@@ -14,29 +14,28 @@
         href='{{request.static_url("stalker:static/stalker/css/stalker.css")}}'/>
 
 {# load jQuery and jQuery Gantt first#}
-  <link rel=stylesheet href='{{ request.static_url("stalker:static/jQueryGantt_mod/platform.css") }}' type="text/css">
-  <link rel=stylesheet href='{{ request.static_url("stalker:static/jQueryGantt_mod/libs/dateField/jquery.dateField.css") }}' type="text/css">
-  <link rel=stylesheet href='{{ request.static_url("stalker:static/jQueryGantt_mod/gantt.css") }}' type="text/css">
+  <link rel=stylesheet href='{{ request.static_url("stalker:static/jQueryGantt/platform.css") }}' type="text/css">
+  <link rel=stylesheet href='{{ request.static_url("stalker:static/jQueryGantt/libs/dateField/jquery.dateField.css") }}' type="text/css">
+  <link rel=stylesheet href='{{ request.static_url("stalker:static/jQueryGantt/gantt.css") }}' type="text/css">
  
   <script src='{{ request.static_url("stalker:static/jquery/1.7/jquery.min.js") }}'></script>
   <script src='{{ request.static_url("stalker:static/jqueryui/1.8/jquery-ui.min.js") }}'></script>
 {#  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>#}
 {#  <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.2/jquery-ui.min.js"></script>#}
   
-  <script src='{{ request.static_url("stalker:static/jQueryGantt_mod/libs/jquery.livequery.min.js") }}'></script>
-  <script src='{{ request.static_url("stalker:static/jQueryGantt_mod/libs/jquery.timers.js") }}'></script>
-  <script src='{{ request.static_url("stalker:static/jQueryGantt_mod/libs/platform.js") }}'></script>
-  <script src='{{ request.static_url("stalker:static/jQueryGantt_mod/libs/date.js") }}'></script>
-  <script src='{{ request.static_url("stalker:static/jQueryGantt_mod/libs/i18nJs.js") }}'></script>
-  <script src='{{ request.static_url("stalker:static/jQueryGantt_mod/libs/dateField/jquery.dateField.js") }}'></script>
-  <script src='{{ request.static_url("stalker:static/jQueryGantt_mod/libs/JST/jquery.JST.js") }}'></script>
+  <script src='{{ request.static_url("stalker:static/jQueryGantt/libs/jquery.livequery.min.js") }}'></script>
+  <script src='{{ request.static_url("stalker:static/jQueryGantt/libs/jquery.timers.js") }}'></script>
+  <script src='{{ request.static_url("stalker:static/jQueryGantt/libs/platform.js") }}'></script>
+  <script src='{{ request.static_url("stalker:static/jQueryGantt/libs/date.js") }}'></script>
+  <script src='{{ request.static_url("stalker:static/jQueryGantt/libs/i18nJs.js") }}'></script>
+  <script src='{{ request.static_url("stalker:static/jQueryGantt/libs/dateField/jquery.dateField.js") }}'></script>
+  <script src='{{ request.static_url("stalker:static/jQueryGantt/libs/JST/jquery.JST.js") }}'></script>
 
-  <script src='{{ request.static_url("stalker:static/jQueryGantt_mod/ganttUtilities.js") }}'></script>
-  <script src='{{ request.static_url("stalker:static/jQueryGantt_mod/ganttTask.js") }}'></script>
-  <script src='{{ request.static_url("stalker:static/jQueryGantt_mod/ganttDrawer.js") }}'></script>
-  <script src='{{ request.static_url("stalker:static/jQueryGantt_mod/ganttGridEditor.js") }}'></script>
-  <script src='{{ request.static_url("stalker:static/jQueryGantt_mod/ganttMaster.js") }}'></script>
-
+  <script src='{{ request.static_url("stalker:static/jQueryGantt/ganttUtilities.js") }}'></script>
+  <script src='{{ request.static_url("stalker:static/jQueryGantt/ganttTask.js") }}'></script>
+  <script src='{{ request.static_url("stalker:static/jQueryGantt/ganttDrawer.js") }}'></script>
+  <script src='{{ request.static_url("stalker:static/jQueryGantt/ganttGridEditor.js") }}'></script>
+  <script src='{{ request.static_url("stalker:static/jQueryGantt/ganttMaster.js") }}'></script>
 
 {# DOJO COMPRESSED #}
   <link rel='stylesheet' type='text/css' media='screen' charset='utf-8'
@@ -286,77 +285,77 @@
             // --------
             // View Project
             project_setting_DropDownMenu.addChild(
-                    new MenuItem({
-                              label: '-  View',
-                              dataId: pID,
-                              onClick: function(){
-                                central_content_pane.set(
-                                        'href',
-                                        'view/project/' + this.get('dataId')
-                                );
-                                central_content_pane.refresh();
-                              }
-                            })
+              new MenuItem({
+                  label: '-  View',
+                  dataId: pID,
+                  onClick: function(){
+                    central_content_pane.set(
+                      'href',
+                      'view/project/' + this.get('dataId')
+                    );
+                    central_content_pane.refresh();
+                  }
+                })
             );
 
             project_setting_DropDownMenu.addChild(
-                    new MenuSeparator({})
+              new MenuSeparator({})
             );
 
             // --------
             // Asset
             project_setting_DropDownMenu.addChild(
-                    dialogCaller({
-                      label:'+ New Asset',
-                      dialog_id:'create_asset_dialog',
-                      content_creator: create_create_asset_dialog,
-                      widget_type: 'MenuItem',
-                      data_id: pID
+              dialogCaller({
+                label:'+ New Asset',
+                dialog_id:'create_asset_dialog',
+                content_creator: create_create_asset_dialog,
+                widget_type: 'MenuItem',
+                data_id: pID
 
-                    })
+              })
             );
 
             // --------
             // Sequence
             project_setting_DropDownMenu.addChild(
-                    dialogCaller({
-                      label:'+ New Sequence',
-                      dialog_id:'create_sequence_dialog',
-                      content_creator: create_create_sequence_dialog,
-                      widget_type: 'MenuItem',
-                      data_id: pID
-                    })
+              dialogCaller({
+                label:'+ New Sequence',
+                dialog_id:'create_sequence_dialog',
+                content_creator: create_create_sequence_dialog,
+                widget_type: 'MenuItem',
+                data_id: pID
+              })
             );
-
+            
             // ----
             // Shot
             project_setting_DropDownMenu.addChild(
-                    dialogCaller({
-                      label:'+ New Shot',
-                      dialog_id:'create_shot_dialog',
-                      content_creator: create_create_shot_dialog,
-                      widget_type: 'MenuItem',
-                      data_id: pID
-                    })
+              dialogCaller({
+                label:'+ New Shot',
+                dialog_id:'create_shot_dialog',
+                content_creator: create_create_shot_dialog,
+                widget_type: 'MenuItem',
+                data_id: pID
+              })
+            );
+            
+            project_setting_DropDownMenu.addChild(
+              new MenuSeparator({})
             );
 
             project_setting_DropDownMenu.addChild(
-                    new MenuSeparator({})
+              dialogCaller({
+                label:'+ Add User',
+                dialog_id:'create_user_dialog',
+                content_creator: create_create_user_dialog,
+                widget_type: 'MenuItem',
+                data_id: pID
+              })
             );
-
-            project_setting_DropDownMenu.addChild(
-                    dialogCaller({
-                      label:'+ Add User',
-                      dialog_id:'create_user_dialog',
-                      content_creator: create_create_user_dialog,
-                      widget_type: 'MenuItem',
-                      data_id: pID
-                    })
-            );
-
+            
             return project_setting_DropDownMenu;
 
-          }
+          };
 
           // Project Memory
           var projects_memory = new JsonRest({

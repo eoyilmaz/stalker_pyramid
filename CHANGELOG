@@ -16,11 +16,17 @@ Stalker Changes
 * Added a new attribute called ``users`` to the Department class which is a
   synonym for the ``members`` attribute.
 
-* Task class is now preventing one of the dependents to be set as the parent of
-  a task.
+* Task:
+  * Task class is now preventing one of the dependents to be set as the parent
+    of a task.
+  * Task class is now preventing one of the parents to be set as the one of the
+    dependents of a task.
+  * Fixed ``autoflush`` bugs in Task class.
 
-* Task class is now preventing one of the parents to be set as the one of the
-  dependents of a task.
+* Fixed `admin` users department initialization.
+
+* Added ``thumbnail`` attribute to the SimpleEntity class which is a reference
+  to a Link instance, showing the path of the thumbnail.
 
 0.2.0.a7
 --------

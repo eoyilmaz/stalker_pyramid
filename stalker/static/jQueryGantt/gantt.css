@@ -9,7 +9,7 @@
   overflow: hidden;
   text-overflow: clip;
   white-space: nowrap;
-  font-size: 10px
+  font-size: 12px
 }
 
 .gdfCell {
@@ -43,7 +43,7 @@
   margin: 0;
   padding: 0;
   width: 100%;
-  background-color: #d4fbe8;
+  background-color: #dedede;
 }
 
 .gdfCellWrap {
@@ -109,7 +109,7 @@
 }
 
 .holyH{
-    background-color: #9CB7AA;
+    background-color: #dedede;
 }
 .holy{
   background-color: #FFF5E6;
@@ -170,7 +170,7 @@
 }
 
 .ganttButtonBar .buttons {
-    float:left; margin:45px 0 0 40px
+    float:left; margin:0 0 0 40px
 }
 
 
@@ -191,17 +191,18 @@
 
 .taskBox{
   position:absolute;
-  height:18px;
-  margin-top:1px;
+  height:15px;
+  margin-top:2px;
   z-index:100;
 }
 
 .taskBox .layout {
   height:100%;
   color:red;
-  border-radius:2px;
+  border-radius:5px;
   background: #eee; /* Old browsers */
   border:1px solid #bbb;
+  /*box-shadow: 3px 3px 8px -1px black;*/
 }
 
 .taskBox .taskStatus {
@@ -232,8 +233,15 @@
 }
 
 .taskBox .taskProgress{
-  height:5px;
+  height:3px;
   position:absolute;
+}
+
+.taskBox .taskBid{
+  height:7px;
+  position:absolute;
+  border-radius: 3px;
+  top: 9px;
 }
 
 .taskBox .layout.extDep{
@@ -247,27 +255,43 @@
   color:black;
   text-align:right;
   padding-right:5px;
+  padding-top: 0px;
   overflow:hidden;
-  left:-200px;
+  left:-210px;
   width:195px;
   white-space:nowrap;
 }
 
 
+.taskDepLabel {
+    color: black;
+    height: 18px;
+    left: 100%;
+    overflow: visible;
+    padding-left: 15px;
+    padding-top: 0px;
+    position: absolute;
+    text-align: left;
+    white-space: nowrap;
+    width: 195px;
+}
+
+
 .taskDepLine {
-  border: 1px solid #9999ff;
+  background-color: #b8d1ed;
+  border: 0px solid #b8d1ed;
   overflow: hidden;
   position: absolute;
 }
 
 
 .taskEditRow,.emptyRow {
-  height:18px;
+  height:19px;
 }
 
 .taskEditRow input{
   border: 0 none;
-  font-size: 10px;
+  font-size: 12px;
   height: 14px;
   margin: 0;
   padding: 0;

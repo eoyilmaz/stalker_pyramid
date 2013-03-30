@@ -270,11 +270,11 @@ require(['dijit/registry', 'dojo/_base/lang','dojo/request/xhr',
         
         // ********************************************************************
         // TASK
-        create_create_task_dialog = function(taskable_entity_id){
+        create_create_task_dialog = function(entity_id){
             return new DialogSimple({
                 id: 'create_task_dialog',
                 title: 'New Task',
-                href: '/create/task/' + taskable_entity_id,
+                href: '/create/task/' + entity_id,
                 resize: true,
                 style: style,
                 executeScripts: true
