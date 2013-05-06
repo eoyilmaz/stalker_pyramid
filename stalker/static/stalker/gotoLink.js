@@ -24,15 +24,12 @@ define(['dijit/registry', 'dojo/on', 'dojo/query'],
         //
         //
         var gotoLink = function(){
+
               // get the Link Elements
               var dataLinks = query('.DataLink');
 
               for (var i=0; i<dataLinks.length; i++){
                   on(dataLinks[i], 'click', function(){
-
-
-                      //alert(this.getAttribute('stalker_target').toLowerCase()+ " : "+this.getAttribute('stalker_href').toLowerCase());
-
                       var contentPane = registry.byId(this.getAttribute('stalker_target'));
                       if (contentPane){
                           contentPane.set('href', this.getAttribute('stalker_href'));

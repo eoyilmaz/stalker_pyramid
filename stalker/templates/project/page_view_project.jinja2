@@ -88,11 +88,6 @@
                     default_href: 'list/assets/{{ project.id }}',
                     href: 'list/assets/{{ project.id }}',
                     style:' padding: 0; margin:0;'
-
-                    {#                        resize: function() {#}
-                    {#                                console.log('onresize');#}
-                    {#                            gotoLink();#}
-                    {#                        }#}
                 }, 'assets_content_pane');
 
                 var shots_content_pane = new ContentPane({
@@ -130,10 +125,8 @@
                     style:' padding: 0; margin:0;'
                 });
 
-
-
-                project_related_data_tab_container.addChild(assets_content_pane);
                 project_related_data_tab_container.addChild(tasks_content_pane);
+                project_related_data_tab_container.addChild(assets_content_pane);
                 project_related_data_tab_container.addChild(shots_content_pane);
                 project_related_data_tab_container.addChild(sequences_content_pane);
                 project_related_data_tab_container.addChild(users_content_pane);
@@ -146,7 +139,7 @@
                 project_content_BorderContainer.startup();
 
 
-                var currentPane = tasks_content_pane;
+                //var currentPane = tasks_content_pane;
 
 {#                var lSplitter = registry.byId("project_border_container").getSplitter("top");#}
 {#                on(lSplitter.domNode, 'mouseup', refreshCurrentPane);#}
@@ -168,7 +161,7 @@
                     nval.set('href', nval.default_href);
                     nval.refresh();
 
-                    currentPane = nval;
+                    //currentPane = nval;
                 });
 
 

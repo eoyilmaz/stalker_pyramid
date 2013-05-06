@@ -20,19 +20,20 @@
 from pyramid.httpexceptions import HTTPOk
 from pyramid.security import authenticated_userid
 from pyramid.view import view_config
-from stalker import Task, User, Studio
+from stalker import Task, User, Studio, TimeLog
 
 from stalker import defaults
 
 import logging
 from stalker import log
+from stalker.db import DBSession
 from stalker.views import get_datetime
 
 logger = logging.getLogger(__name__)
 logger.setLevel(log.logging_level)
 
 @view_config(
-    route_name='create_time_log_dialog',
+    route_name='dialog_create_time_log',
     renderer='templates/time_log/dialog_create_time_log.jinja2',
     permission='Create_TimeLog'
 )
@@ -58,6 +59,7 @@ def create_time_log_dialog(request):
         'task': task
     }
 
+
 @view_config(
     route_name='create_time_log',
     permission='Create_TimeLog'
@@ -70,9 +72,27 @@ def create_time_log(request):
     
     #**************************************************************************
     # collect data
-    resource_id = request.get('resource_id')
+    resource_id = request.params.get('resource_id', None)
+    resource = User.query.filter(User.id==resource_id).first()
+    
     start_date = get_datetime(request, 'start_date', 'start_time')
     end_date = get_datetime(request, 'end_date', 'end_time')
     
+    logger.debug('task_id     : %s' % task_id)
+    logger.debug('task        : %s' % task)
+    logger.debug('resource_id : %s' % resource_id)
+    logger.debug('start_date  : %s' % start_date)
+    logger.debug('end_date    : %s' % end_date)
+    
+    if task and resource and start_date and end_date:
+        # we are ready to create the time log
+        # TimeLog should handle the extension of the effort
+        time_log = TimeLog(
+            task=task,
+            resource=resource,
+            start=start_date,
+            end=end_date
+        )
+        DBSession.add(time_log)
     
     return HTTPOk()
