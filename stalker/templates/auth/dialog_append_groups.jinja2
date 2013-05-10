@@ -92,7 +92,6 @@
             target: '/get/groups_byEntity/{{ user.id }}'
         });
 
-
         var user_groups_multi_select = new MultiSelect({
             name: 'user_groups',
             required: false,
@@ -198,16 +197,24 @@
             label: 'OK',
             type: 'button',
             onClick: function () {
-                submitForm({
-                    dialog: registry.byId('append_group_dialog'),
-                    form: append_group_form,
-                    additional_data: {
-                        'user_id': {{ user.id }}
-                    },
-                    url: 'append/groups',
-                    method: 'POST'
-                });
-            }
+                var group_ids = [];
+                    domConstruct.query('option', user_groups_multi_select.domNode).forEach(function (opt,
+                                                                                             idx,
+                                                                                             arr) {
+                        group_ids.push(opt.value);
+                    });
+
+                    submitForm({
+                        dialog: registry.byId('append_group_dialog'),
+                        form: append_group_form,
+                        additional_data: {
+                            'user_id': {{ user.id }},
+                            'group_ids': group_ids
+                        },
+                        url: 'append/groups',
+                        method: 'POST'
+                    });
+                }
         }, 'append_group_submit_button');
         submit_button.startup();
 

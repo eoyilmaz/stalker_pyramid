@@ -74,7 +74,6 @@
         'stalker/fieldUpdater',
 
         'dojo/domReady!'
-
     ], function (ObjectStore, Memory, JsonRest, lang, registry, Form, Button,
                  MultiSelect, submitForm, dialogCaller, fieldUpdater) {
 
@@ -196,11 +195,19 @@
             label: 'OK',
             type: 'button',
             onClick: function () {
+                var department_ids = [];
+                dojo.query('option', user_departments_multi_select.domNode).forEach(function (opt,
+                                                                                              idx,
+                                                                                              arr) {
+                    department_ids.push(opt.value);
+                });
+
                 submitForm({
                     dialog: registry.byId('append_department_dialog'),
                     form: append_department_form,
                     additional_data: {
-                        'user_id': {{ user.id }}
+                        'user_id': {{ user.id }},
+                        'department_ids': department_ids
                     },
                     url: 'append/departments',
                     method: 'POST'

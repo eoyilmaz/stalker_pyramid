@@ -246,6 +246,7 @@ require([
         label: 'Code',
         required: true,
         placeHolder: 'Enter a code',
+        value: code,
         {% if mode=='UPDATE' %}
             disabled: true
             // cannot change the code for an already created project
@@ -333,9 +334,9 @@ require([
         }
     };
     update_dates(
-            start_dateTextBox.getValue(),
-            end_dateTextBox.getValue(),
-            null
+        start_dateTextBox.getValue(),
+        end_dateTextBox.getValue(),
+        null
     );
 
 

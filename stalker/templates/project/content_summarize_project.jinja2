@@ -18,12 +18,14 @@
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #}
 
-<div style="background-color: #eeeeee; text-align: center"><h3>
-    <strong>{{ project.name }} ({{ project.code }})</strong></h3>
+<div style="background-color: #eeeeee; text-align: center">
+    <h3>
+      <strong>{{ project.name }} ({{ project.code }})</strong>
+    </h3>
 </div>
 
 <div id='project_details'>
-    <div style="background-color: #8ecfb0" class="page_title"></div>
+<div style="background-color: #8ecfb0;" class="page_title"></div>
     {# Thumbnail #}
     <div id='project_thumbnail' class='thumbnail'>
         {% if not project.thumbnail %}
@@ -41,9 +43,7 @@
                 <td style='text-align: right'><strong>Lead</strong></td>
                 <td>&nbsp;</td>
                 <td>
-                    <a href="#" class="DataLink"
-                       stalker_target="central_content"
-                       stalker_href="view/user/{{ project.lead.id }}">{{ project.lead.name }}</a>
+                    <a href="javascript:redirectLink('central_content','view/user/{{ project.lead.id }}');">{{ project.lead.name }}</a>
                     ({{ project.lead.login }})
                 </td>
             </tr>
@@ -100,11 +100,10 @@
 
         'stalker/dialogs',
         'stalker/dialogCaller',
-        'stalker/gotoLink',
 
         'dojo/domReady!'
     ], function (Chart, theme, PiePlot, MoveSlice, Button, dialogs,
-                 dialogCaller, gotoLink) {
+                 dialogCaller) {
 
         // Create the chart within it's "holding" node
         var pieChart = new Chart('project_summary_chart1');
@@ -150,8 +149,6 @@
             data_id: {{ project.id }}
         });
         update_project_button.startup();
-
-        gotoLink();
 
     });
 </script>

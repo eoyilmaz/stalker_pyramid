@@ -114,6 +114,25 @@
 
     <script type='text/javascript'>
 
+        var redirectLinkInParent = function (targetPane, address) {
+
+            var tab_container = dijit.byId('data_tab_container');
+            var contentPane = dijit.byId(targetPane);
+
+            if (contentPane) {
+                if (contentPane != tab_container.selectedChildWidget) {
+                    tab_container.selectChild(contentPane); //Show the selected Tab
+                }
+            }
+            else {
+                contentPane = tab_container.selectedChildWidget;
+            }
+
+            contentPane.set('href', address);
+            contentPane.refresh();
+
+        };
+
         var redirectLink = function (targetPane, address) {
             var contentPane = dijit.byId(targetPane);
             contentPane.set('href', address);
