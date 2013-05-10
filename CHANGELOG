@@ -45,8 +45,10 @@ Stalker Changes
   * Update: All DataGrid field updated with dgrid class.
   * Add: Placeholder images added for user and department.
   * Change: Colors for the layouts are changed with MiamiNice PieChart's color.
+  * Add: Added update group dialog.
   * Fix: Separated the dialog and action routes for ImageFormat.
   * Fix: Separated the dialog and action routes for Asset.
+  * Fix: Separated the dialog and action routes for Repository.
   * Add: Added update group dialog.
   * Add: Append department and append group pages has connected to database.
   * Add: Timelog List page added.
