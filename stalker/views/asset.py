@@ -219,16 +219,15 @@ def view_asset(request):
 def summarize_asset(request):
     """runs when viewing an asset
     """
-
-    login = authenticated_userid(request)
-    logged_in_user = User.query.filter_by(login=login).first()
+    logged_in_user = get_logged_in_user(request)
 
     asset_id = request.matchdict['asset_id']
     asset = Asset.query.filter_by(id=asset_id).first()
 
     return {
         'user': logged_in_user,
-        'asset': asset
+        'asset': asset,
+        'has_permission': PermissionChecker(request)
     }
 
 

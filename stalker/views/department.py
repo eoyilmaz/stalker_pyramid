@@ -28,7 +28,7 @@ from stalker import User, Department, Entity, Tag
 
 import logging
 from stalker import log
-from stalker.views import get_logged_in_user, log_param
+from stalker.views import PermissionChecker, get_logged_in_user, log_param
 
 logger = logging.getLogger(__name__)
 logger.setLevel(log.logging_level)
@@ -43,9 +43,11 @@ def create_department_dialog(request):
     """
 
     return {
-        'mode': 'CREATE'
+        'mode': 'CREATE',
+        'has_permission': PermissionChecker(request),
         # 'users': User.query.all()
     }
+
 
 @view_config(
     route_name='dialog_update_department',
@@ -60,6 +62,7 @@ def update_department_dialog(request):
     logger.debug('called update_department_dialog %s' % department_id)
     return {
         'mode': 'UPDATE',
+        'has_permission': PermissionChecker(request),
         'department': department
     }
 
@@ -201,6 +204,7 @@ def view_department(request):
     department = Department.query.filter_by(id=department_id).first()
 
     return {
+        'has_permission': PermissionChecker(request),
         'user': logged_in_user,
         'department': department
     }
@@ -217,6 +221,7 @@ def summarize_department(request):
     department = Department.query.filter_by(id=department_id).first()
 
     return {
+        'has_permission': PermissionChecker(request),
         'department': department
     }
 
@@ -232,8 +237,8 @@ def list_departments(request):
     entity = Entity.query.filter_by(id=entity_id).first()
 
     return {
+        'has_permission': PermissionChecker(request),
         'entity': entity
-
     }
 
 @view_config(
@@ -265,13 +270,13 @@ def get_departments_byEntity(request):
 def append_departments_dialog(request):
     """runs for append user dialog
     """
-    login = authenticated_userid(request)
-    logged_user = User.query.filter_by(login=login).first()
+    logged_user = get_logged_in_user(request)
 
     user_id = request.matchdict['user_id']
     user = User.query.filter_by(id=user_id).first()
 
     return {
+        'has_permission': PermissionChecker(request),
         'logged_user': logged_user,
         'user': user
     }

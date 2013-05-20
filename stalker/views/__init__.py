@@ -18,15 +18,18 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 
+import os
+import uuid
 import logging
 import datetime
 
-from pyramid.httpexceptions import HTTPServerError
+from pyramid.httpexceptions import HTTPServerError, HTTPOk
 from pyramid.view import view_config
-from pyramid.response import  Response
+from pyramid.response import  Response, FileResponse
 from pyramid.security import has_permission, authenticated_userid
 
-from stalker import log, User
+from stalker import log, User, defaults, Entity, Link
+from stalker.db import DBSession
 
 logger = logging.getLogger(__name__)
 logger.setLevel(log.logging_level)
@@ -143,7 +146,148 @@ def get_multi_integer(request, attr_name):
     """
     return [int(attr) for attr in request.POST.getall(attr_name)]
 
+
 def get_color_as_int(request, attr_name):
     """Extracts a color from request
     """
     return int(request.params.get(attr_name, '#000000')[1:], 16)
+
+
+def upload_file_to_server(request, file_param_name):
+    """uploads a file from a request.POST to the given path
+    
+    Uses the hex representation of a uuid4 sequence as the filename.
+
+    The first two digits of the uuid4 is used for the first folder name,
+    there are 256 possible variations, then the third and fourth characters
+    are used for the second folder name (again 256 other possibilities) and
+    then the uuid4 sequence with the original file extension generates the
+    filename.
+
+    The extension is used on purpose where OSes like windows can infer the file
+    type from the extension.
+
+    {{server_side_storage_path}}/{{uuid4[:2]}}/{{uuid4[2:4]}}//{{uuuid4}}.extension
+    
+    :param request: The request object.
+    :param str file_param_name: The name of the parameter that holds the file.
+    :returns (str, str): The original filename and the file path on the server.
+    """
+    # get the filename
+    file_param = request.POST.get(file_param_name)
+    filename = file_param.filename
+    extension = os.path.splitext(filename)[1]
+    input_file = file_param.file
+    
+    logger.debug('file_param : %s' % file_param)
+    logger.debug('filename   : %s' % filename)
+    logger.debug('extension  : %s' % extension)
+    logger.debug('input_file : %s' % input_file)
+
+    # upload it to the stalker server side storage path
+
+    new_filename = uuid.uuid4().hex + extension
+
+    first_folder = new_filename[:2]
+    second_folder = new_filename[2:4]
+
+    file_path = os.path.join(
+        defaults.server_side_storage_path,
+        first_folder,
+        second_folder
+    )
+    
+    file_full_path = os.path.join(
+        file_path,
+        new_filename
+    )
+
+    # write down to a temp file first
+    temp_file_path = file_full_path + '~'
+    
+    # create folders
+    os.makedirs(file_path)
+
+    output_file = open(temp_file_path, 'wb') # TODO: guess ascii or binary mode    
+
+    input_file.seek(0)
+    while True: # TODO: use 'with'
+        data = input_file.read(2<<16)
+        if not data:
+            break
+        output_file.write(data)
+    output_file.close()
+
+    # data is written completely, rename temp file to original file
+    os.rename(temp_file_path, file_full_path)
+    
+    return filename, file_full_path
+
+@view_config(
+    route_name='dialog_upload_thumbnail',
+    renderer='templates/dialog_upload_thumbnail.jinja2'
+)
+def dialog_upload_thumbnail(request):
+    """fills the upload thumbnail dialog
+    """
+    entity_id = int(request.matchdict.get('entity_id', -1))
+    entity = Entity.query.filter_by(id=entity_id).first()
+    
+    logger.debug('entity_id : %s' % entity_id)
+    logger.debug('entity    : %s' % entity)
+    
+    return {
+        'entity': entity,
+        'has_permission': PermissionChecker(request)
+    }
+
+
+@view_config(
+    route_name='upload_thumbnail'
+)
+def upload_thumbnail(request):
+    """uploads a thumbnail to the server
+    """
+    entity_id = request.matchdict.get('entity_id')
+    entity = Entity.query.filter_by(id=entity_id).first()
+
+    logger.debug(request.params)
+    logger.debug(request.POST)
+    
+    try:
+        original_filename, file_path = \
+            upload_file_to_server(request, 'uploadedfile')
+    except IOError:
+        HTTPServerError()
+    else:
+        # create a Link and assign it to the given Entity
+        new_link = Link(
+            path = file_path,
+            original_filename=original_filename
+        )
+        
+        # assign it as a thumbnail
+        entity.thumbnail = new_link
+        
+        DBSession.add(new_link)
+
+    return HTTPOk()
+
+
+@view_config(
+    route_name='serve_files'
+)
+def serve_files(request):
+    """serves files in the stalker server side storage
+    """
+    partial_file_path = request.matchdict['partial_file_path']
+    
+    logger.debug('partial_file_path : %s' % partial_file_path)
+    
+    file_full_path = os.path.join(
+        defaults.server_side_storage_path,
+        partial_file_path
+    )
+    
+    return FileResponse(file_full_path)
+    

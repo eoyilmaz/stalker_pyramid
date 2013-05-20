@@ -44,7 +44,9 @@
                 <td style='text-align: right'></td>
                 <td>&nbsp;</td>
                 <td>
+					{% if has_permission('Update_Shot') %}
                     <button id='update_shot_button'>Update</button>
+					{% endif %}
                 </td>
             </tr>
         </table>
@@ -98,8 +100,12 @@
             // refresh the pane
             content_pane.refresh();
         };
+	
+	
+						
 
-        // UPDATE STRUCTURE BUTTON
+        {% if has_permission('Update_Shot') %}
+		// UPDATE SHOT BUTTON
         var update_shot_button = dialogCaller({
             label: 'Update',
             dialog_id: 'shot_dialog',
@@ -109,6 +115,7 @@
             data_id: {{ shot.id }}
         });
         update_shot_button.startup();
+		{% endif %}
 
     });
 </script>
