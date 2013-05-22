@@ -28,7 +28,7 @@ import stalker
 from stalker import (defaults, User, Department, Group, Tag, Project, Entity,
                      Studio, Permission, EntityType)
 from stalker.db import DBSession
-from stalker.views import log_param, get_logged_in_user, PermissionChecker
+from stalker.views import log_param, get_logged_in_user, PermissionChecker, get_multi_integer, get_tags
 
 import logging
 from stalker import log
@@ -108,31 +108,19 @@ def create_user(request):
         else:
             # Departments
             if 'department_ids' in request.params:
-                dep_ids = [
-                    int(dep_id)
-                    for dep_id in request.POST.getall('department_ids')
-                ]
+                dep_ids = get_multi_integer(request, 'department_ids')
                 departments = Department.query.filter(
                                 Department.id.in_(dep_ids)).all()
     
         # Groups
         groups = []
         if 'group_ids' in request.params:
-            grp_ids = [
-                int(grp_id)
-                for grp_id in request.POST.getall('group_ids')
-            ]
+            grp_ids = get_multi_integer(request, 'group_ids')
             groups = Group.query.filter(
                             Group.id.in_(grp_ids)).all()
         
         # Tags
-        tags = []
-        tag_names = request.POST.getall('tag_names')
-        for tag_name in tag_names:
-            tag = Tag.query.filter(Tag.name==tag_name).first()
-            if not tag:
-                tag = Tag(name=tag_name)
-            tags.append(tag)
+        tags = get_tags(request)
 
         logger.debug('creating new user')
         new_user = User(
@@ -168,7 +156,7 @@ def update_user(request):
     """
     logged_in_user = get_logged_in_user(request)
     
-    user_id = int(request.params.get('user_id', -1))
+    user_id = request.params.get('user_id', -1)
     user = User.query.filter(User.id==user_id).first()
     
     name = request.params.get('name')
@@ -182,32 +170,20 @@ def update_user(request):
 
         # Departments
         if 'department_ids' in request.params:
-            dep_ids = [
-                int(dep_id)
-                for dep_id in request.POST.getall('department_ids')
-            ]
+            dep_ids = get_multi_integer(request,'department_ids')
             departments = Department.query \
                 .filter(Department.id.in_(dep_ids)).all()
 
         # Groups
         groups = []
         if 'group_ids' in request.params:
-            grp_ids = [
-                int(grp_id)
-                for grp_id in request.POST.getall('group_ids')
-            ]
+            grp_ids = get_multi_integer(request, 'group_ids')
             groups = Group.query \
                 .filter(Group.id.in_(grp_ids)).all()
-        
+
         # Tags
-        tags = []
-        tag_names = request.POST.getall('tag_names')
-        for tag_name in tag_names:
-            tag = Tag.query.filter(Tag.name==tag_name).first()
-            if not tag:
-                tag = Tag(name=tag_name)
-            tags.append(tag)
-        
+        tags = get_tags(request)
+
         user.name = name
         user.login = login
         user.email = email
@@ -216,7 +192,7 @@ def update_user(request):
         user.departments = departments
         user.groups = groups
         user.tags = tags
-        
+
         if password != 'DONTCHANGE':
             user.password = password
         
@@ -425,10 +401,7 @@ def append_users(request):
     """appends the given users o the given Project or Department
     """
     # users
-    user_ids = [
-        int(u_id)
-        for u_id in request.POST.getall('user_ids')
-    ]
+    user_ids = get_multi_integer(request, 'user_ids')
     logger.debug('user_ids  : %s' % user_ids)
     users = User.query.filter(User.id.in_(user_ids)).all()
     
@@ -842,10 +815,7 @@ def append_groups(request):
     """appends the given groups o the given User
     # """
     # groups
-    groups_ids = [
-        int(g_id)
-        for g_id in request.POST.getall('group_ids')
-    ]
+    groups_ids = get_multi_integer(request, 'group_ids')
     logger.debug('groups_ids : %s' % groups_ids)
 
     groups = Group.query.filter(Group.id.in_(groups_ids)).all()

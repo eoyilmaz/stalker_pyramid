@@ -331,8 +331,6 @@ define([
                     var current_label;
                     var current_id;
 
-
-
                     if (this.type == 'FilteringSelect') {
 
                         item = this.input_field_widget.item;
@@ -352,13 +350,11 @@ define([
                         if (item != null) {
                             current_label = this.input_field_widget.item.name;
                             current_id = this.input_field_widget.item.id;
-                        }
-                        else{
-
+                        } else {
                             current_label = this.input_field_widget.value;
                             current_id = this.input_field_widget.value;
-
                         }
+
                     }
 
                     if (current_label != null) {

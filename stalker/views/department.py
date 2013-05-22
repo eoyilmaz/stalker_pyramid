@@ -28,7 +28,7 @@ from stalker import User, Department, Entity, Tag
 
 import logging
 from stalker import log
-from stalker.views import PermissionChecker, get_logged_in_user, log_param
+from stalker.views import PermissionChecker, get_logged_in_user, log_param, get_multi_integer, get_tags
 
 logger = logging.getLogger(__name__)
 logger.setLevel(log.logging_level)
@@ -88,13 +88,7 @@ def create_department(request):
         lead = User.query.filter_by(id=lead_id).first()
 
         # Tags
-        tags = []
-        tag_names = request.POST.getall('tag_names')
-        for tag_name in tag_names:
-            tag = Tag.query.filter(Tag.name==tag_name).first()
-            if not tag:
-                tag = Tag(name=tag_name)
-            tags.append(tag)
+        tags = get_tags(request)
 
         logger.debug('creating new department')
         new_department = Department(
@@ -137,16 +131,7 @@ def update_department(request):
         lead = User.query.filter_by(id=lead_id).first()
 
         # Tags
-        tags = []
-        tag_names = request.POST.getall('tag_names')
-        for tag_name in tag_names:
-            logger.debug('tag_name %s' % tag_name)
-            tag = Tag.query.filter(Tag.name==tag_name).first()
-            if tag is None:
-                logger.debug('new tag is created %s' % tag_name)
-                tag = Tag(name=tag_name)
-            tags.append(tag)
-
+        tags = get_tags(request)
 
         # update the department
         department.name = name
@@ -288,10 +273,7 @@ def append_departments(request):
     """appends the given department to the given User
     """
     # departments
-    department_ids = [
-        int(d_id)
-        for d_id in request.POST.getall('department_ids')
-    ]
+    department_ids = get_multi_integer(request, 'department_ids')
     departments = Department.query.filter(Department.id.in_(department_ids)).all()
 
     # user
