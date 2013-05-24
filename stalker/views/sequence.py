@@ -48,6 +48,7 @@ def create_sequence_dialog(request):
 
     return {
         'mode': 'CREATE',
+        'has_permission': PermissionChecker(request),
         'project': project
     }
 
@@ -65,6 +66,7 @@ def update_sequence_dialog(request):
     return {
         'mode': 'UPDATE',
         'sequence': sequence,
+        'has_permission': PermissionChecker(request),
         'project': sequence.project
     }
 

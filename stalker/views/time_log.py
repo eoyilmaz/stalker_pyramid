@@ -20,14 +20,14 @@
 from pyramid.httpexceptions import HTTPOk
 from pyramid.security import authenticated_userid, has_permission
 from pyramid.view import view_config
-from stalker import Task, User, Studio, TimeLog
+from stalker import Task, User, Studio, TimeLog, Entity
 
 from stalker import defaults
 
 import logging
 from stalker import log
 from stalker.db import DBSession
-from stalker.views import get_datetime, get_logged_in_user
+from stalker.views import get_datetime, get_logged_in_user, PermissionChecker
 
 logger = logging.getLogger(__name__)
 logger.setLevel(log.logging_level)
@@ -54,6 +54,7 @@ def create_time_log_dialog(request):
     
     return {
         'mode': 'CREATE',
+        'has_permission': PermissionChecker(request),
         'studio': studio,
         'logged_in_user': logged_in_user,
         'task': task
@@ -80,6 +81,7 @@ def update_time_log_dialog(request):
 
     return {
         'mode': 'UPDATE',
+        'has_permission': PermissionChecker(request),
         'studio': studio,
         'logged_in_user': logged_in_user,
         'task': time_log.task,
@@ -165,17 +167,14 @@ def update_time_log(request):
 def list_time_logs(request):
     """lists the time logs of the given task
     """
-    task_id = request.matchdict['task_id']
-    task = Task.query.filter_by(id=task_id).first()
-    
-    time_logs = []
-    if task:
-        time_logs = task.time_logs
-    
+    entity_id = request.matchdict['entity_id']
+    entity = Entity.query.filter_by(id=entity_id).first()
+
+    logger.debug('list_time_logs is running')
+    logger.debug('entity_id : %s' % entity_id)
     return {
-        'task': task,
-        'time_logs': time_logs,
-        'has_permission': has_permission
+        'entity': entity,
+        'has_permission': PermissionChecker(request)
     }
 
 @view_config(
@@ -185,13 +184,16 @@ def list_time_logs(request):
 def get_time_logs(request):
     """returns all the Shots of the given Project
     """
-    task_id = request.matchdict['task_id']
-    task = Task.query.filter_by(id=task_id).first()
+    entity_id = request.matchdict['entity_id']
+    entity = Entity.query.filter_by(id=entity_id).first()
 
-    time_logs = []
+    logger.debug('entity_id : %s' % entity_id)
 
-    for time_log in TimeLog.query.filter_by(task_id=task_id).all():
-        time_logs.append({
+    time_log_data = []
+
+    # if entity.time_logs:
+    for time_log in entity.time_logs:
+        time_log_data.append({
             'id': time_log.id,
             'resource_id': time_log.resource_id,
             'resource_name': time_log.resource.name,
@@ -201,5 +203,5 @@ def get_time_logs(request):
             # 'notes': time_log.notes
         })
 
+    return time_log_data
 
-    return time_logs

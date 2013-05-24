@@ -47,6 +47,7 @@ def create_shot_dialog(request):
 
     return {
         'mode': 'CREATE',
+        'has_permission': PermissionChecker(request),
         'project': project
     }
 
@@ -63,6 +64,7 @@ def update_shot_dialog(request):
 
     return {
         'mode': 'UPDATE',
+        'has_permission': PermissionChecker(request),
         'shot': shot,
         'project': shot.project
     }

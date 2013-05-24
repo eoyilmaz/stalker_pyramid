@@ -204,6 +204,7 @@ def view_asset(request):
 
     return {
         'user': logged_in_user,
+        'has_permission': PermissionChecker(request),
         'asset': asset
     }
 
@@ -222,8 +223,8 @@ def summarize_asset(request):
 
     return {
         'user': logged_in_user,
-        'asset': asset,
-        'has_permission': PermissionChecker(request)
+        'has_permission': PermissionChecker(request),
+        'asset': asset
     }
 
 

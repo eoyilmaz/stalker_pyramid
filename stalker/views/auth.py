@@ -523,20 +523,20 @@ def forbidden(request):
 @view_config(route_name='me_menu',
              renderer='templates/auth/me_menu.jinja2')
 def home(request):
-    user = get_logged_in_user(request)
+    logged_in_user = get_logged_in_user(request)
     studio = Studio.query.first()
     projects = Project.query.all()
     
-    logger.debug('user     : %s' % user)
+    logger.debug('logged_in_user     : %s' % logged_in_user)
     logger.debug('studio   : %s' % studio)
     logger.debug('projects : %s' % projects)
     
-    if not user:
+    if not logged_in_user:
         return logout(request)
     
     return {
         'stalker': stalker,
-        'user': user,
+        'logged_in_user': logged_in_user,
         'projects': projects,
         'studio': studio,
         'has_permission': PermissionChecker(request)

@@ -18,7 +18,9 @@
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #}
 <div id='view_time_logs'>
-    <button id='create_time_log_button'>Create TimeLog</button>
+    {% if has_permission('Create_TimeLog') %}
+        <button id='create_time_log_button'>Create TimeLog</button>
+    {% endif %}
     <div id='time_logs_data_grid'></div>
 </div>
 
@@ -62,7 +64,7 @@
             content_creator: dialogs.create_time_log_dialog,
             attach_to: 'create_time_log_button',
             related_field_updater: time_logs_DataGrid_updater,
-            data_id: '{{ task.id }}'
+            data_id: '{{ entity.id }}'
         });
         create_time_log_button.startup();
 
@@ -71,7 +73,7 @@
         function time_logs_DataGrid_updater() {
 
             var time_log_memory = new JsonRest({
-                target: '/get/time_logs/{{ task.id }}'
+                target: '/get/time_logs/{{ entity.id }}'
             });
 
             time_log_memory.query().then(function (data) {
