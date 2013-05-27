@@ -18,15 +18,15 @@
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #}
 
-{#<div style="background-color: #eeeeee; text-align: center">#}
-{#    <h3>#}
-{#      <strong>{{ project.name }} ({{ project.code }})</strong>#}
-{#    </h3>#}
-{#</div>#}
+<div style="background-color: #eeeeee; text-align: center">
+    <h3>
+      <strong>{{ project.name }} ({{ project.code }})</strong>
+    </h3>
+</div>
 
 <div id='project_details'>
-<div style="background-color: #8ecfb0;" class="page_title"></div>
-    
+    <div style="background-color: #8ecfb0;" class="page_title"></div>
+
     {# Thumbnail #}
     <div id='project_thumbnail' class='thumbnail'>
         {% if not project.thumbnail %}
@@ -84,10 +84,17 @@
                 <td>&nbsp;</td>
                 <td>{{ project.end }}</td>
             </tr>
+            <tr>
+                <td style='text-align: right'></td>
+                <td>&nbsp;</td>
+                <td>
+                    {% if has_permission('Update_Project') %}
+                        <button id='update_project_button'>Update</button>
+                    {% endif %}
+                </td>
+            </tr>
         </table>
-        {% if has_permission('Update_Project') %}
-            <button id='update_project_button'>Update</button>
-        {% endif %}
+
     </div>
     {#  Charts  #}
     <div>
@@ -150,7 +157,7 @@
             // refresh the pane
             content_pane.refresh();
         };
-        
+
         {% if has_permission('Update_Project') %}
             var update_project_button = dialogCaller({
                 label: 'Update',
@@ -161,7 +168,7 @@
                 data_id: {{ project.id }}
             });
             update_project_button.startup();
-            
+
             // thumbnail menu
             thumbnailMenu({
                 targetNodeIds: ['project_thumbnail'],
