@@ -4,12 +4,13 @@ About
 
 Stalker is an Open Source Production Asset Management (ProdAM) System designed 
 specifically for Animation and VFX Studios but can be used for any kind of
-projects. Stalker is licensed under LGPL v2.1.
+projects. Stalker is licensed under LGPL v2.1. And Stalker Pyramid is the
+Pyramid Web App package based on Stalker. Basically it supplies the web
+interfaces to the system. It is also licensed under LGPL v2.1.
 
 Features:
  * Designed for animation and VFX Studios.
- * It is a Pyramid Web Application and also SOM (Stalker Object Model) API can
-   be used as a Python library.
+ * It is a Pyramid Web Application.
  * Platform independent.
  * Default installation handles nearly all the asset and project management 
    needs of an animation and vfx studio.
@@ -21,25 +22,13 @@ Features:
    Nuke, XSI, Vue, Blender etc. and any application that has a Python API.
  * Can work as a stand-alone application.
 
-Stalker is build over these other OpenSource projects:
+Stalker Pyramid is build over these other OpenSource projects:
  * Python
+ * Stalker
  * Pyramid
  * SQLAlchemy and Alembic
  * Jinja2
  * TaskJuggler
-
-
-.. Getting Started
-   ===============
-   
-   - cd <directory containing this file>
-   
-   - $venv/bin/python setup.py develop
-   
-   - $venv/bin/populate_stalker development.ini
-   
-   - $venv/bin/pserve development.ini
-
 
 Source
 ======
@@ -48,6 +37,6 @@ The latest development version is available in `Google Project page of
 Stalker`_ or can be directly cloned with the following command if you already
 have mercurial installed::
 
-  hg clone https://stalker.googlecode.com/hg/ stalker
+  hg clone https://stalker-pyramid.googlecode.com/hg/ stalker_pyramid
 
-.. _Google Project page of Stalker: http://code.google.com/p/stalker/
+.. _Google Project page of Stalker: http://code.google.com/p/stalker-pyramid/

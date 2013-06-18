@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-# Stalker a Production Asset Management System
+# Stalker Pyramid a Web Base Production Asset Management System
 # Copyright (C) 2009-2013 Erkan Ozgur Yilmaz
 # 
-# This file is part of Stalker.
+# This file is part of Stalker Pyramid.
 # 
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -34,11 +34,13 @@ from stalker import (User, Task, Entity, Project, StatusList, Status,
                      TaskJugglerScheduler, Studio)
 from stalker.models.task import CircularDependencyError
 from stalker import defaults
-from stalker import log
-from stalker.views import get_datetime, PermissionChecker, get_logged_in_user, get_multi_integer, milliseconds_since_epoch, from_milliseconds, get_date
+from stalker_pyramid.views import (get_datetime, PermissionChecker,
+                                   get_logged_in_user, get_multi_integer,
+                                   milliseconds_since_epoch, from_milliseconds,
+                                   get_date)
 
 logger = logging.getLogger(__name__)
-logger.setLevel(log.logging_level)
+logger.setLevel(logging.DEBUG)
 
 
 def convert_to_jquery_gantt_task_format(tasks):

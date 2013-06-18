@@ -17,9 +17,9 @@ def usage(argv):
 def main(argv=sys.argv):
     if len(argv) != 2:
         usage(argv)
-    
+
     config_uri = argv[1]
     setup_logging(config_uri)
     settings = get_appsettings(config_uri)
-    
+
     db.setup(settings)

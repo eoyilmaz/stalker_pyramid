@@ -1,622 +1,184 @@
-===============
-Stalker Changes
-===============
+=======================
+Stalker Pyramid Changes
+=======================
 
-0.2.0.b9
+0.1.0.b1
 ========
 
-* **SOM:**
+* **Update:** The Pyramid part of Stalker is moved in to a new package (this
+  one).
 
-  * **New:** Added **Version.latest_published_version** and
-    **Version.is_latest_published_version()**.
-  * **Fix:** Fixed **Version.__eq__()**, now Stalker correctly distinguishes
-    different Version instances.
-  * **New:** Added **Repository.to_linux_path()**,
-    **Repository.to_windows_path()**, **Repository.to_osx_path()** and
-    **Repository.to_native_path()** to the **Repository** class.
-  * **New:** Added **Repository.is_in_repo(path)** which checks if the given
-    path is in this repo.
+pre 0.1.0.b1
+============
 
-* **WebUI:**
-  
-  * **Update:** All the date values are now returned as **UTC String** and
-    stored in database as UTC datetime thus Stalker now supports Time Zones.
-  * **Fix:** Fixed all the dialogs with TimeTextBox inputs, where the
-    date portion was reset to epoch by the widget itself, causing a change in
-    Day Light Saving of the users locale and the dialog was reporting wrong
-    date time values. Now in those dialogs, on submit a new date object is
-    created or the DateTextBox widget value is used and the time portion of the
-    Date object is updated from the TimeTextBox. This way, it is guaranteed to
-    get correct date and time values.
-  * **Fix:** Fixed Studio create/update dialog, it is now correctly setting the
-    start and end hours of a non working day.
+* **Update:** All the date values are now returned as **UTC String** and
+  stored in database as UTC datetime thus Stalker now supports Time Zones.
+* **Fix:** Fixed all the dialogs with TimeTextBox inputs, where the
+  date portion was reset to epoch by the widget itself, causing a change in
+  Day Light Saving of the users locale and the dialog was reporting wrong
+  date time values. Now in those dialogs, on submit a new date object is
+  created or the DateTextBox widget value is used and the time portion of the
+  Date object is updated from the TimeTextBox. This way, it is guaranteed to
+  get correct date and time values.
+* **Fix:** Fixed Studio create/update dialog, it is now correctly setting the
+  start and end hours of a non working day.
+* **New:** Studio Page is created.It has Tasks and Resources as Tabs.
+* **New:** Update Studio function id added.
+* **New:** Thumbnail Add function is added to several objects' Summarize Pages.
+    (Task, Asset, Shot, Sequence,Department, Group). List Page is also updated
+    by new thumbnail information.
+* **Fix:** dgrid height attribute is updated and new div's are added for
+    dgrid object.
+* **Fix:** Working hours for each day is taken from database in
+    Studio Update Dialog.
+* **New:** List Ticket page and Create/Update Ticket dialog are created.
+* **Fix:** Added logged_in_user object to user page to fix permission bug. So
+    default facilities of page is define based on logged_in_user.
+* **Fix:** Fixed DGrid auto height problem.
 
-  * **jQueryGantt:**
+* **Fix:** GanttChart  view of Assets, Shots,Sequences or Tasks now displays
+  only the children and parents of that Task derivative.
+* **Update:** Task create/update dialog now displays the full hierarchy in
+  parent/dependent task listings.
+* **Fix:** TimeLog create/update dialog now displays the default times
+  correctly when creating a new TimeLog.
+* **Fix:** TimeLog create/update view callables are now checking if there
+  will be any OverBookedError raised.
+* **Fix:** Task create/update dialog now will not list the task itself in
+  parent and dependent task lists, if the UI is called with a Task instance
+  ({{task}} is not None).
+* **Update:** For Asset Page and Task Page tab order is changed.
+* **New:** Starts and Ends attributes are added to Task Summary Page.
+* **Update:** List of Users, Departments and Groups are now sorted by using
+  the name of the entity.
+* **Update:** Task create/update dialog now has a new field called
+  ``priority``.
+* **Update:** **Task.schedule_constraint** is now filled with correct
+  information when creating/updating a Task.
+* **Fix:** Selected 'Status' attribute for 'Task Dialog' in 'Update' mode is
+    set when dialog is open.
+* **New:** Version List Page and Create/Update Dialogs are added.
+* **New:** Vacation List Page and Create/Update Dialogs are added.
+* **Fix:** Merge tested, and vacation adding is finished.
+* **New:** Version Page is created. It has Outputs,Inputs and Children as
+    Tabs.
+* **New**: Added 'duration' field to TimeLog's List dgrid.
+* **Fix:** Fixed the error in rendering of the **home** occurred when there is
+  no user login information found in the request.
+* **New:** User thumbnails now can be changed.
+* **New:** Project thumbnails now can be changed.
+* **New:** ``content_list_projects`` now shows the project thumbnails.
+* **New:** ``content_list_users`` now shows the user thumbnails.
+* **New:** ``submitForm.js`` now enables all the disabled fields of the given
+  form, and disables them back again upon error.
+* **Fix:** ``TagSelect.js`` will now correctly disable the child widgets if the
+  ``disabled`` attribute is set to **true**.
+* **New:** Added ``fields`` javascript library which are a special group of
+  input fields designed to be used with Stalker.
+* **New:** Added the first input field to stalker/fields, called ``tagField``.
+  It is now possible to add a TagSelect field which is correctly updated by
+  only two lines of code.
+* **New:** Added ``get_tags()`` to stalker.views.__init__ module. Because all
+  the tags now should be created with the ``tagField`` the way to retrieve tags
+  is the same, so this helper function will let you retrieve tags from the
+  given request instance.
+* **New:** Permissions page is added to Group Page.
+* **Fix:** dgrid object is declared from [Grid, Selection, Keyboard]. So it's
+  possible to select a row and navigate by Keyboard.
+* **New:** Permission controls are added to 'Page' and 'List' files.
+* **New:** Permission controls are added to 'Dialog' and 'Summary' files.
+* **Fix:** Minor bug is fixed in Update Department dialog.
+* **Update:** Updated to Dojo 1.9
+* **Update:** stalker.js is renamed to dialogs.js and it is now fully
+  compatible with Dojo AMD.
+* **Update:** Merged StatusList create and update dialogs in to one.
+* **Update:** Content List - Task now checks user permissions to disable part
+  of the UI.
+* **Update:** Added description field to the Summarize Task view.
+* **Update:** Added permission checks to several views.
+* **Fix:** Fixed fieldUpdater.js to work properly with Dojo 1.9 especially for
+  MultiSelect widgets.
+* **Fix:** Separated the dialog and action routes for Structure.
+* **Fix:** Fixed unnecessary module imports in stalker.js.
+* **Fix:** Schedule button is now working properly.
+* **Fix:** Fixed Image Format creation.
+* **Fix:** Fixed Filename Template create dialog routine.
+* **Fix:** Fixed Filename Template update dialog routine.
+* **Fix:** Fixed entity_types in Filename Template creation UI.
+* **Fix:** Fixed Group update dialog, the permissions were not displayed and
+  the name was not updated on the server side.
+* **Fix:** Fixed TaskBox CSS template
+* **New:** GanttChart now displays the finished/unfinished tasks with a
+  green/red 'id' column.
+* **Fix:** Status color attribute converted from unicode to integer.
+* **Fix:** To destroy previous open dialog, same dialog id is given for create
+  and update dialogs.
+* **Update:** In create/update_group dialog, to check all rows new checkboxes
+  are added to head of each column.
+* **Update:** ``ComboBox`` is added to TagSelect widget as a new input widget
+  type.
+* **Update:** Description field is added to Department dialog.
+* **Fix:** ``user_create_dialog`` now shows and updates groups.
+* **Fix:** Updating a project now correctly refreshes the ``project_summary``
+  content pane.
+* **Fix:** Separated the dialog and action routes for ImageFormat.
+* **Fix:** Separated the dialog and action routes for Asset.
+* **Fix:** Separated the dialog and action routes for Repository.
+* **Fix:** The working hours were not correctly passed to the studio instance
+  in Studio creation.
+* **Fix:** "Append User Dialog" is now working properly.
 
-    * **Update:** The gantt chart is now able to display much more info then
-      before. There are two new modes for each of the Grid and Gantt parts of
-      the Gantt Chart. Grid can be set to display *Task*s or *Resources* and
-      the Gantt can set to display *Task*s or *TimeLog*s.
-    * **Update:** Horizontal scrolling is disabled in gantt part of Gantt
-      Chart. All the drawn tasks and links are now set in position with percent
-      values, so they will stick and scale correctly when the split container
-      resize.
-    * **Update:** Any task out of range is culled in gantt chart.
-    * **Update:** Added new buttons to change the range in -1/+1 month,
-      -1/+1 week, -1/+1 day.
-    * **Update:** Replaced the **Date.format()** (originally replaced by
-      jQueryGantt **date.js**) with **date.format.js** library.
-    * **Update:** Changed the background of the Grid and Gantt editors.
-    * **Update:** If the displayed tasks is clipped to the current start end
-      range a double red border is displayed in the clipped start or end.
-
-0.2.0.b8
-========
-
-* **SOM:**
-
-  * **Update:** Renamed **Version.version_of** attribute to **Version.task**.
-  * **Fix:** Fixed **Version.version_number** where it was not possible to have
-    a version number bigger than 2.
-  * **Fix:** In **db.setup()** Ticket statuses are only created if there aren't
-    any.
-  * **Fix:** Added **Vacation** class to the registered class list in
-    stalker.db.
-
-* **WebUI:**
-  * **New:** Studio Page is created.It has Tasks and Resources as Tabs.
-  * **New:** Update Studio function id added.
-  * **New:** Thumbnail Add function is added to several objects' Summarize Pages.
-      (Task, Asset, Shot, Sequence,Department, Group). List Page is also updated
-      by new thumbnail information.
-  * **Fix:** dgrid height attribute is updated and new div's are added for
-      dgrid object.
-  * **Fix:** Working hours for each day is taken from database in
-      Studio Update Dialog.
-  * **New:** List Ticket page and Create/Update Ticket dialog are created.
-  * **Fix:** Added logged_in_user object to user page to fix permission bug. So
-      default facilities of page is define based on logged_in_user.
-
-
-* **WebUI:**
-
-  * **Fix:** Fixed DGrid auto height problem.
-
-0.2.0.b7
-========
-
-* **SOM:**
-
-  * **Update:** **Task.schedule_constraint** is now reflected to the tjp file
-    correctly.
-  * **Fix:** **check_circular_dependency()** now checks if the **entity** and
-    the **other_entity** are the same.
-  * **Fix:** **Task.to_tjp()** now correctly add the dependent tasks of a
-    container task.
-  * **Fix:** **Task.__eq__()** now correctly considers the parent, depends,
-    resources, start and end dates.
-  * **Update:** **Task.priority** is now reflected in tjp file if it is
-    different than the default value (500).
-  * **New::** Added a new class called **Vacation** to hold user vacations.
-  * **Update:** Removed dependencies to ``pyramid.security.Allow`` and
-    ``pyramid.security.Deny`` in couple of packages.
-  * **Update:** Changed the way the ``stalker.defaults`` is created.
-  * **Fix:** **EnvironmentBase.get_version_from_full_path()**,
-    **EnvironmentBase.get_versions_from_path()**,
-    **EnvironmentBase.trim_repo_path()**, **EnvironmentBase.find_repo** methods
-    are now working properly.
-  * **Update:** Added **Version.absolute_full_path** property which renders the
-    absolute full path which also includes the repository path.
-  * **Update:** Added **Version.absolute_path** property which renders the
-    absolute path which also includes the repository path.
-
-* **WebUI:**
-
-  * **Fix:** GanttChart  view of Assets, Shots,Sequences or Tasks now displays
-    only the children and parents of that Task derivative.
-  * **Update:** Task create/update dialog now displays the full hierarchy in
-    parent/dependent task listings.
-  * **Fix:** TimeLog create/update dialog now displays the default times
-    correctly when creating a new TimeLog.
-  * **Fix:** TimeLog create/update view callables are now checking if there
-    will be any OverBookedError raised.
-  * **Fix:** Task create/update dialog now will not list the task itself in
-    parent and dependent task lists, if the UI is called with a Task instance
-    ({{task}} is not None).
-  * **Update:** For Asset Page and Task Page tab order is changed.
-  * **New:** Starts and Ends attributes are added to Task Summary Page.
-  * **Update:** List of Users, Departments and Groups are now sorted by using
-    the name of the entity.
-  * **Update:** Task create/update dialog now has a new field called
-    ``priority``.
-  * **Update:** **Task.schedule_constraint** is now filled with correct
-    information when creating/updating a Task.
-  * **Fix:** Selected 'Status' attribute for 'Task Dialog' in 'Update' mode is
-      set when dialog is open.
-  * **New:** Version List Page and Create/Update Dialogs are added.
-  * **New:** Vacation List Page and Create/Update Dialogs are added.
-  * **Fix:** Merge tested, and vacation adding is finished.
-  * **New:** Version Page is created. It has Outputs,Inputs and Children as
-      Tabs.
-
-
-  * **JQueryGantt:**
-
-    * **Update:** Context menu can now be opened in task names in grid editor.
-    * **Update:** Optimized the creation of task rows.
-    * **Update:** Replaced the ``input`` elements with ``div`` in the task row.
-    * **New:** Holding the mouse on Task bar elements will now show a popup
-      window for more info.
-    * **Update:** Gantt Chart zoom levels are now fully controlled by the start
-      and end date DateTextBoxes.
-    * **New:** Added a new button which will center the gantt chart on today.
-
-0.2.0.b6
-========
-
-* **SOM**:
-  
-  * **Fix:** Fixed **LocalSession._write_data()**, previously it was not
-    creating the local session folder.
-  * **New:** Added a new method called **LocalSession.delete()** to remove the
-    local session file.
-  * **Update:** **Link.full_path** can now be set to an empty string. This is
-    updated in this way for **Version** class.
-  * **Update:** Updated the formatting of **SimpleEntity.nice_name**, it is now
-    possible to have uppercase letters and camel case format will be preserved.
-  * **Update**: **Version.take_name** formatting is enhanced.
-  * **New**: **Task** class is now mixed in with **ReferenceMixin** making it
-    unnecessary to have **Asset**, **Shot** and **Sequence** classes all mixed
-    in individually. Thus removed the **ReferenceMixin** from **Asset**,
-    **Shot** and **Sequence** classes.
-  * **Update**: Added **Task.schedule_model** validation and its tests.
-  * **New**: Added **ScheduleMixin.total_seconds** and
-    **ScheduleMixin.computed_total_seconds**.
-
-  **WebUI**:
-
-  * **New**: Added 'duration' field to TimeLog's List dgrid.
-
-0.2.0.b5
-========
-
-* **SOM**:
-
-  * **New:** **Version** class now has two new attributes called ``parent`` and
-    ``children`` which will be used in tracking of the history of Version
-    instances and track which Versions are derived from which Version.
-  * **New:** **Versions** instances are now derived from **Link** class and not
-    **Entity**.
-  * **Update:** Added new revisions to **alembic** to reflect the change in
-    **Versions** table.
-  * **Update:** **Links.path** is renamed to **Links.full_path** and added
-    three new attributes called **path**, **filename** and **extension**.
-  * **Update:** Added new revisions to alembic to reflect the change in
-    **Links** table.
-  * **New:** Added a new class called **LocalSession** to store session data in
-    users local filesystem. It is going to be replaced with some other system
-    like **Beaker**.
-  * **Fix:** Database part of Stalker can now be imported without depending to
-    **Pyramid**.
-  * **Fix:** Fixed documentation errors that **Sphinx** complained about.
-
-0.2.0.b4
-========
-
-* **WebUI**:
-
-  * **Fix:** Fixed the error in rendering of the **home** occurred when there is no
-    user login information found in the request.
-  * **New:** User thumbnails now can be changed.
-  * **New:** Project thumbnails now can be changed.
-  * **New:** ``content_list_projects`` now shows the project thumbnails.
-  * **New:** ``content_list_users`` now shows the user thumbnails.
-  * **New:** ``submitForm.js`` now enables all the disabled fields of the given
-    form, and disables them back again upon error.
-  * **Fix:** ``TagSelect.js`` will now correctly disable the child widgets if the
-    ``disabled`` attribute is set to **true**.
-  * **New:** Added ``fields`` javascript library which are a special group of input
-    fields designed to be used with Stalker.
-  * **New:** Added the first input field to stalker/fields, called ``tagField``. It
-    is now possible to add a TagSelect field which is correctly updated by only
-    two lines of code.
-  * **New:** Added ``get_tags()`` to stalker.views.__init__ module. Because all the
-    tags now should be created with the ``tagField`` the way to retrieve tags
-    is the same, so this helper function will let you retrieve tags from the
-    given request instance.
-  * **New:** Permissions page is added to Group Page.
-  * **Fix:** dgrid object is declared from [Grid, Selection, Keyboard]. So it's
-    possible to select a row and navigate by Keyboard.
-  * **New:** Permission controls are added to 'Page' and 'List' files.
-  * **New:** Permission controls are added to 'Dialog' and 'Summary' files.
-  * **Fix:** Minor bug is fixed in Update Department dialog.
-
-0.2.0.b3
-========
-
-* **SOM**:
-
-  * **Update:** FilenameTemplate's are not ``strictly typed`` anymore.
-  * **Update:** Removed the FilenameTemplate type initialization, FilenameTemplates
-    do not depend on Types anymore.
-  * **Update:** Added back the ``plural_class_name`` (previously ``plural_name``)
-    property to the ORMClass class, so all the classes in SOM now have this new
-    property. 
-  * **Update:** Added ``accepts_references`` attribute to the EntityType class.
-  * **New:** The Link class has a new attribute called ``original_filename`` to
-    store the original file names of link files.
-  * **New:** Added **alembic** to the project requirements.
-  * **New:** Added alembic migrations which adds the ``accepts_references`` column
-    to ``EntityTypes`` table and ``original_name`` to the ``Links`` table.
-
-* **WebUI**:
-
-  * **Update:** Updated to Dojo 1.9
-  * **Update:** stalker.js is renamed to dialogs.js and it is now fully compatible
-    with Dojo AMD.
-  * **Update:** Merged StatusList create and update dialogs in to one.
-  * **Update:** Content List - Task now checks user permissions to disable part of
-    the UI.
-  * **Update:** Added description field to the Summarize Task view.
-  * **Update:** Added permission checks to several views.
-  * **Fix:** Fixed fieldUpdater.js to work properly with Dojo 1.9 especially for
-    MultiSelect widgets.
-  * **Fix:** Separated the dialog and action routes for Structure.
-  * **Fix:** Fixed unnecessary module imports in stalker.js.
-  * **Fix:** Schedule button is now working properly.
-  * **Fix:** Fixed Image Format creation.
-  * **Fix:** Fixed Filename Template create dialog routine.
-  * **Fix:** Fixed Filename Template update dialog routine.
-  * **Fix:** Fixed entity_types in Filename Template creation UI.
-  * **Fix:** Fixed Group update dialog, the permissions were not displayed and the
-    name was not updated on the server side.
-  * **Fix:** Fixed TaskBox CSS template
-  * **New:** GanttChart now displays the finished/unfinished tasks with a green/red
-    'id' column.
-  * **Fix:** Status color attribute converted from unicode to integer.
-  * **Fix:** To destroy previous open dialog, same dialog id is given for create
-    and update dialogs.
-  * **Update:** In create/update_group dialog, to check all rows new checkboxes are
-    added to head of each column.
-  * **Update:** ``ComboBox`` is added to TagSelect widget as a new input widget
-    type.
-  * **Update:** Description field is added to Department dialog.
-
-0.2.0.b2
-========
-
-* Stalker is now compatible with Python 2.6.
-* SOM:
-
-  * Task:
-  
-    * **Update:** Tasks now have a new attribute called ``watchers`` which holds a
-      list of User instances watching the particular Task.
-    * **Update:** Users now have a new attribute called ``watching`` which is a
-      list of Task instances that this user is watching.
-
-  * TimeLog:
-
-    * **Update:** TimeLog instances will expand Task.schedule_timing value
-      automatically if the total amount of logged time is more than the
-      schedule_timing value.
-    * **Update:** TimeLogs are now considered while scheduling the task.
-    * **Fix:** TimeLogs raises OverBookedError when appending the same TimeLog
-      instance to the same resource.
-
-  * Auth:
-
-    * **Fix:** The default ACLs for determining the permissions are now working
-      properly.
-
-* WebUI:
-
-  * **Fix:** ``user_create_dialog`` now shows and updates groups.
-  * **Fix:** Updating a project now correctly refreshes the ``project_summary``
-    content pane.
-  * **Fix:** Separated the dialog and action routes for ImageFormat.
-  * **Fix:** Separated the dialog and action routes for Asset.
-  * **Fix:** Separated the dialog and action routes for Repository.
-  * **Fix:** The working hours were not correctly passed to the studio instance
-    in Studio creation.
-  * **Fix:** "Append User Dialog" is now working properly.
-
-  * **Fix:** Links between pages is created with redirectLink function which is
-    written in base.jinja2. goToLink.js is deprecated, but still there are some
-    codes that uses gotolink.js, they must be changed for next update.
-  * **Update:** Combined ``user_create_dialog`` and ``user_update_dialog`` into
-    one.
-  * **Update:** Logged in work times will now be visible in gantt charts as a green
-    bar in the TaskBar div.
-  * **Update:** Department menus under 'Crew' menu are now showing the department
-    users.
-  * **Update:** Color choosers in "Create Status Dialog" now have colors picked by
-    default for BG and FG colors.
-  * **Update:** Replaced DataGrid objects with dgrid.
-  * **Update:** Added navigation bar for assets, shots, sequences.
-  * **Update:** Combined ``project_create_dialog`` and ``project_update_dialog``
-    into one.
-  * **Update:** Merged the 'Crew' menu creation code in to one single
-    teamMenuCreator.js, which is able to create menus for any groups and faux
-    groups.
-  * **Update:** All DataGrid field updated with dgrid class.
-  * **New:** Placeholder images added for user and department.
-  * **New:** Added update group dialog.
-  * **Update:** Colors for the layouts are changed with MiamiNice PieChart's color.
-  * **New:** Added update group dialog.
-  * **New:** Append department and append group pages has connected to database.
-  * **New:** Timelog List page added.
-  * **New:** New placeholders added for different type of object.
-
-* jQueryGantt:
-
-  * **Update:** Replaced the ``duration`` column with ``timing`` which correctly
-    shows the schedule timing info of the related task.
-  * **Fix:** The ``depends`` column shows the dependent task names correctly.
-  * **Update:** jQueryGantt displays the owner Project of the Tasks as a container
-    task.
-  * **Update:** Added content link (this will be updated to support proper links,
-    hardcoded links to be removed).
-  * **Update:** Disabled drag and resize of TaskBar elements.
-  * **Update:** Moved the resource link code to the JST template code instead of
-    the Task class.
-
-0.2.0.b1
-========
-
-* WorkingHours.is_working_hour() is working now.
-* WorkingHours class is moved from stalker.models.project to
-  stalker.models.studio module.
-* ``daily_working_hours`` attribute is moved from
-  stalker.models.project.Project to stalker.models.studio.Studio class.
-* Repository path variables now ends with a forward slash even if it is not
-  given.
-* Updated Project classes validation messages to correlate with Stalker
-  standard.
-* Implementation of the Studio class is finished. The scheduling works like a
-  charm.
-* Added dialogCreator.js which helps creating a dialog without having a widget
-  (Button or MenuItem) calling it and updated dialogCaller.js to use
+* **Fix:** Links between pages is created with redirectLink function which is
+  written in base.jinja2. goToLink.js is deprecated, but still there are some
+  codes that uses gotolink.js, they must be changed for next update.
+* **Update:** Combined ``user_create_dialog`` and ``user_update_dialog`` into
+  one.
+* **Update:** Logged in work times will now be visible in gantt charts as a
+  green bar in the TaskBar div.
+* **Update:** Department menus under 'Crew' menu are now showing the department
+  users.
+* **Update:** Color choosers in "Create Status Dialog" now have colors picked
+  by default for BG and FG colors.
+* **Update:** Replaced DataGrid objects with dgrid.
+* **Update:** Added navigation bar for assets, shots, sequences.
+* **Update:** Combined ``project_create_dialog`` and ``project_update_dialog``
+  into one.
+* **Update:** Merged the 'Crew' menu creation code in to one single
+  teamMenuCreator.js, which is able to create menus for any groups and faux
+  groups.
+* **Update:** All DataGrid field updated with dgrid class.
+* **New:** Placeholder images added for user and department.
+* **New:** Added update group dialog.
+* **Update:** Colors for the layouts are changed with MiamiNice PieChart's
+  color.
+* **New:** Added update group dialog.
+* **New:** Append department and append group pages has connected to database.
+* **New:** Timelog List page added.
+* **New:** New placeholders added for different type of object.
+* **New:** Added dialogCreator.js which helps creating a dialog without having
+  a widget (Button or MenuItem) calling it and updated dialogCaller.js to use
   dialogCreator while creating a dialog.
-* It is now possible to use any characters in SimpleEntity.name and the derived
-  classes.
-* jQueryGantt:
-
-  * Fix; t is now possible to correctly move a TaskBar without getting in to
-    an infinite loop which was freezing the browser.
-  * The timing resolution of jQueryGantt is now 1 hour.
-  * Fix; GanttMaster.task_ids were not properly cleaned in GanttMaster.reset(),
-    resulting wrong links to be created.
-  * Added a new zoom level where it is possible to see the every 1 hour of 1
-    day.
-  * Colorized the Sunday column in suitable zoom levels. In upcoming releases
-    it will use the stalker.models.studio.Studio.working_hours attribute to
-    determine if the day/hour is an off day/hour.
-  * Disabled editing of date fields.
-  * Disabled undo/redo queue for performance test.
-  * Fixed vertical overflow in gantt chart.
-  * It is now possible to not to align a tasks start to its dependent tasks
-    end.  
-
 * The Shot, Asset, Sequence detail pages under the Project Overview now opens
   inside the related tab on the Project Page.
-* Booking class is renamed to TimeLog.
-
-0.2.0.a10
-=========
-
-* jQueryGantt:
-
-  * jQueryGantt is now using the Task ids coming from Stalker instead of the
-    ridiculous rowId.
-  * Fixed a lot of issues related with the new data structure, it seems
-    everything is working properly right now.
-  * Parent Tasks displayed differently than the leaf tasks (on paar with the
-    other gantt charts).
-  * Gantt chart in User Detail page is now showing the parent tasks of the
-    tasks of the user.
-  * Now there are two different context menus for container/parent tasks and
-    leaf tasks.
-
-* Added new attribute to WorkingHours class called ``weekly_working_hours``,
-  which calculates the weekly working hours based on the working hours defined
-  in the instance.
 * Updated the Create Task Dialog to reflect the TaskJuggler integration.
-* Task class now has a new attribute called ``schedule_timing`` which is
-  replacing the ``effort``, ``length`` and ``duration`` attributes. Together
-  with the ``schedule_model`` attribute it will be used in scheduling the Task.
-* Updated the config system to the one used in oyProjectManager (based on
-  Sphinx config system). Now to reach the defaults::
-    
-    # instead of doing the following
-    from stalker.conf import defaults # not valid anymore
-    
-    # use this
-    from stalker import defaults
-  
-  If the above idiom is used, the old ``defaults`` module behaviour is
-  retained, so no code change is required other than the new lower case config
-  variable names.
-
-0.2.0.a9
-========
-
-* A new property called ``to_tjp`` added to the SimpleEntity class which needs
-  to be implemented in the child and is going to be used in TaskJuggler
-  integration.
-* A new attribute called ``is_scheduled`` added to Task class and it is going
-  to be used in Gantt charts. Where it will lock the class and will not try
-  to snap it to anywhere if it is scheduled.
-* Changed the ``resolution`` attribute name to ``timing_resolution`` to comply
-  with TaskJuggler.
-* ScheduleMixin:
-
-  * Updated ScheduleMixin class documentation.
-  * There are two new read-only attributes called ``computed_start`` and
-    ``computed_end``. These attributes will be used in storing of the values
-    calculated by TaskJuggler, and will be used in Gantt Charts if available.
-  * Added ``computed_duration``.
-
-* Task:
-
-  * Arranged the TaskJuggler workflow.
-  * The task will use the effort > length > duration attributes in `to_tjp`
-    property.
-
-* Changed the license of Stalker from BSD-2 to LGPL 2.1. Any version previous
-  to 0.2.0.a9 will be still BSD-2 and any version from and including 0.2.0.a9
-  will be distributed under LGPL 2.1 license.
-* Added new types of classes called Schedulers which are going to be used in
-  scheduling the tasks.
-* Added TaskJugglerScheduler, it uses the given project and schedules its
-  tasks.
-
-0.2.0.a8
-========
-
+* Changed the license of Stalker_Pyramid from BSD-2 to LGPL 2.1. Any version
+  previous to 0.2.0.a9 will be still BSD-2 and any version from and including
+  0.2.0.a9 will be distributed under LGPL 2.1 license.
 * TagSelect now can be filled by setting its ``value`` attribute (Ex:
   TagSelect.set('value', data))
 * Fixed Projects menu in base.jinja2, the link is now updating correctly when a
   new project is added.
-* Added a new method called ``is_root`` to Task class. It is true for tasks
-  where there are no parents.
-* Added a new attribute called ``users`` to the Department class which is a
-  synonym for the ``members`` attribute.
-* Task:
-
-  * Task class is now preventing one of the dependents to be set as the parent
-    of a task.
-  * Task class is now preventing one of the parents to be set as the one of the
-    dependents of a task.
-  * Fixed ``autoflush`` bugs in Task class.
-
-* Fixed `admin` users department initialization.
-* Added ``thumbnail`` attribute to the SimpleEntity class which is a reference
-  to a Link instance, showing the path of the thumbnail.
-* Fixed Circular Dependency bug in Task class, where a parent of a newly
-  created task is depending to another task which is set as the dependee for
-  this newly created task (T1 -> T3 -> T2 -> T1 (parent relation) -> T3 -> T2
-  etc.).
-* jQueryGantt: Moving any child task will adjust the parent start and end dates
-  so they fit to the children.
-
-0.2.0.a7
-========
-
-* Changed these default setting value names to corresponding new names:
-
-  * ``DEFAULT_TASK_DURATION`` -> ``TASK_DURATION``
-  * ``DEFAULT_TASK_PRIORITY`` -> ``TASK_PRIORITY``
-  * ``DEFAULT_VERSION_TAKE_NAME`` -> ``VERSION_TAKE_NAME``
-  * ``DEFAULT_TICKET_LABEL`` -> ``TICKET_LABEL``
-  * ``DEFAULT_ACTIONS`` -> ``ACTIONS``
-  * ``DEFAULT_BG_COLOR`` -> ``BG_COLOR``
-  * ``DEFAULT_FG_COLOR`` -> ``FG_COLOR``
-
-* stalker.conf.defaults:
-
-  * Added default settings for project working hours (``WORKING_HOURS``,
-    ``DAY_ORDER``, ``DAILY_WORKING_HOURS``)
-  * Added a new variable for setting the task time resolution called
-    ``TIME_RESOLUTION``.
-
-* stalker.models.project.Project:
-
-  * Removed Project.project_tasks attribute, use Project.tasks directly to get
-    all the Tasks in that project. For root task you can do a quick query::
-      
-      Task.query.filter(Task.project==proj_id).filter(Task.parent==None).all()
-    
-    This will also return the Assets, Sequences and Shots in that project,
-    which are also Tasks.
-  * Users are now assigned to Projects by appending them to the Project.users
-    list. This is done in this way to allow a reduced list of resources to be
-    shown in the Task creation dialogs.
-  * Added a new helper class for Project working hour management, called
-    WorkingHours.
-  * Added a new attribute to Project class called ``working_hours`` which holds
-    stalker.models.project.WorkingHours instances to manage the Project working
-    hours. It will directly be passed to TaskJuggler.
-
-* stalker.models.task.Task:
-
-  * Removed the Task.task_of attribute, use Task.parent to get the owner of
-    this Task.
-  * Task now has two new attributes called Task.parent and Task.children which
-    allow more complex Task-to-Task relation.
-  * Secondary table name for holding Task to Task dependency relation is
-    renamed from ``Task_Tasks`` to ``Task_Dependencies``.
-  * check_circular_dependency function is now accepting a third argument which
-    is the name of the attribute to be investigated for circular relationship.
-    It is done in that way to be able to use the same function in searching for
-    circular relations both in parent/child and depender/dependee relations.
-
-* ScheduleMixin:
-
-  * Added a new attribute to ScheduleMixin for time resolution adjustment.
-    Default value is 1 hour and can be set with
-    stalker.conf.defaults.TIME_RESOLUTION. Any finer time than the resolution
-    is rounded to the closest multiply of the resolution. It is possible to set
-    it from microseconds to years. Although 1 hour is a very reasonable
-    resolution which is also the default resolution for TaskJuggler.
-  * ScheduleMixin now uses datetime.datetime for the start and end attributes.
-  * Renamed the ``start_date`` attribute to ``start``.
-  * Renamed the ``end_date`` attribute to ``end``
-
-* Removed the TaskableEntity.
-* Asset, Sequence and Shot classes are now derived from Task class allowing
-  more complex Task relation combined with the new parent/child relation of
-  Tasks. Use Asset.children or Asset.tasks to reach the child tasks of that
-  asset (same with Sequence and Shot classes).
-* stalker.models.shot.Shot:
-
-  * Removed the sequence and introduced sequences attribute in Shot class. Now
-    one shot can be in more than one Sequence. Allowing more complex
-    Shot/Sequence relations..
-  * Shots can now be created without a Sequence instance. The sequence
-    attribute is just used to group the Shots.
-  * Shots now have a new attribute called ``scenes``, holding Scene instances.
-    It is created to group same shots occurring in the same scenes.
-
-* In tests all the Warnings are now properly handled as Warnings.
-* stalker.models.ticket.Ticket:
-
-  * Ticket instances are now tied to Projects and it is now possible to create
-    Tickets without supplying a Version. They are free now.
-  * It is now possible to link any SimpleEntity to a Ticket.
-  * The Ticket Workflow is now fully customizable. Use
-    stalker.conf.defaults.TICKET_WORKFLOW dictionary to define the workflow and
-    stalker.conf.defaults.TICKET_STATUS_ORDER for the order of the ticket
-    statuses.
-
-* Added a new class called ``Scene`` to manage Shots with another property.
-* Removed the ``output_path`` attribute in FilenameTemplate class.
-* Grouped the templates for each entity under a directory with the entity name.
 * Converted the ``view.py`` to a python module and put the views for each
   entity to its own python file.
-
-0.2.0.a6
-========
-
 * Added a new Dojo Widget called Tag to help the creation of the tags in the
   TagSelect.
-* Users now can have more than one Department.
 * Updated java scripts to be `required` in Dojo AMD way.
 * Updated setup.py to include "pyramid_jinja2"
-* User instances now have two new properties for getting the user tickets
-  (User.tickets) and the open tickets (User.open_tickets).
-* New shortcut Task.project returns the Task.task_of.project value.
 * Added 'PlaceHolder' property for 'FilterSelect Widgets'. And 'Label' property
   is used in construction of 'PlaceHolder' property.
 * Set disabled prerequisite fields, until their prerequisite is selected.
-* Added 'StartDate', 'EndDate' and 'Duration' field to add_project page.
-  'StartDate', 'EndDate' properties are written on database.
-* jQueryGannt:
-
-  * Gannt view is now communicating with Stalker correctly. The only left issue
-    is the end date value is not properly shown in the gannt view.
-  * Updated the jQueryGannt css's to work with Stalker and Dojo.
-
+* Added **StartDate**, **EndDate** and **Duration** field to add_project page.
+  **StartDate**, **EndDate** properties are now written to database.
 * Project page is redesigned. SplitContainer is removed. All contents are
   displayed in TabContainer. New Contents in TabContainer are:
 
@@ -627,176 +189,76 @@ Stalker Changes
 * Shot and Asset creation dialogs now automatically updated with the given
   Project instance info.
 * User overview page is now reflection the new design.
-
-0.2.0.a5
-========
-
-* The ``code`` attribute of the SimpleEntity is now introduced as a separate
-  mixin. To let it be used by the classes it is really needed.
-* The ``query`` method is now converted to a property so it is now possible to
-  use it like a property as in the SQLAlchemy.orm.Session as shown below::
-    
-    from stalker import Project
-    Project.query.all() # instead of Project.query().all()
-
-* ScheduleMixin.due_date is renamed to ScheduleMixin.end_date.
-* Added a new class attribute to SimpleEntity called ``__auto_name__`` which
-  controls the naming of the instances and instances derived from SimpleEntity.
-  If ``__auto_name__`` is set to True the ``name`` attribute of the instance
-  will be automatically generated and it will have the following format::
-    
-    {{ClassName}}_{{UUID4}}
-    
-  Here are a couple of naming examples::
-    
-    Ticket_74bb46b0-29de-4f3e-b4e6-8bcf6aed352d
-    Version_2fa5749e-8cdb-4887-aef2-6d8cec6a4faa
-
-* Fixed an autoflush issue with SQLAlchemy in StatusList class. Now the status
-  column is again not nullable in StatusMixin.
 * The WebUI form fields are now refreshed with newly added data.
 * Added a new Dojo widget called TagSelect. Which is basically a widget for
   adding Tag style widgets.
-
-0.2.0.a4
-========
-
-* Added a new class called EntityType to hold all the available class names and
-  capabilities.
-* Version class now has a new attribute called ``inputs`` to hold the inputs of
-  the current Version instance. It is a list of Link instances.
-* FilenameTemplate classes ``path`` and ``filename`` attributes are no more
-  converted to string, so given a non string value will raise TypeError.
-* Structure.custom_template now only accepts strings and None, setting it to
-  anything else will raise a TypeError.
-* Two Type's for FilenameTemplate's are created by default when initializing
-  the database, first is called "Version" and it is used to define
-  FilenameTemplates which are used for placing Version source files. The second
-  one is called "Reference" and it is used when injecting references to a given
-  class. Along with the FilenameTemplate.target_entity_type this will allow one
-  to create two different FilenameTemplates for one class::
-    
-    # first get the Types
-    vers_type = Type.query()\
-                .filter_by(target_entity_type="FilenameTemplate")\
-                .filter_by(type="Version")\
-                .first()
-    
-    ref_type = Type.query()\
-               .filter_by(target_entity_type="FilenameTemplate")\
-               .filter_by(type="Reference")\
-               .first()
-    
-    # lets create a FilenameTemplate for placing Asset Version files.
-    f_ver = FilenameTemplate(
-        target_entity_type="Asset",
-        type=vers_type,
-        path="Assets/{{asset.type.code}}/{{asset.code}}/{{task.type.code}}",
-        filename="{{asset.code}}_{{version.take_name}}_{{task.type.code}}_v{{'%03d'|version.version_number}}{{link.extension}}"
-        output_path="{{version.path}}/Outputs/{{version.take_name}}"
-    )
-    
-    # and now define a FilenameTemplate for placing Asset Reference files.
-    # no need to have an output_path here...
-    f_ref = FilenameTemplate(
-        target_entity_type="Asset",
-        type=ref_type,
-        path="Assets/{{asset.type.code}}/{{asset.code}}/References",
-        filename="{{link.type.code}}/{{link.id}}{{link.extension}}"
-    )
-
-* stalker.db.register() now accepts only real classes instead of class names.
-  This way it can store more information about classes.
-* Status.bg_color and Status.fg_color attributes are now simple integers. And
-  the Color class is removed.
-* StatusMixin.status is now a ForeignKey to a the Statuses table, thus it is a
-  real Status instance instead of an integer showing the index of the Status in
-  the related StatusList. This way the Status of the object will not change if
-  the content of the StatusList is changed.
-* Added new attribute Project.project_tasks which holds all the direct or
-  indirect Tasks created for that project.
-* User.login_name is renamed to User.login.
-* Removed the ``first_name``, ``last_name`` and ``initials`` attributes from
-  User class. Now the ``name`` and ``code`` attributes are going to be used,
-  thus the ``name`` attribute is no more the equivalent of ``login`` and the
-  ``code`` attribute is doing what was ``initials`` doing previously.
-
-0.2.0.a3
-========
-
-* Status class now has two new attributes ``bg_color`` and ``fg_color`` to hold
-  the UI colors of the Status instance. The colors are Color instances.
-
-0.2.0.a2
-========
-
-* SimpleEntity now has an attribute called ``generic_data`` which can hold any
-  kind of ``SOM`` object inside and it is a list.
-* Changed the formatting rules for the ``name`` in SimpleEntity class, now it
-  can start with a number, and it is not allowed to have multiple whitespace
-  characters following each other.
-* The ``source`` attribute in Version is renamed to ``source_file``.
-* The ``version`` attribute in Version is renamed to ``version_number``.
-* The ``take`` attribute in Version is renamed to ``take_name``.
-* The ``version_number`` in Version is now generated automatically if it is
-  skipped or given as None or it is too low where there is already a version
-  number for the same Version series (means attached to the same Task and has
-  the same ``take_name``.
-* Moved the User class to ``stalker.models.auth module``.
-* Removed the ``stalker.ext.auth`` module because it is not necessary anymore.
-  Thus the User now handles all the password conversions by itself.
-* ``PermissionGroup`` is renamed back to Group
-  again to match with the general naming of the authorization concept.
-* Created two new classes for the Authorization system, first one is called
-  Permission and the second one is a Mixin which is called ACLMixin which adds
-  ACLs to the mixed in class. For now, only the User and Group classes are
-  mixed with this mixin by default.
-* The declarative Base class of SQLAlchemy is now created by binding it to a
-  ORMClass (a random name) which lets all the derived class to have a method
-  called ``query`` which will bypass the need of calling
-  ``DBSession.query(class_)`` but instead just call ``class_.query()``::
-    
-    from stalker.models.auth import User
-    user_1 = User.query().filter_by(name='a user name').first()
-
-
-0.2.0.a1
-========
-
 * Converted the whole system to a Pyramid Web application. If the previous
   implementations investigated, it will be understood that it was only the
   database model of a Web Application.
-* Changed the ``db.setup`` arguments. It is now accepting a dictionary instead
-  of just a string to comply with the SQLAlchemy scaffold and this dictionary
-  should contain keys for the SQLAlchemy engine setup. There is another utility
-  that comes with Pyramid to setup the database under the `scripts` folder, it
-  is also working without any problem with stalker.db.
-* The ``session`` variable is renamed to ``DBSession`` and is now a scopped
-  session, so there is no need to use ``DBSession.commit`` it will be handled
-  by the system it self.
-* Even though the ``DBSession`` is using the Zope Transaction Manager extension
-  normally, in the database tests no extension is used because the transaction
-  manager was swallowing all errors and it was a little weird to try to catch
-  this errors out of the ``with`` block.
-* Refactored the code, all the models are now in separate python files, but can
-  be directly imported from the main stalker module as shown::
-  
-    from stalker import User, Department, Task
-  
-  By using this kind of organization, both development and usage will be eased
-  out.
-  
-* ``task_of`` now only accepts TaskableEntity instances.
-* Updated the examples. It is now showing how to extend SOM correctly. 
-* Updated the references to the SOM classes in docstrings and rst files.
-* Removed the ``Review`` class. And introduced the much handier Ticket class.
-  Now reviewing a data is the process of creating Ticket's to that data.
-* The database is now initialized with a StatusList and a couple of Statuses
-  appropriate for Ticket instances.
-* The database is now initialized with two Type instances ('Enhancement' and
-  'Defect') suitable for Ticket instances.
-* StatusMixin now stores the status attribute as an Integer showing the index
-  of the Status in the ``status_list`` attribute but when asked for the value
-  of ``StatusMixin.status`` attribute it will return a proper Status instance
-  and the attribute can be set with an integer or with a proper Status
-  instance.
+
+* **jQueryGantt:**
+
+  * **Update:** The gantt chart is now able to display much more info then
+    before. There are two new modes for each of the Grid and Gantt parts of
+    the Gantt Chart. Grid can be set to display *Task*s or *Resources* and
+    the Gantt can set to display *Task*s or *TimeLog*s.
+  * **Update:** Horizontal scrolling is disabled in gantt part of Gantt
+    Chart. All the drawn tasks and links are now set in position with percent
+    values, so they will stick and scale correctly when the split container
+    resize.
+  * **Update:** Any task out of range is culled in gantt chart.
+  * **Update:** Added new buttons to change the range in -1/+1 month,
+    -1/+1 week, -1/+1 day.
+  * **Update:** Replaced the **Date.format()** (originally replaced by
+    jQueryGantt **date.js**) with **date.format.js** library.
+  * **Update:** Changed the background of the Grid and Gantt editors.
+  * **Update:** If the displayed tasks is clipped to the current start end
+    range a double red border is displayed in the clipped start or end.
+  * **Update:** Context menu can now be opened in task names in grid editor.
+  * **Update:** Optimized the creation of task rows.
+  * **Update:** Replaced the ``input`` elements with ``div`` in the task row.
+  * **New:** Holding the mouse on Task bar elements will now show a popup
+    window for more info.
+  * **Update:** Gantt Chart zoom levels are now fully controlled by the start
+    and end date DateTextBoxes.
+  * **New:** Added a new button which will center the gantt chart on today.
+  * **Update:** Replaced the ``duration`` column with ``timing`` which
+    correctly shows the schedule timing info of the related task.
+  * **Fix:** The ``depends`` column shows the dependent task names correctly.
+  * **Update:** jQueryGantt displays the owner Project of the Tasks as a
+    container task.
+  * **Update:** Added content link (this will be updated to support proper
+    links, hardcoded links to be removed).
+  * **Update:** Disabled drag and resize of TaskBar elements.
+  * **Update:** Moved the resource link code to the JST template code instead
+    of the Task class.
+  * **Fix:** t is now possible to correctly move a TaskBar without getting in
+    to an infinite loop which was freezing the browser.
+  * **Update:** The timing resolution of jQueryGantt is now 1 hour.
+  * **Fix:** GanttMaster.task_ids were not properly cleaned in
+    GanttMaster.reset(), resulting wrong links to be created.
+  * **Update:** Added a new zoom level where it is possible to see the every 1
+    hour of 1 day.
+  * Moving any child task will adjust the parent start and end dates so they
+    fit to the children.
+  * Gannt view is now communicating with Stalker correctly. The only left issue
+    is the end date value is not properly shown in the gannt view.
+  * Updated the jQueryGannt css's to work with Stalker and Dojo.
+  * Colorized the Sunday column in suitable zoom levels. In upcoming releases
+    it will use the stalker.models.studio.Studio.working_hours attribute to
+    determine if the day/hour is an off day/hour.
+  * Disabled editing of date fields.
+  * Disabled undo/redo queue for performance test.
+  * Fixed vertical overflow in gantt chart.
+  * It is now possible to not to align a tasks start to its dependent tasks
+    end.
+  * jQueryGantt is now using the Task ids coming from Stalker instead of the
+    ridiculous rowId.
+  * Fixed a lot of issues related with the new data structure, it seems
+    everything is working properly right now.
+  * Parent Tasks displayed differently than the leaf tasks (on paar with the
+    other gantt charts).
+  * Gantt chart in User Detail page is now showing the parent tasks of the
+    tasks of the user.
+  * Now there are two different context menus for container/parent tasks and
+    leaf tasks.

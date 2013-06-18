@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-# Stalker a Production Asset Management System
+# Stalker Pyramid a Web Base Production Asset Management System
 # Copyright (C) 2009-2013 Erkan Ozgur Yilmaz
 #
-# This file is part of Stalker.
+# This file is part of Stalker Pyramid.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -17,21 +17,21 @@
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
-from pyramid.httpexceptions import HTTPOk, HTTPServerError
-from pyramid.security import authenticated_userid, has_permission
-from pyramid.view import view_config
-from stalker import Task, User, Studio, Ticket, Entity, Project, Status
-
-from stalker import defaults
 
 import logging
-from stalker import log
+
+from pyramid.httpexceptions import HTTPOk
+from pyramid.view import view_config
+
+from stalker import User, Ticket, Entity, Project, Status
+
+
 from stalker.db import DBSession
-from stalker.exceptions import OverBookedError
-from stalker.views import get_datetime, get_logged_in_user, PermissionChecker, seconds_since_epoch, microseconds_since_epoch
+from stalker_pyramid.views import (get_logged_in_user, PermissionChecker,
+                                   milliseconds_since_epoch)
 
 logger = logging.getLogger(__name__)
-logger.setLevel(log.logging_level)
+logger.setLevel(logging.DEBUG)
 
 @view_config(
     route_name='dialog_create_ticket',
@@ -56,7 +56,7 @@ def create_ticket_dialog(request):
         'has_permission': PermissionChecker(request),
         'logged_in_user': logged_in_user,
         'entity': entity,
-        'microseconds_since_epoch': microseconds_since_epoch
+        'milliseconds_since_epoch': milliseconds_since_epoch
     }
 
 @view_config(
@@ -81,7 +81,7 @@ def update_ticket_dialog(request):
         'logged_in_user': logged_in_user,
         'ticket': ticket,
         'entity': ticket.project,
-        'microseconds_since_epoch': microseconds_since_epoch
+        'milliseconds_since_epoch': milliseconds_since_epoch
     }
 
 

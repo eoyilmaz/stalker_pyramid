@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-# Stalker a Production Asset Management System
+# Stalker Pyramid a Web Base Production Asset Management System
 # Copyright (C) 2009-2013 Erkan Ozgur Yilmaz
 # 
-# This file is part of Stalker.
+# This file is part of Stalker Pyramid.
 # 
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -24,16 +24,17 @@ from pyramid.security import authenticated_userid, forget, remember
 from pyramid.view import view_config, forbidden_view_config
 from sqlalchemy import or_
 
-import stalker
+import stalker_pyramid
 from stalker import (defaults, User, Department, Group, Tag, Project, Entity,
                      Studio, Permission, EntityType)
 from stalker.db import DBSession
-from stalker.views import log_param, get_logged_in_user, PermissionChecker, get_multi_integer, get_tags
+from stalker_pyramid.views import (log_param, get_logged_in_user,
+                                   PermissionChecker, get_multi_integer, get_tags)
 
 import logging
-from stalker import log
+
 logger = logging.getLogger(__name__)
-logger.setLevel(log.logging_level)
+logger.setLevel(logging.DEBUG)
 
 
 @view_config(
@@ -44,18 +45,18 @@ def dialog_create_user(request):
     """called by create user dialog
     """
     logged_in_user = get_logged_in_user(request)
-    
+
     entity_id = request.matchdict['entity_id']
     entity = Entity.query.filter_by(id=entity_id).first()
-    
+
     department = None
     group = None
-    
+
     if isinstance(entity, Department):
         department = entity
     elif isinstance(entity, Group):
         group = entity
-    
+
     return {
         'mode': 'CREATE',
         'has_permission': PermissionChecker(request),
@@ -73,10 +74,10 @@ def dialog_update_user(request):
     """called when updating a user
     """
     logged_in_user = get_logged_in_user(request)
-    
+
     user_id = request.matchdict['user_id']
     user = User.query.filter_by(id=user_id).first()
-    
+
     return {
         'mode': 'UPDATE',
         'has_permission': PermissionChecker(request),
@@ -92,7 +93,7 @@ def create_user(request):
     """called when adding a User
     """
     logged_in_user = get_logged_in_user(request)
-    
+
     name = request.params.get('name', None)
     login = request.params.get('login', None)
     email = request.params.get('email', None)
@@ -110,15 +111,15 @@ def create_user(request):
             if 'department_ids' in request.params:
                 dep_ids = get_multi_integer(request, 'department_ids')
                 departments = Department.query.filter(
-                                Department.id.in_(dep_ids)).all()
-    
+                    Department.id.in_(dep_ids)).all()
+
         # Groups
         groups = []
         if 'group_ids' in request.params:
             grp_ids = get_multi_integer(request, 'group_ids')
             groups = Group.query.filter(
-                            Group.id.in_(grp_ids)).all()
-        
+                Group.id.in_(grp_ids)).all()
+
         # Tags
         tags = get_tags(request)
 
@@ -133,7 +134,7 @@ def create_user(request):
             groups=groups,
             tags=tags
         )
-        
+
         logger.debug('adding new user to db')
         DBSession.add(new_user)
         logger.debug('added new user successfully')
@@ -144,7 +145,7 @@ def create_user(request):
         log_param(request, 'email')
         log_param(request, 'password')
         HTTPServerError()
-    
+
     return HTTPOk()
 
 
@@ -155,22 +156,22 @@ def update_user(request):
     """called when updating a User
     """
     logged_in_user = get_logged_in_user(request)
-    
+
     user_id = request.params.get('user_id', -1)
-    user = User.query.filter(User.id==user_id).first()
-    
+    user = User.query.filter(User.id == user_id).first()
+
     name = request.params.get('name')
     login = request.params.get('login')
     email = request.params.get('email')
     password = request.params.get('password')
-    
+
     # create and add a new user
     if user and name and login and email and password:
         departments = []
 
         # Departments
         if 'department_ids' in request.params:
-            dep_ids = get_multi_integer(request,'department_ids')
+            dep_ids = get_multi_integer(request, 'department_ids')
             departments = Department.query \
                 .filter(Department.id.in_(dep_ids)).all()
 
@@ -195,7 +196,7 @@ def update_user(request):
 
         if password != 'DONTCHANGE':
             user.password = password
-        
+
         logger.debug('updating user')
         DBSession.add(user)
         logger.debug('updated user successfully')
@@ -207,8 +208,9 @@ def update_user(request):
         log_param(request, 'email')
         log_param(request, 'password')
         HTTPServerError()
-    
+
     return HTTPOk()
+
 
 @view_config(
     route_name='list_users',
@@ -225,20 +227,20 @@ def view_users(request):
         'entity': entity
     }
 
+
 @view_config(
     route_name='view_user',
     renderer='templates/auth/page_view_user.jinja2'
 )
 def view_user(request):
-
     logged_in_user = get_logged_in_user(request)
 
     user_id = request.matchdict['user_id']
     user = User.query.filter_by(id=user_id).first()
-    
+
     logger.debug('user_id : %s' % user_id)
     logger.debug('user    : %s' % user)
-     
+
     return {
         'user': user,
         'logged_in_user': logged_in_user,
@@ -304,10 +306,13 @@ def get_users_byEntity(request):
         groupStr = ''
         for department in user.departments:
             departmentStr += '<a href="javascript:redirectLink(%s, %s)">%s</a><br/>' % \
-                             ("'central_content'" , ("'view/department/%s'" % department.id) , department.name)
+                             ("'central_content'",
+                              ("'view/department/%s'" % department.id),
+                              department.name)
         for group in user.groups:
             groupStr += '<a href="javascript:redirectLink(%s, %s)">%s</a><br/>' % \
-                             ("'central_content'" , ("'view/group/%s'" % group.id) , group.name)
+                        ("'central_content'", ("'view/group/%s'" % group.id),
+                         group.name)
         users.append({
             'id': user.id,
             'name': user.name,
@@ -315,7 +320,7 @@ def get_users_byEntity(request):
             'email': user.email,
             'departments': departmentStr,
             'groups': groupStr,
-            'tasksCount': len(user.tasks) ,
+            'tasksCount': len(user.tasks),
             'ticketsCount': len(user.open_tickets),
             'thumbnail_path': user.thumbnail.full_path if user.thumbnail else None
         })
@@ -365,15 +370,16 @@ def append_user_dialog(request):
     """runs for append user dialog
     """
     logged_in_user = get_logged_in_user(request)
-    
+
     entity_id = request.matchdict['entity_id']
     entity = Entity.query.filter_by(id=entity_id).first()
-    
+
     return {
         'user': logged_in_user,
         'has_permission': PermissionChecker(request),
         'entity': entity
     }
+
 
 @view_config(
     route_name='append_user'
@@ -383,16 +389,16 @@ def append_user(request):
     """
     # user
     user_id = request.params.get('user_id', None)
-    user = User.query.filter(User.id==user_id).first()
-    
+    user = User.query.filter(User.id == user_id).first()
+
     # entity
     entity_id = request.params.get('entity_id', None)
-    entity = Entity.query.filter(Entity.id==entity_id).first()
-    
+    entity = Entity.query.filter(Entity.id == entity_id).first()
+
     if user and entity:
         entity.users.append(user)
         DBSession.add_all([entity, user])
-    
+
     return HTTPOk()
 
 
@@ -406,19 +412,19 @@ def append_users(request):
     user_ids = get_multi_integer(request, 'user_ids')
     logger.debug('user_ids  : %s' % user_ids)
     users = User.query.filter(User.id.in_(user_ids)).all()
-    
+
     # entity
     entity_id = request.params.get('entity_id', None)
-    entity = Entity.query.filter(Entity.id==entity_id).first()
-    
+    entity = Entity.query.filter(Entity.id == entity_id).first()
+
     logger.debug('entity : %s' % entity)
     logger.debug('users  : %s' % users)
-    
+
     if users and entity:
         entity.users = users
         DBSession.add(entity)
         DBSession.add_all(users)
-    
+
     return HTTPOk()
 
 
@@ -443,17 +449,18 @@ def get_permissions_from_multi_dict(multi_dict):
 
         else:
             # get permissions
-            permission = Permission.query\
-                .filter_by(access=access)\
-                .filter_by(action=action)\
-                .filter_by(class_name=class_name)\
+            permission = Permission.query \
+                .filter_by(access=access) \
+                .filter_by(action=action) \
+                .filter_by(class_name=class_name) \
                 .first()
 
             if permission:
                 permissions.append(permission)
-    
+
     logger.debug(permissions)
     return permissions
+
 
 @view_config(route_name='logout')
 def logout(request):
@@ -488,8 +495,8 @@ def login(request):
 
         # need to find the user
         # check with the login or email attribute
-        user_obj = User.query\
-            .filter(or_(User.login==login, User.email==login)).first()
+        user_obj = User.query \
+            .filter(or_(User.login == login, User.email == login)).first()
 
         if user_obj:
             login = user_obj.login
@@ -510,7 +517,7 @@ def login(request):
         came_from=came_from,
         login=login,
         password=password,
-        stalker=stalker
+        stalker_pyramid=stalker_pyramid
     )
 
 
@@ -535,16 +542,16 @@ def home(request):
     logged_in_user = get_logged_in_user(request)
     studio = Studio.query.first()
     projects = Project.query.all()
-    
+
     logger.debug('logged_in_user     : %s' % logged_in_user)
     logger.debug('studio   : %s' % studio)
     logger.debug('projects : %s' % projects)
-    
+
     if not logged_in_user:
         return logout(request)
-    
+
     return {
-        'stalker': stalker,
+        'stalker_pyramid': stalker_pyramid,
         'logged_in_user': logged_in_user,
         'projects': projects,
         'studio': studio,
@@ -564,7 +571,7 @@ def check_login_availability(request):
 
     available = 1
     if login:
-        user = User.query.filter(User.login==login).first()
+        user = User.query.filter(User.login == login).first()
         if user:
             available = 0
 
@@ -585,13 +592,14 @@ def check_email_availability(request):
 
     available = 1
     if email:
-        user = User.query.filter(User.email==email).first()
+        user = User.query.filter(User.email == email).first()
         if user:
             available = 0
 
     return {
         'available': available
     }
+
 
 @view_config(
     route_name='dialog_create_group',
@@ -614,6 +622,7 @@ def create_group_dialog(request):
         'logged_in_user': logged_in_user,
         'has_permission': PermissionChecker(request)
     }
+
 
 @view_config(
     route_name='dialog_update_group',
@@ -641,6 +650,7 @@ def update_group_dialog(request):
         'has_permission': PermissionChecker(request)
     }
 
+
 @view_config(
     route_name='create_group'
 )
@@ -648,31 +658,32 @@ def create_group(request):
     """runs when creating a new Group
     """
     logged_in_user = get_logged_in_user(request)
-    
+
     # get parameters
     post_multi_dict = request.POST
-    
+
     # get name
     name = post_multi_dict['name']
 
     # get description
-    description =  post_multi_dict['description']
-    
+    description = post_multi_dict['description']
+
     # remove name and description to leave only permissions in the dictionary
     post_multi_dict.pop('name')
     post_multi_dict.pop('description')
-    
+
     permissions = get_permissions_from_multi_dict(post_multi_dict)
-    
+
     # create the new group
     new_group = Group(name=name)
     new_group.description = description
     new_group.created_by = logged_in_user
     new_group.permissions = permissions
-    
+
     DBSession.add(new_group)
-    
+
     return HTTPOk()
+
 
 @view_config(
     route_name='update_group'
@@ -681,27 +692,27 @@ def update_group(request):
     """updates the group with data from request
     """
     logged_in_user = get_logged_in_user(request)
-    
+
     # get parameters
     post_multi_dict = request.POST
-    
+
     # get group_id
     group_id = post_multi_dict['group_id']
     group = Group.query.filter_by(id=group_id).first()
-    
+
     # get name
     name = post_multi_dict['name']
 
 
     # get description
-    description =  post_multi_dict['description']
+    description = post_multi_dict['description']
 
-    
+
     # remove name and description to leave only permission in the dictionary
     post_multi_dict.pop('name')
     post_multi_dict.pop('description')
     permissions = get_permissions_from_multi_dict(post_multi_dict)
-    
+
     if group:
         group.name = name
         group.description = description
@@ -709,8 +720,9 @@ def update_group(request):
         group.updated_by = logged_in_user
         group.date_updated = datetime.datetime.now()
         DBSession.add(group)
-    
+
     return HTTPOk()
+
 
 @view_config(
     route_name='list_groups',
@@ -726,6 +738,7 @@ def list_groups(request):
         'has_permission': PermissionChecker(request),
         'user': user
     }
+
 
 @view_config(
     route_name='view_group',
@@ -746,6 +759,7 @@ def view_group(request):
         'group': group
     }
 
+
 @view_config(
     route_name='summarize_group',
     renderer='templates/auth/content_summarize_group.jinja2'
@@ -761,6 +775,7 @@ def summarize_group(request):
         'group': group,
         'has_permission': PermissionChecker(request)
     }
+
 
 @view_config(
     route_name='get_groups',
@@ -779,6 +794,7 @@ def get_groups(request):
         for group in Group.query.order_by(Group.name.asc()).all()
     ]
 
+
 @view_config(
     route_name='get_groups_byEntity',
     renderer='json',
@@ -792,12 +808,13 @@ def get_groups_byEntity(request):
 
     return [
         {
-             'id': group.id,
-             'name': group.name,
-             'thumbnail_path': group.thumbnail.full_path if group.thumbnail else None
+            'id': group.id,
+            'name': group.name,
+            'thumbnail_path': group.thumbnail.full_path if group.thumbnail else None
         }
         for group in sorted(entity.groups, key=lambda x: x.name.lower())
     ]
+
 
 @view_config(
     route_name='dialog_append_groups',
@@ -817,6 +834,7 @@ def append_groups_dialog(request):
         'user': user
     }
 
+
 @view_config(
     route_name='append_groups'
 )
@@ -831,7 +849,7 @@ def append_groups(request):
 
     # user
     user_id = request.params.get('user_id', None)
-    user = User.query.filter(User.id==user_id).first()
+    user = User.query.filter(User.id == user_id).first()
 
     logger.debug('user : %s' % user)
     logger.debug('groups  : %s' % groups)

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-# Stalker a Production Asset Management System
+# Stalker Pyramid a Web Base Production Asset Management System
 # Copyright (C) 2009-2013 Erkan Ozgur Yilmaz
 #
-# This file is part of Stalker.
+# This file is part of Stalker Pyramid.
 #
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -22,7 +22,7 @@ from pyramid.httpexceptions import HTTPOk, HTTPServerError
 from pyramid.view import view_config
 from stalker import Link, Entity
 from stalker.db import DBSession
-from stalker.views import upload_file_to_server
+from stalker_pyramid.views import upload_file_to_server
 
 
 view_config(

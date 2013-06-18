@@ -1,5 +1,5 @@
 include *.txt *.ini *.cfg *.rst
-recursive-include stalker *.ico *.png *.css *.gif *.jpg *.pt *.txt *.mak *.mako *.js *.html *.xml *.jinja2
+recursive-include stalker_pyramid *.ico *.png *.css *.gif *.jpg *.pt *.txt *.mak *.mako *.js *.html *.xml *.jinja2
 
 include CHANGELOG
 include TODO
@@ -15,3 +15,6 @@ recursive-include alembic *
 recursive-include docs *
 recursive-include examples *
 recursive-include tests *
+
+prune stalker_pyramid/static/*/.git
+prune stalker_pyramid/static/stalker/fonts

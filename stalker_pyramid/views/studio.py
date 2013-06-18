@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-# Stalker a Production Asset Management System
+# Stalker Pyramid a Web Base Production Asset Management System
 # Copyright (C) 2009-2013 Erkan Ozgur Yilmaz
 # 
-# This file is part of Stalker.
+# This file is part of Stalker Pyramid.
 # 
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -24,12 +24,12 @@ from pyramid.httpexceptions import HTTPOk
 from pyramid.view import view_config
 
 from stalker.db import DBSession
-from stalker import log, Studio, WorkingHours
-from stalker.views import get_time, PermissionChecker, get_logged_in_user
+from stalker import Studio, WorkingHours
+from stalker_pyramid.views import (get_time, PermissionChecker,
+                                   get_logged_in_user)
 
 logger = logging.getLogger(__name__)
-log.logging_level = logging.DEBUG
-logger.setLevel(log.logging_level)
+logger.setLevel(logging.DEBUG)
 
 
 @view_config(

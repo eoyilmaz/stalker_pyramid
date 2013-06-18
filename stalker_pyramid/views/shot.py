@@ -2,7 +2,7 @@
 # Stalker a Production Shot Management System
 # Copyright (C) 2009-2013 Erkan Ozgur Yilmaz
 # 
-# This file is part of Stalker.
+# This file is part of Stalker Pyramid.
 # 
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
@@ -30,10 +30,10 @@ from stalker import User, Sequence, StatusList, Status, Shot, Project
 
 import logging
 from stalker import log
-from stalker.views import PermissionChecker, get_logged_in_user
+from stalker_pyramid.views import PermissionChecker, get_logged_in_user
 
 logger = logging.getLogger(__name__)
-logger.setLevel(log.logging_level)
+logger.setLevel(logging.DEBUG)
 
 @view_config(
     route_name='dialog_create_shot',

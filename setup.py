@@ -1,7 +1,7 @@
 import os
 
 from setuptools import setup, find_packages
-import stalker
+import stalker_pyramid
 
 here = os.path.abspath(os.path.dirname(__file__))
 README = open(os.path.join(here, 'README')).read()
@@ -20,11 +20,11 @@ requires = [
     'pyramid_jinja2',
     'unittest2',
     'sphinx==1.1.3',
-    'stalker>=0.2.1,
+    'stalker>=0.2.0.rc1'
 ]
 
 setup(name='stalker_pyramid',
-      version=stalker.__version__,
+      version=stalker_pyramid.__version__,
       description='Stalker (ProdAM) Based Web App',
       long_description=README + '\n\n' +  CHANGES,
       classifiers=[
