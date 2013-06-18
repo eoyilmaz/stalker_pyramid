@@ -1,0 +1,32 @@
+# use glob syntax
+syntax: glob
+
+*~*
+*.pyc
+docs/html/*
+docs/latex/*
+docs/doctrees/*
+docs/source/generated/*
+docs/source/static_pyramid/stalker_design*.vue
+docs/source/static_pyramid/design
+stalker_pyramid/static/dojo*/
+stalker_pyramid/static/dojox*/
+stalker_pyramid/static/dijit*/
+stalker_pyramid/static/util*/
+stalker_pyramid/static/jquery*/
+stalker_pyramid/static/dgrid*/
+stalker_pyramid/static/put-selector/
+stalker_pyramid/static/xstyle*/
+.coverage
+.DS_Store
+dist/*
+build/*
+stalker_pyramid.egg-info/*
+upload_to_pypi
+lib/*
+bin/*
+include/*
+local
+*.swp
+stalker_pyramid.db*
+.git/

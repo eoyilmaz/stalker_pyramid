@@ -16,17 +16,16 @@ requires = [
     'pyramid_debugtoolbar',
     'zope.sqlalchemy',
     'waitress',
-    'pyseq',
     'jinja2',
     'pyramid_jinja2',
     'unittest2',
     'sphinx==1.1.3',
-    'pytz'
+    'stalker>=0.2.1,
 ]
 
-setup(name='stalker',
+setup(name='stalker_pyramid',
       version=stalker.__version__,
-      description='A Production Asset Management (ProdAM) System',
+      description='Stalker (ProdAM) Based Web App',
       long_description=README + '\n\n' +  CHANGES,
       classifiers=[
         "Programming Language :: Python",
@@ -45,7 +44,7 @@ setup(name='stalker',
       ],
       author='Erkan Ozgur Yilmaz',
       author_email='eoyilmaz@gmail.com',
-      url='http://code.google.com/p/stalker/',
+      url='http://code.google.com/p/stalker_pyramid/',
       keywords=['web', 'wsgi', 'bfg', 'pylons', 'pyramid', 'production',
                 'asset', 'management', 'vfx', 'animation', 'houdini', 'nuke',
                 'fusion', 'xsi', 'blender', 'vue'],
@@ -56,9 +55,9 @@ setup(name='stalker',
       install_requires=requires,
       entry_points="""\
       [paste.app_factory]
-      main = stalker:main
+      main = stalker_pyramid:main
       [console_scripts]
-      initialize_stalker_db = stalker.scripts.initializedb:main
+      initialize_stalker_pyramid_db = stalker_pyramid.scripts.initializedb:main
       """,
 )
 
