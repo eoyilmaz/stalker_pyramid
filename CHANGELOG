@@ -7,6 +7,8 @@ Stalker Pyramid Changes
 
 * **Update:** The Pyramid part of Stalker is moved in to a new package (this
   one).
+* **Fix:** Fixed DBSession, it is now configured with ZopeTransactionExtension
+  independent of Stalkers own configuration.
 
 pre 0.1.0.b1
 ============

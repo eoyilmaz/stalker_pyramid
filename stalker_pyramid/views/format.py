@@ -18,7 +18,7 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 import datetime
-from pyramid.httpexceptions import HTTPOk
+from pyramid.httpexceptions import HTTPOk, HTTPServerError
 
 from pyramid.view import view_config
 
@@ -86,7 +86,12 @@ def create_image_format(request):
             created_by=logged_in_user
         )
         DBSession.add(new_image_format)
-    
+        logger.debug('created new image format')
+        logger.debug('new_image_format: %s' % new_image_format)
+    else:
+        logger.debug('some data is missing')
+        return HTTPServerError()
+
     return HTTPOk()
 
 

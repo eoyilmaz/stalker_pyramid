@@ -9,8 +9,8 @@ CHANGES = open(os.path.join(here, 'CHANGELOG')).read()
 
 requires = [
     'pyramid>=1.4',
-    'sqlalchemy>=0.8',
-    'alembic',
+    #'sqlalchemy>=0.8',
+    #'alembic',
     'transaction',
     'pyramid_tm',
     'pyramid_debugtoolbar',
@@ -18,8 +18,8 @@ requires = [
     'waitress',
     'jinja2',
     'pyramid_jinja2',
-    'unittest2',
-    'sphinx==1.1.3',
+    #'unittest2',
+    #'sphinx==1.1.3',
     'stalker>=0.2.0.rc1'
 ]
 

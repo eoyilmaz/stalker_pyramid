@@ -32,6 +32,7 @@ from stalker.models.auth import group_finder
 
 import logging
 
+logging.basicConfig()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
@@ -48,9 +49,9 @@ def main(global_config, **settings):
     from stalker.db import DBSession
 
     # use the ZopeTransactionExtension for session
-    DBSession.configure(extension=ZopeTransactionExtension)
-
     db.setup(settings)
+    DBSession.remove()
+    DBSession.configure(extension=ZopeTransactionExtension())
 
     # setup authorization and authentication
     authn_policy = AuthTktAuthenticationPolicy(
