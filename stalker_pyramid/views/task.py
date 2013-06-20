@@ -107,6 +107,7 @@ def convert_to_jquery_gantt_task_format(tasks):
         {
             'type': task.entity_type,
             'id': task.id,
+            'hierarchy_name': ' | '.join([parent.name for parent in task.parents]),
             'name': task.name,
             'code': task.id,
             'description': task.description,

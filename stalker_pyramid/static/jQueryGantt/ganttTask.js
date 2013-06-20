@@ -39,6 +39,7 @@ function TaskFactory() {
 function Task(kwargs) {
     this.id = kwargs['id'] || null;
     this.name = kwargs['name'] || null;
+    this.hierarchy_name = kwargs['hierarchy_name'] || null;
     this.code = kwargs['code'] || null;
     this.description = kwargs['description'] || null;
     

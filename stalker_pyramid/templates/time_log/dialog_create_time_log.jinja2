@@ -19,17 +19,29 @@
 #}
 <div class='dijitDialogPaneContentArea'>
     <form id='time_log_form'>
+
+
         <table style='width: 100%'>
 
-            {# TASK #}
             <tr>
-                <td class='label_column'>
-                    <label for='time_log_task'>Task</label>
+                <td>
+
                 </td>
-                <td class='input_column'>
-                    <input id='time_log_task'>
+                <td>
+                    <h4>{% for parent in task.parents %}{{ parent.name }} | {% endfor %}{{ task.name }}</h4>
                 </td>
             </tr>
+
+
+            {# TASK #}
+            {#            <tr>#}
+            {#                <td class='label_column'>#}
+            {#                    <label for='time_log_task'>Task</label>#}
+            {#                </td>#}
+            {#                <td class='input_column'>#}
+            {#                    <input id='time_log_task'>#}
+            {#                </td>#}
+            {#            </tr>#}
 
             {# RESOURCE #}
             <tr>
@@ -119,7 +131,7 @@ require([
     'dojo/domReady!'
 ], function (Form, TextBox, FilteringSelect, Button, SimpleTextarea,
              NumberSpinner, CheckBox, DateTextBox, TimeTextBox, Memory, stamp,
-             submitForm,util) {
+             submitForm, util) {
     // ********************************************************************
     // Generate default values
     var url;
@@ -138,7 +150,7 @@ require([
         // now set the hour values
         start_time_value.setHours(10);
         end_time_value.setHours(19);
-        
+
 
     {% elif mode == 'UPDATE' %}
         url = '{{ request.route_url("update_time_log") }}';
@@ -149,6 +161,7 @@ require([
         start_time_value = start_date_value;
         end_time_value = end_date_value;
 
+
     {% endif %}
 
     // ****************************************************************
@@ -156,16 +169,16 @@ require([
     var time_log_form = new Form({}, 'time_log_form');
     var dialog = time_log_form.getParent();
 
-    // ****************************************************************
-    // Task
-    var task_textBox = new TextBox({
-        name: 'task_name',
-        label: 'Task',
-        value: '{{ task.name }}',
-        disabled: true,
-        required: true
-    }, 'time_log_task');
-    task_textBox.startup();
+    {#    // ****************************************************************#}
+    {#    // Task#}
+    {#    var task_textBox = new TextBox({#}
+    {#        name: 'task_name',#}
+    {#        label: 'Task',#}
+    {#        value: '{{ task.name }}',#}
+    {#        disabled: true,#}
+    {#        required: true#}
+    {#    }, 'time_log_task');#}
+    {#    task_textBox.startup();#}
 
     // ****************************************************************
     // Resource
@@ -205,18 +218,18 @@ require([
         required: true,
         datePattern: 'dd-mm-yyyy',
         style: 'width: 90px;',
-{#        onChange: function () {#}
-{#            if (this.focused) {#}
-{#                update_hours_to_complete();#}
-{#            }#}
-{#        }#}
+        {#        onChange: function () {#}
+        {#            if (this.focused) {#}
+        {#                update_hours_to_complete();#}
+        {#            }#}
+        {#        }#}
     }, 'time_log_start_date');
     start_dateTextBox.startup();
 
     // Time
     var start_time_timeTextBox = new TimeTextBox({
         name: 'start_time',
-        value: start_time_value,
+{#        value: start_time_value,#}
         style: 'width: 85px;',
         constraints: {
             timePattern: 'HH:mm:ss',
@@ -226,6 +239,9 @@ require([
         }
     }, 'time_log_start_time');
     start_time_timeTextBox.startup();
+
+    start_time_timeTextBox.set('value', start_time_value);
+
 
 
     // ****************************************************************
@@ -239,18 +255,18 @@ require([
         required: true,
         datePattern: 'dd-mm-yyyy',
         style: 'width: 90px;',
-{#        onChange: function () {#}
-{#            if (this.focused) {#}
-{#                update_hours_to_complete();#}
-{#            }#}
-{#        }#}
+        {#        onChange: function () {#}
+        {#            if (this.focused) {#}
+        {#                update_hours_to_complete();#}
+        {#            }#}
+        {#        }#}
     }, 'time_log_end_date');
     end_dateTextBox.startup();
 
     // Time
     var end_time_timeTextBox = new TimeTextBox({
         name: 'end_time',
-        value: end_time_value,
+{#        value: end_time_value,#}
         style: 'width: 85px',
         constraints: {
             timePattern: 'HH:mm:ss',
@@ -265,6 +281,8 @@ require([
         }
     }, 'time_log_end_time');
     end_time_timeTextBox.startup();
+
+    end_time_timeTextBox.set('value', end_time_value);
 
     // ****************************************************************
     // Hours To Complete
@@ -371,6 +389,8 @@ require([
                     end_time_timeTextBox.value.getMinutes(),
                     end_time_timeTextBox.value.getSeconds()
             );
+            console.debug('start_time_timeTextBox :', start_time_timeTextBox.value);
+            console.debug('end_time_timeTextBox   :', end_time_timeTextBox.value);
 
             console.debug('start_datetime_value :', start_datetime_value);
             console.debug('end_datetime_value   :', end_datetime_value);
