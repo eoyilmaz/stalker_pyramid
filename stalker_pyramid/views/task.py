@@ -17,10 +17,6 @@
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
-
-
-import datetime
-import json
 import logging
 
 from pyramid.view import view_config
@@ -34,10 +30,10 @@ from stalker import (User, Task, Entity, Project, StatusList, Status,
                      TaskJugglerScheduler, Studio)
 from stalker.models.task import CircularDependencyError
 from stalker import defaults
-from stalker_pyramid.views import (get_datetime, PermissionChecker,
-                                   get_logged_in_user, get_multi_integer,
-                                   milliseconds_since_epoch, from_milliseconds,
+from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
+                                   get_multi_integer, milliseconds_since_epoch,
                                    get_date)
+
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -45,10 +41,20 @@ logger.setLevel(logging.DEBUG)
 
 def convert_to_jquery_gantt_task_format(tasks):
     """Converts the given tasks to the jQuery Gantt compatible json format.
-    
+
     :param tasks: List of Stalker Tasks.
     :return: json compatible dictionary
     """
+
+    if not tasks:
+        return {}
+
+    if not isinstance(tasks, list):
+        raise HTTPServerError(detail='tasks argument in '
+                                     'convert_to_jquery_gantt_task_format '
+                                     'should be a list of '
+                                     'stalker.models.task.Task instances, not '
+                                     '%s' % tasks.__class__.__name__)
 
     data_source = Studio.query.first()
     # logger.debug('data_source : %s' % data_source)
@@ -77,6 +83,13 @@ def convert_to_jquery_gantt_task_format(tasks):
     # create projects list to only list related projects
     projects = []
     for task in tasks:
+        if not isinstance(task, Task):
+            raise HTTPServerError(
+                detail='all elements in tasks list should be instances of '
+                       'stalker.models.task.Task instances, not %s' % 
+                       task.__class__.__name__
+            )
+
         if task.project not in projects:
             projects.append(task.project)
 
@@ -149,16 +162,16 @@ def convert_to_jquery_gantt_task_format(tasks):
     data = {
         'tasks': faux_tasks,
         'resources': [{
-                          'id': resource.id,
-                          'name': resource.name
-                      } for resource in all_resources], #User.query.all()],
+            'id': resource.id,
+            'name': resource.name
+        } for resource in all_resources],  # User.query.all()],
         'time_logs': [{
-                          'id': time_log.id,
-                          'task_id': time_log.task.id,
-                          'resource_id': time_log.resource.id,
-                          'start': milliseconds_since_epoch(time_log.start),
-                          'end': milliseconds_since_epoch(time_log.end)
-                      } for time_log in all_time_logs],
+            'id': time_log.id,
+            'task_id': time_log.task.id,
+            'resource_id': time_log.resource.id,
+            'start': milliseconds_since_epoch(time_log.start),
+            'end': milliseconds_since_epoch(time_log.end)
+        } for time_log in all_time_logs],
         'timing_resolution': (timing_resolution.days * 86400 +
                               timing_resolution.seconds) * 1000,
         'working_hours': working_hours,
@@ -209,7 +222,7 @@ def update_task_dialog(request):
 )
 def update_task(request):
     """Updates the given task with the data coming from the request
-    
+
     :param request: 
     :return:
     """
@@ -752,7 +765,6 @@ def auto_schedule_tasks(request):
 
     return HTTPOk()
 
-
 @view_config(
     route_name='view_task',
     renderer='templates/task/page_view_task.jinja2'
@@ -770,7 +782,6 @@ def view_task(request):
         'user': logged_in_user,
         'task': task
     }
-
 
 @view_config(
     route_name='summarize_task',
@@ -791,6 +802,4 @@ def summarize_task(request):
         'user': logged_in_user,
         'task': task
     }
-
-
 

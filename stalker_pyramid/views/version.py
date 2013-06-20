@@ -20,14 +20,12 @@
 import logging
 
 from pyramid.httpexceptions import HTTPOk, HTTPServerError
-from pyramid.security import authenticated_userid, has_permission
 from pyramid.view import view_config
 
-from stalker import defaults, Task, User, Studio, TimeLog, Entity, Version
+from stalker import Task, TimeLog, Version
 from stalker.db import DBSession
-from stalker.exceptions import OverBookedError
 
-from stalker_pyramid.views import (get_datetime, get_logged_in_user,
+from stalker_pyramid.views import (get_logged_in_user, get_user_os,
                                    PermissionChecker)
 
 logger = logging.getLogger(__name__)
@@ -45,10 +43,8 @@ def create_version_dialog(request):
     # get logged in user
     logged_in_user = get_logged_in_user(request)
 
-
     task_id = request.matchdict['task_id']
     task = Task.query.filter(Task.task_id==task_id).first()
-
 
     return {
         'mode': 'CREATE',
@@ -87,7 +83,6 @@ def update_version_dialog(request):
 def create_version(request):
     """runs when creating a version
     """
-
     logged_in_user = get_logged_in_user(request)
 
     task_id = request.params.get('task_id')
@@ -113,7 +108,6 @@ def create_version(request):
 def update_version(request):
     """runs when updating a version
     """
-
     logged_in_user = get_logged_in_user(request)
 
     version_id = request.params.get('version_id')
@@ -137,7 +131,6 @@ def update_version(request):
 def list_versions(request):
     """lists the versions of the given task
     """
-
     logger.debug('list_versions is running')
 
     task_id = request.matchdict['task_id']
@@ -159,22 +152,38 @@ def get_versions(request):
     logger.debug('get_versions is running')
     task_id = request.matchdict['task_id']
     task = Task.query.filter_by(id=task_id).first()
-
-    logger.debug('entity_id : %s' % task_id)
-
     version_data = []
+
+    user_os = get_user_os(request)
+    logger.debug('entity_id : %s' % task_id)
+    logger.debug('user os: %s' % user_os)
+
+    repo = task.project.repository
 
     # if entity.versions:
     for version in task.versions:
         logger.debug('version.task.id : %s' % version.task.id)
         assert isinstance(version, Version)
+
+        version_absolute_full_path = version.absolute_full_path
+        if repo:
+            if user_os == 'windows':
+                version_absolute_full_path = \
+                    repo.to_windows_path(version.absolute_full_path)
+            elif user_os == 'linux':
+                version_absolute_full_path = \
+                    repo.to_linux_path(version.absolute_full_path)
+            elif user_os == 'osx':
+                version_absolute_full_path = \
+                    repo.to_osx_path(version.absolute_full_path)
+
         version_data.append({
             'id': version.id,
             'name': version.name,
             'task_id': version.task.id,
             'task_name': version.task.name,
             'parent_name': ' | '.join([parent.name for parent in version.task.parents]),
-            'path': version.path,
+            'absolute_full_path': version_absolute_full_path,
             'created_by_id': version.created_by_id,
             'created_by_name': version.created_by.name
 

@@ -56,7 +56,6 @@
                  Selection, Keyboard, declare, editor, Menu, MenuItem,
                  MenuSeparator, Button, dialogs, dialogCaller, dialogCreator) {
 
-
         var StandardGrid = declare([Grid, Selection, Keyboard]);
 
         var versions_DataGrid = new StandardGrid({
@@ -70,7 +69,6 @@
 
 
         {% if has_permission('Create_Version') %}
-
             var create_version_button = dialogCaller({
                 label: 'Create Version',
                 dialog_id: 'version_dialog',
@@ -82,25 +80,17 @@
             create_version_button.startup();
         {% endif %}
 
-
-
         var timeLogData;
-
-
         function versions_DataGrid_updater() {
-
 
             var version_memory = new JsonRest({
                 target: '/get/versions/{{ task.id }}'
             });
 
             version_memory.query().then(function (data) {
-
                 timeLogData = data;
 
                 var columns = [
-
-
                     {
                         field: 'parent_name',
                         label: 'Parent Name'
@@ -110,17 +100,13 @@
                         field: 'task_name',
                         label: 'Task Name',
                         get: function (object) {
-
                             return object; // return entire item for formatter to use
-
                         },
                         formatter: function (value) {
-
                             var targetPane = "'tasks_content_pane'";
                             var address = "'view/task/" + value.task_id + "'";
 
                             return '<a href="javascript:redirectLinkInParent(' + targetPane + ',' + address + ');">' + value.task_name + '</a>';
-
                         }
 
                     },
@@ -128,57 +114,42 @@
                         field: 'name',
                         label: 'Name',
                         get: function (object) {
-
                             return object; // return entire item for formatter to use
-
                         },
                         formatter: function (value) {
-
                             var targetPane = "'tasks_content_pane'";
                             var address = "'view/task/" + value.id + "'";
 
                             return '<a href="javascript:redirectLinkInParent(' + targetPane + ',' + address + ');">' + value.name + '</a>';
-
                         }
-
                     },
                     {
                         field: 'path',
                         label: 'Path',
                         get: function (object) {
-
                             return object; // return entire item for formatter to use
-
                         },
                         formatter: function (value) {
-
-                            return '<a href="' + value.path + '">' + value.path + '</a>';
-
+                            return '<a href="file://' + value.absolute_full_path + '">' + value.absolute_full_path + '</a>';
                         }
-
                     },
                     {
                         field: 'created_by_name',
                         label: "Created By",
                         get: function (object) {
-
                             return object; // return entire item for formatter to use
-
                         },
                         formatter: function (value) {
-
                             var targetPane = "'central_content'";
                             var address = "'view/user/" + value.created_by_id + "'";
 
                             return '<a href="javascript:redirectLink(' + targetPane + ',' + address + ');">' + value.created_by_name + '</a>';
-
                         }
                     }
                 ];
 
                 versions_DataGrid.renderArray(data);
                 versions_DataGrid.set('columns', columns);
-
 
                 {#                var right_click_menu = new Menu({#}
                 {#                    targetNodeIds: ['versions_data_grid'],#}
@@ -211,16 +182,9 @@
                 {#                right_click_menu.addChild(create_update_timelog_menuItem_creator());#}
                 {##}
                 {#                right_click_menu.startup();#}
-
-
             });
-
-
         }
-
         versions_DataGrid_updater();
-
-
     });
 </script>
 

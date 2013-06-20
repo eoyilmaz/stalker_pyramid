@@ -383,3 +383,15 @@ def from_milliseconds(t):
     instance
     """
     return from_microseconds(t*1000)
+
+def get_user_os(request):
+    """returns the user operating system name
+    """
+    user_agent = request.headers['user-agent']
+
+    if 'Windows' in user_agent:
+        return 'windows'
+    elif 'Linux' in user_agent:
+        return 'linux'
+    elif 'OS X' in user_agent:
+        return 'osx'
