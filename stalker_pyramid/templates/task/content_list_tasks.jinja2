@@ -135,6 +135,7 @@
                         selector: '.leafTaskContextMenu',
                         getContent: function (node) {
                             var dataId = node.getAttribute('dataId');
+                            var hierarchy_name = node.getAttribute('hierarchy_name')
                             var name = node.getAttribute('name');
                             var type = node.getAttribute('type');
                             var start = new Date(parseInt(node.getAttribute('start')));
@@ -153,7 +154,11 @@
                             var priority = node.getAttribute('priority');
 
                             return '<table>' +
-                                    '<thead style="text-align: center"><h4>' + name + ' (' + type + ')</h4></thead>' +
+                                    '<thead style="text-align: center">' +
+                                        '<h4>'+hierarchy_name+'</h4>' +
+                                        '<h3>' + name + ' (' + type + ')</h3>' +
+
+                                    '</thead>' +
                                     '<tbody>' +
                                     '<tr>' +
                                         '<td class="label_column">Id</td>' +

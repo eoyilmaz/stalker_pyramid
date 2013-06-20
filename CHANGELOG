@@ -9,6 +9,12 @@ Stalker Pyramid Changes
   one).
 * **Fix:** Fixed DBSession, it is now configured with ZopeTransactionExtension
   independent of Stalkers own configuration.
+* **Fix:** Fixed TimeLog update dialog timing bug. TimeTextBox values are set
+  by 'set' method.
+* **New:** Hierarchical names of the task are added to Task Tool Tip window.
+* **New:** Hierarchical names of the task are added to Create/Update TimeLog
+  dialog.
+
 
 pre 0.1.0.b1
 ============

@@ -270,6 +270,7 @@ GanttMaster.prototype.loadTasks = function (tasks) {
             var t = factory.build({
                 id: task.id,
                 name: task.name,
+                full_name: task.full_name,
                 code: task.code,
                 description: task.description,
                 priority: task.priority,
