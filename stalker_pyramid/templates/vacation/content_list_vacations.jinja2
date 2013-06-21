@@ -84,7 +84,7 @@
         {% endif %}
 
 
-        var timeLogData;
+        var vacationData;
 
 
         function vacations_DataGrid_updater() {
@@ -96,7 +96,7 @@
 
             vacation_memory.query().then(function (data) {
 
-                timeLogData = data;
+                vacationData = data;
 
                 var columns = [
 
@@ -151,21 +151,21 @@
                     selector: '.dgrid-row'
                 });
 
-                var create_update_timelog_menuItem_creator = function () {
+                var create_update_vacation_menuItem_creator = function () {
                     return new MenuItem({
                         label: 'Update Vacation',
                         onClick: function () {
                             var node = this.getParent().currentTarget;
                             var nodeId = node.getAttribute('id');
                             var rowId = vacations_DataGrid.id + '-row-';
-                            var timeLogId = timeLogData[parseInt(nodeId.substring(rowId.length, nodeId.length))].id;
+                            var vacationId = vacationData[parseInt(nodeId.substring(rowId.length, nodeId.length))].id;
 
 
                             var dialog = dialogCreator({
                                 dialog_id: 'vacation_dialog',
                                 content_creator: dialogs.update_vacation_dialog,
                                 related_field_updater: vacations_DataGrid_updater,
-                                data_id: timeLogId
+                                data_id: vacationId
                             });
                             dialog.show();
 
@@ -174,7 +174,7 @@
                     });
                 };
 
-                right_click_menu.addChild(create_update_timelog_menuItem_creator());
+                right_click_menu.addChild(create_update_vacation_menuItem_creator());
 
                 right_click_menu.startup();
 

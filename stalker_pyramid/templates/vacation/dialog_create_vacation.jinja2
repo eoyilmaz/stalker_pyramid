@@ -122,14 +122,21 @@ require([
 
         start_date_value = new Date();// set it today by default
         end_date_value = new Date();// set it today by default
-        start_time_value = 'T10:00:00';
-        end_time_value = 'T19:00:00';
+        start_time_value = start_date_value.clearTime();
+        end_time_value = end_date_value.clearTime();
+        // now set the hour values
+        start_time_value.setHours(10);
+        end_time_value.setHours(19);
+
 
     {% elif mode == 'UPDATE' %}
         url = '{{ request.route_url("update_vacation") }}';
 
         start_date_value = new Date(parseInt({{ milliseconds_since_epoch(vacation.start) }}));
         end_date_value = new Date(parseInt({{ milliseconds_since_epoch(vacation.end) }}));
+
+        start_time_value = start_date_value;
+        end_time_value = end_date_value;
 
         type_id = '{{ vacation.type_id }}';
 

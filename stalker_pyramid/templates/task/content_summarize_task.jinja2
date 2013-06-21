@@ -142,10 +142,12 @@
 
         {% if has_permission('Update_Task') %}
             // UPDATE TASK BUTTON
+
+            var dialog_id = 'update_'+'{{ task.entity_type.lower() }}'+'_dialog';
             var update_task_button = dialogCaller({
                 label: 'Update',
-                dialog_id: 'update_task_dialog',
-                content_creator: dialogs.update_task_dialog,
+                dialog_id: dialog_id,
+                content_creator: dialogs[dialog_id],
                 attach_to: 'update_task_button',
                 data_id: {{ task.id }},
                 related_field_updater: task_summary_updater

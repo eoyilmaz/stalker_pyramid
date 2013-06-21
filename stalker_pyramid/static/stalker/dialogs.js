@@ -463,11 +463,11 @@ define(['exports', 'dojox/widget/DialogSimple', 'dijit/registry', 'dojo/domReady
         };
          // ********************************************************************
         // VACATION
-        exports.create_vacation_dialog = function create_vacation_dialog(uesr_id) {
+        exports.create_vacation_dialog = function create_vacation_dialog(user_id) {
             return new DialogSimple({
                 id: 'vacation_dialog',
                 title: 'New TimeLog',
-                href: '/dialog/create/vacation/' + uesr_id,
+                href: '/dialog/create/vacation/' + user_id,
                 resize: true,
                 style: style,
                 executeScripts: true
@@ -477,7 +477,7 @@ define(['exports', 'dojox/widget/DialogSimple', 'dijit/registry', 'dojo/domReady
         exports.update_vacation_dialog = function update_vacation_dialog(vacation_id) {
             return new DialogSimple({
                 id: 'vacation_dialog',
-                title: 'Update TimeLog',
+                title: 'Update Vacation',
                 href: '/dialog/update/vacation/' + vacation_id,
                 resize: true,
                 style: style,
