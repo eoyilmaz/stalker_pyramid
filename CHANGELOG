@@ -14,7 +14,7 @@ Stalker Pyramid Changes
 * **New:** Hierarchical names of the task are added to Task Tool Tip window.
 * **New:** Hierarchical names of the task are added to Create/Update TimeLog
   dialog.
-
+* **New:** It is now possible to duplicate a task hierarchy in gantt chart now.
 
 pre 0.1.0.b1
 ============

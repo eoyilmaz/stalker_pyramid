@@ -200,6 +200,8 @@
                     // Create Child Task
                     // Create Dependent Task
                     // ============
+                    // Duplicate Task Hierarchy
+                    // ============
                     // Delete
                     // 
 
@@ -395,6 +397,45 @@
                         leaf_taskrow_menu.addChild(create_time_log_menuItem_creator());
                     {% endif %}
 
+                    {% if has_permission('Create_Task') %}
+
+                        parent_taskbar_menu.addChild(new MenuSeparator());
+                        leaf_taskbar_menu.addChild(new MenuSeparator());
+                        parent_taskrow_menu.addChild(new MenuSeparator());
+                        leaf_taskrow_menu.addChild(new MenuSeparator());
+
+
+                        var duplicate_task_hierarchy_menuItem_creator = function () {
+                            return new MenuItem({
+                                label: 'Duplicate Task Hierarchy',
+                                onClick: function () {
+                                    var node = this.getParent().currentTarget;
+                                    var dataId = node.getAttribute('dataId');
+
+                                    // duplicate the given task using XHR
+                                    var deferred = xhr.post(
+                                        'duplicate_task_hierarchy',
+                                        {
+                                            'data': {
+                                                'task_id': dataId
+                                            }
+                                        }
+                                    );
+                                    // refresh after it finishes
+                                    deferred.then(function(){
+                                        loadGanttFromServer();
+                                    });
+                                }
+                            });
+                        };
+
+                        parent_taskbar_menu.addChild(duplicate_task_hierarchy_menuItem_creator());
+                        leaf_taskbar_menu.addChild(duplicate_task_hierarchy_menuItem_creator());
+                        parent_taskrow_menu.addChild(duplicate_task_hierarchy_menuItem_creator());
+                        leaf_taskrow_menu.addChild(duplicate_task_hierarchy_menuItem_creator());
+
+                    {% endif %}
+
                     {% if has_permission('Delete_Task') %}
 
                         parent_taskbar_menu.addChild(new MenuSeparator());
@@ -413,7 +454,6 @@
                         leaf_taskbar_menu.addChild(delete_task_menuItem_creator());
                         parent_taskrow_menu.addChild(delete_task_menuItem_creator());
                         leaf_taskrow_menu.addChild(delete_task_menuItem_creator());
-
 
                     {% endif %}
 

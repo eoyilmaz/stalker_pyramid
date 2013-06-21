@@ -294,6 +294,7 @@ def main(global_config, **settings):
                      'create/task')
     config.add_route('update_task',
                      'update/task/{task_id}') # TODO: remove task_id
+    config.add_route('duplicate_task_hierarchy', 'duplicate_task_hierarchy')
 
     config.add_route('view_task',
                      'view/task/{task_id}')

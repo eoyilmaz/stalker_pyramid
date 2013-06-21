@@ -27,7 +27,7 @@ from sqlalchemy.exc import IntegrityError
 
 from stalker.db import DBSession
 from stalker import (User, Task, Entity, Project, StatusList, Status,
-                     TaskJugglerScheduler, Studio)
+                     TaskJugglerScheduler, Studio, Asset, Shot, Sequence)
 from stalker.models.task import CircularDependencyError
 from stalker import defaults
 from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
@@ -37,6 +37,186 @@ from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
+
+
+# def walk_task_hierarchy(starting_task):
+#     """
+#     """
+
+def duplicate_task(task):
+    """Duplicates the given task without children.
+
+    :param task: a stalker.models.task.Task instance
+    :return: stalker.models.task.Task
+    """
+    # create a new task and change its attributes
+    class_ = Task
+    extra_kwargs = {}
+    if task.entity_type == 'Asset':
+        class_ = Asset
+        extra_kwargs = {
+            'code': task.code
+        }
+    elif task.entity_type == 'Shot':
+        class_ = Shot
+        extra_kwargs = {
+            'code': task.code
+        }
+    elif task.entity_type == 'Sequence':
+        class_ = Sequence
+        extra_kwargs = {
+            'code': task.code
+        }
+
+    dup_task = class_(
+        name=task.name,
+        project=task.project,
+        bid_timing=task.bid_timing,
+        bid_unit=task.bid_unit,
+        computed_end=task.computed_end,
+        computed_start=task.computed_start,
+        created_by=task.created_by,
+        description=task.description,
+        is_milestone=task.is_milestone,
+        resources=task.resources,
+        priority=task.priority,
+        schedule_constraint=task.schedule_constraint,
+        schedule_model=task.schedule_model,
+        schedule_timing=task.schedule_timing,
+        schedule_unit=task.schedule_unit,
+        status=task.status,
+        status_list=task.status_list,
+        notes=task.notes,
+        tags=task.tags,
+        references=task.references,
+        start=task.start,
+        end=task.end,
+        thumbnail=task.thumbnail,
+        timing_resolution=task.timing_resolution,
+        type=task.type,
+        watchers=task.watchers,
+        **extra_kwargs
+    )
+    dup_task.generic_data = task.generic_data
+    dup_task.is_complete = task.is_complete
+
+    return dup_task
+
+
+def walk_hierarchy(task):
+    """Walks the hierarchy of the given task
+
+    :param task: The top most task instance
+    :return:
+    """
+    start_task = task
+    i = 0
+    yield task
+    while True:
+        try:
+            task = task.children[i]
+            yield task
+            i += 1
+        except IndexError: # no more child
+            if task != start_task:
+                # go to parent of the current task
+                parent = task.parent
+                # go to the next child
+                index = parent.children.index(task)
+                i = index + 1
+                task = parent
+            else:
+                break
+
+
+def walk_and_duplicate_task_hierarchy(task):
+    """Walks through task hierarchy and creates duplicates of all the tasks
+    it finds
+
+    :param task: task
+    :return:
+    """
+    # start from the given task
+    logger.debug('duplicating task : %s' % task)
+    logger.debug('task.children    : %s' % task.children)
+    dup_task = duplicate_task(task)
+    task.duplicate = dup_task
+    for child in task.children:
+        logger.debug('duplicating child : %s' % child)
+        duplicated_child = walk_and_duplicate_task_hierarchy(child)
+        duplicated_child.parent = dup_task
+    return dup_task
+
+
+def update_dependencies_in_duplicated_hierarchy(task):
+    """Updates the dependencies in the given task. Uses the task.duplicate
+    attribute to find the duplicate
+
+    :param task: The top most task of the hierarchy
+    :return: None
+    """
+    try:
+        duplicated_task = task.duplicate
+    except AttributeError:
+        # not a duplicated task
+        logger.debug('task has no duplicate: %s' % task)
+        return
+
+    for dependent_task in task.depends:
+        if hasattr(dependent_task, 'duplicate'):
+            logger.debug('there is a duplicate!')
+            logger.debug('dependent_task.duplicate : %s' % 
+                         dependent_task.duplicate)
+            duplicated_task.depends.append(dependent_task.duplicate)
+        else:
+            logger.debug('there is no duplicate!')
+            duplicated_task.depends.append(dependent_task)
+
+    for child in task.children:
+        # check child dependencies
+        # loop through children
+        update_dependencies_in_duplicated_hierarchy(child)
+
+
+def cleanup_duplicate_residuals(task):
+    """Cleans the duplicate attributes in the hierarchy
+
+    :param task: The top task in the hierarchy
+    :return:
+    """
+    try:
+        delattr(task, 'duplicate')
+    except AttributeError:
+        pass
+
+    for child in task.children:
+        cleanup_duplicate_residuals(child)
+
+@view_config(
+    route_name='duplicate_task_hierarchy'
+)
+def duplicate_task_hierarchy(request):
+    """Duplicates the given task hierarchy.
+
+    Walks through the hierarchy of the given task and duplicates every
+    instance it finds in a new task.
+
+    :param task: The task that wanted to be duplicated
+    :return: A list of stalker.models.task.Task
+    """
+    task_id = request.params.get('task_id')
+    task = Task.query.filter_by(id=task_id).first()
+    if task:
+        dup_task = walk_and_duplicate_task_hierarchy(task)
+        update_dependencies_in_duplicated_hierarchy(task)
+        cleanup_duplicate_residuals(task)
+        # update the parent
+        dup_task.parent = task.parent
+        # just rename the dup_task
+        dup_task.name += ' - Duplicate'
+        DBSession.add(dup_task)
+
+    return HTTPOk()
 
 
 def convert_to_jquery_gantt_task_format(tasks):

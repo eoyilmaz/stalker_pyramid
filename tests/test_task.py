@@ -25,11 +25,14 @@ import transaction
 from pyramid import testing
 from pyramid.httpexceptions import HTTPServerError
 
-from stalker import db, Project, Status, StatusList, Repository, Task, User
+from stalker import db, Project, Status, StatusList, Repository, Task, User, Asset, Type
 from stalker.db.session import DBSession
 from zope.sqlalchemy import ZopeTransactionExtension
 
-from stalker_pyramid.views import task, milliseconds_since_epoch
+from stalker_pyramid.views import task
+
+import logging
+logger = logging.getLogger(__name__)
 
 
 class TaskViewTestCase(unittest2.TestCase):
@@ -42,7 +45,8 @@ class TaskViewTestCase(unittest2.TestCase):
         self.config = testing.setUp()
         db.setup({'sqlalchemy.url': 'sqlite:///:memory:'})
 
-        DBSession.configure(extension=ZopeTransactionExtension)
+        DBSession.remove()
+        DBSession.configure(extension=ZopeTransactionExtension())
         # with transaction.manager:
         #     model = MyModel(name='one', value=55)
         #     DBSession.add(model)
@@ -216,17 +220,53 @@ class TaskViewTestCase(unittest2.TestCase):
             )
             DBSession.add(self.test_task8)
 
-            # no children for self.test_task3
-            self.all_tasks = [
-                self.test_task1, self.test_task2, self.test_task3,
-                self.test_task4, self.test_task5, self.test_task6,
-                self.test_task7, self.test_task8
-            ]
-            new_session = DBSession()
-            new_session.add_all([
-                self.test_user1, self.test_user2,
-                self.test_proj1
-            ])
+            self.test_asset_status_list = StatusList(
+                statuses=[self.test_status1, self.test_status2,
+                          self.test_status3],
+                target_entity_type='Asset'
+            )
+            DBSession.add(self.test_asset_status_list)
+
+            # create an asset in between
+            self.test_asset1 = Asset(
+                name='Test Asset 1',
+                code='TA1',
+                parent=self.test_task7,
+                type=Type(
+                    name='Character',
+                    code='Char',
+                    target_entity_type='Asset',
+                ),
+                status_list=self.test_asset_status_list
+            )
+            DBSession.add(self.test_asset1)
+
+            # new task under asset
+            self.test_task9 = Task(
+                name='Test Task 9',
+                parent=self.test_asset1,
+                status_list=self.test_task_statuses,
+                start=datetime.datetime(2013, 6, 20, 0, 0),
+                end=datetime.datetime(2013, 6, 30, 0, 0),
+                schedule_model='effort',
+                schedule_timing=10,
+                schedule_unit='d'
+            )
+            DBSession.add(self.test_task9)
+
+        # no children for self.test_task3
+        self.all_tasks = [
+            self.test_task1, self.test_task2, self.test_task3,
+            self.test_task4, self.test_task5, self.test_task6,
+            self.test_task7, self.test_task8, self.test_task9,
+            self.test_asset1
+        ]
+        new_session = DBSession()
+        new_session.add_all([
+            self.test_user1, self.test_user2,
+            self.test_proj1
+        ])
+        new_session.add_all(self.all_tasks)
 
     def tearDown(self):
         DBSession.remove()
@@ -249,8 +289,7 @@ class TaskViewTestCase(unittest2.TestCase):
             'not a list of task'
         )
 
-    def test_convert_to_jquery_gantt_task_format_tasks_is_not_a_list_of_tasks(
-            self):
+    def test_convert_to_jquery_gantt_task_format_tasks_is_not_a_list_of_tasks(self):
         """testing if an HTTPServerError will be raised when the tasks argument
         is not a list of tasks in convert_to_jquery_gantt_task_format function
         """
@@ -260,8 +299,7 @@ class TaskViewTestCase(unittest2.TestCase):
             ['not', 'a', 'list', 'of', 'tasks']
         )
 
-    def test_convert_to_jquery_gantt_task_format_tasks_is_working_properly(
-            self):
+    def test_convert_to_jquery_gantt_task_format_tasks_is_working_properly(self):
         """testing if task.convert_to_jquery_gantt_task_format function is
         working properly
         """
@@ -269,10 +307,10 @@ class TaskViewTestCase(unittest2.TestCase):
             'tasks': [
                 # project 1
                 {
-                    'type': 'Project',
-                    'id': None,
-                    'code': 'TProj1',
-                    'name': 'Test Project 1',
+                    'type': u'Project',
+                    'id': 22,
+                    'code': u'TProj1',
+                    'name': u'Test Project 1',
                     'start': 1371686400000,
                     'end': 1372550400000,
                     'computed_start': None,
@@ -286,11 +324,12 @@ class TaskViewTestCase(unittest2.TestCase):
                 },
                 # task 1
                 {
-                    'type': 'Task',
+                    'type': u'Task',
                     'id': self.test_task1.id,
-                    'name': 'Test Task 1',
+                    'hierarchy_name': '',
+                    'name': u'Test Task 1',
                     'code': self.test_task1.id,
-                    'description': '',
+                    'description': u'',
                     'priority': 500,
                     'status': 'STATUS_UNDEFINED',
                     'project_id': self.test_proj1.id,
@@ -301,24 +340,25 @@ class TaskViewTestCase(unittest2.TestCase):
                     'start': 1371686400000,
                     'end': 1372550400000,
                     'is_scheduled': False,
-                    'schedule_timing': 10,
-                    'schedule_unit': 'd',
-                    'bid_timing': 10,
-                    'bid_unit': 'd',
-                    'schedule_model': 'effort',
+                    'schedule_timing': 10.0,
+                    'schedule_unit': u'd',
+                    'bid_timing': 10.0,
+                    'bid_unit': u'd',
+                    'schedule_model': u'effort',
                     'schedule_constraint': 0,
-                    'schedule_seconds': 0,
+                    'schedule_seconds': 324000.0,
                     'total_logged_seconds': 0,
                     'computed_start': None,
                     'computed_end': None,
                 },
                 # task 2
                 {
-                    'type': 'Task',
+                    'type': u'Task',
                     'id': self.test_task2.id,
-                    'name': 'Test Task 2',
+                    'hierarchy_name': '',
+                    'name': u'Test Task 2',
                     'code': self.test_task2.id,
-                    'description': '',
+                    'description': u'',
                     'priority': 500,
                     'status': 'STATUS_UNDEFINED',
                     'project_id': self.test_proj1.id,
@@ -329,136 +369,141 @@ class TaskViewTestCase(unittest2.TestCase):
                     'start': 1371686400000,
                     'end': 1372550400000,
                     'is_scheduled': False,
-                    'schedule_timing': 10,
-                    'schedule_unit': 'd',
-                    'bid_timing': 10,
-                    'bid_unit': 'd',
-                    'schedule_model': 'effort',
+                    'schedule_timing': 10.0,
+                    'schedule_unit': u'd',
+                    'bid_timing': 10.0,
+                    'bid_unit': u'd',
+                    'schedule_model': u'effort',
                     'schedule_constraint': 0,
-                    'schedule_seconds': 0,
+                    'schedule_seconds': 324000.0,
                     'total_logged_seconds': 0,
                     'computed_start': None,
                     'computed_end': None,
                 },
                 # task 3
                 {
-                    'type': 'Task',
+                    'type': u'Task',
                     'id': self.test_task3.id,
-                    'name': 'Test Task 3',
+                    'hierarchy_name': '',
+                    'name': u'Test Task 3',
                     'code': self.test_task3.id,
-                    'description': '',
+                    'description': u'',
                     'priority': 500,
                     'status': 'STATUS_UNDEFINED',
                     'project_id': self.test_proj1.id,
                     'parent_id': self.test_proj1.id,
                     'depend_ids': [],
-                    'resource_ids': [],
+                    'resource_ids': [12, 13],
                     'time_log_ids': [],
                     'start': 1371686400000,
                     'end': 1372550400000,
                     'is_scheduled': False,
-                    'schedule_timing': 10,
-                    'schedule_unit': 'd',
-                    'bid_timing': 10,
-                    'bid_unit': 'd',
-                    'schedule_model': 'effort',
+                    'schedule_timing': 10.0,
+                    'schedule_unit': u'd',
+                    'bid_timing': 10.0,
+                    'bid_unit': u'd',
+                    'schedule_model': u'effort',
                     'schedule_constraint': 0,
-                    'schedule_seconds': 0,
+                    'schedule_seconds': 324000.0,
                     'total_logged_seconds': 0,
                     'computed_start': None,
                     'computed_end': None,
                 },
                 # task 4
                 {
-                    'type': 'Task',
+                    'type': u'Task',
                     'id': self.test_task4.id,
-                    'name': 'Test Task 2',
+                    'hierarchy_name': u'Test Task 1',
+                    'name': u'Test Task 4',
                     'code': self.test_task4.id,
-                    'description': '',
+                    'description': u'',
                     'priority': 500,
                     'status': 'STATUS_UNDEFINED',
                     'project_id': self.test_proj1.id,
                     'parent_id': self.test_task1.id,
                     'depend_ids': [],
-                    'resource_ids': [],
+                    'resource_ids': [12],
                     'time_log_ids': [],
                     'start': 1371686400000,
                     'end': 1372550400000,
                     'is_scheduled': False,
-                    'schedule_timing': 10,
-                    'schedule_unit': 'd',
-                    'bid_timing': 10,
-                    'bid_unit': 'd',
-                    'schedule_model': 'effort',
+                    'schedule_timing': 10.0,
+                    'schedule_unit': u'd',
+                    'bid_timing': 10.0,
+                    'bid_unit': u'd',
+                    'schedule_model': u'effort',
                     'schedule_constraint': 0,
-                    'schedule_seconds': 0,
+                    'schedule_seconds': 324000.0,
                     'total_logged_seconds': 0,
                     'computed_start': None,
                     'computed_end': None,
                 },
                 # task 5
                 {
-                    'type': 'Task',
+                    'type': u'Task',
                     'id': self.test_task5.id,
-                    'name': 'Test Task 5',
+                    'hierarchy_name': u'Test Task 1',
+                    'name': u'Test Task 5',
                     'code': self.test_task5.id,
-                    'description': '',
+                    'description': u'',
                     'priority': 500,
                     'status': 'STATUS_UNDEFINED',
                     'project_id': self.test_proj1.id,
                     'parent_id': self.test_task1.id,
                     'depend_ids': [],
-                    'resource_ids': [],
+                    'resource_ids': [12],
                     'time_log_ids': [],
                     'start': 1371686400000,
                     'end': 1372550400000,
                     'is_scheduled': False,
-                    'schedule_timing': 10,
-                    'schedule_unit': 'd',
-                    'bid_timing': 10,
-                    'bid_unit': 'd',
-                    'schedule_model': 'effort',
+                    'schedule_timing': 10.0,
+                    'schedule_unit': u'd',
+                    'bid_timing': 10.0,
+                    'bid_unit': u'd',
+                    'schedule_model': u'effort',
                     'schedule_constraint': 0,
-                    'schedule_seconds': 0,
+                    'schedule_seconds': 324000.0,
                     'total_logged_seconds': 0,
                     'computed_start': None,
                     'computed_end': None,
                 },
                 # task 6
                 {
-                    'type': 'Task',
+                    'type': u'Task',
                     'id': self.test_task6.id,
-                    'name': 'Test Task 6',
+                    'hierarchy_name': u'Test Task 1',
+                    'name': u'Test Task 6',
                     'code': self.test_task6.id,
-                    'description': '',
+                    'description': u'',
                     'priority': 500,
                     'status': 'STATUS_UNDEFINED',
                     'project_id': self.test_proj1.id,
                     'parent_id': self.test_task1.id,
                     'depend_ids': [],
-                    'resource_ids': [],
+                    'resource_ids': [12],
                     'time_log_ids': [],
                     'start': 1371686400000,
                     'end': 1372550400000,
                     'is_scheduled': False,
-                    'schedule_timing': 10,
-                    'schedule_unit': 'd',
-                    'bid_timing': 10,
-                    'bid_unit': 'd',
-                    'schedule_model': 'effort',
+                    'schedule_timing': 10.0,
+                    'schedule_unit': u'd',
+                    'bid_timing': 10.0,
+                    'bid_unit': u'd',
+                    'schedule_model': u'effort',
                     'schedule_constraint': 0,
-                    'schedule_seconds': 0,
+                    'schedule_seconds': 324000.0,
                     'total_logged_seconds': 0,
                     'computed_start': None,
                     'computed_end': None,
                 },
                 # task 7
                 {
-                    'type': 'Task',
+                    'type': u'Task',
                     'id': self.test_task7.id,
-                    'name': 'Test Task 7',
+                    'hierarchy_name': u'Test Task 2',
+                    'name': u'Test Task 7',
                     'code': self.test_task7.id,
-                    'description': '',
+                    'description': u'',
                     'priority': 500,
                     'status': 'STATUS_UNDEFINED',
                     'project_id': self.test_proj1.id,
@@ -469,41 +514,100 @@ class TaskViewTestCase(unittest2.TestCase):
                     'start': 1371686400000,
                     'end': 1372550400000,
                     'is_scheduled': False,
-                    'schedule_timing': 10,
-                    'schedule_unit': 'd',
-                    'bid_timing': 10,
-                    'bid_unit': 'd',
-                    'schedule_model': 'effort',
+                    'schedule_timing': 10.0,
+                    'schedule_unit': u'd',
+                    'bid_timing': 10.0,
+                    'bid_unit': u'd',
+                    'schedule_model': u'effort',
                     'schedule_constraint': 0,
-                    'schedule_seconds': 0,
+                    'schedule_seconds': 324000.0,
                     'total_logged_seconds': 0,
                     'computed_start': None,
                     'computed_end': None,
                 },
                 # task 8
                 {
-                    'type': 'Task',
+                    'type': u'Task',
                     'id': self.test_task8.id,
-                    'name': 'Test Task 8',
+                    'hierarchy_name': u'Test Task 2',
+                    'name': u'Test Task 8',
                     'code': self.test_task8.id,
-                    'description': '',
+                    'description': u'',
                     'priority': 500,
                     'status': 'STATUS_UNDEFINED',
                     'project_id': self.test_proj1.id,
-                    'parent_id': self.test_task1.id,
+                    'parent_id': self.test_task2.id,
+                    'depend_ids': [],
+                    'resource_ids': [13],
+                    'time_log_ids': [],
+                    'start': 1371686400000,
+                    'end': 1372550400000,
+                    'is_scheduled': False,
+                    'schedule_timing': 10.0,
+                    'schedule_unit': u'd',
+                    'bid_timing': 10.0,
+                    'bid_unit': u'd',
+                    'schedule_model': u'effort',
+                    'schedule_constraint': 0,
+                    'schedule_seconds': 324000.0,
+                    'total_logged_seconds': 0,
+                    'computed_start': None,
+                    'computed_end': None,
+                },
+                # task 9
+                {
+                    'type': u'Task',
+                    'id': self.test_task9.id,
+                    'hierarchy_name': u'Test Task 2 | Test Task 7 | Test Asset 1',
+                    'name': u'Test Task 9',
+                    'code': self.test_task9.id,
+                    'description': u'',
+                    'priority': 500,
+                    'status': 'STATUS_UNDEFINED',
+                    'project_id': self.test_proj1.id,
+                    'parent_id': self.test_asset1.id,
                     'depend_ids': [],
                     'resource_ids': [],
                     'time_log_ids': [],
                     'start': 1371686400000,
                     'end': 1372550400000,
                     'is_scheduled': False,
-                    'schedule_timing': 10,
-                    'schedule_unit': 'd',
-                    'bid_timing': 10,
-                    'bid_unit': 'd',
-                    'schedule_model': 'effort',
+                    'schedule_timing': 10.0,
+                    'schedule_unit': u'd',
+                    'bid_timing': 10.0,
+                    'bid_unit': u'd',
+                    'schedule_model': u'effort',
                     'schedule_constraint': 0,
-                    'schedule_seconds': 0,
+                    'schedule_seconds': 324000.0,
+                    'total_logged_seconds': 0,
+                    'computed_start': None,
+                    'computed_end': None,
+                },
+                # test asset 1
+                {
+                    'type': u'Asset',
+                    'id': self.test_asset1.id,
+                    'hierarchy_name': u'Test Task 2 | Test Task 7',
+                    'name': u'Test Asset 1',
+                    'code': self.test_asset1.id,
+                    'description': u'',
+                    'priority': 500,
+                    'status': 'STATUS_UNDEFINED',
+                    'project_id': self.test_proj1.id,
+                    'parent_id': self.test_task7.id,
+                    'depend_ids': [],
+                    'resource_ids': [],
+                    'time_log_ids': [],
+                    'start': 1371686400000,
+                    'end': 1372550400000,
+                    'is_scheduled': False,
+                    'schedule_timing': 1.0,
+                    'schedule_unit': u'h',
+                    'bid_timing': 1.0,
+                    'bid_unit': u'h',
+                    'schedule_model': u'effort',
+                    'schedule_constraint': 0,
+                    'schedule_seconds': 3600.0,
                     'total_logged_seconds': 0,
                     'computed_start': None,
                     'computed_end': None,
@@ -516,7 +620,7 @@ class TaskViewTestCase(unittest2.TestCase):
                  'name': self.test_user2.name},
             ],
             'time_logs': [],
-            'timing_resolution': 60000,
+            'timing_resolution': 3600000,
             'working_hours': {
                 'mon': [[540, 1080]],
                 'tue': [[540, 1080]],
@@ -539,11 +643,209 @@ class TaskViewTestCase(unittest2.TestCase):
             expected_data
         )
 
-        def test_create_task_dialog(self):
-            """testing if the create_task_dialog view is working properly
-            """
-            request = testing.DummyRequest()
-            request.params['']
-            info = task.create_task_dialog(request)
-            self.assertEqual(info['one'].name, 'one')
-            self.assertEqual(info['project'], 'stalker')
+    def test_duplicate_task_hierarchy_task_is_not_existing(self):
+        """testing if None will be returned if the task is not existing
+        """
+        result = task.duplicate_task_hierarchy(None)
+        self.assertEqual(result, None)
+
+    def test_duplicate_task_is_working_properly(self):
+        """testing if duplicate task is working properly
+        """
+        # duplicate a task
+        dup_task2 = task.duplicate_task(self.test_task2)
+
+        # and compare if it is working properly
+        self.assertIsInstance(dup_task2, Task)
+
+        assert isinstance(dup_task2, Task)
+        self.assertEqual(dup_task2.bid_timing, self.test_task2.bid_timing)
+        self.assertEqual(dup_task2.bid_unit, self.test_task2.bid_unit)
+        self.assertEqual(dup_task2.computed_end, self.test_task2.computed_end)
+        self.assertEqual(dup_task2.computed_start,
+                         self.test_task2.computed_start)
+        self.assertEqual(dup_task2.created_by, self.test_task2.created_by)
+        self.assertEqual(dup_task2.depends, self.test_task2.depends)
+        self.assertEqual(dup_task2.description, self.test_task2.description)
+        self.assertEqual(dup_task2.entity_type, self.test_task2.entity_type)
+        self.assertEqual(dup_task2.generic_data, self.test_task2.generic_data)
+        self.assertEqual(dup_task2.is_complete, self.test_task2.is_complete)
+        self.assertEqual(dup_task2.is_milestone, self.test_task2.is_milestone)
+        self.assertEqual(dup_task2.name, self.test_task2.name)
+        self.assertEqual(dup_task2.notes, self.test_task2.notes)
+        self.assertEqual(dup_task2.parent, self.test_task2.parent)
+        self.assertEqual(dup_task2.priority, self.test_task2.priority)
+        self.assertEqual(dup_task2.project, self.test_task2.project)
+        self.assertEqual(dup_task2.references, self.test_task2.references)
+        self.assertEqual(dup_task2.resources, self.test_task2.resources)
+        self.assertEqual(dup_task2.schedule_constraint,
+                         self.test_task2.schedule_constraint)
+        self.assertEqual(dup_task2.schedule_model,
+                         self.test_task2.schedule_model)
+        self.assertEqual(dup_task2.schedule_timing,
+                         self.test_task2.schedule_timing)
+        self.assertEqual(dup_task2.schedule_unit,
+                         self.test_task2.schedule_unit)
+        self.assertEqual(dup_task2.status, self.test_task2.status)
+        self.assertEqual(dup_task2.status_list, self.test_task2.status_list)
+        self.assertEqual(dup_task2.tags, self.test_task2.tags)
+        self.assertEqual(dup_task2.thumbnail, self.test_task2.thumbnail)
+        if self.test_task2.time_logs:
+            self.assertNotEqual(dup_task2.time_logs, self.test_task2.time_logs)
+        self.assertEqual(dup_task2.timing_resolution,
+                         self.test_task2.timing_resolution)
+        self.assertEqual(dup_task2.type, self.test_task2.type)
+        self.assertEqual(dup_task2.updated_by,
+                         self.test_task2.updated_by)
+        if self.test_task2.versions:
+            self.assertNotEqual(dup_task2.versions, self.test_task2.versions)
+        self.assertEqual(dup_task2.versions, [])
+        self.assertEqual(dup_task2.watchers, self.test_task2.watchers)
+
+    def test_duplicate_task_hierarchy_is_working_properly(self):
+        """testing if duplicate_task_hierarchy is working properly
+        """
+        # task1
+        #   task4
+        #   task5
+        #   task6
+        # task2
+        #   task7
+        #   task8
+        # task3
+        # make it complex
+        self.test_task8.depends = [self.test_task7]
+        # external dependency should be preserved
+        self.test_task7.depends = [self.test_task6]
+        self.test_task3.parent = self.test_task8
+        self.test_task3.resources = [self.test_user2]
+
+        # current state
+        # task1
+        #   task4
+        #   task5
+        #   task6
+        # task2
+        #   task7
+        #     Test Asset1
+        #       task9
+        #   task8 (depends task7)
+        #     task3
+        # now duplicate it
+
+        dummyRequest = testing.DummyRequest()
+        dummyRequest.params['task_id'] = self.test_task2.id
+
+        task.duplicate_task_hierarchy(dummyRequest)
+        dup_task = Task.query.filter_by(name='Test Task 2 - Duplicate').first()
+        self.assertIsInstance(dup_task, Task)
+
+        self.assertEqual(len(dup_task.children), 2)
+        self.assertTrue(
+            dup_task.children[0].name in ['Test Task 7', 'Test Task 8']
+        )
+
+        dup_task7 = None
+        dup_task8 = None
+        if dup_task.children[0].name == 'Test Task 7':
+            dup_task7 = dup_task.children[0]
+            dup_task8 = dup_task.children[1]
+        elif dup_task.children[1].name == 'Test Task 7':
+            dup_task7 = dup_task.children[1]
+            dup_task8 = dup_task.children[0]
+
+        for dep_task in dup_task8.depends:
+            logger.debug('%s of %s : ' % (dep_task, dep_task.parents))
+            logger.debug('%s' % dep_task.id)
+
+        # check dependencies
+        self.assertEqual(dup_task8.depends, [dup_task7])
+
+        self.assertEqual(dup_task7.depends, [self.test_task6])
+
+        # check children
+        self.assertEqual(len(dup_task7.children), 1)
+        self.assertEqual(len(dup_task8.children), 1)
+
+        dup_asset1 = dup_task7.children[0]
+        self.assertIsInstance(dup_asset1, Asset)
+        self.assertEqual(len(dup_asset1.children), 1)
+        dup_task9 = dup_asset1.children[0]
+        self.assertEqual(dup_task9.name, 'Test Task 9')
+
+        dup_task3 = dup_task8.children[0]
+        self.assertEqual(dup_task3.name, 'Test Task 3')
+
+        # check resources
+        self.assertEqual(dup_task7.resources, self.test_task7.resources)
+        self.assertEqual(dup_task3.resources, self.test_task3.resources)
+
+        # check timing
+        # task3
+        self.assertEqual(dup_task3.schedule_timing,
+                         self.test_task3.schedule_timing)
+        self.assertEqual(dup_task3.schedule_model,
+                         self.test_task3.schedule_model)
+        self.assertEqual(dup_task3.schedule_constraint,
+                         self.test_task3.schedule_constraint)
+        self.assertEqual(dup_task3.start, self.test_task3.start)
+        self.assertEqual(dup_task3.end, self.test_task3.end)
+
+        # task7
+        self.assertEqual(dup_task7.schedule_timing,
+                         self.test_task7.schedule_timing)
+        self.assertEqual(dup_task7.schedule_model,
+                         self.test_task7.schedule_model)
+        self.assertEqual(dup_task7.schedule_constraint,
+                         self.test_task7.schedule_constraint)
+        self.assertEqual(dup_task7.start, self.test_task7.start)
+        self.assertEqual(dup_task7.end, self.test_task7.end)
+
+        # task8
+        self.assertEqual(dup_task8.schedule_timing,
+                         self.test_task8.schedule_timing)
+        self.assertEqual(dup_task8.schedule_model,
+                         self.test_task8.schedule_model)
+        self.assertEqual(dup_task8.schedule_constraint,
+                         self.test_task8.schedule_constraint)
+        self.assertEqual(dup_task8.start, self.test_task8.start)
+        self.assertEqual(dup_task8.end, self.test_task8.end)
+
+    def test_walk_hierarchy_is_working_properly(self):
+        """testing if walk_hierarchy is working properly
+        """
+        # Before:
+        # task1
+        #   task4
+        #   task5
+        #   task6
+        # task2
+        #   task7
+        #   task8
+        # task3
+
+        # make it complex
+        self.test_task3.parent = self.test_task8
+        self.test_task1.parent = self.test_task2
+        # After:
+        # task2
+        #   task7
+        #   task8
+        #     task3
+        #   task1
+        #     task4
+        #     task5
+        #     task6
+
+        for t in task.walk_hierarchy(self.test_task2):
+            logger.debug(t)
+        self.fail()
+
+    def test_create_task_dialog(self):
+        """testing if the create_task_dialog view is working properly
+        """
+        request = testing.DummyRequest()
+        request.params['']
+        info = task.create_task_dialog(request)
+        self.assertEqual(info['one'].name, 'one')
+        self.assertEqual(info['project'], 'stalker')
