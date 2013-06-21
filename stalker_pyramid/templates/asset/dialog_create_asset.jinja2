@@ -169,9 +169,9 @@ require([
                 name: 'code',
                 label: 'Code',
                 placeHolder: 'Enter a code',
-                {% if mode=='UPDATE' %}
-                    disabled: true,
-                {% endif %}
+{#                {% if mode=='UPDATE' %}#}
+{#                    disabled: true,#}
+{#                {% endif %}#}
                 value: code
             }, 'asset_code');
             code_textBox.startup();

@@ -140,12 +140,13 @@ def update_shot(request):
     shot = Shot.query.filter_by(id=shot_id).first()
 
     name = request.params.get('name')
+    code = request.params.get('code')
 
     status_id = request.params.get('status_id')
     status = Status.query.filter_by(id=status_id).first()
 
 
-    if shot and name  and status:
+    if shot and code and name  and status:
         # get descriptions
         description = request.params.get('description')
 
@@ -155,6 +156,7 @@ def update_shot(request):
         #update the shot
 
         shot.name = name
+        shot.code = code
         shot.description = description
         shot.sequence = sequence
         shot.status = status

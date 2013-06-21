@@ -37,15 +37,22 @@
         "dgrid/editor",
         'dojo/store/Memory',
         'dojo/store/JsonRest',
-        'stalker/dialogs',
+
+        'dijit/Menu',
+        'dijit/MenuItem',
+        'dijit/MenuSeparator',
+
         'stalker/fieldUpdater',
+        'stalker/dialogs',
         'stalker/dialogCaller',
+        'stalker/dialogCreator',
         'dojo/on',
         'dojo/query',
         'dojo/domReady!'],
             function (registry, ObjectStore, List, Grid, Selection, Keyboard,
-                      declare, editor, Memory, JsonRest, dialogs, fieldUpdater,
-                      dialogCaller, on, query) {
+                      declare, editor, Memory, JsonRest, Menu, MenuItem,
+                      MenuSeparator, fieldUpdater, dialogs, dialogCaller,
+                      dialogCreator, on, query) {
 
                 var StandardGrid = declare([Grid, Selection, Keyboard]);
                 var shots_data_grid = new StandardGrid({
@@ -75,6 +82,8 @@
                     shot_data_grid_updater();
                 });
 
+                var shotData;
+
 
                 function shot_data_grid_updater() {
 
@@ -84,6 +93,7 @@
 
                     shot_memory.query().then(function (data) {
 
+                        shotData = data;
                         var columns = [
                             {
                                 label: "Thumbnail",
@@ -178,6 +188,38 @@
 
                         shots_data_grid.renderArray(data);
                         shots_data_grid.set('columns', columns);
+
+                        var right_click_menu = new Menu({
+                            targetNodeIds: ['shots_data_grid'],
+                            selector: '.dgrid-row'
+                        });
+
+                        var create_update_shot_menuItem_creator = function () {
+                            return new MenuItem({
+                                label: 'Update Shot',
+                                onClick: function () {
+                                    var node = this.getParent().currentTarget;
+                                    var nodeId = node.getAttribute('id');
+                                    var rowId = shots_data_grid.id + '-row-';
+                                    var shotId = shotData[parseInt(nodeId.substring(rowId.length, nodeId.length))].id;
+
+
+                                    var dialog = dialogCreator({
+                                        dialog_id: 'shot_dialog',
+                                        content_creator: dialogs.update_shot_dialog,
+                                        related_field_updater: shot_data_grid_updater,
+                                        data_id: shotId
+                                    });
+                                    dialog.show();
+
+
+                                }
+                            });
+                        };
+
+                        right_click_menu.addChild(create_update_shot_menuItem_creator());
+
+                        right_click_menu.startup();
 
                     });
                 }

@@ -154,13 +154,14 @@ def update_asset(request):
     asset = Asset.query.filter_by(id=asset_id).first()
     
     name = request.params.get('name')
+    code = request.params.get('code')
     description = request.params.get('description')
     type_name = request.params.get('type_name')
     
     status_id = request.params.get('status_id')
     status = Status.query.filter_by(id=status_id).first()
     
-    if asset and name and type_name and status:
+    if asset and name and code and type_name and status:
         # get the type
         type_ = Type.query\
             .filter_by(target_entity_type='Asset')\
@@ -176,7 +177,9 @@ def update_asset(request):
             )
         
         # update the asset
+        logger.debug('code      : %s' % code)
         asset.name = name
+        asset.code = code
         asset.description = description
         asset.type = type_
         asset.status = status

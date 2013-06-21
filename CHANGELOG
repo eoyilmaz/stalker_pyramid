@@ -17,6 +17,13 @@ Stalker Pyramid Changes
 * **New:** It is now possible to duplicate a task hierarchy in gantt chart now.
 * **Update:** In the summary page of Task update dialog is called based on
   task entity type.
+* **New:** Update Asset MenuItem is added to right click menu on assets list row.
+* **Update:** In Update Asset Dialog 'code' attribute is enabled to edit.
+* **New:** Update Shot MenuItem is added to right click menu on shots list row.
+* **Update:** In Update Shot Dialog 'code' attribute is enabled to edit.
+* **New:** Update Sequence MenuItem is added to right click menu on sequences
+    list row.
+* **Update:** In Update Sequence Dialog 'code' attribute is enabled to edit.
 
 
 pre 0.1.0.b1

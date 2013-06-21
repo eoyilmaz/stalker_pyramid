@@ -19,13 +19,20 @@
         "dgrid/editor",
         'dojo/store/Memory',
         'dojo/store/JsonRest',
-        'stalker/dialogs',
+
+        'dijit/Menu',
+        'dijit/MenuItem',
+        'dijit/MenuSeparator',
+
         'stalker/fieldUpdater',
+        'stalker/dialogs',
         'stalker/dialogCaller',
+        'stalker/dialogCreator',
         'dojo/domReady!'
     ], function (registry, ObjectStore, List, Grid, Selection, Keyboard,
-                 declare, editor, Memory, JsonRest, dialogs, fieldUpdater,
-                 dialogCaller) {
+                 declare, editor, Memory, JsonRest,Menu, MenuItem,
+                      MenuSeparator, fieldUpdater, dialogs, dialogCaller,
+                      dialogCreator) {
 
         var StandardGrid = declare([Grid, Selection, Keyboard]);
         var sequences_data_grid = new StandardGrid({
@@ -57,6 +64,7 @@
             sequence_data_grid_updater();
         });
 
+        var sequenceData;
 
         function sequence_data_grid_updater() {
 
@@ -65,6 +73,8 @@
             });
 
             sequence_memory.query().then(function (data) {
+
+              sequenceData = data;
 
                 var columns = [
                     {
@@ -147,6 +157,38 @@
 
                 sequences_data_grid.renderArray(data);
                 sequences_data_grid.set('columns', columns);
+
+                 var right_click_menu = new Menu({
+                            targetNodeIds: ['sequences_data_grid'],
+                            selector: '.dgrid-row'
+                        });
+
+                        var create_update_sequence_menuItem_creator = function () {
+                            return new MenuItem({
+                                label: 'Update Sequence',
+                                onClick: function () {
+                                    var node = this.getParent().currentTarget;
+                                    var nodeId = node.getAttribute('id');
+                                    var rowId = sequences_data_grid.id + '-row-';
+                                    var sequenceId = sequenceData[parseInt(nodeId.substring(rowId.length, nodeId.length))].id;
+
+
+                                    var dialog = dialogCreator({
+                                        dialog_id: 'sequence_dialog',
+                                        content_creator: dialogs.update_sequence_dialog,
+                                        related_field_updater: sequence_data_grid_updater,
+                                        data_id: sequenceId
+                                    });
+                                    dialog.show();
+
+
+                                }
+                            });
+                        };
+
+                        right_click_menu.addChild(create_update_sequence_menuItem_creator());
+
+                        right_click_menu.startup();
 
             });
         }
