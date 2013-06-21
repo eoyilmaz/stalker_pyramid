@@ -60,7 +60,7 @@ def duplicate_task(task):
     elif task.entity_type == 'Shot':
         class_ = Shot
         extra_kwargs = {
-            'code': task.code
+            'code': task.code + 'dup'
         }
     elif task.entity_type == 'Sequence':
         class_ = Sequence
