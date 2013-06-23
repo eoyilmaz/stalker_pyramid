@@ -22,180 +22,223 @@
         <button id='list_assets_create_asset_button'>New Asset</button>
     {% endif %}
     <div style='width:100%; height: 100%; position: absolute;'>
-      <div id='assets_data_grid'></div>
+        <div id='assets_data_grid'></div>
     </div>
 
 </div>
 
 <script type='text/javascript'>
-    require([
-        'dijit/registry',
-        'dojo/data/ObjectStore',
-        'dojo/aspect',
-        "dgrid/List",
-        "dgrid/Grid",
-        "dgrid/Selection",
-        "dgrid/Keyboard",
-        "dojo/_base/declare",
-        "dgrid/editor",
-        'dojo/store/Memory',
-        'dijit/form/Select',
-        'dojo/store/JsonRest',
-        'stalker/dialogs',
-        'stalker/fieldUpdater',
-        'stalker/dialogCaller',
-        'dojo/domReady!'
-    ], function (registry, ObjectStore, aspect, List, Grid, Selection,
-                 Keyboard, declare, editor, Memory, Select, JsonRest, dialogs,
-                 fieldUpdater, dialogCaller) {
+require([
+    'dijit/registry',
+    'dojo/data/ObjectStore',
+    'dojo/aspect',
+    "dgrid/List",
+    "dgrid/Grid",
+    "dgrid/Selection",
+    "dgrid/Keyboard",
+    "dojo/_base/declare",
+    "dgrid/editor",
+    'dojo/store/Memory',
+    'dijit/form/Select',
+    'dojo/store/JsonRest',
 
-        var StandardGrid = declare([Grid, Selection, Keyboard]);
-        var asset_data_grid = new StandardGrid({
-            id: 'assets_data_grid',
-            width: '100%',
-            autoHeight: true
-        }, 'assets_data_grid');
+    'dijit/Menu',
+    'dijit/MenuItem',
+    'dijit/MenuSeparator',
 
-        {% if has_permission('Create_Asset') %}
-            var create_asset_button = dialogCaller({
-                label: 'New Asset',
-                dialog_id: 'create_asset_dialog',
-                content_creator: dialogs.create_asset_dialog,
-                attach_to: 'list_assets_create_asset_button',
-                related_field_updater: asset_data_grid_updater,
-                data_id: '{{ project.id }}'
-            });
-            create_asset_button.startup();
-        {% endif %}
+    'stalker/fieldUpdater',
+    'stalker/dialogs',
+    'stalker/dialogCaller',
+    'stalker/dialogCreator',
+    'dojo/domReady!'
+], function (registry, ObjectStore, aspect, List, Grid, Selection, Keyboard,
+             declare, editor, Memory, Select, JsonRest, Menu, MenuItem,
+             MenuSeparator, fieldUpdater, dialogs, dialogCaller,
+             dialogCreator) {
+
+    var StandardGrid = declare([Grid, Selection, Keyboard]);
+    var asset_data_grid = new StandardGrid({
+        id: 'assets_data_grid',
+        width: '100%',
+        autoHeight: true
+    }, 'assets_data_grid');
+
+    {% if has_permission('Create_Asset') %}
+        var create_asset_button = dialogCaller({
+            label: 'New Asset',
+            dialog_id: 'create_asset_dialog',
+            content_creator: dialogs.create_asset_dialog,
+            attach_to: 'list_assets_create_asset_button',
+            related_field_updater: asset_data_grid_updater,
+            data_id: '{{ project.id }}'
+        });
+        create_asset_button.startup();
+    {% endif %}
 
 
-        var status_memory = new JsonRest({
-            target: 'get/statuses_for/Asset'
+    var status_memory = new JsonRest({
+        target: 'get/statuses_for/Asset'
+    });
+
+    var status_store;
+    status_memory.query().then(function (data) {
+        status_store = new ObjectStore({ objectStore: new Memory({ data: data }) });
+        asset_data_grid_updater();
+    });
+
+    var assetData;
+
+
+    function asset_data_grid_updater() {
+
+        var asset_memory = new JsonRest({
+            target: '/get/assets/{{ project.id }}'
         });
 
-        var status_store;
-        status_memory.query().then(function (data) {
-            status_store = new ObjectStore({ objectStore: new Memory({ data: data }) });
-            asset_data_grid_updater();
-        });
+        asset_memory.query().then(function (data) {
 
+            assetData = data;
 
-        function asset_data_grid_updater() {
+            var columns = [
 
-            var asset_memory = new JsonRest({
-                target: '/get/assets/{{ project.id }}'
-            });
+                {
+                    label: "Thumbnail",
+                    field: 'thumbnail',
+                    sortable: false,
+                    get: function (object) {
+                        return object; // return entire item for formatter to use
+                    },
+                    formatter: function (object) {
 
-            asset_memory.query().then(function (data) {
-
-                var columns = [
-
-                    {
-                        label: "Thumbnail",
-                        field: 'thumbnail',
-                        sortable: false,
-                        get: function (object) {
-                            return object; // return entire item for formatter to use
-                        },
-                        formatter: function (object) {
-
-                            var path = '{{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_shot.png") }}';
-                            if (object.thumbnail_path) {
-                                path = object.thumbnail_path;
-                            }
-                            return '<img width= "60px"; src="' + path + '">';
-
+                        var path = '{{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_shot.png") }}';
+                        if (object.thumbnail_path) {
+                            path = object.thumbnail_path;
                         }
-                    },
+                        return '<img width= "60px"; src="' + path + '">';
 
-                    {
-                        field: 'status',
-                        label: "Status",
-                        get: function (object) {
-                            return object; // return entire item for formatter to use
-                        },
-                        formatter: function (item) {
-
-                            var bg_color = '#' + item.status_bg_color.toString(16);
-                            var fg_color = '#' + item.status_fg_color.toString(16);
-
-
-                            return '<span style="color:' + bg_color + '; background-color:' + bg_color + '; ">....</span><span style="color:' + bg_color + '; ">  ' + item.status + '</span>';
-                        }
-
-                    },
-                    {
-                        field: 'name',
-                        label: "Name",
-                        get: function (object) {
-                            return object; // return entire item for formatter to use
-                        },
-                        formatter: function (value) {
-
-                            {% if has_permission('Read_Asset')%}
-
-                                var targetPane = "'assets_content_pane'";
-                                var address = "'view/task/" + value.id + "'";
-                                return '<a href="javascript:redirectLinkInParent(' + targetPane + ',' + address + ');">' + value.name + '</a>';
-
-                            {% else %}
-
-                                return  value.name;
-
-                            {% endif %}
-
-                        }
-                    },
-                    {
-                        field: 'type',
-                        label: "Type"
-                    },
-                    {
-                        field: 'user_name',
-                        label: "Created By",
-                        get: function (object) {
-                            return object; // return entire item for formatter to use
-                        },
-                        formatter: function (value) {
-
-                            {% if has_permission('Read_User')%}
-
-
-                                var targetPane = "'central_content'";
-                                var address = "'view/user/" + value.user_id + "'";
-
-                                return '<a href="javascript:redirectLink(' + targetPane + ',' + address + ');">' + value.user_name + '</a>';
-                            {% else %}
-
-                                return  value.user_name;
-
-                            {% endif %}
-
-                        }
-
-                    },
-                    {
-                        field: 'description',
-                        label: "Description"
                     }
-                ];
+                },
 
-                asset_data_grid.renderArray(data);
-                asset_data_grid.set('columns', columns);
+                {
+                    field: 'status',
+                    label: "Status",
+                    get: function (object) {
+                        return object; // return entire item for formatter to use
+                    },
+                    formatter: function (item) {
 
+                        var bg_color = '#' + item.status_bg_color.toString(16);
+                        var fg_color = '#' + item.status_fg_color.toString(16);
+
+
+                        return '<span style="color:' + bg_color + '; background-color:' + bg_color + '; ">....</span><span style="color:' + bg_color + '; ">  ' + item.status + '</span>';
+                    }
+
+                },
+                {
+                    field: 'name',
+                    label: "Name",
+                    get: function (object) {
+                        return object; // return entire item for formatter to use
+                    },
+                    formatter: function (value) {
+
+                        {% if has_permission('Read_Asset')%}
+
+                            var targetPane = "'assets_content_pane'";
+                            var address = "'view/task/" + value.id + "'";
+                            return '<a href="javascript:redirectLinkInParent(' + targetPane + ',' + address + ');">' + value.name + '</a>';
+
+                        {% else %}
+
+                            return  value.name;
+
+                        {% endif %}
+
+                    }
+                },
+                {
+                    field: 'type',
+                    label: "Type"
+                },
+                {
+                    field: 'user_name',
+                    label: "Created By",
+                    get: function (object) {
+                        return object; // return entire item for formatter to use
+                    },
+                    formatter: function (value) {
+
+                        {% if has_permission('Read_User')%}
+
+
+                            var targetPane = "'central_content'";
+                            var address = "'view/user/" + value.user_id + "'";
+
+                            return '<a href="javascript:redirectLink(' + targetPane + ',' + address + ');">' + value.user_name + '</a>';
+                        {% else %}
+
+                            return  value.user_name;
+
+                        {% endif %}
+
+                    }
+
+                },
+                {
+                    field: 'description',
+                    label: "Description"
+                }
+            ];
+
+            asset_data_grid.renderArray(data);
+            asset_data_grid.set('columns', columns);
+
+            var right_click_menu = new Menu({
+                targetNodeIds: ['assets_data_grid'],
+                selector: '.dgrid-row'
             });
-        }
+
+            var create_update_asset_menuItem_creator = function () {
+                return new MenuItem({
+                    label: 'Update Asset',
+                    onClick: function () {
+                        var node = this.getParent().currentTarget;
+                        var nodeId = node.getAttribute('id');
+                        var rowId = asset_data_grid.id + '-row-';
+                        var assetId = assetData[parseInt(nodeId.substring(rowId.length, nodeId.length))].id;
 
 
-        var content_pane = registry.byId('assets_content_pane');
+                        var dialog = dialogCreator({
+                            dialog_id: 'asset_dialog',
+                            content_creator: dialogs.update_asset_dialog,
+                            related_field_updater: asset_data_grid_updater,
+                            data_id: assetId
+                        });
+                        dialog.show();
 
 
-        aspect.after(content_pane, "resize", function () {
+                    }
+                });
+            };
 
-            console.log('asset_data_grid.resize();');
-            asset_data_grid.resize();
+            right_click_menu.addChild(create_update_asset_menuItem_creator());
+
+            right_click_menu.startup();
 
         });
+    }
+
+
+    var content_pane = registry.byId('assets_content_pane');
+
+
+    aspect.after(content_pane, "resize", function () {
+
+        console.log('asset_data_grid.resize();');
+        asset_data_grid.resize();
 
     });
+
+});
 </script>

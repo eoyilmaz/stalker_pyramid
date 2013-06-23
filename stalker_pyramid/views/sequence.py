@@ -137,17 +137,19 @@ def update_sequence(request):
     sequence = Sequence.query.filter_by(id=sequence_id).first()
 
     name = request.params.get('name')
+    code = request.params.get('code')
 
     status_id = request.params.get('status_id')
     status = Status.query.filter_by(id=status_id).first()
 
 
-    if sequence and name  and status:
+    if sequence and code and name  and status:
         # get descriptions
         description = request.params.get('description')
 
         #update the sequence
         sequence.name = name
+        sequence.code = code
         sequence.description = description
         sequence.status = status
         sequence.updated_by = logged_in_user
