@@ -33,17 +33,16 @@ pre 0.1.0.b1
 * **New:** Studio Page is created.It has Tasks and Resources as Tabs.
 * **New:** Update Studio function id added.
 * **New:** Thumbnail Add function is added to several objects' Summarize Pages.
-    (Task, Asset, Shot, Sequence,Department, Group). List Page is also updated
-    by new thumbnail information.
+  (Task, Asset, Shot, Sequence,Department, Group). List Page is also updated
+  by new thumbnail information.
 * **Fix:** dgrid height attribute is updated and new div's are added for
-    dgrid object.
+  dgrid object.
 * **Fix:** Working hours for each day is taken from database in
-    Studio Update Dialog.
+  Studio Update Dialog.
 * **New:** List Ticket page and Create/Update Ticket dialog are created.
 * **Fix:** Added logged_in_user object to user page to fix permission bug. So
-    default facilities of page is define based on logged_in_user.
+  default facilities of page is define based on logged_in_user.
 * **Fix:** Fixed DGrid auto height problem.
-
 * **Fix:** GanttChart  view of Assets, Shots,Sequences or Tasks now displays
   only the children and parents of that Task derivative.
 * **Update:** Task create/update dialog now displays the full hierarchy in
@@ -135,7 +134,6 @@ pre 0.1.0.b1
 * **Fix:** The working hours were not correctly passed to the studio instance
   in Studio creation.
 * **Fix:** "Append User Dialog" is now working properly.
-
 * **Fix:** Links between pages is created with redirectLink function which is
   written in base.jinja2. goToLink.js is deprecated, but still there are some
   codes that uses gotolink.js, they must be changed for next update.
@@ -208,8 +206,8 @@ pre 0.1.0.b1
 
   * **Update:** The gantt chart is now able to display much more info then
     before. There are two new modes for each of the Grid and Gantt parts of
-    the Gantt Chart. Grid can be set to display *Task*s or *Resources* and
-    the Gantt can set to display *Task*s or *TimeLog*s.
+    the Gantt Chart. Grid can be set to display *Task*\ s or *Resources* and
+    the Gantt can set to display *Task*\ s or *TimeLog*\ s.
   * **Update:** Horizontal scrolling is disabled in gantt part of Gantt
     Chart. All the drawn tasks and links are now set in position with percent
     values, so they will stick and scale correctly when the split container
