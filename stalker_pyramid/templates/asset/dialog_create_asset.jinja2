@@ -119,7 +119,7 @@ require([
             var name;
             var code;
             var description;
-            var type_id;
+            var type_name;
             var asset_id;
             var project_id;
 
@@ -136,7 +136,7 @@ require([
                 name = '{{ asset.name }}';
                 code = '{{ asset.code }}';
                 description = '{{ asset.description }}';
-                type_id = '{{ asset.type_id }}';
+                type_name = '{{ asset.type.name }}';
                 project_id = '{{ asset.project_id }}';
             {% endif %}
 
@@ -218,18 +218,20 @@ require([
                 required: true,
                 store: type_memory,
                 placeHolder: type_place_holder,
-                value: type_id
+                value: type_name
             }, 'asset_type');
             type_comboBox.startup();
 
+            type_comboBox.attr('value', type_name);
+
             // set value of Type
-            if (type_memory.data[0] != undefined) {
-                try {
-                    type_comboBox.attr('value', type_memory.data[0].name);
-                } catch (e) {
-                    // don't do anything
-                }
-            }
+{#            if (type_memory.data[0] != undefined) {#}
+{#                try {#}
+{#                    type_comboBox.attr('value', type_memory.data[0].name);#}
+{#                } catch (e) {#}
+{#                    // don't do anything#}
+{#                }#}
+{#            }#}
 
 
             // ****************************************************************

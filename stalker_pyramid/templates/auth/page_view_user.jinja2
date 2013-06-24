@@ -23,10 +23,10 @@
     {#  </div>#}
     <div id='data_tab_container'>
         <div id='tasks_content_pane'></div>
+        <div id='time_logs_content_pane'></div>
         <div id='projects_content_pane'></div>
         <div id='tickets_content_pane'></div>
         <div id='departments_content_pane'></div>
-        <div id='time_logs_content_pane'></div>
     </div>
 </div>
 
@@ -81,6 +81,18 @@
 
         {% endif %}
 
+         {% if has_permission('List_TimeLog') or logged_in_user.id==user.id %}
+
+            var time_logs_content_pane = new ContentPane({
+                title: 'Time Logs',
+                href: 'list/time_logs/{{ user.id }}',
+                default_href: 'list/time_logs/{{ user.id }}',
+                style: 'padding: 0; margin:0;'
+            });
+            user_related_data_tab_container.addChild(time_logs_content_pane);
+
+        {% endif %}
+
         {% if has_permission('List_Project') or logged_in_user.id==user.id %}
 
             var projects_content_pane = new ContentPane({
@@ -106,7 +118,7 @@
 
         {% endif %}
 
-        {% if has_permission('List_Ticket') or logged_in_user.id==user.id %}
+        {% if has_permission('List_Group') or logged_in_user.id==user.id %}
 
             var groups_content_pane = new ContentPane({
                 title: 'Permissions',
@@ -128,18 +140,6 @@
                 style: ' padding: 0; margin:0;'
             });
             user_related_data_tab_container.addChild(tickets_content_pane);
-
-        {% endif %}
-
-        {% if has_permission('List_TimeLog') or logged_in_user.id==user.id %}
-
-            var time_logs_content_pane = new ContentPane({
-                title: 'Time Logs',
-                href: 'list/time_logs/{{ user.id }}',
-                default_href: 'list/time_logs/{{ user.id }}',
-                style: 'padding: 0; margin:0;'
-            });
-            user_related_data_tab_container.addChild(time_logs_content_pane);
 
         {% endif %}
 
