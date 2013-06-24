@@ -265,6 +265,7 @@
     height: 16px;
     display: none;
 }
+
 .projectBox .layout .milestone.end{
     right:0;
 }
@@ -314,15 +315,10 @@
         color-stop(0, #E0E0E0),
         color-stop(0.50, #FFFFFF)
     );    
-
 }
 
 .taskBox .layout {
     height:100%;
-    /*border-radius: 2px;*/
-    /*border:1px solid #AAAAAA;*/
-    /*background: #CCCCCC; *//* Old browsers */
-    
 }
 
 .taskBox .taskStatus {
@@ -442,7 +438,6 @@
 }
 
 .parentTaskBox.hasChild .layout{
-    /*border:2px solid black;*/
 }
 
 .parentTaskBox .taskProgress{
@@ -453,14 +448,12 @@
 .parentTaskBox .taskBid{
     height:3px;
     position:absolute;
-    /*border-radius: 3px;*/
     top: 3px;
 }
 
 .parentTaskBox .layout.extDep{
     background-image:url('../images/hasExternalDeps.png');
 }
-
 
 /*TIME LOG BOX*/
 .timeLogBox{
@@ -484,7 +477,6 @@
         color-stop(0, #E0E0E0),
         color-stop(0.50, #FFFFFF)
     );    
-
 }
 
 .timeLogBox .layout {
@@ -553,9 +545,6 @@
     background-image:url('../images/hasExternalDeps.png');
 }
 
-
-
-
 .taskLabel{
     position:absolute;
     height:18px;
@@ -622,7 +611,6 @@
     background-color:#FFFF99;
 }
 
-
 .parentTaskEditRow,.emptyRow {
     height:19px;
 }
@@ -640,7 +628,6 @@
 .parentTaskEditRow.rowSelected td,.parentTaskEditRow.rowSelected input{
     background-color:#FFFF99;
 }
-
 
 .taskEditRow,.emptyRow {
     height:19px;
@@ -678,8 +665,6 @@
     background-color:#FFFF99;
 }
 
-
-
 .taskStatusBox{
     position:absolute;
     width:100px;
@@ -713,7 +698,6 @@
 .taskStatus.selected{
     border:#666 2px solid;
 }
-
 
 .ui-resizable-helper { border: 1px dotted #00F;  }
 .ui-resizable-e, .ui-resizable-w {width: 5px;}
@@ -755,7 +739,7 @@
 }
 
 .folder.uncollapsed {
-    background: url('../images/gmail_icons.png') 0px -120px no-repeat;
+    background: url('../images/gmail_icons.png') 0 -120px no-repeat;
 }
 
 .folder.uncollapsed:hover{

@@ -424,7 +424,7 @@ def update_task(request):
     schedule_model = request.params.get('schedule_model') # there should be one
     schedule_timing = float(request.params.get('schedule_timing'))
     schedule_unit = request.params.get('schedule_unit')
-    schedule_constraint = request.params.get('schedule_constraint', 0)
+    schedule_constraint = int(request.params.get('schedule_constraint', 0))
     start = get_date(request, 'start')
     end = get_date(request, 'end')
     update_bid = request.params.get('update_bid')
@@ -754,7 +754,7 @@ def create_task(request):
     schedule_model = request.params.get('schedule_model') # there should be one
     schedule_timing = float(request.params.get('schedule_timing'))
     schedule_unit = request.params.get('schedule_unit')
-    schedule_constraint = request.params.get('schedule_constraint', 0)
+    schedule_constraint = int(request.params.get('schedule_constraint', 0))
 
     # get the resources
     resources = []
