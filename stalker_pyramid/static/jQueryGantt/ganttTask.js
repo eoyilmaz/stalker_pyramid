@@ -93,6 +93,8 @@ function Task(kwargs) {
     this.endIsMilestone = false;
 
     this.collapsed = false;
+    this.hidden = false;
+
     this.clippedStart = false;
     this.clippedEnd = false;
 
@@ -343,4 +345,61 @@ Task.prototype.addTimeLog = function(timeLog) {
 Task.prototype.addTimeLog_with_id = function(timeLog_id){
     var timeLog = this.master.getTimeLog(timeLog_id);
     this.addTimeLog(timeLog);
+};
+
+
+Task.prototype.toggleCollapse = function(){
+    var row = this.rowElement;
+    var folder = row.find(".folder");
+    // toggles collapse state
+    // get collapsed state
+    var collapsed = folder.hasClass('collapsed');
+    var child_task = null;
+    var i = 0;
+    if (collapsed){
+        folder.removeClass('collapsed');
+        folder.addClass('uncollapsed');
+        // update collapsed attribute
+        this.collapsed = false;
+        // change child task rowElements
+        for (i=0; i < this.children.length; i++ ){
+            child_task = this.children[i];
+            child_task.show();
+        }
+    } else {
+        folder.removeClass('uncollapsed');
+        folder.addClass('collapsed');
+        // update collapsed attribute
+        this.collapsed = true;
+        for (i=0; i < this.children.length; i++ ){
+            child_task = this.children[i];
+            child_task.hide();
+        }
+    }
+};
+
+Task.prototype.hide = function(){
+    // hide self and all child
+    this.rowElement.css('display', 'none');
+    if (this.isParent()){
+        for (var i=0; i < this.children.length; i++){
+            var child = this.children[i];
+            child.hide();
+        }
+    }
+    this.hidden = true;
+};
+
+Task.prototype.show = function(){
+    // show self and all child
+    this.rowElement.css('display', 'table-row');
+    if (this.isParent()){
+        if (!this.collapsed){
+            for (var i=0; i < this.children.length; i++){
+                var child = this.children[i];
+                child.show();
+            }
+        }
+    }
+    this.hidden = false;
 };

@@ -739,3 +739,25 @@
     border-right: 6px double red;
     position: absolute;
 }
+
+.folder {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+}
+
+.folder.collapsed {
+    background: url('../images/gmail_icons.png') -40px -120px no-repeat;
+}
+
+.folder.collapsed:hover {
+    background: url('../images/gmail_icons.png') -60px -120px no-repeat;
+}
+
+.folder.uncollapsed {
+    background: url('../images/gmail_icons.png') 0px -120px no-repeat;
+}
+
+.folder.uncollapsed:hover{
+    background: url('../images/gmail_icons.png') -20px -120px no-repeat;
+}

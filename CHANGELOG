@@ -24,7 +24,9 @@ Stalker Pyramid Changes
 * **New:** Update Sequence MenuItem is added to right click menu on sequences
     list row.
 * **Update:** In Update Sequence Dialog 'code' attribute is enabled to edit.
+* **jQueryGantt:**
 
+  * **New:** The parent elements in gantt chart is now collapsible.
 
 pre 0.1.0.b1
 ============

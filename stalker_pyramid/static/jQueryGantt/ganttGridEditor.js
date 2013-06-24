@@ -54,6 +54,8 @@ GridEditor.prototype.addTask = function (task) {
 
     this.element.append(taskRow);
 
+    this.bindRowEvents(task);
+
 //    console.debug('GridEditor.addTask end');
     return taskRow;
 };
@@ -152,4 +154,17 @@ GridEditor.prototype.reset = function () {
 //    console.debug('GridEditor.reset start');
     this.element.find("[dataId]").remove();
 //    console.debug('GridEditor.reset end');
+};
+
+
+GridEditor.prototype.bindRowEvents = function(task){
+    // bind the row events
+    var row = task.rowElement;
+    var folder = row.find(".folder");
+
+    folder.mousedown(function(){
+        task.toggleCollapse();
+        // redraw gantt chart
+        task.master.gantt.refreshGantt();
+    });
 };

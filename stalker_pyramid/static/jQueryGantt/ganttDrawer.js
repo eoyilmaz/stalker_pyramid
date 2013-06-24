@@ -346,7 +346,12 @@ GanttDrawer.prototype.create = function (zoom, originalStartMillis, originalEndM
 //<%-------------------------------------- GANTT TASK GRAPHIC ELEMENT --------------------------------------%>
 GanttDrawer.prototype.drawTask = function (task) {
     //console.debug("drawTask", task.name,new Date(task.start));
-    
+
+    // skip if task is hidden
+    if (task.hidden){
+        return;
+    }
+
     // skip if it is not in the range
     if (task.start > this.originalEndMillis){
         return;
@@ -764,7 +769,10 @@ GanttDrawer.prototype.redrawLinks = function () {
         self.element.find(".ganttLinks").empty();
         for (var i = 0; i < self.master.links.length; i++) {
             var link = self.master.links[i];
-            self.drawLink(link.from, link.to);
+            // if one of the tasks are hidden do not draw
+            if (!link.from.hidden && !link.to.hidden){
+                self.drawLink(link.from, link.to);
+            }
         }
         //prof.stop();
     });
