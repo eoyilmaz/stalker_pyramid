@@ -26,6 +26,7 @@ Stalker Pyramid Changes
 * **Update:** In Update Sequence Dialog 'code' attribute is enabled to edit.
 * **Fix:** In Update Asset Dialog type attribute is set with value that is set
     before.
+* **Fix:** Based on user permissions Studio menu is redefined.
 
 
 pre 0.1.0.b1

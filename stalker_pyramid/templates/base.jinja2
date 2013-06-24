@@ -29,19 +29,19 @@
           href='{{ request.static_url("stalker_pyramid:static/stalker/images/favicon.ico") }}'/>
     <link rel='stylesheet' type='text/css' media='all' charset='utf-8'
           href='{{ request.static_url("stalker_pyramid:static/stalker/css/stalker.css") }}'/>
-    
+
     {# load jQuery and jQuery Gantt first#}
-    <link rel=stylesheet media='all' 
+    <link rel=stylesheet media='all'
           href='{{ request.static_url("stalker_pyramid:static/jQueryGantt/libs/dateField/jquery.dateField.css") }}'
           type="text/css">
-    <link rel=stylesheet media='all' 
+    <link rel=stylesheet media='all'
           href='{{ request.static_url("stalker_pyramid:static/jQueryGantt/css/gantt.css") }}'
           type="text/css">
 
-        {# load date.format #}
+    {# load date.format #}
     <script src='{{ request.static_url("stalker_pyramid:static/stalker/date.format.js") }}'></script>
 
-    
+
     <script src='{{ request.static_url("stalker_pyramid:static/jquery/1.7/jquery.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/jqueryui/1.8/jquery-ui.min.js") }}'></script>
 
@@ -90,7 +90,7 @@
 
 {# TEMPLATES #}
 <div id="gantEditorTemplates" style="display:none;">
-    <div class="__template__" type="TASKSEDITHEAD"><!--
+<div class="__template__" type="TASKSEDITHEAD"><!--
     <table class="gdfTable" cellspacing="0" cellpadding="0" style='width: 1000px'>
       <thead>
       <tr style="height:40px">
@@ -108,7 +108,7 @@
     </table>
     --></div>
 
-    <div class="__template__" type="RESOURCESEDITHEAD"><!--
+<div class="__template__" type="RESOURCESEDITHEAD"><!--
     <table class="gdfTable" cellspacing="0" cellpadding="0" style='width: 1000px'>
       <thead>
       <tr style="height:40px">
@@ -122,7 +122,7 @@
     --></div>
 
 
-    <div class="__template__" type="PROJECTROW"><!--
+<div class="__template__" type="PROJECTROW"><!--
         <tr dataId="(#=obj.id#)" class="projectEditRow" >
             <th class="gdfCell" align="right"><span class="taskRowIndex">(#=obj.getRow()+1#)</span></th>
             <td class="gdfCell" align="right"><span>(#=obj.id#)</span></td>
@@ -135,7 +135,7 @@
         </tr>
     --></div>
 
-    <div class="__template__" type="PARENTTASKROW"><!--
+<div class="__template__" type="PARENTTASKROW"><!--
         <tr dataId="(#=obj.id#)" class="parentTaskEditRow">
         <th class="gdfCell" align="right"><span class="taskRowIndex">(#=obj.getRow()+1#)</span></th>
         <td class="gdfCell" align="right" style="background-color: (#=obj.progress >= 100 ? 'rgb(153, 255, 51)' : 'red'#)"><span>(#=obj.id#)</span></td>
@@ -148,7 +148,7 @@
         </tr>
     --></div>
 
-    <div class="__template__" type="TASKROW"><!--
+<div class="__template__" type="TASKROW"><!--
         <tr dataId="(#=obj.id#)" class="taskEditRow">
             <td class="gdfCell" align="right"><span class="taskRowIndex">(#=obj.getRow()+1#)</span></td>
             <td class="gdfCell" align="right" style="background-color: (#=obj.progress >= 100 ? 'rgb(153, 255, 51)' : 'red'#)"><span>(#=obj.id#)</span></td>
@@ -162,7 +162,7 @@
         </tr>
     --></div>
 
-    <div class="__template__" type="RESOURCEROW"><!--
+<div class="__template__" type="RESOURCEROW"><!--
         <tr dataId="(#=obj.id#)" class="resourceEditRow">
             <td class="gdfCell" align="right"><span class="resourceRowIndex">(#=obj.getRow()+1#)</span></td>
             <td class="gdfCell" align="right"><span>(#=obj.id#)</span></td>
@@ -171,7 +171,7 @@
         </tr>
     --></div>
 
-    <div class="__template__" type="TASKEMPTYROW"><!--
+<div class="__template__" type="TASKEMPTYROW"><!--
         <tr class="taskEditRow emptyRow" >
             <th class="gdfCell" align="right"></th>
             <td class="gdfCell"></td>
@@ -185,7 +185,7 @@
         </tr>
     --></div>
 
-    <div class="__template__" type="RESOURCEEMPTYROW"><!--
+<div class="__template__" type="RESOURCEEMPTYROW"><!--
         <tr class="resourceEditRow emptyRow" >
             <th class="gdfCell" align="right"></th>
             <td class="gdfCell"></td>
@@ -194,7 +194,7 @@
         </tr>
     --></div>
 
-    <div class="__template__" type="PROJECTBAR"><!--
+<div class="__template__" type="PROJECTBAR"><!--
         <div class="projectBox" projectId="(#=obj.id#)" >
             <div class="layout">
                 <div class="projectLabel">(#=obj.link()#)</div>
@@ -203,7 +203,7 @@
     --></div>
 
 
-    <div class="__template__" type="TASKBAR"><!--
+<div class="__template__" type="TASKBAR"><!--
         <div class="taskBox" dataId="(#=obj.id#)">
         <div class="layout (#=obj.hasExternalDep?'extDep':''#)">
             <div class="taskProgress" style="width:(#=obj.progress>100?100:obj.progress#)%;"></div>
@@ -235,7 +235,7 @@
         </div>
     --></div>
 
-    <div class="__template__" type="TASKBAR_COMPACT"><!--
+<div class="__template__" type="TASKBAR_COMPACT"><!--
         <div class="taskBox" dataId="(#=obj.id#)">
         <div class="layout (#=obj.hasExternalDep?'extDep':''#)">
             <div class="taskProgress" style="width:(#=obj.progress>100?100:obj.progress#)%;"></div>
@@ -260,7 +260,7 @@
         </div>
     --></div>
 
-    <div class="__template__" type="PARENTTASKBAR"><!--
+<div class="__template__" type="PARENTTASKBAR"><!--
         <div class="parentTaskBox" dataId="(#=obj.id#)">
             <div class="layout (#=obj.hasExternalDep?'extDep':''#)">
                 <div class="parentTaskContextMenu" dataId="(#=obj.id#)"></div>
@@ -275,7 +275,7 @@
         </div>
     --></div>
 
-    <div class="__template__" type="TIMELOGBAR"><!--
+<div class="__template__" type="TIMELOGBAR"><!--
         <div class="timeLogBox" dataId="(#=obj.id#)">
         <div class="layout">
             <div class="leafTaskContextMenu"
@@ -289,15 +289,15 @@
     --></div>
 
 
-    <div class="__template__" type='TASKLINK'><!--
+<div class="__template__" type='TASKLINK'><!--
       <a href="javascript:redirectLinkInParent('(#=obj.type.toLowerCase()#)s_content_pane','view/task/(#=obj.id#)');">(#=obj.name#) ((#=obj.type#))</a>
     --></div>
 
-    <div class="__template__" type='RESOURCELINK'><!--
+<div class="__template__" type='RESOURCELINK'><!--
     <a href="javascript:redirectLink('central_content','view/user/(#=obj.id#)');">(#=obj.name#)</a>
     --></div>
 
-    <div class="__template__" type='PROJECTLINK'><!--
+<div class="__template__" type='PROJECTLINK'><!--
     <a href="javascript:redirectLink('central_content','view/project/(#=obj.id#)');">(#=obj.name#) ((#=obj.type#))</a>
     --></div>
 
@@ -473,29 +473,33 @@
         });
 
         {% if not studio %}
-            studio_DropDownMenu.addChild(
-                    dialogCaller({
-                        label: 'Create Studio',
-                        dialog_id: 'studio_dialog',
-                        content_creator: dialogs.create_studio_dialog,
-                        widget_type: 'MenuItem'
-                    })
-            );
+            {% if has_permission('Create_Studio') %}
+                studio_DropDownMenu.addChild(
+                        dialogCaller({
+                            label: 'Create Studio',
+                            dialog_id: 'studio_dialog',
+                            content_creator: dialogs.create_studio_dialog,
+                            widget_type: 'MenuItem'
+                        })
+                );
+            {% endif %}
         {% else %}
-            studio_DropDownMenu.addChild(
-                     new MenuItem({
-                        label: '{{ studio.name }}',
-                        style: 'font-weight: bold',
-                        dataId: '{{ studio.id }}',
-                        onClick: function () {
-                            central_content_pane.set(
-                                    'href',
-                                    'view/studio/' + this.get('dataId')
-                            );
-                            central_content_pane.refresh();
-                        }
-                    })
-            );
+            {% if has_permission('Read_Studio') %}
+                studio_DropDownMenu.addChild(
+                        new MenuItem({
+                            label: '{{ studio.name }}',
+                            style: 'font-weight: bold',
+                            dataId: '{{ studio.id }}',
+                            onClick: function () {
+                                central_content_pane.set(
+                                        'href',
+                                        'view/studio/' + this.get('dataId')
+                                );
+                                central_content_pane.refresh();
+                            }
+                        })
+                );
+            {% endif %}
         {% endif %}
 
 
@@ -508,81 +512,111 @@
 
         //------------
         // SETTINGS
-        var settings_DropDownMenu = new DropDownMenu({
-            style: 'display: none;'
-        });
+        var settings_DropDownMenu;
+
+
+        var create_studio_setting_DropDownMenu = function () {
+
+            if (settings_DropDownMenu == null) {
+                alert('create_studio_setting_DropDownMenu');
+                settings_DropDownMenu = new DropDownMenu({
+                    style: 'display: none;'
+                });
+            }
+
+        }
 
         // ------------
         // Filename Template
-        settings_DropDownMenu.addChild(
-                dialogCaller({
-                    label: 'Filename Template',
-                    dialog_id: 'filename_template_dialog',
-                    content_creator: dialogs.create_filename_template_dialog,
-                    widget_type: 'MenuItem'
-                })
-        );
+        {% if has_permission('Create_FilenameTemplate') %}
+            create_studio_setting_DropDownMenu();
+            settings_DropDownMenu.addChild(
+                    dialogCaller({
+                        label: 'Filename Template',
+                        dialog_id: 'filename_template_dialog',
+                        content_creator: dialogs.create_filename_template_dialog,
+                        widget_type: 'MenuItem'
+                    })
+            );
+        {% endif %}
 
         // ------------
         // Image Format
-        settings_DropDownMenu.addChild(
-                dialogCaller({
-                    label: 'Image Format',
-                    dialog_id: 'image_format_dialog',
-                    content_creator: dialogs.create_image_format_dialog,
-                    widget_type: 'MenuItem'
-                })
-        );
+        {% if has_permission('Create_ImageFormat') %}
+            create_studio_setting_DropDownMenu();
+            settings_DropDownMenu.addChild(
+                    dialogCaller({
+                        label: 'Image Format',
+                        dialog_id: 'image_format_dialog',
+                        content_creator: dialogs.create_image_format_dialog,
+                        widget_type: 'MenuItem'
+                    })
+            );
+        {% endif %}
 
         // -------
         // Repository
-        settings_DropDownMenu.addChild(
-                dialogCaller({
-                    label: 'Repository',
-                    dialog_id: 'repository_dialog',
-                    content_creator: dialogs.create_repository_dialog,
-                    widget_type: 'MenuItem'
-                })
-        );
-
+        {% if has_permission('Create_Repository') %}
+            create_studio_setting_DropDownMenu();
+            settings_DropDownMenu.addChild(
+                    dialogCaller({
+                        label: 'Repository',
+                        dialog_id: 'repository_dialog',
+                        content_creator: dialogs.create_repository_dialog,
+                        widget_type: 'MenuItem'
+                    })
+            );
+        {% endif %}
         // -------
         // Status
-        settings_DropDownMenu.addChild(
-                dialogCaller({
-                    label: 'Status',
-                    dialog_id: 'status_dialog',
-                    content_creator: dialogs.create_status_dialog,
-                    widget_type: 'MenuItem'
-                })
-        );
+        {% if has_permission('Create_Status') %}
+            create_studio_setting_DropDownMenu();
+            settings_DropDownMenu.addChild(
+                    dialogCaller({
+                        label: 'Status',
+                        dialog_id: 'status_dialog',
+                        content_creator: dialogs.create_status_dialog,
+                        widget_type: 'MenuItem'
+                    })
+            );
+        {% endif %}
 
         // -------
         // Status List
-        settings_DropDownMenu.addChild(
-                dialogCaller({
-                    label: 'Status List',
-                    dialog_id: 'status_list_dialog',
-                    content_creator: dialogs.create_status_list_dialog,
-                    widget_type: 'MenuItem'
-                })
-        );
+        {% if has_permission('Create_StatusList') %}
+            create_studio_setting_DropDownMenu();
+            settings_DropDownMenu.addChild(
+                    dialogCaller({
+                        label: 'Status List',
+                        dialog_id: 'status_list_dialog',
+                        content_creator: dialogs.create_status_list_dialog,
+                        widget_type: 'MenuItem'
+                    })
+            );
+        {% endif %}
 
         // -------
         // Structure
-        settings_DropDownMenu.addChild(
-                dialogCaller({
-                    label: 'Structure',
-                    dialog_id: 'structure_dialog',
-                    content_creator: dialogs.create_structure_dialog,
-                    widget_type: 'MenuItem'
-                })
-        );
+        {% if has_permission('Create_Structure') %}
+            create_studio_setting_DropDownMenu();
+            settings_DropDownMenu.addChild(
+                    dialogCaller({
+                        label: 'Structure',
+                        dialog_id: 'structure_dialog',
+                        content_creator: dialogs.create_structure_dialog,
+                        widget_type: 'MenuItem'
+                    })
+            );
+        {% endif %}
 
-        studio_DropDownMenu.addChild(new PopupMenuItem({
-            label: "New",
-            popup: settings_DropDownMenu
-        })
-        );
+
+        if (settings_DropDownMenu != null) {
+            studio_DropDownMenu.addChild(new PopupMenuItem({
+                label: "New",
+                popup: settings_DropDownMenu
+            })
+            );
+        }
 
         stalker_MenuBar.addChild(new PopupMenuBarItem({
             label: "STUDIO",
@@ -944,7 +978,8 @@
                 content_pane_to_update: central_content_pane,
                 new_team_dialog_id: 'user_dialog',
                 new_team_dialog_content_creator: dialogs.create_user_dialog,
-                allow_create_new: {%  if has_permission('Create_User') %} true {% else %} false {% endif %}
+                allow_create_new: {%  if has_permission('Create_User') %}
+                    true {% else %} false {% endif %}
             });
         {% endif %}
 
@@ -957,7 +992,8 @@
                 content_pane_to_update: central_content_pane,
                 new_team_dialog_id: 'department_dialog',
                 new_team_dialog_content_creator: dialogs.create_department_dialog,
-                allow_create_new: {%  if has_permission('Create_Department') %} true {% else %} false {% endif %}
+                allow_create_new: {%  if has_permission('Create_Department') %}
+                    true {% else %} false {% endif %}
             });
         {% endif %}
 
@@ -970,7 +1006,8 @@
                 content_pane_to_update: central_content_pane,
                 new_team_dialog_id: 'group_dialog',
                 new_team_dialog_content_creator: dialogs.create_group_dialog,
-                allow_create_new: {%  if has_permission('Create_Group') %} true {% else %} false {% endif %}
+                allow_create_new: {%  if has_permission('Create_Group') %}
+                    true {% else %} false {% endif %}
             });
         {% endif %}
 
