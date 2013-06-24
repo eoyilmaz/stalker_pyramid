@@ -215,6 +215,8 @@ def duplicate_task_hierarchy(request):
         # just rename the dup_task
         dup_task.name += ' - Duplicate'
         DBSession.add(dup_task)
+    else:
+        raise HTTPServerError()
 
     return HTTPOk()
 
