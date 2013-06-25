@@ -385,7 +385,7 @@ GanttMaster.prototype.drawData = function () {
     this.drawResources();
     this.drawTasks();
     this.drawTimeLogs();
-    console.debug(this);
+//    console.debug(this);
 };
 
 

@@ -5,6 +5,8 @@ StalkerGantt Changes
 0.1.0.a4
 --------
 
+* **Update:** Week zoom now shows the day number instead of the first letter of
+  the day.
 * **Update:** Updated the CSS.
 * **New:** All the different types of elements in GridEditor (Project, Task,
   Asset, Shot, Sequence) are now drawn with different background colors.

@@ -239,7 +239,8 @@ GanttDrawer.prototype.create = function (zoom, originalStartMillis, originalEndM
             }, function (date) {
                 //tr2.append(createHeadCell(date.format("EEEE").substr(0, 1), 1, isHoliday(date) ? "holyH" : null));
                 //trBody.append(createBodyCell(1, date.getDay() % 7 == (self.master.firstDayOfWeek + 6) % 7, isHoliday(date) ? "holy" : null));
-                tr2.append(createHeadCell(date.format("dddd").substr(0, 1), 1, date.getDay() == 0 ? "holyH" : null));
+//                tr2.append(createHeadCell(date.format("dddd").substr(0, 1), 1, date.getDay() == 0 ? "holyH" : null));
+                tr2.append(createHeadCell(date.format("d"), 1, date.getDay() == 0 ? "holyH" : null));
                 trBody.append(createBodyCell(1, date.getDay() % 7 == (self.master.firstDayOfWeek + 6) % 7, date.getDay() == 0 ? "holy" : null));
                 date.setDate(date.getDate() + 1);
             });

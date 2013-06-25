@@ -36,6 +36,8 @@ Stalker Pyramid Changes
   * **New:** Thickened the ganttLines to become the background element for
     TaskBars also they are now in the same class with the Grid elements and
     thus have the same bg color.
+  * **Update:** Week zoom now shows the day number instead of the first letter
+    of the day.
 
 pre 0.1.0.b1
 ============
