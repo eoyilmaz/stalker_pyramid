@@ -5,6 +5,12 @@ StalkerGantt Changes
 0.1.0.a4
 --------
 
+* **Update:** Updated the CSS.
+* **New:** All the different types of elements in GridEditor (Project, Task,
+  Asset, Shot, Sequence) are now drawn with different background colors.
+* **New:** Thickened the ganttLines to become the background element for
+  TaskBars also they are now in the same class with the Grid elements and thus
+  have the same bg color.
 * **New:** Parent tasks and Projects are now collapsible.
 * **Update:** The gantt chart is now able to display much more info then
   before. There are two new modes for each of the Grid and Gantt parts of the

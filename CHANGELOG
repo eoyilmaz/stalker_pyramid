@@ -30,6 +30,12 @@ Stalker Pyramid Changes
 * **jQueryGantt:**
 
   * **New:** The parent elements in gantt chart is now collapsible.
+  * **Update:** Updated the CSS.
+  * **New:** All the different types of elements in GridEditor (Project, Task,
+    Asset, Shot, Sequence) are now drawn with different background colors.
+  * **New:** Thickened the ganttLines to become the background element for
+    TaskBars also they are now in the same class with the Grid elements and
+    thus have the same bg color.
 
 pre 0.1.0.b1
 ============

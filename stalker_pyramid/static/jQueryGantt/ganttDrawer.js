@@ -352,15 +352,6 @@ GanttDrawer.prototype.drawTask = function (task) {
         return;
     }
 
-    // skip if it is not in the range
-    if (task.start > this.originalEndMillis){
-        return;
-    }
-
-    if (task.end < this.originalStartMillis){
-        return;
-    }
-    
     var task_drawn_start;
     var task_drawn_end;
     
@@ -391,50 +382,55 @@ GanttDrawer.prototype.drawTask = function (task) {
     for (var i = 0; i < owners.length ; i++){
         var editorRow = owners[i].rowElement;
 
-        var top = editorRow.position().top + this.master.editor.element.parent().scrollTop();
-//        var x = Math.round((task_drawn_start - this.startMillis) * this.fx);
+//        console.debug('editorRow                : ', editorRow);
+//        console.debug('editorRow.position()     : ', editorRow.position());
+//        console.debug('editorRow.position().top : ', editorRow.position().top);
+        // TODO: I can't find where the 1px difference is coming, so I reduced the top value 1px
+        var top = editorRow.position().top - 1; //+ this.master.editor.element.parent().scrollTop();
         var x = (task_drawn_start - this.startMillis) / (this.originalEndMillis - this.originalStartMillis) * 100;
 
-        var taskBox;
-        if (task.type != 'Project'){
-            if (!task.isParent()) {
-                // if it is a leaf task draw a TASKBAR
-                if (this.master.grid_mode == 'Task'){
-                    taskBox = $.JST.createFromTemplate(task, "TASKBAR");
-                } else if (this.master.grid_mode == 'Resource') {
-                    taskBox = $.JST.createFromTemplate(task, "TASKBAR_COMPACT");
-                }
-            } else {
-                // draw a PARENTTASKBAR
-                taskBox = $.JST.createFromTemplate(task, "PARENTTASKBAR");
-            }
-        } else {
-            taskBox = $.JST.createFromTemplate(task, "PROJECTBAR");
-        }
-        
-        //save row element on task
-        task.ganttElements.push(taskBox);
-
-//        taskBox.css({top: top, left: x, width: Math.round((task_drawn_end - task_drawn_start) * this.fx)});
-        taskBox.css({
-            top: top,
-            left: x + '%',
-            width: (task_drawn_end - task_drawn_start) / (this.originalEndMillis - this.originalStartMillis) * 100 + '%' 
-        });
-
-        var taskBoxSeparator = $("<div class='ganttLines'></div>");
-        taskBoxSeparator.css({top: top + taskBoxSeparator.height()});
-
-        this.element.append(taskBox);
+        // draw the separator even if the task is not visible
+        var taskBoxSeparator = $("<div class='ganttLines "+ task.type + "Row'></div>");
+        taskBoxSeparator.css({top: top });
         this.element.append(taskBoxSeparator);
+
+        // skip if it is not in the range
+        if (!(task.start > this.originalEndMillis || task.end < this.originalStartMillis)) {
+            var taskBox;
+            if (task.type != 'Project') {
+                if (!task.isParent()) {
+                    // if it is a leaf task draw a TASKBAR
+                    if (this.master.grid_mode == 'Task') {
+                        taskBox = $.JST.createFromTemplate(task, "TASKBAR");
+                    } else if (this.master.grid_mode == 'Resource') {
+                        taskBox = $.JST.createFromTemplate(task, "TASKBAR_COMPACT");
+                    }
+                } else {
+                    // draw a PARENTTASKBAR
+                    taskBox = $.JST.createFromTemplate(task, "PARENTTASKBAR");
+                }   
+            } else {
+                taskBox = $.JST.createFromTemplate(task, "PROJECTBAR");
+            }
+
+            //save row element on task
+            task.ganttElements.push(taskBox);
+
+            //        taskBox.css({top: top, left: x, width: Math.round((task_drawn_end - task_drawn_start) * this.fx)});
+            taskBox.css({
+                top: top,
+                left: x + '%',
+                width: (task_drawn_end - task_drawn_start) / (this.originalEndMillis - this.originalStartMillis) * 100 + '%'
+            });
+
+            this.element.append(taskBox);
+        }
     }
 };
 
 //<%-------------------------------------- GANTT TIMELOG GRAPHIC ELEMENT --------------------------------------%>
 GanttDrawer.prototype.drawTimeLog = function (time_log) {
-    //console.debug("drawTimeLog", time_log.name,new Date(time_log.start));
     // get the editor row of the resource
-
     var owner;
     if (this.master.grid_mode == 'Resource'){
         owner = time_log.getResource();
@@ -443,10 +439,13 @@ GanttDrawer.prototype.drawTimeLog = function (time_log) {
     }
 
     var editorRow = owner.rowElement;
-//    console.debug('Gantalendar.drawTimeLog: resource.rowElement:', editorRow);
-    var top = editorRow.position().top + this.master.editor.element.parent().scrollTop();
-//    console.debug('Gantalendar.drawTimeLog: top:', top);
+    var top = editorRow.position().top - 1; //+ this.master.editor.element.parent().scrollTop();
     var x = Math.round((time_log.start - this.startMillis) * this.fx);
+
+//    // draw the separator even if the task is not visible
+//    var separator = $("<div class='ganttLines "+ owner.type + "Row'></div>");
+//    separator.css({top: top + separator.height()});
+//    this.element.append(separator);
 
     var time_log_box;
     time_log_box = $.JST.createFromTemplate(time_log, "TIMELOGBAR");
@@ -460,16 +459,7 @@ GanttDrawer.prototype.drawTimeLog = function (time_log) {
     time_log_box_separator.css({top: top + time_log_box_separator.height()});
 
     this.element.append(time_log_box);
-//    this.element.append(time_log_box_separator);
-
 };
-
-
-//GanttDrawer.prototype.addTask = function (task) {
-    //set new boundaries for gantt
-//    this.originalEndMillis = this.originalEndMillis > task.end ? this.originalEndMillis : task.end;
-//    this.originalStartMillis = this.originalStartMillis < task.start ? this.originalStartMillis : task.start;
-//};
 
 
 //<%-------------------------------------- GANT DRAW LINK ELEMENT --------------------------------------%>
@@ -494,10 +484,10 @@ GanttDrawer.prototype.drawLink = function (from, to, type) {
      * A representation of a Horizontal line
      */
     HLine = function (width, top, left) {
-        console.debug('--- HLINE ---');
-        console.debug('width: ', width);
-        console.debug('top  : ', top);
-        console.debug('left : ', left);
+//        console.debug('--- HLINE ---');
+//        console.debug('width: ', width);
+//        console.debug('top  : ', top);
+//        console.debug('left : ', left);
         var hl = $("<div>").addClass("taskDepLine");
         hl.css({
             height: lineSize,
@@ -512,10 +502,10 @@ GanttDrawer.prototype.drawLink = function (from, to, type) {
      * A representation of a Vertical line
      */
     VLine = function (height, top, left) {
-        console.debug('--- VLINE ---');
-        console.debug('height: ', height);
-        console.debug('top  : ', top);
-        console.debug('left : ', left);
+//        console.debug('--- VLINE ---');
+//        console.debug('height: ', height);
+//        console.debug('top  : ', top);
+//        console.debug('left : ', left);
         var vl = $("<div>").addClass("taskDepLine");
         vl.css({
             height: height,
@@ -550,8 +540,8 @@ GanttDrawer.prototype.drawLink = function (from, to, type) {
      */
     function drawStartToEnd(rectFrom, rectTo, peduncolusSize) {
         
-        console.debug('drawStartToEnd.rectFrom : ', rectFrom);
-        console.debug('drawStartToEnd.rectTo : ', rectTo);
+//        console.debug('drawStartToEnd.rectFrom : ', rectFrom);
+//        console.debug('drawStartToEnd.rectTo : ', rectTo);
         
         var left, top;
 
@@ -786,16 +776,21 @@ GanttDrawer.prototype.reset = function () {
 
 
 GanttDrawer.prototype.redrawTasks = function () {
-    for (var i = 0; i < this.master.tasks.length; i++) {
-        var task = this.master.tasks[i];
-        if (this.master.grid_mode == 'Resource' && (task.type != 'Task' || !task.isLeaf())){
-            continue;
+    // TODO: this function should be named drawTasks
+    var mode_is_resource = this.master.grid_mode == 'Resource';
+    if (this.master.gantt_mode == 'Task'){
+        for (var i = 0; i < this.master.tasks.length; i++) {
+            var task = this.master.tasks[i];
+            if (!(mode_is_resource && !task.isLeaf())) {
+                this.drawTask(task);
+            }
         }
-        this.drawTask(task);
     }
 };
 
+
 GanttDrawer.prototype.redrawTimeLogs = function () {
+    // TODO: this function should be named drawTimeLogs
     for (var i = 0; i < this.master.time_logs.length; i++) {
         var time_log = this.master.time_logs[i];
         this.drawTimeLog(time_log);
@@ -804,6 +799,8 @@ GanttDrawer.prototype.redrawTimeLogs = function () {
 
 
 GanttDrawer.prototype.refreshGantt = function (kwargs) {
+    // TODO: This function can be vastly improved by reusing elements
+    // TODO: this is redraw not refresh, please rename it correctly
     if (kwargs){
         var start = kwargs['start'] || null;
         var end = kwargs['end'] || null;
@@ -816,8 +813,8 @@ GanttDrawer.prototype.refreshGantt = function (kwargs) {
     var par = this.element.parent();
 
     //try to maintain last scroll
-    var scrollY = par.scrollTop();
-    var scrollX = par.scrollLeft();
+//    var scrollY = par.scrollTop();
+//    var scrollX = par.scrollLeft();
 
     this.element.remove();
     //guess the zoom level in base of period
@@ -837,18 +834,10 @@ GanttDrawer.prototype.refreshGantt = function (kwargs) {
 
     //set old scroll  
     //console.debug("old scroll:",scrollX,scrollY)
-    par.scrollTop(scrollY);
-    par.scrollLeft(scrollX);
+//    par.scrollTop(scrollY);
+//    par.scrollLeft(scrollX);
 
-    // redraw links
-//    if (this.master.gantt_mode == 'Task'){
-//        this.redrawLinks();
-//    } 
-    //set current task
-//    if (this.master.currentTask) {
-//        this.highlightBar.css("top", this.master.currentTask.ganttElement.position().top);
-//    }
-    this.bindEvents();
+//    this.bindEvents();
 };
 
 GanttDrawer.prototype.bindEvents = function() {

@@ -127,12 +127,12 @@ GanttMaster.prototype.init = function (place) {
     place.bind("refreshTasks.gantt",function () {
         self.redrawTasks();
     }).bind("refreshTask.gantt",function (e, task) {
-        self.drawTask(task);
-    }).bind("zoomPlus.gantt",function () {
-        self.gantt.zoomGantt(true);
-    }).bind("zoomMinus.gantt", function () {
-        self.gantt.zoomGantt(false);
-    });
+            self.drawTask(task);
+        }).bind("zoomPlus.gantt",function () {
+            self.gantt.zoomGantt(true);
+        }).bind("zoomMinus.gantt", function () {
+            self.gantt.zoomGantt(false);
+        });
 };
 
 GanttMaster.messages = {
@@ -214,33 +214,17 @@ GanttMaster.prototype.loadGanttData = function (ganttData, Deferred) {
         this.maxEditableDate = Infinity;
 
 //    console.debug('GanttMaster.loadGanttData 3');
-    
+
     // reset
     this.reset();
 
     // load resources
-    var resource;
-    var data;
-    for (var i = 0; i < ganttData.resources.length; i++) {
-        data = ganttData.resources[i];
-//        console.debug('data: ', data);
-        resource = new Resource({
-            id: data.id,
-            name: data.name,
-            master: this
-        });
-        this.resources.push(resource);
-        this.resource_ids.push(resource.id);
-
-        if (this.grid_mode == 'Resource'){
-//            console.debug('GanttMaster.loadGanttData: adding resource to editor');
-            this.editor.addResource(resource);
-        }
-    }
-//    console.debug('GanttMaster.loadGanttData 2');
-
+    this.loadResources(ganttData.resources);
     this.loadTasks(ganttData.tasks);
     this.loadTimeLogs(ganttData.time_logs);
+
+    // now draw everything
+    this.drawData();
 
     this.endTransaction();
     var self = this;
@@ -251,12 +235,23 @@ GanttMaster.prototype.loadGanttData = function (ganttData, Deferred) {
         deferred.resolve('success');
     });
 
-//    console.debug('daily_working_hours : ', this.daily_working_hours);
-//    console.debug('timing_resolution   : ', this.timing_resolution);
-//    console.debug('working_hours       : ', this.working_hours);
-//    console.debug('GanttMaster.loadGanttData end');
 
     return deferred.promise;
+};
+
+GanttMaster.prototype.loadResources = function (resources) {
+    var resource;
+    var data;
+    for (var i = 0; i < resources.length; i++) {
+        data = resources[i];
+        resource = new Resource({
+            id: data.id,
+            name: data.name,
+            master: this
+        });
+        this.resources.push(resource);
+        this.resource_ids.push(resource.id);
+    }
 };
 
 
@@ -306,21 +301,17 @@ GanttMaster.prototype.loadTasks = function (tasks) {
             }
             task = t;
         }
-//        task.master = this; // in order to access controller from task
-
         task.depends = null;
         this.tasks.push(task);  //append task at the end
-//        this.task_ids.push(task.id); //lookup table for task ids
     }
 
     // sort tasks to their dates
-    this.tasks.sort(function(a, b){return a.start - b.start});
-    for (var i = 0; i < this.tasks.length; i++){
+    this.tasks.sort(function (a, b) {
+        return a.start - b.start
+    });
+    for (var i = 0; i < this.tasks.length; i++) {
         this.task_ids.push(this.tasks[i].id);
     }
-
-//    console.debug('this.tasks    : ', this.tasks);
-//    console.debug('this.task_ids : ', this.task_ids);
 
     // find root tasks
     var root_tasks = [];
@@ -332,8 +323,6 @@ GanttMaster.prototype.loadTasks = function (tasks) {
         }
         // also fill the task.depends
         this.tasks[i].getDepends();
-//        console.debug('task.depend_ids : ', this.tasks[i].depend_ids);
-//        console.debug('task.depends    : ', this.tasks[i].depends);
     }
 
 
@@ -348,7 +337,6 @@ GanttMaster.prototype.loadTasks = function (tasks) {
         }
         return children;
     };
-
 
     var sorted_task_list = [];
     // now go from root to child
@@ -365,31 +353,13 @@ GanttMaster.prototype.loadTasks = function (tasks) {
     }
     // set the first task selected
     this.currentTask = this.tasks[0];
-
-    //var prof=new Profiler("gm_loadTasks_addTaskLoop");
-    for (var i = 0; i < this.tasks.length; i++) {
-        task = this.tasks[i];
-
-        //add Link collection in memory
-        if (this.gantt_mode == 'Task'){
-            this.updateLinks(task);
-        }
-
-        //append task to editor
-        if (this.grid_mode == 'Task'){
-            this.editor.addTask(task);
-        }
-        //append task to gantt
-//            this.gantt.addTask(task);
-    }
-//    console.debug('GanttMaster.loadTasks end');
 };
 
 
 GanttMaster.prototype.loadTimeLogs = function (time_logs) {
     var time_log;
     var data;
-    for (var i = 0 ; i < time_logs.length; i++){
+    for (var i = 0; i < time_logs.length; i++) {
         data = time_logs[i];
         if (!(data instanceof TimeLog)) {
             time_log = new TimeLog({
@@ -409,6 +379,49 @@ GanttMaster.prototype.loadTimeLogs = function (time_logs) {
         // to update the task relation
         time_log.getTask();
     }
+};
+
+GanttMaster.prototype.drawData = function () {
+    this.drawResources();
+    this.drawTasks();
+    this.drawTimeLogs();
+    console.debug(this);
+};
+
+
+GanttMaster.prototype.drawResources = function () {
+    if (this.grid_mode == 'Resource') {
+        for (var i = 0; i < this.resources.length; i++) {
+            this.editor.addResource(this.resources[i]);
+        }
+    }
+};
+
+
+GanttMaster.prototype.drawTasks = function () {
+    var task;
+    //var prof=new Profiler("gm_loadTasks_addTaskLoop");
+    for (var i = 0; i < this.tasks.length; i++) {
+        task = this.tasks[i];
+
+        //add Link collection in memory
+        if (this.gantt_mode == 'Task') {
+            this.updateLinks(task);
+        }
+
+        //append task to editor
+        if (this.grid_mode == 'Task') {
+            this.editor.addTask(task);
+        }
+    }
+};
+
+GanttMaster.prototype.drawTimeLogs = function () {
+    // do nothing for now
+    //this.gantt.refreshGantt();
+//    if (this.gantt_mode == 'TimeLog'){
+//        this.gantt.redrawTimeLogs();
+//    }
 };
 
 
@@ -437,31 +450,29 @@ GanttMaster.prototype.getResource = function (resId) {
 
 
 GanttMaster.prototype.taskIsChanged = function () {
-    //console.debug("taskIsChanged");
     var master = this;
 
     //refresh is executed only once every 50ms
     this.element.stopTime("gnnttaskIsChanged");
-    //var profilerext = new Profiler("gm_taskIsChangedRequest");
     this.element.oneTime(50, "gnnttaskIsChanged", function () {
-        //console.debug("task Is Changed real call to redraw");
-        //var profiler = new Profiler("gm_taskIsChangedReal");
-        master.editor.redraw();
+        master.editor.refresh();
         master.gantt.refreshGantt();
-        //profiler.stop();
     });
-    //profilerext.stop();
 };
 
 
-GanttMaster.prototype.redraw = function () {
-    this.editor.redraw();
+GanttMaster.prototype.refresh = function () {
+    this.editor.refresh();
     this.gantt.refreshGantt();
 };
 
 GanttMaster.prototype.reset = function () {
     this.tasks = [];
     this.task_ids = [];
+    this.resources = [];
+    this.resource_ids = [];
+    this.time_logs = [];
+    this.time_log_ids = [];
     this.links = [];
     delete this.currentTask;
 
@@ -469,6 +480,20 @@ GanttMaster.prototype.reset = function () {
     this.gantt.reset();
 };
 
+GanttMaster.prototype.changeMode = function (grid_mode, gantt_mode) {
+    // remove elements
+    this.editor.reset();
+    this.gantt.reset();
+
+    this.grid_mode = grid_mode;
+    this.gantt_mode = gantt_mode;
+
+    // redraw them
+    this.drawResources();
+    this.drawTasks();
+//    this.drawTimeLogs();
+    this.gantt.refreshGantt();
+};
 
 GanttMaster.prototype.saveGantt = function (forTransaction) {
     //var prof = new Profiler("gm_saveGantt");
@@ -509,7 +534,7 @@ GanttMaster.prototype.saveGantt = function (forTransaction) {
 
 GanttMaster.prototype.updateLinks = function (task) {
     //console.debug("updateLinks");
-    
+
     // TODO: may be we need to check if the gantt_mode == 'Task'
 
     //remove my depends

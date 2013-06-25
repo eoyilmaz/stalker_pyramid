@@ -281,20 +281,20 @@ def convert_to_jquery_gantt_task_format(tasks):
 
     faux_tasks.extend(
         [{
-             'type': project.entity_type,
-             'id': project.id,
-             'code': project.code,
-             'name': project.name,
-             'start': milliseconds_since_epoch(project.start),
-             'end': milliseconds_since_epoch(project.end),
-             'computed_start': milliseconds_since_epoch(project.computed_start) if project.computed_start else None,
-             'computed_end': milliseconds_since_epoch(project.computed_end) if project.computed_end else None,
-             'schedule_model': 'duration',
-             'schedule_timing': project.duration.days,
-             'schedule_unit': 'd',
-             'parent_id': None,
-             'depend_id': [],
-             'resources': [],
+            'type': project.entity_type,
+            'id': project.id,
+            'code': project.code,
+            'name': project.name,
+            'start': milliseconds_since_epoch(project.start),
+            'end': milliseconds_since_epoch(project.end),
+            'computed_start': milliseconds_since_epoch(project.computed_start) if project.computed_start else None,
+            'computed_end': milliseconds_since_epoch(project.computed_end) if project.computed_end else None,
+            'schedule_model': 'duration',
+            'schedule_timing': project.duration.days,
+            'schedule_unit': 'd',
+            'parent_id': None,
+            'depend_id': [],
+            'resources': [],
          } for project in projects]
     )
 
@@ -312,7 +312,7 @@ def convert_to_jquery_gantt_task_format(tasks):
             'parent_id': task.parent.id if task.parent else task.project.id,
             'depend_ids': [dep.id for dep in task.depends],
             'resource_ids': [resource.id for resource in task.resources],
-            'time_log_ids': [time_log.id for time_log in task.time_logs],
+            # 'time_log_ids': [time_log.id for time_log in task.time_logs],
             'start': milliseconds_since_epoch(task.start),
             'end': milliseconds_since_epoch(task.end),
             'is_scheduled': task.is_scheduled,

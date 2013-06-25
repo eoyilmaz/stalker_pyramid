@@ -118,8 +118,8 @@ function Task(kwargs) {
         }
     }
 
-    this.timeLogs = [];
-    this.timeLog_ids = [];
+    this.time_logs = [];
+    this.time_log_ids = [];
 
     // update the duration according to the schedule_timing value
     //this.update_duration_from_schedule_timing();
@@ -328,23 +328,23 @@ Task.prototype.getProgress = function () {
     return this.progress;
 };
 
-Task.prototype.addTimeLog = function(timeLog) {
-    timeLog_id = timeLog.id;
-    var index = this.timeLog_ids.indexOf(timeLog_id);
+Task.prototype.addTimeLog = function(time_log) {
+    var time_log_id = time_log.id;
+    var index = this.time_log_ids.indexOf(time_log_id);
     if (index == -1){
         // it is not in the list
-        // update the timeLog
-        timeLog.task_id = this.id;
-        timeLog.task = this;
+        // update the time_log
+        time_log.task_id = this.id;
+        time_log.task = this;
         // update self
-        this.timeLogs.push(timeLog);
-        this.timeLog_ids.push(timeLog_id);
+        this.time_logs.push(time_log);
+        this.time_log_ids.push(time_log_id);
     } // if it is in the list do nothing
 };
 
-Task.prototype.addTimeLog_with_id = function(timeLog_id){
-    var timeLog = this.master.getTimeLog(timeLog_id);
-    this.addTimeLog(timeLog);
+Task.prototype.addTimeLog_with_id = function(time_log_id){
+    var time_log = this.master.getTimeLog(time_log_id);
+    this.addTimeLog(time_log);
 };
 
 

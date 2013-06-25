@@ -36,10 +36,6 @@ $.gridify = {
     elems.each(function() {
       var table = $(this);
       
-//      console.debug('table                       : ',  table);
-//      console.debug('table.width() --- UPPER --- : ' + table.width());
-      
-      
       //----------------------  header management start
       table.find("th.gdfColHeader.gdfResizable:not(.gdfied)").mouseover(function() {
         $(this).addClass("gdfColHeaderOver");
@@ -54,16 +50,7 @@ $.gridify = {
         if (!$.gridify.columInResize) {
           var colHeader = $(this);
           var mousePos = e.pageX - colHeader.offset().left;
-          
-//          console.clear();
-//          table.attr('initialWidth', table.width());
-//          colHeader.attr('initialWidth', $(this).width());
-//          console.debug('***********************');
-//          console.debug('e.pageX                 : ' + e.pageX);
-//          console.debug('colHeader.offset().left : ' + colHeader.offset().left);
-//          console.debug('mousePos                : ' + mousePos);
-//          console.debug('initialWidth            : ' + colHeader.width());
-//          
+
           if (colHeader.width() - mousePos < opt.colResizeZoneWidth) {
             $("body").addClass("gdfHResizing");
           } else {
@@ -85,17 +72,6 @@ $.gridify = {
             var new_width = (e.pageX - $.gridify.columInResize.offset().left);
             $.gridify.columInResize.width(new_width);
               
-//            console.debug('****************************************');
-//            console.debug('table.width()                         : ' + table.width());
-//            console.debug('initialWidth                          : ' + colHeader.attr('initialWidth'));
-//            console.debug('e.pageX                               : ' + e.pageX);
-//            console.debug('$.gridify.columInResize.offset().left : ' + $.gridify.columInResize.offset().left);
-//            console.debug('new_width                             : ' + new_width);
-            
-//            table.width(
-//                table.attr('initialWidth') + colHeader.width() - colHeader.attr('initialWidth')
-//            );
-            
             //bind mouse up on body to stop resizing
           }).bind("mouseup.gdf", function() {
             //console.debug("stop resizing");
@@ -127,7 +103,6 @@ $.gridify = {
 
 $.splittify = {
   init: function(where, first, second, perc) {
-
     perc=perc || 50;
     
     var splitter = $("<div>").addClass("splitterContainer");
@@ -143,15 +118,12 @@ $.splittify = {
     splitter.append(secondBox);
     splitter.append(splitterBar);
 
-
     where.append(splitter);
 
     var w = where.innerWidth();
-    firstBox.width(w *perc/ 100 - splitterBar.width()).css({left:0});
+    firstBox.width(w * perc / 100 - splitterBar.width()).css({left:0});
     splitterBar.css({left:firstBox.width()});
     secondBox.width(w -firstBox.width()-splitterBar.width() ).css({left:firstBox.width() + splitterBar.width()});
-
-
 
     splitterBar.bind("mousedown.gdf", function(e) {
       $.splittify.splitterBar = $(this);
