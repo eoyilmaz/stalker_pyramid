@@ -21,6 +21,7 @@
  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 function GanttMaster(kwargs) {
+    this.__version__ = '0.1.0.a4';
     this.tasks = [];
     this.task_ids = []; // lookup table for quick task access
 
