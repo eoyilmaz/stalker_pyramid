@@ -146,7 +146,7 @@ require([
 
                             var targetPane = "'assets_content_pane'";
                             var address = "'view/task/" + value.id + "'";
-                            return '<a href="javascript:redirectLinkInParent(' + targetPane + ',' + address + ');">' + value.name + '</a>';
+                            return '<a href="javascript:redirectLinkInParent(' + targetPane + ',' + address + ');">' + value.name + '</a> ('+value.code +')';
 
                         {% else %}
 
