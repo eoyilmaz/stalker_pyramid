@@ -419,15 +419,17 @@ Task.prototype.show = function(){
     // show self and all child
     var rowElement = this.rowElement;
     if (rowElement != null){
-        console.debug('there are rowElement');
+//        console.debug('there are rowElement');
         rowElement.css('display', 'table-row');
     } else {
         // task has never been drawn
         // draw it
-        console.debug('no rowElement');
-        this.master.editor.addTask(this);
+//        console.debug('no rowElement');
+        var self = this;
+        this.lowestChildRow = this.master.editor.addTask(self);
         this.rowElement.css('display', 'table-row');
     }
+    this.hidden = false;
     if (this.isParent()){
         if (!this.collapsed){
             for (var i=0; i < this.children.length; i++){
@@ -436,7 +438,6 @@ Task.prototype.show = function(){
             }
         }
     }
-    this.hidden = false;
 };
 
 Task.prototype.isParentsCollapsed = function(){
@@ -453,33 +454,33 @@ Task.prototype.isParentsCollapsed = function(){
 };
 
 
-Task.prototype.updateParentsLowestChildRow = function(){
-    // also update all parents
-    var all_parents = this.getParents();
-    var current_parent;
-    for (var i=0; i < all_parents.length; i++){
-        current_parent = all_parents[i];
-        if (this.rowElement.position().top < current_parent.lowestChildRow.position().top){
-            current_parent.lowestChildRow = this.rowElement;
-        }
-    }
-};
+//Task.prototype.updateParentsLowestChildRow = function(){
+//    // also update all parents
+//    var all_parents = this.getParents();
+//    var current_parent;
+//    for (var i=0; i < all_parents.length; i++){
+//        current_parent = all_parents[i];
+//        if (this.rowElement.position().top < current_parent.lowestChildRow.position().top){
+//            current_parent.lowestChildRow = this.rowElement;
+//        }
+//    }
+//};
 
 Task.prototype.draw = function(editor){
-    console.debug('Task.draw start');
+//    console.debug('Task.draw start');
     
     // first draw self then the children
     var self = this;
     // hopefully we should have a rowElement
     this.lowestChildRow = editor.addTask(self);
     if (!this.collapsed){
-        console.debug('this.collapsed : ', this.collapsed);
-        console.debug('this          : ', this);
-        console.debug('this.children : ', this.children);
+//        console.debug('this.collapsed : ', this.collapsed);
+//        console.debug('this          : ', this);
+//        console.debug('this.children : ', this.children);
         var child_task = null;
         for (var i=0; i<this.children.length; i++){
             child_task = this.children[i];
-            console.debug('child_task : ', child_task);
+//            console.debug('child_task : ', child_task);
             child_task.draw(editor);
         }
         // add last children's lowestRow to self
@@ -487,5 +488,5 @@ Task.prototype.draw = function(editor){
             this.lowestChildRow = child_task.lowestChildRow;
         }
     }
-    console.debug('Task.draw end');
+//    console.debug('Task.draw end');
 };

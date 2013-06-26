@@ -35,7 +35,7 @@ function GridEditor(master) {
 }
 
 GridEditor.prototype.addTask = function (task) {
-    console.debug('GridEditor.addTask start');
+//    console.debug('GridEditor.addTask start');
 
     var taskRow;
     if (task.type == 'Task' || task.type == 'Asset' || task.type == 'Shot' ||
@@ -51,42 +51,41 @@ GridEditor.prototype.addTask = function (task) {
 
     //save row element on task
     task.rowElement = taskRow;
-    console.debug('drawing task: ', task.name, task);
+//    console.debug('drawing task: ', task.name, task);
     if (task.parent != null){
         // append under the lowestChildRow of the sibling or parent
         var child;
         var found_child = null;
         var children = task.parent.children;
-        console.debug('children: ', children);
+//        console.debug('task.parent.children : ', children);
         // start from the task itself
-        for (var i=task.parent.child_ids.indexOf(task.id)-1; i == 0 ; i--){
-            child = children[i];
-            if (child.rowElement != null){
-                found_child = child;
-                break;
-            }
-        }
-        if (found_child != null){
-            console.debug('inserting after sibling');
+        var sibling_index = task.parent.child_ids.indexOf(task.id) - 1;
+//        console.debug('sibling_index : ', sibling_index);
+        found_child = children[sibling_index];
+        if (found_child){
+//            console.debug('inserting after sibling');
             taskRow.insertAfter(found_child.lowestChildRow); // lowestChildRow is self if this is a leaf task
         } else {
-            console.debug('found no sibling, appending directly under parent');
+//            console.debug('found no sibling, appending directly under parents lowestChildRow');
             // insert directly under parent
+//            console.debug('parents current lowestChildRow : ', task.parent.lowestChildRow);
             taskRow.insertAfter(task.parent.lowestChildRow);
         }
-//        task.lowestChildRow = taskRow;
-//        task.updateParentsLowestChildRow();
+//        console.debug('updating task.lowestChildRow to self');
+        task.lowestChildRow = taskRow;
+//        console.debug('updating task.parent.lowestChildRow');
+        task.parent.lowestChildRow = taskRow;
     } else {
-        console.debug('no parent directly adding to editor');
+//        console.debug('no parent directly adding to editor');
         this.element.append(taskRow);
-//        console.debug('setting task.lowestChildRow');
-//        task.lowestChildRow = taskRow;
-        console.debug('finished adding to editor');
+//        console.debug('setting task.lowestChildRow to self');
+        task.lowestChildRow = taskRow;
+//        console.debug('finished adding to editor');
     }
 
     this.bindRowEvents(task);
 
-    console.debug('GridEditor.addTask end');
+//    console.debug('GridEditor.addTask end');
     return taskRow;
 };
 

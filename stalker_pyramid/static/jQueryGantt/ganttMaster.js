@@ -320,7 +320,7 @@ GanttMaster.prototype.loadTasks = function (tasks) {
 //    }
 
     // find root tasks
-    console.debug('getting root tasks start');
+//    console.debug('getting root tasks start');
     this.root_tasks = [];
     var current_task;
     for (var i = 0; i < this.tasks.length; i++) {
@@ -338,10 +338,10 @@ GanttMaster.prototype.loadTasks = function (tasks) {
         // also fill the task.depends
         this.tasks[i].getDepends();
     }
-    console.debug('getting root tasks end');
+//    console.debug('getting root tasks end');
 
-    console.debug('root_tasks : ', this.root_tasks);
-    console.debug('tasks      : ', this.tasks);
+//    console.debug('root_tasks : ', this.root_tasks);
+//    console.debug('tasks      : ', this.tasks);
     
     var loop_through_child = function (task, children) {
         if (children == null) {
@@ -407,7 +407,7 @@ GanttMaster.prototype.loadTimeLogs = function (time_logs) {
 };
 
 GanttMaster.prototype.drawData = function () {
-    console.debug('GanttMaster.drawData start');
+//    console.debug('GanttMaster.drawData start');
     // before drawing restore collapse state of tasks
     this.restoreTaskCollapseState();
 
@@ -415,7 +415,7 @@ GanttMaster.prototype.drawData = function () {
     this.drawRootTasks();
     this.drawTimeLogs();
 //    console.debug(this);
-    console.debug('GanttMaster.drawData end');
+//    console.debug('GanttMaster.drawData end');
 };
 
 
@@ -451,7 +451,7 @@ GanttMaster.prototype.drawResources = function () {
 //};
 
 GanttMaster.prototype.drawRootTasks = function () {
-    console.debug('GanttMaster.drawRootTasks start');
+//    console.debug('GanttMaster.drawRootTasks start');
     var root_task;
     //var prof=new Profiler("gm_loadTasks_addTaskLoop");
     for (var i = 0; i < this.root_tasks.length; i++) {
@@ -473,7 +473,7 @@ GanttMaster.prototype.drawRootTasks = function () {
 //            this.editor.addTask(task);
 //        }
     }
-    console.debug('GanttMaster.drawRootTasks end');
+//    console.debug('GanttMaster.drawRootTasks end');
 };
 
 GanttMaster.prototype.drawTimeLogs = function () {
@@ -707,11 +707,11 @@ GanttMaster.prototype.storeTaskCollapseState = function(){
     var task;
     for (var i=0; i < this.tasks.length; i++){
         task = this.tasks[i];
-        if (!task.isLeaf()){
+        if (!task.isLeaf() && task.collapsed){
             task_collapse_state.push({'id': task.id, 'collapsed': task.collapsed});
         }
     }
-    console.debug(task_collapse_state);
+//    console.debug(task_collapse_state);
     // delete the cookie
     this.cookie(
         "TaskCollapseState", null, {expire: -1}
@@ -726,9 +726,9 @@ GanttMaster.prototype.storeTaskCollapseState = function(){
 GanttMaster.prototype.restoreTaskCollapseState = function(){
     // restores the task collapse state in a cookie
     // @param cookie: dojo.cookie
-    console.debug('GanttMaster.restoreTaskCollapseState start');
+//    console.debug('GanttMaster.restoreTaskCollapseState start');
     
-    console.debug('restoring task collapse state');
+//    console.debug('restoring task collapse state');
 
     var task_collapse_state = [];
     var task_id;
@@ -738,13 +738,13 @@ GanttMaster.prototype.restoreTaskCollapseState = function(){
     var cookie_data = this.cookie("TaskCollapseState");
     if (cookie_data){
         task_collapse_state = this.json.parse(cookie_data);
-        console.debug('cookie data: ', task_collapse_state);
+//        console.debug('cookie data: ', task_collapse_state);
         if (task_collapse_state){
             for (var i=0; i < task_collapse_state.length; i++){
                 task_id = task_collapse_state[i].id;
-                task_collapsed = eval(task_collapse_state[i].collapsed);
-                console.debug('task_id        : ', task_id);
-                console.debug('task_collapsed : ', task_collapsed);
+                task_collapsed = task_collapse_state[i].collapsed;
+//                console.debug('task_id        : ', task_id);
+//                console.debug('task_collapsed : ', task_collapsed);
                 if (task_collapsed){
                     // get the task
                     task = this.getTask(task_id);
@@ -756,5 +756,5 @@ GanttMaster.prototype.restoreTaskCollapseState = function(){
             }
         }
     }
-    console.debug('GanttMaster.restoreTaskCollapseState end');
+//    console.debug('GanttMaster.restoreTaskCollapseState end');
 };
