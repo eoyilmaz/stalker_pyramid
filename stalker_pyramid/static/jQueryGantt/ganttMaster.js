@@ -24,11 +24,16 @@ function GanttMaster(kwargs) {
     this.__version__ = '0.1.0.a4';
     this.tasks = [];
     this.task_ids = []; // lookup table for quick task access
+    this.root_tasks = [];
+    this.root_task_ids = [];
 
     this.time_logs = [];
     this.time_log_ids = [];
 
     this.links = [];
+
+    this.cookie = null;
+    this.json = null;
 
     this.editor; //element for editor
     this.gantt; //element for gantt
@@ -230,10 +235,10 @@ GanttMaster.prototype.loadGanttData = function (ganttData, Deferred) {
     var self = this;
 
     // TODO: this is ridiculous, it should start when something is finished, not after a certain time
-    this.gantt.element.oneTime(200, function () {
-        self.gantt.centerOnToday();
+//    this.gantt.element.oneTime(200, function () {
+//        self.gantt.centerOnToday();
         deferred.resolve('success');
-    });
+//    });
 
 
     return deferred.promise;
@@ -303,29 +308,41 @@ GanttMaster.prototype.loadTasks = function (tasks) {
         }
         task.depends = null;
         this.tasks.push(task);  //append task at the end
+        this.task_ids.push(task.id);
     }
 
     // sort tasks to their dates
-    this.tasks.sort(function (a, b) {
-        return a.start - b.start
-    });
-    for (var i = 0; i < this.tasks.length; i++) {
-        this.task_ids.push(this.tasks[i].id);
-    }
+//    this.tasks.sort(function (a, b) {
+//        return a.start - b.start
+//    });
+//    for (var i = 0; i < this.tasks.length; i++) {
+//        this.task_ids.push(this.tasks[i].id);
+//    }
 
     // find root tasks
-    var root_tasks = [];
+    console.debug('getting root tasks start');
+    this.root_tasks = [];
+    var current_task;
     for (var i = 0; i < this.tasks.length; i++) {
         // just find root tasks
         // also register parents
-        if (this.tasks[i].getParent() == null) {
-            root_tasks.push(this.tasks[i]);
+//        if (this.tasks[i].getParent() == null) { // this fills parent.children array
+        current_task = this.tasks[i];
+        if (current_task.parent_id == null) {
+            this.root_tasks.push(current_task);
+            this.root_task_ids.push(current_task);
+        } else {
+            // fill parent.children array
+            current_task.getParent();
         }
         // also fill the task.depends
         this.tasks[i].getDepends();
     }
+    console.debug('getting root tasks end');
 
-
+    console.debug('root_tasks : ', this.root_tasks);
+    console.debug('tasks      : ', this.tasks);
+    
     var loop_through_child = function (task, children) {
         if (children == null) {
             children = []
@@ -340,8 +357,8 @@ GanttMaster.prototype.loadTasks = function (tasks) {
 
     var sorted_task_list = [];
     // now go from root to child
-    for (var i = 0; i < root_tasks.length; i++) {
-        sorted_task_list = loop_through_child(root_tasks[i], sorted_task_list);
+    for (var i = 0; i < this.root_tasks.length; i++) {
+        sorted_task_list = loop_through_child(this.root_tasks[i], sorted_task_list);
     }
 
     // update tasks
@@ -352,7 +369,15 @@ GanttMaster.prototype.loadTasks = function (tasks) {
         this.task_ids.push(this.tasks[i].id);
     }
     // set the first task selected
-    this.currentTask = this.tasks[0];
+//    this.currentTask = this.tasks[0];
+
+    // loop through all parent tasks and sort their children
+    for (var i=0; i < this.tasks.length; i++){
+        task = this.tasks[i];
+        if (task.isParent()){
+            task.sortChildren();
+        }
+    }
 };
 
 
@@ -382,10 +407,15 @@ GanttMaster.prototype.loadTimeLogs = function (time_logs) {
 };
 
 GanttMaster.prototype.drawData = function () {
+    console.debug('GanttMaster.drawData start');
+    // before drawing restore collapse state of tasks
+    this.restoreTaskCollapseState();
+
     this.drawResources();
-    this.drawTasks();
+    this.drawRootTasks();
     this.drawTimeLogs();
 //    console.debug(this);
+    console.debug('GanttMaster.drawData end');
 };
 
 
@@ -398,22 +428,52 @@ GanttMaster.prototype.drawResources = function () {
 };
 
 
-GanttMaster.prototype.drawTasks = function () {
-    var task;
+//GanttMaster.prototype.drawTasks = function () {
+//    var task;
+//    //var prof=new Profiler("gm_loadTasks_addTaskLoop");
+//    for (var i = 0; i < this.tasks.length; i++) {
+//        task = this.tasks[i];
+//        
+//        if (task.isParentsCollapsed()){
+//            continue;
+//        }
+//
+//        //add Link collection in memory
+//        if (this.gantt_mode == 'Task') {
+//            this.updateLinks(task);
+//        }
+//
+//        //append task to editor
+//        if (this.grid_mode == 'Task') {
+//            this.editor.addTask(task);
+//        }
+//    }
+//};
+
+GanttMaster.prototype.drawRootTasks = function () {
+    console.debug('GanttMaster.drawRootTasks start');
+    var root_task;
     //var prof=new Profiler("gm_loadTasks_addTaskLoop");
-    for (var i = 0; i < this.tasks.length; i++) {
-        task = this.tasks[i];
+    for (var i = 0; i < this.root_tasks.length; i++) {
+        root_task = this.root_tasks[i];
+        // give the drawer function and let the task manage its hierarchy itself
+        root_task.draw(this.editor);
+
+//        if (task.isParentsCollapsed()){
+//            continue;
+//        }
 
         //add Link collection in memory
-        if (this.gantt_mode == 'Task') {
-            this.updateLinks(task);
-        }
+//        if (this.gantt_mode == 'Task') {
+//            this.updateLinks(task);
+//        }
 
         //append task to editor
-        if (this.grid_mode == 'Task') {
-            this.editor.addTask(task);
-        }
+//        if (this.grid_mode == 'Task') {
+//            this.editor.addTask(task);
+//        }
     }
+    console.debug('GanttMaster.drawRootTasks end');
 };
 
 GanttMaster.prototype.drawTimeLogs = function () {
@@ -637,4 +697,64 @@ GanttMaster.prototype.getDateInterval = function () {
         start: this.minDate,
         end: this.maxDate
     }
+};
+
+GanttMaster.prototype.storeTaskCollapseState = function(){
+    // stores the task collapse state in a cookie
+    // @param cookie: dojo.cookie
+
+    var task_collapse_state = [];
+    var task;
+    for (var i=0; i < this.tasks.length; i++){
+        task = this.tasks[i];
+        if (!task.isLeaf()){
+            task_collapse_state.push({'id': task.id, 'collapsed': task.collapsed});
+        }
+    }
+    console.debug(task_collapse_state);
+    // delete the cookie
+    this.cookie(
+        "TaskCollapseState", null, {expire: -1}
+    );
+    // then store data
+    this.cookie(
+        "TaskCollapseState",
+        this.json.stringify(task_collapse_state)
+    );
+};
+
+GanttMaster.prototype.restoreTaskCollapseState = function(){
+    // restores the task collapse state in a cookie
+    // @param cookie: dojo.cookie
+    console.debug('GanttMaster.restoreTaskCollapseState start');
+    
+    console.debug('restoring task collapse state');
+
+    var task_collapse_state = [];
+    var task_id;
+    var task;
+    var task_collapsed;
+
+    var cookie_data = this.cookie("TaskCollapseState");
+    if (cookie_data){
+        task_collapse_state = this.json.parse(cookie_data);
+        console.debug('cookie data: ', task_collapse_state);
+        if (task_collapse_state){
+            for (var i=0; i < task_collapse_state.length; i++){
+                task_id = task_collapse_state[i].id;
+                task_collapsed = eval(task_collapse_state[i].collapsed);
+                console.debug('task_id        : ', task_id);
+                console.debug('task_collapsed : ', task_collapsed);
+                if (task_collapsed){
+                    // get the task
+                    task = this.getTask(task_id);
+        //            task.toggleCollapse();
+                    if (task){
+                        task.collapsed = true;
+                    }
+                }
+            }
+        }
+    }
+    console.debug('GanttMaster.restoreTaskCollapseState end');
 };

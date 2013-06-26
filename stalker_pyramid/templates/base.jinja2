@@ -126,7 +126,7 @@
         <tr dataId="(#=obj.id#)" class="projectEditRow (#=obj.type#)Row">
             <th class="gdfCell" align="right"><span class="taskRowIndex">(#=obj.getRow()+1#)</span></th>
             <td class="gdfCell" align="right"><span>(#=obj.id#)</span></td>
-            <td class="gdfCell indentCell" style="font-weight: bold"><div class='folder uncollapsed'></div><div style='position:relative;left:15px;'>(#=obj.link()#)</div></td>
+            <td class="gdfCell indentCell" style="font-weight: bold"><div class="(#=obj.collapsed ? 'folder collapsed': 'folder uncollapsed'#)"></div><div style='position:relative;left:15px;'>(#=obj.link()#)</div></td>
             <td class="gdfCell"><div class="date start"></div></td>
             <td class="gdfCell"><div class="date end"></div></td>
             <td class="gdfCell"></td>
@@ -139,7 +139,7 @@
         <tr dataId="(#=obj.id#)" class="parentTaskEditRow (#=obj.type#)Row">
             <th class="gdfCell" align="right"><span class="taskRowIndex">(#=obj.getRow()+1#)</span></th>
             <td class="gdfCell" align="right" style="background-color: (#=obj.progress >= 100 ? 'rgb(153, 255, 51)' : 'red'#)"><span>(#=obj.id#)</span></td>
-            <td class="gdfCell indentCell" style="padding-left:(#=obj.getParents().length*15#)px; (#=obj.getChildren().length>0?'font-weight: bold':''#)"><div class='folder uncollapsed'></div><div style='position:relative;left:15px;'>(#=obj.link()#)</div></td>
+            <td class="gdfCell indentCell" style="padding-left:(#=obj.getParents().length*15#)px; (#=obj.getChildren().length>0?'font-weight: bold':''#)"><div class="(#=obj.collapsed ? 'folder collapsed': 'folder uncollapsed'#)"></div><div style='position:relative;left:15px;'>(#=obj.link()#)</div></td>
             <td class="gdfCell"><div class="date start"></div></td>
             <td class="gdfCell"><div class="date end"></div></td>
             <td class="gdfCell"><div class="timing">(#=obj.schedule_model.toUpperCase()[0]#): (#=obj.schedule_timing#)(#=obj.schedule_unit#)</div></td>

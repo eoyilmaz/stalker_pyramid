@@ -35,6 +35,8 @@ function GridEditor(master) {
 }
 
 GridEditor.prototype.addTask = function (task) {
+    console.debug('GridEditor.addTask start');
+
     var taskRow;
     if (task.type == 'Task' || task.type == 'Asset' || task.type == 'Shot' ||
         task.type == 'Sequence') {
@@ -49,11 +51,42 @@ GridEditor.prototype.addTask = function (task) {
 
     //save row element on task
     task.rowElement = taskRow;
-
-    this.element.append(taskRow);
+    console.debug('drawing task: ', task.name, task);
+    if (task.parent != null){
+        // append under the lowestChildRow of the sibling or parent
+        var child;
+        var found_child = null;
+        var children = task.parent.children;
+        console.debug('children: ', children);
+        // start from the task itself
+        for (var i=task.parent.child_ids.indexOf(task.id)-1; i == 0 ; i--){
+            child = children[i];
+            if (child.rowElement != null){
+                found_child = child;
+                break;
+            }
+        }
+        if (found_child != null){
+            console.debug('inserting after sibling');
+            taskRow.insertAfter(found_child.lowestChildRow); // lowestChildRow is self if this is a leaf task
+        } else {
+            console.debug('found no sibling, appending directly under parent');
+            // insert directly under parent
+            taskRow.insertAfter(task.parent.lowestChildRow);
+        }
+//        task.lowestChildRow = taskRow;
+//        task.updateParentsLowestChildRow();
+    } else {
+        console.debug('no parent directly adding to editor');
+        this.element.append(taskRow);
+//        console.debug('setting task.lowestChildRow');
+//        task.lowestChildRow = taskRow;
+        console.debug('finished adding to editor');
+    }
 
     this.bindRowEvents(task);
 
+    console.debug('GridEditor.addTask end');
     return taskRow;
 };
 
@@ -82,6 +115,10 @@ GridEditor.prototype.refreshRowIndices = function () {
 
 GridEditor.prototype.refreshTaskRow = function (task) {
     var row = task.rowElement;
+    if (row == null){
+        // skip this task
+        return;
+    }
 
     row.find(".taskRowIndex").html(task.getRow() + 1);
     row.find(".indentCell").css("padding-left", task.getParents().length * 15);
@@ -126,10 +163,13 @@ GridEditor.prototype.bindRowEvents = function(task){
     // bind the row events
     var row = task.rowElement;
     var folder = row.find(".folder");
+    var master = this.master;
 
     folder.mousedown(function(){
         task.toggleCollapse();
         // redraw gantt chart
         task.master.gantt.refreshGantt();
+        // store collapse state
+        master.storeTaskCollapseState();
     });
 };

@@ -89,6 +89,8 @@
         'dijit/form/DateTextBox',
         'dijit/Tooltip',
 
+        'dojo/cookie',
+        'dojo/json',
         'dojo/query',
         'dojo/store/Memory',
         'dojo/store/JsonRest',
@@ -104,9 +106,9 @@
 
         'dojo/domReady!'
     ], function (registry, Button, FilteringSelect, Menu, MenuItem,
-                 MenuSeparator, DateTextBox, Tooltip, query, Memory, JsonRest,
-                 xhr, lang, Deferred, when, date, dialogs, dialogCaller,
-                 dialogCreator) {
+                 MenuSeparator, DateTextBox, Tooltip, cookie, json, query,
+                 Memory, JsonRest, xhr, lang, Deferred, when, date, dialogs,
+                 dialogCaller, dialogCreator) {
 
         $('#gantttemplates').loadTemplates();
 
@@ -116,6 +118,9 @@
         });
         ge.init($("#workSpace"));
         //console.debug(ge);
+        // store the dojo cookie
+        ge.cookie = cookie;
+        ge.json = json;
 
         // The Memory
         var tasks_memory;
@@ -237,7 +242,7 @@
 
                 var promise = ge.loadGanttData(data, Deferred);
                 promise.then(function () {
-                    // create tool tip dialogs
+                   // create tool tip dialogs
                     createTaskToolTips();
 
                     // now add the context menu to tasks

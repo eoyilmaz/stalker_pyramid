@@ -346,10 +346,14 @@ GanttDrawer.prototype.create = function (zoom, originalStartMillis, originalEndM
 
 //<%-------------------------------------- GANTT TASK GRAPHIC ELEMENT --------------------------------------%>
 GanttDrawer.prototype.drawTask = function (task) {
-    //console.debug("drawTask", task.name,new Date(task.start));
+//    console.debug('GanttDrawer.prototype.drawTask start');
 
     // skip if task is hidden
     if (task.hidden){
+        return;
+    }
+
+    if (task.isParentsCollapsed()){
         return;
     }
 
@@ -445,6 +449,7 @@ GanttDrawer.prototype.drawTask = function (task) {
         }
         this.element.append(taskBox);
     }
+//    console.debug('GanttDrawer.prototype.drawTask end');
 };
 
 //<%-------------------------------------- GANTT TIMELOG GRAPHIC ELEMENT --------------------------------------%>
@@ -487,6 +492,11 @@ GanttDrawer.prototype.drawLink = function (from, to, type) {
     var peduncolusSize = 10;
     var lineSize = 2;
     var self = this;
+
+    // skip if from or to is hidden
+    if (from.hidden || to.hidden){
+        return;
+    }
 
     // skip if from or to is not visible
     if (from.start > this.originalEndMillis || 
