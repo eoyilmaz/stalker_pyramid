@@ -5,6 +5,9 @@ StalkerGantt Changes
 0.1.0.a4
 --------
 
+* **New:** For Tasks which are not shown because their start and end dates are
+  not in range, a left or right red arrow will be drawn to show where the task
+  is (on left or on right).
 * **Update:** Week zoom now shows the day number instead of the first letter of
   the day.
 * **Update:** Updated the CSS.
