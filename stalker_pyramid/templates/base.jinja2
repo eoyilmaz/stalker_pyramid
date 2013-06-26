@@ -204,7 +204,6 @@
         </div>
     --></div>
 
-
     <div class="__template__" type="TASKBAR"><!--
         <div class="taskBox" dataId="(#=obj.id#)">
             <div class="layout (#=obj.hasExternalDep?'extDep':''#)">
@@ -231,8 +230,8 @@
                 <div class="taskLabel">(#=obj.link()#)</div>
                 <div class="milestone end (#=obj.endIsMilestone?'active':''#)"></div>
                 <div class="taskResourceLabel">(#=obj.getResourcesLinks()#)</div>
-                (#=obj.clippedStart?'<div class="clippedStart">&nbsp</div>':''#)
-                (#=obj.clippedEnd?'<div class="clippedEnd">&nbsp</div>':''#)
+                (#=obj.clippedStart?'<div class="leftArrowHead">&nbsp</div>':''#)
+                (#=obj.clippedEnd?'<div class="rightArrowHead">&nbsp</div>':''#)
             </div>
         </div>
     --></div>
@@ -261,6 +260,15 @@
                     ></div>
             </div>
         </div>
+    --></div>
+
+    <div class="__template__" type="TASKBAR_ON_LEFT"><!--
+        <div class="leftArrowHead" dataId="(#=obj.id#)">&nbsp</div>
+
+    --></div>
+
+    <div class="__template__" type="TASKBAR_ON_RIGHT"><!--
+        <div class="rightArrowHead" dataId="(#=obj.id#)">&nbsp</div>
     --></div>
 
     <div class="__template__" type="PARENTTASKBAR"><!--

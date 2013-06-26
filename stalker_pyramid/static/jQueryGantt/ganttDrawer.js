@@ -395,9 +395,9 @@ GanttDrawer.prototype.drawTask = function (task) {
         taskBoxSeparator.css({top: top });
         this.element.append(taskBoxSeparator);
 
+        var taskBox;
         // skip if it is not in the range
         if (!(task.start > this.originalEndMillis || task.end < this.originalStartMillis)) {
-            var taskBox;
             if (task.type != 'Project') {
                 if (!task.isParent()) {
                     // if it is a leaf task draw a TASKBAR
@@ -423,9 +423,27 @@ GanttDrawer.prototype.drawTask = function (task) {
                 left: x + '%',
                 width: (task_drawn_end - task_drawn_start) / (this.originalEndMillis - this.originalStartMillis) * 100 + '%'
             });
-
-            this.element.append(taskBox);
+        } else {
+            // draw a left or right arrow
+            if (task.end < this.originalStartMillis){
+                taskBox = $.JST.createFromTemplate(task, "TASKBAR_ON_LEFT");
+                task.ganttElements.push(taskBox);
+                taskBox.css({
+                    top: top,
+                    left: 0,
+                    width: '10px'
+                });
+            } else if (task.start > this.originalEndMillis) {
+                taskBox = $.JST.createFromTemplate(task, "TASKBAR_ON_RIGHT");
+                task.ganttElements.push(taskBox);
+                taskBox.css({
+                    top: top,
+                    right: 0,
+                    width: '10px'
+                });
+            }
         }
+        this.element.append(taskBox);
     }
 };
 

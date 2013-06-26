@@ -699,6 +699,27 @@
     cursor: move;
 }
 
+.leftArrowHead {
+    background: url('../images/leftArrowHead.png') no-repeat;
+    position: absolute;
+    left: 0px;
+    width: 5px;
+    height: 10px;
+    margin-top: 5px;
+    z-index: 1;
+}
+
+.rightArrowHead {
+    background: url('../images/rightArrowHead.png') no-repeat;
+    position: absolute;
+    right: 0px;
+    width: 5px;
+    height: 10px;
+    margin-top: 5px;
+    z-index: 1;
+}
+
+
 .linkArrow {
     background: url('../images/linkArrow.png') no-repeat;
     position: absolute;
