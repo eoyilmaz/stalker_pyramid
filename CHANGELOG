@@ -28,6 +28,7 @@ Stalker Pyramid Changes
 * **Fix:** In Update Asset Dialog type attribute is set with value that is set
     before.
 * **Fix:** Based on user permissions Studio menu is redefined.
+* **New:** In List Assets Page, code of asset is added to name column.
 * **jQueryGantt:**
 
   * **New:** The parent elements in gantt chart is now collapsible.

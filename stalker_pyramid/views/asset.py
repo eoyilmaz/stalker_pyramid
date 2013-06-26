@@ -241,6 +241,7 @@ def get_assets(request):
         {
             'id': asset.id,
             'name': asset.name,
+            'code': asset.code,
             'type': asset.type.name,
             'status': asset.status.name,
             'status_bg_color': asset.status.bg_color,
