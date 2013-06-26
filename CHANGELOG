@@ -17,7 +17,8 @@ Stalker Pyramid Changes
 * **New:** It is now possible to duplicate a task hierarchy in gantt chart now.
 * **Update:** In the summary page of Task update dialog is called based on
   task entity type.
-* **New:** Update Asset MenuItem is added to right click menu on assets list row.
+* **New:** Update Asset MenuItem is added to right click menu on assets list
+  row.
 * **Update:** In Update Asset Dialog 'code' attribute is enabled to edit.
 * **New:** Update Shot MenuItem is added to right click menu on shots list row.
 * **Update:** In Update Shot Dialog 'code' attribute is enabled to edit.
@@ -28,7 +29,18 @@ Stalker Pyramid Changes
     before.
 * **Fix:** Based on user permissions Studio menu is redefined.
 * **New:** In List Assets Page, code of asset is added to name column.
+* **jQueryGantt:**
 
+  * **New:** The parent elements in gantt chart is now collapsible.
+  * **Update:** Updated the CSS.
+  * **New:** All the different types of elements in GridEditor (Project, Task,
+    Asset, Shot, Sequence) are now drawn with different background colors.
+  * **New:** Thickened the ganttLines to become the background element for
+    TaskBars also they are now in the same class with the Grid elements and
+    thus have the same bg color.
+  * **Update:** Week zoom now shows the day number instead of the first letter
+    of the day.
+  * **Update:** Removed dateField.js.
 
 pre 0.1.0.b1
 ============

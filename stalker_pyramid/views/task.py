@@ -215,6 +215,8 @@ def duplicate_task_hierarchy(request):
         # just rename the dup_task
         dup_task.name += ' - Duplicate'
         DBSession.add(dup_task)
+    else:
+        raise HTTPServerError()
 
     return HTTPOk()
 
@@ -279,20 +281,20 @@ def convert_to_jquery_gantt_task_format(tasks):
 
     faux_tasks.extend(
         [{
-             'type': project.entity_type,
-             'id': project.id,
-             'code': project.code,
-             'name': project.name,
-             'start': milliseconds_since_epoch(project.start),
-             'end': milliseconds_since_epoch(project.end),
-             'computed_start': milliseconds_since_epoch(project.computed_start) if project.computed_start else None,
-             'computed_end': milliseconds_since_epoch(project.computed_end) if project.computed_end else None,
-             'schedule_model': 'duration',
-             'schedule_timing': project.duration.days,
-             'schedule_unit': 'd',
-             'parent_id': None,
-             'depend_id': [],
-             'resources': [],
+            'type': project.entity_type,
+            'id': project.id,
+            'code': project.code,
+            'name': project.name,
+            'start': milliseconds_since_epoch(project.start),
+            'end': milliseconds_since_epoch(project.end),
+            'computed_start': milliseconds_since_epoch(project.computed_start) if project.computed_start else None,
+            'computed_end': milliseconds_since_epoch(project.computed_end) if project.computed_end else None,
+            'schedule_model': 'duration',
+            'schedule_timing': project.duration.days,
+            'schedule_unit': 'd',
+            'parent_id': None,
+            'depend_id': [],
+            'resources': [],
          } for project in projects]
     )
 
@@ -310,7 +312,7 @@ def convert_to_jquery_gantt_task_format(tasks):
             'parent_id': task.parent.id if task.parent else task.project.id,
             'depend_ids': [dep.id for dep in task.depends],
             'resource_ids': [resource.id for resource in task.resources],
-            'time_log_ids': [time_log.id for time_log in task.time_logs],
+            # 'time_log_ids': [time_log.id for time_log in task.time_logs],
             'start': milliseconds_since_epoch(task.start),
             'end': milliseconds_since_epoch(task.end),
             'is_scheduled': task.is_scheduled,
@@ -422,7 +424,7 @@ def update_task(request):
     schedule_model = request.params.get('schedule_model') # there should be one
     schedule_timing = float(request.params.get('schedule_timing'))
     schedule_unit = request.params.get('schedule_unit')
-    schedule_constraint = request.params.get('schedule_constraint', 0)
+    schedule_constraint = int(request.params.get('schedule_constraint', 0))
     start = get_date(request, 'start')
     end = get_date(request, 'end')
     update_bid = request.params.get('update_bid')
@@ -752,7 +754,7 @@ def create_task(request):
     schedule_model = request.params.get('schedule_model') # there should be one
     schedule_timing = float(request.params.get('schedule_timing'))
     schedule_unit = request.params.get('schedule_unit')
-    schedule_constraint = request.params.get('schedule_constraint', 0)
+    schedule_constraint = int(request.params.get('schedule_constraint', 0))
 
     # get the resources
     resources = []

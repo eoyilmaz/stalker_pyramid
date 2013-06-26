@@ -52,6 +52,7 @@ TimeLog.prototype.getTask = function(){
     // getter for the task
     if (this.task == null){
         this.task = this.master.getTask(this.task_id);
+        this.task.addTimeLog(this);
     }
     return this.task;
 };

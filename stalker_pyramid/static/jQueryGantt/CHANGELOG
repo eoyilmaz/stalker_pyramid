@@ -1,6 +1,56 @@
 ====================
 StalkerGantt Changes
 ====================
+
+0.1.0.a4
+--------
+
+* **Update:** Week zoom now shows the day number instead of the first letter of
+  the day.
+* **Update:** Updated the CSS.
+* **New:** All the different types of elements in GridEditor (Project, Task,
+  Asset, Shot, Sequence) are now drawn with different background colors.
+* **New:** Thickened the ganttLines to become the background element for
+  TaskBars also they are now in the same class with the Grid elements and thus
+  have the same bg color.
+* **New:** Parent tasks and Projects are now collapsible.
+* **Update:** The gantt chart is now able to display much more info then
+  before. There are two new modes for each of the Grid and Gantt parts of the
+  Gantt Chart. Grid can be set to display *Task*\ s or *Resources* and the
+  Gantt can set to display *Task*\ s or *TimeLog*\ s.
+* **Update:** Horizontal scrolling is disabled in gantt part of Gantt Chart.
+  All the drawn tasks and links are now set in position with percent values, so
+  they will stick and scale correctly when the split container resize.
+* **Update:** Any task out of range is culled in gantt chart.
+* **Update:** Added new buttons to change the range in -1/+1 month, -1/+1 week,
+  -1/+1 day.
+* **Update:** Replaced the **Date.format()** (originally replaced by
+  jQueryGantt **date.js**) with **date.format.js** library.
+* **Update:** Changed the background of the Grid and Gantt editors.
+* **Update:** If the displayed tasks is clipped to the current start end range
+  a double red border is displayed in the clipped start or end.
+* **Update:** Context menu can now be opened in task names in grid editor.
+* **Update:** Optimized the creation of task rows.
+* **Update:** Replaced the ``input`` elements with ``div`` in the task row.
+* **New:** Holding the mouse on Task bar elements will now show a popup window
+  for more info.
+* **Update:** Gantt Chart zoom levels are now fully controlled by the start and
+  end date DateTextBoxes.
+* **New:** Added a new button which will center the gantt chart on today.
+* **Update:** Replaced the ``duration`` column with ``timing`` which correctly
+  shows the schedule timing info of the related task.
+* **Fix:** The ``depends`` column shows the dependent task names correctly.
+* **Update:** jQueryGantt displays the owner Project of the Tasks as a
+  container task.
+* **Update:** Added content link (this will be updated to support proper links,
+  hardcoded links to be removed).
+* **Update:** Disabled drag and resize of TaskBar elements.
+* **Update:** Moved the resource link code to the JST template code instead of
+  the Task class.
+* **Update:** The timing resolution of jQueryGantt is now 1 hour.
+* **Fix:** GanttMaster.task_ids were not properly cleaned in
+  GanttMaster.reset(), resulting wrong links to be created.
+
 0.1.0.a3
 --------
 * TaskBar now shows the logged in time and shows them by painting the bar
@@ -45,6 +95,7 @@ StalkerGantt Changes
     index = GanttMaster.task_ids.index_of(desired_task_id)
     task = GanttMaster.tasks[index]
     # no need to tour around
+
 * Removed all the editors windows, will use the custom coded Dojo UI to
   manipulate the Tasks.
 

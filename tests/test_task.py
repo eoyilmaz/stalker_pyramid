@@ -25,11 +25,11 @@ import transaction
 from pyramid import testing
 from pyramid.httpexceptions import HTTPServerError
 
-from stalker import db, Project, Status, StatusList, Repository, Task, User, Asset, Type
+from stalker import db, Project, Status, StatusList, Repository, Task, User, Asset, Type, defaults
 from stalker.db.session import DBSession
 from zope.sqlalchemy import ZopeTransactionExtension
 
-from stalker_pyramid.views import task
+from stalker_pyramid.views import task, PermissionChecker, milliseconds_since_epoch
 
 import logging
 logger = logging.getLogger(__name__)
@@ -646,8 +646,10 @@ class TaskViewTestCase(unittest2.TestCase):
     def test_duplicate_task_hierarchy_task_is_not_existing(self):
         """testing if None will be returned if the task is not existing
         """
-        result = task.duplicate_task_hierarchy(None)
-        self.assertEqual(result, None)
+        dummyRequest = testing.DummyRequest()
+        self.assertRaises(HTTPServerError,
+                          task.duplicate_task_hierarchy,
+                          dummyRequest)
 
     def test_duplicate_task_is_working_properly(self):
         """testing if duplicate task is working properly
@@ -839,13 +841,19 @@ class TaskViewTestCase(unittest2.TestCase):
 
         for t in task.walk_hierarchy(self.test_task2):
             logger.debug(t)
-        self.fail()
+        self.fail('test and implementation is not finished yet')
 
     def test_create_task_dialog(self):
         """testing if the create_task_dialog view is working properly
         """
         request = testing.DummyRequest()
-        request.params['']
-        info = task.create_task_dialog(request)
-        self.assertEqual(info['one'].name, 'one')
-        self.assertEqual(info['project'], 'stalker')
+        request.matchdict['entity_id'] = self.test_proj1.id
+        response = task.create_task_dialog(request)
+        self.assertEqual(response['mode'], 'CREATE')
+        self.assertIsInstance(response['has_permission'], PermissionChecker)
+        self.assertEqual(response['project'], self.test_proj1)
+        self.assertIsNone(response['parent'])
+        self.assertEqual(response['schedule_models'],
+                         defaults.task_schedule_models)
+        self.assertEqual(response['milliseconds_since_epoch'],
+                         milliseconds_since_epoch)

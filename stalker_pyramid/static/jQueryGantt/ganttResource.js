@@ -22,6 +22,7 @@ function Resource(kwargs) {
     this.tasks = kwargs['tasks'] || [];
     this.master = kwargs['master'] || null;
     this.rowElement = null; // row editor html element
+    this.type = 'Resource';
 }
 
 Resource.prototype.getRow = function(){

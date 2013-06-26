@@ -1,16 +1,15 @@
-
 /*.gantt, a {*/
-  /*text-decoration: none;*/
-  /*font-weight: bold;*/
-  /*color: #16ABDD;*/
+/*text-decoration: none;*/
+/*font-weight: bold;*/
+/*color: #16ABDD;*/
 /*}*/
 
 /*.gantt, th, .tableHeader {*/
-  /*font-weight: normal;*/
-  /*color: #FFFFFF;*/
-  /*border: none;*/
-  /*background-color: #dedede;*/
-  /*padding:2px*/
+/*font-weight: normal;*/
+/*color: #FFFFFF;*/
+/*border: none;*/
+/*background-color: #dedede;*/
+/*padding:2px*/
 /*}*/
 
 .gdfTable {
@@ -29,7 +28,7 @@
 
 .gdfCell {
     overflow: hidden;
-    padding:1px
+    padding: 1px
 }
 
 .gdfColHeader {
@@ -39,17 +38,19 @@
 }
 
 .gdfCell, .gdfColHeader {
-    border-bottom: 1px solid #eee;
-    border-right: 1px solid #eee;
+    /*border-bottom: 1px solid #eee;*/
+    /*border-right: 1px solid #eee;*/
+    border-bottom: 1px solid #afafaf;
+    border-right: 1px solid #afafaf;
 }
 
-
-.ganttLines{
-    position:absolute;
-    width:100%;
-    height:1px;
-    border-top:1px solid #eee;
-    z-index:1;
+.ganttLines {
+    position: absolute;
+    width: 100%;
+    height: 18px;
+    border-top: 1px solid #afafaf;
+    border-bottom: 1px solid #afafaf;
+    z-index: 1;
 }
 
 .gdfCellInput {
@@ -87,7 +88,7 @@
     height: 100%;
 }
 
-.splitBox1{
+.splitBox1 {
     overflow-x: hidden;
     overflow-y: hidden;
     background-color: rgb(240, 240, 240);;
@@ -121,106 +122,107 @@
     color: white;
 }
 
-.end{
-    border-right:1px dotted #666
+.end {
+    border-right: 1px dotted #666
 }
 
-.holyH{
+.holyH {
     background-color: #dedede;
 }
 
-.holy{
+.holy {
     background-color: rgb(224, 227, 230);
 }
 
-
-.expcoll{
-    width:6px;
-    height:6px;
-    margin:1px;
-    padding:1px;
-    background-color:yellow;
-    display:inline-block;
-    border:1px solid gray;
-}
-.expcoll.exp{
-    display:none;
+.expcoll {
+    width: 6px;
+    height: 6px;
+    margin: 1px;
+    padding: 1px;
+    background-color: yellow;
+    display: inline-block;
+    border: 1px solid gray;
 }
 
-
-.ganttTable{
-    table-layout:fixed;
+.expcoll.exp {
+    display: none;
 }
 
-.ganttTable td,.ganttTable th{
+.ganttTable {
+    table-layout: fixed;
+}
+
+.ganttTable td, .ganttTable th {
     overflow: hidden;
     text-overflow: clip;
     white-space: nowrap;
 }
 
-.ganttHead1,.ganttHead2{
-    height:20px;
+.ganttHead1, .ganttHead2 {
+    height: 20px;
     background-color: #DEDEDE;
 }
 
-.ganttHead1 th,.ganttHead2 th{
-    border-left:1px solid white;
+.ganttHead1 th, .ganttHead2 th {
+    border-left: 1px solid #afafaf;
 }
 
-.ganttToday{
-    position:absolute;
-    top:0;
-    width:1px;
-    height:100%;
-    border-left:2px dotted #13AFA5;
+.ganttToday {
+    position: absolute;
+    top: 0;
+    width: 1px;
+    height: 100%;
+    border-left: 2px dotted #13AFA5;
+    z-index: 2;
 }
 
-.ganttHighLight{
-    position:absolute;
-    width:100%;
-    height:18px;
-    background-color:yellow;
-    opacity:.4;
+.ganttHighLight {
+    position: absolute;
+    width: 100%;
+    height: 18px;
+    background-color: yellow;
+    opacity: .4;
 }
 
-.ganttButtonBar{
-    position:relative;
-    padding:5px;
+.ganttButtonBar {
+    position: relative;
+    padding: 5px;
 }
+
 .ganttButtonBar .buttons {
-    float:left; margin:0 0 0 40px
+    float: left;
+    margin: 0 0 0 40px
 }
 
-.ganttButtonBar .button span.teamworkIcon{
+.ganttButtonBar .button span.teamworkIcon {
     font-size: 150%
 }
 
-.ganttButtonSeparator{
-    border-left:1px solid gray;
-    padding-right:10px;
-    margin-left:10px;
+.ganttButtonSeparator {
+    border-left: 1px solid gray;
+    padding-right: 10px;
+    margin-left: 10px;
     font-size: 130%
 }
 
-.ganttLinks{
-    z-index:10;
+.ganttLinks {
+    z-index: 10;
 }
 
-.leafTaskContextMenu{
+.leafTaskContextMenu {
     position: absolute;
     width: 100%;
     height: 15px;
 }
 
-.parentTaskContextMenu{
+.parentTaskContextMenu {
     position: absolute;
     width: 100%;
     height: 15px;
 }
-
 
 /*PROJECT BOX*/
-.projectBox{
+.projectBox {
     position: absolute;
     margin-top: 2px;
     z-index: 100;
@@ -250,14 +252,14 @@
 }
 
 .projectBox .taskStatus {
-    left:5px;
-    top:4px;
-    position:absolute;
-    width:10px;
-    height:10px;
+    left: 5px;
+    top: 4px;
+    position: absolute;
+    width: 10px;
+    height: 10px;
 }
 
-.projectBox .layout .milestone{
+.projectBox .layout .milestone {
     top: 0;
     position: absolute;
     width: 16px;
@@ -265,116 +267,102 @@
     height: 16px;
     display: none;
 }
-.projectBox .layout .milestone.end{
-    right:0;
-}
-.projectBox .layout .milestone.active{
-    display:block;
+
+.projectBox .layout .milestone.end {
+    right: 0;
 }
 
-.projectBox.hasChild .layout{
+.projectBox .layout .milestone.active {
+    display: block;
+}
+
+.projectBox.hasChild .layout {
     /*border:2px solid black;*/
 }
 
-.projectBox .taskProgress{
-    height:3px;
-    position:absolute;
+.projectBox .taskProgress {
+    height: 3px;
+    position: absolute;
 }
 
-.projectBox .taskBid{
-    height:3px;
-    position:absolute;
+.projectBox .taskBid {
+    height: 3px;
+    position: absolute;
     /*border-radius: 3px;*/
     top: 3px;
 }
 
-.projectBox .layout.extDep{
-    background-image:url('../images/hasExternalDeps.png');
+.projectBox .layout.extDep {
+    background-image: url('../images/hasExternalDeps.png');
 }
 
 /*TASK BOX*/
-.taskBox{
-    position:absolute;
-    height:15px;
-    margin-top:2px;
-    z-index:100;
+.taskBox {
+    position: absolute;
+    height: 15px;
+    margin-top: 2px;
+    z-index: 100;
     border-radius: 3px;
-    border:1px solid #AAAAAA;
-    
+    border: 1px solid #AAAAAA;
+
     background-image: linear-gradient(bottom, #E0E0E0 0%, #FFFFFF 50%);
     background-image: -o-linear-gradient(bottom, #E0E0E0 0%, #FFFFFF 50%);
     background-image: -moz-linear-gradient(bottom, #E0E0E0 0%, #FFFFFF 50%);
     background-image: -webkit-linear-gradient(bottom, #E0E0E0 0%, #FFFFFF 50%);
     background-image: -ms-linear-gradient(bottom, #E0E0E0 0%, #FFFFFF 50%);
-    
-    background-image: -webkit-gradient(
-        linear,
-        left bottom,
-        left top,
-        color-stop(0, #E0E0E0),
-        color-stop(0.50, #FFFFFF)
-    );    
 
+    background-image: -webkit-gradient(linear, left bottom, left top, color-stop(0, #E0E0E0), color-stop(0.50, #FFFFFF));
 }
 
 .taskBox .layout {
-    height:100%;
-    /*border-radius: 2px;*/
-    /*border:1px solid #AAAAAA;*/
-    /*background: #CCCCCC; *//* Old browsers */
-    
+    height: 100%;
 }
 
 .taskBox .taskStatus {
-    left:5px;
-    top:4px;
-    position:absolute;
-    width:10px;
-    height:10px;
+    left: 5px;
+    top: 4px;
+    position: absolute;
+    width: 10px;
+    height: 10px;
 }
 
-.taskBox .layout .milestone{
+.taskBox .layout .milestone {
     top: 0;
-    position:absolute;
-    width:16px;
+    position: absolute;
+    width: 16px;
     background: url('../images/milestone.png') no-repeat;
-    height:16px;
-    display:none;
-}
-.taskBox .layout .milestone.end{
-    right:0;
+    height: 16px;
+    display: none;
 }
 
-.taskBox .layout .milestone.active{
-    display:block;
+.taskBox .layout .milestone.end {
+    right: 0;
 }
 
-.taskBox.hasChild .layout{
-    border-top:2px solid black;
+.taskBox .layout .milestone.active {
+    display: block;
 }
 
-.taskBox .taskProgress{
+.taskBox.hasChild .layout {
+    border-top: 2px solid black;
+}
+
+.taskBox .taskProgress {
     /*height:3px;*/
     height: 100%;
-    position:absolute;
-    
+    position: absolute;
+
     background-image: linear-gradient(bottom, #6DD900 0%, #99FF33 50%);
     background-image: -o-linear-gradient(bottom, #6DD900 0%, #99FF33 50%);
     background-image: -moz-linear-gradient(bottom, #6DD900 0%, #99FF33 50%);
     background-image: -webkit-linear-gradient(bottom, #6DD900 0%, #99FF33 50%);
     background-image: -ms-linear-gradient(bottom, #6DD900 0%, #99FF33 50%);
-    
-    background-image: -webkit-gradient(
-        linear,
-        left bottom,
-        left top,
-        color-stop(0, #6DD900),
-        color-stop(0.50, #99FF33)
-    );
+
+    background-image: -webkit-gradient(linear, left bottom, left top, color-stop(0, #6DD900), color-stop(0.50, #99FF33));
     border-radius: 2px;
 }
 
-.taskBox .taskExtraTiming{
+.taskBox .taskExtraTiming {
     height: 7px;
     position: absolute;
     border-radius: 2px;
@@ -383,12 +371,12 @@
     background-color: red;
 }
 
-.taskBox .layout.extDep{
-    background-image:url('../images/hasExternalDeps.png');
+.taskBox .layout.extDep {
+    background-image: url('../images/hasExternalDeps.png');
 }
 
 /*PARENT TASK BOX*/
-.parentTaskBox{
+.parentTaskBox {
     position: absolute;
     /*height: 6px;*/
     margin-top: 2px;
@@ -397,7 +385,7 @@
 
 .parentTaskBox .layout {
     height: 5px;
-    background: lightgray;
+    background: black;
     border-radius: 3px 3px 0 0;
 }
 
@@ -419,14 +407,14 @@
 }
 
 .parentTaskBox .taskStatus {
-    left:5px;
-    top:4px;
-    position:absolute;
-    width:10px;
-    height:10px;
+    left: 5px;
+    top: 4px;
+    position: absolute;
+    width: 10px;
+    height: 10px;
 }
 
-.parentTaskBox .layout .milestone{
+.parentTaskBox .layout .milestone {
     top: 0;
     position: absolute;
     width: 16px;
@@ -434,113 +422,100 @@
     height: 16px;
     display: none;
 }
-.parentTaskBox .layout .milestone.end{
-    right:0;
-}
-.parentTaskBox .layout .milestone.active{
-    display:block;
+
+.parentTaskBox .layout .milestone.end {
+    right: 0;
 }
 
-.parentTaskBox.hasChild .layout{
-    /*border:2px solid black;*/
+.parentTaskBox .layout .milestone.active {
+    display: block;
 }
 
-.parentTaskBox .taskProgress{
-    height:3px;
-    position:absolute;
+.parentTaskBox.hasChild .layout {
 }
 
-.parentTaskBox .taskBid{
-    height:3px;
-    position:absolute;
-    /*border-radius: 3px;*/
+.parentTaskBox .taskProgress {
+    height: 3px;
+    position: absolute;
+}
+
+.parentTaskBox .taskBid {
+    height: 3px;
+    position: absolute;
     top: 3px;
 }
 
-.parentTaskBox .layout.extDep{
-    background-image:url('../images/hasExternalDeps.png');
+.parentTaskBox .layout.extDep {
+    background-image: url('../images/hasExternalDeps.png');
 }
 
-
 /*TIME LOG BOX*/
-.timeLogBox{
-    position:absolute;
-    height:15px;
-    margin-top:2px;
-    z-index:100;
+.timeLogBox {
+    position: absolute;
+    height: 15px;
+    margin-top: 2px;
+    z-index: 100;
     border-radius: 3px;
-    border:1px solid #AAAAAA;
-    
+    border: 1px solid #AAAAAA;
+
     background-image: linear-gradient(bottom, #E0E0E0 0%, #FFFFFF 50%);
     background-image: -o-linear-gradient(bottom, #E0E0E0 0%, #FFFFFF 50%);
     background-image: -moz-linear-gradient(bottom, #E0E0E0 0%, #FFFFFF 50%);
     background-image: -webkit-linear-gradient(bottom, #E0E0E0 0%, #FFFFFF 50%);
     background-image: -ms-linear-gradient(bottom, #E0E0E0 0%, #FFFFFF 50%);
-    
-    background-image: -webkit-gradient(
-        linear,
-        left bottom,
-        left top,
-        color-stop(0, #E0E0E0),
-        color-stop(0.50, #FFFFFF)
-    );    
 
+    background-image: -webkit-gradient(linear, left bottom, left top, color-stop(0, #E0E0E0), color-stop(0.50, #FFFFFF));
 }
 
 .timeLogBox .layout {
-    height:100%;
+    height: 100%;
 }
 
 .timeLogBox .taskStatus {
-    left:5px;
-    top:4px;
-    position:absolute;
-    width:10px;
-    height:10px;
+    left: 5px;
+    top: 4px;
+    position: absolute;
+    width: 10px;
+    height: 10px;
 }
 
-.timeLogBox .layout .milestone{
+.timeLogBox .layout .milestone {
     top: 0;
-    position:absolute;
-    width:16px;
+    position: absolute;
+    width: 16px;
     background: url('../images/milestone.png') no-repeat;
-    height:16px;
-    display:none;
-}
-.timeLogBox .layout .milestone.end{
-    right:0;
+    height: 16px;
+    display: none;
 }
 
-.timeLogBox .layout .milestone.active{
-    display:block;
+.timeLogBox .layout .milestone.end {
+    right: 0;
 }
 
-.timeLogBox.hasChild .layout{
-    border-top:2px solid black;
+.timeLogBox .layout .milestone.active {
+    display: block;
 }
 
-.timeLogBox .taskProgress{
+.timeLogBox.hasChild .layout {
+    border-top: 2px solid black;
+}
+
+.timeLogBox .taskProgress {
     /*height:3px;*/
     height: 100%;
-    position:absolute;
-    
+    position: absolute;
+
     background-image: linear-gradient(bottom, #6DD900 0%, #99FF33 50%);
     background-image: -o-linear-gradient(bottom, #6DD900 0%, #99FF33 50%);
     background-image: -moz-linear-gradient(bottom, #6DD900 0%, #99FF33 50%);
     background-image: -webkit-linear-gradient(bottom, #6DD900 0%, #99FF33 50%);
     background-image: -ms-linear-gradient(bottom, #6DD900 0%, #99FF33 50%);
-    
-    background-image: -webkit-gradient(
-        linear,
-        left bottom,
-        left top,
-        color-stop(0, #6DD900),
-        color-stop(0.50, #99FF33)
-    );
+
+    background-image: -webkit-gradient(linear, left bottom, left top, color-stop(0, #6DD900), color-stop(0.50, #99FF33));
     border-radius: 2px;
 }
 
-.timeLogBox .taskExtraTiming{
+.timeLogBox .taskExtraTiming {
     height: 7px;
     position: absolute;
     border-radius: 2px;
@@ -549,26 +524,22 @@
     background-color: red;
 }
 
-.timeLogBox .layout.extDep{
-    background-image:url('../images/hasExternalDeps.png');
+.timeLogBox .layout.extDep {
+    background-image: url('../images/hasExternalDeps.png');
 }
 
-
-
-
-.taskLabel{
-    position:absolute;
-    height:18px;
-    color:black;
-    text-align:right;
-    padding-right:5px;
+.taskLabel {
+    position: absolute;
+    height: 18px;
+    color: black;
+    text-align: right;
+    padding-right: 5px;
     padding-top: 0;
-    overflow:hidden;
-    left:-210px;
-    width:195px;
-    white-space:nowrap;
+    overflow: hidden;
+    left: -210px;
+    width: 195px;
+    white-space: nowrap;
 }
-
 
 .taskResourceLabel {
     color: black;
@@ -596,7 +567,6 @@
     width: 195px;
 }
 
-
 .taskDepLine {
     background-color: #b8d1ed;
     border: 0 solid #b8d1ed;
@@ -604,11 +574,11 @@
     position: absolute;
 }
 
-.projectEditRow,.emptyRow {
-    height:19px;
+.projectEditRow, .emptyRow {
+    height: 19px;
 }
 
-.projectEditRow input{
+.projectEditRow input {
     border: 0 none;
     font-size: 12px;
     height: 14px;
@@ -618,16 +588,15 @@
     font-family: Arial, sans-serif
 }
 
-.projectEditRow.rowSelected td,.projectEditRow.rowSelected input{
-    background-color:#FFFF99;
+.projectEditRow.rowSelected td, .projectEditRow.rowSelected input {
+    background-color: #FFFF99;
 }
 
-
-.parentTaskEditRow,.emptyRow {
-    height:19px;
+.parentTaskEditRow, .emptyRow {
+    height: 19px;
 }
 
-.parentTaskEditRow input{
+.parentTaskEditRow input {
     border: 0 none;
     font-size: 12px;
     height: 14px;
@@ -637,16 +606,15 @@
     font-family: Arial, sans-serif
 }
 
-.parentTaskEditRow.rowSelected td,.parentTaskEditRow.rowSelected input{
-    background-color:#FFFF99;
+.parentTaskEditRow.rowSelected td, .parentTaskEditRow.rowSelected input {
+    background-color: #FFFF99;
 }
 
-
-.taskEditRow,.emptyRow {
-    height:19px;
+.taskEditRow, .emptyRow {
+    height: 19px;
 }
 
-.taskEditRow input{
+.taskEditRow input {
     border: 0 none;
     font-size: 12px;
     height: 14px;
@@ -656,15 +624,15 @@
     font-family: Arial, sans-serif
 }
 
-.taskEditRow.rowSelected td,.taskEditRow.rowSelected input{
-    background-color:#FFFF99;
+.taskEditRow.rowSelected td, .taskEditRow.rowSelected input {
+    background-color: #FFFF99;
 }
 
-.resourceEditRow,.emptyRow {
-    height:19px;
+.resourceEditRow, .emptyRow {
+    height: 19px;
 }
 
-.resourceEditRow input{
+.resourceEditRow input {
     border: 0 none;
     font-size: 12px;
     height: 14px;
@@ -674,51 +642,61 @@
     font-family: Arial, sans-serif
 }
 
-.resourceEditRow.rowSelected td,.resourceEditRow.rowSelected input{
-    background-color:#FFFF99;
+.resourceEditRow.rowSelected td, .resourceEditRow.rowSelected input {
+    background-color: #FFFF99;
 }
 
-
-
-.taskStatusBox{
-    position:absolute;
-    width:100px;
-    height:18px;
-    border:1px solid #a0a0a0;
-    background-color:#fff;
-    margin-top:2px;
-    margin-left:-1px;
+.taskStatusBox {
+    position: absolute;
+    width: 100px;
+    height: 18px;
+    border: 1px solid #a0a0a0;
+    background-color: #fff;
+    margin-top: 2px;
+    margin-left: -1px;
     padding: 2px
 }
-.taskStatus{
-    width:12px;
-    height:12px;
-    display:inline-block;
+
+.taskStatus {
+    width: 12px;
+    height: 12px;
+    display: inline-block;
 }
-.taskStatus[status=STATUS_ACTIVE]{
+
+.taskStatus[status=STATUS_ACTIVE] {
     background-color: #66FF99;
 }
-.taskStatus[status=STATUS_DONE]{
+
+.taskStatus[status=STATUS_DONE] {
     background-color: #0099FF;
 }
-.taskStatus[status=STATUS_FAILED]{
+
+.taskStatus[status=STATUS_FAILED] {
     background-color: #660066;
 }
-.taskStatus[status=STATUS_SUSPENDED]{
+
+.taskStatus[status=STATUS_SUSPENDED] {
     background-color: #fbb11e;
 }
-.taskStatus[status=STATUS_UNDEFINED]{
+
+.taskStatus[status=STATUS_UNDEFINED] {
     background-color: #ffffff;
 }
-.taskStatus.selected{
-    border:#666 2px solid;
+
+.taskStatus.selected {
+    border: #666 2px solid;
 }
 
+.ui-resizable-helper {
+    border: 1px dotted #00F;
+}
 
-.ui-resizable-helper { border: 1px dotted #00F;  }
-.ui-resizable-e, .ui-resizable-w {width: 5px;}
-.ui-draggable{
-    cursor:move;
+.ui-resizable-e, .ui-resizable-w {
+    width: 5px;
+}
+
+.ui-draggable {
+    cursor: move;
 }
 
 .linkArrow {
@@ -738,4 +716,47 @@
     right: 0;
     border-right: 6px double red;
     position: absolute;
+}
+
+.folder {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    margin-top: 2px;
+}
+
+.folder.collapsed {
+    background: url('../images/gmail_icons.png') -40px -120px no-repeat;
+}
+
+.folder.collapsed:hover {
+    background: url('../images/gmail_icons.png') -60px -120px no-repeat;
+}
+
+.folder.uncollapsed {
+    background: url('../images/gmail_icons.png') 0 -120px no-repeat;
+}
+
+.folder.uncollapsed:hover {
+    background: url('../images/gmail_icons.png') -20px -120px no-repeat;
+}
+
+.ProjectRow {
+    background-color: rgba(209, 209, 209, 0.5);
+}
+
+.TaskRow {
+    background-color: rgba(241, 241, 241, 0.5);
+}
+
+.AssetRow {
+    background-color: rgba(255, 231, 219, 0.5);
+}
+
+.ShotRow {
+    background-color: rgba(196, 230, 233, 0.5);
+}
+
+.SequenceRow {
+    background-color: rgba(222, 218, 255, 0.5);
 }
