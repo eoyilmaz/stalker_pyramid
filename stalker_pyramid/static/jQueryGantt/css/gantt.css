@@ -722,6 +722,7 @@
     position: absolute;
     width: 12px;
     height: 12px;
+    margin-top: 2px;
 }
 
 .folder.collapsed {
