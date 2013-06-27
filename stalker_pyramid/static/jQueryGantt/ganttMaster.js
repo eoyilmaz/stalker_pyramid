@@ -708,7 +708,7 @@ GanttMaster.prototype.storeTaskCollapseState = function(){
     for (var i=0; i < this.tasks.length; i++){
         task = this.tasks[i];
         if (!task.isLeaf() && task.collapsed){
-            task_collapse_state.push({'id': task.id, 'collapsed': task.collapsed});
+            task_collapse_state.push(task.id);
         }
     }
 //    console.debug(task_collapse_state);
@@ -741,17 +741,14 @@ GanttMaster.prototype.restoreTaskCollapseState = function(){
 //        console.debug('cookie data: ', task_collapse_state);
         if (task_collapse_state){
             for (var i=0; i < task_collapse_state.length; i++){
-                task_id = task_collapse_state[i].id;
-                task_collapsed = task_collapse_state[i].collapsed;
+                task_id = task_collapse_state[i];
 //                console.debug('task_id        : ', task_id);
 //                console.debug('task_collapsed : ', task_collapsed);
-                if (task_collapsed){
-                    // get the task
-                    task = this.getTask(task_id);
-        //            task.toggleCollapse();
-                    if (task){
-                        task.collapsed = true;
-                    }
+                // get the task
+                task = this.getTask(task_id);
+    //            task.toggleCollapse();
+                if (task){
+                    task.collapsed = true;
                 }
             }
         }

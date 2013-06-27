@@ -391,7 +391,7 @@ GanttDrawer.prototype.drawTask = function (task) {
 //        console.debug('editorRow.position()     : ', editorRow.position());
 //        console.debug('editorRow.position().top : ', editorRow.position().top);
         // TODO: I can't find where the 1px difference is coming, so I reduced the top value 1px
-        var top = editorRow.position().top - 1; //+ this.master.editor.element.parent().scrollTop();
+        var top = editorRow.position().top + this.master.editor.element.parent().scrollTop() - 1;
         var x = (task_drawn_start - this.startMillis) / (this.originalEndMillis - this.originalStartMillis) * 100;
 
         // draw the separator even if the task is not visible
@@ -463,7 +463,7 @@ GanttDrawer.prototype.drawTimeLog = function (time_log) {
     }
 
     var editorRow = owner.rowElement;
-    var top = editorRow.position().top - 1; //+ this.master.editor.element.parent().scrollTop();
+    var top = editorRow.position().top + this.master.editor.element.parent().scrollTop() - 1;
     var x = Math.round((time_log.start - this.startMillis) * this.fx);
 
 //    // draw the separator even if the task is not visible
@@ -842,8 +842,8 @@ GanttDrawer.prototype.refreshGantt = function (kwargs) {
     var par = this.element.parent();
 
     //try to maintain last scroll
-//    var scrollY = par.scrollTop();
-//    var scrollX = par.scrollLeft();
+    var scrollY = par.scrollTop();
+    var scrollX = par.scrollLeft();
 
     this.element.remove();
     //guess the zoom level in base of period
@@ -863,8 +863,8 @@ GanttDrawer.prototype.refreshGantt = function (kwargs) {
 
     //set old scroll  
     //console.debug("old scroll:",scrollX,scrollY)
-//    par.scrollTop(scrollY);
-//    par.scrollLeft(scrollX);
+    par.scrollTop(scrollY);
+    par.scrollLeft(scrollX);
 
 //    this.bindEvents();
 };
