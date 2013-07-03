@@ -21,26 +21,11 @@
  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-/**
- * A method to instantiate valid task models from
- * raw data.
- */
-function TaskFactory() {
-    /**
-     * Build a new Task
-     */
-    this.build = function (kwargs) {
-        kwargs['start'] = kwargs['computed_start'] || kwargs['start'];
-        kwargs['end'] = kwargs['computed_end'] || kwargs['end'];
-        return new Task(kwargs);
-    };
-}
 
 function Task(kwargs) {
     this.id = kwargs['id'] || null;
     this.name = kwargs['name'] || null;
     this.hierarchy_name = kwargs['hierarchy_name'] || null;
-    this.code = kwargs['code'] || null;
     this.description = kwargs['description'] || null;
     
     this.priority = kwargs['priority'] || 500;
@@ -48,8 +33,6 @@ function Task(kwargs) {
     this.type = kwargs['type'] || null;
 
     this.status = "STATUS_UNDEFINED";
-
-    this.project_id = null;
 
     this.children = [];
     this.child_ids = [];
@@ -61,8 +44,6 @@ function Task(kwargs) {
     this.start = kwargs['start'] || null;
     this.duration = kwargs['duration'] || null;
     this.end = kwargs['end'] || null;
-
-    this.is_scheduled = kwargs['is_scheduled'] || false;
 
     this.schedule_model = kwargs['schedule_model'];
     this.schedule_timing = kwargs['schedule_timing'] || 10;
@@ -92,6 +73,7 @@ function Task(kwargs) {
     this.startIsMilestone = false;
     this.endIsMilestone = false;
 
+    // some dynamic attributes
     this.collapsed = false;
     this.hidden = false;
 

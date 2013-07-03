@@ -160,8 +160,7 @@ GanttMaster.messages = {
 
 
 GanttMaster.prototype.createTask = function (kwargs) {
-    var factory = new TaskFactory();
-    return factory.build(kwargs);
+    return new Task(kwargs);
 };
 
 
@@ -245,15 +244,31 @@ GanttMaster.prototype.loadGanttData = function (ganttData, Deferred) {
 };
 
 GanttMaster.prototype.loadResources = function (resources) {
+    // loads data in the following format
+    //
+    // resources = {
+    //     'keys' : ['id', 'name']
+    //     'data' : [
+    //         [resource1.id, resource1.name],
+    //         [resource2.id, resource2.name],
+    //         ...
+    //         [resourceN.id, resourceN.name]
+    //     ]
+    // }
+    //
+
+    var keys = resources.keys;
+    var key_count = keys.length;
+    var kwargs = {};
+    kwargs['master'] = this;
+    var data = resources.data;
+
     var resource;
-    var data;
-    for (var i = 0; i < resources.length; i++) {
-        data = resources[i];
-        resource = new Resource({
-            id: data.id,
-            name: data.name,
-            master: this
-        });
+    for (var i = 0; i < data.length; i++) {
+        for (var j = 0; j < key_count; j++) {
+            kwargs[keys[j]] = data[i][j];
+        }
+        resource = new Resource(kwargs);
         this.resources.push(resource);
         this.resource_ids.push(resource.id);
     }
@@ -261,63 +276,39 @@ GanttMaster.prototype.loadResources = function (resources) {
 
 
 GanttMaster.prototype.loadTasks = function (tasks) {
+    //
+    // loads data in the following format:
+    //
+    // tasks = {
+    //     'keys' : [key1, key2, ...., keyN]
+    //     'data' : [
+    //         [task1.key1, task1.key2, ....., task1.keyN],
+    //         [task2.key1, task2.key2, ....., task2.keyN],
+    //         ...
+    //         [taskN.key1, taskN.key2, ....., taskN.keyN],
+    //     ]
+    // }
+    //
+
 //    console.debug('GanttMaster.loadTasks start');
-    var factory = new TaskFactory();
+    //var factory = new TaskFactory();
+
+    var keys = tasks.keys;
+    var key_count = keys.length;
+    var kwargs = {};
+    kwargs['master'] = this;
+    var data = tasks.data;
 
     var task;
-    for (var i = 0; i < tasks.length; i++) {
-        task = tasks[i];
-        if (!(task instanceof Task)) {
-            var t = factory.build({
-                id: task.id,
-                name: task.name,
-                full_name: task.full_name,
-                code: task.code,
-                description: task.description,
-                priority: task.priority,
-                type: task.type,
-                status: task.status,
-                parent_id: task.parent_id,
-                depend_ids: task.depend_ids,
-                depends: null,
-                resource_ids: task.resource_ids,
-                start: task.start,
-                duration: task.duration,
-                end: task.end,
-                bid_timing: task.bid_timing,
-                bid_unit: task.bid_unit,
-                is_scheduled: task.is_scheduled,
-                is_milestone: task.is_milestone,
-                computed_start: task.computed_start,
-                computed_end: task.computed_end,
-                schedule_constraint: task.schedule_constraint,
-                schedule_model: task.schedule_model,
-                schedule_timing: task.schedule_timing,
-                schedule_unit: task.schedule_unit,
-                schedule_seconds: task.schedule_seconds,
-                total_logged_seconds: task.total_logged_seconds,
-                master: this
-            });
-
-            // TODO: do it properly
-            for (var key in task) {
-                if (key != "end" && key != "start")
-                    t[key] = task[key]; //copy all properties
-            }
-            task = t;
+    for (var i = 0; i < data.length; i++) {
+        for (var j = 0; j < key_count; j++) {
+            kwargs[keys[j]] = data[i][j];
         }
+        task = new Task(kwargs);
         task.depends = null;
         this.tasks.push(task);  //append task at the end
         this.task_ids.push(task.id);
     }
-
-    // sort tasks to their dates
-//    this.tasks.sort(function (a, b) {
-//        return a.start - b.start
-//    });
-//    for (var i = 0; i < this.tasks.length; i++) {
-//        this.task_ids.push(this.tasks[i].id);
-//    }
 
     // find root tasks
 //    console.debug('getting root tasks start');
@@ -372,38 +363,50 @@ GanttMaster.prototype.loadTasks = function (tasks) {
 //    this.currentTask = this.tasks[0];
 
     // loop through all parent tasks and sort their children
-    for (var i=0; i < this.tasks.length; i++){
+    for (var i = 0; i < this.tasks.length; i++) {
         task = this.tasks[i];
         if (task.isParent()){
             task.sortChildren();
         }
     }
+//    console.debug('GanttMaster.loadTasks end');
 };
 
 
 GanttMaster.prototype.loadTimeLogs = function (time_logs) {
+    //
+    // loads data in the following format:
+    //
+    // time_logs = {
+    //     'keys' : [key1, key2, ...., keyN]
+    //     'data' : [
+    //         [time_log1.key1, time_log1.key2, ....., time_log1.keyN],
+    //         [time_log2.key1, time_log2.key2, ....., time_log2.keyN],
+    //         ...
+    //         [time_logN.key1, time_logN.key2, ....., time_logN.keyN],
+    //     ]
+    // }
+    //
+//    console.debug('GanttMaster.loadTimeLogs start');
+    var keys = time_logs.keys;
+    var key_count = keys.length;
+    var kwargs = {};
+    kwargs['master'] = this;
+    var data = time_logs.data;
+ 
     var time_log;
-    var data;
-    for (var i = 0; i < time_logs.length; i++) {
-        data = time_logs[i];
-        if (!(data instanceof TimeLog)) {
-            time_log = new TimeLog({
-                id: data.id,
-                task_id: data.task_id,
-                resource_id: data.resource_id,
-                start: data.start,
-                end: data.end
-            });
-        } else {
-            time_log = data;
+    for (var i = 0; i < data.length; i++) {
+        for (var j = 0; j < key_count; j++) {
+            kwargs[keys[j]] = data[i][j];
         }
+        time_log = new TimeLog(kwargs);
 
-        time_log.master = this;
         this.time_logs.push(time_log);
         this.time_log_ids.push(time_log.id);
         // to update the task relation
         time_log.getTask();
     }
+//    console.debug('GanttMaster.loadTimeLogs end');
 };
 
 GanttMaster.prototype.drawData = function () {

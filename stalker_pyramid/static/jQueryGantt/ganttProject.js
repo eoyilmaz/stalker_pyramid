@@ -18,7 +18,6 @@
 
 function Project(kwargs){
     this.id = kwargs['id'] || null;
-    this.code = kwargs['code'] || code;
     this.name = kwargs['name'] || name;
     
     this.start = kwargs['start'] || null;

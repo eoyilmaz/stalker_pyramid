@@ -5,6 +5,21 @@ StalkerGantt Changes
 0.1.0.a4
 --------
 
+* **Update:** The JSON data format is changed to the following format::
+  
+  tasks = {
+      'keys' : [key1, key2, ...., keyN]
+      'data' : [
+          [task1.key1, task1.key2, ....., task1.keyN],
+          [task2.key1, task2.key2, ....., task2.keyN],
+          ...
+          [taskN.key1, taskN.key2, ....., taskN.keyN],
+      ]
+  }
+  
+  This is much more compact then the original format, because the key names are
+  not repeated over and over again, causing a compression ratio of roughly 3.5
+  over the original format.
 * **New:** For Tasks which are not shown because their start and end dates are
   not in range, a left or right red arrow will be drawn to show where the task
   is (on left or on right).

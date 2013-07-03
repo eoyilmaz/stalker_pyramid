@@ -122,7 +122,7 @@ GridEditor.prototype.refreshTaskRow = function (task) {
     row.find(".taskRowIndex").html(task.getRow() + 1);
     row.find(".indentCell").css("padding-left", task.getParents().length * 15);
     row.find(".name").html(task.name);
-    row.find(".code").html(task.code);
+    row.find(".id").html(task.id);
 
     row.find(".timing").html(task.schedule_model.toUpperCase()[0] + ":" + task.schedule_timing + task.schedule_unit);
     row.find(".start").html(new Date(task.start).format("yyyy-mm-dd HH:00")).updateOldValue(); // called on dates only because for other field is called on focus event

@@ -30,7 +30,7 @@ function TimeLog(kwargs) {
     this.rowElement = null; // row editor html element of the resource
     this.ganttElement = null; // gantt html element
 
-    this.master = null;
+    this.master = kwargs['master'] || null;
 }
 
 TimeLog.prototype.getResource = function(){

@@ -48,6 +48,21 @@ Stalker Pyramid Changes
     upon reload of the page preserves the collapse state by not drawing
     collapsed tasks, it also helps loading the gantt chart much more quickly
     for a project with 50+ tasks.
+  * **Update:** The JSON data format is changed to the following format::
+    
+    tasks = {
+        'keys' : [key1, key2, ...., keyN]
+        'data' : [
+            [task1.key1, task1.key2, ....., task1.keyN],
+            [task2.key1, task2.key2, ....., task2.keyN],
+            ...
+            [taskN.key1, taskN.key2, ....., taskN.keyN],
+        ]
+    }
+    
+    This is much more compact then the original format, because the key names
+    are not repeated over and over again, causing a compression ratio of
+    roughly 3.5 over the original format.
 
 pre 0.1.0.b1
 ============
