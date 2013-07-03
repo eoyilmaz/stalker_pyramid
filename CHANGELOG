@@ -63,6 +63,8 @@ Stalker Pyramid Changes
     This is much more compact then the original format, because the key names
     are not repeated over and over again, causing a compression ratio of
     roughly 3.5 over the original format.
+  * **Update:** Task collapse state will be preserved in different gantt chart
+    views with different set of tasks from the same database.
 
 pre 0.1.0.b1
 ============

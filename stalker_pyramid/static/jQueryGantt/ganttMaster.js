@@ -21,11 +21,13 @@
  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 function GanttMaster(kwargs) {
-    this.__version__ = '0.1.0.a4';
+    this.__version__ = '0.1.0.a5';
     this.tasks = [];
     this.task_ids = []; // lookup table for quick task access
     this.root_tasks = [];
     this.root_task_ids = [];
+    this.parent_tasks = [];
+    this.parent_task_ids = [];
 
     this.time_logs = [];
     this.time_log_ids = [];
@@ -366,6 +368,8 @@ GanttMaster.prototype.loadTasks = function (tasks) {
     for (var i = 0; i < this.tasks.length; i++) {
         task = this.tasks[i];
         if (task.isParent()){
+            this.parent_tasks.push(task);
+            this.parent_task_ids.push(task.id);
             task.sortChildren();
         }
     }
@@ -704,21 +708,31 @@ GanttMaster.prototype.getDateInterval = function () {
 
 GanttMaster.prototype.storeTaskCollapseState = function(){
     // stores the task collapse state in a cookie
-    // @param cookie: dojo.cookie
-
+    // needs a cookie like dojo.cookie in master.cookie
     var task_collapse_state = [];
+    // preserve the previous list
+    var cookie_data = this.cookie("TaskCollapseState");
+    if (cookie_data){
+        task_collapse_state = this.json.parse(cookie_data);
+    }
+//    console.debug('current task_collapse_state:', task_collapse_state);
+    var index;
     var task;
-    for (var i=0; i < this.tasks.length; i++){
-        task = this.tasks[i];
-        if (!task.isLeaf() && task.collapsed){
-            task_collapse_state.push(task.id);
+    for (var i=0; i < this.parent_tasks.length; i++){
+        task = this.parent_tasks[i];
+        index = task_collapse_state.indexOf(task.id);
+        if (task.collapsed){
+            // store if it is not already in the list
+            if (index == -1){
+                task_collapse_state.push(task.id);
+            }
+        } else {
+            // remove it from the list if it is there
+            if (index != -1){
+                task_collapse_state.splice(index, 1);
+            }
         }
     }
-//    console.debug(task_collapse_state);
-    // delete the cookie
-    this.cookie(
-        "TaskCollapseState", null, {expire: -1}
-    );
     // then store data
     this.cookie(
         "TaskCollapseState",
@@ -730,26 +744,18 @@ GanttMaster.prototype.restoreTaskCollapseState = function(){
     // restores the task collapse state in a cookie
     // @param cookie: dojo.cookie
 //    console.debug('GanttMaster.restoreTaskCollapseState start');
-    
 //    console.debug('restoring task collapse state');
-
     var task_collapse_state = [];
     var task_id;
     var task;
-    var task_collapsed;
-
     var cookie_data = this.cookie("TaskCollapseState");
     if (cookie_data){
         task_collapse_state = this.json.parse(cookie_data);
-//        console.debug('cookie data: ', task_collapse_state);
         if (task_collapse_state){
-            for (var i=0; i < task_collapse_state.length; i++){
+            for (var i = 0; i < task_collapse_state.length; i++){
                 task_id = task_collapse_state[i];
-//                console.debug('task_id        : ', task_id);
-//                console.debug('task_collapsed : ', task_collapsed);
                 // get the task
                 task = this.getTask(task_id);
-    //            task.toggleCollapse();
                 if (task){
                     task.collapsed = true;
                 }
