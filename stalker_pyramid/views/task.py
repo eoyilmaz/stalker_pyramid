@@ -278,56 +278,59 @@ def convert_to_jquery_gantt_task_format(tasks):
     faux_tasks = []
 
     # first append projects
-
     faux_tasks.extend(
-        [{
-            'type': project.entity_type,
-            'id': project.id,
-            'code': project.code,
-            'name': project.name,
-            'start': milliseconds_since_epoch(project.start),
-            'end': milliseconds_since_epoch(project.end),
-            'computed_start': milliseconds_since_epoch(project.computed_start) if project.computed_start else None,
-            'computed_end': milliseconds_since_epoch(project.computed_end) if project.computed_end else None,
-            'schedule_model': 'duration',
-            'schedule_timing': project.duration.days,
-            'schedule_unit': 'd',
-            'parent_id': None,
-            'depend_ids': [],
-            'resources': [],
-         } for project in projects]
+        [
+            [
+                project.duration.days,  # bid timing
+                'd',  # bid_unit
+                [],  # depend_ids
+                project.description,  # description
+                milliseconds_since_epoch(project.computed_end if project.computed_end else project.end),  # end
+                '',  # hierarchy name
+                project.id,  # id
+                project.name,  # name
+                None,  # parent_id
+                500,  # priority
+                [],  # resource_ids
+                0,  # schedule_constraint
+                'duration',  # schedule_model TODO: use an integer for effort, duration and length
+                project.duration.days * 24 * 60 * 60,  # schedule_seconds
+                project.duration.days,  # schedule_timing
+                'd',  # schedule_unit
+                milliseconds_since_epoch(project.computed_start if project.computed_start else project.start),  # start
+                'STATUS_UNDEFINED',  # status,
+                0,  # total_logged_seconds
+                project.entity_type,  # type
+            ] for project in projects
+        ]
     )
 
-    faux_tasks.extend([
-        {
-            'type': task.entity_type,
-            'id': task.id,
-            'hierarchy_name': ' | '.join([parent.name for parent in task.parents]),
-            'name': task.name,
-            'code': task.id,
-            'description': task.description,
-            'priority': task.priority,
-            'status': 'STATUS_UNDEFINED',
-            'project_id': task.project.id,
-            'parent_id': task.parent.id if task.parent else task.project.id,
-            'depend_ids': [dep.id for dep in task.depends],
-            'resource_ids': [resource.id for resource in task.resources],
-            'start': milliseconds_since_epoch(task.start),
-            'end': milliseconds_since_epoch(task.end),
-            'is_scheduled': task.is_scheduled,
-            'schedule_timing': task.schedule_timing,
-            'schedule_unit': task.schedule_unit,
-            'bid_timing': task.bid_timing,
-            'bid_unit': task.bid_unit,
-            'schedule_model': task.schedule_model,
-            'schedule_constraint': task.schedule_constraint,
-            'schedule_seconds': task.schedule_seconds,
-            'total_logged_seconds': task.total_logged_seconds,
-            'computed_start': milliseconds_since_epoch(task.computed_start) if task.computed_start else None,
-            'computed_end': milliseconds_since_epoch(task.computed_end) if task.computed_end else None,
-        }
-        for task in tasks
-    ])
+    faux_tasks.extend(
+        [
+            [
+                task.bid_timing,  # bid_timing
+                task.bid_unit,  # bid_unit
+                [dep.id for dep in task.depends],  # depend_ids
+                task.description,  # description
+                milliseconds_since_epoch(task.computed_end if task.computed_end else task.end),  # end
+                ' | '.join([parent.name for parent in task.parents]),  # hierarchy_name
+                task.id,  # id
+                task.name,  # name
+                task.parent.id if task.parent else task.project.id,  # parent_id
+                task.priority,  # priority
+                [resource.id for resource in task.resources],  # resource_ids
+                task.schedule_constraint,  # schedule_constraint
+                task.schedule_model,  # schedule_model
+                task.schedule_seconds,  # schedule_seconds
+                task.schedule_timing,  # schedule_timing
+                task.schedule_unit,  # schedule_unit
+                milliseconds_since_epoch(task.computed_start if task.computed_start else task.start),  # start
+                'STATUS_UNDEFINED',  # status
+                task.total_logged_seconds,  # total_logged_seconds
+                task.entity_type,  # type
+            ] for task in tasks
+        ]
+    )
 
     # prepare time logs
     all_time_logs = []
@@ -342,18 +345,32 @@ def convert_to_jquery_gantt_task_format(tasks):
     all_resources = list(set(all_resources))
 
     data = {
-        'tasks': faux_tasks,
-        'resources': [{
-            'id': resource.id,
-            'name': resource.name
-        } for resource in all_resources],  # User.query.all()],
-        'time_logs': [{
-            'id': time_log.id,
-            'task_id': time_log.task.id,
-            'resource_id': time_log.resource.id,
-            'start': milliseconds_since_epoch(time_log.start),
-            'end': milliseconds_since_epoch(time_log.end)
-        } for time_log in all_time_logs],
+        'tasks': {
+            'keys': [
+                'bid_timing', 'bid_unit', 'depend_ids', 'description', 'end',
+                'hierarchy_name', 'id', 'name', 'parent_id', 'priority',
+                'resource_ids', 'schedule_constraint', 'schedule_model',
+                'schedule_seconds', 'schedule_timing', 'schedule_unit',
+                'start', 'status', 'total_logged_seconds', 'type'],
+            'data': faux_tasks
+        },
+        'resources': {
+            'keys': ['id', 'name'],
+            'data': [
+                [resource.id, resource.name] for resource in all_resources
+            ]
+        },  # User.query.all()],
+        'time_logs': {
+            'keys': ['end', 'id', 'resource_id', 'start', 'task_id'],
+            'data': [
+                [
+                    milliseconds_since_epoch(time_log.end),  # end
+                    time_log.id,  # id
+                    time_log.resource.id,  # resource_id
+                    milliseconds_since_epoch(time_log.start),  # start
+                    time_log.task.id,  # task_id
+                ] for time_log in all_time_logs],
+    },
         'timing_resolution': (timing_resolution.days * 86400 +
                               timing_resolution.seconds) * 1000,
         'working_hours': working_hours,

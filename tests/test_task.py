@@ -314,51 +314,52 @@ class TaskViewTestCase(unittest2.TestCase):
                     'type'
                 ],
                 'data': [
-                    [0, 'h', [], '', 1372550400000, '', 22, u'Test Project 1',
-                     None, 500, [], 0, 'duration', 324000.0, 10, 'd',
-                     1371686400000, 'STATUS_UNDEFINED', 0, u'Project'],
+                    [10, 'd', [], u'', 1372550400000, '', 22,
+                     u'Test Project 1', None, 500, [], 0, 'duration', 864000,
+                     10, 'd', 1371686400000, 'STATUS_UNDEFINED', 0,
+                     u'Project'],
                     [10.0, u'd', [], u'', 1372550400000, '',
                      self.test_task1.id, u'Test Task 1', self.test_proj1.id,
-                    500, [], 0, u'effort', 324000.0, 10.0, u'd', 1371686400000,
-                    'STATUS_UNDEFINED', 0, u'Task'],
-                    [10.0, u'd', [], u'', 1372550400000, '',
+                     500, [], 0, u'effort', 324000.0, 10.0, u'd', 1371686400000,
+                     'STATUS_UNDEFINED', 0, u'Task'],
+                    [10.0, u'd', [], u'', 1372942800000, '',
                      self.test_task2.id, u'Test Task 2', self.test_proj1.id,
-                    500, [], 0, u'effort', 324000.0, 10.0, u'd', 1371686400000,
-                    'STATUS_UNDEFINED', 0, u'Task'],
+                     500, [], 0, u'effort', 324000.0, 10.0, u'd', 1371686400000,
+                     'STATUS_UNDEFINED', 0, u'Task'],
                     [10.0, u'd', [], u'', 1372550400000, '',
                      self.test_task3.id, u'Test Task 3', self.test_proj1.id,
-                    500, [12, 13], 0, u'effort', 324000.0, 10.0, u'd',
-                    1371686400000, 'STATUS_UNDEFINED', 0, u'Task'],
-                    [10.0, u'd', [], u'', 1372550400000, self.test_task4.id,
-                    u'Test Task 1', u'Test Task 4', self.test_task1.id, 500,
-                    [12], 0, u'effort', 324000.0, 10.0, u'd', 1371686400000,
-                    'STATUS_UNDEFINED', 0, u'Task'],
+                     500, [12, 13], 0, u'effort', 324000.0, 10.0, u'd',
+                     1371686400000, 'STATUS_UNDEFINED', 0, u'Task'],
+                    [10.0, u'd', [], u'', 1372550400000, u'Test Task 1',
+                     self.test_task4.id, u'Test Task 4', self.test_task1.id,
+                     500, [12], 0, u'effort', 324000.0, 10.0, u'd',
+                     1371686400000, 'STATUS_UNDEFINED', 0, u'Task'],
                     [10.0, u'd', [], u'', 1372550400000, u'Test Task 1',
                      self.test_task5.id, u'Test Task 5', self.test_task1.id,
-                    500, [12], 0, u'effort', 324000.0, 10.0, u'd',
-                    1371686400000, 'STATUS_UNDEFINED', 0, u'Task'],
+                     500, [12], 0, u'effort', 324000.0, 10.0, u'd',
+                     1371686400000, 'STATUS_UNDEFINED', 0, u'Task'],
                     [10.0, u'd', [], u'', 1372550400000, u'Test Task 1',
                      self.test_task6.id, u'Test Task 6', self.test_task1.id,
-                    500, [12], 0, u'effort', 324000.0, 10.0, u'd',
-                    1371686400000, 'STATUS_UNDEFINED', 0, u'Task'],
+                     500, [12], 0, u'effort', 324000.0, 10.0, u'd',
+                     1371686400000, 'STATUS_UNDEFINED', 0, u'Task'],
                     [10.0, u'd', [], u'', 1372550400000, u'Test Task 2',
-                    self.test_task7.id, u'Test Task 7', self.test_task2.id,
-                    500, [], 0, u'effort', 324000.0, 10.0, u'd', 1371686400000,
-                    'STATUS_UNDEFINED', 0, u'Task'],
+                     self.test_task7.id, u'Test Task 7', self.test_task2.id,
+                     500, [], 0, u'effort', 324000.0, 10.0, u'd', 1371686400000,
+                     'STATUS_UNDEFINED', 0, u'Task'],
                     [10.0, u'd', [], u'', 1372550400000, u'Test Task 2',
-                    self.test_task8.id, u'Test Task 8', self.test_task2.id,
-                    500, [13], 0, u'effort', 324000.0, 10.0, u'd',
-                    1371686400000, 'STATUS_UNDEFINED', 0, u'Task'],
+                     self.test_task8.id, u'Test Task 8', self.test_task2.id,
+                     500, [13], 0, u'effort', 324000.0, 10.0, u'd',
+                     1371686400000, 'STATUS_UNDEFINED', 0, u'Task'],
                     [10.0, u'd', [], u'', 1372550400000,
                      u'Test Task 2 | Test Task 7 | Test Asset 1',
                      self.test_task9.id, u'Test Task 9', self.test_asset1.id,
-                    500, [], 0, u'effort', 324000.0, 10.0, u'd', 1371686400000,
-                    'STATUS_UNDEFINED', 0, u'Task'],
+                     500, [], 0, u'effort', 324000.0, 10.0, u'd', 1371686400000,
+                     'STATUS_UNDEFINED', 0, u'Task'],
                     [1.0, u'h', [], u'', 1372550400000,
                      u'Test Task 2 | Test Task 7', self.test_asset1.id,
-                    u'Test Asset 1', self.test_task7.id, 500, [], 0, u'effort',
-                    3600.0, 1.0, u'h', 1371686400000, 'STATUS_UNDEFINED', 0,
-                    u'Asset']
+                     u'Test Asset 1', self.test_task7.id, 500, [], 0, u'effort',
+                     3600.0, 1.0, u'h', 1371686400000, 'STATUS_UNDEFINED', 0,
+                     u'Asset']
                 ]
             },
             'resources': {
@@ -369,7 +370,7 @@ class TaskViewTestCase(unittest2.TestCase):
                 ]
             },
             'time_logs': {
-                'keys': ['id', 'end', 'resource_id', 'start', 'task_id'],
+                'keys': ['end', 'id', 'resource_id', 'start', 'task_id'],
                 'data': []
             },
             'timing_resolution': 3600000,
@@ -390,6 +391,11 @@ class TaskViewTestCase(unittest2.TestCase):
 
         data = task.convert_to_jquery_gantt_task_format(self.all_tasks)
         self.maxDiff = None
+
+        print data,
+        print '#########################'
+        print expected_data
+
         self.assertEqual(
             data,
             expected_data
