@@ -44,6 +44,8 @@ Stalker Pyramid Changes
   * **New:** For Tasks which are not shown because their start and end dates
     are not in range, a left or right red arrow will be drawn to show where the
     task is (on left or on right).
+  * **New:** BID timing is added to task tooltip list.
+
 
 pre 0.1.0.b1
 ============

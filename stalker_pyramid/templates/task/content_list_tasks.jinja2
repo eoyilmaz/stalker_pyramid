@@ -141,8 +141,10 @@
                         schedule_model = schedule_model.charAt(0).toUpperCase() + schedule_model.substr(1).toLowerCase();
                     }
 
-                    var schedule_timing = node.getAttribute('schedule_timing');
+                    var schedule_timing =  (parseFloat(node.getAttribute('schedule_timing'))).toFixed(1);
                     var schedule_unit = node.getAttribute('schedule_unit');
+                    var bid_timing = node.getAttribute('bid_timing');
+                    var bid_unit = node.getAttribute('bid_unit');
 
                     var description = node.getAttribute('description');
 
@@ -162,6 +164,10 @@
                             '<tr>' +
                                 '<td class="label_column">Priority</td>' +
                                 '<td class="input_column">' + priority + '</td>' +
+                            '</tr>' +
+                            '<tr>' +
+                                '<td class="label_column">BID</td>' +
+                                '<td class="input_column">' + bid_timing +' '+ bid_unit + '</td>' +
                             '</tr>' +
                             '<tr>' +
                                 '<td class="label_column">' + schedule_model + '</td>' +

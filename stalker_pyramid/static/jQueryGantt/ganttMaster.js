@@ -262,6 +262,7 @@ GanttMaster.prototype.loadTasks = function (tasks) {
     var task;
     for (var i = 0; i < tasks.length; i++) {
         task = tasks[i];
+        console.debug('task.schedule_timing: '+task.schedule_timing);
         if (!(task instanceof Task)) {
             var t = factory.build({
                 id: task.id,

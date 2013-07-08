@@ -65,7 +65,7 @@ function Task(kwargs) {
     this.is_scheduled = kwargs['is_scheduled'] || false;
 
     this.schedule_model = kwargs['schedule_model'];
-    this.schedule_timing = kwargs['schedule_timing'] || 10;
+    this.schedule_timing = (kwargs['schedule_timing'] || 10).toFixed(1);
     this.schedule_unit = kwargs['schedule_unit'] || 'h';
     this.schedule_constraint = kwargs['schedule_constraint'] || 0;
 
@@ -83,7 +83,7 @@ function Task(kwargs) {
 
 //    console.debug('schedule_constraint : ', this.schedule_constraint);
 //    console.debug('schedule_model      : ', this.schedule_model);
-//    console.debug('schedule_timing     : ', this.schedule_timing);
+    console.debug('schedule_timing     : ', this.schedule_timing);
 //    console.debug('schedule_unit       : ', this.schedule_unit);
 //    console.debug('bid_timing          : ', this.bid_timing);
 //    console.debug('bid_unit            : ', this.bid_unit);
