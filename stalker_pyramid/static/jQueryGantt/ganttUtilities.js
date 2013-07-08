@@ -126,6 +126,11 @@ $.splittify = {
 
         splitterBar.css({left: desired_width});
         var splitterBar_width = splitterBar.width();
+        // TODO: There is a 15px difference with the initial size and the first size on resize, monkey patching it
+        //                   |
+        //                   +-----------------------------------+
+        //                                                       |
+        //                                                       V
         secondBox.width(w - desired_width - splitterBar_width - 15).css({left:desired_width + splitterBar_width});
 
         splitterBar.bind("mousedown.gdf", function (e) {

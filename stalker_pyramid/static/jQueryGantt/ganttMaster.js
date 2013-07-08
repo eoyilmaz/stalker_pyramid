@@ -21,14 +21,21 @@
  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 function GanttMaster(kwargs) {
-    this.__version__ = '0.1.0.a4';
+    this.__version__ = '0.1.0.a5';
     this.tasks = [];
     this.task_ids = []; // lookup table for quick task access
+    this.root_tasks = [];
+    this.root_task_ids = [];
+    this.parent_tasks = [];
+    this.parent_task_ids = [];
 
     this.time_logs = [];
     this.time_log_ids = [];
 
     this.links = [];
+
+    this.cookie = null;
+    this.json = null;
 
     this.editor; //element for editor
     this.gantt; //element for gantt
@@ -155,8 +162,7 @@ GanttMaster.messages = {
 
 
 GanttMaster.prototype.createTask = function (kwargs) {
-    var factory = new TaskFactory();
-    return factory.build(kwargs);
+    return new Task(kwargs);
 };
 
 
@@ -230,25 +236,41 @@ GanttMaster.prototype.loadGanttData = function (ganttData, Deferred) {
     var self = this;
 
     // TODO: this is ridiculous, it should start when something is finished, not after a certain time
-    this.gantt.element.oneTime(200, function () {
-        self.gantt.centerOnToday();
+//    this.gantt.element.oneTime(200, function () {
+//        self.gantt.centerOnToday();
         deferred.resolve('success');
-    });
+//    });
 
 
     return deferred.promise;
 };
 
 GanttMaster.prototype.loadResources = function (resources) {
+    // loads data in the following format
+    //
+    // resources = {
+    //     'keys' : ['id', 'name']
+    //     'data' : [
+    //         [resource1.id, resource1.name],
+    //         [resource2.id, resource2.name],
+    //         ...
+    //         [resourceN.id, resourceN.name]
+    //     ]
+    // }
+    //
+
+    var keys = resources.keys;
+    var key_count = keys.length;
+    var kwargs = {};
+    kwargs['master'] = this;
+    var data = resources.data;
+
     var resource;
-    var data;
-    for (var i = 0; i < resources.length; i++) {
-        data = resources[i];
-        resource = new Resource({
-            id: data.id,
-            name: data.name,
-            master: this
-        });
+    for (var i = 0; i < data.length; i++) {
+        for (var j = 0; j < key_count; j++) {
+            kwargs[keys[j]] = data[i][j];
+        }
+        resource = new Resource(kwargs);
         this.resources.push(resource);
         this.resource_ids.push(resource.id);
     }
@@ -256,77 +278,64 @@ GanttMaster.prototype.loadResources = function (resources) {
 
 
 GanttMaster.prototype.loadTasks = function (tasks) {
+    //
+    // loads data in the following format:
+    //
+    // tasks = {
+    //     'keys' : [key1, key2, ...., keyN]
+    //     'data' : [
+    //         [task1.key1, task1.key2, ....., task1.keyN],
+    //         [task2.key1, task2.key2, ....., task2.keyN],
+    //         ...
+    //         [taskN.key1, taskN.key2, ....., taskN.keyN],
+    //     ]
+    // }
+    //
+
 //    console.debug('GanttMaster.loadTasks start');
-    var factory = new TaskFactory();
+    //var factory = new TaskFactory();
+
+    var keys = tasks.keys;
+    var key_count = keys.length;
+    var kwargs = {};
+    kwargs['master'] = this;
+    var data = tasks.data;
 
     var task;
-    for (var i = 0; i < tasks.length; i++) {
-        task = tasks[i];
-        console.debug('task.schedule_timing: '+task.schedule_timing);
-        if (!(task instanceof Task)) {
-            var t = factory.build({
-                id: task.id,
-                name: task.name,
-                full_name: task.full_name,
-                code: task.code,
-                description: task.description,
-                priority: task.priority,
-                type: task.type,
-                status: task.status,
-                parent_id: task.parent_id,
-                depend_ids: task.depend_ids,
-                depends: null,
-                resource_ids: task.resource_ids,
-                start: task.start,
-                duration: task.duration,
-                end: task.end,
-                bid_timing: task.bid_timing,
-                bid_unit: task.bid_unit,
-                is_scheduled: task.is_scheduled,
-                is_milestone: task.is_milestone,
-                computed_start: task.computed_start,
-                computed_end: task.computed_end,
-                schedule_constraint: task.schedule_constraint,
-                schedule_model: task.schedule_model,
-                schedule_timing: task.schedule_timing,
-                schedule_unit: task.schedule_unit,
-                schedule_seconds: task.schedule_seconds,
-                total_logged_seconds: task.total_logged_seconds,
-                master: this
-            });
-
-            // TODO: do it properly
-            for (var key in task) {
-                if (key != "end" && key != "start")
-                    t[key] = task[key]; //copy all properties
-            }
-            task = t;
+    for (var i = 0; i < data.length; i++) {
+        for (var j = 0; j < key_count; j++) {
+            kwargs[keys[j]] = data[i][j];
         }
+        task = new Task(kwargs);
         task.depends = null;
         this.tasks.push(task);  //append task at the end
-    }
-
-    // sort tasks to their dates
-    this.tasks.sort(function (a, b) {
-        return a.start - b.start
-    });
-    for (var i = 0; i < this.tasks.length; i++) {
-        this.task_ids.push(this.tasks[i].id);
+        this.task_ids.push(task.id);
     }
 
     // find root tasks
-    var root_tasks = [];
+//    console.debug('getting root tasks start');
+    this.root_tasks = [];
+    var current_task;
     for (var i = 0; i < this.tasks.length; i++) {
         // just find root tasks
         // also register parents
-        if (this.tasks[i].getParent() == null) {
-            root_tasks.push(this.tasks[i]);
+//        if (this.tasks[i].getParent() == null) { // this fills parent.children array
+        current_task = this.tasks[i];
+        if (current_task.parent_id == null) {
+            this.root_tasks.push(current_task);
+            this.root_task_ids.push(current_task);
+        } else {
+            // fill parent.children array
+            current_task.getParent();
         }
         // also fill the task.depends
         this.tasks[i].getDepends();
     }
+//    console.debug('getting root tasks end');
 
-
+//    console.debug('root_tasks : ', this.root_tasks);
+//    console.debug('tasks      : ', this.tasks);
+    
     var loop_through_child = function (task, children) {
         if (children == null) {
             children = []
@@ -341,8 +350,8 @@ GanttMaster.prototype.loadTasks = function (tasks) {
 
     var sorted_task_list = [];
     // now go from root to child
-    for (var i = 0; i < root_tasks.length; i++) {
-        sorted_task_list = loop_through_child(root_tasks[i], sorted_task_list);
+    for (var i = 0; i < this.root_tasks.length; i++) {
+        sorted_task_list = loop_through_child(this.root_tasks[i], sorted_task_list);
     }
 
     // update tasks
@@ -353,40 +362,67 @@ GanttMaster.prototype.loadTasks = function (tasks) {
         this.task_ids.push(this.tasks[i].id);
     }
     // set the first task selected
-    this.currentTask = this.tasks[0];
+//    this.currentTask = this.tasks[0];
+
+    // loop through all parent tasks and sort their children
+    for (var i = 0; i < this.tasks.length; i++) {
+        task = this.tasks[i];
+        if (task.isParent()){
+            this.parent_tasks.push(task);
+            this.parent_task_ids.push(task.id);
+            task.sortChildren();
+        }
+    }
+//    console.debug('GanttMaster.loadTasks end');
 };
 
 
 GanttMaster.prototype.loadTimeLogs = function (time_logs) {
+    //
+    // loads data in the following format:
+    //
+    // time_logs = {
+    //     'keys' : [key1, key2, ...., keyN]
+    //     'data' : [
+    //         [time_log1.key1, time_log1.key2, ....., time_log1.keyN],
+    //         [time_log2.key1, time_log2.key2, ....., time_log2.keyN],
+    //         ...
+    //         [time_logN.key1, time_logN.key2, ....., time_logN.keyN],
+    //     ]
+    // }
+    //
+//    console.debug('GanttMaster.loadTimeLogs start');
+    var keys = time_logs.keys;
+    var key_count = keys.length;
+    var kwargs = {};
+    kwargs['master'] = this;
+    var data = time_logs.data;
+ 
     var time_log;
-    var data;
-    for (var i = 0; i < time_logs.length; i++) {
-        data = time_logs[i];
-        if (!(data instanceof TimeLog)) {
-            time_log = new TimeLog({
-                id: data.id,
-                task_id: data.task_id,
-                resource_id: data.resource_id,
-                start: data.start,
-                end: data.end
-            });
-        } else {
-            time_log = data;
+    for (var i = 0; i < data.length; i++) {
+        for (var j = 0; j < key_count; j++) {
+            kwargs[keys[j]] = data[i][j];
         }
+        time_log = new TimeLog(kwargs);
 
-        time_log.master = this;
         this.time_logs.push(time_log);
         this.time_log_ids.push(time_log.id);
         // to update the task relation
         time_log.getTask();
     }
+//    console.debug('GanttMaster.loadTimeLogs end');
 };
 
 GanttMaster.prototype.drawData = function () {
+//    console.debug('GanttMaster.drawData start');
+    // before drawing restore collapse state of tasks
+    this.restoreTaskCollapseState();
+
     this.drawResources();
-    this.drawTasks();
+    this.drawRootTasks();
     this.drawTimeLogs();
 //    console.debug(this);
+//    console.debug('GanttMaster.drawData end');
 };
 
 
@@ -399,22 +435,52 @@ GanttMaster.prototype.drawResources = function () {
 };
 
 
-GanttMaster.prototype.drawTasks = function () {
-    var task;
+//GanttMaster.prototype.drawTasks = function () {
+//    var task;
+//    //var prof=new Profiler("gm_loadTasks_addTaskLoop");
+//    for (var i = 0; i < this.tasks.length; i++) {
+//        task = this.tasks[i];
+//        
+//        if (task.isParentsCollapsed()){
+//            continue;
+//        }
+//
+//        //add Link collection in memory
+//        if (this.gantt_mode == 'Task') {
+//            this.updateLinks(task);
+//        }
+//
+//        //append task to editor
+//        if (this.grid_mode == 'Task') {
+//            this.editor.addTask(task);
+//        }
+//    }
+//};
+
+GanttMaster.prototype.drawRootTasks = function () {
+//    console.debug('GanttMaster.drawRootTasks start');
+    var root_task;
     //var prof=new Profiler("gm_loadTasks_addTaskLoop");
-    for (var i = 0; i < this.tasks.length; i++) {
-        task = this.tasks[i];
+    for (var i = 0; i < this.root_tasks.length; i++) {
+        root_task = this.root_tasks[i];
+        // give the drawer function and let the task manage its hierarchy itself
+        root_task.draw(this.editor);
+
+//        if (task.isParentsCollapsed()){
+//            continue;
+//        }
 
         //add Link collection in memory
-        if (this.gantt_mode == 'Task') {
-            this.updateLinks(task);
-        }
+//        if (this.gantt_mode == 'Task') {
+//            this.updateLinks(task);
+//        }
 
         //append task to editor
-        if (this.grid_mode == 'Task') {
-            this.editor.addTask(task);
-        }
+//        if (this.grid_mode == 'Task') {
+//            this.editor.addTask(task);
+//        }
     }
+//    console.debug('GanttMaster.drawRootTasks end');
 };
 
 GanttMaster.prototype.drawTimeLogs = function () {
@@ -638,4 +704,63 @@ GanttMaster.prototype.getDateInterval = function () {
         start: this.minDate,
         end: this.maxDate
     }
+};
+
+GanttMaster.prototype.storeTaskCollapseState = function(){
+    // stores the task collapse state in a cookie
+    // needs a cookie like dojo.cookie in master.cookie
+    var task_collapse_state = [];
+    // preserve the previous list
+    var cookie_data = this.cookie("TaskCollapseState");
+    if (cookie_data){
+        task_collapse_state = this.json.parse(cookie_data);
+    }
+//    console.debug('current task_collapse_state:', task_collapse_state);
+    var index;
+    var task;
+    for (var i=0; i < this.parent_tasks.length; i++){
+        task = this.parent_tasks[i];
+        index = task_collapse_state.indexOf(task.id);
+        if (task.collapsed){
+            // store if it is not already in the list
+            if (index == -1){
+                task_collapse_state.push(task.id);
+            }
+        } else {
+            // remove it from the list if it is there
+            if (index != -1){
+                task_collapse_state.splice(index, 1);
+            }
+        }
+    }
+    // then store data
+    this.cookie(
+        "TaskCollapseState",
+        this.json.stringify(task_collapse_state)
+    );
+};
+
+GanttMaster.prototype.restoreTaskCollapseState = function(){
+    // restores the task collapse state in a cookie
+    // @param cookie: dojo.cookie
+//    console.debug('GanttMaster.restoreTaskCollapseState start');
+//    console.debug('restoring task collapse state');
+    var task_collapse_state = [];
+    var task_id;
+    var task;
+    var cookie_data = this.cookie("TaskCollapseState");
+    if (cookie_data){
+        task_collapse_state = this.json.parse(cookie_data);
+        if (task_collapse_state){
+            for (var i = 0; i < task_collapse_state.length; i++){
+                task_id = task_collapse_state[i];
+                // get the task
+                task = this.getTask(task_id);
+                if (task){
+                    task.collapsed = true;
+                }
+            }
+        }
+    }
+//    console.debug('GanttMaster.restoreTaskCollapseState end');
 };
