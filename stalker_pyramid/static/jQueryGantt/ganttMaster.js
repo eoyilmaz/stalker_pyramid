@@ -174,11 +174,13 @@ GanttMaster.prototype.createResource = function (kwargs) {
 //update depends strings
 GanttMaster.prototype.updateDepends = function () {
     //remove all deps
-    for (var i = 0; i < this.tasks.length; i++) {
+    var task_count = this.tasks.length;
+    for (var i = 0; i < task_count; i++) {
         this.tasks[i].depends = [];
     }
 
-    for (var i = 0; i < this.links.length; i++) {
+    var link_count = this.links.length;
+    for (var i = 0; i < link_count; i++) {
         var link = this.links[i];
         link.to.depends.push(link.from.id);
     }
@@ -266,7 +268,8 @@ GanttMaster.prototype.loadResources = function (resources) {
     var data = resources.data;
 
     var resource;
-    for (var i = 0; i < data.length; i++) {
+    var data_count = data.length;
+    for (var i = 0; i < data_count; i++) {
         for (var j = 0; j < key_count; j++) {
             kwargs[keys[j]] = data[i][j];
         }
@@ -302,7 +305,8 @@ GanttMaster.prototype.loadTasks = function (tasks) {
     var data = tasks.data;
 
     var task;
-    for (var i = 0; i < data.length; i++) {
+    var data_count = data.length;
+    for (var i = 0; i < data_count; i++) {
         for (var j = 0; j < key_count; j++) {
             kwargs[keys[j]] = data[i][j];
         }
@@ -316,7 +320,8 @@ GanttMaster.prototype.loadTasks = function (tasks) {
 //    console.debug('getting root tasks start');
     this.root_tasks = [];
     var current_task;
-    for (var i = 0; i < this.tasks.length; i++) {
+    var task_count = this.tasks.length;
+    for (var i = 0; i < task_count; i++) {
         // just find root tasks
         // also register parents
 //        if (this.tasks[i].getParent() == null) { // this fills parent.children array
@@ -342,7 +347,8 @@ GanttMaster.prototype.loadTasks = function (tasks) {
         }
         children.push(task);
         var current_task_children = task.getChildren();
-        for (var n = 0; n < current_task_children.length; n++) {
+        var children_count = current_task_children.length;
+        for (var n = 0; n < children_count; n++) {
             children = loop_through_child(current_task_children[n], children);
         }
         return children;
@@ -350,22 +356,24 @@ GanttMaster.prototype.loadTasks = function (tasks) {
 
     var sorted_task_list = [];
     // now go from root to child
-    for (var i = 0; i < this.root_tasks.length; i++) {
-        sorted_task_list = loop_through_child(this.root_tasks[i], sorted_task_list);
+    var root_task_count = this.root_tasks.length;
+    var root_tasks = this.root_tasks;
+    for (var i = 0; i < root_task_count; i++) {
+        sorted_task_list = loop_through_child(root_tasks[i], sorted_task_list);
     }
 
     // update tasks
     this.tasks = sorted_task_list;
     // update the lookup table
     this.task_ids = [];
-    for (var i = 0; i < this.tasks.length; i++) {
+    for (var i = 0; i < task_count; i++) {
         this.task_ids.push(this.tasks[i].id);
     }
     // set the first task selected
 //    this.currentTask = this.tasks[0];
 
     // loop through all parent tasks and sort their children
-    for (var i = 0; i < this.tasks.length; i++) {
+    for (var i = 0; i < task_count; i++) {
         task = this.tasks[i];
         if (task.isParent()){
             this.parent_tasks.push(task);
@@ -397,9 +405,10 @@ GanttMaster.prototype.loadTimeLogs = function (time_logs) {
     var kwargs = {};
     kwargs['master'] = this;
     var data = time_logs.data;
- 
+    var data_count = data.length;
+
     var time_log;
-    for (var i = 0; i < data.length; i++) {
+    for (var i = 0; i < data_count; i++) {
         for (var j = 0; j < key_count; j++) {
             kwargs[keys[j]] = data[i][j];
         }
@@ -428,7 +437,8 @@ GanttMaster.prototype.drawData = function () {
 
 GanttMaster.prototype.drawResources = function () {
     if (this.grid_mode == 'Resource') {
-        for (var i = 0; i < this.resources.length; i++) {
+        var resource_count = this.resources.length;
+        for (var i = 0; i < resource_count; i++) {
             this.editor.addResource(this.resources[i]);
         }
     }
@@ -461,24 +471,13 @@ GanttMaster.prototype.drawRootTasks = function () {
 //    console.debug('GanttMaster.drawRootTasks start');
     var root_task;
     //var prof=new Profiler("gm_loadTasks_addTaskLoop");
-    for (var i = 0; i < this.root_tasks.length; i++) {
-        root_task = this.root_tasks[i];
+    var root_tasks = this.root_tasks;
+    var editor = this.editor;
+    var root_task_count = this.root_tasks.length;
+    for (var i = 0; i < root_task_count; i++) {
+        root_task = root_tasks[i];
         // give the drawer function and let the task manage its hierarchy itself
-        root_task.draw(this.editor);
-
-//        if (task.isParentsCollapsed()){
-//            continue;
-//        }
-
-        //add Link collection in memory
-//        if (this.gantt_mode == 'Task') {
-//            this.updateLinks(task);
-//        }
-
-        //append task to editor
-//        if (this.grid_mode == 'Task') {
-//            this.editor.addTask(task);
-//        }
+        root_task.draw(editor);
     }
 //    console.debug('GanttMaster.drawRootTasks end');
 };
@@ -565,7 +564,8 @@ GanttMaster.prototype.changeMode = function (grid_mode, gantt_mode) {
 GanttMaster.prototype.saveGantt = function (forTransaction) {
     //var prof = new Profiler("gm_saveGantt");
     var saved = [];
-    for (var i = 0; i < this.tasks.length; i++) {
+    var task_count = this.tasks.length;
+    for (var i = 0; i < task_count; i++) {
         var task = this.tasks[i];
 
         // skip if project
@@ -620,7 +620,8 @@ GanttMaster.prototype.updateLinks = function (task) {
         var newDepsString = "";
 
         var visited = [];
-        for (var j = 0; j < deps.length; j++) {
+        var dep_count = deps.length;
+        for (var j = 0; j < dep_count; j++) {
             var dep = deps[j];
             var lag = 0;
 
@@ -687,8 +688,10 @@ GanttMaster.prototype.checkpoint = function () {
 GanttMaster.prototype.getDateInterval = function () {
     var start = Infinity;
     var end = -Infinity;
-    for (var i = 0; i < this.tasks.length; i++) {
-        var task = this.tasks[i];
+    var tasks = this.tasks;
+    var task_count = this.tasks.length;
+    for (var i = 0; i < task_count; i++) {
+        var task = tasks[i];
         if (task.type == 'Project') {
             continue;
         }
@@ -718,8 +721,10 @@ GanttMaster.prototype.storeTaskCollapseState = function(){
 //    console.debug('current task_collapse_state:', task_collapse_state);
     var index;
     var task;
-    for (var i=0; i < this.parent_tasks.length; i++){
-        task = this.parent_tasks[i];
+    var parent_tasks = this.parent_tasks;
+    var parent_task_count = this.parent_tasks.length;
+    for (var i=0; i < parent_task_count; i++){
+        task = parent_tasks[i];
         index = task_collapse_state.indexOf(task.id);
         if (task.collapsed){
             // store if it is not already in the list
@@ -752,7 +757,8 @@ GanttMaster.prototype.restoreTaskCollapseState = function(){
     if (cookie_data){
         task_collapse_state = this.json.parse(cookie_data);
         if (task_collapse_state){
-            for (var i = 0; i < task_collapse_state.length; i++){
+            var collapsed_task_count = task_collapse_state.length;
+            for (var i = 0; i < collapsed_task_count; i++){
                 task_id = task_collapse_state[i];
                 // get the task
                 task = this.getTask(task_id);

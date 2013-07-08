@@ -31,9 +31,9 @@
           href='{{ request.static_url("stalker_pyramid:static/stalker/css/stalker.css") }}'/>
 
     {# load jQuery and jQuery Gantt first#}
-{#    <link rel=stylesheet media='all'#}
-{#          href='{{ request.static_url("stalker_pyramid:static/jQueryGantt/libs/dateField/jquery.dateField.css") }}'#}
-{#          type="text/css">#}
+    {#    <link rel=stylesheet media='all'#}
+    {#          href='{{ request.static_url("stalker_pyramid:static/jQueryGantt/libs/dateField/jquery.dateField.css") }}'#}
+    {#          type="text/css">#}
     <link rel=stylesheet media='all'
           href='{{ request.static_url("stalker_pyramid:static/jQueryGantt/css/gantt.css") }}'
           type="text/css">
@@ -50,7 +50,7 @@
     <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/libs/platform.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/libs/date.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/libs/i18nJs.js") }}'></script>
-{#    <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/libs/dateField/jquery.dateField.js") }}'></script>#}
+    {#    <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/libs/dateField/jquery.dateField.js") }}'></script>#}
     <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/libs/JST/jquery.JST.js") }}'></script>
 
     <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/ganttUtilities.js") }}'></script>
@@ -161,7 +161,6 @@
             <td class="gdfCell"></td>
         </tr>
     --></div>
-
 
 
     <div class="__template__" type="RESOURCEROW"><!--
@@ -341,7 +340,8 @@
 
         <div id='footer' class='edgePanel'>
             {% block footer %}
-                <div class='footer'>&copy; Copyright 2009-2013, Erkan Ozgur Yilmaz.
+                <div class='footer'>&copy; Copyright 2009-2013, Erkan Ozgur
+                                           Yilmaz.
                     <span style='font-size: 12px;'>Stalker Pyramid v{{ stalker_pyramid.__version__ }}</span>
                 </div>
             {% endblock %}
@@ -350,6 +350,9 @@
 
 
     <script type='text/javascript'>
+
+    // load templates for jQueryGantt
+    $('#gantttemplates').loadTemplates();
 
     var redirectLinkInParent = function (targetPane, address) {
         var tab_container = dijit.byId('data_tab_container');

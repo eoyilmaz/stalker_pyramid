@@ -213,7 +213,7 @@ GanttDrawer.prototype.create = function (zoom, originalStartMillis, originalEndM
             });
         } else if (zoom == "m") {
             //month
-            computedTableWidth = Math.floor(((endPeriod - startPeriod) / (3600000 * 24 * 1)) * 20); //1 day= 20px
+            computedTableWidth = Math.floor(((endPeriod - startPeriod) / (3600000 * 24)) * 20); //1 day= 20px
             iterate(function (date) {
                 var sm = date.getTime();
                 date.setMonth(date.getMonth() + 1);
@@ -336,11 +336,11 @@ GanttDrawer.prototype.create = function (zoom, originalStartMillis, originalEndM
     self.endMillis = originalEndMillis;
     self.originalStartMillis = originalStartMillis; //minimal dimension required by user or by task duration
     self.originalEndMillis = originalEndMillis;
+//    self.originalStartMillis = self.startMillis ; //minimal dimension required by user or by task duration
+//    self.originalEndMillis = self.endMillis ;
 
 //    var table = createGantt(zoom, period.start, period.end);
-    var table = createGantt(zoom, originalStartMillis, originalEndMillis);
-
-    return table;
+    return createGantt(zoom, self.originalStartMillis, self.originalEndMillis);
 };
 
 
@@ -786,8 +786,10 @@ GanttDrawer.prototype.redrawLinks = function () {
     this.element.oneTime(60, "ganttlnksredr", function () {
         //var prof=new Profiler("gd_drawLink_real");
         self.element.find(".ganttLinks").empty();
-        for (var i = 0; i < self.master.links.length; i++) {
-            var link = self.master.links[i];
+        var link_count = self.master.links.length;
+        var links = self.master.links;
+        for (var i = 0; i < link_count; i++) {
+            var link = links[i];
             // if one of the tasks are hidden do not draw
             if (!link.from.hidden && !link.to.hidden){
                 self.drawLink(link.from, link.to);
@@ -808,8 +810,10 @@ GanttDrawer.prototype.redrawTasks = function () {
     // TODO: this function should be named drawTasks
     var mode_is_resource = this.master.grid_mode == 'Resource';
     if (this.master.gantt_mode == 'Task'){
-        for (var i = 0; i < this.master.tasks.length; i++) {
-            var task = this.master.tasks[i];
+        var task_count = this.master.tasks.length;
+        var tasks = this.master.tasks;
+        for (var i = 0; i < task_count; i++) {
+            var task = tasks[i];
             if (!(mode_is_resource && !task.isLeaf())) {
                 this.drawTask(task);
             }
@@ -820,8 +824,10 @@ GanttDrawer.prototype.redrawTasks = function () {
 
 GanttDrawer.prototype.redrawTimeLogs = function () {
     // TODO: this function should be named drawTimeLogs
-    for (var i = 0; i < this.master.time_logs.length; i++) {
-        var time_log = this.master.time_logs[i];
+    var time_logs = this.master.time_logs;
+    var time_log_count = time_logs.length;
+    for (var i = 0; i < time_log_count; i++) {
+        var time_log = time_logs[i];
         this.drawTimeLog(time_log);
     }
 };

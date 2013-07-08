@@ -421,9 +421,6 @@ def update_task_dialog(request):
 )
 def update_task(request):
     """Updates the given task with the data coming from the request
-
-    :param request: 
-    :return:
     """
     # *************************************************************************
     # collect data

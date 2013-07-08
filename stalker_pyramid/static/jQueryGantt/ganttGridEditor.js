@@ -140,12 +140,16 @@ GridEditor.prototype.refreshResourceRow = function (resource) {
 
 GridEditor.prototype.refresh = function () {
     if (this.master.grid_mode == 'Task'){
-        for (var i = 0; i < this.master.tasks.length; i++) {
-            this.refreshTaskRow(this.master.tasks[i]);
+        var tasks = this.master.tasks;
+        var task_count = tasks.length;
+        for (var i = 0; i < task_count; i++) {
+            this.refreshTaskRow(tasks[i]);
         }
     } else if (this.master.grid_mode == 'Resource'){
-        for (var i = 0; i < this.master.resources.length; i++) {
-            this.refreshResourceRow(this.master.resources[i]);
+        var resources = this.master.resources;
+        var resource_count = resources.length;
+        for (var i = 0; i < resource_count; i++) {
+            this.refreshResourceRow(resources[i]);
         }
     }
 };
