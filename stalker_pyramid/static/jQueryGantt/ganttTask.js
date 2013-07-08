@@ -64,7 +64,7 @@ function Task(kwargs) {
 
 //    console.debug('schedule_constraint : ', this.schedule_constraint);
 //    console.debug('schedule_model      : ', this.schedule_model);
-    console.debug('schedule_timing     : ', this.schedule_timing);
+//    console.debug('schedule_timing     : ', this.schedule_timing);
 //    console.debug('schedule_unit       : ', this.schedule_unit);
 //    console.debug('bid_timing          : ', this.bid_timing);
 //    console.debug('bid_unit            : ', this.bid_unit);

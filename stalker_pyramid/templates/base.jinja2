@@ -89,7 +89,7 @@
 {# TODO: Support Multiple monitors by allowing the user to detach content panels #}
 
 {# TEMPLATES #}
-<div id="gantEditorTemplates" style="display:none;">
+<div id="ganttEditorTemplates" style="display:none;">
     <div class="__template__" type="TASKSEDITHEAD"><!--
         <table class="gdfTable" cellspacing="0" cellpadding="0" style='width: 1000px'>
             <thead>
@@ -109,16 +109,16 @@
     --></div>
 
     <div class="__template__" type="RESOURCESEDITHEAD"><!--
-    <table class="gdfTable" cellspacing="0" cellpadding="0" style='width: 1000px'>
-      <thead>
-      <tr style="height:40px">
-        <th class="gdfColHeader gdfResizable" style="width:20px;">#</th>
-        <th class="gdfColHeader gdfResizable" style="width:20px;">id</th>
-        <th class="gdfColHeader gdfResizable" style="width:250px;">name</th>
-        <th class="gdfColHeader gdfResizable" style="width:1430px;"></th>
-      </tr>
-      </thead>
-    </table>
+        <table class="gdfTable" cellspacing="0" cellpadding="0" style='width: 1000px'>
+            <thead>
+                <tr style="height:40px">
+                    <th class="gdfColHeader gdfResizable" style="width:20px;">#</th>
+                    <th class="gdfColHeader gdfResizable" style="width:20px;">id</th>
+                    <th class="gdfColHeader gdfResizable" style="width:250px;">name</th>
+                    <th class="gdfColHeader gdfResizable" style="width:1430px;"></th>
+                </tr>
+            </thead>
+        </table>
     --></div>
 
 
@@ -354,7 +354,7 @@
     <script type='text/javascript'>
 
     // load templates for jQueryGantt
-    $('#gantttemplates').loadTemplates();
+    $('#ganttEditorTemplates').loadTemplates();
 
     var redirectLinkInParent = function (targetPane, address) {
         var tab_container = dijit.byId('data_tab_container');
@@ -534,8 +534,7 @@
                     style: 'display: none;'
                 });
             }
-
-        }
+        };
 
         // ------------
         // Filename Template
@@ -805,7 +804,7 @@
                 return mItem;
             }
 
-        }
+        };
 
 
         var projectMenuItemCreator = function (dLabel, dId) {
@@ -820,7 +819,7 @@
                     );
                     central_content_pane.refresh();
                 }
-            })
+            });
 
 
             {% if has_permission('Update_Project') %}
@@ -849,15 +848,12 @@
 
             return projectMenuItem;
 
-        }
+        };
 
 
         var target = 'get/projects_byEntity/{{ logged_in_user.id }}';
-
         {% if has_permission('List_Project') %}
-
             target = 'get/projects'
-
         {% endif %}
 
         // Project Memory

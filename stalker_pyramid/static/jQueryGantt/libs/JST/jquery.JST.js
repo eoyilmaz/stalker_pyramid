@@ -45,7 +45,7 @@ $.JST = {
                     }
                 }
 
-                tmpl.remove();
+//                tmpl.remove();
 
             });
         });
