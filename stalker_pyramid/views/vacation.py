@@ -63,7 +63,8 @@ def create_vacation_dialog(request):
         'studio': studio,
         'logged_in_user': logged_in_user,
         'user': user,
-        'types':vacation_types
+        'types':vacation_types,
+        'milliseconds_since_epoch': milliseconds_since_epoch
     }
 
 @view_config(
@@ -95,7 +96,8 @@ def update_vacation_dialog(request):
         'logged_in_user': logged_in_user,
         'user': vacation.user,
         'vacation': vacation,
-        'types':vacation_types
+        'types':vacation_types,
+        'milliseconds_since_epoch': milliseconds_since_epoch
     }
 
 

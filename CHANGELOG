@@ -29,6 +29,10 @@ Stalker Pyramid Changes
     before.
 * **Fix:** Based on user permissions Studio menu is redefined.
 * **New:** In List Assets Page, code of asset is added to name column.
+* **New:** BID timing is added to task tooltip list.
+* **Fix:** In Update Vacation Dialog predefined dates are set to dialog date
+    boxes.
+
 * **jQueryGantt:**
 
   * **New:** The parent elements in gantt chart is now collapsible.
@@ -44,8 +48,6 @@ Stalker Pyramid Changes
   * **New:** For Tasks which are not shown because their start and end dates
     are not in range, a left or right red arrow will be drawn to show where the
     task is (on left or on right).
-  * **New:** BID timing is added to task tooltip list.
-
   * **New:** jQueryGantt now stores the collapse state of tasks in a cookie and
     upon reload of the page preserves the collapse state by not drawing
     collapsed tasks, it also helps loading the gantt chart much more quickly
