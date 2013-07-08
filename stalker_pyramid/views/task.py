@@ -440,7 +440,7 @@ def update_task(request):
     schedule_constraint = int(request.params.get('schedule_constraint', 0))
     start = get_date(request, 'start')
     end = get_date(request, 'end')
-    update_bid = request.params.get('update_bid')
+    update_bid = int(request.params.get('update_bid'))
 
     depend_ids = get_multi_integer(request, 'depend_ids')
     depends = Task.query.filter(Task.id.in_(depend_ids)).all()
@@ -500,9 +500,11 @@ def update_task(request):
     task.priority = priority
     task._reschedule(task.schedule_timing, task.schedule_unit)
     if update_bid:
+        logger.debug('updating bid')
         task.bid_timing = task.schedule_timing
         task.bid_unit = task.schedule_unit
-
+    else:
+        logger.debug('not updating bid')
     return HTTPOk(detail='Task updated successfully')
 
 
