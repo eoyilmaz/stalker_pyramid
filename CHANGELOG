@@ -32,6 +32,8 @@ Stalker Pyramid Changes
 * **New:** BID timing is added to task tooltip list.
 * **Fix:** In Update Vacation Dialog predefined dates are set to dialog date
     boxes.
+* **Fix:** In task dialog window submit button is disabled until resources and
+    task list is loaded.
 
 * **jQueryGantt:**
 

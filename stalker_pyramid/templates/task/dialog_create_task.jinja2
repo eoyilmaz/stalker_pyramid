@@ -234,6 +234,10 @@ require([
     var is_milestone = false;
     var selected_resources = [];
     var entity_type = 'Task';
+    var user_memory;
+    var tasks_memory;
+    var status_memory;
+
 
     {% if mode=='CREATE' %}
         {% if depends_to %}
@@ -344,19 +348,24 @@ require([
     depends_tagSelect.startup();
 
     var tasks_result = tasks_jsonRest.query().then(function (data) {
-        var memory = new Memory({data: data});
+        tasks_memory = new Memory({data: data});
         {# remove self from lists #}
         {% if task %}
-            memory.remove({{ task.id }});
+            tasks_memory.remove({{ task.id }});
         {% endif %}
 
-        depends_tagSelect.set('store', memory);
+        depends_tagSelect.set('store', tasks_memory);
         depends_tagSelect.set('value', depends_to);
 
-        parent_widget.set('store', memory);
+        parent_widget.set('store', tasks_memory);
 
         if (parent_id){
             parent_widget.set('value', parent_id);
+        }
+        if (user_memory && status_memory){
+
+          ok_button.set('disabled', false);
+
         }
     });
 
@@ -634,17 +643,23 @@ require([
     }, 'task_resources');
     resources_tagSelect.startup();
 
-    var result = users_jsonRest.query().then(function (data) {
-        var user_memory = new Memory({data: data});
+    var resources_result = users_jsonRest.query().then(function (data) {
+        user_memory = new Memory({data: data});
         resources_tagSelect.set('store', user_memory);
         resources_tagSelect.set('value', selected_resources);
+
+        if (status_memory && tasks_memory){
+
+          ok_button.set('disabled', false);
+
+        }
     });
 
     // ********************************************************************
     // Status
     //
     // The Memory
-    var status_memory = new JsonRest({
+    var status_jsonRest = new JsonRest({
         target: 'get/statuses_for/' + entity_type
     });
 
@@ -653,15 +668,19 @@ require([
         name: 'status_id',
         required: true,
         label: 'Status'
-       // store: status_memory
+       // store: status_jsonRest
     }, 'task_status');
     status_filtering_select.startup();
 
+
     // The Updater
     var update_status_button_function = function (data) {
+        status_memory = data;
         if (data.length > 0) {
             add_status_button.set('onClick', function () {
+
                 var dialog = dijit.byId('status_list_dialog');
+
                 if (dialog != null) {
                     dialog.destroyRecursive();
                 }
@@ -672,10 +691,16 @@ require([
             });
             //status_field_updater.set('callBack', function(){});
         }
+
+        if (user_memory && tasks_memory){
+
+          ok_button.set('disabled', false);
+
+        }
     };
 
     var status_field_updater = fieldUpdater({
-        'memory': status_memory,
+        'memory': status_jsonRest,
         'widget': status_filtering_select,
         'callBack': update_status_button_function,
          {% if mode=='UPDATE' %}
@@ -757,6 +782,7 @@ require([
         }
     }, 'task_ok_button');
     ok_button.startup();
+    ok_button.set('disabled',true );
 
 
     // ********************************************************************
