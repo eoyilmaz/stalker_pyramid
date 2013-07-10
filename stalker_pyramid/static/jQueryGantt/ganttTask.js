@@ -59,8 +59,8 @@ function Task(kwargs) {
 //    console.debug('this.schedule_seconds     : ', this.schedule_seconds);
 //    console.debug('this.progress             : ', this.progress);
 
-    this.bid_timing = (kwargs['bid_timing'] || this.schedule_timing).toFixed(1);
-    this.bid_unit = kwargs['bid_unit'] || this.schedule_unit;
+    this.bid_timing = (kwargs['bid_timing']).toFixed(1);
+    this.bid_unit = kwargs['bid_unit'];
 
 //    console.debug('schedule_constraint : ', this.schedule_constraint);
 //    console.debug('schedule_model      : ', this.schedule_model);
