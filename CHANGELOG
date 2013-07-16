@@ -34,6 +34,7 @@ Stalker Pyramid Changes
     boxes.
 * **Fix:** In task dialog window submit button is disabled until resources and
     task list is loaded.
+* **New:** 'Updated by' attribute is added to task summary page.
 
 * **jQueryGantt:**
 

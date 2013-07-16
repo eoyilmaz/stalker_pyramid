@@ -177,6 +177,16 @@
                 </td>
             </tr>
 
+            {# Entity Type #}
+            <tr>
+                <td class='label_column'>
+                    <label for='task_entity_type'>Type</label>
+                </td>
+                <td class='input_column'>
+                    <input id='task_entity_type'>
+                </td>
+            </tr>
+
         </table>
     </form>
 </div>
@@ -727,6 +737,50 @@ require([
 {#            selected: {{ task.status.id }}#}
 {#        });#}
 {#    {% endif %}#}
+
+
+    var add_entity_special_props =  function(value){
+
+
+
+    }
+
+
+     // Entity type
+    var entity_type_filteringSelect = new FilteringSelect({
+        name: 'entity_type',
+        label: 'Type',
+        store: new Memory({
+            data: [
+                    {
+                        name: 'Task',
+                        id:'Task'
+                    },
+                    {
+                        name: 'Asset',
+                        id:'Asset'
+                    },
+                    {
+                        name: 'Shot',
+                        id:'Shot'
+                    },
+                    {
+                        name: 'Sequence',
+                        id:'Sequence'
+                    }
+            ]
+        }),
+         onChange: function (value) {
+                    add_entity_special_props(value);
+                },
+        required: true,
+        style: 'float: left;'
+    }, 'task_entity_type');
+    // select the first one
+    entity_type_filteringSelect.set('value', '{{ task.entity_type }}' );
+
+
+    console.debug('task code : {{ task.code }}');
 
 
     // ********************************************************************

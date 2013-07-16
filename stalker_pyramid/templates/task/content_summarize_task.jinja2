@@ -61,6 +61,21 @@
                 </td>
             </tr>
             <tr>
+                <td style='text-align: right'><b>Updated By</b></td>
+                <td>&nbsp;</td>
+                <td>
+                    {% if has_permission('Read_User') %}
+                        <a href="javascript:redirectLink('central_content',
+                        'view/user/{{ task.updated_by.id }}');">
+                            {{ task.updated_by.name }}
+                        </a>
+                    {% else %}
+                        {{ task.updated_by.name }}
+                    {% endif %}
+
+                </td>
+            </tr>
+            <tr>
                 <td style='text-align: right'><b>Description</b></td>
                 <td>&nbsp;</td>
                 <td>{{ task.description }}</td>
