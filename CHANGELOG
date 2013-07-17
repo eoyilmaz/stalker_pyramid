@@ -40,6 +40,7 @@ Stalker Pyramid Changes
     entity new proporties are added to dialog form.
 * **Update:** In task create/update dialog hierarchical task name order is
     reversed for easy to find.
+* **New:** Remaining Time attributed is added to task tool tip window.
 
 * **jQueryGantt:**
 

@@ -153,6 +153,8 @@
 
                     var priority = node.getAttribute('priority');
 
+                    var remaining_seconds = node.getAttribute('remaining_seconds');
+
                     return '<table>' +
                             '<thead style="text-align: center">' +
                                 '<h4>'+hierarchy_name+'</h4>' +
@@ -187,6 +189,10 @@
                             '<tr>' +
                                 '<td class="label_column">Description</td>' +
                                 '<td class="input_column">' + description + '</td>' +
+                            '</tr>' +
+                            '<tr>' +
+                                '<td class="label_column">Remaining Time</td>' +
+                                '<td class="input_column">' + remaining_seconds + '</td>' +
                             '</tr>' +
                             '</tbody>' +
                             '</table>';
