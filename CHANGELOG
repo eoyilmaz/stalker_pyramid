@@ -35,6 +35,11 @@ Stalker Pyramid Changes
 * **Fix:** In task dialog window submit button is disabled until resources and
     task list is loaded.
 * **New:** 'Updated by' attribute is added to task summary page.
+* **New:** In task create/update dialog a combo box is added to select different
+    type of task entity such as Asset, Shot, Sequence. Based on the selected
+    entity new proporties are added to dialog form.
+* **Update:** In task create/update dialog hierarchical task name order is
+    reversed for easy to find.
 
 * **jQueryGantt:**
 

@@ -27,7 +27,7 @@ from sqlalchemy.exc import IntegrityError
 
 from stalker.db import DBSession
 from stalker import (User, Task, Entity, Project, StatusList, Status,
-                     TaskJugglerScheduler, Studio, Asset, Shot, Sequence)
+                     TaskJugglerScheduler, Studio, Asset, Shot, Sequence, Type)
 from stalker.models.task import CircularDependencyError
 from stalker import defaults
 from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
@@ -422,6 +422,9 @@ def update_task_dialog(request):
 def update_task(request):
     """Updates the given task with the data coming from the request
     """
+
+    logged_in_user = get_logged_in_user(request)
+
     # *************************************************************************
     # collect data
     parent_id = request.params.get('parent_id', None)
@@ -450,6 +453,11 @@ def update_task(request):
 
     priority = request.params.get('priority', 500)
 
+    entity_type = request.params.get('entity_type', None)
+    code = request.params.get('code', None)
+    asset_type = request.params.get('asset_type_name', None)
+    shot_sequence_id = request.params.get('shot_sequence_id', None)
+
     logger.debug('parent_id           : %s' % parent_id)
     logger.debug('parent              : %s' % parent)
     logger.debug('depend_ids          : %s' % depend_ids)
@@ -469,6 +477,7 @@ def update_task(request):
     logger.debug('end                 : %s' % end)
     logger.debug('update_bid          : %s' % update_bid)
     logger.debug('priority            : %s' % priority)
+    logger.debug('code                : %s' % code)
 
     # get task
     task_id = request.matchdict['task_id']
@@ -488,6 +497,7 @@ def update_task(request):
         transaction.abort()
         return HTTPServerError()
 
+
     task.start = start
     task.end = end
     task.is_milestone = is_milestone
@@ -498,6 +508,29 @@ def update_task(request):
     task.schedule_constraint = schedule_constraint
     task.resources = resources
     task.priority = priority
+    task.code = code
+    task.updated_by = logged_in_user
+
+    if entity_type=='Asset':
+            type_ = Type.query\
+                .filter_by(target_entity_type='Asset')\
+                .filter_by(name=asset_type)\
+                .first()
+
+            if type_ is None:
+                # create a new Type
+                # TODO: should we check for permission here or will it be already done in the UI (ex. filteringSelect instead of comboBox)
+                type_ = Type(
+                    name=asset_type,
+                    code=asset_type,
+                    target_entity_type='Asset'
+                )
+
+            task.type = type_
+
+    if entity_type=='Shot':
+            task.sequence = Sequence.query.filter_by(id=shot_sequence_id).first()
+
     task._reschedule(task.schedule_timing, task.schedule_unit)
     if update_bid:
         logger.debug('updating bid')
@@ -647,10 +680,9 @@ def get_project_tasks(request):
     return [
         {
             'id': task.id,
-            'name': '%s (%s) (%s)' % (
+            'name': '%s (%s)' % (
                 task.name,
-                task.entity_type,
-                ' | '.join([parent.name for parent in task.parents])
+                ' | '.join(reversed([parent.name for parent in task.parents]))
             )
         } for task in Task.query.filter(Task._project == project).all()
     ]
@@ -780,6 +812,12 @@ def create_task(request):
 
     priority = request.params.get('priority', 500)
 
+    entity_type = request.params.get('entity_type', None)
+    code = request.params.get('code', None)
+    asset_type = request.params.get('asset_type_name', None)
+    shot_sequence_id = request.params.get('shot_sequence_id', None)
+
+
     logger.debug('project_id          : %s' % project_id)
     logger.debug('parent_id           : %s' % parent_id)
     logger.debug('name                : %s' % name)
@@ -793,6 +831,8 @@ def create_task(request):
     logger.debug('resources           : %s' % resources)
     logger.debug('priority            : %s' % priority)
     logger.debug('schedule_constraint : %s' % schedule_constraint)
+    logger.debug('entity_type         : %s' % entity_type)
+    logger.debug('code                : %s' % code)
 
     kwargs = {}
 
@@ -810,7 +850,7 @@ def create_task(request):
 
         # get the status_list
         status_list = StatusList.query.filter_by(
-            target_entity_type='Task'
+            target_entity_type=entity_type
         ).first()
 
         logger.debug('status_list: %s' % status_list)
@@ -855,11 +895,56 @@ def create_task(request):
 
         kwargs['priority'] = priority
 
+        kwargs['code'] = code
+
+
+
+        if entity_type=='Asset':
+            type_ = Type.query\
+                .filter_by(target_entity_type='Asset')\
+                .filter_by(name=asset_type)\
+                .first()
+
+            if type_ is None:
+                # create a new Type
+                # TODO: should we check for permission here or will it be already done in the UI (ex. filteringSelect instead of comboBox)
+                type_ = Type(
+                    name=asset_type,
+                    code=asset_type,
+                    target_entity_type='Asset'
+                )
+
+            kwargs['type'] = type_
+
+        if entity_type=='Shot':
+            sequence = Sequence.query.filter_by(id=shot_sequence_id).first()
+            kwargs['sequence'] = sequence
+
+
         try:
-            new_task = Task(**kwargs)
-            logger.debug('new_task.name %s' % new_task.name)
-            logger.debug('new_task.status: %s' % new_task.status)
-            DBSession.add(new_task)
+
+            if entity_type == 'Task':
+                new_entity = Task(**kwargs)
+                logger.debug('new_task.name %s' % new_entity.name)
+                # logger.debug('new_task.status: %s' % new_entity.status)
+                DBSession.add(new_entity)
+            elif entity_type == 'Asset':
+                new_entity =  Asset(**kwargs)
+                logger.debug('new_asset.name %s' % new_entity.name)
+                # logger.debug('new_asset.status: %s' % new_entity.status)
+                DBSession.add(new_entity)
+            elif entity_type == 'Shot':
+                new_entity =  Shot(**kwargs)
+                logger.debug('new_shot.name %s' % new_entity.name)
+                # logger.debug('new_shot.status: %s' % new_entity.status)
+                DBSession.add(new_entity)
+            elif entity_type == 'Sequence':
+                new_entity =  Sequence(**kwargs)
+                logger.debug('new_shot.name %s' % new_entity.name)
+                # logger.debug('new_shot.status: %s' % new_entity.status)
+                DBSession.add(new_entity)
+
+
         except (AttributeError, TypeError, CircularDependencyError) as e:
             logger.debug(e.message)
             error = HTTPServerError()
@@ -867,7 +952,7 @@ def create_task(request):
             error.detail = e.message
             return error
         else:
-            DBSession.add(new_task)
+            DBSession.add(new_entity)
             try:
                 transaction.commit()
             except IntegrityError as e:

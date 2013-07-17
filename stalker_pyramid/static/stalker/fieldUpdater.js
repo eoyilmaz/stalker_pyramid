@@ -117,7 +117,7 @@ define([
                     // set the data normally
                     widget.set('store', new Memory({data: data}));
 
-                    //console.debug('data.length: '+ widget.label + ' : ' + data.length);
+                    console.debug('data.length: '+ widget.label + ' : ' + data.length);
 
                     if (data.length > 0) {
                         if (widget.label) {

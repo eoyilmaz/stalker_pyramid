@@ -253,3 +253,20 @@ def get_assets(request):
         }
         for asset in Asset.query.filter_by(project_id=project_id).all()
     ]
+
+
+@view_config(
+    route_name='get_asset_types',
+    renderer='json'
+)
+def get_asset_types(request):
+    """returns all the Assets of a given Project
+    """
+
+    return [
+        {
+            'id': asset_type.id,
+            'name': asset_type.name
+        }
+        for asset_type in Type.query.filter_by(target_entity_type='Asset').all()
+    ]

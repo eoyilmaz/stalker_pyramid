@@ -18,177 +18,213 @@
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #}
 <div class='dijitDialogPaneContentArea'>
-    <form id='task_form'>
-        <table style='width: 100%; '>
+<form id='task_form'>
+<table style='width: 100%; '>
 
-            {# PROJECT #}
-            <tr>
-                <td class='label_column'>
-                    <label for='task_project'>Project</label>
-                </td>
-                <td class='input_column'>
-                    <input id='task_project'>
-                </td>
-            </tr>
+    {# PROJECT #}
+    <tr>
+        <td class='label_column'>
+            <label for='task_project'>Project</label>
+        </td>
+        <td class='input_column'>
+            <input id='task_project'>
+        </td>
+    </tr>
 
-            {# PARENT #}
-            <tr>
-                <td class='label_column'>
-                    <label for='task_parent'>Parent</label>
-                </td>
-                <td class='input_column' colspan="2">
-                    <input id='task_parent'>
-                </td>
-            </tr>
+     {# Entity Type #}
+    <tr>
+        <td class='label_column'>
+            <label for='task_entity_type'>Type</label>
+        </td>
+        <td class='input_column'>
+            <input id='task_entity_type'>
+        </td>
+    </tr>
 
-            {# NAME #}
-            <tr>
-                <td class='label_column'>
-                    <label for='task_name'>Name</label>
-                </td>
-                <td class='input_column'>
-                    <input id='task_name'>
-                </td>
-            </tr>
+     {# PARENT #}
+    <tr>
+        <td class='label_column'>
+            <label for='task_parent'>Parent</label>
+        </td>
+        <td class='input_column' colspan="2">
+            <input id='task_parent'>
+        </td>
+    </tr>
 
-            {# DESCRIPTION #}
-            <tr>
-                <td class='label_column'>
-                    <label for='task_description'>Description</label>
-                </td>
-                <td class='input_column'>
-                    <input id='task_description'>
-                </td>
-            </tr>
-
-            {# DEPENDENCIES #}
-            <tr>
-                <td class='label_column'>
-                    <label for='task_depends'>Depends</label>
-                </td>
-                <td class='input_column'>
-                    <input id='task_depends'>
-                </td>
-            </tr>
-
-            {# RESOURCES #}
-            <tr>
-                <td class='label_column'>
-                    <label for='task_resources'>Resources</label>
-                </td>
-                <td class='input_column'>
-                    <div id='task_resources'></div>
-                </td>
-            </tr>
-
-            {# CONSTRAINS #}
-
-            {# SCHEDULE USING / EFFORT / LENGTH / DURATION #}
-            <tr>
-                <td class='label_column'>
-                    <label for='task_schedule_model'>Schedule Model</label>
-                </td>
-                <td class='input_column'>
-                    <input id='task_schedule_model'>
-                </td>
-            </tr>
-
-            {# SCHEDULE TIMING #}
-            <tr>
-                <td class='label_column'>
-                    <label for='task_schedule_timing'>Schedule Timing</label>
-                </td>
-                <td class='input_column'>
-                    <div id='task_schedule_timing'></div>
-                    <div id='task_schedule_unit'></div>
-                </td>
-            </tr>
-
-            {% if mode=='UPDATE' %}
-                <tr>
-                    <td class='label_column'>
-                        <label for='task_update_bid'>Also Update Bid ?</label>
-                    </td>
-                    <td class='input_column'>
-                        <div id='task_update_bid'></div>
-                    </td>
-                </tr>
-            {% endif %}
+    {# NAME #}
+    <tr>
+        <td class='label_column'>
+            <label for='task_name'>Name</label>
+        </td>
+        <td class='input_column'>
+            <input id='task_name'>
+        </td>
+    </tr>
 
 
+    {# Entity Code #}
+    <tr id="entity_type_is_not_task">
 
-            {# START #}
-            <tr>
-                <td class='label_column'>
-                    <label for='task_start_constraint'>Constrain Start
-                                                       Date</label>
-                </td>
-                <td class='input_column'>
-                    <input id='task_start_constraint'>
+        <td class='label_column'>
+            <label for='entity_code'>Code</label>
+        </td>
+        <td class='input_column'>
+            <input id='entity_code'>
+        </td>
+    </tr>
+    {# Entity=Asset #}
+    <tr id="entity_type_is_asset">
 
-                    <div id='task_start_date'></div>
-                    <div id='task_start_time'></div>
-                </td>
-            </tr>
+        <td class='label_column'>
+            <label for='asset_type'>Asset Type</label>
+        </td>
+        <td class='input_column'>
+            <input id='asset_type'>
+        </td>
+    </tr>
+    {# Entity=Shot #}
+    <tr id="entity_type_is_shot">
 
-            {# END #}
-            <tr>
-                <td class='label_column'>
-                    <label for='task_end_constraint'>Constrain End Date</label>
-                </td>
-                <td class='input_column'>
-                    <input id='task_end_constraint'>
+        <td class='label_column'>
+            <label for='shot_sequence'>Sequence</label>
+        </td>
+        <td class='input_column'>
+            <input id='shot_sequence'>
+        </td>
+    </tr>
 
-                    <div id='task_end_date'></div>
-                    <div id='task_end_time'></div>
-                </td>
-            </tr>
 
-            {# MILESTONE #}
-            <tr>
-                <td class='label_column'>
-                    <label for='task_is_milestone'>Is Milestone</label>
-                </td>
-                <td class='input_column'>
-                    <input id="task_is_milestone" type="checkbox">
-                </td>
-            </tr>
+    {# DESCRIPTION #}
+    <tr>
+        <td class='label_column'>
+            <label for='task_description'>Description</label>
+        </td>
+        <td class='input_column'>
+            <input id='task_description'>
+        </td>
+    </tr>
 
-            {# PRIORITY #}
-            <tr>
-                <td class='label_column'>
-                    <label for='task_priority'>Priority</label>
-                </td>
-                <td class='input_column'>
-                    <input id="task_priority" value=500>
-                </td>
-            </tr>
+    {# DEPENDENCIES #}
+    <tr>
+        <td class='label_column'>
+            <label for='task_depends'>Depends</label>
+        </td>
+        <td class='input_column'>
+            <input id='task_depends'>
+        </td>
+    </tr>
 
-            {# STATUS #}
-            <tr>
-                <td class='label_column'>
-                    <label for='task_status'>Status</label>
-                </td>
-                <td class='input_column'>
-                    <input id='task_status'>
-                </td>
-                <td class='button_column'>
-                    <button id='task_add_status_button'>Add Status</button>
-                </td>
-            </tr>
+    {# RESOURCES #}
+    <tr>
+        <td class='label_column'>
+            <label for='task_resources'>Resources</label>
+        </td>
+        <td class='input_column'>
+            <div id='task_resources'></div>
+        </td>
+    </tr>
 
-            {# Entity Type #}
-            <tr>
-                <td class='label_column'>
-                    <label for='task_entity_type'>Type</label>
-                </td>
-                <td class='input_column'>
-                    <input id='task_entity_type'>
-                </td>
-            </tr>
+    {# CONSTRAINS #}
 
-        </table>
-    </form>
+    {# SCHEDULE USING / EFFORT / LENGTH / DURATION #}
+    <tr>
+        <td class='label_column'>
+            <label for='task_schedule_model'>Schedule Model</label>
+        </td>
+        <td class='input_column'>
+            <input id='task_schedule_model'>
+        </td>
+    </tr>
+
+    {# SCHEDULE TIMING #}
+    <tr>
+        <td class='label_column'>
+            <label for='task_schedule_timing'>Schedule Timing</label>
+        </td>
+        <td class='input_column'>
+            <div id='task_schedule_timing'></div>
+            <div id='task_schedule_unit'></div>
+        </td>
+    </tr>
+
+    {% if mode=='UPDATE' %}
+        <tr>
+            <td class='label_column'>
+                <label for='task_update_bid'>Also Update Bid ?</label>
+            </td>
+            <td class='input_column'>
+                <div id='task_update_bid'></div>
+            </td>
+        </tr>
+    {% endif %}
+
+
+
+    {# START #}
+    <tr>
+        <td class='label_column'>
+            <label for='task_start_constraint'>Constrain Start
+                Date</label>
+        </td>
+        <td class='input_column'>
+            <input id='task_start_constraint'>
+
+            <div id='task_start_date'></div>
+            <div id='task_start_time'></div>
+        </td>
+    </tr>
+
+    {# END #}
+    <tr>
+        <td class='label_column'>
+            <label for='task_end_constraint'>Constrain End Date</label>
+        </td>
+        <td class='input_column'>
+            <input id='task_end_constraint'>
+
+            <div id='task_end_date'></div>
+            <div id='task_end_time'></div>
+        </td>
+    </tr>
+
+    {# MILESTONE #}
+    <tr>
+        <td class='label_column'>
+            <label for='task_is_milestone'>Is Milestone</label>
+        </td>
+        <td class='input_column'>
+            <input id="task_is_milestone" type="checkbox">
+        </td>
+    </tr>
+
+    {# PRIORITY #}
+    <tr>
+        <td class='label_column'>
+            <label for='task_priority'>Priority</label>
+        </td>
+        <td class='input_column'>
+            <input id="task_priority" value=500>
+        </td>
+    </tr>
+
+    {# STATUS #}
+    <tr>
+        <td class='label_column'>
+            <label for='task_status'>Status</label>
+        </td>
+        <td class='input_column'>
+            <input id='task_status'>
+        </td>
+        <td class='button_column'>
+            <button id='task_add_status_button'>Add Status</button>
+        </td>
+    </tr>
+
+
+
+
+</table>
+</form>
 </div>
 
 <div class='dijitDialogPaneActionBar'>
@@ -202,6 +238,7 @@ require([
     'dijit/form/ValidationTextBox',
     'dijit/form/TextBox',
     'dijit/form/FilteringSelect',
+    'dijit/form/ComboBox',
     'dijit/form/Button',
     'dijit/form/CheckBox',
     'dijit/form/DateTextBox',
@@ -221,11 +258,12 @@ require([
     'stalker/submitForm',
     'stalker/fieldUpdater',
     'stalker/dialogCaller',
+    'dijit/registry',
     'dojo/domReady!'
-], function (Form, ValidationTextBox, TextBox, FilteringSelect, Button,
-             CheckBox, DateTextBox, TimeTextBox, NumberSpinner, Memory,
+], function (Form, ValidationTextBox, TextBox, FilteringSelect, ComboBox,
+             Button, CheckBox, DateTextBox, TimeTextBox, NumberSpinner, Memory,
              JsonRest, date, stamp, locale, dialogs, Tag, TagSelect,
-             submitForm, fieldUpdater, dialogCaller) {
+             submitForm, fieldUpdater, dialogCaller, registry) {
 
     // generate default values
     var priority = 500;
@@ -259,13 +297,13 @@ require([
         {% endif %}
     {% elif mode=='UPDATE' %}
         priority = {{ task.priority }}
-        name = '{{ task.name }}';
+                name = '{{ task.name }}';
         description = '{{ task.description }}';
         depends_to = [
-                {% for depend_task in task.depends %}
-                    {{ depend_task.id }},
-                {% endfor %}
-            ];
+            {% for depend_task in task.depends %}
+                {{ depend_task.id }},
+            {% endfor %}
+        ];
         {% if task.parent %}
             parent_id = {{ task.parent.id }};
         {% endif %}
@@ -283,13 +321,23 @@ require([
             is_milestone = false;
         {% endif %}
         selected_resources = [
-                {% for resource in task.resources %}
-                    {{ resource.id }},
-                {% endfor %}
-            ];
+            {% for resource in task.resources %}
+                {{ resource.id }},
+            {% endfor %}
+        ];
         entity_type = '{{ task.entity_type }}';
     {% endif %}
 
+
+
+    var entity_type_is_not_task = document.getElementById('entity_type_is_not_task');
+    entity_type_is_not_task.style.display = 'none';
+
+    var entity_type_is_asset = document.getElementById('entity_type_is_asset');
+    entity_type_is_asset.style.display = 'none'
+
+    var entity_type_is_shot = document.getElementById('entity_type_is_shot');
+    entity_type_is_shot.style.display = 'none'
 
 
     // ********************************************************************
@@ -369,12 +417,12 @@ require([
 
         parent_widget.set('store', tasks_memory);
 
-        if (parent_id){
+        if (parent_id) {
             parent_widget.set('value', parent_id);
         }
-        if (user_memory && status_memory){
+        if (user_memory && status_memory) {
 
-          ok_button.set('disabled', false);
+            ok_button.set('disabled', false);
 
         }
     });
@@ -455,11 +503,11 @@ require([
     {% endif %}
 
 
-{#    var constrain_schedule_timing = function(){#}
-{#        var new_schedule_model = '{{ schedule_models[2] }}';#}
-{#        var start_date;#}
-{#        var new_schedule_timing = 0;#}
-{#    };#}
+    {#    var constrain_schedule_timing = function(){#}
+    {#        var new_schedule_model = '{{ schedule_models[2] }}';#}
+    {#        var start_date;#}
+    {#        var new_schedule_timing = 0;#}
+    {#    };#}
 
     // ********************************************************************
     // Start Date
@@ -474,9 +522,9 @@ require([
             if (new_value) {
                 start_dateTextBox.set('disabled', false);
                 start_time_timeTextBox.set('disabled', false);
-{#                if (end_constraint_checkBox.getValue() == 'checked'){#}
-{#                    constrain_schedule_timing();#}
-{#                }#}
+                {#                if (end_constraint_checkBox.getValue() == 'checked'){#}
+                {#                    constrain_schedule_timing();#}
+                {#                }#}
             } else {
                 start_dateTextBox.set('disabled', true);
                 start_time_timeTextBox.set('disabled', true);
@@ -658,9 +706,9 @@ require([
         resources_tagSelect.set('store', user_memory);
         resources_tagSelect.set('value', selected_resources);
 
-        if (status_memory && tasks_memory){
+        if (status_memory && tasks_memory) {
 
-          ok_button.set('disabled', false);
+            ok_button.set('disabled', false);
 
         }
     });
@@ -668,23 +716,22 @@ require([
     // ********************************************************************
     // Status
     //
-    // The Memory
-    var status_jsonRest = new JsonRest({
-        target: 'get/statuses_for/' + entity_type
-    });
+
 
     // The Field
     var status_filtering_select = new FilteringSelect({
         name: 'status_id',
         required: true,
         label: 'Status'
-       // store: status_jsonRest
+        // store: status_jsonRest
     }, 'task_status');
     status_filtering_select.startup();
 
 
     // The Updater
     var update_status_button_function = function (data) {
+
+
         status_memory = data;
         if (data.length > 0) {
             add_status_button.set('onClick', function () {
@@ -699,24 +746,37 @@ require([
                 dialog.set('related_field_updater', status_field_updater);
                 dialog.show();
             });
-            //status_field_updater.set('callBack', function(){});
         }
 
-        if (user_memory && tasks_memory){
+        if (user_memory && tasks_memory) {
 
-          ok_button.set('disabled', false);
+            ok_button.set('disabled', false);
 
         }
     };
 
-    var status_field_updater = fieldUpdater({
-        'memory': status_jsonRest,
-        'widget': status_filtering_select,
-        'callBack': update_status_button_function,
-         {% if mode=='UPDATE' %}
-             'selected': '{{ task.status.id }}'
-         {% endif %}
-    });
+    var status_field_updater;
+
+    var get_status_filtering_select_data = function () {
+        // The Memory
+        var status_jsonRest = new JsonRest({
+            target: 'get/statuses_for/' + entity_type
+        });
+
+        status_field_updater = fieldUpdater({
+            'memory': status_jsonRest,
+            'widget': status_filtering_select,
+            'callBack': update_status_button_function,
+            {% if mode=='UPDATE' %}
+                'selected': '{{ task.status.id }}'
+            {% endif %}
+        });
+
+        status_field_updater({animate: true});
+
+    }
+
+    get_status_filtering_select_data();
 
     var add_status_button = dialogCaller({
         label: 'Add Status',
@@ -724,63 +784,169 @@ require([
         content_creator: dialogs.create_status_list_dialog,
         attach_to: 'task_add_status_button',
         related_field_updater: status_field_updater,
-        data_id: 'Task'
+        data_id: entity_type
     });
     add_status_button.startup();
 
-    status_field_updater({animate: true});
-{#    {% if mode == 'CREATE' %}#}
-{#        status_field_updater({animate: true});#}
-{#    {% elif mode == 'UPDATE' %}#}
-{#        status_field_updater({#}
-{#            animate: true,#}
-{#            selected: {{ task.status.id }}#}
-{#        });#}
-{#    {% endif %}#}
+    // status_field_updater({animate: true});
 
 
-    var add_entity_special_props =  function(value){
+    // ********************************************************************
+    // ENTITY TYPE
+    //
+    var add_entity_special_props = function (value) {
+
+        entity_type = value;
+
+        get_status_filtering_select_data();
+
+        var entity_type_is_not_task = document.getElementById('entity_type_is_not_task');
+        entity_type_is_not_task.style.display = 'none';
+
+        var entity_type_is_asset = document.getElementById('entity_type_is_asset');
+        entity_type_is_asset.style.display = 'none';
+
+        var entity_type_is_shot = document.getElementById('entity_type_is_shot');
+        entity_type_is_shot.style.display = 'none';
+
+
+        if (value != 'Task') {
+
+            entity_type_is_not_task = document.getElementById('entity_type_is_not_task');
+            entity_type_is_not_task.style.display = 'table-row';
+
+
+            {% if mode=='UPDATE' %}
+                code_textBox.set('value', '{{ task.code }}');
+            {% endif %}
 
 
 
-    }
+            if (value == 'Asset') {
+
+                entity_type_is_asset = document.getElementById('entity_type_is_asset');
+                entity_type_is_asset.style.display = 'table-row';
+
+                type_comboBox.set('required', true);
 
 
-     // Entity type
+                {% if mode=='UPDATE' %}
+                    type_comboBox.set('value', '{{ task.type.name }}');
+                {% endif %}
+
+            }
+            if (value == 'Shot') {
+
+                entity_type_is_shot = document.getElementById('entity_type_is_shot');
+                entity_type_is_shot.style.display = 'table-row';
+
+            }
+
+
+        }
+
+
+    };
+
+    // Entity type
     var entity_type_filteringSelect = new FilteringSelect({
         name: 'entity_type',
         label: 'Type',
         store: new Memory({
             data: [
-                    {
-                        name: 'Task',
-                        id:'Task'
-                    },
-                    {
-                        name: 'Asset',
-                        id:'Asset'
-                    },
-                    {
-                        name: 'Shot',
-                        id:'Shot'
-                    },
-                    {
-                        name: 'Sequence',
-                        id:'Sequence'
-                    }
+                {
+                    name: 'Task',
+                    id: 'Task'
+                },
+                {
+                    name: 'Asset',
+                    id: 'Asset'
+                },
+                {
+                    name: 'Shot',
+                    id: 'Shot'
+                },
+                {
+                    name: 'Sequence',
+                    id: 'Sequence'
+                }
             ]
         }),
-         onChange: function (value) {
-                    add_entity_special_props(value);
-                },
+        onChange: function (value) {
+            add_entity_special_props(value);
+        },
         required: true,
         style: 'float: left;'
     }, 'task_entity_type');
     // select the first one
-    entity_type_filteringSelect.set('value', '{{ task.entity_type }}' );
+
+    entity_type_filteringSelect.set('value', entity_type);
+    {% if mode == 'UPDATE' %}
+        entity_type_filteringSelect.set('disabled', true);
+    {% endif %}
 
 
-    console.debug('task code : {{ task.code }}');
+    // ****************************************************************
+    // Code
+    var code_textBox = new TextBox({
+        name: 'code',
+        label: 'Code',
+        placeHolder: 'Enter a code'
+    }, 'entity_code');
+    code_textBox.startup();
+
+    // ****************************************************************
+    // Shot_Sequence
+
+    // Sequence
+    var sequence_memory = new JsonRest({
+        target: '/get/sequences/'
+    });
+
+    var sequence_filtering_select = new FilteringSelect({
+        name: 'shot_sequence_id',
+        required: false,
+        label: 'Sequence'
+    }, 'shot_sequence');
+    sequence_filtering_select.startup();
+
+    var sequence_field_updater = fieldUpdater({
+        memory: sequence_memory,
+        query_data: function () {
+            return {{ project.id }};
+        },
+        widget: sequence_filtering_select
+    });
+    sequence_field_updater({animate: false});
+
+
+    // ****************************************************************
+    // Asset Type
+    var type_memory = new JsonRest({
+        target: '/get/asset_types/'
+    });
+
+
+    {# define the UI widget type #}
+    var type_widget_type;
+    var type_place_holder;
+
+    {% if has_permission('Create_Type') %}
+        type_widget_type = ComboBox;
+        type_place_holder = 'Enter A New Type or Select A Type';
+    {% else %}
+        type_widget_type = FilteringSelect;
+        type_place_holder = 'Select A Type';
+    {% endif %}
+
+    var type_comboBox = new type_widget_type({
+        name: 'asset_type_name',
+        store: type_memory,
+        placeHolder: type_place_holder
+    }, 'asset_type');
+    type_comboBox.startup();
+
+    type_comboBox.set('required', false);
 
 
     // ********************************************************************
@@ -836,7 +1002,7 @@ require([
         }
     }, 'task_ok_button');
     ok_button.startup();
-    ok_button.set('disabled',true );
+    ok_button.set('disabled', true);
 
 
     // ********************************************************************

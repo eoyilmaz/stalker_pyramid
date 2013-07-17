@@ -165,10 +165,11 @@ require([
 
             // ****************************************************************
             // Code
-            var code_textBox = new TextBox({
+            var code_textBox = new ValidationTextBox({
                 name: 'code',
                 label: 'Code',
                 placeHolder: 'Enter a code',
+                required: true,
 {#                {% if mode=='UPDATE' %}#}
 {#                    disabled: true,#}
 {#                {% endif %}#}
