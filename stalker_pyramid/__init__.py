@@ -247,6 +247,7 @@ def main(global_config, **settings):
     config.add_route('summarize_asset', 'summarize/asset/{asset_id}')
     config.add_route('list_assets', 'list/assets/{project_id}')
     config.add_route('get_assets', 'get/assets/{project_id}')
+    config.add_route('get_asset_types', 'get/asset_types/')
 
     # *************************************************************************
     # Shots

@@ -55,6 +55,8 @@ function Task(kwargs) {
     this.schedule_seconds = kwargs.schedule_seconds || 0;
     this.total_logged_seconds = kwargs.total_logged_seconds || 0;
 
+    this.remaining_seconds = ((this.schedule_seconds -this.total_logged_seconds)/3600 ).toFixed(1)+' h';
+
     this.progress = this.schedule_seconds > 0 ? this.total_logged_seconds / this.schedule_seconds * 100 : 0;
 
 //    console.debug('this.total_logged_seconds : ', this.total_logged_seconds);

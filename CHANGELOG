@@ -32,6 +32,15 @@ Stalker Pyramid Changes
 * **New:** BID timing is added to task tooltip list.
 * **Fix:** In Update Vacation Dialog predefined dates are set to dialog date
     boxes.
+* **Fix:** In task dialog window submit button is disabled until resources and
+    task list is loaded.
+* **New:** 'Updated by' attribute is added to task summary page.
+* **New:** In task create/update dialog a combo box is added to select different
+    type of task entity such as Asset, Shot, Sequence. Based on the selected
+    entity new properties are added to dialog form.
+* **Update:** In task create/update dialog hierarchical task name order is
+    reversed for easy to find.
+* **New:** Remaining Time attributed is added to task tool tip window.
 
 * **jQueryGantt:**
 
