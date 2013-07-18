@@ -24,12 +24,13 @@
 
 
 function Task(kwargs) {
+    'use strict';
     this.id = kwargs.id || null;
     this.name = kwargs.name || null;
     this.hierarchy_name = kwargs.hierarchy_name || null;
     this.description = kwargs.description || null;
     
-    this.priority = kwargs.priority. || 500;
+    this.priority = kwargs.priority || 500;
 
     this.type = kwargs.type || null;
 
@@ -90,14 +91,15 @@ function Task(kwargs) {
     this.resources = kwargs.resources || [];
     this.resource_ids = kwargs.resource_ids || [];
     
+    var i;
     if (this.resource_ids.length === 0){
         // no problem if there are no resources
-        for (var i = 0; i < this.resources.length; i++) {
+        for (i = 0; i < this.resources.length; i++) {
             this.resource_ids.push(this.resources[i].id);
         }
     } else {
         if (this.master !== null){
-            for (var i = 0; i < this.resource_ids.length; i++){
+            for (i = 0; i < this.resource_ids.length; i++){
                 this.resources.push(this.master.getResource(this.resource_ids[i]));
             }
         }
@@ -111,6 +113,7 @@ function Task(kwargs) {
 }
 
 Task.prototype.clone = function () {
+    'use strict';
     var ret = {};
     for (var key in this) {
         if (typeof(this[key]) !== "function") {
@@ -121,6 +124,7 @@ Task.prototype.clone = function () {
 };
 
 Task.prototype.getResourcesString = function () {
+    'use strict';
     var ret = "";
     for (var i = 0; i < this.resources.length; i++) {
         var resource = this.resources[i];
@@ -133,6 +137,7 @@ Task.prototype.getResourcesString = function () {
 };
 
 Task.prototype.getResourcesLinks = function () {
+    'use strict';
     var ret = "";
     for (var i = 0; i < this.resources.length; i++) {
         ret = ret + (ret === "" ? "" : ", ") + this.resources[i].link();
@@ -141,6 +146,7 @@ Task.prototype.getResourcesLinks = function () {
 };
 
 Task.prototype.getDependsLinks = function () {
+    'use strict';
     var depends = this.getDepends();
     var ret = "";
     for (var i = 0; i < depends.length; i++) {
@@ -150,6 +156,7 @@ Task.prototype.getDependsLinks = function () {
 };
 
 Task.prototype.link = function () {
+    'use strict';
     var rendered;
     if (this.type === 'Project') {
         rendered = $.JST.createFromTemplate(this, "PROJECTLINK");
@@ -161,6 +168,7 @@ Task.prototype.link = function () {
 
 
 Task.prototype.createResource = function (kwargs) {
+    'use strict';
     var resource = new Resource(kwargs);
     this.resources.push(resource);
     return resource;
@@ -169,6 +177,7 @@ Task.prototype.createResource = function (kwargs) {
 
 //<%---------- TASK STRUCTURE ---------------------- --%>
 Task.prototype.getRow = function () {
+    'use strict';
     var index = -1;
     if (this.master)
         index = this.master.tasks.indexOf(this);
@@ -177,6 +186,7 @@ Task.prototype.getRow = function () {
 
 
 Task.prototype.getParents = function () {
+    'use strict';
     var parents = [];
     var current_task = this.getParent();
     while (current_task !== null) {
@@ -188,6 +198,7 @@ Task.prototype.getParents = function () {
 
 
 Task.prototype.getParent = function () {
+    'use strict';
     if (this.parent_id !== null && this.parent === null) {
         // there should be a parent
         // find the parent from parent_id
@@ -208,15 +219,18 @@ Task.prototype.getParent = function () {
 
 
 Task.prototype.isParent = function () {
+    'use strict';
     return this.children.length > 0;
 };
 
 Task.prototype.isLeaf = function () {
+    'use strict';
     return this.children.length === 0;
 };
 
 
 Task.prototype.sortChildren = function(){
+    'use strict';
     // sorts the children to their start dates
     this.children.sort(function (a, b) {
         return a.start - b.start;
@@ -230,15 +244,18 @@ Task.prototype.sortChildren = function(){
 
 
 Task.prototype.getChildren = function () {
+    'use strict';
     return this.children;
 };
 
 
 Task.prototype.getDescendant = function () {
+    'use strict';
     return this.children;
 };
 
 Task.prototype.getDepends = function () {
+    'use strict';
     if (this.depends === null) {
         this.depends = [];
         if (this.depend_ids.length > 0) {
@@ -262,8 +279,10 @@ Task.prototype.getDepends = function () {
 };
 
 Task.prototype.setDepends = function (depends) {
+    'use strict';
     // if this is not an array but a string parse it as depends string
     var dependent_task;
+    var i;
     if (typeof(depends) === 'string') {
         // parse it as depends string
         this.depends_string = depends;
@@ -272,9 +291,9 @@ Task.prototype.setDepends = function (depends) {
         var deps = this.depends_string.split(',');
         var dep_id;
         var depend_index;
-        for (var i = 0; i < deps.length; i++) {
+        for (i = 0; i < deps.length; i++) {
             dep_id = deps[i].split(':')[0].trim(); // don't care about the lag
-            depend_index = this.master.task_ids.indexOf(dep);
+            depend_index = this.master.task_ids.indexOf(dep_id);
             if (depend_index !== -1) {
                 dependent_task = this.master.tasks[depend_index];
                 this.depends.push(dependent_task);
@@ -287,7 +306,7 @@ Task.prototype.setDepends = function (depends) {
         this.depend_ids = [depends.id];
     } else if (depends instanceof Array) {
         // should be an array
-        for (var i; i < depends.length; i++) {
+        for (i = 0; i < depends.length; i++) {
             dependent_task = depends[i];
             if (dependent_task instanceof Task) {
                 this.depends.push(dependent_task);
@@ -300,6 +319,7 @@ Task.prototype.setDepends = function (depends) {
 
 
 Task.prototype.getSuperiors = function () {
+    'use strict';
     // Returns the Tasks that this task depends to.
     return this.getDepends();
 };
@@ -307,6 +327,7 @@ Task.prototype.getSuperiors = function () {
 
 Task.prototype.getInferiors = function () {
     // Returns the tasks that depends to this task
+    'use strict';
     var ret = [];
     var task = this;
     if (this.master) {

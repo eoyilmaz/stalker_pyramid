@@ -36,7 +36,7 @@ from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
 
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.WARNING)
 
 
 # def walk_task_hierarchy(starting_task):
@@ -621,13 +621,12 @@ def get_gantt_tasks(request):
 
     tasks.sort(key=lambda x: x.start)
 
-    # if log.logging_level == logging.DEBUG:
-    #     logger.debug('tasks count: %i' % len(tasks))
-    #     for task in tasks:
-    #         logger.debug('------------------------------')
-    #         logger.debug('task name: %s' % task.name)
-    #         logger.debug('start date: %s' % task.start)
-    #         logger.debug('end date: %s' % task.end)
+    # logger.debug('tasks count: %i' % len(tasks))
+    # for task in tasks:
+    #     logger.debug('------------------------------')
+    #     logger.debug('task name: %s' % task.name)
+    #     logger.debug('start date: %s' % task.start)
+    #     logger.debug('end date: %s' % task.end)
 
     return convert_to_jquery_gantt_task_format(tasks)
 
