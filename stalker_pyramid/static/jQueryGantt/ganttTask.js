@@ -403,8 +403,13 @@ Task.prototype.toggleCollapse = function(kwargs){
 Task.prototype.hide = function(){
     // hide self and all child
     var rowElement = this.rowElement;
+    var ganttElements = this.ganttElements;
+    var i;
     if (rowElement !== null){
         rowElement.css('display', 'none');
+        for (i = 0; i < ganttElements.length; i++){
+            ganttElements[i].css('display', 'none');
+        }
     } else {
         // task has never been drawn
         // draw it
@@ -413,9 +418,10 @@ Task.prototype.hide = function(){
         this.rowElement.css('display', 'none');
     }
     if (this.isParent()){
-        for (var i=0; i < this.children.length; i++){
-            var child = this.children[i];
-            child.hide();
+        var child_count = this.children.length;
+        var children = this.children;
+        for (var i = 0; i < child_count; i++){
+            children[i].hide();
         }
     }
     this.hidden = true;
@@ -424,9 +430,14 @@ Task.prototype.hide = function(){
 Task.prototype.show = function(){
     // show self and all child
     var rowElement = this.rowElement;
+    var ganttElements = this.ganttElements;
+    var i;
     if (rowElement !== null){
 //        console.debug('there are rowElement');
         rowElement.css('display', 'table-row');
+        for (i = 0; i < ganttElements.length; i++){
+            ganttElements[i].css('display', 'block');
+        }
     } else {
         // task has never been drawn
         // draw it
@@ -438,9 +449,10 @@ Task.prototype.show = function(){
     this.hidden = false;
     if (this.isParent()){
         if (!this.collapsed){
-            for (var i=0; i < this.children.length; i++){
-                var child = this.children[i];
-                child.show();
+            var child_count = this.children.length;
+            var children = this.children;
+            for (i = 0; i < child_count; i++){
+                children[i].show();
             }
         }
     }
@@ -468,9 +480,10 @@ Task.prototype.draw = function(editor){
     this.lowestChildRow = editor.addTask(self);
     if (!this.collapsed){
         var child_task = null;
-        for (var i=0; i<this.children.length; i++){
-            child_task = this.children[i];
-            child_task.draw(editor);
+        var child_count = this.children.length;
+        var children = this.children;
+        for (var i=0; i < child_count; i++){
+            children[i].draw(editor);
         }
         // add last children's lowestRow to self
         if (child_task){
