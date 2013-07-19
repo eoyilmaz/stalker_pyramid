@@ -33,8 +33,8 @@ define([
                 {
                     chart: GanttColumn({
                         scale: 4000000,
-                        start: new Date(2012, 0, 29, 1, 20, 0, 0),
-                        end: new Date(2012, 1, 23, 12, 26, 40, 0),
+                        start: new Date(2013, 4, 1),
+                        end: new Date(2014, 0, 1),
                         sortable: false
                     })
                 }

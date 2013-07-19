@@ -36,7 +36,7 @@ from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
 
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.WARNING)
+logger.setLevel(logging.DEBUG)
 
 
 # def walk_task_hierarchy(starting_task):
@@ -395,6 +395,155 @@ def convert_to_jquery_gantt_task_format(tasks):
     return data
 
 
+
+def convert_to_dgrid_gantt_task_format(tasks):
+    """Converts the given tasks to the DGrid Gantt compatible json format.
+
+    :param tasks: List of Stalker Tasks.
+    :return: json compatible dictionary
+    """
+
+    if not tasks:
+        return {}
+
+    if not isinstance(tasks, list):
+        raise HTTPServerError(detail='tasks argument in '
+                                     'convert_to_jquery_gantt_task_format '
+                                     'should be a list of '
+                                     'stalker.models.task.Task instances, not '
+                                     '%s' % tasks.__class__.__name__)
+
+    # data_source = Studio.query.first()
+    # # logger.debug('data_source : %s' % data_source)
+    # 
+    # if not data_source:
+    #     data_source = defaults
+    # 
+    # dwh = data_source.daily_working_hours
+    # wwh = data_source.weekly_working_hours
+    # wwd = data_source.weekly_working_days
+    # ywd = data_source.yearly_working_days
+    # timing_resolution = data_source.timing_resolution
+    # 
+    # # it should work both for studio and defaults
+    # working_hours = {
+    #     'mon': data_source.working_hours['mon'],
+    #     'tue': data_source.working_hours['tue'],
+    #     'wed': data_source.working_hours['wed'],
+    #     'thu': data_source.working_hours['thu'],
+    #     'fri': data_source.working_hours['fri'],
+    #     'sat': data_source.working_hours['sat'],
+    #     'sun': data_source.working_hours['sun']
+    # }
+    # # logger.debug('studio.working_hours : %s' % working_hours)
+
+    # create projects list to only list related projects
+    projects = []
+    for task in tasks:
+        if not isinstance(task, Task):
+            raise HTTPServerError(
+                detail='all elements in tasks list should be instances of '
+                       'stalker.models.task.Task instances, not %s' % 
+                       task.__class__.__name__
+            )
+
+        if task.project not in projects:
+            projects.append(task.project)
+
+    task_data = []
+
+    # first append projects
+    task_data.extend(
+        [{
+            'end': milliseconds_since_epoch(project.computed_end if project.computed_end else project.end),
+            'id': project.id,
+            'name': project.name,
+            'start': milliseconds_since_epoch(project.computed_start if project.computed_start else project.start),
+            'completed' : 0,
+            'hasChildren': True
+        } for project in projects]
+    )
+
+    task_data.extend(
+        [
+            {
+                'dependencies': [dep.id for dep in task.depends],
+                'end': milliseconds_since_epoch(task.computed_end if task.computed_end else task.end),
+                'id': task.id,
+                'name': task.name,
+                'parent': task.parent.id if task.parent else task.project.id,
+                'resource': ','.join(map(lambda x: x.name, task.resources)),
+                'start': milliseconds_since_epoch(task.computed_start if task.computed_start else task.start),
+                'completed': task.total_logged_seconds / task.schedule_seconds,
+                'hasChildren': task.is_container
+            } for task in tasks
+        ]
+    )
+
+    # # prepare time logs
+    # all_time_logs = []
+    # all_resources = []
+    # for task in tasks:
+    #     for time_log in task.time_logs:
+    #         all_time_logs.append(time_log)
+    #     for resource in task.resources:
+    #         all_resources.append(resource)
+
+    # # make it unique
+    # all_resources = list(set(all_resources))
+
+    # data = {
+    #     'tasks': {
+    #         'keys': [
+    #             'bid_timing', 'bid_unit', 'depend_ids', 'description', 'end',
+    #             'hierarchy_name', 'id', 'name', 'parent_id', 'priority',
+    #             'resource_ids', 'schedule_constraint', 'schedule_model',
+    #             'schedule_seconds', 'schedule_timing', 'schedule_unit',
+    #             'start', 'status', 'total_logged_seconds', 'type'],
+    #         'data': task_data
+    #     },
+    #     'resources': {
+    #         'keys': ['id', 'name'],
+    #         'data': [
+    #             [resource.id, resource.name] for resource in all_resources
+    #         ]
+    #     },  # User.query.all()],
+    #     # 'time_logs': {
+    #     #     'keys': ['end', 'id', 'resource_id', 'start', 'task_id'],
+    #     #     'data': [
+    #     #         [
+    #     #             milliseconds_since_epoch(time_log.end),  # end
+    #     #             time_log.id,  # id
+    #     #             time_log.resource.id,  # resource_id
+    #     #             milliseconds_since_epoch(time_log.start),  # start
+    #     #             time_log.task.id,  # task_id
+    #     #         ] for time_log in all_time_logs],
+    # },
+    #     # 'timing_resolution': (timing_resolution.days * 86400 +
+    #     #                       timing_resolution.seconds) * 1000,
+    #     # 'working_hours': working_hours,
+    #     # 'daily_working_hours': dwh,
+    #     # 'weekly_working_hours': wwh,
+    #     # 'weekly_working_days': wwd,
+    #     # 'yearly_working_days': ywd
+    # 
+    #     # "canWrite": 0,
+    #     # "canWriteOnParent": 0
+    # }
+
+    #logger.debug(data)
+
+    # logger.debug('loading gantt data:\n%s' % 
+    #             json.dumps(data,
+    #                        sort_keys=False,
+    #                        indent=4,
+    #                        separators=(',', ': ')
+    #             )
+    # )
+    return task_data
+
+
+
 @view_config(
     route_name='dialog_update_task',
     renderer='templates/task/dialog_create_task.jinja2'
@@ -661,7 +810,7 @@ def get_gantt_tasks(request):
     #     logger.debug('start date: %s' % task.start)
     #     logger.debug('end date: %s' % task.end)
 
-    return convert_to_jquery_gantt_task_format(tasks)
+    return convert_to_dgrid_gantt_task_format(tasks)
 
 
 @view_config(

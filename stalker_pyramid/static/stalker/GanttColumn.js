@@ -1,18 +1,19 @@
 define([
-    "dojo/_base/declare",
-    "dojo/on",
     "dojo/_base/array",
     "dojo/date/locale",
     "put-selector/put"
-], function (declare, on, array, locale, put) {
+], function (array, locale, put) {
     // module:
     //     ganttColumn
     // summary:
-    //     A dgrid column plugin that generates gantt chart time lines in a column.
+    //     A dgrid column plugin that generates gantt chart time lines in a
+    //     column.
 
-    function getColumnSetElement(/*DomNode*/ element) {
+    function getColumnSetElement(element) {
         // summary:
         //     Finds the column set parent element of a given cell.
+        // element:
+        //     DomNode
         // returns:
         //     DomNode?
         while ((element = element.parentNode) && element.className !== "dgrid-column-set") {
@@ -22,15 +23,16 @@ define([
 
     return function (column) {
         // summary:
-        //     Updates a column definition with special rendering methods that generate a gantt style chart.
+        //     Updates a column definition with special rendering methods that
+        //     generate a gantt style chart.
         // column: Object
         //     A column definition with the following special keys:
         //     - start: Date|number
-        //         The start date of the gantt chart's viewport, either as a Date object or in milliseconds
-        //         since the Unix epoch.
+        //         The start date of the gantt chart's viewport, either as a
+        //         Date object or in milliseconds since the Unix epoch.
         //     - end: Date|number
-        //         The end date of the gantt chart's viewport, either as a Date object or in milliseconds
-        //         since the Unix epoch.
+        //         The end date of the gantt chart's viewport, either as a Date
+        //         object or in milliseconds since the Unix epoch.
         //     - scale: number
         //         The number of milliseconds that one pixel represents.
 
@@ -41,17 +43,20 @@ define([
             // summary:
             //     Renders a task.
             // object: Object
-            //     An object representing a task with the following special keys:
+            //     An object representing a task with the following special
+            //     keys:
             //     - start: Date|number
-            //         The start time for the task, either as a Date object or in milliseconds since the
-            //         Unix epoch.
+            //         The start time for the task, either as a Date object or
+            //         in milliseconds since the Unix epoch.
             //     - end: Date|number
-            //         The end time for the task, either as a Date object or in milliseconds since the
-            //         Unix epoch.
+            //         The end time for the task, either as a Date object or in
+            //         milliseconds since the Unix epoch.
             //     - completed: number
-            //         The amount of the task that has been completed, between 0 and 1.
+            //         The amount of the task that has been completed, between
+            //         0 and 1.
             //     - dependencies: any[]
-            //         An array of data objects or data object identifiers that this task depends on.
+            //         An array of data objects or data object identifiers that
+            //         this task depends on.
             // value: unused
             // td: DomNode
 
@@ -61,7 +66,8 @@ define([
             // Add empty content to the cell to avoid it collapsing in IE
             td.innerHTML = "&nbsp;";
 
-            // Ensure the start time is always milliseconds since epoch, not a Date object
+            // Ensure the start time is always milliseconds since epoch
+            // and not a Date object
             var chartStartTime = +column.start,
 
             // This is the number of milliseconds per pixel rendered
@@ -87,38 +93,49 @@ define([
 
             var grid = column.grid;
 
-            // Create arrows for each dependency, but only after all other rows have been rendered so that they
-            // can be retrieved and measured properly
+            // Create arrows for each dependency, but only after all other rows
+            // have been rendered so that they can be retrieved and measured
+            // properly
             setTimeout(function () {
-                // First, create a special column set row (which contains elements that have synced horizontal scrolling) so that all the dependency lines can
-                // be grouped together and will be properly scrolled horizontally along with the rest of the rows
+                // First, create a special column set row (which contains
+                // elements that have synced horizontal scrolling) so that all
+                // the dependency lines can be grouped together and will be
+                // properly scrolled horizontally along with the rest of the
+                // rows
                 if (!dependencyRow) {
-
-                    // This intermediate element is necessary for the dependency lines to render outside of the zero height dependency row;
-                    //    the outer element has a height of zero, the inner element has height to accomodate all the lines
+                    // This intermediate element is necessary for the
+                    // dependency lines to render outside of the zero height
+                    // dependency row;
+                    //    the outer element has a height of zero, the inner
+                    //    element has height to accommodate all the lines
                     dependencyRow = put(getColumnSetElement(firstCell), "-div.dependency-container");
 
-                    // Create the scrolling container for the gantt dependency arrows
+                    // Create the scrolling container for the gantt dependency
+                    // arrows
                     dependencyRow = put(dependencyRow, "div.dgrid-column-set.dependency-row[data-dgrid-column-set-id=1]");
 
-                    // Create the actual container for the dependency arrows inside the scrolling container
-                    // this will scroll within the .dependency-row
+                    // Create the actual container for the dependency arrows
+                    // inside the scrolling container this will scroll within
+                    // the .dependency-row
                     dependencyRow = put(dependencyRow, "div.dependencies.dgrid-column-chart");
                 }
 
                 array.forEach(object.dependencies, function (dependency) {
-                    // This corresponds to the dependency DOM node, the starting point of the dependency line
+                    // This corresponds to the dependency DOM node, the
+                    // starting point of the dependency line
                     var cell = grid.cell(dependency, column.id).element;
 
                     // create the horizontal line part of the arrow
                     var hline = put(dependencyRow, "span.dep-horizontal-line");
 
-                    // we find the location of the starting cell and use that to place the horizontal line
+                    // we find the location of the starting cell and use that
+                    // to place the horizontal line
                     var top = getColumnSetElement(cell).offsetTop + 10;
                     hline.style.top = top + "px";
                     hline.style.left = cell.finished + 5 + "px";
 
-                    // the start variable is the starting point of the target dependent cell
+                    // the start variable is the starting point of the target
+                    // dependent cell
                     hline.style.width = left - cell.finished - 4 + "px";
 
                     // now we create the vertical line and position it
@@ -129,7 +146,8 @@ define([
 
                     var tdTop = getColumnSetElement(td).offsetTop - 5;
                     vline.style.height = tdTop - getColumnSetElement(cell).offsetTop + "px";
-                    // now we create the arrow at the end of the line, position it correctly
+                    // now we create the arrow at the end of the line, position
+                    // it correctly
                     var arrow = put(dependencyRow, "span.ui-icon.down-arrow");
                     arrow.style.top = tdTop + "px";
                     arrow.style.left = left - 7 + "px";
