@@ -5,9 +5,9 @@ define([
     "dgrid/Selection",
     "dgrid/Keyboard",
     "dgrid/tree",
-    "./ganttColumn"
+    "stalker/GanttColumn"
 ], function (declare, OnDemandGrid, ColumnSet, Selection, Keyboard, tree,
-             ganttColumn) {
+             GanttColumn) {
     // module:
     //     GanttGrid
     // summary:
@@ -31,7 +31,7 @@ define([
             // render
             [
                 {
-                    chart: ganttColumn({
+                    chart: GanttColumn({
                         scale: 4000000,
                         start: new Date(2012, 0, 29, 1, 20, 0, 0),
                         end: new Date(2012, 1, 23, 12, 26, 40, 0),

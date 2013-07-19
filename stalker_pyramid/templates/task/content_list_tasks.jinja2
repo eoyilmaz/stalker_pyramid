@@ -66,15 +66,18 @@
 </div>
 
 {# GANTT CHART #}
-<div id="workSpace"
-     style="padding:0;
-      overflow-y:hidden;
-      overflow-x:hidden;
-      border:1px solid #e5e5e5;
-      position:relative;
-      margin:0 5px;
-      width:99%;
-      height:94%;">
+{#<div id="workSpace"#}
+{#     style="padding:0;#}
+{#      overflow-y:hidden;#}
+{#      overflow-x:hidden;#}
+{#      border:1px solid #e5e5e5;#}
+{#      position:relative;#}
+{#      margin:0 5px;#}
+{#      width:99%;#}
+{#      height:94%;">#}
+{#</div>#}
+<div style='width:100%; height: 100%; position: absolute;'>
+    <div id="gantt"></div>
 </div>
 
 <script type="text/javascript">
@@ -100,25 +103,55 @@
         'dojo/when',
         'dojo/date',
 
+        "dgrid/List",
+        "dgrid/Grid",
+        "dgrid/Selection",
+        "dgrid/Keyboard",
+        "dojo/_base/declare",
+
         'stalker/dialogs',
         'stalker/dialogCaller',
         'stalker/dialogCreator',
+        'stalker/GanttGrid',
 
         'dojo/domReady!'
     ], function (registry, Button, FilteringSelect, Menu, MenuItem,
                  MenuSeparator, DateTextBox, Tooltip, cookie, json, query,
-                 Memory, JsonRest, xhr, lang, Deferred, when, date, dialogs,
-                 dialogCaller, dialogCreator) {
+                 Memory, JsonRest, xhr, lang, Deferred, when, date, List, Grid,
+                 Selection, Keyboard, declare, dialogs,
+                 dialogCaller, dialogCreator, GanttGrid) {
 
-        var ge = new GanttMaster({
-            grid_mode: 'Task',
-            gantt_mode: 'Task'
+    
+        var data = new Memory({
+            data:[
+                {name: "Create a column plugin", resource: "Bryan Forbes",  start: 1327900000000, end: 1328300000000, completed: 0.9, id: 1},
+                {name: "Define a column set", resource: "Colin Snover",start: 1328100000000, end: 1328400000000, completed: 0.9, id: 2},
+                {name: "Draw colored bars", resource: "Kris Zyp", start: 1329100000000, end: 1329800000000, completed: 0.4, dependencies:[1], id: 3},
+                {name: "Draw dependency arrows", resource: "Bryan Forbes", start: 1328400000000, end: 1328900000000, completed: 0.4, dependencies:[1], id: 4},
+                {name: "Setup a tree column plugin", start: 1329000000000, end: 1329800000000, completed: 0.4, id: 5, hasChildren: true},
+                {name: "Define getChildren method", resource: "Ken Franqueiro", start: 1329000000000, end: 1329400000000, completed: 0.4, id: 6, parent: 5},
+                {name: "Define tree column", resource: "Chris Barrett", start: 1329400000000, end: 1329800000000, completed: 0.4, dependencies:[2], id: 7, parent: 5}
+            ],
+            getChildren: function(parent, options){
+                return this.query({parent: parent.id}, options);
+            },
+            mayHaveChildren: function(parent){
+                return parent.hasChildren;
+            }
         });
-        ge.init($("#workSpace"));
-        //console.debug(ge);
-        // store the dojo cookie
-        ge.cookie = cookie;
-        ge.json = json;
+
+        var gantt_chart = new GanttGrid({
+            id: 'gantt_dgrid',
+            width: '100%',
+            autoHeight: true,
+            store: data,
+            query: {
+                // Only tasks with no parent task should be displayed in the root of the chart
+                parent: undefined
+            }
+
+        }, 'gantt');
+
 
         // The Memory
         var tasks_memory;

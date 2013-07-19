@@ -34,7 +34,6 @@
         "dgrid/Keyboard",
         "dojo/_base/declare",
 
-        'dojo/store/Memory',
         'dojo/store/JsonRest',
 
         'stalker/dialogs',
@@ -42,8 +41,8 @@
         'stalker/dialogCaller',
 
         'dojo/domReady!'
-    ], function (List, Grid, Selection, Keyboard, declare, Memory, JsonRest,
-                 dialogs, fieldUpdater, dialogCaller) {
+    ], function (List, Grid, Selection, Keyboard, declare, JsonRest, dialogs,
+                 fieldUpdater, dialogCaller) {
 
         var StandardGrid = declare([Grid, Selection, Keyboard]);
         var users_DataGrid = new StandardGrid({
