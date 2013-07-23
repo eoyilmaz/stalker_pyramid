@@ -36,7 +36,7 @@ from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
 
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.WARNING)
 
 
 # def walk_task_hierarchy(starting_task):
@@ -396,6 +396,35 @@ def convert_to_jquery_gantt_task_format(tasks):
 
 
 
+def convert_to_dgrid_gantt_project_format(projects):
+    """Converts the given projects to the DGrid Gantt compatible json format.
+
+    :param projects: List of Stalker Project.
+    :return: json compatible dictionary
+    """
+
+    from sqlalchemy import func
+    def hasChildren(project):
+        return bool(
+            DBSession.query(func.count(Task.id))
+            .join(Task.project, Project.tasks)
+            .filter(Project.id==project.id)
+            .first()[0]
+        )
+
+    return [
+        {
+            'end': milliseconds_since_epoch(project.computed_end if project.computed_end else project.end),
+            'id': project.id,
+            'name': project.name,
+            'start': milliseconds_since_epoch(project.computed_start if project.computed_start else project.start),
+            'completed': 0,
+            'hasChildren': hasChildren(project)
+        } for project in projects
+    ]
+
+
+
 def convert_to_dgrid_gantt_task_format(tasks):
     """Converts the given tasks to the DGrid Gantt compatible json format.
 
@@ -403,146 +432,19 @@ def convert_to_dgrid_gantt_task_format(tasks):
     :return: json compatible dictionary
     """
 
-    if not tasks:
-        return {}
-
-    if not isinstance(tasks, list):
-        raise HTTPServerError(detail='tasks argument in '
-                                     'convert_to_jquery_gantt_task_format '
-                                     'should be a list of '
-                                     'stalker.models.task.Task instances, not '
-                                     '%s' % tasks.__class__.__name__)
-
-    # data_source = Studio.query.first()
-    # # logger.debug('data_source : %s' % data_source)
-    # 
-    # if not data_source:
-    #     data_source = defaults
-    # 
-    # dwh = data_source.daily_working_hours
-    # wwh = data_source.weekly_working_hours
-    # wwd = data_source.weekly_working_days
-    # ywd = data_source.yearly_working_days
-    # timing_resolution = data_source.timing_resolution
-    # 
-    # # it should work both for studio and defaults
-    # working_hours = {
-    #     'mon': data_source.working_hours['mon'],
-    #     'tue': data_source.working_hours['tue'],
-    #     'wed': data_source.working_hours['wed'],
-    #     'thu': data_source.working_hours['thu'],
-    #     'fri': data_source.working_hours['fri'],
-    #     'sat': data_source.working_hours['sat'],
-    #     'sun': data_source.working_hours['sun']
-    # }
-    # # logger.debug('studio.working_hours : %s' % working_hours)
-
-    # create projects list to only list related projects
-    projects = []
-    for task in tasks:
-        if not isinstance(task, Task):
-            raise HTTPServerError(
-                detail='all elements in tasks list should be instances of '
-                       'stalker.models.task.Task instances, not %s' % 
-                       task.__class__.__name__
-            )
-
-        if task.project not in projects:
-            projects.append(task.project)
-
-    task_data = []
-
-    # first append projects
-    task_data.extend(
-        [{
-            'end': milliseconds_since_epoch(project.computed_end if project.computed_end else project.end),
-            'id': project.id,
-            'name': project.name,
-            'start': milliseconds_since_epoch(project.computed_start if project.computed_start else project.start),
-            'completed' : 0,
-            'hasChildren': True
-        } for project in projects]
-    )
-
-    task_data.extend(
-        [
-            {
-                'dependencies': [dep.id for dep in task.depends],
-                'end': milliseconds_since_epoch(task.computed_end if task.computed_end else task.end),
-                'id': task.id,
-                'name': task.name,
-                'parent': task.parent.id if task.parent else task.project.id,
-                'resource': ','.join(map(lambda x: x.name, task.resources)),
-                'start': milliseconds_since_epoch(task.computed_start if task.computed_start else task.start),
-                'completed': task.total_logged_seconds / task.schedule_seconds,
-                'hasChildren': task.is_container
-            } for task in tasks
-        ]
-    )
-
-    # # prepare time logs
-    # all_time_logs = []
-    # all_resources = []
-    # for task in tasks:
-    #     for time_log in task.time_logs:
-    #         all_time_logs.append(time_log)
-    #     for resource in task.resources:
-    #         all_resources.append(resource)
-
-    # # make it unique
-    # all_resources = list(set(all_resources))
-
-    # data = {
-    #     'tasks': {
-    #         'keys': [
-    #             'bid_timing', 'bid_unit', 'depend_ids', 'description', 'end',
-    #             'hierarchy_name', 'id', 'name', 'parent_id', 'priority',
-    #             'resource_ids', 'schedule_constraint', 'schedule_model',
-    #             'schedule_seconds', 'schedule_timing', 'schedule_unit',
-    #             'start', 'status', 'total_logged_seconds', 'type'],
-    #         'data': task_data
-    #     },
-    #     'resources': {
-    #         'keys': ['id', 'name'],
-    #         'data': [
-    #             [resource.id, resource.name] for resource in all_resources
-    #         ]
-    #     },  # User.query.all()],
-    #     # 'time_logs': {
-    #     #     'keys': ['end', 'id', 'resource_id', 'start', 'task_id'],
-    #     #     'data': [
-    #     #         [
-    #     #             milliseconds_since_epoch(time_log.end),  # end
-    #     #             time_log.id,  # id
-    #     #             time_log.resource.id,  # resource_id
-    #     #             milliseconds_since_epoch(time_log.start),  # start
-    #     #             time_log.task.id,  # task_id
-    #     #         ] for time_log in all_time_logs],
-    # },
-    #     # 'timing_resolution': (timing_resolution.days * 86400 +
-    #     #                       timing_resolution.seconds) * 1000,
-    #     # 'working_hours': working_hours,
-    #     # 'daily_working_hours': dwh,
-    #     # 'weekly_working_hours': wwh,
-    #     # 'weekly_working_days': wwd,
-    #     # 'yearly_working_days': ywd
-    # 
-    #     # "canWrite": 0,
-    #     # "canWriteOnParent": 0
-    # }
-
-    #logger.debug(data)
-
-    # logger.debug('loading gantt data:\n%s' % 
-    #             json.dumps(data,
-    #                        sort_keys=False,
-    #                        indent=4,
-    #                        separators=(',', ': ')
-    #             )
-    # )
-    return task_data
-
-
+    return [
+        {
+            'dependencies': [dep.id for dep in task.depends],
+            'end': milliseconds_since_epoch(task.computed_end if task.computed_end else task.end),
+            'id': task.id,
+            'name': task.name,
+            'parent': task.parent.id if task.parent else task.project.id,
+            'resource': ','.join(map(lambda x: x.name, task.resources)),
+            'start': milliseconds_since_epoch(task.computed_start if task.computed_start else task.start),
+            'completed': task.total_logged_seconds / task.schedule_seconds,
+            'hasChildren': task.is_container
+        } for task in tasks
+    ]
 
 @view_config(
     route_name='dialog_update_task',
@@ -748,25 +650,25 @@ def get_gantt_tasks(request):
     entity_id = request.matchdict.get('entity_id')
     entity = Entity.query.filter_by(id=entity_id).first()
 
+    logger.debug('entity : %s' % entity)
+
     tasks = []
     if entity:
-        if entity.entity_type == 'Project':
-            project = entity
-            # get the tasks who is a root task
-            root_tasks = Task.query \
-                .filter(Task._project == project) \
-                .filter(Task.parent == None).all()
-
-            # do a depth first search for child tasks
-            for root_task in root_tasks:
-                # logger.debug('root_task: %s, parent: %s' % (root_task, root_task.parent))
-                tasks.extend(depth_first_flatten(root_task))
-        elif entity.entity_type == 'User':
+        if isinstance(entity, Project):
+            # just return the project it self
+            return convert_to_dgrid_gantt_project_format([entity])
+        elif isinstance(entity, User):
             user = entity
-
             # sort the tasks with the project.id
             if user is not None:
                 tasks = sorted(user.tasks, key=lambda task: task.project.id)
+
+                projects = []
+                for task in tasks:
+                    if task.project not in projects:
+                        projects.append(task.project)
+
+                return_data = convert_to_dgrid_gantt_project_format(projects)
 
                 user_tasks_with_parents = []
                 for task in tasks:
@@ -778,10 +680,9 @@ def get_gantt_tasks(request):
                         user_tasks_with_parents.append(parent)
                         parent = parent.parent
 
-
-                # logger.debug('user_task_with_parents: %s' % user_tasks_with_parents)
-                # logger.debug('tasks                 : %s' % tasks)
                 tasks = list(set(user_tasks_with_parents))
+                return_data.extend(convert_to_dgrid_gantt_task_format(tasks))
+                return return_data
         elif entity.entity_type == 'Studio':
             projects = Project.query.all()
             for project in projects:
@@ -812,6 +713,22 @@ def get_gantt_tasks(request):
 
     return convert_to_dgrid_gantt_task_format(tasks)
 
+@view_config(
+    route_name='get_gantt_task_children',
+    renderer='json'
+)
+def get_gantt_task_children(request):
+    """returns the children tasks of the given task
+    """
+    entity_id = request.matchdict.get('entity_id')
+    entity = Entity.query.filter_by(id=entity_id).first()
+
+    if isinstance(entity, Project):
+        return convert_to_dgrid_gantt_task_format(entity.root_tasks)
+    if isinstance(entity, Task):
+        return convert_to_dgrid_gantt_task_format(entity.children)
+
+    return []
 
 @view_config(
     route_name='get_project_tasks',

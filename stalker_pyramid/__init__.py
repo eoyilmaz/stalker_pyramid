@@ -312,6 +312,7 @@ def main(global_config, **settings):
                      'get/root/tasks/{project_id}') # TODO: fix this
 
     config.add_route('get_gantt_tasks', 'get/gantt/tasks/{entity_id}')
+    config.add_route('get_gantt_task_children', 'get/gantt/task/children/{entity_id}')
 
     config.add_route('auto_schedule_tasks', 'auto_schedule_tasks')
     config.add_route('view_task_nav_bar',

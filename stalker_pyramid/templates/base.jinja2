@@ -29,52 +29,65 @@
           href='{{ request.static_url("stalker_pyramid:static/stalker/images/favicon.ico") }}'/>
     <link rel='stylesheet' type='text/css' media='all' charset='utf-8'
           href='{{ request.static_url("stalker_pyramid:static/stalker/css/stalker.css") }}'/>
-
-    <link rel='stylesheet' type='text/css' media='all' charset='utf-8'
-          href='{{ request.static_url("stalker_pyramid:static/stalker/css/GanttColumn.css") }}'/>
-
+    
     {# load jQuery and jQuery Gantt first#}
     {#    <link rel=stylesheet media='all'#}
     {#          href='{{ request.static_url("stalker_pyramid:static/jQueryGantt/libs/dateField/jquery.dateField.css") }}'#}
     {#          type="text/css">#}
-    <link rel=stylesheet media='all'
-          href='{{ request.static_url("stalker_pyramid:static/jQueryGantt/css/gantt.css") }}'
-          type="text/css">
+{#    <link rel=stylesheet media='all'#}
+{#          href='{{ request.static_url("stalker_pyramid:static/jQueryGantt/css/gantt.css") }}'#}
+{#          type="text/css">#}
 
     {# load date.format #}
     <script src='{{ request.static_url("stalker_pyramid:static/stalker/date.format.js") }}'></script>
 
 
     <script src='{{ request.static_url("stalker_pyramid:static/jquery/1.7/jquery.min.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/jqueryui/1.8/jquery-ui.min.js") }}'></script>
+{#    <script src='{{ request.static_url("stalker_pyramid:static/jqueryui/1.8/jquery-ui.min.js") }}'></script>#}
 
-    <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/libs/jquery.livequery.min.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/libs/jquery.timers.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/libs/platform.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/libs/date.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/libs/i18nJs.js") }}'></script>
+{#    <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/libs/jquery.livequery.min.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/libs/jquery.timers.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/libs/platform.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/libs/date.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/libs/i18nJs.js") }}'></script>#}
     {#    <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/libs/dateField/jquery.dateField.js") }}'></script>#}
-    <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/libs/JST/jquery.JST.js") }}'></script>
+{#    <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/libs/JST/jquery.JST.js") }}'></script>#}
 
-    <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/ganttUtilities.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/ganttProject.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/ganttResource.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/ganttLink.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/ganttTask.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/ganttTimeLog.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/ganttDrawer.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/ganttGridEditor.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/ganttMaster.js") }}'></script>
+{#    <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/ganttUtilities.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/ganttProject.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/ganttResource.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/ganttLink.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/ganttTask.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/ganttTimeLog.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/ganttDrawer.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/ganttGridEditor.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/ganttMaster.js") }}'></script>#}
 
     {# DOJO COMPRESSED #}
     <link rel='stylesheet' type='text/css' media='all' charset='utf-8'
-          href='{{ request.static_url("stalker_pyramid:static/dijit/themes/claro/claro.css") }}'/>
+          href='{{ request.static_url("stalker_pyramid:static/dojo/resources/dojo.css") }}'/>
     <link rel='stylesheet' type='text/css' media='all' charset='utf-8'
-          href='{{ request.static_url("stalker_pyramid:static/dojox/grid/resources/claroGrid.css") }}'/>
+          href='{{ request.static_url("stalker_pyramid:static/dijit/themes/claro/claro.css") }}'/>
+{#    <link rel='stylesheet' type='text/css' media='all' charset='utf-8'#}
+{#          href='{{ request.static_url("stalker_pyramid:static/dojox/grid/resources/claroGrid.css") }}'/>#}
     <link rel='stylesheet' type='text/css' media='all' charset='utf-8'
           href='{{ request.static_url("stalker_pyramid:static/dojox/form/resources/UploaderFileList.css") }}'/>
     <link rel='stylesheet'
           href='{{ request.static_url("stalker_pyramid:static/dojox/form/resources/FileInput.css") }}'/>
+
+    {# DGRID GANTT #}
+    <link rel='stylesheet' type='text/css' media='all' charset='utf-8'
+          href='{{ request.static_url("stalker_pyramid:static/stalker/css/GanttColumn.css") }}'/>
+
+    {# DGRID #}
+    <link rel='stylesheet' type='text/css' media='all' charset='utf-8'
+      href='{{ request.static_url("stalker_pyramid:static/dgrid/css/skins/claro.css") }}'/>
+    <link rel='stylesheet' type='text/css' media='all' charset='utf-8'
+      href='{{ request.static_url("stalker_pyramid:static/dgrid/css/columnset.css") }}'/>
+    <link rel='stylesheet' type='text/css' media='all' charset='utf-8'
+      href='{{ request.static_url("stalker_pyramid:static/dgrid/css/dgrid.css") }}'/>
+    <link rel='stylesheet' type='text/css' media='all' charset='utf-8'
+      href='{{ request.static_url("stalker_pyramid:static/dgrid/css/has-transforms3d.css") }}'/>
 
     {# DOJO MODIFIED CSS #}
     <link rel='stylesheet' type='text/css' media='all' charset='utf-8'
@@ -368,7 +381,7 @@
     <script type='text/javascript'>
 
     // load templates for jQueryGantt
-    $('#ganttEditorTemplates').loadTemplates();
+{#    $('#ganttEditorTemplates').loadTemplates();#}
 
     var redirectLinkInParent = function (targetPane, address) {
         var tab_container = dijit.byId('data_tab_container');

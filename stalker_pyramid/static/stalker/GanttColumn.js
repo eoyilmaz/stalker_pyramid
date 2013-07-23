@@ -16,7 +16,11 @@ define([
         //     DomNode
         // returns:
         //     DomNode?
-        while ((element = element.parentNode) && element.className !== "dgrid-column-set") {
+        if (element) {
+            element = element.parentNode;
+            while (element && element.className !== "dgrid-column-set") {
+                element = element.parentNode;
+            }
         }
         return element;
     }

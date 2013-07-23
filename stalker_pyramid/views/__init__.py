@@ -370,8 +370,7 @@ def milliseconds_since_epoch(dt):
     :returns int: showing the milliseconds since epoch
     """
     dts = dt - datetime.datetime(1970, 1, 1)
-    return (dts.days * 86400 + dts.seconds) * 1000 + int(
-        dts.microseconds / 1000)
+    return dts.days * 86400000 + dts.seconds * 1000
 
 
 def from_microseconds(t):
