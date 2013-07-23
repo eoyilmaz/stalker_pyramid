@@ -31,7 +31,7 @@ define([
             // render
             [
                 {
-                    chart: GanttColumn({
+                    chart: new GanttColumn({
                         scale: 4000000,
                         start: new Date(2013, 4, 1),
                         end: new Date(2014, 0, 1),

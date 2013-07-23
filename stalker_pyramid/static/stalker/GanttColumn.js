@@ -9,21 +9,22 @@ define([
     //     A dgrid column plugin that generates gantt chart time lines in a
     //     column.
 
-    function getColumnSetElement(element) {
-        // summary:
-        //     Finds the column set parent element of a given cell.
-        // element:
-        //     DomNode
-        // returns:
-        //     DomNode?
-        if (element) {
-            element = element.parentNode;
-            while (element && element.className !== "dgrid-column-set") {
-                element = element.parentNode;
-            }
-        }
-        return element;
-    }
+//    function getColumnSetElement(element) {
+//        // summary:
+//        //     Finds the column set parent element of a given cell.
+//        // element:
+//        //     DomNode
+//        // returns:
+//        //     DomNode?
+//        console.debug('element: ', element);
+//        if (element) {
+//            element = element.parentNode;
+//            while (element && element.className !== "dgrid-column-set") {
+//                element = element.parentNode;
+//            }
+//        }
+//        return element;
+//    }
 
     return function (column) {
         // summary:
@@ -97,66 +98,67 @@ define([
 
             var grid = column.grid;
 
-            // Create arrows for each dependency, but only after all other rows
-            // have been rendered so that they can be retrieved and measured
-            // properly
-            setTimeout(function () {
-                // First, create a special column set row (which contains
-                // elements that have synced horizontal scrolling) so that all
-                // the dependency lines can be grouped together and will be
-                // properly scrolled horizontally along with the rest of the
-                // rows
-                if (!dependencyRow) {
-                    // This intermediate element is necessary for the
-                    // dependency lines to render outside of the zero height
-                    // dependency row;
-                    //    the outer element has a height of zero, the inner
-                    //    element has height to accommodate all the lines
-                    dependencyRow = put(getColumnSetElement(firstCell), "-div.dependency-container");
-
-                    // Create the scrolling container for the gantt dependency
-                    // arrows
-                    dependencyRow = put(dependencyRow, "div.dgrid-column-set.dependency-row[data-dgrid-column-set-id=1]");
-
-                    // Create the actual container for the dependency arrows
-                    // inside the scrolling container this will scroll within
-                    // the .dependency-row
-                    dependencyRow = put(dependencyRow, "div.dependencies.dgrid-column-chart");
-                }
-
-                array.forEach(object.dependencies, function (dependency) {
-                    // This corresponds to the dependency DOM node, the
-                    // starting point of the dependency line
-                    var cell = grid.cell(dependency, column.id).element;
-
-                    // create the horizontal line part of the arrow
-                    var hline = put(dependencyRow, "span.dep-horizontal-line");
-
-                    // we find the location of the starting cell and use that
-                    // to place the horizontal line
-                    var top = getColumnSetElement(cell).offsetTop + 10;
-                    hline.style.top = top + "px";
-                    hline.style.left = cell.finished + 5 + "px";
-
-                    // the start variable is the starting point of the target
-                    // dependent cell
-                    hline.style.width = left - cell.finished - 4 + "px";
-
-                    // now we create the vertical line and position it
-                    var vline = put(dependencyRow, "span.dep-vertical-line");
-
-                    vline.style.top = top + 2 + "px";
-                    vline.style.left = left + "px";
-
-                    var tdTop = getColumnSetElement(td).offsetTop - 5;
-                    vline.style.height = tdTop - getColumnSetElement(cell).offsetTop + "px";
-                    // now we create the arrow at the end of the line, position
-                    // it correctly
-                    var arrow = put(dependencyRow, "span.ui-icon.down-arrow");
-                    arrow.style.top = tdTop + "px";
-                    arrow.style.left = left - 7 + "px";
-                });
-            }, 0);
+            // TODO: enable this part later
+//            // Create arrows for each dependency, but only after all other rows
+//            // have been rendered so that they can be retrieved and measured
+//            // properly
+//            setTimeout(function () {
+//                // First, create a special column set row (which contains
+//                // elements that have synced horizontal scrolling) so that all
+//                // the dependency lines can be grouped together and will be
+//                // properly scrolled horizontally along with the rest of the
+//                // rows
+//                if (!dependencyRow) {
+//                    // This intermediate element is necessary for the
+//                    // dependency lines to render outside of the zero height
+//                    // dependency row;
+//                    //    the outer element has a height of zero, the inner
+//                    //    element has height to accommodate all the lines
+//                    dependencyRow = put(getColumnSetElement(firstCell), "-div.dependency-container");
+//
+//                    // Create the scrolling container for the gantt dependency
+//                    // arrows
+//                    dependencyRow = put(dependencyRow, "div.dgrid-column-set.dependency-row[data-dgrid-column-set-id=1]");
+//
+//                    // Create the actual container for the dependency arrows
+//                    // inside the scrolling container this will scroll within
+//                    // the .dependency-row
+//                    dependencyRow = put(dependencyRow, "div.dependencies.dgrid-column-chart");
+//                }
+//
+//                array.forEach(object.dependencies, function (dependency) {
+//                    // This corresponds to the dependency DOM node, the
+//                    // starting point of the dependency line
+//                    var cell = grid.cell(dependency, column.id).element;
+//
+//                    // create the horizontal line part of the arrow
+//                    var hline = put(dependencyRow, "span.dep-horizontal-line");
+//
+//                    // we find the location of the starting cell and use that
+//                    // to place the horizontal line
+//                    var top = getColumnSetElement(cell).offsetTop + 10;
+//                    hline.style.top = top + "px";
+//                    hline.style.left = cell.finished + 5 + "px";
+//
+//                    // the start variable is the starting point of the target
+//                    // dependent cell
+//                    hline.style.width = left - cell.finished - 4 + "px";
+//
+//                    // now we create the vertical line and position it
+//                    var vline = put(dependencyRow, "span.dep-vertical-line");
+//
+//                    vline.style.top = top + 2 + "px";
+//                    vline.style.left = left + "px";
+//
+//                    var tdTop = getColumnSetElement(td).offsetTop - 5;
+//                    vline.style.height = tdTop - getColumnSetElement(cell).offsetTop + "px";
+//                    // now we create the arrow at the end of the line, position
+//                    // it correctly
+//                    var arrow = put(dependencyRow, "span.ui-icon.down-arrow");
+//                    arrow.style.top = tdTop + "px";
+//                    arrow.style.left = left - 7 + "px";
+//                });
+//            }, 0);
         };
 
         column.renderHeaderCell = function (th) {

@@ -318,6 +318,13 @@ def main(global_config, **settings):
     config.add_route('view_task_nav_bar',
                      'view/task_nav_bar/{entity_id}')# TODO: this same with view_entity_nav_bar find a solution to merge them.
 
+    # RESTful test
+    # config.add_route('get_users', 'users/')
+    # config.add_route('get_user_tasks', 'users/{user_id}/tasks/')
+    config.add_route('get_tasks', 'tasks/')
+    config.add_route('get_task', 'tasks/{task_id}')
+    config.add_route('get_task_children', 'tasks/{task_id}/children/')
+
     # *************************************************************************
     # TimeLog
     config.add_route('dialog_create_time_log',
@@ -333,7 +340,7 @@ def main(global_config, **settings):
     config.add_route('list_time_logs',
                      'list/time_logs/{entity_id}') # returns response
 
-      # *************************************************************************
+    # *************************************************************************
     # Ticket
     config.add_route('dialog_create_ticket',
                      'dialog/create/ticket/{entity_id}')

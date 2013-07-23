@@ -19,6 +19,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 import logging
 
+from pyramid.response import Response
+
 from pyramid.view import view_config
 from pyramid.security import authenticated_userid
 from pyramid.httpexceptions import HTTPServerError, HTTPOk
@@ -36,7 +38,7 @@ from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
 
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.WARNING)
+logger.setLevel(logging.DEBUG)
 
 
 # def walk_task_hierarchy(starting_task):
@@ -419,10 +421,10 @@ def convert_to_dgrid_gantt_project_format(projects):
             'name': project.name,
             'start': milliseconds_since_epoch(project.computed_start if project.computed_start else project.start),
             'completed': 0,
-            'hasChildren': hasChildren(project)
+            'hasChildren': hasChildren(project),
+            'children': [{'$ref': 'tasks/%s' % task.id} for task in project.root_tasks]
         } for project in projects
     ]
-
 
 
 def convert_to_dgrid_gantt_task_format(tasks):
@@ -431,7 +433,6 @@ def convert_to_dgrid_gantt_task_format(tasks):
     :param tasks: List of Stalker Tasks.
     :return: json compatible dictionary
     """
-
     return [
         {
             'dependencies': [dep.id for dep in task.depends],
@@ -442,7 +443,8 @@ def convert_to_dgrid_gantt_task_format(tasks):
             'resource': ','.join(map(lambda x: x.name, task.resources)),
             'start': milliseconds_since_epoch(task.computed_start if task.computed_start else task.start),
             'completed': task.total_logged_seconds / task.schedule_seconds,
-            'hasChildren': task.is_container
+            'hasChildren': task.is_container,
+            'children': [{'$ref': 'tasks/%s' % task.id} for task in task.children]
         } for task in tasks
     ]
 
@@ -640,6 +642,76 @@ def get_root_tasks(request):
 
 
 @view_config(
+    route_name='get_tasks',
+    renderer='json'
+)
+def get_tasks(request):
+    """RESTful version of getting all tasks
+    """
+    # logger.debug('request.GET: %s' % request.GET)
+    parent_id = request.GET.get('parent_id')
+    task_id = request.GET.get('task_id')
+    return_data = None
+    content_range = '%s-%s/%s'
+    if task_id:
+        logger.debug('got a task_id : %s' % task_id)
+        task = Entity.query.filter(Entity.id==task_id).first()
+        if isinstance(task, Project):
+            logger.debug('got a Project : %s' % task)
+            return_data = convert_to_dgrid_gantt_project_format([task])
+            content_range = content_range % (0, 0, 1)
+        elif isinstance(task, Task):
+            logger.debug('got a Task : %s' % task)
+            return_data = convert_to_dgrid_gantt_task_format([task])
+            content_range = content_range % (0, 0, 1)
+    elif parent_id:
+        # logger.debug('got some parent_id : %s' % parent_id)
+        parent = Entity.query.filter(Entity.id==parent_id).first()
+        if isinstance(parent, Project):
+            tasks = parent.root_tasks
+        elif isinstance(parent, Task):
+            tasks = Task.query.filter(Task.parent_id==parent_id).all()
+
+        content_range = content_range % (0, len(tasks) - 1, len(tasks))
+        # logger.debug(tasks)
+        return_data = convert_to_dgrid_gantt_task_format(tasks)
+
+    resp = Response(
+        json_body=return_data
+    )
+    resp.content_range = content_range
+    return resp
+
+
+@view_config(
+    route_name='get_task',
+    renderer='json'
+)
+def get_task(request):
+    """RESTful version of getting a task or project
+    """
+    entity_id = request.matchdict.get('task_id')
+    entity = Entity.query.filter_by(id=entity_id).first()
+
+    if isinstance(entity, Task):
+        return convert_to_dgrid_gantt_task_format([entity])
+    elif isinstance(entity, Project):
+        return convert_to_dgrid_gantt_project_format([entity])
+    return []
+
+@view_config(
+    route_name='get_task_children',
+    renderer='json'
+)
+def get_task_children(request):
+    """RESTful version of getting task children
+    """
+    task_id = request.matchdict.get('task_id')
+    task = Task.query.filter_by(id=task_id).first()
+    return convert_to_dgrid_gantt_task_format(task.children)
+
+
+@view_config(
     route_name='get_gantt_tasks',
     renderer='json'
 )
@@ -655,34 +727,27 @@ def get_gantt_tasks(request):
     tasks = []
     if entity:
         if isinstance(entity, Project):
-            # just return the project it self
-            return convert_to_dgrid_gantt_project_format([entity])
+            # return both the project and the root tasks of its
+            project = entity
+            dgrid_data = convert_to_dgrid_gantt_project_format([project])
+            dgrid_data.extend(convert_to_dgrid_gantt_task_format(project.root_tasks))
+            return dgrid_data
         elif isinstance(entity, User):
             user = entity
             # sort the tasks with the project.id
             if user is not None:
-                tasks = sorted(user.tasks, key=lambda task: task.project.id)
-
-                projects = []
-                for task in tasks:
-                    if task.project not in projects:
-                        projects.append(task.project)
-
-                return_data = convert_to_dgrid_gantt_project_format(projects)
+                # TODO: just return root tasks to make it fast
+                # get the user projects and then tasks of the user
+                dgrid_data = convert_to_dgrid_gantt_project_format(user.projects)
 
                 user_tasks_with_parents = []
-                for task in tasks:
+                for task in user.tasks:
                     user_tasks_with_parents.append(task)
-                    parent = task.parent
-                    while parent:
-                        # just add unique parents
-                        #if parent not in user_tasks_with_parents:
-                        user_tasks_with_parents.append(parent)
-                        parent = parent.parent
+                    user_tasks_with_parents.extend(task.parents)
 
                 tasks = list(set(user_tasks_with_parents))
-                return_data.extend(convert_to_dgrid_gantt_task_format(tasks))
-                return return_data
+                dgrid_data.extend(convert_to_dgrid_gantt_task_format(tasks))
+                return dgrid_data
         elif entity.entity_type == 'Studio':
             projects = Project.query.all()
             for project in projects:
@@ -723,11 +788,14 @@ def get_gantt_task_children(request):
     entity_id = request.matchdict.get('entity_id')
     entity = Entity.query.filter_by(id=entity_id).first()
 
+    # return all user tasks with their parents
+    # TODO: check if there is a user id in the query to just return the
+    #       parents of the user tasks
+
     if isinstance(entity, Project):
         return convert_to_dgrid_gantt_task_format(entity.root_tasks)
     if isinstance(entity, Task):
         return convert_to_dgrid_gantt_task_format(entity.children)
-
     return []
 
 @view_config(

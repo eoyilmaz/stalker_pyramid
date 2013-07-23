@@ -65,3 +65,11 @@ th.dgrid-column-chart table {
     border-collapse: collapse;
     table-layout: fixed;
 }
+
+.dgrid-no-data,
+.dgrid-loading {
+    color: #aaa;
+    font-size: 3em;
+    padding: 3em;
+    text-align: center;
+}
