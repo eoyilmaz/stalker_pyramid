@@ -66,10 +66,11 @@ th.dgrid-column-chart table {
     table-layout: fixed;
 }
 
-.dgrid-no-data,
-.dgrid-loading {
-    color: #aaa;
-    font-size: 3em;
-    padding: 3em;
-    text-align: center;
+.dgrid-tree-container {
+-webkit-transition-duration: 0.1s;
+-moz-transition-duration: 0.1s;
+-ms-transition-duration: 0.1s;
+-o-transition-duration: 0.1s;
+transition-duration: 0.1s;
+overflow: hidden;
 }
