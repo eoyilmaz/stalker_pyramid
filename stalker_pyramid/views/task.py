@@ -422,7 +422,7 @@ def convert_to_dgrid_gantt_project_format(projects):
             'start': milliseconds_since_epoch(project.computed_start if project.computed_start else project.start),
             'completed': 0,
             'hasChildren': hasChildren(project),
-            'children': [{'$ref': 'tasks/%s' % task.id} for task in project.root_tasks]
+            # 'children': [{'$ref': 'tasks/%s' % task.id} for task in project.root_tasks]
         } for project in projects
     ]
 
@@ -651,22 +651,21 @@ def get_tasks(request):
     # logger.debug('request.GET: %s' % request.GET)
     parent_id = request.GET.get('parent_id')
     task_id = request.GET.get('task_id')
+
     return_data = None
+    # set the content range to prevent JSONRest Store to query the data twice
     content_range = '%s-%s/%s'
     if task_id:
-        logger.debug('got a task_id : %s' % task_id)
         task = Entity.query.filter(Entity.id==task_id).first()
         if isinstance(task, Project):
-            logger.debug('got a Project : %s' % task)
             return_data = convert_to_dgrid_gantt_project_format([task])
             content_range = content_range % (0, 0, 1)
         elif isinstance(task, Task):
-            logger.debug('got a Task : %s' % task)
             return_data = convert_to_dgrid_gantt_task_format([task])
             content_range = content_range % (0, 0, 1)
     elif parent_id:
-        # logger.debug('got some parent_id : %s' % parent_id)
         parent = Entity.query.filter(Entity.id==parent_id).first()
+
         if isinstance(parent, Project):
             tasks = parent.root_tasks
         elif isinstance(parent, Task):
@@ -675,6 +674,68 @@ def get_tasks(request):
         content_range = content_range % (0, len(tasks) - 1, len(tasks))
         # logger.debug(tasks)
         return_data = convert_to_dgrid_gantt_task_format(tasks)
+
+    resp = Response(
+        json_body=return_data
+    )
+    resp.content_range = content_range
+    return resp
+
+
+@view_config(
+    route_name='get_user_tasks',
+    renderer='json'
+)
+def get_user_tasks(request):
+    """RESTful version of getting all tasks
+    """
+    # logger.debug('request.GET: %s' % request.GET)
+    user_id = request.matchdict.get('user_id')
+    user = User.query.filter(User.id == user_id).first()
+
+    parent_id = request.GET.get('parent_id')
+    parent = Entity.query.filter_by(id=parent_id).first()
+
+    logger.debug('parent_id : %s' % parent_id)
+    logger.debug('parent    : %s' % parent)
+
+    return_data = None
+    # set the content range to prevent JSONRest Store to query the data twice
+    content_range = '%s-%s/%s'
+
+    if user:
+        user = User.query.filter(User.id==user_id).first()
+        if parent:
+            # get user tasks
+            user_tasks = user.tasks
+            # add all parents
+            parent_tasks = []
+            for task in user_tasks:
+                parent_tasks.extend(task.parents)
+
+            if isinstance(parent, Task):
+                parent_children = parent.children
+            elif isinstance(parent, Project):
+                parent_children = parent.root_tasks
+
+            desired_tasks = []
+            for parent_child in parent_children:
+                if parent_child in parent_tasks:
+                    desired_tasks.append(parent_child)
+
+            if not desired_tasks:
+                desired_tasks = parent_children
+
+            return_data = convert_to_dgrid_gantt_task_format(desired_tasks)
+        else:
+            # no parent,
+            # just return projects of the user
+            user_projects = user.projects
+            return_data = convert_to_dgrid_gantt_project_format(user_projects)
+
+        content_range = content_range % (0, len(return_data) - 1, len(return_data))
+
+    logger.debug('return_data: %s' % return_data)
 
     resp = Response(
         json_body=return_data
@@ -1124,35 +1185,35 @@ def create_task(request):
     return HTTPOk(detail='Task created successfully')
 
 
-@view_config(
-    route_name='get_user_tasks',
-    renderer='json'
-)
-def get_user_tasks(request):
-    """returns the user tasks as jQueryGantt json
-    """
-    # get user id
-    user_id = request.matchdict['user_id']
-    user = User.query.filter_by(id=user_id).first()
-
-    # get tasks
-    tasks = []
-    if user is not None:
-        tasks = sorted(user.tasks, key=lambda x: x.project.id)
-        # add also all the parents
-        user_tasks_with_parents = []
-        for task in tasks:
-            user_tasks_with_parents.append(task)
-            current_parent = task.parent
-            while current_parent:
-                user_tasks_with_parents.append(current_parent)
-                current_parent = current_parent.parent
-
-        logger.debug('user_task_with_parents: %s' % user_tasks_with_parents)
-        logger.debug('tasks                 : %s' % tasks)
-        tasks = user_tasks_with_parents
-
-    return convert_to_jquery_gantt_task_format(tasks)
+# @view_config(
+#     route_name='get_user_tasks',
+#     renderer='json'
+# )
+# def get_user_tasks(request):
+#     """returns the user tasks as jQueryGantt json
+#     """
+#     # get user id
+#     user_id = request.matchdict['user_id']
+#     user = User.query.filter_by(id=user_id).first()
+# 
+#     # get tasks
+#     tasks = []
+#     if user is not None:
+#         tasks = sorted(user.tasks, key=lambda x: x.project.id)
+#         # add also all the parents
+#         user_tasks_with_parents = []
+#         for task in tasks:
+#             user_tasks_with_parents.append(task)
+#             current_parent = task.parent
+#             while current_parent:
+#                 user_tasks_with_parents.append(current_parent)
+#                 current_parent = current_parent.parent
+# 
+#         logger.debug('user_task_with_parents: %s' % user_tasks_with_parents)
+#         logger.debug('tasks                 : %s' % tasks)
+#         tasks = user_tasks_with_parents
+# 
+#     return convert_to_jquery_gantt_task_format(tasks)
 
 
 @view_config(
