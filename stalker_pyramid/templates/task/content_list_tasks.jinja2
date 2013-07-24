@@ -125,9 +125,17 @@
                  GanttGrid) {
 
         // The Memory
+        var target = 'tasks/';
+        var tasks_memory_store = new Memory();
+
+        {% if entity.entity_type == 'User' %}
+            console.debug('entity_type is User');
+            target = 'users/{{ entity.id }}/tasks/';
+        {% endif %}
+
         var tasks_jsonRest_store;
         tasks_jsonRest_store = new JsonRest({
-            target: 'tasks/',
+            target: target,
             getChildren: function(parent, options){
                 console.debug('getting children of : ', parent.id);
                 return this.query({parent_id: parent.id}, options);
@@ -137,7 +145,6 @@
                 return parent.hasChildren;
             }
         });
-        var tasks_memory_store = new Memory();
         var tasks_cache_store = new Cache(tasks_jsonRest_store, tasks_memory_store);
 
         var gantt_chart = new GanttGrid({
@@ -150,9 +157,10 @@
                 task_id: {{ entity.id }}
             },
             loadingMessage: "Loading data...",
-            noDataMessage: ""
+            noDataMessage: "",
+            minRowsPerPage: 1,
         }, 'gantt');
-{#        gantt_chart.startup();#}
+        gantt_chart.startup();
 
 
         var loadGanttFromServer = function(){};

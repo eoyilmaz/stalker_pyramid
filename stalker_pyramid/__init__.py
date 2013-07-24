@@ -306,7 +306,7 @@ def main(global_config, **settings):
                      'list/tasks/{entity_id}')
 
     config.add_route('get_entity_tasks', 'get/entity/tasks/{entity_id}')
-    config.add_route('get_user_tasks', 'get/user/tasks/{user_id}')
+
     config.add_route('get_project_tasks', 'get/project/tasks/{project_id}')
     config.add_route('get_root_tasks',
                      'get/root/tasks/{project_id}') # TODO: fix this
@@ -320,7 +320,7 @@ def main(global_config, **settings):
 
     # RESTful test
     # config.add_route('get_users', 'users/')
-    # config.add_route('get_user_tasks', 'users/{user_id}/tasks/')
+    config.add_route('get_user_tasks', 'users/{user_id}/tasks/')
     config.add_route('get_tasks', 'tasks/')
     config.add_route('get_task', 'tasks/{task_id}')
     config.add_route('get_task_children', 'tasks/{task_id}/children/')
