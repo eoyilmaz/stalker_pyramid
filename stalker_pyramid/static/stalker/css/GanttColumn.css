@@ -1,3 +1,69 @@
+/*PROJECT BOX*/
+.projectBox {
+    position: absolute;
+    top: 0px;
+    margin-top: 1px;
+    z-index: 100;
+}
+
+.projectBox .layout {
+    background-color: black;
+    border-radius: 3px 3px 3px 3px;
+    height: 18px;
+}
+
+.projectBox .layout .leftPin {
+    top: 3px;
+    position: absolute;
+    width: 10px;
+    height: 10px;
+}
+
+.projectBox .layout .rightPin {
+    top: 3px;
+    right: 0;
+    position: absolute;
+    width: 10px;
+    height: 10px;
+}
+
+.projectBox .taskStatus {
+    left: 5px;
+    top: 4px;
+    position: absolute;
+    width: 10px;
+    height: 10px;
+}
+
+.projectBox .layout .milestone.end {
+    right: 0;
+}
+
+.projectBox .layout .milestone.active {
+    display: block;
+}
+
+.projectBox.hasChild .layout {
+    /*border:2px solid black;*/
+}
+
+.projectBox .taskProgress {
+    height: 3px;
+    position: absolute;
+}
+
+.projectBox .taskBid {
+    height: 3px;
+    position: absolute;
+    /*border-radius: 3px;*/
+    top: 3px;
+}
+
+
+
+/* ------------------------------------------------------- */
+
+
 .task-bar {
     height: 15px;
     position: absolute;

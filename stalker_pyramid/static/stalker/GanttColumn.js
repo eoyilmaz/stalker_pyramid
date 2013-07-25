@@ -98,23 +98,20 @@ define([
             var taskBar;
 
             if (object.type === 'Project') {
-                taskBar = $.JST.createFromTemplate(object, "PROJECTBAR");
+                taskBar = put(td,
+                    "div.projectBox[style=left:" + left + "px; width:" + width + "px]" +
+                        "[projectId=" + object.id + "]" +
+                        " div.layout" +
+                        " div.projectLabel $ <<", object.name
+                );
             } else if (object.type === 'Task' || object.type === 'Asset' ||
                        object.type === 'Shot' || object.type === 'Sequence') {
-                taskBar = $.JST.createFromTemplate(object, "TASKBAR");
+                taskBar = put(td, "span.task-bar[style=left:" + left + "px;width:" + width + "px]");
             }
             console.debug('code is here 2');
-
             console.debug('taskBar: ', taskBar);
-            taskBar.css({
-                left: left + 'px',
-                width: width + 'px'
-            });
             console.debug('code is here 3a');
             console.debug('td : ', td);
-            //td.append(taskBar);
-            console.debug('taskBar[0].outerHTML : ', taskBar[0].outerHTML);
-            put(td, taskBar[0].outerHTML);
             console.debug('code is here 3b');
 
 

@@ -40,10 +40,10 @@
 
     {# load date.format #}
     <script src='{{ request.static_url("stalker_pyramid:static/stalker/date.format.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/doT/doT.min.js") }}' type="text/javascript"></script>
 
-
-    <script src='{{ request.static_url("stalker_pyramid:static/jquery/1.7/jquery.min.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/jqueryui/1.8/jquery-ui.min.js") }}'></script>
+{#    <script src='{{ request.static_url("stalker_pyramid:static/jquery/1.7/jquery.min.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/jqueryui/1.8/jquery-ui.min.js") }}'></script>#}
 
 {#    <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/libs/jquery.livequery.min.js") }}'></script>#}
 {#    <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/libs/jquery.timers.js") }}'></script>#}
@@ -51,7 +51,7 @@
 {#    <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/libs/date.js") }}'></script>#}
 {#    <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/libs/i18nJs.js") }}'></script>#}
     {#    <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/libs/dateField/jquery.dateField.js") }}'></script>#}
-    <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/libs/JST/jquery.JST.js") }}'></script>
+{#    <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/libs/JST/jquery.JST.js") }}'></script>#}
 
 {#    <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/ganttUtilities.js") }}'></script>#}
 {#    <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/ganttProject.js") }}'></script>#}
@@ -219,9 +219,14 @@
         </div>
     --></div>
     
-{#    <script id="headertmpl" type="text/x-dot-template">#}
-{#       span.projectBox[projectId={{=it.id}}]+div.layout+div.projectLabel#}
-{#    </script>#}
+    {% raw %}
+    <script id="projectBarTemplate" type="text/x-dot-template">
+       div.projectBox[style=left:{{it.left}}px; width:it.widthpx][projectId=it.id]
+           div.layout
+               div.projectLabel {{ it.name }} <<
+    </script>
+    {% endraw %}
+    
 
     <div class="__template__" type="TASKBAR"><!--
         <div class="taskBox" dataId="(#=obj.id#)">
@@ -373,7 +378,13 @@
     <script type='text/javascript'>
 
     // load templates for jQueryGantt
-    $('#ganttEditorTemplates').loadTemplates();
+{#    $('#ganttEditorTemplates').loadTemplates();#}
+    
+    // some templates with doT.js
+    var templates = {};
+    
+    // PROJECTBAR
+    var projectBar_doTCompiled = doT.template(document.getElementById('projectBarTemplate').text, undefined, defs);
 
     var redirectLinkInParent = function (targetPane, address) {
         var tab_container = dijit.byId('data_tab_container');

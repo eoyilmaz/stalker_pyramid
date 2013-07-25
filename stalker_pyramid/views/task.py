@@ -1287,11 +1287,10 @@ def auto_schedule_tasks(request):
         tj_scheduler = TaskJugglerScheduler()
         studio.scheduler = tj_scheduler
 
-        logger.debug('studio.name: %s' % studio.name)
-        logger.debug('studio.working_hours[0]: %s' % studio.working_hours[0])
-        logger.debug(
-            'studio.daily_working_hours: %s' % studio.daily_working_hours)
-        logger.debug('studio.to_tjp: %s' % studio.to_tjp)
+        # logger.debug('studio.name: %s' % studio.name)
+        # logger.debug('studio.working_hours[0]: %s' % studio.working_hours[0])
+        # logger.debug('studio.daily_working_hours: %s' % studio.daily_working_hours)
+        # logger.debug('studio.to_tjp: %s' % studio.to_tjp)
 
         try:
             studio.schedule()
