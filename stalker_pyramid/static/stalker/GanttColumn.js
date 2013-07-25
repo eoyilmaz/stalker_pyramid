@@ -65,6 +65,10 @@ define([
             // value: unused
             // td: DomNode
 
+            object.link = function () {
+                return '';
+            };
+
             // IE < 8 receive the inner padding node, not the td directly
             cell = td.tagName === "TD" ? td : td.parentNode;
 
@@ -85,10 +89,37 @@ define([
                 width = (object.end - object.start) / chartTimeScale;
 
             // Create the colored task bar representing the duration of a task
-            var taskBar = put(td, "span.task-bar[style=left:" + left + "px;width:" + width + "px]");
+//            var taskBar = put(td, "span.task-bar[style=left:" + left + "px;width:" + width + "px]");
+
+            object.progress = object.completed * 100;
+
+            console.debug('code is here 1');
+
+            var taskBar;
+
+            if (object.type === 'Project') {
+                taskBar = $.JST.createFromTemplate(object, "PROJECTBAR");
+            } else if (object.type === 'Task' || object.type === 'Asset' ||
+                       object.type === 'Shot' || object.type === 'Sequence') {
+                taskBar = $.JST.createFromTemplate(object, "TASKBAR");
+            }
+            console.debug('code is here 2');
+
+            console.debug('taskBar: ', taskBar);
+            taskBar.css({
+                left: left + 'px',
+                width: width + 'px'
+            });
+            console.debug('code is here 3a');
+            console.debug('td : ', td);
+            //td.append(taskBar);
+            console.debug('taskBar[0].outerHTML : ', taskBar[0].outerHTML);
+            put(td, taskBar[0].outerHTML);
+            console.debug('code is here 3b');
+
 
             // Create the overlay for the amount of the task that has been completed
-            var completeBar = put(td, "span.completed-bar[style=left:" + left + "px;width:" + width * object.completed + "px]");
+            //var completeBar = put(td, "span.completed-bar[style=left:" + left + "px;width:" + width * object.completed + "px]");
 
             // Save the location of the right-hand edge for drawing depedency lines later
             cell.finished = left + width;

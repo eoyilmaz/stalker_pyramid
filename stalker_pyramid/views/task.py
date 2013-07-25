@@ -441,6 +441,7 @@ def convert_to_dgrid_gantt_project_format(projects):
                 project.computed_start if project.computed_start else project.start),
             'completed': 0,
             'hasChildren': hasChildren(project),
+            'type': project.entity_type
             # 'children': [{'$ref': task.id} for task in project.root_tasks]
         } for project in projects
     ]
@@ -454,17 +455,29 @@ def convert_to_dgrid_gantt_task_format(tasks):
     """
     return [
         {
+            'bid_timing': task.bid_timing,
+            'bid_unit': task.bid_unit,
+            'completed': task.total_logged_seconds / task.schedule_seconds,
             'dependencies': [dep.id for dep in task.depends],
+            'descripion': task.description,
             'end': milliseconds_since_epoch(
                 task.computed_end if task.computed_end else task.end),
+            'hasChildren': task.is_container,
+            'hierarchy_name': ' | '.join([parent.name for parent in task.parents]),
             'id': task.id,
             'name': task.name,
             'parent': task.parent.id if task.parent else task.project.id,
-            'resource': ','.join(map(lambda x: x.name, task.resources)),
+            'priority': task.priority,
+            'resources': [resource.id for resource in task.resources],
+            'schedule_constraint': task.schedule_constraint,
+            'schedule_model': task.schedule_model,
+            'schedule_seconds': task.schedule_seconds,
+            'schedule_timing': task.schedule_timing,
+            'schedule_unit': task.schedule_unit,
             'start': milliseconds_since_epoch(
                 task.computed_start if task.computed_start else task.start),
-            'completed': task.total_logged_seconds / task.schedule_seconds,
-            'hasChildren': task.is_container,
+            'total_logged_seconds': task.total_logged_seconds,
+            'type': task.entity_type,
             # 'children': [{'$ref': task.id} for task in task.children]
         } for task in tasks
     ]

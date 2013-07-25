@@ -17,6 +17,7 @@ stalker_pyramid/static/jquery*/
 stalker_pyramid/static/dgrid*/
 stalker_pyramid/static/put-selector/
 stalker_pyramid/static/xstyle*/
+stalker_pyramid/static/doT*/
 .coverage
 .DS_Store
 dist/*
