@@ -98,15 +98,22 @@ define([
             var taskBar;
 
             if (object.type === 'Project') {
-                taskBar = put(td,
-                    "div.projectBox[style=left:" + left + "px; width:" + width + "px]" +
-                        "[projectId=" + object.id + "]" +
-                        " div.layout" +
-                        " div.projectLabel $ <<", object.name
+                taskBar = put(
+                    td,
+                    'div.projectBox[' +
+                        'style=left:' + left + 'px;' +
+                        'width:' +  width + 'px]' +
+                        '[projectId=' + object.id + '] ' +
+                        'div.layout',
+                    put('div.projectLabel', object.name)
                 );
             } else if (object.type === 'Task' || object.type === 'Asset' ||
                        object.type === 'Shot' || object.type === 'Sequence') {
-                taskBar = put(td, "span.task-bar[style=left:" + left + "px;width:" + width + "px]");
+                taskBar = put(
+                    td,
+                    'div.taskBox[dataId=' + object.id + '] ' +
+                        'div'
+                );
             }
             console.debug('code is here 2');
             console.debug('taskBar: ', taskBar);

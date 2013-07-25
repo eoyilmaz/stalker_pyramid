@@ -42,7 +42,7 @@
     <script src='{{ request.static_url("stalker_pyramid:static/stalker/date.format.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/doT/doT.min.js") }}' type="text/javascript"></script>
 
-{#    <script src='{{ request.static_url("stalker_pyramid:static/jquery/1.7/jquery.min.js") }}'></script>#}
+    <script src='{{ request.static_url("stalker_pyramid:static/jquery/1.7/jquery.min.js") }}'></script>
 {#    <script src='{{ request.static_url("stalker_pyramid:static/jqueryui/1.8/jquery-ui.min.js") }}'></script>#}
 
 {#    <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/libs/jquery.livequery.min.js") }}'></script>#}
@@ -219,15 +219,23 @@
         </div>
     --></div>
     
+{#    {% raw %}#}
+{#    <script id="projectBarTemplate" type="text/x-dot-template">#}
+{#div.projectBox[style=left:{{=it.left }}px; width:{{=it.width }}px][projectId={{=it.id }}] div.layout div.projectLabel <<#}
+{#    </script>#}
+{#    {% endraw %}#}
+    
     {% raw %}
-    <script id="projectBarTemplate" type="text/x-dot-template">
-       div.projectBox[style=left:{{it.left}}px; width:it.widthpx][projectId=it.id]
-           div.layout
-               div.projectLabel {{ it.name }} <<
+    <script id="tmpl_projectBar" type="text/x-dot-template">
+        <div class="projectBox" projectId="{{=it.id}}" >
+            <div class="layout">
+                <div class="projectLabel">{{=it.link()}}</div>
+            </div>
+        </div>
     </script>
     {% endraw %}
     
-
+    
     <div class="__template__" type="TASKBAR"><!--
         <div class="taskBox" dataId="(#=obj.id#)">
             <div class="layout (#=obj.hasExternalDep?'extDep':''#)">
@@ -376,15 +384,30 @@
 
 
     <script type='text/javascript'>
+    
+    // jQuery plugin
+    $.fn.tmpl = function(tmplId, data) {
+        var tmpl = doT.template($('#tmpl_' + tmplId).html());
+        if (!$.isArray(data)) data = [data];
+    
+        return this.each(function() {
+            var html = '';
+            for (var itemIdx = 0; itemIdx < data.length; itemIdx++) {
+                html += tmpl(data[itemIdx]);
+            }
+            $(this).html(html);
+        });
+    };
 
     // load templates for jQueryGantt
 {#    $('#ganttEditorTemplates').loadTemplates();#}
     
     // some templates with doT.js
     var templates = {};
-    
+
     // PROJECTBAR
-    var projectBar_doTCompiled = doT.template(document.getElementById('projectBarTemplate').text, undefined, defs);
+{#    templates.projectBar = doT.template(document.getElementById('projectBarTemplate').text);#}
+{#    templates.taskBar = doT.template(document.getElementsById('taskBarTempalte').text);#}
 
     var redirectLinkInParent = function (targetPane, address) {
         var tab_container = dijit.byId('data_tab_container');
