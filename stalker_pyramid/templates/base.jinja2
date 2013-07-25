@@ -219,12 +219,6 @@
         </div>
     --></div>
     
-{#    {% raw %}#}
-{#    <script id="projectBarTemplate" type="text/x-dot-template">#}
-{#div.projectBox[style=left:{{=it.left }}px; width:{{=it.width }}px][projectId={{=it.id }}] div.layout div.projectLabel <<#}
-{#    </script>#}
-{#    {% endraw %}#}
-    
     {% raw %}
     <script id="tmpl_projectBar" type="text/x-dot-template">
         <div class="projectBox" projectId="{{=it.id}}" >
@@ -271,6 +265,42 @@
         </div>
     --></div>
 
+    {% raw %}
+    <script id="tmpl_taskBar" type="text/x-dot-template">
+        <div class="taskBox" dataId="{{=it.id}}">
+            <div class="layout {{=it.hasExternalDep?'extDep':''}}">
+                <div class="taskProgress" style="width:{{=it.progress > 100 ? 100 : it.progress }}%;"></div>
+                <div class="taskExtraTiming" style="width:{{=(it.schedule_timing - it.bid_timing)/it.schedule_timing*100}}%;"></div>
+                <div class="taskScheduleModel"
+                   style="position: absolute; text-align: center; width: 100%;">
+                   {{=it.schedule_model.toUpperCase()[0]}}: {{=it.schedule_timing}}{{=it.schedule_unit}}
+                </div>
+                <div class="leafTaskContextMenu"
+                    dataId="{{=it.id}}"
+                    name="{{=it.name}}"
+                    hierarchy_name="{{=it.hierarchy_name}}"
+                    start={{=it.start}}
+                    end={{=it.end}}
+                    type="{{=it.type}}"
+                    priority={{=it.priority}}
+                    bid_timing={{=it.bid_timing}}
+                    bid_unit={{=it.bid_unit}}
+                    schedule_model={{=it.schedule_model}}
+                    schedule_timing={{=it.schedule_timing}}
+                    schedule_unit={{=it.schedule_unit}}
+                    description="{{=it.description}}"
+                    remaining_seconds="{{=it.remaining_seconds}}"
+                    ></div>
+                <div class="taskLabel">{{=it.link()}}</div>
+                <div class="milestone end {{=it.endIsMilestone ? 'active' : ''}}"></div>
+                <div class="taskResourceLabel">{{=it.getResourcesLinks()}}</div>
+                {{=it.clippedStart?'<div class="leftArrowHead">&nbsp</div>':''}}
+                {{=it.clippedEnd?'<div class="rightArrowHead">&nbsp</div>':''}}
+            </div>
+        </div>
+    </script>
+    {% endraw %}
+
     <div class="__template__" type="TASKBAR_COMPACT"><!--
         <div class="taskBox" dataId="(#=obj.id#)">
             <div class="layout (#=obj.hasExternalDep?'extDep':''#)">
@@ -316,6 +346,19 @@
         </div>
     --></div>
 
+    {% raw %}
+    <script id="tmpl_parentTaskBar" type="text/x-dot-template">
+        <div class="parentTaskBox" dataId="{{=it.id}}">
+            <div class="layout {{=it.hasExternalDep?'extDep':''}}">
+                <div class="parentTaskContextMenu" dataId="{{=it.id}}"></div>
+                <div class="leftPin"></div>
+                <div class="rightPin"></div>
+                <div class="taskLabel">{{=it.link()}}</div>
+            </div>
+        </div>
+    </script>
+    {% endraw %}
+
     <div class="__template__" type="TIMELOGBAR"><!--
         <div class="timeLogBox" dataId="(#=obj.id#)">
             <div class="layout">
@@ -337,6 +380,12 @@
       <a href="javascript:redirectLinkInParent('(#=obj.type.toLowerCase()#)s_content_pane','view/task/(#=obj.id#)');">(#=obj.name#) ((#=obj.type#))</a>
     --></div>
 
+    {% raw %}
+    <script id="tmpl_taskLink" type="text/x-dot-template">
+      <a href="javascript:redirectLinkInParent('{{=it.type.toLowerCase()}}s_content_pane','view/task/{{=it.id}}');">{{=it.name}} ({{=it.type}})</a>
+    </script>
+    {% endraw %}
+    
     <div class="__template__" type='RESOURCELINK'><!--
         <a href="javascript:redirectLink('central_content','view/user/(#=obj.id#)');">(#=obj.name#)</a>
     --></div>
@@ -344,6 +393,13 @@
     <div class="__template__" type='PROJECTLINK'><!--
         <a href="javascript:redirectLink('central_content','view/project/(#=obj.id#)');">(#=obj.name#) ((#=obj.type#))</a>
     --></div>
+
+    {% raw %}
+    <script id="tmpl_projectLink" type="text/x-dot-template">
+        <a href="javascript:redirectLink('central_content','view/project/{{=it.id}}');">{{=it.name}} ({{=it.type}})</a>
+    </script>
+    {% endraw %}
+
 
 </div>
 
@@ -384,31 +440,21 @@
 
 
     <script type='text/javascript'>
-    
-    // jQuery plugin
-{#    $.fn.tmpl = function(tmplId, data) {#}
-{#        var tmpl = doT.template($('#tmpl_' + tmplId).html());#}
-{#        if (!$.isArray(data)) data = [data];#}
-{#    #}
-{#        return this.each(function() {#}
-{#            var html = '';#}
-{#            for (var itemIdx = 0; itemIdx < data.length; itemIdx++) {#}
-{#                html += tmpl(data[itemIdx]);#}
-{#            }#}
-{#            $(this).html(html);#}
-{#        });#}
-{#    };#}
 
-    // load templates for jQueryGantt
-{#    $('#ganttEditorTemplates').loadTemplates();#}
-    
-    // some templates with doT.js
+    // ************************************************************************
+    // load templates with doT.js
     var templates = {};
 
-    // PROJECTBAR
     templates.projectBar = doT.template(document.getElementById('tmpl_projectBar').text);
-{#    templates.taskBar = doT.template(document.getElementsById('taskBarTempalte').text);#}
+    templates.parentTaskBar = doT.template(document.getElementById('tmpl_parentTaskBar').text);
+    templates.taskBar = doT.template(document.getElementById('tmpl_taskBar').text);
 
+    templates.projectLink = doT.template(document.getElementById('tmpl_projectLink').text);
+    templates.taskLink = doT.template(document.getElementById('tmpl_taskLink').text);
+    // ************************************************************************
+
+
+    // ************************************************************************
     var redirectLinkInParent = function (targetPane, address) {
         var tab_container = dijit.byId('data_tab_container');
         var contentPane = dijit.byId(targetPane);
@@ -426,6 +472,7 @@
         contentPane.refresh();
     };
 
+    // ************************************************************************
     var redirectLink = function (targetPane, address) {
         var contentPane = dijit.byId(targetPane);
         contentPane.set('href', address);

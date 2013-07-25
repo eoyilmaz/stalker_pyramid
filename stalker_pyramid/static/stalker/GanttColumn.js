@@ -1,8 +1,9 @@
 define([
     "dojo/_base/array",
     "dojo/date/locale",
-    "put-selector/put"
-], function (array, locale, put) {
+    "put-selector/put",
+    'stalker/GanttTask'
+], function (array, locale, put, GanttTask) {
     // module:
     //     ganttColumn
     // summary:
@@ -44,7 +45,7 @@ define([
         var dependencyRow,
             firstCell;
 
-        column.renderCell = function (object, value, td) {
+        column.renderCell = function (data, value, td) {
             // summary:
             //     Renders a task.
             // object: Object
@@ -65,15 +66,15 @@ define([
             // value: unused
             // td: DomNode
 
-            object.link = function () {
-                return this.name;
-            };
-
             // IE < 8 receive the inner padding node, not the td directly
             cell = td.tagName === "TD" ? td : td.parentNode;
 
             // Add empty content to the cell to avoid it collapsing in IE
             td.innerHTML = "&nbsp;";
+
+            // create a GanttTask instance
+            var task = new GanttTask(data);
+            console.debug('task: ', task);
 
             // Ensure the start time is always milliseconds since epoch
             // and not a Date object
@@ -81,52 +82,43 @@ define([
 
             // This is the number of milliseconds per pixel rendered
                 chartTimeScale = column.scale,
-
+            
             // The start position of the task bar for this task, in pixels
-                left = (object.start - column.start) / chartTimeScale,
+                left = (task.start - column.start) / chartTimeScale,
 
             // The width of the task bar for this task, in pixels
-                width = (object.end - object.start) / chartTimeScale;
+                width = (task.end - task.start) / chartTimeScale;
 
             // Create the colored task bar representing the duration of a task
-//            var taskBar = put(td, "span.task-bar[style=left:" + left + "px;width:" + width + "px]");
 
-            object.progress = object.completed * 100;
+//            data.progress = data.completed * 100;
+//            data.link = function () {
+//                return this.name;
+//            };
 
             console.debug('code is here 1');
 
             var taskBar;
-            if (object.type === 'Project') {
-//                taskBar = put(
-//                    td,
-//                    'div.projectBox[' +
-//                        'style=left:' + left + 'px;' +
-//                        'width:' +  width + 'px]' +
-//                        '[projectId=' + object.id + '] ' +
-//                        'div.layout',
-//                    put('div.projectLabel', object.name)
-//                );
-
+            if (task.type === 'Project') {
                 console.debug('code is here 1a');
-                taskBar = $(templates.projectBar(object));
+                taskBar = $(templates.projectBar(task));
                 console.debug('code is here 1b');
-                taskBar.css({
-                    left: left,
-                    width: width
-                });
+            } else if (task.type === 'Task' || task.type === 'Asset' ||
+                       task.type === 'Shot' || task.type === 'Sequence') {
                 console.debug('code is here 1c');
-
-                $(td).append(taskBar);
+                if (task.hasChildren){
+                    taskBar = $(templates.parentTaskBar(task));
+                } else {
+                    taskBar = $(templates.taskBar(task));
+                }
                 console.debug('code is here 1d');
-
-            } else if (object.type === 'Task' || object.type === 'Asset' ||
-                       object.type === 'Shot' || object.type === 'Sequence') {
-//                taskBar = put(
-//                    td,
-//                    'div.taskBox[dataId=' + object.id + '] ' +
-//                        'div'
-//                );
             }
+            taskBar.css({
+                left: left,
+                width: width
+            });
+            $(td).append(taskBar);
+
             console.debug('code is here 2');
             console.debug('taskBar: ', taskBar);
             console.debug('code is here 3a');
@@ -144,6 +136,7 @@ define([
             firstCell = firstCell || td;
 
             var grid = column.grid;
+//            console.debug('grid: ', grid);
 
             // TODO: enable this part later
 //            // Create arrows for each dependency, but only after all other rows
