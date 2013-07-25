@@ -386,18 +386,18 @@
     <script type='text/javascript'>
     
     // jQuery plugin
-    $.fn.tmpl = function(tmplId, data) {
-        var tmpl = doT.template($('#tmpl_' + tmplId).html());
-        if (!$.isArray(data)) data = [data];
-    
-        return this.each(function() {
-            var html = '';
-            for (var itemIdx = 0; itemIdx < data.length; itemIdx++) {
-                html += tmpl(data[itemIdx]);
-            }
-            $(this).html(html);
-        });
-    };
+{#    $.fn.tmpl = function(tmplId, data) {#}
+{#        var tmpl = doT.template($('#tmpl_' + tmplId).html());#}
+{#        if (!$.isArray(data)) data = [data];#}
+{#    #}
+{#        return this.each(function() {#}
+{#            var html = '';#}
+{#            for (var itemIdx = 0; itemIdx < data.length; itemIdx++) {#}
+{#                html += tmpl(data[itemIdx]);#}
+{#            }#}
+{#            $(this).html(html);#}
+{#        });#}
+{#    };#}
 
     // load templates for jQueryGantt
 {#    $('#ganttEditorTemplates').loadTemplates();#}
@@ -406,7 +406,7 @@
     var templates = {};
 
     // PROJECTBAR
-{#    templates.projectBar = doT.template(document.getElementById('projectBarTemplate').text);#}
+    templates.projectBar = doT.template(document.getElementById('tmpl_projectBar').text);
 {#    templates.taskBar = doT.template(document.getElementsById('taskBarTempalte').text);#}
 
     var redirectLinkInParent = function (targetPane, address) {

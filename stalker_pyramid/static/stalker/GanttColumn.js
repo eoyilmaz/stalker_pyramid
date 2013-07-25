@@ -66,7 +66,7 @@ define([
             // td: DomNode
 
             object.link = function () {
-                return '';
+                return this.name;
             };
 
             // IE < 8 receive the inner padding node, not the td directly
@@ -96,24 +96,36 @@ define([
             console.debug('code is here 1');
 
             var taskBar;
-
             if (object.type === 'Project') {
-                taskBar = put(
-                    td,
-                    'div.projectBox[' +
-                        'style=left:' + left + 'px;' +
-                        'width:' +  width + 'px]' +
-                        '[projectId=' + object.id + '] ' +
-                        'div.layout',
-                    put('div.projectLabel', object.name)
-                );
+//                taskBar = put(
+//                    td,
+//                    'div.projectBox[' +
+//                        'style=left:' + left + 'px;' +
+//                        'width:' +  width + 'px]' +
+//                        '[projectId=' + object.id + '] ' +
+//                        'div.layout',
+//                    put('div.projectLabel', object.name)
+//                );
+
+                console.debug('code is here 1a');
+                taskBar = $(templates.projectBar(object));
+                console.debug('code is here 1b');
+                taskBar.css({
+                    left: left,
+                    width: width
+                });
+                console.debug('code is here 1c');
+
+                $(td).append(taskBar);
+                console.debug('code is here 1d');
+
             } else if (object.type === 'Task' || object.type === 'Asset' ||
                        object.type === 'Shot' || object.type === 'Sequence') {
-                taskBar = put(
-                    td,
-                    'div.taskBox[dataId=' + object.id + '] ' +
-                        'div'
-                );
+//                taskBar = put(
+//                    td,
+//                    'div.taskBox[dataId=' + object.id + '] ' +
+//                        'div'
+//                );
             }
             console.debug('code is here 2');
             console.debug('taskBar: ', taskBar);
