@@ -39,7 +39,7 @@ Date.preferAmericanFormat = false;
 Date.firstDayOfWeek = 1;
 
 //default 
-Date.defaultFormat = "dd/MM/yyyy";
+Date.defaultFormat = "MM/dd/yyyy";
 
 // If the getFullYear() method is not defined, create it
 if (!Date.prototype.getFullYear) {
@@ -55,7 +55,7 @@ if (!Date.prototype.getFullYear) {
 // Avoids regular expressions to be more portable.
 Date.parseString = function (val, format) {
     // If no format is specified, try a few common formats
-    if (typeof(format) == "undefined" || format == null || format == "") {
+    if (typeof(format) === "undefined" || format === null || format === "") {
         var generalFormats = new Array(Date.defaultFormat, 'y-M-d', 'MMM d, y', 'MMM d,y', 'y-MMM-d', 'd-MMM-y', 'MMM d', 'MMM-d', 'd-MMM');
         var monthFirst = new Array('M/d/y', 'M-d-y', 'M.d.y', 'M/d', 'M-d');
         var dateFirst = new Array('d/M/y', 'd-M-y', 'd.M.y', 'd/M', 'd-M');
@@ -71,11 +71,10 @@ Date.parseString = function (val, format) {
         }
         return null;
     }
-    ;
 
     this.isInteger = function (val) {
         for (var i = 0; i < val.length; i++) {
-            if ("1234567890".indexOf(val.charAt(i)) == -1) {
+            if ("1234567890".indexOf(val.charAt(i)) === -1) {
                 return false;
             }
         }
@@ -393,82 +392,6 @@ Date.prototype.equalsIgnoreTime = function (date2) {
     var d2 = new Date(date2.getTime()).clearTime();
     return (d1.getTime() == d2.getTime());
 };
-
-//// Format a date into a string using a given format string
-//Date.prototype.format = function (format) {
-//    if (!format)
-//        format = Date.defaultFormat;
-//    format = format + "";
-//    var result = "";
-//    var i_format = 0;
-//    var c = "";
-//    var token = "";
-//    var y = this.getFullYear() + "";
-//    var M = this.getMonth() + 1;
-//    var d = this.getDate();
-//    var E = this.getDay();
-//    var H = this.getHours();
-//    var m = this.getMinutes();
-//    var s = this.getSeconds();
-//    // Convert real date parts into formatted versions
-//    var value = new Object();
-//    if (y.length < 4) {
-//        y = "" + (+y + 1900);
-//    }
-//    value["y"] = "" + y;
-//    value["yyyy"] = y;
-//    value["yy"] = y.substring(2, 4);
-//    value["M"] = M;
-//    value["MM"] = Date.LZ(M);
-//    value["MMM"] = Date.monthAbbreviations[M - 1];
-//    value["MMMM"] = Date.monthNames[M - 1];
-//    value["d"] = d;
-//    value["dd"] = Date.LZ(d);
-//    value["E"] = Date.dayAbbreviations[E];
-//    value["EE"] = Date.dayAbbreviations[E];
-//    value["EEE"] = Date.dayAbbreviations[E];
-//    value["EEEE"] = Date.dayNames[E];
-//    value["H"] = H;
-//    value["HH"] = Date.LZ(H);
-//    if (H == 0) {
-//        value["h"] = 12;
-//    }
-//    else if (H > 12) {
-//        value["h"] = H - 12;
-//    }
-//    else {
-//        value["h"] = H;
-//    }
-//    value["hh"] = Date.LZ(value["h"]);
-//    value["K"] = value["h"] - 1;
-//    value["k"] = value["H"] + 1;
-//    value["KK"] = Date.LZ(value["K"]);
-//    value["kk"] = Date.LZ(value["k"]);
-//    if (H > 11) {
-//        value["a"] = "PM";
-//    }
-//    else {
-//        value["a"] = "AM";
-//    }
-//    value["m"] = m;
-//    value["mm"] = Date.LZ(m);
-//    value["s"] = s;
-//    value["ss"] = Date.LZ(s);
-//    while (i_format < format.length) {
-//        c = format.charAt(i_format);
-//        token = "";
-//        while ((format.charAt(i_format) == c) && (i_format < format.length)) {
-//            token += format.charAt(i_format++);
-//        }
-//        if (typeof(value[token]) != "undefined") {
-//            result = result + value[token];
-//        }
-//        else {
-//            result = result + token;
-//        }
-//    }
-//    return result;
-//};
 
 // Get the full name of the day for a date
 Date.prototype.getDayName = function () {

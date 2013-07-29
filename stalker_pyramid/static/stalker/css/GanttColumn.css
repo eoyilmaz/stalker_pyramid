@@ -263,6 +263,24 @@
     width: 195px;
 }
 
+.leafTaskContextMenu {
+    position: absolute;
+    width: 100%;
+    height: 15px;
+}
+
+.parentTaskContextMenu {
+    position: absolute;
+    width: 100%;
+    height: 15px;
+}
+
+/*.contextMenu {*/
+    /*height: 100%;*/
+/*}*/
+
+
+
 /* ------------------------------------------------------- */
 
 /*.task-bar {*/
@@ -365,9 +383,10 @@ th.dgrid-column-chart table {
     width: 120px;
 }
 
-/*#gantt .dgrid-column-set-0 {*/
-/*width: 750px;*/
-/*}*/
+#gantt .dgrid-column-timing {
+    width: 45px;
+}
+
 
 #gantt .dgrid-column-set-0 {
 width: 40%;
@@ -400,7 +419,8 @@ width: 60%;
 
 #gantt .dgrid-cell {
     /*background-color: rgb(240, 240, 240);*/
-    text-overflow: ellipsis;
+    /*text-overflow: ellipsis;*/
+    text-overflow: clip;
     white-space: nowrap;
 }
 

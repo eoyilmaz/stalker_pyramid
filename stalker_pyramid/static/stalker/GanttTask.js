@@ -151,8 +151,14 @@ define([
         },
 
         getResourcesLinks: function () {
-            // TODO: fix it later
-            return '';
+            var ret = '', i, resource;
+            if (this.resources) {
+                for (i = 0; i < this.resources.length; i++) {
+                    resource = this.resources[i];
+                    ret = ret + (ret === "" ? "" : ", ") + templates.resourceLink(resource);
+                }
+            }
+            return ret;
         }
     });
 });

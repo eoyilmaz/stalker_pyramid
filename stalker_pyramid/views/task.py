@@ -468,7 +468,8 @@ def convert_to_dgrid_gantt_task_format(tasks):
             'name': task.name,
             'parent': task.parent.id if task.parent else task.project.id,
             'priority': task.priority,
-            'resources': [resource.id for resource in task.resources],
+            'resources': [
+                {'id': resource.id, 'name': resource.name} for resource in task.resources] if not task.is_container else [],
             'schedule_constraint': task.schedule_constraint,
             'schedule_model': task.schedule_model,
             'schedule_seconds': task.schedule_seconds,
@@ -703,7 +704,7 @@ def get_tasks(request):
         if isinstance(parent, Project):
             tasks = parent.root_tasks
         elif isinstance(parent, Task):
-            tasks = Task.query.filter(Task.parent_id == parent_id).all()
+            tasks = Task.query.filter(Task.parent_id == parent_id).order_by(Task.name).all()
 
         content_range = content_range % (0, len(tasks) - 1, len(tasks))
         # logger.debug(tasks)

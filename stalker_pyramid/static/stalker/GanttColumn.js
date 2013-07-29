@@ -78,10 +78,12 @@ define([
 
             // Ensure the start time is always milliseconds since epoch
             // and not a Date object
-            var chartStartTime = +column.start,
+            column.start = +column.start;
+            column.end = +column.end;
+            
 
             // This is the number of milliseconds per pixel rendered
-                chartTimeScale = column.scale,
+            var chartTimeScale = column.scale,
             
             // The start position of the task bar for this task, in pixels
                 left = (task.start - column.start) / chartTimeScale,
@@ -203,15 +205,23 @@ define([
 //            column.grid.refresh();
         };
 
-        column.centerOnToday = function () {
+        column.scrollToDate = function (date) {
+            // scrolls to the given date
             var header = $(column.headerNode);
             var position = header.position();
-            var today_as_millis = (new Date()).getTime();
-            var today_x = (today_as_millis - column.start) / column.scale;
 
-            console.debug('today_x : ', today_x);
+            var date_as_millis = +date;
+            var date_x = (date_as_millis - column.start) / column.scale;
+
+//            console.debug('today_x : ', today_x);
             var scroller = $('.dgrid-column-set-scroller-1');
-            scroller.scrollLeft(today_x);
+            scroller.scrollLeft(date_x);
+        };
+
+
+        column.centerOnToday = function () {
+            // scrolls to today
+            this.scrollToDate(new Date());
         };
 
         column.renderHeaderCell = function (th) {
@@ -221,7 +231,7 @@ define([
             //
             // here we render the header for the gantt chart, this will be a row of dates
             // with days of the week in a row underneath
-            console.debug('inside column.renderHeaderCell');
+//            console.debug('inside column.renderHeaderCell');
 
             // fix scrolling
             column.grid.addCssRule(".dgrid-column-chart", "width: " + (column.end - column.start) / column.scale + "px");
@@ -232,22 +242,32 @@ define([
 
             // Create the date row
             var dateRow = put(table, "tr[style=table-layout:fixed]");
-            
+
             // start at the time indicated by the column
             var date = new Date(column.start);
             var lastDay = 7;
-            
+
+            var map_days = [6, 0, 1, 2, 3, 4, 5];
+
+            var lastDay_minus_day;
             // now we iterate through the time span, incrementing by date
             while (date.getTime() < column.end) {
                 // each time a new week is started, we write a new date for the week
-                if (date.getDay() < lastDay) {
-                    put(dateRow, "td[style=width:" + (lastDay - date.getDay()) * 86400000 / column.scale + "px;overflow:hidden;text-overflow:clip;white-space:nowrap;]", {
-                        innerHTML: lastDay - date.getDay() > 2 ? locale.format(date, {selector: "date"}) : "",
-                        colSpan: lastDay - date.getDay()
-                    });
+                lastDay_minus_day = lastDay - map_days[date.getDay()];
+//                lastDay_minus_day = lastDay - date.getDay();
+                if (map_days[date.getDay()] < lastDay) {
+                    put(
+                        dateRow,
+                        "td[style=width:" + (lastDay_minus_day) * 86400000 / column.scale + "px;overflow:hidden;text-overflow:clip;white-space:nowrap;]",
+                        {
+                            innerHTML: lastDay_minus_day > 2 ? date.format('dd-mm-yyyy') : "",
+                            colSpan: lastDay_minus_day
+                        }
+                    );
                 }
                 // get the day of the week before incrementing
-                lastDay = date.getDay() + 1;
+//                lastDay = date.getDay() + 1;
+                lastDay = map_days[date.getDay()] + 1;
                 date = new Date(date.getTime() + 86400000); // increment a day
             }
             // now we create a row for the days of the week
@@ -263,7 +283,8 @@ define([
             }
 
             // render today
-            var today_as_millis = (new Date(2013, 5, 9)).getTime();
+            var today_as_millis = (new Date()).getTime();
+//            $(th).parent;
             put(th, "div.today[style=left:" + (today_as_millis - column.start) / column.scale + "px;]");
         };
 

@@ -30,14 +30,6 @@
     <link rel='stylesheet' type='text/css' media='all' charset='utf-8'
           href='{{ request.static_url("stalker_pyramid:static/stalker/css/stalker.css") }}'/>
     
-    {# load jQuery and jQuery Gantt first#}
-    {#    <link rel=stylesheet media='all'#}
-    {#          href='{{ request.static_url("stalker_pyramid:static/jQueryGantt/libs/dateField/jquery.dateField.css") }}'#}
-    {#          type="text/css">#}
-{#    <link rel=stylesheet media='all'#}
-{#          href='{{ request.static_url("stalker_pyramid:static/jQueryGantt/css/gantt.css") }}'#}
-{#          type="text/css">#}
-
     {# load date.format #}
     <script src='{{ request.static_url("stalker_pyramid:static/stalker/date.format.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/doT/doT.min.js") }}' type="text/javascript"></script>
@@ -45,31 +37,14 @@
     <script src='{{ request.static_url("stalker_pyramid:static/jquery/1.7/jquery.min.js") }}'></script>
 {#    <script src='{{ request.static_url("stalker_pyramid:static/jqueryui/1.8/jquery-ui.min.js") }}'></script>#}
 
-{#    <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/libs/jquery.livequery.min.js") }}'></script>#}
-{#    <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/libs/jquery.timers.js") }}'></script>#}
-{#    <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/libs/platform.js") }}'></script>#}
-{#    <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/libs/date.js") }}'></script>#}
-{#    <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/libs/i18nJs.js") }}'></script>#}
-    {#    <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/libs/dateField/jquery.dateField.js") }}'></script>#}
-{#    <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/libs/JST/jquery.JST.js") }}'></script>#}
+    <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/libs/date.js") }}'></script>
 
-{#    <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/ganttUtilities.js") }}'></script>#}
-{#    <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/ganttProject.js") }}'></script>#}
-{#    <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/ganttResource.js") }}'></script>#}
-{#    <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/ganttLink.js") }}'></script>#}
-{#    <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/ganttTask.js") }}'></script>#}
-{#    <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/ganttTimeLog.js") }}'></script>#}
-{#    <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/ganttDrawer.js") }}'></script>#}
-{#    <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/ganttGridEditor.js") }}'></script>#}
-{#    <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/ganttMaster.js") }}'></script>#}
 
     {# DOJO COMPRESSED #}
     <link rel='stylesheet' type='text/css' media='all' charset='utf-8'
           href='{{ request.static_url("stalker_pyramid:static/dojo/resources/dojo.css") }}'/>
     <link rel='stylesheet' type='text/css' media='all' charset='utf-8'
           href='{{ request.static_url("stalker_pyramid:static/dijit/themes/claro/claro.css") }}'/>
-{#    <link rel='stylesheet' type='text/css' media='all' charset='utf-8'#}
-{#          href='{{ request.static_url("stalker_pyramid:static/dojox/grid/resources/claroGrid.css") }}'/>#}
     <link rel='stylesheet' type='text/css' media='all' charset='utf-8'
           href='{{ request.static_url("stalker_pyramid:static/dojox/form/resources/UploaderFileList.css") }}'/>
     <link rel='stylesheet'
@@ -104,304 +79,139 @@
 
 {# TODO: Support Multiple monitors by allowing the user to detach content panels #}
 
+<script type='text/javascript'>
+    // extend date
+    Date.prototype.clearTime = function () {
+        this.setHours(0);
+        this.setMinutes(0);
+        this.setSeconds(0);
+        this.setMilliseconds(0);
+        return this;
+    };
+</script>
+
+
 {# TEMPLATES #}
-<div id="ganttEditorTemplates" style="display:none;">
-    <div class="__template__" type="TASKSEDITHEAD"><!--
-        <table class="gdfTable" cellspacing="0" cellpadding="0" style='width: 1000px'>
-            <thead>
-                <tr style="height:40px">
-                    <th class="gdfColHeader gdfResizable" style="width:20px;">#</th>
-                    <th class="gdfColHeader gdfResizable" style="width:35px;">id</th>
-                    <th class="gdfColHeader gdfResizable" style="width:250px;">name</th>
-                    <th class="gdfColHeader gdfResizable" style="width:105px;">start</th>
-                    <th class="gdfColHeader gdfResizable" style="width:105px;">end</th>
-                    <th class="gdfColHeader gdfResizable" style="width:35px;">timing</th>
-                    <th class="gdfColHeader gdfResizable" style="width:100px;">depends</th>
-                    <th class="gdfColHeader gdfResizable" style="width:400px; text-align: left;">resources</th>
-                    <th class="gdfColHeader gdfResizable" style="width:670px;"></th>
-                </tr>
-            </thead>
-        </table>
-    --></div>
-
-    <div class="__template__" type="RESOURCESEDITHEAD"><!--
-        <table class="gdfTable" cellspacing="0" cellpadding="0" style='width: 1000px'>
-            <thead>
-                <tr style="height:40px">
-                    <th class="gdfColHeader gdfResizable" style="width:20px;">#</th>
-                    <th class="gdfColHeader gdfResizable" style="width:35px;">id</th>
-                    <th class="gdfColHeader gdfResizable" style="width:250px;">name</th>
-                    <th class="gdfColHeader gdfResizable" style="width:1415px;"></th>
-                </tr>
-            </thead>
-        </table>
-    --></div>
-
-
-    <div class="__template__" type="PROJECTROW"><!--
-        <tr dataId="(#=obj.id#)" class="projectEditRow (#=obj.type#)Row">
-            <th class="gdfCell" align="right"><span class="taskRowIndex">(#=obj.getRow()+1#)</span></th>
-            <td class="gdfCell" align="right"><span>(#=obj.id#)</span></td>
-            <td class="gdfCell indentCell" style="font-weight: bold"><div class="(#=obj.collapsed ? 'folder collapsed': 'folder uncollapsed'#)"></div><div style='position:relative;left:15px;'>(#=obj.link()#)</div></td>
-            <td class="gdfCell"><div class="date start"></div></td>
-            <td class="gdfCell"><div class="date end"></div></td>
-            <td class="gdfCell"></td>
-            <td class="gdfCell"></td>
-            <td class="gdfCell taskAssigs"></td>
-        </tr>
-    --></div>
-
-    <div class="__template__" type="PARENTTASKROW"><!--
-        <tr dataId="(#=obj.id#)" class="parentTaskEditRow (#=obj.type#)Row">
-            <th class="gdfCell" align="right"><span class="taskRowIndex">(#=obj.getRow()+1#)</span></th>
-            <td class="gdfCell" align="right" style="background-color: (#=obj.progress >= 100 ? 'rgb(153, 255, 51)' : 'red'#)"><span>(#=obj.id#)</span></td>
-            <td class="gdfCell indentCell" style="padding-left:(#=obj.getParents().length*15#)px; (#=obj.getChildren().length>0?'font-weight: bold':''#)"><div class="(#=obj.collapsed ? 'folder collapsed': 'folder uncollapsed'#)"></div><div style='position:relative;left:15px;'>(#=obj.link()#)</div></td>
-            <td class="gdfCell"><div class="date start"></div></td>
-            <td class="gdfCell"><div class="date end"></div></td>
-            <td class="gdfCell"><div class="timing">(#=obj.schedule_model.toUpperCase()[0]#): (#=obj.schedule_timing#)(#=obj.schedule_unit#)</div></td>
-            <td class="gdfCell">(#=obj.getDependsLinks()#)</td>
-            <td class="gdfCell">(#=obj.getResourcesLinks()#)</td>
-        </tr>
-    --></div>
-
-    <div class="__template__" type="TASKROW"><!--
-        <tr dataId="(#=obj.id#)" class="taskEditRow (#=obj.type#)Row">
-            <td class="gdfCell" align="right"><span class="taskRowIndex">(#=obj.getRow()+1#)</span></td>
-            <td class="gdfCell" align="right" style="background-color: (#=obj.progress >= 100 ? 'rgb(153, 255, 51)' : 'red'#)"><span>(#=obj.id#)</span></td>
-            <td class="gdfCell indentCell" style="padding-left:(#=obj.getParents().length*15#)px; (#=obj.getChildren().length>0?'font-weight: bold':''#)"><div style='position:relative;left:15px;'>(#=obj.link()#)</div></td>
-            <td class="gdfCell"><div class="date start"></div></td>
-            <td class="gdfCell"><div class="date end"></div></td>
-            <td class="gdfCell"><div name="timing">(#=obj.schedule_model.toUpperCase()[0]#): (#=obj.schedule_timing#)(#=obj.schedule_unit#)</div></td>
-            <td class="gdfCell">(#=obj.getDependsLinks()#)</td>
-            <td class="gdfCell">(#=obj.getResourcesLinks()#)</td>
-            <td class="gdfCell"></td>
-        </tr>
-    --></div>
-
-
-    <div class="__template__" type="RESOURCEROW"><!--
-        <tr dataId="(#=obj.id#)" class="resourceEditRow">
-            <td class="gdfCell" align="right"><span class="resourceRowIndex">(#=obj.getRow()+1#)</span></td>
-            <td class="gdfCell" align="right"><span>(#=obj.id#)</span></td>
-            <td class="gdfCell">(#=obj.link()#)</td>
-            <td class="gdfCell"></td>
-        </tr>
-    --></div>
-
-    <div class="__template__" type="TASKEMPTYROW"><!--
-        <tr class="taskEditRow emptyRow" >
-            <th class="gdfCell" align="right"></th>
-            <td class="gdfCell"></td>
-            <td class="gdfCell"></td>
-            <td class="gdfCell"></td>
-            <td class="gdfCell"></td>
-            <td class="gdfCell"></td>
-            <td class="gdfCell"></td>
-            <td class="gdfCell" align="left"></td>
-            <td class="gdfCell"></td>
-        </tr>
-    --></div>
-
-    <div class="__template__" type="RESOURCEEMPTYROW"><!--
-        <tr class="resourceEditRow emptyRow" >
-            <th class="gdfCell" align="right"></th>
-            <td class="gdfCell"></td>
-            <td class="gdfCell" align="left"></td>
-            <td class="gdfCell"></td>
-        </tr>
-    --></div>
-
-    <div class="__template__" type="PROJECTBAR"><!--
-        <div class="projectBox" projectId="(#=obj.id#)" >
-            <div class="layout">
-                <div class="projectLabel">(#=obj.link()#)</div>
-            </div>
+{% raw %}
+<script id="tmpl_projectBar" type="text/x-dot-template">
+    <div class="projectBox" projectId="{{=it.id}}" >
+        <div class="layout">
+            <div class="projectLabel">{{=it.link()}}</div>
         </div>
-    --></div>
-    
-    {% raw %}
-    <script id="tmpl_projectBar" type="text/x-dot-template">
-        <div class="projectBox" projectId="{{=it.id}}" >
-            <div class="layout">
-                <div class="projectLabel">{{=it.link()}}</div>
+    </div>
+</script>
+{% endraw %}
+
+
+{% raw %}
+<script id="tmpl_taskBar" type="text/x-dot-template">
+    <div class="taskBox" dataId="{{=it.id}}">
+        <div class="layout {{=it.hasExternalDep?'extDep':''}}">
+            <div class="taskProgress" style="width:{{=it.progress > 100 ? 100 : it.progress }}%;"></div>
+            <div class="taskExtraTiming" style="width:{{=(it.schedule_timing - it.bid_timing)/it.schedule_timing*100}}%;"></div>
+            <div class="taskScheduleModel"
+               style="position: absolute; text-align: center; width: 100%;">
+               {{=it.schedule_model.toUpperCase()[0]}}: {{=it.schedule_timing}}{{=it.schedule_unit}}
             </div>
+            <div class="taskLabel">{{=it.link()}}</div>
+            <div class="milestone end {{=it.endIsMilestone ? 'active' : ''}}"></div>
+            <div class="taskResourceLabel">{{=it.getResourcesLinks()}}</div>
+            {{=it.clippedStart?'<div class="leftArrowHead">&nbsp</div>':''}}
+            {{=it.clippedEnd?'<div class="rightArrowHead">&nbsp</div>':''}}
+            <div class="leafTaskContextMenu"
+                dataId="{{=it.id}}"
+                name="{{=it.name}}"
+                hierarchy_name="{{=it.hierarchy_name}}"
+                start={{=it.start}}
+                end={{=it.end}}
+                type="{{=it.type}}"
+                priority={{=it.priority}}
+                bid_timing={{=it.bid_timing}}
+                bid_unit={{=it.bid_unit}}
+                schedule_model={{=it.schedule_model}}
+                schedule_timing={{=it.schedule_timing}}
+                schedule_unit={{=it.schedule_unit}}
+                description="{{=it.description}}"
+                remaining_seconds="{{=it.remaining_seconds}}"
+                ></div>
         </div>
-    </script>
-    {% endraw %}
-    
-    
-    <div class="__template__" type="TASKBAR"><!--
-        <div class="taskBox" dataId="(#=obj.id#)">
-            <div class="layout (#=obj.hasExternalDep?'extDep':''#)">
-                <div class="taskProgress" style="width:(#=obj.progress>100?100:obj.progress#)%;"></div>
-                <div class="taskExtraTiming" style="width:(#=(obj.schedule_timing - obj.bid_timing)/obj.schedule_timing*100#)%;;"></div>
-                <div class="taskScheduleModel"
-                   style="position: absolute; text-align: center; width: 100%;">
-                   (#=obj.schedule_model.toUpperCase()[0]#): (#=obj.schedule_timing#)(#=obj.schedule_unit#)
-                </div>
-                <div class="leafTaskContextMenu"
-                    dataId="(#=obj.id#)"
-                    name="(#=obj.name#)"
-                    hierarchy_name="(#=obj.hierarchy_name#)"
-                    start=(#=obj.start#)
-                    end=(#=obj.end#)
-                    type="(#=obj.type#)"
-                    priority=(#=obj.priority#)
-                    bid_timing=(#=obj.bid_timing#)
-                    bid_unit=(#=obj.bid_unit#)
-                    schedule_model=(#=obj.schedule_model#)
-                    schedule_timing=(#=obj.schedule_timing#)
-                    schedule_unit=(#=obj.schedule_unit#)
-                    description="(#=obj.description#)"
-                    remaining_seconds="(#=obj.remaining_seconds#)"
-                    ></div>
-                <div class="milestone (#=obj.startIsMilestone?'active':''#)" ></div>
-                <div class="taskLabel">(#=obj.link()#)</div>
-                <div class="milestone end (#=obj.endIsMilestone?'active':''#)"></div>
-                <div class="taskResourceLabel">(#=obj.getResourcesLinks()#)</div>
-                (#=obj.clippedStart?'<div class="leftArrowHead">&nbsp</div>':''#)
-                (#=obj.clippedEnd?'<div class="rightArrowHead">&nbsp</div>':''#)
-            </div>
+    </div>
+</script>
+{% endraw %}
+
+{% raw %}
+<script id="tmpl_taskEditNameRow" type="text/x-dot-template">
+    <div class="{{=it.contextMenuClass}}" style="font-weight: {{=it.font_weight}}"
+        dataId="{{=it.id}}"
+        name="{{=it.name}}"
+        start={{=it.start}}
+        end={{=it.end}}
+        type="{{=it.type}}"
+        hasChildren={{=it.hasChildren}}>{{=it.name}} ({{=it.type}})</div>
+</script>
+{% endraw %}
+
+<div class="__template__" type="TASKBAR_ON_LEFT"><!--
+    <div class="leftArrowHead" dataId="(#=obj.id#)">&nbsp</div>
+--></div>
+
+<div class="__template__" type="TASKBAR_ON_RIGHT"><!--
+    <div class="rightArrowHead" dataId="(#=obj.id#)">&nbsp</div>
+--></div>
+
+{% raw %}
+<script id="tmpl_parentTaskBar" type="text/x-dot-template">
+    <div class="parentTaskBox" dataId="{{=it.id}}">
+        <div class="layout {{=it.hasExternalDep?'extDep':''}}">
+            <div class="leftPin"></div>
+            <div class="rightPin"></div>
+            <div class="taskLabel">{{=it.link()}}</div>
+            <div class="parentTaskContextMenu" dataId="{{=it.id}}"></div>
         </div>
-    --></div>
+    </div>
+</script>
+{% endraw %}
 
-    {% raw %}
-    <script id="tmpl_taskBar" type="text/x-dot-template">
-        <div class="taskBox" dataId="{{=it.id}}">
-            <div class="layout {{=it.hasExternalDep?'extDep':''}}">
-                <div class="taskProgress" style="width:{{=it.progress > 100 ? 100 : it.progress }}%;"></div>
-                <div class="taskExtraTiming" style="width:{{=(it.schedule_timing - it.bid_timing)/it.schedule_timing*100}}%;"></div>
-                <div class="taskScheduleModel"
-                   style="position: absolute; text-align: center; width: 100%;">
-                   {{=it.schedule_model.toUpperCase()[0]}}: {{=it.schedule_timing}}{{=it.schedule_unit}}
-                </div>
-                <div class="leafTaskContextMenu"
-                    dataId="{{=it.id}}"
-                    name="{{=it.name}}"
-                    hierarchy_name="{{=it.hierarchy_name}}"
-                    start={{=it.start}}
-                    end={{=it.end}}
-                    type="{{=it.type}}"
-                    priority={{=it.priority}}
-                    bid_timing={{=it.bid_timing}}
-                    bid_unit={{=it.bid_unit}}
-                    schedule_model={{=it.schedule_model}}
-                    schedule_timing={{=it.schedule_timing}}
-                    schedule_unit={{=it.schedule_unit}}
-                    description="{{=it.description}}"
-                    remaining_seconds="{{=it.remaining_seconds}}"
-                    ></div>
-                <div class="taskLabel">{{=it.link()}}</div>
-                <div class="milestone end {{=it.endIsMilestone ? 'active' : ''}}"></div>
-                <div class="taskResourceLabel">{{=it.getResourcesLinks()}}</div>
-                {{=it.clippedStart?'<div class="leftArrowHead">&nbsp</div>':''}}
-                {{=it.clippedEnd?'<div class="rightArrowHead">&nbsp</div>':''}}
-            </div>
+<div class="__template__" type="TIMELOGBAR"><!--
+    <div class="timeLogBox" dataId="(#=obj.id#)">
+        <div class="layout">
+            <div class="timeLogContextMenu"
+                dataId="(#=obj.id#)"
+                name="(#=obj.name#)"
+                start=(#=obj.start#)
+                end=(#=obj.end#)
+                task_id=(#=obj.task.id#)
+                task_name="(#=obj.task.name#)"
+                task_type="(#=obj.task.type#)"
+                task_hierarchy_name="(#=obj.task.hierarchy_name#)"
+                ></div>
         </div>
-    </script>
-    {% endraw %}
+    </div>
+--></div>
 
-    <div class="__template__" type="TASKBAR_COMPACT"><!--
-        <div class="taskBox" dataId="(#=obj.id#)">
-            <div class="layout (#=obj.hasExternalDep?'extDep':''#)">
-                <div class="taskProgress" style="width:(#=obj.progress>100?100:obj.progress#)%;"></div>
-                <div class="taskExtraTiming" style="width:(#=(obj.schedule_timing - obj.bid_timing)/obj.schedule_timing*100#)%;;"></div>
-                <div class="taskScheduleModel"
-                   style="position: absolute; text-align: center; width: 100%;">
-                   (#=obj.link()#) (#=obj.schedule_model.toUpperCase()[0]#): (#=obj.schedule_timing#)(#=obj.schedule_unit#)
-                </div>
-                <div class="leafTaskContextMenu"
-                    dataId="(#=obj.id#)"
-                    name="(#=obj.name#)"
-                    hierarchy_name="(#=obj.hierarchy_name#)"
-                    start=(#=obj.start#)
-                    end=(#=obj.end#)
-                    type="(#=obj.type#)"
-                    priority=(#=obj.priority#)
-                    schedule_model=(#=obj.schedule_model#)
-                    schedule_timing=(#=obj.schedule_timing#)
-                    schedule_unit=(#=obj.schedule_unit#)
-                    description="(#=obj.description#)"
-                    ></div>
-            </div>
-        </div>
-    --></div>
+{% raw %}
+<script id="tmpl_taskLink" type="text/x-dot-template">
+  <a href="javascript:redirectLinkInParent('{{=it.type.toLowerCase()}}s_content_pane','view/task/{{=it.id}}');">{{=it.name}} ({{=it.type}})</a>
+</script>
+{% endraw %}
 
-    <div class="__template__" type="TASKBAR_ON_LEFT"><!--
-        <div class="leftArrowHead" dataId="(#=obj.id#)">&nbsp</div>
-    --></div>
+<div class="__template__" type='RESOURCELINK'><!--
+    <a href="javascript:redirectLink('central_content','view/user/(#=obj.id#)');">(#=obj.name#)</a>
+--></div>
 
-    <div class="__template__" type="TASKBAR_ON_RIGHT"><!--
-        <div class="rightArrowHead" dataId="(#=obj.id#)">&nbsp</div>
-    --></div>
-
-    <div class="__template__" type="PARENTTASKBAR"><!--
-        <div class="parentTaskBox" dataId="(#=obj.id#)">
-            <div class="layout (#=obj.hasExternalDep?'extDep':''#)">
-                <div class="parentTaskContextMenu" dataId="(#=obj.id#)"></div>
-                <div class="leftPin"></div>
-                <div class="rightPin"></div>
-                <div class="taskLabel">(#=obj.link()#)</div>
-            </div>
-        </div>
-    --></div>
-
-    {% raw %}
-    <script id="tmpl_parentTaskBar" type="text/x-dot-template">
-        <div class="parentTaskBox" dataId="{{=it.id}}">
-            <div class="layout {{=it.hasExternalDep?'extDep':''}}">
-                <div class="parentTaskContextMenu" dataId="{{=it.id}}"></div>
-                <div class="leftPin"></div>
-                <div class="rightPin"></div>
-                <div class="taskLabel">{{=it.link()}}</div>
-            </div>
-        </div>
-    </script>
-    {% endraw %}
-
-    <div class="__template__" type="TIMELOGBAR"><!--
-        <div class="timeLogBox" dataId="(#=obj.id#)">
-            <div class="layout">
-                <div class="timeLogContextMenu"
-                    dataId="(#=obj.id#)"
-                    name="(#=obj.name#)"
-                    start=(#=obj.start#)
-                    end=(#=obj.end#)
-                    task_id=(#=obj.task.id#)
-                    task_name="(#=obj.task.name#)"
-                    task_type="(#=obj.task.type#)"
-                    task_hierarchy_name="(#=obj.task.hierarchy_name#)"
-                    ></div>
-            </div>
-        </div>
-    --></div>
-
-    <div class="__template__" type='TASKLINK'><!--
-      <a href="javascript:redirectLinkInParent('(#=obj.type.toLowerCase()#)s_content_pane','view/task/(#=obj.id#)');">(#=obj.name#) ((#=obj.type#))</a>
-    --></div>
-
-    {% raw %}
-    <script id="tmpl_taskLink" type="text/x-dot-template">
-      <a href="javascript:redirectLinkInParent('{{=it.type.toLowerCase()}}s_content_pane','view/task/{{=it.id}}');">{{=it.name}} ({{=it.type}})</a>
-    </script>
-    {% endraw %}
-    
-    <div class="__template__" type='RESOURCELINK'><!--
-        <a href="javascript:redirectLink('central_content','view/user/(#=obj.id#)');">(#=obj.name#)</a>
-    --></div>
-
-    <div class="__template__" type='PROJECTLINK'><!--
-        <a href="javascript:redirectLink('central_content','view/project/(#=obj.id#)');">(#=obj.name#) ((#=obj.type#))</a>
-    --></div>
-
-    {% raw %}
-    <script id="tmpl_projectLink" type="text/x-dot-template">
-        <a href="javascript:redirectLink('central_content','view/project/{{=it.id}}');">{{=it.name}} ({{=it.type}})</a>
-    </script>
-    {% endraw %}
+{% raw %}
+<script id='tmpl_resourceLink' type='text/x-dot-template'>
+    <a href="javascript:redirectLink('central_content','view/user/{{=it.id}}');">{{=it.name}}</a>
+</script>
+{% endraw %}
 
 
-</div>
+{% raw %}
+<script id="tmpl_projectLink" type="text/x-dot-template">
+    <a href="javascript:redirectLink('central_content','view/project/{{=it.id}}');">{{=it.name}} ({{=it.type}})</a>
+</script>
+{% endraw %}
+
 
 {% block body %}
     <div id='appLayout' class='demoLayout'>
@@ -451,6 +261,9 @@
 
     templates.projectLink = doT.template(document.getElementById('tmpl_projectLink').text);
     templates.taskLink = doT.template(document.getElementById('tmpl_taskLink').text);
+    templates.resourceLink = doT.template(document.getElementById('tmpl_resourceLink').text);
+
+    templates.taskEditNameRow = doT.template(document.getElementById('tmpl_taskEditNameRow').text);
     // ************************************************************************
 
 

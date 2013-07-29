@@ -1,12 +1,13 @@
 define([
     "dojo/_base/declare",
+    'dojo/_base/lang',
     "dgrid/OnDemandGrid",
     "dgrid/ColumnSet",
     "dgrid/Selection",
     "dgrid/Keyboard",
     "dgrid/tree",
     "stalker/GanttColumn"
-], function (declare, OnDemandGrid, ColumnSet, Selection, Keyboard, tree,
+], function (declare, lang, OnDemandGrid, ColumnSet, Selection, Keyboard, tree,
              GanttColumn) {
     // module:
     //     GanttGrid
@@ -17,6 +18,31 @@ define([
     // column set for the actual gantt chart
     "use strict";
     return declare([OnDemandGrid, ColumnSet, Selection, Keyboard], {
+        keyMap: lang.mixin({}, Keyboard.defaultKeyMap, {
+            //    37 - left
+            //    38 - up
+            //    39 - right
+            //    40 - down
+            39: function () { // right arrow
+                // do something with key right
+                var obj;
+                for (obj in this.selection) {
+                    this.expand(obj, true);
+                }
+            },
+            37: function () {  // left arrow
+                var obj;
+                for (obj in this.selection) {
+                    this.expand(obj, false);
+                }
+            },
+            65: function () { // "a"
+                this.selectAll();
+            },
+            68: function () { // "d"
+                this.clearSelection();
+            }
+        }),
         columnSets: [
             // Column set to display task and resource
             [
@@ -28,8 +54,15 @@ define([
                             return object;
                         },
                         formatter: function (object) {
-                            var bg_color = object.progress >= 100 ? 'rgb(153, 255, 51)' : 'red',
-                                font_weight = 'normal';
+                            var progress = 0, bg_color, font_weight;
+
+                            // TODO: Fix this, and use the total_logged_seconds also for parent tasks
+                            if (!object.hasChildren) {
+                                progress = object.schedule_seconds > 0 ? object.total_logged_seconds / object.schedule_seconds * 100 : 0;
+                            }
+
+                            bg_color = progress >= 100 ? 'rgb(153, 255, 51)' : 'red';
+                            font_weight = 'normal';
 
                             return '<div ' +
                                 'style="' +
@@ -44,13 +77,29 @@ define([
                             label: "Name",
                             sortable: false,
                             get: function (object) {
-                                return object
+                                return object;
                             },
                             formatter: function (object) {
-                                var font_weight = object.hasChildren ? 'bold' : 'normal';
-                                return '<div style="font-weight: ' + font_weight + '">' +
-                                    object.name +
-                                    '</div>';
+                                var template_var = {};
+
+                                template_var.font_weight = object.hasChildren ? 'bold' : 'normal';
+                                template_var.contextMenuClass = 'taskEditRow';
+                                if (object.type === 'Project') {
+                                    template_var.contextMenuClass = '';
+                                } else {
+                                    if (object.hasChildren) {
+                                        template_var.contextMenuClass = 'parentTaskEditRow';
+                                    }
+                                }
+
+                                template_var.hasChildren = object.hasChildren;
+                                template_var.id = object.id;
+                                template_var.name = object.name;
+                                template_var.start = object.start;
+                                template_var.end = object.end;
+                                template_var.type = object.type;
+
+                                return templates.taskEditNameRow(template_var);
                             }
                         }
                     ),
@@ -76,9 +125,36 @@ define([
                             return end_date.format("yyyy-mm-dd HH:MM");
                         }
                     },
+                    timing: {
+                        label: 'Timing',
+                        sortable: false,
+                        get: function (object) {
+                            return object;
+                        },
+                        formatter: function (object) {
+                            var timing = '';
+                            if (!object.hasChildren) {
+                                timing = object.schedule_model.toUpperCase()[0] + ': ' + object.schedule_timing + object.schedule_unit;
+                            }
+                            return timing;
+                        }
+                    },
                     resource: {
                         label: "Resource",
-                        sortable: false
+                        sortable: false,
+                        get: function (object) {
+                            return object;
+                        },
+                        formatter: function (object) {
+                            var ret = '', i, resource;
+                            if (object.resources) {
+                                for (i = 0; i < object.resources.length; i++) {
+                                    resource = object.resources[i];
+                                    ret = ret + (ret === "" ? "" : ", ") + templates.resourceLink(resource);
+                                }
+                            }
+                            return ret;
+                        }
                     }
                 }
             ],
@@ -90,8 +166,8 @@ define([
                 {
                     chart: new GanttColumn({
                         scale: 4000000,
-                        start: new Date(new Date().getTime() - 15552000000),
-                        end: new Date(new Date().getTime() + 15552000000),
+                        start: new Date().getTime() - 15552000000,
+                        end: new Date().getTime() + 15552000000,
                         sortable: false
                     })
                 }
