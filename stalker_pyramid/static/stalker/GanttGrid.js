@@ -89,9 +89,9 @@ define([
             [
                 {
                     chart: new GanttColumn({
-                        scale: 8000000,
-                        start: new Date(2013, 4, 1),
-                        end: new Date(2015, 0, 1),
+                        scale: 4000000,
+                        start: new Date(new Date().getTime() - 15552000000),
+                        end: new Date(new Date().getTime() + 15552000000),
                         sortable: false
                     })
                 }

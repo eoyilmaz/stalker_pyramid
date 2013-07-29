@@ -343,6 +343,11 @@ th.dgrid-column-chart table {
     overflow: hidden;
 }
 
+.dgrid {
+    width: 100%;
+    height: 100%;
+}
+
 #gantt .dgrid-column-id {
     width: 40px;
     text-align: right;
@@ -388,10 +393,10 @@ width: 60%;
     /*float: left;*/
 /*}*/
 
-#gantt .dgrid-cell {
-    border-top: none;
-    border-bottom: none;
-}
+/*#gantt .dgrid-cell {*/
+    /*border-top: none;*/
+    /*border-bottom: none;*/
+/*}*/
 
 #gantt .dgrid-cell {
     /*background-color: rgb(240, 240, 240);*/

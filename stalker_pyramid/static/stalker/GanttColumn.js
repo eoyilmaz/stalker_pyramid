@@ -188,15 +188,30 @@ define([
 //            }, 0);
         };
 
-        column.refresh = function () {
+        column.refresh = function (kwargs) {
             // summary:
             //     Refreshes the header cell
             // remove the header contents
             domConstruct.empty(column.headerNode);
             column.renderHeaderCell(column.headerNode);
 
+            column.start = kwargs.start || column.start;
+            column.end = kwargs.end || column.end;
+
             // let it adjust the scrollbars
             column.grid.resize();
+//            column.grid.refresh();
+        };
+
+        column.centerOnToday = function () {
+            var header = $(column.headerNode);
+            var position = header.position();
+            var today_as_millis = (new Date()).getTime();
+            var today_x = (today_as_millis - column.start) / column.scale;
+
+            console.debug('today_x : ', today_x);
+            var scroller = $('.dgrid-column-set-scroller-1');
+            scroller.scrollLeft(today_x);
         };
 
         column.renderHeaderCell = function (th) {
@@ -207,6 +222,9 @@ define([
             // here we render the header for the gantt chart, this will be a row of dates
             // with days of the week in a row underneath
             console.debug('inside column.renderHeaderCell');
+
+            // fix scrolling
+            column.grid.addCssRule(".dgrid-column-chart", "width: " + (column.end - column.start) / column.scale + "px");
 
             // calculate table width
             var table_width = (column.end - column.start) / column.scale;
@@ -243,9 +261,6 @@ define([
 
                 date = new Date(date.getTime() + 86400000); // increment a day
             }
-
-            // fix scrolling
-            column.grid.addCssRule(".dgrid-column-chart", "width: " + (column.end - column.start) / column.scale + "px");
 
             // render today
             var today_as_millis = (new Date(2013, 5, 9)).getTime();

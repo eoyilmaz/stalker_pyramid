@@ -53,21 +53,21 @@
             </div>
             <div style="float: left;">
                 <button id='list_tasks_refresh_button'>Refresh</button>
-                <button id='minus_1_month'>-1m</button>
-                <button id='minus_1_week'>-1w</button>
-                <button id='minus_1_day'>-1d</button>
+{#                <button id='minus_1_month'>-1m</button>#}
+{#                <button id='minus_1_week'>-1w</button>#}
+{#                <button id='minus_1_day'>-1d</button>#}
                 <button id='list_tasks_go_to_today_button'>Go To Today</button>
-                <button id='plus_1_day'>+1d</button>
-                <button id='plus_1_week'>+1w</button>
-                <button id='plus_1_month'>+1m</button>
+{#                <button id='plus_1_day'>+1d</button>#}
+{#                <button id='plus_1_week'>+1w</button>#}
+{#                <button id='plus_1_month'>+1m</button>#}
             </div>
         </div>
     </div>
 </div>
 
 <div style='width:100%; height: 94%; position: absolute; margin-top: 30px;'>
-{#    <div id="gantt" style="position: static;"></div>#}
-    <div id="gantt"></div>
+    <div id="gantt" style="position: static; width: 100%; height: 100%;"></div>
+{#    <div id="gantt"></div>#}
 {#    <div id="gantt" ></div>#}
 </div>
 
@@ -149,10 +149,8 @@
         }, 'gantt');
         gantt_chart.startup();
 
-        gantt_chart._processScroll();
-
-        var loadGanttFromServer = function(){};
-
+        // get the grantt column
+        var gantt_column = gantt_chart.columnSets[1][0][0];
 
         {% if has_permission('Create_Task') %}
             // CREATE TASK
@@ -161,7 +159,7 @@
                 dialog_id: 'task_dialog',
                 content_creator: dialogs.create_task_dialog,
                 attach_to: 'list_tasks_create_task_button',
-                related_field_updater: loadGanttFromServer,
+                related_field_updater: gantt_column.refresh,
                 data_id: '{{ entity.id }}'
             });
             create_task_button.startup();
@@ -171,7 +169,7 @@
         var reload_gantt_button = new Button({
             label: 'Reload',
             onClick: function () {
-                loadGanttFromServer();
+                gantt_column.refresh();
             }
         }, 'list_tasks_gantt_reload_button');
         reload_gantt_button.startup();
@@ -181,7 +179,6 @@
             var schedule_tasks_button = new Button({
                 label: 'Schedule Tasks',
                 onClick: function () {
-
 
                     var do_schedule = function () {
                         // xhr.post returns a `promise` use it if needed
@@ -200,7 +197,7 @@
 
                     var do_load = function () {
                         // reload scheduled tasks
-                        loadGanttFromServer();
+                        gantt_column.refresh();
                         // kill the busy dialog
                         var busy_dialog = dijit.byId('schedule_tasks_busy_dialog');
                         busy_dialog.destroyRecursive();
@@ -216,24 +213,18 @@
         var start_dateTextBox = new DateTextBox({
             name: 'start',
             label: 'Start Date',
-            {#            value: new Date(new Date().getTime() - 1296000000),// 15 * 24 * 60 * 60 * 1000, set it today + 15 by default#}
+                        value: new Date(new Date().getTime() - 15552000000),// 15 * 24 * 60 * 60 * 1000, set it today + 15 by default
             required: true,
-            datePattern: 'dd-mm-yyyy',
-            {#            onChange: function () {#}
-            {#                loadGanttFromServer();#}
-            {#            }#}
+            datePattern: 'dd-mm-yyyy'
         }, 'gantt_start_date');
         start_dateTextBox.startup();
 
         var end_dateTextBox = new DateTextBox({
             name: 'end',
             label: 'End Date',
-            {#            value: new Date(new Date().getTime() + 1296000000), // set it today + 15 by default#}
+                        value: new Date(new Date().getTime() + 15552000000), // set it today + 15 by default
             required: true,
-            datePattern: 'dd-mm-yyyy',
-            {#            onChange: function () {#}
-            {#                loadGanttFromServer();#}
-            {#            }#}
+            datePattern: 'dd-mm-yyyy'
         }, 'gantt_end_date');
         end_dateTextBox.startup();
     
@@ -307,18 +298,7 @@
                 
                 var start = start_dateTextBox.getValue().getTime();
                 var end =  end_dateTextBox.getValue().getTime();
-
-                var gantt_column = gantt_chart.columnSets[1][0][0];
-                gantt_column.start = start;
-                gantt_column.end = end;
-                console.debug('gantt_chart                   : ', gantt_chart);
-                console.debug('gantt_column                  : ', gantt_column);
-
-{#                dojo.domManip.deleteElement(gantt_column.header_node);#}
-
-{#                gantt_column.renderHeaderCell(query('#ganttChart dgrid-column-set-cell dgrid-column-set-1'));#}
-                gantt_column.refresh();
-                gantt_chart.refresh();
+                gantt_column.refresh({start: start, end: end});
 
             }
         }, 'list_tasks_refresh_button');
@@ -327,88 +307,86 @@
         var go_to_today_button = new Button({
             label: 'Go To Today',
             onClick: function () {
-                ge.gantt.centerOnToday();
+                gantt_column.centerOnToday();
             }
         }, 'list_tasks_go_to_today_button');
         go_to_today_button.startup();
 
-
-
         // change range
-        var refresh_gantt_and_calendar = function(start, end){
-            start_dateTextBox.setValue(start);
-            end_dateTextBox.setValue(end);
-            ge.gantt.refreshGantt({
-                start: start.getTime(),
-                end: end.getTime()
-            });
-        };
+{#        var refresh_gantt_and_calendar = function(start, end){#}
+{#            start_dateTextBox.setValue(start);#}
+{#            end_dateTextBox.setValue(end);#}
+{#            gantt_column.refresh({#}
+{#                start: start.getTime(),#}
+{#                end: end.getTime()#}
+{#            });#}
+{#        };#}
         
-        var minus_1_month = new Button({
-            onClick: function(){
-                var start = new Date(ge.gantt.originalStartMillis);
-                var end = new Date(ge.gantt.originalEndMillis);
-                start = date.add(start, 'month', -1);
-                end = date.add(end, 'month', -1);
-                refresh_gantt_and_calendar(start, end);
-            }
-        }, 'minus_1_month');
-        minus_1_month.startup();
+{#        var minus_1_month = new Button({#}
+{#            onClick: function(){#}
+{#                var start = new Date(ge.gantt.originalStartMillis);#}
+{#                var end = new Date(ge.gantt.originalEndMillis);#}
+{#                start = date.add(start, 'month', -1);#}
+{#                end = date.add(end, 'month', -1);#}
+{#                refresh_gantt_and_calendar(start, end);#}
+{#            }#}
+{#        }, 'minus_1_month');#}
+{#        minus_1_month.startup();#}
 
-        var plus_1_month = new Button({
-            onClick: function(){
-                var start = new Date(ge.gantt.originalStartMillis);
-                var end = new Date(ge.gantt.originalEndMillis);
-                start = date.add(start, 'month', 1);
-                end = date.add(end, 'month', 1);
-                refresh_gantt_and_calendar(start, end);
-            }
-        }, 'plus_1_month');
-        plus_1_month.startup();
+{#        var plus_1_month = new Button({#}
+{#            onClick: function(){#}
+{#                var start = new Date(ge.gantt.originalStartMillis);#}
+{#                var end = new Date(ge.gantt.originalEndMillis);#}
+{#                start = date.add(start, 'month', 1);#}
+{#                end = date.add(end, 'month', 1);#}
+{#                refresh_gantt_and_calendar(start, end);#}
+{#            }#}
+{#        }, 'plus_1_month');#}
+{#        plus_1_month.startup();#}
 
-        var minus_1_week = new Button({
-            onClick: function(){
-                var start = new Date(ge.gantt.originalStartMillis);
-                var end = new Date(ge.gantt.originalEndMillis);
-                start = date.add(start, 'week', -1);
-                end = date.add(end, 'week', -1);
-                refresh_gantt_and_calendar(start, end);
-            }
-        }, 'minus_1_week');
-        minus_1_week.startup();
+{#        var minus_1_week = new Button({#}
+{#            onClick: function(){#}
+{#                var start = new Date(ge.gantt.originalStartMillis);#}
+{#                var end = new Date(ge.gantt.originalEndMillis);#}
+{#                start = date.add(start, 'week', -1);#}
+{#                end = date.add(end, 'week', -1);#}
+{#                refresh_gantt_and_calendar(start, end);#}
+{#            }#}
+{#        }, 'minus_1_week');#}
+{#        minus_1_week.startup();#}
 
-        var plus_1_week = new Button({
-            onClick: function(){
-                var start = new Date(ge.gantt.originalStartMillis);
-                var end = new Date(ge.gantt.originalEndMillis);
-                start = date.add(start, 'week', 1);
-                end = date.add(end, 'week', 1);
-                refresh_gantt_and_calendar(start, end);
-            }
-        }, 'plus_1_week');
-        plus_1_week.startup();
+{#        var plus_1_week = new Button({#}
+{#            onClick: function(){#}
+{#                var start = new Date(ge.gantt.originalStartMillis);#}
+{#                var end = new Date(ge.gantt.originalEndMillis);#}
+{#                start = date.add(start, 'week', 1);#}
+{#                end = date.add(end, 'week', 1);#}
+{#                refresh_gantt_and_calendar(start, end);#}
+{#            }#}
+{#        }, 'plus_1_week');#}
+{#        plus_1_week.startup();#}
 
-        var minus_1_day = new Button({
-            onClick: function(){
-                var start = new Date(ge.gantt.originalStartMillis);
-                var end = new Date(ge.gantt.originalEndMillis);
-                start = date.add(start, 'day', -1);
-                end = date.add(end, 'day', -1);
-                refresh_gantt_and_calendar(start, end);
-            }
-        }, 'minus_1_day');
-        minus_1_week.startup();
+{#        var minus_1_day = new Button({#}
+{#            onClick: function(){#}
+{#                var start = new Date(ge.gantt.originalStartMillis);#}
+{#                var end = new Date(ge.gantt.originalEndMillis);#}
+{#                start = date.add(start, 'day', -1);#}
+{#                end = date.add(end, 'day', -1);#}
+{#                refresh_gantt_and_calendar(start, end);#}
+{#            }#}
+{#        }, 'minus_1_day');#}
+{#        minus_1_week.startup();#}
 
-        var plus_1_day = new Button({
-            onClick: function(){
-                var start = new Date(ge.gantt.originalStartMillis);
-                var end = new Date(ge.gantt.originalEndMillis);
-                start = date.add(start, 'day', 1);
-                end = date.add(end, 'day', 1);
-                refresh_gantt_and_calendar(start, end);
-            }
-        }, 'plus_1_day');
-        plus_1_day.startup();
+{#        var plus_1_day = new Button({#}
+{#            onClick: function(){#}
+{#                var start = new Date(ge.gantt.originalStartMillis);#}
+{#                var end = new Date(ge.gantt.originalEndMillis);#}
+{#                start = date.add(start, 'day', 1);#}
+{#                end = date.add(end, 'day', 1);#}
+{#                refresh_gantt_and_calendar(start, end);#}
+{#            }#}
+{#        }, 'plus_1_day');#}
+{#        plus_1_day.startup();#}
 
     });
 </script>
