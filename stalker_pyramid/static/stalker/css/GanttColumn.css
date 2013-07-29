@@ -59,7 +59,6 @@
     top: 3px;
 }
 
-
 /*PARENT TASK BOX*/
 .parentTaskBox {
     position: absolute;
@@ -134,7 +133,6 @@
 .parentTaskBox .layout.extDep {
     background-image: url('../images/hasExternalDeps.png');
 }
-
 
 /*TASK BOX*/
 .taskBox {
@@ -217,7 +215,6 @@
     background-image: url('../images/hasExternalDeps.png');
 }
 
-
 .taskLabel {
     position: absolute;
     height: 18px;
@@ -257,29 +254,23 @@
     width: 195px;
 }
 
-
-
-
-
-
 /* ------------------------------------------------------- */
 
+/*.task-bar {*/
+/*height: 15px;*/
+/*position: absolute;*/
+/*background-color: #0e0;*/
+/*border-radius: 5px;*/
+/*box-shadow: 2px 2px 3px #aaa;*/
+/*}*/
 
-.task-bar {
-    height: 15px;
-    position: absolute;
-    background-color: #0e0;
-    border-radius: 5px;
-    box-shadow: 2px 2px 3px #aaa;
-}
-
-.completed-bar {
-    height: 15px;
-    position: absolute;
-    background-color: #0a0;
-    border-top-left-radius: 5px;
-    border-bottom-left-radius: 5px;
-}
+/*.completed-bar {*/
+/*height: 15px;*/
+/*position: absolute;*/
+/*background-color: #0a0;*/
+/*border-top-left-radius: 5px;*/
+/*border-bottom-left-radius: 5px;*/
+/*}*/
 
 .dep-horizontal-line {
     height: 1px;
@@ -297,7 +288,8 @@
 
 .dgrid .dgrid-column-chart {
     position: relative;
-    width: 560px;
+    /*width: 560px;*/
+    width: 100%;
     overflow: visible;
 }
 
@@ -324,7 +316,7 @@ th.dgrid-column-chart {
 }
 
 th.dgrid-column-chart td {
-    border: 1px solid #aaa;
+    border: 1px solid #afafaf;
     text-align: center;
 }
 
@@ -334,10 +326,70 @@ th.dgrid-column-chart table {
 }
 
 .dgrid-tree-container {
--webkit-transition-duration: 0.1s;
--moz-transition-duration: 0.1s;
--ms-transition-duration: 0.1s;
--o-transition-duration: 0.1s;
-transition-duration: 0.1s;
-overflow: hidden;
+    -webkit-transition-duration: 0.1s;
+    -moz-transition-duration: 0.1s;
+    -ms-transition-duration: 0.1s;
+    -o-transition-duration: 0.1s;
+    transition-duration: 0.1s;
+    overflow: hidden;
 }
+
+#gantt .dgrid-column-id {
+    width: 40px;
+    text-align: right;
+}
+
+#gantt .dgrid-column-name {
+    width: 200px;
+}
+
+#gantt .dgrid-column-start {
+    width: 120px;
+}
+
+#gantt .dgrid-column-end {
+    width: 120px;
+}
+
+/*#gantt .dgrid-column-set-0 {*/
+/*width: 750px;*/
+/*}*/
+
+/*#gantt .dgrid-column-set-0 {*/
+/*width: 30%;*/
+/*}*/
+
+/*#gantt .dgrid-column-set-1 {*/
+/*width: 70%;*/
+/*}*/
+
+/*#gantt .dgrid-column-set-cell .dgrid-column-set-0 .dgrid-cell {*/
+/*background-color: #dedede;*/
+/*}*/
+
+/*#gantt .dgrid-row {*/
+/**/
+/*}*/
+
+/*#gantt .dgrid-column-set {*/
+    /*overflow: hidden;*/
+    /*width: 100%;*/
+    /*position: relative;*/
+    /*left: 0px;*/
+    /*float: left;*/
+/*}*/
+
+#gantt .dgrid-cell {
+    border-top: none;
+    border-bottom: none;
+}
+
+#gantt .dgrid-cell {
+    /*background-color: rgb(240, 240, 240);*/
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/*#gantt .dgrid-cell-padding {*/
+/*padding: 0px;*/
+/*}*/

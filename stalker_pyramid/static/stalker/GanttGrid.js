@@ -5,9 +5,10 @@ define([
     "dgrid/Selection",
     "dgrid/Keyboard",
     "dgrid/tree",
+    "dgrid/extensions/ColumnResizer",
     "stalker/GanttColumn"
 ], function (declare, OnDemandGrid, ColumnSet, Selection, Keyboard, tree,
-             GanttColumn) {
+             ColumnResizer, GanttColumn) {
     // module:
     //     GanttGrid
     // summary:
@@ -15,14 +16,71 @@ define([
 
     // Creates a new grid with one column set definition to display tasks & resources and a second
     // column set for the actual gantt chart
-
-    return declare([ OnDemandGrid, ColumnSet, Selection, Keyboard ], {
+    "use strict";
+    return declare([OnDemandGrid, ColumnSet, Selection, Keyboard, ColumnResizer], {
         columnSets: [
             // Column set to display task and resource
             [
                 {
-                    name: tree({ label: "Task", sortable: false }),
-                    resource: { label: "Resource", sortable: false }
+                    id: {
+                        label: "ID",
+                        sortable: false,
+                        get: function (object) {
+                            return object;
+                        },
+                        formatter: function (object) {
+                            var bg_color = object.progress >= 100 ? 'rgb(153, 255, 51)' : 'red',
+                                font_weight = 'normal';
+
+                            return '<div ' +
+                                'style="' +
+                                'font-weight: ' + font_weight + ';' +
+                                'background-color: ' + bg_color + '">' +
+                                object.id + '</div>';
+                        },
+                        resizable: true
+                    },
+                    name: tree(
+                        {
+                            label: "Name",
+                            sortable: false,
+                            get: function (object) {
+                                return object
+                            },
+                            formatter: function (object) {
+                                var font_weight = object.hasChildren ? 'bold' : 'normal';
+                                return '<div style="font-weight: ' + font_weight + '">' +
+                                    object.name +
+                                    '</div>';
+                            }
+                        }
+                    ),
+                    start: {
+                        label: 'Start',
+                        sortable: false,
+                        get: function (object) {
+                            return object;
+                        },
+                        formatter: function (object) {
+                            var start_date = new Date(object.start);
+                            return start_date.format("yyyy-mm-dd HH:MM");
+                        }
+                    },
+                    end: {
+                        label: 'End',
+                        sortable: false,
+                        get: function (object) {
+                            return object;
+                        },
+                        formatter: function (object) {
+                            var end_date = new Date(object.end);
+                            return end_date.format("yyyy-mm-dd HH:MM");
+                        }
+                    },
+                    resource: {
+                        label: "Resource",
+                        sortable: false
+                    }
                 }
             ],
 
@@ -32,9 +90,9 @@ define([
             [
                 {
                     chart: new GanttColumn({
-                        scale: 4000000,
+                        scale: 8000000,
                         start: new Date(2013, 4, 1),
-                        end: new Date(2014, 0, 1),
+                        end: new Date(2015, 0, 1),
                         sortable: false
                     })
                 }

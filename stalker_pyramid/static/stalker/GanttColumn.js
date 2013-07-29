@@ -74,7 +74,6 @@ define([
 
             // create a GanttTask instance
             var task = new GanttTask(data);
-            console.debug('task: ', task);
 
             // Ensure the start time is always milliseconds since epoch
             // and not a Date object
@@ -96,35 +95,22 @@ define([
 //                return this.name;
 //            };
 
-            console.debug('code is here 1');
-
             var taskBar;
             if (task.type === 'Project') {
-                console.debug('code is here 1a');
                 taskBar = $(templates.projectBar(task));
-                console.debug('code is here 1b');
             } else if (task.type === 'Task' || task.type === 'Asset' ||
                        task.type === 'Shot' || task.type === 'Sequence') {
-                console.debug('code is here 1c');
-                if (task.hasChildren){
+                if (task.hasChildren) {
                     taskBar = $(templates.parentTaskBar(task));
                 } else {
                     taskBar = $(templates.taskBar(task));
                 }
-                console.debug('code is here 1d');
             }
             taskBar.css({
                 left: left,
                 width: width
             });
             $(td).append(taskBar);
-
-            console.debug('code is here 2');
-            console.debug('taskBar: ', taskBar);
-            console.debug('code is here 3a');
-            console.debug('td : ', td);
-            console.debug('code is here 3b');
-
 
             // Create the overlay for the amount of the task that has been completed
             //var completeBar = put(td, "span.completed-bar[style=left:" + left + "px;width:" + width * object.completed + "px]");
@@ -208,22 +194,27 @@ define([
             //
             // here we render the header for the gantt chart, this will be a row of dates
             // with days of the week in a row underneath
-            var table = put(th, "table");
+
+            // calculate table width
+            var table_width = (column.end - column.start) / column.scale;
+
+            var table = put(th, "table[style=width:" + table_width + "px]");
+
             // Create the date row
-            var dateRow = put(table, "tr");
+            var dateRow = put(table, "tr[style=table-layout:fixed]");
+
             // start at the time indicated by the column
             var date = new Date(column.start);
             var lastDay = 7;
+
             // now we iterate through the time span, incrementing by date
             while (date.getTime() < column.end) {
                 // each time a new week is started, we write a new date for the week
                 if (date.getDay() < lastDay) {
-                    // create the cell
-                    put(dateRow, "td[style=width:" + (lastDay - date.getDay()) * 86400000 / column.scale + "px]", {
+                    put(dateRow, "td[style=width:" + (lastDay - date.getDay()) * 86400000 / column.scale + "px;overflow:hidden;text-overflow:clip;white-space:nowrap;]", {
                         innerHTML: lastDay - date.getDay() > 2 ? locale.format(date, {selector: "date"}) : "",
                         colSpan: lastDay - date.getDay()
                     });
-
                 }
                 // get the day of the week before incrementing
                 lastDay = date.getDay() + 1;
@@ -234,7 +225,7 @@ define([
             // restart the time iteration, and iterate again
             date = new Date(column.start);
             while (date.getTime() < column.end) {
-                put(dayRow, "td[style=width:" + (86400000) / column.scale + "px]", {
+                put(dayRow, "td[style=width:" + (86400000) / column.scale + "px;overflow:hidden;text-overflow:clip;white-space:nowrap;]", {
                     innerHTML: locale.format(date, {selector: "date", datePattern: "EEE"}).substring(0, 1)
                 });
 
