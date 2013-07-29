@@ -1,9 +1,10 @@
 define([
+    'dojo/dom-construct',
     "dojo/_base/array",
     "dojo/date/locale",
     "put-selector/put",
     'stalker/GanttTask'
-], function (array, locale, put, GanttTask) {
+], function (domConstruct, array, locale, put, GanttTask) {
     // module:
     //     ganttColumn
     // summary:
@@ -187,6 +188,17 @@ define([
 //            }, 0);
         };
 
+        column.refresh = function () {
+            // summary:
+            //     Refreshes the header cell
+            // remove the header contents
+            domConstruct.empty(column.headerNode);
+            column.renderHeaderCell(column.headerNode);
+
+            // let it adjust the scrollbars
+            column.grid.resize();
+        };
+
         column.renderHeaderCell = function (th) {
             // summary:
             //     Creates a header cell that contains the dates corresponding to the time lines that are being rendered in the main content
@@ -194,19 +206,19 @@ define([
             //
             // here we render the header for the gantt chart, this will be a row of dates
             // with days of the week in a row underneath
+            console.debug('inside column.renderHeaderCell');
 
             // calculate table width
             var table_width = (column.end - column.start) / column.scale;
-
             var table = put(th, "table[style=width:" + table_width + "px]");
 
             // Create the date row
             var dateRow = put(table, "tr[style=table-layout:fixed]");
-
+            
             // start at the time indicated by the column
             var date = new Date(column.start);
             var lastDay = 7;
-
+            
             // now we iterate through the time span, incrementing by date
             while (date.getTime() < column.end) {
                 // each time a new week is started, we write a new date for the week
@@ -231,6 +243,13 @@ define([
 
                 date = new Date(date.getTime() + 86400000); // increment a day
             }
+
+            // fix scrolling
+            column.grid.addCssRule(".dgrid-column-chart", "width: " + (column.end - column.start) / column.scale + "px");
+
+            // render today
+            var today_as_millis = (new Date(2013, 5, 9)).getTime();
+            put(th, "div.today[style=left:" + (today_as_millis - column.start) / column.scale + "px;]");
         };
 
         return column;

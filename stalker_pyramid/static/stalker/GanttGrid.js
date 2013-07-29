@@ -5,10 +5,9 @@ define([
     "dgrid/Selection",
     "dgrid/Keyboard",
     "dgrid/tree",
-    "dgrid/extensions/ColumnResizer",
     "stalker/GanttColumn"
 ], function (declare, OnDemandGrid, ColumnSet, Selection, Keyboard, tree,
-             ColumnResizer, GanttColumn) {
+             GanttColumn) {
     // module:
     //     GanttGrid
     // summary:
@@ -17,7 +16,7 @@ define([
     // Creates a new grid with one column set definition to display tasks & resources and a second
     // column set for the actual gantt chart
     "use strict";
-    return declare([OnDemandGrid, ColumnSet, Selection, Keyboard, ColumnResizer], {
+    return declare([OnDemandGrid, ColumnSet, Selection, Keyboard], {
         columnSets: [
             // Column set to display task and resource
             [

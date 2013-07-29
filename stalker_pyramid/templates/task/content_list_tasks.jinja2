@@ -66,7 +66,8 @@
 </div>
 
 <div style='width:100%; height: 94%; position: absolute; margin-top: 30px;'>
-    <div id="gantt" style="position: static;"></div>
+{#    <div id="gantt" style="position: static;"></div>#}
+    <div id="gantt"></div>
 {#    <div id="gantt" ></div>#}
 </div>
 
@@ -118,7 +119,6 @@
         var tasks_memory_store = new Memory();
 
         {% if entity.entity_type == 'User' %}
-            console.debug('entity_type is User');
             target = 'users/{{ entity.id }}/tasks/';
         {% endif %}
 
@@ -126,11 +126,9 @@
         tasks_jsonRest_store = new JsonRest({
             target: target,
             getChildren: function(parent, options){
-                console.debug('getting children of : ', parent.id);
                 return this.query({parent_id: parent.id}, options);
             },
             mayHaveChildren: function(parent){
-                console.debug('may have children is running for : ', parent.id);
                 return parent.hasChildren;
             }
         });
@@ -147,10 +145,11 @@
             },
             loadingMessage: "<div style='float: left' class='dijitIconLoading'>&nbsp</div><div>Loading</div>",
             noDataMessage: "",
-            minRowsPerPage: 1
+{#            minRowsPerPage: 1#}
         }, 'gantt');
         gantt_chart.startup();
 
+        gantt_chart._processScroll();
 
         var loadGanttFromServer = function(){};
 
@@ -279,32 +278,48 @@
         var refresh_button = new Button({
             label: 'Refresh',
             onClick: function () {
-                var current_grid_mode = ge.grid_mode;
-                var current_gantt_mode = ge.gantt_mode;
+{#                var current_grid_mode = ge.grid_mode;#}
+{#                var current_gantt_mode = ge.gantt_mode;#}
+{##}
+{#                var desired_grid_mode = grid_mode_filteringSelect.value;#}
+{#                var desired_gantt_mode = gantt_mode_filteringSelect.value;#}
+{##}
+{#                var mode_changed = false;#}
+{#                if (current_grid_mode != desired_grid_mode){#}
+{#                    mode_changed = true;#}
+{#                }#}
+{##}
+{#                if (current_gantt_mode != desired_gantt_mode){#}
+{#                    mode_changed = true;#}
+{#                }#}
+{##}
+{#                if (mode_changed){#}
+{#                    ge.changeMode(desired_grid_mode, desired_gantt_mode);#}
+{#                    if (desired_gantt_mode='TimeLog'){#}
+{#                        createTimeLogToolTips();#}
+{#                    }#}
+{#                } else {#}
+{#                    ge.gantt.refreshGantt({#}
+{#                        start: start_dateTextBox.getValue().getTime(),#}
+{#                        end: end_dateTextBox.getValue().getTime()#}
+{#                    });#}
+{#                }#}
+                
+                var start = start_dateTextBox.getValue().getTime();
+                var end =  end_dateTextBox.getValue().getTime();
 
-                var desired_grid_mode = grid_mode_filteringSelect.value;
-                var desired_gantt_mode = gantt_mode_filteringSelect.value;
+                var gantt_column = gantt_chart.columnSets[1][0][0];
+                gantt_column.start = start;
+                gantt_column.end = end;
+                console.debug('gantt_chart                   : ', gantt_chart);
+                console.debug('gantt_column                  : ', gantt_column);
 
-                var mode_changed = false;
-                if (current_grid_mode != desired_grid_mode){
-                    mode_changed = true;
-                }
+{#                dojo.domManip.deleteElement(gantt_column.header_node);#}
 
-                if (current_gantt_mode != desired_gantt_mode){
-                    mode_changed = true;
-                }
+{#                gantt_column.renderHeaderCell(query('#ganttChart dgrid-column-set-cell dgrid-column-set-1'));#}
+                gantt_column.refresh();
+                gantt_chart.refresh();
 
-                if (mode_changed){
-                    ge.changeMode(desired_grid_mode, desired_gantt_mode);
-                    if (desired_gantt_mode='TimeLog'){
-                        createTimeLogToolTips();
-                    }
-                } else {
-                    ge.gantt.refreshGantt({
-                        start: start_dateTextBox.getValue().getTime(),
-                        end: end_dateTextBox.getValue().getTime()
-                    });
-                }
             }
         }, 'list_tasks_refresh_button');
         refresh_button.startup();
