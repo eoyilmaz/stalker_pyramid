@@ -375,6 +375,20 @@ th.dgrid-column-chart table {
     width: 200px;
 }
 
+#gantt .dgrid-column-timing {
+    width: 45px;
+}
+
+#gantt .dgrid-column-timing {
+    width: 60px;
+    text-align: center;
+}
+
+#gantt .dgrid-column-complete {
+    width: 50px;
+    text-align: right;
+}
+
 #gantt .dgrid-column-start {
     width: 120px;
 }
@@ -383,9 +397,6 @@ th.dgrid-column-chart table {
     width: 120px;
 }
 
-#gantt .dgrid-column-timing {
-    width: 45px;
-}
 
 
 #gantt .dgrid-column-set-0 {

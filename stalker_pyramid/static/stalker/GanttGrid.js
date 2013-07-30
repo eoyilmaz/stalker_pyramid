@@ -33,7 +33,11 @@ define([
             37: function () {  // left arrow
                 var obj;
                 for (obj in this.selection) {
-                    this.expand(obj, false);
+//                    if (obj.hasChildren) {
+                        this.expand(obj, false);
+//                    } else {
+//                        this.select(obj.parent);
+//                    }
                 }
             },
             65: function () { // "a"
@@ -103,6 +107,80 @@ define([
                             }
                         }
                     ),
+                    resource: {
+                        label: "Resource",
+                        sortable: false,
+                        get: function (object) {
+                            return object;
+                        },
+                        formatter: function (object) {
+                            var ret = '', i, resource;
+                            if (object.resources) {
+                                for (i = 0; i < object.resources.length; i++) {
+                                    resource = object.resources[i];
+                                    ret = ret + (ret === "" ? "" : ", ") + templates.resourceLink(resource);
+                                }
+                            }
+                            return ret;
+                        }
+                    },
+                    timing: {
+                        label: 'Timing',
+                        sortable: false,
+                        get: function (object) {
+                            return object;
+                        },
+                        formatter: function (object) {
+
+                            // map time unit names
+                            var time_unit_names = {
+                                'h': 'Hour',
+                                'd': 'Day',
+                                'w': 'Week',
+                                'm': 'Month',
+                                'y': 'Year'
+                            };
+
+                            var timing = '';
+                            if (!object.hasChildren) {
+                                // do not add schedule model if it is the default (effort)
+                                if (object.schedule_model !== 'effort') {
+                                    timing += object.schedule_model.toUpperCase()[0] + ': ';
+                                }
+                                if (Math.floor(object.schedule_timing) === object.schedule_timing){
+                                    timing += object.schedule_timing;
+                                } else {
+                                    timing += (object.schedule_timing).toFixed(1);
+                                }
+                                
+                                timing += ' ' + time_unit_names[object.schedule_unit];
+
+                                // make it plural
+                                if (object.schedule_timing > 1) {
+                                    timing += 's';
+                                }
+                            }
+                            return timing;
+                        }
+                    },
+                    complete: {
+                        label: '% Compl.',
+                        sortable: false,
+                        get: function (object) {
+                            return object;
+                        },
+                        formatter: function (object) {
+                            var p_complete = object.total_logged_seconds / object.schedule_seconds * 100;
+                            // check if it has a floating part
+                            if (Math.floor(p_complete) === p_complete) {
+                                // it is an integer do not fix it
+                                return p_complete + '%';
+                            } else {
+                                // it is a float fix it
+                                return p_complete.toFixed(1) + '%';
+                            }
+                        }
+                    },
                     start: {
                         label: 'Start',
                         sortable: false,
@@ -123,37 +201,6 @@ define([
                         formatter: function (object) {
                             var end_date = new Date(object.end);
                             return end_date.format("yyyy-mm-dd HH:MM");
-                        }
-                    },
-                    timing: {
-                        label: 'Timing',
-                        sortable: false,
-                        get: function (object) {
-                            return object;
-                        },
-                        formatter: function (object) {
-                            var timing = '';
-                            if (!object.hasChildren) {
-                                timing = object.schedule_model.toUpperCase()[0] + ': ' + object.schedule_timing + object.schedule_unit;
-                            }
-                            return timing;
-                        }
-                    },
-                    resource: {
-                        label: "Resource",
-                        sortable: false,
-                        get: function (object) {
-                            return object;
-                        },
-                        formatter: function (object) {
-                            var ret = '', i, resource;
-                            if (object.resources) {
-                                for (i = 0; i < object.resources.length; i++) {
-                                    resource = object.resources[i];
-                                    ret = ret + (ret === "" ? "" : ", ") + templates.resourceLink(resource);
-                                }
-                            }
-                            return ret;
                         }
                     }
                 }
