@@ -23,8 +23,7 @@ import logging
 from pyramid.httpexceptions import HTTPOk
 from pyramid.view import view_config
 
-from stalker import User, Ticket, Entity, Project, Status
-
+from stalker import User, Ticket, Entity, Project, Status, SimpleEntity, Task
 
 from stalker.db import DBSession
 from stalker_pyramid.views import (get_logged_in_user, PermissionChecker,
@@ -262,6 +261,39 @@ def get_tickets(request):
     # if entity.tickets:
     for ticket in entity.tickets:
 
+        assert isinstance(ticket, Ticket)
+        ticket_data.append({
+            'id': ticket.id,
+            'name': ticket.name,
+            'project_id': ticket.project_id,
+            'project_name': ticket.project.name,
+            'owner_id': ticket.owner_id,
+            'owner_name': 'owner',
+            'created_by_id': ticket.created_by_id,
+            'created_by_name': ticket.created_by.name
+        })
+
+    return ticket_data
+
+
+@view_config(
+    route_name='get_task_tickets',
+    renderer='json'
+)
+def get_task_tickets(request):
+    """returns all the Shots of the given Project
+    """
+    entity_id = request.matchdict['entity_id']
+
+    logger.debug('*******************************')
+    logger.debug('get_task_tickets is running')
+
+    logger.debug('entity_id : %s' % entity_id)
+
+    ticket_data = []
+    tickets = Ticket.query.join(Ticket.links, Task).filter(Task.id == entity_id).all()
+
+    for ticket in tickets:
         assert isinstance(ticket, Ticket)
         ticket_data.append({
             'id': ticket.id,

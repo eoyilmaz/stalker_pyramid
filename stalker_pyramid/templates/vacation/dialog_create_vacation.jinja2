@@ -92,6 +92,7 @@ require([
 
     'dijit/form/ComboBox',
     'dijit/form/Button',
+    'dijit/form/TextBox',
     'dijit/form/SimpleTextarea',
     'dijit/form/NumberSpinner',
     'dijit/form/CheckBox',
@@ -105,9 +106,9 @@ require([
     'stalker/util',
 
     'dojo/domReady!'
-], function (Form, TextBox, FilteringSelect,ComboBox, Button, SimpleTextarea,
-             NumberSpinner, CheckBox, DateTextBox, TimeTextBox, Memory, stamp,
-             submitForm, util) {
+], function (Form, TextBox, FilteringSelect, ComboBox, Button, TextBox,
+             SimpleTextarea, NumberSpinner, CheckBox, DateTextBox, TimeTextBox,
+             Memory, stamp, submitForm, util) {
     // ********************************************************************
     // Generate default values
     var url;
@@ -142,6 +143,8 @@ require([
 
     {% endif %}
 
+
+
     // ****************************************************************
     // Form
     var vacation_form = new Form({}, 'vacation_form');
@@ -163,36 +166,52 @@ require([
     var type_memory = new Memory({
         data: [
             {% for type_ in types %}
-                {
-                    id: '{{ type_.id }}',
-                    name: '{{type_.name}}'
-                },
+                {% if type_.name != 'StudioWide' %}
+                    {
+                        id: '{{ type_.id }}',
+                        name: '{{type_.name}}'
+                    },
+                {% endif %}
             {% endfor %}
         ]
     });
 
+    var type_box
 
-    var type_widget_type;
-    var type_place_holder;
+    {% if type != 'StudioWide' %}
+        var type_widget_type;
+        var type_place_holder;
 
-    {% if has_permission('Create_Type') %}
-        type_widget_type = ComboBox;
-        type_place_holder = 'Enter A New Type or Select A Type';
+        {% if has_permission('Create_Type') %}
+            type_widget_type = ComboBox;
+            type_place_holder = 'Enter A New Type or Select A Type';
+        {% else %}
+            type_widget_type = FilteringSelect;
+            type_place_holder = 'Select A Type';
+        {% endif %}
+
+        type_box = new type_widget_type({
+            name: 'type_name',
+            required: true,
+            store: type_memory,
+            placeHolder: type_place_holder,
+            value: type_name
+        }, 'vacation_type');
+        type_box.startup();
+
+        type_box.attr('value', type_name);
+
     {% else %}
-        type_widget_type = FilteringSelect;
-        type_place_holder = 'Select A Type';
+        type_name = '{{ type }}'
+
+        var type_box = new TextBox({
+            name: 'type_name',
+            value: type_name,
+            disabled: true
+        }, 'vacation_type');
+        type_box.startup();
+
     {% endif %}
-
-    var type_comboBox = new type_widget_type({
-        name: 'type_name',
-        required: true,
-        store: type_memory,
-        placeHolder: type_place_holder,
-        value: type_name
-    }, 'vacation_type');
-    type_comboBox.startup();
-
-    type_comboBox.attr('value', type_name);
 
 
     // ****************************************************************
@@ -212,7 +231,7 @@ require([
     // Time
     var start_time_timeTextBox = new TimeTextBox({
         name: 'start_time',
-{#        value: start_time_value,#}
+        {#        value: start_time_value,#}
         style: 'width: 85px;',
         constraints: {
             timePattern: 'HH:mm:ss',
@@ -243,7 +262,7 @@ require([
     // Time
     var end_time_timeTextBox = new TimeTextBox({
         name: 'end_time',
-{#        value: end_time_value,#}
+        {#        value: end_time_value,#}
         style: 'width: 85px',
         constraints: {
             timePattern: 'HH:mm:ss',
@@ -293,6 +312,14 @@ require([
             console.debug('start_datetime_value :', start_datetime_value);
             console.debug('end_datetime_value   :', end_datetime_value);
 
+
+            {% if type != 'StudioWide' %}
+                if (type_box.get('value') == 'StudioWide') {
+                    alert('You can not create a vacation with type StudioWide ');
+                    return;
+                }
+            {% endif %}
+
             submitForm({
                 dialog: dialog,
                 form: vacation_form,
@@ -302,7 +329,12 @@ require([
                     {% if mode == 'UPDATE' %}
                         vacation_id: '{{ vacation.id }}',
                     {% endif %}
-                    user_id: '{{user.id }}'
+                    {% if type != 'StudioWide' %}
+                        user_id: '{{user.id }}'
+                    {% else %}
+                        user_id: '{{studio.id }}'
+                    {% endif %}
+
                 },
                 url: url,
                 method: 'POST'

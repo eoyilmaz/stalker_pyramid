@@ -51,6 +51,16 @@
                 </td>
             </tr>
 
+            {# TASKS #}
+            <tr>
+                <td class='label_column'>
+                    <label for='tasks_tagSelect'>Tasks</label>
+                </td>
+                <td class='input_column'>
+                    <div id='tasks_tagSelect'></div>
+                </td>
+            </tr>
+
             {# STATUS #}
             <tr>
                 <td class='label_column'>
@@ -84,6 +94,8 @@ require([
     'dijit/form/FilteringSelect',
     'dijit/form/ComboBox',
     'dijit/form/Button',
+    'stalker/Tag',
+    'stalker/TagSelect',
     'stalker/dialogs',
     'stalker/submitForm',
     'stalker/fieldUpdater',
@@ -91,25 +103,26 @@ require([
     'stalker/dialogCaller',
     'dojo/domReady!'],
         function (Memory, JsonRest, Form, ValidationTextBox, TextBox,
-                  FilteringSelect, ComboBox, Button, dialogs, submitForm,
-                  fieldUpdater, dialogCreator, dialogCaller) {
+                  FilteringSelect, ComboBox, Button, Tag, TagSelect, dialogs,
+                  submitForm, fieldUpdater, dialogCreator, dialogCaller) {
 
             // ********************************************************************
             // Generate default values
             var url;
             var description;
             var ticket_id;
-            var project_id;
+            var project_id = '{{ entity.project_id }}';
             var owner_id;
-            var owner_memory_target;
+            var owner_memory_target = '/get/users';
 
 
             {% if entity.entity_type == 'Project' %}
                 project_id = '{{ entity.id }}';
-                owner_memory_target = '/get/users_byEntity/'+project_id;
+                owner_memory_target = '/get/users_byEntity/' + project_id;
             {% elif entity.entity_type == 'User' %}
                 owner_id = '{{ entity.id }}';
-                owner_memory_target = '/get/users'
+                project_id = null;
+
             {% endif %}
 
             {# fill values based on the dialog mode #}
@@ -168,14 +181,13 @@ require([
             var project_field_updater = fieldUpdater({
                 'memory': project_memory,
                 'widget': project_select,
-                {% if entity.entity_type == 'Project'%}
+                {% if entity.entity_type != 'User'%}
                     'selected': project_id
                 {% endif %}
             });
 
             // Fill Widget
             project_field_updater();
-
 
 
             // ****************************************************************
@@ -208,7 +220,29 @@ require([
             // Fill Widget
             owner_field_updater();
 
-             // ****************************************************************
+            //*****************************************************************
+            // ********************************************************************
+            // Resources
+            var tasks_jsonRest = new JsonRest({
+                //target: '/get/project_tasks/' + project_id
+              target: '{{ request.route_url('get_project_tasks', project_id=entity.project_id ) }}'
+            });
+
+            var tasks_tagSelect = new TagSelect({
+                id: 'tasks_tagSelect',
+                name: 'tasks_ids',
+                required: true,
+                {#          style: 'width: 100%'#}
+            }, 'tasks_tagSelect');
+            tasks_tagSelect.startup();
+
+            var tasks_result = tasks_jsonRest.query().then(function (data) {
+                alert('data');
+                var tasks_memory = new Memory({data: data});
+                tasks_tagSelect.set('store', tasks_memory);
+                tasks_tagSelect.set('value', [{{ entity.id }}]);
+            });
+            //****************************************************************
             // Status
             //
             // The Memory
@@ -310,6 +344,7 @@ require([
             ticket_form.startup();
 
 
-        });
+        })
+;
 </script>
 

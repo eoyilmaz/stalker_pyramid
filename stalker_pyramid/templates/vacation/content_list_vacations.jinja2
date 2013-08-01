@@ -77,7 +77,13 @@
                 content_creator: dialogs.create_vacation_dialog,
                 attach_to: 'create_vacation_button',
                 related_field_updater: vacations_DataGrid_updater,
-                data_id: '{{ user.id }}'
+                {% if not studio %}
+                    data_id: '{{ user.id }}'
+                {% else %}
+                    data_id: '{{ studio.id }}'
+                {% endif %}
+
+
             });
             create_vacation_button.startup();
 
@@ -94,9 +100,23 @@
                 target: '/get/vacations/{{ user.id }}'
             });
 
+
             vacation_memory.query().then(function (data) {
 
                 vacationData = data;
+
+                {% if studio %}
+
+                    for (var i = 0; i < vacationData.length; i++) {
+
+                        if (vacationData[i].type != 'StudioWide') {
+
+                            vacationData.splice(i, 1);
+
+                        }
+
+                    }
+                {% endif %}
 
                 var columns = [
 
@@ -142,7 +162,7 @@
                     }
                 ];
 
-                vacations_DataGrid.renderArray(data);
+                vacations_DataGrid.renderArray(vacationData);
                 vacations_DataGrid.set('columns', columns);
 
 
