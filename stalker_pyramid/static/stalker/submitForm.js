@@ -79,16 +79,21 @@ define(['dojo/request/xhr', 'dojo/_base/lang'],
                 );
                 
                 deferred.then(function () {
+                    console.debug('code is here 1');
                     // update the caller dialog
                     var related_field_updater = dialog.get(
                         'related_field_updater'
                     );
-                    if (related_field_updater != null) {
+                    console.debug('code is here 2');
+                    if (related_field_updater !== null) {
                         related_field_updater();
                     }
+                    console.debug('code is here 3');
                     // destroy the dialog
                     dialog.reset();
+                    console.debug('code is here 4');
                     dialog.destroyRecursive();
+                    console.debug('code is here 5');
                 }, function (err) {
                     // Do something when the process errors out
                     console.error(err);

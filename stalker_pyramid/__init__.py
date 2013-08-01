@@ -23,7 +23,7 @@ Animation and VFX Studios. See docs for more information.
 """
 from zope.sqlalchemy import ZopeTransactionExtension
 
-__version__ = '0.1.0.b1'
+__version__ = '0.1.0.b2'
 
 
 # before anything about stalker create the defaults
@@ -306,16 +306,24 @@ def main(global_config, **settings):
                      'list/tasks/{entity_id}')
 
     config.add_route('get_entity_tasks', 'get/entity/tasks/{entity_id}')
-    config.add_route('get_user_tasks', 'get/user/tasks/{user_id}')
+
     config.add_route('get_project_tasks', 'get/project/tasks/{project_id}')
     config.add_route('get_root_tasks',
                      'get/root/tasks/{project_id}') # TODO: fix this
 
     config.add_route('get_gantt_tasks', 'get/gantt/tasks/{entity_id}')
+    config.add_route('get_gantt_task_children', 'get/gantt/task/children/{entity_id}')
 
     config.add_route('auto_schedule_tasks', 'auto_schedule_tasks')
     config.add_route('view_task_nav_bar',
                      'view/task_nav_bar/{entity_id}')# TODO: this same with view_entity_nav_bar find a solution to merge them.
+
+    # RESTful test
+    # config.add_route('get_users', 'users/')
+    config.add_route('get_user_tasks', 'users/{user_id}/tasks/')
+    config.add_route('get_tasks', 'tasks/')
+    config.add_route('get_task', 'tasks/{task_id}')
+    config.add_route('get_task_children', 'tasks/{task_id}/children/')
 
     # *************************************************************************
     # TimeLog
@@ -332,7 +340,7 @@ def main(global_config, **settings):
     config.add_route('list_time_logs',
                      'list/time_logs/{entity_id}') # returns response
 
-      # *************************************************************************
+    # *************************************************************************
     # Ticket
     config.add_route('dialog_create_ticket',
                      'dialog/create/ticket/{entity_id}')

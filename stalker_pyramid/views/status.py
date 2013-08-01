@@ -19,14 +19,11 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 import datetime
 
-from pyramid.httpexceptions import HTTPServerError, HTTPOk
-from pyramid.security import authenticated_userid
+from pyramid.httpexceptions import HTTPOk
 from pyramid.view import view_config
-from sqlalchemy.exc import IntegrityError
-import transaction
 
 from stalker.db import DBSession
-from stalker import User, Status, StatusList, EntityType
+from stalker import Status, StatusList, EntityType
 
 import logging
 from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
@@ -64,7 +61,7 @@ def dialog_update_status(request):
     """
     status_id = request.matchdict['status_id']
     status = Status.query.filter_by(id=status_id).first()
-    
+
     return {
         'mode': 'UPDATE',
         'has_permission': PermissionChecker(request),
@@ -79,13 +76,13 @@ def create_status(request):
     """creates a new Status
     """
     logged_in_user = get_logged_in_user(request)
-    
+
     # get parameters
     name = request.params.get('name')
     code = request.params.get('code')
     bg_color = get_color_as_int(request, 'bg_color')
     fg_color = get_color_as_int(request, 'fg_color')
-    
+
     if name and code:
         new_status = Status(
             name=name,
@@ -95,7 +92,7 @@ def create_status(request):
             created_by=logged_in_user,
         )
         DBSession.add(new_status)
-    
+
     return HTTPOk()
 
 
@@ -106,17 +103,17 @@ def update_status(request):
     """updates a status
     """
     logged_in_user = get_logged_in_user(request)
-    
+
     # get parameters
     name = request.params.get('name')
     code = request.params.get('code')
     bg_color = get_color_as_int(request, 'bg_color')
     fg_color = get_color_as_int(request, 'fg_color')
-    
+
     # just update the given Status
     st_id = request.matchdict['status_id']
     status = Status.query.filter_by(id=st_id).first()
-    
+
     if status and name and code:
         status.name = name
         status.code = code
@@ -125,7 +122,7 @@ def update_status(request):
         status.updated_by = logged_in_user
         status.date_updated = datetime.datetime.now()
         DBSession.add(status)
-    
+
     return HTTPOk()
 
 
@@ -134,7 +131,7 @@ def update_status(request):
 # Status List Dialogs
 #
 # *******************
- 
+
 @view_config(
     route_name='dialog_create_status_list',
     renderer='templates/status/dialog_create_status_list.jinja2'
@@ -147,7 +144,7 @@ def dialog_create_status_list(request):
     """fills the create status_list dialog
     """
     target_entity_type = request.matchdict.get('target_entity_type')
-    
+
     return {
         'mode': 'CREATE',
         'has_permission': PermissionChecker(request),
@@ -162,11 +159,10 @@ def dialog_create_status_list(request):
     renderer='templates/status/dialog_create_status_list.jinja2'
 )
 def dialog_update_status_list(request):
-    
     target_entity_type = request.matchdict.get('target_entity_type')
-    status_list = StatusList.query\
+    status_list = StatusList.query \
         .filter_by(target_entity_type=target_entity_type).first()
-    
+
     return {
         'mode': 'UPDATE',
         'has_permission': PermissionChecker(request),
@@ -189,15 +185,15 @@ def create_status_list(request):
     """creates a StatusList
     """
     logged_in_user = get_logged_in_user(request)
-    
+
     # get parameters
     name = request.params.get('name')
     target_entity_type = request.params.get('target_entity_type')
-    
+
     # get statuses
     st_ids = get_multi_integer(request, 'status_ids')
     statuses = Status.query.filter(Status.id.in_(st_ids)).all()
-    
+
     if name and target_entity_type:
         new_status_list = StatusList(
             name=name,
@@ -205,9 +201,10 @@ def create_status_list(request):
             statuses=statuses,
             created_by=logged_in_user
         )
-        DBSession.add(new_status_list)  
-    
+        DBSession.add(new_status_list)
+
     return HTTPOk()
+
 
 @view_config(
     route_name='update_status_list'
@@ -216,29 +213,29 @@ def update_status_list(request):
     """called when updating a StatusList
     """
     logged_in_user = get_logged_in_user(request)
-    
+
     name = request.params.get('name')
-    
+
     status_list_id = request.params.get('status_list_id')
     status_list = StatusList.query.filter_by(id=status_list_id).first()
-    
+
     st_ids = get_multi_integer(request, 'status_ids')
     statuses = Status.query.filter(Status.id.in_(st_ids)).all()
-    
+
     logger.debug('st_ids   : %s' % st_ids)
     logger.debug('statuses : %s' % statuses)
-    
+
     if status_list and name:
         status_list.name = name
         status_list.statuses = statuses
-        
+
         logger.debug('status_list.statuses : %s' % status_list.statuses)
-        
+
         status_list.updated_by = logged_in_user
         status_list.date_updated = datetime.datetime.now()
-        
+
         DBSession.add(status_list)
-    
+
     return HTTPOk()
 
 
@@ -271,10 +268,11 @@ def get_statuses_of(request):
     return [
         {
             'id': status.id,
-            'name': status.name + " (" + status.code+ ")"
+            'name': status.name + " (" + status.code + ")"
         }
         for status in status_list.statuses
     ]
+
 
 @view_config(
     route_name='get_statuses_for',
@@ -284,15 +282,17 @@ def get_statuses_for(request):
     """returns the Statuses of given StatusList
     """
     status_list_type = request.matchdict['target_entity_type']
-    status_list = StatusList.query.filter_by(target_entity_type=status_list_type).first()
+    status_list = StatusList.query.filter_by(
+        target_entity_type=status_list_type).first()
 
     return [
         {
             'id': status.id,
-            'name': status.name + " (" + status.code+ ")"
+            'name': status.name + " (" + status.code + ")"
         }
         for status in status_list.statuses
     ] if status_list else []
+
 
 @view_config(
     route_name='get_status_lists',
@@ -323,6 +323,6 @@ def get_status_lists_for(request):
             'name': status_list.name,
         }
         for status_list in StatusList.query
-            .filter_by(target_entity_type=request.matchdict['target_entity_type'])
-            .all()
+        .filter_by(target_entity_type=request.matchdict['target_entity_type'])
+        .all()
     ]

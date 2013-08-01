@@ -25,7 +25,7 @@ import datetime
 
 from pyramid.httpexceptions import HTTPServerError, HTTPOk
 from pyramid.view import view_config
-from pyramid.response import  Response, FileResponse
+from pyramid.response import Response, FileResponse
 from pyramid.security import has_permission, authenticated_userid
 import transaction
 
@@ -39,10 +39,11 @@ logger.setLevel(log.logging_level)
 class PermissionChecker(object):
     """Helper class for permission check
     """
+
     def __init__(self, request):
         self.has_permission = has_permission
         self.request = request
-    
+
     def __call__(self, perm):
         return self.has_permission(perm, self.request.context, self.request)
 
@@ -55,7 +56,7 @@ def log_param(request, param):
 
 
 @view_config(
-   context=HTTPServerError 
+    context=HTTPServerError
 )
 def server_error(exc, request):
     msg = exc.args[0] if exc.args else ''
@@ -167,13 +168,13 @@ def get_tags(request):
     tag_names = request.POST.getall('tag_names')
     for tag_name in tag_names:
         logger.debug('tag_name %s' % tag_name)
-        tag = Tag.query.filter(Tag.name==tag_name).first()
+        tag = Tag.query.filter(Tag.name == tag_name).first()
         if not tag:
             logger.debug('new tag is created %s' % tag_name)
             tag = Tag(name=tag_name)
             DBSession.add(tag)
         tags.append(tag)
-        
+
     return tags
 
 
@@ -202,7 +203,7 @@ def upload_file_to_server(request, file_param_name):
     filename = file_param.filename
     extension = os.path.splitext(filename)[1]
     input_file = file_param.file
-    
+
     logger.debug('file_param : %s' % file_param)
     logger.debug('filename   : %s' % filename)
     logger.debug('extension  : %s' % extension)
@@ -220,7 +221,7 @@ def upload_file_to_server(request, file_param_name):
         first_folder,
         second_folder
     )
-    
+
     file_full_path = os.path.join(
         file_path,
         new_filename
@@ -228,15 +229,16 @@ def upload_file_to_server(request, file_param_name):
 
     # write down to a temp file first
     temp_file_path = file_full_path + '~'
-    
+
     # create folders
     os.makedirs(file_path)
 
-    output_file = open(temp_file_path, 'wb') # TODO: guess ascii or binary mode    
+    output_file = open(temp_file_path,
+                       'wb') # TODO: guess ascii or binary mode    
 
     input_file.seek(0)
     while True: # TODO: use 'with'
-        data = input_file.read(2<<16)
+        data = input_file.read(2 << 16)
         if not data:
             break
         output_file.write(data)
@@ -244,17 +246,18 @@ def upload_file_to_server(request, file_param_name):
 
     # data is written completely, rename temp file to original file
     os.rename(temp_file_path, file_full_path)
-    
+
     # create a Link instance and return it
     new_link = Link(
-        full_path= file_full_path,
+        full_path=file_full_path,
         original_filename=filename,
         created_by=get_logged_in_user(request)
     )
     DBSession.add(new_link)
     transaction.commit()
-    
+
     return new_link
+
 
 @view_config(
     route_name='dialog_upload_thumbnail',
@@ -265,10 +268,10 @@ def dialog_upload_thumbnail(request):
     """
     entity_id = request.matchdict.get('entity_id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
-    
+
     logger.debug('entity_id : %s' % entity_id)
     logger.debug('entity    : %s' % entity)
-    
+
     return {
         'entity': entity,
         'has_permission': PermissionChecker(request)
@@ -292,7 +295,7 @@ def upload_thumbnail(request):
     else:
         # store the link object
         DBSession.add(new_link)
-        
+
         return {
             'file': new_link.full_path,
             'name': new_link.original_filename,
@@ -311,22 +314,21 @@ def assign_thumbnail(request):
     """
     link_id = request.params.get('link_id', -1)
     entity_id = request.params.get('entity_id', -1)
-    
+
     link = Link.query.filter_by(id=link_id).first()
     entity = Entity.query.filter_by(id=entity_id).first()
-    
+
     logger.debug('link_id   : %s' % link_id)
     logger.debug('link      : %s' % link)
     logger.debug('entity_id : %s' % entity_id)
     logger.debug('entity    : %s' % entity)
-    
+
     if entity and link:
         entity.thumbnail = link
         DBSession.add(entity)
         DBSession.add(link)
-    
-    return HTTPOk()
 
+    return HTTPOk()
 
 
 @view_config(
@@ -336,39 +338,40 @@ def serve_files(request):
     """serves files in the stalker server side storage
     """
     partial_file_path = request.matchdict['partial_file_path']
-    
+
     logger.debug('partial_file_path : %s' % partial_file_path)
-    
+
     file_full_path = os.path.join(
         defaults.server_side_storage_path,
         partial_file_path
     )
-    
+
     return FileResponse(file_full_path)
-    
 
 
 def seconds_since_epoch(dt):
     """converts the given datetime.datetime instance to an integer showing the
     seconds from epoch, and does it without using the strftime('%s') which
     uses the time zone info of the system.
-    
+
     :param dt: datetime.datetime instance to be converted
     :returns int: showing the seconds since epoch
     """
     dts = dt - datetime.datetime(1970, 1, 1)
     return dts.days * 86400 + dts.seconds
 
+
 def milliseconds_since_epoch(dt):
     """converts the given datetime.datetime instance to an integer showing the
     milliseconds from epoch, and does it without using the strftime('%s') which
     uses the time zone info of the system.
-    
+
     :param dt: datetime.datetime instance to be converted
     :returns int: showing the milliseconds since epoch
     """
     dts = dt - datetime.datetime(1970, 1, 1)
-    return (dts.days * 86400 + dts.seconds) * 1000 + int(dts.microseconds / 1000)
+    return dts.days * 86400000 + dts.seconds * 1000
+
 
 def from_microseconds(t):
     """converts the given microseconds showing the time since epoch to datetime
@@ -378,11 +381,13 @@ def from_microseconds(t):
     delta = datetime.timedelta(microseconds=t)
     return epoch + delta
 
+
 def from_milliseconds(t):
     """converts the given milliseconds showing the time since epoch to datetime
     instance
     """
-    return from_microseconds(t*1000)
+    return from_microseconds(t * 1000)
+
 
 def get_user_os(request):
     """returns the user operating system name

@@ -40,31 +40,32 @@ define([
     // selected: Array
     //  stores what is selected among the data
     // 
+    'use strict';
     var fieldUpdater = function (kwargs) {
-        var memory = kwargs.memory;
-        var widget = kwargs.widget;
-        var callBackFunction = kwargs.callBack || function (arg) {
+        var memory, widget, callBackFunction, query_data, selected, placeHolder;
+        memory = kwargs.memory;
+        widget = kwargs.widget;
+        callBackFunction = kwargs.callBack || function (arg) {
         };
-        var query_data = kwargs.query_data || null;
-        var selected = kwargs.selected || [];
-        var placeHolder = kwargs.placeHolder || '';
+        query_data = kwargs.query_data || null;
+        selected = kwargs.selected || [];
+        placeHolder = kwargs.placeHolder || '';
 
         // set default placeHolder
 
 
         return function () {
-            var animate = arguments[0] || true;
-            var query;
+            var i, query, data_id, animate;
+            animate = arguments[0] || true;
 
-            if (query_data != null) {
-                var data_id;
-                if (typeof(query_data) == 'function') {
+            if (query_data !== null) {
+                if (typeof query_data === 'function') {
                     data_id = query_data();
                 } else {
                     data_id = query_data;
                 }
 
-                if (data_id == '') {
+                if (data_id === '') {
                     return;
                 }
 
@@ -76,7 +77,7 @@ define([
             return query.then(function (data) {
 
                 // if the widget is a MultiSelect
-                if (widget.declaredClass == "dijit.form.MultiSelect") {
+                if (widget.declaredClass === "dijit.form.MultiSelect") {
                     widget.reset();
                     // add options manually
                     // remove the previous options first
@@ -87,7 +88,8 @@ define([
                     );
 
                     // add options
-                    for (var i = 0; i < data.length; i++) {
+                    var data_length = data.length;
+                    for (i = 0; i < data_length; i++) {
                         domConstruct.create(
                             'option',
                             {
@@ -100,10 +102,10 @@ define([
 
                     // select selected
                     if (selected.length) {
-                        alert('selected.length: '+selected.length)
+                        document.alert('selected.length: ' + selected.length);
                         widget.set('value', selected);
                     }
-                } else if (widget.declaredClass == 'dojox.grid.DataGrid') {
+                } else if (widget.declaredClass === 'dojox.grid.DataGrid') {
                     // just call render
                     widget.render();
                 } else {
@@ -117,7 +119,7 @@ define([
                     // set the data normally
                     widget.set('store', new Memory({data: data}));
 
-                    console.debug('data.length: '+ widget.label + ' : ' + data.length);
+                    document.console.debug('data.length: '+ widget.label + ' : ' + data.length);
 
                     if (data.length > 0) {
                         if (widget.label) {
@@ -128,7 +130,7 @@ define([
                         }
                         widget.set('placeHolder', placeHolder);
 //
-                        if (widget.declaredClass != 'dijit.form.FilteringSelect') {
+                        if (widget.declaredClass !== 'dijit.form.FilteringSelect') {
                             try {
                                 widget.attr('value', data[0].id);
                             } catch (err) {
@@ -155,12 +157,12 @@ define([
                         widget.set('placeHolder', placeHolder);
                     }
                     if (selected.length) {
-                        console.log('selected value setted!')
+                        document.console.log('selected value setted!');
                         widget.set('value', selected);
                     }
                 }
 
-                if (animate == true) {
+                if (animate === true) {
                     // animate the field to indicate it is updated;
 
                     var domNode = widget.domNode;

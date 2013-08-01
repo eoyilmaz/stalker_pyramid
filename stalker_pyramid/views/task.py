@@ -19,6 +19,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 import logging
 
+from pyramid.response import Response
+
 from pyramid.view import view_config
 from pyramid.security import authenticated_userid
 from pyramid.httpexceptions import HTTPServerError, HTTPOk
@@ -36,7 +38,7 @@ from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
 
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.WARNING)
+logger.setLevel(logging.DEBUG)
 
 
 # def walk_task_hierarchy(starting_task):
@@ -165,7 +167,7 @@ def update_dependencies_in_duplicated_hierarchy(task):
     for dependent_task in task.depends:
         if hasattr(dependent_task, 'duplicate'):
             logger.debug('there is a duplicate!')
-            logger.debug('dependent_task.duplicate : %s' % 
+            logger.debug('dependent_task.duplicate : %s' %
                          dependent_task.duplicate)
             duplicated_task.depends.append(dependent_task.duplicate)
         else:
@@ -191,6 +193,7 @@ def cleanup_duplicate_residuals(task):
 
     for child in task.children:
         cleanup_duplicate_residuals(child)
+
 
 @view_config(
     route_name='duplicate_task_hierarchy'
@@ -268,7 +271,7 @@ def convert_to_jquery_gantt_task_format(tasks):
         if not isinstance(task, Task):
             raise HTTPServerError(
                 detail='all elements in tasks list should be instances of '
-                       'stalker.models.task.Task instances, not %s' % 
+                       'stalker.models.task.Task instances, not %s' %
                        task.__class__.__name__
             )
 
@@ -281,26 +284,31 @@ def convert_to_jquery_gantt_task_format(tasks):
     faux_tasks.extend(
         [
             [
-                project.duration.days,  # bid timing
-                'd',  # bid_unit
-                [],  # depend_ids
-                project.description,  # description
-                milliseconds_since_epoch(project.computed_end if project.computed_end else project.end),  # end
-                '',  # hierarchy name
-                project.id,  # id
-                project.name,  # name
-                None,  # parent_id
-                500,  # priority
-                [],  # resource_ids
-                0,  # schedule_constraint
-                'duration',  # schedule_model TODO: use an integer for effort, duration and length
-                project.duration.days * 24 * 60 * 60,  # schedule_seconds
-                project.duration.days,  # schedule_timing
-                'd',  # schedule_unit
-                milliseconds_since_epoch(project.computed_start if project.computed_start else project.start),  # start
-                'STATUS_UNDEFINED',  # status,
-                0,  # total_logged_seconds
-                project.entity_type,  # type
+                project.duration.days, # bid timing
+                'd', # bid_unit
+                [], # depend_ids
+                project.description, # description
+                milliseconds_since_epoch(
+                    project.computed_end if project.computed_end else project.end),
+                # end
+                '', # hierarchy name
+                project.id, # id
+                project.name, # name
+                None, # parent_id
+                500, # priority
+                [], # resource_ids
+                0, # schedule_constraint
+                'duration',
+                # schedule_model TODO: use an integer for effort, duration and length
+                project.duration.days * 24 * 60 * 60, # schedule_seconds
+                project.duration.days, # schedule_timing
+                'd', # schedule_unit
+                milliseconds_since_epoch(
+                    project.computed_start if project.computed_start else project.start),
+                # start
+                'STATUS_UNDEFINED', # status,
+                0, # total_logged_seconds
+                project.entity_type, # type
             ] for project in projects
         ]
     )
@@ -308,26 +316,31 @@ def convert_to_jquery_gantt_task_format(tasks):
     faux_tasks.extend(
         [
             [
-                task.bid_timing,  # bid_timing
-                task.bid_unit,  # bid_unit
-                [dep.id for dep in task.depends],  # depend_ids
-                task.description,  # description
-                milliseconds_since_epoch(task.computed_end if task.computed_end else task.end),  # end
-                ' | '.join([parent.name for parent in task.parents]),  # hierarchy_name
-                task.id,  # id
-                task.name,  # name
-                task.parent.id if task.parent else task.project.id,  # parent_id
-                task.priority,  # priority
-                [resource.id for resource in task.resources],  # resource_ids
-                task.schedule_constraint,  # schedule_constraint
-                task.schedule_model,  # schedule_model
-                task.schedule_seconds,  # schedule_seconds
-                task.schedule_timing,  # schedule_timing
-                task.schedule_unit,  # schedule_unit
-                milliseconds_since_epoch(task.computed_start if task.computed_start else task.start),  # start
-                'STATUS_UNDEFINED',  # status
-                task.total_logged_seconds,  # total_logged_seconds
-                task.entity_type,  # type
+                task.bid_timing, # bid_timing
+                task.bid_unit, # bid_unit
+                [dep.id for dep in task.depends], # depend_ids
+                task.description, # description
+                milliseconds_since_epoch(
+                    task.computed_end if task.computed_end else task.end),
+                # end
+                ' | '.join([parent.name for parent in task.parents]),
+                # hierarchy_name
+                task.id, # id
+                task.name, # name
+                task.parent.id if task.parent else task.project.id, # parent_id
+                task.priority, # priority
+                [resource.id for resource in task.resources], # resource_ids
+                task.schedule_constraint, # schedule_constraint
+                task.schedule_model, # schedule_model
+                task.schedule_seconds, # schedule_seconds
+                task.schedule_timing, # schedule_timing
+                task.schedule_unit, # schedule_unit
+                milliseconds_since_epoch(
+                    task.computed_start if task.computed_start else task.start),
+                # start
+                'STATUS_UNDEFINED', # status
+                task.total_logged_seconds, # total_logged_seconds
+                task.entity_type, # type
             ] for task in tasks
         ]
     )
@@ -359,18 +372,18 @@ def convert_to_jquery_gantt_task_format(tasks):
             'data': [
                 [resource.id, resource.name] for resource in all_resources
             ]
-        },  # User.query.all()],
+        }, # User.query.all()],
         'time_logs': {
             'keys': ['end', 'id', 'resource_id', 'start', 'task_id'],
             'data': [
                 [
-                    milliseconds_since_epoch(time_log.end),  # end
-                    time_log.id,  # id
-                    time_log.resource.id,  # resource_id
-                    milliseconds_since_epoch(time_log.start),  # start
-                    time_log.task.id,  # task_id
+                    milliseconds_since_epoch(time_log.end), # end
+                    time_log.id, # id
+                    time_log.resource.id, # resource_id
+                    milliseconds_since_epoch(time_log.start), # start
+                    time_log.task.id, # task_id
                 ] for time_log in all_time_logs],
-    },
+        },
         'timing_resolution': (timing_resolution.days * 86400 +
                               timing_resolution.seconds) * 1000,
         'working_hours': working_hours,
@@ -393,6 +406,81 @@ def convert_to_jquery_gantt_task_format(tasks):
     #             )
     # )
     return data
+
+
+def convert_to_dgrid_gantt_project_format(projects):
+    """Converts the given projects to the DGrid Gantt compatible json format.
+
+    :param projects: List of Stalker Project.
+    :return: json compatible dictionary
+    """
+
+    from sqlalchemy import func
+
+    def hasChildren(project):
+        return bool(
+            DBSession.query(func.count(Task.id))
+            .join(Task.project, Project.tasks)
+            .filter(Project.id == project.id)
+            .first()[0]
+        )
+
+    return [
+        {
+            'bid_timing': project.duration.days,
+            'bid_unit': 'd',
+            'completed': project.total_logged_seconds / project.schedule_seconds,
+            'description': project.description,
+            'end': milliseconds_since_epoch(
+                project.computed_end if project.computed_end else project.end),
+            'id': project.id,
+            'name': project.name,
+            'hasChildren': hasChildren(project),
+            'schedule_seconds': project.schedule_seconds,
+            'start': milliseconds_since_epoch(
+                project.computed_start if project.computed_start else project.start),
+            'total_logged_seconds': project.total_logged_seconds,
+            'type': project.entity_type
+            # 'children': [{'$ref': task.id} for task in project.root_tasks]
+        } for project in projects
+    ]
+
+
+def convert_to_dgrid_gantt_task_format(tasks):
+    """Converts the given tasks to the DGrid Gantt compatible json format.
+
+    :param tasks: List of Stalker Tasks.
+    :return: json compatible dictionary
+    """
+    return [
+        {
+            'bid_timing': task.bid_timing,
+            'bid_unit': task.bid_unit,
+            'completed': task.total_logged_seconds / task.schedule_seconds,
+            'dependencies': [dep.id for dep in task.depends],
+            'descripion': task.description,
+            'end': milliseconds_since_epoch(
+                task.computed_end if task.computed_end else task.end),
+            'hasChildren': task.is_container,
+            'hierarchy_name': ' | '.join([parent.name for parent in task.parents]),
+            'id': task.id,
+            'name': task.name,
+            'parent': task.parent.id if task.parent else task.project.id,
+            'priority': task.priority,
+            'resources': [
+                {'id': resource.id, 'name': resource.name} for resource in task.resources] if not task.is_container else [],
+            'schedule_constraint': task.schedule_constraint,
+            'schedule_model': task.schedule_model,
+            'schedule_seconds': task.schedule_seconds,
+            'schedule_timing': task.schedule_timing,
+            'schedule_unit': task.schedule_unit,
+            'start': milliseconds_since_epoch(
+                task.computed_start if task.computed_start else task.start),
+            'total_logged_seconds': task.total_logged_seconds,
+            'type': task.entity_type,
+            # 'children': [{'$ref': task.id} for task in task.children]
+        } for task in tasks
+    ]
 
 
 @view_config(
@@ -497,7 +585,6 @@ def update_task(request):
         transaction.abort()
         return HTTPServerError()
 
-
     task.start = start
     task.end = end
     task.is_milestone = is_milestone
@@ -511,25 +598,25 @@ def update_task(request):
     task.code = code
     task.updated_by = logged_in_user
 
-    if entity_type=='Asset':
-            type_ = Type.query\
-                .filter_by(target_entity_type='Asset')\
-                .filter_by(name=asset_type)\
-                .first()
+    if entity_type == 'Asset':
+        type_ = Type.query \
+            .filter_by(target_entity_type='Asset') \
+            .filter_by(name=asset_type) \
+            .first()
 
-            if type_ is None:
-                # create a new Type
-                # TODO: should we check for permission here or will it be already done in the UI (ex. filteringSelect instead of comboBox)
-                type_ = Type(
-                    name=asset_type,
-                    code=asset_type,
-                    target_entity_type='Asset'
-                )
+        if type_ is None:
+            # create a new Type
+            # TODO: should we check for permission here or will it be already done in the UI (ex. filteringSelect instead of comboBox)
+            type_ = Type(
+                name=asset_type,
+                code=asset_type,
+                target_entity_type='Asset'
+            )
 
-            task.type = type_
+        task.type = type_
 
-    if entity_type=='Shot':
-            task.sequence = Sequence.query.filter_by(id=shot_sequence_id).first()
+    if entity_type == 'Shot':
+        task.sequence = Sequence.query.filter_by(id=shot_sequence_id).first()
 
     task._reschedule(task.schedule_timing, task.schedule_unit)
     if update_bid:
@@ -589,6 +676,146 @@ def get_root_tasks(request):
 
 
 @view_config(
+    route_name='get_tasks',
+    renderer='json'
+)
+def get_tasks(request):
+    """RESTful version of getting all tasks
+    """
+    # logger.debug('request.GET: %s' % request.GET)
+    parent_id = request.GET.get('parent_id')
+    task_id = request.GET.get('task_id')
+
+    return_data = None
+    # set the content range to prevent JSONRest Store to query the data twice
+    content_range = '%s-%s/%s'
+    if task_id:
+        task = Entity.query.filter(Entity.id == task_id).first()
+        if isinstance(task, Project):
+            return_data = convert_to_dgrid_gantt_project_format([task])
+            content_range = content_range % (0, 0, 1)
+        elif isinstance(task, Task):
+            return_data = convert_to_dgrid_gantt_task_format([task])
+            content_range = content_range % (0, 0, 1)
+    elif parent_id:
+        parent = Entity.query.filter(Entity.id == parent_id).first()
+
+        if isinstance(parent, Project):
+            tasks = parent.root_tasks
+        elif isinstance(parent, Task):
+            tasks = Task.query.filter(Task.parent_id == parent_id).order_by(Task.name).all()
+
+        content_range = content_range % (0, len(tasks) - 1, len(tasks))
+        # logger.debug(tasks)
+        return_data = convert_to_dgrid_gantt_task_format(tasks)
+
+    # logger.debug('return_data: %s' % return_data)
+
+    resp = Response(
+        json_body=return_data
+    )
+    resp.content_range = content_range
+    return resp
+
+
+@view_config(
+    route_name='get_user_tasks',
+    renderer='json'
+)
+def get_user_tasks(request):
+    """RESTful version of getting all tasks
+    """
+    # logger.debug('request.GET: %s' % request.GET)
+    user_id = request.matchdict.get('user_id')
+    user = User.query.filter(User.id == user_id).first()
+
+    parent_id = request.GET.get('parent_id')
+    parent = Entity.query.filter_by(id=parent_id).first()
+
+    # logger.debug('parent_id : %s' % parent_id)
+    # logger.debug('parent    : %s' % parent)
+
+    return_data = None
+    # set the content range to prevent JSONRest Store to query the data twice
+    content_range = '%s-%s/%s'
+
+    if user:
+        user = User.query.filter(User.id == user_id).first()
+        # ALTERNATIVE 1: Return tasks on demand
+        if parent:
+            # get user tasks
+            user_tasks = user.tasks
+            # add all parents
+            parent_tasks = []
+            for task in user_tasks:
+                parent_tasks.extend(task.parents)
+
+            if isinstance(parent, Task):
+                parent_children = parent.children
+            elif isinstance(parent, Project):
+                parent_children = parent.root_tasks
+
+            desired_tasks = []
+            for parent_child in parent_children:
+                if parent_child in parent_tasks:
+                    desired_tasks.append(parent_child)
+
+            if not desired_tasks:
+                desired_tasks = parent_children
+
+            return_data = convert_to_dgrid_gantt_task_format(desired_tasks)
+        else:
+            # no parent,
+            # just return projects of the user
+            user_projects = user.projects
+            return_data = convert_to_dgrid_gantt_project_format(user_projects)
+
+        content_range = content_range % (
+        0, len(return_data) - 1, len(return_data))
+
+    # logger.debug('return_data: %s' % return_data)
+
+    resp = Response(
+        json_body=return_data
+    )
+    resp.content_range = content_range
+    return resp
+
+
+@view_config(
+    route_name='get_task',
+    renderer='json'
+)
+def get_task(request):
+    """RESTful version of getting a task or project
+    """
+    entity_id = request.matchdict.get('task_id')
+    entity = Entity.query.filter_by(id=entity_id).first()
+
+    return_data = []
+    if isinstance(entity, Task):
+        return_data = convert_to_dgrid_gantt_task_format([entity])
+    elif isinstance(entity, Project):
+        return_data = convert_to_dgrid_gantt_project_format([entity])
+
+    # logger.debug('return_data: %s' % return_data)
+
+    return return_data
+
+
+@view_config(
+    route_name='get_task_children',
+    renderer='json'
+)
+def get_task_children(request):
+    """RESTful version of getting task children
+    """
+    task_id = request.matchdict.get('task_id')
+    task = Task.query.filter_by(id=task_id).first()
+    return convert_to_dgrid_gantt_task_format(task.children)
+
+
+@view_config(
     route_name='get_gantt_tasks',
     renderer='json'
 )
@@ -599,40 +826,34 @@ def get_gantt_tasks(request):
     entity_id = request.matchdict.get('entity_id')
     entity = Entity.query.filter_by(id=entity_id).first()
 
+    logger.debug('entity : %s' % entity)
+
     tasks = []
     if entity:
-        if entity.entity_type == 'Project':
+        if isinstance(entity, Project):
+            # return both the project and the root tasks of its
             project = entity
-            # get the tasks who is a root task
-            root_tasks = Task.query \
-                .filter(Task._project == project) \
-                .filter(Task.parent == None).all()
-
-            # do a depth first search for child tasks
-            for root_task in root_tasks:
-                # logger.debug('root_task: %s, parent: %s' % (root_task, root_task.parent))
-                tasks.extend(depth_first_flatten(root_task))
-        elif entity.entity_type == 'User':
+            dgrid_data = convert_to_dgrid_gantt_project_format([project])
+            dgrid_data.extend(
+                convert_to_dgrid_gantt_task_format(project.root_tasks))
+            return dgrid_data
+        elif isinstance(entity, User):
             user = entity
-
             # sort the tasks with the project.id
             if user is not None:
-                tasks = sorted(user.tasks, key=lambda task: task.project.id)
+                # TODO: just return root tasks to make it fast
+                # get the user projects and then tasks of the user
+                dgrid_data = convert_to_dgrid_gantt_project_format(
+                    user.projects)
 
                 user_tasks_with_parents = []
-                for task in tasks:
+                for task in user.tasks:
                     user_tasks_with_parents.append(task)
-                    parent = task.parent
-                    while parent:
-                        # just add unique parents
-                        #if parent not in user_tasks_with_parents:
-                        user_tasks_with_parents.append(parent)
-                        parent = parent.parent
+                    user_tasks_with_parents.extend(task.parents)
 
-
-                # logger.debug('user_task_with_parents: %s' % user_tasks_with_parents)
-                # logger.debug('tasks                 : %s' % tasks)
                 tasks = list(set(user_tasks_with_parents))
+                dgrid_data.extend(convert_to_dgrid_gantt_task_format(tasks))
+                return dgrid_data
         elif entity.entity_type == 'Studio':
             projects = Project.query.all()
             for project in projects:
@@ -661,7 +882,28 @@ def get_gantt_tasks(request):
     #     logger.debug('start date: %s' % task.start)
     #     logger.debug('end date: %s' % task.end)
 
-    return convert_to_jquery_gantt_task_format(tasks)
+    return convert_to_dgrid_gantt_task_format(tasks)
+
+
+@view_config(
+    route_name='get_gantt_task_children',
+    renderer='json'
+)
+def get_gantt_task_children(request):
+    """returns the children tasks of the given task
+    """
+    entity_id = request.matchdict.get('entity_id')
+    entity = Entity.query.filter_by(id=entity_id).first()
+
+    # return all user tasks with their parents
+    # TODO: check if there is a user id in the query to just return the
+    #       parents of the user tasks
+
+    if isinstance(entity, Project):
+        return convert_to_dgrid_gantt_task_format(entity.root_tasks)
+    if isinstance(entity, Task):
+        return convert_to_dgrid_gantt_task_format(entity.children)
+    return []
 
 
 @view_config(
@@ -816,7 +1058,6 @@ def create_task(request):
     asset_type = request.params.get('asset_type_name', None)
     shot_sequence_id = request.params.get('shot_sequence_id', None)
 
-
     logger.debug('project_id          : %s' % project_id)
     logger.debug('parent_id           : %s' % parent_id)
     logger.debug('name                : %s' % name)
@@ -896,12 +1137,10 @@ def create_task(request):
 
         kwargs['code'] = code
 
-
-
-        if entity_type=='Asset':
-            type_ = Type.query\
-                .filter_by(target_entity_type='Asset')\
-                .filter_by(name=asset_type)\
+        if entity_type == 'Asset':
+            type_ = Type.query \
+                .filter_by(target_entity_type='Asset') \
+                .filter_by(name=asset_type) \
                 .first()
 
             if type_ is None:
@@ -915,10 +1154,9 @@ def create_task(request):
 
             kwargs['type'] = type_
 
-        if entity_type=='Shot':
+        if entity_type == 'Shot':
             sequence = Sequence.query.filter_by(id=shot_sequence_id).first()
             kwargs['sequence'] = sequence
-
 
         try:
 
@@ -928,17 +1166,17 @@ def create_task(request):
                 # logger.debug('new_task.status: %s' % new_entity.status)
                 DBSession.add(new_entity)
             elif entity_type == 'Asset':
-                new_entity =  Asset(**kwargs)
+                new_entity = Asset(**kwargs)
                 logger.debug('new_asset.name %s' % new_entity.name)
                 # logger.debug('new_asset.status: %s' % new_entity.status)
                 DBSession.add(new_entity)
             elif entity_type == 'Shot':
-                new_entity =  Shot(**kwargs)
+                new_entity = Shot(**kwargs)
                 logger.debug('new_shot.name %s' % new_entity.name)
                 # logger.debug('new_shot.status: %s' % new_entity.status)
                 DBSession.add(new_entity)
             elif entity_type == 'Sequence':
-                new_entity =  Sequence(**kwargs)
+                new_entity = Sequence(**kwargs)
                 logger.debug('new_shot.name %s' % new_entity.name)
                 # logger.debug('new_shot.status: %s' % new_entity.status)
                 DBSession.add(new_entity)
@@ -990,35 +1228,35 @@ def create_task(request):
     return HTTPOk(detail='Task created successfully')
 
 
-@view_config(
-    route_name='get_user_tasks',
-    renderer='json'
-)
-def get_user_tasks(request):
-    """returns the user tasks as jQueryGantt json
-    """
-    # get user id
-    user_id = request.matchdict['user_id']
-    user = User.query.filter_by(id=user_id).first()
-
-    # get tasks
-    tasks = []
-    if user is not None:
-        tasks = sorted(user.tasks, key=lambda x: x.project.id)
-        # add also all the parents
-        user_tasks_with_parents = []
-        for task in tasks:
-            user_tasks_with_parents.append(task)
-            current_parent = task.parent
-            while current_parent:
-                user_tasks_with_parents.append(current_parent)
-                current_parent = current_parent.parent
-
-        logger.debug('user_task_with_parents: %s' % user_tasks_with_parents)
-        logger.debug('tasks                 : %s' % tasks)
-        tasks = user_tasks_with_parents
-
-    return convert_to_jquery_gantt_task_format(tasks)
+# @view_config(
+#     route_name='get_user_tasks',
+#     renderer='json'
+# )
+# def get_user_tasks(request):
+#     """returns the user tasks as jQueryGantt json
+#     """
+#     # get user id
+#     user_id = request.matchdict['user_id']
+#     user = User.query.filter_by(id=user_id).first()
+# 
+#     # get tasks
+#     tasks = []
+#     if user is not None:
+#         tasks = sorted(user.tasks, key=lambda x: x.project.id)
+#         # add also all the parents
+#         user_tasks_with_parents = []
+#         for task in tasks:
+#             user_tasks_with_parents.append(task)
+#             current_parent = task.parent
+#             while current_parent:
+#                 user_tasks_with_parents.append(current_parent)
+#                 current_parent = current_parent.parent
+# 
+#         logger.debug('user_task_with_parents: %s' % user_tasks_with_parents)
+#         logger.debug('tasks                 : %s' % tasks)
+#         tasks = user_tasks_with_parents
+# 
+#     return convert_to_jquery_gantt_task_format(tasks)
 
 
 @view_config(
@@ -1034,11 +1272,10 @@ def auto_schedule_tasks(request):
         tj_scheduler = TaskJugglerScheduler()
         studio.scheduler = tj_scheduler
 
-        logger.debug('studio.name: %s' % studio.name)
-        logger.debug('studio.working_hours[0]: %s' % studio.working_hours[0])
-        logger.debug(
-            'studio.daily_working_hours: %s' % studio.daily_working_hours)
-        logger.debug('studio.to_tjp: %s' % studio.to_tjp)
+        # logger.debug('studio.name: %s' % studio.name)
+        # logger.debug('studio.working_hours[0]: %s' % studio.working_hours[0])
+        # logger.debug('studio.daily_working_hours: %s' % studio.daily_working_hours)
+        # logger.debug('studio.to_tjp: %s' % studio.to_tjp)
 
         try:
             studio.schedule()
@@ -1046,6 +1283,7 @@ def auto_schedule_tasks(request):
             return HTTPServerError()
 
     return HTTPOk()
+
 
 @view_config(
     route_name='view_task',
@@ -1064,6 +1302,7 @@ def view_task(request):
         'user': logged_in_user,
         'task': task
     }
+
 
 @view_config(
     route_name='summarize_task',

@@ -322,15 +322,6 @@ a:hover {
     height: auto;
 }
 
-.dgrid-no-data,
-
-.dgrid-loading {
-    color: #aaa;
-    font-size: 3px;
-    padding: 3px;
-    text-align: center;
-}
-
 .page_title {
     color: #ffffff;
     font-size: 22px;

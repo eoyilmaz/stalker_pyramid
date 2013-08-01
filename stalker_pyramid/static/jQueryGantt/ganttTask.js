@@ -34,7 +34,7 @@ function Task(kwargs) {
 
     this.type = kwargs.type || null;
 
-    this.status = "STATUS_UNDEFINED";
+//    this.status = "STATUS_UNDEFINED";
 
     this.children = [];
     this.child_ids = [];
@@ -55,7 +55,7 @@ function Task(kwargs) {
     this.schedule_seconds = kwargs.schedule_seconds || 0;
     this.total_logged_seconds = kwargs.total_logged_seconds || 0;
 
-    this.remaining_seconds = ((this.schedule_seconds -this.total_logged_seconds)/3600 ).toFixed(1)+' h';
+    this.remaining_seconds = ((this.schedule_seconds - this.total_logged_seconds)/3600 ).toFixed(1)+' h';
 
     this.progress = this.schedule_seconds > 0 ? this.total_logged_seconds / this.schedule_seconds * 100 : 0;
 
@@ -94,14 +94,14 @@ function Task(kwargs) {
     this.resource_ids = kwargs.resource_ids || [];
     
     var i;
-    if (this.resource_ids.length === 0){
+    if (this.resource_ids.length === 0) {
         // no problem if there are no resources
         for (i = 0; i < this.resources.length; i++) {
             this.resource_ids.push(this.resources[i].id);
         }
     } else {
-        if (this.master !== null){
-            for (i = 0; i < this.resource_ids.length; i++){
+        if (this.master !== null) {
+            for (i = 0; i < this.resource_ids.length; i++) {
                 this.resources.push(this.master.getResource(this.resource_ids[i]));
             }
         }

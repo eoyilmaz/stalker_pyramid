@@ -1,0 +1,440 @@
+.today {
+    position: absolute;
+    top: 0;
+    width: 1px;
+    height: 100%;
+    border-left: 2px dotted #13AFA5;
+    z-index: 100;
+}
+
+/*PROJECT BOX*/
+.projectBox {
+    position: absolute;
+    top: 0px;
+    margin-top: 1px;
+    z-index: 100;
+}
+
+.projectBox .layout {
+    background-color: black;
+    border-radius: 3px 3px 3px 3px;
+    height: 18px;
+}
+
+.projectBox .layout .leftPin {
+    top: 3px;
+    position: absolute;
+    width: 10px;
+    height: 10px;
+}
+
+.projectBox .layout .rightPin {
+    top: 3px;
+    right: 0;
+    position: absolute;
+    width: 10px;
+    height: 10px;
+}
+
+.projectBox .taskStatus {
+    left: 5px;
+    top: 4px;
+    position: absolute;
+    width: 10px;
+    height: 10px;
+}
+
+.projectBox .layout .milestone.end {
+    right: 0;
+}
+
+.projectBox .layout .milestone.active {
+    display: block;
+}
+
+.projectBox.hasChild .layout {
+    /*border:2px solid black;*/
+}
+
+.projectBox .taskProgress {
+    height: 3px;
+    position: absolute;
+}
+
+.projectBox .taskBid {
+    height: 3px;
+    position: absolute;
+    /*border-radius: 3px;*/
+    top: 3px;
+}
+
+/*PARENT TASK BOX*/
+.parentTaskBox {
+    position: absolute;
+    /*height: 6px;*/
+    top: 0px;
+    margin-top: 2px;
+    z-index: 100;
+}
+
+.parentTaskBox .layout {
+    height: 5px;
+    background: black;
+    border-radius: 3px 3px 0 0;
+}
+
+.parentTaskBox .layout .leftPin {
+    top: 3px;
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background: url('../images/parentTaskBoxLeftPin.png') no-repeat;
+}
+
+.parentTaskBox .layout .rightPin {
+    top: 3px;
+    right: 0;
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background: url('../images/parentTaskBoxRightPin.png') no-repeat;
+}
+
+.parentTaskBox .taskStatus {
+    left: 5px;
+    top: 4px;
+    position: absolute;
+    width: 10px;
+    height: 10px;
+}
+
+.parentTaskBox .layout .milestone {
+    top: 0;
+    position: absolute;
+    width: 16px;
+    background: url('../images/milestone.png') no-repeat;
+    height: 16px;
+    display: none;
+}
+
+.parentTaskBox .layout .milestone.end {
+    right: 0;
+}
+
+.parentTaskBox .layout .milestone.active {
+    display: block;
+}
+
+.parentTaskBox.hasChild .layout {
+}
+
+.parentTaskBox .taskProgress {
+    height: 3px;
+    position: absolute;
+}
+
+.parentTaskBox .taskBid {
+    height: 3px;
+    position: absolute;
+    top: 3px;
+}
+
+.parentTaskBox .layout.extDep {
+    background-image: url('../images/hasExternalDeps.png');
+}
+
+/*TASK BOX*/
+.taskBox {
+    position: absolute;
+    height: 15px;
+    top: 0px;
+    margin-top: 2px;
+    z-index: 100;
+    border-radius: 3px;
+    border: 1px solid #AAAAAA;
+
+    background-image: linear-gradient(bottom, #E0E0E0 0%, #FFFFFF 50%);
+    background-image: -o-linear-gradient(bottom, #E0E0E0 0%, #FFFFFF 50%);
+    background-image: -moz-linear-gradient(bottom, #E0E0E0 0%, #FFFFFF 50%);
+    background-image: -webkit-linear-gradient(bottom, #E0E0E0 0%, #FFFFFF 50%);
+    background-image: -ms-linear-gradient(bottom, #E0E0E0 0%, #FFFFFF 50%);
+
+    background-image: -webkit-gradient(linear, left bottom, left top, color-stop(0, #E0E0E0), color-stop(0.50, #FFFFFF));
+}
+
+.taskBox .layout {
+    /*height: 100%;*/
+    height: 18px;
+}
+
+.taskBox .taskStatus {
+    left: 5px;
+    top: 4px;
+    position: absolute;
+    width: 10px;
+    height: 10px;
+}
+
+.taskBox .layout .milestone {
+    top: 0;
+    position: absolute;
+    width: 16px;
+    background: url('../images/milestone.png') no-repeat;
+    height: 16px;
+    display: none;
+}
+
+.taskBox .layout .milestone.end {
+    right: 0;
+}
+
+.taskBox .layout .milestone.active {
+    display: block;
+}
+
+.taskBox.hasChild .layout {
+    border-top: 2px solid black;
+}
+
+.taskBox .taskProgress {
+    /*height:3px;*/
+    height: 100%;
+    position: absolute;
+
+    background-image: linear-gradient(bottom, #6DD900 0%, #99FF33 50%);
+    background-image: -o-linear-gradient(bottom, #6DD900 0%, #99FF33 50%);
+    background-image: -moz-linear-gradient(bottom, #6DD900 0%, #99FF33 50%);
+    background-image: -webkit-linear-gradient(bottom, #6DD900 0%, #99FF33 50%);
+    background-image: -ms-linear-gradient(bottom, #6DD900 0%, #99FF33 50%);
+
+    background-image: -webkit-gradient(linear, left bottom, left top, color-stop(0, #6DD900), color-stop(0.50, #99FF33));
+    border-radius: 2px;
+}
+
+.taskBox .taskExtraTiming {
+    height: 7px;
+    position: absolute;
+    border-radius: 2px;
+    top: 9px;
+    right: 0;
+    background-color: red;
+}
+
+.taskBox .layout.extDep {
+    background-image: url('../images/hasExternalDeps.png');
+}
+
+.taskLabel {
+    position: absolute;
+    height: 18px;
+    color: black;
+    text-align: right;
+    padding-right: 5px;
+    padding-top: 0;
+    overflow: hidden;
+    left: -210px;
+    width: 195px;
+    white-space: nowrap;
+}
+
+.taskResourceLabel {
+    color: black;
+    height: 18px;
+    left: 100%;
+    overflow: visible;
+    padding-left: 15px;
+    padding-top: 0;
+    position: absolute;
+    text-align: left;
+    white-space: nowrap;
+    width: 195px;
+}
+
+.taskDepLabel {
+    color: black;
+    height: 18px;
+    left: 100%;
+    overflow: visible;
+    padding-left: 15px;
+    padding-top: 0;
+    position: absolute;
+    text-align: left;
+    white-space: nowrap;
+    width: 195px;
+}
+
+.leafTaskContextMenu {
+    position: absolute;
+    width: 100%;
+    height: 15px;
+}
+
+.parentTaskContextMenu {
+    position: absolute;
+    width: 100%;
+    height: 15px;
+}
+
+/*.contextMenu {*/
+    /*height: 100%;*/
+/*}*/
+
+
+
+/* ------------------------------------------------------- */
+
+/*.task-bar {*/
+/*height: 15px;*/
+/*position: absolute;*/
+/*background-color: #0e0;*/
+/*border-radius: 5px;*/
+/*box-shadow: 2px 2px 3px #aaa;*/
+/*}*/
+
+/*.completed-bar {*/
+/*height: 15px;*/
+/*position: absolute;*/
+/*background-color: #0a0;*/
+/*border-top-left-radius: 5px;*/
+/*border-bottom-left-radius: 5px;*/
+/*}*/
+
+.dep-horizontal-line {
+    height: 1px;
+    background-color: #222;
+    border: 1px solid #ddd;
+}
+
+.dep-vertical-line {
+    width: 1px;
+    top: 0px;
+    border: 1px solid #ddd;
+    border-top: none;
+    background-color: #000;
+}
+
+#gantt .dgrid-column-chart {
+    position: relative;
+    /*width: 6588.45px;*/
+    /*width: 100%;*/
+    overflow: visible;
+}
+
+.down-arrow {
+    background-position: -64px -32px;
+}
+
+.dep-horizontal-line, .dep-vertical-line, .down-arrow {
+    position: absolute;
+    z-index: 10;
+}
+
+#gantt .dgrid .dependency-row {
+    position: absolute;
+    width: 390px;
+}
+
+.dependencies {
+    height: 300px;
+}
+
+th.dgrid-column-chart {
+    padding: 0px;
+}
+
+th.dgrid-column-chart td {
+    border: 1px solid #afafaf;
+    text-align: center;
+}
+
+th.dgrid-column-chart table {
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.dgrid-tree-container {
+    -webkit-transition-duration: 0.2s;
+    -moz-transition-duration: 0.2s;
+    -ms-transition-duration: 0.2s;
+    -o-transition-duration: 0.2s;
+    transition-duration: 0.2s;
+    overflow: hidden;
+}
+
+#gantt .dgrid {
+    width: 100%;
+    height: 100%;
+}
+
+#gantt .dgrid-column-id {
+    width: 40px;
+    text-align: right;
+}
+
+#gantt .dgrid-column-name {
+    width: 200px;
+}
+
+#gantt .dgrid-column-timing {
+    width: 45px;
+}
+
+#gantt .dgrid-column-timing {
+    width: 60px;
+    text-align: center;
+}
+
+#gantt .dgrid-column-complete {
+    width: 50px;
+    text-align: right;
+}
+
+#gantt .dgrid-column-start {
+    width: 120px;
+}
+
+#gantt .dgrid-column-end {
+    width: 120px;
+}
+
+
+
+#gantt .dgrid-column-set-0 {
+width: 40%;
+}
+
+#gantt .dgrid-column-set-1 {
+width: 60%;
+}
+
+/*#gantt .dgrid-column-set-cell .dgrid-column-set-0 .dgrid-cell {*/
+/*background-color: #dedede;*/
+/*}*/
+
+/*#gantt .dgrid-row {*/
+/**/
+/*}*/
+
+/*#gantt .dgrid-column-set {*/
+    /*overflow: hidden;*/
+    /*width: 100%;*/
+    /*position: relative;*/
+    /*left: 0px;*/
+    /*float: left;*/
+/*}*/
+
+/*#gantt .dgrid-cell {*/
+    /*border-top: none;*/
+    /*border-bottom: none;*/
+/*}*/
+
+#gantt .dgrid-cell {
+    /*background-color: rgb(240, 240, 240);*/
+    /*text-overflow: ellipsis;*/
+    text-overflow: clip;
+    white-space: nowrap;
+}
+
+/*#gantt .dgrid-cell-padding {*/
+/*padding: 0px;*/
+/*}*/
