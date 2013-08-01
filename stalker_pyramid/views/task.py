@@ -743,35 +743,39 @@ def get_user_tasks(request):
         user = User.query.filter(User.id == user_id).first()
         # ALTERNATIVE 1: Return tasks on demand
         if parent:
+            logger.debug('there is a parent')
             # get user tasks
             user_tasks = user.tasks
             # add all parents
-            parent_tasks = []
+            user_tasks_and_parents = []
             for task in user_tasks:
-                parent_tasks.extend(task.parents)
+                user_tasks_and_parents.extend(task.parents)
+            user_tasks_and_parents.extend(user_tasks)
 
             if isinstance(parent, Task):
-                parent_children = parent.children
+                parents_children = parent.children
             elif isinstance(parent, Project):
-                parent_children = parent.root_tasks
+                parents_children = parent.root_tasks
 
             desired_tasks = []
-            for parent_child in parent_children:
-                if parent_child in parent_tasks:
-                    desired_tasks.append(parent_child)
+            for child in parents_children:
+                if child in user_tasks_and_parents:
+                    desired_tasks.append(child)
 
             if not desired_tasks:
-                desired_tasks = parent_children
+                desired_tasks = parents_children
 
             return_data = convert_to_dgrid_gantt_task_format(desired_tasks)
         else:
+            logger.debug('no parent')
             # no parent,
             # just return projects of the user
             user_projects = user.projects
             return_data = convert_to_dgrid_gantt_project_format(user_projects)
 
-        content_range = content_range % (
-        0, len(return_data) - 1, len(return_data))
+        content_range = content_range % (0,
+                                         len(return_data) - 1,
+                                         len(return_data))
 
     # logger.debug('return_data: %s' % return_data)
 
