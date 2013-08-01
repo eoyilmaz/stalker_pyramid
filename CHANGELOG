@@ -2,6 +2,14 @@
 Stalker Pyramid Changes
 =======================
 
+0.1.0.b2
+========
+
+* **New:** Stalker_Pyramid now uses a brand new implementation for the
+  gantt chart which utilizes a DGrid with OnDemand capabilities. The new Gantt
+  Chart is over 100x faster then the previous implementation.
+* **Update:** Started to move the view designs towards a RESTFul Service style.
+
 0.1.0.b1
 ========
 

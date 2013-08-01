@@ -139,15 +139,15 @@ define([
                                 'w': 'Week',
                                 'm': 'Month',
                                 'y': 'Year'
-                            };
+                            },
+                                timing = '';
 
-                            var timing = '';
                             if (!object.hasChildren) {
                                 // do not add schedule model if it is the default (effort)
                                 if (object.schedule_model !== 'effort') {
                                     timing += object.schedule_model.toUpperCase()[0] + ': ';
                                 }
-                                if (Math.floor(object.schedule_timing) === object.schedule_timing){
+                                if (Math.floor(object.schedule_timing) === object.schedule_timing) {
                                     timing += object.schedule_timing;
                                 } else {
                                     timing += (object.schedule_timing).toFixed(1);

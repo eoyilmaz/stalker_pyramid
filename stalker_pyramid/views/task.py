@@ -429,18 +429,17 @@ def convert_to_dgrid_gantt_project_format(projects):
         {
             'bid_timing': project.duration.days,
             'bid_unit': 'd',
+            'completed': project.total_logged_seconds / project.schedule_seconds,
             'description': project.description,
             'end': milliseconds_since_epoch(
                 project.computed_end if project.computed_end else project.end),
             'id': project.id,
             'name': project.name,
-            # 'priority': 500,
-            # 'schedule_constraint': 0,
-            # 'schedule_model': 1,
+            'hasChildren': hasChildren(project),
+            'schedule_seconds': project.schedule_seconds,
             'start': milliseconds_since_epoch(
                 project.computed_start if project.computed_start else project.start),
-            'completed': 0,
-            'hasChildren': hasChildren(project),
+            'total_logged_seconds': project.total_logged_seconds,
             'type': project.entity_type
             # 'children': [{'$ref': task.id} for task in project.root_tasks]
         } for project in projects
@@ -710,6 +709,8 @@ def get_tasks(request):
         # logger.debug(tasks)
         return_data = convert_to_dgrid_gantt_task_format(tasks)
 
+    # logger.debug('return_data: %s' % return_data)
+
     resp = Response(
         json_body=return_data
     )
@@ -769,27 +770,6 @@ def get_user_tasks(request):
             user_projects = user.projects
             return_data = convert_to_dgrid_gantt_project_format(user_projects)
 
-        # ALTERNATIVE 2: Return all tasks at once
-        # # just return projects of the user
-        # user_projects = user.projects
-        # return_data = convert_to_dgrid_gantt_project_format(user_projects)
-        # 
-        # # get user tasks
-        # user_tasks = user.tasks
-        # # add all parents
-        # parent_tasks = []
-        # desired_tasks = []
-        # for task in user_tasks:
-        #     task_parents = task.parents
-        #     for i in range(len(task_parents)-1, 0, -1):
-        #         curr_parent = task_parents[i]
-        #         if curr_parent in parent_tasks:
-        #             break
-        #         else:
-        #             desired_tasks.append(curr_parent)
-        #     desired_tasks.append(task)
-        # return_data.extend(convert_to_dgrid_gantt_task_format(desired_tasks))
-
         content_range = content_range % (
         0, len(return_data) - 1, len(return_data))
 
@@ -812,11 +792,15 @@ def get_task(request):
     entity_id = request.matchdict.get('task_id')
     entity = Entity.query.filter_by(id=entity_id).first()
 
+    return_data = []
     if isinstance(entity, Task):
-        return convert_to_dgrid_gantt_task_format([entity])
+        return_data = convert_to_dgrid_gantt_task_format([entity])
     elif isinstance(entity, Project):
-        return convert_to_dgrid_gantt_project_format([entity])
-    return []
+        return_data = convert_to_dgrid_gantt_project_format([entity])
+
+    # logger.debug('return_data: %s' % return_data)
+
+    return return_data
 
 
 @view_config(

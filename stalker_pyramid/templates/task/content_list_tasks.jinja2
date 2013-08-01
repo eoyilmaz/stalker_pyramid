@@ -53,13 +53,7 @@
             </div>
             <div style="float: left;">
                 <button id='list_tasks_refresh_button'>Refresh</button>
-{#                <button id='minus_1_month'>-1m</button>#}
-{#                <button id='minus_1_week'>-1w</button>#}
-{#                <button id='minus_1_day'>-1d</button>#}
                 <button id='list_tasks_go_to_today_button'>Go To Today</button>
-{#                <button id='plus_1_day'>+1d</button>#}
-{#                <button id='plus_1_week'>+1w</button>#}
-{#                <button id='plus_1_month'>+1m</button>#}
             </div>
         </div>
     </div>
@@ -67,8 +61,6 @@
 
 <div style='width:100%; height: 94%; position: absolute; margin-top: 30px;'>
     <div id="gantt" style="position: static; width: 100%; height: 100%;"></div>
-{#    <div id="gantt"></div>#}
-{#    <div id="gantt" ></div>#}
 </div>
 
 
@@ -510,7 +502,7 @@
             },
             loadingMessage: "<div style='float: left' class='dijitIconLoading'>&nbsp</div><div>Loading</div>",
             noDataMessage: "",
-            pageSkip: 20,
+            pageSkip: 0,
             cellNavigation: false
         }, 'gantt');
         gantt_chart.startup();
@@ -538,7 +530,7 @@
         var reload_gantt_button = new Button({
             label: 'Reload',
             onClick: function () {
-                gantt_column.refresh();
+                gantt_column.reload();
             }
         }, 'list_tasks_gantt_reload_button');
         reload_gantt_button.startup();

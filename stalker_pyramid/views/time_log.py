@@ -33,7 +33,7 @@ from stalker_pyramid.views import (get_logged_in_user,
                                    get_date)
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.WARNING)
+logger.setLevel(logging.DEBUG)
 
 
 @view_config(
@@ -121,6 +121,7 @@ def create_time_log(request):
     if task and resource and start_date and end_date:
         # we are ready to create the time log
         # TimeLog should handle the extension of the effort
+        logger.debug('got all the data')
         try:
             time_log = TimeLog(
                 task=task,
@@ -129,9 +130,13 @@ def create_time_log(request):
                 end=end_date
             )
         except OverBookedError:
+            logger.debug('TimeLog thrown OverBookedError!')
             return HTTPServerError()
         else:
             DBSession.add(time_log)
+        logger.debug('no problem here!')
+
+    logger.debug('successfully created time log!')
 
     return HTTPOk()
 

@@ -1,10 +1,11 @@
 define([
     'dojo/dom-construct',
     "dojo/_base/array",
+    'dojo/_base/lang',
     "dojo/date/locale",
     "put-selector/put",
     'stalker/GanttTask'
-], function (domConstruct, array, locale, put, GanttTask) {
+], function (domConstruct, array, lang, locale, put, GanttTask) {
     // module:
     //     ganttColumn
     // summary:
@@ -95,7 +96,7 @@ define([
 
 //            data.progress = data.completed * 100;
 //            data.link = function () {
-//                return this.name;
+//                return column.name;
 //            };
 
             var taskBar;
@@ -194,15 +195,30 @@ define([
             // summary:
             //     Refreshes the header cell
             // remove the header contents
+
+            // set some defaults
+            kwargs = lang.mixin(
+                kwargs,
+                { // default values
+                    'start': column.start,
+                    'end': column.end
+                }
+            );
+
             domConstruct.empty(column.headerNode);
             column.renderHeaderCell(column.headerNode);
-
-            column.start = kwargs.start || column.start;
-            column.end = kwargs.end || column.end;
+            
+            column.start = kwargs.start;
+            column.end = kwargs.end;
 
             // let it adjust the scrollbars
             column.grid.resize();
-//            column.grid.refresh();
+        };
+
+        column.reload = function () {
+            // summary:
+            //      reloads the grid data
+            column.grid.refresh();
         };
 
         column.scrollToDate = function (date) {
@@ -221,7 +237,7 @@ define([
 
         column.centerOnToday = function () {
             // scrolls to today
-            this.scrollToDate(new Date());
+            column.scrollToDate(new Date());
         };
 
         column.renderHeaderCell = function (th) {

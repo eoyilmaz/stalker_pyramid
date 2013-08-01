@@ -17,12 +17,13 @@
  License along with this library; if not, write to the Free Software
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #}
-<div id='view_users'>
+<div id='view_users' style="width: 100%; height: 100%">
     {% if has_permission('Update_User') %}
         <button id='view_users_append_user_button'>Append User</button>
     {% endif %}
     <div style='width:100%; height: 100%; position: absolute;'>
-        <div id='users_data_grid' style='position: static;'></div>
+        <div id='users_data_grid'
+             style="position: static; width: 100%; height: 100%;"></div>
     </div>
 </div>
 
