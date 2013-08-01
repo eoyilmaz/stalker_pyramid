@@ -48,12 +48,27 @@ def create_vacation_dialog(request):
     logged_in_user = get_logged_in_user(request)
 
     
-    user_id = request.matchdict['user_id']
-    user = User.query.filter(User.user_id==user_id).first()
+    user_id = int(request.matchdict.get('user_id', -1))
+    user = User.query.filter_by(name='admin').first()
+
+
+
+    studio = Studio.query.first()
+
+    logger.debug('user_id     : %s' % user_id)
+    logger.debug('studio.id        : %s' % studio.id)
+
+    if user_id==studio.id:
+        type = 'StudioWide'
+    else:
+        type = None
+        user = User.query.filter(User.user_id==user_id).first()
+
 
     vacation_types = Type.query.filter_by(target_entity_type='Vacation').all()
     
-    studio = Studio.query.first()
+
+
     if not studio:
         studio = defaults
     
@@ -64,6 +79,7 @@ def create_vacation_dialog(request):
         'logged_in_user': logged_in_user,
         'user': user,
         'types':vacation_types,
+        'type': type,
         'milliseconds_since_epoch': milliseconds_since_epoch
     }
 
@@ -86,6 +102,7 @@ def update_vacation_dialog(request):
     vacation_types = Type.query.filter_by(target_entity_type='Vacation').all()
 
     studio = Studio.query.first()
+
     if not studio:
         studio = defaults
 
@@ -107,7 +124,7 @@ def update_vacation_dialog(request):
 def create_vacation(request):
     """runs when creating a vacation
     """
-    user_id = request.params.get('user_id')
+    user_id = int(request.params.get('user_id'))
     user = User.query.filter(User.id==user_id).first()
     
     #**************************************************************************
@@ -123,7 +140,7 @@ def create_vacation(request):
     logger.debug('start_date  : %s' % start_date)
     logger.debug('end_date    : %s' % end_date)
     
-    if user and start_date and end_date:
+    if start_date and end_date:
         # we are ready to create the time log
         # Vacation should handle the extension of the effort
 
@@ -140,15 +157,35 @@ def create_vacation(request):
                 code=type_name,
                 target_entity_type='Vacation'
             )
+        studio = Studio.query.first()
+        logger.debug('user_id     : %s' % user_id)
+        logger.debug('studio.id     : %s' % studio.id)
 
-        vacation = Vacation(
-            user=user,
-            created_by=logged_in_user,
-            type = type_,
-            start=start_date,
-            end=end_date
-        )
-        DBSession.add(vacation)
+        if user_id==studio.id:
+            logger.debug('its a studio vacation')
+            for user_ in studio.users:
+                logger.debug('creating for user     : %s' % user_.id)
+                vacation = Vacation(
+                    user=user_,
+                    created_by=logged_in_user,
+                    type = type_,
+                    start=start_date,
+                    end=end_date
+                )
+                DBSession.add(vacation)
+        else:
+            if user and type_name!='StudioWide':
+                logger.debug('its a personal vacation')
+                vacation = Vacation(
+                    user=user,
+                    created_by=logged_in_user,
+                    type = type_,
+                    start=start_date,
+                    end=end_date
+                )
+                DBSession.add(vacation)
+        logger.debug('end of creating vacation')
+
     else:
         HTTPServerError()
     
@@ -203,6 +240,28 @@ def update_vacation(request):
        HTTPServerError()
 
     return HTTPOk()
+
+@view_config(
+    route_name='list_studio_vacations',
+    renderer='templates/vacation/content_list_vacations.jinja2'
+)
+def list_studio_vacations(request):
+    """lists the time logs of the given user
+    """
+
+    logger.debug('list_vacations is running')
+
+    studio_id = request.matchdict['studio_id']
+    studio = Studio.query.filter_by(id=studio_id).first()
+
+    user = User.query.filter_by(name='admin').first()
+
+
+    return {
+        'studio':studio,
+        'user': user,
+        'has_permission': PermissionChecker(request)
+    }
 
 @view_config(
     route_name='list_vacations',

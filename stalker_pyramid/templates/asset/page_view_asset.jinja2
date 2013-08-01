@@ -78,6 +78,7 @@
                 });
 
                 asset_related_data_tab_container.addChild(summary_content_pane);
+
                 {% if has_permission('List_Ticket') %}
                     var tickets_content_pane = new ContentPane({
                         title: 'Tickets',
@@ -87,6 +88,7 @@
 
                     asset_related_data_tab_container.addChild(tickets_content_pane);
                 {% endif %}
+
                 {% if has_permission('List_Version') %}
                     var versions_content_pane = new ContentPane({
                         title: 'Versions',

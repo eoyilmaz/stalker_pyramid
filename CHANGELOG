@@ -49,6 +49,10 @@ Stalker Pyramid Changes
 * **Update:** In task create/update dialog hierarchical task name order is
     reversed for easy to find.
 * **New:** Remaining Time attributed is added to task tool tip window.
+* **New:** In create/update timelog dialog when the alert box is appeared for
+    warning about getting extra hours, user can cancel the action.
+* **New:** Vacation page is created for Studio. Added create vacation dialog.
+
 
 * **jQueryGantt:**
 

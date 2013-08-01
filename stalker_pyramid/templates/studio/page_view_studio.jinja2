@@ -62,14 +62,14 @@
                 }, 'studio_border_container');
 
 
-{#                var title_content_pane = new ContentPane({#}
-{#                    title: 'Title',#}
-{#                    content: '<div style="background-color: #eeeeee; text-align: center"><h3><strong>{{ studio.name }} ({{ studio.code }})</strong></h3></div>',#}
-{#                    region: 'top',#}
-{#                    splitter: true,#}
-{#                    resizable: false,#}
-{#                    style: 'width:100%; height:30px; padding: 0; background-color: #eeeeee;'#}
-{#                }, 'studio_title');#}
+                {#                var title_content_pane = new ContentPane({#}
+                {#                    title: 'Title',#}
+                {#                    content: '<div style="background-color: #eeeeee; text-align: center"><h3><strong>{{ studio.name }} ({{ studio.code }})</strong></h3></div>',#}
+                {#                    region: 'top',#}
+                {#                    splitter: true,#}
+                {#                    resizable: false,#}
+                {#                    style: 'width:100%; height:30px; padding: 0; background-color: #eeeeee;'#}
+                {#                }, 'studio_title');#}
 
                 var summary_content_pane = new ContentPane({
                     title: 'Summarize',
@@ -114,6 +114,18 @@
 
                 {% endif %}
 
+                {% if has_permission('List_Vacation')%}
+
+                    var vacations_content_pane = new ContentPane({
+                        title: 'Vacations',
+                        href: 'list/studio_vacations/{{ studio.id }}',
+                        default_href: 'list/studio_vacations/{{ studio.id }}',
+                        style: 'padding: 0; margin:0;'
+                    });
+                    studio_related_data_tab_container.addChild(vacations_content_pane);
+
+                {% endif %}
+
                 studio_related_data_tab_container.startup();
 
 
@@ -123,11 +135,9 @@
                 studio_content_BorderContainer.startup();
 
 
-
-
                 studio_related_data_tab_container.watch("selectedChildWidget", function (name,
-                                                                                          oval,
-                                                                                          nval) {
+                                                                                         oval,
+                                                                                         nval) {
                     console.debug("selected child changed from ", nval.title, " to ", nval.href);
 
                     oval.set('href', '');
