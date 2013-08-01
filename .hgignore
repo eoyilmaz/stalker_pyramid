@@ -30,3 +30,5 @@ local
 *.swp
 stalker_pyramid.db*
 .git/
+pyramid.log
+pyramid.pid
