@@ -33,7 +33,7 @@ from stalker import log
 from stalker_pyramid.views import PermissionChecker, get_logged_in_user
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.WARNING)
 
 @view_config(
     route_name='dialog_create_shot',

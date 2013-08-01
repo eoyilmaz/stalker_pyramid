@@ -12,12 +12,14 @@ $.JST = {
             $(this).find(".__template__").each(function () {
                 var tmpl = $(this);
                 var type = tmpl.attr("type");
+                var templateBody;
 
                 //template may be inside <!-- ... --> or not in case of ajax loaded templates
-                if (tmpl.get(0).firstChild.nodeType == 8) // 8==comment
-                    var templateBody = tmpl.get(0).firstChild.nodeValue; // this is inside the comment
-                else
-                    var templateBody = tmpl.html(); // this is the whole template
+                if (tmpl.get(0).firstChild.nodeType === 8){ // 8==comment
+                    templateBody = tmpl.get(0).firstChild.nodeValue; // this is inside the comment
+                } else {
+                    templateBody = tmpl.html(); // this is the whole template
+                }
 
                 if (!templateBody.match(/##\w+##/)) { // is Resig' style? e.g. (#=id#) or (# ...some javascript code 'obj' is the alias for the object #)
                     var strFunc =
@@ -29,19 +31,19 @@ $.JST = {
                                 .split("\t").join("'")
                                 .replace(/\(#=(.+?)#\)/g, "',$1,'")
                                 .split("(#").join("');")
-                                .split("#)").join("p.push('")
-                            + "');}return p.join('');";
+                                .split("#)").join("p.push('") +
+                            "');}return p.join('');";
                     try {
                         $.JST._templates[type] = new Function("obj", strFunc);
                     } catch (e) {
-                        console.error("JST error: " + type, e, strFunc);
+                        document.console.error("JST error: " + type, e, strFunc);
                     }
 
                 } else { //plain template   e.g. ##id##
                     try {
                         $.JST._templates[type] = templateBody;
                     } catch (e) {
-                        console.error("JST error: " + type, e, templateBody);
+                        document.console.error("JST error: " + type, e, templateBody);
                     }
                 }
 
@@ -54,12 +56,13 @@ $.JST = {
     createFromTemplate: function (jsonData, template, transformToPrintable) {
         var templates = $.JST._templates;
 
-        var jsData = new Object();
+        var jsData = {};
         if (transformToPrintable) {
             for (var prop in jsonData) {
                 var value = jsonData[prop];
-                if (typeof(value) == "string")
+                if (typeof(value) === "string"){
                     value = (value + "").replace(/\n/g, "<br>");
+                }
                 jsData[prop] = value;
             }
         } else {
@@ -68,7 +71,7 @@ $.JST = {
 
 
         function fillStripData(strip, data) {
-            for (var prop in data) {
+            for(var prop in data) {
                 var value = data[prop];
 
                 strip = strip.replace(new RegExp("##" + prop + "##", "gi"), value);
@@ -79,22 +82,22 @@ $.JST = {
         }
 
         var stripString = "";
-        if (typeof(template) == "undefined") {
-            alert("Template is required");
+        if (typeof(template) === "undefined") {
+            document.alert("Template is required");
             stripString = "<div>Template is required</div>";
 
-        } else if (typeof(templates[template]) == "function") { // resig template
+        } else if (typeof(templates[template]) === "function") { // resig template
             try {
                 stripString = templates[template](jsData);// create a jquery object in memory
             } catch (e) {
-                console.error("JST error: " + template, e.message);
+                document.console.error("JST error: " + template, e.message);
                 stripString = "<div> ERROR: " + template + "<br>" + e.message + "</div>";
             }
 
         } else {
             stripString = templates[template]; // recover strip template
             if (!stripString || stripString.trim() == "") {
-                console.error("No template found for type '" + template + "'");
+                document.console.error("No template found for type '" + template + "'");
                 return $("<div>");
 
             } else {
@@ -107,7 +110,7 @@ $.JST = {
 
         //decorate the strip
         var dec = $.JST._decorators[template];
-        if (typeof (dec) == "function")
+        if (typeof (dec) === "function")
             dec(ret, jsData);
 
         return ret;
@@ -129,7 +132,7 @@ $.JST = {
 
     decorateTemplate: function (element) {
         var dec = $.JST._decorators[element.attr("__template")];
-        if (typeof (dec) == "function")
+        if (typeof (dec) === "function")
             dec(editor);
     },
 
@@ -143,8 +146,9 @@ $.JST = {
 
             $.JST.loadTemplates(div);
 
-            if (typeof(callback == "function"))
+            if (typeof(callback === "function")){
                 callback();
+            }
         }, "html");
     },
 

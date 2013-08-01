@@ -22,36 +22,38 @@
  */
 
 
-function Task(kwargs) {
-    this.id = kwargs['id'] || null;
-    this.name = kwargs['name'] || null;
-    this.hierarchy_name = kwargs['hierarchy_name'] || null;
-    this.description = kwargs['description'] || null;
-    
-    this.priority = kwargs['priority'] || 500;
 
-    this.type = kwargs['type'] || null;
+function Task(kwargs) {
+    'use strict';
+    this.id = kwargs.id || null;
+    this.name = kwargs.name || null;
+    this.hierarchy_name = kwargs.hierarchy_name || null;
+    this.description = kwargs.description || null;
+    
+    this.priority = kwargs.priority || 500;
+
+    this.type = kwargs.type || null;
 
     this.status = "STATUS_UNDEFINED";
 
     this.children = [];
     this.child_ids = [];
-    this.parent_id = kwargs['parent_id'] || null;
-    this.parent = kwargs['parent'] || null;
-    this.depend_ids = kwargs['depend_ids'] || [];
+    this.parent_id = kwargs.parent_id || null;
+    this.parent = kwargs.parent || null;
+    this.depend_ids = kwargs.depend_ids || [];
     this.depends = null;
 
-    this.start = kwargs['start'] || null;
-    this.duration = kwargs['duration'] || null;
-    this.end = kwargs['end'] || null;
+    this.start = kwargs.start || null;
+    this.duration = kwargs.duration || null;
+    this.end = kwargs.end || null;
 
-    this.schedule_model = kwargs['schedule_model'];
-    this.schedule_timing = (kwargs['schedule_timing'] || 10).toFixed(1);
-    this.schedule_unit = kwargs['schedule_unit'] || 'h';
-    this.schedule_constraint = kwargs['schedule_constraint'] || 0;
+    this.schedule_model = kwargs.schedule_model;
+    this.schedule_timing = (kwargs.schedule_timing || 10).toFixed(1);
+    this.schedule_unit = kwargs.schedule_unit || 'h';
+    this.schedule_constraint = kwargs.schedule_constraint || 0;
 
-    this.schedule_seconds = kwargs['schedule_seconds'] || 0;
-    this.total_logged_seconds = kwargs['total_logged_seconds'] || 0;
+    this.schedule_seconds = kwargs.schedule_seconds || 0;
+    this.total_logged_seconds = kwargs.total_logged_seconds || 0;
 
     this.remaining_seconds = ((this.schedule_seconds -this.total_logged_seconds)/3600 ).toFixed(1)+' h';
 
@@ -61,8 +63,8 @@ function Task(kwargs) {
 //    console.debug('this.schedule_seconds     : ', this.schedule_seconds);
 //    console.debug('this.progress             : ', this.progress);
 
-    this.bid_timing = (kwargs['bid_timing']).toFixed(1);
-    this.bid_unit = kwargs['bid_unit'];
+    this.bid_timing = (kwargs.bid_timing).toFixed(1);
+    this.bid_unit = kwargs.bid_unit;
 
 //    console.debug('schedule_constraint : ', this.schedule_constraint);
 //    console.debug('schedule_model      : ', this.schedule_model);
@@ -86,19 +88,20 @@ function Task(kwargs) {
     this.lowestChildRow = null; // for hierarchical row inserts
 
     this.ganttElements = []; //gantt html element
-    this.master = kwargs['master'] || null;
+    this.master = kwargs.master || null;
 
-    this.resources = kwargs['resources'] || [];
-    this.resource_ids = kwargs['resource_ids'] || [];
+    this.resources = kwargs.resources || [];
+    this.resource_ids = kwargs.resource_ids || [];
     
-    if (this.resource_ids.length == 0){
+    var i;
+    if (this.resource_ids.length === 0){
         // no problem if there are no resources
-        for (var i = 0; i < this.resources.length; i++) {
+        for (i = 0; i < this.resources.length; i++) {
             this.resource_ids.push(this.resources[i].id);
         }
     } else {
-        if (this.master != null){
-            for (var i = 0; i < this.resource_ids.length; i++){
+        if (this.master !== null){
+            for (i = 0; i < this.resource_ids.length; i++){
                 this.resources.push(this.master.getResource(this.resource_ids[i]));
             }
         }
@@ -112,9 +115,10 @@ function Task(kwargs) {
 }
 
 Task.prototype.clone = function () {
+    'use strict';
     var ret = {};
     for (var key in this) {
-        if (typeof(this[key]) != "function") {
+        if (typeof(this[key]) !== "function") {
             ret[key] = this[key];
         }
     }
@@ -122,37 +126,41 @@ Task.prototype.clone = function () {
 };
 
 Task.prototype.getResourcesString = function () {
+    'use strict';
     var ret = "";
     for (var i = 0; i < this.resources.length; i++) {
         var resource = this.resources[i];
         var res = this.master.getResource(resource.id);
         if (res) {
-            ret = ret + (ret == "" ? "" : ", ") + res.name;
+            ret = ret + (ret === "" ? "" : ", ") + res.name;
         }
     }
     return ret;
 };
 
 Task.prototype.getResourcesLinks = function () {
+    'use strict';
     var ret = "";
     for (var i = 0; i < this.resources.length; i++) {
-        ret = ret + (ret == "" ? "" : ", ") + this.resources[i].link();
+        ret = ret + (ret === "" ? "" : ", ") + this.resources[i].link();
     }
     return ret;
 };
 
 Task.prototype.getDependsLinks = function () {
+    'use strict';
     var depends = this.getDepends();
     var ret = "";
     for (var i = 0; i < depends.length; i++) {
-        ret = ret + (ret == "" ? "" : ", ") + depends[i].link();
+        ret = ret + (ret === "" ? "" : ", ") + depends[i].link();
     }
     return ret;
 };
 
 Task.prototype.link = function () {
+    'use strict';
     var rendered;
-    if (this.type == 'Project') {
+    if (this.type === 'Project') {
         rendered = $.JST.createFromTemplate(this, "PROJECTLINK");
     } else {
         rendered = $.JST.createFromTemplate(this, "TASKLINK");
@@ -162,6 +170,7 @@ Task.prototype.link = function () {
 
 
 Task.prototype.createResource = function (kwargs) {
+    'use strict';
     var resource = new Resource(kwargs);
     this.resources.push(resource);
     return resource;
@@ -170,6 +179,7 @@ Task.prototype.createResource = function (kwargs) {
 
 //<%---------- TASK STRUCTURE ---------------------- --%>
 Task.prototype.getRow = function () {
+    'use strict';
     var index = -1;
     if (this.master)
         index = this.master.tasks.indexOf(this);
@@ -178,9 +188,10 @@ Task.prototype.getRow = function () {
 
 
 Task.prototype.getParents = function () {
+    'use strict';
     var parents = [];
     var current_task = this.getParent();
-    while (current_task != null) {
+    while (current_task !== null) {
         parents.push(current_task);
         current_task = current_task.parent;
     }
@@ -189,16 +200,17 @@ Task.prototype.getParents = function () {
 
 
 Task.prototype.getParent = function () {
-    if (this.parent_id != null && this.parent == null) {
+    'use strict';
+    if (this.parent_id !== null && this.parent === null) {
         // there should be a parent
         // find the parent from parent_id
         var current_task;
 
         var parent_index = this.master.task_ids.indexOf(this.parent_id);
-        if (parent_index != -1) {
+        if (parent_index !== -1) {
             this.parent = this.master.tasks[parent_index];
             // register the current task as a child of the parent task
-            if (this.parent.child_ids.indexOf(this.id) == -1) {
+            if (this.parent.child_ids.indexOf(this.id) === -1) {
                 this.parent.child_ids.push(this.id);
                 this.parent.children.push(this);
             }
@@ -209,18 +221,21 @@ Task.prototype.getParent = function () {
 
 
 Task.prototype.isParent = function () {
+    'use strict';
     return this.children.length > 0;
 };
 
 Task.prototype.isLeaf = function () {
-    return this.children.length == 0;
+    'use strict';
+    return this.children.length === 0;
 };
 
 
 Task.prototype.sortChildren = function(){
+    'use strict';
     // sorts the children to their start dates
     this.children.sort(function (a, b) {
-        return a.start - b.start
+        return a.start - b.start;
     });
     // update child_ids
     this.child_ids = [];
@@ -231,16 +246,19 @@ Task.prototype.sortChildren = function(){
 
 
 Task.prototype.getChildren = function () {
+    'use strict';
     return this.children;
 };
 
 
 Task.prototype.getDescendant = function () {
+    'use strict';
     return this.children;
 };
 
 Task.prototype.getDepends = function () {
-    if (this.depends == null) {
+    'use strict';
+    if (this.depends === null) {
         this.depends = [];
         if (this.depend_ids.length > 0) {
             // find the tasks
@@ -251,7 +269,7 @@ Task.prototype.getDepends = function () {
                 dep_id = this.depend_ids[i];
                 dep_index = this.master.task_ids.indexOf(dep_id);
 
-                if (dep_index != -1) {
+                if (dep_index !== -1) {
                     dep = this.master.tasks[dep_index];
                     this.depends.push(dep);
                     // also update depends_string
@@ -263,9 +281,11 @@ Task.prototype.getDepends = function () {
 };
 
 Task.prototype.setDepends = function (depends) {
+    'use strict';
     // if this is not an array but a string parse it as depends string
     var dependent_task;
-    if (typeof(depends) == 'string') {
+    var i;
+    if (typeof(depends) === 'string') {
         // parse it as depends string
         this.depends_string = depends;
         this.depends = [];
@@ -273,10 +293,10 @@ Task.prototype.setDepends = function (depends) {
         var deps = this.depends_string.split(',');
         var dep_id;
         var depend_index;
-        for (var i = 0; i < deps.length; i++) {
+        for (i = 0; i < deps.length; i++) {
             dep_id = deps[i].split(':')[0].trim(); // don't care about the lag
-            depend_index = this.master.task_ids.indexOf(dep);
-            if (depend_index != -1) {
+            depend_index = this.master.task_ids.indexOf(dep_id);
+            if (depend_index !== -1) {
                 dependent_task = this.master.tasks[depend_index];
                 this.depends.push(dependent_task);
                 this.depend_ids.push(dependent_task.id);
@@ -288,7 +308,7 @@ Task.prototype.setDepends = function (depends) {
         this.depend_ids = [depends.id];
     } else if (depends instanceof Array) {
         // should be an array
-        for (var i; i < depends.length; i++) {
+        for (i = 0; i < depends.length; i++) {
             dependent_task = depends[i];
             if (dependent_task instanceof Task) {
                 this.depends.push(dependent_task);
@@ -301,6 +321,7 @@ Task.prototype.setDepends = function (depends) {
 
 
 Task.prototype.getSuperiors = function () {
+    'use strict';
     // Returns the Tasks that this task depends to.
     return this.getDepends();
 };
@@ -308,11 +329,12 @@ Task.prototype.getSuperiors = function () {
 
 Task.prototype.getInferiors = function () {
     // Returns the tasks that depends to this task
+    'use strict';
     var ret = [];
     var task = this;
     if (this.master) {
         ret = this.master.links.filter(function (link) {
-            return link.from == task;
+            return link.from === task;
         });
     }
     return ret;
@@ -381,8 +403,13 @@ Task.prototype.toggleCollapse = function(kwargs){
 Task.prototype.hide = function(){
     // hide self and all child
     var rowElement = this.rowElement;
-    if (rowElement != null){
+    var ganttElements = this.ganttElements;
+    var i;
+    if (rowElement !== null){
         rowElement.css('display', 'none');
+        for (i = 0; i < ganttElements.length; i++){
+            ganttElements[i].css('display', 'none');
+        }
     } else {
         // task has never been drawn
         // draw it
@@ -391,9 +418,10 @@ Task.prototype.hide = function(){
         this.rowElement.css('display', 'none');
     }
     if (this.isParent()){
-        for (var i=0; i < this.children.length; i++){
-            var child = this.children[i];
-            child.hide();
+        var child_count = this.children.length;
+        var children = this.children;
+        for (var i = 0; i < child_count; i++){
+            children[i].hide();
         }
     }
     this.hidden = true;
@@ -402,9 +430,14 @@ Task.prototype.hide = function(){
 Task.prototype.show = function(){
     // show self and all child
     var rowElement = this.rowElement;
-    if (rowElement != null){
+    var ganttElements = this.ganttElements;
+    var i;
+    if (rowElement !== null){
 //        console.debug('there are rowElement');
         rowElement.css('display', 'table-row');
+        for (i = 0; i < ganttElements.length; i++){
+            ganttElements[i].css('display', 'block');
+        }
     } else {
         // task has never been drawn
         // draw it
@@ -416,9 +449,10 @@ Task.prototype.show = function(){
     this.hidden = false;
     if (this.isParent()){
         if (!this.collapsed){
-            for (var i=0; i < this.children.length; i++){
-                var child = this.children[i];
-                child.show();
+            var child_count = this.children.length;
+            var children = this.children;
+            for (i = 0; i < child_count; i++){
+                children[i].show();
             }
         }
     }
@@ -427,7 +461,7 @@ Task.prototype.show = function(){
 Task.prototype.isParentsCollapsed = function(){
     // returns true or false depending on any of its parent is collapsed
     var current_task = this.getParent();
-    while (current_task != null) {
+    while (current_task !== null) {
         if (current_task.collapsed){
             this.hidden = true;
             return true;
@@ -437,19 +471,6 @@ Task.prototype.isParentsCollapsed = function(){
     return false;
 };
 
-
-//Task.prototype.updateParentsLowestChildRow = function(){
-//    // also update all parents
-//    var all_parents = this.getParents();
-//    var current_parent;
-//    for (var i=0; i < all_parents.length; i++){
-//        current_parent = all_parents[i];
-//        if (this.rowElement.position().top < current_parent.lowestChildRow.position().top){
-//            current_parent.lowestChildRow = this.rowElement;
-//        }
-//    }
-//};
-
 Task.prototype.draw = function(editor){
 //    console.debug('Task.draw start');
     
@@ -458,14 +479,11 @@ Task.prototype.draw = function(editor){
     // hopefully we should have a rowElement
     this.lowestChildRow = editor.addTask(self);
     if (!this.collapsed){
-//        console.debug('this.collapsed : ', this.collapsed);
-//        console.debug('this          : ', this);
-//        console.debug('this.children : ', this.children);
         var child_task = null;
-        for (var i=0; i<this.children.length; i++){
-            child_task = this.children[i];
-//            console.debug('child_task : ', child_task);
-            child_task.draw(editor);
+        var child_count = this.children.length;
+        var children = this.children;
+        for (var i=0; i < child_count; i++){
+            children[i].draw(editor);
         }
         // add last children's lowestRow to self
         if (child_task){

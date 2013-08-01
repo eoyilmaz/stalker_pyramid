@@ -37,7 +37,7 @@ Stalker Pyramid Changes
 * **New:** 'Updated by' attribute is added to task summary page.
 * **New:** In task create/update dialog a combo box is added to select different
     type of task entity such as Asset, Shot, Sequence. Based on the selected
-    entity new proporties are added to dialog form.
+    entity new properties are added to dialog form.
 * **Update:** In task create/update dialog hierarchical task name order is
     reversed for easy to find.
 * **New:** Remaining Time attributed is added to task tool tip window.
