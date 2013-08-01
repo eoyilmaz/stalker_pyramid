@@ -25,7 +25,7 @@
         {# Tab View #}
 
     </div>
-  <div id='history_content_pane'>
+    <div id='history_content_pane'>
         {# Tab View #}
 
     </div>
@@ -43,7 +43,6 @@
                     splitter: true,
                     resizable: false,
                     style: 'width:100%; height:100%; margin:0; padding: 0;'
-
                 }, 'ticket_border_container');
 
                 var nav_bar_content_pane = new ContentPane({
@@ -72,7 +71,7 @@
                     title: 'History',
                     content: 'history/ticket/{{ ticket.id }}',
                     style: 'padding: 0; margin:0; width:1200px;',
-                    region: 'right'
+                    region: 'bottom'
                 },'history_content_pane');
 
                 ticket_BorderContainer.addChild(history_content_pane);

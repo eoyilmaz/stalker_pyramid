@@ -347,6 +347,9 @@ def main(global_config, **settings):
     config.add_route('summarize_ticket', 'summarize/ticket/{ticket_id}')
     config.add_route('get_tickets',
                      'get/tickets/{entity_id}') # returns json
+    config.add_route('get_task_tickets',
+                     'get/task_tickets/{entity_id}') # returns json
+
     config.add_route('list_tickets',
                      'list/tickets/{entity_id}') # returns response
 
@@ -364,6 +367,8 @@ def main(global_config, **settings):
                      'get/vacations/{user_id}') # returns json
     config.add_route('list_vacations',
                      'list/vacations/{user_id}') # returns response
+    config.add_route('list_studio_vacations',
+                     'list/studio_vacations/{studio_id}')
 
 
      # *************************************************************************

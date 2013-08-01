@@ -284,7 +284,7 @@ GanttDrawer.prototype.create = function (zoom, originalStartMillis, originalEndM
         table.append(tr1).append(tr2).append(trBody).addClass("ganttTable").css({width: '100%'});
         table.height(self.master.editor.element.height());
 
-        var box = $("<div>");
+        var box = $("<tr>");
 //        box.addClass("gantt unselectable").attr("unselectable", "true").css({position: "relative", width: computedTableWidth});
         box.addClass("gantt unselectable").attr("unselectable", "true").css({position: "relative", width: '100%', 'overflow': 'hidden'});
         box.append(table);
@@ -377,9 +377,9 @@ GanttDrawer.prototype.drawTask = function (task) {
     }
 
     var owners = [];
-    if (this.master.grid_mode == 'Resource'){
+    if (this.master.grid_mode === 'Resource'){
         owners = task.resources;
-    } else if (this.master.grid_mode == 'Task') {
+    } else if (this.master.grid_mode === 'Task') {
 //        owners.push(time_log.getTask());
         owners.push(task);
     }
@@ -402,12 +402,12 @@ GanttDrawer.prototype.drawTask = function (task) {
         var taskBox;
         // skip if it is not in the range
         if (!(task.start > this.originalEndMillis || task.end < this.originalStartMillis)) {
-            if (task.type != 'Project') {
+            if (task.type !== 'Project') {
                 if (!task.isParent()) {
                     // if it is a leaf task draw a TASKBAR
-                    if (this.master.grid_mode == 'Task') {
+                    if (this.master.grid_mode === 'Task') {
                         taskBox = $.JST.createFromTemplate(task, "TASKBAR");
-                    } else if (this.master.grid_mode == 'Resource') {
+                    } else if (this.master.grid_mode === 'Resource') {
                         taskBox = $.JST.createFromTemplate(task, "TASKBAR_COMPACT");
                     }
                 } else {
@@ -456,9 +456,9 @@ GanttDrawer.prototype.drawTask = function (task) {
 GanttDrawer.prototype.drawTimeLog = function (time_log) {
     // get the editor row of the resource
     var owner;
-    if (this.master.grid_mode == 'Resource'){
+    if (this.master.grid_mode === 'Resource'){
         owner = time_log.getResource();
-    } else if (this.master.grid_mode == 'Task') {
+    } else if (this.master.grid_mode === 'Task') {
         owner = time_log.getTask();
     }
 

@@ -1,0 +1,67 @@
+.task-bar {
+    height: 15px;
+    position: absolute;
+    background-color: #0e0;
+    border-radius: 5px;
+    box-shadow: 2px 2px 3px #aaa;
+}
+
+.completed-bar {
+    height: 15px;
+    position: absolute;
+    background-color: #0a0;
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
+}
+
+.dep-horizontal-line {
+    height: 1px;
+    background-color: #222;
+    border: 1px solid #ddd;
+}
+
+.dep-vertical-line {
+    width: 1px;
+    top: 0px;
+    border: 1px solid #ddd;
+    border-top: none;
+    background-color: #000;
+}
+
+.dgrid .dgrid-column-chart {
+    position: relative;
+    width: 560px;
+    overflow: visible;
+}
+
+.down-arrow {
+    background-position: -64px -32px;
+}
+
+.dep-horizontal-line, .dep-vertical-line, .down-arrow {
+    position: absolute;
+    z-index: 10;
+}
+
+.dgrid .dependency-row {
+    position: absolute;
+    width: 390px;
+}
+
+.dependencies {
+    height: 300px;
+}
+
+th.dgrid-column-chart {
+    padding: 0px;
+}
+
+th.dgrid-column-chart td {
+    border: 1px solid #aaa;
+    text-align: center;
+}
+
+th.dgrid-column-chart table {
+    border-collapse: collapse;
+    table-layout: fixed;
+}

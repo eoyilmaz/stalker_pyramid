@@ -30,6 +30,9 @@
     <link rel='stylesheet' type='text/css' media='all' charset='utf-8'
           href='{{ request.static_url("stalker_pyramid:static/stalker/css/stalker.css") }}'/>
 
+    <link rel='stylesheet' type='text/css' media='all' charset='utf-8'
+          href='{{ request.static_url("stalker_pyramid:static/stalker/css/ganttColumn.css") }}'/>
+
     {# load jQuery and jQuery Gantt first#}
     {#    <link rel=stylesheet media='all'#}
     {#          href='{{ request.static_url("stalker_pyramid:static/jQueryGantt/libs/dateField/jquery.dateField.css") }}'#}
@@ -73,6 +76,10 @@
     <link rel='stylesheet'
           href='{{ request.static_url("stalker_pyramid:static/dojox/form/resources/FileInput.css") }}'/>
 
+    {# GANTT COLUMN #}
+    <script src='{{ request.static_url("stalker_pyramid:static/stalker/ganttColumn.js") }}'></script>
+
+    
     {# DOJO MODIFIED CSS #}
     <link rel='stylesheet' type='text/css' media='all' charset='utf-8'
           href='{{ request.static_url("stalker_pyramid:static/stalker/css/dojo_modified.css") }}'/>
@@ -95,14 +102,14 @@
             <thead>
                 <tr style="height:40px">
                     <th class="gdfColHeader gdfResizable" style="width:20px;">#</th>
-                    <th class="gdfColHeader gdfResizable" style="width:20px;">id</th>
+                    <th class="gdfColHeader gdfResizable" style="width:35px;">id</th>
                     <th class="gdfColHeader gdfResizable" style="width:250px;">name</th>
                     <th class="gdfColHeader gdfResizable" style="width:105px;">start</th>
                     <th class="gdfColHeader gdfResizable" style="width:105px;">end</th>
                     <th class="gdfColHeader gdfResizable" style="width:35px;">timing</th>
                     <th class="gdfColHeader gdfResizable" style="width:100px;">depends</th>
                     <th class="gdfColHeader gdfResizable" style="width:400px; text-align: left;">resources</th>
-                    <th class="gdfColHeader gdfResizable" style="width:685px;"></th>
+                    <th class="gdfColHeader gdfResizable" style="width:670px;"></th>
                 </tr>
             </thead>
         </table>
@@ -113,9 +120,9 @@
             <thead>
                 <tr style="height:40px">
                     <th class="gdfColHeader gdfResizable" style="width:20px;">#</th>
-                    <th class="gdfColHeader gdfResizable" style="width:20px;">id</th>
+                    <th class="gdfColHeader gdfResizable" style="width:35px;">id</th>
                     <th class="gdfColHeader gdfResizable" style="width:250px;">name</th>
-                    <th class="gdfColHeader gdfResizable" style="width:1430px;"></th>
+                    <th class="gdfColHeader gdfResizable" style="width:1415px;"></th>
                 </tr>
             </thead>
         </table>
@@ -196,109 +203,119 @@
     --></div>
 
     <div class="__template__" type="PROJECTBAR"><!--
-        <div class="projectBox" projectId="(#=obj.id#)" >
-            <div class="layout">
-                <div class="projectLabel">(#=obj.link()#)</div>
-            </div>
-        </div>
+        <tr class="projectBox" projectId="(#=obj.id#)" >
+            <td>
+                <div class="layout">
+                    <div class="projectLabel">(#=obj.link()#)</div>
+                </div>
+            </td>
+        </tr>
     --></div>
 
     <div class="__template__" type="TASKBAR"><!--
-        <div class="taskBox" dataId="(#=obj.id#)">
-            <div class="layout (#=obj.hasExternalDep?'extDep':''#)">
-                <div class="taskProgress" style="width:(#=obj.progress>100?100:obj.progress#)%;"></div>
-                <div class="taskExtraTiming" style="width:(#=(obj.schedule_timing - obj.bid_timing)/obj.schedule_timing*100#)%;;"></div>
-                <div class="taskScheduleModel"
-                   style="position: absolute; text-align: center; width: 100%;">
-                   (#=obj.schedule_model.toUpperCase()[0]#): (#=obj.schedule_timing#)(#=obj.schedule_unit#)
+        <tr class="taskBox" dataId="(#=obj.id#)">
+            <td>
+                <div class="layout (#=obj.hasExternalDep?'extDep':''#)">
+                    <div class="taskProgress" style="width:(#=obj.progress>100?100:obj.progress#)%;"></div>
+                    <div class="taskExtraTiming" style="width:(#=(obj.schedule_timing - obj.bid_timing)/obj.schedule_timing*100#)%;;"></div>
+                    <div class="taskScheduleModel"
+                       style="position: absolute; text-align: center; width: 100%;">
+                       (#=obj.schedule_model.toUpperCase()[0]#): (#=obj.schedule_timing#)(#=obj.schedule_unit#)
+                    </div>
+                    <div class="leafTaskContextMenu"
+                        dataId="(#=obj.id#)"
+                        name="(#=obj.name#)"
+                        hierarchy_name="(#=obj.hierarchy_name#)"
+                        start=(#=obj.start#)
+                        end=(#=obj.end#)
+                        type="(#=obj.type#)"
+                        priority=(#=obj.priority#)
+                        bid_timing=(#=obj.bid_timing#)
+                        bid_unit=(#=obj.bid_unit#)
+                        schedule_model=(#=obj.schedule_model#)
+                        schedule_timing=(#=obj.schedule_timing#)
+                        schedule_unit=(#=obj.schedule_unit#)
+                        description="(#=obj.description#)"
+                        remaining_seconds="(#=obj.remaining_seconds#)"
+                        ></div>
+                    <div class="milestone (#=obj.startIsMilestone?'active':''#)" ></div>
+                    <div class="taskLabel">(#=obj.link()#)</div>
+                    <div class="milestone end (#=obj.endIsMilestone?'active':''#)"></div>
+                    <div class="taskResourceLabel">(#=obj.getResourcesLinks()#)</div>
+                    (#=obj.clippedStart?'<div class="leftArrowHead">&nbsp</div>':''#)
+                    (#=obj.clippedEnd?'<div class="rightArrowHead">&nbsp</div>':''#)
                 </div>
-                <div class="leafTaskContextMenu"
-                    dataId="(#=obj.id#)"
-                    name="(#=obj.name#)"
-                    hierarchy_name="(#=obj.hierarchy_name#)"
-                    start=(#=obj.start#)
-                    end=(#=obj.end#)
-                    type="(#=obj.type#)"
-                    priority=(#=obj.priority#)
-                    bid_timing=(#=obj.bid_timing#)
-                    bid_unit=(#=obj.bid_unit#)
-                    schedule_model=(#=obj.schedule_model#)
-                    schedule_timing=(#=obj.schedule_timing#)
-                    schedule_unit=(#=obj.schedule_unit#)
-                    description="(#=obj.description#)"
-                    remaining_seconds="(#=obj.remaining_seconds#)"
-                    ></div>
-                <div class="milestone (#=obj.startIsMilestone?'active':''#)" ></div>
-                <div class="taskLabel">(#=obj.link()#)</div>
-                <div class="milestone end (#=obj.endIsMilestone?'active':''#)"></div>
-                <div class="taskResourceLabel">(#=obj.getResourcesLinks()#)</div>
-                (#=obj.clippedStart?'<div class="leftArrowHead">&nbsp</div>':''#)
-                (#=obj.clippedEnd?'<div class="rightArrowHead">&nbsp</div>':''#)
-            </div>
-        </div>
+            </td>
+        </tr>
     --></div>
 
     <div class="__template__" type="TASKBAR_COMPACT"><!--
-        <div class="taskBox" dataId="(#=obj.id#)">
-            <div class="layout (#=obj.hasExternalDep?'extDep':''#)">
-                <div class="taskProgress" style="width:(#=obj.progress>100?100:obj.progress#)%;"></div>
-                <div class="taskExtraTiming" style="width:(#=(obj.schedule_timing - obj.bid_timing)/obj.schedule_timing*100#)%;;"></div>
-                <div class="taskScheduleModel"
-                   style="position: absolute; text-align: center; width: 100%;">
-                   (#=obj.link()#) (#=obj.schedule_model.toUpperCase()[0]#): (#=obj.schedule_timing#)(#=obj.schedule_unit#)
+        <tr class="taskBox" dataId="(#=obj.id#)">
+            <td>
+                <div class="layout (#=obj.hasExternalDep?'extDep':''#)">
+                    <div class="taskProgress" style="width:(#=obj.progress>100?100:obj.progress#)%;"></div>
+                    <div class="taskExtraTiming" style="width:(#=(obj.schedule_timing - obj.bid_timing)/obj.schedule_timing*100#)%;;"></div>
+                    <div class="taskScheduleModel"
+                       style="position: absolute; text-align: center; width: 100%;">
+                       (#=obj.link()#) (#=obj.schedule_model.toUpperCase()[0]#): (#=obj.schedule_timing#)(#=obj.schedule_unit#)
+                    </div>
+                    <div class="leafTaskContextMenu"
+                        dataId="(#=obj.id#)"
+                        name="(#=obj.name#)"
+                        hierarchy_name="(#=obj.hierarchy_name#)"
+                        start=(#=obj.start#)
+                        end=(#=obj.end#)
+                        type="(#=obj.type#)"
+                        priority=(#=obj.priority#)
+                        schedule_model=(#=obj.schedule_model#)
+                        schedule_timing=(#=obj.schedule_timing#)
+                        schedule_unit=(#=obj.schedule_unit#)
+                        description="(#=obj.description#)"
+                        ></div>
                 </div>
-                <div class="leafTaskContextMenu"
-                    dataId="(#=obj.id#)"
-                    name="(#=obj.name#)"
-                    hierarchy_name="(#=obj.hierarchy_name#)"
-                    start=(#=obj.start#)
-                    end=(#=obj.end#)
-                    type="(#=obj.type#)"
-                    priority=(#=obj.priority#)
-                    schedule_model=(#=obj.schedule_model#)
-                    schedule_timing=(#=obj.schedule_timing#)
-                    schedule_unit=(#=obj.schedule_unit#)
-                    description="(#=obj.description#)"
-                    ></div>
-            </div>
-        </div>
+            </td>
+        </tr>
     --></div>
 
     <div class="__template__" type="TASKBAR_ON_LEFT"><!--
-        <div class="leftArrowHead" dataId="(#=obj.id#)">&nbsp</div>
+        <tr class="leftArrowHead" dataId="(#=obj.id#)"><td>&nbsp</td></tr>
 
     --></div>
 
     <div class="__template__" type="TASKBAR_ON_RIGHT"><!--
-        <div class="rightArrowHead" dataId="(#=obj.id#)">&nbsp</div>
+        <tr class="rightArrowHead" dataId="(#=obj.id#)"><td>&nbsp</td></tr>
     --></div>
 
     <div class="__template__" type="PARENTTASKBAR"><!--
-        <div class="parentTaskBox" dataId="(#=obj.id#)">
-            <div class="layout (#=obj.hasExternalDep?'extDep':''#)">
-                <div class="parentTaskContextMenu" dataId="(#=obj.id#)"></div>
-                <div class="leftPin"></div>
-                <div class="rightPin"></div>
-                <div class="taskLabel">(#=obj.link()#)</div>
-            </div>
-        </div>
+        <tr class="parentTaskBox" dataId="(#=obj.id#)">
+            <td>
+                <div class="layout (#=obj.hasExternalDep?'extDep':''#)">
+                    <div class="parentTaskContextMenu" dataId="(#=obj.id#)"></div>
+                    <div class="leftPin"></div>
+                    <div class="rightPin"></div>
+                    <div class="taskLabel">(#=obj.link()#)</div>
+                </div>
+            </td>
+        </tr>
     --></div>
 
     <div class="__template__" type="TIMELOGBAR"><!--
-        <div class="timeLogBox" dataId="(#=obj.id#)">
-            <div class="layout">
-                <div class="timeLogContextMenu"
-                    dataId="(#=obj.id#)"
-                    name="(#=obj.name#)"
-                    start=(#=obj.start#)
-                    end=(#=obj.end#)
-                    task_id=(#=obj.task.id#)
-                    task_name="(#=obj.task.name#)"
-                    task_type="(#=obj.task.type#)"
-                    task_hierarchy_name="(#=obj.task.hierarchy_name#)"
-                    ></div>
-            </div>
-        </div>
+        <tr class="timeLogBox" dataId="(#=obj.id#)">
+            <td>
+                <div class="layout">
+                    <div class="timeLogContextMenu"
+                        dataId="(#=obj.id#)"
+                        name="(#=obj.name#)"
+                        start=(#=obj.start#)
+                        end=(#=obj.end#)
+                        task_id=(#=obj.task.id#)
+                        task_name="(#=obj.task.name#)"
+                        task_type="(#=obj.task.type#)"
+                        task_hierarchy_name="(#=obj.task.hierarchy_name#)"
+                        ></div>
+                </div>
+            </td>
+        </tr>
     --></div>
 
 

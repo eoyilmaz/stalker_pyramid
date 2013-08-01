@@ -139,6 +139,7 @@ require([
     var end_date_value;
     var start_time_value;
     var end_time_value;
+    var task_id = {{ task.id }};
     {# fill values based on the dialog mode #}
     {% if mode == 'CREATE' %}
         url = '{{ request.route_url("create_time_log") }}';
@@ -366,11 +367,20 @@ require([
 
             // first warn the user about their negative remaining hours
             if (hours_to_complete_numberSpinner.value < 0) {
-                alert('You are reporting \n\n' +
+              var strconfirm = confirm('You are reporting \n\n' +
                         Math.abs(hours_to_complete_numberSpinner.value) +
-                        ' extra hours'
-                );
+                        ' extra hours');
+              if (strconfirm == false)
+              {
+                  return false;
+              }
+{#                alert('You are reporting \n\n' +#}
+{#                        Math.abs(hours_to_complete_numberSpinner.value) +#}
+{#                        ' extra hours'#}
+{#                );#}
             }
+
+
 
             // merge start_date and start_time
             var start_datetime_value = start_dateTextBox.value;
@@ -395,16 +405,18 @@ require([
             console.debug('start_datetime_value :', start_datetime_value);
             console.debug('end_datetime_value   :', end_datetime_value);
 
+            console.debug('task_id   :', task_id);
+
             submitForm({
                 dialog: dialog,
                 form: time_log_form,
                 additional_data: {
-                    start: start_datetime_value.toUTCString(),
-                    end: end_datetime_value.toUTCString(),
+                    task_Id: '20',
                     {% if mode == 'UPDATE' %}
                         time_log_id: '{{ time_log.id }}',
                     {% endif %}
-                    task_id: '{{task.id }}'
+                    start: start_datetime_value.toUTCString(),
+                    end: end_datetime_value.toUTCString()
                 },
                 url: url,
                 method: 'POST'

@@ -23,3 +23,7 @@ def main(argv=sys.argv):
     settings = get_appsettings(config_uri)
 
     db.setup(settings)
+    db.init()
+
+if __name__ == '__main__':
+    main()

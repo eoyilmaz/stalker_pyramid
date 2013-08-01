@@ -206,6 +206,8 @@
                 connectId: ['workSpace'],
                 selector: '.timeLogContextMenu',
                 getContent: function (node) {
+
+                    console.debug('node.getProgress(): '+ node.getProgress());
                     var dataId = node.getAttribute('dataId');
                     var name = node.getAttribute('name');
                     var start = new Date(parseInt(node.getAttribute('start')));
@@ -237,7 +239,7 @@
                                 '<td class="input_column">' + end.format("yyyy-mm-dd HH:00") + '</td>' +
                             '</tr>' +
                             '<tr>' +
-                                '<td class="label_column">Description</td>' +
+                                '<td class="label_column">Descriptionnnnnnn</td>' +
                                 '<td class="input_column">' + description + '</td>' +
                             '</tr>' +
                             '</tbody>' +
@@ -453,6 +455,52 @@
                                         related_field_updater: loadGanttFromServer
                                     });
                                     dialog.show();
+                                    {#                                    });#}
+                                }
+                            })
+                        };
+
+                        leaf_taskbar_menu.addChild(create_time_log_menuItem_creator());
+                        leaf_taskrow_menu.addChild(create_time_log_menuItem_creator());
+                    {% endif %}
+
+
+                    {% if has_permission('Create_Ticket') %}
+
+                        parent_taskbar_menu.addChild(new MenuSeparator());
+                        leaf_taskbar_menu.addChild(new MenuSeparator());
+                        parent_taskrow_menu.addChild(new MenuSeparator());
+                        leaf_taskrow_menu.addChild(new MenuSeparator());
+
+                        var create_time_log_menuItem_creator = function () {
+                            return new MenuItem({
+                                label: 'Create Ticket',
+                                onClick: function () {
+                                    var node = this.getParent().currentTarget;
+                                    var dataId = node.getAttribute('dataId');
+
+                                    // check if it is a leaf task
+                                    var task = ge.getTask(dataId);
+                                    //console.debug(task);
+
+                                    if (task.isParent()) {
+                                        // warn the user and return
+                                        alert('This is a container Task,\n' +
+                                                'You can not enter any time_logs for\n' +
+                                                'container Tasks!');
+                                        return;
+                                    }
+
+                                    {#                                    saveGanttOnServer().then(function(){#}
+                                    var dialog = dialogCreator({
+                                        dialog_id: 'ticket_dialog',
+                                        data_id: dataId,
+                                        content_creator: dialogs.create_ticket_dialog,
+                                        related_field_updater: loadGanttFromServer
+                                    });
+                                    dialog.show();
+
+
                                     {#                                    });#}
                                 }
                             })

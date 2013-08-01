@@ -57,9 +57,6 @@ require([
              MenuSeparator, Button, dialogs, dialogCaller, dialogCreator) {
 
 
-
-
-
     var StandardGrid = declare([Grid, Selection, Keyboard]);
 
     var ticket_DataGrid = new StandardGrid({
@@ -92,9 +89,13 @@ require([
 
     function ticket_DataGrid_updater() {
 
+        var target = '/get/tickets/{{ entity.id }}';
+        {% if entity.entity_type == 'Task'%}
+            target = '/get/task_tickets/{{ entity.id }}'
+        {% endif %}
 
         var ticket_memory = new JsonRest({
-            target: '/get/tickets/{{ entity.id }}'
+            target: target
         });
 
         ticket_memory.query().then(function (data) {
