@@ -11,6 +11,7 @@ Stalker Pyramid Changes
 * **Update:** Started to move the view designs towards a RESTFul Service style.
 * **Update:** Adding studio vacation method is changed.Vacation that has not
     got a user is suppose to be studio vacation
+* **Fix:** Minor bug is fixed in update vacation
 
 0.1.0.b1
 ========

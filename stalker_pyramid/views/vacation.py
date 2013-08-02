@@ -90,14 +90,18 @@ def update_vacation_dialog(request):
     vacation_id = request.matchdict['vacation_id']
     vacation = Vacation.query.filter_by(id=vacation_id).first()
 
+    vacation_types = Type.query.filter(Type.target_entity_type=='Vacation').all()
+
 
     studio = Studio.query.first()
 
     if not studio:
         studio = defaults
 
-    vacation_types = Type.query.filter(Type.target_entity_type=='Vacation').all()
-
+    user=vacation.user
+    if not vacation.user:
+        user = studio
+        vacation_types=[]
 
 
     return {
@@ -105,10 +109,9 @@ def update_vacation_dialog(request):
         'has_permission': PermissionChecker(request),
         'studio': studio,
         'logged_in_user': logged_in_user,
-        'user': vacation.user,
+        'user': user,
         'vacation': vacation,
         'types':vacation_types,
-        'type' :type,
         'milliseconds_since_epoch': milliseconds_since_epoch
     }
 
