@@ -9,6 +9,8 @@ Stalker Pyramid Changes
   gantt chart which utilizes a DGrid with OnDemand capabilities. The new Gantt
   Chart is over 100x faster then the previous implementation.
 * **Update:** Started to move the view designs towards a RESTFul Service style.
+* **Update:** Adding studio vacation method is changed.Vacation that has not
+    got a user is suppose to be studio vacation
 
 0.1.0.b1
 ========
@@ -52,6 +54,9 @@ Stalker Pyramid Changes
 * **New:** In create/update timelog dialog when the alert box is appeared for
     warning about getting extra hours, user can cancel the action.
 * **New:** Vacation page is created for Studio. Added create vacation dialog.
+* **Fix:** Minor bug is fixed in fieldUpdater.
+* **Fix:** Minor bug is fixed in create/update time log file.
+
 
 
 * **jQueryGantt:**

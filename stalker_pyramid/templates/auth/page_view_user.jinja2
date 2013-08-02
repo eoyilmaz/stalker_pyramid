@@ -81,7 +81,7 @@
 
         {% endif %}
 
-         {% if has_permission('List_TimeLog') or logged_in_user.id==user.id %}
+        {% if has_permission('List_TimeLog') or logged_in_user.id==user.id %}
 
             var time_logs_content_pane = new ContentPane({
                 title: 'Time Logs',
@@ -161,18 +161,18 @@
         user_related_data_tab_container.startup();
         user_BorderContainer.startup();
 
-{##}
-{#        user_related_data_tab_container.watch("selectedChildWidget", function (name,#}
-{#                                                                               oval,#}
-{#                                                                               nval) {#}
-{#            console.debug("selected child changed from ", nval.title, " to ", nval.href);#}
-{#            oval.set('href', '');#}
-{#            oval.refresh();#}
-{##}
-{#            nval.set('href', nval.default_href);#}
-{#            nval.refresh();#}
-{##}
-{#        });#}
+
+        user_related_data_tab_container.watch("selectedChildWidget", function (name,
+                                                                               oval,
+                                                                               nval) {
+            console.debug("selected child changed from ", nval.title, " to ", nval.href);
+            oval.set('href', '');
+            oval.refresh();
+
+            nval.set('href', nval.default_href);
+            nval.refresh();
+
+        });
     });
 </script>
 

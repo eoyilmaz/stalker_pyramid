@@ -166,19 +166,18 @@ require([
     var type_memory = new Memory({
         data: [
             {% for type_ in types %}
-                {% if type_.name != 'StudioWide' %}
-                    {
-                        id: '{{ type_.id }}',
-                        name: '{{type_.name}}'
-                    },
-                {% endif %}
+                {
+                    id: '{{ type_.id }}',
+                    name: '{{type_.name}}'
+                },
+
             {% endfor %}
         ]
     });
 
     var type_box
 
-    {% if type != 'StudioWide' %}
+    {% if types  %}
         var type_widget_type;
         var type_place_holder;
 
@@ -202,7 +201,7 @@ require([
         type_box.attr('value', type_name);
 
     {% else %}
-        type_name = '{{ type }}'
+        type_name = 'StudioWide'
 
         var type_box = new TextBox({
             name: 'type_name',
@@ -313,7 +312,7 @@ require([
             console.debug('end_datetime_value   :', end_datetime_value);
 
 
-            {% if type != 'StudioWide' %}
+            {% if types %}
                 if (type_box.get('value') == 'StudioWide') {
                     alert('You can not create a vacation with type StudioWide ');
                     return;
@@ -329,11 +328,7 @@ require([
                     {% if mode == 'UPDATE' %}
                         vacation_id: '{{ vacation.id }}',
                     {% endif %}
-                    {% if type != 'StudioWide' %}
-                        user_id: '{{user.id }}'
-                    {% else %}
-                        user_id: '{{studio.id }}'
-                    {% endif %}
+                    user_id: '{{user.id }}'
 
                 },
                 url: url,

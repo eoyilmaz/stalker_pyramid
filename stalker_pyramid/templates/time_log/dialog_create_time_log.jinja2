@@ -372,6 +372,7 @@ require([
                         ' extra hours');
               if (strconfirm == false)
               {
+                  console.debug('strconfirm');
                   return false;
               }
 {#                alert('You are reporting \n\n' +#}
@@ -379,6 +380,7 @@ require([
 {#                        ' extra hours'#}
 {#                );#}
             }
+
 
 
 
@@ -411,7 +413,7 @@ require([
                 dialog: dialog,
                 form: time_log_form,
                 additional_data: {
-                    task_Id: '20',
+                    task_Id: task_id,
                     {% if mode == 'UPDATE' %}
                         time_log_id: '{{ time_log.id }}',
                     {% endif %}

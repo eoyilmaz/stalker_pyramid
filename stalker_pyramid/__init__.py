@@ -371,6 +371,10 @@ def main(global_config, **settings):
     config.add_route('create_vacation', 'create/vacation')
     config.add_route('update_vacation', 'update/vacation')
 
+
+
+    config.add_route('get_studio_vacations',
+                     'get/studio_vacations') # returns json
     config.add_route('get_vacations',
                      'get/vacations/{user_id}') # returns json
     config.add_route('list_vacations',
