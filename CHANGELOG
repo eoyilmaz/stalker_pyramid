@@ -15,6 +15,9 @@ Stalker Pyramid Changes
   prefix instead of revealing the real path on the server.
 * **New:** It is now possible to upload and query References (Link instances
   assigned as references) for Task, Asset, Shot and Sequences.
+* **Update:** Adding studio vacation method is changed.Vacation that has not
+    got a user is suppose to be studio vacation
+* **Fix:** Minor bug is fixed in update vacation
 
 0.1.0.b1
 ========
@@ -58,6 +61,9 @@ Stalker Pyramid Changes
 * **New:** In create/update timelog dialog when the alert box is appeared for
     warning about getting extra hours, user can cancel the action.
 * **New:** Vacation page is created for Studio. Added create vacation dialog.
+* **Fix:** Minor bug is fixed in fieldUpdater.
+* **Fix:** Minor bug is fixed in create/update time log file.
+
 
 
 * **jQueryGantt:**

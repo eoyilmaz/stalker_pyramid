@@ -21,8 +21,9 @@ define([
     'dojo/dom-construct',
     'dojo/query',
     'dojo/store/Memory',
-    'dojo/_base/fx'
-], function (domConstruct, dojoQuery, Memory, fx) {
+    'dojo/_base/fx',
+    'dojo/_base/lang'
+], function (domConstruct, dojoQuery, Memory, fx, lang) {
     // ************************************************************************
     // FIELD_UPDATER
     // 
@@ -43,13 +44,22 @@ define([
     'use strict';
     var fieldUpdater = function (kwargs) {
         var memory, widget, callBackFunction, query_data, selected, placeHolder;
+
+//        kwargs = lang.mixin(kwargs,
+//            {
+//                callBack: function (arg) {alert('bisiy')},
+//                query_data: null,
+//                placeHolder: '',
+//                selected: []
+//            }
+//        );
+
         memory = kwargs.memory;
         widget = kwargs.widget;
-        callBackFunction = kwargs.callBack || function (arg) {
-        };
-        query_data = kwargs.query_data || null;
-        selected = kwargs.selected || [];
-        placeHolder = kwargs.placeHolder || '';
+        callBackFunction = kwargs.callBack;
+        query_data = kwargs.query_data;
+        selected = kwargs.selected;
+        placeHolder = kwargs.placeHolder;
 
         // set default placeHolder
 
@@ -102,7 +112,7 @@ define([
 
                     // select selected
                     if (selected.length) {
-                        document.alert('selected.length: ' + selected.length);
+
                         widget.set('value', selected);
                     }
                 } else if (widget.declaredClass === 'dojox.grid.DataGrid') {
@@ -119,9 +129,11 @@ define([
                     // set the data normally
                     widget.set('store', new Memory({data: data}));
 
-                    document.console.debug('data.length: '+ widget.label + ' : ' + data.length);
+
+
 
                     if (data.length > 0) {
+                        console.log('data.length');
                         if (widget.label) {
                             placeHolder = 'Select a ' + widget.label;
                         }
@@ -129,7 +141,7 @@ define([
                             placeHolder = 'Select an item from list';
                         }
                         widget.set('placeHolder', placeHolder);
-//
+
                         if (widget.declaredClass !== 'dijit.form.FilteringSelect') {
                             try {
                                 widget.attr('value', data[0].id);
@@ -157,10 +169,14 @@ define([
                         widget.set('placeHolder', placeHolder);
                     }
                     if (selected.length) {
-                        document.console.log('selected value setted!');
+                        console.log('selected value setted!');
                         widget.set('value', selected);
                     }
+
+
                 }
+
+
 
                 if (animate === true) {
                     // animate the field to indicate it is updated;
@@ -183,7 +199,12 @@ define([
                 //   use kwargs
                 //   kwargs.data
                 //   kwargs.widget
+
                 callBackFunction(data);
+                console.log('callBackFunction');
+
+
+
             });
         };
     };

@@ -407,6 +407,8 @@ require([
 
     var tasks_result = tasks_jsonRest.query().then(function (data) {
         tasks_memory = new Memory({data: data});
+
+        console.log('tasks_memory');
         {# remove self from lists #}
         {% if task %}
             tasks_memory.remove({{ task.id }});
@@ -703,6 +705,9 @@ require([
 
     var resources_result = users_jsonRest.query().then(function (data) {
         user_memory = new Memory({data: data});
+
+
+       console.log('user_memory');
         resources_tagSelect.set('store', user_memory);
         resources_tagSelect.set('value', selected_resources);
 
@@ -733,6 +738,8 @@ require([
 
 
         status_memory = data;
+        console.log('status_memory')
+
         if (data.length > 0) {
             add_status_button.set('onClick', function () {
 
@@ -763,10 +770,12 @@ require([
             target: 'get/statuses_for/' + entity_type
         });
 
+        console.log('get_status_filtering_select_data');
+
         status_field_updater = fieldUpdater({
-            'memory': status_jsonRest,
-            'widget': status_filtering_select,
-            'callBack': update_status_button_function,
+            memory: status_jsonRest,
+            widget: status_filtering_select,
+            callBack: update_status_button_function,
             {% if mode=='UPDATE' %}
                 'selected': '{{ task.status.id }}'
             {% endif %}
@@ -776,7 +785,7 @@ require([
 
     }
 
-    get_status_filtering_select_data();
+    //get_status_filtering_select_data();
 
     var add_status_button = dialogCaller({
         label: 'Add Status',

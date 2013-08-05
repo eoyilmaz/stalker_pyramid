@@ -77,11 +77,7 @@
                 content_creator: dialogs.create_vacation_dialog,
                 attach_to: 'create_vacation_button',
                 related_field_updater: vacations_DataGrid_updater,
-                {% if not studio %}
-                    data_id: '{{ user.id }}'
-                {% else %}
-                    data_id: '{{ studio.id }}'
-                {% endif %}
+                data_id: '{{ user.id }}'
 
 
             });
@@ -99,24 +95,22 @@
             var vacation_memory = new JsonRest({
                 target: '/get/vacations/{{ user.id }}'
             });
+            {#            {% if not studio %}#}
+            {#                var vacation_memory = new JsonRest({#}
+            {#                    target: '/get/vacations/{{ user.id }}'#}
+            {#                });#}
+            {#            {% else %}#}
+            {#                var vacation_memory = new JsonRest({#}
+            {#                   target: '/get/studio_vacations'#}
+            {#                });#}
+            {##}
+            {#            {% endif %}#}
 
 
             vacation_memory.query().then(function (data) {
 
                 vacationData = data;
 
-                {% if studio %}
-
-                    for (var i = 0; i < vacationData.length; i++) {
-
-                        if (vacationData[i].type != 'StudioWide') {
-
-                            vacationData.splice(i, 1);
-
-                        }
-
-                    }
-                {% endif %}
 
                 var columns = [
 

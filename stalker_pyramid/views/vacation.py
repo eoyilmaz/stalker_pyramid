@@ -33,7 +33,7 @@ from stalker_pyramid.views import (get_datetime, get_logged_in_user,
                                    get_date)
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.WARNING)
+logger.setLevel(logging.DEBUG)
 
 @view_config(
     route_name='dialog_create_vacation',
@@ -49,28 +49,21 @@ def create_vacation_dialog(request):
 
     
     user_id = int(request.matchdict.get('user_id', -1))
-    user = User.query.filter_by(name='admin').first()
+    user = User.query.filter(User.user_id==user_id).first()
 
-
+    vacation_types = Type.query.filter(Type.target_entity_type=='Vacation').all()
 
     studio = Studio.query.first()
 
-    logger.debug('user_id     : %s' % user_id)
-    logger.debug('studio.id        : %s' % studio.id)
-
-    if user_id==studio.id:
-        type = 'StudioWide'
-    else:
-        type = None
-        user = User.query.filter(User.user_id==user_id).first()
-
-
-    vacation_types = Type.query.filter_by(target_entity_type='Vacation').all()
-    
-
-
     if not studio:
         studio = defaults
+
+    if not user:
+        user = studio
+        vacation_types=[]
+
+
+
     
     return {
         'mode': 'CREATE',
@@ -79,7 +72,6 @@ def create_vacation_dialog(request):
         'logged_in_user': logged_in_user,
         'user': user,
         'types':vacation_types,
-        'type': type,
         'milliseconds_since_epoch': milliseconds_since_epoch
     }
 
@@ -98,20 +90,26 @@ def update_vacation_dialog(request):
     vacation_id = request.matchdict['vacation_id']
     vacation = Vacation.query.filter_by(id=vacation_id).first()
 
+    vacation_types = Type.query.filter(Type.target_entity_type=='Vacation').all()
 
-    vacation_types = Type.query.filter_by(target_entity_type='Vacation').all()
 
     studio = Studio.query.first()
 
     if not studio:
         studio = defaults
 
+    user=vacation.user
+    if not vacation.user:
+        user = studio
+        vacation_types=[]
+
+
     return {
         'mode': 'UPDATE',
         'has_permission': PermissionChecker(request),
         'studio': studio,
         'logged_in_user': logged_in_user,
-        'user': vacation.user,
+        'user': user,
         'vacation': vacation,
         'types':vacation_types,
         'milliseconds_since_epoch': milliseconds_since_epoch
@@ -124,6 +122,8 @@ def update_vacation_dialog(request):
 def create_vacation(request):
     """runs when creating a vacation
     """
+
+    logger.debug('inside create_vacation')
     user_id = int(request.params.get('user_id'))
     user = User.query.filter(User.id==user_id).first()
     
@@ -157,39 +157,36 @@ def create_vacation(request):
                 code=type_name,
                 target_entity_type='Vacation'
             )
-        studio = Studio.query.first()
-        logger.debug('user_id     : %s' % user_id)
-        logger.debug('studio.id     : %s' % studio.id)
 
-        if user_id==studio.id:
+        if not user:
             logger.debug('its a studio vacation')
-            for user_ in studio.users:
-                logger.debug('creating for user     : %s' % user_.id)
-                vacation = Vacation(
-                    user=user_,
+
+            vacation = Vacation(
                     created_by=logged_in_user,
                     type = type_,
                     start=start_date,
                     end=end_date
                 )
-                DBSession.add(vacation)
+            DBSession.add(vacation)
         else:
-            if user and type_name!='StudioWide':
-                logger.debug('its a personal vacation')
-                vacation = Vacation(
-                    user=user,
+            logger.debug('its a personal vacation')
+            vacation = Vacation(
+                   user=user,
                     created_by=logged_in_user,
                     type = type_,
                     start=start_date,
                     end=end_date
-                )
-                DBSession.add(vacation)
+            )
+            DBSession.add(vacation)
         logger.debug('end of creating vacation')
 
     else:
         HTTPServerError()
     
     return HTTPOk()
+
+
+
 
 
 @view_config(
@@ -201,6 +198,7 @@ def update_vacation(request):
 
     vacation_id = request.params.get('vacation_id')
     vacation = Vacation.query.filter_by(id=vacation_id).first()
+
 
     #**************************************************************************
     # collect data
@@ -230,12 +228,14 @@ def update_vacation(request):
                 target_entity_type='Vacation'
             )
 
+
         vacation.updated_by = logged_in_user
         vacation.type = type_
         vacation.start = start_date
         vacation.end = end_date
-
         DBSession.add(vacation)
+
+
     else:
        HTTPServerError()
 
@@ -249,17 +249,14 @@ def list_studio_vacations(request):
     """lists the time logs of the given user
     """
 
-    logger.debug('list_vacations is running')
+    logger.debug('list_studio_vacations is running')
 
     studio_id = request.matchdict['studio_id']
     studio = Studio.query.filter_by(id=studio_id).first()
 
-    user = User.query.filter_by(name='admin').first()
-
-
     return {
-        'studio':studio,
-        'user': user,
+
+        'user': studio,
         'has_permission': PermissionChecker(request)
     }
 
@@ -283,6 +280,34 @@ def list_vacations(request):
     }
 
 @view_config(
+    route_name='get_studio_vacations',
+    renderer='json'
+)
+def get_studio_vacations(request):
+    """returns all the Shots of the given Project
+    """
+    logger.debug('get_vacations is running')
+    user = User.query.filter_by(name='admin').first()
+
+    studio_vacations = Vacation.query.filter_by(user=None).all()
+    vacation_data = []
+
+    # if studio_vacations
+    for vacation in studio_vacations:
+        assert isinstance(vacation, Vacation)
+
+        vacation_data.append({
+           'id': vacation.id,
+           'type': vacation.type.name,
+           'created_by_id': vacation.created_by_id,
+           'created_by_name': vacation.created_by.name,
+           'start_date' : milliseconds_since_epoch(vacation.start),
+           'end_date': milliseconds_since_epoch(vacation.end)
+        })
+
+    return vacation_data
+
+@view_config(
     route_name='get_vacations',
     renderer='json'
 )
@@ -297,20 +322,35 @@ def get_vacations(request):
 
     vacation_data = []
 
-    # if user.vacations:
-    for vacation in user.vacations:
-        logger.debug('vacation.user.id : %s' % vacation.user.id)
-        assert isinstance(vacation, Vacation)
-        vacation_data.append({
-            'id': vacation.id,
-            'type': vacation.type.name,
-            'created_by_id': vacation.created_by_id,
-            'created_by_name': vacation.created_by.name,
-            'start_date' : milliseconds_since_epoch(vacation.start),
-            'end_date': milliseconds_since_epoch(vacation.end)
 
-            # 'hours_to_complete': vacation.hours_to_complete,
-            # 'notes': vacation.notes
+    if user:
+        # if user.vacations:
+        for vacation in user.vacations:
+
+            assert isinstance(vacation, Vacation)
+
+            vacation_data.append({
+               'id': vacation.id,
+               'type': vacation.type.name,
+               'created_by_id': vacation.created_by_id,
+               'created_by_name': vacation.created_by.name,
+               'start_date' : milliseconds_since_epoch(vacation.start),
+               'end_date': milliseconds_since_epoch(vacation.end)
+            })
+
+    studio_vacations = Vacation.query.filter_by(user=None).all()
+    # if studio_vacations:
+    for studio_vacation in studio_vacations:
+
+        assert isinstance(studio_vacation, Vacation)
+
+        vacation_data.append({
+           'id': studio_vacation.id,
+           'type': studio_vacation.type.name,
+           'created_by_id': studio_vacation.created_by_id,
+           'created_by_name': studio_vacation.created_by.name,
+           'start_date' : milliseconds_since_epoch(studio_vacation.start),
+           'end_date': milliseconds_since_epoch(studio_vacation.end)
         })
 
     return vacation_data
