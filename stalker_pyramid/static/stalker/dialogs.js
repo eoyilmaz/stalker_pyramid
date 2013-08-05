@@ -61,6 +61,19 @@ define(['exports', 'dojox/widget/DialogSimple', 'dijit/registry', 'dojo/domReady
         };
 
         // ********************************************************************
+        exports.upload_reference_dialog = function upload_reference_dialog(entity_id) {
+            dialog_killer('upload_reference_dialog');
+            return new DialogSimple({
+                id: 'upload_reference_dialog',
+                title: 'Upload Reference Dialog',
+                href: '/dialog/upload_reference/' + entity_id,
+                resize: true,
+                style: style,
+                executeScripts: true
+            });
+        };
+
+        // ********************************************************************
         // STUDIO
         exports.create_studio_dialog = function create_studio_dialog() {
             return new DialogSimple({

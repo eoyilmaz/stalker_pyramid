@@ -18,13 +18,13 @@
 define([
     'dijit/Menu',
     'dijit/MenuItem',
-    
+
     'stalker/dialogs',
     'stalker/dialogCreator',
-    
+
     'dojo/domReady!'
 ], function (Menu, MenuItem, dialogs, dialogCreator) {
-    
+
     // ************************************************************************
     // Thumbnail Menu
     // 
@@ -34,15 +34,14 @@ define([
         var leftClickToOpen = kwargs['leftClickToOpen'] || true;
         var entity_id = kwargs['entity_id'] || -1;
         var related_field_updater = kwargs['related_field_updater'] || function(){};
-        
-        
+
         // create the thumbnail upload menu
         var t_menu = new Menu({
             targetNodeIds: targetNodeIds,
             selector: selector,
             leftClickToOpen: leftClickToOpen
         });
-        
+
         var t_menuItem_creator = function () {
             return new MenuItem({
                 label: 'Upload Thumbnail...',

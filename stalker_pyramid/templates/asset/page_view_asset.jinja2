@@ -55,8 +55,7 @@
                 var asset_related_data_tab_container = new TabContainer({
 
                     region: 'center',
-                    style: 'width: 100%; background-color: #eeeeee;',
-                    style: 'padding: 0; margin:0;'
+                    style: 'width: 100%; background-color: #eeeeee; padding: 0; margin:0;'
                 }, 'asset_related_data_tab_container');
 
 
@@ -99,6 +98,15 @@
                     asset_related_data_tab_container.addChild(versions_content_pane);
                 {% endif %}
 
+            
+                {# List References#}
+                var references_content_pane = new ContentPane({
+                    title: 'References',
+                    href: 'asset/{{ asset.id }}/reference/',
+                    style: 'width: 100%;'
+                });
+                asset_related_data_tab_container.addChild(references_content_pane);
+                {# End List References #}
 
 
                 asset_related_data_tab_container.startup();
@@ -106,7 +114,6 @@
                 asset_BorderContainer.addChild(nav_bar_content_pane);
                 asset_BorderContainer.addChild(asset_related_data_tab_container);
                 asset_BorderContainer.startup();
-
 
             });
 </script>

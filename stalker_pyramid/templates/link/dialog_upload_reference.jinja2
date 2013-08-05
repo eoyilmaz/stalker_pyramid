@@ -1,5 +1,5 @@
 <div class='dijitDialogPaneContentArea'>
-    <form accept-charset="utf-8" id='upload_thumbnail_form'>
+    <form accept-charset="utf-8" id='upload_reference_form'>
     {#      enctype='multipart/form-data'>#}
         
         <div class='dijitDialogPaneContentArea'>
@@ -15,14 +15,14 @@
                         </td>
                     </tr>
                     
-                    Thumbnail 
+                    Reference 
                     <tr>
                         <td class='label_column'>
-                            <label for='thumbnail'>Thumbnail</label>
+                            <label for='reference'>Reference</label>
                         </td>
                         <td class='input_column'>
-                            <div id='thumbnail_list'></div>
-                            <div id='thumbnail'></div>
+                            <div id='reference_list'></div>
+                            <div id='reference'></div>
                         </td>
                     </tr>
                 </table>
@@ -31,8 +31,8 @@
 </div>
 
 <div class='dijitDialogPaneActionBar'>
-    <button id='thumbnail_ok_button' >Ok</button>
-    <button id='thumbnail_cancel_button'>Cancel</button>
+    <button id='reference_ok_button' >Ok</button>
+    <button id='reference_cancel_button'>Cancel</button>
 </div>
 
 <script type='text/javascript'>
@@ -59,9 +59,9 @@
         
         // ********************************************************************
         // Form
-        var upload_thumbnail_form = new Form({}, 'upload_thumbnail_form');
+        var upload_reference_form = new Form({}, 'upload_reference_form');
 
-        var dialog = upload_thumbnail_form.getParent();
+        var dialog = upload_reference_form.getParent();
         
 
         // ********************************************************************
@@ -76,13 +76,13 @@
         name_textBox.startup();
 
         // ********************************************************************
-        // Thumbnail
-        var thumbnail_uploader = new dojox.form.Uploader({
+        // Reference
+        var reference_uploader = new dojox.form.Uploader({
             label: 'Browse...',
             multiple: false,
             uploadOnSelect: true,
             enctype: 'multipart/form-data',
-            url: 'upload_thumbnail',
+            url: 'upload_file   ',
             onBegin: function(data){
                 // reset data
                 is_upload_finished = false;
@@ -95,13 +95,13 @@
                 link_id = data.link_id;
                 console.debug('link_id :', link_id);
             }
-        }, 'thumbnail');
-        thumbnail_uploader.startup();
+        }, 'reference');
+        reference_uploader.startup();
 
-        var thumbnail_list = new dojox.form.uploader.FileList({
-            uploader: thumbnail_uploader
-        }, 'thumbnail_list');
-        thumbnail_list.startup();
+        var reference_list = new dojox.form.uploader.FileList({
+            uploader: reference_uploader
+        }, 'reference_list');
+        reference_list.startup();
 
         // ********************************************************************
         // Ok Button
@@ -115,19 +115,19 @@
                     console.debug('dialog             : ', dialog);
                     submitForm({
                         dialog: dialog,
-                        form: upload_thumbnail_form,
+                        form: upload_reference_form,
                         additional_data: {
                             entity_id: entity_id,
                             link_id: link_id
                         },
-                        url: '{{ request.route_url('assign_thumbnail') }}',
+                        url: '{{ request.route_url('assign_reference') }}',
                         method: 'POST'
                     });
                 }else{
                     alert('Upload has not finished yet!');
                 }
             }
-        }, 'thumbnail_ok_button');
+        }, 'reference_ok_button');
         ok_button.startup();
 
         // ********************************************************************
@@ -138,10 +138,10 @@
             onClick: function () {
                 dialog.destroyRecursive();
             }
-        }, 'thumbnail_cancel_button');
+        }, 'reference_cancel_button');
         cancel_button.startup();
 
-        upload_thumbnail_form.startup();
+        upload_reference_form.startup();
 
     });
 </script>

@@ -79,6 +79,15 @@
                     task_related_data_tab_container.addChild(tickets_content_pane);
 
                 {% endif %}
+            
+                {# List References#}
+                var references_content_pane = new ContentPane({
+                    title: 'References',
+                    href: 'list/entity/{{ task.id }}/references/',
+                    style: 'width: 100%;'
+                });
+                task_related_data_tab_container.addChild(references_content_pane);
+                {# End List References #}
 
                  var summary_content_pane = new ContentPane({
                     title: 'Overview',

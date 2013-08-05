@@ -80,8 +80,12 @@ def main(global_config, **settings):
 
     config.add_route('busy_dialog', 'dialog/busy')
 
-    config.add_route('serve_files',
-                     defaults.server_side_storage_path + '/{partial_file_path:[a-zA-Z0-9/\.]+}')
+    # addresses like http:/localhost:6543/SPLocal/{some_path} will let SP to serve those files
+    # SPL : Stalker Pyramid Local
+    config.add_route(
+        'serve_files',
+        'SPL' + '/{partial_file_path:[a-zA-Z0-9/\.]+}'
+    )
 
     logger.debug(defaults.server_side_storage_path + '/{partial_file_path}')
 
@@ -90,11 +94,28 @@ def main(global_config, **settings):
     # *************************************************************************
 
     # *************************************************************************
-    # Thumbnail
+    # Thumbnail References and Links
+
+    config.add_route('get_project_references',  'projects/{entity_id}/references/')
+    config.add_route('get_task_references',     'tasks/{entity_id}/references/')
+    config.add_route('get_asset_references',    'assets/{entity_id}/references/')
+    config.add_route('get_shot_references',     'shots/{entity_id}/references/')
+    config.add_route('get_sequence_references', 'sequences/{entity_id}/references/')
+
+    config.add_route('list_entity_references', 'list/entity/{entity_id}/references/')
+
+    config.add_route('get_references', 'reference/')
+    config.add_route('get_reference',  'reference/{ref_id}')
+
     config.add_route('dialog_upload_thumbnail',
                      'dialog/upload_thumbnail/{entity_id}')
-    config.add_route('upload_thumbnail', 'upload_thumbnail')
+
+    config.add_route('dialog_upload_reference',
+                     'dialog/upload_reference/{entity_id}')
+
+    config.add_route('upload_file',      'upload_file')
     config.add_route('assign_thumbnail', 'assign_thumbnail')
+    config.add_route('assign_reference', 'assign_reference')
 
 
     # *************************************************************************
@@ -107,6 +128,7 @@ def main(global_config, **settings):
 
     config.add_route('view_studio', 'view/studio/{studio_id}')
     config.add_route('summarize_studio', 'summarize/studio/{studio_id}')
+
     # *************************************************************************
     # Project
     config.add_route('dialog_create_project', 'dialog/create/project')
@@ -308,8 +330,6 @@ def main(global_config, **settings):
     config.add_route('get_entity_tasks', 'get/entity/tasks/{entity_id}')
 
     config.add_route('get_project_tasks', 'get/project/tasks/{project_id}')
-    config.add_route('get_root_tasks',
-                     'get/root/tasks/{project_id}') # TODO: fix this
 
     config.add_route('get_gantt_tasks', 'get/gantt/tasks/{entity_id}')
     config.add_route('get_gantt_task_children', 'get/gantt/task/children/{entity_id}')
@@ -323,7 +343,7 @@ def main(global_config, **settings):
     config.add_route('get_user_tasks', 'users/{user_id}/tasks/')
     config.add_route('get_tasks', 'tasks/')
     config.add_route('get_task', 'tasks/{task_id}')
-    config.add_route('get_task_children', 'tasks/{task_id}/children/')
+    config.add_route('get_task_children',   'tasks/{task_id}/children/')
 
     # *************************************************************************
     # TimeLog

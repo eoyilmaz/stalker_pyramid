@@ -9,6 +9,12 @@ Stalker Pyramid Changes
   gantt chart which utilizes a DGrid with OnDemand capabilities. The new Gantt
   Chart is over 100x faster then the previous implementation.
 * **Update:** Started to move the view designs towards a RESTFul Service style.
+* **Update:** Files stored in Stalker Pyramid Local Storage (SPL Storage) are
+  now reached with the 'SPL'
+  (ex: http://192.168.0.64:6543/SPL/SPL/e8/cb/e8cb374b62e54165a56e216de58eede4.jpg)
+  prefix instead of revealing the real path on the server.
+* **New:** It is now possible to upload and query References (Link instances
+  assigned as references) for Task, Asset, Shot and Sequences.
 
 0.1.0.b1
 ========

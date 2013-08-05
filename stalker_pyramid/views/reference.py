@@ -22,37 +22,7 @@ from pyramid.httpexceptions import HTTPOk, HTTPServerError
 from pyramid.view import view_config
 from stalker import Link, Entity
 from stalker.db import DBSession
-from stalker_pyramid.views import upload_file_to_server
+from stalker_pyramid.views.link import upload_file_to_server
 
 
-view_config(
-    route_name='upload_reference'
-)
-def upload_reference(request):
-    """called when uploading a reference
-    """
 
-    entity_id = request.matchdict.get('entity_id')
-    entity = Entity.query.filter_by(id=entity_id).first()
-
-    # check if entity accepts references
-    try:
-        if not entity.accepts_references:
-            raise HTTPServerError()
-    except AttributeError as e:
-        raise HTTPServerError(msg=e.message)
-
-    filename, file_path = upload_file_to_server(request, 'link')
-
-    # create a Link and assign it to the given Referencable Entity
-    new_link = Link(
-        full_path= file_path,
-        original_filename=filename
-    )
-
-    # assign it as a reference
-    entity.references.append(new_link)
-
-    DBSession.add(new_link)
-
-    return HTTPOk()

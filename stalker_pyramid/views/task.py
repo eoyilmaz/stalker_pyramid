@@ -224,190 +224,6 @@ def duplicate_task_hierarchy(request):
     return HTTPOk()
 
 
-def convert_to_jquery_gantt_task_format(tasks):
-    """Converts the given tasks to the jQuery Gantt compatible json format.
-
-    :param tasks: List of Stalker Tasks.
-    :return: json compatible dictionary
-    """
-
-    if not tasks:
-        return {}
-
-    if not isinstance(tasks, list):
-        raise HTTPServerError(detail='tasks argument in '
-                                     'convert_to_jquery_gantt_task_format '
-                                     'should be a list of '
-                                     'stalker.models.task.Task instances, not '
-                                     '%s' % tasks.__class__.__name__)
-
-    data_source = Studio.query.first()
-    # logger.debug('data_source : %s' % data_source)
-
-    if not data_source:
-        data_source = defaults
-
-    dwh = data_source.daily_working_hours
-    wwh = data_source.weekly_working_hours
-    wwd = data_source.weekly_working_days
-    ywd = data_source.yearly_working_days
-    timing_resolution = data_source.timing_resolution
-
-    # it should work both for studio and defaults
-    working_hours = {
-        'mon': data_source.working_hours['mon'],
-        'tue': data_source.working_hours['tue'],
-        'wed': data_source.working_hours['wed'],
-        'thu': data_source.working_hours['thu'],
-        'fri': data_source.working_hours['fri'],
-        'sat': data_source.working_hours['sat'],
-        'sun': data_source.working_hours['sun']
-    }
-    # logger.debug('studio.working_hours : %s' % working_hours)
-
-    # create projects list to only list related projects
-    projects = []
-    for task in tasks:
-        if not isinstance(task, Task):
-            raise HTTPServerError(
-                detail='all elements in tasks list should be instances of '
-                       'stalker.models.task.Task instances, not %s' %
-                       task.__class__.__name__
-            )
-
-        if task.project not in projects:
-            projects.append(task.project)
-
-    faux_tasks = []
-
-    # first append projects
-    faux_tasks.extend(
-        [
-            [
-                project.duration.days, # bid timing
-                'd', # bid_unit
-                [], # depend_ids
-                project.description, # description
-                milliseconds_since_epoch(
-                    project.computed_end if project.computed_end else project.end),
-                # end
-                '', # hierarchy name
-                project.id, # id
-                project.name, # name
-                None, # parent_id
-                500, # priority
-                [], # resource_ids
-                0, # schedule_constraint
-                'duration',
-                # schedule_model TODO: use an integer for effort, duration and length
-                project.duration.days * 24 * 60 * 60, # schedule_seconds
-                project.duration.days, # schedule_timing
-                'd', # schedule_unit
-                milliseconds_since_epoch(
-                    project.computed_start if project.computed_start else project.start),
-                # start
-                'STATUS_UNDEFINED', # status,
-                0, # total_logged_seconds
-                project.entity_type, # type
-            ] for project in projects
-        ]
-    )
-
-    faux_tasks.extend(
-        [
-            [
-                task.bid_timing, # bid_timing
-                task.bid_unit, # bid_unit
-                [dep.id for dep in task.depends], # depend_ids
-                task.description, # description
-                milliseconds_since_epoch(
-                    task.computed_end if task.computed_end else task.end),
-                # end
-                ' | '.join([parent.name for parent in task.parents]),
-                # hierarchy_name
-                task.id, # id
-                task.name, # name
-                task.parent.id if task.parent else task.project.id, # parent_id
-                task.priority, # priority
-                [resource.id for resource in task.resources], # resource_ids
-                task.schedule_constraint, # schedule_constraint
-                task.schedule_model, # schedule_model
-                task.schedule_seconds, # schedule_seconds
-                task.schedule_timing, # schedule_timing
-                task.schedule_unit, # schedule_unit
-                milliseconds_since_epoch(
-                    task.computed_start if task.computed_start else task.start),
-                # start
-                'STATUS_UNDEFINED', # status
-                task.total_logged_seconds, # total_logged_seconds
-                task.entity_type, # type
-            ] for task in tasks
-        ]
-    )
-
-    # prepare time logs
-    all_time_logs = []
-    all_resources = []
-    for task in tasks:
-        for time_log in task.time_logs:
-            all_time_logs.append(time_log)
-        for resource in task.resources:
-            all_resources.append(resource)
-
-    # make it unique
-    all_resources = list(set(all_resources))
-
-    data = {
-        'tasks': {
-            'keys': [
-                'bid_timing', 'bid_unit', 'depend_ids', 'description', 'end',
-                'hierarchy_name', 'id', 'name', 'parent_id', 'priority',
-                'resource_ids', 'schedule_constraint', 'schedule_model',
-                'schedule_seconds', 'schedule_timing', 'schedule_unit',
-                'start', 'status', 'total_logged_seconds', 'type'],
-            'data': faux_tasks
-        },
-        'resources': {
-            'keys': ['id', 'name'],
-            'data': [
-                [resource.id, resource.name] for resource in all_resources
-            ]
-        }, # User.query.all()],
-        'time_logs': {
-            'keys': ['end', 'id', 'resource_id', 'start', 'task_id'],
-            'data': [
-                [
-                    milliseconds_since_epoch(time_log.end), # end
-                    time_log.id, # id
-                    time_log.resource.id, # resource_id
-                    milliseconds_since_epoch(time_log.start), # start
-                    time_log.task.id, # task_id
-                ] for time_log in all_time_logs],
-        },
-        'timing_resolution': (timing_resolution.days * 86400 +
-                              timing_resolution.seconds) * 1000,
-        'working_hours': working_hours,
-        'daily_working_hours': dwh,
-        'weekly_working_hours': wwh,
-        'weekly_working_days': wwd,
-        'yearly_working_days': ywd
-
-        # "canWrite": 0,
-        # "canWriteOnParent": 0
-    }
-
-    #logger.debug(data)
-
-    # logger.debug('loading gantt data:\n%s' % 
-    #             json.dumps(data,
-    #                        sort_keys=False,
-    #                        indent=4,
-    #                        separators=(',', ': ')
-    #             )
-    # )
-    return data
-
-
 def convert_to_dgrid_gantt_project_format(projects):
     """Converts the given projects to the DGrid Gantt compatible json format.
 
@@ -648,31 +464,6 @@ def depth_first_flatten(task, task_array=None):
             task_array = depth_first_flatten(child_task, task_array)
 
     return task_array
-
-
-@view_config(
-    route_name='get_root_tasks',
-    renderer='json',
-)
-def get_root_tasks(request):
-    """returns all the root tasks in the database related to the given project
-    """
-    project_id = request.matchdict.get('project_id')
-    project = Project.query.filter_by(id=project_id).first()
-
-    tasks = []
-
-    root_tasks = Task.query \
-        .filter(Task._project == project) \
-        .filter(Task.parent == None).all()
-
-    # do a depth first search for child tasks
-    for root_task in root_tasks:
-        logger.debug(
-            'root_task: %s, parent: %s' % (root_task, root_task.parent))
-        tasks.extend(depth_first_flatten(root_task))
-
-    return convert_to_jquery_gantt_task_format(tasks)
 
 
 @view_config(
@@ -937,14 +728,15 @@ def get_project_tasks(request):
     route_name='list_tasks',
     renderer='templates/task/content_list_tasks.jinja2'
 )
+@view_config(
+    route_name='list_entity_references',
+    renderer='templates/link/content_list_references.jinja2'
+)
 def list_tasks(request):
     """runs when viewing tasks of a TaskableEntity
     """
-    logged_in_user = get_logged_in_user(request)
-
     entity_id = request.matchdict['entity_id']
     entity = Entity.query.filter(Entity.id == entity_id).first()
-
     return {
         'has_permission': PermissionChecker(request),
         'entity': entity
