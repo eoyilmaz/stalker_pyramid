@@ -59,7 +59,7 @@ def dialog_create_status(request):
 def dialog_update_status(request):
     """fills update status dialog
     """
-    status_id = request.matchdict['status_id']
+    status_id = request.matchdict.get('id', -1)
     status = Status.query.filter_by(id=status_id).first()
 
     return {
@@ -111,7 +111,7 @@ def update_status(request):
     fg_color = get_color_as_int(request, 'fg_color')
 
     # just update the given Status
-    st_id = request.matchdict['status_id']
+    st_id = request.matchdict.get('id', -1)
     status = Status.query.filter_by(id=st_id).first()
 
     if status and name and code:
@@ -263,7 +263,7 @@ def get_statuses(request):
 def get_statuses_of(request):
     """returns the Statuses of given StatusList
     """
-    status_list_id = request.matchdict['status_list_id']
+    status_list_id = request.matchdict.get('id', -1)
     status_list = StatusList.query.filter_by(id=status_list_id).first()
     return [
         {

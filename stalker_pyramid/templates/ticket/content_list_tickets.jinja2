@@ -89,9 +89,9 @@ require([
 
     function ticket_DataGrid_updater() {
 
-        var target = '/get/tickets/{{ entity.id }}';
-        {% if entity.entity_type == 'Task'%}
-            target = '/get/task_tickets/{{ entity.id }}'
+        var target = '{{ request.route_url('get_entity_tickets', id=entity.id) }}';
+        {% if entity.entity_type == 'Project' %}
+            target = '{{ request.route_url('get_project_tickets', id=entity.id) }}';
         {% endif %}
 
         var ticket_memory = new JsonRest({
@@ -116,7 +116,7 @@ require([
                     formatter: function (value) {
 
                         var targetPane = "'tickets_content_pane'";
-                        var address = "'view/ticket/" + value.id + "'";
+                        var address = "'tickets/" + value.id + "/view'";
 
                         return '<a href="javascript:redirectLinkInParent(' + targetPane + ',' + address + ');">' + value.name + '</a>';
 
@@ -134,7 +134,7 @@ require([
                     formatter: function (value) {
 
                         var targetPane = "'central_content'";
-                        var address = "'view/project/" + value.project_id + "'";
+                        var address = "'projects/" + value.project_id + "'/view";
 
                         return '<a href="javascript:redirectLink(' + targetPane + ',' + address + ');">' + value.project_name + '</a>';
 
@@ -151,7 +151,7 @@ require([
                     formatter: function (value) {
 
                         var targetPane = "'central_content'";
-                        var address = "'view/user/" + value.owner_id + "'";
+                        var address = "'users/" + value.owner_id + "/view'";
 
                         return '<a href="javascript:redirectLink(' + targetPane + ',' + address + ');">' + value.owner_name + '</a>';
 
@@ -168,7 +168,7 @@ require([
                     formatter: function (value) {
 
                         var targetPane = "'central_content'";
-                        var address = "'view/user/" + value.created_by_id + "'";
+                        var address = "'users/" + value.created_by_id + "/view'";
 
                         return '<a href="javascript:redirectLink(' + targetPane + ',' + address + ');">' + value.created_by_name + '</a>';
 
@@ -185,7 +185,7 @@ require([
                     formatter: function (value) {
 
                         var targetPane = "'central_content'";
-                        var address = "'view/user/" + value.updated_by_id + "'";
+                        var address = "'users/" + value.updated_by_id + "/view'";
 
                         return '<a href="javascript:redirectLink(' + targetPane + ',' + address + ');">' + value.updated_by_name + '</a>';
 

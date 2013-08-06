@@ -60,6 +60,7 @@
 <script type="text/javascript">
     require([
         'dojo/dom-construct',
+        'dojo/query',
         'dojo/store/Memory',
         'dojo/data/ObjectStore',
         'dojo/store/JsonRest',
@@ -75,7 +76,7 @@
         'stalker/fieldUpdater',
 
         'dojo/domReady!'
-    ], function (domConstruct, Memory, ObjectStore, JsonRest, lang, registry,
+    ], function (domConstruct, dojoQuery, Memory, ObjectStore, JsonRest, lang, registry,
                  Form, Button, MultiSelect, submitForm, dialogCaller,
                  fieldUpdater) {
 
@@ -89,7 +90,7 @@
         // ********************************************************************
         // Project Group List
         var user_groups_memory = new JsonRest({
-            target: '/get/groups_byEntity/{{ user.id }}'
+            target: 'users/{{ user.id }}/groups/'
         });
 
         var user_groups_multi_select = new MultiSelect({
@@ -115,7 +116,7 @@
         // ********************************************************************
         // All Group List
         var all_groups_memory = new JsonRest({
-            target: '/get/groups'
+            target: 'groups/'
         });
 
         var all_groups_multi_select = new MultiSelect({
@@ -129,7 +130,6 @@
         var get_user_groups_data = function (data) {
             // run the function to fill the data for the first time
             user_groups_field_updater({animate: false});
-
         };
 
         // The Updater
@@ -149,12 +149,13 @@
 
         var remove_item = function (multi_select, rId) {
             var domNode = multi_select.domNode;
-            domConstruct.query('option', domNode).forEach(function (opt, idx,
-                                                                    arr) {
-                if (opt.value == rId) {
-                    domConstruct.destroy(opt);
+            dojoQuery('option', domNode).forEach(
+                function (opt, idx, arr) {
+                    if (opt.value == rId) {
+                        domConstruct.destroy(opt);
+                    }
                 }
-            });
+            );
         };
 
         // ********************************************************************
@@ -164,7 +165,7 @@
             type: 'button',
             onClick: function () {
                 var selected_data = all_groups_multi_select.get('value');
-                var all_options = domConstruct.query('option', 'all_groups_list');
+                var all_options = dojoQuery('option', 'all_groups_list');
 
                 for (var i = 0; i < all_options.length; i++) {
                     if (selected_data.indexOf(all_options[i].value) != -1) {
@@ -181,7 +182,7 @@
             type: 'button',
             onClick: function () {
                 var selected_data = user_groups_multi_select.get('value');
-                var all_options = domConstruct.query('option', 'user_groups_list');
+                var all_options = dojoQuery('option', 'user_groups_list');
 
                 for (var i = 0; i < all_options.length; i++) {
                     if (selected_data.indexOf(all_options[i].value) != -1) {
@@ -198,9 +199,10 @@
             type: 'button',
             onClick: function () {
                 var group_ids = [];
-                    domConstruct.query('option', user_groups_multi_select.domNode).forEach(function (opt,
-                                                                                             idx,
-                                                                                             arr) {
+                    dojoQuery(
+                        'option',
+                        user_groups_multi_select.domNode
+                    ).forEach(function (opt, idx, arr) {
                         group_ids.push(opt.value);
                     });
 
@@ -208,10 +210,10 @@
                         dialog: registry.byId('append_group_dialog'),
                         form: append_group_form,
                         additional_data: {
-                            'user_id': {{ user.id }},
+{#                            'user_id': {{ user.id }},#}
                             'group_ids': group_ids
                         },
-                        url: 'append/groups',
+                        url: '{{ request.route_url('append_user_to_groups', id=user.id) }}',
                         method: 'POST'
                     });
                 }

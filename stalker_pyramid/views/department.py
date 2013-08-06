@@ -19,12 +19,12 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 import datetime
 
-from pyramid.httpexceptions import HTTPFound, HTTPOk, HTTPServerError
+from pyramid.httpexceptions import HTTPOk, HTTPServerError
 from pyramid.security import authenticated_userid
 from pyramid.view import view_config
 
 from stalker.db import DBSession
-from stalker import User, Department, Entity, Tag
+from stalker import User, Department, Entity
 
 import logging
 from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
@@ -56,7 +56,7 @@ def create_department_dialog(request):
 def update_department_dialog(request):
     """fills the update department dialog
     """
-    department_id = request.matchdict['department_id']
+    department_id = request.matchdict.get('id', -1)
     department = Department.query.filter_by(id=department_id).first()
 
     logger.debug('called update_department_dialog %s' % department_id)
@@ -74,15 +74,15 @@ def create_department(request):
     """creates a new Department
     """
     logged_in_user = get_logged_in_user(request)
-    
+
     logger.debug('called new_department')
 
     # get params
 
-    name =  request.params.get('name')
+    name = request.params.get('name')
 
     if name:
-        description =  request.params.get('description')
+        description = request.params.get('description')
 
         lead_id = request.params.get('lead_id', -1)
         lead = User.query.filter_by(id=lead_id).first()
@@ -92,11 +92,11 @@ def create_department(request):
 
         logger.debug('creating new department')
         new_department = Department(
-           name = name,
-           description = description,
-           lead = lead,
-           created_by=logged_in_user,
-           tags = tags
+            name=name,
+            description=description,
+            lead=lead,
+            created_by=logged_in_user,
+            tags=tags
         )
         DBSession.add(new_department)
         logger.debug('created new department')
@@ -106,6 +106,7 @@ def create_department(request):
         HTTPServerError()
 
     return HTTPOk()
+
 
 @view_config(
     route_name='update_department'
@@ -117,15 +118,14 @@ def update_department(request):
 
     logger.debug('called update_department')
     # get params
-    department_id = request.params.get('department_id')
+    department_id = request.matchdict.get('id', -1)
     department = Department.query.filter_by(id=department_id).first()
 
     name = request.params.get('name')
 
-
     if department and name:
         # get the type
-        description =  request.params.get('description')
+        description = request.params.get('description')
 
         lead_id = request.params.get('lead_id', -1)
         lead = User.query.filter_by(id=lead_id).first()
@@ -155,7 +155,6 @@ def update_department(request):
     return HTTPOk()
 
 
-
 @view_config(
     route_name='get_departments',
     renderer='json'
@@ -171,6 +170,7 @@ def get_departments(request):
         for dep in Department.query.order_by(Department.name.asc()).all()
     ]
 
+
 @view_config(
     route_name='view_department',
     renderer='templates/department/page_view_department.jinja2'
@@ -178,12 +178,10 @@ def get_departments(request):
 def view_department(request):
     """runs when viewing a department
     """
-
     login = authenticated_userid(request)
     logged_in_user = User.query.filter_by(login=login).first()
 
-
-    department_id = request.matchdict['department_id']
+    department_id = request.matchdict.get('id', -1)
     department = Department.query.filter_by(id=department_id).first()
 
     return {
@@ -191,6 +189,7 @@ def view_department(request):
         'user': logged_in_user,
         'department': department
     }
+
 
 @view_config(
     route_name='summarize_department',
@@ -200,7 +199,7 @@ def summarize_department(request):
     """runs when getting general User info
     """
     # get the user id
-    department_id = request.matchdict['department_id']
+    department_id = request.matchdict.get('id', -1)
     department = Department.query.filter_by(id=department_id).first()
 
     return {
@@ -208,14 +207,15 @@ def summarize_department(request):
         'department': department
     }
 
+
 @view_config(
-    route_name='list_departments',
+    route_name='list_user_departments',
     renderer='templates/department/content_list_departments.jinja2'
 )
 def list_departments(request):
     """
     """
-    entity_id = request.matchdict['entity_id']
+    entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
 
     return {
@@ -223,45 +223,27 @@ def list_departments(request):
         'entity': entity
     }
 
+
 @view_config(
-    route_name='get_departments_byEntity',
+    route_name='get_entity_departments',
     renderer='json'
 )
-def get_departments_byEntity(request):
+def get_entity_departments(request):
     """
     """
-    entity_id = request.matchdict['entity_id']
+    entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
 
-
     return [
-            {
-             'name': department.name,
-             'id': department.id,
+        {
+            'name': department.name,
+            'id': department.id,
             'thumbnail_path': department.thumbnail.full_path if department.thumbnail else None
 
-            }
-            for department in entity.departments
-        ]
+        }
+        for department in entity.departments
+    ]
 
-
-@view_config(
-    route_name='dialog_append_departments',
-    renderer='templates/department/dialog_append_departments.jinja2'
-)
-def append_departments_dialog(request):
-    """runs for append user dialog
-    """
-    logged_in_user = get_logged_in_user(request)
-
-    user_id = request.matchdict['user_id']
-    user = User.query.filter_by(id=user_id).first()
-
-    return {
-        'has_permission': PermissionChecker(request),
-        'logged_in_user': logged_in_user,
-        'user': user
-    }
 
 @view_config(
     route_name='append_departments'
@@ -271,11 +253,12 @@ def append_departments(request):
     """
     # departments
     department_ids = get_multi_integer(request, 'department_ids')
-    departments = Department.query.filter(Department.id.in_(department_ids)).all()
+    departments = Department.query.filter(
+        Department.id.in_(department_ids)).all()
 
     # user
-    user_id = request.params.get('user_id', None)
-    user = Entity.query.filter(User.id==user_id).first()
+    user_id = request.params.get('id', -1)
+    user = Entity.query.filter(User.id == user_id).first()
 
     logger.debug('user : %s' % user)
     logger.debug('departments  : %s' % departments)

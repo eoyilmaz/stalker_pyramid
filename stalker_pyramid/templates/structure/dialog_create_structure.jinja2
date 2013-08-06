@@ -100,7 +100,7 @@
         {% if mode=='CREATE' %}
             url = '{{ request.route_url('create_structure') }}';
         {% elif mode=='UPDATE' %}
-            url = '{{ request.route_url('update_structure') }}';
+            url = '{{ request.route_url('update_structure', id=structure.id) }}';
             name = '{{ structure.name }}';
             custom_template = '{{ structure.custom_template }}';
             ft_ids = [
@@ -110,7 +110,7 @@
             ];
             console.debug(ft_ids);
             additional_data = {
-                structure_id: {{ structure.id }}
+{#                structure_id: {{ structure.id }}#}
             };
         {% endif %}
 
@@ -150,7 +150,7 @@
         // ********************************************************************
         // Filename Template
         var filename_template_memory = new JsonRest({
-            target: '/get/filename_templates'
+            target: '{{ request.route_url('get_filename_templates') }}'
         });
 
         // The Widget

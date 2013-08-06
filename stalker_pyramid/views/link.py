@@ -37,30 +37,6 @@ logger.setLevel(logging.DEBUG)
 
 
 @view_config(
-    route_name='dialog_upload_reference',
-    renderer='templates/link/dialog_upload_reference.jinja2'
-)
-@view_config(
-    route_name='dialog_upload_thumbnail',
-    renderer='templates/link/dialog_upload_thumbnail.jinja2'
-)
-def dialog_upload_file(request):
-    """fills the upload file dialog, used both in uploading thumbnails and
-    references
-    """
-    entity_id = request.matchdict.get('entity_id', -1)
-    entity = Entity.query.filter_by(id=entity_id).first()
-
-    logger.debug('entity_id : %s' % entity_id)
-    logger.debug('entity    : %s' % entity)
-
-    return {
-        'entity': entity,
-        'has_permission': PermissionChecker(request)
-    }
-
-
-@view_config(
     route_name='upload_file',
     renderer='json'
 )
@@ -148,9 +124,13 @@ def get_entity_references(request):
     """called when the references to Project/Task/Asset/Shot/Sequence is
     requested
     """
-    logger.debug('asking references for task')
-    entity_id = request.matchdict.get('entity_id', -1)
+    entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter(Entity.id==entity_id).first()
+    logger.debug('asking references for entity: %s' % entity)
+
+    # TODO: there should be a 'get all references' for Projects for example
+    #       which returns all the references related to this project.
+
     if entity:
         return [
             {
@@ -158,38 +138,6 @@ def get_entity_references(request):
                 'original_filename': link.original_filename,
             } for link in entity.references]
     return []
-
-# view_config(
-#     route_name='upload_reference'
-# )
-# def upload_reference(request):
-#     """called when uploading a reference
-#     """
-# 
-#     entity_id = request.matchdict.get('entity_id')
-#     entity = Entity.query.filter_by(id=entity_id).first()
-# 
-#     # check if entity accepts references
-#     try:
-#         if not entity.accepts_references:
-#             raise HTTPServerError()
-#     except AttributeError as e:
-#         raise HTTPServerError(msg=e.message)
-# 
-#     filename, file_path = upload_file_to_server(request, 'link')
-# 
-#     # create a Link and assign it to the given Referencable Entity
-#     new_link = Link(
-#         full_path= file_path,
-#         original_filename=filename
-#     )
-# 
-#     # assign it as a reference
-#     entity.references.append(new_link)
-# 
-#     DBSession.add(new_link)
-# 
-#     return HTTPOk()
 
 
 def upload_file_to_server(request, file_param_name):

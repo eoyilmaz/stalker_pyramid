@@ -71,14 +71,14 @@ require([
             content_creator: dialogs.create_asset_dialog,
             attach_to: 'list_assets_create_asset_button',
             related_field_updater: asset_data_grid_updater,
-            data_id: '{{ project.id }}'
+            data_id: '{{ entity.id }}'
         });
         create_asset_button.startup();
     {% endif %}
 
 
     var status_memory = new JsonRest({
-        target: 'get/statuses_for/Asset'
+        target: 'statuses/Asset/'
     });
 
     var status_store;
@@ -93,15 +93,12 @@ require([
     function asset_data_grid_updater() {
 
         var asset_memory = new JsonRest({
-            target: '/get/assets/{{ project.id }}'
+            target: '{{ request.route_url('get_project_assets', id=entity.id) }}'
         });
 
         asset_memory.query().then(function (data) {
-
             assetData = data;
-
             var columns = [
-
                 {
                     label: "Thumbnail",
                     field: 'thumbnail',
@@ -141,20 +138,14 @@ require([
                     get: function (object) {
                         return object; // return entire item for formatter to use
                     },
-                    formatter: function (value) {
-
+                    formatter: function (object) {
                         {% if has_permission('Read_Asset')%}
-
-                            var targetPane = "'assets_content_pane'";
-                            var address = "'view/task/" + value.id + "'";
-                            return '<a href="javascript:redirectLinkInParent(' + targetPane + ',' + address + ');">' + value.name + '</a> ('+value.code +')';
-
+                            object.targetPane = 'assets_content_pane';
+                            object.address = 'tasks/' + object.id + '/view';
+                            return templates.entityNameField(object);
                         {% else %}
-
-                            return  value.name;
-
+                            return value.name;
                         {% endif %}
-
                     }
                 },
                 {
@@ -167,21 +158,14 @@ require([
                     get: function (object) {
                         return object; // return entire item for formatter to use
                     },
-                    formatter: function (value) {
-
+                    formatter: function (object) {
+                        var return_value = object.user_name;
                         {% if has_permission('Read_User')%}
-
-
-                            var targetPane = "'central_content'";
-                            var address = "'view/user/" + value.user_id + "'";
-
-                            return '<a href="javascript:redirectLink(' + targetPane + ',' + address + ');">' + value.user_name + '</a>';
-                        {% else %}
-
-                            return  value.user_name;
-
+                            object.targetPane = 'central_content';
+                            object.address = 'users/' + object.user_id + '/view';
+                            return_value = templates.userNameField(object);
                         {% endif %}
-
+                        return return_value;
                     }
 
                 },
@@ -208,7 +192,6 @@ require([
                         var rowId = asset_data_grid.id + '-row-';
                         var assetId = assetData[parseInt(nodeId.substring(rowId.length, nodeId.length))].id;
 
-
                         var dialog = dialogCreator({
                             dialog_id: 'asset_dialog',
                             content_creator: dialogs.update_asset_dialog,
@@ -223,18 +206,14 @@ require([
             };
 
             right_click_menu.addChild(create_update_asset_menuItem_creator());
-
             right_click_menu.startup();
 
         });
     }
 
-
     var content_pane = registry.byId('assets_content_pane');
 
-
     aspect.after(content_pane, "resize", function () {
-
         console.log('asset_data_grid.resize();');
         asset_data_grid.resize();
 

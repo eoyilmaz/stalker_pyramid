@@ -100,7 +100,7 @@
         {% if mode == 'CREATE' %}
             url = '{{ request.route_url("create_image_format") }}';
         {% elif mode == 'UPDATE' %}
-            url = '{{ request.route_url("update_image_format") }}';
+            url = '{{ request.route_url("update_image_format", id=imf.id) }}';
             name = '{{ imf.name }}';
             width = {{ imf.width }};
             height = {{ imf.height }};

@@ -29,6 +29,7 @@ from stalker_pyramid.views import (get_date, get_logged_in_user,
                                    PermissionChecker, milliseconds_since_epoch)
 
 import logging
+
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.WARNING)
 
@@ -58,10 +59,10 @@ def update_project_dialog(request):
     """runs when updating a project
     """
     logged_in_user = get_logged_in_user(request)
-    
-    project_id = request.matchdict['project_id']
+
+    project_id = request.matchdict.get('id', -1)
     project = Project.query.filter_by(id=project_id).first()
-    
+
     return {
         'mode': 'UPDATE',
         'has_permission': PermissionChecker(request),
@@ -78,38 +79,38 @@ def create_project(request):
     """called when adding a new Project
     """
     logged_in_user = get_logged_in_user(request)
-    
+
     # parameters
     name = request.params.get('name')
     code = request.params.get('code')
     fps = int(request.params.get('fps'))
-    
+
     imf_id = request.params.get('image_format', -1)
     imf = ImageFormat.query.filter_by(id=imf_id).first()
-    
+
     repo_id = request.params.get('repository_id', -1)
     repo = Repository.query.filter_by(id=repo_id).first()
-    
+
     structure_id = request.params.get('structure_id', -1)
     structure = Structure.query.filter_by(id=structure_id).first()
-    
+
     lead_id = request.params.get('lead_id', -1)
     lead = User.query.filter_by(id=lead_id).first()
-    
+
     status_id = request.params.get('status_id', -1)
     status = Status.query.filter_by(id=status_id).first()
-    
+
     # get the dates
     start = get_date(request, 'start')
     end = get_date(request, 'end')
-    
+
     if name and code and imf and repo and structure and lead_id and status:
         # lets create the project
-        
+
         # status list
-        status_list = StatusList.query\
+        status_list = StatusList.query \
             .filter_by(target_entity_type='Project').first()
-        
+
         new_project = Project(
             name=name,
             code=code,
@@ -124,13 +125,13 @@ def create_project(request):
             start=start,
             end=end
         )
-        
+
         DBSession.add(new_project)
-        
+
     else:
         logger.debug('there are missing parameters')
         HTTPServerError()
-    
+
     return HTTPOk()
 
 
@@ -141,37 +142,37 @@ def update_project(request):
     """called when updating a Project
     """
     logged_in_user = get_logged_in_user(request)
-    
+
     # parameters
     project_id = request.params.get('project_id', -1)
     project = Project.query.filter_by(id=project_id).first()
-    
+
     name = request.params.get('name')
-    
+
     fps = int(request.params.get('fps'))
-    
+
     imf_id = request.params.get('image_format', -1)
     imf = ImageFormat.query.filter_by(id=imf_id).first()
-    
+
     repo_id = request.params.get('repository_id', -1)
     repo = Repository.query.filter_by(id=repo_id).first()
-    
+
     structure_id = request.params.get('structure_id', -1)
     structure = Structure.query.filter_by(id=structure_id).first()
-    
+
     lead_id = request.params.get('lead_id', -1)
     lead = User.query.filter_by(id=lead_id).first()
-    
+
     status_id = request.params.get('status_id', -1)
     status = Status.query.filter_by(id=status_id).first()
-    
+
     # get the dates
     start = get_date(request, 'start')
     end = get_date(request, 'end')
-    
+
     if project and name and imf and repo and structure and lead and \
             status:
-        
+
         project.name = name
         project.image_format = imf
         project.repository = repo
@@ -183,45 +184,24 @@ def update_project(request):
         project.status = status
         project.start = start
         project.end = end
-    
+
         DBSession.add(project)
-    
+
     else:
         logger.debug('there are missing parameters')
         HTTPServerError()
-    
+
     return HTTPOk()
 
 
-
 @view_config(
-    route_name='list_projects',
-    renderer='templates/project/content_list_projects.jinja2'
-)
-def view_projects(request):
-    """runs when viewing all projects
-    """
-
-    logged_in_user = get_logged_in_user(request)
-
-    entity_id = request.matchdict['entity_id']
-    entity = Entity.query.filter_by(id=entity_id).first()
-
-    # just return all the projects
-    return {
-        'entity': entity,
-        'logged_in_user': logged_in_user,
-        'has_permission': PermissionChecker(request)
-    }
-
-@view_config(
-    route_name='get_projects_byEntity',
+    route_name='get_entity_projects',
     renderer='json'
 )
-def get_projects_byEntity(request):
+def get_entity_projects(request):
     """
     """
-    entity_id = request.matchdict['entity_id']
+    entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
 
     return [
@@ -229,7 +209,7 @@ def get_projects_byEntity(request):
             'id': project.id,
             'name': project.name,
             'thumbnail_path': project.thumbnail.full_path
-                                            if project.thumbnail else None
+            if project.thumbnail else None
         }
         for project in entity.projects
     ]
@@ -249,63 +229,3 @@ def get_projects(request):
         }
         for proj in Project.query.all()
     ]
-
-
-@view_config(
-    route_name='overview_project',
-    renderer='templates/project/page_view_project_overview.jinja2'
-)
-@view_config(
-    route_name='view_project',
-    renderer='templates/project/page_view_project.jinja2'
-)
-@view_config(
-    route_name='list_assets',
-    renderer='templates/asset/content_list_assets.jinja2'
-)
-@view_config(
-    route_name='list_shots',
-    renderer='templates/shot/content_list_shots.jinja2'
-)
-@view_config(
-    route_name='list_sequences',
-    renderer='templates/sequence/content_list_sequences.jinja2'
-)
-@view_config(
-    route_name='summarize_project',
-    renderer='templates/project/content_summarize_project.jinja2'
-)
-def view_project_related_data(request):
-    """runs when viewing project related data
-    """
-    logged_in_user = get_logged_in_user(request)
-    
-    project_id = request.matchdict['project_id']
-    project = Project.query.filter_by(id=project_id).first()
-    
-    return {
-        'user': logged_in_user,
-        'project': project,
-        'has_permission': PermissionChecker(request)
-    }
-
-
-@view_config(
-    route_name='view_task_nav_bar',
-    renderer='templates/task/content_task_nav_bar.jinja2',
-)
-@view_config(
-    route_name='view_entity_nav_bar',
-    renderer='templates/content_nav_bar.jinja2',
-)
-def view_entity_nav_bar(request):
-    """runs when viewing all projects
-    """
-    entity_id = request.matchdict['entity_id']
-    entity = Entity.query.filter_by(id=entity_id).first()
-
-    # just return all the projects
-    return {
-        'entity': entity,
-        'has_permission': PermissionChecker(request)
-    }

@@ -103,7 +103,7 @@
         {% if mode=='CREATE' %}
             url = '{{ request.route_url('create_filename_template') }}';
         {% elif mode=='UPDATE' %}
-            url = '{{ request.route_url('update_filename_template') }}';
+            url = '{{ request.route_url('update_filename_template', id=ft.id) }}';
             name = '{{ ft.name }}';
             target_entity_type = '{{ ft.target_entity_type }}';
             path = '{{ ft.path }}';

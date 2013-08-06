@@ -50,7 +50,7 @@
 
         var summary_content_pane = new ContentPane({
             title: 'Summarize',
-            href: 'summarize/user/{{ user.id }}',
+            href: 'users/{{ user.id }}/summarize',
             region: 'top',
             style: 'width:100%; height:150px; padding: 0; background-color: #eeeeee;',
             splitter: true
@@ -73,8 +73,8 @@
 
             var tasks_content_pane = new ContentPane({
                 title: 'Tasks',
-                href: 'list/tasks/{{ user.id }}',
-                default_href: 'list/tasks/{{ user.id }}',
+                href: 'users/{{ user.id }}/tasks/list',
+                default_href: 'users/{{ user.id }}/tasks/list',
                 style: ' padding: 0; margin:0;'
             }, 'tasks_content_pane');
             user_related_data_tab_container.addChild(tasks_content_pane);
@@ -85,8 +85,8 @@
 
             var time_logs_content_pane = new ContentPane({
                 title: 'Time Logs',
-                href: 'list/time_logs/{{ user.id }}',
-                default_href: 'list/time_logs/{{ user.id }}',
+                href: 'users/{{ user.id }}/time_logs/list',
+                default_href: 'users/{{ user.id }}/time_logs/list',
                 style: 'padding: 0; margin:0;'
             });
             user_related_data_tab_container.addChild(time_logs_content_pane);
@@ -97,8 +97,8 @@
 
             var projects_content_pane = new ContentPane({
                 title: 'Projects',
-                href: 'list/projects/{{ user.id }}',
-                default_href: 'list/projects/{{ user.id }}',
+                href: 'users/{{ user.id }}/projects/list',
+                default_href: 'users/{{ user.id }}/projects/list',
                 style: ' padding: 0; margin:0;'
             });
             user_related_data_tab_container.addChild(projects_content_pane);
@@ -109,8 +109,8 @@
 
             var departments_content_pane = new ContentPane({
                 title: 'Departments',
-                href: 'list/departments/{{ user.id }}',
-                default_href: 'list/departments/{{ user.id }}',
+                href: 'users/{{ user.id }}/departments/list',
+                default_href: 'users/{{ user.id }}/departments/list',
                 style: ' padding: 0; margin:0;'
             });
 
@@ -122,8 +122,8 @@
 
             var groups_content_pane = new ContentPane({
                 title: 'Permissions',
-                href: 'list/groups/{{ user.id }}',
-                default_href: 'list/groups/{{ user.id }}',
+                href: 'users/{{ user.id }}/groups/list',
+                default_href: 'users/{{ user.id }}/groups/list',
                 style: ' padding: 0; margin:0;'
             });
 
@@ -135,8 +135,8 @@
 
             var tickets_content_pane = new ContentPane({
                 title: 'Tickets',
-                href: 'list/tickets/{{ user.id }}',
-                default_href: 'list/tickets/{{ user.id }}',
+                href: 'users/{{ user.id }}/tickets/list',
+                default_href: 'users/{{ user.id }}/tickets/list',
                 style: ' padding: 0; margin:0;'
             });
             user_related_data_tab_container.addChild(tickets_content_pane);
@@ -147,32 +147,30 @@
 
             var vacations_content_pane = new ContentPane({
                 title: 'Vacations',
-                href: 'list/vacations/{{ user.id }}',
-                default_href: 'list/vacations/{{ user.id }}',
+                href: 'users/{{ user.id }}/vacations/list',
+                default_href: 'users/{{ user.id }}/vacations/list',
                 style: 'padding: 0; margin:0;'
             });
             user_related_data_tab_container.addChild(vacations_content_pane);
 
         {% endif %}
 
-
         user_BorderContainer.addChild(user_related_data_tab_container);
-
         user_related_data_tab_container.startup();
         user_BorderContainer.startup();
 
+{#        user_related_data_tab_container.watch(#}
+{#            "selectedChildWidget",#}
+{#            function (name, oval, nval) {#}
+{#                console.debug("selected child changed from ", nval.title, " to ", nval.href);#}
+{#                oval.set('href', '');#}
+{#                oval.refresh();#}
 
-        user_related_data_tab_container.watch("selectedChildWidget", function (name,
-                                                                               oval,
-                                                                               nval) {
-            console.debug("selected child changed from ", nval.title, " to ", nval.href);
-            oval.set('href', '');
-            oval.refresh();
-
-            nval.set('href', nval.default_href);
-            nval.refresh();
-
-        });
+{#                nval.set('href', nval.default_href);#}
+{#                nval.refresh();#}
+        
+{#            }#}
+{#        );#}
     });
 </script>
 

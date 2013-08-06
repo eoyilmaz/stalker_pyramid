@@ -55,7 +55,7 @@
                 <td>
                     {% if has_permission('Read_User') %}
                         <a href="javascript:redirectLink('central_content',
-                        'view/user/{{ group.created_by.id }}');">
+                        'users/{{ group.created_by.id }}/view');">
                             {{ group.created_by.name }}
                         </a>
                     {% else %}

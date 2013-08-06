@@ -52,7 +52,7 @@
             autoHeight: true
         }, 'users_data_grid');
 
-        {% if has_permission('Update_'+entity.entity_type ) and has_permission('Update_User') %}
+        {% if has_permission('Update_' + entity.entity_type ) and has_permission('Update_User') %}
             var append_user_button = dialogCaller({
                 label: 'Append User',
                 dialog_id: 'append_user_dialog',
@@ -66,7 +66,7 @@
 
         function users_DataGrid_updater() {
             var user_memory = new JsonRest({
-                target: '/get/users_byEntity/{{ entity.id }}'
+                target: 'entities/{{ entity.id }}/users/'
             });
 
             user_memory.query().then(function (data) {
@@ -99,7 +99,7 @@
                             {% if has_permission('Read_User') %}
 
                                 var targetPane = "'central_content'";
-                                var address = "'view/user/" + value.id + "'";
+                                var address = "'users/" + value.id + "'/view";
 
                                 return '<a href="javascript:redirectLink(' + targetPane + ',' + address + ');">' + value.name + '</a><br/>(' + value.login + ')';
                             {% else %}

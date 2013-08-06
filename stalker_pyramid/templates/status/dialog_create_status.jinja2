@@ -117,7 +117,7 @@
             additional_data = {
                 status_id: {{ status.id }}
             };
-            url = '{{ request.route_url('update_status')}}';
+            url = '{{ request.route_url('update_status', id=status.id)}}';
         {% endif %}
         
         // **********************************************************************

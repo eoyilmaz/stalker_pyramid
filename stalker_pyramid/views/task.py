@@ -306,7 +306,7 @@ def convert_to_dgrid_gantt_task_format(tasks):
 def update_task_dialog(request):
     """runs when updating a task
     """
-    task_id = request.matchdict['task_id']
+    task_id = request.matchdict.get('id', -1)
     task = Task.query.filter(Task.id == task_id).first()
 
     return {
@@ -384,7 +384,7 @@ def update_task(request):
     logger.debug('code                : %s' % code)
 
     # get task
-    task_id = request.matchdict['task_id']
+    task_id = request.matchdict.get('id', -1)
     task = Task.query.filter(Task.id == task_id).first()
 
     # update the task
@@ -517,7 +517,7 @@ def get_user_tasks(request):
     """RESTful version of getting all tasks
     """
     # logger.debug('request.GET: %s' % request.GET)
-    user_id = request.matchdict.get('user_id')
+    user_id = request.matchdict.get('id', -1)
     user = User.query.filter(User.id == user_id).first()
 
     parent_id = request.GET.get('parent_id')
@@ -584,7 +584,7 @@ def get_user_tasks(request):
 def get_task(request):
     """RESTful version of getting a task or project
     """
-    entity_id = request.matchdict.get('task_id')
+    entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
 
     return_data = []
@@ -605,7 +605,7 @@ def get_task(request):
 def get_task_children(request):
     """RESTful version of getting task children
     """
-    task_id = request.matchdict.get('task_id')
+    task_id = request.matchdict.get('id', -1)
     task = Task.query.filter_by(id=task_id).first()
     return convert_to_dgrid_gantt_task_format(task.children)
 
@@ -618,7 +618,7 @@ def get_gantt_tasks(request):
     """returns all the tasks in the database related to the given entity in
     jQueryGantt compatible json format
     """
-    entity_id = request.matchdict.get('entity_id')
+    entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
 
     logger.debug('entity : %s' % entity)
@@ -687,7 +687,7 @@ def get_gantt_tasks(request):
 def get_gantt_task_children(request):
     """returns the children tasks of the given task
     """
-    entity_id = request.matchdict.get('entity_id')
+    entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
 
     # return all user tasks with their parents
@@ -710,7 +710,7 @@ def get_project_tasks(request):
     flat json format
     """
     # get all the tasks related in the given project
-    project_id = request.matchdict.get('project_id')
+    project_id = request.matchdict.get('id', -1)
     project = Project.query.filter_by(id=project_id).first()
 
     return [
@@ -724,33 +724,18 @@ def get_project_tasks(request):
     ]
 
 
-@view_config(
-    route_name='list_tasks',
-    renderer='templates/task/content_list_tasks.jinja2'
-)
-@view_config(
-    route_name='list_entity_references',
-    renderer='templates/link/content_list_references.jinja2'
-)
-def list_tasks(request):
-    """runs when viewing tasks of a TaskableEntity
-    """
-    entity_id = request.matchdict['entity_id']
-    entity = Entity.query.filter(Entity.id == entity_id).first()
-    return {
-        'has_permission': PermissionChecker(request),
-        'entity': entity
-    }
+
+
 
 
 @view_config(
-    route_name='dialog_create_task',
+    route_name='dialog_create_project_task',
     renderer='templates/task/dialog_create_task.jinja2'
 )
 def create_task_dialog(request):
     """only project information is present
     """
-    entity_id = request.matchdict['entity_id']
+    entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
 
     parent = None
@@ -759,9 +744,6 @@ def create_task_dialog(request):
     else:
         project = entity.project
         parent = entity
-
-
-    # project = Project.query.filter_by(id=project_id).first()
 
     return {
         'mode': 'CREATE',
@@ -780,7 +762,7 @@ def create_task_dialog(request):
 def create_child_task_dialog(request):
     """generates the info from the given parent task
     """
-    parent_task_id = request.matchdict['task_id']
+    parent_task_id = request.matchdict.get('id', -1)
     parent_task = Task.query.filter_by(id=parent_task_id).first()
 
     project = parent_task.project if parent_task else None
@@ -790,7 +772,8 @@ def create_child_task_dialog(request):
         'has_permission': PermissionChecker(request),
         'project': project,
         'parent': parent_task,
-        'schedule_models': defaults.task_schedule_models
+        'schedule_models': defaults.task_schedule_models,
+        'milliseconds_since_epoch': milliseconds_since_epoch
     }
 
 
@@ -802,7 +785,7 @@ def create_dependent_task_dialog(request):
     """runs when adding a dependent task
     """
     # get the dependee task
-    depends_to_task_id = request.matchdict['task_id']
+    depends_to_task_id = request.matchdict.get('id', -1)
     depends_to_task = Task.query.filter_by(id=depends_to_task_id).first()
 
     project = depends_to_task.project if depends_to_task else None
@@ -812,7 +795,8 @@ def create_dependent_task_dialog(request):
         'has_permission': PermissionChecker(request),
         'project': project,
         'depends_to': depends_to_task,
-        'schedule_models': defaults.task_schedule_models
+        'schedule_models': defaults.task_schedule_models,
+        'milliseconds_since_epoch': milliseconds_since_epoch
     }
 
 
@@ -1024,37 +1008,6 @@ def create_task(request):
     return HTTPOk(detail='Task created successfully')
 
 
-# @view_config(
-#     route_name='get_user_tasks',
-#     renderer='json'
-# )
-# def get_user_tasks(request):
-#     """returns the user tasks as jQueryGantt json
-#     """
-#     # get user id
-#     user_id = request.matchdict['user_id']
-#     user = User.query.filter_by(id=user_id).first()
-# 
-#     # get tasks
-#     tasks = []
-#     if user is not None:
-#         tasks = sorted(user.tasks, key=lambda x: x.project.id)
-#         # add also all the parents
-#         user_tasks_with_parents = []
-#         for task in tasks:
-#             user_tasks_with_parents.append(task)
-#             current_parent = task.parent
-#             while current_parent:
-#                 user_tasks_with_parents.append(current_parent)
-#                 current_parent = current_parent.parent
-# 
-#         logger.debug('user_task_with_parents: %s' % user_tasks_with_parents)
-#         logger.debug('tasks                 : %s' % tasks)
-#         tasks = user_tasks_with_parents
-# 
-#     return convert_to_jquery_gantt_task_format(tasks)
-
-
 @view_config(
     route_name='auto_schedule_tasks',
 )
@@ -1082,25 +1035,6 @@ def auto_schedule_tasks(request):
 
 
 @view_config(
-    route_name='view_task',
-    renderer='templates/task/page_view_task.jinja2'
-)
-def view_task(request):
-    """runs when viewing a task
-    """
-    logged_in_user = get_logged_in_user(request)
-
-    task_id = request.matchdict['task_id']
-    task = Task.query.filter_by(id=task_id).first()
-
-    return {
-        'has_permission': PermissionChecker(request),
-        'user': logged_in_user,
-        'task': task
-    }
-
-
-@view_config(
     route_name='summarize_task',
     renderer='templates/task/content_summarize_task.jinja2'
 )
@@ -1111,7 +1045,7 @@ def summarize_task(request):
     login = authenticated_userid(request)
     logged_in_user = User.query.filter_by(login=login).first()
 
-    task_id = request.matchdict['task_id']
+    task_id = request.matchdict.get('id', -1)
     task = Task.query.filter_by(id=task_id).first()
 
     return {

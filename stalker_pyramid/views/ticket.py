@@ -39,21 +39,15 @@ logger.setLevel(logging.WARNING)
 def create_ticket_dialog(request):
     """creates a create_ticket_dialog by using the given task
     """
-    logger.debug('inside create_ticket_dialog')
-
-    # get logged in user
-    logged_in_user = get_logged_in_user(request)
-
-
-    entity_id = request.matchdict['entity_id']
+    entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter(Entity.entity_id==entity_id).first()
 
-    logger.debug('entity_type : %s' % entity.entity_type)
+    # TODO: remove 'mode': 'CREATE' by considering it the default mode
 
     return {
         'mode': 'CREATE',
         'has_permission': PermissionChecker(request),
-        'logged_in_user': logged_in_user,
+        'logged_in_user': get_logged_in_user(request),
         'entity': entity,
         'milliseconds_since_epoch': milliseconds_since_epoch
     }
@@ -70,7 +64,7 @@ def update_ticket_dialog(request):
     # get logged in user
     logged_in_user = get_logged_in_user(request)
 
-    ticket_id = request.matchdict['ticket_id']
+    ticket_id = request.matchdict.get('id', -1)
     ticket = Ticket.query.filter_by(id=ticket_id).first()
 
 
@@ -187,7 +181,7 @@ def view_ticket(request):
     """
     logged_in_user = get_logged_in_user(request)
 
-    ticket_id = request.matchdict['ticket_id']
+    ticket_id = request.matchdict.get('id', -1)
     ticket = Ticket.query.filter_by(id=ticket_id).first()
 
     return {
@@ -206,7 +200,7 @@ def summarize_ticket(request):
     """
     logged_in_user = get_logged_in_user(request)
 
-    ticket_id = request.matchdict['ticket_id']
+    ticket_id = request.matchdict.get('id', -1)
     ticket = Ticket.query.filter_by(id=ticket_id).first()
 
     return {
@@ -217,36 +211,22 @@ def summarize_ticket(request):
 
 
 @view_config(
-    route_name='list_tickets',
-    renderer='templates/ticket/content_list_tickets.jinja2'
-)
-def list_tickets(request):
-    """lists the time logs of the given task
-    """
-
-    entity_id = request.matchdict['entity_id']
-    entity = Entity.query.filter_by(id=entity_id).first()
-
-    logger.debug('*******************************')
-    logger.debug('list_tickets is running')
-
-    logger.debug('entity_id : %s' % entity_id)
-
-    return {
-        'entity': entity,
-        'has_permission': PermissionChecker(request)
-    }
-
-@view_config(
-    route_name='get_tickets',
+    route_name='get_task_tickets',
     renderer='json'
 )
-def get_tickets(request):
-    """returns all the Shots of the given Project
+@view_config(
+    route_name='get_entity_tickets',
+    renderer='json'
+)
+def get_entity_linked_tickets(request):
+    """returns all the tickets of the given Project
     """
-
-    entity_id = request.matchdict['entity_id']
+    entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
+
+    # query all the tickets where the Ticket.links collection has the entity
+    tickets = Ticket.query.join(Ticket.links, SimpleEntity)\
+        .filter(SimpleEntity.id==entity_id).all()
 
     logger.debug('*******************************')
     logger.debug('get_tickets is running')
@@ -254,47 +234,12 @@ def get_tickets(request):
     logger.debug('entity_id : %s' % entity_id)
 
     logger.debug('entity : %s' % entity)
-    logger.debug('entity_tickets : %s' %  len(entity.tickets))
+    logger.debug('entity_tickets : %s' %  len(tickets))
 
     ticket_data = []
-
-    # if entity.tickets:
-    for ticket in entity.tickets:
-
-        assert isinstance(ticket, Ticket)
-        ticket_data.append({
-            'id': ticket.id,
-            'name': ticket.name,
-            'project_id': ticket.project_id,
-            'project_name': ticket.project.name,
-            'owner_id': ticket.owner_id,
-            'owner_name': 'owner',
-            'created_by_id': ticket.created_by_id,
-            'created_by_name': ticket.created_by.name
-        })
-
-    return ticket_data
-
-
-@view_config(
-    route_name='get_task_tickets',
-    renderer='json'
-)
-def get_task_tickets(request):
-    """returns all the Shots of the given Project
-    """
-    entity_id = request.matchdict['entity_id']
-
-    logger.debug('*******************************')
-    logger.debug('get_task_tickets is running')
-
-    logger.debug('entity_id : %s' % entity_id)
-
-    ticket_data = []
-    tickets = Ticket.query.join(Ticket.links, Task).filter(Task.id == entity_id).all()
 
     for ticket in tickets:
-        assert isinstance(ticket, Ticket)
+        # assert isinstance(ticket, Ticket)
         ticket_data.append({
             'id': ticket.id,
             'name': ticket.name,
@@ -307,4 +252,3 @@ def get_task_tickets(request):
         })
 
     return ticket_data
-

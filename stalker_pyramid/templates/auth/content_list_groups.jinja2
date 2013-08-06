@@ -62,7 +62,7 @@
                 function groups_DataGrid_updater() {
 
                     var group_memory = new JsonRest({
-                        target: '/get/groups_byEntity/{{ user.id }}'
+                        target: '{{ request.route_url('get_user_groups', id=user.id) }}'
                     });
 
                     group_memory.query().then(function (data) {
@@ -77,7 +77,7 @@
                                 },
                                 formatter: function (object) {
 
-                                    var path = '{{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_Team.png") }}';
+                                    var path = '{{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_Team.jpg") }}';
                                     if (object.thumbnail_path) {
                                         path = object.thumbnail_path;
                                     }
@@ -94,7 +94,7 @@
                                 formatter: function (value) {
                                     {% if has_permission('Read_Group') %}
                                         var targetPane = "'central_content'";
-                                        var address = "'view/group/" + value.id + "'";
+                                        var address = "'groups/" + value.id + "/view'";
 
                                         return '<a href="javascript:redirectLink(' + targetPane + ',' + address + ');">' + value.name + '</a>';
 

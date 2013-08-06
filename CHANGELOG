@@ -2,6 +2,12 @@
 Stalker Pyramid Changes
 =======================
 
+0.1.0.b3
+========
+
+* **Update:** Redesigned all the routes to comply with a RESTful service
+  scheme.
+
 0.1.0.b2
 ========
 

@@ -32,7 +32,7 @@
                 <td>
                     {% if has_permission('Read_Project') %}
                         <a href="javascript:redirectLink('central_content',
-                        'view/project/{{ task.project.id }}');">
+                        '{{ request.route_url('view_project', id=task.project.id) }}');">
                             {{ task.project.name }}
                         </a>
                     {% else %}
@@ -51,7 +51,7 @@
                 <td>
                     {% if has_permission('Read_User') %}
                         <a href="javascript:redirectLink('central_content',
-                        'view/user/{{ task.created_by.id }}');">
+                        '{{ request.route_url('view_user', id=task.created_by.id) }}');">
                             {{ task.created_by.name }}
                         </a>
                     {% else %}
@@ -66,7 +66,7 @@
                 <td>
                     {% if has_permission('Read_User') %}
                         <a href="javascript:redirectLink('central_content',
-                        'view/user/{{ task.updated_by.id }}');">
+                        '{{ request.route_url('view_user', id=task.updated_by.id) }}');">
                             {{ task.updated_by.name }}
                         </a>
                     {% else %}

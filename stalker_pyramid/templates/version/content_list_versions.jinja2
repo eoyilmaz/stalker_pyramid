@@ -75,7 +75,7 @@
                 content_creator: dialogs.create_version_dialog,
                 attach_to: 'create_version_button',
                 related_field_updater: versions_DataGrid_updater,
-                data_id: '{{ task.id }}'
+                data_id: '{{ entity.id }}'
             });
             create_version_button.startup();
         {% endif %}
@@ -84,7 +84,7 @@
         function versions_DataGrid_updater() {
 
             var version_memory = new JsonRest({
-                target: '/get/versions/{{ task.id }}'
+                target: '{{ request.route_url('get_task_versions', id=entity.id) }}',
             });
 
             version_memory.query().then(function (data) {
@@ -104,7 +104,7 @@
                         },
                         formatter: function (value) {
                             var targetPane = "'tasks_content_pane'";
-                            var address = "'view/task/" + value.task_id + "'";
+                            var address = "'tasks/" + value.task_id + "/view'";
 
                             return '<a href="javascript:redirectLinkInParent(' + targetPane + ',' + address + ');">' + value.task_name + '</a>';
                         }
@@ -118,7 +118,7 @@
                         },
                         formatter: function (value) {
                             var targetPane = "'tasks_content_pane'";
-                            var address = "'view/task/" + value.id + "'";
+                            var address = "'tasks/" + value.id + "/view'";
 
                             return '<a href="javascript:redirectLinkInParent(' + targetPane + ',' + address + ');">' + value.name + '</a>';
                         }
@@ -141,7 +141,7 @@
                         },
                         formatter: function (value) {
                             var targetPane = "'central_content'";
-                            var address = "'view/user/" + value.created_by_id + "'";
+                            var address = "'users/" + value.created_by_id + "/view'";
 
                             return '<a href="javascript:redirectLink(' + targetPane + ',' + address + ');">' + value.created_by_name + '</a>';
                         }

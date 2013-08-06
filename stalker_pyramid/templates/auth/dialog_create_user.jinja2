@@ -152,15 +152,15 @@
         var selected_tags;
         
         {% if mode=='CREATE' %}
-            url = 'create/user';
-            {% if department %}
-                selected_departments = [{{ department.id }}];
+            url = 'users/create';
+            {% if entity.entity_type == 'Department' %}
+                selected_departments = [{{ entity.id }}];
             {% endif %}
-            {% if group %}
-                selected_groups = [{{ group.id }}];
+            {% if entity.entity_type == 'Group' %}
+                selected_groups = [{{ entity.id }}];
             {% endif %}
         {% elif mode=='UPDATE'%}
-            url = 'update/user';
+            url = 'users/{{ user.id }}/update/';
             name = '{{ user.name }}';
             login = '{{ user.login }}';
             email = '{{ user.email }}';
@@ -273,7 +273,7 @@
         var create_department_button;
         
         var departments_jsonRest = new JsonRest({
-            target: 'get/departments'
+            target: '{{ request.route_url('get_departments') }}'
         });
         
         departments_tagSelect = new TagSelect({
@@ -314,7 +314,7 @@
 
         // Store
         var groups_jsonRest = new JsonRest({
-            target: 'get/groups'
+            target: '{{ request.route_url('get_groups') }}'
         });
         
         groups_tagSelect = new TagSelect({
@@ -372,7 +372,7 @@
                 // validate login name
                 // check login availability
                 var login_memory = new JsonRest({
-                    target: 'check/login_availability/' + login_textBox.value
+                    target: 'check_availability/login/' + login_textBox.value
                 });
 
                 var login_result = login_memory.query().then(function (data) {
@@ -403,7 +403,7 @@
 
                 }).then(function () {
                     var email_memory = new JsonRest({
-                        target: 'check/email_availability/' + email_textBox.value
+                        target: 'check_availability/email/' + email_textBox.value
                     });
 
                     var email_result = email_memory.query().then(function (data) {
@@ -436,8 +436,8 @@
                                     method: 'POST',
                                     url: url,
                                     additional_data: {
-                                        {% if department %}
-                                            department_id: {{ department.id }},
+                                        {% if entity.entity_type == 'Department' %}
+                                            department_id: {{ entity.id }},
                                         {% endif %}
                                         {% if mode=='UPDATE' %}
                                             user_id: {{user.id}}

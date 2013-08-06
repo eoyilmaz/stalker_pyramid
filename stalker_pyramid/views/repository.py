@@ -20,7 +20,7 @@
 
 import logging
 import datetime
-from pyramid.httpexceptions import HTTPOk, HTTPServerError
+from pyramid.httpexceptions import HTTPOk
 
 from pyramid.view import view_config
 
@@ -53,9 +53,9 @@ def dialog_create_repository(request):
 def dialog_update_repository(request):
     """fills the update repository dialog
     """
-    repo_id = request.matchdict['repo_id']
+    repo_id = request.matchdict.get('id', -1)
     repo = Repository.query.filter_by(id=repo_id).first()
-    
+
     return {
         'mode': 'UPDATE',
         'repo': repo,
@@ -70,24 +70,24 @@ def create_repository(request):
     """creates a new repository
     """
     logged_in_user = get_logged_in_user(request)
-    
+
     # get params
     name = request.params.get('name')
     windows_path = request.params.get('windows_path')
     linux_path = request.params.get('linux_path')
     osx_path = request.params.get('osx_path')
-    
+
     if name and windows_path and linux_path and osx_path:
         # create a new Repository and save it to the database
-         new_repository = Repository(
-             name=name,
-             windows_path=windows_path,
-             linux_path=linux_path,
-             osx_path=osx_path,
-             created_by=logged_in_user
-         )
-         DBSession.add(new_repository)
-    
+        new_repository = Repository(
+            name=name,
+            windows_path=windows_path,
+            linux_path=linux_path,
+            osx_path=osx_path,
+            created_by=logged_in_user
+        )
+        DBSession.add(new_repository)
+
     return HTTPOk()
 
 
@@ -98,15 +98,15 @@ def update_repository(request):
     """updates a repository
     """
     logged_in_user = get_logged_in_user(request)
-    
+
     repo_id = request.params.get('repo_id')
     repo = Repository.query.filter_by(id=repo_id).first()
-    
+
     name = request.params.get('name')
     windows_path = request.params.get('windows_path')
     linux_path = request.params.get('linux_path')
     osx_path = request.params.get('osx_path')
-    
+
     if repo and name and windows_path and linux_path and osx_path:
         repo.name = name
         repo.windows_path = windows_path
@@ -114,9 +114,9 @@ def update_repository(request):
         repo.osx_path = osx_path
         repo.updated_by = logged_in_user
         repo.date_updated = datetime.datetime.now()
-        
+
         DBSession.add(repo)
-    
+
     return HTTPOk()
 
 

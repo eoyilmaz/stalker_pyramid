@@ -73,7 +73,7 @@
 
                 var summary_content_pane = new ContentPane({
                     title: 'Summarize',
-                    href: 'summarize/project/{{ project.id }}',
+                    href: '{{ request.route_url('summarize_project', id=entity.id) }}',
                     region: 'top',
                     splitter: true,
                     style: 'width:100%; height:192px; padding: 0; background-color: #eeeeee;'
@@ -91,8 +91,8 @@
                     var tasks_content_pane = new ContentPane({
                         id: 'tasks_content_pane',
                         title: 'Tasks',
-                        default_href: 'list/tasks/{{ project.id }}',
-                        href: 'list/tasks/{{ project.id }}',
+                        default_href: '{{ request.route_url('list_project_tasks', id=entity.id) }}',
+                        href: '{{ request.route_url('list_project_tasks', id=entity.id) }}',
                         style: ' padding: 0; margin:0;'
                     }, 'tasks_content_pane');
 
@@ -104,8 +104,8 @@
                     var assets_content_pane = new ContentPane({
                         id: 'assets_content_pane',
                         title: 'Assets',
-                        default_href: 'list/assets/{{ project.id }}',
-                        href: 'list/assets/{{ project.id }}',
+                        default_href: '{{ request.route_url('list_project_assets', id=entity.id) }}',
+                        href: '{{ request.route_url('list_project_assets', id=entity.id) }}',
                         style: ' padding: 0; margin:0; height:100%;'
                     }, 'assets_content_pane');
                     project_related_data_tab_container.addChild(assets_content_pane);
@@ -115,8 +115,8 @@
                     var shots_content_pane = new ContentPane({
                         id: 'shots_content_pane',
                         title: 'Shots',
-                        default_href: 'list/shots/{{ project.id }}',
-                        href: 'list/shots/{{ project.id }}',
+                        default_href: '{{ request.route_url('list_project_shots', id=entity.id) }}',
+                        href: '{{ request.route_url('list_project_shots', id=entity.id) }}',
                         style: ' padding: 0; margin:0;'
                     }, 'shots_content_pane');
 
@@ -127,8 +127,8 @@
                     var sequences_content_pane = new ContentPane({
                         id: 'sequences_content_pane',
                         title: 'Sequences',
-                        default_href: 'list/sequences/{{ project.id }}',
-                        href: 'list/sequences/{{ project.id }}',
+                        default_href: '{{ request.route_url('list_project_sequences', id=entity.id) }}',
+                        href: '{{ request.route_url('list_project_sequences', id=entity.id) }}',
                         style: ' padding: 0; margin:0;'
                     }, 'sequences_content_pane');
 
@@ -139,8 +139,8 @@
                     var users_content_pane = new ContentPane({
                         id: 'users_content_pane',
                         title: 'Users',
-                        default_href: 'list/users/{{ project.id }}',
-                        href: 'list/users/{{ project.id }}',
+                        default_href: '{{ request.route_url('list_project_users', id=entity.id) }}',
+                        href: '{{ request.route_url('list_project_users', id=entity.id) }}',
                         style: ' padding: 0; margin:0;'
                     });
 
@@ -152,8 +152,8 @@
                     var tickets_content_pane = new ContentPane({
                         id: 'tickets_content_pane',
                         title: 'Tickets',
-                        default_href: 'list/tickets/{{ project.id }}',
-                        href: 'list/tickets/{{ project.id }}',
+                        default_href: '{{ request.route_url('list_project_tickets', id=entity.id) }}',
+                        href: '{{ request.route_url('list_project_tickets', id=entity.id) }}',
                         style: ' padding: 0; margin:0;'
                     });
 
@@ -164,8 +164,8 @@
                     var references_content_pane = new ContentPane({
                         id: 'references_content_pane',
                         title: 'References',
-                        default_href: 'list/sequences/{{ project.id }}',
-                        content: 'list/sequences/{{ project.id }}',
+                        default_href: '{{ request.route_url('list_project_references', id=entity.id) }}',
+                        content: '{{ request.route_url('list_project_references', id=entity.id) }}',
                         style: ' padding: 0; margin:0;'
                     });
 
@@ -175,64 +175,22 @@
                 project_related_data_tab_container.startup();
 
 
-                //project_content_BorderContainer.addChild(title_content_pane);
                 project_content_BorderContainer.addChild(summary_content_pane);
                 project_content_BorderContainer.addChild(project_related_data_tab_container);
                 project_content_BorderContainer.startup();
 
-                //var currentPane = tasks_content_pane;
-
-{#                var lSplitter_title = registry.byId("project_title")._splitterWidget;#}
-{#                on(lSplitter_title.domNode, 'click', function () {#}
-{#                });#}
-{#                on(lSplitter_title.domNode, 'click', testFunction);#}
+{#                project_related_data_tab_container.watch(#}
+{#                    "selectedChildWidget",#}
+{#                    function (name, oval, nval) {#}
+{#                        console.debug("selected child changed from ", nval.title, " to ", nval.href);#}
 {##}
-{#                function testFunction() {#}
+{#                        oval.set('href', '');#}
+{#                        oval.refresh();#}
 {##}
-{#                    alert('testFunction');#}
-{##}
-{#                }#}
-{##}
-{#                var lSplitter_summary = registry.byId("project_summary")._splitterWidget;#}
-{#                on(lSplitter_summary.domNode, 'click', hideSummary);#}
-{##}
-{#                var summary_on = true;#}
-{##}
-{#                function hideSummary() {#}
-{##}
-{#                    project_content_BorderContainer.removeChild(summary_content_pane);#}
-{##}
-{#                    on(lSplitter_title.domNode, 'click', showSummary);#}
-{##}
-{#                }#}
-{##}
-{#                function showSummary() {#}
-{##}
-{#                    project_content_BorderContainer.addChild(summary_content_pane);#}
-{##}
-{#                    on(lSplitter_title.domNode, 'click', function () {#}
-{#                    });#}
-{##}
-{#                    lSplitter_summary = registry.byId("project_summary")._splitterWidget;#}
-{#                    on(lSplitter_summary.domNode, 'click', hideSummary);#}
-{##}
-{#                }#}
-
-
-                project_related_data_tab_container.watch("selectedChildWidget", function (name,
-                                                                                          oval,
-                                                                                          nval) {
-                    console.debug("selected child changed from ", nval.title, " to ", nval.href);
-
-                    oval.set('href', '');
-                    oval.refresh();
-
-                    nval.set('href', nval.default_href);
-                    nval.refresh();
-
-                    //currentPane = nval;
-                });
-
+{#                        nval.set('href', nval.default_href);#}
+{#                        nval.refresh();#}
+{#                    }#}
+{#                );#}
 
             });
 

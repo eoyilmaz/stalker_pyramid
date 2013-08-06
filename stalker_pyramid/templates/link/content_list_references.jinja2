@@ -91,9 +91,9 @@ require([
 
 
     function reference_data_grid_updater() {
-
+        
         var reference_memory = new JsonRest({
-            target: '/tasks/{{ entity.id }}/references/'
+            target: '{{ request.route_url('get_entity_references', id=entity.id)}}'
         });
 
         reference_memory.query().then(function (data) {

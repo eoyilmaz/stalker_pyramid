@@ -45,7 +45,7 @@
                     <td>
                         {% if has_permission('Read_User') %}
                             <a href="javascript:redirectLink('central_content',
-                            'view/user/{{ department.lead.id }}');">
+                            'users/{{ department.lead.id }}/view');">
                                 {{ department.lead.name }}
                             </a>
                         {% else %}
@@ -70,7 +70,7 @@
                 <td>
                     {% if has_permission('Read_User') %}
                         <a href="javascript:redirectLink('central_content',
-                        'view/user/{{ department.created_by.id }}');">
+                        'users/{{ department.created_by.id }}/view');">
                             {{ department.created_by.name }}
                         </a>
                     {% else %}
@@ -110,7 +110,6 @@
             // refresh the pane
             content_pane.refresh();
         };
-
 
         {% if has_permission('Update_Department') %}
 

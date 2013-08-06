@@ -57,7 +57,7 @@ def dialog_update_filename_template(request):
     """fills the update filename template dialog
     """
     # get the filename template
-    ft_id = request.matchdict['ft_id']
+    ft_id = request.matchdict.get('id', -1)
     ft = FilenameTemplate.query.filter_by(id=ft_id).first()
 
     # for now prepare the data by hand

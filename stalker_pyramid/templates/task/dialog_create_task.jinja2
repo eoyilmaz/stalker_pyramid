@@ -310,7 +310,7 @@ require([
         schedule_model = '{{ task.schedule_model }}';
         schedule_timing = {{ task.schedule_timing }};
         schedule_unit = '{{ task.schedule_unit }}';
-        url = '{{ request.route_url('update_task', task_id=task.id) }}';
+        url = '{{ request.route_url('update_task', id=task.id) }}';
         start_date = new Date({{ milliseconds_since_epoch(task.start) }});
         start_time = 'T{{ '%02d'|format(task.start.hour) }}:{{'%02d'|format(task.start.minute) }}:00';
         end_date = new Date({{ milliseconds_since_epoch(task.end) }});
@@ -359,7 +359,7 @@ require([
 
     // ********************************************************************
     var tasks_jsonRest = new JsonRest({
-        target: '{{ request.route_url('get_project_tasks', project_id=project.id) }}'
+        target: '{{ request.route_url('get_project_tasks', id=project.id) }}'
     });
 
     var parent_widget = new FilteringSelect({
@@ -692,7 +692,7 @@ require([
     // ********************************************************************
     // Resources
     var users_jsonRest = new JsonRest({
-        target: '/get/users_byEntity/{{ project.id }}'
+        target: '{{ request.route_url("get_project_users", id=project.id) }}'
     });
 
     var resources_tagSelect = new TagSelect({
@@ -767,7 +767,7 @@ require([
     var get_status_filtering_select_data = function () {
         // The Memory
         var status_jsonRest = new JsonRest({
-            target: 'get/statuses_for/' + entity_type
+            target: '' 'statuses/' + entity_type + '/'
         });
 
         console.log('get_status_filtering_select_data');
@@ -909,7 +909,7 @@ require([
 
     // Sequence
     var sequence_memory = new JsonRest({
-        target: '/get/sequences/'
+        target: '{{ request.route_url("get_sequences") }}'
     });
 
     var sequence_filtering_select = new FilteringSelect({
@@ -932,7 +932,7 @@ require([
     // ****************************************************************
     // Asset Type
     var type_memory = new JsonRest({
-        target: '/get/asset_types/'
+        target: '{{ request.route_url("get_asset_types") }}'
     });
 
 

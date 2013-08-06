@@ -17,12 +17,8 @@
  License along with this library; if not, write to the Free Software
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #}
-{##}
-{#<div style="background-color: #eeeeee; text-align: center">#}
-{#    <h3>#}
-{#        <strong>{{ project.name }} ({{ project.code }})</strong>#}
-{#    </h3>#}
-{#</div>#}
+
+{% set project = entity %}
 
 <div id='project_details'>
     <div style="background-color: #8ecfb0;" class="page_title"></div>
@@ -51,7 +47,7 @@
                 <td>&nbsp;</td>
                 <td>
                     {% if has_permission('Read_User') %}
-                        <a href="javascript:redirectLink('central_content', 'view/user/{{ project.lead.id }}');">
+                        <a href="javascript:redirectLink('central_content', 'users/{{ project.lead.id }}/view');">
                             {{ project.lead.name }}
                         </a>
                     {% else %}

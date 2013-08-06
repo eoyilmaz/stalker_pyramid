@@ -181,7 +181,7 @@ def view_studio(request):
     """
     logged_in_user = get_logged_in_user(request)
 
-    studio_id = request.matchdict['studio_id']
+    studio_id = request.matchdict.get('id', -1)
     studio = Studio.query.filter_by(id=studio_id).first()
 
     return {
@@ -201,7 +201,7 @@ def summarize_studio(request):
     """
     logged_in_user = get_logged_in_user(request)
 
-    studio_id = request.matchdict['studio_id']
+    studio_id = request.matchdict.get('id', -1)
     studio = Studio.query.filter_by(id=studio_id).first()
 
     return {

@@ -205,7 +205,7 @@ require([
     {% if mode=='CREATE' %}
         url = '{{ request.route_url("create_project") }}';
     {% elif mode=='UPDATE' %}
-        url = '{{ request.route_url("update_project") }}';
+        url = '{{ request.route_url("update_project", id=project.id) }}';
         name = '{{ project.name }}';
         code = '{{ project.code }}';
         start_date_value = new Date(parseInt({{ milliseconds_since_epoch(project.start) }}));
@@ -345,7 +345,7 @@ require([
     //
     // The memory
     var imf_memory = new JsonRest({
-        target: '/get/image_formats'
+        target: 'image_formats/'
     });
 
     // The Field
@@ -437,7 +437,7 @@ require([
     // REPOSITORY
     // The Memory
     var repository_memory = new JsonRest({
-        target: '/get/repositories'
+        target: 'repositories/'
     });
 
     var repository_filteringSelect = new FilteringSelect({
@@ -509,7 +509,7 @@ require([
     //
     // The memory
     var structure_memory = new JsonRest({
-        target: '/get/structures'
+        target: 'structures/'
     });
 
     // The Field
@@ -578,7 +578,7 @@ require([
     // ********************************************************************
     // LEAD
     var lead_memory = new JsonRest({
-        target: '/get/users'
+        target: 'users/'
     });
 
     // The Field
@@ -645,7 +645,7 @@ require([
     //
     // The Memory
     var status_memory = new JsonRest({
-        target: 'get/statuses_for/Project'
+        target: 'statuses/Project/'
     });
 
     // The Field

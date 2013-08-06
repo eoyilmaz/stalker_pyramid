@@ -72,7 +72,7 @@ require([
             {% if mode == 'CREATE' %}
                 url = '{{ request.route_url("create_version") }}';
             {% elif mode == 'UPDATE' %}
-                url = '{{ request.route_url("update_version") }}';
+                url = '{{ request.route_url("update_version", id=version.id) }}';
                 name = '{{ version.name }}';
             {% endif %}
 

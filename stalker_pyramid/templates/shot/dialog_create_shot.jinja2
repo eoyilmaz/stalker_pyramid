@@ -133,7 +133,7 @@ require([
                     project_id = '{{ project.id }}';
                 {% endif %}
             {% elif mode == 'UPDATE' %}
-                url = '{{ request.route_url("update_shot") }}';
+                url = '{{ request.route_url("update_shot", id=shot.id) }}';
                 name = '{{ shot.name }}';
                 code = '{{ shot.code }}';
                 description = '{{ shot.description }}';
@@ -224,7 +224,7 @@ require([
             // **********************************************************************
             // Sequence
             var sequence_memory = new JsonRest({
-                target: '/get/sequences/'
+                target: '{{ request.route_url('get_sequences') }}'
             });
 
             var sequence_filtering_select = new FilteringSelect({

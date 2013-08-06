@@ -54,9 +54,9 @@ def dialog_create_structure(request):
 def dialog_update_structure(request):
     """fills the update structure dialog
     """
-    structure_id = request.matchdict['structure_id']
+    structure_id = request.matchdict.get('id', -1)
     structure = Structure.query.filter_by(id=structure_id).first()
-    
+
     return {
         'mode': 'UPDATE',
         'has_permission': PermissionChecker(request),
@@ -71,7 +71,7 @@ def create_structure(request):
     """creates a structure
     """
     logged_in_user = get_logged_in_user(request)
-    
+
     # get parameters
     name = request.params.get('name')
     custom_template = request.params.get('custom_template')
@@ -87,7 +87,7 @@ def create_structure(request):
             created_by=logged_in_user,
         )
         DBSession.add(new_structure)
-    
+
     return HTTPOk()
 
 
@@ -97,20 +97,20 @@ def create_structure(request):
 def update_structure(request):
     """updates a structure
     """
-    
+
     logged_in_user = get_logged_in_user(request)
-    
+
     # get params
     structure_id = request.params.get('structure_id')
     structure = Structure.query.filter_by(id=structure_id).first()
-    
+
     name = request.params.get('name')
     custom_template = request.params.get('custom_template')
-    
+
     # get all FilenameTemplates
     ft_ids = get_multi_integer(request, 'filename_templates')
     fts = FilenameTemplate.query.filter(FilenameTemplate.id.in_(ft_ids)).all()
-    
+
     if name:
         # update structure
         structure.name = name
@@ -118,9 +118,9 @@ def update_structure(request):
         structure.templates = fts
         structure.updated_by = logged_in_user
         structure.date_updated = datetime.datetime.now()
-        
+
         DBSession.add(structure)
-    
+
     return HTTPOk()
 
 

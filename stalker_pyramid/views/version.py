@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.WARNING)
 
 @view_config(
-    route_name='dialog_create_version',
+    route_name='dialog_create_task_version',
     renderer='templates/version/dialog_create_version.jinja2',
 )
 def create_version_dialog(request):
@@ -43,7 +43,7 @@ def create_version_dialog(request):
     # get logged in user
     logged_in_user = get_logged_in_user(request)
 
-    task_id = request.matchdict['task_id']
+    task_id = request.matchdict.get('id', -1)
     task = Task.query.filter(Task.task_id==task_id).first()
 
     return {
@@ -65,7 +65,7 @@ def update_version_dialog(request):
     # get logged in user
     logged_in_user = get_logged_in_user(request)
 
-    version_id = request.matchdict['version_id']
+    version_id = request.matchdict.get('id', -1)
     version = Version.query.filter_by(id=version_id).first()
 
     return {
@@ -124,33 +124,16 @@ def update_version(request):
 
     return HTTPOk()
 
-@view_config(
-    route_name='list_versions',
-    renderer='templates/version/content_list_versions.jinja2'
-)
-def list_versions(request):
-    """lists the versions of the given task
-    """
-    logger.debug('list_versions is running')
-
-    task_id = request.matchdict['task_id']
-    task = Task.query.filter_by(id=task_id).first()
-
-    logger.debug('entity_id : %s' % task_id)
-    return {
-        'task': task,
-        'has_permission': PermissionChecker(request)
-    }
 
 @view_config(
-    route_name='get_versions',
+    route_name='get_task_versions',
     renderer='json'
 )
-def get_versions(request):
+def get_task_versions(request):
     """returns all the Shots of the given Project
     """
     logger.debug('get_versions is running')
-    task_id = request.matchdict['task_id']
+    task_id = request.matchdict.get('id', -1)
     task = Task.query.filter_by(id=task_id).first()
     version_data = []
 
@@ -193,6 +176,7 @@ def get_versions(request):
 
     return version_data
 
+
 @view_config(
     route_name='view_version',
     renderer='templates/version/page_view_version.jinja2'
@@ -203,7 +187,7 @@ def view_version(request):
 
     logger.debug('view_version is running')
 
-    version_id = request.matchdict['version_id']
+    version_id = request.matchdict.get('id', -1)
     version = Version.query.filter_by(id=version_id).first()
 
     logger.debug('version_id : %s' % version_id)
@@ -223,7 +207,7 @@ def summarize_version(request):
 
     logger.debug('view_version is running')
 
-    version_id = request.matchdict['version_id']
+    version_id = request.matchdict.get('id', -1)
     version = Version.query.filter_by(id=version_id).first()
 
     logger.debug('version_id : %s' % version_id)
@@ -243,7 +227,7 @@ def list_version_outputs(request):
 
     logger.debug('list_version_outputs is running')
 
-    version_id = request.matchdict['version_id']
+    version_id = request.matchdict.get('id', -1)
     version = Version.query.filter_by(id=version_id).first()
 
     logger.debug('entity_id : %s' % version_id)
@@ -259,10 +243,9 @@ def list_version_outputs(request):
 def list_version_inputs(request):
     """lists the versions of the given task
     """
-
     logger.debug('list_version_inputs is running')
 
-    version_id = request.matchdict['version_id']
+    version_id = request.matchdict.get('id', -1)
     version = Version.query.filter_by(id=version_id).first()
 
     logger.debug('entity_id : %s' % version_id)
@@ -278,10 +261,9 @@ def list_version_inputs(request):
 def list_version_children(request):
     """lists the versions of the given task
     """
-
     logger.debug('list_version_children is running')
 
-    version_id = request.matchdict['version_id']
+    version_id = request.matchdict.get('id', -1)
     version = Version.query.filter_by(id=version_id).first()
 
     logger.debug('entity_id : %s' % version_id)

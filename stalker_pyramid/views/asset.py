@@ -38,7 +38,7 @@ logger.setLevel(logging.WARNING)
 def create_asset_dialog(request):
     """fills the create asset dialog
     """
-    project_id = request.matchdict['project_id']
+    project_id = request.matchdict['id']
     project = Project.query.filter_by(id=project_id).first()
     asset_types = Type.query.filter_by(target_entity_type='Asset').all()
 
@@ -56,10 +56,10 @@ def create_asset_dialog(request):
 def update_asset_dialog(request):
     """fills the update asset dialog
     """
-    asset_id = request.matchdict['asset_id']
+    asset_id = request.matchdict['id']
     asset = Asset.query.filter_by(id=asset_id).first()
     asset_types = Type.query.filter_by(target_entity_type='Asset').all()
-    
+
     return {
         'mode': 'UPDATE',
         'has_permission': PermissionChecker(request),
@@ -76,27 +76,27 @@ def create_asset(request):
     """creates a new Asset
     """
     logged_in_user = get_logged_in_user(request)
-    
+
     # get params
     name = request.params.get('name')
     code = request.params.get('code')
     description = request.params.get('description')
     type_name = request.params.get('type_name')
-    
+
     status_id = request.params.get('status_id')
     status = Status.query.filter_by(id=status_id).first()
-    
+
     project_id = request.params.get('project_id')
     project = Project.query.filter_by(id=project_id).first()
     logger.debug('project_id   : %s' % project_id)
-    
+
     if name and code and type_name and status and  project:
         # get the type
         type_ = Type.query\
             .filter_by(target_entity_type='Asset')\
             .filter_by(name=type_name)\
             .first()
-        
+
         if type_ is None:
             # create a new Type
             # TODO: should we check for permission here or will it be already done in the UI (ex. filteringSelect instead of comboBox)
@@ -105,17 +105,17 @@ def create_asset(request):
                 code=type_name,
                 target_entity_type='Asset'
             )
-        
+
         # get the status_list
         status_list = StatusList.query.filter_by(
             target_entity_type='Asset'
         ).first()
-        
+
         # there should be a status_list
         # TODO: you should think about how much possible this is
         if status_list is None:
             return HTTPServerError(detail='No StatusList found')
-        
+
         # create the asset
         new_asset = Asset(
             name=name,
@@ -127,7 +127,7 @@ def create_asset(request):
             status=status,
             created_by=logged_in_user
         )
-        
+
         DBSession.add(new_asset)
     else:
         logger.debug('there are missing parameters')
@@ -148,26 +148,26 @@ def update_asset(request):
     """updates an Asset
     """
     logged_in_user = get_logged_in_user(request)
-    
+
     # get params
-    asset_id = request.params.get('asset_id')
+    asset_id = request.matchdict.get('id', -1)
     asset = Asset.query.filter_by(id=asset_id).first()
-    
+
     name = request.params.get('name')
     code = request.params.get('code')
     description = request.params.get('description')
     type_name = request.params.get('type_name')
-    
+
     status_id = request.params.get('status_id')
     status = Status.query.filter_by(id=status_id).first()
-    
+
     if asset and name and code and type_name and status:
         # get the type
         type_ = Type.query\
             .filter_by(target_entity_type='Asset')\
             .filter_by(name=type_name)\
             .first()
-        
+
         if type_ is None:
             # create a new Type
             type_ = Type(
@@ -175,7 +175,7 @@ def update_asset(request):
                 code=type_name,
                 target_entity_type='Asset'
             )
-        
+
         # update the asset
         logger.debug('code      : %s' % code)
         asset.name = name
@@ -185,9 +185,9 @@ def update_asset(request):
         asset.status = status
         asset.updated_by = logged_in_user
         asset.date_updated = datetime.datetime.now()
-        
+
         DBSession.add(asset)
-    
+
     return HTTPOk()
 
 
@@ -200,7 +200,7 @@ def view_asset(request):
     """
     logged_in_user = get_logged_in_user(request)
 
-    asset_id = request.matchdict['asset_id']
+    asset_id = request.matchdict['id']
     asset = Asset.query.filter_by(id=asset_id).first()
 
     return {
@@ -219,7 +219,7 @@ def summarize_asset(request):
     """
     logged_in_user = get_logged_in_user(request)
 
-    asset_id = request.matchdict['asset_id']
+    asset_id = request.matchdict.get('id', -1)
     asset = Asset.query.filter_by(id=asset_id).first()
 
     return {
@@ -230,13 +230,14 @@ def summarize_asset(request):
 
 
 @view_config(
-    route_name='get_assets',
+    route_name='get_project_assets',
     renderer='json'
 )
 def get_assets(request):
     """returns all the Assets of a given Project
     """
-    project_id = request.matchdict['project_id']
+    # TODO: this should be paginated
+    project_id = request.matchdict.get('id', -1)
     return [
         {
             'id': asset.id,
@@ -262,7 +263,6 @@ def get_assets(request):
 def get_asset_types(request):
     """returns all the Assets of a given Project
     """
-
     return [
         {
             'id': asset_type.id,

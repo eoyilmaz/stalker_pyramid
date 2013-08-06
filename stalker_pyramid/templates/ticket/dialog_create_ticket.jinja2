@@ -113,23 +113,22 @@ require([
             var ticket_id;
             var project_id = '{{ entity.project_id }}';
             var owner_id;
-            var owner_memory_target = '/get/users';
+            var owner_memory_target = 'users/';
 
 
             {% if entity.entity_type == 'Project' %}
                 project_id = '{{ entity.id }}';
-                owner_memory_target = '/get/users_byEntity/' + project_id;
+                owner_memory_target = 'entities/' + project_id + '/users/';
             {% elif entity.entity_type == 'User' %}
                 owner_id = '{{ entity.id }}';
                 project_id = null;
-
             {% endif %}
 
             {# fill values based on the dialog mode #}
             {% if mode == 'CREATE' %}
                 url = '{{ request.route_url("create_ticket") }}';
             {% elif mode == 'UPDATE' %}
-                url = '{{ request.route_url("update_ticket") }}';
+                url = '{{ request.route_url("update_ticket", id=ticket.id) }}';
                 ticket_id = '{{ ticket.id }}';
                 description = '{{ ticket.description }}';
                 owner_id = '{{ ticket.owner_id }}';
@@ -225,7 +224,7 @@ require([
             // Resources
             var tasks_jsonRest = new JsonRest({
                 //target: '/get/project_tasks/' + project_id
-              target: '{{ request.route_url('get_project_tasks', project_id=entity.project_id ) }}'
+              target: '{{ request.route_url('get_project_tasks', id=entity.project_id ) }}'
             });
 
             var tasks_tagSelect = new TagSelect({

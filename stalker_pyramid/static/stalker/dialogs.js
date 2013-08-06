@@ -24,6 +24,8 @@ define(['exports', 'dojox/widget/DialogSimple', 'dijit/registry', 'dojo/domReady
         // summary:
         //      creates the default dialogs
 
+        var reg = new RegExp('{id}', 'g');
+
         var style = 'width: auto; height: auto; padding: 0px;';
 
         var dialog_killer = function (id) {
@@ -53,7 +55,7 @@ define(['exports', 'dojox/widget/DialogSimple', 'dijit/registry', 'dojo/domReady
             return new DialogSimple({
                 id: 'upload_thumbnail_dialog',
                 title: 'Upload Thumbnail Dialog',
-                href: '/dialog/upload_thumbnail/' + entity_id,
+                href: 'entities/{id}/thumbnail/upload/dialog'.replace(reg, entity_id),
                 resize: true,
                 style: style,
                 executeScripts: true
@@ -66,7 +68,7 @@ define(['exports', 'dojox/widget/DialogSimple', 'dijit/registry', 'dojo/domReady
             return new DialogSimple({
                 id: 'upload_reference_dialog',
                 title: 'Upload Reference Dialog',
-                href: '/dialog/upload_reference/' + entity_id,
+                href: 'entities/{id}/references/upload/dialog'.replace(reg, entity_id),
                 resize: true,
                 style: style,
                 executeScripts: true
@@ -79,7 +81,7 @@ define(['exports', 'dojox/widget/DialogSimple', 'dijit/registry', 'dojo/domReady
             return new DialogSimple({
                 id: 'studio_dialog',
                 title: 'New Studio',
-                href: 'dialog/create/studio',
+                href: 'studios/create/dialog',
                 resize: true,
                 style: 'width: 730px; height: auto; padding: 0px;',
                 executeScripts: true
@@ -90,7 +92,7 @@ define(['exports', 'dojox/widget/DialogSimple', 'dijit/registry', 'dojo/domReady
             return new DialogSimple({
                 id: 'studio_dialog',
                 title: 'Update Studio',
-                href: 'dialog/update/studio',
+                href: 'studios/-1/update/dialog',
                 resize: true,
                 style: style,
                 executeScripts: true
@@ -103,7 +105,7 @@ define(['exports', 'dojox/widget/DialogSimple', 'dijit/registry', 'dojo/domReady
             return new DialogSimple({
                 id: 'project_dialog',
                 title: 'New Project',
-                href: '/dialog/create/project',
+                href: 'projects/create/dialog',
                 resize: true,
                 style: style,
                 executeScripts: true
@@ -114,7 +116,7 @@ define(['exports', 'dojox/widget/DialogSimple', 'dijit/registry', 'dojo/domReady
             return new DialogSimple({
                 id: 'project_dialog',
                 title: 'Update Project',
-                href: '/dialog/update/project/' + project_id,
+                href: 'projects/{id}/update/dialog'.replace(reg, project_id),
                 resize: true,
                 style: style,
                 executeScripts: true
@@ -127,18 +129,18 @@ define(['exports', 'dojox/widget/DialogSimple', 'dijit/registry', 'dojo/domReady
             return new DialogSimple({
                 id: 'image_format_dialog',
                 title: 'New Image Format',
-                href: '/dialog/create/image_format',
+                href: 'image_formats/create/dialog',
                 resize: true,
                 style: style,
                 executeScripts: true
             });
         };
 
-        exports.update_image_format_dialog = function update_image_format_dialog(image_format_id) {
+        exports.update_image_format_dialog = function update_image_format_dialog(imf_id) {
             return new DialogSimple({
                 id: 'image_format_dialog',
                 title: 'Update Image Format',
-                href: '/dialog/update/image_format/' + image_format_id,
+                href: 'image_formats/{id}/update/dialog'.replace(reg, imf_id),
                 resize: true,
                 style: style,
                 executeScripts: true
@@ -151,7 +153,7 @@ define(['exports', 'dojox/widget/DialogSimple', 'dijit/registry', 'dojo/domReady
             return new DialogSimple({
                 id: 'structure_dialog',
                 title: 'New Structure',
-                href: '/dialog/create/structure',
+                href: 'structures/create/dialog',
                 resize: true,
                 style: style,
                 executeScripts: true
@@ -162,7 +164,7 @@ define(['exports', 'dojox/widget/DialogSimple', 'dijit/registry', 'dojo/domReady
             return new DialogSimple({
                 id: 'structure_dialog',
                 title: 'Update Structure',
-                href: '/dialog/update/structure/' + structure_id,
+                href: 'structures/{id}/update/dialog'.replace(reg, structure_id),
                 resize: true,
                 style: style,
                 executeScripts: true
@@ -176,7 +178,31 @@ define(['exports', 'dojox/widget/DialogSimple', 'dijit/registry', 'dojo/domReady
             return new DialogSimple({
                 id: 'user_dialog',
                 title: 'New User',
-                href: 'dialog/create/user/' + entity_id,
+                href: 'users/create/dialog',
+                resize: true,
+                style: style,
+                executeScripts: true
+            });
+        };
+
+        exports.create_department_user_dialog = function create_department_user_dialog(entity_id) {
+            entity_id = entity_id || -1;
+            return new DialogSimple({
+                id: 'user_dialog',
+                title: 'New User',
+                href: 'departments/{id}/users/create/dialog'.replace(reg, entity_id),
+                resize: true,
+                style: style,
+                executeScripts: true
+            });
+        };
+
+        exports.create_group_user_dialog = function create_group_user_dialog(entity_id) {
+            entity_id = entity_id || -1;
+            return new DialogSimple({
+                id: 'user_dialog',
+                title: 'New User',
+                href: 'groups/{id}/users/create/dialog'.replace(reg, entity_id),
                 resize: true,
                 style: style,
                 executeScripts: true
@@ -187,7 +213,7 @@ define(['exports', 'dojox/widget/DialogSimple', 'dijit/registry', 'dojo/domReady
             return new DialogSimple({
                 id: 'user_dialog',
                 title: 'Update User',
-                href: 'dialog/update/user/' + user_id,
+                href: 'users/{id}/update/dialog'.replace(reg, user_id),
                 resize: true,
                 style: style,
                 executeScripts: true
@@ -198,7 +224,7 @@ define(['exports', 'dojox/widget/DialogSimple', 'dijit/registry', 'dojo/domReady
             return new DialogSimple({
                 id: 'append_user_dialog',
                 title: 'Append User',
-                href: 'dialog/append/users/' + entity_id,
+                href: 'entities/{id}/users/append/dialog'.replace(reg, entity_id),
                 resize: true,
                 style: style,
                 executeScripts: true
@@ -211,18 +237,18 @@ define(['exports', 'dojox/widget/DialogSimple', 'dijit/registry', 'dojo/domReady
             return new DialogSimple({
                 id: 'filename_template_dialog',
                 title: 'New Filename Template',
-                href: 'dialog/create/filename_template',
+                href: 'filename_templates/create/dialog',
                 resize: true,
                 style: style,
                 executeScripts: true
             });
         };
 
-        exports.update_filename_template_dialog = function update_filename_template_dialog(filename_template_id) {
+        exports.update_filename_template_dialog = function update_filename_template_dialog(ft_id) {
             var myDialog = new DialogSimple({
                 id: 'filename_template_dialog',
                 title: 'Update Filename Template',
-                href: 'dialog/update/filename_template/' + filename_template_id,
+                href: 'filename_templates/{id}/update/dialog'.replace(reg, ft_id),
                 resize: true,
                 style: style,
                 executeScripts: true
@@ -235,7 +261,7 @@ define(['exports', 'dojox/widget/DialogSimple', 'dijit/registry', 'dojo/domReady
             return new DialogSimple({
                 id: 'repository_dialog',
                 title: 'New Repository',
-                href: '/dialog/create/repository',
+                href: 'repositories/create/dialog',
                 resize: true,
                 style: style,
                 executeScripts: true
@@ -246,7 +272,7 @@ define(['exports', 'dojox/widget/DialogSimple', 'dijit/registry', 'dojo/domReady
             return new DialogSimple({
                 id: 'repository_dialog',
                 title: 'Update Repository',
-                href: '/dialog/update/repository/' + repo_id,
+                href: 'repositories/{id}/update/dialog'.replace(reg, repo_id),
                 resize: true,
                 style: style,
                 executeScripts: true
@@ -258,9 +284,9 @@ define(['exports', 'dojox/widget/DialogSimple', 'dijit/registry', 'dojo/domReady
         exports.create_status_list_dialog = function create_status_list_dialog(target_entity_type) {
             var href;
             if (target_entity_type == null) {
-                href = '/dialog/create/status_list'
+                href = 'status_lists/create/dialog';
             } else {
-                href = '/dialog/create/status_list/' + target_entity_type
+                href = 'status_lists/{id}/create/dialog'.replace(reg, target_entity_type);
             }
             return new DialogSimple({
                 id: 'status_list_dialog',
@@ -276,7 +302,7 @@ define(['exports', 'dojox/widget/DialogSimple', 'dijit/registry', 'dojo/domReady
             return new DialogSimple({
                 id: 'status_list_dialog',
                 title: 'Update Status List',
-                href: '/dialog/update/status_list/' + target_entity_type,
+                href: 'status_lists/{id}/update/dialog'.replace(reg, target_entity_type),
                 resize: true,
                 style: style,
                 executeScripts: true
@@ -289,7 +315,7 @@ define(['exports', 'dojox/widget/DialogSimple', 'dijit/registry', 'dojo/domReady
             return new DialogSimple({
                 id: 'status_dialog',
                 title: 'New Status',
-                href: '/dialog/create/status',
+                href: 'statuses/create/dialog',
                 resize: true,
                 style: style,
                 executeScripts: true
@@ -300,7 +326,7 @@ define(['exports', 'dojox/widget/DialogSimple', 'dijit/registry', 'dojo/domReady
             return new DialogSimple({
                 id: 'status_dialog',
                 title: 'Update Status',
-                href: '/dialog/update/status/' + status_id,
+                href: 'statuses/{id}/update/dialog'.replace(reg, status_id),
                 resize: true,
                 style: style,
                 executeScripts: true
@@ -314,7 +340,7 @@ define(['exports', 'dojox/widget/DialogSimple', 'dijit/registry', 'dojo/domReady
             return new DialogSimple({
                 id: 'asset_dialog',
                 title: 'New Asset',
-                href: '/dialog/create/asset/' + project_id,
+                href: 'projects/{id}/assets/create/dialog'.replace(reg, project_id),
                 resize: true,
                 style: style,
                 executeScripts: true
@@ -325,7 +351,7 @@ define(['exports', 'dojox/widget/DialogSimple', 'dijit/registry', 'dojo/domReady
             return new DialogSimple({
                 id: 'asset_dialog',
                 title: 'Update Asset',
-                href: '/dialog/update/asset/' + asset_id,
+                href: 'assets/{id}/update/dialog'.replace(reg, asset_id),
                 resize: true,
                 style: style,
                 executeScripts: true
@@ -339,7 +365,7 @@ define(['exports', 'dojox/widget/DialogSimple', 'dijit/registry', 'dojo/domReady
             return new DialogSimple({
                 id: 'shot_dialog',
                 title: 'New Shot',
-                href: '/dialog/create/shot/' + project_id,
+                href: 'projects/{id}/shots/create/dialog'.replace(reg, project_id),
                 resize: true,
                 style: style,
                 executeScripts: true
@@ -350,7 +376,7 @@ define(['exports', 'dojox/widget/DialogSimple', 'dijit/registry', 'dojo/domReady
             return new DialogSimple({
                 id: 'shot_dialog',
                 title: 'Update Shot',
-                href: '/dialog/update/shot/' + shot_id,
+                href: 'shots/{id}/update/dialog'.replace(reg, shot_id),
                 resize: true,
                 style: style,
                 executeScripts: true
@@ -364,7 +390,7 @@ define(['exports', 'dojox/widget/DialogSimple', 'dijit/registry', 'dojo/domReady
             return new DialogSimple({
                 id: 'sequence_dialog',
                 title: 'New Sequence',
-                href: '/dialog/create/sequence/' + project_id,
+                href: 'projects/{id}/sequences/create/dialog'.replace(reg, project_id),
                 resize: true,
                 style: style,
                 executeScripts: true
@@ -375,7 +401,7 @@ define(['exports', 'dojox/widget/DialogSimple', 'dijit/registry', 'dojo/domReady
             return new DialogSimple({
                 id: 'sequence_dialog',
                 title: 'Update Sequence',
-                href: '/dialog/update/sequence/' + sequence_id,
+                href: 'sequences/{id}/update/dialog'.replace(reg, sequence_id),
                 resize: true,
                 style: style,
                 executeScripts: true
@@ -388,7 +414,7 @@ define(['exports', 'dojox/widget/DialogSimple', 'dijit/registry', 'dojo/domReady
             return new DialogSimple({
                 id: 'task_dialog',
                 title: 'New Task',
-                href: 'dialog/create/task/' + project_id,
+                href: 'projects/{id}/tasks/create/dialog'.replace(reg, project_id),
                 resize: true,
                 style: style,
                 executeScripts: true
@@ -399,7 +425,7 @@ define(['exports', 'dojox/widget/DialogSimple', 'dijit/registry', 'dojo/domReady
             return new DialogSimple({
                 id: 'task_dialog',
                 title: 'Update Task',
-                href: '/dialog/update/task/' + task_id,
+                href: 'tasks/{id}/update/dialog'.replace(reg, task_id),
                 resize: true,
                 style: style,
                 executeScripts: true
@@ -410,7 +436,7 @@ define(['exports', 'dojox/widget/DialogSimple', 'dijit/registry', 'dojo/domReady
             return new DialogSimple({
                 id: 'task_dialog',
                 title: 'New Child Task',
-                href: '/dialog/create/child_task/' + task_id,
+                href: 'tasks/{id}/child_tasks/create/dialog'.replace(reg, task_id),
                 resize: true,
                 style: style,
                 executeScripts: true
@@ -421,7 +447,7 @@ define(['exports', 'dojox/widget/DialogSimple', 'dijit/registry', 'dojo/domReady
             return new DialogSimple({
                 id: 'task_dialog',
                 title: 'New Dependent Task',
-                href: '/dialog/create/dependent_task/' + task_id,
+                href: 'tasks/{id}/dependent_tasks/create/dialog'.replace(reg, task_id),
                 resize: true,
                 style: style,
                 executeScripts: true
@@ -434,7 +460,7 @@ define(['exports', 'dojox/widget/DialogSimple', 'dijit/registry', 'dojo/domReady
             return new DialogSimple({
                 id: 'time_log_dialog',
                 title: 'New TimeLog',
-                href: '/dialog/create/time_log/' + task_id,
+                href: 'tasks/{id}/time_logs/create/dialog'.replace(reg, task_id),
                 resize: true,
                 style: style,
                 executeScripts: true
@@ -445,7 +471,7 @@ define(['exports', 'dojox/widget/DialogSimple', 'dijit/registry', 'dojo/domReady
             return new DialogSimple({
                 id: 'time_log_dialog',
                 title: 'Update TimeLog',
-                href: '/dialog/update/time_log/' + time_log_id,
+                href: 'time_logs/{id}/update/dialog'.replace(reg, time_log_id),
                 resize: true,
                 style: style,
                 executeScripts: true
@@ -453,11 +479,11 @@ define(['exports', 'dojox/widget/DialogSimple', 'dijit/registry', 'dojo/domReady
         };
         // ********************************************************************
         // TICKET
-        exports.create_ticket_dialog = function create_ticket_dialog(entity_id) {
+        exports.create_ticket_dialog = function create_ticket_dialog(project_id) {
             return new DialogSimple({
                 id: 'ticket_dialog',
                 title: 'New Ticket',
-                href: '/dialog/create/ticket/' + entity_id,
+                href: 'projects/{id}/tickets/create/dialog'.replace(reg, project_id),
                 resize: true,
                 style: style,
                 executeScripts: true
@@ -468,7 +494,7 @@ define(['exports', 'dojox/widget/DialogSimple', 'dijit/registry', 'dojo/domReady
             return new DialogSimple({
                 id: 'ticket_dialog',
                 title: 'Update Ticket',
-                href: '/dialog/update/ticket/' + ticket_id,
+                href: 'tickets/{id}/update/dialog'.replace(reg, ticket_id),
                 resize: true,
                 style: style,
                 executeScripts: true
@@ -480,7 +506,7 @@ define(['exports', 'dojox/widget/DialogSimple', 'dijit/registry', 'dojo/domReady
             return new DialogSimple({
                 id: 'vacation_dialog',
                 title: 'New TimeLog',
-                href: '/dialog/create/vacation/' + user_id,
+                href: 'users/{id}/vacations/create/dialog'.replace(reg, user_id),
                 resize: true,
                 style: style,
                 executeScripts: true
@@ -491,7 +517,7 @@ define(['exports', 'dojox/widget/DialogSimple', 'dijit/registry', 'dojo/domReady
             return new DialogSimple({
                 id: 'vacation_dialog',
                 title: 'Update Vacation',
-                href: '/dialog/update/vacation/' + vacation_id,
+                href: 'vacations/{id}/update/dialog'.replace(reg, vacation_id),
                 resize: true,
                 style: style,
                 executeScripts: true
@@ -504,7 +530,7 @@ define(['exports', 'dojox/widget/DialogSimple', 'dijit/registry', 'dojo/domReady
             return new DialogSimple({
                 id: 'version_dialog',
                 title: 'New Version',
-                href: '/dialog/create/version/' + task_id,
+                href: 'tasks/{id}/versions/create/dialog'.replace(reg, task_id),
                 resize: true,
                 style: style,
                 executeScripts: true
@@ -515,7 +541,7 @@ define(['exports', 'dojox/widget/DialogSimple', 'dijit/registry', 'dojo/domReady
             return new DialogSimple({
                 id: 'version_dialog',
                 title: 'Update Version',
-                href: '/dialog/update/version/' + version_id,
+                href: 'versions/{id}/update/dialog'.replace(reg, version_id),
                 resize: true,
                 style: style,
                 executeScripts: true
@@ -529,7 +555,7 @@ define(['exports', 'dojox/widget/DialogSimple', 'dijit/registry', 'dojo/domReady
             return new DialogSimple({
                 id: 'department_dialog',
                 title: 'New Department',
-                href: 'dialog/create/department',
+                href: 'departments/create/dialog',
                 resize: true,
                 style: style,
                 executeScripts: true
@@ -540,7 +566,7 @@ define(['exports', 'dojox/widget/DialogSimple', 'dijit/registry', 'dojo/domReady
             return new DialogSimple({
                 id: 'department_dialog',
                 title: 'Update Department',
-                href: 'dialog/update/department/' + department_id,
+                href: 'departments/{id}/update/dialog'.replace(reg, department_id),
                 resize: true,
                 style: style,
                 executeScripts: true
@@ -551,7 +577,7 @@ define(['exports', 'dojox/widget/DialogSimple', 'dijit/registry', 'dojo/domReady
             return new DialogSimple({
                 id: 'append_department_dialog',
                 title: 'Append Department',
-                href: 'dialog/append/departments/' + user_id,
+                href: 'users/{id}/departments/append/dialog'.replace(reg, user_id),
                 resize: true,
                 style: style,
                 executeScripts: true
@@ -564,7 +590,7 @@ define(['exports', 'dojox/widget/DialogSimple', 'dijit/registry', 'dojo/domReady
             return new DialogSimple({
                 id: 'group_dialog',
                 title: 'New Group',
-                href: 'dialog/create/group',
+                href: 'groups/create/dialog',
                 resize: true,
                 style: style,
                 executeScripts: true
@@ -575,7 +601,7 @@ define(['exports', 'dojox/widget/DialogSimple', 'dijit/registry', 'dojo/domReady
             return new DialogSimple({
                 id: 'group_dialog',
                 title: 'Update Group',
-                href: 'dialog/update/group/' + group_id,
+                href: 'groups/{id}/update/dialog'.replace(reg, group_id),
                 resize: true,
                 style: style,
                 executeScripts: true
@@ -586,7 +612,7 @@ define(['exports', 'dojox/widget/DialogSimple', 'dijit/registry', 'dojo/domReady
             return new DialogSimple({
                 id: 'append_group_dialog',
                 title: 'Append Group',
-                href: 'dialog/append/groups/' + user_id,
+                href: 'users/{id}/groups/append/dialog'.replace(reg, user_id),
                 resize: true,
                 style: style,
                 executeScripts: true

@@ -54,7 +54,7 @@
                 <td>
                     {% if has_permission('Read_User') %}
                         <a href="javascript:redirectLink('central_content',
-                        'view/user/{{ ticket.created_by.id }}');">
+                        '{{ request.route_url('view_user', id=ticket.created_by.id) }}');">
                             {{ ticket.created_by.name }}
                         </a>
                     {% else %}

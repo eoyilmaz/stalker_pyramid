@@ -54,7 +54,7 @@
                 <td>
                     {% if has_permission('Read_Project') %}
                         <a href="javascript:redirectLink('central_content',
-                        'view/project/{{ asset.project.id }}');">
+                        'projects/{{ asset.project.id }}/view');">
                             {{ asset.project.name }}
                         </a>
                     {% else %}
@@ -78,7 +78,7 @@
                 <td>
                     {% if has_permission('Read_User') %}
                         <a href="javascript:redirectLink('central_content',
-                        'view/user/{{ asset.created_by.id }}');">
+                        'users/{{ asset.created_by.id }}/view');">
                             {{ asset.created_by.name }}
                         </a>
                     {% else %}

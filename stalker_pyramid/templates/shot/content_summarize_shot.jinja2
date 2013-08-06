@@ -33,7 +33,7 @@
                 <td>
                     {% if has_permission('Read_Project') %}
                         <a href="javascript:redirectLink('central_content',
-                        'view/project/{{ shot.project.id }}');">
+                        '{{ request.route_url('view_project', id=shot.project.id) }}');">
                             {{ shot.project.name }}
                         </a>
                     {% else %}
@@ -52,7 +52,7 @@
                 <td>
                     {% if has_permission('Read_User') %}
                         <a href="javascript:redirectLink('central_content',
-                        'view/user/{{ shot.created_by.id }}');">
+                        '{{ request.route_url('view_user', id=shot.created_by.id) }}');">
                             {{ shot.created_by.name }}
                         </a>
                     {% else %}
@@ -120,9 +120,6 @@
             // refresh the pane
             content_pane.refresh();
         };
-
-
-
 
         {% if has_permission('Update_Shot') %}
             // UPDATE SHOT BUTTON

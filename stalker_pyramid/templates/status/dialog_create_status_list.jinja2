@@ -119,9 +119,9 @@
                 {% endfor %}
             ];
             
-            url = '{{ request.route_url('update_status_list') }}';
+            url = '{{ request.route_url('update_status_list', id=status_list.id) }}';
             additional_data = {
-                'status_list_id': {{ status_list.id }}
+{#                'status_list_id': {{ status_list.id }}#}
             };
         {% endif %}
         
@@ -171,7 +171,7 @@
         // 
         // The Memory
         var statuses_memory = new JsonRest({
-            target: '/get/statuses'
+            target: '{{ request.route_url('get_statuses') }}'
         });
 
         // The Widget
