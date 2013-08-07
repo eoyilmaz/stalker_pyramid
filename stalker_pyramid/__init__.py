@@ -69,6 +69,7 @@ def main(global_config, **settings):
     config.set_authorization_policy(authz_policy)
 
     config.include('pyramid_jinja2')
+    config.include('pyramid_mailer')
     config.add_static_view('static', 'static', cache_max_age=3600)
 
     # *************************************************************************
@@ -187,7 +188,7 @@ def main(global_config, **settings):
     config.add_route('summarize_project',          'projects/{id}/summarize')
 
     config.add_route('get_projects',               'projects/')
-    config.add_route('get_project_users',          'projets/{id}/users/')
+    config.add_route('get_project_users',          'projects/{id}/users/')
     config.add_route('get_project_assets',         'projects/{id}/assets/')
     config.add_route('get_project_shots',          'projects/{id}/shots/')
     config.add_route('get_project_sequences',      'projects/{id}/sequences/')

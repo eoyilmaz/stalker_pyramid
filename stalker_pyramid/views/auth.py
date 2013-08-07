@@ -293,6 +293,10 @@ def get_users(request):
 
 
 @view_config(
+    route_name='get_project_users',
+    renderer='json'
+)
+@view_config(
     route_name='get_entity_users',
     renderer='json'
 )

@@ -19,12 +19,16 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 import logging
 
-from pyramid.response import Response
+import transaction
 
+from pyramid.response import Response
 from pyramid.view import view_config
 from pyramid.security import authenticated_userid
 from pyramid.httpexceptions import HTTPServerError, HTTPOk
-import transaction
+
+from pyramid_mailer import get_mailer
+from pyramid_mailer.message import Message
+
 from sqlalchemy.exc import IntegrityError
 
 from stalker.db import DBSession
@@ -359,6 +363,10 @@ def update_task(request):
     resource_ids = get_multi_integer(request, 'resource_ids')
     resources = User.query.filter(User.id.in_(resource_ids)).all()
 
+    # get responsible
+    responsible_id = request.params.get('responsible_id', -1)
+    responsible = User.query.filter(User.id==responsible_id).first()
+
     priority = request.params.get('priority', 500)
 
     entity_type = request.params.get('entity_type', None)
@@ -372,6 +380,7 @@ def update_task(request):
     logger.debug('depends             : %s' % depends)
     logger.debug('resource_ids        : %s' % resource_ids)
     logger.debug('resources           : %s' % resources)
+    logger.debug('responsible         : %s' % responsible)
     logger.debug('name                : %s' % name)
     logger.debug('description         : %s' % description)
     logger.debug('is_milestone        : %s' % is_milestone)
@@ -417,6 +426,11 @@ def update_task(request):
     task.priority = priority
     task.code = code
     task.updated_by = logged_in_user
+
+    # update responsible
+    if responsible:
+        if task.responsible != responsible:
+            task.responsible = responsible
 
     if entity_type == 'Asset':
         type_ = Type.query \
@@ -848,6 +862,10 @@ def create_task(request):
         resource_ids = get_multi_integer(request, 'resource_ids')
         resources = User.query.filter(User.id.in_(resource_ids)).all()
 
+    # get responsible
+    responsible_id = request.params.get('responsible_id', -1)
+    responsible = User.query.filter(User.id==responsible_id).first()
+
     priority = request.params.get('priority', 500)
 
     entity_type = request.params.get('entity_type', None)
@@ -866,6 +884,7 @@ def create_task(request):
     logger.debug('schedule_unit       : %s' % schedule_unit)
     logger.debug('resource_ids        : %s' % resource_ids)
     logger.debug('resources           : %s' % resources)
+    logger.debug('responsible         : %s' % responsible)
     logger.debug('priority            : %s' % priority)
     logger.debug('schedule_constraint : %s' % schedule_constraint)
     logger.debug('entity_type         : %s' % entity_type)
@@ -978,6 +997,11 @@ def create_task(request):
                 # logger.debug('new_shot.status: %s' % new_entity.status)
                 DBSession.add(new_entity)
 
+            if responsible:
+                # check if the responsible is different than
+                # the parents responsible
+                if new_entity.responsible != responsible:
+                    new_entity.responsible = responsible
 
         except (AttributeError, TypeError, CircularDependencyError) as e:
             logger.debug(e.message)
@@ -1087,9 +1111,9 @@ def request_task_review(request):
         # get the project that the ticket belongs to
         project = task.project
 
-        summary_text = 'Review Task %s' % task.name
+        summary_text = 'Review Request: "%s"' % task.name
         description_text = '%s has requested you to do a review for ' \
-                           '%s (%s) - (%s)' % (
+                           '"%s (%s) - (%s)"' % (
             logged_in_user.name,
             task.name,
             task.entity_type,
@@ -1108,6 +1132,18 @@ def request_task_review(request):
         review_ticket.set_owner(responsible)
 
         DBSession.add(review_ticket)
-        # TODO: send email to responsible
+
+        # send email to responsible and resources of the task
+        mailer = get_mailer(request)
+
+        recipients = [logged_in_user.email, responsible.email]
+        # recipients.extend(task.resources)
+
+        message = Message(
+            subject=summary_text,
+            sender="Anima Stalker <anima.stalker.pyramid@stalker.com>",
+            recipients=recipients,
+            body=description_text)
+        mailer.send(message)
 
     return HTTPOk()

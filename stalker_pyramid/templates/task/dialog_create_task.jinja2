@@ -72,6 +72,7 @@
             <input id='entity_code'>
         </td>
     </tr>
+
     {# Entity=Asset #}
     <tr id="entity_type_is_asset">
 
@@ -82,6 +83,7 @@
             <input id='asset_type'>
         </td>
     </tr>
+
     {# Entity=Shot #}
     <tr id="entity_type_is_shot">
 
@@ -92,7 +94,6 @@
             <input id='shot_sequence'>
         </td>
     </tr>
-
 
     {# DESCRIPTION #}
     <tr>
@@ -123,6 +124,17 @@
             <div id='task_resources'></div>
         </td>
     </tr>
+
+    {# RESPONSIBLE #}
+    <tr>
+        <td class='label_column'>
+            <label for='task_responsible'>Responsible</label>
+        </td>
+        <td class='input_column'>
+            <div id='task_responsible'></div>
+        </td>
+    </tr>
+
 
     {# CONSTRAINS #}
 
@@ -283,6 +295,8 @@ require([
     var selected_resources = [];
     var entity_type = 'Task';
     var user_memory;
+    var responsible_id;
+    var responsible_memory;
     var tasks_memory;
     var status_memory;
 
@@ -325,6 +339,7 @@ require([
                 {{ resource.id }},
             {% endfor %}
         ];
+        responsible_id = {{ task.responsible.id }};
         entity_type = '{{ task.entity_type }}';
     {% endif %}
 
@@ -408,7 +423,6 @@ require([
     var tasks_result = tasks_jsonRest.query().then(function (data) {
         tasks_memory = new Memory({data: data});
 
-        console.log('tasks_memory');
         {# remove self from lists #}
         {% if task %}
             tasks_memory.remove({{ task.id }});
@@ -422,10 +436,9 @@ require([
         if (parent_id) {
             parent_widget.set('value', parent_id);
         }
+
         if (user_memory && status_memory) {
-
             ok_button.set('disabled', false);
-
         }
     });
 
@@ -689,7 +702,7 @@ require([
     priority_numberSpinner.startup();
 
 
-    // ********************************************************************
+    {# ********************************************************************* #}
     // Resources
     var users_jsonRest = new JsonRest({
         target: '{{ request.route_url("get_project_users", id=project.id) }}'
@@ -703,20 +716,40 @@ require([
     }, 'task_resources');
     resources_tagSelect.startup();
 
-    var resources_result = users_jsonRest.query().then(function (data) {
+    {# ********************************************************************* #}
+    // Responsible
+    var responsible_filteringSelect = new FilteringSelect({
+        id: 'responsible_filteringSelect',
+        name: 'responsible_id',
+        required: false
+    }, 'task_responsible');
+    responsible_filteringSelect.startup();
+
+    {# ********************************************************************* #}
+    {# Set Resources and Responsible #}
+    users_jsonRest.query().then(function (data) {
         user_memory = new Memory({data: data});
 
+        // duplicate the data for responsible field
+        var data_copy = data.slice();
 
-       console.log('user_memory');
+        responsible_memory = new Memory({data: data_copy});
+        responsible_filteringSelect.set('store', responsible_memory);
+        if (responsible_id){
+            responsible_filteringSelect.set('value', responsible_id);
+        }
+
         resources_tagSelect.set('store', user_memory);
         resources_tagSelect.set('value', selected_resources);
 
         if (status_memory && tasks_memory) {
-
             ok_button.set('disabled', false);
-
         }
+
     });
+
+
+
 
     // ********************************************************************
     // Status
@@ -732,14 +765,9 @@ require([
     }, 'task_status');
     status_filtering_select.startup();
 
-
     // The Updater
     var update_status_button_function = function (data) {
-
-
         status_memory = data;
-        console.log('status_memory')
-
         if (data.length > 0) {
             add_status_button.set('onClick', function () {
 
@@ -756,9 +784,7 @@ require([
         }
 
         if (user_memory && tasks_memory) {
-
             ok_button.set('disabled', false);
-
         }
     };
 
@@ -767,10 +793,8 @@ require([
     var get_status_filtering_select_data = function () {
         // The Memory
         var status_jsonRest = new JsonRest({
-            target: '' 'statuses/' + entity_type + '/'
+            target: 'statuses/' + entity_type + '/'
         });
-
-        console.log('get_status_filtering_select_data');
 
         status_field_updater = fieldUpdater({
             memory: status_jsonRest,
@@ -783,7 +807,7 @@ require([
 
         status_field_updater({animate: true});
 
-    }
+    };
 
     //get_status_filtering_select_data();
 
@@ -909,7 +933,7 @@ require([
 
     // Sequence
     var sequence_memory = new JsonRest({
-        target: '{{ request.route_url("get_sequences") }}'
+        target: 'projects/' {# the {id}/sequences/ part will be added later #}
     });
 
     var sequence_filtering_select = new FilteringSelect({
@@ -922,7 +946,7 @@ require([
     var sequence_field_updater = fieldUpdater({
         memory: sequence_memory,
         query_data: function () {
-            return {{ project.id }};
+            return '{{ project.id }}/sequences/';
         },
         widget: sequence_filtering_select
     });
