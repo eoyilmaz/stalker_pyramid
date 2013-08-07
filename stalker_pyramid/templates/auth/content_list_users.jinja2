@@ -109,7 +109,7 @@
                             {% if has_permission('Read_User') %}
 
                                 var targetPane = "'central_content'";
-                                var address = "'users/" + value.id + "'/view";
+                                var address = "'users/" + value.id + "/view'";
 
                                 return '<a href="javascript:redirectLink(' + targetPane + ',' + address + ');">' + value.name + '</a><br/>(' + value.login + ')';
                             {% else %}

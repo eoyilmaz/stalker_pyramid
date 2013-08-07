@@ -211,25 +211,6 @@ def update_user(request):
     return HTTPOk()
 
 
-@view_config(
-    route_name='list_department_users',
-    renderer='templates/auth/content_list_users.jinja2'
-)
-@view_config(
-    route_name='list_group_users',
-    renderer='templates/auth/content_list_users.jinja2'
-)
-def view_users(request):
-    """
-    """
-    entity_id = request.matchdict.get('id', -1)
-    entity = Entity.query.filter_by(id=entity_id).first()
-
-    return {
-        'has_permission': PermissionChecker(request),
-        'entity': entity
-    }
-
 
 @view_config(
     route_name='view_user',
@@ -247,7 +228,8 @@ def view_user(request):
     return {
         'user': user,
         'logged_in_user': logged_in_user,
-        'has_permission': PermissionChecker(request)
+        'has_permission': PermissionChecker(request),
+        'stalker_pyramid' : stalker_pyramid
     }
 
 

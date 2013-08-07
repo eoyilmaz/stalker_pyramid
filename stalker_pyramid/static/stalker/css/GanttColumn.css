@@ -313,7 +313,7 @@
     background-color: #000;
 }
 
-#gantt .dgrid-column-chart {
+.gantt .dgrid-column-chart {
     position: relative;
     /*width: 6588.45px;*/
     /*width: 100%;*/
@@ -329,7 +329,7 @@
     z-index: 10;
 }
 
-#gantt .dgrid .dependency-row {
+.gantt .dgrid .dependency-row {
     position: absolute;
     width: 390px;
 }
@@ -361,61 +361,61 @@ th.dgrid-column-chart table {
     overflow: hidden;
 }
 
-#gantt .dgrid {
+.gantt .dgrid {
     width: 100%;
     height: 100%;
 }
 
-#gantt .dgrid-column-id {
+.gantt .dgrid-column-id {
     width: 40px;
     text-align: right;
 }
 
-#gantt .dgrid-column-name {
+.gantt .dgrid-column-name {
     width: 200px;
 }
 
-#gantt .dgrid-column-timing {
+.gantt .dgrid-column-timing {
     width: 45px;
 }
 
-#gantt .dgrid-column-timing {
+.gantt .dgrid-column-timing {
     width: 60px;
     text-align: center;
 }
 
-#gantt .dgrid-column-complete {
+.gantt .dgrid-column-complete {
     width: 50px;
     text-align: right;
 }
 
-#gantt .dgrid-column-start {
+.gantt .dgrid-column-start {
     width: 120px;
 }
 
-#gantt .dgrid-column-end {
+.gantt .dgrid-column-end {
     width: 120px;
 }
 
 
 
-#gantt .dgrid-column-set-0 {
+.gantt .dgrid-column-set-0 {
 width: 40%;
 }
 
-#gantt .dgrid-column-set-1 {
+.gantt .dgrid-column-set-1 {
 width: 60%;
 }
 
-/*#gantt .dgrid-column-set-cell .dgrid-column-set-0 .dgrid-cell {*/
+/*.gantt .dgrid-column-set-cell .dgrid-column-set-0 .dgrid-cell {*/
 /*background-color: #dedede;*/
 /*}*/
 
-/*#gantt .dgrid-row {*/
+/*.gantt .dgrid-row {*/
 /**/
 /*}*/
 
-/*#gantt .dgrid-column-set {*/
+/*.gantt .dgrid-column-set {*/
     /*overflow: hidden;*/
     /*width: 100%;*/
     /*position: relative;*/
@@ -423,18 +423,18 @@ width: 60%;
     /*float: left;*/
 /*}*/
 
-/*#gantt .dgrid-cell {*/
+/*.gantt .dgrid-cell {*/
     /*border-top: none;*/
     /*border-bottom: none;*/
 /*}*/
 
-#gantt .dgrid-cell {
+.gantt .dgrid-cell {
     /*background-color: rgb(240, 240, 240);*/
     /*text-overflow: ellipsis;*/
     text-overflow: clip;
     white-space: nowrap;
 }
 
-/*#gantt .dgrid-cell-padding {*/
+/*.gantt .dgrid-cell-padding {*/
 /*padding: 0px;*/
 /*}*/

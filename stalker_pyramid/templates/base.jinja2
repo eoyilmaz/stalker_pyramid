@@ -158,9 +158,60 @@
                 schedule_unit={{=it.schedule_unit}}
                 description="{{=it.description}}"
                 remaining_seconds="{{=it.remaining_seconds}}"
+                resources="{{=it.getResourcesStr()}}"
+                responsible_id="{{=it.responsible.id}}"
+                responsible_name="{{=it.responsible.name}}"
                 ></div>
         </div>
     </div>
+</script>
+
+<script id='tmpl_leafTaskToolTip' type='text/x-dot-template'>
+<table>
+    <thead style="text-align: center">
+        <h2>{{=it.name}} ({{=it.type}})</h2>
+        <h4>{{=it.hierarchy_name}}</h4>
+    </thead>
+
+    <tbody>
+        <tr>
+            <td class="label_column">Id</td>
+            <td class="input_column">{{=it.dataId}}</td>
+        </tr>
+        <tr>
+            <td class="label_column">Priority</td>
+            <td class="input_column">{{=it.priority}}</td>
+        </tr>
+        <tr>
+            <td class="label_column">BID</td>
+            <td class="input_column">{{=it.bid_timing}} {{=it.bid_unit}}</td>
+        </tr>
+        <tr>
+            <td class="label_column">{{=it.schedule_model}}</td>
+            <td class="input_column">{{=it.schedule_timing}} {{=it.schedule_unit}}</td>
+        </tr>
+        <tr>
+            <td class="label_column">Start</td>
+            <td class="input_column">{{=it.start.format("yyyy-mm-dd HH:00")}}</td>
+        </tr>
+        <tr>
+            <td class="label_column">End</td>
+            <td class="input_column">{{=it.end.format("yyyy-mm-dd HH:00")}}</td>
+        </tr>
+        <tr>
+            <td class="label_column">Description</td>
+            <td class="input_column">{{=it.description}}</td>
+        </tr>
+        <tr>
+            <td class="label_column">Remaining Time</td>
+            <td class="input_column">{{=it.remaining_seconds}}</td>
+        </tr>
+        <tr>
+            <td class="label_column">Responsible</td>
+            <td class="input_column">{{=it.responsible.name}}</td>
+        </tr>
+    </tbody>
+</table>
 </script>
 
 <script id="tmpl_taskEditNameRow" type="text/x-dot-template">
@@ -170,6 +221,10 @@
         start={{=it.start}}
         end={{=it.end}}
         type="{{=it.type}}"
+        {{ if (!it.hasChildren) { }}
+            responsible_id="{{=it.responsible.id}}"
+            responsible_name="{{=it.responsible.name}}"
+        {{ } }}
         hasChildren={{=it.hasChildren}}>{{=it.name}} ({{=it.type}})</div>
 </script>
 
@@ -272,6 +327,8 @@
 
     templates.taskEditNameRow = doT.template(document.getElementById('tmpl_taskEditNameRow').text);
 
+    templates.leafTaskToolTip = doT.template(document.getElementById('tmpl_leafTaskToolTip').text);
+    
     // for DGrid Headers
     templates.entityNameField = doT.template(document.getElementById('tmpl_entityNameField').text);
     templates.userNameField = doT.template(document.getElementById('tmpl_userNameField').text);

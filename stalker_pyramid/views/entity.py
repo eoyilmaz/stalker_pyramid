@@ -133,6 +133,14 @@ logger.setLevel(logging.DEBUG)
     renderer='templates/sequence/content_list_sequences.jinja2'
 )
 @view_config(
+    route_name='list_department_users',
+    renderer='templates/auth/content_list_users.jinja2'
+)
+@view_config(
+    route_name='list_group_users',
+    renderer='templates/auth/content_list_users.jinja2'
+)
+@view_config(
     route_name='summarize_project',
     renderer='templates/project/content_summarize_project.jinja2'
 )

@@ -7,6 +7,9 @@ Stalker Pyramid Changes
 
 * **Update:** Redesigned all the routes to comply with a RESTful service
   scheme.
+* **New:** Leaf tasks on gantt chart now have a new functionality called
+  "Request Review" which can be invoked through the context menu. It will
+  create a new Ticket and assign it to the task responsible.
 
 0.1.0.b2
 ========

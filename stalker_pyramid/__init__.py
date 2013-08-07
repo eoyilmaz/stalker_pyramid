@@ -418,6 +418,8 @@ def main(global_config, **settings):
 
     config.add_route('get_task_tickets', 'tasks/{id}/tickets') # json
 
+    config.add_route('request_task_review', 'tasks/{id}/request_review')
+
     # *************************************************************************
     # Vacation
     config.add_route('dialog_update_vacation', 'vacations/{id}/update/dialog')

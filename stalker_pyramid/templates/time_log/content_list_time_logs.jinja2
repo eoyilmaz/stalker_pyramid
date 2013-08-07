@@ -133,7 +133,7 @@ require([
                     formatter: function (value) {
 
                         var targetPane = "'tasks_content_pane'";
-                        var address = "'tasks/" + value.task_id + "'/view";
+                        var address = "'tasks/" + value.task_id + "/view'";
 
                         return '<a href="javascript:redirectLinkInParent(' + targetPane + ',' + address + ');">' + value.task_name + '</a>';
 
@@ -148,10 +148,9 @@ require([
                     },
                     formatter: function (value) {
                         var targetPane = "'central_content'";
-                        var address = "'users/" + value.resource_id + "'/view";
+                        var address = "'users/" + value.resource_id + "/view'";
 
                         return '<a href="javascript:redirectLink(' + targetPane + ',' + address + ');">' + value.resource_name + '</a>';
-
                     }
                 },
                 {

@@ -23,44 +23,45 @@
     <div style="float: left;">
         <div style="float: left;">
             {% if has_permission('Create_Task') %}
-                <button id='list_tasks_create_task_button'>Create Task</button>
+                <button id='{{ entity.entity_type }}_{{ entity.id }}_list_tasks_create_task_button'>Create Task</button>
             {% endif %}
-            <button id='list_tasks_gantt_reload_button'>Reload</button>
+            <button id={{ entity.entity_type }}_{{ entity.id }}_'list_tasks_gantt_reload_button'>Reload</button>
         </div>
         <div style="width: 100px; float: left"></div>
         {% if has_permission('Update_Task') %}
             <div style='float: left;'>
-                <button id="list_tasks_schedule_tasks_button">Schedule Tasks
+                <button id="{{ entity.entity_type }}_{{ entity.id }}_list_tasks_schedule_tasks_button">Schedule Tasks
                 </button>
             </div>
         {% endif %}
         <div style='float: left;'> {# gantt boundries #}
             <div style="float: left">
                 <div style='float: left;'>Start :</div>
-                <div id='gantt_start_date' style='float: left;'></div>
+                <div id='{{ entity.entity_type }}_{{ entity.id }}_gantt_start_date' style='float: left;'></div>
             </div>
             <div style="float: left">
                 <div style='float: left;'>End</div>
-                <div id='gantt_end_date' style='float: left;'></div>
+                <div id='{{ entity.entity_type }}_{{ entity.id }}_gantt_end_date' style='float: left;'></div>
             </div>
             <div style="float: left">
                 <div style='float: left;'>Grid Mode</div>
-                <div id='grid_mode' style='float: left;'></div>
+                <div id='{{ entity.entity_type }}_{{ entity.id }}_grid_mode' style='float: left;'></div>
             </div>
             <div style="float: left">
                 <div style='float: left;'>Gantt Mode</div>
-                <div id='gantt_mode' style='float: left;'></div>
+                <div id='{{ entity.entity_type }}_{{ entity.id }}_gantt_mode' style='float: left;'></div>
             </div>
             <div style="float: left;">
-                <button id='list_tasks_refresh_button'>Refresh</button>
-                <button id='list_tasks_go_to_today_button'>Go To Today</button>
+                <button id='{{ entity.entity_type }}_{{ entity.id }}_list_tasks_refresh_button'>Refresh</button>
+                <button id='{{ entity.entity_type }}_{{ entity.id }}_list_tasks_go_to_today_button'>Go To Today</button>
             </div>
         </div>
     </div>
 </div>
 
 <div style='width:100%; height: 94%; position: absolute; margin-top: 30px;'>
-    <div id="gantt" style="position: static; width: 100%; height: 100%;"></div>
+    <div id="{{ entity.entity_type }}_{{ entity.id }}_gantt"  class='gantt'
+         style="position: static; width: 100%; height: 100%;"></div>
 </div>
 
 
@@ -109,73 +110,37 @@
         var createTaskToolTips = function(){
             // create tool tip dialogs for task info
             new Tooltip({
-                connectId: ['gantt'],
+                connectId: ['{{ entity.entity_type }}_{{ entity.id }}_gantt'],
                 selector: '.leafTaskContextMenu',
                 getContent: function (node) {
-                    var dataId = node.getAttribute('dataId');
-                    var hierarchy_name = node.getAttribute('hierarchy_name');
-                    var name = node.getAttribute('name');
-                    var type = node.getAttribute('type');
-                    var start = new Date(parseInt(node.getAttribute('start')));
-                    var end = new Date(parseInt(node.getAttribute('end')));
-                    var schedule_model = node.getAttribute('schedule_model');
+                    var object = {};
+                    
+                    object.dataId = node.getAttribute('dataId');
+                    object.hierarchy_name = node.getAttribute('hierarchy_name');
+                    object.name = node.getAttribute('name');
+                    object.type = node.getAttribute('type');
+                    object.start = new Date(parseInt(node.getAttribute('start')));
+                    object.end = new Date(parseInt(node.getAttribute('end')));
+                    object.schedule_model = node.getAttribute('schedule_model');
     
-                    if (schedule_model){
-                        schedule_model = schedule_model.charAt(0).toUpperCase() + schedule_model.substr(1).toLowerCase();
+                    if (object.schedule_model){
+                        object.schedule_model = object.schedule_model.charAt(0).toUpperCase() + object.schedule_model.substr(1).toLowerCase();
                     }
 
-                    var schedule_timing =  (parseFloat(node.getAttribute('schedule_timing'))).toFixed(1);
-                    var schedule_unit = node.getAttribute('schedule_unit');
-                    var bid_timing = node.getAttribute('bid_timing');
-                    var bid_unit = node.getAttribute('bid_unit');
+                    object.schedule_timing =  (parseFloat(node.getAttribute('schedule_timing'))).toFixed(1);
+                    object.schedule_unit = node.getAttribute('schedule_unit');
+                    object.bid_timing = node.getAttribute('bid_timing');
+                    object.bid_unit = node.getAttribute('bid_unit');
 
-                    var description = node.getAttribute('description');
+                    object.description = node.getAttribute('description');
+                    object.priority = node.getAttribute('priority');
+                    object.remaining_seconds = node.getAttribute('remaining_seconds');
 
-                    var priority = node.getAttribute('priority');
+                    object.responsible = {};
+                    object.responsible.id = node.getAttribute('responsible_id');
+                    object.responsible.name = node.getAttribute('responsible_name');
 
-                    var remaining_seconds = node.getAttribute('remaining_seconds');
-
-                    return '<table>' +
-                            '<thead style="text-align: center">' +
-                                '<h4>'+hierarchy_name+'</h4>' +
-                                '<h3>' + name + ' (' + type + ')</h3>' +
-    
-                            '</thead>' +
-                            '<tbody>' +
-                            '<tr>' +
-                                '<td class="label_column">Id</td>' +
-                                '<td class="input_column">' + dataId + '</td>' +
-                            '</tr>' +
-                            '<tr>' +
-                                '<td class="label_column">Priority</td>' +
-                                '<td class="input_column">' + priority + '</td>' +
-                            '</tr>' +
-                            '<tr>' +
-                                '<td class="label_column">BID</td>' +
-                                '<td class="input_column">' + bid_timing +' '+ bid_unit + '</td>' +
-                            '</tr>' +
-                            '<tr>' +
-                                '<td class="label_column">' + schedule_model + '</td>' +
-                                '<td class="input_column">' + schedule_timing + ' ' + schedule_unit + '</td>' +
-                            '</tr>' +
-                            '<tr>' +
-                                '<td class="label_column">Start</td>' +
-                                '<td class="input_column">' + start.format("yyyy-mm-dd HH:00") + '</td>' +
-                            '</tr>' +
-                            '<tr>' +
-                                '<td class="label_column">End</td>' +
-                                '<td class="input_column">' + end.format("yyyy-mm-dd HH:00") + '</td>' +
-                            '</tr>' +
-                            '<tr>' +
-                                '<td class="label_column">Description</td>' +
-                                '<td class="input_column">' + description + '</td>' +
-                            '</tr>' +
-                            '<tr>' +
-                                '<td class="label_column">Remaining Time</td>' +
-                                '<td class="input_column">' + remaining_seconds + '</td>' +
-                            '</tr>' +
-                            '</tbody>' +
-                            '</table>';
+                    return templates.leafTaskToolTip(object);
                 }
             });
         };
@@ -215,24 +180,24 @@
 
             {# PARENT TASK MENU #}
             var parent_taskbar_menu = new Menu({
-                targetNodeIds: ['gantt'],
+                targetNodeIds: ['{{ entity.entity_type }}_{{ entity.id }}_gantt'],
                 selector: '.parentTaskContextMenu'
             });
 
             var parent_taskrow_menu = new Menu({
-                targetNodeIds: ['gantt'],
+                targetNodeIds: ['{{ entity.entity_type }}_{{ entity.id }}_gantt'],
                 selector: '.parentTaskEditRow'
             });
 
 
             {# LEAF TASK MENU #}
             var leaf_taskbar_menu = new Menu({
-                targetNodeIds: ['gantt'],
+                targetNodeIds: ['{{ entity.entity_type }}_{{ entity.id }}_gantt'],
                 selector: '.leafTaskContextMenu'
             });
 
             var leaf_taskrow_menu = new Menu({
-                targetNodeIds: ['gantt'],
+                targetNodeIds: ['{{ entity.entity_type }}_{{ entity.id }}_gantt'],
                 selector: '.taskEditRow'
             });
 
@@ -456,10 +421,53 @@
 
             {% endif %}
 
+            {# REQUEST REVIEW#}
+            var ask_review_creator = function(){
+                return new MenuItem({
+                    label: 'Request Review',
+                    style: 'color: red',
+                    onClick: function(){
+                        var node = this.getParent().currentTarget;
+                        var dataId = node.getAttribute('dataId');
+                        console.debug('dataId: ', dataId);
+                        console.debug('node:', node);
+                        var responsible = {
+                            'id': node.getAttribute('responsible_id'),
+                            'name': node.getAttribute('responsible_name')
+                        };
+
+                        var url = 'tasks/{id}/request_review';
+                        console.debug('url before: ', url);
+                        var id_replacer = new RegExp('{id}', 'g');
+                        url = url.replace(id_replacer, dataId);
+                        console.debug('url after: ', url);
+                        
+                        var answer = confirm(
+                            'This will create a new Ticket and assign ' +
+                            'it to ' + responsible.name + '\n\n' +
+                            'Is that ok?'
+                        );
+
+                        if (answer){
+                            return xhr.post(
+                                url,
+                                {
+                                    method: 'POST'
+                                }
+                            );
+                        }
+                    }
+                });
+            };
+            leaf_taskbar_menu.addChild(ask_review_creator());
+            leaf_taskrow_menu.addChild(ask_review_creator());
+
             leaf_taskbar_menu.startup();
             parent_taskbar_menu.startup();
             leaf_taskrow_menu.startup();
             parent_taskrow_menu.startup();
+
+
         };
 
 
@@ -486,7 +494,7 @@
         var tasks_cache_store = new Cache(tasks_jsonRest_store, tasks_memory_store);
 
         var gantt_chart = new GanttGrid({
-            id: 'gantt_dgrid',
+            id: '{{ entity.entity_type }}_{{ entity.id }}_gantt_dgrid',
             width: '100%',
             autoHeight: true,
             store: tasks_cache_store,
@@ -498,7 +506,7 @@
             noDataMessage: "",
             pageSkip: 0,
             cellNavigation: false
-        }, 'gantt');
+        }, '{{ entity.entity_type }}_{{ entity.id }}_gantt');
         gantt_chart.startup();
 
         // create context menus and tooltip dialogs
@@ -526,7 +534,7 @@
             onClick: function () {
                 gantt_column.reload();
             }
-        }, 'list_tasks_gantt_reload_button');
+        }, '{{ entity.entity_type }}_{{ entity.id }}_list_tasks_gantt_reload_button');
         reload_gantt_button.startup();
 
         // SCHEDULE
@@ -539,7 +547,7 @@
                         // xhr.post returns a `promise` use it if needed
                         // show the busy dialog
                         var busy_dialog = dialogs.busy_dialog({
-                            id: 'schedule_tasks_busy_dialog'
+                            id: '{{ entity.entity_type }}_{{ entity.id }}_schedule_tasks_busy_dialog'
                         });
                         busy_dialog.show();
                         return xhr.post(
@@ -561,7 +569,7 @@
                     when(do_schedule(), do_load);
 
                 }
-            }, 'list_tasks_schedule_tasks_button');
+            }, '{{ entity.entity_type }}_{{ entity.id }}_list_tasks_schedule_tasks_button');
             schedule_tasks_button.startup();
         {% endif %}
 
@@ -571,7 +579,7 @@
                         value: new Date(new Date().getTime() - 15552000000),// 15 * 24 * 60 * 60 * 1000, set it today + 15 by default
             required: true,
             datePattern: 'dd-mm-yyyy'
-        }, 'gantt_start_date');
+        }, '{{ entity.entity_type }}_{{ entity.id }}_gantt_start_date');
         start_dateTextBox.startup();
 
         var end_dateTextBox = new DateTextBox({
@@ -580,7 +588,7 @@
                         value: new Date(new Date().getTime() + 15552000000), // set it today + 15 by default
             required: true,
             datePattern: 'dd-mm-yyyy'
-        }, 'gantt_end_date');
+        }, '{{ entity.entity_type }}_{{ entity.id }}_gantt_end_date');
         end_dateTextBox.startup();
 
         var grid_mode_filteringSelect = new FilteringSelect({
@@ -599,7 +607,7 @@
                 ]
             }),
             value: 'Task'
-        }, 'grid_mode');
+        }, '{{ entity.entity_type }}_{{ entity.id }}_grid_mode');
         grid_mode_filteringSelect.startup();
 
         var gantt_mode_filteringSelect = new FilteringSelect({
@@ -618,7 +626,7 @@
                 ]
             }),
             value: 'Task'
-        }, 'gantt_mode');
+        }, '{{ entity.entity_type }}_{{ entity.id }}_gantt_mode');
         gantt_mode_filteringSelect.startup();
 
         var refresh_button = new Button({
@@ -628,7 +636,7 @@
                 var end =  end_dateTextBox.getValue().getTime();
                 gantt_column.refresh({start: start, end: end});
             }
-        }, 'list_tasks_refresh_button');
+        }, '{{ entity.entity_type }}_{{ entity.id }}_list_tasks_refresh_button');
         refresh_button.startup();
 
         var go_to_today_button = new Button({
@@ -636,7 +644,7 @@
             onClick: function () {
                 gantt_column.centerOnToday();
             }
-        }, 'list_tasks_go_to_today_button');
+        }, '{{ entity.entity_type }}_{{ entity.id }}_list_tasks_go_to_today_button');
         go_to_today_button.startup();
 
     });

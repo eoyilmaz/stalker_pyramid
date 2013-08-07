@@ -29,7 +29,7 @@ from sqlalchemy.exc import IntegrityError
 
 from stalker.db import DBSession
 from stalker import (User, Task, Entity, Project, StatusList, Status,
-                     TaskJugglerScheduler, Studio, Asset, Shot, Sequence, Type)
+                     TaskJugglerScheduler, Studio, Asset, Shot, Sequence, Type, Ticket)
 from stalker.models.task import CircularDependencyError
 from stalker import defaults
 from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
@@ -283,6 +283,10 @@ def convert_to_dgrid_gantt_task_format(tasks):
             'name': task.name,
             'parent': task.parent.id if task.parent else task.project.id,
             'priority': task.priority,
+            'responsible': {
+                'id': task.responsible.id,
+                'name': task.responsible.name
+            },
             'resources': [
                 {'id': resource.id, 'name': resource.name} for resource in task.resources] if not task.is_container else [],
             'schedule_constraint': task.schedule_constraint,
@@ -1067,3 +1071,43 @@ def summarize_task(request):
         'task': task
     }
 
+@view_config(
+    route_name='request_task_review',
+)
+def request_task_review(request):
+    """creates a new ticket and sends an email to the responsible
+    """
+    task_id = request.matchdict.get('id', -1)
+    task = Task.query.filter(Task.id==task_id).first()
+
+    if task:
+        # get logged in user as he review requester
+        logged_in_user = get_logged_in_user(request)
+
+        # get the project that the ticket belongs to
+        project = task.project
+
+        summary_text = 'Review Task %s' % task.name
+        description_text = '%s has requested you to do a review for ' \
+                           '%s (%s) - (%s)' % (
+            logged_in_user.name,
+            task.name,
+            task.entity_type,
+            "|".join(map(lambda x: x.name, task.parents))
+        )
+
+        responsible = task.responsible
+
+        # create a Ticket with the owner set to the responsible
+        review_ticket = Ticket(
+            project=project,
+            summary=summary_text,
+            description=description_text,
+            created_by=logged_in_user
+        )
+        review_ticket.set_owner(responsible)
+
+        DBSession.add(review_ticket)
+        # TODO: send email to responsible
+
+    return HTTPOk()
