@@ -463,20 +463,14 @@
         };
 
 
-
-
-
-
-
-
-
-
         // The Memory
         var target = 'tasks/';
         var tasks_memory_store = new Memory();
 
         {% if entity.entity_type == 'User' %}
-            target = 'users/{{ entity.id }}/tasks/';
+            target =  '{{ request.route_url('get_user_tasks', id=entity.id) }}';
+        {% elif entity.entity_type == 'Studio' %}
+            target =  '{{ request.route_url('get_studio_tasks', id=entity.id) }}';
         {% endif %}
 
         var tasks_jsonRest_store;

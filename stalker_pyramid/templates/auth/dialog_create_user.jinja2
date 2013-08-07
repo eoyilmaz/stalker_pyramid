@@ -436,11 +436,12 @@
                                     method: 'POST',
                                     url: url,
                                     additional_data: {
-                                        {% if entity.entity_type == 'Department' %}
-                                            department_id: {{ entity.id }},
-                                        {% endif %}
                                         {% if mode=='UPDATE' %}
                                             user_id: {{user.id}}
+                                        {% else %}
+                                            {% if entity.entity_type == 'Department' %}
+                                                department_id: {{ entity.id }},
+                                            {% endif %}
                                         {% endif %}
                                     }
                                 });

@@ -513,12 +513,16 @@ def get_tasks(request):
     route_name='get_user_tasks',
     renderer='json'
 )
-def get_user_tasks(request):
-    """RESTful version of getting all tasks
+@view_config(
+    route_name='get_studio_tasks',
+    renderer='json'
+)
+def get_entity_tasks(request):
+    """RESTful version of getting all tasks of an entity
     """
     # logger.debug('request.GET: %s' % request.GET)
-    user_id = request.matchdict.get('id', -1)
-    user = User.query.filter(User.id == user_id).first()
+    entity_id = request.matchdict.get('id', -1)
+    entity = Entity.query.filter(Entity.id == entity_id).first()
 
     parent_id = request.GET.get('parent_id')
     parent = Entity.query.filter_by(id=parent_id).first()
@@ -530,39 +534,50 @@ def get_user_tasks(request):
     # set the content range to prevent JSONRest Store to query the data twice
     content_range = '%s-%s/%s'
 
-    if user:
-        user = User.query.filter(User.id == user_id).first()
-        # ALTERNATIVE 1: Return tasks on demand
+    if entity:
         if parent:
             logger.debug('there is a parent')
-            # get user tasks
-            user_tasks = user.tasks
-            # add all parents
-            user_tasks_and_parents = []
-            for task in user_tasks:
-                user_tasks_and_parents.extend(task.parents)
-            user_tasks_and_parents.extend(user_tasks)
+            tasks = []
+            if isinstance(entity, User):
+                # get user tasks
+                entity_tasks = entity.tasks
 
-            if isinstance(parent, Task):
-                parents_children = parent.children
-            elif isinstance(parent, Project):
-                parents_children = parent.root_tasks
+                # add all parents
+                entity_tasks_and_parents = []
+                for task in entity_tasks:
+                    entity_tasks_and_parents.extend(task.parents)
+                entity_tasks_and_parents.extend(entity_tasks)
 
-            desired_tasks = []
-            for child in parents_children:
-                if child in user_tasks_and_parents:
-                    desired_tasks.append(child)
+                if isinstance(parent, Task):
+                    parents_children = parent.children
+                elif isinstance(parent, Project):
+                    parents_children = parent.root_tasks
 
-            if not desired_tasks:
-                desired_tasks = parents_children
+                for child in parents_children:
+                    if child in entity_tasks_and_parents:
+                        tasks.append(child)
 
-            return_data = convert_to_dgrid_gantt_task_format(desired_tasks)
+                if not tasks:
+                    # there are no children
+                    tasks = parents_children
+            elif isinstance(entity, Studio):
+                if isinstance(parent, Task):
+                    tasks = parent.children
+                elif isinstance(parent, Project):
+                    tasks = parent.root_tasks
+
+            return_data = convert_to_dgrid_gantt_task_format(tasks)
         else:
             logger.debug('no parent')
             # no parent,
-            # just return projects of the user
-            user_projects = user.projects
-            return_data = convert_to_dgrid_gantt_project_format(user_projects)
+            # just return projects of the entity
+            entity_projects = []
+            if isinstance(entity, User):
+                entity_projects = entity.projects
+            elif isinstance(entity, Studio):
+                entity_projects = Project.query.all()
+
+            return_data = convert_to_dgrid_gantt_project_format(entity_projects)
 
         content_range = content_range % (0,
                                          len(return_data) - 1,
@@ -722,8 +737,6 @@ def get_project_tasks(request):
             )
         } for task in Task.query.filter(Task._project == project).all()
     ]
-
-
 
 
 

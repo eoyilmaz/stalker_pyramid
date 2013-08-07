@@ -287,7 +287,24 @@ def get_users(request):
     return [
         {
             'id': user.id,
-            'name': user.name
+            'name': user.name,
+            'login': user.login,
+            'email': user.email,
+            'departments': [
+                {
+                    'id': department.id,
+                    'name': department.name
+                } for department in user.departments
+            ],
+            'groups': [
+                {
+                    'id': group.id,
+                    'name': group.name
+                } for group in user.groups
+            ],
+            'tasksCount': len(user.tasks),
+            'ticketsCount': len(user.open_tickets),
+            'thumbnail_path': user.thumbnail.full_path if user.thumbnail else None
         }
         for user in User.query.order_by(User.name.asc()).all()
     ]
@@ -303,34 +320,29 @@ def get_entity_users(request):
     entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
 
-    users = []
-
-    for user in sorted(entity.users, key=lambda x: x.name.lower()):
-        departmentStr = ''
-        groupStr = ''
-        for department in user.departments:
-            departmentStr += '<a href="javascript:redirectLink(%s, %s)">%s</a><br/>' % \
-                             ("'central_content'",
-                              ("'departments/%s/view'" % department.id),
-                              department.name)
-        for group in user.groups:
-            groupStr += '<a href="javascript:redirectLink(%s, %s)">%s</a><br/>' % \
-                        ("'central_content'", ("'groups/%s/view'" % group.id),
-                         group.name)
-        users.append({
-            'id': user.id,
-            'name': user.name,
-            'login': user.login,
-            'email': user.email,
-            'departments': departmentStr,
-            'groups': groupStr,
-            'tasksCount': len(user.tasks),
-            'ticketsCount': len(user.open_tickets),
-            'thumbnail_path': user.thumbnail.full_path if user.thumbnail else None
-        })
-
     # works for Departments and Projects or any entity that has users attribute
-    return users
+    return [{
+        'id': user.id,
+        'name': user.name,
+        'login': user.login,
+        'email': user.email,
+        'departments': [
+            {
+                'id': department.id,
+                'name': department.name
+            } for department in user.departments
+        ],
+        'groups': [
+            {
+                'id': group.id,
+                'name': group.name
+            } for group in user.groups
+        ],
+        'tasksCount': len(user.tasks),
+        'ticketsCount': len(user.open_tickets),
+        'thumbnail_path': user.thumbnail.full_path if user.thumbnail else None
+    } for user in sorted(entity.users, key=lambda x: x.name.lower())]
+
 
 
 @view_config(

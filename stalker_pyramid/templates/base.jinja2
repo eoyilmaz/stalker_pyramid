@@ -203,6 +203,20 @@
 <script id='tmpl_userNameField' type="text/x-dot-template">
     <a href="javascript:redirectLink('{{=it.targetPane}}', '{{=it.address}}');">{{=it.user_name}}</a>
 </script>
+
+<script id='tmpl_departmentField' type="text/x-dot-template">
+    <a href="javascript:redirectLink('{{=it.targetPane}}', '{{=it.address}}');">{{=it.name}}</a>
+</script>
+
+<script id='tmpl_groupField' type="text/x-dot-template">
+    <a href="javascript:redirectLink('{{=it.targetPane}}', '{{=it.address}}');">{{=it.name}}</a>
+</script>
+
+<script id='tmpl_ticketNameField' type="text/x-dot-template">
+    <a href="javascript:redirectLink('{{=it.targetPane}}', '{{=it.address}}');">#{{=it.number}}</a>
+</script>
+
+
 {% endraw %}
 
 
@@ -258,9 +272,12 @@
 
     templates.taskEditNameRow = doT.template(document.getElementById('tmpl_taskEditNameRow').text);
 
-    // for DGrid
+    // for DGrid Headers
     templates.entityNameField = doT.template(document.getElementById('tmpl_entityNameField').text);
     templates.userNameField = doT.template(document.getElementById('tmpl_userNameField').text);
+    templates.departmentField = doT.template(document.getElementById('tmpl_departmentField').text);
+    templates.groupField = doT.template(document.getElementById('tmpl_groupField').text);
+    templates.ticketNameField = doT.template(document.getElementById('tmpl_ticketNameField').text);
     // ************************************************************************
 
 

@@ -89,6 +89,10 @@ logger.setLevel(logging.DEBUG)
     renderer='templates/task/content_list_tasks.jinja2'
 )
 @view_config(
+    route_name='list_studio_tasks',
+    renderer='templates/task/content_list_tasks.jinja2'
+)
+@view_config(
     route_name='list_entity_references',
     renderer='templates/link/content_list_references.jinja2'
 )
@@ -110,6 +114,10 @@ logger.setLevel(logging.DEBUG)
 )
 @view_config(
     route_name='list_project_users',
+    renderer='templates/auth/content_list_users.jinja2'
+)
+@view_config(
+    route_name='list_users',
     renderer='templates/auth/content_list_users.jinja2'
 )
 @view_config(

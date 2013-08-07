@@ -52,21 +52,31 @@
             autoHeight: true
         }, 'users_data_grid');
 
-        {% if has_permission('Update_' + entity.entity_type ) and has_permission('Update_User') %}
-            var append_user_button = dialogCaller({
-                label: 'Append User',
-                dialog_id: 'append_user_dialog',
-                content_creator: dialogs.append_user_dialog,
-                attach_to: 'view_users_append_user_button',
-                related_field_updater: users_DataGrid_updater,
-                data_id: '{{ entity.id }}'
-            });
-            append_user_button.startup();
+        {% if entity %}
+            {% if has_permission('Update_' + entity.entity_type ) and has_permission('Update_User') %}
+                var append_user_button = dialogCaller({
+                    label: 'Append User',
+                    dialog_id: 'append_user_dialog',
+                    content_creator: dialogs.append_user_dialog,
+                    attach_to: 'view_users_append_user_button',
+                    related_field_updater: users_DataGrid_updater,
+                    data_id: '{{ entity.id }}'
+                });
+                append_user_button.startup();
+            {% endif %}
         {% endif %}
 
         function users_DataGrid_updater() {
+            var target;
+        
+            {% if entity %}
+                target = '{{ request.route_url('get_entity_users', id=entity.id) }}';
+            {% else %}
+                target = '{{ request.route_url('get_users') }}';
+            {% endif %}
+
             var user_memory = new JsonRest({
-                target: 'entities/{{ entity.id }}/users/'
+                target: target
             });
 
             user_memory.query().then(function (data) {
@@ -121,8 +131,23 @@
                         get: function (object) {
                             return object; // return entire item for formatter to use
                         },
-                        formatter: function (value) {
-                            return value.departments + '<br/>';
+                        formatter: function (object) {
+                            var return_value = '';
+                            var department;
+                            var dep_count = object.departments.length;
+                            var rendered_template = '';
+                            for (var i=0; i< dep_count; i++) {
+                                department = object.departments[i];
+                                // render department template
+                                department.targetPane = 'central_content';
+                                department.address = 'departments/' + department.id + '/view';
+                                rendered_template = templates.departmentField(department);
+                                if (i > 0){
+                                     return_value += ', ';
+                                }
+                                return_value += rendered_template;
+                            }
+                            return return_value;
                         }
                     },
                     {
@@ -131,8 +156,21 @@
                         get: function (object) {
                             return object; // return entire item for formatter to use
                         },
-                        formatter: function (value) {
-                            return value.groups + '<br/>';
+                        formatter: function (object) {
+                            var return_value = '';
+                            var group;
+                            var grp_count = object.groups.length;
+                            for (var i=0; i< grp_count; i++) {
+                                group = object.groups[i];
+                                // render department template
+                                group.targetPane = 'central_content';
+                                group.address = 'groups/' + group.id + '/view';
+                                if (i > 0){
+                                     return_value += ', ';
+                                }
+                                return_value += templates.groupField(group);
+                            }
+                            return return_value;
                         }
                     },
                     {
