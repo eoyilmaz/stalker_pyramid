@@ -1131,6 +1131,9 @@ def request_task_review(request):
         )
         review_ticket.set_owner(responsible)
 
+        # link the task to the review
+        review_ticket.links.append(task)
+
         DBSession.add(review_ticket)
 
         # send email to responsible and resources of the task

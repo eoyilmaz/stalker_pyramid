@@ -14,6 +14,8 @@ Stalker Pyramid Changes
   and the logged in user.
 * **Update:** It is now possible to upload multiple References.
 * **Update:** Reference dialog now has a tag field.
+* **Update:** "Duplicate Task Hierarchy" now confirms the action to the user
+  before doing anything.
 
 0.1.0.b2
 ========
