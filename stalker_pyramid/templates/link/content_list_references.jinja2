@@ -50,12 +50,10 @@ require([
     'stalker/fieldUpdater',
     'stalker/dialogs',
     'stalker/dialogCaller',
-    'stalker/dialogCreator',
     'dojo/domReady!'
 ], function (registry, ObjectStore, aspect, List, Grid, Selection, Keyboard,
              declare, editor, Memory, Select, JsonRest, Menu, MenuItem,
-             MenuSeparator, fieldUpdater, dialogs, dialogCaller,
-             dialogCreator) {
+             MenuSeparator, fieldUpdater, dialogs, dialogCaller) {
 
     var StandardGrid = declare([Grid, Selection, Keyboard]);
     var reference_data_grid = new StandardGrid({
@@ -76,17 +74,6 @@ require([
         upload_reference_button.startup();
     {% endif %}
 
-
-{#    var status_memory = new JsonRest({#}
-{#        target: 'get/statuses_for/Reference'#}
-{#    });#}
-{##}
-{#    var status_store;#}
-{#    status_memory.query().then(function (data) {#}
-{#        status_store = new ObjectStore({ objectStore: new Memory({ data: data }) });#}
-{#        reference_data_grid_updater();#}
-{#    });#}
-
     var referenceData;
 
 
@@ -101,7 +88,6 @@ require([
             referenceData = data;
 
             var columns = [
-
                 {
                     label: "Thumbnail",
                     field: 'thumbnail',
@@ -112,8 +98,8 @@ require([
                     formatter: function (object) {
 
                         var path = '{{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_shot.png") }}';
-                        if (object.full_path) {
-                            path = object.full_path;
+                        if (object.thumbnail) {
+                            path = object.thumbnail;
                         }
                         return '<img width= "60px"; src="' + path + '">';
 
@@ -132,6 +118,24 @@ require([
                 {
                     field: 'description',
                     label: "Description"
+                },
+                {
+                    field: 'tags',
+                    label: 'Tags',
+                    get: function (object) {
+                        return object;
+                    },
+                    formatter: function (object) {
+                        var return_val = '';
+                        var tags = object.tags;
+                        for (var i=0; i < tags.length; i++){
+                            if (i > 0){
+                                return_val += ', ';
+                            }
+                            return_val += tags[i].name;
+                        }
+                        return return_val;
+                    }
                 }
             ];
 
@@ -142,33 +146,6 @@ require([
                 targetNodeIds: ['references_data_grid'],
                 selector: '.dgrid-row'
             });
-
-{#            var create_update_reference_menuItem_creator = function () {#}
-{#                return new MenuItem({#}
-{#                    label: 'Update Reference',#}
-{#                    onClick: function () {#}
-{#                        var node = this.getParent().currentTarget;#}
-{#                        var nodeId = node.getAttribute('id');#}
-{#                        var rowId = reference_data_grid.id + '-row-';#}
-{#                        var referenceId = referenceData[parseInt(nodeId.substring(rowId.length, nodeId.length))].id;#}
-{##}
-{##}
-{#                        var dialog = dialogCreator({#}
-{#                            dialog_id: 'reference_dialog',#}
-{#                            content_creator: dialogs.update_reference_dialog,#}
-{#                            related_field_updater: reference_data_grid_updater,#}
-{#                            data_id: referenceId#}
-{#                        });#}
-{#                        dialog.show();#}
-{##}
-{##}
-{#                    }#}
-{#                });#}
-{#            };#}
-{##}
-{#            right_click_menu.addChild(create_update_reference_menuItem_creator());#}
-{##}
-{#            right_click_menu.startup();#}
 
         });
     }

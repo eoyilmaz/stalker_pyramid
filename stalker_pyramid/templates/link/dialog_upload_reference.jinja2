@@ -1,6 +1,5 @@
 <div class='dijitDialogPaneContentArea'>
     <form accept-charset="utf-8" id='upload_reference_form'>
-    {#      enctype='multipart/form-data'>#}
         
         <div class='dijitDialogPaneContentArea'>
             <table style='width: 100%'>
@@ -14,8 +13,8 @@
                         <input id='entity_name'>
                     </td>
                 </tr>
-                
-                Reference 
+
+                {# Reference #}
                 <tr>
                     <td class='label_column'>
                         <label for='reference'>Reference</label>
@@ -25,6 +24,17 @@
                         <div id='reference'></div>
                     </td>
                 </tr>
+
+                {# Tags #}
+                <tr>
+                    <td class='label_column'>
+                        <label for='reference_tags'>Tags</label>
+                    </td>
+                    <td class='input_column'>
+                        <input id='reference_tags'>
+                    </td>
+                </tr>
+                
             </table>
         </div>
     </form>
@@ -46,16 +56,17 @@
         'dojox/form/uploader/FileList',
             
         'stalker/submitForm',
+        'stalker/fields/tagField',
 
         'dojo/domReady!'
     ], function (Form, Button, ValidationTextBox, FileInput, Uploader,
-                 FileList, submitForm) {
+                 FileList, submitForm, tagField) {
         
         // ********************************************************************
         // Some important vars
         var is_upload_finished = false;
         var entity_id = {{ entity.id }};
-        var link_id = -1;
+        var link_ids = -1;
         
         // ********************************************************************
         // Form
@@ -79,21 +90,21 @@
         // Reference
         var reference_uploader = new dojox.form.Uploader({
             label: 'Browse...',
-            multiple: false,
+            multiple: true,
             uploadOnSelect: true,
             enctype: 'multipart/form-data',
-            url: 'upload_file   ',
+            url: 'upload_files',
             onBegin: function(data){
                 // reset data
                 is_upload_finished = false;
-                link_id = -1;
+                link_ids = [];
             },
             onComplete: function(data){
                 // store the link.id
                 console.debug(data);
                 is_upload_finished = true;
-                link_id = data.link_id;
-                console.debug('link_id :', link_id);
+                link_ids = data.link_ids;
+                console.debug('link_ids :', link_ids);
             }
         }, 'reference');
         reference_uploader.startup();
@@ -104,21 +115,30 @@
         reference_list.startup();
 
         // ********************************************************************
+        // Tags
+        var selected_tags = [];
+        var tags_tagSelect = tagField({
+            attach_to: 'reference_tags',
+            selected_tags: selected_tags
+        });
+        tags_tagSelect.startup();
+
+        // ********************************************************************
         // Ok Button
         var ok_button = new Button({
             label: 'OK',
             type: 'button',
             onClick: function () {
-                if (is_upload_finished && link_id != -1){
+                if (is_upload_finished && link_ids.length !== 0){
                     console.debug('is_upload_finished : ', is_upload_finished);
-                    console.debug('link_id            : ', link_id);
+                    console.debug('link_ids           : ', link_ids);
                     console.debug('dialog             : ', dialog);
                     submitForm({
                         dialog: dialog,
                         form: upload_reference_form,
                         additional_data: {
                             entity_id: entity_id,
-                            link_id: link_id
+                            link_ids: link_ids
                         },
                         url: '{{ request.route_url('assign_reference') }}',
                         method: 'POST'

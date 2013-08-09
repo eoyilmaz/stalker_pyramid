@@ -12,6 +12,8 @@ Stalker Pyramid Changes
   create a new Ticket and assign it to the task responsible.
 * **New:** Calling 'Request Review' now will send an email to the responsible
   and the logged in user.
+* **Update:** It is now possible to upload multiple References.
+* **Update:** Reference dialog now has a tag field.
 
 0.1.0.b2
 ========

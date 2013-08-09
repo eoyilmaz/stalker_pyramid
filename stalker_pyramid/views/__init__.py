@@ -240,12 +240,8 @@ def serve_files(request):
     """serves files in the stalker server side storage
     """
     partial_file_path = request.matchdict['partial_file_path']
-
-    logger.debug('partial_file_path : %s' % partial_file_path)
-
     file_full_path = os.path.join(
         defaults.server_side_storage_path,
         partial_file_path
     )
-
     return FileResponse(file_full_path)

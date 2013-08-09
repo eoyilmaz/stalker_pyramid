@@ -81,7 +81,7 @@ def main(global_config, **settings):
 
     config.add_route('busy_dialog', 'dialog/busy')
 
-    # addresses like http:/localhost:6543/SPLocal/{some_path} will let SP to serve those files
+    # addresses like http:/localhost:6543/SPL/{some_path} will let SP to serve those files
     # SPL : Stalker Pyramid Local
     config.add_route(
         'serve_files',
@@ -140,7 +140,7 @@ def main(global_config, **settings):
     config.add_route('get_references',       'references/')
     config.add_route('get_reference',        'references/{id}')
 
-    config.add_route('upload_file',          'upload_file')
+    config.add_route('upload_files',         'upload_files')
     config.add_route('assign_thumbnail',     'assign_thumbnail')
     config.add_route('assign_reference',     'assign_reference')
 
