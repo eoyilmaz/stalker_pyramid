@@ -283,7 +283,7 @@ define(['exports', 'dojox/widget/DialogSimple', 'dijit/registry', 'dojo/domReady
         // STATUS LIST
         exports.create_status_list_dialog = function create_status_list_dialog(target_entity_type) {
             var href;
-            if (target_entity_type == null) {
+            if (target_entity_type === null) {
                 href = 'status_lists/create/dialog';
             } else {
                 href = 'status_lists/{id}/create/dialog'.replace(reg, target_entity_type);
@@ -475,7 +475,7 @@ define(['exports', 'dojox/widget/DialogSimple', 'dijit/registry', 'dojo/domReady
                 resize: true,
                 style: style,
                 executeScripts: true
-            })
+            });
         };
         // ********************************************************************
         // TICKET
@@ -498,7 +498,7 @@ define(['exports', 'dojox/widget/DialogSimple', 'dijit/registry', 'dojo/domReady
                 resize: true,
                 style: style,
                 executeScripts: true
-            })
+            });
         };
          // ********************************************************************
         // VACATION
@@ -521,7 +521,7 @@ define(['exports', 'dojox/widget/DialogSimple', 'dijit/registry', 'dojo/domReady
                 resize: true,
                 style: style,
                 executeScripts: true
-            })
+            });
         };
 
         // ********************************************************************
@@ -545,7 +545,7 @@ define(['exports', 'dojox/widget/DialogSimple', 'dijit/registry', 'dojo/domReady
                 resize: true,
                 style: style,
                 executeScripts: true
-            })
+            });
         };
 
 

@@ -18,126 +18,184 @@
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #}
 <div class='dijitDialogPaneContentArea'>
-    <form id='version_form'>
-        <table style='width: 100%;'>
+    <form accept-charset="utf-8" id='upload_version_form'>
+        <table style='width: 100%'>
 
-            {# NAME #}
+            {# Task Name #}
             <tr>
                 <td class='label_column'>
-                    <label for='version_name'>Name</label>
+                    <label for='task_name'>Task</label>
                 </td>
                 <td class='input_column'>
-                    <input id='version_name'>
+                    <input id='task_name'>
                 </td>
             </tr>
 
+            {# Take #}
+            <tr>
+                <td class='label_column'>
+                    <label for='take'>Take</label>
+                </td>
+                <td class='input_column'>
+                    <input id='take'>
+                </td>
+            </tr>
 
+            {# Version #}
+            <tr>
+                <td class='label_column'>
+                    <label for='version'>Version</label>
+                </td>
+                <td class='input_column'>
+                    <div id='version_list'></div>
+                    <div id='version'></div>
+                </td>
+            </tr>
 
         </table>
     </form>
 </div>
 
 <div class='dijitDialogPaneActionBar'>
-    <button id='version_ok_button'>OK</button>
+    <button id='version_ok_button' >Ok</button>
     <button id='version_cancel_button'>Cancel</button>
 </div>
+
 <script type='text/javascript'>
-require([
-    'dojo/store/Memory',
-    'dojo/store/JsonRest',
-    'dijit/form/Form',
-    'dijit/form/ValidationTextBox',
-    'dijit/form/TextBox',
-    'dijit/form/FilteringSelect',
-    'dijit/form/ComboBox',
-    'dijit/form/Button',
-    'stalker/dialogs',
-    'stalker/submitForm',
-    'stalker/fieldUpdater',
-    'stalker/dialogCreator',
-    'stalker/dialogCaller',
-    'dojo/domReady!'],
-        function (Memory, JsonRest, Form, ValidationTextBox, TextBox,
-                  FilteringSelect, ComboBox, Button, dialogs, submitForm,
-                  fieldUpdater, dialogCreator, dialogCaller) {
+    require([
+        'dojo/store/Memory',
 
-            // ********************************************************************
-            // Generate default values
-            var url;
-            var name;
+        'dijit/form/Form',
+        'dijit/form/Button',
+        'dijit/form/ValidationTextBox',
+        'dijit/form/ComboBox',
 
+        'dojox/form/FileInput',
+        'dojox/form/Uploader',
+        'dojox/form/uploader/FileList',
+            
+        'stalker/submitForm',
 
+        'dojo/domReady!'
+    ], function (Memory, Form, Button, ValidationTextBox, ComboBox, FileInput,
+                 Uploader, FileList, submitForm) {
+        
+        // ********************************************************************
+        // Some important vars
+        var is_upload_finished = false;
+        var task_id = {{ task.id }};
+        var link_ids = [];
+        
+        // ********************************************************************
+        // Form
+        var upload_version_form = new Form({}, 'upload_version_form');
 
-            {# fill values based on the dialog mode #}
-            {% if mode == 'CREATE' %}
-                url = '{{ request.route_url("create_version") }}';
-            {% elif mode == 'UPDATE' %}
-                url = '{{ request.route_url("update_version", id=version.id) }}';
-                name = '{{ version.name }}';
-            {% endif %}
+        var dialog = upload_version_form.getParent();
+        
 
+        // ********************************************************************
+        // Name
+        var name_textBox = new ValidationTextBox({
+            name: 'task_name',
+            label: 'Task',
+            required: true,
+            value: '{{ task.name }} ({{ task.task_type }})',
+            disabled: true
+        }, 'task_name');
+        name_textBox.startup();
 
+        {# ***************************************************************** #}
+        {# Take #}
+        
+        var take_data = [
+                {% for take_name in take_names %}
+                    {
+                        id: '{{ take_name }}',
+                        name: '{{take_name}}'
+                    },
+                {% endfor %}
+            ];
+        
+        var take_memory = new Memory({
+            data: take_data
+        });
 
-            // ****************************************************************
-            // Form
-            var version_form = new Form({
-                id: 'version_form'
-            }, 'version_form');
+        var take_name_comboBox = ComboBox({
+            name: 'take_name',
+            label: 'Take Name',
+            required: true,
+            value: '{{ default_take_name }}',
+            store: take_memory
+        }, 'take');
+        take_name_comboBox.startup();
 
-            var dialog = version_form.getParent();
+        // ********************************************************************
+        // Version
+        var version_uploader = new dojox.form.Uploader({
+            label: 'Browse...',
+            multiple: false,
+            uploadOnSelect: true,
+            enctype: 'multipart/form-data',
+            url: 'upload_files',
+            onBegin: function(data){
+                // reset data
+                is_upload_finished = false;
+                link_ids = [];
+            },
+            onComplete: function(data){
+                // store the link.id
+                console.debug(data);
+                is_upload_finished = true;
+                link_ids = data.link_ids;
+                console.debug('link_ids :', link_ids);
+            }
+        }, 'version');
+        version_uploader.startup();
 
+        var version_list = new dojox.form.uploader.FileList({
+            uploader: version_uploader
+        }, 'version_list');
+        version_list.startup();
 
-            // ****************************************************************
-            // Name
-            var name_textBox = new ValidationTextBox({
-                name: 'name',
-                label: 'Name',
-                placeHolder: 'Enter a name',
-                required: true,
-                value: name
-            }, 'version_name');
-            name_textBox.startup();
-
-
-
-
-            // ****************************************************************
-            // Ok Button
-            var ok_button = new Button({
-                label: 'OK',
-                type: 'button',
-                onClick: function () {
+        // ********************************************************************
+        // Ok Button
+        var ok_button = new Button({
+            label: 'OK',
+            type: 'button',
+            onClick: function () {
+                if (is_upload_finished && link_ids.length != 0){
+                    console.debug('is_upload_finished : ', is_upload_finished);
+                    console.debug('link_ids           : ', link_ids);
+                    console.debug('dialog             : ', dialog);
                     submitForm({
                         dialog: dialog,
-                        form: version_form,
+                        form: upload_version_form,
                         additional_data: {
-                            {% if mode=='UPDATE' %}
-                                version_id: '{{ version.id }}',
-                            {% endif %}
-                            task_id: '{{task.id }}'
+                            task_id: task_id,
+                            link_ids: link_ids
                         },
-                        url: url,
+                        url: '{{ request.route_url('assign_version') }}',
                         method: 'POST'
                     });
+                }else{
+                    alert('Upload has not finished yet!');
                 }
-            }, 'version_ok_button');
-            ok_button.startup();
+            }
+        }, 'version_ok_button');
+        ok_button.startup();
 
+        // ********************************************************************
+        // Cancel Button
+        var cancel_button = new Button({
+            label: 'Cancel',
+            type: 'button',
+            onClick: function () {
+                dialog.destroyRecursive();
+            }
+        }, 'version_cancel_button');
+        cancel_button.startup();
 
-            // ****************************************************************
-            // Cancel Button
-            var cancel_button = new Button({
-                label: 'Cancel',
-                type: 'button',
-                onClick: function () {
-                    dialog.destroyRecursive();
-                }
-            }, 'version_cancel_button');
-            cancel_button.startup();
+        upload_version_form.startup();
 
-            version_form.startup();
-
-
-        });
+    });
 </script>
-

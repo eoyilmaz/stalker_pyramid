@@ -430,11 +430,13 @@ def main(global_config, **settings):
 
     # *************************************************************************
     # Version
-    config.add_route('dialog_create_task_version', 'tasks/{id}/versions/create')
+    config.add_route('dialog_create_task_version', 'tasks/{id}/versions/create/dialog')
     config.add_route('dialog_update_version',      'versions/{id}/update/dialog')
 
     config.add_route('create_version', 'versions/create')
     config.add_route('update_version', 'versions/{id}/update')
+
+    config.add_route('assign_version', 'assign_version') # TODO: update this address
 
     config.add_route('view_version',          'versions/{id}/view')
     config.add_route('summarize_version',     'versions/{id}/summarize')

@@ -234,32 +234,6 @@ def view_user(request):
 
 
 @view_config(
-    route_name='summarize_user',
-    renderer='templates/auth/content_summarize_user.jinja2'
-)
-@view_config(
-    route_name='view_user_tasks',
-    renderer='templates/task/content_list_tasks.jinja2'
-)
-def summarize_user(request):
-    """runs when getting general User info
-    """
-    # get logged in user
-
-    logged_in_user = get_logged_in_user(request)
-
-    # get the user id
-    user_id = request.matchdict.get('id', -1)
-    user = User.query.filter_by(id=user_id).first()
-
-    return {
-        'user': user,
-        'logged_in_user': logged_in_user,
-        'has_permission': PermissionChecker(request)
-    }
-
-
-@view_config(
     route_name='get_users',
     renderer='json'
 )
@@ -760,23 +734,6 @@ def view_group(request):
         'user': logged_in_user,
         'has_permission': PermissionChecker(request),
         'group': group
-    }
-
-
-@view_config(
-    route_name='summarize_group',
-    renderer='templates/auth/content_summarize_group.jinja2'
-)
-def summarize_group(request):
-    """runs when getting general User info
-    """
-    # get the user id
-    group_id = request.matchdict.get('id', -1)
-    group = Group.query.filter_by(id=group_id).first()
-
-    return {
-        'group': group,
-        'has_permission': PermissionChecker(request)
     }
 
 

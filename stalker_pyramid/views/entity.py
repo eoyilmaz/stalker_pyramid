@@ -29,6 +29,10 @@ logger.setLevel(logging.DEBUG)
 
 
 @view_config(
+    route_name='view_user_tasks',
+    renderer='templates/task/content_list_tasks.jinja2'
+)
+@view_config(
     route_name='view_entity_nav_bar',
     renderer='templates/content_nav_bar.jinja2',
 )
@@ -141,8 +145,52 @@ logger.setLevel(logging.DEBUG)
     renderer='templates/auth/content_list_users.jinja2'
 )
 @view_config(
+    route_name='summarize_asset',
+    renderer='templates/asset/content_summarize_asset.jinja2'
+)
+@view_config(
+    route_name='summarize_department',
+    renderer='templates/department/content_summarize_department.jinja2'
+)
+@view_config(
+    route_name='summarize_group',
+    renderer='templates/auth/content_summarize_group.jinja2'
+)
+@view_config(
     route_name='summarize_project',
     renderer='templates/project/content_summarize_project.jinja2'
+)
+@view_config(
+    route_name='summarize_sequence',
+    renderer='templates/sequence/content_summarize_sequence.jinja2'
+)
+@view_config(
+    route_name='summarize_shot',
+    renderer='templates/shot/content_summarize_shot.jinja2'
+)
+@view_config(
+    route_name='summarize_studio',
+    renderer='templates/studio/content_summarize_studio.jinja2'
+)
+@view_config(
+    route_name='summarize_task',
+    renderer='templates/task/content_summarize_task.jinja2'
+)
+@view_config(
+    route_name='summarize_ticket',
+    renderer='templates/ticket/content_summarize_ticket.jinja2'
+)
+@view_config(
+    route_name='summarize_user',
+    renderer='templates/auth/content_summarize_user.jinja2'
+)
+@view_config(
+    route_name='summarize_version',
+    renderer='templates/version/content_summarize_version.jinja2'
+)
+@view_config(
+    route_name='view_shot',
+    renderer='templates/shot/page_view_shot.jinja2'
 )
 @view_config(
     route_name='view_task',

@@ -330,4 +330,3 @@ def upload_files_to_server(request, file_params):
 
     transaction.commit()
     return links
-

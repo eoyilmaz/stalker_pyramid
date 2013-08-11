@@ -1076,26 +1076,6 @@ def auto_schedule_tasks(request):
 
 
 @view_config(
-    route_name='summarize_task',
-    renderer='templates/task/content_summarize_task.jinja2'
-)
-def summarize_task(request):
-    """runs when viewing an task
-    """
-
-    login = authenticated_userid(request)
-    logged_in_user = User.query.filter_by(login=login).first()
-
-    task_id = request.matchdict.get('id', -1)
-    task = Task.query.filter_by(id=task_id).first()
-
-    return {
-        'has_permission': PermissionChecker(request),
-        'user': logged_in_user,
-        'task': task
-    }
-
-@view_config(
     route_name='request_task_review',
 )
 def request_task_review(request):

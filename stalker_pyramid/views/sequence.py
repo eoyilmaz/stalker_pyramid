@@ -188,26 +188,6 @@ def view_sequence(request):
 
 
 @view_config(
-    route_name='summarize_sequence',
-    renderer='templates/sequence/content_summarize_sequence.jinja2'
-)
-def summarize_sequence(request):
-    """runs when viewing an sequence
-    """
-
-    login = authenticated_userid(request)
-    logged_in_user = User.query.filter_by(login=login).first()
-
-    sequence_id = request.matchdict.get('id', -1)
-    sequence = Sequence.query.filter_by(id=sequence_id).first()
-
-    return {
-        'user': logged_in_user,
-        'sequence': sequence,
-        'has_permission': PermissionChecker(request)
-    }
-
-@view_config(
     route_name='get_sequences',
     renderer='json'
 )

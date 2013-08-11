@@ -192,23 +192,6 @@ def view_department(request):
 
 
 @view_config(
-    route_name='summarize_department',
-    renderer='templates/department/content_summarize_department.jinja2'
-)
-def summarize_department(request):
-    """runs when getting general User info
-    """
-    # get the user id
-    department_id = request.matchdict.get('id', -1)
-    department = Department.query.filter_by(id=department_id).first()
-
-    return {
-        'has_permission': PermissionChecker(request),
-        'department': department
-    }
-
-
-@view_config(
     route_name='list_user_departments',
     renderer='templates/department/content_list_departments.jinja2'
 )
