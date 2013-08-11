@@ -196,25 +196,6 @@ def view_ticket(request):
 
 
 @view_config(
-    route_name='summarize_ticket',
-    renderer='templates/ticket/content_summarize_ticket.jinja2'
-)
-def summarize_ticket(request):
-    """runs when viewing an ticket
-    """
-    logged_in_user = get_logged_in_user(request)
-
-    ticket_id = request.matchdict.get('id', -1)
-    ticket = Ticket.query.filter_by(id=ticket_id).first()
-
-    return {
-        'user': logged_in_user,
-        'has_permission': PermissionChecker(request),
-        'ticket': ticket
-    }
-
-
-@view_config(
     route_name='get_tickets',
     renderer='json'
 )
