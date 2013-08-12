@@ -111,6 +111,17 @@
 
                     },
                     {
+                        field: 'is_published',
+                        label: 'Is Published',
+                        formatter: function (value) {
+                            console.debug('is_published.value : ', value);
+                            if (value) {
+                                return '<img width= "12px"; src="{{ request.static_url("stalker_pyramid:static/stalker/images/icon-small-check.gif") }}">';
+                            }
+                            return '';
+                        }
+                    },
+                    {
                         field: 'name',
                         label: 'Name',
                         get: function (object) {
@@ -130,7 +141,7 @@
                             return object; // return entire item for formatter to use
                         },
                         formatter: function (value) {
-                            return '<a href="file://' + value.absolute_full_path + '">' + value.absolute_full_path + '</a>';
+                            return '<a href="javascript:copyToClipboard(\''+ value.absolute_full_path +'\')">' + value.absolute_full_path + '</a>';
                         }
                     },
                     {

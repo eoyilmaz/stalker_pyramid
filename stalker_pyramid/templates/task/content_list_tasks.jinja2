@@ -25,7 +25,7 @@
             {% if has_permission('Create_Task') %}
                 <button id='{{ entity.entity_type }}_{{ entity.id }}_list_tasks_create_task_button'>Create Task</button>
             {% endif %}
-            <button id={{ entity.entity_type }}_{{ entity.id }}_'list_tasks_gantt_reload_button'>Reload</button>
+            <button id='{{ entity.entity_type }}_{{ entity.id }}_list_tasks_gantt_reload_button'>Reload</button>
         </div>
         <div style="width: 100px; float: left"></div>
         {% if has_permission('Update_Task') %}
@@ -520,7 +520,7 @@
         // create context menus and tooltip dialogs
         create_contextMenus();
 
-        // get the grantt column
+        // get the gantt column
         var gantt_column = gantt_chart.columnSets[1][0][0];
         
         {% if has_permission('Create_Task') %}
@@ -529,7 +529,7 @@
                 label: 'Create Task',
                 dialog_id: 'task_dialog',
                 content_creator: dialogs.create_task_dialog,
-                attach_to: 'list_tasks_create_task_button',
+                attach_to: '{{ entity.entity_type }}_{{ entity.id }}_list_tasks_create_task_button',
                 related_field_updater: gantt_column.refresh,
                 data_id: '{{ entity.id }}'
             });

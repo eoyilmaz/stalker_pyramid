@@ -23,7 +23,6 @@ import transaction
 
 from pyramid.response import Response
 from pyramid.view import view_config
-from pyramid.security import authenticated_userid
 from pyramid.httpexceptions import HTTPServerError, HTTPOk
 
 from pyramid_mailer import get_mailer
@@ -863,8 +862,10 @@ def create_task(request):
         resources = User.query.filter(User.id.in_(resource_ids)).all()
 
     # get responsible
-    responsible_id = request.params.get('responsible_id', -1)
-    responsible = User.query.filter(User.id==responsible_id).first()
+    responsible_id = request.params.get('responsible_id', None)
+    responsible = None 
+    if responsible_id:
+        responsible = User.query.filter(User.id==responsible_id).first()
 
     priority = request.params.get('priority', 500)
 
