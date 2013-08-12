@@ -19,6 +19,7 @@ Stalker Pyramid Changes
 * **New:** It is now possible to create new Version files by uploading files to
   the server. Though the stalker server now needs to have a link to the file
   server.
+* **Update:** Updating Studiowide Vacation is not allowed in user vacation list.
 
 0.1.0.b2
 ========

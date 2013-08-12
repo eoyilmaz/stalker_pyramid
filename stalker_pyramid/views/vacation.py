@@ -251,15 +251,14 @@ def get_vacations(request):
     entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter(Entity.id==entity_id).first()
 
-    vacations = []
-    if isinstance(entity, Studio):
-        vacations = Vacation.query.filter(Vacation.user==None).all()
-    elif isinstance(entity, User):
-        vacations = entity.vacations
+    vacations = Vacation.query.filter(Vacation.user==None).all()
+    if isinstance(entity, User):
+        vacations.extend(entity.vacations)
 
     return [{
             'id': vacation.id,
             'type': vacation.type.name,
+            'user_id': vacation.user.id if vacation.user else None,
             'created_by_id': vacation.created_by_id,
             'created_by_name': vacation.created_by.name,
             'start_date': milliseconds_since_epoch(vacation.start),

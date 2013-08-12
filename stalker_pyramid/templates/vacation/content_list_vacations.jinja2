@@ -166,22 +166,34 @@
                 });
 
                 var create_update_vacation_menuItem_creator = function () {
+
+
                     return new MenuItem({
                         label: 'Update Vacation',
                         onClick: function () {
                             var node = this.getParent().currentTarget;
                             var nodeId = node.getAttribute('id');
                             var rowId = vacations_DataGrid.id + '-row-';
-                            var vacationId = vacationData[parseInt(nodeId.substring(rowId.length, nodeId.length))].id;
+                            var rowIndex = parseInt(nodeId.substring(rowId.length, nodeId.length));
+                            var vacationId = vacationData[rowIndex].id;
 
+                            console.log(vacationData[rowIndex].user_id);
 
-                            var dialog = dialogCreator({
+                            if(vacationData[rowIndex].user_id){
+                              var dialog = dialogCreator({
                                 dialog_id: 'vacation_dialog',
                                 content_creator: dialogs.update_vacation_dialog,
                                 related_field_updater: vacations_DataGrid_updater,
                                 data_id: vacationId
-                            });
-                            dialog.show();
+                              });
+                              dialog.show();
+                            }
+                            else{
+
+                              alert('Its a StudioWide vacation. You cant update it. Use studio page to update this vacation.' );
+
+                            }
+
 
 
                         }
