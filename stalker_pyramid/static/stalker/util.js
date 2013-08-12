@@ -30,4 +30,9 @@ define(['exports',  'dojo/domReady!'],
             var minutes = parseInt(kwargs['minutes']) || 0;
             var dateObj = new Date(minutes * 60000);
         };
+
+        exports.copyToClipboard = function (text) {
+            window.prompt("Copy to clipboard: Ctrl+C, Enter", text);
+        };
+
     });

@@ -785,7 +785,7 @@ def get_entity_groups(request):
 )
 @view_config(
     route_name='append_user_to_departments_dialog',
-    renderer='templates/auth/dialog_append_user_to_departments.jinja2'
+    renderer='templates/department/dialog_append_user_to_departments.jinja2'
 )
 def append_user_dialogs(request):
     """runs for append user dialog
