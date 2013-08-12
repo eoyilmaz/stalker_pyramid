@@ -211,6 +211,10 @@ def list_departments(request):
     route_name='get_entity_departments',
     renderer='json'
 )
+@view_config(
+    route_name='get_user_departments',
+    renderer='json'
+)
 def get_entity_departments(request):
     """
     """
