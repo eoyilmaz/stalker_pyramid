@@ -204,6 +204,7 @@
                 var tasks_jsonRest = new JsonRest({
                     target: 'projects/' + id + '/tasks/'
                 });
+                // TODO: this should only display user tasks for the ticket dialog reached through user page
         
                 var tasks_result = tasks_jsonRest.query().then(function (data) {
                     var tasks_memory = new Memory({data: data});
