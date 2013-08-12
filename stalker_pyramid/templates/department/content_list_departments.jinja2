@@ -72,7 +72,7 @@
         function departments_DataGrid_updater() {
 
             var department_memory = new JsonRest({
-                target: '/get/departments_byEntity/{{ entity.id }}'
+                target: 'entities/{{ entity.id }}/departments/'
             });
 
             department_memory.query().then(function (data) {
@@ -87,7 +87,7 @@
                         },
                         formatter: function (object) {
 
-                            var path = '{{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_Team.png") }}';
+                            var path = '{{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_Team.jpg") }}';
                             if (object.thumbnail_path) {
                                 path = object.thumbnail_path;
                             }
@@ -105,7 +105,7 @@
 
                             {% if has_permission('Read_Department') %}
                                 var targetPane = "'central_content'";
-                                var address = "'view/department/" + value.id + "'";
+                                var address = "'departments/" + value.id + "/view'";
 
                                 return '<a href="javascript:redirectLink(' + targetPane + ',' + address + ');">' + value.name + '</a>';
 

@@ -45,14 +45,15 @@ define([
     var fieldUpdater = function (kwargs) {
         var memory, widget, callBackFunction, query_data, selected, placeHolder;
 
-//        kwargs = lang.mixin(kwargs,
-//            {
-//                callBack: function (arg) {alert('bisiy')},
-//                query_data: null,
-//                placeHolder: '',
-//                selected: []
-//            }
-//        );
+        kwargs = lang.mixin(
+            {
+                memory: null,
+                callBack: function (arg) {},
+                query_data: null,
+                placeHolder: '',
+                selected: []
+            }, kwargs
+        );
 
         memory = kwargs.memory;
         widget = kwargs.widget;
@@ -112,7 +113,6 @@ define([
 
                     // select selected
                     if (selected.length) {
-
                         widget.set('value', selected);
                     }
                 } else if (widget.declaredClass === 'dojox.grid.DataGrid') {
@@ -133,11 +133,9 @@ define([
 
 
                     if (data.length > 0) {
-                        console.log('data.length');
                         if (widget.label) {
                             placeHolder = 'Select a ' + widget.label;
-                        }
-                        else {
+                        } else {
                             placeHolder = 'Select an item from list';
                         }
                         widget.set('placeHolder', placeHolder);
@@ -169,7 +167,7 @@ define([
                         widget.set('placeHolder', placeHolder);
                     }
                     if (selected.length) {
-                        console.log('selected value setted!');
+//                        console.log('selected value setted!');
                         widget.set('value', selected);
                     }
 
@@ -201,9 +199,6 @@ define([
                 //   kwargs.widget
 
                 callBackFunction(data);
-                console.log('callBackFunction');
-
-
 
             });
         };

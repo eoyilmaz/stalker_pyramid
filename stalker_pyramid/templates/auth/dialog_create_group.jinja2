@@ -126,7 +126,7 @@
         {% if mode == 'CREATE' %}
             url = '{{ request.route_url("create_group") }}';
         {% elif mode == 'UPDATE' %}
-            url = '{{ request.route_url("update_group") }}';
+            url = '{{ request.route_url("update_group", id=group.id) }}';
             name = '{{ group.name }}';
             additional_data = {
                 group_id: {{ group.id }}

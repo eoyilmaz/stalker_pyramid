@@ -62,7 +62,6 @@ require([
     var ticket_DataGrid = new StandardGrid({
         id: 'ticket_data_grid',
         width: '100%',
-        {#            autoHeight: true,#}
         selectionMode: 'single',
         cellNavigation: false,
         allowSelectAll: true
@@ -70,7 +69,6 @@ require([
 
 
     {% if has_permission('Create_Ticket')%}
-
         var create_ticket_button = dialogCaller({
             label: 'Create Ticket',
             dialog_id: 'ticket_dialog',
@@ -88,10 +86,14 @@ require([
 
 
     function ticket_DataGrid_updater() {
+    
+        console.debug('ticket_DataGrid_updater start');
 
-        var target = '/get/tickets/{{ entity.id }}';
-        {% if entity.entity_type == 'Task'%}
-            target = '/get/task_tickets/{{ entity.id }}'
+        var target = '{{ request.route_url('get_entity_tickets', id=entity.id) }}';
+        {% if entity.entity_type == 'Project' %}
+            target = '{{ request.route_url('get_project_tickets', id=entity.id) }}';
+        {% elif entity.entity_type == 'User' %}            
+            target = '{{ request.route_url('get_user_tickets', id=entity.id) }}';
         {% endif %}
 
         var ticket_memory = new JsonRest({
@@ -99,27 +101,29 @@ require([
         });
 
         ticket_memory.query().then(function (data) {
-
             ticketData = data;
-
             var columns = [
-
-
                 {
                     field: 'id',
                     label: 'Ticket',
                     get: function (object) {
-
                         return object; // return entire item for formatter to use
-
                     },
-                    formatter: function (value) {
+                    formatter: function (object) {
+                        object.targetPane = 'tickets_content_pane';
+                        object.address = 'tickets/' + object.id + '/view';
+                        return templates.ticketNameField(object);
+                    }
 
-                        var targetPane = "'tickets_content_pane'";
-                        var address = "'view/ticket/" + value.id + "'";
-
-                        return '<a href="javascript:redirectLinkInParent(' + targetPane + ',' + address + ');">' + value.name + '</a>';
-
+                },
+                {
+                    field: 'id',
+                    label: 'Summary',
+                    get: function (object) {
+                        return object; // return entire item for formatter to use
+                    },
+                    formatter: function (object) {
+                        return object.summary;
                     }
 
                 },
@@ -134,7 +138,7 @@ require([
                     formatter: function (value) {
 
                         var targetPane = "'central_content'";
-                        var address = "'view/project/" + value.project_id + "'";
+                        var address = "'projects/" + value.project_id + "'/view";
 
                         return '<a href="javascript:redirectLink(' + targetPane + ',' + address + ');">' + value.project_name + '</a>';
 
@@ -151,7 +155,7 @@ require([
                     formatter: function (value) {
 
                         var targetPane = "'central_content'";
-                        var address = "'view/user/" + value.owner_id + "'";
+                        var address = "'users/" + value.owner_id + "/view'";
 
                         return '<a href="javascript:redirectLink(' + targetPane + ',' + address + ');">' + value.owner_name + '</a>';
 
@@ -168,7 +172,7 @@ require([
                     formatter: function (value) {
 
                         var targetPane = "'central_content'";
-                        var address = "'view/user/" + value.created_by_id + "'";
+                        var address = "'users/" + value.created_by_id + "/view'";
 
                         return '<a href="javascript:redirectLink(' + targetPane + ',' + address + ');">' + value.created_by_name + '</a>';
 
@@ -185,7 +189,7 @@ require([
                     formatter: function (value) {
 
                         var targetPane = "'central_content'";
-                        var address = "'view/user/" + value.updated_by_id + "'";
+                        var address = "'users/" + value.updated_by_id + "/view'";
 
                         return '<a href="javascript:redirectLink(' + targetPane + ',' + address + ');">' + value.updated_by_name + '</a>';
 
@@ -195,7 +199,6 @@ require([
 
             ticket_DataGrid.renderArray(data);
             ticket_DataGrid.set('columns', columns);
-
 
             var right_click_menu = new Menu({
                 targetNodeIds: ['ticket_data_grid'],
@@ -211,7 +214,6 @@ require([
                         var rowId = ticket_DataGrid.id + '-row-';
                         var ticketId = ticketData[parseInt(nodeId.substring(rowId.length, nodeId.length))].id;
 
-
                         var dialog = dialogCreator({
                             dialog_id: 'ticket_dialog',
                             content_creator: dialogs.update_ticket_dialog,
@@ -220,19 +222,17 @@ require([
                         });
                         dialog.show();
 
-
                     }
                 });
             };
 
             right_click_menu.addChild(create_update_ticket_menuItem_creator());
-
             right_click_menu.startup();
-
 
         });
 
         ticket_DataGrid.resize();
+        console.debug('ticket_DataGrid_updater end');
 
     }
 

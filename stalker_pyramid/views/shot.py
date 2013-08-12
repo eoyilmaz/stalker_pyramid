@@ -42,7 +42,7 @@ logger.setLevel(logging.WARNING)
 def create_shot_dialog(request):
     """fills the create shot dialog
     """
-    project_id = request.matchdict['project_id']
+    project_id = request.matchdict.get('id', -1)
     project = Project.query.filter_by(id=project_id).first()
 
     return {
@@ -59,7 +59,7 @@ def create_shot_dialog(request):
 def update_shot_dialog(request):
     """fills the create shot dialog
     """
-    shot_id = request.matchdict['shot_id']
+    shot_id = request.matchdict.get('id')
     shot = Shot.query.filter_by(id=shot_id).first()
 
     return {
@@ -174,39 +174,15 @@ def update_shot(request):
     return HTTPOk()
 
 
-@view_config(
-    route_name='view_shot',
-    renderer='templates/shot/page_view_shot.jinja2'
-)
-@view_config(
-    route_name='summarize_shot',
-    renderer='templates/shot/content_summarize_shot.jinja2'
-)
-def view_shot(request):
-    """runs when viewing an shot
-    """
-    logged_in_user = get_logged_in_user(request)
-
-    shot_id = request.matchdict['shot_id']
-    shot = Shot.query.filter_by(id=shot_id).first()
-
-    return {
-        'user': logged_in_user,
-        'shot': shot,
-        'has_permission': PermissionChecker(request)
-    }
-
 
 @view_config(
-    route_name='get_shots',
+    route_name='get_project_shots',
     renderer='json'
 )
 def get_shots(request):
     """returns all the Shots of the given Project
     """
-    project_id = request.matchdict['project_id']
-    project = Project.query.filter_by(id=project_id).first()
-
+    project_id = request.matchdict.get('id', -1)
     shots = []
 
     for shot in Shot.query.filter_by(project_id=project_id).all():

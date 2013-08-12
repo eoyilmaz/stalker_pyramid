@@ -46,22 +46,22 @@
                 dojoType='dijit.form.Button'
                 type='button'
                 onClick="
-                    require([
+                        require([
                         'stalker/dialogs',
                         'stalker/dialogCreator',
 
                         'dojo/domReady!'
-                    ], function (dialogs, dialogCreator) {
+                        ], function (dialogs, dialogCreator) {
 
                         var myDialog = dialogCreator({
-                            dialog_id: 'user_dialog',
-                            data_id: '{{ logged_in_user.id }}',
-                            content_creator: dialogs.update_user_dialog
+                        dialog_id: 'user_dialog',
+                        data_id: '{{ logged_in_user.id }}',
+                        content_creator: dialogs.update_user_dialog
                         });
                         myDialog.show();
 
-                    });
-                "
+                        });
+                        "
                 >Settings
         </button>
         <button id='logout_button'

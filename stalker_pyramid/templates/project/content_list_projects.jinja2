@@ -50,7 +50,7 @@
         function projects_DataGrid_updater() {
 
             var projects_memory = new JsonRest({
-                target: '/get/projects_byEntity/{{ entity.id }}'
+                target: '{{ request.route_url("get_entity_projects", id=entity.id) }}'
             });
 
             projects_memory.query().then(function (data) {
@@ -83,7 +83,7 @@
                             {% if has_permission('Read_Project') or  entity==logged_in_user%}
 
                                 var targetPane = "'central_content'";
-                                var address = "'view/project/" + value.id + "'";
+                                var address = "'projects/" + value.id + "/view'";
 
                                 return '<a href="javascript:redirectLink(' + targetPane + ',' + address + ');">' + value.name + '</a>';
 
@@ -96,11 +96,8 @@
                     }
                 ];
 
-
                 projects_DataGrid.renderArray(data);
-
                 projects_DataGrid.set('columns', columns);
-
 
             });
 

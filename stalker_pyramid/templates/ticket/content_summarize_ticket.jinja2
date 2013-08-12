@@ -17,6 +17,7 @@
  License along with this library; if not, write to the Free Software
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #}
+{% set ticket=entity %}
 <div style="background-color: #9d9d9d" class="page_title"></div>
 <div id='ticket_details_content_pane'>
     {# Basic Info #}
@@ -35,7 +36,7 @@
                 <td>
                     {% if has_permission('Read_Project') %}
                         <a href="javascript:redirectLink('central_content',
-                        'view/project/{{ ticket.project.id }}');">
+                        'project/{{ ticket.project.id }}/view');">
                             {{ ticket.project.name }}
                         </a>
                     {% else %}
@@ -54,7 +55,7 @@
                 <td>
                     {% if has_permission('Read_User') %}
                         <a href="javascript:redirectLink('central_content',
-                        'view/user/{{ ticket.created_by.id }}');">
+                        '{{ request.route_url('view_user', id=ticket.created_by.id) }}');">
                             {{ ticket.created_by.name }}
                         </a>
                     {% else %}
@@ -113,7 +114,7 @@
             thumbnailMenu({
                 targetNodeIds: ['ticket_avatar'],
                 selector: '.thumbnail_menu',
-                entity_id: {{ user.id }},
+                entity_id: {{ ticket.id }},
                 related_field_updater: function () {
                     var content_pane = update_ticket_button.getParent();
                     if (content_pane != null) {

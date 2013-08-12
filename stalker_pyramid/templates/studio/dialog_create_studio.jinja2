@@ -45,8 +45,7 @@
             {# Daily Working Hours #}
             <tr>
                 <td class='label_column'>
-                    <label for='studio_daily_working_hours'>Daily Working
-                        Hours</label>
+                    <label for='studio_daily_working_hours'>Daily Working Hours</label>
                 </td>
                 <td class='input_column'>
                     <input id='studio_daily_working_hours'>
@@ -229,7 +228,7 @@ require([
         url = '{{ request.route_url("create_studio") }}';
 
     {% elif mode == 'UPDATE' %}
-        url = '{{ request.route_url("update_studio") }}';
+        url = '{{ request.route_url("update_studio", id=studio.id) }}';
         studio_id = '{{ studio.id }}';
         name = '{{ studio.name }}';
         daily_working_hours = '{{ studio.daily_working_hours }}';

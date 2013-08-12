@@ -88,7 +88,7 @@
         // ********************************************************************
         // Project User List
         var entity_users_memory = new JsonRest({
-            target: '/get/users_byEntity/{{ entity.id }}'
+            target: '{{ request.route_url('get_entity_users', id=entity.id) }}'
         });
 
 
@@ -115,7 +115,7 @@
         // ********************************************************************
         // All User List
         var all_users_memory = new JsonRest({
-            target: '/get/users'
+            target: '{{ request.route_url('get_users') }}'
         });
 
         var all_users_multi_select = new MultiSelect({
@@ -206,10 +206,9 @@
                     dialog: registry.byId('append_user_dialog'),
                     form: append_user_form,
                     additional_data: {
-                        'entity_id': {{ entity.id }},
                         'user_ids': user_ids
                     },
-                    url: 'append/users',
+                    url: '{{ request.route_url('append_users_to_entity', id=entity.id) }}',
                     method: 'POST'
                 });
             }

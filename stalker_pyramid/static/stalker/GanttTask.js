@@ -69,6 +69,9 @@ define([
         resources: [],
         resource_ids: [],
 
+        responsible: [],
+        responsible_ids: [],
+
         time_logs: [],
         time_log_ids: [],
 
@@ -120,6 +123,8 @@ define([
             this.resources = kwargs.resources || [];
             this.resource_ids = kwargs.resource_ids || [];
 
+            this.responsible = kwargs.responsible;
+
             var i;
             if (this.resource_ids.length === 0) {
                 // no problem if there are no resources
@@ -159,6 +164,18 @@ define([
                 }
             }
             return ret;
+        },
+
+        getResourcesStr: function () {
+            var ret = '', i, resource;
+            if (this.resources) {
+                for (i = 0; i < this.resources.length; i++) {
+                    resource = this.resources[i];
+                    ret = ret + (ret === "" ? "" : ", ") + resource.name;
+                }
+            }
+            return ret;
         }
+
     });
 });

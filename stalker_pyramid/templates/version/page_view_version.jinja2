@@ -28,8 +28,12 @@
 </div>
 
 <script type='text/javascript'>
-    require(['dijit/registry', 'dijit/layout/BorderContainer',
-        'dijit/layout/TabContainer', 'dojox/layout/ContentPane', 'dojo/domReady!'],
+    require([
+        'dijit/registry',
+        'dijit/layout/BorderContainer',
+        'dijit/layout/TabContainer',
+        'dojox/layout/ContentPane',
+        'dojo/domReady!'],
             function (registry, BorderContainer, TabContainer, ContentPane) {
 
                 var version_BorderContainer = new BorderContainer({
@@ -44,7 +48,7 @@
 
                 var nav_bar_content_pane = new ContentPane({
                     title: 'NavBar',
-                    href: 'view/entity_nav_bar/{{ version.id }}',
+                    href: '{{ request.route_url('view_entity_nav_bar', id=version.id) }}',
                     region: 'top',
                     style: 'padding: 0; margin:0;'
                 }, 'version_nav_bar_content_pane');
@@ -61,7 +65,7 @@
 
                  var summary_content_pane = new ContentPane({
                     title: 'Overview',
-                    href: 'summarize/version/{{ version.id }}',
+                    href: '{{ request.route_url('summarize_version', id=version.id) }}',
                     style: 'padding: 0; margin:0;'
 
                 });
@@ -71,14 +75,14 @@
 
                 var outputs_content_pane = new ContentPane({
                     title: 'Tasks',
-                    href: 'list/version/outputs/{{ version.id  }}',
+                    href: '{{ request.route_url('list_version_outputs', id=version.id) }}',
                     style: 'width: 100%;'
                 });
                 version_related_data_tab_container.addChild(outputs_content_pane);
 
                 var inputs_content_pane = new ContentPane({
                     title: 'Tasks',
-                    href: 'list/version/inputs/{{ version.id  }}',
+                    href: '{{ request.route_url('list_version_inputs', id=version.id) }}',
                     style: 'width: 100%;'
                 });
                 version_related_data_tab_container.addChild(inputs_content_pane);

@@ -131,7 +131,7 @@ require([
 
 
     {% elif mode == 'UPDATE' %}
-        url = '{{ request.route_url("update_vacation") }}';
+        url = '{{ request.route_url("update_vacation", id=vacation.id) }}';
 
         start_date_value = new Date(parseInt({{ milliseconds_since_epoch(vacation.start) }}));
         end_date_value = new Date(parseInt({{ milliseconds_since_epoch(vacation.end) }}));

@@ -25,7 +25,7 @@ from pyramid.view import view_config, forbidden_view_config
 from sqlalchemy import or_
 
 import stalker_pyramid
-from stalker import (defaults, User, Department, Group, Tag, Project, Entity,
+from stalker import (defaults, User, Department, Group, Project, Entity,
                      Studio, Permission, EntityType)
 from stalker.db import DBSession
 from stalker_pyramid.views import (log_param, get_logged_in_user,
@@ -41,28 +41,27 @@ logger.setLevel(logging.WARNING)
     route_name='dialog_create_user',
     renderer='templates/auth/dialog_create_user.jinja2'
 )
+@view_config(
+    route_name='dialog_create_department_user',
+    renderer='templates/auth/dialog_create_user.jinja2'
+)
+@view_config(
+    route_name='dialog_create_group_user',
+    renderer='templates/auth/dialog_create_user.jinja2'
+)
 def dialog_create_user(request):
     """called by create user dialog
     """
     logged_in_user = get_logged_in_user(request)
 
-    entity_id = request.matchdict['entity_id']
+    entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
-
-    department = None
-    group = None
-
-    if isinstance(entity, Department):
-        department = entity
-    elif isinstance(entity, Group):
-        group = entity
 
     return {
         'mode': 'CREATE',
         'has_permission': PermissionChecker(request),
         'logged_in_user': logged_in_user,
-        'department': department,
-        'group': group
+        'entity': entity
     }
 
 
@@ -75,7 +74,7 @@ def dialog_update_user(request):
     """
     logged_in_user = get_logged_in_user(request)
 
-    user_id = request.matchdict['user_id']
+    user_id = request.matchdict.get('id', -1)
     user = User.query.filter_by(id=user_id).first()
 
     return {
@@ -157,7 +156,7 @@ def update_user(request):
     """
     logged_in_user = get_logged_in_user(request)
 
-    user_id = request.params.get('user_id', -1)
+    user_id = request.params.get('id', -1)
     user = User.query.filter(User.id == user_id).first()
 
     name = request.params.get('name')
@@ -212,21 +211,6 @@ def update_user(request):
     return HTTPOk()
 
 
-@view_config(
-    route_name='list_users',
-    renderer='templates/auth/content_list_users.jinja2'
-)
-def view_users(request):
-    """
-    """
-    entity_id = request.matchdict['entity_id']
-    entity = Entity.query.filter_by(id=entity_id).first()
-
-    return {
-        'has_permission': PermissionChecker(request),
-        'entity': entity
-    }
-
 
 @view_config(
     route_name='view_user',
@@ -235,7 +219,7 @@ def view_users(request):
 def view_user(request):
     logged_in_user = get_logged_in_user(request)
 
-    user_id = request.matchdict['user_id']
+    user_id = request.matchdict.get('id', -1)
     user = User.query.filter_by(id=user_id).first()
 
     logger.debug('user_id : %s' % user_id)
@@ -244,35 +228,8 @@ def view_user(request):
     return {
         'user': user,
         'logged_in_user': logged_in_user,
-        'has_permission': PermissionChecker(request)
-    }
-
-
-@view_config(
-    route_name='summarize_user',
-    renderer='templates/auth/content_summarize_user.jinja2'
-)
-@view_config(
-    route_name='view_user_tasks',
-    renderer='templates/task/content_list_tasks.jinja2'
-)
-def summarize_user(request):
-    """runs when getting general User info
-    """
-    # get logged in user
-
-    logged_in_user = get_logged_in_user(request)
-
-    # get the user id
-    user_id = request.matchdict['user_id']
-    user = User.query.filter_by(id=user_id).first()
-
-    logger.debug('summarize_user is running')
-
-    return {
-        'user': user,
-        'logged_in_user': logged_in_user,
-        'has_permission': PermissionChecker(request)
+        'has_permission': PermissionChecker(request),
+        'stalker_pyramid' : stalker_pyramid
     }
 
 
@@ -284,59 +241,78 @@ def get_users(request):
     """returns all the users in database
     """
     return [
-        {'id': user.id, 'name': user.name}
+        {
+            'id': user.id,
+            'name': user.name,
+            'login': user.login,
+            'email': user.email,
+            'departments': [
+                {
+                    'id': department.id,
+                    'name': department.name
+                } for department in user.departments
+            ],
+            'groups': [
+                {
+                    'id': group.id,
+                    'name': group.name
+                } for group in user.groups
+            ],
+            'tasksCount': len(user.tasks),
+            'ticketsCount': len(user.open_tickets),
+            'thumbnail_path': user.thumbnail.full_path if user.thumbnail else None
+        }
         for user in User.query.order_by(User.name.asc()).all()
     ]
 
 
 @view_config(
-    route_name='get_users_byEntity',
+    route_name='get_project_users',
     renderer='json'
 )
-def get_users_byEntity(request):
+@view_config(
+    route_name='get_entity_users',
+    renderer='json'
+)
+def get_entity_users(request):
     """returns all the Users of a given Entity
     """
-    entity_id = request.matchdict['entity_id']
+    entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
 
-    users = []
-
-    for user in sorted(entity.users, key=lambda x: x.name.lower()):
-        departmentStr = ''
-        groupStr = ''
-        for department in user.departments:
-            departmentStr += '<a href="javascript:redirectLink(%s, %s)">%s</a><br/>' % \
-                             ("'central_content'",
-                              ("'view/department/%s'" % department.id),
-                              department.name)
-        for group in user.groups:
-            groupStr += '<a href="javascript:redirectLink(%s, %s)">%s</a><br/>' % \
-                        ("'central_content'", ("'view/group/%s'" % group.id),
-                         group.name)
-        users.append({
-            'id': user.id,
-            'name': user.name,
-            'login': user.login,
-            'email': user.email,
-            'departments': departmentStr,
-            'groups': groupStr,
-            'tasksCount': len(user.tasks),
-            'ticketsCount': len(user.open_tickets),
-            'thumbnail_path': user.thumbnail.full_path if user.thumbnail else None
-        })
-
     # works for Departments and Projects or any entity that has users attribute
-    return users
+    return [{
+        'id': user.id,
+        'name': user.name,
+        'login': user.login,
+        'email': user.email,
+        'departments': [
+            {
+                'id': department.id,
+                'name': department.name
+            } for department in user.departments
+        ],
+        'groups': [
+            {
+                'id': group.id,
+                'name': group.name
+            } for group in user.groups
+        ],
+        'tasksCount': len(user.tasks),
+        'ticketsCount': len(user.open_tickets),
+        'thumbnail_path': user.thumbnail.full_path if user.thumbnail else None
+    } for user in sorted(entity.users, key=lambda x: x.name.lower())]
+
 
 
 @view_config(
-    route_name='get_users_not_in_entity',
+    route_name='get_entity_users_not',
     renderer='json'
 )
 def get_users_not_in_entity(request):
     """returns all the Users which are not related with the given Entity
     """
-    entity_id = request.matchdict['entity_id']
+    entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
 
     entity_class = None
@@ -346,7 +322,6 @@ def get_users_not_in_entity(request):
         entity_class = Department
 
     logger.debug(User.query.filter(User.notin_(entity_class.users)).all())
-
 
     # works for Departments and Projects or any entity that has users attribute
     return [
@@ -363,7 +338,7 @@ def get_users_not_in_entity(request):
 
 
 @view_config(
-    route_name='dialog_append_users',
+    route_name='append_users_to_entity_dialog',
     renderer='templates/auth/dialog_append_users.jinja2'
 )
 def append_user_dialog(request):
@@ -371,24 +346,27 @@ def append_user_dialog(request):
     """
     logged_in_user = get_logged_in_user(request)
 
-    entity_id = request.matchdict['entity_id']
+    entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
 
     return {
-        'user': logged_in_user,
+        'logged_in_user': logged_in_user,
         'has_permission': PermissionChecker(request),
         'entity': entity
     }
 
 
 @view_config(
-    route_name='append_user'
+    route_name='append_user_to_group'
+)
+@view_config(
+    route_name='append_user_to_department'
 )
 def append_user(request):
-    """appends the given user to the given Project or Department
+    """appends the given user to the given Project or Department or Group
     """
     # user
-    user_id = request.params.get('user_id', None)
+    user_id = request.params.get('id', None)
     user = User.query.filter(User.id == user_id).first()
 
     # entity
@@ -403,9 +381,9 @@ def append_user(request):
 
 
 @view_config(
-    route_name='append_users'
+    route_name='append_users_to_entity'
 )
-def append_users(request):
+def append_users_to_entity(request):
     """appends the given users o the given Project or Department
     """
     # users
@@ -637,7 +615,7 @@ def update_group_dialog(request):
 
     entity_types = EntityType.query.all()
 
-    group_id = request.matchdict['group_id']
+    group_id = request.matchdict.get('id', -1)
     group = Group.query.filter_by(id=group_id).first()
 
     return {
@@ -725,15 +703,14 @@ def update_group(request):
 
 
 @view_config(
-    route_name='list_groups',
+    route_name='list_user_groups',
     renderer='templates/auth/content_list_groups.jinja2'
 )
 def list_groups(request):
     """
     """
-    user_id = request.matchdict['user_id']
+    user_id = request.matchdict.get('id', -1)
     user = User.query.filter_by(id=user_id).first()
-
     return {
         'has_permission': PermissionChecker(request),
         'user': user
@@ -750,30 +727,13 @@ def view_group(request):
     """
     logged_in_user = get_logged_in_user(request)
 
-    group_id = request.matchdict['group_id']
+    group_id = request.matchdict.get('id', -1)
     group = Group.query.filter_by(id=group_id).first()
 
     return {
         'user': logged_in_user,
         'has_permission': PermissionChecker(request),
         'group': group
-    }
-
-
-@view_config(
-    route_name='summarize_group',
-    renderer='templates/auth/content_summarize_group.jinja2'
-)
-def summarize_group(request):
-    """runs when getting general User info
-    """
-    # get the user id
-    group_id = request.matchdict['group_id']
-    group = Group.query.filter_by(id=group_id).first()
-
-    return {
-        'group': group,
-        'has_permission': PermissionChecker(request)
     }
 
 
@@ -796,14 +756,17 @@ def get_groups(request):
 
 
 @view_config(
-    route_name='get_groups_byEntity',
-    renderer='json',
-    permission='Read_Group'
+    route_name='get_entity_groups',
+    renderer='json'
 )
-def get_groups_byEntity(request):
-    """returns all the Users of a given Entity
+@view_config(
+    route_name='get_user_groups',
+    renderer='json'
+)
+def get_entity_groups(request):
+    """returns all the groups of a given Entity
     """
-    entity_id = request.matchdict['entity_id']
+    entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
 
     return [
@@ -817,15 +780,19 @@ def get_groups_byEntity(request):
 
 
 @view_config(
-    route_name='dialog_append_groups',
-    renderer='templates/auth/dialog_append_groups.jinja2'
+    route_name='append_user_to_groups_dialog',
+    renderer='templates/auth/dialog_append_user_to_groups.jinja2'
 )
-def append_groups_dialog(request):
+@view_config(
+    route_name='append_user_to_departments_dialog',
+    renderer='templates/auth/dialog_append_user_to_departments.jinja2'
+)
+def append_user_dialogs(request):
     """runs for append user dialog
     """
     logged_in_user = get_logged_in_user(request)
 
-    user_id = request.matchdict['user_id']
+    user_id = request.matchdict.get('id', -1)
     user = User.query.filter_by(id=user_id).first()
 
     return {
@@ -836,10 +803,10 @@ def append_groups_dialog(request):
 
 
 @view_config(
-    route_name='append_groups'
+    route_name='append_user_to_groups'
 )
 def append_groups(request):
-    """appends the given groups o the given User
+    """appends the given group o the given user
     # """
     # groups
     groups_ids = get_multi_integer(request, 'group_ids')
@@ -848,7 +815,7 @@ def append_groups(request):
     groups = Group.query.filter(Group.id.in_(groups_ids)).all()
 
     # user
-    user_id = request.params.get('user_id', None)
+    user_id = request.matchdict.get('id', None)
     user = User.query.filter(User.id == user_id).first()
 
     logger.debug('user : %s' % user)
@@ -875,7 +842,7 @@ def view_permissions(request):
 
     entity_types = EntityType.query.all()
 
-    group_id = request.matchdict['group_id']
+    group_id = request.matchdict.get('id', -1)
     group = Group.query.filter_by(id=group_id).first()
 
     return {

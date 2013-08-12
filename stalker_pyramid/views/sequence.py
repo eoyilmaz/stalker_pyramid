@@ -22,11 +22,10 @@ import datetime
 from pyramid.httpexceptions import HTTPServerError, HTTPOk
 from pyramid.security import authenticated_userid
 from pyramid.view import view_config
-from sqlalchemy.exc import IntegrityError
 
-import transaction
+
 from stalker.db import DBSession
-from stalker import User, Project, StatusList, Status, Sequence, Type
+from stalker import User, Project, StatusList, Status, Sequence, Entity
 
 import logging
 from stalker_pyramid.views import PermissionChecker, get_logged_in_user
@@ -42,7 +41,7 @@ logger.setLevel(logging.WARNING)
 def create_sequence_dialog(request):
     """fills the create sequence dialog
     """
-    project_id = request.matchdict['project_id']
+    project_id = request.matchdict.get('id', -1)
     project = Project.query.filter_by(id=project_id).first()
 
     return {
@@ -59,7 +58,7 @@ def create_sequence_dialog(request):
 def update_sequence_dialog(request):
     """fills the create sequence dialog
     """
-    sequence_id = request.matchdict['sequence_id']
+    sequence_id = request.matchdict.get('id', -1)
     sequence = Sequence.query.filter_by(id=sequence_id).first()
 
     return {
@@ -178,28 +177,7 @@ def view_sequence(request):
     login = authenticated_userid(request)
     logged_in_user = User.query.filter_by(login=login).first()
 
-    sequence_id = request.matchdict['sequence_id']
-    sequence = Sequence.query.filter_by(id=sequence_id).first()
-
-    return {
-        'user': logged_in_user,
-        'sequence': sequence,
-        'has_permission': PermissionChecker(request)
-    }
-
-
-@view_config(
-    route_name='summarize_sequence',
-    renderer='templates/sequence/content_summarize_sequence.jinja2'
-)
-def summarize_sequence(request):
-    """runs when viewing an sequence
-    """
-
-    login = authenticated_userid(request)
-    logged_in_user = User.query.filter_by(login=login).first()
-
-    sequence_id = request.matchdict['sequence_id']
+    sequence_id = request.matchdict.get('id', -1)
     sequence = Sequence.query.filter_by(id=sequence_id).first()
 
     return {
@@ -214,10 +192,8 @@ def summarize_sequence(request):
     renderer='json'
 )
 def get_sequences(request):
-    """returns the related sequences of the given project as a json data
+    """returns all sequences as a json data
     """
-    project_id = request.matchdict['project_id']
-    project = Project.query.filter_by(id=project_id).first()
     return [
         {
             'id': sequence.id,
@@ -229,5 +205,34 @@ def get_sequences(request):
             'user_name': sequence.created_by.name,
             'thumbnail_path': sequence.thumbnail.full_path if sequence.thumbnail else None
         }
-        for sequence in project.sequences
+        for sequence in Sequence.query.all()
+    ]
+
+
+@view_config(
+    route_name='get_project_sequences',
+    renderer='json'
+)
+@view_config(
+    route_name='get_entity_sequences',
+    renderer='json'
+)
+def get_project_sequences(request):
+    """returns the related sequences of the given project as a json data
+    """
+    entity_id = request.matchdict.get('id', -1)
+    entity = Entity.query.filter_by(id=entity_id).first()
+
+    return [
+        {
+            'id': sequence.id,
+            'name': sequence.name,
+            'status': sequence.status.name,
+            'status_bg_color': sequence.status.bg_color,
+            'status_fg_color': sequence.status.fg_color,
+            'user_id': sequence.created_by.id,
+            'user_name': sequence.created_by.name,
+            'thumbnail_path': sequence.thumbnail.full_path if sequence.thumbnail else None
+        }
+        for sequence in entity.sequences
     ]

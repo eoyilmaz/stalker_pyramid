@@ -44,7 +44,7 @@
 
                 var summary_content_pane = new ContentPane({
                     title: 'Summarize',
-                    href: 'summarize/department/{{ department.id }}',
+                    href: 'departments/{{ department.id }}/summarize',
                     region: 'top',
                     style: 'width:100%; height:150px; padding: 0; margin:0; background-color: #eeeeee;',
                     splitter: true
@@ -62,7 +62,7 @@
                 {% if has_permission('List_User') %}
                     var users_content_pane = new ContentPane({
                         title: 'Users',
-                        href: 'list/users/{{ department.id }}',
+                        href: 'departments/{{ department.id }}/users/list',
                         style: 'padding: 0; margin:0;'
                     });
 

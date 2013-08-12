@@ -29,7 +29,7 @@ function Task(kwargs) {
     this.name = kwargs.name || null;
     this.hierarchy_name = kwargs.hierarchy_name || null;
     this.description = kwargs.description || null;
-    
+
     this.priority = kwargs.priority || 500;
 
     this.type = kwargs.type || null;

@@ -52,7 +52,7 @@ def dialog_create_image_format(request):
 def dialog_update_image_format(request):
     """fills update image format dialog
     """
-    imf_id = request.matchdict['imf_id']
+    imf_id = request.matchdict.get('id', -1)
     imf = ImageFormat.query\
             .filter(ImageFormat.id==imf_id)\
             .first()

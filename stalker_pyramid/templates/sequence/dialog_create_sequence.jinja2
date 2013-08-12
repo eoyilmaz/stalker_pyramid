@@ -145,7 +145,7 @@ require([
                     project_id = '{{ project.id }}';
                 {% endif %}
             {% elif mode == 'UPDATE' %}
-                url = '{{ request.route_url("update_sequence") }}';
+                url = '{{ request.route_url("update_sequence", id=sequence.id) }}';
                 name = '{{ sequence.name }}';
                 code = '{{ sequence.code }}';
                 description = '{{ sequence.description }}';

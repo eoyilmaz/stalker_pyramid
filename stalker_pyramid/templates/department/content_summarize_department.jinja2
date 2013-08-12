@@ -17,6 +17,7 @@
  License along with this library; if not, write to the Free Software
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #}
+{% set department=entity %}
 <div id='department_details_content_pane'>
     <div style="background-color: #7f9599 " class="page_title"></div>
     {# Avatar #}
@@ -45,7 +46,7 @@
                     <td>
                         {% if has_permission('Read_User') %}
                             <a href="javascript:redirectLink('central_content',
-                            'view/user/{{ department.lead.id }}');">
+                            'users/{{ department.lead.id }}/view');">
                                 {{ department.lead.name }}
                             </a>
                         {% else %}
@@ -70,7 +71,7 @@
                 <td>
                     {% if has_permission('Read_User') %}
                         <a href="javascript:redirectLink('central_content',
-                        'view/user/{{ department.created_by.id }}');">
+                        'users/{{ department.created_by.id }}/view');">
                             {{ department.created_by.name }}
                         </a>
                     {% else %}
@@ -110,7 +111,6 @@
             // refresh the pane
             content_pane.refresh();
         };
-
 
         {% if has_permission('Update_Department') %}
 

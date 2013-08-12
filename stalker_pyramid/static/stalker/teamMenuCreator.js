@@ -46,6 +46,8 @@ define([
         var entity_type_name_title = entity_type_name.slice(0, 1).toUpperCase() +
             entity_type_name.slice(1).toLowerCase();
         var entity_type_name_plural = kwargs.entity_type_name_plural || entity_type_name_title + 's';
+        
+        var id_replacer = new RegExp('{id}', 'g');
 
         // Main Menu PopUpMenu
 
@@ -80,7 +82,10 @@ define([
                         onClick: function () {
                             content_pane_to_update.set(
                                 'href',
-                                view_entity_url + this.get('dataId')
+                                view_entity_url.replace(
+                                    id_replacer,
+                                    this.get('dataId')
+                                )
                             );
                             content_pane_to_update.refresh();
                         }
@@ -108,7 +113,7 @@ define([
 
                 // List Users
                 var users_memory = new JsonRest({
-                    target: 'get/users_byEntity/' + tID
+                    target: 'entities/{id}/users/'.replace(id_replacer, tID)
                 });
 
                 var result = users_memory.query().then(function (data) {
@@ -148,7 +153,10 @@ define([
                     onClick: function () {
                         content_pane_to_update.set(
                             'href',
-                            view_entity_url + this.get('dataId')
+                            view_entity_url.replace(
+                                id_replacer,
+                                this.get('dataId')
+                            )
                         );
                         content_pane_to_update.refresh();
                     }

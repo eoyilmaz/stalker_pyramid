@@ -14,10 +14,12 @@ requires = [
     'transaction',
     'pyramid_tm',
     'pyramid_debugtoolbar',
+    'pyramid_mailer',
     'zope.sqlalchemy',
     'waitress',
     'jinja2',
     'pyramid_jinja2',
+    'pil',
     #'unittest2',
     #'sphinx==1.1.3',
     'stalker>=0.2.0.rc1'

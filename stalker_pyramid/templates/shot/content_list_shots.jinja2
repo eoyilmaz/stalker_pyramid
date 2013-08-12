@@ -68,14 +68,14 @@
                         content_creator: dialogs.create_shot_dialog,
                         attach_to: 'list_shots_create_shot_button',
                         related_field_updater: shot_data_grid_updater,
-                        data_id: '{{ project.id }}'
+                        data_id: '{{ entity.id }}'
                     });
                     create_shot_button.startup();
                 {% endif%}
 
 
                 var status_memory = new JsonRest({
-                    target: 'get/statuses_for/Shot'
+                    target: '{{ request.route_url('get_statuses_for', target_entity_type='Shot') }}'
                 });
 
                 status_memory.query().then(function (data) {
@@ -88,7 +88,7 @@
                 function shot_data_grid_updater() {
 
                     var shot_memory = new JsonRest({
-                        target: '/get/shots/{{ project.id }}'
+                        target: '{{ request.route_url('get_project_shots', id=entity.id) }}'
                     });
 
                     shot_memory.query().then(function (data) {
@@ -119,11 +119,8 @@
                                     return object; // return entire item for formatter to use
                                 },
                                 formatter: function (item) {
-
                                     var bg_color = '#' + item.status_bg_color.toString(16);
                                     var fg_color = '#' + item.status_fg_color.toString(16);
-
-
                                     return '<span style="color:' + bg_color + '; background-color:' + bg_color + '; ">....</span><span style="color:' + bg_color + '; ">  ' + item.status + '</span>';
                                 }
 
@@ -138,7 +135,7 @@
                                     {% if has_permission('Read_Shot')%}
 
                                         var targetPane = "'shots_content_pane'";
-                                        var address = "'view/task/" + value.id + "'";
+                                        var address = "'tasks/" + value.id + "/view'";
 
                                         return '<a href="javascript:redirectLink(' + targetPane + ',' + address + ');">' + value.name + '</a>';
                                     {% else %}
@@ -160,7 +157,7 @@
                                     {% if has_permission('Read_User')%}
 
                                         var targetPane = "'central_content'";
-                                        var address = "'view/user/" + value.user_id + "'";
+                                        var address = "'users/" + value.user_id + "/view'";
 
                                         return '<a href="javascript:redirectLink(' + targetPane + ',' + address + ');">' + value.user_name + '</a>';
                                     {% else %}
@@ -203,7 +200,6 @@
                                     var rowId = shots_data_grid.id + '-row-';
                                     var shotId = shotData[parseInt(nodeId.substring(rowId.length, nodeId.length))].id;
 
-
                                     var dialog = dialogCreator({
                                         dialog_id: 'shot_dialog',
                                         content_creator: dialogs.update_shot_dialog,
@@ -211,7 +207,6 @@
                                         data_id: shotId
                                     });
                                     dialog.show();
-
 
                                 }
                             });

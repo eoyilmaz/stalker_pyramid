@@ -97,7 +97,7 @@
         {% if mode=='CREATE' %}
             url = '{{ request.route_url('create_repository') }}';
         {% elif mode=='UPDATE' %}
-            url = '{{ request.route_url('update_repository') }}';
+            url = '{{ request.route_url('update_repository', id=repo.id) }}';
             name = '{{ repo.name }}';
             linux_path = '{{ repo.linux_path }}';
             windows_path = '{{ repo.windows_path }}';

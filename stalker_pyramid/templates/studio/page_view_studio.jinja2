@@ -73,7 +73,7 @@
 
                 var summary_content_pane = new ContentPane({
                     title: 'Summarize',
-                    href: 'summarize/studio/{{ studio.id }}',
+                    href: '{{ request.route_url('summarize_studio', id=studio.id) }}',
                     region: 'top',
                     splitter: true,
                     style: 'width:100%; height:192px; padding: 0; background-color: #eeeeee;'
@@ -91,22 +91,20 @@
                     var tasks_content_pane = new ContentPane({
                         id: 'tasks_content_pane',
                         title: 'Tasks',
-                        default_href: 'list/tasks/{{ studio.id }}',
-                        href: 'list/tasks/{{ studio.id }}',
+                        default_href: '{{ request.route_url('list_studio_tasks', id=studio.id) }}',
+                        href: '{{ request.route_url('list_studio_tasks', id=studio.id) }}',
                         style: ' padding: 0; margin:0;'
                     }, 'tasks_content_pane');
 
                     studio_related_data_tab_container.addChild(tasks_content_pane);
                 {% endif %}
 
-
-
                 {% if has_permission('List_User') %}
                     var users_content_pane = new ContentPane({
                         id: 'users_content_pane',
                         title: 'Users',
-                        default_href: 'list/users/{{ studio.id }}',
-                        href: 'list/users/{{ studio.id }}',
+                        default_href: '{{ request.route_url('list_users') }}',
+                        href: '{{ request.route_url('list_users') }}',
                         style: ' padding: 0; margin:0;'
                     });
 
@@ -118,8 +116,8 @@
 
                     var vacations_content_pane = new ContentPane({
                         title: 'Vacations',
-                        href: 'list/studio_vacations/{{ studio.id }}',
-                        default_href: 'list/studio_vacations/{{ studio.id }}',
+                        href: '{{ request.route_url('list_studio_vacations', id=studio.id) }}',
+                        default_href: '{{ request.route_url('list_studio_vacations', id=studio.id) }}',
                         style: 'padding: 0; margin:0;'
                     });
                     studio_related_data_tab_container.addChild(vacations_content_pane);
@@ -134,21 +132,20 @@
                 studio_content_BorderContainer.addChild(studio_related_data_tab_container);
                 studio_content_BorderContainer.startup();
 
-
-                studio_related_data_tab_container.watch("selectedChildWidget", function (name,
-                                                                                         oval,
-                                                                                         nval) {
-                    console.debug("selected child changed from ", nval.title, " to ", nval.href);
-
-                    oval.set('href', '');
-                    oval.refresh();
-
-                    nval.set('href', nval.default_href);
-                    nval.refresh();
-
-                    //currentPane = nval;
-                });
-
+{#                studio_related_data_tab_container.watch(#}
+{#                    "selectedChildWidget",#}
+{#                    function (name, oval, nval) {#}
+{#                        console.debug("selected child changed from ", nval.title, " to ", nval.href);#}
+{##}
+{#                        oval.set('href', '');#}
+{#                        oval.refresh();#}
+{##}
+{#                        nval.set('href', nval.default_href);#}
+{#                        nval.refresh();#}
+{##}
+{#                        //currentPane = nval;#}
+{#                    }#}
+{#                );#}
 
             });
 

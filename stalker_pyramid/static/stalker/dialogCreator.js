@@ -17,8 +17,8 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
-define(['dijit/registry', 'dojo/domReady!'],
-    function(registry){
+define(['dojo/domReady!'],
+    function () {
         // *******************************************************************
         // DialogCaller
         //
@@ -47,25 +47,25 @@ define(['dijit/registry', 'dojo/domReady!'],
         //   a function object without any parameters which will update the
         //   the related field which this form is adding data to.
         // 
-        
+
         // it calls a dialog which generally adds or edits a data
         // but it is not limited with that, it just calls the dialog
-        
+
         var dialogCreator = function(kwargs){
-            var dialog_id = kwargs['dialog_id'] || null;
-            var data_id = kwargs.data_id || function(){};
-            var content_creator = kwargs.content_creator;
-            var related_field_updater = kwargs.related_field_updater || function(){};            
-            
-            if (dialog_id != null){
+            var dialog_id = kwargs.dialog_id || null,
+            data_id = kwargs.data_id || function () {},
+            content_creator = kwargs.content_creator,
+            related_field_updater = kwargs.related_field_updater || function () {};
+
+            if (dialog_id !== null) {
                 var dialog = dijit.byId(dialog_id);
-                if (dialog != null){
+                if (dialog !== null && dialog !== undefined) {
                     dialog.destroyRecursive();
                 }
-                
+
                 // get the data_id
-                if (data_id != null){
-                    if (typeof(data_id) == 'function') {
+                if (data_id !== null) {
+                    if (typeof(data_id) === 'function') {
                         dialog = content_creator(data_id());
                     } else {
                         dialog = content_creator(data_id);
@@ -73,7 +73,7 @@ define(['dijit/registry', 'dojo/domReady!'],
                 } else {
                     dialog = content_creator();
                 }
-                
+
                 // set the field updater
                 dialog.set(
                     'related_field_updater',
@@ -82,13 +82,12 @@ define(['dijit/registry', 'dojo/domReady!'],
 
                 // show the dialog
                 //dialog.show();
-                
+
                 return dialog;
             }
 
         };
-        
+
         return dialogCreator;
-    }
-);
+    });
 

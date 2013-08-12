@@ -101,12 +101,12 @@
         {% if mode == 'CREATE' %}
             url = '{{ request.route_url("create_department") }}';
         {% elif mode == 'UPDATE' %}
-            url = '{{ request.route_url("update_department") }}';
+            url = '{{ request.route_url("update_department", id=department.id) }}';
             name = '{{ department.name }}';
             description = '{{ department.description }}';
-            additional_data = {
-                   'department_id': '{{ department.id }}'
-            };
+{#            additional_data = {#}
+{#                   'department_id': '{{ department.id }}'#}
+{#            };#}
             {% if department.lead %}
               lead_id = '{{ department.lead.id }}';
             {% endif %}
@@ -158,7 +158,6 @@
         // Memory
         var lead_memory = new JsonRest({
             target: '{{ request.route_url("get_users") }}'
-            //target: 'get/users'
         });
 
         // Widget

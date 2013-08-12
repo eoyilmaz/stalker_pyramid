@@ -198,11 +198,11 @@ define([
 
             // set some defaults
             kwargs = lang.mixin(
-                kwargs,
                 { // default values
                     'start': column.start,
                     'end': column.end
-                }
+                },
+                kwargs
             );
 
             domConstruct.empty(column.headerNode);

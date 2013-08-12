@@ -48,7 +48,7 @@
                 content_creator: dialogs.create_sequence_dialog,
                 attach_to: 'list_sequences_create_sequence_button',
                 related_field_updater: sequence_data_grid_updater,
-                data_id: '{{ project.id }}'
+                data_id: '{{ entity.id }}'
             });
             create_sequence_button.startup();
         {% endif %}
@@ -57,10 +57,10 @@
         //asset_data_grid_updater();
 
         var status_memory = new JsonRest({
-            target: 'get/statuses_for/Sequence'
+            target: 'statuses/Sequence/'
         });
 
-        status_memory.query().then(function (data) {
+        status_memory.query().then(function (data) {    
             sequence_data_grid_updater();
         });
 
@@ -69,7 +69,7 @@
         function sequence_data_grid_updater() {
 
             var sequence_memory = new JsonRest({
-                target: '/get/sequences/{{ project.id }}'
+                target: '{{ request.route_url('get_project_sequences', id=entity.id) }}'
             });
 
             sequence_memory.query().then(function (data) {
@@ -117,20 +117,13 @@
                             return object; // return entire item for formatter to use
                         },
                         formatter: function (value) {
-
-
                             {% if has_permission('Read_Sequence')%}
-
                                 var targetPane = "'sequences_content_pane'";
-                                var address = "'view/task/" + value.id + "'";
-
+                                var address = "'tasks/" + value.id + "/view'";
                                 return '<a href="javascript:redirectLink(' + targetPane + ',' + address + ');">' + value.name + '</a>';
                             {% else %}
-
                                 return  value.name;
-
                             {% endif %}
-
                         }
                     },
                     {
@@ -143,7 +136,7 @@
                             {% if has_permission('Read_User')%}
 
                                 var targetPane = "'central_content'";
-                                var address = "'view/user/" + value.user_id + "'";
+                                var address = "'users/" + value.user_id + "/view'";
 
                                 return '<a href="javascript:redirectLink(' + targetPane + ',' + address + ');">' + value.user_name + '</a>';
                             {% else %}
@@ -181,13 +174,11 @@
                                     });
                                     dialog.show();
 
-
                                 }
                             });
                         };
 
                         right_click_menu.addChild(create_update_sequence_menuItem_creator());
-
                         right_click_menu.startup();
 
             });

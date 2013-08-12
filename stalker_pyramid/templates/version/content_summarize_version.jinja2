@@ -17,6 +17,7 @@
  License along with this library; if not, write to the Free Software
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #}
+{% set version=entity %}
 <div style="background-color: #9d9d9d" class="page_title"></div>
 <div id='version_details_content_pane'>
     {# Avatar #}
@@ -60,7 +61,7 @@
                 <td>
                     {% if has_permission('Read_User') %}
                         <a href="javascript:redirectLink('central_content',
-                        'view/user/{{ version.created_by.id }}');">
+                        '{{ request.route_url("view_user", id=version.created_by.id) }}');">
                             {{ version.created_by.name }}
                         </a>
                     {% else %}
@@ -127,7 +128,7 @@
             thumbnailMenu({
                 targetNodeIds: ['version_avatar'],
                 selector: '.thumbnail_menu',
-                entity_id: {{ user.id }},
+                entity_id: {{ version.id }},
                 related_field_updater: function () {
                     var content_pane = add_output_button.getParent();
                     if (content_pane != null) {
@@ -137,11 +138,7 @@
             });
         {% endif %}
 
-
-
-
     });
-
 </script>
 
 

@@ -74,11 +74,11 @@ define([
             },
 
             _setStyleAttr: function (value) {
-                console.debug(
-                    'setting the TagSelect.input_field_widget.style: ', value
-                );
+//                console.debug(
+//                    'setting the TagSelect.input_field_widget.style: ', value
+//                );
                 if (this.input_field_widget) {
-                    console.debug('there is an input_field_widget');
+//                    console.debug('there is an input_field_widget');
                     this.input_field_widget.set('style', value);
                 }
             },
@@ -94,7 +94,7 @@ define([
                 // return the value of the buttons
                 var value = [];
                 for (var i = 0; i < this.tags.length; i++) {
-                    if (this.type == 'ComboBox'){
+                    if (this.type === 'ComboBox'){
                         value.push(this.tags[i].label);
                     }
                     else{
@@ -126,20 +126,20 @@ define([
 
                         // get the labels of the selected ids
                         result = this.store.query({id: value[i]});
-                        console.log('result:  '+ result.length)
+//                        console.log('result:  '+ result.length);
                         if (result.length) {
                             tag_label = result[0].name;
                         }
                     } else {
 
                         tag_label = value[i];
-                        console.log('tag_label:  '+tag_label)
+//                        console.log('tag_label:  ' + tag_label)
                     }
                     tag_value = value[i];
-                    console.log('tag_value:  '+ tag_value+' tag_label:  '+ tag_label)
+//                    console.log('tag_value:  ' + tag_value + ' tag_label:  ' +  tag_label);
 
                     // create the items
-                    if (tag_label != '') {
+                    if (tag_label !== '') {
                         this.add_tag({
                             label: tag_label,
                             value: tag_value
@@ -189,7 +189,7 @@ define([
 
             reset: function stalker_tagSelect_reset() {
                 this.inherited(arguments);
-                if (this.input_field_widget != null) {
+                if (this.input_field_widget !== null) {
                     this.input_field_widget.reset();
                 }
                 for (var i = 0; i < this.tags.length; i++) {
@@ -224,8 +224,8 @@ define([
 
                 var is_disabled = this.get('disabled');
 
-                if (label != null) {
-                    if (label != '') {
+                if (label !== null) {
+                    if (label !== '') {
 
                         // add a new button to the the tagList
                         var tag = new Tag({
@@ -260,7 +260,7 @@ define([
             // 
             remove_tag: function (/*stalker.Tag*/ tag) {
                 // check if it is really a Tag instance
-                if (tag.declaredClass != 'stalker.Tag') {
+                if (tag.declaredClass !== 'stalker.Tag') {
                     // TODO: it can be an instance of a derived class
                     // don't bother doing anything with that
                     return;
@@ -274,7 +274,7 @@ define([
 
                 // remove the tag from the tags list
                 var index = this.tags.indexOf(tag);
-                if (index != -1) {
+                if (index !== -1) {
                     this.tags.splice(index, 1);
                 }
 
@@ -298,15 +298,15 @@ define([
                 // create the input field widget with the given arguments
                 var WidgetClass = null;
 
-                if (this.type == 'FilteringSelect') {
+                if (this.type === 'FilteringSelect') {
 
                     WidgetClass = FilteringSelect;
 
-                } else if (this.type == 'TextBox') {
+                } else if (this.type === 'TextBox') {
 
                     WidgetClass = TextBox;
 
-                }else if (this.type == 'ComboBox'){
+                }else if (this.type === 'ComboBox'){
 
                     WidgetClass = ComboBox;
 
@@ -331,23 +331,23 @@ define([
                     var current_label;
                     var current_id;
 
-                    if (this.type == 'FilteringSelect') {
+                    if (this.type === 'FilteringSelect') {
 
                         item = this.input_field_widget.item;
-                        if (item != null) {
+                        if (item !== null) {
                             current_label = item.name;
                             current_id = this.input_field_widget.value;
                         }
 
-                    } else if (this.type == 'TextBox') {
+                    } else if (this.type === 'TextBox') {
 
                         current_label = this.input_field_widget.value;
                         current_id = this.input_field_widget.value;
 
-                    }else if (this.type == 'ComboBox'){
+                    }else if (this.type === 'ComboBox'){
 
                         item = this.input_field_widget.item;
-                        if (item != null) {
+                        if (item !== null) {
                             current_label = this.input_field_widget.item.name;
                             current_id = this.input_field_widget.item.id;
                         } else {
@@ -357,8 +357,8 @@ define([
 
                     }
 
-                    if (current_label != null) {
-                        if (current_label != '') {
+                    if (current_label !== null) {
+                        if (current_label !== '') {
 
                             this.add_tag({
                                 label: current_label,

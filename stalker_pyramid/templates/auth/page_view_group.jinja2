@@ -47,7 +47,7 @@
 
         var summary_content_pane = new ContentPane({
             title: 'Summarize',
-            href: 'summarize/group/{{ group.id }}',
+            href: 'groups/{{ group.id }}/summarize',
             region: 'top',
             style: 'width:100%; height:150px; padding: 0; background-color: #eeeeee;',
             splitter: true
@@ -69,7 +69,7 @@
             var permissions_content_pane = new ContentPane({
                 id: 'permission_content_pane',
                 title: 'Permissions',
-                href: 'list/permissions/{{ group.id }}',
+                href: 'groups/{{ group.id }}/permissions/list',
                 style: 'padding: 0; margin:0;'
             });
 
@@ -80,7 +80,7 @@
 
             var users_content_pane = new ContentPane({
                 title: 'Users',
-                href: 'list/users/{{ group.id }}',
+                href: 'groups/{{ group.id }}/users/list',
                 style: 'padding: 0; margin:0;'
             });
 

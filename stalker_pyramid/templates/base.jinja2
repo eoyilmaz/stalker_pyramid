@@ -92,6 +92,34 @@
 
 
 {# TEMPLATES #}
+
+
+<div class="__template__" type="TASKBAR_ON_LEFT"><!--
+    <div class="leftArrowHead" dataId="(#=obj.id#)">&nbsp</div>
+--></div>
+
+<div class="__template__" type="TASKBAR_ON_RIGHT"><!--
+    <div class="rightArrowHead" dataId="(#=obj.id#)">&nbsp</div>
+--></div>
+
+<div class="__template__" type="TIMELOGBAR"><!--
+    <div class="timeLogBox" dataId="(#=obj.id#)">
+        <div class="layout">
+            <div class="timeLogContextMenu"
+                dataId="(#=obj.id#)"
+                name="(#=obj.name#)"
+                start=(#=obj.start#)
+                end=(#=obj.end#)
+                task_id=(#=obj.task.id#)
+                task_name="(#=obj.task.name#)"
+                task_type="(#=obj.task.type#)"
+                task_hierarchy_name="(#=obj.task.hierarchy_name#)"
+                ></div>
+        </div>
+    </div>
+--></div>
+
+
 {% raw %}
 <script id="tmpl_projectBar" type="text/x-dot-template">
     <div class="projectBox" projectId="{{=it.id}}" >
@@ -100,10 +128,7 @@
         </div>
     </div>
 </script>
-{% endraw %}
 
-
-{% raw %}
 <script id="tmpl_taskBar" type="text/x-dot-template">
     <div class="taskBox" dataId="{{=it.id}}">
         <div class="layout {{=it.hasExternalDep?'extDep':''}}">
@@ -133,13 +158,62 @@
                 schedule_unit={{=it.schedule_unit}}
                 description="{{=it.description}}"
                 remaining_seconds="{{=it.remaining_seconds}}"
+                resources="{{=it.getResourcesStr()}}"
+                responsible_id="{{=it.responsible.id}}"
+                responsible_name="{{=it.responsible.name}}"
                 ></div>
         </div>
     </div>
 </script>
-{% endraw %}
 
-{% raw %}
+<script id='tmpl_leafTaskToolTip' type='text/x-dot-template'>
+<table>
+    <thead style="text-align: center">
+        <h2>{{=it.name}} ({{=it.type}})</h2>
+        <h4>{{=it.hierarchy_name}}</h4>
+    </thead>
+
+    <tbody>
+        <tr>
+            <td class="label_column">Id</td>
+            <td class="input_column">{{=it.dataId}}</td>
+        </tr>
+        <tr>
+            <td class="label_column">Priority</td>
+            <td class="input_column">{{=it.priority}}</td>
+        </tr>
+        <tr>
+            <td class="label_column">BID</td>
+            <td class="input_column">{{=it.bid_timing}} {{=it.bid_unit}}</td>
+        </tr>
+        <tr>
+            <td class="label_column">{{=it.schedule_model}}</td>
+            <td class="input_column">{{=it.schedule_timing}} {{=it.schedule_unit}}</td>
+        </tr>
+        <tr>
+            <td class="label_column">Start</td>
+            <td class="input_column">{{=it.start.format("yyyy-mm-dd HH:00")}}</td>
+        </tr>
+        <tr>
+            <td class="label_column">End</td>
+            <td class="input_column">{{=it.end.format("yyyy-mm-dd HH:00")}}</td>
+        </tr>
+        <tr>
+            <td class="label_column">Description</td>
+            <td class="input_column">{{=it.description}}</td>
+        </tr>
+        <tr>
+            <td class="label_column">Remaining Time</td>
+            <td class="input_column">{{=it.remaining_seconds}}</td>
+        </tr>
+        <tr>
+            <td class="label_column">Responsible</td>
+            <td class="input_column">{{=it.responsible.name}}</td>
+        </tr>
+    </tbody>
+</table>
+</script>
+
 <script id="tmpl_taskEditNameRow" type="text/x-dot-template">
     <div class="{{=it.contextMenuClass}}" style="font-weight: {{=it.font_weight}}"
         dataId="{{=it.id}}"
@@ -147,19 +221,13 @@
         start={{=it.start}}
         end={{=it.end}}
         type="{{=it.type}}"
+        {{ if (!it.hasChildren) { }}
+            responsible_id="{{=it.responsible.id}}"
+            responsible_name="{{=it.responsible.name}}"
+        {{ } }}
         hasChildren={{=it.hasChildren}}>{{=it.name}} ({{=it.type}})</div>
 </script>
-{% endraw %}
 
-<div class="__template__" type="TASKBAR_ON_LEFT"><!--
-    <div class="leftArrowHead" dataId="(#=obj.id#)">&nbsp</div>
---></div>
-
-<div class="__template__" type="TASKBAR_ON_RIGHT"><!--
-    <div class="rightArrowHead" dataId="(#=obj.id#)">&nbsp</div>
---></div>
-
-{% raw %}
 <script id="tmpl_parentTaskBar" type="text/x-dot-template">
     <div class="parentTaskBox" dataId="{{=it.id}}">
         <div class="layout {{=it.hasExternalDep?'extDep':''}}">
@@ -170,46 +238,40 @@
         </div>
     </div>
 </script>
-{% endraw %}
 
-<div class="__template__" type="TIMELOGBAR"><!--
-    <div class="timeLogBox" dataId="(#=obj.id#)">
-        <div class="layout">
-            <div class="timeLogContextMenu"
-                dataId="(#=obj.id#)"
-                name="(#=obj.name#)"
-                start=(#=obj.start#)
-                end=(#=obj.end#)
-                task_id=(#=obj.task.id#)
-                task_name="(#=obj.task.name#)"
-                task_type="(#=obj.task.type#)"
-                task_hierarchy_name="(#=obj.task.hierarchy_name#)"
-                ></div>
-        </div>
-    </div>
---></div>
-
-{% raw %}
 <script id="tmpl_taskLink" type="text/x-dot-template">
-  <a href="javascript:redirectLinkInParent('{{=it.type.toLowerCase()}}s_content_pane','view/task/{{=it.id}}');">{{=it.name}} ({{=it.type}})</a>
+  <a href="javascript:redirectLinkInParent('{{=it.type.toLowerCase()}}s_content_pane','tasks/{{=it.id}}/view');">{{=it.name}} ({{=it.type}})</a>
 </script>
-{% endraw %}
 
-<div class="__template__" type='RESOURCELINK'><!--
-    <a href="javascript:redirectLink('central_content','view/user/(#=obj.id#)');">(#=obj.name#)</a>
---></div>
-
-{% raw %}
 <script id='tmpl_resourceLink' type='text/x-dot-template'>
-    <a href="javascript:redirectLink('central_content','view/user/{{=it.id}}');">{{=it.name}}</a>
+    <a href="javascript:redirectLink('central_content','users/{{=it.id}}/view');">{{=it.name}}</a>
 </script>
-{% endraw %}
 
-
-{% raw %}
 <script id="tmpl_projectLink" type="text/x-dot-template">
-    <a href="javascript:redirectLink('central_content','view/project/{{=it.id}}');">{{=it.name}} ({{=it.type}})</a>
+    <a href="javascript:redirectLink('central_content','projects/{{=it.id}}/view');">{{=it.name}} ({{=it.type}})</a>
 </script>
+
+<script id='tmpl_entityNameField' type="text/x-dot-template">
+    <a href="javascript:redirectLinkInParent('{{=it.targetPane}}', '{{=it.address}}');">{{=it.name}} ({{=it.code}})</a>
+</script>
+
+<script id='tmpl_userNameField' type="text/x-dot-template">
+    <a href="javascript:redirectLink('{{=it.targetPane}}', '{{=it.address}}');">{{=it.user_name}}</a>
+</script>
+
+<script id='tmpl_departmentField' type="text/x-dot-template">
+    <a href="javascript:redirectLink('{{=it.targetPane}}', '{{=it.address}}');">{{=it.name}}</a>
+</script>
+
+<script id='tmpl_groupField' type="text/x-dot-template">
+    <a href="javascript:redirectLink('{{=it.targetPane}}', '{{=it.address}}');">{{=it.name}}</a>
+</script>
+
+<script id='tmpl_ticketNameField' type="text/x-dot-template">
+    <a href="javascript:redirectLink('{{=it.targetPane}}', '{{=it.address}}');">#{{=it.number}}</a>
+</script>
+
+
 {% endraw %}
 
 
@@ -264,6 +326,15 @@
     templates.resourceLink = doT.template(document.getElementById('tmpl_resourceLink').text);
 
     templates.taskEditNameRow = doT.template(document.getElementById('tmpl_taskEditNameRow').text);
+
+    templates.leafTaskToolTip = doT.template(document.getElementById('tmpl_leafTaskToolTip').text);
+    
+    // for DGrid Headers
+    templates.entityNameField = doT.template(document.getElementById('tmpl_entityNameField').text);
+    templates.userNameField = doT.template(document.getElementById('tmpl_userNameField').text);
+    templates.departmentField = doT.template(document.getElementById('tmpl_departmentField').text);
+    templates.groupField = doT.template(document.getElementById('tmpl_groupField').text);
+    templates.ticketNameField = doT.template(document.getElementById('tmpl_ticketNameField').text);
     // ************************************************************************
 
 
@@ -351,7 +422,7 @@
             name: 'central_content_pane',
             region: 'center',
             style: 'padding: 0px',
-            href: 'view/user/{{ logged_in_user.id }}',
+            href: '{{ request.route_url('view_user', id=logged_in_user.id) }}',
             executeScripts: true
         }, 'central_content');
         appLayout.addChild(central_content_pane);
@@ -383,7 +454,7 @@
             onClick: function () {
                 central_content_pane.set(
                         'href',
-                        'view/user/{{ logged_in_user.id }}'
+                        '{{ request.route_url('view_user', id=logged_in_user.id) }}'
                 );
                 central_content_pane.refresh();
             }
@@ -418,7 +489,7 @@
                             onClick: function () {
                                 central_content_pane.set(
                                         'href',
-                                        'view/studio/' + this.get('dataId')
+                                        'studios/' + this.get('dataId') + '/view'
                                 );
                                 central_content_pane.refresh();
                             }
@@ -579,7 +650,7 @@
                         onClick: function () {
                             central_content_pane.set(
                                     'href',
-                                    'view/project/' + this.get('dataId')
+                                    'projects/' + this.get('dataId') + '/view'
                             );
                             central_content_pane.refresh();
                         }
@@ -728,7 +799,7 @@
                 onClick: function () {
                     central_content_pane.set(
                             'href',
-                            'view/project/' + this.get('dataId')
+                            'projects/' + this.get('dataId') + '/view'
                     );
                     central_content_pane.refresh();
                 }
@@ -764,9 +835,9 @@
         };
 
 
-        var target = 'get/projects_byEntity/{{ logged_in_user.id }}';
+        var target = '{{ request.route_url("get_entity_projects", id=logged_in_user.id) }}';
         {% if has_permission('List_Project') %}
-            target = 'get/projects'
+            target = '{{ request.route_url("get_projects") }}';
         {% endif %}
 
         // Project Memory
@@ -888,32 +959,44 @@
             popup: crew_DropDownMenu
         }));
 
+        var allow_create_new_user = false;
+        var allow_create_new_department = false;
+        var allow_create_new_group = false;
+        
+        {% if has_permission('Create_User') %}
+            allow_create_new_user = true;
+        {% endif %}
+        {% if has_permission('Create_Department') %}
+            allow_create_new_department = true;
+        {% endif %}
+        {% if has_permission('Create_Group') %}
+            allow_create_new_group = true;
+        {% endif %}
+    
         {% if has_permission('List_User') %}
             teamMenuCreator({
                 team_is_singular: true,
                 menu_to_attach: crew_DropDownMenu,
                 entity_type_name: 'user',
-                view_entity_url: 'view/user/',
-                query_entity_url: 'get/users',
+                view_entity_url: 'users/{id}/view',
+                query_entity_url: 'users/',
                 content_pane_to_update: central_content_pane,
                 new_team_dialog_id: 'user_dialog',
                 new_team_dialog_content_creator: dialogs.create_user_dialog,
-                allow_create_new: {%  if has_permission('Create_User') %}
-                    true {% else %} false {% endif %}
+                allow_create_new: allow_create_new_user
             });
         {% endif %}
-
+    
         {% if has_permission('List_Department') %}
             teamMenuCreator({
                 menu_to_attach: crew_DropDownMenu,
                 entity_type_name: 'department',
-                view_entity_url: 'view/department/',
-                query_entity_url: 'get/departments',
+                view_entity_url: 'departments/{id}/view',
+                query_entity_url: 'departments/',
                 content_pane_to_update: central_content_pane,
                 new_team_dialog_id: 'department_dialog',
                 new_team_dialog_content_creator: dialogs.create_department_dialog,
-                allow_create_new: {%  if has_permission('Create_Department') %}
-                    true {% else %} false {% endif %}
+                allow_create_new: allow_create_new_department
             });
         {% endif %}
 
@@ -921,13 +1004,12 @@
             teamMenuCreator({
                 menu_to_attach: crew_DropDownMenu,
                 entity_type_name: 'group',
-                view_entity_url: 'view/group/',
-                query_entity_url: 'get/groups',
+                view_entity_url: 'groups/{id}/view',
+                query_entity_url: 'groups/',
                 content_pane_to_update: central_content_pane,
                 new_team_dialog_id: 'group_dialog',
                 new_team_dialog_content_creator: dialogs.create_group_dialog,
-                allow_create_new: {%  if has_permission('Create_Group') %}
-                    true {% else %} false {% endif %}
+                allow_create_new: allow_create_new_group
             });
         {% endif %}
 
@@ -972,7 +1054,7 @@
         // load user home by default
         central_content_pane.set(
                 'href',
-                'view/user/{{ logged_in_user.id }}'
+                '{{ request.route_url('view_user', id=logged_in_user.id) }}'
         );
         central_content_pane.refresh();
     });

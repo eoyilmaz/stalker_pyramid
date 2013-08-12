@@ -93,6 +93,11 @@ define([
                                 } else {
                                     if (object.hasChildren) {
                                         template_var.contextMenuClass = 'parentTaskEditRow';
+                                    } else {
+                                        template_var.responsible = {
+                                            id: object.responsible.id,
+                                            name: object.responsible.name
+                                        };
                                     }
                                 }
 

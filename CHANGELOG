@@ -2,6 +2,24 @@
 Stalker Pyramid Changes
 =======================
 
+0.1.0.b3
+========
+
+* **Update:** Redesigned all the routes to comply with a RESTful service
+  scheme.
+* **New:** Leaf tasks on gantt chart now have a new functionality called
+  "Request Review" which can be invoked through the context menu. It will
+  create a new Ticket and assign it to the task responsible.
+* **New:** Calling 'Request Review' now will send an email to the responsible
+  and the logged in user.
+* **Update:** It is now possible to upload multiple References.
+* **Update:** Reference dialog now has a tag field.
+* **Update:** "Duplicate Task Hierarchy" now confirms the action to the user
+  before doing anything.
+* **New:** It is now possible to create new Version files by uploading files to
+  the server. Though the stalker server now needs to have a link to the file
+  server.
+
 0.1.0.b2
 ========
 
@@ -9,6 +27,12 @@ Stalker Pyramid Changes
   gantt chart which utilizes a DGrid with OnDemand capabilities. The new Gantt
   Chart is over 100x faster then the previous implementation.
 * **Update:** Started to move the view designs towards a RESTFul Service style.
+* **Update:** Files stored in Stalker Pyramid Local Storage (SPL Storage) are
+  now reached with the 'SPL'
+  (ex: http://192.168.0.64:6543/SPL/SPL/e8/cb/e8cb374b62e54165a56e216de58eede4.jpg)
+  prefix instead of revealing the real path on the server.
+* **New:** It is now possible to upload and query References (Link instances
+  assigned as references) for Task, Asset, Shot and Sequences.
 * **Update:** Adding studio vacation method is changed.Vacation that has not
     got a user is suppose to be studio vacation
 * **Fix:** Minor bug is fixed in update vacation

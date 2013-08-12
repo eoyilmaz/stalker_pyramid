@@ -1,0 +1,164 @@
+{# Stalker Pyramid a Web Base Production Asset Management System
+ Copyright (C) 2009-2013 Erkan Ozgur Yilmaz
+
+ This file is part of Stalker Pyramid.
+
+ This library is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation;
+ version 2.1 of the License.
+
+ This library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Lesser General Public License for more details.
+
+ You should have received a copy of the GNU Lesser General Public
+ License along with this library; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+#}
+<div id='list_references' style="width: 100%; height: 100%">
+    {% if has_permission('Create_Link') %}
+        <button id='list_references_upload_reference_button'>Upload Reference</button>
+    {% endif %}
+    <div style='width:100%; height: 100%; position: absolute;'>
+        <div id='references_data_grid'
+             style="position: static; width: 100%; height: 100%;"></div>
+    </div>
+
+</div>
+
+<script type='text/javascript'>
+require([
+    'dijit/registry',
+    'dojo/data/ObjectStore',
+    'dojo/aspect',
+    "dgrid/List",
+    "dgrid/Grid",
+    "dgrid/Selection",
+    "dgrid/Keyboard",
+    "dojo/_base/declare",
+    "dgrid/editor",
+    'dojo/store/Memory',
+    'dijit/form/Select',
+    'dojo/store/JsonRest',
+
+    'dijit/Menu',
+    'dijit/MenuItem',
+    'dijit/MenuSeparator',
+
+    'stalker/fieldUpdater',
+    'stalker/dialogs',
+    'stalker/dialogCaller',
+    'dojo/domReady!'
+], function (registry, ObjectStore, aspect, List, Grid, Selection, Keyboard,
+             declare, editor, Memory, Select, JsonRest, Menu, MenuItem,
+             MenuSeparator, fieldUpdater, dialogs, dialogCaller) {
+
+    var StandardGrid = declare([Grid, Selection, Keyboard]);
+    var reference_data_grid = new StandardGrid({
+        id: 'references_data_grid',
+        width: '100%',
+        autoHeight: true
+    }, 'references_data_grid');
+
+    {% if has_permission('Create_Link') %}
+        var upload_reference_button = dialogCaller({
+            label: 'Upload Reference',
+            dialog_id: 'upload_reference_dialog',
+            content_creator: dialogs.upload_reference_dialog,
+            attach_to: 'list_references_upload_reference_button',
+            related_field_updater: reference_data_grid_updater,
+            data_id: '{{ entity.id }}'
+        });
+        upload_reference_button.startup();
+    {% endif %}
+
+    var referenceData;
+
+
+    function reference_data_grid_updater() {
+        
+        var reference_memory = new JsonRest({
+            target: '{{ request.route_url('get_entity_references', id=entity.id)}}'
+        });
+
+        reference_memory.query().then(function (data) {
+
+            referenceData = data;
+
+            var columns = [
+                {
+                    label: "Thumbnail",
+                    field: 'thumbnail',
+                    sortable: false,
+                    get: function (object) {
+                        return object; // return entire item for formatter to use
+                    },
+                    formatter: function (object) {
+
+                        var path = '{{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_shot.png") }}';
+                        if (object.thumbnail) {
+                            path = object.thumbnail;
+                        }
+                        return '<img width= "60px"; src="' + path + '">';
+
+                    }
+                },
+                {
+                    field: 'original_filename',
+                    label: "Filename",
+                    get: function (object) {
+                        return object; // return entire item for formatter to use
+                    },
+                    formatter: function (object) {
+                        return '<a href="' + object.full_path + '">' + object.original_filename + '</a>';
+                    }
+                },
+                {
+                    field: 'description',
+                    label: "Description"
+                },
+                {
+                    field: 'tags',
+                    label: 'Tags',
+                    get: function (object) {
+                        return object;
+                    },
+                    formatter: function (object) {
+                        var return_val = '';
+                        var tags = object.tags;
+                        for (var i=0; i < tags.length; i++){
+                            if (i > 0){
+                                return_val += ', ';
+                            }
+                            return_val += tags[i].name;
+                        }
+                        return return_val;
+                    }
+                }
+            ];
+
+            reference_data_grid.renderArray(data);
+            reference_data_grid.set('columns', columns);
+
+            var right_click_menu = new Menu({
+                targetNodeIds: ['references_data_grid'],
+                selector: '.dgrid-row'
+            });
+
+        });
+    }
+    reference_data_grid_updater();
+
+    var content_pane = registry.byId('references_content_pane');
+
+    aspect.after(content_pane, "resize", function () {
+
+        console.log('reference_data_grid.resize();');
+        reference_data_grid.resize();
+
+    });
+
+});
+</script>

@@ -47,7 +47,7 @@
 
                 var nav_bar_content_pane = new ContentPane({
                     title: 'NavBar',
-                    href: 'view/entity_nav_bar/{{ ticket.id }}',
+                    href: '{{ request.route_url('view_entity_nav_bar', id=ticket.id) }}',
                     region: 'top',
                     style: 'padding: 0; margin:0;'
                 }, 'ticket_nav_bar_content_pane');
@@ -59,7 +59,7 @@
 
                 var summary_content_pane = new ContentPane({
                     title: 'Overview',
-                    href: 'summarize/ticket/{{ ticket.id }}',
+                    href: '{{ request.route_url('summarize_ticket', id=ticket.id) }}',
                     style: 'padding: 0; margin:0;',
                     region: 'center'
                 },'summary_content_pane');

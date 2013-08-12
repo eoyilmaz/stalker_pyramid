@@ -48,7 +48,7 @@ def create_time_log_dialog(request):
     # get logged in user
     logged_in_user = get_logged_in_user(request)
 
-    task_id = request.matchdict['task_id']
+    task_id = request.matchdict.get('id', -1)
     task = Task.query.filter(Task.task_id == task_id).first()
 
     studio = Studio.query.first()
@@ -77,7 +77,7 @@ def update_time_log_dialog(request):
     # get logged in user
     logged_in_user = get_logged_in_user(request)
 
-    time_log_id = request.matchdict['time_log_id']
+    time_log_id = request.matchdict.get('id', -1)
     time_log = TimeLog.query.filter_by(id=time_log_id).first()
 
     studio = Studio.query.first()
@@ -183,34 +183,18 @@ def update_time_log(request):
 
 
 @view_config(
-    route_name='list_time_logs',
-    renderer='templates/time_log/content_list_time_logs.jinja2'
+    route_name='get_entity_time_logs',
+    renderer='json'
 )
-def list_time_logs(request):
-    """lists the time logs of the given task
-    """
-
-    logger.debug('list_time_logs is running')
-
-    entity_id = request.matchdict['entity_id']
-    entity = Entity.query.filter_by(id=entity_id).first()
-
-    logger.debug('entity_id : %s' % entity_id)
-    return {
-        'entity': entity,
-        'has_permission': PermissionChecker(request)
-    }
-
-
 @view_config(
-    route_name='get_time_logs',
+    route_name='get_task_time_logs',
     renderer='json'
 )
 def get_time_logs(request):
     """returns all the Shots of the given Project
     """
     logger.debug('get_time_logs is running')
-    entity_id = request.matchdict['entity_id']
+    entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
 
     logger.debug('entity_id : %s' % entity_id)
@@ -219,8 +203,8 @@ def get_time_logs(request):
 
     # if entity.time_logs:
     for time_log in entity.time_logs:
-        logger.debug('time_log.task.id : %s' % time_log.task.id)
-        assert isinstance(time_log, TimeLog)
+        # logger.debug('time_log.task.id : %s' % time_log.task.id)
+        # assert isinstance(time_log, TimeLog)
         time_log_data.append({
             'id': time_log.id,
             'task_id': time_log.task.id,

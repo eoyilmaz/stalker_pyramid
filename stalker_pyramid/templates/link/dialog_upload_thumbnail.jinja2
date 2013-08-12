@@ -1,32 +1,48 @@
+{# Stalker Pyramid a Web Base Production Asset Management System
+ Copyright (C) 2009-2013 Erkan Ozgur Yilmaz
+
+ This file is part of Stalker Pyramid.
+
+ This library is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation;
+ version 2.1 of the License.
+
+ This library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Lesser General Public License for more details.
+
+ You should have received a copy of the GNU Lesser General Public
+ License along with this library; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+#}
 <div class='dijitDialogPaneContentArea'>
     <form accept-charset="utf-8" id='upload_thumbnail_form'>
-    {#      enctype='multipart/form-data'>#}
-        
-        <div class='dijitDialogPaneContentArea'>
-                <table style='width: 100%'>
-        
-                    {# Entity Name #}
-                    <tr>
-                        <td class='label_column'>
-                            <label for='entity_name'>Entity</label>
-                        </td>
-                        <td class='input_column'>
-                            <input id='entity_name'>
-                        </td>
-                    </tr>
-                    
-                    Thumbnail 
-                    <tr>
-                        <td class='label_column'>
-                            <label for='thumbnail'>Thumbnail</label>
-                        </td>
-                        <td class='input_column'>
-                            <div id='thumbnail_list'></div>
-                            <div id='thumbnail'></div>
-                        </td>
-                    </tr>
-                </table>
-        </div>
+        <table style='width: 100%'>
+
+            {# Entity Name #}
+            <tr>
+                <td class='label_column'>
+                    <label for='entity_name'>Entity</label>
+                </td>
+                <td class='input_column'>
+                    <input id='entity_name'>
+                </td>
+            </tr>
+            
+            {# Thumbnail #}
+            <tr>
+                <td class='label_column'>
+                    <label for='thumbnail'>Thumbnail</label>
+                </td>
+                <td class='input_column'>
+                    <div id='thumbnail_list'></div>
+                    <div id='thumbnail'></div>
+                </td>
+            </tr>
+
+        </table>
     </form>
 </div>
 
@@ -55,7 +71,7 @@
         // Some important vars
         var is_upload_finished = false;
         var entity_id = {{ entity.id }};
-        var link_id = -1;
+        var link_ids = [];
         
         // ********************************************************************
         // Form
@@ -82,18 +98,18 @@
             multiple: false,
             uploadOnSelect: true,
             enctype: 'multipart/form-data',
-            url: 'upload_thumbnail',
+            url: 'upload_files',
             onBegin: function(data){
                 // reset data
                 is_upload_finished = false;
-                link_id = -1;
+                link_ids = [];
             },
             onComplete: function(data){
                 // store the link.id
                 console.debug(data);
                 is_upload_finished = true;
-                link_id = data.link_id;
-                console.debug('link_id :', link_id);
+                link_ids = data.link_ids;
+                console.debug('link_ids :', link_ids);
             }
         }, 'thumbnail');
         thumbnail_uploader.startup();
@@ -109,16 +125,16 @@
             label: 'OK',
             type: 'button',
             onClick: function () {
-                if (is_upload_finished && link_id != -1){
+                if (is_upload_finished && link_ids.length != 0){
                     console.debug('is_upload_finished : ', is_upload_finished);
-                    console.debug('link_id            : ', link_id);
+                    console.debug('link_ids           : ', link_ids);
                     console.debug('dialog             : ', dialog);
                     submitForm({
                         dialog: dialog,
                         form: upload_thumbnail_form,
                         additional_data: {
                             entity_id: entity_id,
-                            link_id: link_id
+                            link_ids: link_ids
                         },
                         url: '{{ request.route_url('assign_thumbnail') }}',
                         method: 'POST'

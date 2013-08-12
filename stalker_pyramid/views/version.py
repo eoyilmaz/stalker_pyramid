@@ -18,21 +18,25 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 import logging
+import shutil
+import os
 
 from pyramid.httpexceptions import HTTPOk, HTTPServerError
 from pyramid.view import view_config
+from sqlalchemy import distinct
 
-from stalker import Task, TimeLog, Version
+from stalker import Task, TimeLog, Version, Link, Entity, defaults
 from stalker.db import DBSession
 
 from stalker_pyramid.views import (get_logged_in_user, get_user_os,
-                                   PermissionChecker)
+                                   PermissionChecker, get_multi_integer)
+from stalker_pyramid.views.link import convert_file_link_to_full_path
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.WARNING)
+logger.setLevel(logging.DEBUG)
 
 @view_config(
-    route_name='dialog_create_version',
+    route_name='dialog_create_task_version',
     renderer='templates/version/dialog_create_version.jinja2',
 )
 def create_version_dialog(request):
@@ -43,14 +47,26 @@ def create_version_dialog(request):
     # get logged in user
     logged_in_user = get_logged_in_user(request)
 
-    task_id = request.matchdict['task_id']
+    task_id = request.matchdict.get('id', -1)
     task = Task.query.filter(Task.task_id==task_id).first()
+
+    takes = map(
+        lambda x: x[0],
+        DBSession.query(distinct(Version.take_name))
+        .filter(Version.task == task)
+        .all()
+    )
+
+    if defaults.version_take_name not in takes:
+        takes.append(defaults.version_take_name)
 
     return {
         'mode': 'CREATE',
         'has_permission': PermissionChecker(request),
         'logged_in_user': logged_in_user,
-        'task': task
+        'task': task,
+        'default_take_name': defaults.version_take_name,
+        'take_names': [defaults.version_take_name]
     }
 
 @view_config(
@@ -60,12 +76,10 @@ def create_version_dialog(request):
 def update_version_dialog(request):
     """updates a create_version_dialog by using the given task
     """
-    logger.debug('inside updates_version_dialog')
-
     # get logged in user
     logged_in_user = get_logged_in_user(request)
 
-    version_id = request.matchdict['version_id']
+    version_id = request.matchdict.get('id', -1)
     version = Version.query.filter_by(id=version_id).first()
 
     return {
@@ -77,27 +91,85 @@ def update_version_dialog(request):
     }
 
 
+# @view_config(
+#     route_name='create_version'
+# )
+# def create_version(request):
+#     """runs when creating a version
+#     """
+#     logged_in_user = get_logged_in_user(request)
+# 
+#     task_id = request.params.get('task_id')
+#     task = Task.query.filter(Task.id==task_id).first()
+# 
+#     if task:
+# 
+#         version = Version(
+#             task=task,
+#             created_by=logged_in_user,
+#         )
+# 
+#         DBSession.add(version)
+#     else:
+#         HTTPServerError()
+# 
+#     return HTTPOk()
+
 @view_config(
-    route_name='create_version'
+    route_name='assign_version',
 )
-def create_version(request):
-    """runs when creating a version
+def assign_version(request):
+    """assigns the version to the given entity
     """
+    # TODO: this should be renamed to create version
+    # collect data
+    link_ids = get_multi_integer(request, 'link_ids')
+    task_id = request.params.get('task_id', -1)
+
+    link = Link.query.filter(Link.id.in_(link_ids)).first()
+    task = Task.query.filter_by(id=task_id).first()
     logged_in_user = get_logged_in_user(request)
 
-    task_id = request.params.get('task_id')
-    task = Task.query.filter(Task.id==task_id).first()
+    logger.debug('link_ids  : %s' % link_ids)
+    logger.debug('link      : %s' % link)
+    logger.debug('task_id   : %s' % task_id)
+    logger.debug('task      : %s' % task)
 
-    if task:
+    if task and link:
+        # delete the link and create a version instead
+        full_path = convert_file_link_to_full_path(link.full_path)
+        take_name = request.params.get('take_name', defaults.version_take_name)
+        path_and_filename, extension = os.path.splitext(full_path)
 
-        version = Version(
-            task=task,
-            created_by=logged_in_user,
-        )
+        version = Version(task=task, take_name=take_name,
+                          created_by=logged_in_user)
 
+        # generate path values
+        version.update_paths()
+        version.extension = extension
+
+        # specify that this version is created with Stalker Pyramid
+        version.created_with = 'StalkerPyramid' # TODO: that should also be a config value
+
+        # now move the link file to the version.absolute_full_path
+        try:
+            os.makedirs(
+                os.path.dirname(version.absolute_full_path)
+            )
+        except OSError:
+            # dir exists
+            pass
+
+        logger.debug('full_path : %s' % full_path)
+        logger.debug('version.absolute_full_path : %s' % version.absolute_full_path)
+
+        shutil.copyfile(full_path, version.absolute_full_path)
+        os.remove(full_path)
+
+        # it is now safe to delete the link
+        DBSession.add(task)
+        DBSession.delete(link)
         DBSession.add(version)
-    else:
-        HTTPServerError()
 
     return HTTPOk()
 
@@ -124,33 +196,16 @@ def update_version(request):
 
     return HTTPOk()
 
-@view_config(
-    route_name='list_versions',
-    renderer='templates/version/content_list_versions.jinja2'
-)
-def list_versions(request):
-    """lists the versions of the given task
-    """
-    logger.debug('list_versions is running')
-
-    task_id = request.matchdict['task_id']
-    task = Task.query.filter_by(id=task_id).first()
-
-    logger.debug('entity_id : %s' % task_id)
-    return {
-        'task': task,
-        'has_permission': PermissionChecker(request)
-    }
 
 @view_config(
-    route_name='get_versions',
+    route_name='get_task_versions',
     renderer='json'
 )
-def get_versions(request):
+def get_task_versions(request):
     """returns all the Shots of the given Project
     """
     logger.debug('get_versions is running')
-    task_id = request.matchdict['task_id']
+    task_id = request.matchdict.get('id', -1)
     task = Task.query.filter_by(id=task_id).first()
     version_data = []
 
@@ -193,6 +248,7 @@ def get_versions(request):
 
     return version_data
 
+
 @view_config(
     route_name='view_version',
     renderer='templates/version/page_view_version.jinja2'
@@ -203,27 +259,7 @@ def view_version(request):
 
     logger.debug('view_version is running')
 
-    version_id = request.matchdict['version_id']
-    version = Version.query.filter_by(id=version_id).first()
-
-    logger.debug('version_id : %s' % version_id)
-    return {
-        'version': version,
-        'has_permission': PermissionChecker(request)
-    }
-
-
-@view_config(
-    route_name='summarize_version',
-    renderer='templates/version/content_summarize_version.jinja2'
-)
-def summarize_version(request):
-    """lists the versions of the given task
-    """
-
-    logger.debug('view_version is running')
-
-    version_id = request.matchdict['version_id']
+    version_id = request.matchdict.get('id', -1)
     version = Version.query.filter_by(id=version_id).first()
 
     logger.debug('version_id : %s' % version_id)
@@ -243,7 +279,7 @@ def list_version_outputs(request):
 
     logger.debug('list_version_outputs is running')
 
-    version_id = request.matchdict['version_id']
+    version_id = request.matchdict.get('id', -1)
     version = Version.query.filter_by(id=version_id).first()
 
     logger.debug('entity_id : %s' % version_id)
@@ -259,10 +295,9 @@ def list_version_outputs(request):
 def list_version_inputs(request):
     """lists the versions of the given task
     """
-
     logger.debug('list_version_inputs is running')
 
-    version_id = request.matchdict['version_id']
+    version_id = request.matchdict.get('id', -1)
     version = Version.query.filter_by(id=version_id).first()
 
     logger.debug('entity_id : %s' % version_id)
@@ -278,10 +313,9 @@ def list_version_inputs(request):
 def list_version_children(request):
     """lists the versions of the given task
     """
-
     logger.debug('list_version_children is running')
 
-    version_id = request.matchdict['version_id']
+    version_id = request.matchdict.get('id', -1)
     version = Version.query.filter_by(id=version_id).first()
 
     logger.debug('entity_id : %s' % version_id)
