@@ -246,7 +246,8 @@ def get_task_versions(request):
             'absolute_full_path': version_absolute_full_path,
             'created_by_id': version.created_by_id,
             'created_by_name': version.created_by.name,
-            'is_published': version.is_published
+            'is_published': version.is_published,
+            'version_number': version.version_number
             # 'hours_to_complete': version.hours_to_complete,
             # 'notes': version.notes
         })

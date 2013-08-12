@@ -259,6 +259,7 @@ def get_tickets(request):
             'created_by_id': ticket.created_by_id,
             'created_by_name': ticket.created_by.name,
             'updated_by_id': ticket.updated_by_id,
-            'updated_by_name': ticket.updated_by.name
+            'updated_by_name': ticket.updated_by.name,
+            'status': ticket.status.name
         } for ticket in tickets
     ]

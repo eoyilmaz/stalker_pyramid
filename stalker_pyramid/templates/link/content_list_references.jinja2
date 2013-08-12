@@ -19,7 +19,8 @@
 #}
 <div id='list_references' style="width: 100%; height: 100%">
     {% if has_permission('Create_Link') %}
-        <button id='list_references_upload_reference_button'>Upload Reference</button>
+        <button id='list_references_upload_reference_button'>Upload Reference
+        </button>
     {% endif %}
     <div style='width:100%; height: 100%; position: absolute;'>
         <div id='references_data_grid'
@@ -29,136 +30,140 @@
 </div>
 
 <script type='text/javascript'>
-require([
-    'dijit/registry',
-    'dojo/data/ObjectStore',
-    'dojo/aspect',
-    "dgrid/List",
-    "dgrid/Grid",
-    "dgrid/Selection",
-    "dgrid/Keyboard",
-    "dojo/_base/declare",
-    "dgrid/editor",
-    'dojo/store/Memory',
-    'dijit/form/Select',
-    'dojo/store/JsonRest',
+    require([
+        "dojo/_base/declare",
+        'dojo/aspect',
+        'dojo/data/ObjectStore',
+        'dojo/store/JsonRest',
+        'dojo/store/Memory',
 
-    'dijit/Menu',
-    'dijit/MenuItem',
-    'dijit/MenuSeparator',
+        'dijit/registry',
+        'dijit/Menu',
+        'dijit/MenuItem',
+        'dijit/MenuSeparator',
+        'dijit/form/Select',
 
-    'stalker/fieldUpdater',
-    'stalker/dialogs',
-    'stalker/dialogCaller',
-    'dojo/domReady!'
-], function (registry, ObjectStore, aspect, List, Grid, Selection, Keyboard,
-             declare, editor, Memory, Select, JsonRest, Menu, MenuItem,
-             MenuSeparator, fieldUpdater, dialogs, dialogCaller) {
+        "dgrid/List",
+        "dgrid/Grid",
+        "dgrid/Selection",
+        "dgrid/Keyboard",
+        'dgrid/extensions/ColumnResizer',
+        "dgrid/editor",
 
-    var StandardGrid = declare([Grid, Selection, Keyboard]);
-    var reference_data_grid = new StandardGrid({
-        id: 'references_data_grid',
-        width: '100%',
-        autoHeight: true
-    }, 'references_data_grid');
+        'stalker/fieldUpdater',
+        'stalker/dialogs',
+        'stalker/dialogCaller',
+        'dojo/domReady!'
+    ], function (declare, aspect, ObjectStore, JsonRest, Memory, registry,
+                 Menu, MenuItem, MenuSeparator, Select, List, Grid, Selection,
+                 Keyboard, ColumnResizer, editor, fieldUpdater, dialogs,
+                 dialogCaller) {
 
-    {% if has_permission('Create_Link') %}
-        var upload_reference_button = dialogCaller({
-            label: 'Upload Reference',
-            dialog_id: 'upload_reference_dialog',
-            content_creator: dialogs.upload_reference_dialog,
-            attach_to: 'list_references_upload_reference_button',
-            related_field_updater: reference_data_grid_updater,
-            data_id: '{{ entity.id }}'
-        });
-        upload_reference_button.startup();
-    {% endif %}
+        var StandardGrid = declare([Grid, Selection, Keyboard, ColumnResizer]);
+        var reference_data_grid = new StandardGrid({
+            id: 'references_data_grid',
+            width: '100%',
+            autoHeight: true
+        }, 'references_data_grid');
 
-    var referenceData;
+        {% if has_permission('Create_Link') %}
+            var upload_reference_button = dialogCaller({
+                label: 'Upload Reference',
+                dialog_id: 'upload_reference_dialog',
+                content_creator: dialogs.upload_reference_dialog,
+                attach_to: 'list_references_upload_reference_button',
+                related_field_updater: reference_data_grid_updater,
+                data_id: '{{ entity.id }}'
+            });
+            upload_reference_button.startup();
+        {% endif %}
+
+        var referenceData;
 
 
-    function reference_data_grid_updater() {
-        
-        var reference_memory = new JsonRest({
-            target: '{{ request.route_url('get_entity_references', id=entity.id)}}'
-        });
+        function reference_data_grid_updater() {
 
-        reference_memory.query().then(function (data) {
-
-            referenceData = data;
-
-            var columns = [
-                {
-                    label: "Thumbnail",
-                    field: 'thumbnail',
-                    sortable: false,
-                    get: function (object) {
-                        return object; // return entire item for formatter to use
-                    },
-                    formatter: function (object) {
-
-                        var path = '{{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_shot.png") }}';
-                        if (object.thumbnail) {
-                            path = object.thumbnail;
-                        }
-                        return '<img width= "60px"; src="' + path + '">';
-
-                    }
-                },
-                {
-                    field: 'original_filename',
-                    label: "Filename",
-                    get: function (object) {
-                        return object; // return entire item for formatter to use
-                    },
-                    formatter: function (object) {
-                        return '<a href="' + object.full_path + '">' + object.original_filename + '</a>';
-                    }
-                },
-                {
-                    field: 'description',
-                    label: "Description"
-                },
-                {
-                    field: 'tags',
-                    label: 'Tags',
-                    get: function (object) {
-                        return object;
-                    },
-                    formatter: function (object) {
-                        var return_val = '';
-                        var tags = object.tags;
-                        for (var i=0; i < tags.length; i++){
-                            if (i > 0){
-                                return_val += ', ';
-                            }
-                            return_val += tags[i].name;
-                        }
-                        return return_val;
-                    }
-                }
-            ];
-
-            reference_data_grid.renderArray(data);
-            reference_data_grid.set('columns', columns);
-
-            var right_click_menu = new Menu({
-                targetNodeIds: ['references_data_grid'],
-                selector: '.dgrid-row'
+            var reference_memory = new JsonRest({
+                target: '{{ request.route_url('get_entity_references', id=entity.id)}}'
             });
 
+            reference_memory.query().then(function (data) {
+
+                referenceData = data;
+
+                var columns = [
+                    {
+                        label: "Thumbnail",
+                        field: 'thumbnail',
+                        sortable: false,
+                        get: function (object) {
+                            return object; // return entire item for formatter to use
+                        },
+                        formatter: function (object) {
+
+                            var path = '{{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_shot.png") }}';
+                            if (object.thumbnail) {
+                                path = object.thumbnail;
+                            }
+                            return '<img width= "60px"; src="' + path + '">';
+
+                        }
+                    },
+                    {
+                        field: 'original_filename',
+                        label: "Filename",
+                        get: function (object) {
+                            return object; // return entire item for formatter to use
+                        },
+                        formatter: function (object) {
+                            return '<a href="' + object.full_path + '">' + object.original_filename + '</a>';
+                        }
+                    },
+                    {
+                        field: 'description',
+                        label: "Description"
+                    },
+                    {
+                        field: 'tags',
+                        label: 'Tags',
+                        get: function (object) {
+                            return object;
+                        },
+                        formatter: function (object) {
+                            var return_val = '';
+                            var tags = object.tags;
+                            for (var i = 0; i < tags.length; i++) {
+                                if (i > 0) {
+                                    return_val += ', ';
+                                }
+                                return_val += tags[i].name;
+                            }
+                            return return_val;
+                        }
+                    }
+                ];
+
+                reference_data_grid.renderArray(data);
+                reference_data_grid.set('columns', columns);
+
+                var right_click_menu = new Menu({
+                    targetNodeIds: ['references_data_grid'],
+                    selector: '.dgrid-row'
+                });
+
+            });
+        }
+
+        reference_data_grid_updater();
+
+        var content_pane = registry.byId('references_content_pane');
+
+        aspect.after(content_pane, "resize", function () {
+
+            console.log('reference_data_grid.resize();');
+            reference_data_grid.resize();
+
         });
-    }
-    reference_data_grid_updater();
-
-    var content_pane = registry.byId('references_content_pane');
-
-    aspect.after(content_pane, "resize", function () {
-
-        console.log('reference_data_grid.resize();');
-        reference_data_grid.resize();
 
     });
-
-});
 </script>

@@ -29,76 +29,80 @@
 
 <script type='text/javascript'>
     require([
-        'dijit/registry',
+        'dojo/_base/declare',
         'dojo/data/ObjectStore',
-        "dgrid/List",
-        "dgrid/Grid",
-        "dgrid/Selection",
-        "dgrid/Keyboard",
-        "dojo/_base/declare",
-        "dgrid/editor",
         'dojo/store/Memory',
         'dojo/store/JsonRest',
+
+        'dijit/registry',
+
+        'dgrid/List',
+        'dgrid/Grid',
+        'dgrid/Selection',
+        'dgrid/Keyboard',
+        'dgrid/extensions/ColumnResizer',
+        'dgrid/editor',
+
         'stalker/dialogs',
         'stalker/fieldUpdater',
         'stalker/dialogCaller',
-        'dojo/domReady!'],
-            function (registry, ObjectStore, List, Grid, Selection, Keyboard,
-                      declare, editor, Memory, JsonRest, dialogs, fieldUpdater,
-                      dialogCaller) {
 
-                var getPermissionAccess = function (action, class_name) {
-                    {% for permission in group.permissions %}
-                        if ('{{ permission.action }}' == action && '{{ permission.class_name }}' == class_name) {
+        'dojo/domReady!'
+    ], function (declare, ObjectStore, Memory, JsonRest, registry, List, Grid,
+                 Selection, Keyboard, ColumnResizer, editor, dialogs,
+                 fieldUpdater, dialogCaller) {
 
-                            return '{{ permission.access }}';
-                        }
-                    {% endfor %}
-                };
+        var getPermissionAccess = function (action, class_name) {
+            {% for permission in group.permissions %}
+                if ('{{ permission.action }}' == action && '{{ permission.class_name }}' == class_name) {
+                    return '{{ permission.access }}';
+                }
+            {% endfor %}
+        };
 
-                var StandardGrid = declare([Grid, Selection, Keyboard]);
+        var StandardGrid = declare([Grid, Selection, Keyboard]);
 
-                var permissions_DataGrid = new StandardGrid({
-                    id: 'permissions_data_grid',
-                    width: '100%'
-                }, 'permissions_data_grid');
+        var permissions_DataGrid = new StandardGrid({
+            id: 'permissions_data_grid',
+            width: '100%'
+        }, 'permissions_data_grid');
 
-                var columns = [];
+        var columns = [];
 
-                columns.push({
-                    label: 'Name',
-                    field: 'name'
-                });
+        columns.push({
+            label: 'Name',
+            field: 'name'
+        });
 
-                {% for action in actions %}
-                    columns.push({
-                        label: '{{ action }}',
-                        field: '{{ action }}',
-                        formatter: function (value) {
-                            if (value == 'Allow') {
-                                return '<img width= "12px"; src="{{ request.static_url("stalker_pyramid:static/stalker/images/icon-small-check.gif") }}">';
-                            }
-                            return '';
-                        }
-                    });
-                {% endfor %}
-
-                var data = [];
-
-                {% for entity in entity_types %}
-                    var item = {
-                        'name': '{{ entity.name }}'
-                    };
-                    {% for action in actions %}
-                        item['{{ action }}'] = getPermissionAccess('{{ action }}', '{{ entity.name }}');
-                    {% endfor %}
-                    data.push(item);
-                {% endfor %}
-
-
-                permissions_DataGrid.renderArray(data);
-                permissions_DataGrid.set('columns', columns);
+        {% for action in actions %}
+            columns.push({
+                label: '{{ action }}',
+                field: '{{ action }}',
+                formatter: function (value) {
+                    if (value == 'Allow') {
+                        return '<img width= "12px"; src="{{ request.static_url("stalker_pyramid:static/stalker/images/icon-small-check.gif") }}">';
+                    }
+                    return '';
+                }
             });
+        {% endfor %}
+
+        var data = [];
+
+        {% for entity in entity_types %}
+            var item = {
+                'name': '{{ entity.name }}'
+            };
+            {% for action in actions %}
+                item['{{ action }}'] = getPermissionAccess('{{ action }}', '{{ entity.name }}');
+            {% endfor %}
+            data.push(item);
+        {% endfor %}
+
+
+        permissions_DataGrid.renderArray(data);
+        permissions_DataGrid.set('columns', columns);
+    });
 
 
 </script>

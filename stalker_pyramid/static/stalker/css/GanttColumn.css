@@ -3,7 +3,7 @@
     top: 0;
     width: 1px;
     height: 100%;
-    border-left: 2px dotted #13AFA5;
+    border-left: 2px dotted red;
     z-index: 100;
 }
 
@@ -315,8 +315,6 @@
 
 .gantt .dgrid-column-chart {
     position: relative;
-    /*width: 6588.45px;*/
-    /*width: 100%;*/
     overflow: visible;
 }
 
@@ -397,8 +395,6 @@ th.dgrid-column-chart table {
     width: 120px;
 }
 
-
-
 .gantt .dgrid-column-set-0 {
 width: 40%;
 }
@@ -433,6 +429,13 @@ width: 60%;
     /*text-overflow: ellipsis;*/
     text-overflow: clip;
     white-space: nowrap;
+}
+
+.gantt .ganttHead1 {
+    overflow:hidden;text-overflow:clip;white-space:nowrap;
+}
+.gantt .ganttHead2 {
+    overflow:hidden;text-overflow:clip;white-space:nowrap;
 }
 
 /*.gantt .dgrid-cell-padding {*/

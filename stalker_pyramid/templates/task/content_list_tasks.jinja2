@@ -517,6 +517,14 @@
         }, '{{ entity.entity_type }}_{{ entity.id }}_gantt');
         gantt_chart.startup();
 
+        // ceter on today
+        setTimeout(
+            function(){
+                gantt_column.centerOnToday()
+            },
+            0
+        );
+
         // create context menus and tooltip dialogs
         create_contextMenus();
 
@@ -640,9 +648,10 @@
         var refresh_button = new Button({
             label: 'Refresh',
             onClick: function () {
-                var start = start_dateTextBox.getValue().getTime();
-                var end =  end_dateTextBox.getValue().getTime();
-                gantt_column.refresh({start: start, end: end});
+{#                var start = start_dateTextBox.getValue().getTime();#}
+{#                var end =  end_dateTextBox.getValue().getTime();#}
+{#                gantt_column.refresh({start: start, end: end});#}
+                gantt_column.refresh();
             }
         }, '{{ entity.entity_type }}_{{ entity.id }}_list_tasks_refresh_button');
         refresh_button.startup();

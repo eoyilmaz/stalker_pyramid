@@ -28,6 +28,7 @@
 
 <script type='text/javascript'>
 require([
+    "dojo/_base/declare",
     'dojo/data/ObjectStore',
     'dojo/store/Memory',
     'dojo/store/JsonRest',
@@ -38,7 +39,7 @@ require([
     "dgrid/OnDemandGrid",
     "dgrid/Selection",
     "dgrid/Keyboard",
-    "dojo/_base/declare",
+    'dgrid/extensions/ColumnResizer',
     "dgrid/editor",
 
     'dijit/Menu',
@@ -52,12 +53,12 @@ require([
     'stalker/dialogCreator',
 
     'dojo/domReady!'
-], function (ObjectStore, Memory, JsonRest, aspect, selector, List, Grid,
-             Selection, Keyboard, declare, editor, Menu, MenuItem,
+], function (declare, ObjectStore, Memory, JsonRest, aspect, selector, List,
+             Grid, Selection, Keyboard, ColumnResizer, editor, Menu, MenuItem,
              MenuSeparator, Button, dialogs, dialogCaller, dialogCreator) {
 
 
-    var StandardGrid = declare([Grid, Selection, Keyboard]);
+    var StandardGrid = declare([Grid, Selection, Keyboard, ColumnResizer]);
 
     var ticket_DataGrid = new StandardGrid({
         id: 'ticket_data_grid',
@@ -80,11 +81,7 @@ require([
         create_ticket_button.startup();
     {% endif %}
 
-
-
     var ticketData;
-
-
     function ticket_DataGrid_updater() {
     
         console.debug('ticket_DataGrid_updater start');
@@ -143,6 +140,10 @@ require([
                         return '<a href="javascript:redirectLink(' + targetPane + ',' + address + ');">' + value.project_name + '</a>';
 
                     }
+                },
+                {
+                    field: 'status',
+                    label: 'Status'
                 },
                 {
                     field: 'owner_id',
