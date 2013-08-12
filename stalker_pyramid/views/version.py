@@ -139,10 +139,15 @@ def assign_version(request):
         # delete the link and create a version instead
         full_path = convert_file_link_to_full_path(link.full_path)
         take_name = request.params.get('take_name', defaults.version_take_name)
+        publish = bool(request.params.get('publish'))
+
+        logger.debug('publish : %s' % publish)
+
         path_and_filename, extension = os.path.splitext(full_path)
 
         version = Version(task=task, take_name=take_name,
                           created_by=logged_in_user)
+        version.is_published = publish
 
         # generate path values
         version.update_paths()
@@ -240,8 +245,8 @@ def get_task_versions(request):
             'parent_name': ' | '.join([parent.name for parent in version.task.parents]),
             'absolute_full_path': version_absolute_full_path,
             'created_by_id': version.created_by_id,
-            'created_by_name': version.created_by.name
-
+            'created_by_name': version.created_by.name,
+            'is_published': version.is_published
             # 'hours_to_complete': version.hours_to_complete,
             # 'notes': version.notes
         })

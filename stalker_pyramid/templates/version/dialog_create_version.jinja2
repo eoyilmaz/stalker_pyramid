@@ -41,6 +41,16 @@
                 </td>
             </tr>
 
+            {# Publish #}
+            <tr>
+                <td class='label_column'>
+                    <label for='publish'>Publish?</label>
+                </td>
+                <td class='input_column'>
+                    <input id='publish' type='checkbox'>
+                </td>
+            </tr>
+
             {# Version #}
             <tr>
                 <td class='label_column'>
@@ -69,6 +79,7 @@
         'dijit/form/Button',
         'dijit/form/ValidationTextBox',
         'dijit/form/ComboBox',
+        'dijit/form/CheckBox',
 
         'dojox/form/FileInput',
         'dojox/form/Uploader',
@@ -77,24 +88,22 @@
         'stalker/submitForm',
 
         'dojo/domReady!'
-    ], function (Memory, Form, Button, ValidationTextBox, ComboBox, FileInput,
-                 Uploader, FileList, submitForm) {
+    ], function (Memory, Form, Button, ValidationTextBox, ComboBox, CheckBox,
+                 FileInput, Uploader, FileList, submitForm) {
         
-        // ********************************************************************
-        // Some important vars
+        {# ***************************************************************** #}
+        {# Some important vars #}
         var is_upload_finished = false;
         var task_id = {{ task.id }};
         var link_ids = [];
         
-        // ********************************************************************
-        // Form
+        {# ***************************************************************** #}
+        {# Form #}
         var upload_version_form = new Form({}, 'upload_version_form');
-
         var dialog = upload_version_form.getParent();
-        
 
-        // ********************************************************************
-        // Name
+        {# ***************************************************************** #}
+        {# Name #}
         var name_textBox = new ValidationTextBox({
             name: 'task_name',
             label: 'Task',
@@ -129,8 +138,16 @@
         }, 'take');
         take_name_comboBox.startup();
 
-        // ********************************************************************
-        // Version
+        {# ***************************************************************** #}
+        {# Publish ? #}
+        var publish_checkBox = new CheckBox({
+            value: 'checked',
+            checked: false
+        }, 'publish');
+        publish_checkBox.startup();
+
+        {# ***************************************************************** #}
+        {# Version #}
         var version_uploader = new dojox.form.Uploader({
             label: 'Browse...',
             multiple: false,
@@ -172,7 +189,8 @@
                         form: upload_version_form,
                         additional_data: {
                             task_id: task_id,
-                            link_ids: link_ids
+                            link_ids: link_ids,
+                            publish: eval(publish_checkBox.get('checked')) ? 1 : 0
                         },
                         url: '{{ request.route_url('assign_version') }}',
                         method: 'POST'
