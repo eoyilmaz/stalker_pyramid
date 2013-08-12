@@ -103,7 +103,7 @@ def create_time_log(request):
     """
 
     logger.debug('inside create_time_log')
-    task_id = request.params.get('task_Id')
+    task_id = request.params.get('task_id')
     task = Task.query.filter(Task.id == task_id).first()
 
     #**************************************************************************
@@ -150,12 +150,12 @@ def update_time_log(request):
     """runs when updating a time_log
     """
     logger.debug('inside update_time_log')
-    time_log_id = request.params.get('time_log_id')
+    time_log_id = int(request.params.get('time_log_id'))
     time_log = TimeLog.query.filter_by(id=time_log_id).first()
 
     #**************************************************************************
     # collect data
-    resource_id = request.params.get('resource_id', None)
+    resource_id = int(request.params.get('resource_id', None))
     resource = User.query.filter(User.id == resource_id).first()
 
     start_date = get_date(request, 'start')

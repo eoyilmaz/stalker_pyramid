@@ -675,7 +675,7 @@ def update_group(request):
     post_multi_dict = request.POST
 
     # get group_id
-    group_id = post_multi_dict['group_id']
+    group_id = int(post_multi_dict['group_id'])
     group = Group.query.filter_by(id=group_id).first()
 
     # get name

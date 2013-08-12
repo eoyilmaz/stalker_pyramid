@@ -36,6 +36,8 @@ Stalker Pyramid Changes
 * **Update:** Adding studio vacation method is changed.Vacation that has not
     got a user is suppose to be studio vacation
 * **Fix:** Minor bug is fixed in update vacation
+* **Fix:** Minor bug is fixed in auth.py and time_log.py.
+
 
 0.1.0.b1
 ========
