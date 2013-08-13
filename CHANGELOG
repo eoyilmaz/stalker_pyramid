@@ -26,6 +26,8 @@ Stalker Pyramid Changes
   be in the middle of the view.
 * **Update:** GanttColumn now shows the width of the days/weeks correctly.
 * **New:** References are now shown in a dojox.image.LightBox dialog.
+* **Fix:** Fixed **get_permissions_from_multi_dict()**, it is now skipping
+  unknown access, action and class_name entries.
 
 0.1.0.b2
 ========
