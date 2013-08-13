@@ -55,7 +55,7 @@ define([
                         formatter: function (object) {
                             var p_complete = 0, bg_color, font_weight;
 
-                            p_complete = Math.max(object.total_logged_seconds / object.schedule_seconds * 100, 100);
+                            p_complete = object.total_logged_seconds / object.schedule_seconds * 100;
 
                             bg_color = p_complete >= 100 ? 'rgb(153, 255, 51)' : 'red';
                             font_weight = 'normal';
