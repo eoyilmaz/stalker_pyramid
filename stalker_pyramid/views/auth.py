@@ -339,15 +339,20 @@ def get_users_not_in_entity(request):
 
 @view_config(
     route_name='append_users_to_entity_dialog',
-    renderer='templates/auth/dialog_append_users.jinja2'
+    renderer='templates/auth/dialog_append_users_to_entity.jinja2'
 )
-def append_user_dialog(request):
+def append_users_to_entity_dialog(request):
     """runs for append user dialog
     """
+
+    logger.debug('append_users_to_entity_dialog :' )
+
     logged_in_user = get_logged_in_user(request)
 
     entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
+
+    logger.debug('entity_id : %s' % entity_id)
 
     return {
         'logged_in_user': logged_in_user,
@@ -355,46 +360,25 @@ def append_user_dialog(request):
         'entity': entity
     }
 
-
-@view_config(
-    route_name='append_user_to_group'
-)
-@view_config(
-    route_name='append_user_to_department'
-)
-def append_user(request):
-    """appends the given user to the given Project or Department or Group
-    """
-    # user
-    user_id = request.params.get('id', None)
-    user = User.query.filter(User.id == user_id).first()
-
-    # entity
-    entity_id = request.params.get('entity_id', None)
-    entity = Entity.query.filter(Entity.id == entity_id).first()
-
-    if user and entity:
-        entity.users.append(user)
-        DBSession.add_all([entity, user])
-
-    return HTTPOk()
-
-
 @view_config(
     route_name='append_users_to_entity'
 )
 def append_users_to_entity(request):
     """appends the given users o the given Project or Department
     """
+
+    logger.debug('append_users_to_entity ')
+
     # users
     user_ids = get_multi_integer(request, 'user_ids')
     logger.debug('user_ids  : %s' % user_ids)
     users = User.query.filter(User.id.in_(user_ids)).all()
 
     # entity
-    entity_id = request.params.get('entity_id', None)
+    entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter(Entity.id == entity_id).first()
 
+    logger.debug('entity_id : %s' % entity_id)
     logger.debug('entity : %s' % entity)
     logger.debug('users  : %s' % users)
 
@@ -404,6 +388,119 @@ def append_users_to_entity(request):
         DBSession.add_all(users)
 
     return HTTPOk()
+
+
+
+@view_config(
+    route_name='append_user_to_group'
+)
+@view_config(
+    route_name='append_user_to_department'
+)
+def append_user_to_entity(request):
+    """appends the given user to the given Project or Department or Group
+    """
+    # This is an unused method
+
+    # user
+    user_id = request.params.get('id', None)
+    user = User.query.filter(User.id == user_id).first()
+
+    # entity
+    entity_id = request.params.get('entity_id', None)
+    entity = Entity.query.filter(Entity.id == entity_id).first()
+
+
+
+    if user and entity:
+        entity.users.append(user)
+        DBSession.add_all([entity, user])
+
+    return HTTPOk()
+
+
+@view_config(
+    route_name='append_user_to_groups_dialog',
+    renderer='templates/auth/dialog_append_user_to_groups.jinja2'
+)
+@view_config(
+    route_name='append_user_to_departments_dialog',
+    renderer='templates/department/dialog_append_user_to_departments.jinja2'
+)
+def append_user_to_entity_dialog(request):
+    """runs for append user dialog
+    """
+
+    logger.debug('append_user_to_entity_dialog')
+
+    logged_in_user = get_logged_in_user(request)
+
+    user_id = request.matchdict.get('id', -1)
+    user = User.query.filter_by(id=user_id).first()
+
+    return {
+        'has_permission': PermissionChecker(request),
+        'logged_in_user': logged_in_user,
+        'user': user
+    }
+
+
+@view_config(
+    route_name='append_user_to_groups'
+)
+def append_user_to_groups(request):
+    """appends the given group o the given user
+    # """
+    # groups
+    groups_ids = get_multi_integer(request, 'group_ids')
+    logger.debug('groups_ids : %s' % groups_ids)
+
+    groups = Group.query.filter(Group.id.in_(groups_ids)).all()
+
+    # user
+    user_id = request.matchdict.get('id', None)
+    user = User.query.filter(User.id == user_id).first()
+
+    logger.debug('user : %s' % user)
+    logger.debug('groups  : %s' % groups)
+
+    if groups and user:
+        user.groups = groups
+        DBSession.add(user)
+        DBSession.add_all(groups)
+
+    return HTTPOk()
+
+@view_config(
+    route_name='append_user_to_departments'
+)
+def append_user_to_departments(request):
+    """appends the given department to the given User
+    """
+    # departments
+
+    logger.debug('append_user_to_departments')
+
+    department_ids = get_multi_integer(request, 'department_ids')
+    departments = Department.query.filter(
+        Department.id.in_(department_ids)).all()
+
+    # user
+    user_id = request.matchdict.get('id', -1)
+    user = Entity.query.filter(User.id == user_id).first()
+
+    logger.debug('user : %s' % user)
+    logger.debug('departments  : %s' % departments)
+
+    if departments and user:
+        user.departments = departments
+        DBSession.add(user)
+        DBSession.add_all(departments)
+
+    return HTTPOk()
+
+
+
 
 
 def get_permissions_from_multi_dict(multi_dict):
@@ -423,30 +520,33 @@ def get_permissions_from_multi_dict(multi_dict):
             action = action_and_class_name[0]
             class_name = action_and_class_name[1]
 
-            logger.debug('access     : %s' % access)
-            logger.debug('action     : %s' % action)
-            logger.debug('class_name : %s' % class_name)
+            # logger.debug('access     : %s' % access)
+            # logger.debug('action     : %s' % action)
+            # logger.debug('class_name : %s' % class_name)
 
         except IndexError:
             continue
 
         else:
 
-            # if access in ['Allow', 'Deny'] and \
-            #     class_name in all_class_names and \
-            #     action in all_actions:
+            if access in ['Allow', 'Deny'] and \
+                class_name in all_class_names and \
+                action in all_actions:
 
-            # get permissions
-            permission = Permission.query \
-                .filter_by(access=access) \
-                .filter_by(action=action) \
-                .filter_by(class_name=class_name) \
-                .first()
+                # get permissions
+                permission = Permission.query \
+                    .filter_by(access=access) \
+                    .filter_by(action=action) \
+                    .filter_by(class_name=class_name) \
+                    .first()
+                logger.debug('access     : %s' % access)
+                logger.debug('action     : %s' % action)
+                logger.debug('class_name : %s' % class_name)
 
-            if permission:
-                permissions.append(permission)
+                if permission:
+                    permissions.append(permission)
 
-    logger.debug(permissions)
+    # logger.debug(permissions)
     return permissions
 
 
@@ -788,58 +888,7 @@ def get_entity_groups(request):
         for group in sorted(entity.groups, key=lambda x: x.name.lower())
     ]
 
-@view_config(
-    route_name='append_user_to_entity_dialog',
-    renderer='templates/auth/dialog_append_user_to_entity.jinja2'
-)
-@view_config(
-    route_name='append_user_to_groups_dialog',
-    renderer='templates/auth/dialog_append_user_to_groups.jinja2'
-)
-@view_config(
-    route_name='append_user_to_departments_dialog',
-    renderer='templates/department/dialog_append_user_to_departments.jinja2'
-)
-def append_user_dialogs(request):
-    """runs for append user dialog
-    """
-    logged_in_user = get_logged_in_user(request)
 
-    user_id = request.matchdict.get('id', -1)
-    user = User.query.filter_by(id=user_id).first()
-
-    return {
-        'has_permission': PermissionChecker(request),
-        'logged_in_user': logged_in_user,
-        'user': user
-    }
-
-
-@view_config(
-    route_name='append_user_to_groups'
-)
-def append_groups(request):
-    """appends the given group o the given user
-    # """
-    # groups
-    groups_ids = get_multi_integer(request, 'group_ids')
-    logger.debug('groups_ids : %s' % groups_ids)
-
-    groups = Group.query.filter(Group.id.in_(groups_ids)).all()
-
-    # user
-    user_id = request.matchdict.get('id', None)
-    user = User.query.filter(User.id == user_id).first()
-
-    logger.debug('user : %s' % user)
-    logger.debug('groups  : %s' % groups)
-
-    if groups and user:
-        user.groups = groups
-        DBSession.add(user)
-        DBSession.add_all(groups)
-
-    return HTTPOk()
 
 
 @view_config(

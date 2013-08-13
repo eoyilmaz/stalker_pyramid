@@ -101,6 +101,7 @@ def main(global_config, **settings):
     config.add_route('dialog_upload_entity_reference', 'entities/{id}/references/upload/dialog')
 
     config.add_route('create_entity_users_dialog',     'entities/{id}/users/create/dialog')
+
     config.add_route('append_users_to_entity_dialog',  'entities/{id}/users/append/dialog')
     config.add_route('append_users_to_entity',         'entities/{id}/users/append')
 
@@ -240,13 +241,12 @@ def main(global_config, **settings):
     config.add_route('dialog_create_vacation','users/{id}/vacations/create/dialog')
 
     config.add_route('append_user_to_departments_dialog', 'users/{id}/departments/append/dialog')
-    config.add_route('append_user_to_groups_dialog',      'users/{id}/groups/append/dialog')
-    config.add_route('append_user_to_entity_dialog',      'users/{id}/entity/append/dialog')
-
-    config.add_route('append_user_to_group',       'users/{uid}/groups/{gid}/append')
-    config.add_route('append_user_to_groups',      'users/{id}/groups/append')
-    config.add_route('append_user_to_department',  'users/{uid}/department/{did}/append')
     config.add_route('append_user_to_departments', 'users/{id}/departments/append')
+    config.add_route('append_user_to_department',  'users/{uid}/department/{did}/append') # unused
+
+    config.add_route('append_user_to_groups_dialog', 'users/{id}/groups/append/dialog')
+    config.add_route('append_user_to_groups', 'users/{id}/groups/append')
+    config.add_route('append_user_to_group',  'users/{uid}/groups/{gid}/append')# unused
 
     config.add_route('create_user',           'users/create')
     config.add_route('update_user',           'users/{id}/update')

@@ -28,7 +28,8 @@
 
                 </td>
                 <td>
-                    <h4>{% for parent in task.parents %}{{ parent.name }} | {% endfor %}{{ task.name }}</h4>
+                    <h4>{% for parent in task.parents %}{{ parent.name }}
+                        | {% endfor %}{{ task.name }}</h4>
                 </td>
             </tr>
 
@@ -219,30 +220,34 @@ require([
         required: true,
         datePattern: 'dd-mm-yyyy',
         style: 'width: 90px;',
-        {#        onChange: function () {#}
-        {#            if (this.focused) {#}
-        {#                update_hours_to_complete();#}
-        {#            }#}
-        {#        }#}
+        onChange: function () {
+            if (this.focused) {
+                update_hours_to_complete();
+            }
+        }
     }, 'time_log_start_date');
     start_dateTextBox.startup();
 
     // Time
     var start_time_timeTextBox = new TimeTextBox({
         name: 'start_time',
-{#        value: start_time_value,#}
+        {#        value: start_time_value,#}
         style: 'width: 85px;',
         constraints: {
             timePattern: 'HH:mm:ss',
             clickableIncrement: 'T01:00:00',
             visibleIncrement: 'T01:00:00',
             visibleRange: 'T01:00:00'
+        },
+        onChange: function () {
+            if (this.focused) {
+                update_hours_to_complete();
+            }
         }
     }, 'time_log_start_time');
     start_time_timeTextBox.startup();
 
     start_time_timeTextBox.set('value', start_time_value);
-
 
 
     // ****************************************************************
@@ -256,18 +261,18 @@ require([
         required: true,
         datePattern: 'dd-mm-yyyy',
         style: 'width: 90px;',
-        {#        onChange: function () {#}
-        {#            if (this.focused) {#}
-        {#                update_hours_to_complete();#}
-        {#            }#}
-        {#        }#}
+        onChange: function () {
+            if (this.focused) {
+                update_hours_to_complete();
+            }
+        }
     }, 'time_log_end_date');
     end_dateTextBox.startup();
 
     // Time
     var end_time_timeTextBox = new TimeTextBox({
         name: 'end_time',
-{#        value: end_time_value,#}
+        {#        value: end_time_value,#}
         style: 'width: 85px',
         constraints: {
             timePattern: 'HH:mm:ss',
@@ -324,6 +329,8 @@ require([
         var total_logged_seconds = {{ task.total_logged_seconds }};
         var remaining_seconds = {{ task.remaining_seconds }};
 
+
+
         // get the time difference from interface
         var start_date = new Date(start_dateTextBox.value);
         var end_date = new Date(end_dateTextBox.value);
@@ -336,6 +343,13 @@ require([
 
         var timing_resolution = 3600000; // 1 hour
         var duration_millis = end_date.getTime() - start_date.getTime();
+
+        {% if mode == 'UPDATE' %}
+
+            duration_millis -=  (end_date_value.getTime() - start_date_value.getTime());
+
+        {% endif %}
+
         // round the duration millis
         duration_millis = (((duration_millis + timing_resolution * 0.5) / timing_resolution) >> 0 ) * timing_resolution;
         var duration_seconds = duration_millis / 1000;
@@ -367,21 +381,18 @@ require([
 
             // first warn the user about their negative remaining hours
             if (hours_to_complete_numberSpinner.value < 0) {
-              var strconfirm = confirm('You are reporting \n\n' +
+                var strconfirm = confirm('You are reporting \n\n' +
                         Math.abs(hours_to_complete_numberSpinner.value) +
                         ' extra hours');
-              if (strconfirm == false)
-              {
-                  console.debug('strconfirm');
-                  return false;
-              }
-{#                alert('You are reporting \n\n' +#}
-{#                        Math.abs(hours_to_complete_numberSpinner.value) +#}
-{#                        ' extra hours'#}
-{#                );#}
+                if (strconfirm == false) {
+                    console.debug('strconfirm');
+                    return false;
+                }
+                {#                alert('You are reporting \n\n' +#}
+                {#                        Math.abs(hours_to_complete_numberSpinner.value) +#}
+                {#                        ' extra hours'#}
+                {#                );#}
             }
-
-
 
 
             // merge start_date and start_time

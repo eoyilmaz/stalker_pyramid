@@ -26,6 +26,11 @@ Stalker Pyramid Changes
   be in the middle of the view.
 * **Update:** GanttColumn now shows the width of the days/weeks correctly.
 * **New:** References are now shown in a dojox.image.LightBox dialog.
+* **Fix:** The bugs after RESTful service scheme in appending user to different
+   types of entity are fixed.
+* **Fix:** In TimeLog UI, when updating a time log the remaining hours is
+   calculated correctly by first adding the updated time log duration to the
+   remaining time. Thus the ui shows the correct value after update.
 
 0.1.0.b2
 ========

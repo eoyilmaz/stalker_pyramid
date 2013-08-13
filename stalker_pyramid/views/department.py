@@ -232,30 +232,7 @@ def get_entity_departments(request):
     ]
 
 
-@view_config(
-    route_name='append_departments'
-)
-def append_departments(request):
-    """appends the given department to the given User
-    """
-    # departments
-    department_ids = get_multi_integer(request, 'department_ids')
-    departments = Department.query.filter(
-        Department.id.in_(department_ids)).all()
 
-    # user
-    user_id = request.params.get('id', -1)
-    user = Entity.query.filter(User.id == user_id).first()
-
-    logger.debug('user : %s' % user)
-    logger.debug('departments  : %s' % departments)
-
-    if departments and user:
-        user.departments = departments
-        DBSession.add(user)
-        DBSession.add_all(departments)
-
-    return HTTPOk()
 
 
 
