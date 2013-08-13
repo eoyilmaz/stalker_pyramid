@@ -432,19 +432,19 @@ def get_permissions_from_multi_dict(multi_dict):
 
         else:
 
-            if access in ['Allow', 'Deny'] and \
-                class_name in all_class_names and \
-                action in all_actions:
+            # if access in ['Allow', 'Deny'] and \
+            #     class_name in all_class_names and \
+            #     action in all_actions:
 
-                # get permissions
-                permission = Permission.query \
-                    .filter_by(access=access) \
-                    .filter_by(action=action) \
-                    .filter_by(class_name=class_name) \
-                    .first()
+            # get permissions
+            permission = Permission.query \
+                .filter_by(access=access) \
+                .filter_by(action=action) \
+                .filter_by(class_name=class_name) \
+                .first()
 
-                if permission:
-                    permissions.append(permission)
+            if permission:
+                permissions.append(permission)
 
     logger.debug(permissions)
     return permissions
