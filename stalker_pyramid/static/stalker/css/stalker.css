@@ -18,6 +18,7 @@
 */
 
 @import '../../dgrid/css/dgrid.css';
+@import "../../dojox/image/resources/Lightbox.css";
 
 
 html, body {

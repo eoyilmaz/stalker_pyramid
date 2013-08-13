@@ -269,13 +269,13 @@ define([
             var table_width = number_of_days * (one_day_width + 1); // add 1px per day for border (ugly!)
             column.scale = (column.end - column.start) / table_width;
 
-            console.debug('column.start           : ', column.start);
-            console.debug('column.end             : ', column.end);
-            console.debug('column.scale (norm)    : ', column.scale);
-            console.debug('number of days         : ', number_of_days);
-            console.debug('one week width         : ', one_week_width);
-            console.debug('one day width          : ', one_day_width);
-            console.debug('table_width            : ', table_width);
+//            console.debug('column.start           : ', column.start);
+//            console.debug('column.end             : ', column.end);
+//            console.debug('column.scale (norm)    : ', column.scale);
+//            console.debug('number of days         : ', number_of_days);
+//            console.debug('one week width         : ', one_week_width);
+//            console.debug('one day width          : ', one_day_width);
+//            console.debug('table_width            : ', table_width);
 
             // fix scrolling
             column.grid.addCssRule(".dgrid-column-chart", "width: " + table_width + "px");

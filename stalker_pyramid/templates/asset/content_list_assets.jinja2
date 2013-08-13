@@ -30,8 +30,7 @@
 
 <script type='text/javascript'>
 require([
-    "dojo/_base/declare",
-    'dojo/aspect',
+    'dojo/_base/declare',
     'dojo/data/ObjectStore',
     'dojo/store/Memory',
     'dojo/store/JsonRest',
@@ -54,7 +53,7 @@ require([
     'stalker/dialogCaller',
     'stalker/dialogCreator',
     'dojo/domReady!'
-], function (declare, aspect, ObjectStore, Memory, JsonRest, registry, Select,
+], function (declare, ObjectStore, Memory, JsonRest, registry, Select,
              Menu, MenuItem, MenuSeparator, List,  Grid, Selection, Keyboard,
              ColumnResizer, editor, fieldUpdater, dialogs, dialogCaller,
              dialogCreator) {
@@ -212,14 +211,6 @@ require([
 
         });
     }
-
-    var content_pane = registry.byId('assets_content_pane');
-
-    aspect.after(content_pane, "resize", function () {
-        console.log('asset_data_grid.resize();');
-        asset_data_grid.resize();
-
-    });
 
 });
 </script>

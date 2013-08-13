@@ -31,8 +31,8 @@
 
 <script type='text/javascript'>
     require([
-        "dojo/_base/declare",
-        'dojo/aspect',
+        'dojo/_base/declare',
+        'dojo/_base/lang',
         'dojo/data/ObjectStore',
         'dojo/store/JsonRest',
         'dojo/store/Memory',
@@ -43,27 +43,41 @@
         'dijit/MenuSeparator',
         'dijit/form/Select',
 
-        "dgrid/List",
-        "dgrid/Grid",
-        "dgrid/Selection",
-        "dgrid/Keyboard",
-        'dgrid/extensions/ColumnResizer',
-        "dgrid/editor",
+        'dojox/image/Lightbox',
+
+        'dgrid/List',
+        'dgrid/Grid',
+        'dgrid/Selection',
+        'dgrid/Keyboard',
+        "dgrid/extensions/ColumnResizer",
+        'dgrid/editor',
 
         'stalker/fieldUpdater',
         'stalker/dialogs',
         'stalker/dialogCaller',
         'dojo/domReady!'
-    ], function (declare, aspect, ObjectStore, JsonRest, Memory, registry,
-                 Menu, MenuItem, MenuSeparator, Select, List, Grid, Selection,
-                 Keyboard, ColumnResizer, editor, fieldUpdater, dialogs,
-                 dialogCaller) {
+    ], function (declare, lang, ObjectStore, JsonRest, Memory, registry,
+                 Menu, MenuItem, MenuSeparator, Select, Lightbox, List, Grid,
+                 Selection, Keyboard, ColumnResizer, editor, fieldUpdater,
+                 dialogs, dialogCaller) {
 
         var StandardGrid = declare([Grid, Selection, Keyboard, ColumnResizer]);
         var reference_data_grid = new StandardGrid({
             id: 'references_data_grid',
             width: '100%',
-            autoHeight: true
+            autoHeight: true,
+            cellNavigation: false,
+            keyMap: lang.mixin({}, Keyboard.defaultKeyMap, {
+                13: function(args){
+                    // TODO: show the image when user hits enter/return
+                    // try to get the link to the image
+{#                    if (this.selection){#}
+{#                        var id = this.selection[0];#}
+{#                        console.debug(id);#}
+{#                        console.debug(this);#}
+{#                    }#}
+                }
+            })
         }, 'references_data_grid');
 
         {% if has_permission('Create_Link') %}
@@ -88,9 +102,7 @@
             });
 
             reference_memory.query().then(function (data) {
-
                 referenceData = data;
-
                 var columns = [
                     {
                         label: "Thumbnail",
@@ -100,13 +112,11 @@
                             return object; // return entire item for formatter to use
                         },
                         formatter: function (object) {
-
                             var path = '{{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_shot.png") }}';
                             if (object.thumbnail) {
                                 path = object.thumbnail;
                             }
                             return '<img width= "60px"; src="' + path + '">';
-
                         }
                     },
                     {
@@ -116,7 +126,7 @@
                             return object; // return entire item for formatter to use
                         },
                         formatter: function (object) {
-                            return '<a href="' + object.full_path + '">' + object.original_filename + '</a>';
+                            return templates.referenceLink(object);
                         }
                     },
                     {
@@ -155,15 +165,6 @@
         }
 
         reference_data_grid_updater();
-
-        var content_pane = registry.byId('references_content_pane');
-
-        aspect.after(content_pane, "resize", function () {
-
-            console.log('reference_data_grid.resize();');
-            reference_data_grid.resize();
-
-        });
 
     });
 </script>

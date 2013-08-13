@@ -61,6 +61,10 @@ logger.setLevel(logging.DEBUG)
     renderer='templates/ticket/content_list_tickets.jinja2'
 )
 @view_config(
+    route_name='list_task_tickets',
+    renderer='templates/ticket/content_list_tickets.jinja2'
+)
+@view_config(
     route_name='list_projects',
     renderer='templates/project/content_list_projects.jinja2'
 )

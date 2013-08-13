@@ -24,7 +24,6 @@ define([
             //    39 - right
             //    40 - down
             39: function () { // right arrow
-                // do something with key right
                 var obj;
                 for (obj in this.selection) {
                     this.expand(obj, true);
@@ -33,11 +32,7 @@ define([
             37: function () {  // left arrow
                 var obj;
                 for (obj in this.selection) {
-//                    if (obj.hasChildren) {
                         this.expand(obj, false);
-//                    } else {
-//                        this.select(obj.parent);
-//                    }
                 }
             },
             65: function () { // "a"
