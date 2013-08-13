@@ -177,6 +177,16 @@
             // Delete
             // 
 
+            {# PROJECT MENU #}
+            var project_taskbar_menu = new Menu({
+                targetNodeIds: ['{{ entity.entity_type }}_{{ entity.id }}_gantt'],
+                selector: '.projectContextMenu'
+            });
+
+            var project_taskrow_menu = new Menu({
+                targetNodeIds: ['{{ entity.entity_type }}_{{ entity.id }}_gantt'],
+                selector: '.projectEditRow'
+            });
 
             {# PARENT TASK MENU #}
             var parent_taskbar_menu = new Menu({
@@ -206,7 +216,7 @@
             {# SCROLL TO TASK #}
             var scroll_to_task_creator = function(){
                 return new MenuItem({
-                    label: 'Scroll To Task',
+                    label: 'Scroll To',
                     onClick: function(){
                         var node = this.getParent().currentTarget;
                         // get start date
@@ -216,15 +226,17 @@
                     }
                 })
             };
-            leaf_taskbar_menu.addChild(scroll_to_task_creator());
+            project_taskbar_menu.addChild(scroll_to_task_creator());
+            project_taskrow_menu.addChild(scroll_to_task_creator());
             parent_taskbar_menu.addChild(scroll_to_task_creator());
-            leaf_taskrow_menu.addChild(scroll_to_task_creator());
             parent_taskrow_menu.addChild(scroll_to_task_creator());
+            leaf_taskbar_menu.addChild(scroll_to_task_creator());
+            leaf_taskrow_menu.addChild(scroll_to_task_creator());
 
             {# TASK SUMMARY #}
             var view_task_summary_menuItem_creator = function () {
                 return new MenuItem({
-                    label: 'View Task Summary',
+                    label: 'View Task',
                     onClick: function () {
                         var node = this.getParent().currentTarget;
                         // get task id
@@ -240,21 +252,40 @@
                 });
             };
 
-            leaf_taskbar_menu.addChild(view_task_summary_menuItem_creator());
             parent_taskbar_menu.addChild(view_task_summary_menuItem_creator());
-            leaf_taskrow_menu.addChild(view_task_summary_menuItem_creator());
             parent_taskrow_menu.addChild(view_task_summary_menuItem_creator());
+            leaf_taskbar_menu.addChild(view_task_summary_menuItem_creator());
+            leaf_taskrow_menu.addChild(view_task_summary_menuItem_creator());
+
+            var view_project_summary_menuItem_creator = function () {
+                return new MenuItem({
+                    label: 'View Project',
+                    onClick: function () {
+                        var node = this.getParent().currentTarget;
+                        // get task id
+                        var dataId = node.getAttribute('dataId');
+
+                        var contentPane = registry.byId('central_content');
+                        contentPane.set(
+                                'href',
+                                'projects/' + dataId + '/view'
+                        );
+                        contentPane.refresh();
+                    }
+                });
+            };
+            project_taskbar_menu.addChild(view_project_summary_menuItem_creator());
+            project_taskrow_menu.addChild(view_project_summary_menuItem_creator());
 
             {% if has_permission('Update_Task') %}
-
                 parent_taskbar_menu.addChild(new MenuSeparator());
-                leaf_taskbar_menu.addChild(new MenuSeparator());
                 parent_taskrow_menu.addChild(new MenuSeparator());
+                leaf_taskbar_menu.addChild(new MenuSeparator());
                 leaf_taskrow_menu.addChild(new MenuSeparator());
 
                 var update_task_menuItem_creator = function () {
                     return new MenuItem({
-                        label: 'Update Task',
+                        label: 'Update...',
                         onClick: function () {
 
                             var node = this.getParent().currentTarget;
@@ -276,20 +307,70 @@
                 };
 
                 parent_taskbar_menu.addChild(update_task_menuItem_creator());
-                leaf_taskbar_menu.addChild(update_task_menuItem_creator());
                 parent_taskrow_menu.addChild(update_task_menuItem_creator());
+                leaf_taskbar_menu.addChild(update_task_menuItem_creator());
                 leaf_taskrow_menu.addChild(update_task_menuItem_creator());
             {% endif %}
 
-            {% if has_permission('Create_Task') %}
-                var create_child_task_menuItem_creator = function () {
+            {% if has_permission('Update_Project') %}
+                project_taskbar_menu.addChild(new MenuSeparator());
+                project_taskrow_menu.addChild(new MenuSeparator());
+
+                var update_project_menuItem_creator = function () {
                     return new MenuItem({
-                        label: 'Create Child Task',
+                        label: 'Update...',
+                        onClick: function () {
+
+                            var node = this.getParent().currentTarget;
+                            var dataId = node.getAttribute('dataId');
+
+                            // create and call update_task dialog
+                            var dialog = dialogCreator({
+                                dialog_id: 'project_dialog',
+                                data_id: dataId,
+                                content_creator: dialogs.update_project_dialog,
+                                related_field_updater: gantt_column.refresh
+                            });
+
+                            dialog.show();
+                        }
+                    });
+                };
+
+                project_taskbar_menu.addChild(update_project_menuItem_creator());
+                project_taskrow_menu.addChild(update_project_menuItem_creator());
+            {% endif %}
+
+
+            {% if has_permission('Create_Task') %}
+                var create_project_task_menuItem_creator = function () {
+                    return new MenuItem({
+                        label: 'Create Child Task...',
                         onClick: function () {
                             var node = this.getParent().currentTarget;
                             var dataId = node.getAttribute('dataId');
 
-                            {#                                        saveGanttOnServer().then(function(){#}
+                            var dialog = dialogCreator({
+                                dialog_id: 'task_dialog',
+                                data_id: dataId,
+                                content_creator: dialogs.create_task_dialog,
+                                related_field_updater: gantt_column.refresh
+                            });
+
+                            dialog.show();
+                        }
+                    });
+                };
+                project_taskbar_menu.addChild(create_project_task_menuItem_creator());
+                project_taskrow_menu.addChild(create_project_task_menuItem_creator());
+
+                var create_child_task_menuItem_creator = function () {
+                    return new MenuItem({
+                        label: 'Create Child Task...',
+                        onClick: function () {
+                            var node = this.getParent().currentTarget;
+                            var dataId = node.getAttribute('dataId');
+
                             var dialog = dialogCreator({
                                 dialog_id: 'task_dialog',
                                 data_id: dataId,
@@ -298,20 +379,18 @@
                             });
 
                             dialog.show();
-                            {#                                        });#}
                         }
                     });
                 };
 
                 parent_taskbar_menu.addChild(create_child_task_menuItem_creator());
-                leaf_taskbar_menu.addChild(create_child_task_menuItem_creator());
                 parent_taskrow_menu.addChild(create_child_task_menuItem_creator());
+                leaf_taskbar_menu.addChild(create_child_task_menuItem_creator());
                 leaf_taskrow_menu.addChild(create_child_task_menuItem_creator());
-
 
                 var create_dependent_task_menuItem_creator = function () {
                     return new MenuItem({
-                        label: 'Create Dependent Task',
+                        label: 'Create Dependent Task...',
                         onClick: function () {
                             var node = this.getParent().currentTarget;
                             var dataId = node.getAttribute('dataId');
@@ -331,8 +410,8 @@
                 };
 
                 parent_taskbar_menu.addChild(create_dependent_task_menuItem_creator());
-                leaf_taskbar_menu.addChild(create_dependent_task_menuItem_creator());
                 parent_taskrow_menu.addChild(create_dependent_task_menuItem_creator());
+                leaf_taskbar_menu.addChild(create_dependent_task_menuItem_creator());
                 leaf_taskrow_menu.addChild(create_dependent_task_menuItem_creator());
 
             {% endif %}
@@ -341,7 +420,7 @@
             {% if has_permission('Create_TimeLog') %}
                 var create_time_log_menuItem_creator = function () {
                     return new MenuItem({
-                        label: 'Create TimeLog',
+                        label: 'Create TimeLog...',
                         onClick: function () {
                             var node = this.getParent().currentTarget;
                             var dataId = node.getAttribute('dataId');
@@ -405,10 +484,9 @@
 
             {# Duplicate Task Hierarchy #}
             {% if has_permission('Create_Task') %}
-
                 parent_taskbar_menu.addChild(new MenuSeparator());
-                leaf_taskbar_menu.addChild(new MenuSeparator());
                 parent_taskrow_menu.addChild(new MenuSeparator());
+                leaf_taskbar_menu.addChild(new MenuSeparator());
                 leaf_taskrow_menu.addChild(new MenuSeparator());
 
 
@@ -443,19 +521,16 @@
                 };
 
                 parent_taskbar_menu.addChild(duplicate_task_hierarchy_menuItem_creator());
-                leaf_taskbar_menu.addChild(duplicate_task_hierarchy_menuItem_creator());
                 parent_taskrow_menu.addChild(duplicate_task_hierarchy_menuItem_creator());
+                leaf_taskbar_menu.addChild(duplicate_task_hierarchy_menuItem_creator());
                 leaf_taskrow_menu.addChild(duplicate_task_hierarchy_menuItem_creator());
-
             {% endif %}
 
             {% if has_permission('Delete_Task') %}
-
                 parent_taskbar_menu.addChild(new MenuSeparator());
-                leaf_taskbar_menu.addChild(new MenuSeparator());
                 parent_taskrow_menu.addChild(new MenuSeparator());
+                leaf_taskbar_menu.addChild(new MenuSeparator());
                 leaf_taskrow_menu.addChild(new MenuSeparator());
-
 
                 var delete_task_menuItem_creator = function () {
                     return new MenuItem({
@@ -464,17 +539,15 @@
                 };
 
                 parent_taskbar_menu.addChild(delete_task_menuItem_creator());
-                leaf_taskbar_menu.addChild(delete_task_menuItem_creator());
                 parent_taskrow_menu.addChild(delete_task_menuItem_creator());
+                leaf_taskbar_menu.addChild(delete_task_menuItem_creator());
                 leaf_taskrow_menu.addChild(delete_task_menuItem_creator());
-
             {% endif %}
 
             leaf_taskbar_menu.startup();
-            parent_taskbar_menu.startup();
             leaf_taskrow_menu.startup();
+            parent_taskbar_menu.startup();
             parent_taskrow_menu.startup();
-
 
         };
 

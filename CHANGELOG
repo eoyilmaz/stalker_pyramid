@@ -30,6 +30,7 @@ Stalker Pyramid Changes
   unknown access, action and class_name entries.
 * **Fix:** Fixed Gantt Chart not showing completed parent tasks id column with
   a in green background.
+* **New:** Added menu for Projects in Gantt Chart.
 
 0.1.0.b2
 ========
