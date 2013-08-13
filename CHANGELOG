@@ -28,6 +28,8 @@ Stalker Pyramid Changes
 * **New:** References are now shown in a dojox.image.LightBox dialog.
 * **Fix:** Fixed **get_permissions_from_multi_dict()**, it is now skipping
   unknown access, action and class_name entries.
+* **Fix:** Fixed Gantt Chart not showing completed parent tasks id column with
+  a in green background.
 
 0.1.0.b2
 ========

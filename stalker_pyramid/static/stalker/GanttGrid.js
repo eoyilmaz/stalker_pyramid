@@ -32,7 +32,7 @@ define([
             37: function () {  // left arrow
                 var obj;
                 for (obj in this.selection) {
-                        this.expand(obj, false);
+                    this.expand(obj, false);
                 }
             },
             65: function () { // "a"
@@ -53,12 +53,9 @@ define([
                             return object;
                         },
                         formatter: function (object) {
-                            var progress = 0, bg_color, font_weight, p_complete;
+                            var p_complete = 0, bg_color, font_weight;
 
-                            // TODO: Fix this, and use the total_logged_seconds also for parent tasks
-                            if (!object.hasChildren) {
-                                p_complete = object.total_logged_seconds / object.schedule_seconds * 100;
-                            }
+                            p_complete = Math.max(object.total_logged_seconds / object.schedule_seconds * 100, 100);
 
                             bg_color = p_complete >= 100 ? 'rgb(153, 255, 51)' : 'red';
                             font_weight = 'normal';
