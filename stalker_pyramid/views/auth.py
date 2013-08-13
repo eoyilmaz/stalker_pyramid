@@ -413,7 +413,7 @@ def get_permissions_from_multi_dict(multi_dict):
 
     # gather all access, actions, and class_names
     all_class_names = EntityType.query.all()
-    all_actions = defaults.actions,
+    all_actions = defaults.actions
 
     for key in multi_dict.keys():
         access = multi_dict[key]
