@@ -58,14 +58,14 @@ define([
                             return object;
                         },
                         formatter: function (object) {
-                            var progress = 0, bg_color, font_weight;
+                            var progress = 0, bg_color, font_weight, p_complete;
 
                             // TODO: Fix this, and use the total_logged_seconds also for parent tasks
                             if (!object.hasChildren) {
-                                progress = object.schedule_seconds > 0 ? object.total_logged_seconds / object.schedule_seconds * 100 : 0;
+                                p_complete = object.total_logged_seconds / object.schedule_seconds * 100;
                             }
 
-                            bg_color = progress >= 100 ? 'rgb(153, 255, 51)' : 'red';
+                            bg_color = p_complete >= 100 ? 'rgb(153, 255, 51)' : 'red';
                             font_weight = 'normal';
 
                             return '<div ' +
