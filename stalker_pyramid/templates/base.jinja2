@@ -109,21 +109,37 @@
 
 
 {% raw %}
+
+<script id="tmpl_projectEditRow" type="text/x-dot-template">
+    <div class="projectEditRow"
+        dataId="{{=it.id}}"
+        name="{{=it.name}}"
+        start={{=it.start}}
+        end={{=it.end}}
+        type="{{=it.type}}"
+        hasChildren={{=it.hasChildren}}>{{=it.name}} ({{=it.type}})</div>
+</script>
+
+
 <script id="tmpl_projectBar" type="text/x-dot-template">
     <div class="projectBox" projectId="{{=it.id}}" >
         <div class="layout">
             <div class="projectLabel">{{=it.link()}}</div>
+            <div class="projectContextMenu" dataId="{{=it.id}}"></div>
         </div>
     </div>
 </script>
+
+
+
+
 
 <script id="tmpl_taskBar" type="text/x-dot-template">
     <div class="taskBox" dataId="{{=it.id}}">
         <div class="layout {{=it.hasExternalDep?'extDep':''}}">
             <div class="taskProgress" style="width:{{=it.progress > 100 ? 100 : it.progress }}%;"></div>
             <div class="taskExtraTiming" style="width:{{=(it.schedule_timing - it.bid_timing)/it.schedule_timing*100}}%;"></div>
-            <div class="taskScheduleModel"
-               style="position: absolute; text-align: center; width: 100%;">
+            <div class="taskScheduleModel">
                {{=it.schedule_model.toUpperCase()[0]}}: {{=it.schedule_timing}}{{=it.schedule_unit}}
             </div>
             <div class="taskLabel">{{=it.link()}}</div>
@@ -202,8 +218,8 @@
 </table>
 </script>
 
-<script id="tmpl_taskEditNameRow" type="text/x-dot-template">
-    <div class="{{=it.contextMenuClass}}" style="font-weight: {{=it.font_weight}}"
+<script id="tmpl_taskEditRow" type="text/x-dot-template">
+    <div class="{{=it.contextMenuClass}}"
         dataId="{{=it.id}}"
         name="{{=it.name}}"
         start={{=it.start}}
@@ -215,6 +231,18 @@
         {{ } }}
         hasChildren={{=it.hasChildren}}>{{=it.name}} ({{=it.type}})</div>
 </script>
+
+
+<script id="tmpl_parentTaskEditRow" type="text/x-dot-template">
+    <div class="{{=it.contextMenuClass}}"
+        dataId="{{=it.id}}"
+        name="{{=it.name}}"
+        start={{=it.start}}
+        end={{=it.end}}
+        type="{{=it.type}}"
+        hasChildren={{=it.hasChildren}}>{{=it.name}} ({{=it.type}})</div>
+</script>
+
 
 <script id="tmpl_parentTaskBar" type="text/x-dot-template">
     <div class="parentTaskBox" dataId="{{=it.id}}">
@@ -311,11 +339,14 @@
     templates.parentTaskBar = doT.template(document.getElementById('tmpl_parentTaskBar').text);
     templates.taskBar = doT.template(document.getElementById('tmpl_taskBar').text);
 
+    templates.projectEditRow = doT.template(document.getElementById('tmpl_projectEditRow').text);
+    templates.parentTaskEditRow = doT.template(document.getElementById('tmpl_parentTaskEditRow').text);
+    templates.taskEditRow = doT.template(document.getElementById('tmpl_taskEditRow').text);
+
     templates.projectLink = doT.template(document.getElementById('tmpl_projectLink').text);
     templates.taskLink = doT.template(document.getElementById('tmpl_taskLink').text);
     templates.resourceLink = doT.template(document.getElementById('tmpl_resourceLink').text);
 
-    templates.taskEditNameRow = doT.template(document.getElementById('tmpl_taskEditNameRow').text);
 
     templates.leafTaskToolTip = doT.template(document.getElementById('tmpl_leafTaskToolTip').text);
     

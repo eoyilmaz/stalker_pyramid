@@ -276,8 +276,12 @@ def convert_to_dgrid_gantt_task_format(tasks):
             'bid_timing': task.bid_timing,
             'bid_unit': task.bid_unit,
             'completed': task.total_logged_seconds / task.schedule_seconds,
-            'dependencies': [dep.id for dep in task.depends],
-            'descripion': task.description,
+            'dependencies': [
+                {
+                    'id': dep.id,
+                    'name': dep.name
+                } for dep in task.depends],
+            'description': task.description,
             'end': milliseconds_since_epoch(
                 task.computed_end if task.computed_end else task.end),
             'hasChildren': task.is_container,

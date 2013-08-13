@@ -32,7 +32,7 @@ define([
             37: function () {  // left arrow
                 var obj;
                 for (obj in this.selection) {
-                        this.expand(obj, false);
+                    this.expand(obj, false);
                 }
             },
             65: function () { // "a"
@@ -53,20 +53,14 @@ define([
                             return object;
                         },
                         formatter: function (object) {
-                            var progress = 0, bg_color, font_weight, p_complete;
+                            var p_cmpl, p_cmpl_r, bg_color, font_weight;
 
-                            // TODO: Fix this, and use the total_logged_seconds also for parent tasks
-                            if (!object.hasChildren) {
-                                p_complete = object.total_logged_seconds / object.schedule_seconds * 100;
-                            }
+                            p_cmpl = object.total_logged_seconds / object.schedule_seconds * 100;
+                            p_cmpl_r = (Math.floor(p_cmpl / 10) * 10).toFixed(0);
 
-                            bg_color = p_complete >= 100 ? 'rgb(153, 255, 51)' : 'red';
                             font_weight = 'normal';
 
-                            return '<div ' +
-                                'style="' +
-                                'font-weight: ' + font_weight + ';' +
-                                'background-color: ' + bg_color + '">' +
+                            return '<div class="percentComplete' + p_cmpl_r + '">' +
                                 object.id + '</div>';
                         },
                         resizable: true
@@ -79,14 +73,17 @@ define([
                                 return object;
                             },
                             formatter: function (object) {
+                                
+                                var template = templates.taskEditRow;
                                 var template_var = {};
-
                                 template_var.font_weight = object.hasChildren ? 'bold' : 'normal';
                                 template_var.contextMenuClass = 'taskEditRow';
                                 if (object.type === 'Project') {
-                                    template_var.contextMenuClass = '';
+                                    template = templates.projectEditRow;
+                                    template_var.contextMenuClass = 'projectEditRow';
                                 } else {
                                     if (object.hasChildren) {
+                                        template = templates.parentTaskEditRow;
                                         template_var.contextMenuClass = 'parentTaskEditRow';
                                     } else {
                                         template_var.responsible = {
@@ -103,7 +100,7 @@ define([
                                 template_var.end = object.end;
                                 template_var.type = object.type;
 
-                                return templates.taskEditNameRow(template_var);
+                                return template(template_var);
                             }
                         }
                     ),

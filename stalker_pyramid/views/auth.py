@@ -509,8 +509,11 @@ def get_permissions_from_multi_dict(multi_dict):
     permissions = []
 
     # gather all access, actions, and class_names
-    all_class_names = EntityType.query.all()
+    all_class_names = [entity_type.name for entity_type in EntityType.query.all()]
     all_actions = defaults.actions
+
+    logger.debug(all_class_names)
+    logger.debug(all_actions)
 
     for key in multi_dict.keys():
         access = multi_dict[key]
@@ -520,9 +523,9 @@ def get_permissions_from_multi_dict(multi_dict):
             action = action_and_class_name[0]
             class_name = action_and_class_name[1]
 
-            # logger.debug('access     : %s' % access)
-            # logger.debug('action     : %s' % action)
-            # logger.debug('class_name : %s' % class_name)
+            logger.debug('access     : %s' % access)
+            logger.debug('action     : %s' % action)
+            logger.debug('class_name : %s' % class_name)
 
         except IndexError:
             continue
@@ -539,14 +542,11 @@ def get_permissions_from_multi_dict(multi_dict):
                     .filter_by(action=action) \
                     .filter_by(class_name=class_name) \
                     .first()
-                logger.debug('access     : %s' % access)
-                logger.debug('action     : %s' % action)
-                logger.debug('class_name : %s' % class_name)
-
+    
                 if permission:
                     permissions.append(permission)
 
-    # logger.debug(permissions)
+    logger.debug(permissions)
     return permissions
 
 

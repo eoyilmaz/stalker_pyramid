@@ -7,6 +7,20 @@
     z-index: 100;
 }
 
+.taskScheduleModel {
+    position: absolute; text-align: center; width: 100%;
+}
+
+
+.projectEditRow {
+    font-weight: bold;
+}
+
+.parentTaskEditRow {
+    font-weight: bold;
+}
+
+
 /*PROJECT BOX*/
 .projectBox {
     position: absolute;
@@ -441,3 +455,29 @@ width: 60%;
 /*.gantt .dgrid-cell-padding {*/
 /*padding: 0px;*/
 /*}*/
+
+.project {
+    font-weight: bold;
+}
+
+.parent {
+    font-weight: bold;
+}
+
+.percentComplete0 {
+    background-color: red
+}
+
+.percentComplete10, .percentComplete20, .percentComplete30,
+.percentComplete40 {
+    background-color: darkorange;
+}
+
+.percentComplete50, .percentComplete60, .percentComplete70, .percentComplete80,
+.percentComplete90 {
+    background-color: yellow;
+}
+
+.percentComplete100 {
+    background-color: rgb(153, 255, 51);
+}
