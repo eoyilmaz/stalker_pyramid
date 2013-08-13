@@ -241,6 +241,7 @@ def main(global_config, **settings):
 
     config.add_route('append_user_to_departments_dialog', 'users/{id}/departments/append/dialog')
     config.add_route('append_user_to_groups_dialog',      'users/{id}/groups/append/dialog')
+    config.add_route('append_user_to_entity_dialog',      'users/{id}/entity/append/dialog')
 
     config.add_route('append_user_to_group',       'users/{uid}/groups/{gid}/append')
     config.add_route('append_user_to_groups',      'users/{id}/groups/append')

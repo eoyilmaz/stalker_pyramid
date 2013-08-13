@@ -778,7 +778,10 @@ def get_entity_groups(request):
         for group in sorted(entity.groups, key=lambda x: x.name.lower())
     ]
 
-
+@view_config(
+    route_name='append_user_to_entity_dialog',
+    renderer='templates/auth/dialog_append_user_to_entity.jinja2'
+)
 @view_config(
     route_name='append_user_to_groups_dialog',
     renderer='templates/auth/dialog_append_user_to_groups.jinja2'
