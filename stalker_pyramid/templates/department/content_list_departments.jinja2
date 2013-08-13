@@ -39,6 +39,7 @@
         "dgrid/Grid",
         "dgrid/Selection",
         "dgrid/Keyboard",
+        'dgrid/extensions/ColumnResizer',
         "dojo/_base/declare",
 
         'stalker/dialogs',
@@ -47,9 +48,10 @@
 
         'dojo/domReady!'
     ], function (Memory, JsonRest, ObjectStore, List, Grid, Selection,
-                 Keyboard, declare, dialogs, fieldUpdater, dialogCaller) {
+                 Keyboard, ColumnResizer, declare, dialogs, fieldUpdater,
+                 dialogCaller) {
 
-        var StandardGrid = declare([Grid, Selection, Keyboard]);
+        var StandardGrid = declare([Grid, Selection, Keyboard, ColumnResizer]);
         var departments_DataGrid = new StandardGrid({
             id: 'departments_data_grid',
             width: '100%',

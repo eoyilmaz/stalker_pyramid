@@ -9,32 +9,35 @@
 </div>
 <script type='text/javascript'>
     require([
-        'dijit/registry',
+        "dojo/_base/declare",
         'dojo/data/ObjectStore',
+        'dojo/store/Memory',
+        'dojo/store/JsonRest',
+
+        'dijit/registry',
+        'dijit/Menu',
+        'dijit/MenuItem',
+        'dijit/MenuSeparator',
+
         "dgrid/List",
         "dgrid/Grid",
         "dgrid/Selection",
         "dgrid/Keyboard",
-        "dojo/_base/declare",
+        'dgrid/extensions/ColumnResizer',
         "dgrid/editor",
-        'dojo/store/Memory',
-        'dojo/store/JsonRest',
-
-        'dijit/Menu',
-        'dijit/MenuItem',
-        'dijit/MenuSeparator',
 
         'stalker/fieldUpdater',
         'stalker/dialogs',
         'stalker/dialogCaller',
         'stalker/dialogCreator',
-        'dojo/domReady!'
-    ], function (registry, ObjectStore, List, Grid, Selection, Keyboard,
-                 declare, editor, Memory, JsonRest,Menu, MenuItem,
-                      MenuSeparator, fieldUpdater, dialogs, dialogCaller,
-                      dialogCreator) {
 
-        var StandardGrid = declare([Grid, Selection, Keyboard]);
+        'dojo/domReady!'
+    ], function (declare, ObjectStore, Memory, JsonRest, registry, Menu,
+                 MenuItem, MenuSeparator, List, Grid, Selection, Keyboard,
+                 ColumnResizer, editor, fieldUpdater, dialogs, dialogCaller,
+                 dialogCreator) {
+
+        var StandardGrid = declare([Grid, Selection, Keyboard, ColumnResizer]);
         var sequences_data_grid = new StandardGrid({
             id: 'sequences_data_grid',
             width: '100%',
@@ -60,7 +63,7 @@
             target: 'statuses/Sequence/'
         });
 
-        status_memory.query().then(function (data) {    
+        status_memory.query().then(function (data) {
             sequence_data_grid_updater();
         });
 
@@ -74,7 +77,7 @@
 
             sequence_memory.query().then(function (data) {
 
-              sequenceData = data;
+                sequenceData = data;
 
                 var columns = [
                     {
@@ -151,35 +154,35 @@
                 sequences_data_grid.renderArray(data);
                 sequences_data_grid.set('columns', columns);
 
-                 var right_click_menu = new Menu({
-                            targetNodeIds: ['sequences_data_grid'],
-                            selector: '.dgrid-row'
-                        });
+                var right_click_menu = new Menu({
+                    targetNodeIds: ['sequences_data_grid'],
+                    selector: '.dgrid-row'
+                });
 
-                        var create_update_sequence_menuItem_creator = function () {
-                            return new MenuItem({
-                                label: 'Update Sequence',
-                                onClick: function () {
-                                    var node = this.getParent().currentTarget;
-                                    var nodeId = node.getAttribute('id');
-                                    var rowId = sequences_data_grid.id + '-row-';
-                                    var sequenceId = sequenceData[parseInt(nodeId.substring(rowId.length, nodeId.length))].id;
+                var create_update_sequence_menuItem_creator = function () {
+                    return new MenuItem({
+                        label: 'Update Sequence',
+                        onClick: function () {
+                            var node = this.getParent().currentTarget;
+                            var nodeId = node.getAttribute('id');
+                            var rowId = sequences_data_grid.id + '-row-';
+                            var sequenceId = sequenceData[parseInt(nodeId.substring(rowId.length, nodeId.length))].id;
 
 
-                                    var dialog = dialogCreator({
-                                        dialog_id: 'sequence_dialog',
-                                        content_creator: dialogs.update_sequence_dialog,
-                                        related_field_updater: sequence_data_grid_updater,
-                                        data_id: sequenceId
-                                    });
-                                    dialog.show();
-
-                                }
+                            var dialog = dialogCreator({
+                                dialog_id: 'sequence_dialog',
+                                content_creator: dialogs.update_sequence_dialog,
+                                related_field_updater: sequence_data_grid_updater,
+                                data_id: sequenceId
                             });
-                        };
+                            dialog.show();
 
-                        right_click_menu.addChild(create_update_sequence_menuItem_creator());
-                        right_click_menu.startup();
+                        }
+                    });
+                };
+
+                right_click_menu.addChild(create_update_sequence_menuItem_creator());
+                right_click_menu.startup();
 
             });
         }

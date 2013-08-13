@@ -18,6 +18,7 @@
 */
 
 @import '../../dgrid/css/dgrid.css';
+@import "../../dojox/image/resources/Lightbox.css";
 
 
 html, body {
@@ -355,4 +356,8 @@ a:hover {
     height: 30;
     left: 10px;
 
+}
+
+#versions_data_grid .version_number {
+    width: 35px;
 }

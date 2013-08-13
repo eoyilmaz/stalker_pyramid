@@ -30,34 +30,35 @@
 
 <script type='text/javascript'>
 require([
-    'dijit/registry',
+    'dojo/_base/declare',
     'dojo/data/ObjectStore',
-    'dojo/aspect',
+    'dojo/store/Memory',
+    'dojo/store/JsonRest',
+
+    'dijit/registry',
+    'dijit/form/Select',
+    'dijit/Menu',
+    'dijit/MenuItem',
+    'dijit/MenuSeparator',
+
     "dgrid/List",
     "dgrid/Grid",
     "dgrid/Selection",
     "dgrid/Keyboard",
-    "dojo/_base/declare",
+    'dgrid/extensions/ColumnResizer',
     "dgrid/editor",
-    'dojo/store/Memory',
-    'dijit/form/Select',
-    'dojo/store/JsonRest',
-
-    'dijit/Menu',
-    'dijit/MenuItem',
-    'dijit/MenuSeparator',
 
     'stalker/fieldUpdater',
     'stalker/dialogs',
     'stalker/dialogCaller',
     'stalker/dialogCreator',
     'dojo/domReady!'
-], function (registry, ObjectStore, aspect, List, Grid, Selection, Keyboard,
-             declare, editor, Memory, Select, JsonRest, Menu, MenuItem,
-             MenuSeparator, fieldUpdater, dialogs, dialogCaller,
+], function (declare, ObjectStore, Memory, JsonRest, registry, Select,
+             Menu, MenuItem, MenuSeparator, List,  Grid, Selection, Keyboard,
+             ColumnResizer, editor, fieldUpdater, dialogs, dialogCaller,
              dialogCreator) {
 
-    var StandardGrid = declare([Grid, Selection, Keyboard]);
+    var StandardGrid = declare([Grid, Selection, Keyboard, ColumnResizer]);
     var asset_data_grid = new StandardGrid({
         id: 'assets_data_grid',
         width: '100%',
@@ -210,14 +211,6 @@ require([
 
         });
     }
-
-    var content_pane = registry.byId('assets_content_pane');
-
-    aspect.after(content_pane, "resize", function () {
-        console.log('asset_data_grid.resize();');
-        asset_data_grid.resize();
-
-    });
 
 });
 </script>

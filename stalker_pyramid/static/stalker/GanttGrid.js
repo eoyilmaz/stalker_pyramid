@@ -24,7 +24,6 @@ define([
             //    39 - right
             //    40 - down
             39: function () { // right arrow
-                // do something with key right
                 var obj;
                 for (obj in this.selection) {
                     this.expand(obj, true);
@@ -33,11 +32,7 @@ define([
             37: function () {  // left arrow
                 var obj;
                 for (obj in this.selection) {
-//                    if (obj.hasChildren) {
                         this.expand(obj, false);
-//                    } else {
-//                        this.select(obj.parent);
-//                    }
                 }
             },
             65: function () { // "a"
@@ -218,8 +213,8 @@ define([
                 {
                     chart: new GanttColumn({
                         scale: 4000000,
-                        start: new Date().getTime() - 15552000000,
-                        end: new Date().getTime() + 15552000000,
+                        start: new Date().clearTime().getTime() - 15552000000,
+                        end: new Date().clearTime().getTime() + 15552000000 + 86400000 - 1,
                         sortable: false
                     })
                 }

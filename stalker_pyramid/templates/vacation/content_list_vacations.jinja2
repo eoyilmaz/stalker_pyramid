@@ -28,6 +28,7 @@
 
 <script type='text/javascript'>
     require([
+        "dojo/_base/declare",
         'dojo/data/ObjectStore',
         'dojo/store/Memory',
         'dojo/store/JsonRest',
@@ -38,7 +39,7 @@
         "dgrid/OnDemandGrid",
         "dgrid/Selection",
         "dgrid/Keyboard",
-        "dojo/_base/declare",
+        'dgrid/extensions/ColumnResizer',
         "dgrid/editor",
 
         'dijit/Menu',
@@ -52,12 +53,12 @@
         'stalker/dialogCreator',
 
         'dojo/domReady!'
-    ], function (ObjectStore, Memory, JsonRest, aspect, selector, List, Grid,
-                 Selection, Keyboard, declare, editor, Menu, MenuItem,
-                 MenuSeparator, Button, dialogs, dialogCaller, dialogCreator) {
+    ], function (declare, ObjectStore, Memory, JsonRest, aspect, selector,
+                 List, Grid, Selection, Keyboard, ColumnResizer, editor, Menu,
+                 MenuItem, MenuSeparator, Button, dialogs, dialogCaller,
+                 dialogCreator) {
 
-
-        var StandardGrid = declare([Grid, Selection, Keyboard]);
+        var StandardGrid = declare([Grid, Selection, Keyboard, ColumnResizer]);
 
         var vacations_DataGrid = new StandardGrid({
             id: 'vacations_data_grid',

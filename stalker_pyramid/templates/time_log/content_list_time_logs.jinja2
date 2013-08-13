@@ -31,23 +31,22 @@
 
 <script type='text/javascript'>
 require([
+    'dojo/_base/declare',
     'dojo/data/ObjectStore',
     'dojo/store/Memory',
     'dojo/store/JsonRest',
-    'dojo/aspect',
 
     "dgrid/selector",
     "dgrid/List",
     "dgrid/OnDemandGrid",
     "dgrid/Selection",
     "dgrid/Keyboard",
-    "dojo/_base/declare",
+    'dgrid/extensions/ColumnResizer',
     "dgrid/editor",
 
     'dijit/Menu',
     'dijit/MenuItem',
     'dijit/MenuSeparator',
-
     'dijit/form/Button',
 
     'stalker/dialogs',
@@ -55,17 +54,16 @@ require([
     'stalker/dialogCreator',
 
     'dojo/domReady!'
-], function (ObjectStore, Memory, JsonRest, aspect, selector, List, Grid,
-             Selection, Keyboard, declare, editor, Menu, MenuItem,
+], function (declare, ObjectStore, Memory, JsonRest, selector, List,
+             Grid, Selection, Keyboard, ColumnResizer, editor, Menu, MenuItem,
              MenuSeparator, Button, dialogs, dialogCaller, dialogCreator) {
 
 
-    var StandardGrid = declare([Grid, Selection, Keyboard]);
+    var StandardGrid = declare([Grid, Selection, Keyboard, ColumnResizer]);
 
     var time_logs_DataGrid = new StandardGrid({
         id: 'time_logs_data_grid',
         width: '100%',
-        {#            autoHeight: true,#}
         selectionMode: 'single',
         cellNavigation: false,
         allowSelectAll: true
@@ -223,13 +221,6 @@ require([
     }
 
     time_logs_DataGrid_updater();
-
-
-    aspect.after(this, "resize", function () {
-        console.log('time_logs_DataGrid.resize();');
-        time_logs_DataGrid.resize();
-    });
-
 
 });
 </script>

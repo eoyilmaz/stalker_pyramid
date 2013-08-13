@@ -27,197 +27,197 @@
 </div>
 <script type='text/javascript'>
     require([
-        'dijit/registry',
+        "dojo/_base/declare",
         'dojo/data/ObjectStore',
+        'dojo/store/Memory',
+        'dojo/store/JsonRest',
+
+        'dijit/registry',
+        'dijit/Menu',
+        'dijit/MenuItem',
+        'dijit/MenuSeparator',
+
         "dgrid/List",
         "dgrid/Grid",
         "dgrid/Selection",
         "dgrid/Keyboard",
-        "dojo/_base/declare",
+        'dgrid/extensions/ColumnResizer',
         "dgrid/editor",
-        'dojo/store/Memory',
-        'dojo/store/JsonRest',
-
-        'dijit/Menu',
-        'dijit/MenuItem',
-        'dijit/MenuSeparator',
 
         'stalker/fieldUpdater',
         'stalker/dialogs',
         'stalker/dialogCaller',
         'stalker/dialogCreator',
-        'dojo/on',
-        'dojo/query',
-        'dojo/domReady!'],
-            function (registry, ObjectStore, List, Grid, Selection, Keyboard,
-                      declare, editor, Memory, JsonRest, Menu, MenuItem,
-                      MenuSeparator, fieldUpdater, dialogs, dialogCaller,
-                      dialogCreator, on, query) {
+        'dojo/domReady!'
+    ], function (declare, ObjectStore, Memory, JsonRest, registry, Menu,
+                 MenuItem, MenuSeparator, List, Grid, Selection, Keyboard,
+                 ColumnResizer, editor, fieldUpdater, dialogs, dialogCaller,
+                 dialogCreator) {
 
-                var StandardGrid = declare([Grid, Selection, Keyboard]);
-                var shots_data_grid = new StandardGrid({
-                    id: 'shots_data_grid',
-                    width: '100%',
-                    autoHeight: true
-                }, 'shots_data_grid');
+        var StandardGrid = declare([Grid, Selection, Keyboard, ColumnResizer]);
+        var shots_data_grid = new StandardGrid({
+            id: 'shots_data_grid',
+            width: '100%',
+            autoHeight: true
+        }, 'shots_data_grid');
 
-                {% if has_permission('Create_Shot') %}
-                    var create_shot_button = dialogCaller({
-                        label: 'New Shot',
-                        dialog_id: 'shot_dialog',
-                        content_creator: dialogs.create_shot_dialog,
-                        attach_to: 'list_shots_create_shot_button',
-                        related_field_updater: shot_data_grid_updater,
-                        data_id: '{{ entity.id }}'
-                    });
-                    create_shot_button.startup();
-                {% endif%}
-
-
-                var status_memory = new JsonRest({
-                    target: '{{ request.route_url('get_statuses_for', target_entity_type='Shot') }}'
-                });
-
-                status_memory.query().then(function (data) {
-                    shot_data_grid_updater();
-                });
-
-                var shotData;
-
-
-                function shot_data_grid_updater() {
-
-                    var shot_memory = new JsonRest({
-                        target: '{{ request.route_url('get_project_shots', id=entity.id) }}'
-                    });
-
-                    shot_memory.query().then(function (data) {
-
-                        shotData = data;
-                        var columns = [
-                            {
-                                label: "Thumbnail",
-                                field: 'thumbnail',
-                                sortable: false,
-                                get: function (object) {
-                                    return object; // return entire item for formatter to use
-                                },
-                                formatter: function (object) {
-
-                                    var path = '{{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_shot.png") }}';
-                                    if (object.thumbnail_path) {
-                                        path = object.thumbnail_path;
-                                    }
-                                    return '<img width= "60px"; src="' + path + '">';
-
-                                }
-                            },
-                            {
-                                field: 'status',
-                                label: "Status",
-                                get: function (object) {
-                                    return object; // return entire item for formatter to use
-                                },
-                                formatter: function (item) {
-                                    var bg_color = '#' + item.status_bg_color.toString(16);
-                                    var fg_color = '#' + item.status_fg_color.toString(16);
-                                    return '<span style="color:' + bg_color + '; background-color:' + bg_color + '; ">....</span><span style="color:' + bg_color + '; ">  ' + item.status + '</span>';
-                                }
-
-                            },
-                            {
-                                field: 'name',
-                                label: "Name",
-                                get: function (object) {
-                                    return object; // return entire item for formatter to use
-                                },
-                                formatter: function (value) {
-                                    {% if has_permission('Read_Shot')%}
-
-                                        var targetPane = "'shots_content_pane'";
-                                        var address = "'tasks/" + value.id + "/view'";
-
-                                        return '<a href="javascript:redirectLink(' + targetPane + ',' + address + ');">' + value.name + '</a>';
-                                    {% else %}
-
-                                        return  value.user_name;
-
-                                    {% endif %}
-
-                                }
-                            },
-                            {
-                                field: 'user_name',
-                                label: "Created By",
-                                get: function (object) {
-                                    return object; // return entire item for formatter to use
-                                },
-                                formatter: function (value) {
-
-                                    {% if has_permission('Read_User')%}
-
-                                        var targetPane = "'central_content'";
-                                        var address = "'users/" + value.user_id + "/view'";
-
-                                        return '<a href="javascript:redirectLink(' + targetPane + ',' + address + ');">' + value.user_name + '</a>';
-                                    {% else %}
-
-                                        return  value.user_name;
-
-                                    {% endif %}
-                                }
-                            },
-                            {
-                                field: 'sequences',
-                                label: "Sequences",
-                                get: function (object) {
-                                    return object; // return entire item for formatter to use
-                                },
-                                formatter: function (value) {
-                                    return value.sequences + '<br/>';
-                                }
-                            },
-                            {
-                                field: 'description',
-                                label: "Description"
-                            }
-                        ];
-
-                        shots_data_grid.renderArray(data);
-                        shots_data_grid.set('columns', columns);
-
-                        var right_click_menu = new Menu({
-                            targetNodeIds: ['shots_data_grid'],
-                            selector: '.dgrid-row'
-                        });
-
-                        var create_update_shot_menuItem_creator = function () {
-                            return new MenuItem({
-                                label: 'Update Shot',
-                                onClick: function () {
-                                    var node = this.getParent().currentTarget;
-                                    var nodeId = node.getAttribute('id');
-                                    var rowId = shots_data_grid.id + '-row-';
-                                    var shotId = shotData[parseInt(nodeId.substring(rowId.length, nodeId.length))].id;
-
-                                    var dialog = dialogCreator({
-                                        dialog_id: 'shot_dialog',
-                                        content_creator: dialogs.update_shot_dialog,
-                                        related_field_updater: shot_data_grid_updater,
-                                        data_id: shotId
-                                    });
-                                    dialog.show();
-
-                                }
-                            });
-                        };
-
-                        right_click_menu.addChild(create_update_shot_menuItem_creator());
-
-                        right_click_menu.startup();
-
-                    });
-                }
+        {% if has_permission('Create_Shot') %}
+            var create_shot_button = dialogCaller({
+                label: 'New Shot',
+                dialog_id: 'shot_dialog',
+                content_creator: dialogs.create_shot_dialog,
+                attach_to: 'list_shots_create_shot_button',
+                related_field_updater: shot_data_grid_updater,
+                data_id: '{{ entity.id }}'
             });
+            create_shot_button.startup();
+        {% endif%}
+
+
+        var status_memory = new JsonRest({
+            target: '{{ request.route_url('get_statuses_for', target_entity_type='Shot') }}'
+        });
+
+        status_memory.query().then(function (data) {
+            shot_data_grid_updater();
+        });
+
+        var shotData;
+
+
+        function shot_data_grid_updater() {
+
+            var shot_memory = new JsonRest({
+                target: '{{ request.route_url('get_project_shots', id=entity.id) }}'
+            });
+
+            shot_memory.query().then(function (data) {
+
+                shotData = data;
+                var columns = [
+                    {
+                        label: "Thumbnail",
+                        field: 'thumbnail',
+                        sortable: false,
+                        get: function (object) {
+                            return object; // return entire item for formatter to use
+                        },
+                        formatter: function (object) {
+
+                            var path = '{{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_shot.png") }}';
+                            if (object.thumbnail_path) {
+                                path = object.thumbnail_path;
+                            }
+                            return '<img width= "60px"; src="' + path + '">';
+
+                        }
+                    },
+                    {
+                        field: 'status',
+                        label: "Status",
+                        get: function (object) {
+                            return object; // return entire item for formatter to use
+                        },
+                        formatter: function (item) {
+                            var bg_color = '#' + item.status_bg_color.toString(16);
+                            var fg_color = '#' + item.status_fg_color.toString(16);
+                            return '<span style="color:' + bg_color + '; background-color:' + bg_color + '; ">....</span><span style="color:' + bg_color + '; ">  ' + item.status + '</span>';
+                        }
+
+                    },
+                    {
+                        field: 'name',
+                        label: "Name",
+                        get: function (object) {
+                            return object; // return entire item for formatter to use
+                        },
+                        formatter: function (value) {
+                            {% if has_permission('Read_Shot')%}
+
+                                var targetPane = "'shots_content_pane'";
+                                var address = "'tasks/" + value.id + "/view'";
+
+                                return '<a href="javascript:redirectLink(' + targetPane + ',' + address + ');">' + value.name + '</a>';
+                            {% else %}
+
+                                return  value.user_name;
+
+                            {% endif %}
+
+                        }
+                    },
+                    {
+                        field: 'user_name',
+                        label: "Created By",
+                        get: function (object) {
+                            return object; // return entire item for formatter to use
+                        },
+                        formatter: function (value) {
+
+                            {% if has_permission('Read_User')%}
+
+                                var targetPane = "'central_content'";
+                                var address = "'users/" + value.user_id + "/view'";
+
+                                return '<a href="javascript:redirectLink(' + targetPane + ',' + address + ');">' + value.user_name + '</a>';
+                            {% else %}
+
+                                return  value.user_name;
+
+                            {% endif %}
+                        }
+                    },
+                    {
+                        field: 'sequences',
+                        label: "Sequences",
+                        get: function (object) {
+                            return object; // return entire item for formatter to use
+                        },
+                        formatter: function (value) {
+                            return value.sequences + '<br/>';
+                        }
+                    },
+                    {
+                        field: 'description',
+                        label: "Description"
+                    }
+                ];
+
+                shots_data_grid.renderArray(data);
+                shots_data_grid.set('columns', columns);
+
+                var right_click_menu = new Menu({
+                    targetNodeIds: ['shots_data_grid'],
+                    selector: '.dgrid-row'
+                });
+
+                var create_update_shot_menuItem_creator = function () {
+                    return new MenuItem({
+                        label: 'Update Shot',
+                        onClick: function () {
+                            var node = this.getParent().currentTarget;
+                            var nodeId = node.getAttribute('id');
+                            var rowId = shots_data_grid.id + '-row-';
+                            var shotId = shotData[parseInt(nodeId.substring(rowId.length, nodeId.length))].id;
+
+                            var dialog = dialogCreator({
+                                dialog_id: 'shot_dialog',
+                                content_creator: dialogs.update_shot_dialog,
+                                related_field_updater: shot_data_grid_updater,
+                                data_id: shotId
+                            });
+                            dialog.show();
+
+                        }
+                    });
+                };
+
+                right_click_menu.addChild(create_update_shot_menuItem_creator());
+
+                right_click_menu.startup();
+
+            });
+        }
+    });
 </script>
 

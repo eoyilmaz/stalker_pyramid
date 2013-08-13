@@ -28,6 +28,7 @@
 
 <script type='text/javascript'>
     require([
+        "dojo/_base/declare",
         'dojo/data/ObjectStore',
         'dojo/store/Memory',
         'dojo/store/JsonRest',
@@ -38,7 +39,7 @@
         "dgrid/OnDemandGrid",
         "dgrid/Selection",
         "dgrid/Keyboard",
-        "dojo/_base/declare",
+        'dgrid/extensions/ColumnResizer',
         "dgrid/editor",
 
         'dijit/Menu',
@@ -52,11 +53,12 @@
         'stalker/dialogCreator',
 
         'dojo/domReady!'
-    ], function (ObjectStore, Memory, JsonRest, aspect, selector, List, Grid,
-                 Selection, Keyboard, declare, editor, Menu, MenuItem,
-                 MenuSeparator, Button, dialogs, dialogCaller, dialogCreator) {
+    ], function (declare, ObjectStore, Memory, JsonRest, aspect, selector,
+                 List, Grid, Selection, Keyboard, ColumnResizer, editor, Menu,
+                 MenuItem, MenuSeparator, Button, dialogs, dialogCaller,
+                 dialogCreator) {
 
-        var StandardGrid = declare([Grid, Selection, Keyboard]);
+        var StandardGrid = declare([Grid, Selection, Keyboard, ColumnResizer]);
 
         var versions_DataGrid = new StandardGrid({
             id: 'versions_data_grid',
@@ -93,12 +95,13 @@
                 var columns = [
                     {
                         field: 'parent_name',
-                        label: 'Parent Name'
-
+                        label: 'Parent Name',
+                        resizable: true
                     },
                     {
                         field: 'task_name',
                         label: 'Task Name',
+                        resizable: true,
                         get: function (object) {
                             return object; // return entire item for formatter to use
                         },
@@ -111,8 +114,14 @@
 
                     },
                     {
+                        field: 'version_number',
+                        label: '#',
+                        resizable: true
+                    },
+                    {
                         field: 'is_published',
                         label: 'Is Published',
+                        resizable: true,
                         formatter: function (value) {
                             console.debug('is_published.value : ', value);
                             if (value) {
@@ -124,6 +133,7 @@
                     {
                         field: 'name',
                         label: 'Name',
+                        resizable: true,
                         get: function (object) {
                             return object; // return entire item for formatter to use
                         },
@@ -137,6 +147,7 @@
                     {
                         field: 'path',
                         label: 'Path',
+                        resizable: true,
                         get: function (object) {
                             return object; // return entire item for formatter to use
                         },
@@ -147,6 +158,7 @@
                     {
                         field: 'created_by_name',
                         label: "Created By",
+                        resizable: true,
                         get: function (object) {
                             return object; // return entire item for formatter to use
                         },

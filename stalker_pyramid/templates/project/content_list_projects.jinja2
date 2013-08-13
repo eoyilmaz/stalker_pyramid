@@ -24,22 +24,28 @@
 </div>
 
 <script type='text/javascript'>
-    require(['dijit/registry',
+    require([
+        "dojo/_base/declare",
         'dojo/data/ObjectStore',
+        'dojo/store/Memory',
+        'dojo/store/JsonRest',
+        
+        'dijit/registry',
+        'dijit/form/FilteringSelect',
+        
         "dgrid/List",
         "dgrid/Grid",
         "dgrid/Selection",
         "dgrid/Keyboard",
-        "dojo/_base/declare",
+        'dgrid/extensions/ColumnResizer',
         "dgrid/editor",
-        'dojo/store/Memory',
-        'dijit/form/FilteringSelect',
-        'dojo/store/JsonRest',
+        
         'dojo/domReady!'
-    ], function (registry, ObjectStore, List, Grid, Selection, Keyboard,
-                 declare, editor, Memory, FilteringSelect, JsonRest) {
+    ], function (declare, ObjectStore, Memory, JsonRest, registry,
+                 FilteringSelect, List, Grid, Selection, Keyboard,
+                 ColumnResizer, editor) {
 
-        var StandardGrid = declare([Grid, Selection, Keyboard]);
+        var StandardGrid = declare([Grid, Selection, Keyboard, ColumnResizer]);
         var projects_DataGrid = new StandardGrid({
             id: 'projects_data_grid',
             width: '100%',
