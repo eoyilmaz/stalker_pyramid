@@ -410,6 +410,11 @@ def get_permissions_from_multi_dict(multi_dict):
     """returns the permission instances from the given multi_dict
     """
     permissions = []
+
+    # gather all access, actions, and class_names
+    all_class_names = EntityType.query.all()
+    all_actions = defaults.actions,
+
     for key in multi_dict.keys():
         access = multi_dict[key]
         action_and_class_name = key.split('_')
@@ -426,15 +431,20 @@ def get_permissions_from_multi_dict(multi_dict):
             continue
 
         else:
-            # get permissions
-            permission = Permission.query \
-                .filter_by(access=access) \
-                .filter_by(action=action) \
-                .filter_by(class_name=class_name) \
-                .first()
 
-            if permission:
-                permissions.append(permission)
+            if access in ['Allow', 'Deny'] and \
+                class_name in all_class_names and \
+                action in all_actions:
+
+                # get permissions
+                permission = Permission.query \
+                    .filter_by(access=access) \
+                    .filter_by(action=action) \
+                    .filter_by(class_name=class_name) \
+                    .first()
+
+                if permission:
+                    permissions.append(permission)
 
     logger.debug(permissions)
     return permissions
