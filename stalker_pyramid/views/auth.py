@@ -34,7 +34,7 @@ from stalker_pyramid.views import (log_param, get_logged_in_user,
 import logging
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.WARNING)
+logger.setLevel(logging.DEBUG)
 
 
 @view_config(
