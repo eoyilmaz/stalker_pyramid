@@ -36,6 +36,8 @@ Stalker Pyramid Changes
 * **Fix:** In TimeLog UI, when updating a time log the remaining hours is
    calculated correctly by first adding the updated time log duration to the
    remaining time. Thus the ui shows the correct value after update.
+* **Fix:** URL of duplicate task hierarchy method changed into Restful service
+   scheme format.
 
 0.1.0.b2
 ========

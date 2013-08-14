@@ -210,7 +210,7 @@ def duplicate_task_hierarchy(request):
     :param task: The task that wanted to be duplicated
     :return: A list of stalker.models.task.Task
     """
-    task_id = request.params.get('task_id')
+    task_id = request.matchdict.get('id', -1)
     task = Task.query.filter_by(id=task_id).first()
     if task:
         dup_task = walk_and_duplicate_task_hierarchy(task)
