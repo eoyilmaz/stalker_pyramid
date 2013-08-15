@@ -38,6 +38,7 @@ Stalker Pyramid Changes
    remaining time. Thus the ui shows the correct value after update.
 * **Fix:** URL of duplicate task hierarchy method changed into Restful service
    scheme format.
+* **New:** Gantt Chart is displayed in Department Views Task tab.
 
 0.1.0.b2
 ========

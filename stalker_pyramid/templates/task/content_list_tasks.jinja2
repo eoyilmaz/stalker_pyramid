@@ -578,6 +578,8 @@ require([
         target = '{{ request.route_url('get_user_tasks', id=entity.id) }}';
     {% elif entity.entity_type == 'Studio' %}
         target = '{{ request.route_url('get_studio_tasks', id=entity.id) }}';
+    {% elif entity.entity_type == 'Department' %}
+        target = '{{ request.route_url('get_department_tasks', id=entity.id) }}';
     {% endif %}
 
     var tasks_jsonRest_store;

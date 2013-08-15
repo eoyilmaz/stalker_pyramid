@@ -32,7 +32,7 @@ from sqlalchemy.exc import IntegrityError
 
 from stalker.db import DBSession
 from stalker import (User, Task, Entity, Project, StatusList, Status,
-                     TaskJugglerScheduler, Studio, Asset, Shot, Sequence, Type, Ticket)
+                     TaskJugglerScheduler, Studio, Asset, Shot, Sequence, Type, Ticket, Department)
 from stalker.models.task import CircularDependencyError
 from stalker import defaults
 from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
@@ -538,6 +538,10 @@ def get_tasks(request):
     route_name='get_studio_tasks',
     renderer='json'
 )
+@view_config(
+    route_name='get_department_tasks',
+    renderer='json'
+)
 def get_entity_tasks(request):
     """RESTful version of getting all tasks of an entity
     """
@@ -581,11 +585,37 @@ def get_entity_tasks(request):
                 if not tasks:
                     # there are no children
                     tasks = parents_children
+            if isinstance(entity, Department):
+                # get user tasks
+                entity_tasks = []
+
+                for user in entity.users:
+                    entity_tasks.extend(user.tasks)
+
+                # add all parents
+                entity_tasks_and_parents = []
+                for task in entity_tasks:
+                    entity_tasks_and_parents.extend(task.parents)
+                entity_tasks_and_parents.extend(entity_tasks)
+
+                if isinstance(parent, Task):
+                    parents_children = parent.children
+                elif isinstance(parent, Project):
+                    parents_children = parent.root_tasks
+
+                for child in parents_children:
+                    if child in entity_tasks_and_parents:
+                        tasks.append(child)
+
+                if not tasks:
+                    # there are no children
+                    tasks = parents_children
             elif isinstance(entity, Studio):
                 if isinstance(parent, Task):
                     tasks = parent.children
                 elif isinstance(parent, Project):
                     tasks = parent.root_tasks
+
 
             return_data = convert_to_dgrid_gantt_task_format(tasks)
         else:
@@ -597,6 +627,11 @@ def get_entity_tasks(request):
                 entity_projects = entity.projects
             elif isinstance(entity, Studio):
                 entity_projects = Project.query.all()
+            elif isinstance(entity, Department):
+                for user in entity.users:
+                    for project in user.projects:
+                        if project not in entity_projects:
+                            entity_projects.append(project)
 
             return_data = convert_to_dgrid_gantt_project_format(entity_projects)
 

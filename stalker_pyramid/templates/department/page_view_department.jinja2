@@ -59,6 +59,19 @@
                 }, 'department_related_data_tab_container');
 
 
+                {% if has_permission('List_Task') %}
+                    var tasks_content_pane = new ContentPane({
+                        id: 'tasks_content_pane',
+                        title: 'Tasks',
+                        default_href: '{{ request.route_url('list_department_tasks', id=department.id) }}',
+                        href: '{{ request.route_url('list_department_tasks', id=department.id) }}',
+                        style: ' padding: 0; margin:0;'
+                    }, 'tasks_content_pane');
+
+                    department_related_data_tab_container.addChild(tasks_content_pane);
+                {% endif %}
+
+
                 {% if has_permission('List_User') %}
                     var users_content_pane = new ContentPane({
                         title: 'Users',
@@ -69,6 +82,8 @@
                     department_related_data_tab_container.addChild(users_content_pane);
 
                 {% endif %}
+
+
 
                 department_BorderContainer.addChild(department_related_data_tab_container);
                 department_BorderContainer.startup();
