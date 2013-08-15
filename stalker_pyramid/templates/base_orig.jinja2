@@ -1,0 +1,1067 @@
+{# Stalker Pyramid a Web Base Production Asset Management System
+ Copyright (C) 2009-2013 Erkan Ozgur Yilmaz
+ 
+ This file is part of Stalker Pyramid.
+ 
+ This library is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation;
+ version 2.1 of the License.
+
+ This library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Lesser General Public License for more details.
+
+ You should have received a copy of the GNU Lesser General Public
+ License along with this library; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+#}
+<!DOCTYPE html>
+<html>
+<head>
+{#    <title>Stalker Pyramid v{{ stalker_pyramid.__version__ }}</title>#}
+    <title>Stalker Pyramid v0.1.0.b3</title>
+    <meta charset='utf-8'>
+    <meta http-equiv='Content-Type' content='text/html;charset=UTF-8'/>
+    <meta name='keywords' content='python web application'/>
+    <meta name='description' content='pyramid web application'/>
+    <link rel='shortcut icon'
+          href='{{ request.static_url("stalker_pyramid:static/stalker/images/favicon.ico") }}'/>
+    <link rel='stylesheet' type='text/css' media='all' charset='utf-8'
+          href='{{ request.static_url("stalker_pyramid:static/stalker/css/stalker.css") }}'/>
+    
+    {# load date.format #}
+    <script src='{{ request.static_url("stalker_pyramid:static/stalker/date.format.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/doT/doT.min.js") }}' type="text/javascript"></script>
+
+    <script src='{{ request.static_url("stalker_pyramid:static/jquery/1.7/jquery.min.js") }}'></script>
+
+    <script src='{{ request.static_url("stalker_pyramid:static/jQueryGantt/libs/date.js") }}'></script>
+
+
+    {# DOJO COMPRESSED #}
+    <link rel='stylesheet' type='text/css' media='all' charset='utf-8'
+          href='{{ request.static_url("stalker_pyramid:static/dojo/resources/dojo.css") }}'/>
+    <link rel='stylesheet' type='text/css' media='all' charset='utf-8'
+          href='{{ request.static_url("stalker_pyramid:static/dijit/themes/claro/claro.css") }}'/>
+    <link rel='stylesheet' type='text/css' media='all' charset='utf-8'
+          href='{{ request.static_url("stalker_pyramid:static/dojox/form/resources/UploaderFileList.css") }}'/>
+    <link rel='stylesheet'
+          href='{{ request.static_url("stalker_pyramid:static/dojox/form/resources/FileInput.css") }}'/>
+
+    {# DGRID GANTT #}
+    <link rel='stylesheet' type='text/css' media='all' charset='utf-8'
+          href='{{ request.static_url("stalker_pyramid:static/stalker/css/GanttColumn.css") }}'/>
+
+    {# DGRID #}
+    <link rel='stylesheet' type='text/css' media='all' charset='utf-8'
+      href='{{ request.static_url("stalker_pyramid:static/dgrid/css/skins/claro.css") }}'/>
+    <link rel='stylesheet' type='text/css' media='all' charset='utf-8'
+      href='{{ request.static_url("stalker_pyramid:static/dgrid/css/columnset.css") }}'/>
+    <link rel='stylesheet' type='text/css' media='all' charset='utf-8'
+      href='{{ request.static_url("stalker_pyramid:static/dgrid/css/dgrid.css") }}'/>
+    <link rel='stylesheet' type='text/css' media='all' charset='utf-8'
+      href='{{ request.static_url("stalker_pyramid:static/dgrid/css/has-transforms3d.css") }}'/>
+
+    {# DOJO MODIFIED CSS #}
+    <link rel='stylesheet' type='text/css' media='all' charset='utf-8'
+          href='{{ request.static_url("stalker_pyramid:static/stalker/css/dojo_modified.css") }}'/>
+
+    {# DOJO JAVA SCRIPTS #}
+    <script type='text/javascript'
+            data-dojo-config="async: true, parseOnLoad: true"
+            src='{{ request.static_url("stalker_pyramid:static/dojo/dojo.js") }}'>
+    </script>
+
+</head>
+<body class='claro'>
+
+{# TODO: Support Multiple monitors by allowing the user to detach content panels #}
+
+{# TEMPLATES #}
+
+
+{#<div class="__template__" type="TASKBAR_ON_LEFT"><!--#}
+{#    <div class="leftArrowHead" dataId="(#=obj.id#)">&nbsp</div>#}
+{#--></div>#}
+{##}
+{#<div class="__template__" type="TASKBAR_ON_RIGHT"><!--#}
+{#    <div class="rightArrowHead" dataId="(#=obj.id#)">&nbsp</div>#}
+{#--></div>#}
+{##}
+{#<div class="__template__" type="TIMELOGBAR"><!--#}
+{#    <div class="timeLogBox" dataId="(#=obj.id#)">#}
+{#        <div class="layout">#}
+{#            <div class="timeLogContextMenu"#}
+{#                dataId="(#=obj.id#)"#}
+{#                name="(#=obj.name#)"#}
+{#                start=(#=obj.start#)#}
+{#                end=(#=obj.end#)#}
+{#                task_id=(#=obj.task.id#)#}
+{#                task_name="(#=obj.task.name#)"#}
+{#                task_type="(#=obj.task.type#)"#}
+{#                task_hierarchy_name="(#=obj.task.hierarchy_name#)"#}
+{#                ></div>#}
+{#        </div>#}
+{#    </div>#}
+{#--></div>#}
+
+
+{% raw %}
+<script id="tmpl_projectEditRow" type="text/x-dot-template">
+    <div class="projectEditRow"
+        dataId="{{=it.id}}"
+        name="{{=it.name}}"
+        start={{=it.start}}
+        end={{=it.end}}
+        type="{{=it.type}}"
+        hasChildren={{=it.hasChildren}}>{{=it.name}} ({{=it.type}})</div>
+</script>
+
+
+<script id="tmpl_projectBar" type="text/x-dot-template">
+    <div class="projectBox" projectId="{{=it.id}}" >
+        <div class="layout">
+            <div class="projectLabel">{{=it.link()}}</div>
+            <div class="projectContextMenu" dataId="{{=it.id}}"></div>
+        </div>
+    </div>
+</script>
+
+
+<script id="tmpl_taskBar" type="text/x-dot-template">
+    <div class="taskBox" dataId="{{=it.id}}">
+        <div class="layout {{=it.hasExternalDep?'extDep':''}}">
+            <div class="taskProgress" style="width:{{=it.progress > 100 ? 100 : it.progress }}%;"></div>
+            <div class="taskExtraTiming" style="width:{{=(it.schedule_timing - it.bid_timing)/it.schedule_timing*100}}%;"></div>
+            <div class="taskScheduleModel">
+               {{=it.schedule_model.toUpperCase()[0]}}: {{=it.schedule_timing}}{{=it.schedule_unit}}
+            </div>
+            <div class="taskLabel">{{=it.link()}}</div>
+            <div class="milestone end {{=it.endIsMilestone ? 'active' : ''}}"></div>
+            <div class="taskResourceLabel">{{=it.getResourcesLinks()}}</div>
+            {{=it.clippedStart?'<div class="leftArrowHead">&nbsp</div>':''}}
+            {{=it.clippedEnd?'<div class="rightArrowHead">&nbsp</div>':''}}
+            <div class="leafTaskContextMenu"
+                dataId="{{=it.id}}"
+                name="{{=it.name}}"
+                hierarchy_name="{{=it.hierarchy_name}}"
+                start={{=it.start}}
+                end={{=it.end}}
+                type="{{=it.type}}"
+                priority={{=it.priority}}
+                bid_timing={{=it.bid_timing}}
+                bid_unit={{=it.bid_unit}}
+                schedule_model={{=it.schedule_model}}
+                schedule_timing={{=it.schedule_timing}}
+                schedule_unit={{=it.schedule_unit}}
+                description="{{=it.description}}"
+                remaining_seconds="{{=it.remaining_seconds}}"
+                resources="{{=it.getResourcesStr()}}"
+                responsible_id="{{=it.responsible.id}}"
+                responsible_name="{{=it.responsible.name}}"
+                ></div>
+        </div>
+    </div>
+</script>
+
+<script id='tmpl_leafTaskToolTip' type='text/x-dot-template'>
+<table>
+    <thead style="text-align: center">
+        <h2>{{=it.name}} ({{=it.type}})</h2>
+        <h4>{{=it.hierarchy_name}}</h4>
+    </thead>
+
+    <tbody>
+        <tr>
+            <td class="label_column">Id</td>
+            <td class="input_column">{{=it.dataId}}</td>
+        </tr>
+        <tr>
+            <td class="label_column">Priority</td>
+            <td class="input_column">{{=it.priority}}</td>
+        </tr>
+        <tr>
+            <td class="label_column">BID</td>
+            <td class="input_column">{{=it.bid_timing}} {{=it.bid_unit}}</td>
+        </tr>
+        <tr>
+            <td class="label_column">{{=it.schedule_model}}</td>
+            <td class="input_column">{{=it.schedule_timing}} {{=it.schedule_unit}}</td>
+        </tr>
+        <tr>
+            <td class="label_column">Start</td>
+            <td class="input_column">{{=it.start.format("yyyy-mm-dd HH:00")}}</td>
+        </tr>
+        <tr>
+            <td class="label_column">End</td>
+            <td class="input_column">{{=it.end.format("yyyy-mm-dd HH:00")}}</td>
+        </tr>
+        <tr>
+            <td class="label_column">Description</td>
+            <td class="input_column">{{=it.description}}</td>
+        </tr>
+        <tr>
+            <td class="label_column">Remaining Time</td>
+            <td class="input_column">{{=it.remaining_seconds}}</td>
+        </tr>
+        <tr>
+            <td class="label_column">Responsible</td>
+            <td class="input_column">{{=it.responsible.name}}</td>
+        </tr>
+    </tbody>
+</table>
+</script>
+
+<script id="tmpl_taskEditRow" type="text/x-dot-template">
+    <div class="{{=it.contextMenuClass}}"
+        dataId="{{=it.id}}"
+        name="{{=it.name}}"
+        start={{=it.start}}
+        end={{=it.end}}
+        type="{{=it.type}}"
+        {{ if (!it.hasChildren) { }}
+            responsible_id="{{=it.responsible.id}}"
+            responsible_name="{{=it.responsible.name}}"
+        {{ } }}
+        hasChildren={{=it.hasChildren}}>{{=it.name}} ({{=it.type}})</div>
+</script>
+
+
+<script id="tmpl_parentTaskEditRow" type="text/x-dot-template">
+    <div class="{{=it.contextMenuClass}}"
+        dataId="{{=it.id}}"
+        name="{{=it.name}}"
+        start={{=it.start}}
+        end={{=it.end}}
+        type="{{=it.type}}"
+        hasChildren={{=it.hasChildren}}>{{=it.name}} ({{=it.type}})</div>
+</script>
+
+
+<script id="tmpl_parentTaskBar" type="text/x-dot-template">
+    <div class="parentTaskBox" dataId="{{=it.id}}">
+        <div class="layout {{=it.hasExternalDep?'extDep':''}}">
+            <div class="leftPin"></div>
+            <div class="rightPin"></div>
+            <div class="taskLabel">{{=it.link()}}</div>
+            <div class="parentTaskContextMenu" dataId="{{=it.id}}"></div>
+        </div>
+    </div>
+</script>
+
+<script id="tmpl_taskLink" type="text/x-dot-template">
+  <a href="javascript:redirectLinkInParent('{{=it.type.toLowerCase()}}s_content_pane','tasks/{{=it.id}}/view');">{{=it.name}} ({{=it.type}})</a>
+</script>
+
+<script id='tmpl_resourceLink' type='text/x-dot-template'>
+    <a href="javascript:redirectLink('central_content','users/{{=it.id}}/view');">{{=it.name}}</a>
+</script>
+
+<script id="tmpl_projectLink" type="text/x-dot-template">
+    <a href="javascript:redirectLink('central_content','projects/{{=it.id}}/view');">{{=it.name}} ({{=it.type}})</a>
+</script>
+
+<script id='tmpl_entityNameField' type="text/x-dot-template">
+    <a href="javascript:redirectLinkInParent('{{=it.targetPane}}', '{{=it.address}}');">{{=it.name}} ({{=it.code}})</a>
+</script>
+
+<script id='tmpl_userNameField' type="text/x-dot-template">
+    <a href="javascript:redirectLink('{{=it.targetPane}}', '{{=it.address}}');">{{=it.user_name}}</a>
+</script>
+
+<script id='tmpl_departmentField' type="text/x-dot-template">
+    <a href="javascript:redirectLink('{{=it.targetPane}}', '{{=it.address}}');">{{=it.name}}</a>
+</script>
+
+<script id='tmpl_groupField' type="text/x-dot-template">
+    <a href="javascript:redirectLink('{{=it.targetPane}}', '{{=it.address}}');">{{=it.name}}</a>
+</script>
+
+<script id='tmpl_ticketNameField' type="text/x-dot-template">
+    <a href="javascript:redirectLink('{{=it.targetPane}}', '{{=it.address}}');">#{{=it.number}}</a>
+</script>
+
+<script id='tmpl_referenceLink' type='text/x-dot-template'>
+    <a href="javascript:lightBox('{{=it.original_filename}}', '{{=it.full_path}}');">{{=it.original_filename}}</a>
+</script>
+{% endraw %}
+
+
+{% block body %}
+    <div id='appLayout' class='demoLayout'>
+        <div id='header' class='edgePanel' style="overflow: hidden">
+            {% block header %}
+                <div id='stalker_logo'>
+                    <a href="/" style='color: #000000'>STALKER</a>
+                </div>
+
+                <div id='stalkerMenuBar' style='color: #000000'></div>
+
+                <div id='mebar'>
+                    <div style='color: #000000' id='mebutton'></div>
+                </div>
+            {% endblock header %}
+        </div>
+
+        <div style="margin-top: 0" id='central_content' class='centralPanel'>
+            {% block content %}
+                <div id='main_view'>
+                    {% block main_view %}
+                    {% endblock main_view %}
+                </div>
+            {% endblock content%}
+        </div>
+
+        <div id='footer' class='edgePanel'>
+            {% block footer %}
+                <div class='footer'>&copy; Copyright 2009-2013, Erkan Ozgur
+                                           Yilmaz.
+{#                    <span style='font-size: 12px;'>Stalker Pyramid v{{ stalker_pyramid.__version__ }}</span>#}
+                    <span style='font-size: 12px;'>Stalker Pyramid v0.1.0.b3</span>
+                </div>
+            {% endblock footer %}
+        </div>
+    </div>
+
+
+    <script type='text/javascript'>
+    // ************************************************************************
+    // load templates with doT.js
+    var templates = {};
+
+    templates.projectBar = doT.template(document.getElementById('tmpl_projectBar').text);
+    templates.parentTaskBar = doT.template(document.getElementById('tmpl_parentTaskBar').text);
+    templates.taskBar = doT.template(document.getElementById('tmpl_taskBar').text);
+
+    templates.projectEditRow = doT.template(document.getElementById('tmpl_projectEditRow').text);
+    templates.parentTaskEditRow = doT.template(document.getElementById('tmpl_parentTaskEditRow').text);
+    templates.taskEditRow = doT.template(document.getElementById('tmpl_taskEditRow').text);
+
+    templates.projectLink = doT.template(document.getElementById('tmpl_projectLink').text);
+    templates.taskLink = doT.template(document.getElementById('tmpl_taskLink').text);
+    templates.resourceLink = doT.template(document.getElementById('tmpl_resourceLink').text);
+
+
+    templates.leafTaskToolTip = doT.template(document.getElementById('tmpl_leafTaskToolTip').text);
+    
+    // for DGrid Headers
+    templates.entityNameField = doT.template(document.getElementById('tmpl_entityNameField').text);
+    templates.userNameField = doT.template(document.getElementById('tmpl_userNameField').text);
+    templates.departmentField = doT.template(document.getElementById('tmpl_departmentField').text);
+    templates.groupField = doT.template(document.getElementById('tmpl_groupField').text);
+    templates.ticketNameField = doT.template(document.getElementById('tmpl_ticketNameField').text);
+    templates.referenceLink = doT.template(document.getElementById('tmpl_referenceLink').text);
+    // ************************************************************************
+
+    var copyToClipboard = function (text) {
+            window.prompt("Copy to clipboard: Ctrl+C, Enter", text);
+        };
+
+{#    // ************************************************************************#}
+{#    var redirectLinkInParent = function (targetPane, address) {#}
+{#        var tab_container = dijit.byId('data_tab_container');#}
+{#        var contentPane = dijit.byId(targetPane);#}
+{##}
+{#        if (contentPane) {#}
+{#            if (contentPane != tab_container.selectedChildWidget) {#}
+{#                tab_container.selectChild(contentPane); //Show the selected Tab#}
+{#            }#}
+{#        }#}
+{#        else {#}
+{#            contentPane = tab_container.selectedChildWidget;#}
+{#        }#}
+{##}
+{#        contentPane.set('href', address);#}
+{#        contentPane.refresh();#}
+{#    };#}
+{##}
+{#    // ************************************************************************#}
+{#    var redirectLink = function (targetPane, address) {#}
+{#        var contentPane = dijit.byId(targetPane);#}
+{#        contentPane.set('href', address);#}
+{#        contentPane.refresh();#}
+{#    };#}
+
+    var lightBox = function(title, href){
+        var lb = new dojox.image.Lightbox({ title:title, href:href });
+        lb.startup();
+        lb.show();
+    };
+
+    require([
+        'dijit/layout/BorderContainer',
+        'dojox/layout/ContentPane',
+
+{#        'dijit/MenuBar',#}
+{#        'dijit/MenuBarItem',#}
+{#        'dijit/MenuSeparator',#}
+{#        'dijit/PopupMenuBarItem',#}
+{#        'dijit/PopupMenuItem',#}
+{#        'dijit/MenuItem',#}
+{#        'dijit/DropDownMenu',#}
+{#        'dijit/form/DropDownButton',#}
+{#        'dijit/TooltipDialog',#}
+{#        'dijit/popup',#}
+
+{#        'dojo/on',#}
+
+{#        'dojo/store/JsonRest',#}
+{#        'dojo/store/Memory',#}
+{#        'dojo/_base/fx',#}
+
+{#        'stalker/dialogs',#}
+{#        'stalker/dialogCaller',#}
+{#        'stalker/dialogCreator',#}
+{#        'stalker/teamMenuCreator',#}
+
+        'dojo/domReady!'
+{#    ], function (BorderContainer, ContentPane, MenuBar, MenuBarItem,#}
+{#                 MenuSeparator, PopupMenuBarItem, PopupMenuItem, MenuItem,#}
+{#                 DropDownMenu, DropDownButton, TooltipDialog, popup, on,#}
+{#                 JsonRest, Memory, fx, dialogs, dialogCaller, dialogCreator,#}
+{#                 teamMenuCreator) {#}
+    ], function (BorderContainer, ContentPane) {
+
+        // ******************************************************************
+        // create the BorderContainer and attach it to our appLayout div
+        var appLayout = new BorderContainer({
+            design: 'headline',
+            style: 'padding: 0px',
+            splitter: true,
+            gutters: false
+        }, 'appLayout');
+
+        // ******************************************************************
+        // Header
+        var header_pane = new ContentPane({
+            name: 'header_pane',
+            region: 'top',
+            style: 'height: 24px; padding: 0px;',
+            executeScripts: true
+        }, 'header');
+        appLayout.addChild(header_pane);
+
+        // ******************************************************************
+        // Main Content
+        var central_content_pane = new ContentPane({
+            name: 'central_content_pane',
+            region: 'center',
+            style: 'padding: 0px',
+{#            href: '{{ request.route_url('view_user', id=logged_in_user.id) }}',#}
+            executeScripts: true
+        }, 'central_content');
+        appLayout.addChild(central_content_pane);
+
+
+        // ******************************************************************
+        // Footer
+        var footer_content_pane = new ContentPane({
+            name: 'footer_pane',
+            region: 'bottom',
+            style: 'height: 14px; padding: 0px'
+        }, 'footer');
+        footer_content_pane.startup();
+        appLayout.addChild(footer_content_pane);
+
+
+{#        // ******************************************************************#}
+{#        // MenuBar#}
+{#        var stalker_MenuBar = new MenuBar({}, 'stalkerMenuBar');#}
+
+
+{#        // ******************************************************************#}
+{#        // HOME#}
+{#        stalker_MenuBar.addChild(#}
+{#                new MenuBarItem({#}
+{#                label: "HOME ",#}
+{#                onClick: function () {#}
+{#                    central_content_pane.set(#}
+{#                            'href',#}
+{#                            '{{ request.route_url('view_user', id=logged_in_user.id) }}'#}
+{#                    );#}
+{#                    central_content_pane.refresh();#}
+{#                }#}
+{#            })#}
+{#        );#}
+
+
+{#        // ******************************************************************#}
+{#        // STUDIO#}
+{#        var studio_DropDownMenu = new DropDownMenu({});#}
+{##}
+{#        {% if not studio %}#}
+{#            {% if has_permission('Create_Studio') %}#}
+{#                studio_DropDownMenu.addChild(#}
+{#                    dialogCaller({#}
+{#                        label: 'Create Studio',#}
+{#                        dialog_id: 'studio_dialog',#}
+{#                        content_creator: dialogs.create_studio_dialog,#}
+{#                        widget_type: 'MenuItem'#}
+{#                    })#}
+{#                );#}
+{#            {% endif %}#}
+{#        {% else %}#}
+{#            {% if has_permission('Read_Studio') %}#}
+{#                studio_DropDownMenu.addChild(#}
+{#                    new MenuItem({#}
+{#                        label: '{{ studio.name }}',#}
+{#                        style: 'font-weight: bold',#}
+{#                        dataId: '{{ studio.id }}',#}
+{#                        onClick: function () {#}
+{#                            central_content_pane.set(#}
+{#                                    'href',#}
+{#                                    'studios/' + this.get('dataId') + '/view'#}
+{#                            );#}
+{#                            central_content_pane.refresh();#}
+{#                        }#}
+{#                    })#}
+{#                );#}
+{#            {% endif %}#}
+{#        {% endif %}#}
+
+
+
+{#        studio_DropDownMenu.addChild(#}
+{#                new MenuSeparator({})#}
+{#        );#}
+
+{#        //------------#}
+{#        // SETTINGS#}
+{#        var settings_DropDownMenu;#}
+{##}
+{#        var create_studio_setting_DropDownMenu = function () {#}
+{#            if (settings_DropDownMenu == null) {#}
+{#                settings_DropDownMenu = new DropDownMenu({#}
+{#                    style: 'display: none;'#}
+{#                });#}
+{#            }#}
+{#        };#}
+
+{#        // ------------#}
+{#        // Filename Template#}
+{#        {% if has_permission('Create_FilenameTemplate') %}#}
+{#            create_studio_setting_DropDownMenu();#}
+{#            settings_DropDownMenu.addChild(#}
+{#                dialogCaller({#}
+{#                    label: 'Filename Template',#}
+{#                    dialog_id: 'filename_template_dialog',#}
+{#                    content_creator: dialogs.create_filename_template_dialog,#}
+{#                    widget_type: 'MenuItem'#}
+{#                })#}
+{#            );#}
+{#        {% endif %}#}
+
+{#        // ------------#}
+{#        // Image Format#}
+{#        {% if has_permission('Create_ImageFormat') %}#}
+{#            create_studio_setting_DropDownMenu();#}
+{#            settings_DropDownMenu.addChild(#}
+{#                dialogCaller({#}
+{#                    label: 'Image Format',#}
+{#                    dialog_id: 'image_format_dialog',#}
+{#                    content_creator: dialogs.create_image_format_dialog,#}
+{#                    widget_type: 'MenuItem'#}
+{#                })#}
+{#            );#}
+{#        {% endif %}#}
+
+        // -------
+{#        // Repository#}
+{#        {% if has_permission('Create_Repository') %}#}
+{#            create_studio_setting_DropDownMenu();#}
+{#            settings_DropDownMenu.addChild(#}
+{#                dialogCaller({#}
+{#                    label: 'Repository',#}
+{#                    dialog_id: 'repository_dialog',#}
+{#                    content_creator: dialogs.create_repository_dialog,#}
+{#                    widget_type: 'MenuItem'#}
+{#                })#}
+{#            );#}
+{#        {% endif %}#}
+{#        // -------#}
+{#        // Status#}
+{#        {% if has_permission('Create_Status') %}#}
+{#            create_studio_setting_DropDownMenu();#}
+{#            settings_DropDownMenu.addChild(#}
+{#                dialogCaller({#}
+{#                    label: 'Status',#}
+{#                    dialog_id: 'status_dialog',#}
+{#                    content_creator: dialogs.create_status_dialog,#}
+{#                    widget_type: 'MenuItem'#}
+{#                })#}
+{#            );#}
+{#        {% endif %}#}
+
+{#        // -------#}
+{#        // Status List#}
+{#        {% if has_permission('Create_StatusList') %}#}
+{#            create_studio_setting_DropDownMenu();#}
+{#            settings_DropDownMenu.addChild(#}
+{#                dialogCaller({#}
+{#                    label: 'Status List',#}
+{#                    dialog_id: 'status_list_dialog',#}
+{#                    content_creator: dialogs.create_status_list_dialog,#}
+{#                    widget_type: 'MenuItem'#}
+{#                })#}
+{#            );#}
+{#        {% endif %}#}
+
+{#        // -------#}
+{#        // Structure#}
+{#        {% if has_permission('Create_Structure') %}#}
+{#            create_studio_setting_DropDownMenu();#}
+{#            settings_DropDownMenu.addChild(#}
+{#                dialogCaller({#}
+{#                    label: 'Structure',#}
+{#                    dialog_id: 'structure_dialog',#}
+{#                    content_creator: dialogs.create_structure_dialog,#}
+{#                    widget_type: 'MenuItem'#}
+{#                })#}
+{#            );#}
+{#        {% endif %}#}
+
+
+{#        if (settings_DropDownMenu != null) {#}
+{#            studio_DropDownMenu.addChild(#}
+{#                new PopupMenuItem({#}
+{#                    label: "New",#}
+{#                    popup: settings_DropDownMenu#}
+{#                })#}
+{#            );#}
+{#        }#}
+
+{#        stalker_MenuBar.addChild(new PopupMenuBarItem({#}
+{#            label: "STUDIO",#}
+{#            popup: studio_DropDownMenu#}
+{#        }));#}
+
+
+{#        // ******************************************************************#}
+{#        // PROJECTS#}
+{#        var projects_DropDownMenu = new DropDownMenu({});#}
+{##}
+{#        stalker_MenuBar.addChild(#}
+{#            new PopupMenuBarItem({#}
+{#                label: "PROJECTS",#}
+{#                popup: projects_DropDownMenu#}
+{#            })#}
+{#        );#}
+
+{#        // Project Menu#}
+{#        var create_project_setting_DropDownMenu = function (pID) {#}
+{##}
+{#            var project_setting_DropDownMenu = new DropDownMenu({#}
+{##}
+{#            });#}
+{##}
+{##}
+{#            // --------#}
+{#            // View Project#}
+{##}
+{#            project_setting_DropDownMenu.addChild(#}
+{#                new MenuItem({#}
+{#                    label: 'View',#}
+{#                    dataId: pID,#}
+{#                    onClick: function () {#}
+{#                        central_content_pane.set(#}
+{#                                'href',#}
+{#                                'projects/' + this.get('dataId') + '/view'#}
+{#                        );#}
+{#                        central_content_pane.refresh();#}
+{#                    }#}
+{#                })#}
+{#            );#}
+{#            var needSeparator1 = false;#}
+{#            var needSeparator2 = false;#}
+{##}
+{#            // --------#}
+{#            {% if has_permission('Update_Project') %}#}
+{#                // Update Project#}
+{#                project_setting_DropDownMenu.addChild(#}
+{#                    dialogCaller({#}
+{#                        label: 'Update',#}
+{#                        dialog_id: 'project_dialog',#}
+{#                        content_creator: dialogs.update_project_dialog,#}
+{#                        widget_type: 'MenuItem',#}
+{#                        data_id: pID#}
+{##}
+{#                    })#}
+{#                );#}
+{#                needSeparator1 = true;#}
+{#                needSeparator2 = true;#}
+{#            {% endif %}#}
+{##}
+{##}
+{##}
+{#            // --------#}
+{#            {% if has_permission('Create_Asset') %}#}
+{##}
+{#                // Asset#}
+{##}
+{#                if (needSeparator1) {#}
+{#                    project_setting_DropDownMenu.addChild(#}
+{#                            new MenuSeparator({})#}
+{#                    );#}
+{#                    needSeparator1 = false;#}
+{#                }#}
+{##}
+{#                project_setting_DropDownMenu.addChild(#}
+{#                    dialogCaller({#}
+{#                        label: 'New Asset',#}
+{#                        dialog_id: 'asset_dialog',#}
+{#                        content_creator: dialogs.create_asset_dialog,#}
+{#                        widget_type: 'MenuItem',#}
+{#                        data_id: pID#}
+{##}
+{#                    })#}
+{#                );#}
+{##}
+{#                needSeparator2 = true;#}
+{#            {% endif %}#}
+{##}
+{#            // --------#}
+{#            {% if has_permission('Create_Sequence') %}#}
+{#                // Sequence#}
+{#                if (needSeparator1) {#}
+{#                    project_setting_DropDownMenu.addChild(#}
+{#                            new MenuSeparator({})#}
+{#                    );#}
+{#                    needSeparator1 = false;#}
+{#                }#}
+{#                project_setting_DropDownMenu.addChild(#}
+{#                    dialogCaller({#}
+{#                        label: 'New Sequence',#}
+{#                        dialog_id: 'sequence_dialog',#}
+{#                        content_creator: dialogs.create_sequence_dialog,#}
+{#                        widget_type: 'MenuItem',#}
+{#                        data_id: pID#}
+{#                    })#}
+{#                );#}
+{##}
+{#                needSeparator2 = true;#}
+{#            {% endif %}#}
+{##}
+{#            // ----#}
+{#            {% if has_permission('Create_Shot') %}#}
+{#                // Shot#}
+{#                if (needSeparator1) {#}
+{#                    project_setting_DropDownMenu.addChild(#}
+{#                            new MenuSeparator({})#}
+{#                    );#}
+{#                    needSeparator1 = false;#}
+{##}
+{#                }#}
+{#                project_setting_DropDownMenu.addChild(#}
+{#                    dialogCaller({#}
+{#                        label: 'New Shot',#}
+{#                        dialog_id: 'shot_dialog',#}
+{#                        content_creator: dialogs.create_shot_dialog,#}
+{#                        widget_type: 'MenuItem',#}
+{#                        data_id: pID#}
+{#                    })#}
+{#                );#}
+{##}
+{#                needSeparator2 = true;#}
+{#            {% endif %}#}
+{##}
+{#            {% if has_permission('Update_User') %}#}
+{#                if (needSeparator2) {#}
+{#                    project_setting_DropDownMenu.addChild(#}
+{#                            new MenuSeparator({})#}
+{#                    );#}
+{#                }#}
+{##}
+{#                project_setting_DropDownMenu.addChild(#}
+{#                    dialogCaller({#}
+{#                        label: 'Append User',#}
+{#                        dialog_id: 'append_user_dialog',#}
+{#                        content_creator: dialogs.append_user_dialog,#}
+{#                        widget_type: 'MenuItem',#}
+{#                        data_id: pID#}
+{#                    })#}
+{#                );#}
+{#            {% endif %}#}
+{##}
+{#            return project_setting_DropDownMenu;#}
+{##}
+{#        };#}
+
+{#        var projectPopupMenuItem = function (mItem, dLabel, dId) {#}
+{#            if (mItem.classname != 'PopupMenuItem') {#}
+{#                return new PopupMenuItem({#}
+{#                    label: dLabel,#}
+{#                    dataId: dId,#}
+{#                    popup: create_project_setting_DropDownMenu(dId)#}
+{#                });#}
+{#            }#}
+{#            else {#}
+{#                return mItem;#}
+{#            }#}
+{#        };#}
+
+{#        var projectMenuItemCreator = function (dLabel, dId) {#}
+{#            var projectMenuItem = new MenuItem({#}
+{#                label: dLabel,#}
+{#                dataId: dId,#}
+{#                onClick: function () {#}
+{#                    central_content_pane.set(#}
+{#                            'href',#}
+{#                            'projects/' + this.get('dataId') + '/view'#}
+{#                    );#}
+{#                    central_content_pane.refresh();#}
+{#                }#}
+{#            });#}
+{##}
+{##}
+{#            {% if has_permission('Update_Project') %}#}
+{#                projectMenuItem = projectPopupMenuItem(projectMenuItem, dLabel, dId);#}
+{#            {% endif %}#}
+{##}
+{##}
+{#            // -----#}
+{#            {% if has_permission('Create_Asset') %}#}
+{#                // Asset#}
+{#                projectMenuItem = projectPopupMenuItem(projectMenuItem, dLabel, dId);#}
+{#            {% endif %}#}
+{##}
+{#            // --------#}
+{#            {% if has_permission('Create_Sequence') %}#}
+{#                // Sequence#}
+{#                projectMenuItem = projectPopupMenuItem(projectMenuItem, dLabel, dId);#}
+{#            {% endif %}#}
+{##}
+{#            // ----#}
+{#            {% if has_permission('Create_Shot') %}#}
+{#                // Shot#}
+{#                projectMenuItem = projectPopupMenuItem(projectMenuItem, dLabel, dId);#}
+{#            {% endif %}#}
+{##}
+{#            return projectMenuItem;#}
+{#        };#}
+
+{#        var target = '{{ request.route_url("get_entity_projects", id=logged_in_user.id) }}';#}
+{#        {% if has_permission('List_Project') %}#}
+{#            target = '{{ request.route_url("get_projects") }}';#}
+{#        {% endif %}#}
+
+{#        // Project Memory#}
+{#        var projects_memory = new JsonRest({#}
+{#            target: target#}
+{#        });#}
+
+{#        // Projects Updater#}
+{#        var projects_DropDownMenu_updater = function () {#}
+{#            // delete the current items#}
+{#            var items = projects_DropDownMenu.getChildren();#}
+{#            for (var i = 0; i < items.length; i++) {#}
+{#                items[i].destroyRecursive();#}
+{#            }#}
+{##}
+{#            // query new items#}
+{#            var result = projects_memory.query().then(function (data) {#}
+{#                for (var i = 0; i < data.length; i++) {#}
+{#                    projects_DropDownMenu.addChild(projectMenuItemCreator(data[i].name, data[i].id));#}
+{#                }#}
+{#                var needSeparator = false;#}
+{#                if (i > 0) {#}
+{#                    needSeparator = true;#}
+{##}
+{#                }#}
+{##}
+{#                {% if has_permission('Create_Project') %}#}
+{#                    if (needSeparator) {#}
+{#                        projects_DropDownMenu.addChild(#}
+{#                                new MenuSeparator({})#}
+{#                        );#}
+{#                    }#}
+{#                    projects_DropDownMenu.addChild(#}
+{#                        dialogCaller({#}
+{#                            label: 'New Project',#}
+{#                            dialog_id: 'project_dialog',#}
+{#                            content_creator: dialogs.create_project_dialog,#}
+{#                            widget_type: 'MenuItem',#}
+{#                            related_field_updater: projects_DropDownMenu_updater#}
+{#                        })#}
+{#                    );#}
+{#                {% endif %}#}
+{##}
+{##}
+{##}
+{#                // -----#}
+{#                {% if has_permission('Create_Asset') %}#}
+{#                    if (needSeparator) {#}
+{#                        projects_DropDownMenu.addChild(#}
+{#                                new MenuSeparator({})#}
+{#                        );#}
+{#                        needSeparator = false;#}
+{#                    }#}
+{#                    // Asset#}
+{#                    projects_DropDownMenu.addChild(#}
+{#                        dialogCaller({#}
+{#                            label: 'New Asset',#}
+{#                            dialog_id: 'asset_dialog',#}
+{#                            content_creator: dialogs.create_asset_dialog,#}
+{#                            widget_type: 'MenuItem'#}
+{##}
+{#                        })#}
+{#                    );#}
+{#                {% endif %}#}
+{##}
+{#                // --------#}
+{#                {% if has_permission('Create_Sequence') %}#}
+{#                    // Sequence#}
+{#                    if (needSeparator) {#}
+{#                        projects_DropDownMenu.addChild(#}
+{#                                new MenuSeparator({})#}
+{#                        );#}
+{#                        needSeparator = false;#}
+{#                    }#}
+{##}
+{#                    projects_DropDownMenu.addChild(#}
+{#                        dialogCaller({#}
+{#                            label: 'New Sequence',#}
+{#                            dialog_id: 'sequence_dialog',#}
+{#                            content_creator: dialogs.create_sequence_dialog,#}
+{#                            widget_type: 'MenuItem'#}
+{#                        })#}
+{#                    );#}
+{#                {% endif %}#}
+{##}
+{#                // ----#}
+{#                {% if has_permission('Create_Shot') %}#}
+{#                    // Shot#}
+{##}
+{#                    if (needSeparator) {#}
+{#                        projects_DropDownMenu.addChild(#}
+{#                                new MenuSeparator({})#}
+{#                        );#}
+{#                        needSeparator = false;#}
+{#                    }#}
+{##}
+{#                    projects_DropDownMenu.addChild(#}
+{#                        dialogCaller({#}
+{#                            label: 'New Shot',#}
+{#                            dialog_id: 'shot_dialog',#}
+{#                            content_creator: dialogs.create_shot_dialog,#}
+{#                            widget_type: 'MenuItem'#}
+{#                        })#}
+{#                    );#}
+{#                {% endif %}#}
+{#            });#}
+{#        };#}
+{#        projects_DropDownMenu_updater();#}
+
+
+{#        // ******************************************************************#}
+{#        // CREW - Users / Departments / Groups#}
+{#        var crew_DropDownMenu = new DropDownMenu();#}
+{##}
+{#        stalker_MenuBar.addChild(new PopupMenuBarItem({#}
+{#            label: 'CREW',#}
+{#            popup: crew_DropDownMenu#}
+{#        }));#}
+{##}
+{#        var allow_create_new_user = false;#}
+{#        var allow_create_new_department = false;#}
+{#        var allow_create_new_group = false;#}
+{#        #}
+{#        {% if has_permission('Create_User') %}#}
+{#            allow_create_new_user = true;#}
+{#        {% endif %}#}
+{#        {% if has_permission('Create_Department') %}#}
+{#            allow_create_new_department = true;#}
+{#        {% endif %}#}
+{#        {% if has_permission('Create_Group') %}#}
+{#            allow_create_new_group = true;#}
+{#        {% endif %}#}
+{#    #}
+{#        {% if has_permission('List_User') %}#}
+{#            teamMenuCreator({#}
+{#                team_is_singular: true,#}
+{#                menu_to_attach: crew_DropDownMenu,#}
+{#                entity_type_name: 'user',#}
+{#                view_entity_url: 'users/{id}/view',#}
+{#                query_entity_url: 'users/',#}
+{#                content_pane_to_update: central_content_pane,#}
+{#                new_team_dialog_id: 'user_dialog',#}
+{#                new_team_dialog_content_creator: dialogs.create_user_dialog,#}
+{#                allow_create_new: allow_create_new_user#}
+{#            });#}
+{#        {% endif %}#}
+{#    #}
+{#        {% if has_permission('List_Department') %}#}
+{#            teamMenuCreator({#}
+{#                menu_to_attach: crew_DropDownMenu,#}
+{#                entity_type_name: 'department',#}
+{#                view_entity_url: 'departments/{id}/view',#}
+{#                query_entity_url: 'departments/',#}
+{#                content_pane_to_update: central_content_pane,#}
+{#                new_team_dialog_id: 'department_dialog',#}
+{#                new_team_dialog_content_creator: dialogs.create_department_dialog,#}
+{#                allow_create_new: allow_create_new_department#}
+{#            });#}
+{#        {% endif %}#}
+{##}
+{#        {% if has_permission('List_Group') %}#}
+{#            teamMenuCreator({#}
+{#                menu_to_attach: crew_DropDownMenu,#}
+{#                entity_type_name: 'group',#}
+{#                view_entity_url: 'groups/{id}/view',#}
+{#                query_entity_url: 'groups/',#}
+{#                content_pane_to_update: central_content_pane,#}
+{#                new_team_dialog_id: 'group_dialog',#}
+{#                new_team_dialog_content_creator: dialogs.create_group_dialog,#}
+{#                allow_create_new: allow_create_new_group#}
+{#            });#}
+{#        {% endif %}#}
+{##}
+{#        stalker_MenuBar.startup();#}
+{##}
+{##}
+{#        // ******************************************************************#}
+{#        // ME BAR#}
+{#        var mebar_tooltipDialog = new TooltipDialog({#}
+{#            id: 'mebar_tooltipDialog',#}
+{#            style: 'width: 250px; height: 100%',#}
+{#            href: '/me_menu',#}
+{#            onMouseLeave: function () {#}
+{#                mebar_tooltipDialog.set('visible', false);#}
+{#                popup.close(mebar_tooltipDialog);#}
+{#            }#}
+{#        });#}
+{#        mebar_tooltipDialog.startup();#}
+{##}
+{#        var settings_button = dialogCaller({#}
+{#            label: 'Update',#}
+{#            dialog_id: 'update_user_dialog',#}
+{#            content_creator: dialogs.update_user_dialog,#}
+{#            attach_to: 'settings_button',#}
+{#            data_id: '{{ logged_in_user.id }}'#}
+{#        });#}
+{#        settings_button.startup();#}
+{##}
+{#        //#}
+{#        var mebar_dropDownButton = DropDownButton({#}
+{#            label: '{{ logged_in_user.name }}',#}
+{#            dropDown: mebar_tooltipDialog,#}
+{#            style: 'margin-top: 0px; margin-bottom: 0px; color: #000000'#}
+{#        }, 'mebutton');#}
+{#        mebar_dropDownButton.startup();#}
+
+        // ******************************************************************
+        // startup app layout
+        appLayout.startup();
+
+{#        // load user home by default#}
+{#        central_content_pane.set(#}
+{#                'href',#}
+{#                '{{ request.route_url('view_user', id=logged_in_user.id) }}'#}
+{#        );#}
+{#        central_content_pane.refresh();#}
+    });
+    </script>
+{% endblock body %}
+</body>
+</html>

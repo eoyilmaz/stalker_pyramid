@@ -71,11 +71,16 @@ def main(global_config, **settings):
     config.include('pyramid_jinja2')
     config.include('pyramid_mailer')
     config.add_static_view('static', 'static', cache_max_age=3600)
+    config.add_static_view('deform', 'deform:static', cache_max_age=3600)
+    config.add_static_view('deform_bootstrap', 'deform_bootstrap:static', cache_max_age=3600)
 
     # *************************************************************************
     # Basics
+    config.add_route('deform_test', '/deform_test')
+
     config.add_route('home', '/')
     config.add_route('me_menu', '/me_menu')
+    config.add_route('signin', '/signin')
     config.add_route('login', '/login')
     config.add_route('logout', '/logout')
 

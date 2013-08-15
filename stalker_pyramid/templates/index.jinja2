@@ -23,19 +23,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <!-- CSS -->
-    
-    <link rel="stylesheet" href="/static/bootstrap-3.0.0/css/bootstrap.min.css" type="text/css" />
     <link rel="stylesheet" href="/deform_bootstrap/deform_bootstrap.css" type="text/css" />
     <link rel="stylesheet" href="/deform_bootstrap/bootstrap-datepicker.css" type="text/css" />
-    <link rel="stylesheet" href="/deform_bootstrap/jquery_chosen/chosen.css" type="text/css" />
     <link rel="stylesheet" href="/deform_bootstrap/chosen_bootstrap.css" type="text/css" />
-    <link rel="stylesheet" href="/static/bootstrap/css/bootstrap-responsive.css">
-{#    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->#}
-{#    <!--[if lt IE 9]>#}
-{#      <script src="../assets/js/html5shiv.js"></script>#}
-{#    <![endif]-->#}
+    <link rel="stylesheet" href="/static/stalker/css/bootstrap-responsive.css">
+</head>
+<body>
 
 
+    {{ form|safe }}
+    
+    <script type="text/javascript">
+       deform.load()
+    </script>
+    
+    
+    
+    
+    
+    
+    
     <!-- JavaScript -->
     <script type="text/javascript"
           src="/deform_bootstrap/jquery-1.7.1.min.js"></script>
@@ -56,15 +63,9 @@
     <script type="text/javascript"
           src="/deform_bootstrap/bootstrap-typeahead.js"></script>
     <script type="text/javascript"
-          src="deform_bootstrap/jquery_chosen/chosen.jquery.min.js"></script>
-    <script type="text/javascript"
-          src="/static/bootstrap-3.0.0/js/bootstrap.min.js"></script>
+          src="/deform_bootstrap/bootstrap.min.js"></script>
     <script type="text/javascript"
           src="/deform_bootstrap/deform_bootstrap.js"></script>
 
-</head>
-<body>
-{% block content %}
-{% endblock content %}
 </body>
 </html>

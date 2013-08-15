@@ -20,6 +20,7 @@
 
 import datetime
 from pyramid.httpexceptions import HTTPOk, HTTPServerError
+from pyramid.response import Response
 from pyramid.view import view_config
 
 from stalker.db import DBSession
@@ -31,7 +32,54 @@ from stalker_pyramid.views import (get_date, get_logged_in_user,
 import logging
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.WARNING)
+logger.setLevel(logging.DEBUG)
+
+
+import colander 
+from deform import Form, ValidationFailure
+
+
+@view_config(
+    route_name='deform_test',
+    renderer='templates/index.jinja2'
+)
+def deform_test(request):
+    """testing the deform library
+    """
+    class Person(colander.MappingSchema):
+        name = colander.SchemaNode(colander.String())
+        age = colander.SchemaNode(colander.Integer(),
+                                  validator=colander.Range(0, 200))
+
+    class People(colander.SequenceSchema):
+        person = Person()
+
+    class Schema(colander.MappingSchema):
+        people = People()
+
+    schema = Schema()
+    myform = Form(schema=schema, buttons=('submit',))
+
+    if 'submit' in request.POST:
+        logger.debug('submit in POST')
+
+        controls = request.POST.items()
+        try:
+            appstruct = myform.validate(controls)  # call validate
+        except ValidationFailure, e: # catch the exception
+            return {'form':e.render()} # re-render the form with an exception
+
+        # the form submission succeeded, we have the data
+        return {
+            'form': None,
+            'appstruct': appstruct
+        }
+
+    html = myform.render()
+
+    return {
+        'form': html
+    }
 
 
 @view_config(
