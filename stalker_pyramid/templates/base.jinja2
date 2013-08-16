@@ -23,14 +23,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <!-- CSS -->
-{#    <link rel="stylesheet" href="/deform_bootstrap/deform_bootstrap.css"#}
-{#          type="text/css"/>#}
-{#    <link rel="stylesheet" href="/deform_bootstrap/bootstrap-datepicker.css"#}
-{#          type="text/css"/>#}
-{#    <link rel="stylesheet" href="/deform_bootstrap/jquery_chosen/chosen.css"#}
-{#          type="text/css"/>#}
-{#    <link rel="stylesheet" href="/deform_bootstrap/chosen_bootstrap.css"#}
-{#          type="text/css"/>#}
+    {#    <link rel="stylesheet" href="/deform_bootstrap/deform_bootstrap.css"#}
+    {#          type="text/css"/>#}
+    {#    <link rel="stylesheet" href="/deform_bootstrap/bootstrap-datepicker.css"#}
+    {#          type="text/css"/>#}
+    {#    <link rel="stylesheet" href="/deform_bootstrap/jquery_chosen/chosen.css"#}
+    {#          type="text/css"/>#}
+    {#    <link rel="stylesheet" href="/deform_bootstrap/chosen_bootstrap.css"#}
+    {#          type="text/css"/>#}
     <link rel="stylesheet" href="/static/bootstrap/css/bootstrap.css"
           type="text/css"/>
     <link rel="stylesheet"
@@ -42,7 +42,6 @@
     {#    <![endif]-->#}
 
 
-
 </head>
 <body>
 {% block content %}
@@ -52,14 +51,55 @@
             <div class="navbar-inner">
                 <div class='container-fluid'>
                     <div class='navbar-header'>
-                        <a class="brand" href="/">Stalker <small>v{{ stalker_pyramid.__version__ }}</small></a>
+                        <a class="brand" href="/">Stalker
+                            <small>v{{ stalker_pyramid.__version__ }}</small>
+                        </a>
                     </div>
-                    <p class="navbar-text pull-right">Logged in as <a href="#" class="navbar-link">{{ logged_in_user.name }}</a></p>
+                    <p class="navbar-text pull-right">Logged in as <a href="#"
+                                                                      class="navbar-link">{{ logged_in_user.name }}</a>
+                    </p>
+
                     <div class="container-fluid">
                         <ul class="nav navbar-nav">
-                            <li class="active"><a href="#">Home</a></li>
-                            <li><a href="#about">About</a></li>
-                            <li><a href="#contact">Contact</a></li>
+                            <li><a href="#Studio">HOME</a></li>
+                            <li class="dropdown">
+                                <a class="dropdown-toggle"
+                                   data-toggle="dropdown" href="#"
+                                   id="download">Studio <span
+                                        class="caret"></span></a>
+                                <ul class="dropdown-menu"
+                                    aria-labelledby="download">
+                                    <li><a tabindex="-1"
+                                           href="#">bootstrap.min.css</a>
+                                    </li>
+                                    <li><a tabindex="-1"
+                                           href="#">bootstrap.css</a>
+                                    </li>
+                                    <li class="divider"></li>
+                                    <li><a tabindex="-1"
+                                           href="#">variables.less</a>
+                                    </li>
+                                    <li><a tabindex="-1"
+                                           href="#">bootswatch.less</a>
+                                    </li>
+                                </ul>
+                            </li>
+
+                            <li><a href="#Crew">Crew</a></li>
+                            <li class="dropdown">
+                                <a href="#" class="dropdown-toggle"
+                                   data-toggle="dropdown">Dropdown <b
+                                        class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    <li><a href="#">Action</a></li>
+                                    <li><a href="#">Another action</a></li>
+                                    <li><a href="#">Something else here</a>
+                                    </li>
+                                    <li><a href="#">Separated link</a></li>
+                                    <li><a href="#">One more separated link</a>
+                                    </li>
+                                </ul>
+                            </li>
                         </ul>
                     </div>
                 </div>
@@ -77,14 +117,14 @@
                 </div>
             </div>
 
-            
+
             <div class="row-fluid">
                 <div class='span10'>
                     {% block main_content %}
                     {% endblock main_content %}
                 </div>
             </div>
-                
+
         {% endblock main_container %}
     </div>
 
@@ -92,7 +132,9 @@
         <footer>
             <div id="footer" class='panel-footer'>
                 <div class="container">
-                    <p class="muted credit text-center">Stalker Pyramid v{{ stalker_pyramid.__version__ }} &copy; 2013 Erkan Ozgur Yilmaz.
+                    <p class="muted credit text-center">Stalker Pyramid
+                        v{{ stalker_pyramid.__version__ }} &copy; 2013 Erkan
+                        Ozgur Yilmaz.
                     </p>
                 </div>
             </div>
@@ -102,9 +144,9 @@
 
 {% endblock content %}
 
-    <!-- JavaScript -->
-    <script type="text/javascript"
-            src="/static/jquery/1.9.1/jquery.js"></script>
+<!-- JavaScript -->
+<script type="text/javascript"
+        src="/static/jquery/1.9.1/jquery.js"></script>
 
 {#    <script type="text/javascript"#}
 {#            src="/deform_bootstrap/jquery-ui-1.8.18.custom.min.js"></script>#}
@@ -126,9 +168,8 @@
 {#            src="deform_bootstrap/jquery_chosen/chosen.jquery.min.js"></script>#}
 {#    <script type="text/javascript"#}
 {#            src="/deform_bootstrap/deform_bootstrap.js"></script>#}
-    <script type="text/javascript"
-            src="/static/bootstrap/js/bootstrap.js"></script>
-
+<script type="text/javascript"
+        src="/static/bootstrap/js/bootstrap.js"></script>
 
 
 </body>
