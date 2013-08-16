@@ -19,7 +19,9 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 import logging
 from pyramid.view import view_config
-from stalker import Entity
+from stalker import Entity, Studio
+
+import stalker_pyramid
 from stalker_pyramid.views import PermissionChecker, get_logged_in_user, milliseconds_since_epoch
 
 
@@ -82,7 +84,7 @@ logger.setLevel(logging.DEBUG)
 )
 @view_config(
     route_name='list_user_tasks',
-    renderer='templates/task/content_list_tasks.jinja2'
+    renderer='templates/task/list_entity_tasks.jinja2'
 )
 @view_config(
     route_name='list_project_tasks',
@@ -94,7 +96,7 @@ logger.setLevel(logging.DEBUG)
 )
 @view_config(
     route_name='list_entity_tasks',
-    renderer='templates/task/content_list_tasks.jinja2'
+    renderer='templates/task/list_entity_tasks.jinja2'
 )
 @view_config(
     route_name='list_studio_tasks',
@@ -206,9 +208,13 @@ def get_entity_related_data(request):
     entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
 
+    studio = Studio.query.first()
+
     return {
         'entity': entity,
         'has_permission': PermissionChecker(request),
         'logged_in_user': get_logged_in_user(request),
-        'milliseconds_since_epoch': milliseconds_since_epoch
+        'milliseconds_since_epoch': milliseconds_since_epoch,
+        'stalker_pyramid': stalker_pyramid,
+        'studio': studio,
     }

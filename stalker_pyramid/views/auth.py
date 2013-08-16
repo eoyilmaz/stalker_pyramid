@@ -626,11 +626,7 @@ def forbidden(request):
 def home(request):
     logged_in_user = get_logged_in_user(request)
     studio = Studio.query.first()
-    projects = Project.query.all()
-
-    logger.debug('logged_in_user : %s' % logged_in_user)
-    logger.debug('studio         : %s' % studio)
-    logger.debug('projects       : %s' % projects)
+    # projects = Project.query.all()
 
     if not logged_in_user:
         return logout(request)
@@ -638,7 +634,7 @@ def home(request):
     return {
         'stalker_pyramid': stalker_pyramid,
         'logged_in_user': logged_in_user,
-        'projects': projects,
+        # 'projects': projects,
         'studio': studio,
         'has_permission': PermissionChecker(request)
     }

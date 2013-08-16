@@ -77,6 +77,8 @@ define([
             // create a GanttTask instance
             var task = new GanttTask(data);
 
+            console.debug('Task : ', task);
+
             // Ensure the start time is always milliseconds since epoch
             // and not a Date object
             column.start = +column.start;
@@ -100,19 +102,21 @@ define([
 
             var taskBar;
             if (task.type === 'Project') {
-                taskBar = $(templates.projectBar(task));
+                taskBar = $($.parseHTML(templates.projectBar(task)));
             } else if (task.type === 'Task' || task.type === 'Asset' ||
                        task.type === 'Shot' || task.type === 'Sequence') {
                 if (task.hasChildren) {
-                    taskBar = $(templates.parentTaskBar(task));
+                    taskBar = $($.parseHTML(templates.parentTaskBar(task)));
                 } else {
-                    taskBar = $(templates.taskBar(task));
+                    taskBar = $($.parseHTML(templates.taskBar(task)));
                 }
             }
+
             taskBar.css({
                 left: left,
                 width: width
             });
+
             $(td).append(taskBar);
 
             // Create the overlay for the amount of the task that has been completed
@@ -130,6 +134,8 @@ define([
             // render today
             var today_as_millis = (new Date()).getTime();
             put(td, "div.today[style=left:" + Math.floor((today_as_millis - column.start) / column.scale) + "px;]");
+
+            console.debug('code is here 4');
 
 
             // TODO: enable this part later

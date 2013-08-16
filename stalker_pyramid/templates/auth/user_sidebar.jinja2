@@ -6,16 +6,14 @@
         <div class="media">
             <a class="pull-left" href="#">
                 <img style='width:64px; height: auto; overflow: hidden;' class="thumbnail" src="{%- if logged_in_user.thumbnail -%}
-                    {{ logged_in_user.thumbnail.full_path }}
+                    /{{ logged_in_user.thumbnail.full_path }}
                 {%- else -%}
                     {{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_0.png") }}
                 {%- endif -%}">
             </a>
             <div class="media-body">
                 <h5 class="media-heading">{{ logged_in_user.name }} <small>({{ logged_in_user.login }})</small></h5>
-                <button class='btn btn-primary btn-small'>
-                    Edit Profile
-                </button>
+                <button class='btn btn-primary btn-small'>Edit Profile »</button>
             </div>
         </div>
 
@@ -24,7 +22,12 @@
         <li class='divider'></li>
 
         {# Tasks #}
-        <li><a href='#'>Tasks <span class='badge badge-info'>{{ logged_in_user.tasks | count }}</span></a></li>
+
+        {% if request.current_route_path() == request.route_path('list_user_tasks', id=logged_in_user.id) %}
+            <li class='active'><a>Tasks <span class='badge badge-info'>{{ logged_in_user.tasks | count }}</span></a></li>
+        {% else %}
+            <li><a href='{{ request.route_url('list_user_tasks', id=logged_in_user.id) }}'>Tasks <span class='badge badge-info'>{{ logged_in_user.tasks | count }}</span></a></li>
+        {% endif %}
 
         <li class='divider'></li>
 
@@ -40,7 +43,7 @@
 
         {# Projects #}
         <li class='nav-header'>Projects</li>
-        {% for project in projects %}
+        {% for project in logged_in_user.projects %}
             <li><a href='#'>{{ project.name }} ({{ project.code }})</a></li>
         {% endfor %}
         
