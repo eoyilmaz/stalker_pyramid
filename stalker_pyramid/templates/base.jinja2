@@ -48,62 +48,208 @@
 
     {% block navbar %}
         <div class='navbar navbar-inverse navbar-fixed-top'>
-            <div class="navbar-inner">
-                <div class='container-fluid'>
-                    <div class='navbar-header'>
-                        <a class="brand" href="/">Stalker
-                            <small>v{{ stalker_pyramid.__version__ }}</small>
-                        </a>
-                    </div>
-                    <p class="navbar-text pull-right">Logged in as <a href="#"
-                                                                      class="navbar-link">{{ logged_in_user.name }}</a>
-                    </p>
+        <div class="navbar-inner">
+            <div class='container-fluid'>
+                <div class='navbar-header'>
+                    <a class="brand" href="/">Stalker
+                        <small>v{{ stalker_pyramid.__version__ }}</small>
+                    </a>
+                </div>
+                <p class="navbar-text pull-right">Logged in as <a href="#"
+                                                                  class="navbar-link">{{ logged_in_user.name }}</a>
+                </p>
 
-                    <div class="container-fluid">
-                        <ul class="nav navbar-nav">
-                            <li><a href="#Studio">HOME</a></li>
-                            <li class="dropdown">
-                                <a class="dropdown-toggle"
-                                   data-toggle="dropdown" href="#"
-                                   id="download">Studio <span
-                                        class="caret"></span></a>
-                                <ul class="dropdown-menu"
-                                    aria-labelledby="download">
-                                    <li><a tabindex="-1"
-                                           href="#">bootstrap.min.css</a>
-                                    </li>
-                                    <li><a tabindex="-1"
-                                           href="#">bootstrap.css</a>
-                                    </li>
-                                    <li class="divider"></li>
-                                    <li><a tabindex="-1"
-                                           href="#">variables.less</a>
-                                    </li>
-                                    <li><a tabindex="-1"
-                                           href="#">bootswatch.less</a>
-                                    </li>
-                                </ul>
-                            </li>
+                <div class="container-fluid">
+                    <ul class="nav navbar-nav">
+                        <li><a href="#">Home</a></li>
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle"
+                               data-toggle="dropdown">Studio <b
+                                    class="caret"></b></a>
+                            <ul class="dropdown-menu">
+                                {% if not studio %}#}
+                                    {% if has_permission('Create_Studio') %}
+                                        <li><a href="#">Create Studio</a>
+                                        </li>
+                                    {% endif %}
+                                {% else %}
+                                    {% if has_permission('Read_Studio') %}
+                                        <li>
+                                            <a href="#">{{ studio.name }}</a>
+                                        </li>
+                                    {% endif %}
+                                {% endif %}
+                                <li class="divider"></li>
+                                <li class="dropdown-submenu">
+                                    <a tabindex="-1" href="#">New</a>
+                                    <ul class="dropdown-menu">
 
-                            <li><a href="#Crew">Crew</a></li>
+                                        {% if has_permission('Create_FilenameTemplate') %}
+
+                                            <li>
+                                                <a href="#">FilenameTemplate</a>
+                                            </li>
+                                        {% endif %}
+
+
+                                        {% if has_permission('Create_ImageFormat') %}
+                                            <li><a href="#">Image
+                                                Format</a>
+                                            </li>
+                                        {% endif %}
+
+
+                                        {% if has_permission('Create_Repository') %}
+                                            <li><a href="#">Repository</a>
+                                            </li>
+                                        {% endif %}
+
+                                        {% if has_permission('Create_Status') %}
+                                            <li><a href="#">Status</a>
+                                            </li>
+                                        {% endif %}
+
+
+                                        {% if has_permission('Create_StatusList') %}
+                                            <li><a href="#">Status List</a>
+                                            </li>
+                                        {% endif %}
+
+
+                                        {% if has_permission('Create_Structure') %}
+                                            <li><a href="#">Structure</a>
+                                            </li>
+                                        {% endif %}
+                                    </ul>
+                                </li>
+                            </ul>
+                        </li>
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle"
+                               data-toggle="dropdown">Crew <b
+                                    class="caret"></b></a>
+                            <ul class="dropdown-menu" role="menu"
+                                aria-labelledby="dropdownMenu">
+                                {% if has_permission('List_User') %}
+                                    <li class="dropdown-submenu">
+                                        <a tabindex="-1" href="#">Users</a>
+                                        <ul class="dropdown-menu">
+
+                                            {% for user in studio.users %}
+                                                <li>
+                                                    <a href='#'>{{ user.name }}
+                                                        ({{ user.login }})</a>
+                                                </li>
+                                            {% endfor %}
+
+                                            {% if has_permission('Create_User') %}
+                                                <li class="divider"></li>
+                                                <li>
+                                                    <a href='#'>New
+                                                        User</a>
+                                                </li>
+                                            {% endif %}
+                                        </ul>
+                                    </li>
+                                {% endif %}
+                                {% if has_permission('List_Department') %}
+                                    <li class="dropdown-submenu">
+                                        <a tabindex="-1"
+                                           href="#">Departments</a>
+                                        <ul class="dropdown-menu">
+
+                                            {% for department in studio.departments %}
+                                                <li class="dropdown-submenu">
+                                                    <a tabindex="-1"
+                                                       href="#">{{ department.name }}</a>
+                                                    <ul class="dropdown-menu">
+                                                        {% for user in department.users %}
+                                                            <li>
+                                                                <a href='#'>{{ user.name }}</a>
+                                                            </li>
+                                                        {% endfor %}
+                                                        {% if has_permission('Create_User') %}
+                                                            <li class="divider"></li>
+                                                            <li>
+                                                                <a href='#'>New
+                                                                    User</a>
+                                                            </li>
+                                                        {% endif %}
+                                                    </ul>
+                                                </li>
+                                            {% endfor %}
+
+                                            {% if has_permission('Create_Department') %}
+                                                <li class="divider"></li>
+                                                <li>
+                                                    <a href='#'>New
+                                                        Department</a>
+                                                </li>
+                                            {% endif %}
+                                        </ul>
+                                    </li>
+                                {% endif %}
+                                {% if has_permission('List_Group') %}
+                                    <li class="dropdown-submenu">
+                                        <a tabindex="-1"
+                                           href="#">Groups</a>
+                                        <ul class="dropdown-menu">
+                                            {% for group in groups %}
+                                                <li class="dropdown-submenu">
+                                                    <a tabindex="-1"
+                                                       href="#">{{ group.name }}</a>
+                                                    <ul class="dropdown-menu">
+                                                        {% for user in group.users %}
+                                                            <li>
+                                                                <a href='#'>{{ user.name }}</a>
+                                                            </li>
+                                                        {% endfor %}
+                                                        {% if has_permission('Create_User') %}
+                                                            <li class="divider"></li>
+                                                            <li>
+                                                                <a href='#'>New
+                                                                    User</a>
+                                                            </li>
+                                                        {% endif %}
+                                                    </ul>
+                                                </li>
+                                            {% endfor %}
+                                            {% if has_permission('Create_Group') %}
+                                                <li class="divider"></li>
+                                                <li>
+                                                    <a href='#'>New
+                                                        Group</a>
+                                                </li>
+                                            {% endif %}
+                                        </ul>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </li>
+                        {% if has_permission('List_Project') %}
                             <li class="dropdown">
                                 <a href="#" class="dropdown-toggle"
-                                   data-toggle="dropdown">Dropdown <b
+                                   data-toggle="dropdown">Projects <b
                                         class="caret"></b></a>
                                 <ul class="dropdown-menu">
-                                    <li><a href="#">Action</a></li>
-                                    <li><a href="#">Another action</a></li>
-                                    <li><a href="#">Something else here</a>
-                                    </li>
-                                    <li><a href="#">Separated link</a></li>
-                                    <li><a href="#">One more separated link</a>
-                                    </li>
+                                    {% for project in projects %}
+                                        <li>
+                                            <a href='#'>{{ project.name }}</a>
+                                        </li>
+                                    {% endfor %}
+                                    {% if has_permission('Create_Project') %}
+                                        <li class="divider"></li>
+                                        <li>
+                                            <a href='#'>New Project</a>
+                                        </li>
+                                    {% endif %}
                                 </ul>
                             </li>
-                        </ul>
-                    </div>
+                        {% endif %}
+                    </ul>
                 </div>
             </div>
+        </div>
         </div>
     {% endblock navbar %}
 

@@ -627,6 +627,7 @@ def home(request):
     logged_in_user = get_logged_in_user(request)
     studio = Studio.query.first()
     projects = Project.query.all()
+    groups = Group.query.all()
 
     logger.debug('logged_in_user : %s' % logged_in_user)
     logger.debug('studio         : %s' % studio)
@@ -639,6 +640,7 @@ def home(request):
         'stalker_pyramid': stalker_pyramid,
         'logged_in_user': logged_in_user,
         'projects': projects,
+        'groups':groups,
         'studio': studio,
         'has_permission': PermissionChecker(request)
     }

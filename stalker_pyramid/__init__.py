@@ -23,7 +23,7 @@ Animation and VFX Studios. See docs for more information.
 """
 from zope.sqlalchemy import ZopeTransactionExtension
 
-__version__ = '0.1.0.b3'
+__version__ = '0.1.0.b4'
 
 
 # before anything about stalker create the defaults
