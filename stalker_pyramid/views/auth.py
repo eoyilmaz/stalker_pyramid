@@ -19,7 +19,8 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 import datetime
 import colander
-from deform import widget, Form, ValidationFailure
+from deform import widget
+import deform
 
 from pyramid.httpexceptions import HTTPFound, HTTPOk, HTTPServerError
 from pyramid.security import authenticated_userid, forget, remember
@@ -544,7 +545,7 @@ def get_permissions_from_multi_dict(multi_dict):
                     .filter_by(action=action) \
                     .filter_by(class_name=class_name) \
                     .first()
-    
+
                 if permission:
                     permissions.append(permission)
 
@@ -568,7 +569,6 @@ def logout(request):
 def login(request):
     """the login view
     """
-
     logger.debug('login start')
     login_url = request.route_url('login')
     referrer = request.url
@@ -576,114 +576,33 @@ def login(request):
         referrer = '/'
 
     came_from = request.params.get('came_from', referrer)
-    # message = ''
-    # login = ''
-    # password = ''
-    # 
-    # if 'submitted' in request.params:
-    #     login = request.params['login']
-    #     password = request.params['password']
-    # 
-    #     # need to find the user
-    #     # check with the login or email attribute
-    #     user_obj = User.query \
-    #         .filter(or_(User.login == login, User.email == login)).first()
-    # 
-    #     if user_obj:
-    #         login = user_obj.login
-    # 
-    #     if user_obj and user_obj.check_password(password):
-    #         headers = remember(request, login)
-    #         return HTTPFound(
-    #             location=came_from,
-    #             headers=headers,
-    #         )
-    # 
-    #     message = 'Wrong username or password!!!'
-    # 
-    # logger.debug('login end')
-    # return dict(
-    #     message=message,
-    #     url='/signin',
-    #     came_from=came_from,
-    #     login=login,
-    #     password=password,
-    #     stalker_pyramid=stalker_pyramid
-    # )
 
-    def login_validator(form, value):
-        login = value['login']
-        password = value['password']
+    login = request.params.get('login', '')
+    password = request.params.get('password', '')
+    has_error = False
 
-        # need to find the user
-        # check with the login or email attribute
-        user_obj = User.query \
+    if 'submit' in request.params:
+        # get the user again (first got it in validation)
+        user_obj = User.query\
             .filter(or_(User.login == login, User.email == login)).first()
 
-        if not user_obj or not user_obj.check_password(password):
-            message = 'Wrong username or password!!!'
-            exc = colander.Invalid(form, message)
-            exc['login'] = message
-            exc['password'] = message
-            raise exc
-
-    class LoginInfoSchema(colander.MappingSchema):
-        login = colander.SchemaNode(
-            colander.String(),
-            title='Login or Email',
-            widget=widget.TextInputWidget(
-                placeholder='Login or Email Address',
-                css_class='input-block-level'
-            )
-        )
-        password = colander.SchemaNode(
-            colander.String(),
-            widget = widget.PasswordWidget(
-                placeholder='Password',
-                css_class='input-block-level'
-            ),
-            validator = colander.Length(min=5),
-            data_placeholder='Password'
-        )
-        # remember_me = colander.SchemaNode(colander.Boolean(), default=False)
-
-    schema = LoginInfoSchema(
-        validator=login_validator
-    )
-    myform = Form(
-        schema=schema,
-        buttons=('Sign In',),
-        bootstrap_form_style='form-signin'
-    )
-
-    if 'Sign_In' in request.POST:
-        controls = request.POST.items()
-        try:
-            appstruct = myform.validate(controls)
-            logger.debug('appstruct : %s' % appstruct)
-
-            login = appstruct['login']
-            # get the user again (first got it in validation)
-            user_obj = User.query\
-                .filter(or_(User.login == login, User.email == login)).first()
+        if user_obj:
             login = user_obj.login
 
+        if user_obj and user_obj.check_password(password):
             headers = remember(request, login)
             # form submission succeeded
             return HTTPFound(
                 location=came_from,
                 headers=headers,
             )
-
-        except ValidationFailure, e:
-            return {
-                'form': e.render()
-            }
-
-    html = myform.render()
+        else:
+            has_error = True
 
     return {
-        'form': html
+        'login': login,
+        'password': password,
+        'has_error': has_error
     }
 
 
@@ -698,7 +617,7 @@ def forbidden(request):
 
 @view_config(
     route_name='home',
-    renderer='templates/index.jinja2'
+    renderer='templates/home.jinja2'
 )
 @view_config(
     route_name='me_menu',
@@ -709,9 +628,9 @@ def home(request):
     studio = Studio.query.first()
     projects = Project.query.all()
 
-    logger.debug('logged_in_user     : %s' % logged_in_user)
-    logger.debug('studio   : %s' % studio)
-    logger.debug('projects : %s' % projects)
+    logger.debug('logged_in_user : %s' % logged_in_user)
+    logger.debug('studio         : %s' % studio)
+    logger.debug('projects       : %s' % projects)
 
     if not logged_in_user:
         return logout(request)
