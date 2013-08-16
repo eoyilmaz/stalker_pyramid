@@ -90,10 +90,7 @@
 
                                         {% if has_permission('Create_User') %}
                                             <li class="divider"></li>
-                                            <li>
-                                                <a href='#'>New
-                                                    User</a>
-                                            </li>
+                                            <li> <a href='#'>New User</a></li>
                                         {% endif %}
                                     </ul>
                                 </li>
@@ -105,32 +102,14 @@
                                     <ul class="dropdown-menu">
 
                                         {% for department in studio.departments %}
-                                            <li class="dropdown-submenu">
-                                                <a tabindex="-1"
-                                                   href="#">{{ department.name }}</a>
-                                                <ul class="dropdown-menu">
-                                                    {% for user in department.users %}
-                                                        <li>
-                                                            <a href='#'>{{ user.name }}</a>
-                                                        </li>
-                                                    {% endfor %}
-                                                    {% if has_permission('Create_User') %}
-                                                        <li class="divider"></li>
-                                                        <li>
-                                                            <a href='#'>New
-                                                                User</a>
-                                                        </li>
-                                                    {% endif %}
-                                                </ul>
+                                            <li>
+                                                <a tabindex="-1" href="#">{{ department.name }}</a>
                                             </li>
                                         {% endfor %}
 
                                         {% if has_permission('Create_Department') %}
                                             <li class="divider"></li>
-                                            <li>
-                                                <a href='#'>New
-                                                    Department</a>
-                                            </li>
+                                            <li><a href='#'>New Department</a></li>
                                         {% endif %}
                                     </ul>
                                 </li>
@@ -141,30 +120,14 @@
                                        href="#">Groups</a>
                                     <ul class="dropdown-menu">
                                         {% for group in groups %}
-                                            <li class="dropdown-submenu">
-                                                <a tabindex="-1"
-                                                   href="#">{{ group.name }}</a>
-                                                <ul class="dropdown-menu">
-                                                    {% for user in group.users %}
-                                                        <li>
-                                                            <a href='#'>{{ user.name }}</a>
-                                                        </li>
-                                                    {% endfor %}
-                                                    {% if has_permission('Create_User') %}
-                                                        <li class="divider"></li>
-                                                        <li>
-                                                            <a href='#'>New
-                                                                User</a>
-                                                        </li>
-                                                    {% endif %}
-                                                </ul>
+                                            <li>
+                                                <a tabindex="-1" href="#">{{ group.name }}</a>
                                             </li>
                                         {% endfor %}
                                         {% if has_permission('Create_Group') %}
                                             <li class="divider"></li>
                                             <li>
-                                                <a href='#'>New
-                                                    Group</a>
+                                                <a href='#'>New Group</a>
                                             </li>
                                         {% endif %}
                                     </ul>
@@ -175,8 +138,7 @@
                     {% if has_permission('List_Project') %}
                         <li class="dropdown">
                             <a href="#" class="dropdown-toggle"
-                               data-toggle="dropdown">Projects <b
-                                    class="caret"></b></a>
+                               data-toggle="dropdown">Projects <b class="caret"></b></a>
                             <ul class="dropdown-menu">
                                 {% for project in projects %}
                                     <li>
