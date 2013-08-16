@@ -31,14 +31,14 @@
 
 
     <!-- CSS -->
-{#    <link rel="stylesheet" href="/deform_bootstrap/deform_bootstrap.css"#}
-{#          type="text/css"/>#}
-{#    <link rel="stylesheet" href="/deform_bootstrap/bootstrap-datepicker.css"#}
-{#          type="text/css"/>#}
-{#    <link rel="stylesheet" href="/deform_bootstrap/jquery_chosen/chosen.css"#}
-{#          type="text/css"/>#}
-{#    <link rel="stylesheet" href="/deform_bootstrap/chosen_bootstrap.css"#}
-{#          type="text/css"/>#}
+    {#    <link rel="stylesheet" href="/deform_bootstrap/deform_bootstrap.css"#}
+    {#          type="text/css"/>#}
+    {#    <link rel="stylesheet" href="/deform_bootstrap/bootstrap-datepicker.css"#}
+    {#          type="text/css"/>#}
+    {#    <link rel="stylesheet" href="/deform_bootstrap/jquery_chosen/chosen.css"#}
+    {#          type="text/css"/>#}
+    {#    <link rel="stylesheet" href="/deform_bootstrap/chosen_bootstrap.css"#}
+    {#          type="text/css"/>#}
     <link rel="stylesheet" href="/static/bootstrap/css/bootstrap.css"
           type="text/css"/>
     <link rel="stylesheet"
@@ -64,23 +64,7 @@
 {% block content %}
 
     {% block navbar %}
-        <div class='navbar navbar-inverse navbar-fixed-top'>
-            <div class="navbar-inner">
-                <div class='container-fluid'>
-                    <div class='navbar-header'>
-                        <a class="brand" href="/">Stalker <small>v{{ stalker_pyramid.__version__ }}</small></a>
-                    </div>
-                    <p class="navbar-text pull-right">Logged in as <a href="#" class="navbar-link">{{ logged_in_user.name }}</a></p>
-                    <div class="container-fluid">
-                        <ul class="nav navbar-nav">
-                            <li class="active"><a href="#">Home</a></li>
-                            <li><a href="#about">About</a></li>
-                            <li><a href="#contact">Contact</a></li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
+        {% include 'navbar.jinja2' %}
     {% endblock navbar %}
 
     <div class="container-fluid">
@@ -97,7 +81,7 @@
                     {% endblock main_content %}
                 </div>
             </div>
-                
+
         {% endblock main_container %}
     </div>
 
