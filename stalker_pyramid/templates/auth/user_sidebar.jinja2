@@ -1,0 +1,68 @@
+{# Render User Side Bar #}
+<div class='well sidebar-nav'>
+    <ul class='nav nav-list'>
+        {# Thumbnail #}
+        <li>
+        <div class="media">
+            <a class="pull-left" href="#">
+                <img style='width:64px; height: auto; overflow: hidden;' class="thumbnail" src="{%- if logged_in_user.thumbnail -%}
+                    {{ logged_in_user.thumbnail.full_path }}
+                {%- else -%}
+                    {{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_0.png") }}
+                {%- endif -%}">
+            </a>
+            <div class="media-body">
+                <h5 class="media-heading">{{ logged_in_user.name }} <small>({{ logged_in_user.login }})</small></h5>
+                <button class='btn btn-primary btn-small'>
+                    Edit Profile
+                </button>
+            </div>
+        </div>
+
+        </li>
+    
+        <li class='divider'></li>
+
+        {# Tasks #}
+        <li><a href='#'>Tasks <span class='badge badge-info'>{{ logged_in_user.tasks | count }}</span></a></li>
+
+        <li class='divider'></li>
+
+        {# Tickets #}
+        <li><a href='#'>Tickets <span class="badge badge-important">{{ logged_in_user.open_tickets | count }}</span></a></li>
+
+        <li class='divider'></li>
+
+        {# TimeLogs #}
+        <li><a href='#'>TimeLogs</a></li>
+
+        <li class='divider'></li>
+
+        {# Projects #}
+        <li class='nav-header'>Projects</li>
+        {% for project in projects %}
+            <li><a href='#'>{{ project.name }} ({{ project.code }})</a></li>
+        {% endfor %}
+        
+        <li class='divider'></li>
+
+        {# Departments #}
+        <li class='nav-header'>Departments</li>
+        {% for department in logged_in_user.departments%}
+            <li><a href='#'>{{ department.name }}</a></li>
+        {% endfor %}
+    
+        <li class='divider'></li>
+
+        {# Permission Groups #}
+        <li class='nav-header'>Permisson Groups</li>
+        {% for group in logged_in_user.groups %}
+            <li><a href='#'>{{ group.name }}</a></li>
+        {% endfor %}
+    
+        <li class='divider'></li>
+        
+         {# Vacations #}
+        <li><a href='#'>Vacations <span class="badge badge-success">{{ logged_in_user.vacations | count }}</span></a></li>
+    </ul>
+</div>
