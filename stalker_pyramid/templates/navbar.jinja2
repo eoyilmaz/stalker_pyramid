@@ -12,7 +12,7 @@
 
             <div class="container-fluid">
                 <ul class="nav navbar-nav">
-                    <li><a href="#">Home</a></li>
+                    <li><a href="/">Home</a></li>
                     <li class="dropdown">
                         <a href="#" class="dropdown-toggle"
                            data-toggle="dropdown">Studio <b
@@ -79,9 +79,8 @@
                             {% if has_permission('List_User') %}
                                 <li class="dropdown-submenu">
                                     <a tabindex="-1" href="#">Users</a>
-                                    <ul class="dropdown-menu">
-
-                                        {% for user in studio.users %}
+                                    <ul class="dropdown-menu pre-scrollable" style='max-height: 750px;'>
+                                        {% for user in users %}
                                             <li>
                                                 <a href='#'>{{ user.name }}
                                                     ({{ user.login }})</a>

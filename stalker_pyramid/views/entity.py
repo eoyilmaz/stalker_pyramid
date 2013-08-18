@@ -19,7 +19,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 import logging
 from pyramid.view import view_config
-from stalker import Entity, Studio
+from stalker import Entity, Studio, Project, Group, User
 
 import stalker_pyramid
 from stalker_pyramid.views import PermissionChecker, get_logged_in_user, milliseconds_since_epoch
@@ -209,6 +209,9 @@ def get_entity_related_data(request):
     entity = Entity.query.filter_by(id=entity_id).first()
 
     studio = Studio.query.first()
+    projects = Project.query.all()
+    groups = Group.query.all()
+    users = User.query.order_by(User.name).all()
 
     return {
         'entity': entity,
@@ -216,5 +219,8 @@ def get_entity_related_data(request):
         'logged_in_user': get_logged_in_user(request),
         'milliseconds_since_epoch': milliseconds_since_epoch,
         'stalker_pyramid': stalker_pyramid,
+        'projects': projects,
+        'groups': groups,
         'studio': studio,
+        'users': users
     }

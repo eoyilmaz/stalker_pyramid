@@ -29,7 +29,7 @@ from sqlalchemy import or_
 
 import stalker_pyramid
 from stalker import (defaults, User, Department, Group, Project, Entity,
-                     Studio, Permission, EntityType)
+                     Studio, Permission, EntityType, Task)
 from stalker.db import DBSession
 from stalker_pyramid.views import (log_param, get_logged_in_user,
                                    PermissionChecker, get_multi_integer, get_tags)
@@ -625,20 +625,36 @@ def forbidden(request):
 )
 def home(request):
     logged_in_user = get_logged_in_user(request)
-    studio = Studio.query.first()
-    projects = Project.query.all()
-    groups = Group.query.all()
 
     if not logged_in_user:
         return logout(request)
+
+    studio = Studio.query.first()
+    projects = Project.query.all()
+    groups = Group.query.all()
+    users = User.query.order_by(User.name).all()
+
+    today = datetime.date.today()
+    start = datetime.time(0, 0)
+    end = datetime.time(23, 59, 59)
+
+    start_of_today = datetime.datetime.combine(today, start)
+    end_of_today = datetime.datetime.combine(today, end)
+
+    tasks_today = Task.query.join(User, Task.resources)\
+        .filter(User.id==logged_in_user.id)\
+        .filter(Task.computed_start < end_of_today)\
+        .filter(Task.computed_end > start_of_today).all()
 
     return {
         'stalker_pyramid': stalker_pyramid,
         'logged_in_user': logged_in_user,
         'projects': projects,
-        'groups':groups,
+        'groups': groups,
         'studio': studio,
-        'has_permission': PermissionChecker(request)
+        'has_permission': PermissionChecker(request),
+        'users': users,
+        'tasks_today': tasks_today
     }
 
 

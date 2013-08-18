@@ -71,15 +71,15 @@
         {% block main_container %}
 
             <div class="row-fluid">
-                <div class='span2'>
-                    {% block sidebar %}
-                    {% endblock sidebar %}
-                </div>
+                {% block sidebar %}
+                    <div class='span2'>
+                    </div>
+                {% endblock sidebar %}
             
-                <div class='span10'>
-                    {% block main_content %}
-                    {% endblock main_content %}
-                </div>
+                {% block main_content %}
+                    <div class='span10'>
+                    </div>
+                {% endblock main_content %}
             </div>
 
         {% endblock main_container %}
@@ -87,7 +87,7 @@
 
     {% block footer %}
         <footer>
-            <div id="footer" class='panel-footer'>
+            <div id="footer" class='footer'>
                 <div class="container">
                     <p class="muted credit text-center">Stalker Pyramid v{{ stalker_pyramid.__version__ }} &copy; 2009-2013 Erkan Ozgur Yilmaz.
                     </p>
@@ -114,6 +114,7 @@
     <script src='{{ request.static_url("stalker_pyramid:static/stalker/date.format.js") }}'></script>
 
 {% endblock scripts%}
+
 
 
 </body>
