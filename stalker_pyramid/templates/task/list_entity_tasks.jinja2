@@ -49,7 +49,7 @@
 
 {% block sidebar %}
     {% if entity.entity_type == 'User' %}
-        <div class='span2'>
+        <div class='col-lg-2'>
             {% include 'auth/user_sidebar.jinja2' %}
         </div>
     {% endif %}
@@ -323,13 +323,13 @@
 {#        </div>#}
 {#    </div>#}
     
-    <div class='span10'>
+    <div class='col-lg-10'>
         <div class='btn-group'>
-            <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+            <a class="btn btn-default dropdown-toggle" data-toggle="dropdown" href="#">
                 Create
                 <span class="caret"></span>
             </a>
-            <ul class="dropdown-menu">
+            <ul class="dropdown-menu" role='menu'>
                 <li><a href='#'>Task</a></li>
                 <li><a href='#'>Asset</a></li>
                 <li><a href='#'>Shot</a></li>
@@ -337,10 +337,10 @@
             </ul>
         </div>
         <div class='btn-group'>
-            <button class='btn'>Reload</button>
-            <button class='btn'>Refresh</button>
-            <button class='btn'>Schedule Tasks</button>
-            <button class='btn'>Go To Today</button>
+            <button class='btn btn-default'>Reload</button>
+            <button class='btn btn-default'>Refresh</button>
+            <button class='btn btn-default'>Schedule Tasks</button>
+            <button class='btn btn-default'>Go To Today</button>
         </div>
         <a id='test' href='#' data-toggle='tooltip' title data-original-title='test'>Test</a>
     

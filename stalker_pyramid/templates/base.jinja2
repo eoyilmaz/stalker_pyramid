@@ -31,26 +31,13 @@
 
 
     <!-- CSS -->
-    {#    <link rel="stylesheet" href="/deform_bootstrap/deform_bootstrap.css"#}
-    {#          type="text/css"/>#}
-    {#    <link rel="stylesheet" href="/deform_bootstrap/bootstrap-datepicker.css"#}
-    {#          type="text/css"/>#}
-    {#    <link rel="stylesheet" href="/deform_bootstrap/jquery_chosen/chosen.css"#}
-    {#          type="text/css"/>#}
-    {#    <link rel="stylesheet" href="/deform_bootstrap/chosen_bootstrap.css"#}
-    {#          type="text/css"/>#}
-    <link rel="stylesheet" href="/static/bootstrap/css/bootstrap.css"
-          type="text/css"/>
-    <link rel="stylesheet"
-          href="/static/bootstrap/css/bootstrap-responsive.css">
+    <link rel="stylesheet" href="/static/bootstrap-3.0.0/css/bootstrap.min.css">
+    <link rel='stylesheet' href="/static/bootstrap-3.0.0/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="/static/bootstrap-3.0.0/css/bootstrap.icon-large.min.css" >
     <link rel="stylesheet" href="/static/stalker/css/stalker_bootstrap.css">
-    {#    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->#}
-    {#    <!--[if lt IE 9]>#}
-    {#      <script src="../assets/js/html5shiv.js"></script>#}
-    {#    <![endif]-->#}
 
-{% block extra_scripts %}
-{% endblock extra_scripts %}
+    {% block extra_scripts %}
+    {% endblock extra_scripts %}
 
 
     {% block header_extra %}
@@ -67,17 +54,17 @@
         {% include 'navbar.jinja2' %}
     {% endblock navbar %}
 
-    <div class="container-fluid">
+    <div class="container">
         {% block main_container %}
 
-            <div class="row-fluid">
+            <div class="row">
                 {% block sidebar %}
-                    <div class='span2'>
+                    <div class='col-lg-2'>
                     </div>
                 {% endblock sidebar %}
             
                 {% block main_content %}
-                    <div class='span10'>
+                    <div class='col-lg-10'>
                     </div>
                 {% endblock main_content %}
             </div>
@@ -88,9 +75,9 @@
     {% block footer %}
         <footer>
             <div id="footer" class='footer'>
-                <div class="container">
-                    <p class="muted credit text-center">Stalker Pyramid v{{ stalker_pyramid.__version__ }} &copy; 2009-2013 Erkan Ozgur Yilmaz.
-                    </p>
+                <div class="container muted credit">
+                    <div class="text-center" style='float: left;'>Stalker Pyramid v{{ stalker_pyramid.__version__ }} &copy; 2009-2013 Erkan Ozgur Yilmaz.</div>
+                    <div class='text-right' style="float:right;"><a href='http://www.glyphicons.com/'>GLYPHICONS.com</a></div>
                 </div>
             </div>
         </footer>
@@ -99,20 +86,9 @@
 
 <!-- JavaScript -->
 {% block scripts%}
-    <script src="/static/jquery/1.9.1/jquery.js"></script>
-{#    <script src="/deform_bootstrap/jquery-ui-1.8.18.custom.min.js"></script>#}
-{#    <script src="/deform_bootstrap/jquery-ui-timepicker-addon-0.9.9.js"></script>#}
-{#    <script src="/deform_bootstrap/jquery.form-2.96.js"></script>#}
-{#    <script src="/deform_bootstrap/jquery.maskedinput-1.3.js"></script>#}
-{#    <script src="/deform/scripts/deform.js"></script>#}
-{#    <script src="/deform_bootstrap/bootstrap-datepicker.js"></script>#}
-{#    <script src="/deform_bootstrap/bootstrap-typeahead.js"></script>#}
-{#    <script src="/deform_bootstrap/bootstrap-typeahead.js"></script>#}
-{#    <script src="deform_bootstrap/jquery_chosen/chosen.jquery.min.js"></script>#}
-{#    <script src="/deform_bootstrap/deform_bootstrap.js"></script>#}
-    <script src='{{ request.static_url("stalker_pyramid:static/bootstrap/js/bootstrap.js") }}'></script>
+    <script src="/static/jquery/jquery-2.0.3.js"></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/bootstrap-3.0.0/js/bootstrap.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/stalker/date.format.js") }}'></script>
-
 {% endblock scripts%}
 
 
