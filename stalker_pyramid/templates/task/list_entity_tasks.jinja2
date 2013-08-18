@@ -49,7 +49,9 @@
 
 {% block sidebar %}
     {% if entity.entity_type == 'User' %}
-        {% include 'auth/user_sidebar.jinja2' %}
+        <div class='span2'>
+            {% include 'auth/user_sidebar.jinja2' %}
+        </div>
     {% endif %}
 {% endblock sidebar %}
 
@@ -163,8 +165,13 @@
     </script>
 
     <script id="tmpl_taskEditRow" type="text/x-dot-template">
-        <div class="{{=it.contextMenuClass}}"
-            dataId="{{=it.id}}"
+        <a href='/tasks/{{=it.id}}/view'
+
+            data-toggle='tooltip'
+            data-placement='top'
+            title
+            data-original-title='test tooltip'
+
             name="{{=it.name}}"
             start={{=it.start}}
             end={{=it.end}}
@@ -173,7 +180,7 @@
                 responsible_id="{{=it.responsible.id}}"
                 responsible_name="{{=it.responsible.name}}"
             {{ } }}
-            hasChildren={{=it.hasChildren}}>{{=it.name}} ({{=it.type}})</div>
+            hasChildren={{=it.hasChildren}}>{{=it.name}} ({{=it.type}})</a>
     </script>
 
 
@@ -316,31 +323,35 @@
 {#        </div>#}
 {#    </div>#}
     
-    <div class='btn-group'>
-        <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
-            Create
-            <span class="caret"></span>
-        </a>
-        <ul class="dropdown-menu">
-            <li><a href='#'>Task</a></li>
-            <li><a href='#'>Asset</a></li>
-            <li><a href='#'>Shot</a></li>
-            <li><a href='#'>Sequence</a></li>
-        </ul>
-    </div>
-    <div class='btn-group'>
-        <button class='btn'>Reload</button>
-        <button class='btn'>Refresh</button>
-        <button class='btn'>Schedule Tasks</button>
-        <button class='btn'>Go To Today</button>
-    </div>
-
-    <div>
-        <div id="{{ entity.entity_type }}_{{ entity.id }}_gantt" class='gantt'
-             style='height: 800px'></div>
+    <div class='span10'>
+        <div class='btn-group'>
+            <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+                Create
+                <span class="caret"></span>
+            </a>
+            <ul class="dropdown-menu">
+                <li><a href='#'>Task</a></li>
+                <li><a href='#'>Asset</a></li>
+                <li><a href='#'>Shot</a></li>
+                <li><a href='#'>Sequence</a></li>
+            </ul>
+        </div>
+        <div class='btn-group'>
+            <button class='btn'>Reload</button>
+            <button class='btn'>Refresh</button>
+            <button class='btn'>Schedule Tasks</button>
+            <button class='btn'>Go To Today</button>
+        </div>
+        <a id='test' href='#' data-toggle='tooltip' title data-original-title='test'>Test</a>
+    
+        <div>
+            <div id="{{ entity.entity_type }}_{{ entity.id }}_gantt" class='gantt'
+                 style='height: 800px'></div>
+        </div>
     </div>
 
     <script type="text/javascript">
+
         require([
             'dijit/registry',
     
@@ -413,7 +424,7 @@
                         object.responsible = {};
                         object.responsible.id = node.getAttribute('responsible_id');
                         object.responsible.name = node.getAttribute('responsible_name');
-    
+
                         return templates.leafTaskToolTip(object);
                     }
                 });
@@ -422,7 +433,11 @@
     
             var create_contextMenus = function () {
                // create tool tip dialogs
-                createTaskToolTips();
+{#                createTaskToolTips();#}
+            
+                // initialize tooltips
+                $('.gantt a').tooltip();
+
     
                 // now add the context menu to tasks
     
