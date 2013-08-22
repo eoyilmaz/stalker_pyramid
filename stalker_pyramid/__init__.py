@@ -110,7 +110,7 @@ def main(global_config, **settings):
     config.add_route('append_users_to_entity_dialog',  'entities/{id}/users/append/dialog')
     config.add_route('append_users_to_entity',         'entities/{id}/users/append')
 
-    config.add_route('list_entity_users',              'entities/{id}/users/list')
+
 
     # get routes returns json
     config.add_route('get_entity_users',               'entities/{id}/users/')
@@ -125,7 +125,9 @@ def main(global_config, **settings):
     config.add_route('get_entity_sequences',           'entities/{id}/sequences/')
     config.add_route('get_entity_vacations',           'entities/{id}/vacations/')
 
+    config.add_route('list_entity_users',              'entities/{id}/users/list')
     config.add_route('list_entity_departments',        'entities/{id}/departments/list') # html
+    config.add_route('list_entity_groups',             'entities/{id}/groups/list') # html
     config.add_route('list_entity_tasks',              'entities/{id}/tasks/list') # html
     config.add_route('list_entity_tickets',            'entities/{id}/tickets/list') # html
     config.add_route('list_entity_projects',           'entities/{id}/projects/list')

@@ -25,7 +25,7 @@
             {% if has_permission('Create_Task') %}
                 <button id='{{ entity.entity_type }}_{{ entity.id }}_list_tasks_create_task_button'>Create Task</button>
             {% endif %}
-            <button id='{{ entity.entity_type }}_{{ entity.id }}_list_tasks_gantt_reload_button'>Reload</button>
+            <button class="btn btn-app btn-inverse btn-mini" id='{{ entity.entity_type }}_{{ entity.id }}_list_tasks_gantt_reload_button'>Reload</button>
         </div>
         <div style="width: 100px; float: left"></div>
         {% if has_permission('Update_Task') %}

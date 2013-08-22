@@ -1,71 +1,151 @@
 {# Render User Side Bar #}
-<div class='well sidebar-nav'>
-    <ul class='nav nav-list'>
-        {# Thumbnail #}
-        <li>
+
+{% set user=entity %}
+{#<div class='well sidebar-nav'>#}
+<ul class='nav nav-list'>
+    {# Thumbnail #}
+    <li>
         <div class="media">
             <a class="pull-left" href="#" style="width: 64px; height: 64px">
-                <img style='width:auto; height: auto;' class="img-thumbnail" src="{%- if logged_in_user.thumbnail -%}
-                    /{{ logged_in_user.thumbnail.full_path }}
+                <img style='width:auto; height: auto;' class="img-thumbnail"
+                     src="{%- if user.thumbnail -%}
+                    /{{ user.thumbnail.full_path }}
                 {%- else -%}
                     {{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_0.png") }}
                 {%- endif -%}">
             </a>
+
             <div class="media-body">
-                <h5 class="media-heading">{{ logged_in_user.name }} <small>({{ logged_in_user.login }})</small></h5>
-                <button class='btn btn-primary btn-sm'>Edit Profile »</button>
+                <h5 class="media-heading">{{ user.name }}
+                    <small>({{ user.login }})</small>
+                </h5>
             </div>
         </div>
 
+    </li>
+
+    {#Dashboard#}
+    {% if request.current_route_path() == request.route_path('view_user', id=user.id) %}
+        <li class='active'>
+            <a>
+                <i class="icon-task"></i>
+                <span class="menu-text">Dashboard</span>
+            </a>
         </li>
-    
-        <li class='divider'></li>
+    {% else %}
+        <li>
+            <a href='{{ request.route_url('view_user', id=user.id) }}'>
+                <i class="icon-task"></i>
+                <span class="menu-text">Dashboard</span>
+            </a>
+        </li>
+    {% endif %}
 
-        {# Tasks #}
 
-        {% if request.current_route_path() == request.route_path('list_user_tasks', id=logged_in_user.id) %}
-            <li class='active'><a>Tasks <span class='badge badge-info'>{{ logged_in_user.tasks | count }}</span></a></li>
-        {% else %}
-            <li><a href='{{ request.route_url('list_user_tasks', id=logged_in_user.id) }}'>Tasks <span class='badge badge-info'>{{ logged_in_user.tasks | count }}</span></a></li>
-        {% endif %}
+    {#TASKS#}
+    {% if request.current_route_path() == request.route_path('list_user_tasks', id=user.id) %}
+        <li class='active'>
+            <a>
+                <i class="icon-task"></i>
+                <span class="menu-text">Tasks</span>
+                <span class='badge badge-info'>{{ user.tasks | count }}</span>
+            </a>
+        </li>
+    {% else %}
+        <li>
+            <a href='{{ request.route_url('list_user_tasks', id=user.id) }}'>
+                <i class="icon-task"></i>
+                <span class="menu-text">Tasks</span>
+                <span class='badge badge-info'>{{ user.tasks | count }}</span>
+            </a>
+        </li>
+    {% endif %}
 
-        <li class='divider'></li>
+    {#TICKETS#}
+    {% if request.current_route_path() == request.route_path('list_user_tickets', id=user.id) %}
+        <li class='active'>
+            <a>
+                <i class="icon-task"></i>
+                <span class="menu-text">Tickets</span>
+                <span class='badge badge-important'>{{ user.open_tickets | count }}</span>
+            </a>
+        </li>
+    {% else %}
+        <li>
+            <a href='{{ request.route_url('list_user_tickets', id=user.id) }}'>
+                <i class="icon-task"></i>
+                <span class="menu-text">Tickets</span>
+                <span class='badge badge-important'>{{ user.open_tickets | count }}</span>
+            </a>
+        </li>
+    {% endif %}
 
-        {# Tickets #}
-        <li><a href='#'>Tickets <span class="badge badge-important">{{ logged_in_user.open_tickets | count }}</span></a></li>
+        {#TICKETS#}
+    {% if request.current_route_path() == request.route_path('list_user_time_logs', id=user.id) %}
+        <li class='active'>
+            <a>
+                <i class="icon-task"></i>
+                <span class="menu-text">Timelogs</span>
+            </a>
+        </li>
+    {% else %}
+        <li>
+            <a href='{{ request.route_url('list_user_time_logs', id=user.id) }}'>
+                <i class="icon-task"></i>
+                <span class="menu-text">Timelogs</span>
+            </a>
+        </li>
+    {% endif %}
 
-        <li class='divider'></li>
 
-        {# TimeLogs #}
-        <li><a href='#'>TimeLogs</a></li>
 
-        <li class='divider'></li>
+    {# Projects #}
+    <li class='nav-header'>Projects</li>
 
-        {# Projects #}
-        <li class='nav-header'>Projects</li>
-        {% for project in logged_in_user.projects %}
-            <li><a href='#'>{{ project.name }} ({{ project.code }})</a></li>
-        {% endfor %}
-        
-        <li class='divider'></li>
+    {% for project in user.projects %}
+        <li>
+            <a href="{{ request.route_url('view_project', id=project.id) }}">
+              <i class="icon-task"></i>
+              <span class="menu-text">{{ project.name }}({{ project.code }})</span>
+            </a>
+        </li>
+    {% endfor %}
 
-        {# Departments #}
-        <li class='nav-header'>Departments</li>
-        {% for department in logged_in_user.departments%}
-            <li><a href='#'>{{ department.name }}</a></li>
-        {% endfor %}
-    
-        <li class='divider'></li>
 
-        {# Permission Groups #}
-        <li class='nav-header'>Permisson Groups</li>
-        {% for group in logged_in_user.groups %}
-            <li><a href='#'>{{ group.name }}</a></li>
-        {% endfor %}
-    
-        <li class='divider'></li>
-        
-         {# Vacations #}
-        <li><a href='#'>Vacations <span class="badge badge-success">{{ logged_in_user.vacations | count }}</span></a></li>
-    </ul>
-</div>
+
+    {# Departments #}
+    <li class='nav-header'>Departments</li>
+    {% for department in user.departments %}
+        <li>
+            <a href="{{ request.route_url('view_department', id=department.id) }}">
+              <i class="icon-task"></i>
+              <span class="menu-text">{{ department.name }}</span>
+            </a>
+        </li>
+    {% endfor %}
+
+
+
+    {# Permission Groups #}
+    <li class='nav-header'>Permisson Groups</li>
+    {% for group in user.groups %}
+        <li>
+            <a href="{{ request.route_url('view_group', id=group.id) }}">
+              <i class="icon-task"></i>
+              <span class="menu-text">{{ group.name }}</span>
+            </a>
+        </li>
+    {% endfor %}
+
+    <li class="divider"></li>
+
+    {# Vacations #}
+    <li>
+      <a href='#'>
+        <i class="icon-task"></i>
+        <span class="menu-text">Vacations </span>
+        <span class="badge badge-success">{{ user.vacations | count }}</span>
+      </a>
+    </li>
+</ul>
+{#</div>#}

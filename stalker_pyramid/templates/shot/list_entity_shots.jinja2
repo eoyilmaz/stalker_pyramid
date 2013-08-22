@@ -1,0 +1,26 @@
+{% extends "base.jinja2" %}
+{% block sidebar %}
+
+    {% include 'sidebar.jinja2' %}
+
+{% endblock sidebar %}
+
+{% block main_content %}
+
+    {% set shots=entity.shots %}
+    <div class='col-lg-10'>
+        <div class="page-header">
+            <h3>{{ entity.name }}
+                <small>Shots</small>
+            </h3>
+        </div>
+
+
+        <div class="row">
+            {% for shot in shots %}
+                {% include 'shots/list_item_shots.jinja2' %}
+            {% endfor %}
+        </div>
+    </div>
+
+{% endblock main_content %}

@@ -1,0 +1,26 @@
+{% extends "base.jinja2" %}
+{% block sidebar %}
+
+    {% include 'sidebar.jinja2' %}
+
+{% endblock sidebar %}
+
+{% block main_content %}
+
+    {% set sequence=entity.sequences %}
+    <div class='col-lg-10'>
+        <div class="page-header">
+            <h3>{{ entity.name }}
+                <small>Sequences</small>
+            </h3>
+        </div>
+
+
+        <div class="row">
+            {% for sequence in sequences %}
+                {% include 'sequence/list_item_sequence.jinja2' %}
+            {% endfor %}
+        </div>
+    </div>
+
+{% endblock main_content %}

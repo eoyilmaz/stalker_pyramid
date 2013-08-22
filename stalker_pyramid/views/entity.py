@@ -32,7 +32,7 @@ logger.setLevel(logging.DEBUG)
 
 @view_config(
     route_name='view_user_tasks',
-    renderer='templates/task/content_list_tasks.jinja2'
+    renderer='templates/task/list_entity_tasks.jinja2'
 )
 @view_config(
     route_name='view_entity_nav_bar',
@@ -88,11 +88,11 @@ logger.setLevel(logging.DEBUG)
 )
 @view_config(
     route_name='list_project_tasks',
-    renderer='templates/task/content_list_tasks.jinja2'
+    renderer='templates/task/list_entity_tasks.jinja2'
 )
 @view_config(
     route_name='list_task_tasks',
-    renderer='templates/task/content_list_tasks.jinja2'
+    renderer='templates/task/list_entity_tasks.jinja2'
 )
 @view_config(
     route_name='list_entity_tasks',
@@ -100,7 +100,7 @@ logger.setLevel(logging.DEBUG)
 )
 @view_config(
     route_name='list_studio_tasks',
-    renderer='templates/task/content_list_tasks.jinja2'
+    renderer='templates/task/list_entity_tasks.jinja2'
 )
 @view_config(
     route_name='list_entity_references',
@@ -120,35 +120,59 @@ logger.setLevel(logging.DEBUG)
 )
 @view_config(
     route_name='view_project',
-    renderer='templates/project/page_view_project.jinja2'
+    renderer='templates/project/view_project.jinja2'
+)
+@view_config(
+    route_name='list_entity_users',
+    renderer='templates/auth/list_entity_users.jinja2'
+)
+@view_config(
+    route_name='view_user',
+    renderer='templates/auth/view_user.jinja2'
+)
+@view_config(
+    route_name='list_entity_departments',
+    renderer='templates/department/list_entity_departments.jinja2'
+)
+@view_config(
+    route_name='view_department',
+    renderer='templates/department/view_department.jinja2'
+)
+@view_config(
+    route_name='list_entity_groups',
+    renderer='templates/auth/list_entity_groups.jinja2'
+)
+@view_config(
+    route_name='view_group',
+    renderer='templates/auth/view_group.jinja2'
 )
 @view_config(
     route_name='list_project_users',
-    renderer='templates/auth/content_list_users.jinja2'
+    renderer='templates/auth/list_entity_users.jinja2'
 )
 @view_config(
     route_name='list_users',
-    renderer='templates/auth/content_list_users.jinja2'
+    renderer='templates/auth/list_entity_users.jinja2'
 )
 @view_config(
     route_name='list_project_assets',
-    renderer='templates/asset/content_list_assets.jinja2'
+    renderer='templates/asset/list_entity_assets.jinja2'
 )
 @view_config(
     route_name='list_project_shots',
-    renderer='templates/shot/content_list_shots.jinja2'
+    renderer='templates/shot/list_entity_shots.jinja2'
 )
 @view_config(
     route_name='list_project_sequences',
-    renderer='templates/sequence/content_list_sequences.jinja2'
+    renderer='templates/sequence/list_entity_sequences.jinja2'
 )
 @view_config(
     route_name='list_department_users',
-    renderer='templates/auth/content_list_users.jinja2'
+    renderer='templates/auth/list_entity_users.jinja2'
 )
 @view_config(
     route_name='list_group_users',
-    renderer='templates/auth/content_list_users.jinja2'
+    renderer='templates/auth/list_entity_users.jinja2'
 )
 @view_config(
     route_name='summarize_asset',
@@ -173,6 +197,10 @@ logger.setLevel(logging.DEBUG)
 @view_config(
     route_name='summarize_shot',
     renderer='templates/shot/content_summarize_shot.jinja2'
+)
+@view_config(
+    route_name='view_studio',
+    renderer='templates/studio/view_studio.jinja2'
 )
 @view_config(
     route_name='summarize_studio',
@@ -210,17 +238,13 @@ def get_entity_related_data(request):
 
     studio = Studio.query.first()
     projects = Project.query.all()
-    groups = Group.query.all()
-    users = User.query.order_by(User.name).all()
 
     return {
-        'entity': entity,
-        'has_permission': PermissionChecker(request),
+        'stalker_pyramid': stalker_pyramid,
+        'studio': studio,
         'logged_in_user': get_logged_in_user(request),
         'milliseconds_since_epoch': milliseconds_since_epoch,
-        'stalker_pyramid': stalker_pyramid,
-        'projects': projects,
-        'groups': groups,
-        'studio': studio,
-        'users': users
+        'has_permission': PermissionChecker(request),
+        'projects':projects,
+        'entity': entity
     }
