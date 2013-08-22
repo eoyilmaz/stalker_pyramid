@@ -18,35 +18,78 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="utf-8">
     <title>Stalker Pyramid</title>
-    <!-- Meta Tags -->
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-
 
     <script src='{{ request.static_url("stalker_pyramid:static/doT/doT.min.js") }}'></script>
 
     {% block pre_header %}
     {% endblock pre_header %}
 
+    <!--basic styles-->
 
-    <!-- CSS -->
-    <link rel="stylesheet" href='{{ request.static_url("stalker_pyramid:static/bootstrap-3.0.0/css/bootstrap.min.css") }}'>
-    <link rel='stylesheet' href='{{ request.static_url("stalker_pyramid:static/bootstrap-3.0.0/css/bootstrap-theme.min.css") }}'>
-    <link rel="stylesheet" href='{{ request.static_url("stalker_pyramid:static/bootstrap-3.0.0/css/bootstrap.icon-large.min.css") }}'>
-    <link rel="stylesheet" href='{{ request.static_url("stalker_pyramid:static/bootstrap-datetimepicker/css/bootstrap-datetimepicker.min.css") }}'>
-    <link rel="stylesheet" href='{{ request.static_url("stalker_pyramid:static/stalker/css/stalker_bootstrap.css") }}'>
-    <link rel="stylesheet" href='{{ request.static_url("stalker_pyramid:static/bootstrap-datetimepicker/css/bootstrap-datetimepicker.min.css") }}'>
+    <link rel="stylesheet" href="/static/ace/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/ace/css/bootstrap-responsive.min.css">
+    <link rel="stylesheet" href="/static/ace/css/font-awesome.min.css">
 
-    {% block extra_header_scripts %}
-    {% endblock extra_header_scripts %}
+    <!--[if IE 7]>
+    <link rel="stylesheet" href="/static/ace/css/font-awesome-ie7.min.css"/>
+    <![endif]-->
 
-    {% block header_extra %}
-    {% endblock header_extra %}
+    <!--page specific plugin styles-->
+
+    <link rel="stylesheet" href="/static/ace/css/jquery-ui-1.10.3.custom.min.css">
+    <link rel="stylesheet" href="/static/ace/css/jquery.gritter.css">
+
+    <!--fonts-->
+    <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Open+Sans:400,300">
+
+    <!--ace styles-->
+
+    <link rel="stylesheet" href="/static/ace/css/ace.min.css">
+    <link rel="stylesheet" href="/static/ace/css/ace-responsive.min.css">
+    <link rel="stylesheet" href="/static/ace/css/ace-skins.min.css">
+
+    <!--[if lte IE 8]>
+    <link rel="stylesheet" href="/static/ace/css/ace-ie.min.css"/>
+    <![endif]-->
+
+    <!--inline styles related to this page-->
+    <style>
+        .spinner-preview {
+            width: 100px;
+            height: 100px;
+            text-align: center;
+            margin-top: 60px;
+        }
+
+        .dropdown-preview {
+            margin: 0 5px;
+            display: inline-block;
+        }
+
+        .dropdown-preview  > .dropdown-menu {
+            display: block;
+            position: static;
+            margin-bottom: 5px;
+        }
+    </style>
+
+    <!--ace settings handler-->
+
+    <script src="/static/ace/js/ace-extra.min.js"></script>
+    <style type="text/css"></style>
+
+
+
+    {% block post_header %}
+    {% endblock post_header %}
 
 </head>
-<body>
-
+<body class="navbar-fixed breadcrumbs-fixed">
 
 
 {% block content %}
@@ -55,20 +98,27 @@
         {% include 'navbar.jinja2' %}
     {% endblock navbar %}
 
-    <div class="container">
+    <div class="main-container container-fluid">
         {% block main_container %}
 
-            <div class="row">
+            <div class='sidebar sidebar-fixed'>
                 {% block sidebar %}
-                    <div class='col-lg-2'>
-                    </div>
                 {% endblock sidebar %}
-            
-                {% block main_content %}
-                    <div class='col-lg-10'>
-                    </div>
-                {% endblock main_content %}
             </div>
+            <div class="main-content">
+                <div class="breadcrumbs breadcrumbs-fixed" id="breadcrumbs">
+
+                      {% include 'breadcrumbs.jinja2' %}
+
+                </div>
+
+                <div class='page-content'>
+                    {% block page_content %}
+                    {% endblock page_content %}
+                </div>
+            </div>
+
+
 
         {% endblock main_container %}
     </div>
@@ -98,12 +148,11 @@
 
 
 <!-- JavaScript -->
-{% block scripts%}
-    <script src='{{ request.static_url("stalker_pyramid:static/jquery/jquery-2.0.3.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/bootstrap-3.0.0/js/bootstrap.js") }}'></script>
+{% block scripts %}
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery-2.0.3.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootstrap.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/stalker/date.format.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/bootstrap-datetimepicker/js/bootstrap-datetimepicker.min.js") }}'></script>
-{% endblock scripts%}
+{% endblock scripts %}
 
 {% block extrascripts %}
 {% endblock extrascripts %}

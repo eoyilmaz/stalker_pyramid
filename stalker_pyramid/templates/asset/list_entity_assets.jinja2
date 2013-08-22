@@ -1,0 +1,20 @@
+{% extends "base.jinja2" %}
+{% block sidebar %}
+
+    {% include 'sidebar.jinja2' %}
+
+{% endblock sidebar %}
+
+{% block page_content %}
+
+    {% set assets=entity.assets %}
+    <div class='span12'>
+
+        <div class="row">
+            {% for asset in assets %}
+                {% include 'asset/list_item_asset.jinja2' %}
+            {% endfor %}
+        </div>
+    </div>
+
+{% endblock page_content %}

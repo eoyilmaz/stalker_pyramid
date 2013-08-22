@@ -172,20 +172,3 @@ def update_studio(request):
 
 
 
-@view_config(
-    route_name='view_studio',
-    renderer='templates/studio/page_view_studio.jinja2'
-)
-def view_studio(request):
-    """runs when viewing a studio
-    """
-    logged_in_user = get_logged_in_user(request)
-
-    studio_id = request.matchdict.get('id', -1)
-    studio = Studio.query.filter_by(id=studio_id).first()
-
-    return {
-        'user': logged_in_user,
-        'has_permission': PermissionChecker(request),
-        'studio': studio
-    }

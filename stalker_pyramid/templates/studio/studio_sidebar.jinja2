@@ -1,0 +1,47 @@
+{# Render User Side Bar #}
+
+{% set project=entity %}
+<div class='well sidebar-nav'>
+    <ul class='nav nav-list'>
+        {# Thumbnail #}
+        <li>
+        <div class="media">
+            <a class="pull-left" href="#" style="width: 64px; height: 64px">
+                <img style='width:auto; height: auto;' class="img-thumbnail" src="{%- if studio.thumbnail -%}
+                    /{{ studio.thumbnail.full_path }}
+                {%- else -%}
+                    {{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_0.png") }}
+                {%- endif -%}">
+            </a>
+            <div class="media-body">
+                <h5 class="media-heading">{{ studio.name }} <small>({{ studio.code }})</small></h5>
+                <button class='btn btn-primary btn-sm'>Edit Studio »</button>
+            </div>
+        </div>
+
+        </li>
+
+        <li class='divider'></li>
+
+        {# Tasks #}
+
+        {% if request.current_route_path() == request.route_path('list_studio_tasks', id=studio.id) %}
+            <li class='active'><a>Tasks <span class='badge badge-info'>{{ studio.tasks | count }}</span></a></li>
+        {% else %}
+            <li><a href='{{ request.route_url('list_studio_tasks', id=studio.id) }}'>Tasks <span class='badge badge-info'>{{ studio.tasks | count }}</span></a></li>
+        {% endif %}
+
+        <li class='divider'></li>
+
+        {# Users #}
+
+        <li><a href="{{ request.route_url('list_entity_users', id=studio.id) }}">Users</a></li>
+
+        <li class='divider'></li>
+
+        {# Vacations #}
+
+        <li><a href='#'>Vacations</a></li>
+
+    </ul>
+</div>

@@ -1,0 +1,28 @@
+{% extends "base.jinja2" %}
+{% if entity %}
+    {% set groups=entity.groups %}
+{% else %}
+    {% set entity=studio %}
+{% endif %}
+{% block sidebar %}
+
+    {% include 'sidebar.jinja2' %}
+
+{% endblock sidebar %}
+
+{% block main_content %}
+
+    <div class="page-header">
+        <h3>{{ entity.name }}
+            <small>Groups</small>
+        </h3>
+    </div>
+    <div class='col-lg-12'>
+        <div class="row">
+            {% for group in groups %}
+                {% include 'auth/list_item_group.jinja2' %}
+            {% endfor %}
+        </div>
+    </div>
+
+{% endblock main_content %}

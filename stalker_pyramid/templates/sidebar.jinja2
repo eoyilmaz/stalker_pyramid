@@ -1,0 +1,15 @@
+{% if entity.entity_type == 'User' %}
+        {% include 'auth/user_sidebar.jinja2' %}
+
+{% elif entity.entity_type == 'Project' %}
+
+
+        {% include 'project/project_sidebar.jinja2' %}
+
+{% elif entity.entity_type == 'Studio' %}
+
+        {% include 'studio/studio_sidebar.jinja2' %}
+
+{% endif %}
+
+

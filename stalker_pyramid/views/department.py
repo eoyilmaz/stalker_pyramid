@@ -171,41 +171,6 @@ def get_departments(request):
     ]
 
 
-@view_config(
-    route_name='view_department',
-    renderer='templates/department/page_view_department.jinja2'
-)
-def view_department(request):
-    """runs when viewing a department
-    """
-    login = authenticated_userid(request)
-    logged_in_user = User.query.filter_by(login=login).first()
-
-    department_id = request.matchdict.get('id', -1)
-    department = Department.query.filter_by(id=department_id).first()
-
-    return {
-        'has_permission': PermissionChecker(request),
-        'user': logged_in_user,
-        'department': department
-    }
-
-
-@view_config(
-    route_name='list_user_departments',
-    renderer='templates/department/content_list_departments.jinja2'
-)
-def list_departments(request):
-    """
-    """
-    entity_id = request.matchdict.get('id', -1)
-    entity = Entity.query.filter_by(id=entity_id).first()
-
-    return {
-        'has_permission': PermissionChecker(request),
-        'entity': entity
-    }
-
 
 @view_config(
     route_name='get_entity_departments',

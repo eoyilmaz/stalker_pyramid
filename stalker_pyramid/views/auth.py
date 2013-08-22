@@ -18,9 +18,9 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 import datetime
-import colander
-from deform import widget
-import deform
+# import colander
+# from deform import widget
+# import deform
 
 from pyramid.httpexceptions import HTTPFound, HTTPOk, HTTPServerError
 from pyramid.security import authenticated_userid, forget, remember
@@ -32,7 +32,7 @@ from stalker import (defaults, User, Department, Group, Project, Entity,
                      Studio, Permission, EntityType, Task)
 from stalker.db import DBSession
 from stalker_pyramid.views import (log_param, get_logged_in_user,
-                                   PermissionChecker, get_multi_integer, get_tags)
+                                   PermissionChecker, get_multi_integer, get_tags, milliseconds_since_epoch)
 
 import logging
 
@@ -212,28 +212,6 @@ def update_user(request):
         HTTPServerError()
 
     return HTTPOk()
-
-
-
-@view_config(
-    route_name='view_user',
-    renderer='templates/auth/page_view_user.jinja2'
-)
-def view_user(request):
-    logged_in_user = get_logged_in_user(request)
-
-    user_id = request.matchdict.get('id', -1)
-    user = User.query.filter_by(id=user_id).first()
-
-    logger.debug('user_id : %s' % user_id)
-    logger.debug('user    : %s' % user)
-
-    return {
-        'user': user,
-        'logged_in_user': logged_in_user,
-        'has_permission': PermissionChecker(request),
-        'stalker_pyramid' : stalker_pyramid
-    }
 
 
 @view_config(
@@ -631,8 +609,6 @@ def home(request):
 
     studio = Studio.query.first()
     projects = Project.query.all()
-    groups = Group.query.all()
-    users = User.query.order_by(User.name).all()
 
     today = datetime.date.today()
     start = datetime.time(0, 0)
@@ -648,12 +624,11 @@ def home(request):
 
     return {
         'stalker_pyramid': stalker_pyramid,
-        'logged_in_user': logged_in_user,
-        'projects': projects,
-        'groups': groups,
         'studio': studio,
+        'logged_in_user': logged_in_user,
         'has_permission': PermissionChecker(request),
-        'users': users,
+        'projects': projects,
+        'entity': logged_in_user,
         'tasks_today': tasks_today
     }
 
@@ -824,38 +799,28 @@ def update_group(request):
 
 
 @view_config(
-    route_name='list_user_groups',
-    renderer='templates/auth/content_list_groups.jinja2'
+    route_name='list_groups',
+    renderer='templates/auth/list_entity_groups.jinja2'
 )
 def list_groups(request):
     """
     """
-    user_id = request.matchdict.get('id', -1)
-    user = User.query.filter_by(id=user_id).first()
-    return {
-        'has_permission': PermissionChecker(request),
-        'user': user
-    }
 
+    groups = Group.query.all()
 
-@view_config(
-    route_name='view_group',
-    renderer='templates/auth/page_view_group.jinja2',
-    permission='Read_Group'
-)
-def view_group(request):
-    """runs when viewing a group
-    """
-    logged_in_user = get_logged_in_user(request)
-
-    group_id = request.matchdict.get('id', -1)
-    group = Group.query.filter_by(id=group_id).first()
+    studio = Studio.query.first()
+    projects = Project.query.all()
 
     return {
-        'user': logged_in_user,
+        'stalker_pyramid': stalker_pyramid,
+        'studio': studio,
+        'logged_in_user': get_logged_in_user(request),
+        'milliseconds_since_epoch': milliseconds_since_epoch,
         'has_permission': PermissionChecker(request),
-        'group': group
+        'projects':projects,
+        'groups': groups
     }
+
 
 
 @view_config(
