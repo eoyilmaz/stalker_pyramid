@@ -7,7 +7,8 @@
     <li>
         <div class="media">
             <a class="pull-left" href="#" style="width: 64px; height: 64px">
-                <img style='width:auto; height: auto;' class="img-thumbnail"
+                <img style='width:auto; height: auto;'
+                     class="img-thumbnail"
                      src="{%- if user.thumbnail -%}
                     /{{ user.thumbnail.full_path }}
                 {%- else -%}
@@ -16,9 +17,7 @@
             </a>
 
             <div class="media-body">
-                <h5 class="media-heading">{{ user.name }}
-                    <small>({{ user.login }})</small>
-                </h5>
+                <h5 class="media-heading">{{ user.name }} <small>({{ user.login }})</small></h5>
             </div>
         </div>
 
@@ -42,7 +41,7 @@
     {% endif %}
 
 
-    {#TASKS#}
+    {# Tasks #}
     {% if request.current_route_path() == request.route_path('list_user_tasks', id=user.id) %}
         <li class='active'>
             <a>
@@ -61,7 +60,7 @@
         </li>
     {% endif %}
 
-    {#TICKETS#}
+    {# Tickets #}
     {% if request.current_route_path() == request.route_path('list_user_tickets', id=user.id) %}
         <li class='active'>
             <a>
@@ -80,7 +79,7 @@
         </li>
     {% endif %}
 
-        {#TICKETS#}
+    {# Time Logs #}
     {% if request.current_route_path() == request.route_path('list_user_time_logs', id=user.id) %}
         <li class='active'>
             <a>

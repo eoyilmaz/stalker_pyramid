@@ -17,7 +17,6 @@
 -->
 <!DOCTYPE html>
 <html>
-
 <head>
     <meta charset="utf-8">
     <title>Stalker Pyramid</title>
@@ -32,26 +31,21 @@
 
     <!--basic styles-->
 
-    <link href="/static/ace/css/bootstrap.min.css" rel="stylesheet">
-    <link href="/static/ace/css/bootstrap-responsive.min.css"
-          rel="stylesheet">
+    <link rel="stylesheet" href="/static/ace/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/ace/css/bootstrap-responsive.min.css">
     <link rel="stylesheet" href="/static/ace/css/font-awesome.min.css">
 
     <!--[if IE 7]>
-    <link rel="stylesheet"
-          href="/static/ace/css/font-awesome-ie7.min.css"/>
+    <link rel="stylesheet" href="/static/ace/css/font-awesome-ie7.min.css"/>
     <![endif]-->
 
     <!--page specific plugin styles-->
 
-    <link rel="stylesheet"
-          href="/static/ace/css/jquery-ui-1.10.3.custom.min.css">
+    <link rel="stylesheet" href="/static/ace/css/jquery-ui-1.10.3.custom.min.css">
     <link rel="stylesheet" href="/static/ace/css/jquery.gritter.css">
 
     <!--fonts-->
-
-    <link rel="stylesheet"
-          href="http://fonts.googleapis.com/css?family=Open+Sans:400,300">
+    <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Open+Sans:400,300">
 
     <!--ace styles-->
 
@@ -64,7 +58,6 @@
     <![endif]-->
 
     <!--inline styles related to this page-->
-
     <style>
         .spinner-preview {
             width: 100px;
@@ -89,6 +82,12 @@
 
     <script src="/static/ace/js/ace-extra.min.js"></script>
     <style type="text/css"></style>
+
+
+
+    {% block post_header %}
+    {% endblock post_header %}
+
 </head>
 <body class="navbar-fixed breadcrumbs-fixed">
 
@@ -128,25 +127,35 @@
         <footer>
             <div id="footer" class='footer'>
                 <div class="container muted credit">
-                    <div class="text-center" style='float: left;'>Stalker
-                        Pyramid v{{ stalker_pyramid.__version__ }} &copy;
-                        2009-2013 Erkan Ozgur Yilmaz.
-                    </div>
-                    <div class='text-right' style="float:right;"><a
-                            href='http://www.glyphicons.com/'>GLYPHICONS.com</a>
-                    </div>
+                    <div class="text-center" style='float: left;'>Stalker Pyramid v{{ stalker_pyramid.__version__ }} &copy; 2009-2013 Erkan Ozgur Yilmaz.</div>
+                    <div class='text-right' style="float:right;"><a href='http://www.glyphicons.com/'>GLYPHICONS.com</a></div>
                 </div>
             </div>
         </footer>
     {% endblock footer %}
 {% endblock content %}
 
+
+{% block modals%}
+    <div id='base_modal_dialog'
+         class='modal fade'
+         tabIndex='-1'
+         role='dialog'
+         aria-labelledby="myModalLabel"></div>
+{% endblock %}
+
+
+
+
 <!-- JavaScript -->
 {% block scripts %}
-    <script src="/static/jquery/jquery-2.0.3.js"></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/bootstrap-3.0.0/js/bootstrap.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery-2.0.3.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootstrap.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/stalker/date.format.js") }}'></script>
 {% endblock scripts %}
+
+{% block extrascripts %}
+{% endblock extrascripts %}
 
 
 </body>

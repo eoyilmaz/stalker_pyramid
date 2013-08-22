@@ -82,42 +82,25 @@ def deform_test(request):
     }
 
 
-@view_config(
-    route_name='dialog_create_project',
-    renderer='templates/project/dialog_create_project.jinja2',
-)
-def create_project_dialog(request):
-    """called when the create project dialog is requested
-    """
-    logged_in_user = get_logged_in_user(request)
-
-    return {
-        'mode': 'CREATE',
-        'has_permission': PermissionChecker(request),
-        'logged_in_user': logged_in_user,
-        'milliseconds_since_epoch': milliseconds_since_epoch
-    }
-
-
-@view_config(
-    route_name='dialog_update_project',
-    renderer='templates/project/dialog_create_project.jinja2'
-)
-def update_project_dialog(request):
-    """runs when updating a project
-    """
-    logged_in_user = get_logged_in_user(request)
-
-    project_id = request.matchdict.get('id', -1)
-    project = Project.query.filter_by(id=project_id).first()
-
-    return {
-        'mode': 'UPDATE',
-        'has_permission': PermissionChecker(request),
-        'project': project,
-        'logged_in_user': logged_in_user,
-        'milliseconds_since_epoch': milliseconds_since_epoch
-    }
+# @view_config(
+#     route_name='dialog_update_project',
+#     renderer='templates/project/dialog_create_project.jinja2'
+# )
+# def update_project_dialog(request):
+#     """runs when updating a project
+#     """
+#     logged_in_user = get_logged_in_user(request)
+# 
+#     project_id = request.matchdict.get('id', -1)
+#     project = Project.query.filter_by(id=project_id).first()
+# 
+#     return {
+#         'mode': 'UPDATE',
+#         'has_permission': PermissionChecker(request),
+#         'project': project,
+#         'logged_in_user': logged_in_user,
+#         'milliseconds_since_epoch': milliseconds_since_epoch
+#     }
 
 
 @view_config(

@@ -1,9 +1,7 @@
 <div class='navbar navbar-fixed-top'>
-<div class="navbar-inner">
-<div class='container-fluid'>
-<a class="brand" href="/">
-    <small>Stalker v{{ stalker_pyramid.__version__ }}</small>
-</a>
+    <div class="navbar-inner">
+        <div class='container-fluid'>
+            <a class="brand" href="/">Stalker <small>v{{ stalker_pyramid.__version__ }}</small></a>
 <ul class="nav navbar-nav">
     <li>
         <a href="{{ request.route_url('view_user', id=logged_in_user.id) }}">Home</a>
@@ -26,40 +24,6 @@
                 {% endif %}
             {% endif %}
             <li class="divider"></li>
-            <li class="dropdown-submenu">
-                <a tabindex="-1" href="#">New</a>
-                <ul class="dropdown-menu">
-                    <li>
-                        <a href="#">FilenameTemplate</a>
-                    </li>
-                    {% if has_permission('Create_FilenameTemplate') %}
-                        <li>
-                            <a href="#">FilenameTemplate</a>
-                        </li>
-                    {% endif %}
-                    {% if has_permission('Create_ImageFormat') %}
-                        <li><a href="#">Image
-                            Format</a>
-                        </li>
-                    {% endif %}
-                    {% if has_permission('Create_Repository') %}
-                        <li><a href="#">Repository</a>
-                        </li>
-                    {% endif %}
-                    {% if has_permission('Create_Status') %}
-                        <li><a href="#">Status</a>
-                        </li>
-                    {% endif %}
-                    {% if has_permission('Create_StatusList') %}
-                        <li><a href="#">Status List</a>
-                        </li>
-                    {% endif %}
-                    {% if has_permission('Create_Structure') %}
-                        <li><a href="#">Structure</a>
-                        </li>
-                    {% endif %}
-                </ul>
-            </li>
         </ul>
     </li>
     <li class="dropdown">
