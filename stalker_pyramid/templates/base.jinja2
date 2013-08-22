@@ -31,14 +31,15 @@
 
 
     <!-- CSS -->
-    <link rel="stylesheet" href="/static/bootstrap-3.0.0/css/bootstrap.min.css">
-    <link rel='stylesheet' href="/static/bootstrap-3.0.0/css/bootstrap-theme.min.css">
-    <link rel="stylesheet" href="/static/bootstrap-3.0.0/css/bootstrap.icon-large.min.css" >
-    <link rel="stylesheet" href="/static/stalker/css/stalker_bootstrap.css">
+    <link rel="stylesheet" href='{{ request.static_url("stalker_pyramid:static/bootstrap-3.0.0/css/bootstrap.min.css") }}'>
+    <link rel='stylesheet' href='{{ request.static_url("stalker_pyramid:static/bootstrap-3.0.0/css/bootstrap-theme.min.css") }}'>
+    <link rel="stylesheet" href='{{ request.static_url("stalker_pyramid:static/bootstrap-3.0.0/css/bootstrap.icon-large.min.css") }}'>
+    <link rel="stylesheet" href='{{ request.static_url("stalker_pyramid:static/bootstrap-datetimepicker/css/bootstrap-datetimepicker.min.css") }}'>
+    <link rel="stylesheet" href='{{ request.static_url("stalker_pyramid:static/stalker/css/stalker_bootstrap.css") }}'>
+    <link rel="stylesheet" href='{{ request.static_url("stalker_pyramid:static/bootstrap-datetimepicker/css/bootstrap-datetimepicker.min.css") }}'>
 
-    {% block extra_scripts %}
-    {% endblock extra_scripts %}
-
+    {% block extra_header_scripts %}
+    {% endblock extra_header_scripts %}
 
     {% block header_extra %}
     {% endblock header_extra %}
@@ -84,13 +85,28 @@
     {% endblock footer %}
 {% endblock content %}
 
+
+{% block modals%}
+    <div id='base_modal_dialog'
+         class='modal fade'
+         tabIndex='-1'
+         role='dialog'
+         aria-labelledby="myModalLabel"></div>
+{% endblock %}
+
+
+
+
 <!-- JavaScript -->
 {% block scripts%}
-    <script src="/static/jquery/jquery-2.0.3.js"></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/jquery/jquery-2.0.3.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/bootstrap-3.0.0/js/bootstrap.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/stalker/date.format.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/bootstrap-datetimepicker/js/bootstrap-datetimepicker.min.js") }}'></script>
 {% endblock scripts%}
 
+{% block extrascripts %}
+{% endblock extrascripts %}
 
 
 </body>

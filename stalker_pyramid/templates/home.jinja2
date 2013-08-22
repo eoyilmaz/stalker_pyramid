@@ -11,10 +11,7 @@
 {% block main_content %}
     <div class='col-lg-10'>
         <div class='row'>
-            <div class='span2'>
-            </div>
-        
-            <div class='span6'>
+            <div class='col-lg-8 col-lg-offset-2'>
                 <h3 class='text-center'>My Tasks Today</h3>
                 <table class='table table-hover'>
                     <thead>
@@ -28,7 +25,7 @@
                     </thead>
                     <tbody>
                     {% for task in tasks_today %}
-                        <tr class={% if task.percent_complete == 0 %}'error'{% elif task.percent_complete >= 100 %}'success'{% else %}'warning'{% endif %}>
+                        <tr class={% if task.percent_complete == 0 %}'danger'{% elif task.percent_complete >= 100 %}'success'{% else %}'warning'{% endif %}>
                             <td>{{ task.id }}</td>
                             <td><a href='{{ request.route_url('view_task', id=task.id) }}'>{{ task.name }}</a></td>
                             <td>{{ task.start }}</td>
@@ -39,17 +36,10 @@
                     </tbody>
                 </table>
             </div>
-        
-        
-            <div class='span2'>
-            </div>
         </div>
-        
+
         <div class='row'>
-            <div class='span2'>
-            </div>
-        
-            <div class='span6'>
+            <div class='col-lg-8 col-lg-offset-2'>
                 <h3 class='text-center'>My Projects</h3>
                 <table class='table table-hover'>
                     <thead>
@@ -63,7 +53,7 @@
                     </thead>
                     <tbody>
                     {% for project in logged_in_user.projects %}
-                        <tr class={% if project.percent_complete == 0 %}'error'{% elif project.percent_complete >= 100 %}'success'{% else %}'warning'{% endif %}>
+                        <tr class={% if project.percent_complete == 0 %}'danger'{% elif project.percent_complete >= 100 %}'success'{% else %}'warning'{% endif %}>
                             <td>{{ project.id }}</td>
                             <td><a href='{{ request.route_url('view_project', id=project.id) }}'>{{ project.name }}</a></td>
                             <td>{{ project.start }}</td>
@@ -74,10 +64,7 @@
                     </tbody>
                 </table>
             </div>
-        
-        
-            <div class='span2'>
-            </div>
+
         </div>
     </div>    
 {% endblock main_content %}

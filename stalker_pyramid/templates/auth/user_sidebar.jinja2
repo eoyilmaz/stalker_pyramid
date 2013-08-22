@@ -1,22 +1,21 @@
 {# Render User Side Bar #}
-<div class='well sidebar-nav'>
+<div class='well well-sm well-lg sidebar-nav'>
     <ul class='nav nav-list'>
         {# Thumbnail #}
         <li>
-        <div class="media">
-            <a class="pull-left" href="#" style="width: 64px; height: 64px">
-                <img style='width:auto; height: auto;' class="img-thumbnail" src="{%- if logged_in_user.thumbnail -%}
-                    /{{ logged_in_user.thumbnail.full_path }}
-                {%- else -%}
-                    {{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_0.png") }}
-                {%- endif -%}">
-            </a>
-            <div class="media-body">
-                <h5 class="media-heading">{{ logged_in_user.name }} <small>({{ logged_in_user.login }})</small></h5>
-                <button class='btn btn-primary btn-sm'>Edit Profile »</button>
+            <div class="media">
+                <a class="pull-left" href="#" style="width: 64px; height: 64px">
+                    <img style='width:auto; height: auto;' class="img-thumbnail" src="{%- if logged_in_user.thumbnail -%}
+                        /{{ logged_in_user.thumbnail.full_path }}
+                    {%- else -%}
+                        {{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_0.png") }}
+                    {%- endif -%}">
+                </a>
+                <div class="media-body">
+                    <h5 class="media-heading">{{ logged_in_user.name }} <small>({{ logged_in_user.login }})</small></h5>
+                    <button class='btn btn-primary btn-sm'><span class='glyphicon glyphicon-edit'></span> Edit Profile</button>
+                </div>
             </div>
-        </div>
-
         </li>
     
         <li class='divider'></li>
@@ -24,7 +23,7 @@
         {# Tasks #}
 
         {% if request.current_route_path() == request.route_path('list_user_tasks', id=logged_in_user.id) %}
-            <li class='active'><a>Tasks <span class='badge badge-info'>{{ logged_in_user.tasks | count }}</span></a></li>
+            <li class='active'><a>Tasks <span class='badge'>{{ logged_in_user.tasks | count }}</span></a></li>
         {% else %}
             <li><a href='{{ request.route_url('list_user_tasks', id=logged_in_user.id) }}'>Tasks <span class='badge badge-info'>{{ logged_in_user.tasks | count }}</span></a></li>
         {% endif %}

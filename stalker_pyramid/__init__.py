@@ -170,8 +170,8 @@ def main(global_config, **settings):
 
     # *************************************************************************
     # Project
-    config.add_route('dialog_create_project',      'projects/create/dialog')
-    config.add_route('dialog_update_project',      'projects/{id}/update/dialog')
+    config.add_route('project_dialog',             'projects/{id}/{mode}/dialog')
+
     config.add_route('dialog_create_project_task', 'projects/{id}/tasks/create/dialog')
     config.add_route('dialog_create_asset',        'projects/{id}/assets/create/dialog')
 

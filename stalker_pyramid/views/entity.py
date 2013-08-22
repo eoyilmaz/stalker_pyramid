@@ -202,6 +202,10 @@ logger.setLevel(logging.DEBUG)
     route_name='view_task',
     renderer='templates/task/page_view_task.jinja2'
 )
+@view_config(
+    route_name='project_dialog',
+    renderer='templates/project/project_dialog.jinja2',
+)
 def get_entity_related_data(request):
     """lists the time logs of the given task
     """
@@ -213,7 +217,10 @@ def get_entity_related_data(request):
     groups = Group.query.all()
     users = User.query.order_by(User.name).all()
 
+    mode = request.matchdict.get('mode', None)
+
     return {
+        'mode': mode,
         'entity': entity,
         'has_permission': PermissionChecker(request),
         'logged_in_user': get_logged_in_user(request),

@@ -147,7 +147,10 @@
                                 {% if has_permission('Create_Project') %}
                                     <li class="divider"></li>
                                     <li>
-                                        <a href='#'>New Project</a>
+                                        <a data-target='#base_modal_dialog'
+                                           data-toggle="modal"
+                                           data-keyboard=true
+                                           href="{{ request.route_url('project_dialog', id=-1, mode='create') }}">New Project</a>
                                     </li>
                                 {% endif %}
                             </ul>
