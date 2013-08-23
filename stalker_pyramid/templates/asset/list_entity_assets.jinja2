@@ -8,13 +8,21 @@
 {% block page_content %}
 
     {% set assets=entity.assets %}
-    <div class='span12'>
+    <div class='column-fluid'>
+    
+        {% for asset in assets %}
+            
+            {% if (loop.index0 % 6) == 0 %}
+                <div class="row-fluid">
+            {% endif %}
+            
+            {% include 'asset/list_item_asset.jinja2' %}
 
-        <div class="row">
-            {% for asset in assets %}
-                {% include 'asset/list_item_asset.jinja2' %}
-            {% endfor %}
-        </div>
+
+            {% if (loop.index0 % 6) == 5 %}
+                </div>
+            {% endif %}
+        {% endfor %}
+
     </div>
-
 {% endblock page_content %}
