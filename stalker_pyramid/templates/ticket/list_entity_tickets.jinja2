@@ -1,0 +1,15 @@
+{% extends "base.jinja2" %}
+{% block sidebar %}
+    {% include 'sidebar.jinja2' %}
+
+{% endblock sidebar %}
+
+{% block breadcrumbs %}
+    {% set page_title='Tickets' %}
+    {% include 'breadcrumbs.jinja2' %}
+{% endblock breadcrumbs %}
+
+{% block page_content %}
+    {% set page_title='Tickets' %}
+    {% include 'page_header.jinja2' %}
+{% endblock page_content %}

@@ -3,20 +3,18 @@
     <link rel="stylesheet" href="/static/ace/css/fullcalendar.css">
 {% endblock pre_header %}
 
+
+{% block breadcrumbs %}
+    {% set page_title='Dashboard' %}
+    {% include 'breadcrumbs.jinja2' %}
+{% endblock breadcrumbs %}
+
 {% block sidebar %}
     {% include 'auth/user_sidebar.jinja2' %}
 {% endblock sidebar %}
 
 {% block page_content %}
-    <div class="page-header position-relative">
-        <h1>
-            Resource Calender
-            <small>
-                <i class="icon-double-angle-right"></i>
-                gunluk is takibi
-            </small>
-        </h1>
-    </div>
+    {% include 'page_header.jinja2' %}
     <!--/.page-header-->
 
     <div class="row-fluid">
@@ -871,10 +869,6 @@
     </div>
 
     <div class="space-6"></div>
-
-
-
-
 
 
     </div>

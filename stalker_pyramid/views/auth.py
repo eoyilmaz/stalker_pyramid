@@ -798,6 +798,11 @@ def update_group(request):
     return HTTPOk()
 
 
+
+@view_config(
+    route_name='list_studio_groups',
+    renderer='templates/auth/list_entity_groups.jinja2'
+)
 @view_config(
     route_name='list_groups',
     renderer='templates/auth/list_entity_groups.jinja2'
@@ -891,4 +896,80 @@ def view_permissions(request):
         'entity_types': entity_types,
         'logged_in_user': logged_in_user,
         'has_permission': PermissionChecker(request)
+    }
+
+
+@view_config(
+    route_name='view_group',
+    renderer='templates/auth/view_entity_group.jinja2'
+)
+def view_group(request):
+    """create group dialog
+    """
+    logged_in_user = get_logged_in_user(request)
+
+    permissions = Permission.query.all()
+
+    entity_types = EntityType.query.all()
+
+    group_id = request.matchdict.get('id', -1)
+    group = Group.query.filter_by(id=group_id).first()
+
+    entity_id = request.matchdict.get('id', -1)
+    entity = Entity.query.filter_by(id=entity_id).first()
+
+    studio = Studio.query.first()
+    projects = Project.query.all()
+
+    return {
+        'mode': 'UPDATE',
+        'entity': entity,
+        'actions': defaults.actions,
+        'permissions': permissions,
+        'entity_types': entity_types,
+        'logged_in_user': logged_in_user,
+        'stalker_pyramid': stalker_pyramid,
+        'has_permission': PermissionChecker(request),
+        'studio': studio,
+        'projects': projects
+
+    }
+
+
+@view_config(
+    route_name='view_entity_group',
+    renderer='templates/auth/view_entity_group.jinja2'
+)
+def view_entity_group(request):
+    """create group dialog
+    """
+    logged_in_user = get_logged_in_user(request)
+
+    permissions = Permission.query.all()
+
+    entity_types = EntityType.query.all()
+
+    entity_id = request.matchdict.get('eid', -1)
+    entity = Entity.query.filter_by(id=entity_id).first()
+
+    logger.debug('entity_type     : %s' % entity.entity_type)
+
+    group_id = request.matchdict.get('id', -1)
+    group = Group.query.filter_by(id=group_id).first()
+
+    studio = Studio.query.first()
+    projects = Project.query.all()
+
+    return {
+        'entity': entity,
+        'group': group,
+        'actions': defaults.actions,
+        'permissions': permissions,
+        'entity_types': entity_types,
+        'logged_in_user': logged_in_user,
+        'stalker_pyramid': stalker_pyramid,
+        'has_permission': PermissionChecker(request),
+        'studio': studio,
+        'projects': projects
+
     }

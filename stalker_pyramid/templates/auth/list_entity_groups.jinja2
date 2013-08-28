@@ -1,28 +1,43 @@
 {% extends "base.jinja2" %}
-{% if entity %}
-    {% set groups=entity.groups %}
-{% else %}
-    {% set entity=studio %}
-{% endif %}
+
+{% block breadcrumbs %}
+  {% if entity %}
+        {% set groups=entity.groups %}
+    {% else %}
+        {% set entity=studio %}
+    {% endif %}
+    {% set page_title='Groups' %}
+    {% include 'breadcrumbs.jinja2' %}
+{% endblock breadcrumbs %}
+
 {% block sidebar %}
+  {% if entity %}
+        {% set groups=entity.groups %}
+    {% else %}
+        {% set entity=studio %}
+    {% endif %}
 
     {% include 'sidebar.jinja2' %}
-
 {% endblock sidebar %}
 
-{% block main_content %}
+{% block page_content %}
+    {% if entity %}
+        {% set groups=entity.groups %}
+    {% else %}
+        {% set entity=studio %}
+    {% endif %}
 
-    <div class="page-header">
-        <h3>{{ entity.name }}
-            <small>Groups</small>
-        </h3>
-    </div>
-    <div class='col-lg-12'>
-        <div class="row">
+    {% set page_title='Groups' %}
+    {% include 'page_header.jinja2' %}
+
+    <div class="row-fluid">
+        <ul class="thumbnails">
             {% for group in groups %}
-                {% include 'auth/list_item_group.jinja2' %}
+                <li class="span2">
+                    {% include 'auth/list_item_group.jinja2' %}
+                </li>
             {% endfor %}
-        </div>
-    </div>
 
-{% endblock main_content %}
+        </ul>
+    </div>
+{% endblock page_content %}

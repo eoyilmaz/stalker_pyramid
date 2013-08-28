@@ -1,4 +1,10 @@
 {% extends "base.jinja2" %}
+
+{% block breadcrumbs %}
+    {% set page_title='Assets' %}
+    {% include 'breadcrumbs.jinja2' %}
+{% endblock breadcrumbs %}
+
 {% block sidebar %}
 
     {% include 'sidebar.jinja2' %}
@@ -7,22 +13,23 @@
 
 {% block page_content %}
 
+    {% set page_title='Assets' %}
+    {% include 'page_header.jinja2' %}
+
     {% set assets=entity.assets %}
-    <div class='column-fluid'>
-    
-        {% for asset in assets %}
-            
-            {% if (loop.index0 % 6) == 0 %}
-                <div class="row-fluid">
-            {% endif %}
-            
-            {% include 'asset/list_item_asset.jinja2' %}
+
+    {% for asset in assets %}
+
+      {% if (loop.index0 % 6) == 0 %}
+           <div class="row-fluid">
+      {% endif %}
+
+      {% include 'asset/list_item_asset.jinja2' %}
 
 
-            {% if (loop.index0 % 6) == 5 %}
-                </div>
-            {% endif %}
-        {% endfor %}
-
-    </div>
+      {% if (loop.index0 % 6) == 5 %}
+          </div>
+          <div class="space"></div>
+      {% endif %}
+    {% endfor %}
 {% endblock page_content %}

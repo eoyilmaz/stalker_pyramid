@@ -1,0 +1,296 @@
+{% extends "base.jinja2" %}
+
+
+{% block pre_header %}
+    <link rel="stylesheet" href="assets/css/jquery-ui-1.10.3.custom.min.css"/>
+    <link rel="stylesheet" href="assets/css/jquery.gritter.css"/>
+{% endblock pre_header %}
+
+{% block sidebar %}
+    {% include 'auth/user_sidebar.jinja2' %}
+{% endblock sidebar %}
+
+{% block page_content %}
+    {% set user=entity %}
+    {% set page_title='Settings' %}
+    {% include 'page_header.jinja2' %}
+    <!--/.page-header-->
+
+    <div class="user-profile row-fluid">
+    <!--PAGE CONTENT BEGINS-->
+
+    <div class="span3 center">
+        <div>
+                  <span class="profile-picture">
+                      <img id="avatar"
+                           class="editable editable-click editable-empty"
+                           alt="Alex's Avatar"
+                           src="{%- if user.thumbnail -%}
+                                              /{{ user.thumbnail.full_path }}
+                                          {%- else -%}
+                                              {{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_0.png") }}
+                                          {%- endif -%}">
+                  </span>
+
+            <div class="space-4"></div>
+
+            <div class="width-80 label label-info label-large arrowed-in arrowed-in-right">
+                <div class="inline position-relative">
+                    <a href="#"
+                       class="user-title-label dropdown-toggle"
+                       data-toggle="dropdown">
+                        <i class="icon-circle light-green middle"></i>
+                        &nbsp;
+                        <span class="white middle bigger-120">{{ user.name }}</span>
+                    </a>
+
+                    <ul class="align-left dropdown-menu dropdown-caret dropdown-lighter">
+                        <li class="nav-header"> Change Status</li>
+
+                        <li>
+                            <a href="#">
+                                <i class="icon-circle green"></i>
+                                &nbsp;
+                                <span class="green">Available</span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="#">
+                                <i class="icon-circle red"></i>
+                                &nbsp;
+                                <span class="red">Busy</span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="#">
+                                <i class="icon-circle grey"></i>
+                                &nbsp;
+                                <span class="grey">On Vacation</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="space-6"></div>
+
+
+        <div class="hr hr16 dotted"></div>
+    </div>
+    <div class="span7">
+    <h4 class="header smaller green">Basic Info</h4>
+    <div class="profile-user-info profile-user-info-striped">
+
+        <div class="profile-info-row">
+            <div class="profile-info-name"> Name</div>
+
+            <div class="profile-info-value">
+                <span class="editable editable-click"
+                      id="username">{{ user.name }}</span>
+            </div>
+        </div>
+
+        <div class="profile-info-row">
+            <div class="profile-info-name"> Login</div>
+
+            <div class="profile-info-value">
+                <span class="editable editable-click"
+                      id="userlogin">{{ user.login }}</span>
+            </div>
+        </div>
+
+        <div class="profile-info-row">
+            <div class="profile-info-name"> E-mail</div>
+
+            <div class="profile-info-value">
+                <span class="editable editable-click"
+                      id="city">{{ user.email }}</span>
+            </div>
+        </div>
+    </div>
+    <div class="hr hr16 dotted"></div>
+    <div class="space-9"></div>
+    <h4 class="header smaller green">User of</h4>
+    <div class="widget-box span4">
+        <div class="widget-header widget-header-small header-color-green">
+
+
+            <h4 class="smaller">
+                <i class="icon-folder-close-alt"></i>
+                Projects
+            </h4>
+
+            <div class="widget-toolbar action-buttons">
+                <a href="#" data-action="reload">
+                    <i class="icon-refresh white"></i>
+                </a>
+
+                &nbsp;
+                <a href="#" class="white" data-rel="tooltip" title=""
+                   data-original-title="Default">
+                    <i class="icon-plus"></i>
+                </a>
+
+
+            </div>
+        </div>
+        <div class="widget-body">
+            <div class="widget-main">
+                {% for project in user.projects %}
+                    <div class="profile-activity clearfix">
+                        <div>
+                            <img class="pull-left"
+                                 alt="Alex Doe's avatar"
+                                 src="{%- if project.thumbnail -%}
+                        /{{ project.thumbnail.full_path }}
+                    {%- else -%}
+                        {{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}
+                    {%- endif -%}">
+                            <a class="user"
+                               href="{{ request.route_url('view_project', id=project.id) }}">{{ project.name }} </a>
+
+                            <div class="time">
+                                <i class="icon-user bigger-110"></i>
+                                {{ project.users | count }} users
+                            </div>
+                        </div>
+
+                        <div class="tools action-buttons">
+                            <a href="#" class="blue">
+                                <i class="icon-pencil bigger-125"></i>
+                            </a>
+
+                            <a href="#" class="red">
+                                <i class="icon-remove bigger-125"></i>
+                            </a>
+                        </div>
+                    </div>
+                {% endfor %}
+
+
+            </div>
+        </div>
+    </div>
+    <div class="widget-box span4">
+        <div class="widget-header widget-header-small header-color-blue">
+
+            <h4 class="smaller">
+                <i class="icon-key"></i>
+                Departments
+            </h4>
+
+            <div class="widget-toolbar action-buttons">
+                <a href="#" data-action="reload">
+                    <i class="icon-refresh"></i>
+                </a>
+
+                &nbsp;
+                <a href="#" class="white">
+                    <i class="icon-plus"></i>
+                </a>
+            </div>
+        </div>
+        <div class="widget-body">
+            <div class="widget-main">
+
+                {% for department in user.departments %}
+                    <div class="profile-activity clearfix">
+                        <div>
+                            <img class="pull-left" alt="Alex Doe's avatar"
+                                 src="{%- if department.thumbnail -%}
+                        /{{ department.thumbnail.full_path }}
+                    {%- else -%}
+                        {{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}
+                    {%- endif -%}">
+                            <a class="user"
+                               href="{{ request.route_url('view_entity_department', eid=user.id, id=department.id) }}">{{ department.name }}</a>
+
+                            <div class="time">
+                                <i class="icon-user bigger-110"></i>
+                                {{ department.users | count }} users
+                            </div>
+                        </div>
+
+                        <div class="tools action-buttons">
+                            <a href="#" class="blue">
+                                <i class="icon-pencil bigger-125"></i>
+                            </a>
+
+                            <a href="#" class="red">
+                                <i class="icon-remove bigger-125"></i>
+                            </a>
+                        </div>
+                    </div>
+                {% endfor %}
+
+
+            </div>
+        </div>
+    </div>
+    <div class="widget-box span3">
+        <div class="widget-header widget-header-small header-color-purple">
+
+            <h4 class="smaller">
+                <i class="icon-group"></i>
+                Groups
+            </h4>
+
+            <div class="widget-toolbar action-buttons">
+                <a href="#" data-action="reload">
+                    <i class="icon-refresh"></i>
+                </a>
+
+                &nbsp;
+                <a href="#" class="white">
+                    <i class="icon-plus"></i>
+                </a>
+            </div>
+        </div>
+        <div class="widget-body">
+            <div class="widget-main">
+                {% for group in user.groups %}
+                    <div class="profile-activity clearfix">
+                        <div>
+                            <img class="pull-left" alt="Alex Doe's avatar"
+                                 src="{%- if group.thumbnail -%}
+                        /{{ group.thumbnail.full_path }}
+                    {%- else -%}
+                        {{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}
+                    {%- endif -%}">
+                            <a class="user"
+                               href="{{ request.route_url('view_entity_group', eid=user.id, id=group.id) }}">{{ group.name }}</a>
+
+                            <div class="time">
+                                <i class="icon-user bigger-110"></i>
+                                {{ group.users | count }} users
+                            </div>
+                        </div>
+
+                        <div class="tools action-buttons">
+                            <a href="#" class="blue">
+                                <i class="icon-pencil bigger-125"></i>
+                            </a>
+
+                            <a href="#" class="red">
+                                <i class="icon-remove bigger-125"></i>
+                            </a>
+                        </div>
+                    </div>
+                {% endfor %}
+
+
+            </div>
+        </div>
+    </div>
+
+
+    <!--PAGE CONTENT ENDS-->
+    </div>
+    <!--/.span-->
+    </div>
+    <!--/.row-fluid-->
+
+{% endblock page_content %}

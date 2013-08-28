@@ -24,9 +24,10 @@ from pyramid.security import authenticated_userid
 from pyramid.view import view_config
 
 from stalker.db import DBSession
-from stalker import User, Department, Entity
+from stalker import User, Department, Entity, Studio, Project, defaults
 
 import logging
+import stalker_pyramid
 from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
                                    log_param, get_multi_integer, get_tags)
 
@@ -196,6 +197,36 @@ def get_entity_departments(request):
         for department in entity.departments
     ]
 
+@view_config(
+    route_name='view_entity_department',
+    renderer='templates/department/view_entity_department.jinja2'
+)
+def view_entity_department(request):
+    """create department dialog
+    """
+    logged_in_user = get_logged_in_user(request)
+
+    entity_id = request.matchdict.get('eid', -1)
+    entity = Entity.query.filter_by(id=entity_id).first()
+
+    logger.debug('entity_type     : %s' % entity.entity_type)
+
+    department_id = request.matchdict.get('id', -1)
+    department = Department.query.filter_by(id=department_id).first()
+
+    studio = Studio.query.first()
+    projects = Project.query.all()
+
+    return {
+        'entity': entity,
+        'department': department,
+        'actions': defaults.actions,
+        'logged_in_user': logged_in_user,
+        'stalker_pyramid': stalker_pyramid,
+        'has_permission': PermissionChecker(request),
+        'studio': studio,
+        'projects': projects
+    }
 
 
 

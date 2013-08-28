@@ -35,6 +35,7 @@ from stalker import (User, Task, Entity, Project, StatusList, Status,
                      TaskJugglerScheduler, Studio, Asset, Shot, Sequence, Type, Ticket)
 from stalker.models.task import CircularDependencyError
 from stalker import defaults
+import stalker_pyramid
 from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
                                    get_multi_integer, milliseconds_since_epoch,
                                    get_date)
@@ -1135,3 +1136,45 @@ def request_task_review(request):
         mailer.send(message)
 
     return HTTPOk()
+
+
+
+@view_config(
+    route_name='view_project_asset',
+    renderer='templates/task/view_project_task.jinja2'
+)
+@view_config(
+    route_name='view_project_sequence',
+    renderer='templates/task/view_project_task.jinja2'
+)
+@view_config(
+    route_name='view_project_shot',
+    renderer='templates/task/view_project_task.jinja2'
+)
+@view_config(
+    route_name='view_project_task',
+    renderer='templates/task/view_project_task.jinja2'
+)
+def view_project_task(request):
+    """runs when viewing an task
+    """
+
+    project_id = request.matchdict['pid']
+    project = Project.query.filter_by(id=project_id).first()
+
+    task_id = request.matchdict['id']
+    task = Task.query.filter_by(id=task_id).first()
+
+    studio = Studio.query.first()
+    projects = Project.query.all()
+
+    return {
+        'entity':project,
+        'task': task,
+        'has_permission': PermissionChecker(request),
+        'logged_in_user': get_logged_in_user(request),
+        'milliseconds_since_epoch': milliseconds_since_epoch,
+        'stalker_pyramid': stalker_pyramid,
+        'projects': projects,
+        'studio': studio
+    }

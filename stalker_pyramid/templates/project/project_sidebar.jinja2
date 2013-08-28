@@ -1,34 +1,58 @@
 {# Render Project Side Bar #}
 
 {% set project=entity %}
-<ul class="nav nav-list">
 
-     {# Thumbnail #}
-    <li>
-        <div class="media">
-            <a class="pull-left" href="#" style="width: 64px; height: 64px">
-                <img style='width:auto; height: auto;' class="img-thumbnail"
-                     src="{%- if project.thumbnail -%}
-                    /{{ project.thumbnail.full_path }}
-                {%- else -%}
-                    {{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_0.png") }}
-                {%- endif -%}">
-            </a>
+<ul class='nav nav-list'>
 
-            <div class="media-body">
-                <h5 class="media-heading">{{ project.name }}
-                    <small>({{ project.code }})</small>
-                </h5>
+    {# Thumbnail #}
+        <li>
+            <div class="media">
+                <a class="pull-left" href="#" style="width: 100px; height: 100px">
+                    <img style='width:auto; height: 100px;'
+                         class="img-thumbnail"
+                         src="{%- if project.thumbnail -%}
+                        /{{ project.thumbnail.full_path }}
+                    {%- else -%}
+                        {{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}
+                    {%- endif -%}">
+                </a>
+
+                <div class="media-body">
+                    <h5 class="media-heading">{{ project.name }}
+                    </h5>
+
+                  <a href="#" class="menu-text">
+                    <i class="icon-edit"></i>
+                    Edit
+                  </a>
+                </div>
             </div>
-        </div>
+        </li>
 
-    </li>
 
-    {#TASKS#}
+    {#Dashboard#}
+    {% if request.current_route_path() == request.route_path('view_project', id=project.id) %}
+        <li class='active'>
+            <a>
+                <i class="icon-dashboard"></i>
+                <span class="menu-text">Dashboard</span>
+            </a>
+        </li>
+    {% else %}
+        <li>
+            <a href='{{ request.route_url('view_project', id=project.id) }}'>
+                <i class="icon-dashboard"></i>
+                <span class="menu-text">Dashboard</span>
+            </a>
+        </li>
+    {% endif %}
+
+
+    {# Tasks #}
     {% if request.current_route_path() == request.route_path('list_project_tasks', id=project.id) %}
         <li class='active'>
             <a>
-                <i class="icon-task"></i>
+                <i class="icon-tasks"></i>
                 <span class="menu-text">Tasks</span>
                 <span class='badge badge-info'>{{ project.tasks | count }}</span>
             </a>
@@ -36,62 +60,101 @@
     {% else %}
         <li>
             <a href='{{ request.route_url('list_project_tasks', id=project.id) }}'>
-                <i class="icon-task"></i>
+                <i class="icon-tasks"></i>
                 <span class="menu-text">Tasks</span>
                 <span class='badge badge-info'>{{ project.tasks | count }}</span>
             </a>
         </li>
     {% endif %}
 
-    {#ASSETS#}
+    {# Tickets #}
+    {% if request.current_route_path() == request.route_path('list_project_tickets', id=project.id) %}
+        <li class='active'>
+            <a>
+                <i class="icon-ticket"></i>
+                <span class="menu-text">Tickets</span>
+                <span class='badge badge-important'>{{ project.open_tickets | count }}</span>
+            </a>
+        </li>
+    {% else %}
+        <li>
+            <a href='{{ request.route_url('list_project_tickets', id=project.id) }}'>
+                <i class="icon-ticket"></i>
+                <span class="menu-text">Tickets</span>
+                <span class='badge badge-important'>{{ project.open_tickets | count }}</span>
+            </a>
+        </li>
+    {% endif %}
+
+    {# Assets #}
     {% if request.current_route_path() == request.route_path('list_project_assets', id=project.id) %}
         <li class='active'>
             <a>
-                <i class="icon-asset"></i>
+                <i class="icon-puzzle-piece"></i>
                 <span class="menu-text">Assets</span>
             </a>
         </li>
     {% else %}
         <li>
             <a href='{{ request.route_url('list_project_assets', id=project.id) }}'>
-                <i class="icon-asset"></i>
+                <i class="icon-puzzle-piece"></i>
                 <span class="menu-text">Assets</span>
             </a>
         </li>
     {% endif %}
 
-    {#SHOTS#}
-    {% if request.current_route_path() == request.route_path('list_project_shots', id=project.id) %}
-        <li class='active'>
-            <a>
-                <i class="icon-shot"></i>
-                <span class="menu-text">Shots</span>
-            </a>
-        </li>
-    {% else %}
-        <li>
-            <a href='{{ request.route_url('list_project_shots', id=project.id) }}'>
-                <i class="icon-shot"></i>
-                <span class="menu-text">Shots</span>
-            </a>
-        </li>
-    {% endif %}
-
-    {#SEQUENCE#}
+     {# Sequences #}
     {% if request.current_route_path() == request.route_path('list_project_sequences', id=project.id) %}
         <li class='active'>
             <a>
-                <i class="icon-sequence"></i>
+                <i class="icon-film"></i>
                 <span class="menu-text">Sequences</span>
             </a>
         </li>
     {% else %}
         <li>
             <a href='{{ request.route_url('list_project_sequences', id=project.id) }}'>
-                <i class="icon-shot"></i>
+                <i class="icon-film"></i>
                 <span class="menu-text">Sequences</span>
             </a>
         </li>
     {% endif %}
 
+    {# Shots #}
+    {% if request.current_route_path() == request.route_path('list_project_shots', id=project.id) %}
+        <li class='active'>
+            <a>
+                <i class="icon-camera"></i>
+                <span class="menu-text">Shots</span>
+            </a>
+        </li>
+    {% else %}
+        <li>
+            <a href='{{ request.route_url('list_project_shots', id=project.id) }}'>
+                <i class="icon-camera"></i>
+                <span class="menu-text">Shots</span>
+            </a>
+        </li>
+    {% endif %}
+
+
+
+    {# Users #}
+    {% if request.current_route_path() == request.route_path('list_project_users', id=project.id) %}
+        <li class='active'>
+            <a>
+                <i class="icon-user"></i>
+                <span class="menu-text">Users</span>
+                <span class='badge badge-success'>{{ project.users | count }}</span>
+            </a>
+        </li>
+    {% else %}
+        <li>
+            <a href='{{ request.route_url('list_project_users', id=project.id) }}'>
+                <i class="icon-user"></i>
+                <span class="menu-text">Users</span>
+                <span class='badge badge-success'>{{ project.users | count }}</span>
+            </a>
+        </li>
+    {% endif %}
 </ul>

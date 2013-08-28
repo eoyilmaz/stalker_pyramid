@@ -41,11 +41,13 @@
 
     <!--page specific plugin styles-->
 
-    <link rel="stylesheet" href="/static/ace/css/jquery-ui-1.10.3.custom.min.css">
+    <link rel="stylesheet"
+          href="/static/ace/css/jquery-ui-1.10.3.custom.min.css">
     <link rel="stylesheet" href="/static/ace/css/jquery.gritter.css">
 
     <!--fonts-->
-    <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Open+Sans:400,300">
+    <link rel="stylesheet"
+          href="http://fonts.googleapis.com/css?family=Open+Sans:400,300">
 
     <!--ace styles-->
 
@@ -101,15 +103,32 @@
     <div class="main-container container-fluid">
         {% block main_container %}
 
-            <div class='sidebar sidebar-fixed'>
+            <div class='sidebar sidebar-fixed' id="sidebar">
+                <script type="text/javascript">
+                    try {
+                        ace.settings.check('sidebar', 'fixed')
+                    } catch (e) {
+                    }
+                </script>
                 {% block sidebar %}
                 {% endblock sidebar %}
+                <div class="sidebar-collapse" id="sidebar-collapse">
+                    <i class="icon-double-angle-left"
+                       data-icon1="icon-double-angle-left"
+                       data-icon2="icon-double-angle-right"></i>
+                </div>
+                <script type="text/javascript">
+                    try {
+                        ace.settings.check('sidebar', 'collapsed')
+                    } catch (e) {
+                    }
+                </script>
             </div>
             <div class="main-content">
                 <div class="breadcrumbs breadcrumbs-fixed" id="breadcrumbs">
-
-                      {% include 'breadcrumbs.jinja2' %}
-
+{#                    {% include 'breadcrumbs.jinja2' %}#}
+                    {% block breadcrumbs %}
+                    {% endblock breadcrumbs %}
                 </div>
 
                 <div class='page-content'>
@@ -123,20 +142,20 @@
         {% endblock main_container %}
     </div>
 
-{#    {% block footer %}#}
-{#        <footer>#}
-{#            <div id="footer" class='footer'>#}
-{#                <div class="container muted credit">#}
-{#                    <div class="text-center" style='float: left;'>Stalker Pyramid v{{ stalker_pyramid.__version__ }} &copy; 2009-2013 Erkan Ozgur Yilmaz.</div>#}
-{#                    <div class='text-right' style="float:right;"><a href='http://www.glyphicons.com/'>GLYPHICONS.com</a></div>#}
-{#                </div>#}
-{#            </div>#}
-{#        </footer>#}
-{#    {% endblock footer %}#}
+    {#    {% block footer %}#}
+    {#        <footer>#}
+    {#            <div id="footer" class='footer'>#}
+    {#                <div class="container muted credit">#}
+    {#                    <div class="text-center" style='float: left;'>Stalker Pyramid v{{ stalker_pyramid.__version__ }} &copy; 2009-2013 Erkan Ozgur Yilmaz.</div>#}
+    {#                    <div class='text-right' style="float:right;"><a href='http://www.glyphicons.com/'>GLYPHICONS.com</a></div>#}
+    {#                </div>#}
+    {#            </div>#}
+    {#        </footer>#}
+    {#    {% endblock footer %}#}
 {% endblock content %}
 
 
-{% block modals%}
+{% block modals %}
     <div id='base_modal_dialog'
          class='modal fade'
          tabIndex='-1'
@@ -149,9 +168,13 @@
 
 <!-- JavaScript -->
 {% block scripts %}
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery-2.0.3.min.js") }}'></script>
+
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootstrap.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/stalker/date.format.js") }}'></script>
+    <script src="/static/ace/js/ace-elements.min.js"></script>
+    <script src="/static/ace/js/ace.min.js"></script>
 {% endblock scripts %}
 
 {% block extrascripts %}

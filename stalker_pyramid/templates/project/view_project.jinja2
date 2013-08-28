@@ -1,96 +1,15 @@
 {% extends "base.jinja2" %}
 
+{% block breadcrumbs %}
+    {% set page_title='Dashboard' %}
+    {% include 'breadcrumbs.jinja2' %}
+{% endblock breadcrumbs %}
+
 {% block sidebar %}
-
     {% include 'sidebar.jinja2' %}
-
 {% endblock sidebar %}
 
-{##}
-{#{% block main_container %}#}
-{#    {% set project=entity %}#}
-{#    {% set users=entity.users %}#}
-{##}
-{##}
-{#    <div class="media">#}
-{#        <a class="pull-left" href="#" style="width: 132px; height: 132px">#}
-{#            <img style='width:auto; height: auto;' class="img-thumbnail"#}
-{#                 src="{%- if project.thumbnail -%}#}
-{#                    /{{ project.thumbnail.full_path }}#}
-{#                {%- else -%}#}
-{#                    {{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_Team.jpg") }}#}
-{#                {%- endif -%}">#}
-{#        </a>#}
-{##}
-{#        <div class="media-body">#}
-{#            <h2 class="media-heading">{{ project.name }}#}
-{#                <small> {{ project.description }}</small>#}
-{#            </h2>#}
-{#            <button class='btn btn-primary btn-sm'>Edit Project »</button>#}
-{#        </div>#}
-{#    </div>#}
-{#    <div class="col-lg-12">#}
-{#        <div class="bs-example">#}
-{#            <ul class="nav nav-tabs" style="margin-bottom: 15px;">#}
-{#                <li class="active">#}
-{#                    <a href="#project_tasks" data-toggle="tab">Tasks</a>#}
-{#                </li>#}
-{#                <li class="">#}
-{#                    <a href="#project_assets" data-toggle="tab">Assets</a>#}
-{#                </li>#}
-{#                <li class="">#}
-{#                    <a href="#project_shots" data-toggle="tab">Shots</a>#}
-{#                </li>#}
-{#                <li class="">#}
-{#                    <a href="#project_sequences" data-toggle="tab">Sequences</a>#}
-{#                </li>#}
-{#                <li class="">#}
-{#                    <a href="#project_users" data-toggle="tab">Users</a>#}
-{#                </li>#}
-{#                <li class="">#}
-{#                    <a href="#project_tickets" data-toggle="tab">Tickets</a>#}
-{#                </li>#}
-{#            </ul>#}
-{#            <div id="myTabContent" class="tab-content">#}
-{#                <div class="tab-pane fade active in" id="project_tasks">#}
-{#                    <div class='col-lg-12'>#}
-{#                        {% include 'task/list_entity_tasks_module.jinja2' %}#}
-{#                    </div>#}
-{#                </div>#}
-{#                <div class="tab-pane fade" id="project_assets">#}
-{#                    <div class='col-lg-12'>#}
-{#                        {% include 'asset/list_entity_assets.jinja2' %}#}
-{#                    </div>#}
-{#                </div>#}
-{#               <div class="tab-pane fade" id="project_shots">#}
-{#                    <div class='col-lg-12'>#}
-{#                        {% include 'shot/list_entity_shots.jinja2' %}#}
-{#                    </div>#}
-{#                </div>#}
-{#                <div class="tab-pane fade" id="project_sequences">#}
-{#                    <div class='col-lg-12'>#}
-{#                        {% include 'sequence/list_entity_sequences.jinja2' %}#}
-{#                    </div>#}
-{#                </div>#}
-{#                <div class="tab-pane fade" id="project_users">#}
-{#                    <div class='col-lg-12'>#}
-{#                        <div class="row">#}
-{#                            {% for user in users %}#}
-{#                                {% include 'auth/list_item_user.jinja2' %}#}
-{#                            {% endfor %}#}
-{#                        </div>#}
-{#                    </div>#}
-{#                </div>#}
-{#                <div class="tab-pane fade" id="project_tickets">#}
-{#                    <div class='col-lg-12'>#}
-{#                        {% include 'ticket/list_entity_tickets.jinja2' %}#}
-{#                    </div>#}
-{#                </div>#}
-{##}
-{#            </div>#}
-{#        </div>#}
-{#    </div>#}
-{##}
-{##}
-{##}
-{#{% endblock main_container %}#}
+{% block page_content %}
+  {% set page_title='Dashboard' %}
+  {% include 'page_header.jinja2' %}
+{% endblock page_content %}

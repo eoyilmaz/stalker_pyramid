@@ -1,26 +1,35 @@
 {% extends "base.jinja2" %}
+
+{% block breadcrumbs %}
+    {% set page_title='Shots' %}
+    {% include 'breadcrumbs.jinja2' %}
+{% endblock breadcrumbs %}
+
 {% block sidebar %}
 
     {% include 'sidebar.jinja2' %}
 
 {% endblock sidebar %}
 
-{% block main_content %}
+{% block page_content %}
+
+    {% set page_title='Shots' %}
+    {% include 'page_header.jinja2' %}
 
     {% set shots=entity.shots %}
-    <div class='col-lg-10'>
-        <div class="page-header">
-            <h3>{{ entity.name }}
-                <small>Shots</small>
-            </h3>
-        </div>
+
+    {% for shot in shots %}
+
+      {% if (loop.index0 % 6) == 0 %}
+           <div class="row-fluid">
+      {% endif %}
+
+      {% include 'shot/list_item_shot.jinja2' %}
 
 
-        <div class="row">
-            {% for shot in shots %}
-                {% include 'shots/list_item_shots.jinja2' %}
-            {% endfor %}
-        </div>
-    </div>
-
-{% endblock main_content %}
+      {% if (loop.index0 % 6) == 5 %}
+          </div>
+          <div class="space"></div>
+      {% endif %}
+    {% endfor %}
+{% endblock page_content %}

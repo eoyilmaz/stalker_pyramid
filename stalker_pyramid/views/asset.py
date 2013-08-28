@@ -21,11 +21,12 @@ import datetime
 
 from pyramid.httpexceptions import HTTPServerError, HTTPOk
 from pyramid.view import view_config
-from stalker import Project, Type, StatusList, Status, Asset
+from stalker import Project, Type, StatusList, Status, Asset, Studio
 from stalker.db import DBSession
 
 import logging
-from stalker_pyramid.views import PermissionChecker, get_logged_in_user
+import stalker_pyramid
+from stalker_pyramid.views import PermissionChecker, get_logged_in_user, milliseconds_since_epoch
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.WARNING)
@@ -190,24 +191,6 @@ def update_asset(request):
 
     return HTTPOk()
 
-
-@view_config(
-    route_name='view_asset',
-    renderer='templates/asset/page_view_asset.jinja2'
-)
-def view_asset(request):
-    """runs when viewing an asset
-    """
-    logged_in_user = get_logged_in_user(request)
-
-    asset_id = request.matchdict['id']
-    asset = Asset.query.filter_by(id=asset_id).first()
-
-    return {
-        'user': logged_in_user,
-        'has_permission': PermissionChecker(request),
-        'asset': asset
-    }
 
 
 @view_config(

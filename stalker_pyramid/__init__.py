@@ -136,6 +136,8 @@ def main(global_config, **settings):
 
     config.add_route('view_entity_nav_bar',            'entities/{id}/nav_bar')
     config.add_route('view_entity_tasks',              'entities/{id}/tasks/view')
+    config.add_route('view_entity_group',              'entities/{eid}/groups/{id}/view')
+    config.add_route('view_entity_department',         'entities/{eid}/departments/{id}/view')
 
     # *************************************************************************
     # Thumbnail References and Links
@@ -168,6 +170,10 @@ def main(global_config, **settings):
 
     config.add_route('list_studio_tasks',     'studios/{id}/tasks/list')
     config.add_route('list_studio_vacations', 'studios/{id}/vacations/list') # html
+    config.add_route('list_studio_users',     'studios/{id}/users/list') # html
+    config.add_route('list_studio_departments',     'studios/{id}/departments/list') # html
+    config.add_route('list_studio_groups',     'groups/list') # html
+
 
 
     # *************************************************************************
@@ -187,9 +193,13 @@ def main(global_config, **settings):
     config.add_route('list_projects',              'projects/list') # html
     config.add_route('list_project_users',         'projects/{id}/users/list')
     config.add_route('list_project_tasks',         'projects/{id}/tasks/list') # html
+    config.add_route('view_project_task',          'projects/{pid}/tasks/{id}/view')
     config.add_route('list_project_assets',        'projects/{id}/assets/list')
+    config.add_route('view_project_asset',         'projects/{pid}/assets/{id}/view')
     config.add_route('list_project_shots',         'projects/{id}/shots/list')
+    config.add_route('view_project_shot',          'projects/{pid}/shots/{id}/view')
     config.add_route('list_project_sequences',     'projects/{id}/sequences/list')
+    config.add_route('view_project_sequence',      'projects/{pid}/sequences/{id}/view')
     config.add_route('list_project_tickets',       'projects/{id}/tickets/list')
     config.add_route('list_project_references',    'projects/{id}/references/list')
 
@@ -258,6 +268,7 @@ def main(global_config, **settings):
     config.add_route('create_user',           'users/create')
     config.add_route('update_user',           'users/{id}/update')
     config.add_route('view_user',             'users/{id}/view')
+    config.add_route('view_user_settings',    'users/{id}/view_settings')
     config.add_route('summarize_user',        'users/{id}/summarize')
 
     config.add_route('get_users',             'users/') # json
@@ -304,6 +315,7 @@ def main(global_config, **settings):
 
     config.add_route('get_status_lists',     'status_lists/')
     config.add_route('get_status_lists_for', 'status_lists_for/{target_entity_type}/')
+
 
     # *************************************************************************
     # Status

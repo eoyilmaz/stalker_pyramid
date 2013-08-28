@@ -1,25 +1,33 @@
 {% extends "base.jinja2" %}
+
+{% block breadcrumbs %}
+    {% set page_title='Departments' %}
+    {% include 'breadcrumbs.jinja2' %}
+{% endblock breadcrumbs %}
+
+
 {% block sidebar %}
 
     {% include 'sidebar.jinja2' %}
 
 {% endblock sidebar %}
 
-{% block main_content %}
+{% block page_content %}
 
     {% set departments=entity.departments %}
-    <div class="page-header">
-        <h3>{{ entity.name }}
-            <small>DEPARTMENTS</small>
-        </h3>
-    </div>
+    {% set page_title='Departments' %}
+    {% include 'page_header.jinja2' %}
 
-    <div class='col-lg-12'>
-        <div class="row">
+    <div class="row-fluid">
+        <ul class="thumbnails">
             {% for department in departments %}
-                {% include 'department/list_item_department.jinja2' %}
+                <li class="span2">
+                    {% include 'department/list_item_department.jinja2' %}
+                </li>
             {% endfor %}
-        </div>
+
+        </ul>
     </div>
 
-{% endblock main_content %}
+
+{% endblock page_content %}

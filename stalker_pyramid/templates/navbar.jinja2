@@ -34,13 +34,13 @@
             aria-labelledby="dropdownMenu">
             {% if has_permission('List_User') %}
                 <li>
-                    <a href="{{ request.route_url('list_entity_users', id=studio.id) }}">Users</a>
+                    <a href="{{ request.route_url('list_studio_users', id=studio.id) }}">Users</a>
                 </li>
             {% endif %}
             {% if has_permission('List_Department') %}
                 <li>
                     <a tabindex="-1"
-                       href="{{ request.route_url('list_entity_departments', id=studio.id) }}">Departments</a>
+                       href="{{ request.route_url('list_studio_departments', id=studio.id) }}">Departments</a>
                 </li>
             {% endif %}
             {% if has_permission('List_Group') %}
@@ -167,7 +167,7 @@
 
         <ul class="user-menu pull-right dropdown-menu dropdown-yellow dropdown-caret dropdown-closer">
             <li>
-                <a href="#">
+                <a href="{{ request.route_url('view_user_settings', id=logged_in_user.id) }}">
                     <i class="icon-cog"></i>
                     Settings
                 </a>

@@ -1,0 +1,16 @@
+<div class="row-fluid">
+        <div class="span12">
+            <!--PAGE CONTENT BEGINS-->
+
+            <div class="row-fluid">
+                <ul class="ace-thumbnails">
+                    {% for reference in references %}
+                        {% include 'link/list_item_reference.jinja2' %}
+                    {% endfor %}
+
+                </ul>
+            </div>
+            <!--PAGE CONTENT ENDS-->
+        </div>
+        <!--/.span-->
+    </div>

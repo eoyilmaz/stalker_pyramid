@@ -1,16 +1,17 @@
 <li>
-    <a href="{{ request.route_url('view_user', id=user.id) }}"
+    <a href="#"
        title="Photo Title" data-rel="colorbox"
        class="cboxElement">
         <img alt="150x150" style="height: 150px"
-             src="{%- if user.thumbnail -%}
-                    /{{ user.thumbnail.full_path }}
+             src="{%- if reference.thumbnail -%}
+                    /{{ reference.thumbnail.full_path }}
                 {%- else -%}
                     {{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_0.png") }}
            {%- endif -%}">
-
         <div class="tags">
-            <span class="label label-warning arrowed-in">{{ user.name }}</span>
+          {% for tag in reference.tags %}
+            <span class="label label-info arrowed-in">{{ tag.name }}</span>
+          {% endfor %}
         </div>
     </a>
 

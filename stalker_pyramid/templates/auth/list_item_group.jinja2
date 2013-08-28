@@ -1,68 +1,66 @@
-<div class="col-lg-2">
-    <div class="thumbnail">
-        <img data-src="holder.js/300x200" alt="300x200"
-             style='width:auto; height: auto; overflow: hidden;'
-             class="thumbnail" src="{%- if group.thumbnail -%}
+<div class="thumbnail">
+    <img data-src="holder.js/300x200" alt="300x200"
+         style='width:auto; height: auto; overflow: hidden;'
+         class="thumbnail" src="{%- if group.thumbnail -%}
                     /{{ group.thumbnail.full_path }}
                 {%- else -%}
                     {{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_Team.jpg") }}
                 {%- endif -%}">
 
-        <div class="caption">
-            <h3>{{ group.name }}</h3>
+    <div class="caption">
+        <h3>{{ group.name }}</h3>
 
-            <p>
-            <table>
-                {% if group.lead %}
-                    <tr>
-                        <td style='text-align: right'>
-                            <b>Lead</b></td>
-                        <td>&nbsp;</td>
-                        <td>
-                            {% if has_permission('Read_User') %}
-                                <a href="{{ request.route_url('view_user', id=group.lead.id) }}">
-                                    {{ group.lead.name }}
-                                </a>
-                            {% else %}
-                                {{ group.lead.name }}
-                            {% endif %}
-                            ({{ group.lead.login }})
-                        </td>
-                    </tr>
-                {% endif %}
-                {% if group.description %}
-                    <tr>
-                        <td style='text-align: right'>
-                            <strong>Description</strong>
-                        </td>
-                        <td>&nbsp;</td>
-                        <td>{{ group.description }}</td>
-                    </tr>
-                {% endif %}
+        <p>
+        <table>
+            {% if group.lead %}
                 <tr>
-                    <td style='text-align: right'><strong>Created
-                        By</strong>
-                    </td>
+                    <td style='text-align: right'>
+                        <b>Lead</b></td>
                     <td>&nbsp;</td>
                     <td>
                         {% if has_permission('Read_User') %}
-                            <a href="{{ request.route_url('view_user', id=group.created_by.id) }}">
-                                {{ group.created_by.name }}
+                            <a href="{{ request.route_url('view_user', id=group.lead.id) }}">
+                                {{ group.lead.name }}
                             </a>
                         {% else %}
-                            {{ group.created_by.name }}
+                            {{ group.lead.name }}
                         {% endif %}
+                        ({{ group.lead.login }})
                     </td>
                 </tr>
-            </table>
+            {% endif %}
+            {% if group.description %}
+                <tr>
+                    <td style='text-align: right'>
+                        <strong>Description</strong>
+                    </td>
+                    <td>&nbsp;</td>
+                    <td>{{ group.description }}</td>
+                </tr>
+            {% endif %}
+            <tr>
+                <td style='text-align: right'><strong>Created
+                    By</strong>
+                </td>
+                <td>&nbsp;</td>
+                <td>
+                    {% if has_permission('Read_User') %}
+                        <a href="{{ request.route_url('view_user', id=group.created_by.id) }}">
+                            {{ group.created_by.name }}
+                        </a>
+                    {% else %}
+                        {{ group.created_by.name }}
+                    {% endif %}
+                </td>
+            </tr>
+        </table>
 
 
-            </p>
-            <p>
-                <a href="{{ request.route_url('view_group', id=group.id) }}"
-                   class="btn btn-primary">View</a> <a href="#"
-                                                       class="btn btn-default">Update</a>
-            </p>
-        </div>
+        </p>
+        <p>
+            <a href="{{ request.route_url('view_entity_group', eid=entity.id, id=group.id) }}"
+               class="btn btn-mini btn-info">View</a> <a href="#"
+                                                         class="btn btn-mini btn-yellow">Update</a>
+        </p>
     </div>
 </div>

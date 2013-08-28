@@ -55,16 +55,20 @@ logger.setLevel(logging.DEBUG)
     renderer='templates/time_log/content_list_time_logs.jinja2'
 )
 @view_config(
-    route_name='list_user_tickets',
-    renderer='templates/ticket/content_list_tickets.jinja2'
+    route_name='list_entity_tickets',
+    renderer='templates/ticket/list_entity_tickets.jinja2'
 )
 @view_config(
-    route_name='list_entity_tickets',
-    renderer='templates/ticket/content_list_tickets.jinja2'
+    route_name='list_user_tickets',
+    renderer='templates/ticket/list_entity_tickets.jinja2'
+)
+@view_config(
+    route_name='list_project_tickets',
+    renderer='templates/ticket/list_entity_tickets.jinja2'
 )
 @view_config(
     route_name='list_task_tickets',
-    renderer='templates/ticket/content_list_tickets.jinja2'
+    renderer='templates/ticket/list_entity_tickets.jinja2'
 )
 @view_config(
     route_name='list_projects',
@@ -76,11 +80,11 @@ logger.setLevel(logging.DEBUG)
 )
 @view_config(
     route_name='list_studio_vacations',
-    renderer='templates/vacation/content_list_vacations.jinja2'
+    renderer='templates/vacation/list_entity_vacations.jinja2'
 )
 @view_config(
     route_name='list_user_vacations',
-    renderer='templates/vacation/content_list_vacations.jinja2'
+    renderer='templates/vacation/list_entity_vacations.jinja2'
 )
 @view_config(
     route_name='list_user_tasks',
@@ -104,15 +108,11 @@ logger.setLevel(logging.DEBUG)
 )
 @view_config(
     route_name='list_entity_references',
-    renderer='templates/link/content_list_references.jinja2'
+    renderer='templates/link/list_entity_references.jinja2'
 )
 @view_config(
     route_name='list_task_versions',
     renderer='templates/version/content_list_versions.jinja2'
-)
-@view_config(
-    route_name='list_project_tickets',
-    renderer='templates/ticket/content_list_tickets.jinja2'
 )
 @view_config(
     route_name='list_project_references',
@@ -127,32 +127,52 @@ logger.setLevel(logging.DEBUG)
     renderer='templates/auth/list_entity_users.jinja2'
 )
 @view_config(
-    route_name='view_user',
-    renderer='templates/auth/view_user.jinja2'
-)
-@view_config(
-    route_name='list_entity_departments',
-    renderer='templates/department/list_entity_departments.jinja2'
-)
-@view_config(
-    route_name='view_department',
-    renderer='templates/department/view_department.jinja2'
-)
-@view_config(
-    route_name='list_entity_groups',
-    renderer='templates/auth/list_entity_groups.jinja2'
-)
-@view_config(
-    route_name='view_group',
-    renderer='templates/auth/view_group.jinja2'
+    route_name='list_studio_users',
+    renderer='templates/auth/list_entity_users.jinja2'
 )
 @view_config(
     route_name='list_project_users',
     renderer='templates/auth/list_entity_users.jinja2'
 )
 @view_config(
+    route_name='list_department_users',
+    renderer='templates/auth/list_entity_users.jinja2'
+)
+@view_config(
+    route_name='list_group_users',
+    renderer='templates/auth/list_entity_users.jinja2'
+)
+@view_config(
     route_name='list_users',
     renderer='templates/auth/list_entity_users.jinja2'
+)
+@view_config(
+    route_name='view_user_settings',
+    renderer='templates/auth/view_user_settings.jinja2'
+)
+@view_config(
+    route_name='view_user',
+    renderer='templates/auth/view_user.jinja2'
+)
+@view_config(
+    route_name='list_user_groups',
+    renderer='templates/auth/list_entity_groups.jinja2'
+)
+@view_config(
+    route_name='list_user_departments',
+    renderer='templates/department/list_entity_departments.jinja2'
+)
+@view_config(
+    route_name='list_studio_departments',
+    renderer='templates/department/list_entity_departments.jinja2'
+)
+@view_config(
+    route_name='list_entity_departments',
+    renderer='templates/department/list_entity_departments.jinja2'
+)
+@view_config(
+    route_name='list_entity_groups',
+    renderer='templates/auth/list_entity_groups.jinja2'
 )
 @view_config(
     route_name='list_project_assets',
@@ -165,14 +185,6 @@ logger.setLevel(logging.DEBUG)
 @view_config(
     route_name='list_project_sequences',
     renderer='templates/sequence/list_entity_sequences.jinja2'
-)
-@view_config(
-    route_name='list_department_users',
-    renderer='templates/auth/list_entity_users.jinja2'
-)
-@view_config(
-    route_name='list_group_users',
-    renderer='templates/auth/list_entity_users.jinja2'
 )
 @view_config(
     route_name='summarize_asset',
