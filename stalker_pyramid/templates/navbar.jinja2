@@ -65,13 +65,17 @@
                 {% if has_permission('Create_Project') %}
                     <li class="divider"></li>
                     <li>
-                        <a href='#'>New Project</a>
+                        <a data-target='#project_dialog'
+                           data-toggle="modal"
+                           data-keyboard=true
+                           href="/projects/-1/create/dialog">New Project</a>
                     </li>
                 {% endif %}
             </ul>
         </li>
     {% endif %}
 </ul>
+   
 
 <ul class="nav ace-nav pull-right">
     <li class="grey red">
