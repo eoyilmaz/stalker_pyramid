@@ -21,6 +21,7 @@
 import logging
 import datetime
 import os
+from pyramid.exceptions import Forbidden
 
 from pyramid.httpexceptions import HTTPServerError
 from pyramid.view import view_config

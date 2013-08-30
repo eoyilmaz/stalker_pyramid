@@ -76,6 +76,9 @@ def create_shot(request):
     """runs when adding a new shot
     """
     logged_in_user = get_logged_in_user(request)
+    if not logged_in_user:
+        import auth
+        return auth.logout(request)
 
     name = request.params.get('name')
     code = request.params.get('code')
@@ -135,6 +138,9 @@ def update_shot(request):
     """runs when adding a new shot
     """
     logged_in_user = get_logged_in_user(request)
+    if not logged_in_user:
+        import auth
+        return auth.logout(request)
 
     shot_id = request.params.get('shot_id')
     shot = Shot.query.filter_by(id=shot_id).first()

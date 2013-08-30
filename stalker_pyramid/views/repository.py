@@ -70,6 +70,9 @@ def create_repository(request):
     """creates a new repository
     """
     logged_in_user = get_logged_in_user(request)
+    if not logged_in_user:
+        import auth
+        return auth.logout(request)
 
     # get params
     name = request.params.get('name')
@@ -98,6 +101,9 @@ def update_repository(request):
     """updates a repository
     """
     logged_in_user = get_logged_in_user(request)
+    if not logged_in_user:
+        import auth
+        return auth.logout(request)
 
     repo_id = request.params.get('repo_id')
     repo = Repository.query.filter_by(id=repo_id).first()

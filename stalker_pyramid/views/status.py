@@ -76,6 +76,9 @@ def create_status(request):
     """creates a new Status
     """
     logged_in_user = get_logged_in_user(request)
+    if not logged_in_user:
+        import auth
+        return auth.logout(request)
 
     # get parameters
     name = request.params.get('name')
@@ -103,6 +106,9 @@ def update_status(request):
     """updates a status
     """
     logged_in_user = get_logged_in_user(request)
+    if not logged_in_user:
+        import auth
+        return auth.logout(request)
 
     # get parameters
     name = request.params.get('name')
@@ -185,6 +191,9 @@ def create_status_list(request):
     """creates a StatusList
     """
     logged_in_user = get_logged_in_user(request)
+    if not logged_in_user:
+        import auth
+        return auth.logout(request)
 
     # get parameters
     name = request.params.get('name')
@@ -213,6 +222,9 @@ def update_status_list(request):
     """called when updating a StatusList
     """
     logged_in_user = get_logged_in_user(request)
+    if not logged_in_user:
+        import auth
+        return auth.logout(request)
 
     name = request.params.get('name')
 

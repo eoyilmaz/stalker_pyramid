@@ -65,10 +65,7 @@
                 {% if has_permission('Create_Project') %}
                     <li class="divider"></li>
                     <li>
-                        <a data-target='#project_dialog'
-                           data-toggle="modal"
-                           data-keyboard=true
-                           href="/projects/-1/create/dialog">New Project</a>
+                        <a href="/projects/-1/create/dialog">New Project</a>
                     </li>
                 {% endif %}
             </ul>
@@ -152,7 +149,6 @@
             </ul>
         {% endif %}
     </li>
-
     <li class="light-blue">
         <a data-toggle="dropdown" href="#" class="dropdown-toggle">
             <img class="nav-user-photo"
@@ -187,7 +183,7 @@
             <li class="divider"></li>
 
             <li>
-                <a href="#">
+                <a href="/logout">
                     <i class="icon-off"></i>
                     Logout
                 </a>

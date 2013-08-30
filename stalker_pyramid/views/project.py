@@ -20,87 +20,17 @@
 
 import datetime
 from pyramid.httpexceptions import HTTPOk, HTTPServerError
-from pyramid.response import Response
 from pyramid.view import view_config
 
 from stalker.db import DBSession
 from stalker import (User, ImageFormat, Repository, Structure, Status,
                      StatusList, Project, Entity)
-from stalker_pyramid.views import (get_date, get_logged_in_user,
-                                   PermissionChecker, milliseconds_since_epoch)
+from stalker_pyramid.views import (get_date, get_logged_in_user)
 
 import logging
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
-
-
-import colander 
-from deform import Form, ValidationFailure
-
-
-@view_config(
-    route_name='deform_test',
-    renderer='templates/index.jinja2'
-)
-def deform_test(request):
-    """testing the deform library
-    """
-    class Person(colander.MappingSchema):
-        name = colander.SchemaNode(colander.String())
-        age = colander.SchemaNode(colander.Integer(),
-                                  validator=colander.Range(0, 200))
-
-    class People(colander.SequenceSchema):
-        person = Person()
-
-    class Schema(colander.MappingSchema):
-        people = People()
-
-    schema = Schema()
-    myform = Form(schema=schema, buttons=('submit',))
-
-    if 'submit' in request.POST:
-        logger.debug('submit in POST')
-
-        controls = request.POST.items()
-        try:
-            appstruct = myform.validate(controls)  # call validate
-        except ValidationFailure, e: # catch the exception
-            return {'form':e.render()} # re-render the form with an exception
-
-        # the form submission succeeded, we have the data
-        return {
-            'form': None,
-            'appstruct': appstruct
-        }
-
-    html = myform.render()
-
-    return {
-        'form': html
-    }
-
-
-# @view_config(
-#     route_name='dialog_update_project',
-#     renderer='templates/project/dialog_create_project.jinja2'
-# )
-# def update_project_dialog(request):
-#     """runs when updating a project
-#     """
-#     logged_in_user = get_logged_in_user(request)
-# 
-#     project_id = request.matchdict.get('id', -1)
-#     project = Project.query.filter_by(id=project_id).first()
-# 
-#     return {
-#         'mode': 'UPDATE',
-#         'has_permission': PermissionChecker(request),
-#         'project': project,
-#         'logged_in_user': logged_in_user,
-#         'milliseconds_since_epoch': milliseconds_since_epoch
-#     }
 
 
 @view_config(
@@ -110,6 +40,9 @@ def create_project(request):
     """called when adding a new Project
     """
     logged_in_user = get_logged_in_user(request)
+    if not logged_in_user:
+        import auth
+        return auth.logout(request)
 
     # parameters
     name = request.params.get('name')
@@ -173,6 +106,9 @@ def update_project(request):
     """called when updating a Project
     """
     logged_in_user = get_logged_in_user(request)
+    if not logged_in_user:
+        import auth
+        return auth.logout(request)
 
     # parameters
     project_id = request.params.get('project_id', -1)

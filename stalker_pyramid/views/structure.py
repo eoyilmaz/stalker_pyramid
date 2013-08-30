@@ -71,6 +71,10 @@ def create_structure(request):
     """creates a structure
     """
     logged_in_user = get_logged_in_user(request)
+    if not logged_in_user:
+        import auth
+        return auth.logout(request)
+
 
     # get parameters
     name = request.params.get('name')
@@ -97,8 +101,10 @@ def create_structure(request):
 def update_structure(request):
     """updates a structure
     """
-
     logged_in_user = get_logged_in_user(request)
+    if not logged_in_user:
+        import auth
+        return auth.logout(request)
 
     # get params
     structure_id = request.params.get('structure_id')

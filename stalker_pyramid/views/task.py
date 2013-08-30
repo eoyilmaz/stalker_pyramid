@@ -338,8 +338,10 @@ def update_task_dialog(request):
 def update_task(request):
     """Updates the given task with the data coming from the request
     """
-
     logged_in_user = get_logged_in_user(request)
+    if not logged_in_user:
+        import auth
+        return auth.logout(request)
 
     # *************************************************************************
     # collect data
@@ -842,6 +844,9 @@ def create_task(request):
     """runs when adding a new task
     """
     logged_in_user = get_logged_in_user(request)
+    if not logged_in_user:
+        import auth
+        return auth.logout(request)
 
     # ***********************************************************************
     # collect params
@@ -1087,13 +1092,16 @@ def auto_schedule_tasks(request):
 def request_task_review(request):
     """creates a new ticket and sends an email to the responsible
     """
+    # get logged in user as he review requester
+    logged_in_user = get_logged_in_user(request)
+    if not logged_in_user:
+        import auth
+        return auth.logout(request)
+
     task_id = request.matchdict.get('id', -1)
     task = Task.query.filter(Task.id==task_id).first()
 
     if task:
-        # get logged in user as he review requester
-        logged_in_user = get_logged_in_user(request)
-
         # get the project that the ticket belongs to
         project = task.project
 
@@ -1158,6 +1166,10 @@ def request_task_review(request):
 def view_project_task(request):
     """runs when viewing an task
     """
+    logged_in_user = get_logged_in_user(request)
+    if not logged_in_user:
+        import auth
+        return auth.logout(request)
 
     project_id = request.matchdict['pid']
     project = Project.query.filter_by(id=project_id).first()
@@ -1172,7 +1184,7 @@ def view_project_task(request):
         'entity':project,
         'task': task,
         'has_permission': PermissionChecker(request),
-        'logged_in_user': get_logged_in_user(request),
+        'logged_in_user': logged_in_user,
         'milliseconds_since_epoch': milliseconds_since_epoch,
         'stalker_pyramid': stalker_pyramid,
         'projects': projects,

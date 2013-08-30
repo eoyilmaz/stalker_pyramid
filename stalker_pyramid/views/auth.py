@@ -56,6 +56,8 @@ def dialog_create_user(request):
     """called by create user dialog
     """
     logged_in_user = get_logged_in_user(request)
+    if not logged_in_user:
+        return logout(request)
 
     entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
@@ -76,6 +78,8 @@ def dialog_update_user(request):
     """called when updating a user
     """
     logged_in_user = get_logged_in_user(request)
+    if not logged_in_user:
+        return logout(request)
 
     user_id = request.matchdict.get('id', -1)
     user = User.query.filter_by(id=user_id).first()
@@ -95,6 +99,8 @@ def create_user(request):
     """called when adding a User
     """
     logged_in_user = get_logged_in_user(request)
+    if not logged_in_user:
+        return logout(request)
 
     name = request.params.get('name', None)
     login = request.params.get('login', None)
@@ -158,6 +164,8 @@ def update_user(request):
     """called when updating a User
     """
     logged_in_user = get_logged_in_user(request)
+    if not logged_in_user:
+        return logout(request)
 
     user_id = request.params.get('id', -1)
     user = User.query.filter(User.id == user_id).first()
@@ -213,47 +221,61 @@ def update_user(request):
 
     return HTTPOk()
 
-
 @view_config(
     route_name='get_users',
-    renderer='json'
+    renderer='json',
+    permission='List_User'
 )
 def get_users(request):
     """returns all the users in database
     """
-    return [
-        {
-            'id': user.id,
-            'name': user.name,
-            'login': user.login,
-            'email': user.email,
-            'departments': [
-                {
-                    'id': department.id,
-                    'name': department.name
-                } for department in user.departments
-            ],
-            'groups': [
-                {
-                    'id': group.id,
-                    'name': group.name
-                } for group in user.groups
-            ],
-            'tasksCount': len(user.tasks),
-            'ticketsCount': len(user.open_tickets),
-            'thumbnail_path': user.thumbnail.full_path if user.thumbnail else None
-        }
-        for user in User.query.order_by(User.name.asc()).all()
-    ]
+    # if there is a simple flag, just return ids and names and login
+    simple = request.GET.get('simple')
+    if simple:
+        return [
+            {
+                'id': user.id,
+                'name': user.name,
+                'login': user.login,
+            }
+            for user in User.query.order_by(User.name.asc()).all()
+        ]
+    else:
+        return [
+            {
+                'id': user.id,
+                'name': user.name,
+                'login': user.login,
+                'email': user.email,
+                'departments': [
+                    {
+                        'id': department.id,
+                        'name': department.name
+                    } for department in user.departments
+                ],
+                'groups': [
+                    {
+                        'id': group.id,
+                        'name': group.name
+                    } for group in user.groups
+                ],
+                'tasksCount': len(user.tasks),
+                'ticketsCount': len(user.open_tickets),
+                'thumbnail_path': user.thumbnail.full_path if user.thumbnail else None
+            }
+            for user in User.query.order_by(User.name.asc()).all()
+        ]
 
 
 @view_config(
     route_name='get_project_users',
-    renderer='json'
+    renderer='json',
+    permission='List_User'
 )
 @view_config(
     route_name='get_entity_users',
-    renderer='json'
+    renderer='json',
+    permission='List_User'
 )
 def get_entity_users(request):
     """returns all the Users of a given Entity
@@ -288,7 +310,8 @@ def get_entity_users(request):
 
 @view_config(
     route_name='get_entity_users_not',
-    renderer='json'
+    renderer='json',
+    permission='List_User'
 )
 def get_users_not_in_entity(request):
     """returns all the Users which are not related with the given Entity
@@ -325,15 +348,12 @@ def get_users_not_in_entity(request):
 def append_users_to_entity_dialog(request):
     """runs for append user dialog
     """
-
-    logger.debug('append_users_to_entity_dialog :' )
-
     logged_in_user = get_logged_in_user(request)
+    if not logged_in_user:
+        return logout(request)
 
     entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
-
-    logger.debug('entity_id : %s' % entity_id)
 
     return {
         'logged_in_user': logged_in_user,
@@ -411,10 +431,9 @@ def append_user_to_entity(request):
 def append_user_to_entity_dialog(request):
     """runs for append user dialog
     """
-
-    logger.debug('append_user_to_entity_dialog')
-
     logged_in_user = get_logged_in_user(request)
+    if not logged_in_user:
+        return logout(request)
 
     user_id = request.matchdict.get('id', -1)
     user = User.query.filter_by(id=user_id).first()
@@ -530,8 +549,9 @@ def get_permissions_from_multi_dict(multi_dict):
     logger.debug(permissions)
     return permissions
 
-
-@view_config(route_name='logout')
+@view_config(
+    route_name='logout'
+)
 def logout(request):
     headers = forget(request)
     return HTTPFound(
@@ -603,7 +623,6 @@ def forbidden(request):
 )
 def home(request):
     logged_in_user = get_logged_in_user(request)
-
     if not logged_in_user:
         return logout(request)
 
@@ -683,6 +702,8 @@ def create_group_dialog(request):
     """create group dialog
     """
     logged_in_user = get_logged_in_user(request)
+    if not logged_in_user:
+        return logout(request)
 
     permissions = Permission.query.all()
 
@@ -706,6 +727,8 @@ def update_group_dialog(request):
     """update group dialog
     """
     logged_in_user = get_logged_in_user(request)
+    if not logged_in_user:
+        return logout(request)
 
     permissions = Permission.query.all()
 
@@ -732,6 +755,8 @@ def create_group(request):
     """runs when creating a new Group
     """
     logged_in_user = get_logged_in_user(request)
+    if not logged_in_user:
+        return logout(request)
 
     # get parameters
     post_multi_dict = request.POST
@@ -766,6 +791,8 @@ def update_group(request):
     """updates the group with data from request
     """
     logged_in_user = get_logged_in_user(request)
+    if not logged_in_user:
+        return logout(request)
 
     # get parameters
     post_multi_dict = request.POST
@@ -810,6 +837,9 @@ def update_group(request):
 def list_groups(request):
     """
     """
+    logged_in_user = get_logged_in_user(request)
+    if not logged_in_user:
+        return logout(request)
 
     groups = Group.query.all()
 
@@ -819,7 +849,7 @@ def list_groups(request):
     return {
         'stalker_pyramid': stalker_pyramid,
         'studio': studio,
-        'logged_in_user': get_logged_in_user(request),
+        'logged_in_user': logged_in_user,
         'milliseconds_since_epoch': milliseconds_since_epoch,
         'has_permission': PermissionChecker(request),
         'projects':projects,
@@ -848,11 +878,13 @@ def get_groups(request):
 
 @view_config(
     route_name='get_entity_groups',
-    renderer='json'
+    renderer='json',
+    permission='List_Group'
 )
 @view_config(
     route_name='get_user_groups',
-    renderer='json'
+    renderer='json',
+    permission='List_Group'
 )
 def get_entity_groups(request):
     """returns all the groups of a given Entity
@@ -880,6 +912,8 @@ def view_permissions(request):
     """create group dialog
     """
     logged_in_user = get_logged_in_user(request)
+    if not logged_in_user:
+        return logout(request)
 
     permissions = Permission.query.all()
 
@@ -907,6 +941,8 @@ def view_group(request):
     """create group dialog
     """
     logged_in_user = get_logged_in_user(request)
+    if not logged_in_user:
+        return logout(request)
 
     permissions = Permission.query.all()
 
@@ -944,6 +980,8 @@ def view_entity_group(request):
     """create group dialog
     """
     logged_in_user = get_logged_in_user(request)
+    if not logged_in_user:
+        return logout(request)
 
     permissions = Permission.query.all()
 

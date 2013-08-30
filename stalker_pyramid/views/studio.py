@@ -25,8 +25,7 @@ from pyramid.view import view_config
 
 from stalker.db import DBSession
 from stalker import Studio, WorkingHours
-from stalker_pyramid.views import (get_time, PermissionChecker,
-                                   get_logged_in_user)
+from stalker_pyramid.views import (get_time, PermissionChecker)
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.WARNING)
