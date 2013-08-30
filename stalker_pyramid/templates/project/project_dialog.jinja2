@@ -39,16 +39,28 @@
             </div>
         </div>
 
-        {# Start Date #}
+        {# Start & End Dates #}
         <div class="row-fluid">
             <label for="start_date_picker" class="span2 control-label">Date</label>
+            <div class="span10 input-prepend">
+                <input id='start_end_date_range_picker' type="text" data-date-format="yyyy-mm-dd" placeholder="Start & End Dates">
+                <span class="add-on">
+                    <i class="icon-calendar"></i>
+                </span>
+            </div>
+        </div>
+
+        {# Image Format #}
+        <div class="row-fluid">
+            <label for='image_format' class="span2 control-label">Image Format</label>
             <div class="span10">
-                <div class="row-fluid input-append">
-                    <input class="span10 date-picker" id='start_date_picker' type="text" data-date-format="yyyy-mm-dd">
-                    <span class="add-on">
-                        <i class="icon-calendar"></i>
-                    </span>
-                </div>
+                <select id='image_format' data-placeholder='Image Format'>
+                    <option>Test 1</option>
+                    <option>Test 2</option>
+                    <option>Test 3</option>
+                    <option>Test 4</option>
+                    <option>Test 5</option>
+                </select>
             </div>
         </div>
 
@@ -79,11 +91,27 @@
 <script type="text/javascript">
     console.debug('code is here 1');
 
+    {# Start End Date Picker #}
     // initialize date picker
-    $('.date-picker').datepicker().next().on(ace.click_event, function(){
-        $(this).prev().focus();
-    });
-    console.debug('code is here 2');
+    var start_end_date_range_picker = $('#start_end_date_range_picker').daterangepicker();
 
+    // fix z-index of the container
+    start_end_date_range_picker.data().daterangepicker.container.css({'z-index': 1060});
+
+
+
+    {# Image Format Select #}
+    var image_format = $("#image_format");
+    var original_width = image_format.width();
+    image_format.chosen();
+    // fix width
+    image_format.data().chosen.container.css({width: original_width + 'px'});
+
+    
+    // cleanup vars
+    delete window.start_end_date_range_picker, window.image_format,
+            window.original_width;
+
+    console.debug('code is here 2');
 </script>
 

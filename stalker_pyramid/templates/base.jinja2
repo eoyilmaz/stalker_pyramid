@@ -24,8 +24,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 
-    <script src='{{ request.static_url("stalker_pyramid:static/doT/doT.min.js") }}'></script>
-
     {% block pre_header %}
     {% endblock pre_header %}
 
@@ -46,20 +44,19 @@
     <link rel="stylesheet"
           href='{{ request.static_url("stalker_pyramid:static/ace/css/jquery.gritter.css") }}'>
 
-<link rel="stylesheet" href="/static/ace/css/chosen.css" />
-<link rel="stylesheet" href="/static/ace/css/datepicker.css" />
-<link rel="stylesheet" href="/static/ace/css/bootstrap-timepicker.css" />
-<link rel="stylesheet" href="/static/ace/css/daterangepicker.css" />
-<link rel="stylesheet" href="/static/ace/css/colorpicker.css" />
 
+    <link rel="stylesheet" href='{{ request.static_url("stalker_pyramid:static/ace/css/chosen.css") }}' />
+    <link rel="stylesheet" href='{{ request.static_url("stalker_pyramid:static/ace/css/datepicker.css") }}' />
+    <link rel="stylesheet" href='{{ request.static_url("stalker_pyramid:static/ace/css/bootstrap-timepicker.css") }}' />
+    <link rel="stylesheet" href='{{ request.static_url("stalker_pyramid:static/ace/css/daterangepicker.css") }}' />
+    <link rel="stylesheet" href='{{ request.static_url("stalker_pyramid:static/ace/css/colorpicker.css") }}' />
 
 
     <!--fonts-->
     <link rel="stylesheet"
-          href="http://fonts.googleapis.com/css?family=Open+Sans:400,300">
+          href='{{ request.static_url("stalker_pyramid:static/stalker/css/stalker_bootstrap.css") }}'>
 
     <!--ace styles-->
-
     <link rel="stylesheet" href='{{ request.static_url("stalker_pyramid:static/ace/css/ace.min.css") }}'>
     <link rel="stylesheet" href='{{ request.static_url("stalker_pyramid:static/ace/css/ace-responsive.min.css") }}'>
     <link rel="stylesheet" href='{{ request.static_url("stalker_pyramid:static/ace/css/ace-skins.min.css") }}'>
@@ -90,6 +87,7 @@
     </style>
 
     <!--ace settings handler-->
+    <script src='{{ request.static_url("stalker_pyramid:static/doT/doT.min.js") }}'></script>
 
     {% block post_header %}
     {% endblock post_header %}
@@ -160,19 +158,14 @@
 
 
 {% block modals %}
-    <div id='project_dialog'
-         class='modal hide fade'
-         tabIndex='-1'
-         role='dialog'
-         aria-labelledby="myModalLabel"
-         aria-hidden="true">
+    
+    {# Project Dialog #}
+    <div id='project_dialog'  aria-labelledby="project_dialog_label" class='modal hide fade' tabIndex='-1' role='dialog' aria-hidden="true">
         <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-            <h3 id="myModalLabel">Project Dialog</h3>
+            <h3 id="project_dialog_label">Project Dialog</h3>
         </div>
-        <div class="modal-body">
-            <p>One fine body…</p>
-        </div>
+        <div class="modal-body"></div>
         <div class="modal-footer">
             <button type="button" class="btn btn-small" data-dismiss="modal">
                 <i class="icon-remove"></i>
@@ -184,6 +177,7 @@
             </button>
         </div>
     </div>
+
 
 {% endblock %}
 
@@ -201,15 +195,6 @@
 {% block extrascripts %}
 {% endblock extrascripts %}
 
-
-{#<script>#}
-    {# TODO: The bootstrap modal dialog was not working properly, did this, but this should not be necessary #}
-{#    $('.modal').on('show', function () {#}
-{#        var self = $(this);#}
-{#        var link = self.data('modal').options.remote;#}
-{#        self.load(link);#}
-{#    });#}
-{#</script>#}
 
 
 </body>
