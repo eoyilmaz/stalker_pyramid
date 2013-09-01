@@ -40,44 +40,53 @@
 
     <div class='row-fluid'>
         <div class='span12'>
-            <form class='form-horizontal' role='form'>
+            <form id='project_form'
+                  class='form-horizontal'
+                  role='form'
+                  method="post"
+                  action="{{ request.route_url('create_project') }}">
 
                 {# Thumbnail #}
                 <div class='control-group'>
                     <label for='thumbnail' class='span2 control-label'>Thumbnail</label>
 
                     <div class='span3'>
-                        <input id='thumbnail' type="file">
+                        <input id='thumbnail' name='thumbnail' type="file">
                     </div>
                 </div>
-        
+
                 {# Name #}
                 <div class="control-group">
                     <label class="span2 control-label" for="project_name">Name</label>
                     <div class="span10">
-                        <input type="text"
+                        <input id="project_name"
+                               name='name'
+                               type="text"
                                class="form-control"
-                               id="project_name"
-                               placeholder="Name">
+                               placeholder="Name"
+                               required>
                     </div>
                 </div>
-        
+
                 {# Code #}
                 <div class="control-group">
                     <label for="project_code" class="span2 control-label">Code</label>
                     <div class="span10">
                         <input id="project_code"
+                               name='code'
                                type="text"
                                class="form-control"
-                               placeholder="Code">
+                               placeholder="Code"
+                               required>
                     </div>
                 </div>
-        
+
                 {# Start & End Dates #}
                 <div class="control-group">
                     <label for="start_end_date_range_picker" class="span2 control-label">Date</label>
                     <div class="span10 input-prepend">
                         <input id='start_end_date_range_picker'
+                               name='start_and_end_dates'
                                type="text"
                                data-date-format="yyyy-mm-dd"
                                placeholder="Start & End Dates">
@@ -86,80 +95,78 @@
                         </span>
                     </div>
                 </div>
-        
+
                 {# Image Format #}
                 <div class="control-group">
                     <label for='image_format' class="span2 control-label">Image Format</label>
                     <div class="span10">
-                        <select id='image_format' data-placeholder='Image Format'>
-                            <option>Image Format 1</option>
-                            <option>Image Format 2</option>
-                            <option>Image Format 3</option>
-                            <option>Image Format 4</option>
-                            <option>Image Format 5</option>
+                        <select id='image_format'
+                                name='image_format_id'
+                                data-placeholder='Image Format'
+                                required>
                         </select>
                     </div>
                 </div>
-    
+
                 {# FPS #}
                 <div class='control-group'>
                     <label for='fps' class='span2 control-label'>FPS</label>
                     <div class='span10'>
-                        <input id='fps' type='text' placeholder='FPS' value=25>
+                        <input id='fps'
+                               name='fps'
+                               type='text'
+                               placeholder='FPS'
+                               value=25
+                               min=1
+                               required>
                     </div>
                 </div>
-    
+
                 {# Repository #}
                 <div class="control-group">
                     <label for='repository' class="span2 control-label">Repository</label>
                     <div class="span10">
-                        <select id='repository' data-placeholder='Repository'>
-                            <option>Repo 1</option>
-                            <option>Repo 2</option>
-                            <option>Repo 3</option>
-                            <option>Repo 4</option>
-                            <option>Repo 5</option>
+                        <select id='repository'
+                                name='repository_id'
+                                data-placeholder='Repository'
+                                required>
                         </select>
                     </div>
                 </div>
-                
+
                 {# Structure #}
                 <div class="control-group">
                     <label for='structure' class="span2 control-label">Structure</label>
                     <div class="span10">
-                        <select id='structure' data-placeholder='Structure'>
-                            <option>Structure 1</option>
-                            <option>Structure 2</option>
-                            <option>Structure 3</option>
-                            <option>Structure 4</option>
-                            <option>Structure 5</option>
+                        <select id='structure'
+                                name='structure_id'
+                                data-placeholder='Structure'
+                                required>
                         </select>
                     </div>
                 </div>
-                
+
                 {# Lead #}
                 <div class="control-group">
                     <label for='lead' class="span2 control-label">Lead</label>
                     <div class="span10">
-                        <select id='lead' data-placeholder='Lead'>
-                            <option>Lead 1</option>
-                            <option>Lead 2</option>
-                            <option>Lead 3</option>
-                            <option>Lead 4</option>
-                            <option>Lead 5</option>
+                        <select id='lead'
+                                name='lead_id'
+                                data-placeholder='Lead'
+                                required>
                         </select>
                     </div>
                 </div>
-                
+
+                <input type='hidden' name='came_from' value='{{ came_from }}'>
+
                 {# Form Buttons #}
                 <div class="form-actions">
-                    <button type="button" class="btn btn-info btn-primary">
-                        <i class="icon-ok"></i>
-                        Ok
+                    <button type="submit" class="btn btn-info btn-primary">
+                        <i class="icon-ok"></i>Ok
                     </button>
                     <button type="button" class="btn">
-                        <i class="icon-remove"></i>
-                        Cancel
+                        <i class="icon-remove"></i>Cancel
                     </button>
                 </div>
         
@@ -171,8 +178,6 @@
 
 
 
-
-{#</div>#}
 {% block extrascripts %}
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery-ui-1.10.3.custom.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.ui.touch-punch.min.js") }}'></script>
@@ -190,37 +195,20 @@
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/fuelux/fuelux.spinner.min.js") }}'></script>
 
 
-
-
     <script type="text/javascript">
-
-
-
         {# Update info #}
-        var name, code, start_date, end_date, image_format_id, fps=25,
-                repository_id, structure_id, lead_id;
-        console.debug('mode : ', '{{ mode }}');
         {% if mode == 'update' %}
-            name = '{{ project.name }}';
-            code = '{{ project.code }}';
-            start_date = new Date({{ milliseconds_since_epoch(project.start) }});
-            end_date = new Date({{ milliseconds_since_epoch(project.end) }});
-            image_format_id = {{ project.image_format.id }};
-            fps = {{ project.fps }}
-            repository_id = {{ project.repository.id }};
-            structure_id = {{ project.structure.id }};
             lead_id = {{ project.lead.id }};
         {% endif %}
-        
-
 
 
         {# Update Name and code #}
-        $(document).ready(function() {
-            if (name) $('#project_name').val(name);
-            if (code) $('#project_code').val(code);
-        });
-
+        {% if mode == 'update' %}
+            $(document).ready(function() {
+                $('#project_name').val('{{ project.name }}');
+                $('#project_code').val('{{ project.code }}');
+            });
+        {% endif %}
 
 
 
@@ -238,19 +226,27 @@
             start_end_date_range_picker.data().daterangepicker.container.css({'z-index': 1060});
 
             // fill data if mode is update
-            if (start_date && end_date) {
+            {% if mode == 'update' %}
+                var start_date = new Date({{ milliseconds_since_epoch(project.start) }});
+                var end_date = new Date({{ milliseconds_since_epoch(project.end) }});
                 start_end_date_range_picker.val(
                     start_date.format('mm/dd/yyyy') + ' - ' + end_date.format('mm/dd/yyyy')
                 );
                 start_end_date_range_picker.data().daterangepicker.updateFromControl();
-            }
+            {% endif %}
         });
+
 
 
 
         {# FPS #}
         $(document).ready(function(){
             {# FPS Spinner #}
+            var fps = 25;
+            {% if mode == 'update' %}
+                fps = {{ project.fps }}
+            {% endif %}
+
             $('#fps').ace_spinner({
                 value: fps,
                 min: 1,
@@ -265,12 +261,8 @@
 
 
 
-
-
         {# Chosen Field Updater #}
-        var chosen_field_creator = function(selector, url, data_template){
-            var field = $(selector);
-
+        var chosen_field_creator = function(field, url, data_template){
             // fill image format with new json data
             return $.getJSON(url).then(function(data){
                 // remove current data
@@ -296,12 +288,16 @@
                 '<option value={{=it.id}}>{{=it.name}} ({{=it.width}} x {{=it.height}} x {{=it.pixel_aspect}})</option>'
             );
             {% endraw %}
-            var deferred = chosen_field_creator('#image_format', '/image_formats/', image_format_option_template);
-            if (image_format_id){
+            var image_format = $('#image_format');
+            var deferred = chosen_field_creator(image_format, '/image_formats/', image_format_option_template);
+            
+            var image_format_id;
+            {% if mode == 'update' %}
+                image_format_id = {{ project.image_format.id }};
                 deferred.then(function(){
-                    $('#image_format').val(image_format_id).trigger('chosen:updated');
+                    image_format.val(image_format_id).trigger('chosen:updated');
                 });
-            }
+            {% endif %}
         });
 
 
@@ -314,12 +310,15 @@
                 '<option value={{=it.id}}>{{=it.name}}</option>'
             );
             {% endraw %}
-            var deferred = chosen_field_creator('#repository', '/repositories/', repository_option_template);
-            if (repository_id){
+            
+            var repository = $('#repository');
+            var deferred = chosen_field_creator(repository, '/repositories/', repository_option_template);
+            {% if mode == 'update' %}
+                var repository_id = {{ project.repository.id }};
                 deferred.then(function(){
-                    $('#repository').val(repository_id).trigger('chosen:updated');
+                    repository.val(repository_id).trigger('chosen:updated');
                 });
-            }
+            {% endif %}
         });
 
 
@@ -332,12 +331,15 @@
                 '<option value={{=it.id}}>{{=it.name}}</option>'
             );
             {% endraw %}
-            var deferred = chosen_field_creator('#structure', '/structures/', structure_option_template);
-            if (structure_id){
+
+            var structure = $('#structure');
+            var deferred = chosen_field_creator(structure, '/structures/', structure_option_template);
+            {% if mode == 'update' %}
+                var structure_id = {{ project.structure.id }};
                 deferred.then(function(){
-                    $('#structure').val(structure_id).trigger('chosen:updated');
+                    structure.val(structure_id).trigger('chosen:updated');
                 });
-            }
+            {% endif %}
         });
 
 
@@ -350,19 +352,21 @@
                 '<option value={{=it.id}}>{{=it.name}}</option>'
             );
             {% endraw %}
-            var deferred = chosen_field_creator('#lead', '/users/?simple=true', lead_option_template);
-            if (lead_id){
-                deferred.then(function(){
-                    $('#lead').val(lead_id).trigger('chosen:updated');
+            var lead = $('#lead');
+            var deferred = chosen_field_creator(lead, '/users/?simple=true', lead_option_template);
+            {% if mode == 'update' %}
+                var lead_id = {{ project.lead.id }};
+                deferred.then(function() {
+                    lead.val(lead_id).trigger('chosen:updated');
                 });
-            }
+            {% endif %}
         });
 
 
 
 
         {# Thumbnail #}
-        $(document).ready(function($){
+        $(document).ready(function(){
             $('#thumbnail').ace_file_input({
                 style: 'well',
                 btn_choose: 'Drop files here or click to choose',
@@ -370,6 +374,111 @@
                 no_icon: 'icon-cloud-upload',
                 droppable: true,
                 thumbnail: 'fit'
+            });
+        });
+
+
+
+
+        {# Form #}
+        $(document).ready(function(){
+
+            $('#project_form').validate({
+                errorElement: 'span',
+                errorClass: 'help-inline',
+                focusInvalid: true,
+                rules: {
+                    email: {
+                        required: true,
+                        email: true
+                    },
+                    password: {
+                        required: true,
+                        minlength: 5
+                    },
+                    password2: {
+                        required: true,
+                        minlength: 5,
+                        equalTo: "#password"
+                    },
+                    name: {
+                        required: true
+                    },
+                    code: {
+                        required: true
+                    },
+                    phone: {
+                        required: true,
+                        phone: 'required'
+                    },
+                    url: {
+                        required: true,
+                        url: true
+                    },
+                    comment: {
+                        required: true
+                    },
+                    state: {
+                        required: true
+                    },
+                    platform: {
+                        required: true
+                    },
+                    subscription: {
+                        required: true
+                    },
+                    gender: 'required',
+                    agree: 'required'
+                },
+
+                messages: {
+                    email: {
+                        required: "Please provide a valid email.",
+                        email: "Please provide a valid email."
+                    },
+                    password: {
+                        required: "Please specify a password.",
+                        minlength: "Please specify a secure password."
+                    },
+                    subscription: "Please choose at least one option",
+                    gender: "Please choose gender",
+                    agree: "Please accept our policy"
+                },
+
+                invalidHandler: function (event, validator) { //display error alert on form submit
+                    $('.alert-error', $('.login-form')).show();
+                },
+
+                highlight: function (e) {
+                    $(e).closest('.control-group').removeClass('info').addClass('error');
+                },
+
+                success: function (e) {
+                    $(e).closest('.control-group').removeClass('error').addClass('info');
+                    $(e).remove();
+                },
+
+                errorPlacement: function (error, element) {
+                    if (element.is(':checkbox') || element.is(':radio')) {
+                        var controls = element.closest('.controls');
+                        if (controls.find(':checkbox,:radio').length > 1) controls.append(error);
+                        else error.insertAfter(element.nextAll('.lbl:eq(0)').eq(0));
+                    }
+                    else if (element.is('.select2')) {
+                        error.insertAfter(element.siblings('[class*="select2-container"]:eq(0)'));
+                    }
+                    else if (element.is('.chosen-select')) {
+                        error.insertAfter(element.siblings('[class*="chosen-container"]:eq(0)'));
+                    }
+                    else error.insertAfter(element);
+                },
+
+                submitHandler: function (form) {
+                    form.submit();
+                },
+
+                invalidHandler: function (form) {
+                }
             });
         });
 

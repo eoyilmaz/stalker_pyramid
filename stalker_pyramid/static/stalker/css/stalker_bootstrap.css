@@ -30,3 +30,13 @@
   font-weight: 400;
   src: local('Open Sans'), local('OpenSans'), url('../fonts/cJZKeOuBrn4kERxqtaUH3T8E0i7KZn-EPnyo3HZu7kw.woff') format('woff');
 }
+
+/*.flash-message {*/
+    /*display: block;*/
+    /*position: absolute;*/
+    /*z-index: 10000;*/
+    /*top: 0;*/
+    /*left: 0;*/
+    /*width: 50%;*/
+    /*margin-left: 25%;*/
+/*}*/

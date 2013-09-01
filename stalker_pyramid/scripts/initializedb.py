@@ -25,5 +25,9 @@ def main(argv=sys.argv):
     db.setup(settings)
     db.init()
 
+    # TODO: also create basic Status and status lists for
+    # Project, Asset, Shot, Sequence
+
+
 if __name__ == '__main__':
     main()

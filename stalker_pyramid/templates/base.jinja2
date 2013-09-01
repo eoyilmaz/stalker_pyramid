@@ -89,9 +89,29 @@
     <!--ace settings handler-->
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/uncompressed/ace-extra.js") }}'></script>
 
+    {% block templates %}
+    {% endblock templates %}
+
 </head>
 <body class="navbar-fixed breadcrumbs-fixed">
 
+
+{% for message in request.session.pop_flash() %}
+    {% set message_type=message.split(':')[0] %}
+    {% set message_content=message.split(':')[1]%}
+    <div class="flash-message alert alert-{{message_type}} text-center hide">
+        <button type="button" class="close" data-dismiss="alert">
+            <i class="icon-remove"></i>
+        </button>
+        <p>
+            <strong>
+{#                <i class="icon-ok"></i>#}
+                {{ message_type.title() }}!
+            </strong>
+            {{ message_content|safe }}
+        </p>
+    </div>
+{% endfor %}
 
 {% block content %}
 
@@ -276,14 +296,44 @@
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/uncompressed/ace.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootbox.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/stalker/date.format.js") }}'></script>
-    
+
+    <script type="text/javascript">
+        if ("ontouchend" in document) document.write("<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.mobile.custom.min.js") }}'>" + "<" + "/script>");
+    </script>
+
+
+
     <script type="text/javascript">
         $(document).ready(function(){
             // hide ace-settings bar
             $('#ace-settings-box').toggleClass('open');
         });
     </script>
+
+
+    {# Pop Flash Messages #}
+    <script type='text/javascript'>
+        $(function(){
+            $('.flash-message').slideToggle();
+        });
+    </script>
+    
+    {# Add came_from attribute to all a's #}
+    <script type='text/javascript'>
+        $(function(){
+            $('a.dialog').each(function(i){
+                var href = this.getAttribute('href');
+                if (href !='#'){
+                    this.setAttribute('href', href + '?came_from={{ request.path }}')
+                }
+            });
+        });
+    </script>
+
+
 {% endblock scripts %}
+
+
 
 {% block extrascripts %}
 {% endblock extrascripts %}

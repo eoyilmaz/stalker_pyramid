@@ -277,10 +277,14 @@ def get_tickets(request):
             'project_name': ticket.project.name,
             'owner_id': ticket.owner_id if ticket.owner else -1,
             'owner_name': ticket.owner.name if ticket.owner else '',
+            'date_created' : milliseconds_since_epoch(ticket.date_created),
+            'date_updated' : milliseconds_since_epoch(ticket.date_updated),
             'created_by_id': ticket.created_by_id,
             'created_by_name': ticket.created_by.name,
             'updated_by_id': ticket.updated_by_id,
             'updated_by_name': ticket.updated_by.name,
-            'status': ticket.status.name
+            'status': ticket.status.name,
+            'priority': ticket.priority,
+            'type': ticket.type.name if ticket.type else None
         } for ticket in tickets
     ]

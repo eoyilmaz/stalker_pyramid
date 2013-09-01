@@ -249,6 +249,11 @@ logger.setLevel(logging.DEBUG)
 def get_entity_related_data(request):
     """lists the time logs of the given task
     """
+    logged_in_user = get_logged_in_user(request)
+    if not logged_in_user:
+        import auth
+        return auth.logout(request)
+
     studio = Studio.query.first()
 
     entity_id = request.matchdict.get('id')
@@ -261,10 +266,7 @@ def get_entity_related_data(request):
 
     mode = request.matchdict.get('mode', None)
 
-    logged_in_user = get_logged_in_user(request)
-    if not logged_in_user:
-        import auth
-        return auth.logout(request)
+    came_from = request.params.get('came_from', request.url)
 
     return {
         'mode': mode,
@@ -275,4 +277,5 @@ def get_entity_related_data(request):
         'stalker_pyramid': stalker_pyramid,
         'projects': projects,
         'studio': studio,
+        'came_from': came_from
     }

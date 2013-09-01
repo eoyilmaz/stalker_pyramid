@@ -614,6 +614,10 @@ def forbidden(request):
 
 
 @view_config(
+    route_name='flash_message',
+    renderer='templates/home.jinja2'
+)
+@view_config(
     route_name='home',
     renderer='templates/home.jinja2'
 )
@@ -640,6 +644,10 @@ def home(request):
         .filter(User.id==logged_in_user.id)\
         .filter(Task.computed_start < end_of_today)\
         .filter(Task.computed_end > start_of_today).all()
+
+    flash_message = request.GET.get('flash')
+    if flash_message:
+        request.session.flash(flash_message)
 
     return {
         'stalker_pyramid': stalker_pyramid,

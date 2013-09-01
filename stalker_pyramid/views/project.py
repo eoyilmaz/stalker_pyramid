@@ -19,13 +19,14 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 
 import datetime
-from pyramid.httpexceptions import HTTPOk, HTTPServerError
+from pyramid.httpexceptions import HTTPOk, HTTPServerError, HTTPFound
 from pyramid.view import view_config
 
 from stalker.db import DBSession
 from stalker import (User, ImageFormat, Repository, Structure, Status,
                      StatusList, Project, Entity)
-from stalker_pyramid.views import (get_date, get_logged_in_user)
+from stalker_pyramid.views import (get_date, get_date_range,
+                                   get_logged_in_user)
 
 import logging
 
@@ -44,12 +45,14 @@ def create_project(request):
         import auth
         return auth.logout(request)
 
+    came_from = request.params.get('came_from', '/')
+
     # parameters
     name = request.params.get('name')
     code = request.params.get('code')
     fps = int(request.params.get('fps'))
 
-    imf_id = request.params.get('image_format', -1)
+    imf_id = request.params.get('image_format_id', -1)
     imf = ImageFormat.query.filter_by(id=imf_id).first()
 
     repo_id = request.params.get('repository_id', -1)
@@ -61,42 +64,64 @@ def create_project(request):
     lead_id = request.params.get('lead_id', -1)
     lead = User.query.filter_by(id=lead_id).first()
 
-    status_id = request.params.get('status_id', -1)
-    status = Status.query.filter_by(id=status_id).first()
+    status = Status.query.filter_by(name='New').first()
 
     # get the dates
-    start = get_date(request, 'start')
-    end = get_date(request, 'end')
+    start, end = get_date_range(request, 'start_and_end_dates')
 
-    if name and code and imf and repo and structure and lead_id and status:
+    logger.debug('name          : %s' % name)
+    logger.debug('code          : %s' % code)
+    logger.debug('fps           : %s' % fps)
+    logger.debug('imf_id        : %s' % imf_id)
+    logger.debug('repo_id       : %s' % repo_id)
+    logger.debug('repo          : %s' % repo)
+    logger.debug('structure_id  : %s' % structure_id)
+    logger.debug('structure     : %s' % structure)
+    logger.debug('lead_id       : %s' % lead_id)
+    logger.debug('lead          : %s' % lead)
+    logger.debug('start         : %s' % start)
+    logger.debug('end           : %s' % end)
+
+    if name and code and imf and repo and structure and lead_id:
+        # status is always New
         # lets create the project
 
         # status list
         status_list = StatusList.query \
             .filter_by(target_entity_type='Project').first()
 
-        new_project = Project(
-            name=name,
-            code=code,
-            image_format=imf,
-            repository=repo,
-            created_by=logged_in_user,
-            fps=fps,
-            structure=structure,
-            lead=lead,
-            status_list=status_list,
-            status=status,
-            start=start,
-            end=end
-        )
+        try:
+            new_project = Project(
+                name=name,
+                code=code,
+                image_format=imf,
+                repository=repo,
+                created_by=logged_in_user,
+                fps=fps,
+                structure=structure,
+                lead=lead,
+                status_list=status_list,
+                status=status,
+                start=start,
+                end=end
+            )
 
-        DBSession.add(new_project)
+            DBSession.add(new_project)
+            # flash success message
+            request.session.flash(
+                'success:Project <strong>%s</strong> is created successfully' % name
+            )
+        except BaseException as e:
+            request.session.flash('error:' + e.message)
+            HTTPFound(location=came_from)
 
     else:
         logger.debug('there are missing parameters')
         HTTPServerError()
 
-    return HTTPOk()
+    return HTTPFound(
+        location=came_from
+    )
 
 
 @view_config(

@@ -21,6 +21,7 @@
 Stalker Pyramid is a Production Asset Management System (ProdAM) designed for
 Animation and VFX Studios. See docs for more information.
 """
+import pyramid_beaker
 from zope.sqlalchemy import ZopeTransactionExtension
 
 __version__ = '0.1.0.b3'
@@ -68,6 +69,12 @@ def main(global_config, **settings):
     config.set_authentication_policy(authn_policy)
     config.set_authorization_policy(authz_policy)
 
+    # Configure Beaker sessions and caching
+    session_factory = pyramid_beaker.session_factory_from_settings(settings)
+    config.set_session_factory(session_factory)
+    pyramid_beaker.set_cache_regions_from_settings(settings)
+
+
     config.include('pyramid_jinja2')
     config.include('pyramid_mailer')
     config.add_static_view('static', 'static', cache_max_age=3600)
@@ -85,6 +92,7 @@ def main(global_config, **settings):
     config.add_route('logout', '/logout')
 
     config.add_route('busy_dialog', 'dialog/busy')
+    config.add_route('flash_message', '/flash_message')
 
     # addresses like http:/localhost:6543/SPL/{some_path} will let SP to serve those files
     # SPL : Stalker Pyramid Local
