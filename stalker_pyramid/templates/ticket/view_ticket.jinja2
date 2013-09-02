@@ -1,0 +1,198 @@
+{# Stalker Pyramid a Web Base Production Asset Management System
+ Copyright (C) 2009-2013 Erkan Ozgur Yilmaz
+
+ This file is part of Stalker Pyramid.
+
+ This library is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation;
+ version 2.1 of the License.
+
+ This library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Lesser General Public License for more details.
+
+ You should have received a copy of the GNU Lesser General Public
+ License along with this library; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+#}
+{% set ticket=entity %}
+
+{% extends "base.jinja2" %}
+
+{% block breadcrumbs %}
+    {% set listed_type=ticket.plural_class_name %}
+    {% set page_title='Ticket #%i' % ticket.number %}
+    {% include 'breadcrumbs.jinja2' %}
+{% endblock breadcrumbs %}
+
+{% block sidebar %}
+{#    {% include 'sidebar.jinja2' %}#}
+{% endblock sidebar %}
+
+{% block page_content %}
+
+    <div class="row-fluid">
+
+        <div class='span8 offset2'>
+            <div class='widget'>
+                <div class="widget-header widget-header-small header-color-orange">
+                    <h6>
+                        Ticket #{{ ticket.number }}
+                    </h6>
+                </div>
+                <div class="widget-body">
+                    <div class="widget-body-inner" style="display: block;">
+                        <div class="widget-main">
+                            <h2>{{ ticket.summary }}</h2>
+                            <table class='table'>
+                                <tr>
+                                    <th>Project</th>
+                                    <td><a href='/projects/{{ ticket.project.id }}/view'>{{ ticket.project.name }}</a></td>
+                                    <th>Related Tickets</th>
+                                    <td>{% for r_ticket in ticket.related_tickets%}{{ r_ticket.number }},{% endfor %}</td>
+                                </tr>
+                                <tr>
+                                    <th>Type</th>
+                                    <td>{{ ticket.type.name }}</td>
+                                    <th>Priority</th>
+                                    <td>{{ ticket.priority }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Status</th>
+                                    <td>{{ ticket.status.name }}</td>
+                                    <th>Reported By</th>
+                                    <td><a href='/users/{{ ticket.created_by.id }}/view'>{{ ticket.created_by.name }}</a></td>
+                                </tr>
+                                <tr>
+                                    <th>Owner</th>
+                                    <td><a href='/users/{{ ticket.owner.id }}/view'>{{ ticket.owner.name }}</a></td>
+                                    <th>Date Created</th>
+                                    <td id='date_created'></td>
+                                </tr>
+                                <tr>
+                                    <th>Links</th>
+                                    <td>
+                                        {%- for link in ticket.links -%}
+                                            {%- if loop.index0 > 0 %},{% endif -%}
+                                            <a href='/{{ link.plural_class_name.lower() }}/{{ link.id }}/view'>
+                                            {{ link.name }} ({{ link.entity_type }})</a>
+                                        {%- endfor -%}
+                                    </td>
+                                </tr>
+                            </table>
+                            <hr>
+                            <h4>Description</h4>
+                            <p>{{ ticket.description }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {# Messages / Notes #}
+            {% for comment in ticket.comments %}
+                <hr>
+                <div class='widget-box transparent'>
+                    <div class='widget-header widget-header-small'>
+                        <h6><strong>{{ comment.created_by.name }}</strong> at {{ comment.date_created }}</h6>
+                    </div>
+                    <div class='widget-body'>
+                        {{ comment.description }}
+                    </div>
+                </div>
+            {% endfor %}
+
+            {# Editor #}
+            <hr>
+            <div class='widget'>
+                <div class="widget-header widget-header-small">
+                <h6>Create Message</h6>
+                </div>
+                <div class='widget-body'>
+                    <div class="wysiwyg-editor" id="editor1"></div>
+                </div>
+                
+                <div class='right'>
+                    <button class='btn'>Submit</button>
+                </div>
+            </div>
+
+        </div>
+            
+    </div>
+
+{% endblock page_content %}
+
+{% block extrascripts %}
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery-ui-1.10.3.custom.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.ui.touch-punch.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/markdown/markdown.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/markdown/bootstrap-markdown.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.hotkeys.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootstrap-wysiwyg.min.js") }}'></script>
+    
+    <script type="text/javascript">
+    
+        function showErrorAlert(reason, detail) {
+            var msg = '';
+            if (reason === 'unsupported-file-type') {
+                msg = "Unsupported format " + detail;
+            }
+            else {
+                console.log("error uploading file", reason, detail);
+            }
+            $('<div class="alert"> <button type="button" class="close" data-dismiss="alert">&times;</button>' +
+                    '<strong>File upload error</strong> ' + msg + ' </div>').prependTo('#alerts');
+        }
+        
+        {# update date_created #}
+        $(function(){
+            var date_created = new Date({{ milliseconds_since_epoch(ticket.date_created) }}).format('yyyy-mm-dd HH:MM');
+            $('#date_created').html(date_created);
+        });
+    
+        $(function(){
+            $('#editor1').ace_wysiwyg({
+                toolbar: [
+                    'font',
+                    null,
+                    'fontSize',
+                    null,
+                    {name: 'bold', className: 'btn-info'},
+                    {name: 'italic', className: 'btn-info'},
+                    {name: 'strikethrough', className: 'btn-info'},
+                    {name: 'underline', className: 'btn-info'},
+                    null,
+                    {name: 'insertunorderedlist', className: 'btn-success'},
+                    {name: 'insertorderedlist', className: 'btn-success'},
+                    {name: 'outdent', className: 'btn-purple'},
+                    {name: 'indent', className: 'btn-purple'},
+                    null,
+                    {name: 'justifyleft', className: 'btn-primary'},
+                    {name: 'justifycenter', className: 'btn-primary'},
+                    {name: 'justifyright', className: 'btn-primary'},
+                    {name: 'justifyfull', className: 'btn-inverse'},
+                    null,
+                    {name: 'createLink', className: 'btn-pink'},
+                    {name: 'unlink', className: 'btn-pink'},
+                    null,
+                    {name: 'insertImage', className: 'btn-success'},
+                    null,
+                    'foreColor',
+                    null,
+                    {name: 'undo', className: 'btn-grey'},
+                    {name: 'redo', className: 'btn-grey'}
+                ],
+                'wysiwyg': {
+                    fileUploadError: showErrorAlert
+                }
+            }).prev().addClass('wysiwyg-style1');
+        });
+    </script>
+    
+    
+    
+    
+    
+{% endblock extrascripts %}

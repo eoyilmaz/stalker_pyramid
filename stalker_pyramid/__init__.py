@@ -440,12 +440,13 @@ def main(global_config, **settings):
     config.add_route('create_ticket', 'tickets/create')
     config.add_route('update_ticket', 'tickets/{id}/update')
 
-    config.add_route('view_ticket',      'tickets/{id}/view')
-    config.add_route('summarize_ticket', 'tickets/{id}/summarize')
+    config.add_route('view_ticket',         'tickets/{id}/view')
+    config.add_route('summarize_ticket',    'tickets/{id}/summarize')
 
     config.add_route('get_tickets',      'tickets/')
 
-    config.add_route('get_task_tickets', 'tasks/{id}/tickets') # json
+    config.add_route('get_task_tickets',    'tasks/{id}/tickets') # json
+    config.add_route('list_ticket_tickets', 'tickets/{id}/tickets/') # html
 
     config.add_route('request_task_review', 'tasks/{id}/request_review')
 

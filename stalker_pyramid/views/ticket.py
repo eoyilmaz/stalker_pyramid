@@ -194,26 +194,26 @@ def update_ticket(request):
 
     return HTTPOk()
 
-@view_config(
-    route_name='view_ticket',
-    renderer='templates/ticket/page_view_ticket.jinja2'
-)
-def view_ticket(request):
-    """runs when viewing an ticket
-    """
-    logged_in_user = get_logged_in_user(request)
-    if not logged_in_user:
-        import auth
-        return auth.logout(request)
-
-    ticket_id = request.matchdict.get('id', -1)
-    ticket = Ticket.query.filter_by(id=ticket_id).first()
-
-    return {
-        'user': logged_in_user,
-        'has_permission': PermissionChecker(request),
-        'ticket': ticket
-    }
+# @view_config(
+#     route_name='view_ticket',
+#     renderer='templates/ticket/view_ticket.jinja2'
+# )
+# def view_ticket(request):
+#     """runs when viewing an ticket
+#     """
+#     logged_in_user = get_logged_in_user(request)
+#     if not logged_in_user:
+#         import auth
+#         return auth.logout(request)
+# 
+#     ticket_id = request.matchdict.get('id', -1)
+#     ticket = Ticket.query.filter_by(id=ticket_id).first()
+# 
+#     return {
+#         'user': logged_in_user,
+#         'has_permission': PermissionChecker(request),
+#         'ticket': ticket
+#     }
 
 
 @view_config(
