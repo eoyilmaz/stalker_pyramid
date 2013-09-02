@@ -243,6 +243,10 @@ logger.setLevel(logging.DEBUG)
     renderer='templates/task/page_view_task.jinja2'
 )
 @view_config(
+    route_name='view_ticket',
+    renderer='templates/ticket/view_ticket.jinja2'
+)
+@view_config(
     route_name='project_dialog',
     renderer='templates/project/project_dialog.jinja2',
 )

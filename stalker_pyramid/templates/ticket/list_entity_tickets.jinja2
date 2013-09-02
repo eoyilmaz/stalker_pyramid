@@ -43,6 +43,7 @@
         <thead>
         <tr>
             <th>Ticket</th>
+            <th>Project</th>
             <th class="hidden-480">Summary</th>
             <th>Type</th>
             <th>Severity</th>
@@ -71,6 +72,7 @@
 <script id="tmpl_ticketRow" type="text/x-dot-template">
     <tr>
         <td><a href='/tickets/{{=it.id }}/view'>#{{=it.number}}</a></td>
+        <td><a href='/projects/{{=it.project_id }}/view'>{{=it.project_name}}</a></td>
         <td class="hidden-480"><a href='/tickets/{{=it.id }}/view'>{{=it.summary}}</a></td>
         <td>{{=it.type}}</td>
         <td>{{=it.priority}}</td>
