@@ -20,7 +20,6 @@
 import datetime
 
 from pyramid.httpexceptions import HTTPOk, HTTPServerError
-from pyramid.security import authenticated_userid
 from pyramid.view import view_config
 
 from stalker.db import DBSession
@@ -29,7 +28,7 @@ from stalker import User, Department, Entity, Studio, Project, defaults
 import logging
 import stalker_pyramid
 from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
-                                   log_param, get_multi_integer, get_tags)
+                                   log_param, get_tags)
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.WARNING)
@@ -75,11 +74,11 @@ def create_department(request):
     """creates a new Department
     """
     logged_in_user = get_logged_in_user(request)
-
-    logger.debug('called new_department')
+    if not logged_in_user:
+        import auth
+        return auth.logout(request)
 
     # get params
-
     name = request.params.get('name')
 
     if name:
@@ -116,6 +115,9 @@ def update_department(request):
     """updates an Department
     """
     logged_in_user = get_logged_in_user(request)
+    if not logged_in_user:
+        import auth
+        return auth.logout(request)
 
     logger.debug('called update_department')
     # get params
@@ -205,6 +207,9 @@ def view_entity_department(request):
     """create department dialog
     """
     logged_in_user = get_logged_in_user(request)
+    if not logged_in_user:
+        import auth
+        return auth.logout(request)
 
     entity_id = request.matchdict.get('eid', -1)
     entity = Entity.query.filter_by(id=entity_id).first()

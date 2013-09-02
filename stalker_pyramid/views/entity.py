@@ -249,21 +249,33 @@ logger.setLevel(logging.DEBUG)
 def get_entity_related_data(request):
     """lists the time logs of the given task
     """
-    entity_id = request.matchdict.get('id', -1)
-    entity = Entity.query.filter_by(id=entity_id).first()
+    logged_in_user = get_logged_in_user(request)
+    if not logged_in_user:
+        import auth
+        return auth.logout(request)
 
     studio = Studio.query.first()
+
+    entity_id = request.matchdict.get('id')
+    if not entity_id:
+        entity = studio
+    else:
+        entity = Entity.query.filter_by(id=entity_id).first()
+
     projects = Project.query.all()
 
     mode = request.matchdict.get('mode', None)
+
+    came_from = request.params.get('came_from', request.url)
 
     return {
         'mode': mode,
         'entity': entity,
         'has_permission': PermissionChecker(request),
-        'logged_in_user': get_logged_in_user(request),
+        'logged_in_user': logged_in_user,
         'milliseconds_since_epoch': milliseconds_since_epoch,
         'stalker_pyramid': stalker_pyramid,
         'projects': projects,
         'studio': studio,
+        'came_from': came_from
     }

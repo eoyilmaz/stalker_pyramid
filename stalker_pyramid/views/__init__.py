@@ -21,6 +21,7 @@
 import logging
 import datetime
 import os
+from pyramid.exceptions import Forbidden
 
 from pyramid.httpexceptions import HTTPServerError
 from pyramid.view import view_config
@@ -97,6 +98,19 @@ def get_date(request, date_attr):
         request.params[date_attr][:-4],
         '%a, %d %b %Y %H:%M:%S'
     )
+
+def get_date_range(request, date_range_attr):
+    """Extracts a UTC datetime object from the given request
+
+    :param request: the request instance
+    :param date_range_attr: the attribute name
+    :return: datetime.datetime
+    """
+    date_range_string = request.params.get(date_range_attr)
+    start_str, end_str = date_range_string.split(' - ')
+    start = datetime.datetime.strptime(start_str, '%m/%d/%Y')
+    end = datetime.datetime.strptime(end_str, '%m/%d/%Y')
+    return start, end
 
 
 def get_datetime(request, date_attr, time_attr):

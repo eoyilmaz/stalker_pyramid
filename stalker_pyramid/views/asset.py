@@ -77,6 +77,9 @@ def create_asset(request):
     """creates a new Asset
     """
     logged_in_user = get_logged_in_user(request)
+    if not logged_in_user:
+        import auth
+        return auth.logout(request)
 
     # get params
     name = request.params.get('name')
@@ -149,6 +152,9 @@ def update_asset(request):
     """updates an Asset
     """
     logged_in_user = get_logged_in_user(request)
+    if not logged_in_user:
+        import auth
+        return auth.logout(request)
 
     # get params
     asset_id = request.matchdict.get('id', -1)

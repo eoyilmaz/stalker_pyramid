@@ -94,6 +94,9 @@ def assign_thumbnail(request):
     logger.debug('entity    : %s' % entity)
 
     logged_in_user = get_logged_in_user(request)
+    if not logged_in_user:
+        import auth
+        return auth.logout(request)
 
     if entity and link:
         entity.thumbnail = link
@@ -126,6 +129,9 @@ def assign_reference(request):
     tags = get_tags(request)
 
     logged_in_user = get_logged_in_user(request)
+    if not logged_in_user:
+        import auth
+        return auth.logout(request)
 
     logger.debug('link_ids  : %s' % link_ids)
     logger.debug('links     : %s' % links)

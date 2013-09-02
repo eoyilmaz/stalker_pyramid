@@ -77,8 +77,6 @@ define([
             // create a GanttTask instance
             var task = new GanttTask(data);
 
-            console.debug('Task : ', task);
-
             // Ensure the start time is always milliseconds since epoch
             // and not a Date object
             column.start = +column.start;
@@ -134,9 +132,6 @@ define([
             // render today
             var today_as_millis = (new Date()).getTime();
             put(td, "div.today[style=left:" + Math.floor((today_as_millis - column.start) / column.scale) + "px;]");
-
-            console.debug('code is here 4');
-
 
             // TODO: enable this part later
 //            // Create arrows for each dependency, but only after all other rows

@@ -70,12 +70,15 @@ def create_image_format(request):
     """creates an image format
     """
     logged_in_user = get_logged_in_user(request)
-    
+    if not logged_in_user:
+        import auth
+        return auth.logout(request)
+
     name = request.params.get('name')
     width = int(request.params.get('width', -1))
     height = int(request.params.get('height', -1))
     pixel_aspect = float(request.params.get('pixel_aspect', -1))
-    
+
     if name and width and height and pixel_aspect:
         # create a new ImageFormat and save it to the database
         new_image_format = ImageFormat(
@@ -102,16 +105,19 @@ def update_image_format(request):
     """updates an image format
     """
     logged_in_user = get_logged_in_user(request)
+    if not logged_in_user:
+        import auth
+        return auth.logout(request)
 
     # get params
     imf_id = request.params.get('imf_id', -1)
     imf = ImageFormat.query.filter_by(id=imf_id).first()
-    
+
     name = request.params.get('name')
     width = int(request.params.get('width', -1))
     height = int(request.params.get('height', -1))
     pixel_aspect = float(request.params.get('pixel_aspect', -1))
-    
+
     if imf and name and width and height and pixel_aspect:
         imf.name = request.params['name']
         imf.width = int(request.params['width'])
@@ -120,7 +126,7 @@ def update_image_format(request):
         imf.updated_by = logged_in_user
         imf.date_updated = datetime.datetime.now()
         DBSession.add(imf)
-    
+
     return HTTPOk()
 
 

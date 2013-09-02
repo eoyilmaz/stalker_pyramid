@@ -40,6 +40,11 @@ logger.setLevel(logging.DEBUG)
 def create_ticket_dialog(request):
     """creates a create_ticket_dialog by using the given task
     """
+    logged_in_user = get_logged_in_user(request)
+    if not logged_in_user:
+        import auth
+        return auth.logout(request)
+
     entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter(Entity.entity_id==entity_id).first()
 
@@ -48,7 +53,7 @@ def create_ticket_dialog(request):
     return {
         'mode': 'CREATE',
         'has_permission': PermissionChecker(request),
-        'logged_in_user': get_logged_in_user(request),
+        'logged_in_user': logged_in_user,
         'entity': entity,
         'milliseconds_since_epoch': milliseconds_since_epoch
     }
@@ -64,6 +69,9 @@ def update_ticket_dialog(request):
 
     # get logged in user
     logged_in_user = get_logged_in_user(request)
+    if not logged_in_user:
+        import auth
+        return auth.logout(request)
 
     ticket_id = request.matchdict.get('id', -1)
     ticket = Ticket.query.filter_by(id=ticket_id).first()
@@ -84,6 +92,11 @@ def update_ticket_dialog(request):
 def create_ticket(request):
     """runs when creating a ticket
     """
+    logged_in_user = get_logged_in_user(request)
+    if not logged_in_user:
+        import auth
+        return auth.logout(request)
+
     #**************************************************************************
     # collect data
 
@@ -116,7 +129,7 @@ def create_ticket(request):
             summary=summary,
             description=description,
             project=project,
-            created_by=get_logged_in_user(request),
+            created_by=logged_in_user,
         )
         ticket.set_owner(owner)
 
@@ -131,6 +144,11 @@ def create_ticket(request):
 def update_ticket(request):
     """runs when updating a ticket
     """
+    logged_in_user = get_logged_in_user(request)
+    if not logged_in_user:
+        import auth
+        return auth.logout(request)
+
     ticket_id = request.matchdict.get('id', -1)
     ticket = Ticket.query.filter_by(id=ticket_id).first()
 
@@ -167,7 +185,7 @@ def update_ticket(request):
         ticket.status = status
         if ticket.owner != owner:
             ticket.set_owner(owner)
-        ticket.updated_by = get_logged_in_user(request)
+        ticket.updated_by = logged_in_user
 
         DBSession.add(ticket)
         logger.debug('successfully updated ticket')
@@ -184,6 +202,9 @@ def view_ticket(request):
     """runs when viewing an ticket
     """
     logged_in_user = get_logged_in_user(request)
+    if not logged_in_user:
+        import auth
+        return auth.logout(request)
 
     ticket_id = request.matchdict.get('id', -1)
     ticket = Ticket.query.filter_by(id=ticket_id).first()
@@ -256,10 +277,14 @@ def get_tickets(request):
             'project_name': ticket.project.name,
             'owner_id': ticket.owner_id if ticket.owner else -1,
             'owner_name': ticket.owner.name if ticket.owner else '',
+            'date_created' : milliseconds_since_epoch(ticket.date_created),
+            'date_updated' : milliseconds_since_epoch(ticket.date_updated),
             'created_by_id': ticket.created_by_id,
             'created_by_name': ticket.created_by.name,
             'updated_by_id': ticket.updated_by_id,
             'updated_by_name': ticket.updated_by.name,
-            'status': ticket.status.name
+            'status': ticket.status.name,
+            'priority': ticket.priority,
+            'type': ticket.type.name if ticket.type else None
         } for ticket in tickets
     ]
