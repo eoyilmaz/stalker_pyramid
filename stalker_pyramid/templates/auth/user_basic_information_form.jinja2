@@ -2,11 +2,11 @@
       class='form-horizontal'
       role='form'
       method="post"
-      action={% if mode.title() == 'Create' %}
-                "{{ request.route_url(mode.title().lower()+'_user') }}"
-             {% elif mode.title() == 'Update' %}
-                 "{{ request.route_url(mode.title().lower()+'_user', id=user.id) }}"
-             {% endif %}
+        {% if mode.title() == 'Create' %}
+      action="{{ request.route_url(mode.title().lower()+'_user') }}"
+        {% elif mode.title() == 'Update' %}
+      action="{{ request.route_url(mode.title().lower()+'_user', id=user.id) }}"
+        {% endif %}
         >
 
 
@@ -29,9 +29,9 @@
                            type="text"
                            class="form-control"
                            placeholder="Name"
-                           {% if mode.title() == 'Update' %}
-                                 value= '{{ user.name }}'
-                           {% endif %}
+                            {% if mode.title() == 'Update' %}
+                               value='{{ user.name }}'
+                            {% endif %}
                            required>
                 </div>
             </div>
@@ -46,9 +46,9 @@
                            type="text"
                            class="form-control"
                            placeholder="Login"
-                           {% if mode.title() == 'Update' %}
-                                 value= '{{ user.login }}'
-                           {% endif %}
+                            {% if mode.title() == 'Update' %}
+                               value='{{ user.login }}'
+                            {% endif %}
                            required>
                 </div>
             </div>
@@ -70,9 +70,9 @@
                                  type="email"
                                  class="form-control"
                                  placeholder="Email"
-                                 {% if mode.title() == 'Update' %}
-                                       value= '{{ user.email }}'
-                                 {% endif %}
+                                  {% if mode.title() == 'Update' %}
+                                 value='{{ user.email }}'
+                                  {% endif %}
                                  required>
                           <i class="icon-envelope icon-flip-horizontal"></i>
                        </span>
@@ -80,22 +80,22 @@
         </div>
 
 
-{#        <div class="control-group">#}
-{#            <label class="span2 control-label"#}
-{#                   for="form-field-phone">Phone</label>#}
-{##}
-{#            <div class="span6">#}
-{#                    <span class="input-icon input-icon-left">#}
-{#                      <input id="form-field-phone"#}
-{#                             name='phone'#}
-{#                             type="text"#}
-{#                             class="form-control"#}
-{#                             placeholder="Phone"#}
-{#                             >#}
-{#                      <i class="icon-phone icon-flip-horizontal"></i>#}
-{#                    </span>#}
-{#            </div>#}
-{#        </div>#}
+        {#        <div class="control-group">#}
+        {#            <label class="span2 control-label"#}
+        {#                   for="form-field-phone">Phone</label>#}
+        {##}
+        {#            <div class="span6">#}
+        {#                    <span class="input-icon input-icon-left">#}
+        {#                      <input id="form-field-phone"#}
+        {#                             name='phone'#}
+        {#                             type="text"#}
+        {#                             class="form-control"#}
+        {#                             placeholder="Phone"#}
+        {#                             >#}
+        {#                      <i class="icon-phone icon-flip-horizontal"></i>#}
+        {#                    </span>#}
+        {#            </div>#}
+        {#        </div>#}
     </div>
 
     <h4 class="header blue bolder smaller">Password</h4>
@@ -112,9 +112,9 @@
                        type="password"
                        class="form-control"
                        placeholder="Password"
-                       {% if mode.title() == 'Update' %}
-                                 value= '{{ user.password }}'
-                           {% endif %}
+                        {% if mode.title() == 'Update' %}
+                       value='{{ user.password }}'
+                        {% endif %}
                        required>
             </div>
         </div>
@@ -130,9 +130,9 @@
                        type="password"
                        class="form-control"
                        placeholder="Confirm Password"
-                       {% if mode.title() == 'Update' %}
-                                 value= '{{ user.password }}'
-                           {% endif %}
+                        {% if mode.title() == 'Update' %}
+                       value='{{ user.password }}'
+                        {% endif %}
                        required>
             </div>
         </div>

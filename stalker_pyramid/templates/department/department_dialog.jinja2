@@ -114,7 +114,7 @@
 
     {# Thumbnail #}
     $(document).ready(function () {
-        $('#thumbnail').ace_file_input({
+        $('#department_thumbnail').ace_file_input({
             style: 'well',
             btn_choose: 'Change Avatar',
             btn_change: null,
@@ -152,50 +152,28 @@
         });
     };
 
-    {# Department #}
+
+
+    {# User #}
     $(document).ready(function () {
         {% raw %}
-        var department_option_template = doT.template(
+        var user_option_template = doT.template(
                 '<option value={{=it.id}}>{{=it.name}}</option>'
         );
         {% endraw %}
 
-        var department = $('#department');
-        var deferred = chosen_field_creator(department, '/departments/', department_option_template);
+        var user = $('#department_lead');
+        var deferred = chosen_field_creator(user, '/users/', user_option_template);
         {% if mode == 'update' %}
-            {#                var department_id = {{ user.department.id }};#}
+            {#                var user_id = {{ user.user.id }};#}
             {#                deferred.then(function () {#}
-            {#                    department.val(department_id).trigger('chosen:updated');#}
-            {#                });#}
-        {% endif %}
-    });
-
-
-    {# Group #}
-    $(document).ready(function () {
-        {% raw %}
-        var group_option_template = doT.template(
-                '<option value={{=it.id}}>{{=it.name}}</option>'
-        );
-        {% endraw %}
-
-        var group = $('#group');
-        var deferred = chosen_field_creator(group, '/groups/', group_option_template);
-        {% if mode == 'update' %}
-            {#                var group_id = {{ user.group.id }};#}
-            {#                deferred.then(function () {#}
-            {#                    group.val(group_id).trigger('chosen:updated');#}
+            {#                    user.val(user_id).trigger('chosen:updated');#}
             {#                });#}
         {% endif %}
     });
 
     $(document).ready(function () {
 
-        {% raw %}
-        var tag_option_template = doT.template(
-                '<option value={{=it.id}}>{{=it.name}}</option>'
-        );
-        {% endraw %}
 
         var tag_input = $('#form-field-tags');
         if (!( /msie\s*(8|7|6)/.test(navigator.userAgent.toLowerCase()))) {

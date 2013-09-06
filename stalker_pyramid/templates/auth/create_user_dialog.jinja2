@@ -2,12 +2,35 @@
     <div class="span8">
         <div class="widget-box">
             <div class="widget-header widget-header-blue widget-header-flat">
-                <h4 class="lighter">New Department</h4>
+                <h4 class="lighter">New User</h4>
             </div>
 
             <div class="widget-body">
                 <div class="widget-main">
+                    <div id="fuelux-wizard" class="row-fluid hide"
+                         data-target="#step-container">
+                        <ul class="wizard-steps">
+                            <li data-target="#step1" class="active">
+                                <span class="step">1</span>
+                                <span class="title">Basic Information</span>
+                            </li>
 
+                            <li data-target="#step2">
+                                <span class="step">2</span>
+                                <span class="title">Append Project</span>
+                            </li>
+
+                            <li data-target="#step3">
+                                <span class="step">3</span>
+                                <span class="title">Append Department</span>
+                            </li>
+
+                            <li data-target="#step4">
+                                <span class="step">4</span>
+                                <span class="title">Append Group</span>
+                            </li>
+                        </ul>
+                    </div>
 
                     <hr>
                     <div class="step-content row-fluid position-relative"
