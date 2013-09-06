@@ -69,6 +69,8 @@ def create_project(request):
     # get the dates
     start, end = get_date_range(request, 'start_and_end_dates')
 
+    logger.debug('create_project          :')
+
     logger.debug('name          : %s' % name)
     logger.debug('code          : %s' % code)
     logger.debug('fps           : %s' % fps)

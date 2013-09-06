@@ -20,11 +20,11 @@
                     <h5 class="media-heading">{{ user.name }}
                         <small>({{ user.login }})</small>
                     </h5>
-
-                  <a  href="{{ request.route_url('view_user_settings', id=user.id) }}" class="menu-text">
-                    <i class="icon-edit"></i>
-                    Edit
-                  </a>
+                    <a href="/users/{{ user.id }}/update/dialog" class="menu-text">
+  {#                  <a  href="{{ request.route_url('view_user_settings', id=user.id) }}" class="menu-text">#}
+                      <i class="icon-edit"></i>
+                      Edit
+                    </a>
                 </div>
             </div>
         </li>

@@ -23,7 +23,19 @@
                     </li>
                 {% endif %}
             {% endif %}
-            <li class="divider"></li>
+            {% if has_permission('Create_User') %}
+                <li class="divider"></li>
+                <li><a href="/users/-1/create/dialog">New  User</a>
+                </li>
+            {% endif %}
+            {% if has_permission('Create_Department') %}
+                <li><a href="/departments/-1/create/dialog">New Department</a>
+                </li>
+            {% endif %}
+            {% if has_permission('Create_Group') %}
+                <li><a href="/groups/-1/create/dialog">New Group</a>
+                </li>
+            {% endif %}
         </ul>
     </li>
     <li class="dropdown">

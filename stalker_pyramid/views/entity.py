@@ -250,6 +250,18 @@ logger.setLevel(logging.DEBUG)
     route_name='project_dialog',
     renderer='templates/project/project_dialog.jinja2',
 )
+@view_config(
+    route_name='user_dialog',
+    renderer='templates/auth/user_dialog.jinja2',
+)
+@view_config(
+    route_name='group_dialog',
+    renderer='templates/auth/group_dialog.jinja2',
+)
+@view_config(
+    route_name='department_dialog',
+    renderer='templates/department/department_dialog.jinja2',
+)
 def get_entity_related_data(request):
     """lists the time logs of the given task
     """

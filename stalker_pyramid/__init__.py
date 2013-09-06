@@ -258,6 +258,8 @@ def main(global_config, **settings):
     # User
 
     # dialogs
+    config.add_route('user_dialog',             'users/{id}/{mode}/dialog')
+
     config.add_route('dialog_create_department_user', 'departments/{id}/users/create/dialog')
     config.add_route('dialog_create_group_user',      'groups/{id}/users/create/dialog')
     config.add_route('dialog_create_user',            'users/create/dialog')
@@ -476,6 +478,8 @@ def main(global_config, **settings):
     # *************************************************************************
     # Department
 
+    config.add_route('department_dialog',             'departments/{id}/{mode}/dialog')
+
     config.add_route('dialog_create_department', 'departments/create/dialog')
     config.add_route('dialog_update_department', 'departments/{id}/update/dialog')
 
@@ -491,6 +495,8 @@ def main(global_config, **settings):
 
     # *************************************************************************
     # Group
+
+    config.add_route('group_dialog',             'groups/{id}/{mode}/dialog')
 
     config.add_route('dialog_create_group', 'groups/create/dialog')
     config.add_route('dialog_update_group', 'groups/{id}/update/dialog')

@@ -1,0 +1,154 @@
+<form id='user_form'
+      class='form-horizontal'
+      role='form'
+      method="post"
+      action={% if mode.title() == 'Create' %}
+                "{{ request.route_url(mode.title().lower()+'_user') }}"
+             {% elif mode.title() == 'Update' %}
+                 "{{ request.route_url(mode.title().lower()+'_user', id=user.id) }}"
+             {% endif %}
+        >
+
+
+    <div class="row-fluid">
+
+        <div class="span3">
+            <input id='thumbnail' name='thumbnail'
+                   type="file"/>
+        </div>
+
+        <div class="span6">
+            {# Name #}
+            <div class="control-group">
+                <label class="span2 control-label"
+                       for="user_name">Name</label>
+
+                <div class="span6">
+                    <input id="user_name"
+                           name='name'
+                           type="text"
+                           class="form-control"
+                           placeholder="Name"
+                           {% if mode.title() == 'Update' %}
+                                 value= '{{ user.name }}'
+                           {% endif %}
+                           required>
+                </div>
+            </div>
+            {# Login #}
+            <div class="control-group">
+                <label for="user_login"
+                       class="span2 control-label">Login</label>
+
+                <div class="span6">
+                    <input id="user_login"
+                           name='login'
+                           type="text"
+                           class="form-control"
+                           placeholder="Login"
+                           {% if mode.title() == 'Update' %}
+                                 value= '{{ user.login }}'
+                           {% endif %}
+                           required>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <h4 class="header blue bolder smaller">Contact</h4>
+
+    <div class="row-fluid">
+        {# Email #}
+        <div class="control-group">
+            <label for="user_email"
+                   class="span2 control-label">Email</label>
+
+            <div class="span6">
+                      <span class="input-icon input-icon-left">
+                          <input id="user_email"
+                                 name='email'
+                                 type="email"
+                                 class="form-control"
+                                 placeholder="Email"
+                                 {% if mode.title() == 'Update' %}
+                                       value= '{{ user.email }}'
+                                 {% endif %}
+                                 required>
+                          <i class="icon-envelope icon-flip-horizontal"></i>
+                       </span>
+            </div>
+        </div>
+
+
+{#        <div class="control-group">#}
+{#            <label class="span2 control-label"#}
+{#                   for="form-field-phone">Phone</label>#}
+{##}
+{#            <div class="span6">#}
+{#                    <span class="input-icon input-icon-left">#}
+{#                      <input id="form-field-phone"#}
+{#                             name='phone'#}
+{#                             type="text"#}
+{#                             class="form-control"#}
+{#                             placeholder="Phone"#}
+{#                             >#}
+{#                      <i class="icon-phone icon-flip-horizontal"></i>#}
+{#                    </span>#}
+{#            </div>#}
+{#        </div>#}
+    </div>
+
+    <h4 class="header blue bolder smaller">Password</h4>
+
+    <div class="row-fluid">
+        {# Password #}
+        <div class="control-group">
+            <label for="user_password"
+                   class="span2 control-label">Password</label>
+
+            <div class="span6">
+                <input id="user_password"
+                       name='password'
+                       type="password"
+                       class="form-control"
+                       placeholder="Password"
+                       {% if mode.title() == 'Update' %}
+                                 value= '{{ user.password }}'
+                           {% endif %}
+                       required>
+            </div>
+        </div>
+
+        {# Confirm Password #}
+        <div class="control-group">
+            <label for="user_password2"
+                   class="span2 control-label">Confirm Password</label>
+
+            <div class="span6">
+                <input id="user_password2"
+                       name='password2'
+                       type="password"
+                       class="form-control"
+                       placeholder="Confirm Password"
+                       {% if mode.title() == 'Update' %}
+                                 value= '{{ user.password }}'
+                           {% endif %}
+                       required>
+            </div>
+        </div>
+
+    </div>
+
+
+    <input type='hidden' name='came_from' value='{{ came_from }}'>
+
+    {#    Form Buttons #}
+    <div class="form-actions">
+        <button type="submit" class="btn btn-info btn-primary">
+            <i class="icon-ok"></i>Ok
+        </button>
+        <button type="button" class="btn">
+            <i class="icon-remove"></i>Cancel
+        </button>
+    </div>
+</form>

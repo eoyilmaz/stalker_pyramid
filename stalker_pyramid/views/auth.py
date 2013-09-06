@@ -41,58 +41,6 @@ logger.setLevel(logging.DEBUG)
 
 
 @view_config(
-    route_name='dialog_create_user',
-    renderer='templates/auth/dialog_create_user.jinja2'
-)
-@view_config(
-    route_name='dialog_create_department_user',
-    renderer='templates/auth/dialog_create_user.jinja2'
-)
-@view_config(
-    route_name='dialog_create_group_user',
-    renderer='templates/auth/dialog_create_user.jinja2'
-)
-def dialog_create_user(request):
-    """called by create user dialog
-    """
-    logged_in_user = get_logged_in_user(request)
-    if not logged_in_user:
-        return logout(request)
-
-    entity_id = request.matchdict.get('id', -1)
-    entity = Entity.query.filter_by(id=entity_id).first()
-
-    return {
-        'mode': 'CREATE',
-        'has_permission': PermissionChecker(request),
-        'logged_in_user': logged_in_user,
-        'entity': entity
-    }
-
-
-@view_config(
-    route_name='dialog_update_user',
-    renderer='templates/auth/dialog_create_user.jinja2'
-)
-def dialog_update_user(request):
-    """called when updating a user
-    """
-    logged_in_user = get_logged_in_user(request)
-    if not logged_in_user:
-        return logout(request)
-
-    user_id = request.matchdict.get('id', -1)
-    user = User.query.filter_by(id=user_id).first()
-
-    return {
-        'mode': 'UPDATE',
-        'has_permission': PermissionChecker(request),
-        'logged_in_user': logged_in_user,
-        'user': user
-    }
-
-
-@view_config(
     route_name='create_user'
 )
 def create_user(request):
@@ -101,6 +49,8 @@ def create_user(request):
     logged_in_user = get_logged_in_user(request)
     if not logged_in_user:
         return logout(request)
+
+    came_from = request.params.get('came_from', '/')
 
     name = request.params.get('name', None)
     login = request.params.get('login', None)
@@ -132,20 +82,27 @@ def create_user(request):
         tags = get_tags(request)
 
         logger.debug('creating new user')
-        new_user = User(
-            name=request.params['name'],
-            login=request.params['login'],
-            email=request.params['email'],
-            password=request.params['password'],
-            created_by=logged_in_user,
-            departments=departments,
-            groups=groups,
-            tags=tags
-        )
+        try:
+            new_user = User(
+                name=request.params['name'],
+                login=request.params['login'],
+                email=request.params['email'],
+                password=request.params['password'],
+                created_by=logged_in_user,
+                departments=departments,
+                groups=groups,
+                tags=tags
+            )
 
-        logger.debug('adding new user to db')
-        DBSession.add(new_user)
-        logger.debug('added new user successfully')
+            logger.debug('adding new user to db')
+            DBSession.add(new_user)
+            logger.debug('added new user successfully')
+            request.session.flash(
+                'success:User <strong>%s</strong> is created successfully' % name
+            )
+        except BaseException as e:
+            request.session.flash('error:' + e.message)
+            HTTPFound(location=came_from)
     else:
         logger.debug('not all parameters are in request.params')
         log_param(request, 'name')
@@ -154,7 +111,9 @@ def create_user(request):
         log_param(request, 'password')
         HTTPServerError()
 
-    return HTTPOk()
+    return HTTPFound(
+        location=came_from
+    )
 
 
 @view_config(
@@ -167,7 +126,9 @@ def update_user(request):
     if not logged_in_user:
         return logout(request)
 
-    user_id = request.params.get('id', -1)
+    came_from = request.params.get('came_from', '/')
+
+    user_id = request.matchdict.get('id')
     user = User.query.filter(User.id == user_id).first()
 
     name = request.params.get('name')
@@ -177,20 +138,20 @@ def update_user(request):
 
     # create and add a new user
     if user and name and login and email and password:
-        departments = []
-
-        # Departments
-        if 'department_ids' in request.params:
-            dep_ids = get_multi_integer(request, 'department_ids')
-            departments = Department.query \
-                .filter(Department.id.in_(dep_ids)).all()
-
-        # Groups
-        groups = []
-        if 'group_ids' in request.params:
-            grp_ids = get_multi_integer(request, 'group_ids')
-            groups = Group.query \
-                .filter(Group.id.in_(grp_ids)).all()
+        # departments = []
+        #
+        # # Departments
+        # if 'department_ids' in request.params:
+        #     dep_ids = get_multi_integer(request, 'department_ids')
+        #     departments = Department.query \
+        #         .filter(Department.id.in_(dep_ids)).all()
+        #
+        # # Groups
+        # groups = []
+        # if 'group_ids' in request.params:
+        #     grp_ids = get_multi_integer(request, 'group_ids')
+        #     groups = Group.query \
+        #         .filter(Group.id.in_(grp_ids)).all()
 
         # Tags
         tags = get_tags(request)
@@ -200,9 +161,9 @@ def update_user(request):
         user.email = email
         user.updated_by = logged_in_user
         user.date_updated = datetime.datetime.now()
-        user.departments = departments
-        user.groups = groups
-        user.tags = tags
+        # user.departments = departments
+        # user.groups = groups
+        # user.tags = tags
 
         if password != 'DONTCHANGE':
             user.password = password
@@ -210,6 +171,9 @@ def update_user(request):
         logger.debug('updating user')
         DBSession.add(user)
         logger.debug('updated user successfully')
+        request.session.flash(
+                'success:User <strong>%s</strong> is updated successfully' % name
+            )
     else:
         logger.debug('not all parameters are in request.params')
         log_param(request, 'user_id')
@@ -219,7 +183,10 @@ def update_user(request):
         log_param(request, 'password')
         HTTPServerError()
 
-    return HTTPOk()
+    return HTTPFound(
+        location=came_from
+    )
+
 
 @view_config(
     route_name='get_users',
@@ -285,27 +252,26 @@ def get_entity_users(request):
 
     # works for Departments and Projects or any entity that has users attribute
     return [{
-        'id': user.id,
-        'name': user.name,
-        'login': user.login,
-        'email': user.email,
-        'departments': [
-            {
-                'id': department.id,
-                'name': department.name
-            } for department in user.departments
-        ],
-        'groups': [
-            {
-                'id': group.id,
-                'name': group.name
-            } for group in user.groups
-        ],
-        'tasksCount': len(user.tasks),
-        'ticketsCount': len(user.open_tickets),
-        'thumbnail_path': user.thumbnail.full_path if user.thumbnail else None
-    } for user in sorted(entity.users, key=lambda x: x.name.lower())]
-
+                'id': user.id,
+                'name': user.name,
+                'login': user.login,
+                'email': user.email,
+                'departments': [
+                    {
+                        'id': department.id,
+                        'name': department.name
+                    } for department in user.departments
+                ],
+                'groups': [
+                    {
+                        'id': group.id,
+                        'name': group.name
+                    } for group in user.groups
+                ],
+                'tasksCount': len(user.tasks),
+                'ticketsCount': len(user.open_tickets),
+                'thumbnail_path': user.thumbnail.full_path if user.thumbnail else None
+            } for user in sorted(entity.users, key=lambda x: x.name.lower())]
 
 
 @view_config(
@@ -361,6 +327,7 @@ def append_users_to_entity_dialog(request):
         'entity': entity
     }
 
+
 @view_config(
     route_name='append_users_to_entity'
 )
@@ -391,7 +358,6 @@ def append_users_to_entity(request):
     return HTTPOk()
 
 
-
 @view_config(
     route_name='append_user_to_group'
 )
@@ -410,8 +376,6 @@ def append_user_to_entity(request):
     # entity
     entity_id = request.params.get('entity_id', None)
     entity = Entity.query.filter(Entity.id == entity_id).first()
-
-
 
     if user and entity:
         entity.users.append(user)
@@ -471,6 +435,7 @@ def append_user_to_groups(request):
 
     return HTTPOk()
 
+
 @view_config(
     route_name='append_user_to_departments'
 )
@@ -500,16 +465,14 @@ def append_user_to_departments(request):
     return HTTPOk()
 
 
-
-
-
 def get_permissions_from_multi_dict(multi_dict):
     """returns the permission instances from the given multi_dict
     """
     permissions = []
 
     # gather all access, actions, and class_names
-    all_class_names = [entity_type.name for entity_type in EntityType.query.all()]
+    all_class_names = [entity_type.name for entity_type in
+                       EntityType.query.all()]
     all_actions = defaults.actions
 
     logger.debug(all_class_names)
@@ -533,8 +496,8 @@ def get_permissions_from_multi_dict(multi_dict):
         else:
 
             if access in ['Allow', 'Deny'] and \
-                class_name in all_class_names and \
-                action in all_actions:
+                            class_name in all_class_names and \
+                            action in all_actions:
 
                 # get permissions
                 permission = Permission.query \
@@ -548,6 +511,7 @@ def get_permissions_from_multi_dict(multi_dict):
 
     logger.debug(permissions)
     return permissions
+
 
 @view_config(
     route_name='logout'
@@ -581,7 +545,7 @@ def login(request):
 
     if 'submit' in request.params:
         # get the user again (first got it in validation)
-        user_obj = User.query\
+        user_obj = User.query \
             .filter(or_(User.login == login, User.email == login)).first()
 
         if user_obj:
@@ -640,9 +604,9 @@ def home(request):
     start_of_today = datetime.datetime.combine(today, start)
     end_of_today = datetime.datetime.combine(today, end)
 
-    tasks_today = Task.query.join(User, Task.resources)\
-        .filter(User.id==logged_in_user.id)\
-        .filter(Task.computed_start < end_of_today)\
+    tasks_today = Task.query.join(User, Task.resources) \
+        .filter(User.id == logged_in_user.id) \
+        .filter(Task.computed_start < end_of_today) \
         .filter(Task.computed_end > start_of_today).all()
 
     flash_message = request.GET.get('flash')
@@ -833,7 +797,6 @@ def update_group(request):
     return HTTPOk()
 
 
-
 @view_config(
     route_name='list_studio_groups',
     renderer='templates/auth/list_entity_groups.jinja2'
@@ -860,10 +823,9 @@ def list_groups(request):
         'logged_in_user': logged_in_user,
         'milliseconds_since_epoch': milliseconds_since_epoch,
         'has_permission': PermissionChecker(request),
-        'projects':projects,
+        'projects': projects,
         'groups': groups
     }
-
 
 
 @view_config(
@@ -908,8 +870,6 @@ def get_entity_groups(request):
         }
         for group in sorted(entity.groups, key=lambda x: x.name.lower())
     ]
-
-
 
 
 @view_config(
