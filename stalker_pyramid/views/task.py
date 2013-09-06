@@ -400,7 +400,7 @@ def update_task(request):
     logger.debug('code                : %s' % code)
 
     # get task
-    task_id = request.matchdict.get('id', -1)
+    task_id = int(request.matchdict.get('id', -1))
     task = Task.query.filter(Task.id == task_id).first()
 
     # update the task
