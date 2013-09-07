@@ -274,6 +274,28 @@
 {#            </button>#}
 {#        </div>#}
 {#    </div>#}
+    <div id='task_dialog'
+         aria-labelledby="task_dialog_label"
+         class='modal hide fade'
+         tabIndex='-1'
+         role='dialog'
+         aria-hidden="true">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h3 id="project_dialog_label">Task Dialog</h3>
+        </div>
+        <div class="modal-body"></div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-small" data-dismiss="modal">
+                <i class="icon-remove"></i>
+                Cancel
+            </button>
+            <button type="button" class="btn btn-small btn-primary">
+                <i class="icon-ok"></i>
+                Ok
+            </button>
+        </div>
+    </div>
 
 
 {% endblock modals%}
@@ -281,18 +303,21 @@
 <!-- JavaScript -->
 {% block scripts %}
     <script src='{{ request.static_url("stalker_pyramid:static/jquery/jquery-2.0.3.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery-ui-1.10.3.custom.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.ui.touch-punch.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootstrap.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/ace-elements.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/uncompressed/ace.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootbox.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/stalker/date.format.js") }}'></script>
 
+
     <script type="text/javascript">
         if ("ontouchend" in document) document.write("<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.mobile.custom.min.js") }}'>" + "<" + "/script>");
     </script>
 
 
-
+    {# Ace Settings Box #}
     <script type="text/javascript">
         $(document).ready(function(){
             // hide ace-settings bar
@@ -319,7 +344,34 @@
             });
         });
     </script>
+    
+    {# Chosen Field Updater #}
+    <script>
+        var chosen_field_creator = function(field, url, data_template, chosen_options){
+            // fill field with new json data
+            return $.getJSON(url).then(function(data){
+                // remove current data
+                field.empty();
 
+                // append new options to the select
+                for (var i=0; i<data.length; i++) {
+                    field.append( data_template(data[i]) );
+                }
+
+                // convert it to chosen
+                field.chosen(chosen_options);
+            });
+        };
+    </script>
+
+    {# Task Dialog Initialize #}
+    <script type="text/javascript">
+        $(function(){
+            $('#task_dialog').on('shown', function(){
+                init_task_dialog();
+            });
+        })
+    </script>
 
 {% endblock scripts %}
 

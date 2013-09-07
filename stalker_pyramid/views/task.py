@@ -763,32 +763,43 @@ def get_project_tasks(request):
     ]
 
 
-
-
 @view_config(
-    route_name='dialog_create_project_task',
-    renderer='templates/task/dialog_create_task.jinja2'
+    route_name='project_task_dialog',
+    renderer='templates/task/task_dialog.jinja2'
 )
 def create_task_dialog(request):
     """only project information is present
     """
+    logged_in_user = get_logged_in_user(request)
+    if not logged_in_user:
+        import auth
+        return auth.logout(request)
+
     entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
 
     parent = None
-    if entity.entity_type == 'Project':
-        project = entity
-    else:
-        project = entity.project
-        parent = entity
+    project = None
+    if entity:
+        if entity.entity_type == 'Project':
+            project = entity
+        else:
+            project = entity.project
+            parent = entity
+
+    mode = request.matchdict.get('mode', None)
+
+    came_from = request.params.get('came_from', request.url)
 
     return {
-        'mode': 'CREATE',
+        'mode': mode,
         'has_permission': PermissionChecker(request),
+        'logged_in_user': logged_in_user,
         'project': project,
         'parent': parent,
         'schedule_models': defaults.task_schedule_models,
-        'milliseconds_since_epoch': milliseconds_since_epoch
+        'milliseconds_since_epoch': milliseconds_since_epoch,
+        'came_from': came_from
     }
 
 

@@ -179,8 +179,6 @@
 
 
 {% block extrascripts %}
-    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery-ui-1.10.3.custom.min.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.ui.touch-punch.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/chosen.jquery.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-datepicker.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/moment.min.js") }}'></script>
@@ -257,28 +255,6 @@
                 //alert(this.value)
             });
         });
-
-
-
-
-        {# Chosen Field Updater #}
-        var chosen_field_creator = function(field, url, data_template){
-            // fill image format with new json data
-            return $.getJSON(url).then(function(data){
-                // remove current data
-                field.empty();
-
-                // append new options to the select
-                for (var i=0; i<data.length; i++) {
-                    field.append( data_template(data[i]) );
-                }
-
-                // convert it to chosen
-                field.chosen();
-            });
-        };
-
-
 
 
         {# Image Format #}

@@ -292,21 +292,27 @@
 
             <div class="btn-toolbar">
 
-                <div class="btn-group">
-                    <button data-toggle="dropdown"
-                            class="btn btn-small btn-primary dropdown-toggle">
-                        <i class="icon-edit bigger-150"></i>
-                        Create
-                        <span class="caret"></span>
-                    </button>
-
-                    <ul class="dropdown-menu" role='menu'>
-                        <li><a href='#'>Task</a></li>
-                        <li><a href='#'>Asset</a></li>
-                        <li><a href='#'>Shot</a></li>
-                        <li><a href='#'>Sequence</a></li>
-                    </ul>
-                </div>
+                {% if has_permission('Create_Task') %}
+                    <div class="btn-group">
+                        <button data-toggle="dropdown"
+                                class="btn btn-small btn-primary dropdown-toggle">
+                            <i class="icon-edit bigger-150"></i>
+                            Create
+                            <span class="caret"></span>
+                        </button>
+    
+                        <ul class="dropdown-menu" role='menu'>
+                            <li>
+                                <a data-target="#task_dialog"
+                                   data-toggle="modal"
+                                   data-keyboard=false
+                                   href='{{ request.route_url("project_task_dialog", id=-1, mode='create') }}'>Task</a></li>
+                            <li><a href='#'>Asset</a></li>
+                            <li><a href='#'>Shot</a></li>
+                            <li><a href='#'>Sequence</a></li>
+                        </ul>
+                    </div>
+                {% endif %}
 
 
                 <button class="btn btn-small btn-success"><i
@@ -315,9 +321,13 @@
                 <button class="btn btn-small btn-success"><i
                         class="icon-refresh bigger-150"></i>Refresh
                 </button>
-                <button class="btn btn-small btn-purple"><i
-                        class="icon-cogs bigger-150"></i>Schedule Tasks
-                </button>
+
+                {% if has_permission('Update_Task') %}
+                    <button class="btn btn-small btn-purple"><i
+                            class="icon-cogs bigger-150"></i>Schedule Tasks
+                    </button>
+                {% endif %}
+
                 <button class="btn btn-small btn-yellow"><i
                         class="icon-calendar bigger-150"></i>Go To Today
                 </button>

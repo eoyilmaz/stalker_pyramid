@@ -188,7 +188,7 @@ def main(global_config, **settings):
     # Project
     config.add_route('project_dialog',             'projects/{id}/{mode}/dialog')
 
-    config.add_route('dialog_create_project_task', 'projects/{id}/tasks/create/dialog')
+    config.add_route('project_task_dialog',        'projects/{id}/tasks/{mode}/dialog')
     config.add_route('dialog_create_asset',        'projects/{id}/assets/create/dialog')
 
     config.add_route('get_project_tasks',          'projects/{id}/tasks/') # json
@@ -393,7 +393,7 @@ def main(global_config, **settings):
     # Task
 
     # Dialogs
-    config.add_route('dialog_create_task_task',     'tasks/{id}/tasks/create/dialog')
+    config.add_route('create_child_task_dialog',    'tasks/{id}/create/dialog')
     config.add_route('dialog_create_asset_task',    'assets/{id}/create/dialog')
     config.add_route('dialog_create_shot_task',     'shots/{id}/create/dialog')
     config.add_route('dialog_create_sequence_task', 'sequences/{id}/create/dialog')
