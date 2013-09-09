@@ -23,7 +23,7 @@ import datetime
 import os
 from pyramid.exceptions import Forbidden
 
-from pyramid.httpexceptions import HTTPServerError
+from pyramid.httpexceptions import HTTPServerError, HTTPForbidden
 from pyramid.view import view_config
 from pyramid.response import Response, FileResponse
 from pyramid.security import has_permission, authenticated_userid
@@ -153,8 +153,10 @@ def get_logged_in_user(request):
 
     :param request: Request object
     """
-    return User.query.filter_by(login=authenticated_userid(request)).first()
-
+    user = User.query.filter_by(login=authenticated_userid(request)).first()
+    if not user:
+        raise HTTPForbidden(headers=request)
+    return user
 
 def get_multi_integer(request, attr_name):
     """Extracts multi data from request.POST

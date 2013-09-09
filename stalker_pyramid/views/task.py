@@ -339,9 +339,6 @@ def update_task(request):
     """Updates the given task with the data coming from the request
     """
     logged_in_user = get_logged_in_user(request)
-    if not logged_in_user:
-        import auth
-        return auth.logout(request)
 
     # *************************************************************************
     # collect data
@@ -763,32 +760,40 @@ def get_project_tasks(request):
     ]
 
 
-
-
 @view_config(
-    route_name='dialog_create_project_task',
-    renderer='templates/task/dialog_create_task.jinja2'
+    route_name='project_task_dialog',
+    renderer='templates/task/task_dialog.jinja2'
 )
 def create_task_dialog(request):
     """only project information is present
     """
+    logged_in_user = get_logged_in_user(request)
+
     entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
 
     parent = None
-    if entity.entity_type == 'Project':
-        project = entity
-    else:
-        project = entity.project
-        parent = entity
+    project = None
+    if entity:
+        if entity.entity_type == 'Project':
+            project = entity
+        else:
+            project = entity.project
+            parent = entity
+
+    mode = request.matchdict.get('mode', None)
+
+    came_from = request.params.get('came_from', request.url)
 
     return {
-        'mode': 'CREATE',
+        'mode': mode,
         'has_permission': PermissionChecker(request),
+        'logged_in_user': logged_in_user,
         'project': project,
         'parent': parent,
         'schedule_models': defaults.task_schedule_models,
-        'milliseconds_since_epoch': milliseconds_since_epoch
+        'milliseconds_since_epoch': milliseconds_since_epoch,
+        'came_from': came_from
     }
 
 
@@ -844,9 +849,6 @@ def create_task(request):
     """runs when adding a new task
     """
     logged_in_user = get_logged_in_user(request)
-    if not logged_in_user:
-        import auth
-        return auth.logout(request)
 
     # ***********************************************************************
     # collect params
@@ -854,15 +856,15 @@ def create_task(request):
     parent_id = request.params.get('parent_id', None)
     name = request.params.get('name', None)
     description = request.params.get('description', '')
-    is_milestone = request.params.get('is_milestone', None)
-    status_id = request.params.get('status_id', None)
-    if status_id:
-        status_id = int(status_id)
+    # is_milestone = request.params.get('is_milestone', None)
+    # status_id = request.params.get('status_id', None)
+    # if status_id:
+    #     status_id = int(status_id)
 
     schedule_model = request.params.get('schedule_model') # there should be one
     schedule_timing = float(request.params.get('schedule_timing'))
     schedule_unit = request.params.get('schedule_unit')
-    schedule_constraint = int(request.params.get('schedule_constraint', 0))
+    # schedule_constraint = int(request.params.get('schedule_constraint', 0))
 
     # get the resources
     resources = []
@@ -873,9 +875,9 @@ def create_task(request):
 
     # get responsible
     responsible_id = request.params.get('responsible_id', None)
-    responsible = None 
+    responsible = None
     if responsible_id:
-        responsible = User.query.filter(User.id==responsible_id).first()
+        responsible = User.query.filter(User.id == responsible_id).first()
 
     priority = request.params.get('priority', 500)
 
@@ -888,8 +890,8 @@ def create_task(request):
     logger.debug('parent_id           : %s' % parent_id)
     logger.debug('name                : %s' % name)
     logger.debug('description         : %s' % description)
-    logger.debug('is_milestone        : %s' % is_milestone)
-    logger.debug('status_id           : %s' % status_id)
+    # logger.debug('is_milestone        : %s' % is_milestone)
+    # logger.debug('status_id           : %s' % status_id)
     logger.debug('schedule_model      : %s' % schedule_model)
     logger.debug('schedule_timing     : %s' % schedule_timing)
     logger.debug('schedule_unit       : %s' % schedule_unit)
@@ -897,13 +899,14 @@ def create_task(request):
     logger.debug('resources           : %s' % resources)
     logger.debug('responsible         : %s' % responsible)
     logger.debug('priority            : %s' % priority)
-    logger.debug('schedule_constraint : %s' % schedule_constraint)
+    # logger.debug('schedule_constraint : %s' % schedule_constraint)
     logger.debug('entity_type         : %s' % entity_type)
     logger.debug('code                : %s' % code)
+    logger.debug('asset_type          : %s' % asset_type)
 
     kwargs = {}
 
-    if project_id and name and status_id:
+    if project_id and name:
         # get the project
         project = Project.query.filter_by(id=project_id).first()
         kwargs['project'] = project
@@ -928,7 +931,7 @@ def create_task(request):
                 detail='No StatusList found'
             )
 
-        status = Status.query.filter_by(id=status_id).first()
+        status = Status.query.filter_by(name='New').first()
         logger.debug('status: %s' % status)
 
         # get the dates
@@ -955,7 +958,7 @@ def create_task(request):
         kwargs['schedule_model'] = schedule_model
         kwargs['schedule_timing'] = schedule_timing
         kwargs['schedule_unit'] = schedule_unit
-        kwargs['schedule_constraint'] = schedule_constraint
+        # kwargs['schedule_constraint'] = schedule_constraint
 
         kwargs['resources'] = resources
         kwargs['depends'] = depends
@@ -1044,12 +1047,13 @@ def create_task(request):
         get_param('project_id')
         get_param('name')
         get_param('description')
-        get_param('is_milestone')
+        # get_param('is_milestone')
         get_param('resource_ids')
-        get_param('status_id')
+        # get_param('status_id')
 
         param_list = ['project_id', 'name', 'description',
-                      'is_milestone', 'resource_ids', 'status_id']
+                      # 'is_milestone', 'status_id'
+                      'resource_ids']
 
         params = [param for param in param_list if param not in request.params]
 
@@ -1094,9 +1098,6 @@ def request_task_review(request):
     """
     # get logged in user as he review requester
     logged_in_user = get_logged_in_user(request)
-    if not logged_in_user:
-        import auth
-        return auth.logout(request)
 
     task_id = request.matchdict.get('id', -1)
     task = Task.query.filter(Task.id==task_id).first()
@@ -1167,9 +1168,6 @@ def view_project_task(request):
     """runs when viewing an task
     """
     logged_in_user = get_logged_in_user(request)
-    if not logged_in_user:
-        import auth
-        return auth.logout(request)
 
     project_id = request.matchdict['pid']
     project = Project.query.filter_by(id=project_id).first()

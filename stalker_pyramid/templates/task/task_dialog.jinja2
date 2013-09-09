@@ -1,0 +1,649 @@
+
+
+
+<div class='row-fluid'>
+    <div class='span12'>
+
+        <form id='task_form'
+              class='form-horizontal'
+              role='form'
+              method='post'
+              action="{{ request.route_url('create_task') }}">
+            
+            {# Entity Type #}
+            <div class='control-group'>
+                <label class='span3 control-label' for='task_entity_type'>Entity Type</label>
+                <div class='span9'>
+                    <select id='task_entity_type'
+                            class='input-block-level'
+                            name='entity_type'
+                            required>
+                        <option>Task</option>
+                        <option>Asset</option>
+                        <option>Shot</option>
+                        <option>Sequence</option>
+                    </select>
+                </div>
+            </div>
+
+            {# Project #}
+            <div class='control-group'>
+                <label class='span3 control-label' for='task_project'>Project</label>
+                <div class='span9'>
+                    <select id='task_project'
+                            class='input-block-level'
+                            name='project_id'
+                            required></select>
+                </div>
+            </div>
+
+            {# Parent #}
+            <div class='control-group'>
+                <label class='span3 control-label' for='task_parent'>Parent</label>
+                <div class='span9'>
+                    <select id='task_parent'
+                            name='parent_id'
+                            class='input-block-level'
+                            name='task_parent_id'
+                            data-placeholder='Parent'></select>
+                </div>
+            </div>
+
+            {# Name #}
+            <div class="control-group">
+                <label class="span3 control-label" for="task_name">Name</label>
+                <div class="span9">
+                    <input id="task_name"
+                           class='input-block-level'
+                           name='name'
+                           type="text"
+                           class="form-control"
+                           required>
+                </div>
+            </div>
+
+            {# Code #}
+            <div id='code_inputs' class="control-group">
+                <label class="span3 control-label" for="task_code">Code</label>
+                <div class="span9">
+                    <input id="task_code"
+                           class='input-block-level'
+                           name='code'
+                           type="text"
+                           class="form-control">
+                </div>
+            </div>
+
+            {# Task Type #}
+            <div id='task_inputs'>
+                <div class='control-group'>
+                    <label class='span3 control-label' for='task_type'>Task Type</label>
+                    <div class='span9'>
+                        <input id='task_type'
+                               class='input-block-level'
+                               name='task_type'
+                               type='text'>
+                    </div>
+                </div>
+            </div>
+
+            {# Asset Type #}
+            <div id='asset_inputs'>
+                <div class='control-group'>
+                    <label class='span3 control-label' for='asset_type'>Asset Type</label>
+                    <div class='span9'>
+                        <input id='asset_type'
+                               name='asset_type'
+                               type='text'
+                               class='input-block-level'>
+                    </div>
+                </div>
+            </div>
+
+            {# Shot Sequence #}
+            <div id='shot_inputs'>
+                <div class='control-group'>
+                    <label class="span3 control-label" for='shot_sequence'>Sequence</label>
+                    <div class='span9'>
+                        <select id='shot_sequence'
+                                class='input-block-level'
+                                name='shot_sequence_id'></select>
+                    </div>
+                </div>
+            </div>
+
+            {# Description #}
+            <div class='control-group'>
+                <label class='span3 control-label' for='task_description'>Description</label>
+                <div class='span9'>
+                    <textarea id="task_description"
+                              name='description'
+                              class="autosize-transition span12"
+                              style="overflow: hidden;
+                                     word-wrap: break-word;
+                                     resize: horizontal;
+                                     height: 50px;"></textarea>
+                </div>
+            </div>
+
+            {# Dependencies #}
+            <div class='control-group'>
+                <label class='span3 control-label' for='task_dependencies'>Dependencies</label>
+                <div class='span9'>
+                    <select id='task_dependencies'
+                            multiple=''
+                            class='input-block-level tag-input-style'
+                            name='dependency_ids'
+                            data-placeholder='Dependencies'></select>
+                </div>
+            </div>
+
+            {# Resources #}
+            <div class='control-group'>
+                <label class='span3 control-label' for='task_resources'>Resources</label>
+                <div class='span9'>
+                    <select id='task_resources'
+                            multiple=''
+                            class='input-block-level tag-input-style'
+                            name='resource_ids'
+                            data-placeholder='Resources'></select>
+                </div>
+            </div>
+
+            {# Responsible #}
+            <div class='control-group'>
+                <label class='span3 control-label' for='task_responsible'>Responsible</label>
+                <div class='span9'>
+                    <select id='task_responsible'
+                            class='input-block-level'
+                            name='responsible_id'
+                            data-placeholder='Responsible'></select>
+                </div>
+            </div>
+
+            {# Constraints #}
+
+            {# Schedule Timing #}
+            <div class='control-group'>
+                <label class='span3 control-label' for='task_schedule_timing'>Schedule Timing</label>
+                <div class='span9'>
+                    <div class='span2'>
+                        <input id='task_schedule_timing'
+                               class='input-block-level'
+                               name='schedule_timing'
+                               type='text'
+                               value=1
+                               min=1
+                               required>
+                    </div>
+                    <div class='span3'>
+                        <select id='task_schedule_unit'
+                               class='input-block-level'
+                               name='schedule_unit'
+                               val='Days'>
+                            <option value='h'>Hours</option>
+                            <option value='d'>Days</option>
+                            <option value='w'>Weeks</option>
+                            <option value='m'>Months</option>
+                            <option value='y'>Years</option>
+                        </select>
+                    </div>
+                    <div class='span3'>
+                        <select id='task_schedule_model'
+                                class='input-block-level'
+                                name='schedule_model'>
+                            <option value='effort'>Effort</option>
+                            <option value='duration'>Duration</option>
+                            <option value='length'>Length</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            {# Priority #}
+            <div class='control-group'>
+                <label class='span3 control-label' for='task_priority'>Priority</label>
+                <div class='span9'>
+                    <input id='task_priority'
+                           name='priorty'
+                           type='text'
+                           placeholder='Priority'
+                           value=500
+                           min=1
+                           max=1000
+                           required>
+                </div>
+            </div>
+            
+            
+        </form>
+
+    </div>
+</div>
+
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/chosen.jquery.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-datepicker.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/moment.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/daterangepicker.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootstrap-colorpicker.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.autosize-min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.inputlimiter.1.3.1.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.maskedinput.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootstrap-tag.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.validate.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/additional-methods.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/fuelux/fuelux.spinner.min.js") }}'></script>
+
+
+<script>
+    function init_task_dialog(){
+        console.debug('starting to initialize task dialog!!!');
+
+        {# ***************************************************************** #}
+        {# Entity Type #}
+        {# Update fields according to the selected Entity Type #}
+        // convert to chosen
+        var task_entity_type = $('#task_entity_type');
+        task_entity_type.chosen({disable_search_threshold: 10});
+
+        var task_inputs = $('#task_inputs');
+        var shot_inputs = $('#shot_inputs');
+        var code_inputs = $('#code_inputs');
+        var asset_inputs = $('#asset_inputs');
+
+        var update_entity_type_fields = function(){
+            // Asset - Code and Asset Type
+            // Shot - Code and Sequence
+            // Sequence - Code
+            var entity_type_value = task_entity_type.val().trim();
+            if (entity_type_value === 'Task') {
+                shot_inputs.hide();
+                code_inputs.hide();
+                asset_inputs.hide();
+                task_inputs.show();
+            } else if (entity_type_value === 'Asset'){
+                shot_inputs.hide();
+                code_inputs.show();
+                asset_inputs.show();
+                task_inputs.hide();
+            } else if (entity_type_value === 'Shot'){
+                shot_inputs.show();
+                code_inputs.show();
+                asset_inputs.hide();
+                task_inputs.hide();
+            } else if (entity_type_value === 'Sequence'){
+                shot_inputs.hide();
+                code_inputs.show();
+                asset_inputs.hide();
+                task_inputs.hide();
+            }
+        };
+
+        task_entity_type.on('change', update_entity_type_fields);
+        // and update on initialize
+        update_entity_type_fields();
+
+        {# ***************************************************************** #}
+        {# Projects #}
+        {% raw %}
+        var project_option_template = doT.template(
+            '<option value={{=it.id}}>{{=it.name}}</option>'
+        );
+        {% endraw %}
+        var task_project = $('#task_project');
+        var deferred = chosen_field_creator(
+            task_project, '/projects/',
+            project_option_template,
+            {search_contains: true}
+        );
+
+        var project_id;
+        {% if mode == 'update' %}
+            project_id = {{ task.project.id }};
+            deferred.then(function(){
+                task_project.val(project_id).trigger('chosen:updated');
+            });
+        {% endif %}
+
+        // Updates on project change
+        task_project.on('change', function(){
+            update_task_parent_and_dependency_fields();
+            update_resource_field();
+
+            // update responsible
+            fill_responsible_field();
+            update_responsible_field();
+
+            // update sequences
+            shot_sequence_updater();
+        });
+
+        {# ***************************************************************** #}
+        {# Parent and Dependencies#}
+        // create a chosen first
+        var task_parent = $('#task_parent').chosen({
+            search_contains: true,
+            enable_split_word_search: true,
+            allow_single_deselect: true
+        });
+        
+        var task_dependencies = $('#task_dependencies').chosen({
+            search_contains: true,
+            enable_split_word_search: true
+        });
+
+        // update task_parent callback
+        var update_task_parent_and_dependency_fields = function(){
+            // remove current elements
+            task_parent.find('option').remove();
+
+            // trigger an update
+            task_parent.trigger('liszt:updated');
+
+            // get the project id
+            var project_id = task_project.val();
+
+            // get tasks of that project as json from server
+            $.getJSON('/projects/' + project_id + '/tasks/').then(function(data){
+                // now append the data to the task_parent
+                {% raw %}
+                var task_parent_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
+                {% endraw %}
+
+                var parent_task_count = data.length;
+                var rendered_template = null;
+                // add and empty option to both
+                task_parent.append('<option val="">&nbsp;</option>');
+                for (var i=0; i < parent_task_count; i++){
+                    rendered_template = task_parent_template(data[i]);
+                    task_parent.append(rendered_template);
+                    task_dependencies.append(rendered_template)
+                }
+                // trigger another update
+                task_parent.trigger('liszt:updated');
+                // trigger another update
+                task_dependencies.trigger('liszt:updated');
+            });
+        };
+
+        // update now
+        setTimeout(update_task_parent_and_dependency_fields, 100); // TODO: This is not good
+
+        // Updates on parent change
+        task_parent.on('change', function(){
+            update_responsible_field();
+        });
+
+        {# ***************************************************************** #}
+        {# Code #}
+        // update code on name change if it is empty
+        var task_name = $('#task_name');
+        var task_code = $('#task_code');
+        task_name.on('keyup', function(){
+            task_code.val(task_name.val());
+        });
+
+        {# ***************************************************************** #}
+        {# Task Type #}
+        $.getJSON('/types/?target_entity_type=Task').then(function(available_types){
+            var asset_type = $('#task_type').autocomplete({
+                delay: 0,
+                source: available_types,
+                minLength: 0
+            });
+        });
+
+        {# ***************************************************************** #}
+        {# Asset Type #}
+        $.getJSON('/types/?target_entity_type=Asset').then(function(available_types){
+            var asset_type = $('#asset_type').autocomplete({
+                delay: 0,
+                source: available_types,
+                minLength: 0
+            });
+        });
+
+        {# ***************************************************************** #}
+        {# Sequence #}
+        var shot_sequence = $('#shot_sequence');
+        // convert it to a chosen
+        shot_sequence.chosen({
+            inherit_select_classes: true
+        });
+
+        {% raw %}
+        var sequence_template = doT.template('<option id="{{=it.id}}">{{=it.name}}</option>');
+        {% endraw %}
+
+        // and update it on project change
+        var shot_sequence_updater = function(){
+            var url = '/projects/' + task_project.val() + '/sequences/';
+            $.getJSON(url).then(function(data){
+                // remove current options
+                shot_sequence.find('option').remove();
+
+                // add new ones
+                var data_count = data.length;
+                for (var i=0 ; i < data_count; i++){
+                    shot_sequence.append(sequence_template(data[i]));
+                }
+
+                // trigger an update
+                shot_sequence.trigger('liszt:updated');
+            });
+        };
+
+        // update it on initialize
+        setTimeout(shot_sequence_updater, 100); // TODO: this is ugly
+
+        {# ***************************************************************** #}
+        {# Resources and Responsible#}
+        var task_resources = $('#task_resources');
+
+        task_resources.chosen({
+            search_contains: true,
+            enable_split_word_search: true
+        });
+
+        {% raw %}
+        var resource_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
+        {% endraw %}
+
+        var update_resource_field = function(){
+            //
+            // Updates the resource field
+            //
+            var url = '/projects/' + task_project.val() + '/users/?simple=1';
+            $.getJSON(url).then(function(data){
+                // remove current elements
+                task_resources.find('option').remove();
+
+                // append new ones
+                var data_count = data.length;
+                for (var i=0; i < data_count; i++){
+                    task_resources.append(resource_template(data[i]));
+                }
+
+                // update the chosen
+                task_resources.trigger('liszt:updated');
+            });
+        };
+
+        // also update it now
+        setTimeout(update_resource_field, 100); // TODO: update this, this is ugly!
+
+
+
+        {# ***************************************************************** #}
+        {# Responsible#}
+        var task_responsible = $('#task_responsible');
+
+        task_responsible.chosen({
+            search_contains: true,
+            enable_split_word_search: true,
+            allow_single_deselect: true
+        });
+
+        var fill_responsible_field = function(){
+            //
+            // Updates the responsible field
+            //
+            var url = '/projects/' + task_project.val() + '/users/?simple=1';
+            $.getJSON(url).then(function(data){
+                // remove current elements
+                task_responsible.find('option').remove();
+
+                // append new ones
+                var data_count = data.length;
+                // append a single empty option to the responsible field
+                task_responsible.append('<option value=""></option>');
+                for (var i=0; i < data_count; i++){
+                    task_responsible.append(resource_template(data[i]));
+                }
+
+                task_responsible.trigger('liszt:updated');
+            });
+        };
+
+        var update_responsible_field = function(){
+            //
+            // Updates the responsible field according to the selected project
+            // and parent task
+            //
+            
+            // get the selected parent
+            var curr_parent = task_parent.val();
+            // get task info
+            var parent_task_url = '/tasks/' + curr_parent + '/';
+            var project_url = '/projects/' + task_project.val() + '/lead/';
+
+            if (curr_parent && curr_parent !== '\xA0') { // check if it is not '&nbsp' (which is \xA0 in javascript)
+                // there is a parent use its responsible
+                console.debug('there is a parent :', curr_parent);
+                $.getJSON(parent_task_url).then(function(task_data){
+                    task_responsible.val(task_data[0].responsible.id);
+                    task_responsible.trigger('liszt:updated');
+                });
+            } else { // no parent use projects lead
+                console.debug('there is no parent, using project lead!');
+                $.getJSON(project_url).then(function(lead_data){
+                    task_responsible.val(lead_data.id);
+                    task_responsible.trigger('liszt:updated');
+                });
+            }
+
+        };
+
+        // also update it now
+        setTimeout(fill_responsible_field, 100); // TODO: update this, this is ugly!
+
+
+        {# ***************************************************************** #}
+        {# Priority Spinner #}
+        var priority = 500;
+        {% if mode == 'update' %}
+            priority = {{ entity.priority }};
+        {% endif %}
+
+        $('#task_priority').ace_spinner({
+            value: priority,
+            min: 1,
+            max: 1000,
+            step: 1,
+            btn_up_class: 'btn-info',
+            btn_down_class: 'btn-info'
+        }).on('change', function(){
+            // check if it is in the range
+            var curr_value = $(this).val();
+            $(this).val(curr_value <= 1000 ? curr_value >= 1 ? curr_value : 1 : 1000 );
+        });
+
+        {# ***************************************************************** #}
+        {# Submit Button #}
+        $('#task_dialog_submit_button').on('click', function(){
+            var task_form = $('#task_form');
+            if ( task_form.validate() ){
+                $.post(
+                    task_form.attr('action'),
+                    task_form.serialize()
+                );
+            }
+        });
+
+        $('#task_form').validate({
+            errorElement: 'span',
+            errorClass: 'help-inline',
+            focusInvalid: true,
+            rules: {
+                name: {
+                    required: true
+                },
+                code: {
+                    required: true
+                },
+                dependencies: {
+                    required: false
+                },
+                comment: {
+                    required: true
+                },
+                state: {
+                    required: true
+                },
+                platform: {
+                    required: true
+                },
+                subscription: {
+                    required: true
+                },
+                gender: 'required',
+                agree: 'required'
+            },
+
+            messages: {
+            },
+
+            invalidHandler: function (event, validator) { //display error alert on form submit
+                $('.alert-error', $('.login-form')).show();
+            },
+
+            highlight: function (e) {
+                $(e).closest('.control-group').removeClass('info').addClass('error');
+            },
+
+            success: function (e) {
+                $(e).closest('.control-group').removeClass('error').addClass('info');
+                $(e).remove();
+            },
+
+            errorPlacement: function (error, element) {
+                if (element.is(':checkbox') || element.is(':radio')) {
+                    var controls = element.closest('.controls');
+                    if (controls.find(':checkbox,:radio').length > 1) controls.append(error);
+                    else error.insertAfter(element.nextAll('.lbl:eq(0)').eq(0));
+                }
+                else if (element.is('.select2')) {
+                    error.insertAfter(element.siblings('[class*="select2-container"]:eq(0)'));
+                }
+                else if (element.is('.chosen-select')) {
+                    error.insertAfter(element.siblings('[class*="chosen-container"]:eq(0)'));
+                }
+                else error.insertAfter(element);
+            },
+
+            submitHandler: function (form) {
+                form.submit();
+            }
+
+        });
+
+
+        console.debug('finished initializing the task dialog!')
+    }
+</script>
+
+<script type="text/javascript">
+    function destruct_task_dialog(){
+        $('#task_dialog').data('modal', null);
+    }
+</script>

@@ -75,9 +75,6 @@ def create_sequence(request):
     """runs when adding a new sequence
     """
     logged_in_user = get_logged_in_user(request)
-    if not logged_in_user:
-        import auth
-        return auth.logout(request)
 
     name = request.params.get('name')
     code = request.params.get('code')
@@ -134,9 +131,6 @@ def update_sequence(request):
     """runs when adding a new sequence
     """
     logged_in_user = get_logged_in_user(request)
-    if not logged_in_user:
-        import auth
-        return auth.logout(request)
 
     sequence_id = request.params.get('sequence_id')
     sequence = Sequence.query.filter_by(id=sequence_id).first()

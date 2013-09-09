@@ -31,6 +31,13 @@
     {% block pre_header %}
     {% endblock pre_header %}
 
+    <link rel="stylesheet" href='{{ request.static_url("stalker_pyramid:static/ace/css/chosen.css") }}' />
+    <link rel="stylesheet" href='{{ request.static_url("stalker_pyramid:static/ace/css/datepicker.css") }}' />
+    <link rel="stylesheet" href='{{ request.static_url("stalker_pyramid:static/ace/css/bootstrap-timepicker.css") }}' />
+    <link rel="stylesheet" href='{{ request.static_url("stalker_pyramid:static/ace/css/daterangepicker.css") }}' />
+    <link rel="stylesheet" href='{{ request.static_url("stalker_pyramid:static/ace/css/colorpicker.css") }}' />
+
+
     <!--basic styles-->
 
     <link rel="stylesheet" href='{{ request.static_url("stalker_pyramid:static/ace/css/bootstrap.min.css") }}'>
@@ -44,7 +51,7 @@
     <!--page specific plugin styles-->
 
     <link rel="stylesheet"
-          href='{{ request.static_url("stalker_pyramid:static/ace/css/jquery-ui-1.10.3.custom.min.css") }}'>
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/jquery-ui-1.10.3.full.min.css") }}'>
     <link rel="stylesheet"
           href='{{ request.static_url("stalker_pyramid:static/ace/css/jquery.gritter.css") }}'>
 
@@ -81,6 +88,16 @@
             position: static;
             margin-bottom: 5px;
         }
+        
+        .modal-body {
+            max-height: 650px;
+        }
+        
+        {# fix for autocomplete and jquery-ui#}
+        .ui-front {
+            z-index: 1100;
+        }
+        
     </style>
 
     {% block post_header %}
@@ -274,6 +291,29 @@
 {#            </button>#}
 {#        </div>#}
 {#    </div>#}
+    <div id='task_dialog'
+         aria-labelledby="task_dialog_label"
+         class='modal hide fade'
+         tabIndex='-1'
+         role='dialog'
+         aria-hidden="true">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h3 id="project_dialog_label">Task Dialog</h3>
+        </div>
+        <div class="modal-body"></div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-small" data-dismiss="modal">
+                <i class="icon-remove"></i>
+                Cancel
+            </button>
+            <button id='task_dialog_submit_button'
+                    type="button" class="btn btn-small btn-primary">
+                <i class="icon-ok"></i>
+                Ok
+            </button>
+        </div>
+    </div>
 
 
 {% endblock modals%}
@@ -281,18 +321,21 @@
 <!-- JavaScript -->
 {% block scripts %}
     <script src='{{ request.static_url("stalker_pyramid:static/jquery/jquery-2.0.3.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery-ui-1.10.3.full.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.ui.touch-punch.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootstrap.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/ace-elements.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/uncompressed/ace.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootbox.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/stalker/date.format.js") }}'></script>
 
+
     <script type="text/javascript">
         if ("ontouchend" in document) document.write("<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.mobile.custom.min.js") }}'>" + "<" + "/script>");
     </script>
 
 
-
+    {# Ace Settings Box #}
     <script type="text/javascript">
         $(document).ready(function(){
             // hide ace-settings bar
@@ -319,7 +362,39 @@
             });
         });
     </script>
+    
+    {# Chosen Field Updater #}
+    <script>
+        var chosen_field_creator = function(field, url, data_template, chosen_options){
+            // fill field with new json data
+            return $.getJSON(url).then(function(data){
+                // remove current data
+                field.empty();
 
+                // append new options to the select
+                var data_count = data.length;
+                for (var i=0; i < data_count; i++) {
+                    field.append( data_template(data[i]) );
+                }
+
+                // convert it to chosen
+                field.chosen(chosen_options);
+            });
+        };
+    </script>
+
+    {# Task Dialog Initialize #}
+    <script type="text/javascript">
+        $(function(){
+            var task_dialog = $('#task_dialog');
+            task_dialog.on('shown', function(){
+                init_task_dialog();
+            });
+            task_dialog.on('hidden', function(){
+                destruct_task_dialog();
+            });
+        })
+    </script>
 
 {% endblock scripts %}
 

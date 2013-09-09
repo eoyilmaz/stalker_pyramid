@@ -33,3 +33,4 @@ stalker_pyramid.db*
 pyramid.log
 pyramid.pid
 local_production.ini
+local_production2.ini

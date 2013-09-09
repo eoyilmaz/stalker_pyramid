@@ -44,9 +44,6 @@ def create_vacation_dialog(request):
 
     # get logged in user
     logged_in_user = get_logged_in_user(request)
-    if not logged_in_user:
-        import auth
-        return auth.logout(request)
 
     user_id = int(request.matchdict.get('id', -1))
     user = User.query.filter(User.user_id == user_id).first()
@@ -85,9 +82,6 @@ def update_vacation_dialog(request):
 
     # get logged in user
     logged_in_user = get_logged_in_user(request)
-    if not logged_in_user:
-        import auth
-        return auth.logout(request)
 
     vacation_id = request.matchdict.get('id', -1)
     vacation = Vacation.query.filter_by(id=vacation_id).first()
@@ -131,9 +125,6 @@ def create_vacation(request):
     #**************************************************************************
     # collect data
     logged_in_user = get_logged_in_user(request)
-    if not logged_in_user:
-        import auth
-        return auth.logout(request)
 
     type_name = request.params.get('type_name')
     start_date = get_date(request, 'start')
@@ -204,9 +195,6 @@ def update_vacation(request):
     #**************************************************************************
     # collect data
     logged_in_user = get_logged_in_user(request)
-    if not logged_in_user:
-        import auth
-        return auth.logout(request)
 
     type_name = request.params.get('type_name')
     start_date = get_date(request, 'start')

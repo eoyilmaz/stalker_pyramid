@@ -179,8 +179,6 @@
 
 
 {% block extrascripts %}
-    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery-ui-1.10.3.custom.min.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.ui.touch-punch.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/chosen.jquery.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-datepicker.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/moment.min.js") }}'></script>
@@ -244,7 +242,7 @@
             {# FPS Spinner #}
             var fps = 25;
             {% if mode == 'update' %}
-                fps = {{ project.fps }}
+                fps = {{ project.fps }};
             {% endif %}
 
             $('#fps').ace_spinner({
@@ -253,32 +251,8 @@
                 step: 1,
                 btn_up_class: 'btn-info',
                 btn_down_class: 'btn-info'
-            }).on('change', function () {
-                //alert(this.value)
             });
         });
-
-
-
-
-        {# Chosen Field Updater #}
-        var chosen_field_creator = function(field, url, data_template){
-            // fill image format with new json data
-            return $.getJSON(url).then(function(data){
-                // remove current data
-                field.empty();
-
-                // append new options to the select
-                for (var i=0; i<data.length; i++) {
-                    field.append( data_template(data[i]) );
-                }
-
-                // convert it to chosen
-                field.chosen();
-            });
-        };
-
-
 
 
         {# Image Format #}
@@ -295,7 +269,7 @@
             {% if mode == 'update' %}
                 image_format_id = {{ project.image_format.id }};
                 deferred.then(function(){
-                    image_format.val(image_format_id).trigger('chosen:updated');
+                    image_format.val(image_format_id).trigger('liszt:updated');
                 });
             {% endif %}
         });
@@ -316,7 +290,7 @@
             {% if mode == 'update' %}
                 var repository_id = {{ project.repository.id }};
                 deferred.then(function(){
-                    repository.val(repository_id).trigger('chosen:updated');
+                    repository.val(repository_id).trigger('liszt:updated');
                 });
             {% endif %}
         });
@@ -337,7 +311,7 @@
             {% if mode == 'update' %}
                 var structure_id = {{ project.structure.id }};
                 deferred.then(function(){
-                    structure.val(structure_id).trigger('chosen:updated');
+                    structure.val(structure_id).trigger('liszt:updated');
                 });
             {% endif %}
         });
@@ -357,7 +331,7 @@
             {% if mode == 'update' %}
                 var lead_id = {{ project.lead.id }};
                 deferred.then(function() {
-                    lead.val(lead_id).trigger('chosen:updated');
+                    lead.val(lead_id).trigger('liszt:updated');
                 });
             {% endif %}
         });

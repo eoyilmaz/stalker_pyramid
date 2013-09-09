@@ -47,9 +47,6 @@ def create_time_log_dialog(request):
 
     # get logged in user
     logged_in_user = get_logged_in_user(request)
-    if not logged_in_user:
-        import auth
-        return auth.logout(request)
 
     task_id = request.matchdict.get('id', -1)
     task = Task.query.filter(Task.task_id == task_id).first()
@@ -79,9 +76,6 @@ def update_time_log_dialog(request):
 
     # get logged in user
     logged_in_user = get_logged_in_user(request)
-    if not logged_in_user:
-        import auth
-        return auth.logout(request)
 
     time_log_id = request.matchdict.get('id', -1)
     time_log = TimeLog.query.filter_by(id=time_log_id).first()
