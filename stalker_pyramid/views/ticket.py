@@ -41,9 +41,6 @@ def create_ticket_dialog(request):
     """creates a create_ticket_dialog by using the given task
     """
     logged_in_user = get_logged_in_user(request)
-    if not logged_in_user:
-        import auth
-        return auth.logout(request)
 
     entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter(Entity.entity_id==entity_id).first()
@@ -69,9 +66,6 @@ def update_ticket_dialog(request):
 
     # get logged in user
     logged_in_user = get_logged_in_user(request)
-    if not logged_in_user:
-        import auth
-        return auth.logout(request)
 
     ticket_id = request.matchdict.get('id', -1)
     ticket = Ticket.query.filter_by(id=ticket_id).first()
@@ -93,9 +87,6 @@ def create_ticket(request):
     """runs when creating a ticket
     """
     logged_in_user = get_logged_in_user(request)
-    if not logged_in_user:
-        import auth
-        return auth.logout(request)
 
     #**************************************************************************
     # collect data
@@ -145,9 +136,6 @@ def update_ticket(request):
     """runs when updating a ticket
     """
     logged_in_user = get_logged_in_user(request)
-    if not logged_in_user:
-        import auth
-        return auth.logout(request)
 
     ticket_id = request.matchdict.get('id', -1)
     ticket = Ticket.query.filter_by(id=ticket_id).first()
@@ -202,9 +190,6 @@ def update_ticket(request):
 #     """runs when viewing an ticket
 #     """
 #     logged_in_user = get_logged_in_user(request)
-#     if not logged_in_user:
-#         import auth
-#         return auth.logout(request)
 # 
 #     ticket_id = request.matchdict.get('id', -1)
 #     ticket = Ticket.query.filter_by(id=ticket_id).first()

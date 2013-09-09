@@ -74,9 +74,6 @@ def create_department(request):
     """creates a new Department
     """
     logged_in_user = get_logged_in_user(request)
-    if not logged_in_user:
-        import auth
-        return auth.logout(request)
 
     # get params
     name = request.params.get('name')
@@ -115,9 +112,6 @@ def update_department(request):
     """updates an Department
     """
     logged_in_user = get_logged_in_user(request)
-    if not logged_in_user:
-        import auth
-        return auth.logout(request)
 
     logger.debug('called update_department')
     # get params
@@ -207,9 +201,6 @@ def view_entity_department(request):
     """create department dialog
     """
     logged_in_user = get_logged_in_user(request)
-    if not logged_in_user:
-        import auth
-        return auth.logout(request)
 
     entity_id = request.matchdict.get('eid', -1)
     entity = Entity.query.filter_by(id=entity_id).first()

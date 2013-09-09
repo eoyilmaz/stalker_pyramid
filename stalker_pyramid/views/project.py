@@ -41,9 +41,6 @@ def create_project(request):
     """called when adding a new Project
     """
     logged_in_user = get_logged_in_user(request)
-    if not logged_in_user:
-        import auth
-        return auth.logout(request)
 
     came_from = request.params.get('came_from', '/')
 
@@ -133,9 +130,6 @@ def update_project(request):
     """called when updating a Project
     """
     logged_in_user = get_logged_in_user(request)
-    if not logged_in_user:
-        import auth
-        return auth.logout(request)
 
     # parameters
     project_id = request.params.get('project_id', -1)
@@ -223,3 +217,23 @@ def get_projects(request):
         }
         for proj in Project.query.all()
     ]
+
+@view_config(
+    route_name='get_project_lead',
+    renderer='json'
+)
+def get_project_lead(request):
+    """returns the project lead as a json data
+    """
+    project_id = request.matchdict.get('id', -1)
+    project = Project.query.filter(Project.id==project_id).first()
+    lead_data = {}
+    if project:
+        lead = project.lead
+        lead_data = {
+            'id': lead.id,
+            'name': lead.name,
+            'login': lead.login
+        }
+
+    return lead_data

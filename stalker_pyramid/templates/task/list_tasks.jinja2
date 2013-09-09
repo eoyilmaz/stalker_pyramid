@@ -296,7 +296,7 @@
                     <div class="btn-group">
                         <button data-toggle="dropdown"
                                 class="btn btn-small btn-primary dropdown-toggle">
-                            <i class="icon-edit bigger-150"></i>
+                            <i class="icon-edit bigger-120"></i>
                             Create
                             <span class="caret"></span>
                         </button>
@@ -314,23 +314,35 @@
                     </div>
                 {% endif %}
 
+                <div class="btn-group">
+                    <button class="btn btn-small btn-success">
+                        <i class="icon-refresh bigger-120"></i>
+                        Reload
+                    </button>
+                </div>
 
-                <button class="btn btn-small btn-success"><i
-                        class="icon-refresh bigger-150"></i>Reload
-                </button>
-                <button class="btn btn-small btn-success"><i
-                        class="icon-refresh bigger-150"></i>Refresh
-                </button>
+                <div class="btn-group">
+                    <button class="btn btn-small btn-success">
+                        <i class="icon-refresh bigger-120"></i>
+                        Refresh
+                    </button>
+                </div>
 
                 {% if has_permission('Update_Task') %}
-                    <button class="btn btn-small btn-purple"><i
-                            class="icon-cogs bigger-150"></i>Schedule Tasks
-                    </button>
+                    <div class="btn-group">
+                        <button class="btn btn-small btn-purple">
+                            <i class="icon-cogs bigger-120"></i>
+                            Schedule Tasks
+                        </button>
+                    </div>
                 {% endif %}
 
-                <button class="btn btn-small btn-yellow"><i
-                        class="icon-calendar bigger-150"></i>Go To Today
-                </button>
+                <div class="btn-group">
+                    <button class="btn btn-small btn-yellow">
+                        <i class="icon-calendar bigger-120"></i>
+                        Go To Today
+                    </button>
+                </div>
             </div>
             {#        <a id='test' href='#' data-toggle='tooltip' title#}
             {#           data-original-title='test'>Test</a>#}

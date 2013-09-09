@@ -266,9 +266,6 @@ def get_entity_related_data(request):
     """lists the time logs of the given task
     """
     logged_in_user = get_logged_in_user(request)
-    if not logged_in_user:
-        import auth
-        return auth.logout(request)
 
     studio = Studio.query.first()
 

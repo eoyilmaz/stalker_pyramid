@@ -70,9 +70,6 @@ def create_image_format(request):
     """creates an image format
     """
     logged_in_user = get_logged_in_user(request)
-    if not logged_in_user:
-        import auth
-        return auth.logout(request)
 
     name = request.params.get('name')
     width = int(request.params.get('width', -1))
@@ -105,9 +102,6 @@ def update_image_format(request):
     """updates an image format
     """
     logged_in_user = get_logged_in_user(request)
-    if not logged_in_user:
-        import auth
-        return auth.logout(request)
 
     # get params
     imf_id = request.params.get('imf_id', -1)

@@ -46,9 +46,6 @@ def create_version_dialog(request):
 
     # get logged in user
     logged_in_user = get_logged_in_user(request)
-    if not logged_in_user:
-        import auth
-        return auth.logout(request)
 
     task_id = request.matchdict.get('id', -1)
     task = Task.query.filter(Task.task_id==task_id).first()
@@ -81,9 +78,6 @@ def update_version_dialog(request):
     """
     # get logged in user
     logged_in_user = get_logged_in_user(request)
-    if not logged_in_user:
-        import auth
-        return auth.logout(request)
 
     version_id = request.matchdict.get('id', -1)
     version = Version.query.filter_by(id=version_id).first()
@@ -104,9 +98,6 @@ def update_version_dialog(request):
 #     """runs when creating a version
 #     """
 #     logged_in_user = get_logged_in_user(request)
-#     if not logged_in_user:
-#         import auth
-#         return auth.logout(request)
 # 
 #     task_id = request.params.get('task_id')
 #     task = Task.query.filter(Task.id==task_id).first()
@@ -131,9 +122,6 @@ def assign_version(request):
     """assigns the version to the given entity
     """
     logged_in_user = get_logged_in_user(request)
-    if not logged_in_user:
-        import auth
-        return auth.logout(request)
 
     # TODO: this should be renamed to create version
     # collect data
@@ -199,9 +187,6 @@ def update_version(request):
     """runs when updating a version
     """
     logged_in_user = get_logged_in_user(request)
-    if not logged_in_user:
-        import auth
-        return auth.logout(request)
 
     version_id = request.params.get('version_id')
     version = TimeLog.query.filter_by(id=version_id).first()

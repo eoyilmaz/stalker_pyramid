@@ -48,9 +48,10 @@
 
             <div class='form-group {% if has_error %} has-error{% endif %}'>
                 <input type="text" class="input-block-level form-control"
-                       placeholder="Email address" name='login' value='{{ login }}'>
+                       placeholder="Email address" name='login' value='{{ login }}'/>
                 <input type="password" class="input-block-level form-control"
-                       placeholder="Password" name='password' value='{{ password }}'>
+                       placeholder="Password" name='password' value='{{ password }}'/>
+                <input type='hidden' name='came_from' value='{{ came_from }}'/>
             </div>
             {#            <label class="checkbox">#}
             {#              <input type="checkbox" value="remember-me"> Remember me#}

@@ -77,9 +77,6 @@ def create_filename_template(request):
     """creates a new FilenameTemplate
     """
     logged_in_user = get_logged_in_user(request)
-    if not logged_in_user:
-        import auth
-        return auth.logout(request)
 
     # get parameters
     name = request.params.get('name')
@@ -107,9 +104,6 @@ def update_filename_template(request):
     """updates a FilenameTemplate instance
     """
     logged_in_user = get_logged_in_user(request)
-    if not logged_in_user:
-        import auth
-        return auth.logout(request)
 
     name = request.params.get('name')
     path = request.params.get('path')

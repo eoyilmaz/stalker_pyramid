@@ -31,6 +31,13 @@
     {% block pre_header %}
     {% endblock pre_header %}
 
+    <link rel="stylesheet" href='{{ request.static_url("stalker_pyramid:static/ace/css/chosen.css") }}' />
+    <link rel="stylesheet" href='{{ request.static_url("stalker_pyramid:static/ace/css/datepicker.css") }}' />
+    <link rel="stylesheet" href='{{ request.static_url("stalker_pyramid:static/ace/css/bootstrap-timepicker.css") }}' />
+    <link rel="stylesheet" href='{{ request.static_url("stalker_pyramid:static/ace/css/daterangepicker.css") }}' />
+    <link rel="stylesheet" href='{{ request.static_url("stalker_pyramid:static/ace/css/colorpicker.css") }}' />
+
+
     <!--basic styles-->
 
     <link rel="stylesheet" href='{{ request.static_url("stalker_pyramid:static/ace/css/bootstrap.min.css") }}'>
@@ -44,7 +51,7 @@
     <!--page specific plugin styles-->
 
     <link rel="stylesheet"
-          href='{{ request.static_url("stalker_pyramid:static/ace/css/jquery-ui-1.10.3.custom.min.css") }}'>
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/jquery-ui-1.10.3.full.min.css") }}'>
     <link rel="stylesheet"
           href='{{ request.static_url("stalker_pyramid:static/ace/css/jquery.gritter.css") }}'>
 
@@ -81,6 +88,16 @@
             position: static;
             margin-bottom: 5px;
         }
+        
+        .modal-body {
+            max-height: 650px;
+        }
+        
+        {# fix for autocomplete and jquery-ui#}
+        .ui-front {
+            z-index: 1100;
+        }
+        
     </style>
 
     {% block post_header %}
@@ -290,7 +307,8 @@
                 <i class="icon-remove"></i>
                 Cancel
             </button>
-            <button type="button" class="btn btn-small btn-primary">
+            <button id='task_dialog_submit_button'
+                    type="button" class="btn btn-small btn-primary">
                 <i class="icon-ok"></i>
                 Ok
             </button>
@@ -303,7 +321,7 @@
 <!-- JavaScript -->
 {% block scripts %}
     <script src='{{ request.static_url("stalker_pyramid:static/jquery/jquery-2.0.3.min.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery-ui-1.10.3.custom.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery-ui-1.10.3.full.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.ui.touch-punch.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootstrap.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/ace-elements.min.js") }}'></script>
@@ -354,7 +372,8 @@
                 field.empty();
 
                 // append new options to the select
-                for (var i=0; i<data.length; i++) {
+                var data_count = data.length;
+                for (var i=0; i < data_count; i++) {
                     field.append( data_template(data[i]) );
                 }
 
@@ -367,8 +386,12 @@
     {# Task Dialog Initialize #}
     <script type="text/javascript">
         $(function(){
-            $('#task_dialog').on('shown', function(){
+            var task_dialog = $('#task_dialog');
+            task_dialog.on('shown', function(){
                 init_task_dialog();
+            });
+            task_dialog.on('hidden', function(){
+                destruct_task_dialog();
             });
         })
     </script>

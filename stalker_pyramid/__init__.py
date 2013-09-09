@@ -192,6 +192,7 @@ def main(global_config, **settings):
     config.add_route('dialog_create_asset',        'projects/{id}/assets/create/dialog')
 
     config.add_route('get_project_tasks',          'projects/{id}/tasks/') # json
+    config.add_route('get_project_lead',           'projects/{id}/lead/') # json
 
     config.add_route('create_project',             'projects/create')
     config.add_route('update_project',             'projects/{id}/update')
@@ -516,6 +517,10 @@ def main(global_config, **settings):
     # Tag
 
     config.add_route('get_tags', 'tags/')
+
+    # *************************************************************************
+    # Type
+    config.add_route('get_types', 'types/')
 
     config.scan(ignore='stalker.env')
     return config.make_wsgi_app()

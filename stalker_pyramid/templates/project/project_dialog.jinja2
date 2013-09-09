@@ -242,7 +242,7 @@
             {# FPS Spinner #}
             var fps = 25;
             {% if mode == 'update' %}
-                fps = {{ project.fps }}
+                fps = {{ project.fps }};
             {% endif %}
 
             $('#fps').ace_spinner({
@@ -251,8 +251,6 @@
                 step: 1,
                 btn_up_class: 'btn-info',
                 btn_down_class: 'btn-info'
-            }).on('change', function () {
-                //alert(this.value)
             });
         });
 
@@ -271,7 +269,7 @@
             {% if mode == 'update' %}
                 image_format_id = {{ project.image_format.id }};
                 deferred.then(function(){
-                    image_format.val(image_format_id).trigger('chosen:updated');
+                    image_format.val(image_format_id).trigger('liszt:updated');
                 });
             {% endif %}
         });
@@ -292,7 +290,7 @@
             {% if mode == 'update' %}
                 var repository_id = {{ project.repository.id }};
                 deferred.then(function(){
-                    repository.val(repository_id).trigger('chosen:updated');
+                    repository.val(repository_id).trigger('liszt:updated');
                 });
             {% endif %}
         });
@@ -313,7 +311,7 @@
             {% if mode == 'update' %}
                 var structure_id = {{ project.structure.id }};
                 deferred.then(function(){
-                    structure.val(structure_id).trigger('chosen:updated');
+                    structure.val(structure_id).trigger('liszt:updated');
                 });
             {% endif %}
         });
@@ -333,7 +331,7 @@
             {% if mode == 'update' %}
                 var lead_id = {{ project.lead.id }};
                 deferred.then(function() {
-                    lead.val(lead_id).trigger('chosen:updated');
+                    lead.val(lead_id).trigger('liszt:updated');
                 });
             {% endif %}
         });
