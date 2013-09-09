@@ -31,9 +31,13 @@
                 <h2 class="media-heading">{{ department.name }}
                     <small> {{ department.description }}</small>
                 </h2>
+                <a href="/departments/{{ department.id }}/update/dialog" class="btn btn-small btn-primary">
+                    <i class="icon-edit"></i>
 
-                <button class='btn btn-mini btn-info'><i class="icon-edit"></i> Edit Department »
-                </button>
+                    Edit Department
+                    <i class="icon-on-right icon-arrow-right"></i>
+                </a>
+
             </div>
         </div>
     </div>
@@ -43,12 +47,12 @@
                 <ul class="nav nav-tabs">
                     <li class="active">
                         <a href="#department_tasks" data-toggle="tab">
-                          <i class="icon-tasks"></i> Tasks
+                            <i class="icon-tasks"></i> Tasks
                         </a>
                     </li>
                     <li class="">
                         <a href="#department_users" data-toggle="tab">
-                          <i class="icon-user"></i> Users
+                            <i class="icon-user"></i> Users
                         </a>
                     </li>
                 </ul>

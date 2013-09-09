@@ -979,3 +979,38 @@ def view_entity_group(request):
         'projects': projects
 
     }
+
+@view_config(
+    route_name='group_dialog',
+    renderer='templates/auth/group_dialog.jinja2',
+)
+def group_dialog(request):
+    """create group dialog
+    """
+    logged_in_user = get_logged_in_user(request)
+    if not logged_in_user:
+        return logout(request)
+
+    permissions = Permission.query.all()
+
+    entity_types = EntityType.query.all()
+
+    entity_id = request.matchdict.get('eid', -1)
+    entity = Entity.query.filter_by(id=entity_id).first()
+
+
+    studio = Studio.query.first()
+    projects = Project.query.all()
+
+    return {
+        'entity' : entity,
+        'mode': 'CREATE',
+        'actions': defaults.actions,
+        'permissions': permissions,
+        'entity_types': entity_types,
+        'logged_in_user': logged_in_user,
+        'stalker_pyramid': stalker_pyramid,
+        'has_permission': PermissionChecker(request),
+        'studio': studio,
+        'projects': projects
+    }

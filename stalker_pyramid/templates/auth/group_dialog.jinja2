@@ -1,0 +1,353 @@
+{# Stalker Pyramid a Web Base Production Asset Management System
+ Copyright (C) 2009-2013 Erkan Ozgur Yilmaz
+
+ This file is part of Stalker Pyramid.
+
+ This library is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation;
+ version 2.1 of the License.
+
+ This library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Lesser General Public License for more details.
+
+ You should have received a copy of the GNU Lesser General Public
+ License along with this library; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+#}
+{% extends 'base.jinja2' %}
+
+{% block pre_header %}
+
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/chosen.min.css") }}'/>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/datepicker.css") }}'/>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/bootstrap-timepicker.css") }}'/>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/daterangepicker.css") }}'/>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/colorpicker.css") }}'/>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/jquery-ui-1.10.3.custom.min.css") }}'/>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/bootstrap-editable.css") }}'/>
+
+{% endblock pre_header %}
+
+{% block breadcrumbs %}
+
+    {% set page_title=mode.title() %}
+    {% include 'breadcrumbs.jinja2' %}
+
+{% endblock breadcrumbs %}
+
+{% block sidebar %}
+
+    {% if entity %}
+        {% include 'sidebar.jinja2' %}
+    {% endif %}
+
+{% endblock sidebar %}
+
+{% block page_content %}
+
+    {% set page_title=mode.title() %}
+    {% include 'page_header.jinja2' %}
+
+    {% set group=entity %}
+    {% include 'auth/'+mode.title().lower()+'_group_dialog.jinja2' %}
+
+{% endblock page_content %}
+
+{% block extrascripts %}
+
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery-ui-1.10.3.custom.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.ui.touch-punch.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/chosen.jquery.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-datepicker.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/moment.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/daterangepicker.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootstrap-colorpicker.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.autosize-min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.inputlimiter.1.3.1.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.maskedinput.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootstrap-tag.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.validate.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/additional-methods.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/fuelux/fuelux.spinner.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/fuelux/fuelux.wizard.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/additional-methods.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.maskedinput.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/select2.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootstrap-wysiwyg.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/markdown/markdown.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/markdown/bootstrap-markdown.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.hotkeys.min.js") }}'></script>
+
+    <script type="text/javascript">
+
+     $.mask.definitions['~'] = '[+-]';
+        $('#phone').mask('(999) 999-9999');
+
+        jQuery.validator.addMethod("phone", function (value, element) {
+            return this.optional(element) || /^\(\d{3}\) \d{3}\-\d{4}( x\d{1,6})?$/.test(value);
+        }, "Enter a valid phone number.");
+
+    $(document).ready(function () {
+
+        $('#fuelux-wizard').ace_wizard().on('change',function (e, info) {
+            if (info.step == 1) {
+                if (!$('#user_form').valid()) return false;
+            }
+        }).on('finished',function (e) {
+                    bootbox.dialog("Thank you! Your information was successfully saved!", [
+                          {
+                              "label": "OK",
+                              "class": "btn-small btn-primary"
+                          }
+                    ]
+                    );
+                }).on('stepclick', function (e) {
+                    //return false;//prevent clicking on steps
+                });
+    });
+
+    {# Thumbnail #}
+    $(document).ready(function () {
+        $('#group_thumbnail').ace_file_input({
+            style: 'well',
+            btn_choose: 'Change Avatar',
+            btn_change: null,
+            no_icon: 'icon-picture',
+            droppable: true,
+            thumbnail: 'fit'
+        });
+      {# Update Name and login #}
+
+    });
+
+   {% if mode == 'update' %}
+        $(document).ready(function () {
+{#            $('#user_name').val('{{ user.name }}');#}
+{#            $('#user_login').val('{{ user.login }}');#}
+        });
+    {% endif %}
+     function showErrorAlert(reason, detail) {
+            var msg = '';
+            if (reason === 'unsupported-file-type') {
+                msg = "Unsupported format " + detail;
+            }
+            else {
+                console.log("error uploading file", reason, detail);
+            }
+            $('<div class="alert"> <button type="button" class="close" data-dismiss="alert">&times;</button>' +
+                    '<strong>File upload error</strong> ' + msg + ' </div>').prependTo('#alerts');
+        }
+
+      $(function(){
+            $('#group_description').ace_wysiwyg({
+                toolbar: [
+                    'font',
+                    null,
+                    'fontSize',
+                    null,
+                    {name: 'bold', className: 'btn-info'},
+                    {name: 'italic', className: 'btn-info'},
+                    {name: 'strikethrough', className: 'btn-info'},
+                    {name: 'underline', className: 'btn-info'},
+                    null,
+                    {name: 'insertunorderedlist', className: 'btn-success'},
+                    {name: 'insertorderedlist', className: 'btn-success'},
+                    {name: 'outdent', className: 'btn-purple'},
+                    {name: 'indent', className: 'btn-purple'},
+                    null,
+                    {name: 'justifyleft', className: 'btn-primary'},
+                    {name: 'justifycenter', className: 'btn-primary'},
+                    {name: 'justifyright', className: 'btn-primary'},
+                    {name: 'justifyfull', className: 'btn-inverse'},
+                    null,
+                    {name: 'createLink', className: 'btn-pink'},
+                    {name: 'unlink', className: 'btn-pink'},
+                    null,
+                    {name: 'insertImage', className: 'btn-success'},
+                    null,
+                    'foreColor',
+                    null,
+                    {name: 'undo', className: 'btn-grey'},
+                    {name: 'redo', className: 'btn-grey'}
+                ],
+                'wysiwyg': {
+                    fileUploadError: showErrorAlert
+                }
+            }).prev().addClass('wysiwyg-style3');
+        });
+
+
+
+    {# Chosen Field Updater #}
+    var chosen_field_creator = function (field, url, data_template) {
+        // fill image format with new json data
+        return $.getJSON(url).then(function (data) {
+            // remove current data
+            field.empty();
+
+            // append new options to the select
+            for (var i = 0; i < data.length; i++) {
+                field.append(data_template(data[i]));
+            }
+
+            // convert it to chosen
+            field.chosen();
+        });
+    };
+
+
+
+    {# User #}
+    $(document).ready(function () {
+        {% raw %}
+        var user_option_template = doT.template(
+                '<option value={{=it.id}}>{{=it.name}}</option>'
+        );
+        {% endraw %}
+
+        var user = $('#group_lead');
+        var deferred = chosen_field_creator(user, '/users/', user_option_template);
+        {% if mode == 'update' %}
+            {#                var user_id = {{ user.user.id }};#}
+            {#                deferred.then(function () {#}
+            {#                    user.val(user_id).trigger('chosen:updated');#}
+            {#                });#}
+        {% endif %}
+    });
+
+    $(document).ready(function () {
+
+
+        var tag_input = $('#form-field-tags');
+        if (!( /msie\s*(8|7|6)/.test(navigator.userAgent.toLowerCase()))) {
+            tag_input.tag(
+                    {
+                        placeholder: tag_input.attr('placeholder'),
+//enable typeahead by specifying the source array
+                        source: ace.variable_US_STATES//defined in ace.js >> ace.enable_search_ahead
+                    }
+            );
+        }
+        else {
+//display a textarea for old IE, because it doesn't support this plugin or another one I tried!
+            tag_input.after('<textarea id="' + tag_input.attr('id') + '" name="' + tag_input.attr('name') + '" rows="3">' + tag_input.val() + '</textarea>').remove();
+//$('#form-field-tags').autosize({append: "\n"});
+        }
+    });
+
+
+    {# Form #}
+    $(document).ready(function () {
+
+        $('#user_form').validate({
+            errorElement: 'span',
+            errorClass: 'help-inline',
+            focusInvalid: true,
+            rules: {
+                email: {
+                    required: true,
+                    email: true
+                },
+                password: {
+                    required: true,
+                    minlength: 5
+                },
+                password2: {
+                    required: true,
+                    minlength: 5,
+                    equalTo: "#user_password"
+                },
+                name: {
+                    required: true
+                },
+                login: {
+                    required: true
+                },
+                phone: {
+                    required: true,
+                    phone: 'required'
+                },
+                url: {
+                    required: true,
+                    url: true
+                },
+                comment: {
+                    required: true
+                },
+                state: {
+                    required: true
+                },
+                platform: {
+                    required: true
+                },
+                subscription: {
+                    required: true
+                },
+                gender: 'required',
+                agree: 'required'
+            },
+
+            messages: {
+                email: {
+                    required: "Please provide a valid email.",
+                    email: "Please provide a valid email."
+                },
+                password: {
+                    required: "Please specify a password.",
+                    minlength: "Please specify a secure password."
+                },
+                subscription: "Please choose at least one option",
+                gender: "Please choose gender",
+                agree: "Please accept our policy"
+            },
+
+            invalidHandler: function (event, validator) { //display error alert on form submit
+                $('.alert-error', $('.login-form')).show();
+            },
+
+            highlight: function (e) {
+                $(e).closest('.control-group').removeClass('info').addClass('error');
+            },
+
+            success: function (e) {
+                $(e).closest('.control-group').removeClass('error').addClass('info');
+                $(e).remove();
+            },
+
+            errorPlacement: function (error, element) {
+                if (element.is(':checkbox') || element.is(':radio')) {
+                    var controls = element.closest('.controls');
+                    if (controls.find(':checkbox,:radio').length > 1) controls.append(error);
+                    else error.insertAfter(element.nextAll('.lbl:eq(0)').eq(0));
+                }
+                else if (element.is('.select2')) {
+                    error.insertAfter(element.siblings('[class*="select2-container"]:eq(0)'));
+                }
+                else if (element.is('.chosen-select')) {
+                    error.insertAfter(element.siblings('[class*="chosen-container"]:eq(0)'));
+                }
+                else error.insertAfter(element);
+            },
+
+            submitHandler: function (form) {
+                form.submit();
+            },
+
+            invalidHandler: function (form) {
+            }
+        });
+    });
+
+    </script>
+
+{% endblock extrascripts %}

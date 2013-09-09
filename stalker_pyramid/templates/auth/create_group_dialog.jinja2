@@ -2,7 +2,7 @@
     <div class="span8">
         <div class="widget-box">
             <div class="widget-header widget-header-blue widget-header-flat">
-                <h4 class="lighter">New Department</h4>
+                <h4 class="lighter">New Group</h4>
             </div>
 
             <div class="widget-body">
@@ -13,9 +13,9 @@
                           role='form'
                           method="post"
                             {% if mode.title() == 'Create' %}
-                          action="{{ request.route_url(mode.title().lower()+'_department') }}"
+                          action="{{ request.route_url(mode.title().lower()+'_group') }}"
                             {% elif mode.title() == 'Update' %}
-                          action="{{ request.route_url(mode.title().lower()+'_department', id=department.id) }}"
+                          action="{{ request.route_url(mode.title().lower()+'_group', id=group.id) }}"
                             {% endif %}
                             >
 
@@ -23,10 +23,10 @@
                         {# Thumbnail #}
                         <div class="control-group">
                             <label class="span2 control-label"
-                                   for="department_thumbnail">Thumbnail</label>
+                                   for="group_thumbnail">Thumbnail</label>
 
                             <div class="span3">
-                                <input id="department_thumbnail"
+                                <input id="group_thumbnail"
                                        name='thumbnail'
                                        type="file"
                                        class="form-control"
@@ -37,67 +37,43 @@
                         {# Name #}
                         <div class="control-group">
                             <label class="span2 control-label"
-                                   for="department_name">Name</label>
+                                   for="group_name">Name</label>
 
                             <div class="span6">
-                                <input id="department_name"
+                                <input id="group_name"
                                        name='name'
                                        type="text"
                                        class="form-control"
                                        placeholder="Name"
                                         {% if mode.title() == 'Update' %}
-                                       value='{{ department.name }}'
+                                       value='{{ group.name }}'
                                         {% endif %}
                                        required>
-                            </div>
-                        </div>
-                        {# Lead #}
-                        <div class="control-group">
-                            <label for="department_lead"
-                                   class="span2 control-label">Lead</label>
-
-                            <div class="span6">
-                                <select id="department_lead"
-                                        name='lead'
-                                        type="lead"
-                                        class="form-control"
-                                        placeholder="Lead"
-                                        {% if mode.title() == 'Update' %}
-                                        value='{{ department.lead }}'
-                                        {% endif %}
-                                        >
-                                </select>
-
-                            </div>
-                        </div>
-
-                        {# TAGS #}
-                         <div class="control-group">
-                            <label class="control-label" for="form-field-tags">Tag
-                                input</label>
-
-                            <div class="controls">
-                                <input type="text"
-                                       name="tags"
-                                       id="form-field-tags"
-                                       placeholder="Enter tags ..."/>
                             </div>
                         </div>
 
                         {# Description #}
                         <div class="control-group">
-                            <label for="department_description"
+                            <label for="group_description"
                                    class="span2 control-label">Description</label>
 
                             <div class="span10">
                                 <div class="wysiwyg-editor"
-                                     id="department_description"
+                                     id="group_description"
                                      name="description"></div>
 
 
                             </div>
                         </div>
+                        {# Permissions #}
+                        <div class="control-group">
+                            <label for="group_description"
+                                   class="span2 control-label">Permissions</label>
 
+                            <div class="span10">
+                                {% include 'auth/list_permissions.jinja2' %}
+                            </div>
+                        </div>
 
 
                         <input type='hidden' name='came_from'

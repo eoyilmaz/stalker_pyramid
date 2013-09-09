@@ -19,7 +19,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 import datetime
 
-from pyramid.httpexceptions import HTTPOk, HTTPServerError
+from pyramid.httpexceptions import HTTPOk, HTTPServerError, HTTPFound
 from pyramid.view import view_config
 
 from stalker.db import DBSession
@@ -78,8 +78,13 @@ def create_department(request):
         import auth
         return auth.logout(request)
 
+    came_from = request.params.get('came_from', '/')
+
+
     # get params
     name = request.params.get('name')
+
+    logger.debug('department.name %s' % name)
 
     if name:
         description = request.params.get('description')
@@ -91,21 +96,34 @@ def create_department(request):
         tags = get_tags(request)
 
         logger.debug('creating new department')
-        new_department = Department(
-            name=name,
-            description=description,
-            lead=lead,
-            created_by=logged_in_user,
-            tags=tags
-        )
-        DBSession.add(new_department)
-        logger.debug('created new department')
+        logger.debug('department.description  : %s' % description)
+
+
+        try:
+            new_department = Department(
+                name=name,
+                description=description,
+                lead=lead,
+                created_by=logged_in_user,
+                tags=tags
+            )
+            DBSession.add(new_department)
+            logger.debug('created new department')
+            logger.debug('added new user successfully')
+            request.session.flash(
+                'success:Department <strong>%s</strong> is created successfully' % name
+            )
+        except BaseException as e:
+            request.session.flash('error:' + e.message)
+            HTTPFound(location=came_from)
     else:
         logger.debug('not all parameters are in request.params')
         log_param(request, 'name')
         HTTPServerError()
 
-    return HTTPOk()
+    return HTTPFound(
+        location=came_from
+    )
 
 
 @view_config(
