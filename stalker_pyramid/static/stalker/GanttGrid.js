@@ -211,7 +211,7 @@ define([
                     chart: new GanttColumn({
                         scale: 4000000,
                         start: new Date().clearTime().getTime() - 15552000000 * 1.5,
-                        end: new Date().clearTime().getTime() + 15552000000 * 3 + 86400000 - 1,
+                        end: new Date().clearTime().getTime() + 15552000000 * 3 + 86400000 - 1+(6 - new Date().getDay()) * 86400000,
                         sortable: false
                     })
                 }
