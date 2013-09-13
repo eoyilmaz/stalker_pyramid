@@ -1,0 +1,173 @@
+{# Stalker Pyramid a Web Base Production Asset Management System
+ Copyright (C) 2009-2013 Erkan Ozgur Yilmaz
+
+ This file is part of Stalker Pyramid.
+
+ This library is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation;
+ version 2.1 of the License.
+
+ This library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Lesser General Public License for more details.
+
+ You should have received a copy of the GNU Lesser General Public
+ License along with this library; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+#}
+{% extends "base.jinja2" %}
+
+{# BREADCRUMBS #}
+{% block breadcrumbs %}
+
+    {% set page_title='Shots' %}
+    {% include 'breadcrumbs.jinja2' %}
+
+{% endblock breadcrumbs %}
+
+{# SIDEBAR #}
+{% block sidebar %}
+
+    {% include 'sidebar.jinja2' %}
+
+{% endblock sidebar %}
+
+{# MODALS #}
+{% block modals %}
+
+    {% include 'task/task_dialog_template.jinja2' %}
+
+{% endblock modals %}
+
+{# PAGE-CONTENT #}
+{% block page_content %}
+
+    {% set page_title='Shots' %}
+    {% include 'page_header.jinja2' %}
+
+    {% if has_permission('Create_Shot') %}
+        <div class="row-fluid">
+            <div class="btn-toolbar">
+                <div class="btn-group">
+                    <button class="btn btn-small btn-success">
+                        <i class="icon-edit bigger-120"></i>
+                        <a class="white"
+                           data-target="#task_dialog"
+                           data-toggle="modal"
+                           data-keyboard=false
+                           href='{{ request.route_url("project_task_dialog", id=-1, mode='create') }}'>Create
+                        </a>
+                    </button>
+                </div>
+            </div>
+        </div>
+        {#        <div class="space-10"></div>#}
+    {% endif %}
+
+    <div id="loading_spinner" class="well well-sm">
+
+        <div class="inline middle blue bigger-110"><i
+                class="icon-spinner icon-spin orange bigger-125"></i> Loading
+            content...
+        </div>
+    </div>
+
+    <div id="content" class="row-fluid hide">
+
+        <table id="shots_table"
+               class="table table-striped table-bordered table-hover">
+            <thead>
+            <tr>
+                <th>Thumbnail</th>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Completed</th>
+                <th>Created By</th>
+            </tr>
+            </thead>
+            <tbody>
+
+            </tbody>
+        </table>
+    </div>
+
+{% endblock page_content %}
+
+{# EXTRA-SCRIPTS #}
+{% block extrascripts %}
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.dataTables.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.dataTables.bootstrap.js") }}'></script>
+
+
+    {% raw %}
+    <script id="tmpl_shotRow" type="text/x-dot-template">
+        <tr>
+            <td><img style='width:auto; height: 100px;'
+                     class="img-thumbnail"
+                     src="{{=it.thumbnail_full_path }}">
+            </td>
+            <td><a href='{{=it.link}}'>{{=it.name}}</a>
+            </td>
+            <td>{{=it.description}}
+            </td>
+            <td>
+                <div class="progress progress-success">
+                    <div style="width:{{=it.percent_complete}}%"
+                         class="bar">
+                        <span class="pull-left">{{=it.percent_complete}}%</span>
+                    </div>
+                </div>
+                <div>
+                    <span>{{=it.status}}</span>
+                </div>
+            </td>
+            <td><a href='/users/{{=it.created_by_id}}/view'>{{=it.created_by_name}}</a>
+            </td>
+        </tr>
+    </script>
+    {% endraw %}
+
+
+
+    <script>
+        // fill shots table with dynamic data
+
+        $.getJSON('/projects/{{ entity.id }}/shots/').then(function (data) {
+
+            var shots = data;
+            var shot_template = doT.template($('#tmpl_shotRow').html());
+
+            // wait until document is ready
+            $(function () {
+                var i;
+                var table_body = $('#shots_table>tbody');
+                for (i = 0; i < data.length; i++) {
+                    data[i].link = '/projects/{{ entity.id }}/shots/' + data[i].id + '/view';
+                    // fix dates
+                    data[i].date_created = new Date(data[i].date_created).format('yyyy-mm-dd HH:MM');
+
+                    if (data[i].thumbnail_full_path == null) {
+                        data[i].thumbnail_full_path = '{{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}';
+                    }
+                    else {
+                        data[i].thumbnail_full_path = '/' + data[i].thumbnail_full_path;
+                    }
+                    // append it to the table
+                    table_body.append(shot_template(data[i]));
+                }
+
+                var oTable1 = $('#shots_table').dataTable();
+
+                $('#loading_spinner').hide();
+                $('#content').show();
+
+            });
+        });
+
+    </script>
+
+
+{% endblock extrascripts %}
+

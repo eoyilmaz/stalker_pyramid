@@ -1,0 +1,24 @@
+{% extends "base.jinja2" %}
+
+{#SIDEBAR#}
+{% block sidebar %}
+
+    {% include 'sidebar.jinja2' %}
+
+{% endblock sidebar %}
+
+{#BREADCRUMBS#}
+{% block breadcrumbs %}
+
+    {% set page_title='Dashboard' %}
+    {% include 'breadcrumbs.jinja2' %}
+
+{% endblock breadcrumbs %}
+
+{#PAGE-CONTENT#}
+{% block page_content %}
+
+  {% set page_title='Dashboard' %}
+  {% include 'page_header.jinja2' %}
+
+{% endblock page_content %}

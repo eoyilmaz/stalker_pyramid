@@ -1,33 +1,35 @@
-<script type="text/javascript">
-    try {
-        ace.settings.check('breadcrumbs', 'fixed')
-    } catch (e) {
-    }
-</script>
+<div class="breadcrumbs breadcrumbs-fixed"
+     id="breadcrumbs">
+    <script type="text/javascript">
+        try {
+            ace.settings.check('breadcrumbs', 'fixed')
+        } catch (e) {
+        }
+    </script>
 
-<ul class="breadcrumb">
-    <li>
-        <i class="icon-home home-icon"></i>
-        <a href="{{ request.route_url('view_user', id=logged_in_user.id) }}">Home</a>
+    <ul class="breadcrumb">
+        <li>
+            <i class="icon-home home-icon"></i>
+            <a href="{{ request.route_url('view_user', id=logged_in_user.id) }}">Home</a>
             <span class="divider">
               <i class="icon-angle-right arrow-icon"></i>
             </span>
-    </li>
-    {% if entity %}
-    <li>
-        <a href="{{ request.route_url('view_' + entity.entity_type.lower(), id=entity.id) }}">{{ entity.name }}</a>
+        </li>
+        {% if entity %}
+            <li>
+                <a href="{{ request.route_url('view_' + entity.entity_type.lower(), id=entity.id) }}">{{ entity.name }}</a>
             <span class="divider">
               <i class="icon-angle-right arrow-icon"></i>
             </span>
-    </li>
-    {% endif %}
+            </li>
+        {% endif %}
 
-    <li class="active">{{ page_title }}</li>
-</ul>
-<!--.breadcrumb-->
+        <li class="active">{{ page_title }}</li>
+    </ul>
+    <!--.breadcrumb-->
 
-<div class="nav-search" id="nav-search">
-    <form class="form-search">
+    <div class="nav-search" id="nav-search">
+        <form class="form-search">
         <span class="input-icon">
         <input type="text" placeholder="Search ..."
                class="input-small nav-search-input"
@@ -35,6 +37,7 @@
                autocomplete="on">
         <i class="icon-search nav-search-icon"></i>
         </span>
-    </form>
+        </form>
+    </div>
+    <!--#nav-search-->
 </div>
-<!--#nav-search-->

@@ -21,6 +21,7 @@
     <meta charset="utf-8">
     <title>Stalker Pyramid</title>
 
+{#    <meta name="description" content="with draggable and editable events"/>#}
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 
@@ -28,24 +29,33 @@
     {# special case for doT it needs to be the very first script to let Gantt Chart view #}
     <script src='{{ request.static_url("stalker_pyramid:static/doT/doT.min.js") }}'></script>
 
+    {# PRE-HEADER #}
     {% block pre_header %}
     {% endblock pre_header %}
 
-    <link rel="stylesheet" href='{{ request.static_url("stalker_pyramid:static/ace/css/chosen.css") }}' />
-    <link rel="stylesheet" href='{{ request.static_url("stalker_pyramid:static/ace/css/datepicker.css") }}' />
-    <link rel="stylesheet" href='{{ request.static_url("stalker_pyramid:static/ace/css/bootstrap-timepicker.css") }}' />
-    <link rel="stylesheet" href='{{ request.static_url("stalker_pyramid:static/ace/css/daterangepicker.css") }}' />
-    <link rel="stylesheet" href='{{ request.static_url("stalker_pyramid:static/ace/css/colorpicker.css") }}' />
-
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/chosen.css") }}'/>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/datepicker.css") }}'/>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/bootstrap-timepicker.css") }}'/>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/daterangepicker.css") }}'/>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/colorpicker.css") }}'/>
 
     <!--basic styles-->
 
-    <link rel="stylesheet" href='{{ request.static_url("stalker_pyramid:static/ace/css/bootstrap.min.css") }}'>
-    <link rel="stylesheet" href='{{ request.static_url("stalker_pyramid:static/ace/css/bootstrap-responsive.min.css") }}'>
-    <link rel="stylesheet" href='{{ request.static_url("stalker_pyramid:static/ace/css/font-awesome.min.css") }}'>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/bootstrap.min.css") }}'>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/bootstrap-responsive.min.css") }}'>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/font-awesome.min.css") }}'>
 
     <!--[if IE 7]>
-    <link rel="stylesheet" href='{{ request.static_url("stalker_pyramid:static/ace/css/font-awesome-ie7.min.css") }}'/>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/font-awesome-ie7.min.css") }}'/>
     <![endif]-->
 
     <!--page specific plugin styles-->
@@ -55,18 +65,22 @@
     <link rel="stylesheet"
           href='{{ request.static_url("stalker_pyramid:static/ace/css/jquery.gritter.css") }}'>
 
-
     <!--fonts-->
     <link rel="stylesheet"
           href='{{ request.static_url("stalker_pyramid:static/stalker/css/stalker_bootstrap.css") }}'>
-
+{#    <link rel="stylesheet"#} {#
+          href='{{ request.static_url("stalker_pyramid:static/stalker/css/ace-fonts.css") }}'/#}
     <!--ace styles-->
-    <link rel="stylesheet" href='{{ request.static_url("stalker_pyramid:static/ace/css/ace.min.css") }}'>
-    <link rel="stylesheet" href='{{ request.static_url("stalker_pyramid:static/ace/css/ace-responsive.min.css") }}'>
-    <link rel="stylesheet" href='{{ request.static_url("stalker_pyramid:static/ace/css/ace-skins.min.css") }}'>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/ace.min.css") }}'>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/ace-responsive.min.css") }}'>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/ace-skins.min.css") }}'>
 
     <!--[if lte IE 8]>
-    <link rel="stylesheet" href='{{ request.static_url("stalker_pyramid:static/ace/css/ace-ie.min.css") }}'/>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/ace-ie.min.css") }}'/>
     <![endif]-->
 
 
@@ -88,24 +102,27 @@
             position: static;
             margin-bottom: 5px;
         }
-        
+
         .modal-body {
             max-height: 650px;
         }
-        
+
         {# fix for autocomplete and jquery-ui#}
         .ui-front {
             z-index: 1100;
         }
-        
+
     </style>
 
+
+    {# POST-HEADER #}
     {% block post_header %}
     {% endblock post_header %}
 
     <!--ace settings handler-->
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/uncompressed/ace-extra.js") }}'></script>
 
+    {# TEMPLATES #}
     {% block templates %}
     {% endblock templates %}
 
@@ -115,14 +132,14 @@
 
 {% for message in request.session.pop_flash() %}
     {% set message_type=message.split(':')[0] %}
-    {% set message_content=message.split(':')[1]%}
-    <div class="flash-message alert alert-{{message_type}} text-center hide">
+    {% set message_content=message.split(':')[1] %}
+    <div class="flash-message alert alert-{{ message_type }} text-center hide">
         <button type="button" class="close" data-dismiss="alert">
             <i class="icon-remove"></i>
         </button>
         <p>
             <strong>
-{#                <i class="icon-ok"></i>#}
+                {#                <i class="icon-ok"></i>#}
                 {{ message_type.title() }}!
             </strong>
             {{ message_content|safe }}
@@ -130,127 +147,74 @@
     </div>
 {% endfor %}
 
+{# CONTENT #}
 {% block content %}
 
+    {# NAV-BAR #}
     {% block navbar %}
         {% include 'navbar.jinja2' %}
     {% endblock navbar %}
 
     <div class="main-container container-fluid">
+
+        {# MAIN-CONTAINER #}
         {% block main_container %}
 
-            <div class='sidebar sidebar-fixed' id="sidebar">
-                <script type="text/javascript">
-                    try {
-                        ace.settings.check('sidebar', 'fixed')
-                        ace.settings.check('sidebar', 'collapsed')
-                    } catch (e) {
-                    }
-                </script>
-                {% block sidebar %}
-                {% endblock sidebar %}
-            </div>
+            {# SIDEBAR #}
+            {% block sidebar %}
+            {% endblock sidebar %}
 
-            
+            {# MAIN-CONTENT #}
             {% block main_content %}
-            <div class="main-content">
-                <div class="breadcrumbs breadcrumbs-fixed" id="breadcrumbs">
-{#                    {% include 'breadcrumbs.jinja2' %}#}
+                <div class="main-content">
+
+                    {# BREADCRUMBS #}
                     {% block breadcrumbs %}
                     {% endblock breadcrumbs %}
-                </div>
 
-                <div class='page-content'>
-                    {% block page_content %}
-                    {% endblock page_content %}
 
-                    <div class="ace-settings-container"
-                         id="ace-settings-container">
-                        <div class="btn btn-app btn-mini btn-warning ace-settings-btn open"
-                             id="ace-settings-btn">
-                            <i class="icon-cog bigger-150"></i>
-                        </div>
+                    <div class='page-content'>
 
-                        <div class="ace-settings-box open" id="ace-settings-box">
-                            <div>
-                                <div class="pull-left">
-                                    <select id="skin-colorpicker" class="hide" style="display: none;">
-                                        <option data-skin="default" value="#438EB9">#438EB9</option>
-                                        <option data-skin="skin-1" value="#222A2D">#222A2D</option>
-                                        <option data-skin="skin-2" value="#C6487E">#C6487E</option>
-                                        <option data-skin="skin-3" value="#D0D0D0">#D0D0D0</option>
-                                    </select>
+                        {# PAGE-CONTENT #}
+                        {% block page_content %}
+                        {% endblock page_content %}
 
-{#                                    <div class="dropdown dropdown-colorpicker">#}
-{#                                        <a data-toggle="dropdown"#}
-{#                                           class="dropdown-toggle" href="#">#}
-{#                                            <span class="btn-colorpicker"#}
-{#                                                  style="background-color:#438EB9"></span>#}
-{#                                        </a>#}
-{#                                        <ul class="dropdown-menu dropdown-caret">#}
-{#                                            <li>#}
-{#                                                <a class="colorpick-btn selected"#}
-{#                                                   href="#"#}
-{#                                                   style="background-color:#438EB9;"#}
-{#                                                   data-color="#438EB9"></a>#}
-{#                                            </li>#}
-{#                                            <li><a class="colorpick-btn"#}
-{#                                                   href="#"#}
-{#                                                   style="background-color:#222A2D;"#}
-{#                                                   data-color="#222A2D"></a>#}
-{#                                            </li>#}
-{#                                            <li><a class="colorpick-btn"#}
-{#                                                   href="#"#}
-{#                                                   style="background-color:#C6487E;"#}
-{#                                                   data-color="#C6487E"></a>#}
-{#                                            </li>#}
-{#                                            <li><a class="colorpick-btn"#}
-{#                                                   href="#"#}
-{#                                                   style="background-color:#D0D0D0;"#}
-{#                                                   data-color="#D0D0D0"></a>#}
-{#                                            </li>#}
-{#                                        </ul>#}
-{#                                    </div>#}
-                                </div>
-                                <span>&nbsp; Choose Skin</span>
-                            </div>
-
-{#                            <div>#}
-{#                                <input type="checkbox"#}
-{#                                       class="ace ace-checkbox-2"#}
-{#                                       id="ace-settings-navbar">#}
-{#                                <label class="lbl" for="ace-settings-navbar">#}
-{#                                    Fixed Navbar</label>#}
-{#                            </div>#}
+{#                        <div class="ace-settings-container"#}
+{#                         id="ace-settings-container">#}
+{#                        <div class="btn btn-app btn-mini btn-warning ace-settings-btn open"#}
+{#                             id="ace-settings-btn">#}
+{#                            <i class="icon-cog bigger-150"></i>#}
+{#                        </div>#}
 {##}
+{#                        <div class="ace-settings-box open"#}
+{#                             id="ace-settings-box">#}
 {#                            <div>#}
-{#                                <input type="checkbox"#}
-{#                                       class="ace ace-checkbox-2"#}
-{#                                       id="ace-settings-sidebar">#}
-{#                                <label class="lbl" for="ace-settings-sidebar">#}
-{#                                    Fixed Sidebar</label>#}
+{#                                <div class="pull-left">#}
+{#                                    <select id="skin-colorpicker"#}
+{#                                            class="hide"#}
+{#                                            style="display: none;">#}
+{#                                        <option data-skin="default"#}
+{#                                                value="#438EB9">#438EB9#}
+{#                                        </option>#}
+{#                                        <option data-skin="skin-1"#}
+{#                                                value="#222A2D">#222A2D#}
+{#                                        </option>#}
+{#                                        <option data-skin="skin-2"#}
+{#                                                value="#C6487E">#C6487E#}
+{#                                        </option>#}
+{#                                        <option data-skin="skin-3"#}
+{#                                                value="#D0D0D0">#D0D0D0#}
+{#                                        </option>#}
+{#                                    </select>#}
+{#                                </div>#}
+{#                                <span>&nbsp; Choose Skin</span>#}
 {#                            </div>#}
-{##}
-{#                            <div>#}
-{#                                <input type="checkbox"#}
-{#                                       class="ace ace-checkbox-2"#}
-{#                                       id="ace-settings-breadcrumbs">#}
-{#                                <label class="lbl"#}
-{#                                       for="ace-settings-breadcrumbs"> Fixed#}
-{#                                                                       Breadcrumbs</label>#}
-{#                            </div>#}
-{##}
-{#                            <div>#}
-{#                                <input type="checkbox"#}
-{#                                       class="ace ace-checkbox-2"#}
-{#                                       id="ace-settings-rtl">#}
-{#                                <label class="lbl" for="ace-settings-rtl">#}
-{#                                    Right To Left (rtl)</label>#}
-{#                            </div>#}
-                        </div>
+{#                        </div>#}
+{#                    </div>#}
+
                     </div>
+
                 </div>
-            </div>
             {% endblock main_content %}
 
 
@@ -258,67 +222,23 @@
         {% endblock main_container %}
     </div>
 
-    {#    {% block footer %}#}
-    {#        <footer>#}
-    {#            <div id="footer" class='footer'>#}
-    {#                <div class="container muted credit">#}
-    {#                    <div class="text-center" style='float: left;'>Stalker Pyramid v{{ stalker_pyramid.__version__ }} &copy; 2009-2013 Erkan Ozgur Yilmaz.</div>#}
-    {#                    <div class='text-right' style="float:right;"><a href='http://www.glyphicons.com/'>GLYPHICONS.com</a></div>#}
+    {#        {% block footer %}#}
+    {#            <footer>#}
+    {#                <div id="footer" class='footer'>#}
+    {#                    <div class="container muted credit">#}
+    {#                        <div class="text-center" style='float: left;'>Stalker Pyramid v{{ stalker_pyramid.__version__ }} &copy; 2009-2013 Erkan Ozgur Yilmaz.</div>#}
+    {#                        <div class='text-right' style="float:right;"><a href='http://www.glyphicons.com/'>GLYPHICONS.com</a></div>#}
+    {#                    </div>#}
     {#                </div>#}
-    {#            </div>#}
-    {#        </footer>#}
-    {#    {% endblock footer %}#}
+    {#            </footer>#}
+    {#        {% endblock footer %}#}
 {% endblock content %}
 
-
+{# MODALS #}
 {% block modals %}
-    
-    {# Project Dialog #}
-{#    <div id='project_dialog'  aria-labelledby="project_dialog_label" class='modal hide fade' tabIndex='-1' role='dialog' aria-hidden="true">#}
-{#        <div class="modal-header">#}
-{#            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>#}
-{#            <h3 id="project_dialog_label">Project Dialog</h3>#}
-{#        </div>#}
-{#        <div class="modal-body"></div>#}
-{#        <div class="modal-footer">#}
-{#            <button type="button" class="btn btn-small" data-dismiss="modal">#}
-{#                <i class="icon-remove"></i>#}
-{#                Cancel#}
-{#            </button>#}
-{#            <button type="button" class="btn btn-small btn-primary">#}
-{#                <i class="icon-ok"></i>#}
-{#                Ok#}
-{#            </button>#}
-{#        </div>#}
-{#    </div>#}
-    <div id='task_dialog'
-         aria-labelledby="task_dialog_label"
-         class='modal hide fade'
-         tabIndex='-1'
-         role='dialog'
-         aria-hidden="true">
-        <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-            <h3 id="project_dialog_label">Task Dialog</h3>
-        </div>
-        <div class="modal-body"></div>
-        <div class="modal-footer">
-            <button type="button" class="btn btn-small" data-dismiss="modal">
-                <i class="icon-remove"></i>
-                Cancel
-            </button>
-            <button id='task_dialog_submit_button'
-                    type="button" class="btn btn-small btn-primary">
-                <i class="icon-ok"></i>
-                Ok
-            </button>
-        </div>
-    </div>
+{% endblock modals %}
 
-
-{% endblock modals%}
-
-<!-- JavaScript -->
+{# SCRIPTS #}
 {% block scripts %}
     <script src='{{ request.static_url("stalker_pyramid:static/jquery/jquery-2.0.3.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery-ui-1.10.3.full.min.js") }}'></script>
@@ -337,7 +257,7 @@
 
     {# Ace Settings Box #}
     <script type="text/javascript">
-        $(document).ready(function(){
+        $(document).ready(function () {
             // hide ace-settings bar
             $('#ace-settings-box').toggleClass('open');
         });
@@ -346,35 +266,36 @@
 
     {# Pop Flash Messages #}
     <script type='text/javascript'>
-        $(function(){
+        $(function () {
             $('.flash-message').slideToggle();
         });
     </script>
-    
+
     {# Add came_from attribute to all a's #}
     <script type='text/javascript'>
-        $(function(){
-            $('a.dialog').each(function(i){
+        $(function () {
+            $('a.dialog').each(function (i) {
                 var href = this.getAttribute('href');
-                if (href !='#'){
+                if (href != '#') {
                     this.setAttribute('href', href + '?came_from={{ request.path }}')
                 }
             });
         });
     </script>
-    
+
     {# Chosen Field Updater #}
     <script>
-        var chosen_field_creator = function(field, url, data_template, chosen_options){
+        var chosen_field_creator = function (field, url, data_template,
+                                             chosen_options) {
             // fill field with new json data
-            return $.getJSON(url).then(function(data){
+            return $.getJSON(url).then(function (data) {
                 // remove current data
                 field.empty();
 
                 // append new options to the select
                 var data_count = data.length;
-                for (var i=0; i < data_count; i++) {
-                    field.append( data_template(data[i]) );
+                for (var i = 0; i < data_count; i++) {
+                    field.append(data_template(data[i]));
                 }
 
                 // convert it to chosen
@@ -385,12 +306,12 @@
 
     {# Task Dialog Initialize #}
     <script type="text/javascript">
-        $(function(){
+        $(function () {
             var task_dialog = $('#task_dialog');
-            task_dialog.on('shown', function(){
+            task_dialog.on('shown', function () {
                 init_task_dialog();
             });
-            task_dialog.on('hidden', function(){
+            task_dialog.on('hidden', function () {
                 destruct_task_dialog();
             });
         })
@@ -399,10 +320,9 @@
 {% endblock scripts %}
 
 
-
+{# EXTRA-SCRIPTS #}
 {% block extrascripts %}
 {% endblock extrascripts %}
-
 
 
 </body>

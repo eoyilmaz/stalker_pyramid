@@ -5,6 +5,12 @@
    {% include 'task/list_tasks_preheader.jinja2' %}
 {% endblock pre_header %}
 
+{% block modals %}
+
+     {% include 'task/task_dialog_template.jinja2' %}
+
+{% endblock modals%}
+
 {% block post_header %}
     <style>
         /* Fix expando triangle after bootstrap */

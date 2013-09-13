@@ -1,0 +1,271 @@
+<div class="row-fluid">
+
+<div class="span5">
+    <div class="widget-box">
+        <div class="widget-header widget-header-small header-color-grey">
+            <h4 class="smaller">
+                <i class="icon-info-sign"></i>
+                Basic Information
+            </h4>
+        </div>
+        <div class="widget-body">
+            <div class="widget-main">
+                {% include 'auth/dialog/user_basic_information_form.jinja2' %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="span7">
+<div class="row-fluid">
+    <div class="hr hr6 hr-dotted"></div>
+    <div class="space-16"></div>
+    <div class="infobox-container">
+        <div class="infobox infobox-purple  ">
+            <div class="infobox-icon">
+                <i class="icon-ticket"></i>
+            </div>
+
+            <div class="infobox-data">
+                <span class="infobox-data-number">{{ user.open_tickets | count }}</span>
+
+                <div class="infobox-content">open tickets</div>
+            </div>
+            <div class="badge badge-transparent">
+                <a href="#">Edit
+                    <i class="icon-wrench red"></i>
+                </a>
+            </div>
+
+        </div>
+
+        <div class="infobox infobox-blue2  ">
+            <div class="infobox-icon">
+                <i class="icon-tasks"></i>
+            </div>
+
+
+            <div class="infobox-data">
+                <span class="infobox-data-number">{{ user.tasks | count }}</span>
+
+                <div class="infobox-content">tasks</div>
+            </div>
+            <div class="badge badge-transparent">
+                <a href="#">Edit
+                    <i class="icon-wrench red"></i>
+                </a>
+            </div>
+        </div>
+        <div class="infobox infobox-orange">
+            <div class="infobox-icon">
+                <i class="icon-sun"></i>
+            </div>
+
+            <div class="infobox-data">
+                <span class="infobox-data-number">{{ user.vacations | count }}</span>
+
+                <div class="infobox-content">vacations</div>
+            </div>
+            <div class="badge badge-transparent">
+                <a href="#">Edit
+                    <i class="icon-wrench red"></i>
+                </a>
+            </div>
+        </div>
+
+
+        <div class="hr hr32 hr-dotted"></div>
+
+
+    </div>
+</div>
+<div class="row-fluid">
+    <div class="span4">
+        <div class="widget-box">
+            <div class="widget-header widget-header-small header-color-green">
+                <h4 class="smaller">
+                    <i class="icon-folder-close-alt"></i>
+                    Projects
+                </h4>
+                {% if has_permission('Update_Project') %}
+                    <div class="widget-toolbar action-buttons">
+                        <a href="#" data-action="reload">
+                            <i class="icon-refresh white"></i>
+                        </a>
+
+                        &nbsp;
+                        <a href="#" class="white" data-rel="tooltip" title=""
+                           data-original-title="Default">
+                            <i class="icon-plus"></i>
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="widget-body">
+                <div class="widget-main">
+                    {% if user.projects %}
+                        {% for project in user.projects %}
+                            <div class="profile-activity clearfix">
+                                <div>
+                                    <img class="pull-left"
+                                         src="{%- if project.thumbnail -%}
+                                      /{{ project.thumbnail.full_path }}
+                                  {%- else -%}
+                                      {{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}
+                                  {%- endif -%}">
+                                    <a class="user"
+                                       href="{{ request.route_url('view_project', id=project.id) }}">{{ project.name }} </a>
+
+                                    <div class="time">
+                                        <i class="icon-user bigger-110"></i>
+                                        {{ project.users | count }} users
+                                    </div>
+                                </div>
+
+                                <div class="tools action-buttons">
+                                    <a href="#" class="blue">
+                                        <i class="icon-pencil bigger-125"></i>
+                                    </a>
+
+                                    <a href="#" class="red">
+                                        <i class="icon-remove bigger-125"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="profile-activity clearfix">
+                            No Project to list
+                        </div>
+                    {% endif %}
+
+
+                </div>
+            </div>
+        </div>
+        <div class="space-6"></div>
+    </div>
+
+    <div class="span4">
+        <div class="widget-box">
+            <div class="widget-header widget-header-small header-color-blue">
+
+                <h4 class="smaller">
+                    <i class="icon-group"></i>
+                    Departments
+                </h4>
+                {% if has_permission('Update_Department') %}
+                    <div class="widget-toolbar action-buttons">
+                        <a href="#" data-action="reload">
+                            <i class="icon-refresh"></i>
+                        </a>
+
+                        &nbsp;
+                        <a href="#" class="white">
+                            <i class="icon-plus"></i>
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="widget-body">
+                <div class="widget-main">
+
+                    {% for department in user.departments %}
+                        <div class="profile-activity clearfix">
+                            <div>
+                                <img class="pull-left"
+                                     src="{%- if department.thumbnail -%}
+                                        /{{ department.thumbnail.full_path }}
+                                    {%- else -%}
+                                        {{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}
+                                    {%- endif -%}">
+                                <a class="user"
+                                   href="{{ request.route_url('view_entity_department', eid=user.id, id=department.id) }}">{{ department.name }}</a>
+
+                                <div class="time">
+                                    <i class="icon-user bigger-110"></i>
+                                    {{ department.users | count }} users
+                                </div>
+                            </div>
+
+                            <div class="tools action-buttons">
+                                <a href="#" class="blue">
+                                    <i class="icon-pencil bigger-125"></i>
+                                </a>
+
+                                <a href="#" class="red">
+                                    <i class="icon-remove bigger-125"></i>
+                                </a>
+                            </div>
+                        </div>
+                    {% endfor %}
+
+
+                </div>
+            </div>
+        </div>
+        <div class="space-6"></div>
+    </div>
+    <div class="span4">
+        <div class="widget-box">
+            <div class="widget-header widget-header-small header-color-purple">
+
+                <h4 class="smaller">
+                    <i class="icon-key"></i>
+                    Groups
+                </h4>
+                {% if has_permission('Update_Group') %}
+                    <div class="widget-toolbar action-buttons">
+                        <a href="#" data-action="reload">
+                            <i class="icon-refresh"></i>
+                        </a>
+
+                        &nbsp;
+                        <a href="#" class="white">
+                            <i class="icon-plus"></i>
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="widget-body">
+                <div class="widget-main">
+
+                    {% for group in user.groups %}
+                        <div class="profile-activity clearfix">
+                            <div>
+                                <img class="pull-left"
+                                     src="{%- if group.thumbnail -%}
+                                      /{{ group.thumbnail.full_path }}
+                                  {%- else -%}
+                                      {{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}
+                                  {%- endif -%}">
+                                <a class="user"
+                                   href="{{ request.route_url('view_entity_group', eid=user.id, id=group.id) }}">{{ group.name }}</a>
+
+                                <div class="time">
+                                    <i class="icon-user bigger-110"></i>
+                                    {{ group.users | count }} users
+                                </div>
+                            </div>
+
+                            <div class="tools action-buttons">
+                                <a href="#" class="blue">
+                                    <i class="icon-pencil bigger-125"></i>
+                                </a>
+
+                                <a href="#" class="red">
+                                    <i class="icon-remove bigger-125"></i>
+                                </a>
+                            </div>
+                        </div>
+                    {% endfor %}
+
+
+                </div>
+            </div>
+        </div>
+        <div class="space-6"></div>
+    </div>
+</div>
+</div>
+</div>

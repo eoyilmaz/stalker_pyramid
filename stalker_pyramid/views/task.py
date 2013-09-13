@@ -772,6 +772,8 @@ def create_task_dialog(request):
     entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
 
+    entity_type = request.matchdict.get('etype', -1)
+
     parent = None
     project = None
     if entity:

@@ -29,45 +29,7 @@ import stalker_pyramid
 from stalker_pyramid.views import PermissionChecker, get_logged_in_user, milliseconds_since_epoch
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.WARNING)
-
-
-@view_config(
-    route_name='dialog_create_asset',
-    renderer='templates/asset/dialog_create_asset.jinja2'
-)
-def create_asset_dialog(request):
-    """fills the create asset dialog
-    """
-    project_id = request.matchdict['id']
-    project = Project.query.filter_by(id=project_id).first()
-    asset_types = Type.query.filter_by(target_entity_type='Asset').all()
-
-    return {
-        'mode': 'CREATE',
-        'has_permission': PermissionChecker(request),
-        'project': project,
-        'types': asset_types
-    }
-
-@view_config(
-    route_name='dialog_update_asset',
-    renderer='templates/asset/dialog_create_asset.jinja2'
-)
-def update_asset_dialog(request):
-    """fills the update asset dialog
-    """
-    asset_id = request.matchdict['id']
-    asset = Asset.query.filter_by(id=asset_id).first()
-    asset_types = Type.query.filter_by(target_entity_type='Asset').all()
-
-    return {
-        'mode': 'UPDATE',
-        'has_permission': PermissionChecker(request),
-        'project': asset.project,
-        'types': asset_types,
-        'asset': asset
-    }
+logger.setLevel(logging.DEBUG)
 
 
 @view_config(
@@ -76,6 +38,8 @@ def update_asset_dialog(request):
 def create_asset(request):
     """creates a new Asset
     """
+    logger.debug('***create_asset method starts ***')
+
     logged_in_user = get_logged_in_user(request)
 
     # get params
@@ -148,6 +112,8 @@ def create_asset(request):
 def update_asset(request):
     """updates an Asset
     """
+
+    logger.debug('***update_asset method starts ***')
     logged_in_user = get_logged_in_user(request)
 
     # get params
@@ -193,6 +159,11 @@ def update_asset(request):
 
 
 
+
+@view_config(
+    route_name='get_entity_assets',
+    renderer='json'
+)
 @view_config(
     route_name='get_project_assets',
     renderer='json'
@@ -201,20 +172,26 @@ def get_assets(request):
     """returns all the Assets of a given Project
     """
     # TODO: this should be paginated
+    logger.debug('*** get_assets method starts ***')
+
     project_id = request.matchdict.get('id', -1)
+
     return [
         {
+            'thumbnail_full_path': asset.thumbnail.full_path if asset.thumbnail else None,
             'id': asset.id,
             'name': asset.name,
             'code': asset.code,
-            'type': asset.type.name,
+            'type_name': asset.type.name,
+            'type_id': asset.type.id,
             'status': asset.status.name,
             'status_bg_color': asset.status.bg_color,
             'status_fg_color': asset.status.fg_color,
-            'user_id': asset.created_by.id,
-            'user_name': asset.created_by.name,
+            'created_by_id': asset.created_by.id,
+            'created_by_name': asset.created_by.name,
             'description': asset.description,
-            'thumbnail_path': asset.thumbnail.full_path if asset.thumbnail else None
+            'date_created':milliseconds_since_epoch(asset.date_created),
+            'percent_complete': asset.percent_complete
         }
         for asset in Asset.query.filter_by(project_id=project_id).all()
     ]
@@ -227,6 +204,7 @@ def get_assets(request):
 def get_asset_types(request):
     """returns all the Assets of a given Project
     """
+    logger.debug('*** get_asset_types method starts ***')
     return [
         {
             'id': asset_type.id,

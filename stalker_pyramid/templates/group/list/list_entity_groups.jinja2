@@ -1,0 +1,46 @@
+{% extends "base.jinja2" %}
+
+{# BREADCRUMBS #}
+{% block breadcrumbs %}
+  {% if entity %}
+        {% set groups=entity.groups %}
+    {% else %}
+        {% set entity=studio %}
+    {% endif %}
+    {% set page_title='Groups' %}
+    {% include 'breadcrumbs.jinja2' %}
+{% endblock breadcrumbs %}
+
+{# SIDEBAR #}
+{% block sidebar %}
+  {% if entity %}
+        {% set groups=entity.groups %}
+    {% else %}
+        {% set entity=studio %}
+    {% endif %}
+
+    {% include 'sidebar.jinja2' %}
+{% endblock sidebar %}
+
+{# PAGE-CONTENT #}
+{% block page_content %}
+    {% if entity %}
+        {% set groups=entity.groups %}
+    {% else %}
+        {% set entity=studio %}
+    {% endif %}
+
+    {% set page_title='Groups' %}
+    {% include 'page_header.jinja2' %}
+
+    <div class="row-fluid">
+        <ul class="thumbnails">
+            {% for group in groups %}
+                <li class="span2">
+                    {% include 'group/list/list_item_group.jinja2' %}
+                </li>
+            {% endfor %}
+
+        </ul>
+    </div>
+{% endblock page_content %}

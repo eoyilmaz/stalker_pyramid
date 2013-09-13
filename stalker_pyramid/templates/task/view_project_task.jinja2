@@ -1,22 +1,32 @@
 {% extends "base.jinja2" %}
 
-{% block breadcrumbs %}
-    {% set listed_type=task.plural_class_name %}
-    {% set page_title=task.name %}
-    {% include 'breadcrumbs_detail.jinja2' %}
-{% endblock breadcrumbs %}
-
-{% block sidebar %}
-    {% include 'sidebar.jinja2' %}
-{% endblock sidebar %}
-
+{#PRE-HEADER #}
 {% block pre_header %}
+
     {% include 'task/list_tasks_preheader.jinja2' %}
 
-    <link rel="stylesheet" href="/static/ace/css/dropzone.css" />
+    <link rel="stylesheet" href='request.static_url("stalker_pyramid:static/ace/css/dropzone.css")' />
 
 {% endblock pre_header %}
 
+{#SIDEBAR#}
+{% block sidebar %}
+
+    {% include 'sidebar.jinja2' %}
+
+{% endblock sidebar %}
+
+{#BREADCRUMBS#}
+{% block breadcrumbs %}
+
+    {% set listed_type=task.plural_class_name %}
+    {% set page_title=task.name %}
+    {% include 'breadcrumbs_detail.jinja2' %}
+
+{% endblock breadcrumbs %}
+
+
+{#PAGE-CONTENT#}
 {% block page_content %}
     <div class="row-fluid">
 
@@ -28,7 +38,7 @@
                      src="{%- if task.thumbnail -%}
                     /{{ task.thumbnail.full_path }}
                 {%- else -%}
-                    {{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_Team.jpg") }}
+                    {{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}
                 {%- endif -%}">
             </a>
 
@@ -151,15 +161,11 @@
         </div>
     </div>
 
-
-
 {% endblock page_content %}
 
+{#EXTRA-SCRIPTS#}
 {% block extrascripts %}
-
-    <script src="/static/ace/js/dropzone.min.js"></script>
-
-
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/dropzone.min.js") }}'></script>
     <!--inline scripts related to this page-->
 
     <script type="text/javascript">

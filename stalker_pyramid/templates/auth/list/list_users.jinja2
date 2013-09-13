@@ -1,0 +1,60 @@
+<div class="row-fluid">
+    <div class="span12">
+        <!--PAGE CONTENT BEGINS-->
+        {% if entity.entity_type == 'Studio' %}
+
+            {% if has_permission('Create_User') %}
+
+                <div class="row-fluid">
+                    <div class="btn-toolbar">
+                        <div class="btn-group">
+                            <button class="btn btn-small btn-success">
+                                <i class="icon-edit bigger-120"></i>
+                                <a class="white"
+                                   data-target="#user_dialog"
+                                   data-toggle="modal"
+                                   data-keyboard=false
+                                   href='#'>Create User
+                                </a>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            {% endif %}
+        {% else %}
+
+            {% if has_permission('Update_User') %}
+
+                <div class="row-fluid">
+                    <div class="btn-toolbar" >
+                        <div class="btn-group">
+                            <button class="btn btn-small btn-success">
+                                <i class="icon-edit bigger-120"></i>
+                                <a class="white"
+                                   data-target="#append_dialog"
+                                   data-toggle="modal"
+                                   data-keyboard=false
+                                   href='#'>Append User
+                                </a>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            {% endif %}
+
+        {% endif %}
+
+        <div class="row-fluid">
+            <ul class="ace-thumbnails">
+                {% for user in users %}
+                    {% include 'auth/list/list_item_user.jinja2' %}
+                {% endfor %}
+
+            </ul>
+        </div>
+        <!--PAGE CONTENT ENDS-->
+    </div>
+    <!--/.span-->
+</div>

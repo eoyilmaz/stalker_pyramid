@@ -29,7 +29,102 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 
-
+@view_config(
+    route_name='user_dialog',
+    renderer='templates/auth/dialog/user_dialog.jinja2',
+)
+@view_config(
+    route_name='list_entity_users',
+    renderer='templates/auth/list/list_entity_users.jinja2'
+)
+@view_config(
+    route_name='list_studio_users',
+    renderer='templates/auth/list/list_entity_users.jinja2'
+)
+@view_config(
+    route_name='list_project_users',
+    renderer='templates/auth/list/list_entity_users.jinja2'
+)
+@view_config(
+    route_name='list_department_users',
+    renderer='templates/auth/list/list_entity_users.jinja2'
+)
+@view_config(
+    route_name='list_group_users',
+    renderer='templates/auth/list/list_entity_users.jinja2'
+)
+@view_config(
+    route_name='list_users',
+    renderer='templates/auth/list/list_entity_users.jinja2'
+)
+@view_config(
+    route_name='view_user',
+    renderer='templates/auth/view/view_user.jinja2'
+)
+@view_config(
+    route_name='list_user_groups',
+    renderer='templates/group/list/list_entity_groups.jinja2'
+)
+@view_config(
+    route_name='list_entity_groups',
+    renderer='templates/group/list/list_entity_groups.jinja2'
+)
+@view_config(
+    route_name='department_dialog',
+    renderer='templates/department/dialog/department_dialog.jinja2',
+)
+@view_config(
+    route_name='list_entity_departments',
+    renderer='templates/department/list/list_entity_departments.jinja2'
+)
+@view_config(
+    route_name='list_user_departments',
+    renderer='templates/department/list/list_entity_departments.jinja2'
+)
+@view_config(
+    route_name='list_studio_departments',
+    renderer='templates/department/list/list_entity_departments.jinja2'
+)
+@view_config(
+    route_name='project_dialog',
+    renderer='templates/project/dialog/project_dialog.jinja2',
+)
+@view_config(
+    route_name='list_projects',
+    renderer='templates/project/list/list_entity_projects.jinja2'
+)
+@view_config(
+    route_name='list_entity_projects',
+    renderer='templates/project/list/list_entity_projects.jinja2'
+)
+@view_config(
+    route_name='list_user_projects',
+    renderer='templates/project/list/list_entity_projects.jinja2'
+)
+@view_config(
+    route_name='list_studio_projects',
+    renderer='templates/project/list/list_entity_projects.jinja2'
+)
+@view_config(
+    route_name='view_project',
+    renderer='templates/project/view/view_project.jinja2'
+)
+@view_config(
+    route_name='view_studio',
+    renderer='templates/studio/view/view_studio.jinja2'
+)
+@view_config(
+    route_name='list_project_assets',
+    renderer='templates/asset/list/list_entity_assets.jinja2'
+)
+@view_config(
+    route_name='list_project_shots',
+    renderer='templates/shot/list/list_entity_shots.jinja2'
+)
+@view_config(
+    route_name='list_project_sequences',
+    renderer='templates/sequence/list/list_entity_sequences.jinja2'
+)
 @view_config(
     route_name='view_user_tasks',
     renderer='templates/task/list_entity_tasks.jinja2'
@@ -69,14 +164,6 @@ logger.setLevel(logging.DEBUG)
 @view_config(
     route_name='list_task_tickets',
     renderer='templates/ticket/list_entity_tickets.jinja2'
-)
-@view_config(
-    route_name='list_projects',
-    renderer='templates/project/content_list_projects.jinja2'
-)
-@view_config(
-    route_name='list_user_projects',
-    renderer='templates/project/content_list_projects.jinja2'
 )
 @view_config(
     route_name='list_studio_vacations',
@@ -119,122 +206,6 @@ logger.setLevel(logging.DEBUG)
     renderer='templates/link/content_list_references.jinja2'
 )
 @view_config(
-    route_name='view_project',
-    renderer='templates/project/view_project.jinja2'
-)
-@view_config(
-    route_name='list_entity_users',
-    renderer='templates/auth/list_entity_users.jinja2'
-)
-@view_config(
-    route_name='list_studio_users',
-    renderer='templates/auth/list_entity_users.jinja2'
-)
-@view_config(
-    route_name='list_project_users',
-    renderer='templates/auth/list_entity_users.jinja2'
-)
-@view_config(
-    route_name='list_department_users',
-    renderer='templates/auth/list_entity_users.jinja2'
-)
-@view_config(
-    route_name='list_group_users',
-    renderer='templates/auth/list_entity_users.jinja2'
-)
-@view_config(
-    route_name='list_users',
-    renderer='templates/auth/list_entity_users.jinja2'
-)
-@view_config(
-    route_name='view_user_settings',
-    renderer='templates/auth/view_user_settings.jinja2'
-)
-@view_config(
-    route_name='view_user',
-    renderer='templates/auth/view_user.jinja2'
-)
-@view_config(
-    route_name='list_user_groups',
-    renderer='templates/auth/list_entity_groups.jinja2'
-)
-@view_config(
-    route_name='list_user_departments',
-    renderer='templates/department/list_entity_departments.jinja2'
-)
-@view_config(
-    route_name='list_studio_departments',
-    renderer='templates/department/list_entity_departments.jinja2'
-)
-@view_config(
-    route_name='list_entity_departments',
-    renderer='templates/department/list_entity_departments.jinja2'
-)
-@view_config(
-    route_name='list_entity_groups',
-    renderer='templates/auth/list_entity_groups.jinja2'
-)
-@view_config(
-    route_name='list_project_assets',
-    renderer='templates/asset/list_entity_assets.jinja2'
-)
-@view_config(
-    route_name='list_project_shots',
-    renderer='templates/shot/list_entity_shots.jinja2'
-)
-@view_config(
-    route_name='list_project_sequences',
-    renderer='templates/sequence/list_entity_sequences.jinja2'
-)
-@view_config(
-    route_name='summarize_asset',
-    renderer='templates/asset/content_summarize_asset.jinja2'
-)
-@view_config(
-    route_name='summarize_department',
-    renderer='templates/department/content_summarize_department.jinja2'
-)
-@view_config(
-    route_name='summarize_group',
-    renderer='templates/auth/content_summarize_group.jinja2'
-)
-@view_config(
-    route_name='summarize_project',
-    renderer='templates/project/content_summarize_project.jinja2'
-)
-@view_config(
-    route_name='summarize_sequence',
-    renderer='templates/sequence/content_summarize_sequence.jinja2'
-)
-@view_config(
-    route_name='summarize_shot',
-    renderer='templates/shot/content_summarize_shot.jinja2'
-)
-@view_config(
-    route_name='view_studio',
-    renderer='templates/studio/view_studio.jinja2'
-)
-@view_config(
-    route_name='summarize_studio',
-    renderer='templates/studio/content_summarize_studio.jinja2'
-)
-@view_config(
-    route_name='summarize_task',
-    renderer='templates/task/content_summarize_task.jinja2'
-)
-@view_config(
-    route_name='summarize_ticket',
-    renderer='templates/ticket/content_summarize_ticket.jinja2'
-)
-@view_config(
-    route_name='summarize_user',
-    renderer='templates/auth/content_summarize_user.jinja2'
-)
-@view_config(
-    route_name='summarize_version',
-    renderer='templates/version/content_summarize_version.jinja2'
-)
-@view_config(
     route_name='view_shot',
     renderer='templates/shot/page_view_shot.jinja2'
 )
@@ -245,19 +216,6 @@ logger.setLevel(logging.DEBUG)
 @view_config(
     route_name='view_ticket',
     renderer='templates/ticket/view_ticket.jinja2'
-)
-@view_config(
-    route_name='project_dialog',
-    renderer='templates/project/project_dialog.jinja2',
-)
-@view_config(
-    route_name='user_dialog',
-    renderer='templates/auth/user_dialog.jinja2',
-)
-
-@view_config(
-    route_name='department_dialog',
-    renderer='templates/department/department_dialog.jinja2',
 )
 def get_entity_related_data(request):
     """lists the time logs of the given task

@@ -1,0 +1,302 @@
+{# Stalker Pyramid a Web Base Production Asset Management System
+ Copyright (C) 2009-2013 Erkan Ozgur Yilmaz
+
+ This file is part of Stalker Pyramid.
+
+ This library is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation;
+ version 2.1 of the License.
+
+ This library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Lesser General Public License for more details.
+
+ You should have received a copy of the GNU Lesser General Public
+ License along with this library; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+#}
+{% extends 'base.jinja2' %}
+
+{# PRE-HEADER #}
+{% block pre_header %}
+
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/chosen.min.css") }}'/>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/datepicker.css") }}'/>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/bootstrap-timepicker.css") }}'/>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/daterangepicker.css") }}'/>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/colorpicker.css") }}'/>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/jquery-ui-1.10.3.custom.min.css") }}'/>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/bootstrap-editable.css") }}'/>
+
+{% endblock pre_header %}
+
+{# SIDEBAR #}
+{% block sidebar %}
+
+    {% if entity %}
+        {% include 'sidebar.jinja2' %}
+    {% endif %}
+
+{% endblock sidebar %}
+
+{# BREADCRUMBS #}
+{% block breadcrumbs %}
+
+    {% set page_title=mode.title() %}
+    {% include 'breadcrumbs.jinja2' %}
+
+{% endblock breadcrumbs %}
+
+{# PAGE-CONTENT #}
+{% block page_content %}
+
+    {% set page_title=mode.title() %}
+    {% include 'page_header.jinja2' %}
+
+    {% set user=entity %}
+    {% include 'auth/dialog/'+mode.title().lower()+'_user_dialog.jinja2' %}
+
+{% endblock page_content %}
+
+{# EXTRA-SCRIPTS #}
+{% block extrascripts %}
+
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery-ui-1.10.3.custom.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.ui.touch-punch.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/chosen.jquery.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-datepicker.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/moment.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/daterangepicker.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootstrap-colorpicker.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.autosize-min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.inputlimiter.1.3.1.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.maskedinput.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootstrap-tag.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.validate.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/additional-methods.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/fuelux/fuelux.spinner.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/fuelux/fuelux.wizard.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/additional-methods.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.maskedinput.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/select2.min.js") }}'></script>
+
+    <script type="text/javascript">
+
+     $.mask.definitions['~'] = '[+-]';
+        $('#phone').mask('(999) 999-9999');
+
+        jQuery.validator.addMethod("phone", function (value, element) {
+            return this.optional(element) || /^\(\d{3}\) \d{3}\-\d{4}( x\d{1,6})?$/.test(value);
+        }, "Enter a valid phone number.");
+
+    $(document).ready(function () {
+
+        $('#fuelux-wizard').ace_wizard().on('change',function (e, info) {
+            if (info.step == 1) {
+                if (!$('#user_form').valid()) return false;
+            }
+        }).on('finished',function (e) {
+                    bootbox.dialog("Thank you! Your information was successfully saved!", [
+                          {
+                              "label": "OK",
+                              "class": "btn-small btn-primary"
+                          }
+                    ]
+                    );
+                }).on('stepclick', function (e) {
+                    //return false;//prevent clicking on steps
+                });
+    });
+
+    {# Thumbnail #}
+    $(document).ready(function () {
+        $('#thumbnail').ace_file_input({
+            style: 'well',
+            btn_choose: 'Change Avatar',
+            btn_change: null,
+            no_icon: 'icon-picture',
+            droppable: true,
+            thumbnail: 'fit'
+        });
+      {# Update Name and login #}
+
+    });
+
+   {% if mode == 'update' %}
+        $(document).ready(function () {
+{#            $('#user_name').val('{{ user.name }}');#}
+{#            $('#user_login').val('{{ user.login }}');#}
+        });
+    {% endif %}
+
+
+
+    {# Chosen Field Updater #}
+    var chosen_field_creator = function (field, url, data_template) {
+        // fill image format with new json data
+        return $.getJSON(url).then(function (data) {
+            // remove current data
+            field.empty();
+
+            // append new options to the select
+            for (var i = 0; i < data.length; i++) {
+                field.append(data_template(data[i]));
+            }
+
+            // convert it to chosen
+            field.chosen();
+        });
+    };
+
+    {# Department #}
+    $(document).ready(function () {
+        {% raw %}
+        var department_option_template = doT.template(
+                '<option value={{=it.id}}>{{=it.name}}</option>'
+        );
+        {% endraw %}
+
+        var department = $('#department');
+        var deferred = chosen_field_creator(department, '/departments/', department_option_template);
+        {% if mode == 'update' %}
+            {#                var department_id = {{ user.department.id }};#}
+            {#                deferred.then(function () {#}
+            {#                    department.val(department_id).trigger('chosen:updated');#}
+            {#                });#}
+        {% endif %}
+    });
+
+
+    {# Group #}
+    $(document).ready(function () {
+        {% raw %}
+        var group_option_template = doT.template(
+                '<option value={{=it.id}}>{{=it.name}}</option>'
+        );
+        {% endraw %}
+
+        var group = $('#group');
+        var deferred = chosen_field_creator(group, '/groups/', group_option_template);
+        {% if mode == 'update' %}
+            {#                var group_id = {{ user.group.id }};#}
+            {#                deferred.then(function () {#}
+            {#                    group.val(group_id).trigger('chosen:updated');#}
+            {#                });#}
+        {% endif %}
+    });
+
+    $(document).ready(function () {
+
+        {% raw %}
+        var tag_option_template = doT.template(
+                '<option value={{=it.id}}>{{=it.name}}</option>'
+        );
+        {% endraw %}
+
+        var tag_input = $('#form-field-tags');
+        if (!( /msie\s*(8|7|6)/.test(navigator.userAgent.toLowerCase()))) {
+            tag_input.tag(
+                    {
+                        placeholder: tag_input.attr('placeholder'),
+//enable typeahead by specifying the source array
+                        source: ace.variable_US_STATES//defined in ace.js >> ace.enable_search_ahead
+                    }
+            );
+        }
+        else {
+//display a textarea for old IE, because it doesn't support this plugin or another one I tried!
+            tag_input.after('<textarea id="' + tag_input.attr('id') + '" name="' + tag_input.attr('name') + '" rows="3">' + tag_input.val() + '</textarea>').remove();
+//$('#form-field-tags').autosize({append: "\n"});
+        }
+    });
+
+
+    {# Form #}
+    $(document).ready(function () {
+
+        $('#user_form').validate({
+            errorElement: 'span',
+            errorClass: 'help-inline',
+            focusInvalid: true,
+            rules: {
+                email: {
+                    required: true,
+                    email: true
+                },
+                password: {
+                    required: true,
+                    minlength: 5
+                },
+                password2: {
+                    required: true,
+                    minlength: 5,
+                    equalTo: "#user_password"
+                },
+                name: {
+                    required: true
+                },
+                login: {
+                    required: true
+                }
+            },
+
+            messages: {
+                email: {
+                    required: "Please provide a valid email.",
+                    email: "Please provide a valid email."
+                },
+                password: {
+                    required: "Please specify a password.",
+                    minlength: "Please specify a secure password."
+                }
+            },
+
+            invalidHandler: function (event, validator) { //display error alert on form submit
+                $('.alert-error', $('.login-form')).show();
+            },
+
+            highlight: function (e) {
+                $(e).closest('.control-group').removeClass('info').addClass('error');
+            },
+
+            success: function (e) {
+                $(e).closest('.control-group').removeClass('error').addClass('info');
+                $(e).remove();
+            },
+
+            errorPlacement: function (error, element) {
+                if (element.is(':checkbox') || element.is(':radio')) {
+                    var controls = element.closest('.controls');
+                    if (controls.find(':checkbox,:radio').length > 1) controls.append(error);
+                    else error.insertAfter(element.nextAll('.lbl:eq(0)').eq(0));
+                }
+                else if (element.is('.select2')) {
+                    error.insertAfter(element.siblings('[class*="select2-container"]:eq(0)'));
+                }
+                else if (element.is('.chosen-select')) {
+                    error.insertAfter(element.siblings('[class*="chosen-container"]:eq(0)'));
+                }
+                else error.insertAfter(element);
+            },
+
+            submitHandler: function (form) {
+                form.submit();
+            },
+
+            invalidHandler: function (form) {
+            }
+        });
+    });
+
+    </script>
+
+{% endblock extrascripts %}

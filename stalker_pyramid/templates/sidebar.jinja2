@@ -1,26 +1,40 @@
-{% if entity.entity_type == 'User' %}
-    {% include 'auth/user_sidebar.jinja2' %}
+<div class='sidebar sidebar-fixed' id="sidebar">
 
-{% elif entity.entity_type == 'Project' %}
+    <script type="text/javascript">
+        try {
+            ace.settings.check('sidebar', 'fixed')
+            ace.settings.check('sidebar', 'collapsed')
+        } catch (e) {
+        }
+    </script>
 
-    {% include 'project/project_sidebar.jinja2' %}
+    {% if entity.entity_type == 'User' %}
 
-{% elif entity.entity_type == 'Studio' %}
+        {% include 'auth/view/user_sidebar.jinja2' %}
 
-    {% include 'studio/studio_sidebar.jinja2' %}
+    {% elif entity.entity_type == 'Project' %}
 
-{% endif %}
+        {% include 'project/view/project_sidebar.jinja2' %}
 
-<div class="sidebar-collapse" id="sidebar-collapse">
-    <i class="icon-double-angle-left"
-       data-icon1="icon-double-angle-left"
-       data-icon2="icon-double-angle-right"></i>
+    {% elif entity.entity_type == 'Studio' %}
+
+        {% include 'studio/view/studio_sidebar.jinja2' %}
+
+    {% endif %}
+
+    <div class="sidebar-collapse" id="sidebar-collapse">
+
+        <i class="icon-double-angle-left"
+           data-icon1="icon-double-angle-left"
+           data-icon2="icon-double-angle-right"></i>
+
+    </div>
+
+    <script type="text/javascript">
+        try {
+            ace.settings.check('sidebar', 'collapsed')
+        } catch (e) {
+        }
+    </script>
+
 </div>
-<script type="text/javascript">
-    try {
-        ace.settings.check('sidebar', 'collapsed')
-    } catch (e) {
-    }
-</script>
-
-

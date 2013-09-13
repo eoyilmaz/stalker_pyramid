@@ -30,44 +30,10 @@ from stalker import User, Sequence, StatusList, Status, Shot, Project
 
 import logging
 from stalker import log
-from stalker_pyramid.views import PermissionChecker, get_logged_in_user
+from stalker_pyramid.views import PermissionChecker, get_logged_in_user, milliseconds_since_epoch
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.WARNING)
-
-@view_config(
-    route_name='dialog_create_shot',
-    renderer='templates/shot/dialog_create_shot.jinja2'
-)
-def create_shot_dialog(request):
-    """fills the create shot dialog
-    """
-    project_id = request.matchdict.get('id', -1)
-    project = Project.query.filter_by(id=project_id).first()
-
-    return {
-        'mode': 'CREATE',
-        'has_permission': PermissionChecker(request),
-        'project': project
-    }
-
-
-@view_config(
-    route_name='dialog_update_shot',
-    renderer='templates/shot/dialog_create_shot.jinja2'
-)
-def update_shot_dialog(request):
-    """fills the create shot dialog
-    """
-    shot_id = request.matchdict.get('id')
-    shot = Shot.query.filter_by(id=shot_id).first()
-
-    return {
-        'mode': 'UPDATE',
-        'has_permission': PermissionChecker(request),
-        'shot': shot,
-        'project': shot.project
-    }
 
 @view_config(
     route_name='create_shot'
@@ -176,6 +142,10 @@ def update_shot(request):
 
 
 @view_config(
+    route_name='get_entity_shots',
+    renderer='json'
+)
+@view_config(
     route_name='get_project_shots',
     renderer='json'
 )
@@ -198,10 +168,12 @@ def get_shots(request):
             'status': shot.status.name,
             'status_bg_color': shot.status.bg_color,
             'status_fg_color': shot.status.fg_color,
-            'user_id': shot.created_by.id,
-            'user_name': shot.created_by.name,
+            'created_by_id': shot.created_by.id,
+            'created_by_name': shot.created_by.name,
             'description': shot.description,
-            'thumbnail_path': shot.thumbnail.full_path if shot.thumbnail else None
+            'date_created':milliseconds_since_epoch(shot.date_created),
+            'thumbnail_path': shot.thumbnail.full_path if shot.thumbnail else None,
+            'percent_complete': shot.percent_complete
         })
 
 

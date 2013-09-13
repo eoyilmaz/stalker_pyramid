@@ -131,6 +131,8 @@ def main(global_config, **settings):
     config.add_route('get_entity_time_logs',           'entities/{id}/time_logs/')
     config.add_route('get_entity_projects',            'entities/{id}/projects/')
     config.add_route('get_entity_sequences',           'entities/{id}/sequences/')
+    config.add_route('get_entity_assets',              'entities/{id}/assets/')
+    config.add_route('get_entity_shots',               'entities/{id}/shots/')
     config.add_route('get_entity_vacations',           'entities/{id}/vacations/')
 
     config.add_route('list_entity_users',              'entities/{id}/users/list')
@@ -171,16 +173,16 @@ def main(global_config, **settings):
     config.add_route('update_studio',         'studios/{id}/update')
 
     config.add_route('view_studio',           'studios/{id}/view')
-    config.add_route('summarize_studio',      'studios/{id}/summarize')
 
     config.add_route('get_studio_tasks',      'studios/{id}/tasks/')
     config.add_route('get_studio_vacations',  'studios/{id}/vacations/') # json
 
-    config.add_route('list_studio_tasks',     'studios/{id}/tasks/list')
-    config.add_route('list_studio_vacations', 'studios/{id}/vacations/list') # html
-    config.add_route('list_studio_users',     'studios/{id}/users/list') # html
+    config.add_route('list_studio_tasks',           'studios/{id}/tasks/list')
+    config.add_route('list_studio_vacations',       'studios/{id}/vacations/list') # html
+    config.add_route('list_studio_users',           'studios/{id}/users/list') # html
+    config.add_route('list_studio_projects',        'studios/{id}/projects/list') # html
     config.add_route('list_studio_departments',     'studios/{id}/departments/list') # html
-    config.add_route('list_studio_groups',     'groups/list') # html
+    config.add_route('list_studio_groups',          'groups/list') # html
 
 
 
@@ -211,8 +213,6 @@ def main(global_config, **settings):
     config.add_route('view_project_sequence',      'projects/{pid}/sequences/{id}/view')
     config.add_route('list_project_tickets',       'projects/{id}/tickets/list')
     config.add_route('list_project_references',    'projects/{id}/references/list')
-
-    config.add_route('summarize_project',          'projects/{id}/summarize')
 
     config.add_route('get_projects',               'projects/')
     config.add_route('get_project_users',          'projects/{id}/users/')
@@ -280,7 +280,6 @@ def main(global_config, **settings):
     config.add_route('update_user',           'users/{id}/update')
     config.add_route('view_user',             'users/{id}/view')
     config.add_route('view_user_settings',    'users/{id}/view_settings')
-    config.add_route('summarize_user',        'users/{id}/summarize')
 
     config.add_route('get_users',             'users/') # json
     config.add_route('get_user_departments',  'users/{id}/departments/') # json
@@ -350,7 +349,6 @@ def main(global_config, **settings):
     config.add_route('update_asset',        'assets/{id}/update')
 
     config.add_route('view_asset',          'assets/{id}/view')
-    config.add_route('summarize_asset',     'assets/{id}/summarize')
     config.add_route('get_asset_tickets',   'assets/{id}/tickets/')
     config.add_route('list_asset_tickets',  'assets/{id}/tickets/list')
     config.add_route('get_asset_types',     'assets/types/')
@@ -364,7 +362,6 @@ def main(global_config, **settings):
     config.add_route('update_shot',        'shots/{id}/update')
 
     config.add_route('view_shot',          'shots/{id}/view')
-    config.add_route('summarize_shot',     'shots/{id}/summarize')
 
     config.add_route('list_shot_tasks',    'shots/{id}/tasks/list') # html
     config.add_route('list_shot_tickets',  'shots/{id}/tickets/list') # html
@@ -379,7 +376,6 @@ def main(global_config, **settings):
     config.add_route('update_sequence', 'sequences/{id}/update')
 
     config.add_route('view_sequence',          'sequences/{id}/view')
-    config.add_route('summarize_sequence',     'sequences/{id}/summarize')
 
     config.add_route('get_sequence_references', 'sequences/{id}/references/')  # json
     config.add_route('get_sequence_tickets',    'sequences/{id}/tickets/') # json
@@ -408,7 +404,6 @@ def main(global_config, **settings):
     config.add_route('duplicate_task_hierarchy', 'tasks/{id}/duplicate')
 
     config.add_route('view_task',                'tasks/{id}/view')
-    config.add_route('summarize_task',           'tasks/{id}/summarize')
 
     config.add_route('list_task_tasks',          'tasks/{id}/tasks/list') # html
     config.add_route('list_task_versions',       'tasks/{id}/versions/list') # html
@@ -444,7 +439,6 @@ def main(global_config, **settings):
     config.add_route('update_ticket', 'tickets/{id}/update')
 
     config.add_route('view_ticket',         'tickets/{id}/view')
-    config.add_route('summarize_ticket',    'tickets/{id}/summarize')
 
     config.add_route('get_tickets',      'tickets/')
 
@@ -471,7 +465,6 @@ def main(global_config, **settings):
     config.add_route('assign_version', 'assign_version') # TODO: update this address
 
     config.add_route('view_version',          'versions/{id}/view')
-    config.add_route('summarize_version',     'versions/{id}/summarize')
     config.add_route('list_version_outputs',  'versions/{id}/outputs/list') # html
     config.add_route('list_version_inputs',   'versions/{id}/inputs/list') # html
     config.add_route('list_version_children', 'versions/{id}/children/list') # html
@@ -486,7 +479,6 @@ def main(global_config, **settings):
 
     config.add_route('create_department',     'departments/create')
     config.add_route('update_department',     'departments/update')
-    config.add_route('summarize_department',  'departments/{id}/summarize')
     config.add_route('view_department',       'departments/{id}/view')
     config.add_route('get_departments',       'departments/')
 
@@ -505,7 +497,6 @@ def main(global_config, **settings):
     config.add_route('create_group',        'groups/create')
     config.add_route('update_group',        'groups/{id}/update')
     config.add_route('view_group',          'groups/{id}/view')
-    config.add_route('summarize_group',     'groups/{id}/summarize')
 
     config.add_route('get_groups',          'groups/')
 

@@ -26,7 +26,7 @@ from stalker.db import DBSession
 from stalker import (User, ImageFormat, Repository, Structure, Status,
                      StatusList, Project, Entity)
 from stalker_pyramid.views import (get_date, get_date_range,
-                                   get_logged_in_user)
+                                   get_logged_in_user, milliseconds_since_epoch)
 
 import logging
 
@@ -189,15 +189,28 @@ def update_project(request):
 def get_entity_projects(request):
     """
     """
+
+    logger.debug('***get_entity_projects method starts ***')
+
     entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
 
+    logger.debug('entity.projects count :%s',entity.projects)
+
+
+
     return [
         {
-            'id': project.id,
-            'name': project.name,
-            'thumbnail_path': project.thumbnail.full_path
-            if project.thumbnail else None
+            'project_id': project.id,
+            'project_name': project.name,
+            'lead_id': project.lead.id,
+            'lead_name': project.lead.name,
+            'date_created' : milliseconds_since_epoch(project.date_created),
+            'created_by_id': project.created_by.id,
+            'created_by_name': project.created_by.name,
+            'thumbnail_full_path': project.thumbnail.full_path if project.thumbnail else None,
+            'status': project.status.name,
+            'percent_complete': project.percent_complete
         }
         for project in entity.projects
     ]
