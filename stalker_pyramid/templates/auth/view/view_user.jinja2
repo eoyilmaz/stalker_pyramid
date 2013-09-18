@@ -24,6 +24,12 @@
 
 {% endblock breadcrumbs %}
 
+{# MODALS #}
+{% block modals %}
+
+     {% include 'time_log/timelog_dialog_template.jinja2' %}
+
+{% endblock modals%}
 
 {#PAGE-CONTENT#}
 {% block page_content %}
@@ -38,76 +44,12 @@
 
             <div class="row-fluid">
                 <div class="span9">
+
                     <div class="space"></div>
-
                     <div id="calendar"></div>
+
                 </div>
-                <div class="span3">
-                    <div class="widget-box transparent">
-                        <div class="widget-header">
-                            <h4>Draggable events</h4>
-                        </div>
-
-                        <div class="widget-body">
-                            <div class="widget-main">
-                                <div id="external-events">
-                                    <div class="external-event label-grey"
-                                         data-class="label-grey">
-                                        <i class="icon-move"></i>
-                                        My Event 1
-                                    </div>
-
-                                    <div class="external-event label-success"
-                                         data-class="label-success">
-                                        <i class="icon-move"></i>
-                                        My Event 2
-                                    </div>
-
-                                    <div class="external-event label-important"
-                                         data-class="label-important">
-                                        <i class="icon-move"></i>
-                                        My Event 3
-                                    </div>
-
-                                    <div class="external-event label-purple"
-                                         data-class="label-purple">
-                                        <i class="icon-move"></i>
-                                        My Event 4
-                                    </div>
-
-                                    <div class="external-event label-yellow"
-                                         data-class="label-yellow">
-                                        <i class="icon-move"></i>
-                                        My Event 5
-                                    </div>
-
-                                    <div class="external-event label-pink"
-                                         data-class="label-pink">
-                                        <i class="icon-move"></i>
-                                        My Event 6
-                                    </div>
-
-                                    <div class="external-event label-info"
-                                         data-class="label-info">
-                                        <i class="icon-move"></i>
-                                        My Event 7
-                                    </div>
-
-                                    <label>
-                                        <input type="checkbox"
-                                               class="ace ace-checkbox"
-                                               id="drop-remove"/>
-                                        <span class="lbl"> Remove after drop</span>
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-
             </div>
-
             <!--PAGE CONTENT ENDS-->
         </div>
         <!--/.span-->
@@ -171,13 +113,15 @@
                 var start_date = new Date(parseInt(data[i].start_date));
                 var end_date = new Date(parseInt(data[i].end_date));
 
+
                 var time_log = {
-                    title: data[i].parent_name + ' / ' + data[i].task_name,
+                    tId:data[i].id,
+                    title: data[i].task_name+' | '+data[i].parent_name,
                     start: start_date,
                     end: end_date,
                     className: 'label-important',
                     allDay: false
-                }
+                };
 
                 events.push(time_log);
             }
@@ -192,6 +136,7 @@
                     var end_date = new Date(parseInt(vData[j].end_date));
 
                     var vacation = {
+                        tId:vData[j].id,
                         title: vData[j].type,
                         start: start_date,
                         end: end_date,
@@ -215,26 +160,8 @@
                         right: 'month,agendaWeek,agendaDay'
                     },
                     events: events,
-                    {#                            [#}
-                    {#                        {#}
-                    {#                            title: 'All Day Event',#}
-                    {#                            start: new Date(y, m, 1),#}
-                    {#                            className: 'label-important'#}
-                    {#                        },#}
-                    {#                        {#}
-                    {#                            title: 'Long Event',#}
-                    {#                            start: new Date(y, m, d - 5),#}
-                    {#                            end: new Date(y, m, d - 2),#}
-                    {#                            className: 'label-success'#}
-                    {#                        },#}
-                    {#                        {#}
-                    {#                            title: 'Some Event',#}
-                    {#                            start: new Date(y, m, d - 3, 16, 0),#}
-                    {#                            allDay: false#}
-                    {#                        }#}
-                    {#                    ],#}
                     editable: true,
-                    droppable: true, // this allows things to be dropped onto the calendar !!!
+                    droppable: false, // this allows things to be dropped onto the calendar !!!
                     drop: function (date, allDay) { // this function is called when something is dropped
 
 // retrieve the dropped element's stored Event Object
@@ -265,62 +192,62 @@
                     selectHelper: true,
                     select: function (start, end, allDay) {
 
-                        bootbox.prompt("New Event Title:", function (title) {
-                            if (title !== null) {
-                                calendar.fullCalendar('renderEvent',
-                                        {
-                                            title: title,
-                                            start: start,
-                                            end: end,
-                                            allDay: allDay
-                                        },
-                                        true // make the event "stick"
-                                );
-                            }
-                        });
 
+                        $('#time_log_dialog').modal({'remote':'{{ request.route_url("entity_time_log_dialog", id=-1, mode='create') }}'});
+
+{##}
+{#                        bootbox.prompt("New Time Log:", function (title) {#}
+{#                            if (title !== null) {#}
+{#                                calendar.fullCalendar('renderEvent',#}
+{#                                        {#}
+{#                                            title: title,#}
+{#                                            start: start,#}
+{#                                            end: end,#}
+{#                                            allDay: allDay#}
+{#                                        },#}
+{#                                        true // make the event "stick"#}
+{#                                );#}
+{#                            }#}
+{#                        });#}
+{##}
 
                         calendar.fullCalendar('unselect');
 
                     },
                     eventClick: function (calEvent, jsEvent, view) {
 
-                        var form = $("<form class='form-inline'><label>Change event name &nbsp;</label></form>");
-                        form.append("<input autocomplete=off type=text value='" + calEvent.title + "' /> ");
-                        form.append("<button type='submit' class='btn btn-small btn-success'><i class='icon-ok'></i> Save</button>");
 
-                        var div = bootbox.dialog(form,
-                                [
-                                    {
-                                        "label": "<i class='icon-trash'></i> Delete Event",
-                                        "class": "btn-small btn-danger",
-                                        "callback": function () {
-                                            calendar.fullCalendar('removeEvents', function (ev) {
-                                                return (ev._id == calEvent._id);
-                                            })
-                                        }
-                                    }
-                                    ,
-                                    {
-                                        "label": "<i class='icon-remove'></i> Close",
-                                        "class": "btn-small"
-                                    }
-                                ]
-                                ,
-                                {
-// prompts need a few extra options
-                                    "onEscape": function () {
-                                        div.modal("hide");
-                                    }
-                                }
-                        );
+                        $('#time_log_dialog').modal({'remote':"/entities/"+calEvent.tId+"/time_log/update/dialog"});
 
-                        form.on('submit', function () {
-                            calEvent.title = form.find("input[type=text]").val();
-                            calendar.fullCalendar('updateEvent', calEvent);
-                            div.modal("hide");
-                            return false;
-                        });
+
+{#                        var form = $("<form class='form-inline'><label>Change event name &nbsp;</label></form>");#}
+{#                        form.append("<select id='task_names' name='task_id' class='input-block-level'  data-placeholder='Select Task Name'></select>");#}
+{#                        form.append("<button type='submit' class='btn btn-small btn-success'><i cladss='icon-ok'></i> Save</button>");#}
+{##}
+{##}
+{##}
+{#                        var div = bootbox.dialog(form,#}
+{#                                [#}
+{#                                    {#}
+{#                                        "label": "<i class='icon-remove'></i> Close",#}
+{#                                        "class": "btn-small"#}
+{#                                    }#}
+{#                                ]#}
+{#                                ,#}
+{#                                {#}
+{##}
+{#                                    "onEscape": function () {#}
+{#                                        div.modal("hide");#}
+{#                                    }#}
+{#                                }#}
+{#                        );#}
+{##}
+{#                        form.on('submit', function () {#}
+{#                            calEvent.title = form.find("input[type=text]").val();#}
+{#                            calendar.fullCalendar('updateEvent', calEvent);#}
+{#                            div.modal("hide");#}
+{#                            return false;#}
+{#                        });#}
                     }
 
 

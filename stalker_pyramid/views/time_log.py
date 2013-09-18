@@ -37,31 +37,45 @@ logger.setLevel(logging.DEBUG)
 
 
 @view_config(
-    route_name='dialog_create_time_log',
-    renderer='templates/time_log/dialog_create_time_log.jinja2',
+    route_name='task_time_log_dialog',
+    renderer='templates/time_log/dialog/time_log_dialog.jinja2',
 )
-def create_time_log_dialog(request):
+@view_config(
+    route_name='user_time_log_dialog',
+    renderer='templates/time_log/dialog/time_log_dialog.jinja2',
+)
+@view_config(
+    route_name='entity_time_log_dialog',
+    renderer='templates/time_log/dialog/time_log_dialog.jinja2',
+)
+def time_log_dialog(request):
     """creates a create_time_log_dialog by using the given task
     """
-    logger.debug('inside create_time_log_dialog')
+    logger.debug('inside time_log_dialog')
+
+    came_from = request.params.get('came_from', request.url)
+
+    mode = request.matchdict.get('mode', None)
 
     # get logged in user
     logged_in_user = get_logged_in_user(request)
 
-    task_id = request.matchdict.get('id', -1)
-    task = Task.query.filter(Task.task_id == task_id).first()
+    entity_id = request.matchdict.get('id', -1)
+    entity = Entity.query.filter_by(id=entity_id).first()
+
 
     studio = Studio.query.first()
     if not studio:
         studio = defaults
 
     return {
-        'mode': 'CREATE',
+        'mode': mode,
         'has_permission': PermissionChecker(request),
         'studio': studio,
         'logged_in_user': logged_in_user,
-        'task': task,
-        'milliseconds_since_epoch': milliseconds_since_epoch
+        'entity': entity,
+        'milliseconds_since_epoch': milliseconds_since_epoch,
+        'came_from': came_from
     }
 
 
