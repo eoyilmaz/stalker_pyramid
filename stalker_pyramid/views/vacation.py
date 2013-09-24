@@ -257,6 +257,7 @@ def get_vacations(request):
 
     return [{
             'id': vacation.id,
+            'entity_type':vacation.plural_class_name.lower(),
             'type': vacation.type.name,
             'user_id': vacation.user.id if vacation.user else None,
             'created_by_id': vacation.created_by_id,

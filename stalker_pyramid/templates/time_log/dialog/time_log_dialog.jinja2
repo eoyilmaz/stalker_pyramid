@@ -1,42 +1,66 @@
 <div class='row-fluid'>
     <div class='span12'>
+      <div id="selected_date"></div>
 
         <form id='time_log_form'
               class='form-horizontal'
               role='form'
-              method='post'
-              action="{{ request.route_url('create_time_log') }}">
+              method='post'>
 
 
-            {# Project #}
+            {# Resource #}
             <div class='control-group'>
-                <label class='span3 control-label' for='time_log_project'>Project</label>
+                <label class='span2 control-label' for='time_log_resource'>Resource</label>
 
-                <div class='span9'>
-                    <select id='time_log_project'
+                <div class='span10'>
+                    <select id='time_log_resource'
                             class='input-block-level'
-                            name='project_id'
+                            name='resource_id'
                             required></select>
                 </div>
             </div>
 
             {# Task #}
             <div class='control-group'>
-                <label class='span3 control-label'
+                <label class='span2 control-label'
                        for='time_log_task'>Task</label>
 
-                <div class='span9'>
+                <div class='span10'>
                     <select id='time_log_task'
                             name='task_id'
                             class='input-block-level'
                             data-placeholder='Task'></select>
                 </div>
             </div>
+            {# Start Time#}
+            <div class="row-fluid">
+                <div class="control-group">
+                    <label class='span2 control-label'
+                           for='start_time'>From</label>
 
+                    <div class="span2 input-append bootstrap-timepicker">
+                        <input id="start_time" name="start_time" type="text"
+                               class="input-small"/>
+                    <span class="add-on">
+                        <i class="icon-time"></i>
+                        </span>
+                    </div>
+                </div>
+
+                {# End Time#}
+                <div class="control-group">
+                    <label class='span2 control-label' for="end_time">To</label>
+
+                    <div class="span2 input-append bootstrap-timepicker">
+                        <input id="end_time" name="end_time" type="text" class="input-small"/>
+                    <span class="add-on">
+                        <i class="icon-time"></i>
+                        </span>
+                    </div>
+                </div>
+            </div>
         </form>
-
         <div class="space-20"></div>
-
     </div>
 </div>
 
@@ -44,6 +68,7 @@
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-datepicker.min.js") }}'></script>
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/moment.min.js") }}'></script>
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/daterangepicker.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-timepicker.min.js") }}'></script>
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootstrap-colorpicker.min.js") }}'></script>
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.autosize-min.js") }}'></script>
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.inputlimiter.1.3.1.min.js") }}'></script>
@@ -55,191 +80,233 @@
 
 
 <script>
-    function init_time_log_dialog() {
-        console.debug('starting to initialize time_log dialog!!!');
+function init_time_log_dialog(start, end) {
+    console.debug('starting to initialize time_log dialog!!!');
 
-        {# ***************************************************************** #}
-        {# Projects #}
-        {% raw %}
-        var project_option_template = doT.template(
-                '<option value={{=it.id}} {{=it.selected}}>{{=it.name}}</option>'
-        );
-        {% endraw %}
-        var time_log_project = $('#time_log_project');
-        var deferred = chosen_field_creator(
-                time_log_project, '/projects/',
-                project_option_template,
-                {% if mode == 'update' %}
-                    '{{ entity.task.project.id }}',
-                {% endif %}
-                {search_contains: true}
+    {# ***************************************************************** #}
 
-        );
-
-        var project_id;
-        {% if mode == 'update' %}
-            project_id = '{{ entity.task.project.id }}';
-
-            deferred.then(function () {
-                time_log_project.val(project_id).trigger('chosen:updated');
-            });
-        {% endif %}
-
-        // Updates on project change
-        time_log_project.on('change', function () {
-            update_time_log_task();
+    $("#selected_date").empty();
+    $("#selected_date").append('<h4 class="blue">' + start.format('dd:mm:yyyy')+'</h4>');
 
 
-        });
+    var task_id;
+    var task_url = '/tasks/'
 
-        {# ***************************************************************** #}
-        {# Tasks#}
-        // create a chosen first
-        var time_log_task = $('#time_log_task').chosen({
-            search_contains: true,
-            enable_split_word_search: true,
-            allow_single_deselect: true
-        });
+    var resource_id;
+    var resource_url = '/users/'
+
+    var start_date_value = start;
+    var end_date_value = end;
+
+    var start_time_value = start_date_value.clearTime();
+    var end_time_value = end_date_value.clearTime();
+
+    start_time_value.setHours(10);
+    end_time_value.setHours(19);
 
 
-        // update time_log_task callback
-        var update_time_log_task = function () {
-            // remove current elements
+    {% if mode == 'create' %}
+
+        $("#time_log_form").attr("action", "{{ request.route_url('create_time_log', id=entity.id) }}");
+
+        {% if entity.entity_type  == 'User' %}
+
+            {# ***************************************************************** #}
+            {# Resource #}
+            var time_log_resource = $('#time_log_resource');
+            time_log_resource.append('<option value={{ entity.id }} selected>{{ entity.name }}</option>');
+
+            {# ***************************************************************** #}
+            {# Task #}
+            {% raw %}
+                var task_option_template = doT.template(
+                        '<option value={{=it.id}}>{{=it.name}}</option>'
+                );
+            {% endraw %}
+
+            var time_log_task = $('#time_log_task');
             time_log_task.find('option').remove();
 
-            // trigger an update
-            //time_log_task.trigger('liszt:updated');
+            {% for task in entity.tasks %}
 
-            // get the project id
-            var project_id = time_log_project.val();
+              var parent_name = '';
 
-            // get time_logs of that project as json from server
-            $.getJSON('/projects/' + project_id + '/tasks/').then(function (data) {
+              {% for parent in task.parents %}
 
-                // now append the data to the time_log_task
-                {% raw %}
-                var time_log_task_template = doT.template('<option value={{=it.id}} {{=it.selected}} >{{=it.name}}</option>');
-                {% endraw %}
+                parent_name+= " | "+ '{{parent.name }}'
 
-                var task_time_log_count = data.length;
-                var rendered_template = null;
+              {% endfor %}
 
-                // add and empty option to both
-                time_log_task.empty();
+               var data = {id:'{{ task.id }}', name:'{{ task.name }}'+parent_name};
+               time_log_task.append(task_option_template(data));
 
-                for (var i = 0; i < task_time_log_count; i++) {
+            {% endfor %}
 
-                    data[i].selected = ''
-
-                    {% if mode == 'update' %}
-                        if (data[i].id == {{ entity.task.id }}) {
-                            data[i].selected = 'selected';
-                        }
-                    {% endif %}
-
-                    rendered_template = time_log_task_template(data[i]);
-                    time_log_task.append(rendered_template);
-
-                }
-                // trigger another update
-
-                time_log_task.trigger('liszt:updated');
-
+            time_log_task.on('change', function () {
 
             });
-        };
 
-        // update now
-        setTimeout(update_time_log_task, 100); // TODO: This is not good
+        {% elif entity.entity_type  == 'Task'%}
 
-        // Updates on task change
-        time_log_task.on('change', function () {
+          {# ***************************************************************** #}
+            {# Resource #}
+            var time_log_task = $('#time_log_task');
+            var parent_name = '';
 
-        });
+            {% for parent in entity.parents %}
 
+                parent_name+= " | "+ '{{parent.name }}'
 
-        {# ***************************************************************** #}
-        {# Submit Button #}
-        $('#time_log_dialog_submit_button').on('click', function () {
-            var time_log_form = $('#time_log_form');
-            if (time_log_form.validate()) {
-                $.post(
-                        time_log_form.attr('action'),
-                        time_log_form.serialize()
+            {% endfor %}
+            time_log_task.append('<option value={{ entity.id }} selected>{{ entity.name }}'+parent_name+'</option>');
+
+            {# ***************************************************************** #}
+            {# Resource #}
+            {% raw %}
+                var user_option_template = doT.template(
+                        '<option value={{=it.id}}>{{=it.name}}</option>'
                 );
-            }
-        });
+            {% endraw %}
 
-        $('#time_log_form').validate({
-            errorElement: 'span',
-            errorClass: 'help-inline',
-            focusInvalid: true,
-            rules: {
-                name: {
-                    required: true
-                },
-                code: {
-                    required: true
-                },
-                dependencies: {
-                    required: false
-                },
-                comment: {
-                    required: true
-                },
-                state: {
-                    required: true
-                },
-                platform: {
-                    required: true
-                },
-                subscription: {
-                    required: true
-                },
-                gender: 'required',
-                agree: 'required'
-            },
+            var time_log_resource = $('#time_log_resource');
+            time_log_resource.find('option').remove();
 
-            messages: {
-            },
+            {% for user in entity.users %}
+               var data = {id:'{{ user.id }}', name:'{{ user.name }}'+parent_name};
+               time_log_resource.append(user_option_template(data));
 
-            invalidHandler: function (event, validator) { //display error alert on form submit
-                $('.alert-error', $('.login-form')).show();
-            },
+            {% endfor %}
 
-            highlight: function (e) {
-                $(e).closest('.control-group').removeClass('info').addClass('error');
-            },
+            time_log_resource.on('change', function () {
 
-            success: function (e) {
-                $(e).closest('.control-group').removeClass('error').addClass('info');
-                $(e).remove();
-            },
+            });
 
-            errorPlacement: function (error, element) {
-                if (element.is(':checkbox') || element.is(':radio')) {
-                    var controls = element.closest('.controls');
-                    if (controls.find(':checkbox,:radio').length > 1) controls.append(error);
-                    else error.insertAfter(element.nextAll('.lbl:eq(0)').eq(0));
-                }
-                else if (element.is('.select2')) {
-                    error.insertAfter(element.siblings('[class*="select2-container"]:eq(0)'));
-                }
-                else if (element.is('.chosen-select')) {
-                    error.insertAfter(element.siblings('[class*="chosen-container"]:eq(0)'));
-                }
-                else error.insertAfter(element);
-            },
 
-            submitHandler: function (form) {
-                form.submit();
-            }
+
+        {% endif %}
+
+    {% elif mode == 'update' %}
+
+        $("#time_log_form").attr("action", "{{ request.route_url('update_time_log', id=time_log.id) }}");
+
+        var time_log_resource = $('#time_log_resource');
+        time_log_resource.append('<option value={{ time_log.user.id }} selected>{{ time_log.user.name }}</option>');
+
+        var time_log_task = $('#time_log_task');
+        time_log_task.append('<option value={{ time_log.task.id }} selected>{{ time_log.task.name }}</option>');
+
+        start_date_value = new Date(parseInt({{ milliseconds_since_epoch(time_log.start) }}));
+        end_date_value = new Date(parseInt({{ milliseconds_since_epoch(time_log.end) }}));
+
+        start_time_value = start_date_value;
+        end_time_value = end_date_value;
+
+    {% endif %}
+
+
+
+    $(document).ready(function () {
+
+        var start_time = $('#start_time');
+        start_time.val(start_time_value.format('HH:MM'));
+        start_time.timepicker({
+            minuteStep: 1,
+            showSeconds: false,
+            showMeridian: false
+        })
+
+        start_time.on('change', function () {
 
         });
 
+    })
 
-        console.debug('finished initializing the time_log dialog!')
-    }
+    $(document).ready(function () {
+
+        var end_time = $('#end_time');
+        end_time.val(end_time_value.format('HH:MM'));
+        end_time.timepicker({
+            minuteStep: 1,
+            showSeconds: false,
+            showMeridian: false
+        })
+
+        end_time.on('change', function () {
+
+        });
+
+    })
+
+
+    {# ***************************************************************** #}
+    {# Submit Button #}
+    $('#time_log_dialog_submit_button').on('click', function () {
+        var time_log_form = $('#time_log_form');
+        if (time_log_form.validate()) {
+
+            $.post(
+                    time_log_form.attr('action'),
+                    time_log_form.serialize()+'&'+$.param({ 'start': start_date_value.toUTCString(),'end': end_date_value.toUTCString() })
+            );
+
+        }
+    });
+
+    $('#time_log_form').validate({
+        errorElement: 'span',
+        errorClass: 'help-inline',
+        focusInvalid: true,
+        rules: {
+            resource_id: {
+                required: true
+            },
+            task_id: {
+                required: true
+            },
+            comment: {
+                required: true
+            }
+        },
+
+        messages: {
+        },
+
+        invalidHandler: function (event, validator) { //display error alert on form submit
+            $('.alert-error', $('.login-form')).show();
+        },
+
+        highlight: function (e) {
+            $(e).closest('.control-group').removeClass('info').addClass('error');
+        },
+
+        success: function (e) {
+            $(e).closest('.control-group').removeClass('error').addClass('info');
+            $(e).remove();
+        },
+
+        errorPlacement: function (error, element) {
+            if (element.is(':checkbox') || element.is(':radio')) {
+                var controls = element.closest('.controls');
+                if (controls.find(':checkbox,:radio').length > 1) controls.append(error);
+                else error.insertAfter(element.nextAll('.lbl:eq(0)').eq(0));
+            }
+            else if (element.is('.select2')) {
+                error.insertAfter(element.siblings('[class*="select2-container"]:eq(0)'));
+            }
+            else if (element.is('.chosen-select')) {
+                error.insertAfter(element.siblings('[class*="chosen-container"]:eq(0)'));
+            }
+            else error.insertAfter(element);
+        },
+
+        submitHandler: function (form) {
+            form.submit();
+        }
+
+    });
+
+    console.debug('finished initializing the time_log dialog!')
+}
 </script>
 
 <script type="text/javascript">

@@ -5,7 +5,12 @@
 
     <link rel="stylesheet"
           href='{{ request.static_url("stalker_pyramid:static/ace/css/fullcalendar.css") }}'/>
-
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/bootstrap-timepicker.css") }}'/>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/datepicker.css") }}'/>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/daterangepicker.css") }}'/>
 {% endblock pre_header %}
 
 {#SIDEBAR#}
@@ -27,9 +32,9 @@
 {# MODALS #}
 {% block modals %}
 
-     {% include 'time_log/timelog_dialog_template.jinja2' %}
+    {% include 'time_log/dialog/time_log_dialog_template.jinja2' %}
 
-{% endblock modals%}
+{% endblock modals %}
 
 {#PAGE-CONTENT#}
 {% block page_content %}
@@ -74,190 +79,201 @@
     <!--inline scripts related to this page-->
 
     <script type="text/javascript">
-    jQuery(function ($) {
+        jQuery(function ($) {
 
-        /* initialize the external events
-         -----------------------------------------------------------------*/
+            /* initialize the external events
+             -----------------------------------------------------------------*/
 
-        $('#external-events div.external-event').each(function () {
+            $('#external-events div.external-event').each(function () {
 
 // create an Event Object (http://arshaw.com/fullcalendar/docs/event_data/Event_Object/)
 // it doesn't need to have a start or end
-            var eventObject = {
-                title: $.trim($(this).text()) // use the element's text as the event title
-            };
-
-// store the Event Object in the DOM element so we can get to it later
-            $(this).data('eventObject', eventObject);
-
-// make the event draggable using jQuery UI
-            $(this).draggable({
-                zIndex: 999,
-                revert: true,      // will cause the event to go back to its
-                revertDuration: 0  //  original position after the drag
-            });
-
-        });
-
-
-        /* initialize the calendar
-         -----------------------------------------------------------------*/
-        $.getJSON('/entities/{{ entity.id }}/time_logs/').then(function (data) {
-
-
-            var events = [];
-            var time_logs = [];
-            for (var i = 0; i < data.length; i++) {
-
-
-                var start_date = new Date(parseInt(data[i].start_date));
-                var end_date = new Date(parseInt(data[i].end_date));
-
-
-                var time_log = {
-                    tId:data[i].id,
-                    title: data[i].task_name+' | '+data[i].parent_name,
-                    start: start_date,
-                    end: end_date,
-                    className: 'label-important',
-                    allDay: false
+                var eventObject = {
+                    title: $.trim($(this).text()) // use the element's text as the event title
                 };
 
-                events.push(time_log);
-            }
-            $.getJSON('/entities/{{ entity.id }}/vacations/').then(function (vData) {
+// store the Event Object in the DOM element so we can get to it later
+                $(this).data('eventObject', eventObject);
 
-                var vacations = [];
+// make the event draggable using jQuery UI
+                $(this).draggable({
+                    zIndex: 999,
+                    revert: true,      // will cause the event to go back to its
+                    revertDuration: 0  //  original position after the drag
+                });
 
-                for (var j = 0; j < vData.length; j++) {
+            });
 
 
-                    var start_date = new Date(parseInt(vData[j].start_date));
-                    var end_date = new Date(parseInt(vData[j].end_date));
+            /* initialize the calendar
+             -----------------------------------------------------------------*/
+            $.getJSON('/entities/{{ entity.id }}/time_logs/').then(function (data) {
 
-                    var vacation = {
-                        tId:vData[j].id,
-                        title: vData[j].type,
+
+                var events = [];
+                var time_logs = [];
+                for (var i = 0; i < data.length; i++) {
+
+
+                    var start_date = new Date(parseInt(data[i].start_date));
+                    var end_date = new Date(parseInt(data[i].end_date));
+
+
+                    var time_log = {
+                        tId: data[i].id,
+                        tType: data[i].entity_type,
+                        title: data[i].task_name + ' | ' + data[i].parent_name,
                         start: start_date,
                         end: end_date,
-                        className: 'label-yellow',
-                        allDay: true
+                        className: 'label-important',
+                        allDay: false
+                    };
+
+                    events.push(time_log);
+                }
+                $.getJSON('/entities/{{ entity.id }}/vacations/').then(function (vData) {
+
+                    var vacations = [];
+
+                    for (var j = 0; j < vData.length; j++) {
+
+
+                        var start_date = new Date(parseInt(vData[j].start_date));
+                        var end_date = new Date(parseInt(vData[j].end_date));
+
+                        var vacation = {
+                            tId: vData[j].id,
+                            tType: vData[j].entity_type,
+                            title: vData[j].type,
+                            start: start_date,
+                            end: end_date,
+                            className: 'label-yellow',
+                            allDay: true
+                        }
+
+                        events.push(vacation);
                     }
 
-                    events.push(vacation);
-                }
 
+                    var calendar = $('#calendar').fullCalendar({
+                        buttonText: {
+                            prev: '<i class="icon-chevron-left"></i>',
+                            next: '<i class="icon-chevron-right"></i>'
+                        },
 
-                var calendar = $('#calendar').fullCalendar({
-                    buttonText: {
-                        prev: '<i class="icon-chevron-left"></i>',
-                        next: '<i class="icon-chevron-right"></i>'
-                    },
-
-                    header: {
-                        left: 'prev,next today',
-                        center: 'title',
-                        right: 'month,agendaWeek,agendaDay'
-                    },
-                    events: events,
-                    editable: true,
-                    droppable: false, // this allows things to be dropped onto the calendar !!!
-                    drop: function (date, allDay) { // this function is called when something is dropped
+                        header: {
+                            left: 'prev,next today',
+                            center: 'title',
+                            right: 'month,agendaWeek,agendaDay'
+                        },
+                        events: events,
+                        editable: true,
+                        droppable: false, // this allows things to be dropped onto the calendar !!!
+                        drop: function (date, allDay) { // this function is called when something is dropped
 
 // retrieve the dropped element's stored Event Object
-                        var originalEventObject = $(this).data('eventObject');
-                        var $extraEventClass = $(this).attr('data-class');
+                            var originalEventObject = $(this).data('eventObject');
+                            var $extraEventClass = $(this).attr('data-class');
 
 
 // we need to copy it, so that multiple events don't have a reference to the same object
-                        var copiedEventObject = $.extend({}, originalEventObject);
+                            var copiedEventObject = $.extend({}, originalEventObject);
 
 // assign it the date that was reported
-                        copiedEventObject.start = date;
-                        copiedEventObject.allDay = allDay;
-                        if ($extraEventClass) copiedEventObject['className'] = [$extraEventClass];
+                            copiedEventObject.start = date;
+                            copiedEventObject.allDay = allDay;
+                            if ($extraEventClass) copiedEventObject['className'] = [$extraEventClass];
 
 // render the event on the calendar
 // the last `true` argument determines if the event "sticks" (http://arshaw.com/fullcalendar/docs/event_rendering/renderEvent/)
-                        $('#calendar').fullCalendar('renderEvent', copiedEventObject, true);
+                            $('#calendar').fullCalendar('renderEvent', copiedEventObject, true);
 
 // is the "remove after drop" checkbox checked?
-                        if ($('#drop-remove').is(':checked')) {
+                            if ($('#drop-remove').is(':checked')) {
 // if so, remove the element from the "Draggable Events" list
-                            $(this).remove();
+                                $(this).remove();
+                            }
+
+                        },
+                        selectable: true,
+                        selectHelper: true,
+                        select: function (start, end, allDay) {
+                            var time_log_dialog = $('#time_log_dialog');
+                            time_log_dialog.modal({'remote': "/users/{{ entity.id }}/time_logs/create/dialog"});
+
+                            time_log_dialog.on('shown', function () {
+
+
+                              init_time_log_dialog(start, end);
+
+                            });
+                            time_log_dialog.on('hidden', function () {
+                                destruct_time_log_dialog();
+
+                            });
+
+                            {##}
+                            {#                        bootbox.prompt("New Time Log:", function (title) {#}
+                            {#                            if (title !== null) {#}
+                            {#                                calendar.fullCalendar('renderEvent',#}
+                            {#                                        {#}
+                            {#                                            title: title,#}
+                            {#                                            start: start,#}
+                            {#                                            end: end,#}
+                            {#                                            allDay: allDay#}
+                            {#                                        },#}
+                            {#                                        true // make the event "stick"#}
+                            {#                                );#}
+                            {#                            }#}
+                            {#                        });#}
+                            {##}
+
+                            calendar.fullCalendar('unselect');
+
+                        },
+                        eventClick: function (calEvent, jsEvent, view) {
+
+                            $('#time_log_dialog').modal({'remote': "/time_logs/" + calEvent.tId + "/update/dialog"});
+
+
+                            {#                        var form = $("<form class='form-inline'><label>Change event name &nbsp;</label></form>");#}
+                            {#                        form.append("<select id='task_names' name='task_id' class='input-block-level'  data-placeholder='Select Task Name'></select>");#}
+                            {#                        form.append("<button type='submit' class='btn btn-small btn-success'><i cladss='icon-ok'></i> Save</button>");#}
+                            {##}
+                            {##}
+                            {##}
+                            {#                        var div = bootbox.dialog(form,#}
+                            {#                                [#}
+                            {#                                    {#}
+                            {#                                        "label": "<i class='icon-remove'></i> Close",#}
+                            {#                                        "class": "btn-small"#}
+                            {#                                    }#}
+                            {#                                ]#}
+                            {#                                ,#}
+                            {#                                {#}
+                            {##}
+                            {#                                    "onEscape": function () {#}
+                            {#                                        div.modal("hide");#}
+                            {#                                    }#}
+                            {#                                }#}
+                            {#                        );#}
+                            {##}
+                            {#                        form.on('submit', function () {#}
+                            {#                            calEvent.title = form.find("input[type=text]").val();#}
+                            {#                            calendar.fullCalendar('updateEvent', calEvent);#}
+                            {#                            div.modal("hide");#}
+                            {#                            return false;#}
+                            {#                        });#}
                         }
 
-                    },
-                    selectable: true,
-                    selectHelper: true,
-                    select: function (start, end, allDay) {
+
+                    })
 
 
-                        $('#time_log_dialog').modal({'remote':'{{ request.route_url("entity_time_log_dialog", id=-1, mode='create') }}'});
-
-{##}
-{#                        bootbox.prompt("New Time Log:", function (title) {#}
-{#                            if (title !== null) {#}
-{#                                calendar.fullCalendar('renderEvent',#}
-{#                                        {#}
-{#                                            title: title,#}
-{#                                            start: start,#}
-{#                                            end: end,#}
-{#                                            allDay: allDay#}
-{#                                        },#}
-{#                                        true // make the event "stick"#}
-{#                                );#}
-{#                            }#}
-{#                        });#}
-{##}
-
-                        calendar.fullCalendar('unselect');
-
-                    },
-                    eventClick: function (calEvent, jsEvent, view) {
-
-
-                        $('#time_log_dialog').modal({'remote':"/entities/"+calEvent.tId+"/time_log/update/dialog"});
-
-
-{#                        var form = $("<form class='form-inline'><label>Change event name &nbsp;</label></form>");#}
-{#                        form.append("<select id='task_names' name='task_id' class='input-block-level'  data-placeholder='Select Task Name'></select>");#}
-{#                        form.append("<button type='submit' class='btn btn-small btn-success'><i cladss='icon-ok'></i> Save</button>");#}
-{##}
-{##}
-{##}
-{#                        var div = bootbox.dialog(form,#}
-{#                                [#}
-{#                                    {#}
-{#                                        "label": "<i class='icon-remove'></i> Close",#}
-{#                                        "class": "btn-small"#}
-{#                                    }#}
-{#                                ]#}
-{#                                ,#}
-{#                                {#}
-{##}
-{#                                    "onEscape": function () {#}
-{#                                        div.modal("hide");#}
-{#                                    }#}
-{#                                }#}
-{#                        );#}
-{##}
-{#                        form.on('submit', function () {#}
-{#                            calEvent.title = form.find("input[type=text]").val();#}
-{#                            calendar.fullCalendar('updateEvent', calEvent);#}
-{#                            div.modal("hide");#}
-{#                            return false;#}
-{#                        });#}
-                    }
-
-
-                })
-
-
+                });
             });
-        });
 
-    })
+        })
     </script>
 
 {% endblock extrascripts %}

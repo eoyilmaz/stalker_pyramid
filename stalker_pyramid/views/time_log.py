@@ -30,7 +30,7 @@ from stalker.db import DBSession
 from stalker.exceptions import OverBookedError
 from stalker_pyramid.views import (get_logged_in_user,
                                    PermissionChecker, milliseconds_since_epoch,
-                                   get_date)
+                                   get_date, get_date_range)
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -48,14 +48,12 @@ logger.setLevel(logging.DEBUG)
     route_name='entity_time_log_dialog',
     renderer='templates/time_log/dialog/time_log_dialog.jinja2',
 )
-def time_log_dialog(request):
+def create_time_log_dialog(request):
     """creates a create_time_log_dialog by using the given task
     """
     logger.debug('inside time_log_dialog')
 
     came_from = request.params.get('came_from', request.url)
-
-    mode = request.matchdict.get('mode', None)
 
     # get logged in user
     logged_in_user = get_logged_in_user(request)
@@ -63,25 +61,29 @@ def time_log_dialog(request):
     entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
 
+    start = request.matchdict.get('start', -1)
+    end = request.matchdict.get('end', -1)
 
     studio = Studio.query.first()
     if not studio:
         studio = defaults
 
     return {
-        'mode': mode,
+        'mode': 'create',
         'has_permission': PermissionChecker(request),
         'studio': studio,
         'logged_in_user': logged_in_user,
         'entity': entity,
+        'start': start,
+        'end': end,
         'milliseconds_since_epoch': milliseconds_since_epoch,
         'came_from': came_from
     }
 
 
 @view_config(
-    route_name='dialog_update_time_log',
-    renderer='templates/time_log/dialog_create_time_log.jinja2',
+    route_name='time_log_update_dialog',
+    renderer='templates/time_log/dialog/time_log_dialog.jinja2',
 )
 def update_time_log_dialog(request):
     """updates a create_time_log_dialog by using the given task
@@ -99,7 +101,7 @@ def update_time_log_dialog(request):
         studio = defaults
 
     return {
-        'mode': 'UPDATE',
+        'mode': 'update',
         'has_permission': PermissionChecker(request),
         'studio': studio,
         'logged_in_user': logged_in_user,
@@ -127,6 +129,7 @@ def create_time_log(request):
 
     start_date = get_date(request, 'start')
     end_date = get_date(request, 'end')
+
 
     logger.debug('task_id     : %s' % task_id)
     logger.debug('task        : %s' % task)
@@ -164,7 +167,8 @@ def update_time_log(request):
     """runs when updating a time_log
     """
     logger.debug('inside update_time_log')
-    time_log_id = int(request.params.get('time_log_id'))
+    # time_log_id = int(request.params.get('time_log_id'))
+    time_log_id = request.matchdict.get('id', -1)
     time_log = TimeLog.query.filter_by(id=time_log_id).first()
 
     #**************************************************************************
@@ -172,13 +176,16 @@ def update_time_log(request):
     resource_id = int(request.params.get('resource_id', None))
     resource = User.query.filter(User.id == resource_id).first()
 
+
     start_date = get_date(request, 'start')
     end_date = get_date(request, 'end')
 
     logger.debug('time_log_id : %s' % time_log_id)
     logger.debug('resource_id : %s' % resource_id)
-    logger.debug('start_date  : %s' % start_date)
-    logger.debug('end_date    : %s' % end_date)
+    logger.debug('start         : %s' % start_date)
+    logger.debug('end           : %s' % end_date)
+
+
 
     if time_log and resource and start_date and end_date:
         # we are ready to create the time log
@@ -221,6 +228,7 @@ def get_time_logs(request):
         # assert isinstance(time_log, TimeLog)
         time_log_data.append({
             'id': time_log.id,
+            'entity_type':time_log.plural_class_name.lower(),
             'task_id': time_log.task.id,
             'task_name': time_log.task.name,
             'task_status': time_log.task.status.name,

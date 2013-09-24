@@ -421,12 +421,12 @@ def main(global_config, **settings):
 
     # *************************************************************************
     # TimeLog
-
-    config.add_route('entity_time_log_dialog', 'entities/{id}/time_log/{mode}/dialog')
-    config.add_route('task_time_log_dialog', 'tasks/{id}/time_log/{mode}/dialog')
-    config.add_route('user_time_log_dialog', 'users/{id}/time_log/{mode}/dialog')
     config.add_route('dialog_create_time_log', 'tasks/{id}/time_logs/create/dialog')
-    config.add_route('dialog_update_time_log', 'time_logs/{id}/update/dialog')
+
+    config.add_route('entity_time_log_dialog', 'entities/{id}/time_logs/create/dialog')
+    config.add_route('task_time_log_dialog', 'tasks/{id}/time_logs/create/dialog')
+    config.add_route('user_time_log_dialog', 'users/{id}/time_logs/create/dialog')
+    config.add_route('time_log_update_dialog', 'time_logs/{id}/update/dialog')
 
     config.add_route('create_time_log', 'time_logs/create')
     config.add_route('update_time_log', 'time_logs/{id}/update')

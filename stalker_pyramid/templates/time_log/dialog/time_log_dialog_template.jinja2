@@ -2,13 +2,14 @@
      aria-labelledby="time_log_dialog_label"
      class='modal hide fade'
      tabIndex='-1'
+     zIndex='2'
      role='dialog'
      aria-hidden="true">
     <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal"
                 aria-hidden="true">×
         </button>
-        <h3 id="project_dialog_label">Time Log Dialog</h3>
+        <h3 id="project_dialog_label">Time Log</h3>
     </div>
     <div class="modal-body" style="height: 500px"></div>
     <div class="modal-footer">
@@ -16,7 +17,7 @@
             <i class="icon-remove"></i>
             Cancel
         </button>
-        <button id='time_log_dialog_submit_button'
+        <button id='time_log_dialog_submit_button' data-dismiss="modal"
                 type="button" class="btn btn-small btn-primary">
             <i class="icon-ok"></i>
             Ok

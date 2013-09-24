@@ -308,7 +308,7 @@
 
 
                 // convert it to chosen
-                field.chosen(chosen_options);
+                // field.chosen(chosen_options);
             });
         };
     </script>
@@ -330,13 +330,16 @@
     {# Time Log Dialog Initialize #}
     <script type="text/javascript">
         $(function () {
-            var time_log_dialog = $('#time_log_dialog');
-            time_log_dialog.on('shown', function () {
-                init_time_log_dialog();
-            });
-            time_log_dialog.on('hidden', function () {
-                destruct_time_log_dialog();
-            });
+{#            var time_log_dialog = $('#time_log_dialog');#}
+{#            time_log_dialog.on('shown', function () {#}
+{##}
+{#                init_time_log_dialog();#}
+{#            });#}
+{#            time_log_dialog.on('hidden', function () {#}
+{#                destruct_time_log_dialog();#}
+{##}
+{#            });#}
+
         })
     </script>
 

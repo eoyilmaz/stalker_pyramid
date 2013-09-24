@@ -529,7 +529,10 @@ def get_tasks(request):
     resp.content_range = content_range
     return resp
 
-
+@view_config(
+    route_name='get_entity_tasks',
+    renderer='json'
+)
 @view_config(
     route_name='get_user_tasks',
     renderer='json'
@@ -541,7 +544,7 @@ def get_tasks(request):
 def get_entity_tasks(request):
     """RESTful version of getting all tasks of an entity
     """
-    # logger.debug('request.GET: %s' % request.GET)
+    logger.debug('request.GET: %s' % request.GET)
     entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter(Entity.id == entity_id).first()
 

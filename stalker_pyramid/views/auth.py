@@ -211,52 +211,52 @@ def update_user(request):
     )
 
 
-# @view_config(
-#     route_name='get_users',
-#     renderer='json',
-#     permission='List_User'
-# )
-# def get_users(request):
-#     """returns all the users in database
-#     """
-#     # if there is a simple flag, just return ids and names and login
-#     simple = request.GET.get('simple')
-#     if simple:
-#         return [
-#             {
-#                 'id': user.id,
-#                 'name': user.name,
-#                 'login': user.login,
-#             }
-#             for user in User.query.order_by(User.name.asc()).all()
-#         ]
-#     else:
-#         return [
-#             {
-#                 'id': user.id,
-#                 'name': user.name,
-#                 'login': user.login,
-#                 'email': user.email,
-#                 'departments': [
-#                     {
-#                         'id': department.id,
-#                         'name': department.name
-#                     } for department in user.departments
-#                 ],
-#                 'groups': [
-#                     {
-#                         'id': group.id,
-#                         'name': group.name
-#                     } for group in user.groups
-#                 ],
-#                 'tasksCount': len(user.tasks),
-#                 'ticketsCount': len(user.open_tickets),
-#                 'thumbnail_path': user.thumbnail.full_path if user.thumbnail else None
-#             }
-#             for user in User.query.order_by(User.name.asc()).all()
-#         ]
-#
-#
+@view_config(
+    route_name='get_users',
+    renderer='json',
+    permission='List_User'
+)
+def get_users(request):
+    """returns all the users in database
+    """
+    # if there is a simple flag, just return ids and names and login
+    simple = request.GET.get('simple')
+    if simple:
+        return [
+            {
+                'id': user.id,
+                'name': user.name,
+                'login': user.login,
+            }
+            for user in User.query.order_by(User.name.asc()).all()
+        ]
+    else:
+        return [
+            {
+                'id': user.id,
+                'name': user.name,
+                'login': user.login,
+                'email': user.email,
+                'departments': [
+                    {
+                        'id': department.id,
+                        'name': department.name
+                    } for department in user.departments
+                ],
+                'groups': [
+                    {
+                        'id': group.id,
+                        'name': group.name
+                    } for group in user.groups
+                ],
+                'tasksCount': len(user.tasks),
+                'ticketsCount': len(user.open_tickets),
+                'thumbnail_path': user.thumbnail.full_path if user.thumbnail else None
+            }
+            for user in User.query.order_by(User.name.asc()).all()
+        ]
+
+
 # @view_config(
 #     route_name='get_project_users',
 #     renderer='json',
