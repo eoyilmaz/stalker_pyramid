@@ -375,7 +375,9 @@ def update_task(request):
     entity_type = request.params.get('entity_type', None)
     code = request.params.get('code', None)
     asset_type = request.params.get('asset_type_name', None)
-    shot_sequence_id = int(request.params.get('shot_sequence_id', -1))
+    shot_sequence_id = -1
+    if entity_type == 'Shot':
+        shot_sequence_id = int(request.params.get('shot_sequence_id', -1))
 
     logger.debug('parent_id           : %s' % parent_id)
     logger.debug('parent              : %s' % parent)
