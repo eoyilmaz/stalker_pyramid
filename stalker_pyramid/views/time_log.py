@@ -61,8 +61,7 @@ def create_time_log_dialog(request):
     entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
 
-    start = request.matchdict.get('start', -1)
-    end = request.matchdict.get('end', -1)
+
 
     studio = Studio.query.first()
     if not studio:
@@ -74,8 +73,6 @@ def create_time_log_dialog(request):
         'studio': studio,
         'logged_in_user': logged_in_user,
         'entity': entity,
-        'start': start,
-        'end': end,
         'milliseconds_since_epoch': milliseconds_since_epoch,
         'came_from': came_from
     }
@@ -199,6 +196,7 @@ def update_time_log(request):
             return HTTPServerError()
         else:
             DBSession.add(time_log)
+            logger.debug('successfully updated time log!')
 
     return HTTPOk()
 
@@ -237,8 +235,10 @@ def get_time_logs(request):
             'resource_id': time_log.resource_id,
             'resource_name': time_log.resource.name,
             'duration': time_log.total_seconds,
-            'start_date': milliseconds_since_epoch(time_log.start),
-            'end_date': milliseconds_since_epoch(time_log.end)
+            'start': milliseconds_since_epoch(time_log.start),
+            'end': milliseconds_since_epoch(time_log.end),
+            'className': 'label-important',
+            'allDay': '0'
 
             # 'hours_to_complete': time_log.hours_to_complete,
             # 'notes': time_log.notes

@@ -121,6 +121,7 @@ def main(global_config, **settings):
 
 
     # get routes returns json
+
     config.add_route('get_entity_users',               'entities/{id}/users/')
     config.add_route('get_entity_users_not',           'entities/{id}/users/not')
     config.add_route('get_entity_references',          'entities/{id}/references/')
@@ -261,12 +262,13 @@ def main(global_config, **settings):
     # dialogs
     config.add_route('user_dialog',             'users/{id}/{mode}/dialog')
 
+
+
     config.add_route('dialog_create_department_user', 'departments/{id}/users/create/dialog')
     config.add_route('dialog_create_group_user',      'groups/{id}/users/create/dialog')
     config.add_route('dialog_create_user',            'users/create/dialog')
 
     config.add_route('dialog_update_user',    'users/{id}/update/dialog')
-    config.add_route('dialog_create_vacation','users/{id}/vacations/create/dialog')
 
     config.add_route('append_user_to_departments_dialog', 'users/{id}/departments/append/dialog')
     config.add_route('append_user_to_departments', 'users/{id}/departments/append')
@@ -287,6 +289,7 @@ def main(global_config, **settings):
     config.add_route('get_user_tasks',        'users/{id}/tasks/') # json
     config.add_route('get_user_vacations',    'users/{id}/vacations/') # json
     config.add_route('get_user_tickets',      'users/{id}/tickets/') # json
+    config.add_route('get_user_events',       'users/{id}/events/')#json
 
     config.add_route('list_users',            'users/list') # html
     config.add_route('list_user_tasks',       'users/{id}/tasks/list') # html
@@ -421,12 +424,12 @@ def main(global_config, **settings):
 
     # *************************************************************************
     # TimeLog
-    config.add_route('dialog_create_time_log', 'tasks/{id}/time_logs/create/dialog')
 
     config.add_route('entity_time_log_dialog', 'entities/{id}/time_logs/create/dialog')
     config.add_route('task_time_log_dialog', 'tasks/{id}/time_logs/create/dialog')
     config.add_route('user_time_log_dialog', 'users/{id}/time_logs/create/dialog')
-    config.add_route('time_log_update_dialog', 'time_logs/{id}/update/dialog')
+    # TODO: Change the TimeLog Entity plural name so we can use 'time_logs' string here.
+    config.add_route('time_log_update_dialog', 'timelogs/{id}/update/dialog')
 
     config.add_route('create_time_log', 'time_logs/create')
     config.add_route('update_time_log', 'time_logs/{id}/update')
@@ -453,7 +456,9 @@ def main(global_config, **settings):
 
     # *************************************************************************
     # Vacation
-    config.add_route('dialog_update_vacation', 'vacations/{id}/update/dialog')
+    config.add_route('entity_vacation_dialog', 'entities/{id}/vacations/create/dialog')
+    config.add_route('user_vacation_dialog', 'users/{id}/vacations/create/dialog')
+    config.add_route('vacation_update_dialog', 'vacations/{id}/update/dialog')
 
     config.add_route('create_vacation', 'vacations/create')
     config.add_route('update_vacation', 'vacations/{id}/update')

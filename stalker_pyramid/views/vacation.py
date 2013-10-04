@@ -32,10 +32,13 @@ from stalker_pyramid.views import (get_logged_in_user, PermissionChecker,
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-
 @view_config(
-    route_name='dialog_create_vacation',
-    renderer='templates/vacation/dialog_create_vacation.jinja2',
+    route_name='entity_vacation_dialog',
+    renderer='templates/vacation/dialog/vacation_dialog.jinja2',
+)
+@view_config(
+    route_name='user_vacation_dialog',
+    renderer='templates/vacation/dialog/vacation_dialog.jinja2',
 )
 def create_vacation_dialog(request):
     """creates a create_vacation_dialog by using the given user
@@ -61,7 +64,7 @@ def create_vacation_dialog(request):
         vacation_types = []
 
     return {
-        'mode': 'CREATE',
+        'mode': 'create',
         'has_permission': PermissionChecker(request),
         'studio': studio,
         'logged_in_user': logged_in_user,
@@ -72,8 +75,8 @@ def create_vacation_dialog(request):
 
 
 @view_config(
-    route_name='dialog_update_vacation',
-    renderer='templates/vacation/dialog_create_vacation.jinja2',
+    route_name='vacation_update_dialog',
+    renderer='templates/vacation/dialog/vacation_dialog.jinja2',
 )
 def update_vacation_dialog(request):
     """updates a create_vacation_dialog by using the given user
@@ -100,7 +103,7 @@ def update_vacation_dialog(request):
         vacation_types = []
 
     return {
-        'mode': 'UPDATE',
+        'mode': 'update',
         'has_permission': PermissionChecker(request),
         'studio': studio,
         'logged_in_user': logged_in_user,
@@ -187,14 +190,14 @@ def create_vacation(request):
 def update_vacation(request):
     """runs when updating a vacation
     """
-
-    vacation_id = request.params.get('vacation_id')
-    vacation = Vacation.query.filter_by(id=vacation_id).first()
-
+    logged_in_user = get_logged_in_user(request)
 
     #**************************************************************************
     # collect data
-    logged_in_user = get_logged_in_user(request)
+
+    vacation_id = request.matchdict.get('id', -1)
+    vacation = Vacation.query.filter_by(id=vacation_id).first()
+
 
     type_name = request.params.get('type_name')
     start_date = get_date(request, 'start')
@@ -202,6 +205,8 @@ def update_vacation(request):
 
     logger.debug('start_date  : %s' % start_date)
     logger.debug('end_date    : %s' % end_date)
+    logger.debug('vacation    : %s' % vacation)
+    logger.debug('vacation_id    : %s' % vacation_id)
 
     if vacation and start_date and end_date:
         # we are ready to create the time log
@@ -224,8 +229,10 @@ def update_vacation(request):
         vacation.type = type_
         vacation.start = start_date
         vacation.end = end_date
+
         DBSession.add(vacation)
 
+        logger.debug('vacation_id    : %s is updated! ' % vacation_id)
 
     else:
         HTTPServerError()

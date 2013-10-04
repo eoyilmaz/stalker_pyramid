@@ -1,38 +1,43 @@
 <div class='row-fluid'>
+
     <div class='span12'>
+        <div id="message"
+             class="flash-message alert alert-danger text-center hide">
+
+        </div>
 
 
-        <form id='time_log_form'
+        <form id='vacation_form'
               class='form-horizontal'
               role='form'
               method='post'>
 
 
-            {# Resource #}
+            {# User #}
             <div class='control-group'>
-                <label class='span2 control-label' for='time_log_resource'>Resource</label>
+                <label class='span2 control-label'
+                       for='vacation_user'>User</label>
 
                 <div class='span10'>
-                    <select id='time_log_resource'
+                    <select id='vacation_user'
                             class='input-block-level'
-                            name='resource_id'
+                            name='user_id'
                             required></select>
                 </div>
             </div>
 
-            {# Task #}
+            {# Type #}
             <div class='control-group'>
                 <label class='span2 control-label'
-                       for='time_log_task'>Task</label>
+                       for='vacation_type'>Type</label>
 
                 <div class='span10'>
-                    <select id='time_log_task'
-                            name='task_id'
+                    <select id='vacation_type'
                             class='input-block-level'
-                            data-placeholder='Task'></select>
+                            name='type_name'
+                            required></select>
                 </div>
             </div>
-
 
             {# Start & End Dates #}
             <div class="control-group">
@@ -81,28 +86,7 @@
                 </div>
             </div>
         </form>
-        <div class="space-5"></div>
-        <div class="hr dotted"></div>
-        <div class="space-10"></div>
-        <div class="row-fluid">
-            <div class="span2">
 
-            </div>
-            <div class="span2">
-                <div id="percent_completed_chart"
-                     class="easy-pie-chart percentage"
-                     data-size="70" data-color="#87B87F">
-
-                </div>
-            </div>
-
-            <div class="span6">
-
-                <div id="remaning_hours" class="infobox-content">
-                </div>
-            </div>
-
-        </div>
     </div>
 </div>
 
@@ -124,10 +108,9 @@
 
 <script>
 function init_event_dialog(start, end, allDay) {
-    console.debug('starting to initialize time_log dialog!!!');
+    console.debug('starting to initialize vacation dialog!!!');
 
     {# ***************************************************************** #}
-
 
     var start_date_value = start;
     var end_date_value = end;
@@ -144,115 +127,101 @@ function init_event_dialog(start, end, allDay) {
 
 
     {% if mode == 'create' %}
+        //*********************************************************
+        //Action
 
+        $("#vacation_form").attr("action", "{{ request.route_url('create_vacation', id=entity.id) }}");
 
-        $("#time_log_form").attr("action", "{{ request.route_url('create_time_log', id=entity.id) }}");
+        //*********************************************************
+        //User
 
-        {% if entity.entity_type  == 'User' %}
+        var vacation_user = $('#vacation_user');
+        vacation_user.append('<option value={{ user.id }} selected>{{ user.name }}</option>');
 
-            {# ***************************************************************** #}
-            {# Resource #}
+        //*********************************************************
+        //Type
 
-            var time_log_resource = $('#time_log_resource');
-            time_log_resource.append('<option value={{ entity.id }} selected>{{ entity.name }}</option>');
+        var vacation_type = $('#vacation_type');
+        {% raw %}
+        var type_option_template = doT.template(
+                '<option value={{=it.id}} {{=it.selected}}>{{=it.name}}</option>'
+        );
+        {% endraw %}
 
-            {# ***************************************************************** #}
-            {# Task #}
+        {% for type in types %}
 
-            {% raw %}
-            var task_option_template = doT.template(
-                    '<option value={{=it.id}}>{{=it.name}}</option>'
-            );
-            {% endraw %}
-
-            var time_log_task = $('#time_log_task');
-            time_log_task.find('option').remove();
-
-            {% for task in entity.tasks %}
-
-                var parent_name = '';
-
-                {% for parent in task.parents %}
-
-                    parent_name += " | " + '{{parent.name }}';
-
-                {% endfor %}
-
-                var data = {id: '{{ task.id }}', name: '{{ task.name }}' + parent_name};
-                time_log_task.append(task_option_template(data));
-
-            {% endfor %}
-
-            time_log_task.on('change', function () {
-
-                update_hours_to_complete()
-
-            });
-
-        {% elif entity.entity_type  == 'Task'%}
-
-            {# ***************************************************************** #}
-            {# Task #}
-
-            var time_log_task = $('#time_log_task');
-            var parent_name = '';
-
-            {% for parent in entity.parents %}
-
-                parent_name += " | " + '{{parent.name }}'
-
-            {% endfor %}
-
-            time_log_task.append('<option value={{ entity.id }} selected>{{ entity.name }}' + parent_name + '</option>');
-
-            {# ***************************************************************** #}
-            {# Resource #}
-
-            {% raw %}
-            var user_option_template = doT.template(
-                    '<option value={{=it.id}}>{{=it.name}}</option>'
-            );
-            {% endraw %}
-
-            var time_log_resource = $('#time_log_resource');
-            time_log_resource.find('option').remove();
-
-            {% for user in entity.users %}
-
-                var data = {id: '{{ user.id }}', name: '{{ user.name }}' + parent_name};
-                time_log_resource.append(user_option_template(data));
-
-            {% endfor %}
-
-            time_log_resource.on('change', function () {
-
-            });
-
-
-
-        {% endif %}
-
-    {% elif mode == 'update' %}
-        alert('update')
-
-        $("#time_log_form").attr("action", "{{ request.route_url('update_time_log', id=time_log.id) }}");
-
-        var time_log_resource = $('#time_log_resource');
-        time_log_resource.append('<option value={{ time_log.resource.id }} selected>{{ time_log.resource.name }}</option>');
-
-        var time_log_task = $('#time_log_task');
-        var parent_name = '';
-
-        {% for parent in time_log.task.parents %}
-
-            parent_name += " | " + '{{parent.name }}';
+            var data = {id: '{{ type.name }}', name: '{{ type.name }}'};
+            vacation_type.append(type_option_template(data));
 
         {% endfor %}
 
-        time_log_task.append('<option value={{ time_log.task.id }} selected>{{ time_log.task.name }}' + parent_name + '</option>');
 
-        start_date_value = new Date(parseInt({{ milliseconds_since_epoch(time_log.start) }}));
-        end_date_value = new Date(parseInt({{ milliseconds_since_epoch(time_log.end) }}));
+
+        //*********************************************************
+        //Start, End
+
+        start_date_value = new Date(parseInt({{ milliseconds_since_epoch(vacation.start) }}));
+        end_date_value = new Date(parseInt({{ milliseconds_since_epoch(vacation.end) }}));
+
+        start_time_value = start_date_value;
+        end_time_value = end_date_value;
+
+
+
+    {% elif mode == 'update' %}
+        //*********************************************************
+        //Action
+
+        $("#vacation_form").attr("action", "{{ request.route_url('update_vacation', id=vacation.id) }}");
+
+        //*********************************************************
+        //User
+
+        var vacation_user = $('#vacation_user');
+        vacation_user.append('<option value={{ user.id }} selected>{{ user.name }}</option>');
+
+        //*********************************************************
+        //Type
+
+        var vacation_type = $('#vacation_type');
+
+        {% raw %}
+        var type_option_template = doT.template(
+                '<option value={{=it.id}} {{=it.selected}}>{{=it.name}}</option>'
+        );
+        {% endraw %}
+
+        {% if types | count > 0 %}
+
+            {% for type in types %}
+
+                var selected = '';
+
+                {% if vacation.type.id == type.id %}
+
+                    selected = 'selected';
+
+                {% endif %}
+
+
+
+                var data = {id: '{{ type.name }}', name: '{{ type.name }}', selected: selected};
+                vacation_type.append(type_option_template(data));
+
+            {% endfor %}
+
+        {% else %}
+
+            var data = {id: '{{ vacation.type.name }}', name: '{{ vacation.type.name }}', selected: 'selected'};
+            vacation_type.append(type_option_template(data));
+
+        {% endif %}
+
+        //*********************************************************
+        //Start, End
+
+        start_date_value = new Date(parseInt({{ milliseconds_since_epoch(vacation.start) }}));
+        end_date_value = new Date(parseInt({{ milliseconds_since_epoch(vacation.end) }}));
 
         start_time_value = start_date_value;
         end_time_value = end_date_value;
@@ -282,92 +251,7 @@ function init_event_dialog(start, end, allDay) {
     {# ***************************************************************** #}
     {# Update Remaining Hours #}
 
-    // Calculate remaining hours
-    var update_hours_to_complete = function () {
 
-        // total hours of time_logs should have been given by Stalker
-        // calculate the remaining hours
-
-
-        $.getJSON('/tasks/' + time_log_task.val() + '/').then(function (data) {
-
-
-            var remaining_seconds = parseFloat(data[0].schedule_seconds) - parseFloat(data[0].total_logged_seconds);
-
-
-            var start_end = get_start_end();
-            var start = start_end[0];
-            var end = start_end[1];
-
-            var timing_resolution = 3600000; // 1 hour
-            var duration_millis = end.getTime() - start.getTime();
-
-
-            // round the duration millis
-            duration_millis = (((duration_millis + timing_resolution * 0.5) / timing_resolution) >> 0 ) * timing_resolution;
-
-            {% if mode == 'update' %}
-
-                duration_millis -= (end_date_value.getTime() - start_date_value.getTime());
-
-            {% endif %}
-
-            var duration_seconds = duration_millis / 1000;
-
-            // subtract already logged time
-            var remaining_seconds_after_this_time_log = remaining_seconds - duration_seconds;
-            var remaining_hours_after_this_time_log = parseInt(remaining_seconds_after_this_time_log / 3600);
-
-            var remaning_hours = $('#remaning_hours');
-            remaning_hours.find('span').remove();
-
-            var completed_percent;
-
-            if (remaining_hours_after_this_time_log >= 0) {
-
-                remaning_hours.append("<span class='pull_left'>If you enter this time log, <b>" + remaining_hours_after_this_time_log + "</b> hours remains to complete this task. </span>");
-
-                completed_percent = (100 - ((remaining_seconds_after_this_time_log / parseFloat(data[0].schedule_seconds)) * 100)).toFixed(1);
-
-            }
-
-            else {
-
-                remaning_hours.append("<span class='pull_left'>You entered <b>" + remaining_hours_after_this_time_log + "</b> extra hours. </span>");
-
-                completed_percent = 100;
-
-            }
-
-            var percent_completed_chart = $('#percent_completed_chart');
-            percent_completed_chart.attr('data-percent', completed_percent);
-            percent_completed_chart.find('span').remove();
-            percent_completed_chart.append("<span class='percent'>" + completed_percent + "</span>%");
-
-            $('.easy-pie-chart.percentage').each(function () {
-
-                var $box = $(this).closest('.infobox');
-                var barColor = $(this).data('color') || (!$box.hasClass('infobox-dark') ? $box.css('color') : 'rgba(255,255,255,0.95)');
-                var trackColor = barColor == 'rgba(255,255,255,0.95)' ? 'rgba(255,255,255,0.25)' : '#E2E2E2';
-                var size = parseInt($(this).data('size')) || 50;
-
-                $(this).easyPieChart({
-                    barColor: barColor,
-                    trackColor: trackColor,
-                    scaleColor: false,
-                    lineCap: 'butt',
-                    lineWidth: parseInt(size / 10),
-                    animate: /msie\s*(8|7|6)/.test(navigator.userAgent.toLowerCase()) ? false : 1000,
-                    size: size
-                });
-            });
-
-        });
-
-
-    };
-
-    update_hours_to_complete();
 
 
     {# ***************************************************************** #}
@@ -392,12 +276,6 @@ function init_event_dialog(start, end, allDay) {
 
         start_end_date_range_picker.data().daterangepicker.updateFromControl();
 
-        // TODO: Change the listener action type
-        start_end_date_range_picker.on('hidden', function () {
-
-            update_hours_to_complete()
-
-        });
 
     });
 
@@ -413,15 +291,6 @@ function init_event_dialog(start, end, allDay) {
             showSeconds: false,
             showMeridian: false
         });
-
-
-        // TODO: Change the listener action type
-        start_time.on('hide.timepicker', function () {
-
-            update_hours_to_complete()
-
-        });
-
     });
 
     {# ***************************************************************** #}
@@ -436,14 +305,6 @@ function init_event_dialog(start, end, allDay) {
             showSeconds: false,
             showMeridian: false
         });
-
-        // TODO: Change the listener action type
-        end_time.on('hide.timepicker', function () {
-
-            update_hours_to_complete()
-
-        });
-
     });
 
     {# ***************************************************************** #}
@@ -451,11 +312,18 @@ function init_event_dialog(start, end, allDay) {
 
     $('#event_dialog_submit_button').on('click', function () {
 
-        var time_log_form = $('#time_log_form');
+        var vacation_form = $('#vacation_form');
 
-        alert('init_event_dialoginit_event_dialog')
+        {% if types | count > 0 %}
 
-        if (time_log_form.validate()) {
+            if (vacation_type.val() == 'StudioWide') {
+                $('#message').show();
+                $('#message').append("<p><strong><i class='icon-danger'>You can not create a vacation with type StudioWide</p>")
+                return;
+            }
+        {% endif %}
+
+        if (vacation_form.validate()) {
 
             // merge end_date and end_time
             var start_end = get_start_end();
@@ -463,27 +331,37 @@ function init_event_dialog(start, end, allDay) {
             var end = start_end[1];
 
             $.post(
-                    time_log_form.attr('action'),
-                    time_log_form.serialize() + '&' + $.param({ 'start': start.toUTCString(), 'end': end.toUTCString() })
+                    vacation_form.attr('action'),
+                    vacation_form.serialize() + '&' + $.param({ 'start': start.toUTCString(), 'end': end.toUTCString() })
             );
 
         }
     });
 
-    $('#time_log_form').validate({
+    $('#vacation_form').validate({
         errorElement: 'span',
         errorClass: 'help-inline',
         focusInvalid: true,
         rules: {
-            resource_id: {
+            user_id: {
                 required: true
             },
-            task_id: {
+            type_name: {
                 required: true
             },
             comment: {
                 required: true
+            },
+            start_and_end_dates: {
+                required: true
+            },
+            start_time: {
+                required: true
+            },
+            end_time: {
+                required: true
             }
+
         },
 
         messages: {
@@ -523,12 +401,13 @@ function init_event_dialog(start, end, allDay) {
 
     });
 
-    console.debug('finished initializing the time_log dialog!')
+    console.debug('finished initializing the vacation dialog!')
 }
 </script>
 
 <script type="text/javascript">
     function destruct_event_dialog() {
         $('#event_dialog').data('modal', null);
+        alert('destruct_event_dialog');
     }
 </script>

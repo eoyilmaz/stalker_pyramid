@@ -632,7 +632,7 @@ def get_task(request):
     elif isinstance(entity, Project):
         return_data = convert_to_dgrid_gantt_project_format([entity])
 
-    # logger.debug('return_data: %s' % return_data)
+    logger.debug('return_data: %s' % return_data)
 
     return return_data
 

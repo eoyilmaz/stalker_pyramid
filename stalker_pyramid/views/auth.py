@@ -29,7 +29,7 @@ from sqlalchemy import or_
 
 import stalker_pyramid
 from stalker import (defaults, User, Department, Group, Project, Entity,
-                     Studio, Permission, EntityType, Task)
+                     Studio, Permission, EntityType, Task, Vacation)
 from stalker.db import DBSession
 from stalker_pyramid.views import (log_param, get_logged_in_user,
                                    PermissionChecker, get_multi_integer, get_tags, milliseconds_since_epoch)
@@ -694,6 +694,87 @@ def check_email_availability(request):
     return {
         'available': available
     }
+
+
+@view_config(
+    route_name='get_user_events',
+    renderer='json'
+)
+def get_user_events(request):
+    """checks it the given email is available
+    """
+    """returns all the Shots of the given Project
+    """
+    logger.debug('get_user_events is running')
+    user_id = request.matchdict.get('id', -1)
+    user = User.query.filter_by(id=user_id).first()
+
+    logger.debug('user_id : %s' % user_id)
+
+    events = []
+
+    # if user.time_logs:
+    for time_log in user.time_logs:
+        # logger.debug('time_log.task.id : %s' % time_log.task.id)
+        # assert isinstance(time_log, TimeLog)
+        events.append({
+            'id': time_log.id,
+            'entity_type':time_log.plural_class_name.lower(),
+            'title': '%s (%s)' % (
+                time_log.task.name,
+                ' | '.join(reversed([parent.name for parent in time_log.task.parents]))),
+            'start': milliseconds_since_epoch(time_log.start),
+            'end': milliseconds_since_epoch(time_log.end),
+            'className': 'label-important',
+            'allDay': False,
+            'status': time_log.task.status.name
+            # 'hours_to_complete': time_log.hours_to_complete,
+            # 'notes': time_log.notes
+        })
+
+
+    vacations = Vacation.query.filter(Vacation.user==None).all()
+    if isinstance(user, User):
+        vacations.extend(user.vacations)
+    # if user.time_logs:
+    for vacation in vacations:
+        # logger.debug('time_log.task.id : %s' % time_log.task.id)
+        # assert isinstance(time_log, TimeLog)
+        events.append({
+            'id': vacation.id,
+            'entity_type':vacation.plural_class_name.lower(),
+            'title': vacation.type.name,
+            'start': milliseconds_since_epoch(vacation.start),
+            'end': milliseconds_since_epoch(vacation.end),
+            'className': 'label-yellow',
+            'allDay': True,
+            'status': ''
+        })
+    today = datetime.datetime.today()
+
+    # if user.time_logs:
+    for task in user.tasks:
+        # logger.debug('time_log.task.id : %s' % time_log.task.id)
+        # assert isinstance(time_log, TimeLog)
+
+        if today < task.start:
+            events.append({
+                'id': task.id,
+                'entity_type':task.plural_class_name.lower(),
+                'title': '%s (%s)' % (
+                    task.name,
+                    ' | '.join(reversed([parent.name for parent in task.parents]))),
+                'start': milliseconds_since_epoch(task.start),
+                'end': milliseconds_since_epoch(task.end),
+                'className': 'label',
+                'allDay': False,
+                'status': task.status.name
+                # 'hours_to_complete': time_log.hours_to_complete,
+                # 'notes': time_log.notes
+            })
+
+    return events
+
 
 
 
