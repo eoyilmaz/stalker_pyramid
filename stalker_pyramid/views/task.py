@@ -375,7 +375,7 @@ def update_task(request):
     entity_type = request.params.get('entity_type', None)
     code = request.params.get('code', None)
     asset_type = request.params.get('asset_type_name', None)
-    shot_sequence_id = request.params.get('shot_sequence_id', None)
+    shot_sequence_id = int(request.params.get('shot_sequence_id', -1))
 
     logger.debug('parent_id           : %s' % parent_id)
     logger.debug('parent              : %s' % parent)
@@ -453,7 +453,9 @@ def update_task(request):
         task.type = type_
 
     if entity_type == 'Shot':
-        task.sequence = Sequence.query.filter_by(id=shot_sequence_id).first()
+        temp_sequence = Sequence.query.filter_by(id=shot_sequence_id).first()
+        if temp_sequence:
+            task.sequences = [temp_sequence]
 
     task._reschedule(task.schedule_timing, task.schedule_unit)
     if update_bid:
