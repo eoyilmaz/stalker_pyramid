@@ -247,7 +247,6 @@
         task_entity_type.val("{{ entity_type }}");
 
 
-
        // task_entity_type.val('Asset');
 
         var task_inputs = $('#task_inputs');
@@ -301,13 +300,20 @@
             {search_contains: true}
         );
 
-        var project_id;
+        var project_id = -1;
         {% if mode == 'update' %}
             project_id = {{ task.project.id }};
+        {% else %}
+            {% if project %}
+                project_id = {{ project.id }};
+            {% endif %}
+        {% endif %}
+
+        if (project_id !== -1){
             deferred.then(function(){
                 task_project.val(project_id).trigger('chosen:updated');
             });
-        {% endif %}
+        }
 
         // Updates on project change
         task_project.on('change', function(){

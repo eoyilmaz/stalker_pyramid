@@ -306,20 +306,20 @@
                                 <a data-target="#task_dialog"
                                    data-toggle="modal"
                                    data-keyboard=false
-                                   href='{{ request.route_url("project_task_dialog", id=-1, mode='create') }}'>Task</a></li>
+                                   href='{{ request.route_url("project_task_dialog", id=entity.id, mode='create') }}'>Task</a></li>
                             <li>
                                 <a data-target="#task_dialog"
                                    data-toggle="modal"
                                    data-keyboard=false
-                                   href='{{ request.route_url("project_asset_dialog", id=-1, mode='create')}}'>Asset</a></li>
+                                   href='{{ request.route_url("project_asset_dialog", id=entity.id, mode='create')}}'>Asset</a></li>
                             <li><a data-target="#task_dialog"
                                    data-toggle="modal"
                                    data-keyboard=false
-                                   href='{{ request.route_url("project_shot_dialog", id=-1, mode='create')}}'>Shot</a></li>
+                                   href='{{ request.route_url("project_shot_dialog", id=entity.id, mode='create')}}'>Shot</a></li>
                             <li><a data-target="#task_dialog"
                                    data-toggle="modal"
                                    data-keyboard=false
-                                   href='{{ request.route_url("project_sequence_dialog", id=-1, mode='create')}}'>Sequence</a></li>
+                                   href='{{ request.route_url("project_sequence_dialog", id=entity.id, mode='create')}}'>Sequence</a></li>
                         </ul>
                     </div>
                 {% endif %}

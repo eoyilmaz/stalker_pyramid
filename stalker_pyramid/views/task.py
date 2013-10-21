@@ -779,8 +779,12 @@ def create_data_dialog(request, entity_type='Task'):
         if entity.entity_type == 'Project':
             project = entity
         else:
-            project = entity.project
-            parent = entity
+            try:
+                project = entity.project
+                parent = entity
+            except AttributeError:
+                # entity doesn't have an attribute like project
+                pass
 
     mode = request.matchdict.get('mode', None)
 
