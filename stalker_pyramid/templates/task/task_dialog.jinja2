@@ -241,7 +241,10 @@
         {# Update fields according to the selected Entity Type #}
         // convert to chosen
         var task_entity_type = $('#task_entity_type');
-      //  task_entity_type.chosen({disable_search_threshold: 10});
+        //  task_entity_type.chosen({disable_search_threshold: 10});
+        
+        {# set the entity type #}
+        task_entity_type.val("{{ entity_type }}");
 
 
 

@@ -212,6 +212,11 @@ def update_user(request):
 
 
 @view_config(
+    route_name='get_project_users',
+    renderer='json',
+    permission='List_User'
+)
+@view_config(
     route_name='get_users',
     renderer='json',
     permission='List_User'
@@ -221,6 +226,15 @@ def get_users(request):
     """
     # if there is a simple flag, just return ids and names and login
     simple = request.GET.get('simple')
+
+    # if there is an id it is probably a project
+    pid = request.matchdict.get('id')
+    if pid:
+        project = Project.query.filter(Project.id == pid).first()
+        users = project.users
+    else:
+        users = User.query.order_by(User.name.asc()).all()
+
     if simple:
         return [
             {
@@ -228,7 +242,7 @@ def get_users(request):
                 'name': user.name,
                 'login': user.login,
             }
-            for user in User.query.order_by(User.name.asc()).all()
+            for user in users
         ]
     else:
         return [
@@ -253,7 +267,7 @@ def get_users(request):
                 'ticketsCount': len(user.open_tickets),
                 'thumbnail_path': user.thumbnail.full_path if user.thumbnail else None
             }
-            for user in User.query.order_by(User.name.asc()).all()
+            for user in users
         ]
 
 

@@ -300,16 +300,26 @@
                             Create
                             <span class="caret"></span>
                         </button>
-    
+
                         <ul class="dropdown-menu" role='menu'>
                             <li>
                                 <a data-target="#task_dialog"
                                    data-toggle="modal"
                                    data-keyboard=false
                                    href='{{ request.route_url("project_task_dialog", id=-1, mode='create') }}'>Task</a></li>
-                            <li><a href='#'>Asset</a></li>
-                            <li><a href='#'>Shot</a></li>
-                            <li><a href='#'>Sequence</a></li>
+                            <li>
+                                <a data-target="#task_dialog"
+                                   data-toggle="modal"
+                                   data-keyboard=false
+                                   href='{{ request.route_url("project_asset_dialog", id=-1, mode='create')}}'>Asset</a></li>
+                            <li><a data-target="#task_dialog"
+                                   data-toggle="modal"
+                                   data-keyboard=false
+                                   href='{{ request.route_url("project_shot_dialog", id=-1, mode='create')}}'>Shot</a></li>
+                            <li><a data-target="#task_dialog"
+                                   data-toggle="modal"
+                                   data-keyboard=false
+                                   href='{{ request.route_url("project_sequence_dialog", id=-1, mode='create')}}'>Sequence</a></li>
                         </ul>
                     </div>
                 {% endif %}

@@ -1,19 +1,19 @@
 # -*- coding: utf-8 -*-
 # Stalker Pyramid a Web Base Production Asset Management System
 # Copyright (C) 2009-2013 Erkan Ozgur Yilmaz
-# 
+#
 # This file is part of Stalker Pyramid.
-# 
+#
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
 # License as published by the Free Software Foundation;
 # version 2.1 of the License.
-# 
+#
 # This library is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # Lesser General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
@@ -323,7 +323,7 @@ def update_task_dialog(request):
     task = Task.query.filter(Task.id == task_id).first()
 
     return {
-        'mode': 'UPDATE',
+        'mode': 'update',
         'has_permission': PermissionChecker(request),
         'project': task.project,
         'task': task,
@@ -764,19 +764,14 @@ def get_project_tasks(request):
     ]
 
 
-@view_config(
-    route_name='project_task_dialog',
-    renderer='templates/task/task_dialog.jinja2'
-)
-def create_task_dialog(request):
-    """only project information is present
+
+def create_data_dialog(request, entity_type='Task'):
+    """a generic function which will create a dictionary with enough data
     """
     logged_in_user = get_logged_in_user(request)
 
     entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
-
-    entity_type = request.matchdict.get('etype', -1)
 
     parent = None
     project = None
@@ -799,8 +794,49 @@ def create_task_dialog(request):
         'parent': parent,
         'schedule_models': defaults.task_schedule_models,
         'milliseconds_since_epoch': milliseconds_since_epoch,
-        'came_from': came_from
+        'came_from': came_from,
+        'entity_type': entity_type
     }
+
+
+@view_config(
+    route_name='project_task_dialog',
+    renderer='templates/task/task_dialog.jinja2'
+)
+def create_task_dialog(request):
+    """called when creating tasks
+    """
+    return create_data_dialog(request, entity_type='Task')
+
+
+@view_config(
+    route_name='project_asset_dialog',
+    renderer='templates/task/task_dialog.jinja2'
+)
+def create_asset_dialog(request):
+    """called when creating assets
+    """
+    return create_data_dialog(request, entity_type='Asset')
+
+
+@view_config(
+    route_name='project_shot_dialog',
+    renderer='templates/task/task_dialog.jinja2'
+)
+def create_shot_dialog(request):
+    """called when creating shots
+    """
+    return create_data_dialog(request, entity_type='Shot')
+
+
+@view_config(
+    route_name='project_sequence_dialog',
+    renderer='templates/task/task_dialog.jinja2'
+)
+def create_sequence_dialog(request):
+    """called when creating sequences
+    """
+    return create_data_dialog(request, entity_type='Sequence')
 
 
 @view_config(
@@ -810,6 +846,7 @@ def create_task_dialog(request):
 def create_child_task_dialog(request):
     """generates the info from the given parent task
     """
+    # TODO: update this so it will use the create_data_dialog()
     parent_task_id = request.matchdict.get('id', -1)
     parent_task = Task.query.filter_by(id=parent_task_id).first()
 
@@ -1170,22 +1207,30 @@ def request_task_review(request):
     route_name='view_project_task',
     renderer='templates/task/view_project_task.jinja2'
 )
+@view_config(
+    route_name='view_task',
+    renderer='templates/task/view_project_task.jinja2'
+)
 def view_project_task(request):
     """runs when viewing an task
     """
     logged_in_user = get_logged_in_user(request)
 
-    project_id = request.matchdict['pid']
-    project = Project.query.filter_by(id=project_id).first()
-
     task_id = request.matchdict['id']
     task = Task.query.filter_by(id=task_id).first()
+
+    project_id = request.matchdict.get('pid', None)
+    if project_id:
+        project = Project.query.filter_by(id=project_id).first()
+    else:
+        if task:
+            project = task.project
 
     studio = Studio.query.first()
     projects = Project.query.all()
 
     return {
-        'entity':project,
+        'entity': project,
         'task': task,
         'has_permission': PermissionChecker(request),
         'logged_in_user': logged_in_user,

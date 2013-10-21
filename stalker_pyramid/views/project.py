@@ -268,29 +268,26 @@ def get_project_tasks_today(request):
     start_of_today = datetime.datetime.combine(today, start)
     end_of_today = datetime.datetime.combine(today, end)
 
-    tasks_today = [];
+    tasks_today = []
 
-    if action=='start':
-
+    if action == 'start':
         tasks_today = Task.query.join(Project, Task.project) \
             .filter(Project.id == project_id) \
             .filter(Task.computed_start < end_of_today) \
             .filter(Task.computed_end > start_of_today).all()
 
-    elif action=='end':
+    elif action == 'end':
+        tasks_today = Task.query.join(Project, Task.project) \
+           .filter(Project.id == project_id) \
+           .filter(Task.computed_end > start_of_today) \
+           .filter(Task.computed_end <= end_of_today).all()
 
-         tasks_today = Task.query.join(Project, Task.project) \
-            .filter(Project.id == project_id) \
-            .filter(Task.computed_end > start_of_today) \
-            .filter(Task.computed_end <= end_of_today).all()
-
-    task_today_list=[]
-
+    task_today_list = []
 
     for task in tasks_today:
         assert isinstance(task, Task)
         if task.is_leaf:
-            resourcesSTR =''
+            resourcesSTR = ''
             for user in task.resources:
                 resourcesSTR += '<a href="/users/%s/view">%s</a><br/>' % (user.id , user.name)
 

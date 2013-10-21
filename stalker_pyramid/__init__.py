@@ -193,7 +193,9 @@ def main(global_config, **settings):
     config.add_route('project_dialog',             'projects/{id}/{mode}/dialog')
 
     config.add_route('project_task_dialog',        'projects/{id}/tasks/{mode}/dialog')
-    config.add_route('dialog_create_asset',        'projects/{id}/assets/create/dialog')
+    config.add_route('project_asset_dialog',       'projects/{id}/assets/{mode}/dialog')
+    config.add_route('project_shot_dialog',        'projects/{id}/shots/{mode}/dialog')
+    config.add_route('project_sequence_dialog',    'projects/{id}/sequences/{mode}/dialog')
 
     config.add_route('get_project_tasks',          'projects/{id}/tasks/') # json
     config.add_route('get_project_lead',           'projects/{id}/lead/') # json
@@ -223,9 +225,9 @@ def main(global_config, **settings):
     config.add_route('get_project_sequences',      'projects/{id}/sequences/')
     config.add_route('get_project_references',     'projects/{id}/references/') # json
     config.add_route('get_project_tickets',        'projects/{id}/tickets/') # json
-    config.add_route('get_project_tasks_today',    'projects/{id}/tasks/{action}/today/') # json
-    config.add_route('get_project_tasks_complete_today',        'projects/{id}/tasks/complete_today/') # json
 
+    config.add_route('get_project_tasks_today',    'projects/{id}/tasks/{action}/today/') # json
+    config.add_route('get_project_tasks_in_date',  'projects/{id}/tasks/{action}/{date}/') # json
 
 
     # *************************************************************************

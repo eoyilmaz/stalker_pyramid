@@ -210,10 +210,6 @@ logger.setLevel(logging.DEBUG)
     renderer='templates/shot/page_view_shot.jinja2'
 )
 @view_config(
-    route_name='view_task',
-    renderer='templates/task/page_view_task.jinja2'
-)
-@view_config(
     route_name='view_ticket',
     renderer='templates/ticket/view_ticket.jinja2'
 )
