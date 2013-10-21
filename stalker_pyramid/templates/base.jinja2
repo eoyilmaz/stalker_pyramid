@@ -327,18 +327,20 @@
         })
     </script>
 
-    {# Time Log Dialog Initialize #}
+    {# Event Dialog Initialize #}
     <script type="text/javascript">
         $(function () {
-{#            var time_log_dialog = $('#time_log_dialog');#}
-{#            time_log_dialog.on('shown', function () {#}
-{##}
-{#                init_time_log_dialog();#}
-{#            });#}
-{#            time_log_dialog.on('hidden', function () {#}
-{#                destruct_time_log_dialog();#}
-{##}
-{#            });#}
+            var event_dialog = $('#event_dialog');
+            event_dialog.on('shown', function () {
+
+                init_event_dialog();
+            });
+            event_dialog.on('hidden', function () {
+
+
+                destruct_event_dialog();
+
+            });
 
         })
     </script>

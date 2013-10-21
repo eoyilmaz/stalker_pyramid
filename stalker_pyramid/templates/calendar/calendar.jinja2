@@ -9,28 +9,33 @@
 <script type="text/javascript">
     $(function () {
 
-        /* initialize the external events
-         -----------------------------------------------------------------*/
 
-        $('#external-events div.external-event').each(function () {
 
-// create an Event Object (http://arshaw.com/fullcalendar/docs/event_data/Event_Object/)
-// it doesn't need to have a start or end
-            var eventObject = {
-                title: $.trim($(this).text()) // use the element's text as the event title
-            };
 
-// store the Event Object in the DOM element so we can get to it later
-            $(this).data('eventObject', eventObject);
 
-// make the event draggable using jQuery UI
-            $(this).draggable({
-                zIndex: 999,
-                revert: true,      // will cause the event to go back to its
-                revertDuration: 0  //  original position after the drag
-            });
-
-        });
+        {##}
+        {#        /* initialize the external events#}
+        {#         -----------------------------------------------------------------*/#}
+        {##}
+        {#        $('#external-events div.external-event').each(function () {#}
+        {##}
+        {#// create an Event Object (http://arshaw.com/fullcalendar/docs/event_data/Event_Object/)#}
+        {#// it doesn't need to have a start or end#}
+        {#            var eventObject = {#}
+        {#                title: $.trim($(this).text()) // use the element's text as the event title#}
+        {#            };#}
+        {##}
+        {#// store the Event Object in the DOM element so we can get to it later#}
+        {#            $(this).data('eventObject', eventObject);#}
+        {##}
+        {#// make the event draggable using jQuery UI#}
+        {#            $(this).draggable({#}
+        {#                zIndex: 999,#}
+        {#                revert: true,      // will cause the event to go back to its#}
+        {#                revertDuration: 0  //  original position after the drag#}
+        {#            });#}
+        {##}
+        {#        });#}
 
 
         $.getJSON($('#calendar').attr('address')).then(function (data) {
@@ -54,6 +59,8 @@
                     allDay: data[i].allDay
                 };
 
+                console.log(data[i].entity_type)
+
                 events.push(event);
 
             }
@@ -62,8 +69,42 @@
             /* initialize the calendar
              -----------------------------------------------------------------*/
 
-
             var calendar = $('#calendar').fullCalendar({
+                {% if event_type %}
+                    {% if has_permission('Create_'+event_type) %}
+
+                        select: function (start, end, allDay) {
+
+                            var event_dialog = $('#event_dialog');
+
+                            $('#event_dialog').attr('start', start);
+                            $('#event_dialog').attr('end', end);
+                            $('#event_dialog').attr('allDay', allDay);
+
+                            event_dialog.modal({'remote': "/{{ entity.plural_class_name.lower() }}/{{ entity.id }}/{{ event_type.lower() }}s/create/dialog"});
+
+                            calendar.fullCalendar('unselect');
+
+                        },
+
+                    {% endif %}
+
+                    {% if has_permission('Update_'+ event_type) %}
+
+                        eventClick: function (calEvent, jsEvent, view) {
+
+
+                            var event_dialog = $('#event_dialog');
+
+                            event_dialog.modal({'remote': "/" + calEvent.entity_type + "/" + calEvent.eId + "/update/dialog"});
+
+
+                        },
+                    {% endif %}
+                {% endif %}
+
+
+
                 buttonText: {
                     prev: '<i class="icon-chevron-left"></i>',
                     next: '<i class="icon-chevron-right"></i>'
@@ -79,68 +120,12 @@
                 droppable: false, // this allows things to be dropped onto the calendar !!!
 
                 selectable: true,
-                selectHelper: true,
-                select: function (start, end, allDay) {
-
-{#                    var event_dialog = $('#event_dialog');#}
-{##}
-{#                    event_dialog.modal({'remote': "/users/{{ entity.id }}/time_logs/create/dialog"});#}
-{##}
-{##}
-{#                    event_dialog.on('shown', function () {#}
-{##}
-{#                        init_event_dialog(start, end, allDay);#}
-{##}
-{#                    });#}
-{##}
-{#                    event_dialog.on('hidden', function () {#}
-{##}
-{#                        destruct_event_dialog();#}
-{##}
-{#                    });#}
+                selectHelper: true
 
 
-                    bootbox.dialog({'defaultHref':"/users/{{ entity.id }}/time_logs/create/dialog"});
-{#                    bootbox.prompt("New Event Title:", function (title) {#}
-{#                        if (title !== null) {#}
-{#                            calendar.fullCalendar('renderEvent',#}
-{#                                    {#}
-{#                                        title: title,#}
-{#                                        start: start,#}
-{#                                        end: end,#}
-{#                                        allDay: allDay#}
-{#                                    },#}
-{#                                    true // make the event "stick"#}
-{#                            );#}
-{#                        }#}
-{#                    });#}
-
-                    calendar.fullCalendar('unselect');
-
-                },
-                eventClick: function (calEvent, jsEvent, view) {
-
-                    var event_dialog = $('#event_dialog');
-
-                    event_dialog.modal({'remote': "/" + calEvent.entity_type + "/" + calEvent.eId + "/update/dialog"});
-
-
-                    event_dialog.on('shown', function () {
-
-                        init_event_dialog(0, 0, 0);
-
-                    });
-
-                    event_dialog.on('hidden', function () {
-
-                        destruct_event_dialog();
-
-                    });
-
-
-                }
 
             });
+
 
         });
     });

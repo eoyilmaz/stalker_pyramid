@@ -701,10 +701,7 @@ def check_email_availability(request):
     renderer='json'
 )
 def get_user_events(request):
-    """checks it the given email is available
-    """
-    """returns all the Shots of the given Project
-    """
+
     logger.debug('get_user_events is running')
     user_id = request.matchdict.get('id', -1)
     user = User.query.filter_by(id=user_id).first()
@@ -725,7 +722,7 @@ def get_user_events(request):
                 ' | '.join(reversed([parent.name for parent in time_log.task.parents]))),
             'start': milliseconds_since_epoch(time_log.start),
             'end': milliseconds_since_epoch(time_log.end),
-            'className': 'label-important',
+            'className': 'label-success',
             'allDay': False,
             'status': time_log.task.status.name
             # 'hours_to_complete': time_log.hours_to_complete,
@@ -750,6 +747,8 @@ def get_user_events(request):
             'allDay': True,
             'status': ''
         })
+
+
     today = datetime.datetime.today()
 
     # if user.time_logs:
@@ -757,7 +756,7 @@ def get_user_events(request):
         # logger.debug('time_log.task.id : %s' % time_log.task.id)
         # assert isinstance(time_log, TimeLog)
 
-        if today < task.start:
+        if today < task.end:
             events.append({
                 'id': task.id,
                 'entity_type':task.plural_class_name.lower(),
@@ -774,6 +773,24 @@ def get_user_events(request):
             })
 
     return events
+
+
+@view_config(
+    route_name='get_user_efficiency_graphic',
+    renderer='json'
+)
+def get_user_efficiency_graphic(request):
+
+    logger.debug('get_user_efficiency_graphic is running')
+    user_id = request.matchdict.get('id', -1)
+    user = User.query.filter_by(id=user_id).first()
+
+    logger.debug('user_id : %s' % user_id)
+
+    efficiency_list = []
+
+
+    return efficiency_list
 
 
 

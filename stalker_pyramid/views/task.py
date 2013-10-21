@@ -18,6 +18,7 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 import logging
+import datetime
 
 import transaction
 
@@ -1193,3 +1194,54 @@ def view_project_task(request):
         'projects': projects,
         'studio': studio
     }
+
+
+@view_config(
+    route_name='get_entity_tasks_stats',
+    renderer='json'
+)
+def get_entity_tasks_stats(request):
+    """runs when viewing an task
+    """
+    entity_id = request.matchdict.get('id', -1)
+    entity = Entity.query.filter_by(id=entity_id).first()
+
+    logger.debug('user_id : %s' % entity_id)
+
+    status_list = StatusList.query.filter_by(
+            target_entity_type='Task'
+        ).first()
+
+
+    join_attr = None
+
+    colors = {'Waiting To Start':'purple','Work In Progress':'pink', 'New':'red', 'Completed':'green'}
+
+    if entity.entity_type =='User':
+        join_attr = Task.resources
+    elif entity.entity_type =='Project':
+        join_attr = Task.project
+
+    __class__ = entity.__class__
+
+
+    status_count_task=[]
+
+    #TODO find the correct solution to filter leaf tasks. This does not work.
+    for status in status_list.statuses:
+        status_count_task.append({
+            'name': status.name,
+            'color':colors[status.name],
+            'icon': 'icon-folder-close-alt',
+            'count':Task.query.join(entity.__class__, join_attr) \
+                            .filter(__class__.id == entity_id) \
+                            .filter(Task.status_id == status.id) \
+                            .filter(Task.children == None) \
+                            .count()
+        })
+
+    return status_count_task
+
+
+
+

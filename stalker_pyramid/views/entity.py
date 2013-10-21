@@ -167,11 +167,11 @@ logger.setLevel(logging.DEBUG)
 )
 @view_config(
     route_name='list_studio_vacations',
-    renderer='templates/vacation/list_entity_vacations.jinja2'
+    renderer='templates/vacation/list/list_entity_vacations.jinja2'
 )
 @view_config(
     route_name='list_user_vacations',
-    renderer='templates/vacation/list_entity_vacations.jinja2'
+    renderer='templates/vacation/list/list_entity_vacations.jinja2'
 )
 @view_config(
     route_name='list_user_tasks',

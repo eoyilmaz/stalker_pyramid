@@ -11,6 +11,9 @@
           href='{{ request.static_url("stalker_pyramid:static/ace/css/datepicker.css") }}'/>
     <link rel="stylesheet"
           href='{{ request.static_url("stalker_pyramid:static/ace/css/daterangepicker.css") }}'/>
+
+   {% include 'charts/chart_preheader.jinja2' %}
+
 {% endblock pre_header %}
 
 {#SIDEBAR#}
@@ -40,6 +43,7 @@
 {% block page_content %}
 
     {% set page_title='Dashboard' %}
+
     {% include 'page_header.jinja2' %}
     <!--/.page-header-->
 
@@ -49,17 +53,360 @@
             <!--PAGE CONTENT BEGINS-->
 
             <div class="row-fluid">
+
                 <div class="span9">
-
-                    <div class="space"></div>
-                    <div id="calendar" address='/users/{{ entity.id }}/events/'></div>
-
+                  <div id="infobox" address='/entities/{{ entity.id }}/tasks_stats/' class="infobox-container"></div>
+                  <div class="hr hr8 hr-double"></div>
+                  <div class="space"></div>
+                  <div id="calendar" address='/users/{{ entity.id }}/events/'></div>
                 </div>
+               <div class="span3">
+
+                  <div class="widget-box">
+                        <div class="widget-header widget-header-flat widget-header-small">
+                            <h5>
+                                <i class="icon-signal"></i>
+                                Resource Efficiency
+
+                            </h5>
+
+                            <div class="widget-toolbar no-border">
+
+                                <button class="btn btn-minier btn-info dropdown-toggle"
+                                        data-toggle="dropdown">
+                                    This Week
+                                    <i class="icon-angle-down icon-on-right"></i>
+                                </button>
+
+                                <ul class="dropdown-menu dropdown-info pull-right dropdown-caret">
+                                    <li class="active">
+                                        <a href="#">This Week</a>
+                                    </li>
+
+                                    <li>
+                                        <a href="#">This Month</a>
+                                    </li>
+
+                                    <li>
+                                        <a href="#">This Year</a>
+                                    </li>
+                                </ul>
+
+                            </div>
+                        </div>
+
+                        <div class="widget-body">
+                            <div class="widget-main">
+
+                                <div id="bar_chart"></div>
+
+                                <div class="hr hr8 hr-double"></div>
+
+                                <div class="clearfix">
+
+                                    <div class="grid3">
+                                        <span class="grey">
+                                            <i class="icon-sign-blank icon-2x green2"></i>
+                                            &nbsp; Timelogs
+                                        </span>
+                                        <h4 class="bigger pull-right">40 h</h4>
+                                    </div>
+
+                                    <div class="grid3">
+                                        <span class="grey">
+                                            <i class="icon-sign-blank icon-2x yellow"></i>
+                                            &nbsp; Vacation
+                                        </span>
+                                        <h4 class="bigger pull-right">4 h</h4>
+                                    </div>
+
+                                    <div class="grid3">
+                                        <span class="grey">
+                                            <i class="icon-sign-blank icon-2x light-grey"></i>
+                                            &nbsp; Unknown
+                                        </span>
+                                        <h4 class="bigger pull-right">5 h</h4>
+                                    </div>
+
+                                </div>
+                            </div>
+                            <!--/widget-main-->
+                        </div>
+                        <!--/widget-body-->
+                    </div>
+                    <!--/widget-box-->
+
+                  <div class="space-20"></div>
+
+									<div class="widget-box transparent">
+											<div class="widget-header widget-header-small">
+												<h4 class="blue smaller">
+													<i class="icon-rss orange"></i>
+													Recent Activities
+												</h4>
+
+												<div class="widget-toolbar action-buttons">
+													<a href="#" data-action="reload">
+														<i class="icon-refresh blue"></i>
+													</a>
+
+													&nbsp;
+													<a href="#" class="pink">
+														<i class="icon-trash"></i>
+													</a>
+												</div>
+											</div>
+
+											<div class="widget-body">
+												<div class="widget-main padding-8">
+													<div id="profile-feed-1" class="profile-feed">
+														<div class="profile-activity clearfix">
+															<div>
+																<img class="pull-left" alt="Alex Doe's avatar" src="assets/avatars/avatar5.png" />
+																<a class="user" href="#"> Alex Doe </a>
+																changed his profile photo.
+																<a href="#">Take a look</a>
+
+																<div class="time">
+																	<i class="icon-time bigger-110"></i>
+																	an hour ago
+																</div>
+															</div>
+
+															<div class="tools action-buttons">
+																<a href="#" class="blue">
+																	<i class="icon-pencil bigger-125"></i>
+																</a>
+
+																<a href="#" class="red">
+																	<i class="icon-remove bigger-125"></i>
+																</a>
+															</div>
+														</div>
+
+														<div class="profile-activity clearfix">
+															<div>
+																<img class="pull-left" alt="Susan Smith's avatar" src="assets/avatars/avatar1.png" />
+																<a class="user" href="#"> Susan Smith </a>
+
+																is now friends with Alex Doe.
+																<div class="time">
+																	<i class="icon-time bigger-110"></i>
+																	2 hours ago
+																</div>
+															</div>
+
+															<div class="tools action-buttons">
+																<a href="#" class="blue">
+																	<i class="icon-pencil bigger-125"></i>
+																</a>
+
+																<a href="#" class="red">
+																	<i class="icon-remove bigger-125"></i>
+																</a>
+															</div>
+														</div>
+
+														<div class="profile-activity clearfix">
+															<div>
+																<i class="pull-left thumbicon icon-ok btn-success no-hover"></i>
+																<a class="user" href="#"> Alex Doe </a>
+																joined
+																<a href="#">Country Music</a>
+
+																group.
+																<div class="time">
+																	<i class="icon-time bigger-110"></i>
+																	5 hours ago
+																</div>
+															</div>
+
+															<div class="tools action-buttons">
+																<a href="#" class="blue">
+																	<i class="icon-pencil bigger-125"></i>
+																</a>
+
+																<a href="#" class="red">
+																	<i class="icon-remove bigger-125"></i>
+																</a>
+															</div>
+														</div>
+
+														<div class="profile-activity clearfix">
+															<div>
+																<i class="pull-left thumbicon icon-picture btn-info no-hover"></i>
+																<a class="user" href="#"> Alex Doe </a>
+																uploaded a new photo.
+																<a href="#">Take a look</a>
+
+																<div class="time">
+																	<i class="icon-time bigger-110"></i>
+																	5 hours ago
+																</div>
+															</div>
+
+															<div class="tools action-buttons">
+																<a href="#" class="blue">
+																	<i class="icon-pencil bigger-125"></i>
+																</a>
+
+																<a href="#" class="red">
+																	<i class="icon-remove bigger-125"></i>
+																</a>
+															</div>
+														</div>
+
+														<div class="profile-activity clearfix">
+															<div>
+																<img class="pull-left" alt="David Palms's avatar" src="assets/avatars/avatar4.png" />
+																<a class="user" href="#"> David Palms </a>
+
+																left a comment on Alex's wall.
+																<div class="time">
+																	<i class="icon-time bigger-110"></i>
+																	8 hours ago
+																</div>
+															</div>
+
+															<div class="tools action-buttons">
+																<a href="#" class="blue">
+																	<i class="icon-pencil bigger-125"></i>
+																</a>
+
+																<a href="#" class="red">
+																	<i class="icon-remove bigger-125"></i>
+																</a>
+															</div>
+														</div>
+
+														<div class="profile-activity clearfix">
+															<div>
+																<i class="pull-left thumbicon icon-edit btn-pink no-hover"></i>
+																<a class="user" href="#"> Alex Doe </a>
+																published a new blog post.
+																<a href="#">Read now</a>
+
+																<div class="time">
+																	<i class="icon-time bigger-110"></i>
+																	11 hours ago
+																</div>
+															</div>
+
+															<div class="tools action-buttons">
+																<a href="#" class="blue">
+																	<i class="icon-pencil bigger-125"></i>
+																</a>
+
+																<a href="#" class="red">
+																	<i class="icon-remove bigger-125"></i>
+																</a>
+															</div>
+														</div>
+
+														<div class="profile-activity clearfix">
+															<div>
+																<img class="pull-left" alt="Alex Doe's avatar" src="assets/avatars/avatar5.png" />
+																<a class="user" href="#"> Alex Doe </a>
+
+																upgraded his skills.
+																<div class="time">
+																	<i class="icon-time bigger-110"></i>
+																	12 hours ago
+																</div>
+															</div>
+
+															<div class="tools action-buttons">
+																<a href="#" class="blue">
+																	<i class="icon-pencil bigger-125"></i>
+																</a>
+
+																<a href="#" class="red">
+																	<i class="icon-remove bigger-125"></i>
+																</a>
+															</div>
+														</div>
+
+														<div class="profile-activity clearfix">
+															<div>
+																<i class="pull-left thumbicon icon-key btn-info no-hover"></i>
+																<a class="user" href="#"> Alex Doe </a>
+
+																logged in.
+																<div class="time">
+																	<i class="icon-time bigger-110"></i>
+																	12 hours ago
+																</div>
+															</div>
+
+															<div class="tools action-buttons">
+																<a href="#" class="blue">
+																	<i class="icon-pencil bigger-125"></i>
+																</a>
+
+																<a href="#" class="red">
+																	<i class="icon-remove bigger-125"></i>
+																</a>
+															</div>
+														</div>
+
+														<div class="profile-activity clearfix">
+															<div>
+																<i class="pull-left thumbicon icon-off btn-inverse no-hover"></i>
+																<a class="user" href="#"> Alex Doe </a>
+
+																logged out.
+																<div class="time">
+																	<i class="icon-time bigger-110"></i>
+																	16 hours ago
+																</div>
+															</div>
+
+															<div class="tools action-buttons">
+																<a href="#" class="blue">
+																	<i class="icon-pencil bigger-125"></i>
+																</a>
+
+																<a href="#" class="red">
+																	<i class="icon-remove bigger-125"></i>
+																</a>
+															</div>
+														</div>
+
+														<div class="profile-activity clearfix">
+															<div>
+																<i class="pull-left thumbicon icon-key btn-info no-hover"></i>
+																<a class="user" href="#"> Alex Doe </a>
+
+																logged in.
+																<div class="time">
+																	<i class="icon-time bigger-110"></i>
+																	16 hours ago
+																</div>
+															</div>
+
+															<div class="tools action-buttons">
+																<a href="#" class="blue">
+																	<i class="icon-pencil bigger-125"></i>
+																</a>
+
+																<a href="#" class="red">
+																	<i class="icon-remove bigger-125"></i>
+																</a>
+															</div>
+														</div>
+													</div>
+												</div>
+											</div>
+                </div>
+
+               </div>
+
             </div>
-            <!--PAGE CONTENT ENDS-->
+            <!--/row-->
         </div>
-        <!--/.span-->
+
     </div>
+  <!--PAGE CONTENT ENDS-->
 
 {% endblock page_content %}
 
@@ -67,7 +414,24 @@
 {#EXTRA-SCRIPTS#}
 {% block extrascripts %}
 
-        {% include 'calendar/calendar.jinja2' %}
 
+    {% if entity.tasks | count > 0 %}
+
+        {% if has_permission('Update_User') or logged_in_user.id == entity.id %}
+
+            <script type="text/javascript">
+            </script>
+
+            {% set event_type='TimeLog' %}
+
+        {% endif %}
+
+    {% endif %}
+
+    {% include 'charts/chart_extrascripts.jinja2' %}
+
+    {% include 'calendar/calendar.jinja2' %}
+    {% include 'charts/bar_chart.jinja2' %}
+    {% include 'charts/infobox.jinja2' %}
 
 {% endblock extrascripts %}

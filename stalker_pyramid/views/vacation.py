@@ -37,13 +37,17 @@ logger.setLevel(logging.DEBUG)
     renderer='templates/vacation/dialog/vacation_dialog.jinja2',
 )
 @view_config(
+    route_name='studio_vacation_dialog',
+    renderer='templates/vacation/dialog/vacation_dialog.jinja2',
+)
+@view_config(
     route_name='user_vacation_dialog',
     renderer='templates/vacation/dialog/vacation_dialog.jinja2',
 )
 def create_vacation_dialog(request):
     """creates a create_vacation_dialog by using the given user
     """
-    logger.debug('inside create_vacation_dialog')
+    logger.debug('***create_vacation_dialog method starts ***')
 
     # get logged in user
     logged_in_user = get_logged_in_user(request)
@@ -52,7 +56,8 @@ def create_vacation_dialog(request):
     user = User.query.filter(User.user_id == user_id).first()
 
     vacation_types = Type.query.filter(
-        Type.target_entity_type == 'Vacation').all()
+        Type.target_entity_type == 'Vacation').filter(Type.name !='StudioWide').all()
+
 
     studio = Studio.query.first()
 
@@ -61,7 +66,8 @@ def create_vacation_dialog(request):
 
     if not user:
         user = studio
-        vacation_types = []
+        vacation_types = Type.query.filter(
+        Type.target_entity_type == 'Vacation').filter(Type.name =='StudioWide').all()
 
     return {
         'mode': 'create',
@@ -81,7 +87,7 @@ def create_vacation_dialog(request):
 def update_vacation_dialog(request):
     """updates a create_vacation_dialog by using the given user
     """
-    logger.debug('inside updates_vacation_dialog')
+    logger.debug('***update_vacation_dialog method starts ***')
 
     # get logged in user
     logged_in_user = get_logged_in_user(request)
@@ -100,7 +106,8 @@ def update_vacation_dialog(request):
     user = vacation.user
     if not vacation.user:
         user = studio
-        vacation_types = []
+        vacation_types = Type.query.filter(
+        Type.target_entity_type == 'Vacation').filter(Type.name =='StudioWide').all()
 
     return {
         'mode': 'update',
@@ -122,6 +129,7 @@ def create_vacation(request):
     """
 
     logger.debug('inside create_vacation')
+
     user_id = int(request.params.get('user_id'))
     user = User.query.filter(User.id == user_id).first()
 
@@ -265,10 +273,10 @@ def get_vacations(request):
     return [{
             'id': vacation.id,
             'entity_type':vacation.plural_class_name.lower(),
-            'type': vacation.type.name,
-            'user_id': vacation.user.id if vacation.user else None,
-            'created_by_id': vacation.created_by_id,
-            'created_by_name': vacation.created_by.name,
-            'start_date': milliseconds_since_epoch(vacation.start),
-            'end_date': milliseconds_since_epoch(vacation.end)
+            'title': vacation.type.name,
+            'start': milliseconds_since_epoch(vacation.start),
+            'end': milliseconds_since_epoch(vacation.end),
+            'className': 'label-yellow',
+            'allDay': True,
+            'status': ''
         } for vacation in vacations]

@@ -128,6 +128,7 @@ def main(global_config, **settings):
     config.add_route('get_entity_departments',         'entities/{id}/departments/')
     config.add_route('get_entity_groups',              'entities/{id}/groups/')
     config.add_route('get_entity_tasks',               'entities/{id}/tasks/')
+    config.add_route('get_entity_tasks_stats',         'entities/{id}/tasks_stats/')
     config.add_route('get_entity_tickets',             'entities/{id}/tickets/')
     config.add_route('get_entity_time_logs',           'entities/{id}/time_logs/')
     config.add_route('get_entity_projects',            'entities/{id}/projects/')
@@ -222,6 +223,8 @@ def main(global_config, **settings):
     config.add_route('get_project_sequences',      'projects/{id}/sequences/')
     config.add_route('get_project_references',     'projects/{id}/references/') # json
     config.add_route('get_project_tickets',        'projects/{id}/tickets/') # json
+    config.add_route('get_project_tasks_today',    'projects/{id}/tasks/{action}/today/') # json
+    config.add_route('get_project_tasks_complete_today',        'projects/{id}/tasks/complete_today/') # json
 
 
 
@@ -290,6 +293,7 @@ def main(global_config, **settings):
     config.add_route('get_user_vacations',    'users/{id}/vacations/') # json
     config.add_route('get_user_tickets',      'users/{id}/tickets/') # json
     config.add_route('get_user_events',       'users/{id}/events/')#json
+    config.add_route('get_user_efficiency_graphic','users/{id}/efficiency_graphic/')#json
 
     config.add_route('list_users',            'users/list') # html
     config.add_route('list_user_tasks',       'users/{id}/tasks/list') # html
@@ -299,6 +303,7 @@ def main(global_config, **settings):
     config.add_route('list_user_projects',    'users/{id}/projects/list') # html
     config.add_route('list_user_time_logs',   'users/{id}/time_logs/list') # html
     config.add_route('list_user_tickets',   'users/{id}/tickets/list') # html
+
 
     config.add_route('view_user_tasks',       'users/{id}/tasks/view') # html
     config.add_route('view_user_versions',    'users/{id}/versions/view')
@@ -425,9 +430,9 @@ def main(global_config, **settings):
     # *************************************************************************
     # TimeLog
 
-    config.add_route('entity_time_log_dialog', 'entities/{id}/time_logs/create/dialog')
-    config.add_route('task_time_log_dialog', 'tasks/{id}/time_logs/create/dialog')
-    config.add_route('user_time_log_dialog', 'users/{id}/time_logs/create/dialog')
+    config.add_route('entity_time_log_dialog', 'entities/{id}/timelogs/create/dialog')
+    config.add_route('task_time_log_dialog', 'tasks/{id}/timelogs/create/dialog')
+    config.add_route('user_time_log_dialog', 'users/{id}/timelogs/create/dialog')
     # TODO: Change the TimeLog Entity plural name so we can use 'time_logs' string here.
     config.add_route('time_log_update_dialog', 'timelogs/{id}/update/dialog')
 
@@ -457,6 +462,7 @@ def main(global_config, **settings):
     # *************************************************************************
     # Vacation
     config.add_route('entity_vacation_dialog', 'entities/{id}/vacations/create/dialog')
+    config.add_route('studio_vacation_dialog', 'studios/{id}/vacations/create/dialog')
     config.add_route('user_vacation_dialog', 'users/{id}/vacations/create/dialog')
     config.add_route('vacation_update_dialog', 'vacations/{id}/update/dialog')
 

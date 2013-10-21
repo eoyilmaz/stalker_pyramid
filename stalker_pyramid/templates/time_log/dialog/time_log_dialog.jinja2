@@ -7,34 +7,47 @@
               role='form'
               method='post'>
 
+            <div class='row-fluid'>
+                <div class="span10">
+                    {# Resource #}
+                    <div class='control-group'>
+                        <label class='span2 control-label'
+                               for='time_log_resource'>Resource</label>
 
-            {# Resource #}
-            <div class='control-group'>
-                <label class='span2 control-label' for='time_log_resource'>Resource</label>
+                        <div class='span10'>
+                            <select id='time_log_resource'
+                                    class='input-block-level'
+                                    name='resource_id'
+                                    required></select>
+                        </div>
+                    </div>
 
-                <div class='span10'>
-                    <select id='time_log_resource'
-                            class='input-block-level'
-                            name='resource_id'
-                            required></select>
+                    {# Task #}
+                    <div class='control-group'>
+                        <label class='span2 control-label'
+                               for='time_log_task'>Task</label>
+
+                        <div class='span10'>
+                            <select id='time_log_task'
+                                    name='task_id'
+                                    class='input-block-level'
+                                    data-placeholder='Task'></select>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="span2">
+                    <div id="percent_completed_chart"
+                         class="easy-pie-chart percentage"
+                         data-size="70" data-color="#87B87F">
+
+                    </div>
                 </div>
             </div>
-
-            {# Task #}
-            <div class='control-group'>
-                <label class='span2 control-label'
-                       for='time_log_task'>Task</label>
-
-                <div class='span10'>
-                    <select id='time_log_task'
-                            name='task_id'
-                            class='input-block-level'
-                            data-placeholder='Task'></select>
-                </div>
-            </div>
-
 
             {# Start & End Dates #}
+
             <div class="control-group">
                 <label for="start_end_date_range_picker"
                        class="span2 control-label">Date</label>
@@ -57,7 +70,7 @@
                     <label class='span2 control-label'
                            for='start_time'>From</label>
 
-                    <div class="span2 input-append bootstrap-timepicker">
+                    <div class="span10 input-append bootstrap-timepicker">
                         <input id="start_time" name="start_time" type="text"
                                class="input-small"/>
                     <span class="add-on">
@@ -71,7 +84,7 @@
                     <label class='span2 control-label'
                            for="end_time">To</label>
 
-                    <div class="span2 input-append bootstrap-timepicker">
+                    <div class="span10 input-append bootstrap-timepicker">
                         <input id="end_time" name="end_time" type="text"
                                class="input-small"/>
                     <span class="add-on">
@@ -88,13 +101,7 @@
             <div class="span2">
 
             </div>
-            <div class="span2">
-                <div id="percent_completed_chart"
-                     class="easy-pie-chart percentage"
-                     data-size="70" data-color="#87B87F">
 
-                </div>
-            </div>
 
             <div class="span6">
 
@@ -126,29 +133,38 @@
 function init_event_dialog(start, end, allDay) {
     console.debug('starting to initialize time_log dialog!!!');
 
+
+    $('#event_dialog_label').find('span').remove();
+    $('#event_dialog_label').append('<span>Timelog</span>')
+
     {# ***************************************************************** #}
 
 
-    var start_date_value = start;
-    var end_date_value = end;
+    var event_dialog = $('#event_dialog')
+
+    var start_date_value = new Date(event_dialog.attr('start'));
+    var end_date_value = new Date(event_dialog.attr('end'));
 
     var start_time_value = start_date_value;
     var end_time_value = end_date_value;
 
 
-    if (allDay) {
+    if (event_dialog.attr('allDay') == 'true') {
         start_time_value.setHours(10);
         end_time_value.setHours(19);
     }
 
 
 
+
     {% if mode == 'create' %}
 
 
-        $("#time_log_form").attr("action", "{{ request.route_url('create_time_log', id=entity.id) }}");
+        $("#time_log_form").attr("action", "{{ request.route_url('create_time_log') }}");
 
         {% if entity.entity_type  == 'User' %}
+
+
 
             {# ***************************************************************** #}
             {# Resource #}
@@ -188,6 +204,8 @@ function init_event_dialog(start, end, allDay) {
                 update_hours_to_complete()
 
             });
+
+
 
         {% elif entity.entity_type  == 'Task'%}
 
@@ -233,7 +251,6 @@ function init_event_dialog(start, end, allDay) {
         {% endif %}
 
     {% elif mode == 'update' %}
-        alert('update')
 
         $("#time_log_form").attr("action", "{{ request.route_url('update_time_log', id=time_log.id) }}");
 
@@ -530,5 +547,6 @@ function init_event_dialog(start, end, allDay) {
 <script type="text/javascript">
     function destruct_event_dialog() {
         $('#event_dialog').data('modal', null);
+        alert('destruct_event_dialog');
     }
 </script>

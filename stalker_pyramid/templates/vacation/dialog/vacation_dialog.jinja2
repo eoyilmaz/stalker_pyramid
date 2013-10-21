@@ -110,19 +110,57 @@
 function init_event_dialog(start, end, allDay) {
     console.debug('starting to initialize vacation dialog!!!');
 
+    $('#event_dialog_label').find('span').remove();
+    $('#event_dialog_label').append('<span>Vacation</span>')
+
+
     {# ***************************************************************** #}
 
-    var start_date_value = start;
-    var end_date_value = end;
+    var start_date_value = new Date($('#event_dialog').attr('start'));
+    var end_date_value = new Date($('#event_dialog').attr('end'));
 
     var start_time_value = start_date_value;
     var end_time_value = end_date_value;
 
 
-    if (allDay) {
+    if ($('#event_dialog').attr('allDay') == 'true') {
         start_time_value.setHours(10);
         end_time_value.setHours(19);
     }
+
+
+    //*********************************************************
+    //Type
+
+    var vacation_type = $('#vacation_type');
+
+    {% raw %}
+    var type_option_template = doT.template(
+            '<option value={{=it.id}} {{=it.selected}}>{{=it.name}}</option>'
+    );
+    {% endraw %}
+
+
+
+    {% for type in types %}
+
+        var selected = '';
+
+        {% if mode == 'update' %}
+
+            {% if vacation.type.id == type.id %}
+
+                selected = 'selected';
+
+            {% endif %}
+        {% endif %}
+
+
+        var data = {id: '{{ type.name }}', name: '{{ type.name }}', selected: selected};
+        vacation_type.append(type_option_template(data));
+
+    {% endfor %}
+
 
 
 
@@ -130,41 +168,13 @@ function init_event_dialog(start, end, allDay) {
         //*********************************************************
         //Action
 
-        $("#vacation_form").attr("action", "{{ request.route_url('create_vacation', id=entity.id) }}");
+        $("#vacation_form").attr("action", "{{ request.route_url('create_vacation') }}");
 
         //*********************************************************
         //User
 
         var vacation_user = $('#vacation_user');
         vacation_user.append('<option value={{ user.id }} selected>{{ user.name }}</option>');
-
-        //*********************************************************
-        //Type
-
-        var vacation_type = $('#vacation_type');
-        {% raw %}
-        var type_option_template = doT.template(
-                '<option value={{=it.id}} {{=it.selected}}>{{=it.name}}</option>'
-        );
-        {% endraw %}
-
-        {% for type in types %}
-
-            var data = {id: '{{ type.name }}', name: '{{ type.name }}'};
-            vacation_type.append(type_option_template(data));
-
-        {% endfor %}
-
-
-
-        //*********************************************************
-        //Start, End
-
-        start_date_value = new Date(parseInt({{ milliseconds_since_epoch(vacation.start) }}));
-        end_date_value = new Date(parseInt({{ milliseconds_since_epoch(vacation.end) }}));
-
-        start_time_value = start_date_value;
-        end_time_value = end_date_value;
 
 
 
@@ -180,42 +190,7 @@ function init_event_dialog(start, end, allDay) {
         var vacation_user = $('#vacation_user');
         vacation_user.append('<option value={{ user.id }} selected>{{ user.name }}</option>');
 
-        //*********************************************************
-        //Type
 
-        var vacation_type = $('#vacation_type');
-
-        {% raw %}
-        var type_option_template = doT.template(
-                '<option value={{=it.id}} {{=it.selected}}>{{=it.name}}</option>'
-        );
-        {% endraw %}
-
-        {% if types | count > 0 %}
-
-            {% for type in types %}
-
-                var selected = '';
-
-                {% if vacation.type.id == type.id %}
-
-                    selected = 'selected';
-
-                {% endif %}
-
-
-
-                var data = {id: '{{ type.name }}', name: '{{ type.name }}', selected: selected};
-                vacation_type.append(type_option_template(data));
-
-            {% endfor %}
-
-        {% else %}
-
-            var data = {id: '{{ vacation.type.name }}', name: '{{ vacation.type.name }}', selected: 'selected'};
-            vacation_type.append(type_option_template(data));
-
-        {% endif %}
 
         //*********************************************************
         //Start, End
@@ -314,14 +289,14 @@ function init_event_dialog(start, end, allDay) {
 
         var vacation_form = $('#vacation_form');
 
-        {% if types | count > 0 %}
-
-            if (vacation_type.val() == 'StudioWide') {
-                $('#message').show();
-                $('#message').append("<p><strong><i class='icon-danger'>You can not create a vacation with type StudioWide</p>")
-                return;
-            }
-        {% endif %}
+        {#        {% if types | count > 0 %}#}
+        {##}
+        {#            if (vacation_type.val() == 'StudioWide') {#}
+        {#                $('#message').show();#}
+        {#                $('#message').append("<p><strong><i class='icon-danger'>You can not create a vacation with type StudioWide</p>")#}
+        {#                return;#}
+        {#            }#}
+        {#        {% endif %}#}
 
         if (vacation_form.validate()) {
 

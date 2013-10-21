@@ -24,7 +24,7 @@ from pyramid.view import view_config
 
 from stalker.db import DBSession
 from stalker import (User, ImageFormat, Repository, Structure, Status,
-                     StatusList, Project, Entity)
+                     StatusList, Project, Entity, Task)
 from stalker_pyramid.views import (get_date, get_date_range,
                                    get_logged_in_user, milliseconds_since_epoch)
 
@@ -250,3 +250,58 @@ def get_project_lead(request):
         }
 
     return lead_data
+
+@view_config(
+    route_name='get_project_tasks_today',
+    renderer='json'
+)
+def get_project_tasks_today(request):
+    """returns the project lead as a json data
+    """
+    project_id = request.matchdict.get('id', -1)
+    action = request.matchdict.get('action', -1)
+
+    today = datetime.date.today()
+    start = datetime.time(0, 0)
+    end = datetime.time(23, 59, 59)
+
+    start_of_today = datetime.datetime.combine(today, start)
+    end_of_today = datetime.datetime.combine(today, end)
+
+    tasks_today = [];
+
+    if action=='start':
+
+        tasks_today = Task.query.join(Project, Task.project) \
+            .filter(Project.id == project_id) \
+            .filter(Task.computed_start < end_of_today) \
+            .filter(Task.computed_end > start_of_today).all()
+
+    elif action=='end':
+
+         tasks_today = Task.query.join(Project, Task.project) \
+            .filter(Project.id == project_id) \
+            .filter(Task.computed_end > start_of_today) \
+            .filter(Task.computed_end <= end_of_today).all()
+
+    task_today_list=[]
+
+
+    for task in tasks_today:
+        assert isinstance(task, Task)
+        if task.is_leaf:
+            resourcesSTR =''
+            for user in task.resources:
+                resourcesSTR += '<a href="/users/%s/view">%s</a><br/>' % (user.id , user.name)
+
+            task_today_list.append({
+                'task_id': task.id,
+                'task_name':'%s (%s)' % (task.name,' | '.join(reversed([parent.name for parent in task.parents]))),
+                'resources': resourcesSTR,
+                'created_by_id':task.created_by.id,
+                'created_by_name':task.created_by.name,
+                'status':task.status.name,
+                'percent_complete':task.percent_complete
+            })
+
+    return task_today_list
