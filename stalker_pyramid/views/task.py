@@ -255,6 +255,7 @@ def convert_to_dgrid_gantt_project_format(projects):
             'end': milliseconds_since_epoch(
                 project.computed_end if project.computed_end else project.end),
             'id': project.id,
+            'link': '/projects/%s/view' % project.id,
             'name': project.name,
             'hasChildren': hasChildren(project),
             'schedule_seconds': project.schedule_seconds,
@@ -289,6 +290,7 @@ def convert_to_dgrid_gantt_task_format(tasks):
             'hasChildren': task.is_container,
             'hierarchy_name': ' | '.join([parent.name for parent in task.parents]),
             'id': task.id,
+            'link': '/%ss/%s/view' % (task.entity_type.lower(), task.id),
             'name': task.name,
             'parent': task.parent.id if task.parent else task.project.id,
             'priority': task.priority,
@@ -1213,6 +1215,18 @@ def request_task_review(request):
 )
 @view_config(
     route_name='view_task',
+    renderer='templates/task/view_project_task.jinja2'
+)
+@view_config(
+    route_name='view_asset',
+    renderer='templates/task/view_project_task.jinja2'
+)
+@view_config(
+    route_name='view_shot',
+    renderer='templates/task/view_project_task.jinja2'
+)
+@view_config(
+    route_name='view_sequence',
     renderer='templates/task/view_project_task.jinja2'
 )
 def view_project_task(request):

@@ -345,6 +345,13 @@
         })
     </script>
 
+    {# Gantt Chart Scroll #}
+    <script type="text/javascript">
+        var scrollToTaskItem = function (start) {
+            $("#gantt_scroll_to_button").attr('start', start).trigger('click');
+        };
+    </script>
+
 {% endblock scripts %}
 
 

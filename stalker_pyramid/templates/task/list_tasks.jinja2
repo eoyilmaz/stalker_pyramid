@@ -7,7 +7,7 @@
          start={{=it.start}}
          end={{=it.end}}
          type="{{=it.type}}"
-         hasChildren={{=it.hasChildren}}>{{=it.name}} ({{=it.type}})
+         hasChildren={{=it.hasChildren}}><a href="{{=it.link}}">{{=it.name}} ({{=it.type}})</a>
     </div>
 </script>
 
@@ -147,7 +147,7 @@
          start={{=it.start}}
          end={{=it.end}}
          type="{{=it.type}}"
-         hasChildren={{=it.hasChildren}}>{{=it.name}} ({{=it.type}})
+         hasChildren={{=it.hasChildren}}><a href="{{=it.link}}">{{=it.name}} ({{=it.type}})</a>
     </div>
 </script>
 
@@ -164,38 +164,35 @@
 </script>
 
 <script id="tmpl_taskLink" type="text/x-dot-template">
-    <a href="javascript:redirectLinkInParent('{{=it.type.toLowerCase()}}s_content_pane','tasks/{{=it.id}}/view');">{{=it.name}}
-        ({{=it.type}})</a>
+    <a href="/tasks/{{=it.id}}/view">{{=it.name}} ({{=it.type}})</a>
 </script>
 
 <script id='tmpl_resourceLink' type='text/x-dot-template'>
-    <a href="javascript:redirectLink('central_content','users/{{=it.id}}/view');">{{=it.name}}</a>
+    <a href="/users/{{=it.id}}/view">{{=it.name}}</a>
 </script>
 
 <script id="tmpl_projectLink" type="text/x-dot-template">
-    <a href="javascript:redirectLink('central_content','projects/{{=it.id}}/view');">{{=it.name}}
-        ({{=it.type}})</a>
+    <a href="/projects/{{=it.id}}/view">{{=it.name}} ({{=it.type}})</a>
 </script>
 
 <script id='tmpl_entityNameField' type="text/x-dot-template">
-    <a href="javascript:redirectLinkInParent('{{=it.targetPane}}', '{{=it.address}}');">{{=it.name}}
-        ({{=it.code}})</a>
+    <a href="{{=it.address}}">{{=it.name}} ({{=it.code}})</a>
 </script>
 
 <script id='tmpl_userNameField' type="text/x-dot-template">
-    <a href="javascript:redirectLink('{{=it.targetPane}}', '{{=it.address}}');">{{=it.user_name}}</a>
+    <a href="{{=it.address}}>{{=it.user_name}}</a>
 </script>
 
 <script id='tmpl_departmentField' type="text/x-dot-template">
-    <a href="javascript:redirectLink('{{=it.targetPane}}', '{{=it.address}}');">{{=it.name}}</a>
+    <a href="{{=it.address}}">{{=it.name}}</a>
 </script>
 
 <script id='tmpl_groupField' type="text/x-dot-template">
-    <a href="javascript:redirectLink('{{=it.targetPane}}', '{{=it.address}}');">{{=it.name}}</a>
+    <a href="{{=it.address}}">{{=it.name}}</a>
 </script>
 
 <script id='tmpl_ticketNameField' type="text/x-dot-template">
-    <a href="javascript:redirectLink('{{=it.targetPane}}', '{{=it.address}}');">#{{=it.number}}</a>
+    <a href="{{=it.address}}">#{{=it.number}}</a>
 </script>
 
 <script id='tmpl_referenceLink' type='text/x-dot-template'>
@@ -241,7 +238,6 @@
         lb.show();
     };
 </script>
-
 
 {#    <div style="float: left;">#}
 {#        <div style="float: left;">#}
@@ -324,35 +320,43 @@
                     </div>
                 {% endif %}
 
-                <div class="btn-group">
+                <div id="gantt_reload_button" class="btn-group">
                     <button class="btn btn-small btn-success">
-                        <i class="icon-refresh bigger-120"></i>
+                        <span class="icon-refresh bigger-120"></span>
                         Reload
                     </button>
                 </div>
 
-                <div class="btn-group">
+                <div id="gantt_refresh_button" class="btn-group">
                     <button class="btn btn-small btn-success">
-                        <i class="icon-refresh bigger-120"></i>
+                        <span class="icon-refresh bigger-120"></span>
                         Refresh
                     </button>
                 </div>
 
                 {% if has_permission('Update_Task') %}
-                    <div class="btn-group">
+                    <div id="gantt_schedule_tasks_button" class="btn-group">
                         <button class="btn btn-small btn-purple">
-                            <i class="icon-cogs bigger-120"></i>
+                            <span class="icon-cogs bigger-120"></span>
                             Schedule Tasks
                         </button>
                     </div>
+                    <div id="schedule-dialog-message" class="hide">
+                        <div class="progress progress-warning progress-small progress-striped active">
+                            <div class="bar" style="width: 100%;"></div>
+                        </div>
+                    </div>
                 {% endif %}
 
-                <div class="btn-group">
+                <div id="gantt_go_to_today_button" class="btn-group">
                     <button class="btn btn-small btn-yellow">
                         <i class="icon-calendar bigger-120"></i>
                         Go To Today
                     </button>
                 </div>
+            
+                <div id="gantt_scroll_to_button" class="hidden"></div>
+
             </div>
             {#        <a id='test' href='#' data-toggle='tooltip' title#}
             {#           data-original-title='test'>Test</a>#}
@@ -525,6 +529,7 @@ require([
                 label: 'Scroll To',
                 onClick: function () {
                     var node = this.getParent().currentTarget;
+                    console.debug('node: ', node);
                     // get start date
                     var start = node.getAttribute('start');
                     console.debug('start :', start);
@@ -899,10 +904,10 @@ require([
 
     // ceter on today
     setTimeout(
-            function () {
-                gantt_column.centerOnToday()
-            },
-            0
+        function () {
+            gantt_column.centerOnToday()
+        },
+        0
     );
 
     // create context menus and tooltip dialogs
@@ -924,17 +929,48 @@ require([
     {#                create_task_button.startup();#}
     {#            {% endif %}#}
 
-    {#            // RELOAD#}
-    {#            var reload_gantt_button = new Button({#}
-    {#                label: 'Reload',#}
-    {#                onClick: function () {#}
-    {#                    gantt_column.reload();#}
-    {#                }#}
-    {#            }, '{{ entity.entity_type }}_{{ entity.id }}_list_tasks_gantt_reload_button');#}
-    {#            reload_gantt_button.startup();#}
+    // Reload Button
+    $("#gantt_reload_button").on('click', function(e){
+        gantt_column.reload();
+        event.stopPropagation();
+    });
 
-    {#            // SCHEDULE#}
-    {#            {% if has_permission('Update_Task') %}#}
+    // Refresh Button
+    $("#gantt_refresh_button").on('click', function(e){
+        gantt_column.refresh();
+        event.stopPropagation();
+    });
+
+    $("#gantt_scroll_to_button").on('click', function(e){
+        var start = $(this).attr('start');
+        gantt_column.scrollToDate(start);
+    });
+
+    // Schedule
+    {% if has_permission('Update_Task') %}
+        $('#gantt_schedule_tasks_button').on('click', function(){
+            var dialog = $( "#schedule-dialog-message" ).dialog({
+                modal: true,
+                title: "Scheduling Tasks...",
+                title_html: true,
+                height: 70,
+                width: 350,
+            });
+
+            $.post(
+                '{{ request.route_url("auto_schedule_tasks") }}'
+            ).done(function(){
+                alert('scheduling tasks has finished successfully!');
+            }).fail(function(){
+                alert('scheduling tasks has failed!');
+            }).always(function(){
+                dialog.close();
+                gantt_column.refresh();
+            })
+
+            
+            
+        });
     {#                var schedule_tasks_button = new Button({#}
     {#                    label: 'Schedule Tasks',#}
     {#                    onClick: function () {#}
@@ -967,82 +1003,13 @@ require([
     {#                    }#}
     {#                }, '{{ entity.entity_type }}_{{ entity.id }}_list_tasks_schedule_tasks_button');#}
     {#                schedule_tasks_button.startup();#}
-    {#            {% endif %}#}
+    {% endif %}
 
-    {#            var start_dateTextBox = new DateTextBox({#}
-    {#                name: 'start',#}
-    {#                label: 'Start Date',#}
-    {#                            value: new Date(new Date().getTime() - 15552000000),// 15 * 24 * 60 * 60 * 1000, set it today + 15 by default#}
-    {#                required: true,#}
-    {#                datePattern: 'dd-mm-yyyy'#}
-    {#            }, '{{ entity.entity_type }}_{{ entity.id }}_gantt_start_date');#}
-    {#            start_dateTextBox.startup();#}
-    {#    #}
-    {#            var end_dateTextBox = new DateTextBox({#}
-    {#                name: 'end',#}
-    {#                label: 'End Date',#}
-    {#                            value: new Date(new Date().getTime() + 15552000000), // set it today + 15 by default#}
-    {#                required: true,#}
-    {#                datePattern: 'dd-mm-yyyy'#}
-    {#            }, '{{ entity.entity_type }}_{{ entity.id }}_gantt_end_date');#}
-    {#            end_dateTextBox.startup();#}
-    {#    #}
-    {#            var grid_mode_filteringSelect = new FilteringSelect({#}
-    {#                name: 'gantt_chart_grid_mode',#}
-    {#                label: 'Grid Mode',#}
-    {#                store: new Memory({#}
-    {#                    data: [#}
-    {#                        {#}
-    {#                            id: 'Task',#}
-    {#                            name: 'Task'#}
-    {#                        },#}
-    {#                        {#}
-    {#                            id: 'Resource',#}
-    {#                            name: 'Resource'#}
-    {#                        }#}
-    {#                    ]#}
-    {#                }),#}
-    {#                value: 'Task'#}
-    {#            }, '{{ entity.entity_type }}_{{ entity.id }}_grid_mode');#}
-    {#            grid_mode_filteringSelect.startup();#}
-    {#    #}
-    {#            var gantt_mode_filteringSelect = new FilteringSelect({#}
-    {#                name: 'gantt_chart_gantt_mode',#}
-    {#                label: 'Gantt Mode',#}
-    {#                store: new Memory({#}
-    {#                    data: [#}
-    {#                        {#}
-    {#                            id: 'Task',#}
-    {#                            name: 'Task'#}
-    {#                        },#}
-    {#                        {#}
-    {#                            id: 'TimeLog',#}
-    {#                            name: 'TimeLog'#}
-    {#                        }#}
-    {#                    ]#}
-    {#                }),#}
-    {#                value: 'Task'#}
-    {#            }, '{{ entity.entity_type }}_{{ entity.id }}_gantt_mode');#}
-    {#            gantt_mode_filteringSelect.startup();#}
 
-    {#            var refresh_button = new Button({#}
-    {#                label: 'Refresh',#}
-    {#                onClick: function () {#}
-    {#                var start = start_dateTextBox.getValue().getTime();#}
-    {#                var end =  end_dateTextBox.getValue().getTime();#}
-    {#                gantt_column.refresh({start: start, end: end});#}
-    {#                    gantt_column.refresh();#}
-    {#                }#}
-    {#            }, '{{ entity.entity_type }}_{{ entity.id }}_list_tasks_refresh_button');#}
-    {#            refresh_button.startup();#}
-    {#    #}
-    {#            var go_to_today_button = new Button({#}
-    {#                label: 'Go To Today',#}
-    {#                onClick: function () {#}
-    {#                    gantt_column.centerOnToday();#}
-    {#                }#}
-    {#            }, '{{ entity.entity_type }}_{{ entity.id }}_list_tasks_go_to_today_button');#}
-    {#            go_to_today_button.startup();#}
+
+    $('#gantt_go_to_today_button').on('click', function(){
+       gantt_column.centerOnToday(); 
+    });
 
 });
 </script>

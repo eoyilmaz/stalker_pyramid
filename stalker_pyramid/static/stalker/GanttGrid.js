@@ -46,6 +46,24 @@ define([
             // Column set to display task and resource
             [
                 {
+                    action: {
+                        label: "Action",
+                        sortable: false,
+                        get: function (object) {
+                            return object;
+                        },
+                        formatter: function (object) {
+                            var object_type = object.type;
+                            var id_template_str = '<div class="action-buttons">' +
+                                '<a onclick="javascript:scrollToTaskItem(' + object.start + ')" class="blue" title="Scroll To"><i class="icon-exchange"></i></a>' +
+                                '<a href="' + object.link + '" class="green" title="View"><i class="icon-eye-open"></i></a>' +
+                                '</div>';
+
+                            var id_template = doT.template(id_template_str);
+                            return id_template(object);
+                        },
+                        resizable: true
+                    },
                     id: {
                         label: "ID",
                         sortable: false,
@@ -53,15 +71,7 @@ define([
                             return object;
                         },
                         formatter: function (object) {
-                            var p_cmpl, p_cmpl_r, bg_color, font_weight;
-
-                            p_cmpl = object.total_logged_seconds / object.schedule_seconds * 100;
-                            p_cmpl_r = (Math.floor(p_cmpl / 10) * 10).toFixed(0);
-
-                            font_weight = 'normal';
-
-                            return '<div class="percentComplete' + p_cmpl_r + '">' +
-                                object.id + '</div>';
+                            return '<a href="' + object.link + '">' + object.id + '</a>';
                         },
                         resizable: true
                     },
@@ -73,7 +83,6 @@ define([
                                 return object;
                             },
                             formatter: function (object) {
-                                
                                 var template = templates.taskEditRow;
                                 var template_var = {};
                                 template_var.font_weight = object.hasChildren ? 'bold' : 'normal';
@@ -94,6 +103,7 @@ define([
                                 }
 
                                 template_var.hasChildren = object.hasChildren;
+                                template_var.link = object.link;
                                 template_var.id = object.id;
                                 template_var.name = object.name;
                                 template_var.start = object.start;
@@ -149,7 +159,7 @@ define([
                                 } else {
                                     timing += (object.schedule_timing).toFixed(1);
                                 }
-                                
+
                                 timing += ' ' + time_unit_names[object.schedule_unit];
 
                                 // make it plural
@@ -167,15 +177,24 @@ define([
                             return object;
                         },
                         formatter: function (object) {
-                            var p_complete = object.total_logged_seconds / object.schedule_seconds * 100;
+                            var p_complete, p_complete_str, p_complete_rounded, bg_color, font_weight;
+                            p_complete = object.total_logged_seconds / object.schedule_seconds * 100;
+
+                            font_weight = 'normal';
+
                             // check if it has a floating part
+
                             if (Math.floor(p_complete) === p_complete) {
                                 // it is an integer do not fix it
-                                return p_complete + '%';
+                                p_complete_str = p_complete + '%';
                             } else {
                                 // it is a float fix it
-                                return p_complete.toFixed(1) + '%';
+                                p_complete_str = p_complete.toFixed(1) + '%';
                             }
+
+                            p_complete_rounded = (Math.floor(p_complete / 10) * 10).toFixed(0);
+
+                            return '<div class="percentComplete' + p_complete_rounded + '">' + p_complete_str + '</div>';
                         }
                     },
                     start: {

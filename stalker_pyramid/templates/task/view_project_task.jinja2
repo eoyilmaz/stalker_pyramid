@@ -5,7 +5,7 @@
 
     {% include 'task/list_tasks_preheader.jinja2' %}
 
-    <link rel="stylesheet" href='request.static_url("stalker_pyramid:static/ace/css/dropzone.css")' />
+    <link rel="stylesheet" href='{{ request.static_url("stalker_pyramid:static/ace/css/dropzone.css") }}' />
 
 {% endblock pre_header %}
 
@@ -165,12 +165,14 @@
 
 {#EXTRA-SCRIPTS#}
 {% block extrascripts %}
-    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/dropzone.min.js") }}'></script>
+    <script type="text/javascript" src='{{ request.static_url("stalker_pyramid:static/ace/js/dropzone.min.js") }}'></script>
     <!--inline scripts related to this page-->
 
     <script type="text/javascript">
         jQuery(function ($) {
-
+            
+            
+            
             try {
                 $(".dropzone").dropzone({
                     paramName: "file", // The name that will be used to transfer the file
@@ -186,7 +188,8 @@
                     previewTemplate: "<div class=\"dz-preview dz-file-preview\">\n  <div class=\"dz-details\">\n    <div class=\"dz-filename\"><span data-dz-name></span></div>\n    <div class=\"dz-size\" data-dz-size></div>\n    <img data-dz-thumbnail />\n  </div>\n  <div class=\"progress progress-small progress-success progress-striped active\"><span class=\"bar\" data-dz-uploadprogress></span></div>\n  <div class=\"dz-success-mark\"><span></span></div>\n  <div class=\"dz-error-mark\"><span></span></div>\n  <div class=\"dz-error-message\"><span data-dz-errormessage></span></div>\n</div>"
                 });
             } catch (e) {
-                alert('Dropzone.js does not support older browsers!');
+                //alert('Dropzone.js does not support older browsers!');
+                //alert(e);
             }
 
         });

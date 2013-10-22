@@ -160,20 +160,21 @@
 /*TASK BOX*/
 .taskBox {
     position: absolute;
-    height: 15px;
+    height: 20px;
     top: 0px;
     margin-top: 2px;
     z-index: 100;
     border-radius: 3px;
     border: 1px solid #AAAAAA;
 
-    background-image: linear-gradient(bottom, #E0E0E0 0%, #FFFFFF 50%);
-    background-image: -o-linear-gradient(bottom, #E0E0E0 0%, #FFFFFF 50%);
-    background-image: -moz-linear-gradient(bottom, #E0E0E0 0%, #FFFFFF 50%);
-    background-image: -webkit-linear-gradient(bottom, #E0E0E0 0%, #FFFFFF 50%);
-    background-image: -ms-linear-gradient(bottom, #E0E0E0 0%, #FFFFFF 50%);
+    /*background-image: linear-gradient(bottom, #E0E0E0 0%, #FFFFFF 50%);*/
+    /*background-image: -o-linear-gradient(bottom, #E0E0E0 0%, #FFFFFF 50%);*/
+    /*background-image: -moz-linear-gradient(bottom, #E0E0E0 0%, #FFFFFF 50%);*/
+    /*background-image: -webkit-linear-gradient(bottom, #E0E0E0 0%, #FFFFFF 50%);*/
+    /*background-image: -ms-linear-gradient(bottom, #E0E0E0 0%, #FFFFFF 50%);*/
 
-    background-image: -webkit-gradient(linear, left bottom, left top, color-stop(0, #E0E0E0), color-stop(0.50, #FFFFFF));
+    /*background-image: -webkit-gradient(linear, left bottom, left top, color-stop(0, #E0E0E0), color-stop(0.50, #FFFFFF));*/
+    background-color: #f5f5f5 !important;
 }
 
 .taskBox .layout {
@@ -215,13 +216,15 @@
     height: 100%;
     position: absolute;
 
-    background-image: linear-gradient(bottom, #6DD900 0%, #99FF33 50%);
-    background-image: -o-linear-gradient(bottom, #6DD900 0%, #99FF33 50%);
-    background-image: -moz-linear-gradient(bottom, #6DD900 0%, #99FF33 50%);
-    background-image: -webkit-linear-gradient(bottom, #6DD900 0%, #99FF33 50%);
-    background-image: -ms-linear-gradient(bottom, #6DD900 0%, #99FF33 50%);
+    /*background-image: linear-gradient(bottom, #6DD900 0%, #99FF33 50%);*/
+    /*background-image: -o-linear-gradient(bottom, #6DD900 0%, #99FF33 50%);*/
+    /*background-image: -moz-linear-gradient(bottom, #6DD900 0%, #99FF33 50%);*/
+    /*background-image: -webkit-linear-gradient(bottom, #6DD900 0%, #99FF33 50%);*/
+    /*background-image: -ms-linear-gradient(bottom, #6DD900 0%, #99FF33 50%);*/
 
-    background-image: -webkit-gradient(linear, left bottom, left top, color-stop(0, #6DD900), color-stop(0.50, #99FF33));
+    /*background-image: -webkit-gradient(linear, left bottom, left top, color-stop(0, #6DD900), color-stop(0.50, #99FF33));*/
+    background-color: #87b87f !important;
+
     border-radius: 2px;
 }
 
@@ -231,7 +234,7 @@
     border-radius: 2px;
     top: 9px;
     right: 0;
-    background-color: red;
+    background-color: #dd5a43 !important;
 }
 
 .taskBox .layout.extDep {
@@ -378,9 +381,14 @@ th.dgrid-column-chart table {
     height: 100%;
 }
 
+.gantt .dgrid-column-action {
+    width: 40px;
+    text-align: center;
+}
+
 .gantt .dgrid-column-id {
     width: 40px;
-    text-align: right;
+    text-align: center;
 }
 
 .gantt .dgrid-column-name {
@@ -402,11 +410,11 @@ th.dgrid-column-chart table {
 }
 
 .gantt .dgrid-column-start {
-    width: 120px;
+    width: 105px;
 }
 
 .gantt .dgrid-column-end {
-    width: 120px;
+    width: 105px;
 }
 
 .gantt .dgrid-column-set-0 {
@@ -452,6 +460,21 @@ width: 60%;
     overflow:hidden;text-overflow:clip;white-space:nowrap;
 }
 
+
+/* to show the drop-down menus in task edit row*/
+/*.gantt .dgrid-cell {*/
+    /*overflow: visible;*/
+/*}*/
+
+/*.gantt .dgrid-column-set-cell.dgrid-column-set-0>div {*/
+    /*overflow: visible;*/
+/*}*/
+
+/*.gantt .dgrid-tree-container {*/
+    /*overflow: visible;*/
+/*}*/
+
+
 /*.gantt .dgrid-cell-padding {*/
 /*padding: 0px;*/
 /*}*/
@@ -465,19 +488,19 @@ width: 60%;
 }
 
 .percentComplete0 {
-    background-color: red
+    background-color: #dd5a43 !important
 }
 
 .percentComplete10, .percentComplete20, .percentComplete30,
 .percentComplete40 {
-    background-color: darkorange;
+    background-color: #ff892a !important;
 }
 
 .percentComplete50, .percentComplete60, .percentComplete70, .percentComplete80,
 .percentComplete90 {
-    background-color: yellow;
+    background-color: #fee188 !important;
 }
 
 .percentComplete100 {
-    background-color: rgb(153, 255, 51);
+    background-color: #87b87f !important;
 }
