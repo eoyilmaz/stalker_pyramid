@@ -405,8 +405,8 @@ th.dgrid-column-chart table {
 }
 
 .gantt .dgrid-column-complete {
-    width: 50px;
-    text-align: right;
+    width: 30px;
+    text-align: center;
 }
 
 .gantt .dgrid-column-start {

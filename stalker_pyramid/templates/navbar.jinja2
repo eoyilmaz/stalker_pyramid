@@ -1,15 +1,14 @@
 <div class='navbar navbar-fixed-top'>
     <div class="navbar-inner">
         <div class='container-fluid'>
-            <a class="brand" href="/">Stalker <small>v{{ stalker_pyramid.__version__ }}</small></a>
+            <a class="brand" href="/">Stalker</a>
 <ul class="nav navbar-nav">
     <li>
         <a href="{{ request.route_url('view_user', id=logged_in_user.id) }}">Home</a>
     </li>
     <li class="dropdown">
         <a href="#" class="dropdown-toggle"
-           data-toggle="dropdown">Studio <b
-                class="caret"></b></a>
+           data-toggle="dropdown">Studio <b class="caret"></b></a>
         <ul class="dropdown-menu">
             {% if not studio %}#}
                 {% if has_permission('Create_Studio') %}
@@ -25,7 +24,7 @@
             {% endif %}
             {% if has_permission('Create_User') %}
                 <li class="divider"></li>
-                <li><a href="/users/-1/create/dialog">New  User</a>
+                <li><a href="/users/-1/create/dialog">New User</a>
                 </li>
             {% endif %}
             {% if has_permission('Create_Department') %}

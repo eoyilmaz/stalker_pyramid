@@ -33,13 +33,14 @@ from sqlalchemy.exc import IntegrityError
 
 from stalker.db import DBSession
 from stalker import (User, Task, Entity, Project, StatusList, Status,
-                     TaskJugglerScheduler, Studio, Asset, Shot, Sequence, Type, Ticket)
+                     TaskJugglerScheduler, Studio, Asset, Shot, Sequence, Type,
+                     Ticket)
 from stalker.models.task import CircularDependencyError
 from stalker import defaults
 import stalker_pyramid
 from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
                                    get_multi_integer, milliseconds_since_epoch,
-                                   get_date)
+                                   get_date, StdToHTMLConverter)
 
 
 logger = logging.getLogger(__name__)
@@ -1126,15 +1127,14 @@ def auto_schedule_tasks(request):
         tj_scheduler = TaskJugglerScheduler()
         studio.scheduler = tj_scheduler
 
-        # logger.debug('studio.name: %s' % studio.name)
-        # logger.debug('studio.working_hours[0]: %s' % studio.working_hours[0])
-        # logger.debug('studio.daily_working_hours: %s' % studio.daily_working_hours)
-        # logger.debug('studio.to_tjp: %s' % studio.to_tjp)
-
         try:
             studio.schedule()
-        except RuntimeError:
-            return HTTPServerError()
+        except RuntimeError as e:
+            logger.debug('%s' % e.message)
+            c = StdToHTMLConverter(e)
+            response = Response(c.html())
+            response.status_int = 500
+            return response
 
     return HTTPOk()
 

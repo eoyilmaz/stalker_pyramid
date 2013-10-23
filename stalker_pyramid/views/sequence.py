@@ -127,7 +127,7 @@ def update_sequence(request):
         logger.debug('there are missing parameters')
         logger.debug('name      : %s' % name)
         logger.debug('status    : %s' % status)
-        HTTPServerError()
+        HTTPServerError()   
 
     return HTTPOk()
 

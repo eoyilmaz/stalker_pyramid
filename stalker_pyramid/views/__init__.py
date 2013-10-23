@@ -36,7 +36,44 @@ logger = logging.getLogger(__name__)
 logger.setLevel(log.logging_level)
 
 
+class StdToHTMLConverter():
+    """Converts stderr, stdout messages of TaskJuggler to html
 
+    :param error: An exception
+    """
+
+    formatChars = {
+        '\e[1m': '<strong>',
+        '\e[21m': '</strong>',
+        '\e[2m':  '<span class="dark">',
+        '\e[22m': '</span>',
+        '\x1b[31m': '<span class="red">',
+        '\x1b[0m': '</span>',
+    }
+
+    def __init__(self, error):
+        self.error_message = error.message
+
+    def html(self):
+        """returns the html version of the message
+        """
+        # convert the error message to a string
+        if isinstance(self.error_message, list):
+            buffer = []
+            for msg in self.error_message:
+                # join the message in to <p> elements
+                buffer.append('<p>%s</p>' % msg.strip())
+
+            # convert the list to string
+            strBuffer = ''.join(buffer)
+        else:
+            strBuffer = self.error_message
+
+        # for each formatChar replace them with an html tag
+        for key in self.formatChars.keys():
+            strBuffer = strBuffer.replace(key, self.formatChars[key])
+
+        return strBuffer
 
 
 class PermissionChecker(object):

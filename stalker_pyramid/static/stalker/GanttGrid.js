@@ -6,9 +6,10 @@ define([
     "dgrid/Selection",
     "dgrid/Keyboard",
     "dgrid/tree",
+    "dgrid/extensions/DijitRegistry",
     "stalker/GanttColumn"
 ], function (declare, lang, OnDemandGrid, ColumnSet, Selection, Keyboard, tree,
-             GanttColumn) {
+             DijitRegistry, GanttColumn) {
     // module:
     //     GanttGrid
     // summary:
@@ -17,7 +18,7 @@ define([
     // Creates a new grid with one column set definition to display tasks & resources and a second
     // column set for the actual gantt chart
     "use strict";
-    return declare([OnDemandGrid, ColumnSet, Selection, Keyboard], {
+    return declare([OnDemandGrid, ColumnSet, Selection, Keyboard, DijitRegistry], {
         keyMap: lang.mixin({}, Keyboard.defaultKeyMap, {
             //    37 - left
             //    38 - up
@@ -114,6 +115,26 @@ define([
                             }
                         }
                     ),
+                    complete: {
+                        label: '%',
+                        sortable: false,
+                        get: function (object) {
+                            return object;
+                        },
+                        formatter: function (object) {
+                            var p_complete, p_complete_str, p_complete_rounded, bg_color, font_weight;
+                            p_complete = object.total_logged_seconds / object.schedule_seconds * 100;
+
+                            font_weight = 'normal';
+
+                            // check if it has a floating part
+
+                            p_complete_str = p_complete.toFixed(0);
+                            p_complete_rounded = (Math.floor(p_complete / 10) * 10).toFixed(0);
+
+                            return '<div class="percentComplete' + p_complete_rounded + '">' + p_complete_str + '</div>';
+                        }
+                    },
                     resource: {
                         label: "Resource",
                         sortable: false,
@@ -170,33 +191,6 @@ define([
                             return timing;
                         }
                     },
-                    complete: {
-                        label: '% Compl.',
-                        sortable: false,
-                        get: function (object) {
-                            return object;
-                        },
-                        formatter: function (object) {
-                            var p_complete, p_complete_str, p_complete_rounded, bg_color, font_weight;
-                            p_complete = object.total_logged_seconds / object.schedule_seconds * 100;
-
-                            font_weight = 'normal';
-
-                            // check if it has a floating part
-
-                            if (Math.floor(p_complete) === p_complete) {
-                                // it is an integer do not fix it
-                                p_complete_str = p_complete + '%';
-                            } else {
-                                // it is a float fix it
-                                p_complete_str = p_complete.toFixed(1) + '%';
-                            }
-
-                            p_complete_rounded = (Math.floor(p_complete / 10) * 10).toFixed(0);
-
-                            return '<div class="percentComplete' + p_complete_rounded + '">' + p_complete_str + '</div>';
-                        }
-                    },
                     start: {
                         label: 'Start',
                         sortable: false,
@@ -218,7 +212,17 @@ define([
                             var end_date = new Date(object.end);
                             return end_date.format("yyyy-mm-dd HH:MM");
                         }
-                    }
+                    },
+//                    dependencies: {
+//                        label: 'Dependencies',
+//                        sortable: false,
+//                        get: function(object) {
+//                            return object;
+//                        },
+//                        formatter: function(object) {
+//                            return object;
+//                        }
+//                    }
                 }
             ],
 
