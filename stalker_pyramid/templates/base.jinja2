@@ -297,7 +297,7 @@
                 var data_count = data.length;
                 for (var i = 0; i < data_count; i++) {
 
-                    data[i].selected = ''
+                    data[i].selected = '';
 
                     if (data[i].id == selected_id) {
                         data[i].selected = 'selected';
@@ -330,16 +330,12 @@
     {# Event Dialog Initialize #}
     <script type="text/javascript">
         $(function () {
-            var event_dialog = $('#event_dialog');
+            var event_dialog = $('#dialog_template');
             event_dialog.on('shown', function () {
-
-                init_event_dialog();
+                init_dialog();
             });
             event_dialog.on('hidden', function () {
-
-
-                destruct_event_dialog();
-
+                destruct_dialog();
             });
 
         })

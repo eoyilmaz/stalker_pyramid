@@ -56,6 +56,13 @@
 
 {% endblock breadcrumbs %}
 
+{# MODALS #}
+{% block modals %}
+
+    {% include 'modals/dialog_template.jinja2' %}
+
+{% endblock modals %}
+
 {# PAGE-CONTENT #}
 {% block page_content %}
 
@@ -90,6 +97,12 @@
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/select2.min.js") }}'></script>
 
     <script type="text/javascript">
+
+
+    $(document).ready(function () {
+        //destruct_dialog();
+
+    });
 
      $.mask.definitions['~'] = '[+-]';
         $('#phone').mask('(999) 999-9999');

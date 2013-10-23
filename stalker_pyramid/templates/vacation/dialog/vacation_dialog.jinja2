@@ -107,23 +107,24 @@
 
 
 <script>
-function init_event_dialog(start, end, allDay) {
+function init_dialog() {
     console.debug('starting to initialize vacation dialog!!!');
 
-    $('#event_dialog_label').find('span').remove();
-    $('#event_dialog_label').append('<span>Vacation</span>')
+    $('#dialog_template_label').find('span').remove();
+    $('#dialog_template_label').append('<span>Vacation</span>')
 
 
     {# ***************************************************************** #}
+    var event_dialog = $('#dialog_template')
 
-    var start_date_value = new Date($('#event_dialog').attr('start'));
-    var end_date_value = new Date($('#event_dialog').attr('end'));
+    var start_date_value = new Date(event_dialog.attr('start'));
+    var end_date_value = new Date(event_dialog.attr('end'));
 
     var start_time_value = start_date_value;
     var end_time_value = end_date_value;
 
 
-    if ($('#event_dialog').attr('allDay') == 'true') {
+    if (event_dialog.attr('allDay') == 'true') {
         start_time_value.setHours(10);
         end_time_value.setHours(19);
     }
@@ -285,7 +286,7 @@ function init_event_dialog(start, end, allDay) {
     {# ***************************************************************** #}
     {# Submit Button #}
 
-    $('#event_dialog_submit_button').on('click', function () {
+    $('#dialog_template_submit_button').on('click', function () {
 
         var vacation_form = $('#vacation_form');
 
@@ -381,8 +382,9 @@ function init_event_dialog(start, end, allDay) {
 </script>
 
 <script type="text/javascript">
-    function destruct_event_dialog() {
-        $('#event_dialog').data('modal', null);
-        alert('destruct_event_dialog');
+
+    function destruct_dialog() {
+        $('#dialog_template').data('modal', null);
     }
+
 </script>

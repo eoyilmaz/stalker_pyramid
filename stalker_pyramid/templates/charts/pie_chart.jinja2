@@ -5,7 +5,7 @@
 
         function drawPieChart(placeholder, data, colors) {
 
-            var plot8 = $.jqplot(placeholder, [data], {
+             $.jqplot(placeholder, [data], {
                 fontSize: 50,
                 textColor: '#ff0000',
                 grid: {
@@ -72,11 +72,7 @@
                 content.push([data[i].name + " (" + data[i].count + ")", data[i].count]);
                 colors.push(data[i].color);
 
-                ///infobox.append('<div class="infobox infobox-' + data[i].color + '"><div class="infobox-icon"><i class="' + data[i].icon + '"></i></div><div class="infobox-data"><span class="infobox-data-number">' + data[i].count + '</span><div class="infobox-content">' + data[i].name + '</div></div></div>');
-
             }
-
-            console.log(content);
 
             drawPieChart('pie_chart', content, colors)
 

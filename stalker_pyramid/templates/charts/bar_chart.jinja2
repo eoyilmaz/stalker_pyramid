@@ -2,6 +2,69 @@
 
 <script class="code" type="text/javascript">
     $(document).ready(function () {
+
+
+        function drawBarChart(placeholder, data, ticks, colors, series) {
+
+            $.jqplot(placeholder, data, {
+                // Tell the plot to stack the bars
+                fontSize: '50',
+                stackSeries: true,
+                captureRightClick: true,
+                seriesColors: colors,
+                seriesDefaults: {
+                    renderer: $.jqplot.BarRenderer,
+                    rendererOptions: {
+                        // Put a 30 pixel margin between bars.
+                        barMargin: 10,
+                        // Highlight bars when mouse button pressed.
+                        // Disables default highlighting on mouse over.
+                        highlightMouseDown: true,
+                        barPadding: 10,      // number of pixels between adjacent bars in the same
+                        // group (same category or bin).
+
+                        barDirection: 'vertical', // vertical or horizontal.
+                        barWidth: 30,     // width of the bars.  null to calculate automatically.
+                        shadowOffset: 2,    // offset from the bar edge to stroke the shadow.
+                        shadowDepth: 5,     // number of strokes to make for the shadow.
+                        shadowAlpha: 0.1   // transparency of the shadow.
+                    },
+                    pointLabels: {show: true}
+
+                },
+                series: series,
+                axes: {
+                    xaxis: {
+                        renderer: $.jqplot.CategoryAxisRenderer,
+                        ticks: ticks
+
+                    },
+                    yaxis: {
+                        // Don't pad out the bottom of the data range.  By default,
+                        // axes scaled as if data extended 10% above and below the
+                        // actual range to prevent data points right on grid boundaries.
+                        // Don't want to do that here.
+                        pad: 1,
+                        tickOptions: {formatString: '%d h'}
+                    }
+                },
+                legend: {
+                    show: true,
+                    location: 'ne',
+                    placement: 'inside',
+                    xoffset: 0,
+                    yoffset: 0
+                }
+
+            });
+
+        }
+
+        var bar_chart = $('#bar_chart');
+
+        {#        $.getJSON(bar_chart.attr('address')).then(function (data) {#}
+
+
         var s1 = [15, 9, 0, 5, 7, 8];
         var s2 = [0, 0, 0, 2, 0, 0];
         var s3 = [0, 0, 9, 2, 2, 0];
@@ -9,69 +72,20 @@
         // Ticks should match up one for each y value (category) in the series.
         var ticks = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-        plot3 = $.jqplot('bar_chart', [s1, s2, s3], {
-            // Tell the plot to stack the bars
-            fontSize: '50',
-            stackSeries: true,
-            captureRightClick: true,
-            seriesColors: ['#82af6f', '#fee188', '#bbb'],
-            seriesDefaults: {
-                renderer: $.jqplot.BarRenderer,
-                rendererOptions: {
-                    // Put a 30 pixel margin between bars.
-                    barMargin: 10,
-                    // Highlight bars when mouse button pressed.
-                    // Disables default highlighting on mouse over.
-                    highlightMouseDown: true,
-                    barPadding: 10,      // number of pixels between adjacent bars in the same
-                                // group (same category or bin).
+        var colors = ['#82af6f', '#fee188', '#bbb'];
 
-            barDirection: 'vertical', // vertical or horizontal.
-            barWidth: 30,     // width of the bars.  null to calculate automatically.
-            shadowOffset: 2,    // offset from the bar edge to stroke the shadow.
-            shadowDepth: 5,     // number of strokes to make for the shadow.
-            shadowAlpha: 0.1   // transparency of the shadow.
-                },
-                pointLabels: {show: true}
+        var series = [
+            {label: 'Timelogs'},
+            {label: 'Vacation'},
+            {label: 'Unknown'}
+        ];
 
-            },
-            series: [
-                {label: 'Timelogs'},
-                {label: 'Vacation'},
-                {label: 'Unknown'}
-            ],
-            axes: {
-                xaxis: {
-                    renderer: $.jqplot.CategoryAxisRenderer,
-                    ticks: ticks
+        drawBarChart('bar_chart', [s1, s2, s3], ticks, colors);
 
-                },
-                yaxis: {
-                    // Don't pad out the bottom of the data range.  By default,
-                    // axes scaled as if data extended 10% above and below the
-                    // actual range to prevent data points right on grid boundaries.
-                    // Don't want to do that here.
-                    pad: 1,
-                    tickOptions: {formatString: '%d h'}
-                }
-            },
-            legend: {
-                show: false,
-                location: 'se',
-                placement: 'outside',
-                xoffset: 0,
-                yoffset: 0
-            }
 
-        });
-        // Bind a listener to the "jqplotDataClick" event.  Here, simply change
-        // the text of the info3 element to show what series and ponit were
-        // clicked along with the data for that point.
-        {#        $('#chart3').bind('jqplotDataClick',#}
-        {#                function (ev, seriesIndex, pointIndex, data) {#}
-        {#                    $('#info3').html('series: ' + seriesIndex + ', point: ' + pointIndex + ', data: ' + data);#}
-        {#                }#}
-        {#        );#}
+        {#        })#}
+
+
     });
 </script>
 

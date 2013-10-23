@@ -130,17 +130,17 @@
 
 
 <script>
-function init_event_dialog(start, end, allDay) {
+function init_dialog() {
     console.debug('starting to initialize time_log dialog!!!');
 
 
-    $('#event_dialog_label').find('span').remove();
-    $('#event_dialog_label').append('<span>Timelog</span>')
+    $('#dialog_template_label').find('span').remove();
+    $('#dialog_template_label').append('<span>Timelog</span>')
 
     {# ***************************************************************** #}
 
 
-    var event_dialog = $('#event_dialog')
+    var event_dialog = $('#dialog_template')
 
     var start_date_value = new Date(event_dialog.attr('start'));
     var end_date_value = new Date(event_dialog.attr('end'));
@@ -155,6 +155,18 @@ function init_event_dialog(start, end, allDay) {
     }
 
 
+    var came_from = '/'
+
+    {% if entity.entity_type  == 'User' %}
+
+        came_from = '{{ request.route_url('view_user', id=entity.id) }}'
+
+    {% elif entity.entity_type  == 'Task'%}
+
+        came_from = '{{ request.route_url('task_view', id=entity.id) }}'
+
+    {% endif %}
+
 
 
     {% if mode == 'create' %}
@@ -163,8 +175,6 @@ function init_event_dialog(start, end, allDay) {
         $("#time_log_form").attr("action", "{{ request.route_url('create_time_log') }}");
 
         {% if entity.entity_type  == 'User' %}
-
-
 
             {# ***************************************************************** #}
             {# Resource #}
@@ -211,6 +221,7 @@ function init_event_dialog(start, end, allDay) {
 
             {# ***************************************************************** #}
             {# Task #}
+
 
             var time_log_task = $('#time_log_task');
             var parent_name = '';
@@ -466,11 +477,9 @@ function init_event_dialog(start, end, allDay) {
     {# ***************************************************************** #}
     {# Submit Button #}
 
-    $('#event_dialog_submit_button').on('click', function () {
+    $('#dialog_template_submit_button').on('click', function () {
 
         var time_log_form = $('#time_log_form');
-
-        alert('init_event_dialoginit_event_dialog')
 
         if (time_log_form.validate()) {
 
@@ -480,9 +489,12 @@ function init_event_dialog(start, end, allDay) {
             var end = start_end[1];
 
             $.post(
-                    time_log_form.attr('action'),
-                    time_log_form.serialize() + '&' + $.param({ 'start': start.toUTCString(), 'end': end.toUTCString() })
-            );
+                            time_log_form.attr('action'),
+                            time_log_form.serialize() + '&' + $.param({ 'start': start.toUTCString(), 'end': end.toUTCString() })
+                    ).done(function () {
+                        window.location.replace(came_from);
+                    });
+            ;
 
         }
     });
@@ -545,8 +557,9 @@ function init_event_dialog(start, end, allDay) {
 </script>
 
 <script type="text/javascript">
-    function destruct_event_dialog() {
-        $('#event_dialog').data('modal', null);
-        alert('destruct_event_dialog');
+    function destruct_dialog() {
+
+        $('#dialog_template').data('modal', null);
+
     }
 </script>

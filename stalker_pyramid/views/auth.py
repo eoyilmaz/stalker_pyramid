@@ -58,6 +58,7 @@ def create_user(request):
     email = request.params.get('email', None)
     password = request.params.get('password', None)
 
+    logger.debug('came_from : %s' % came_from)
     logger.debug('new user name : %s' % name)
     logger.debug('new user login : %s' % login)
     logger.debug('new user email : %s' % email)
@@ -157,7 +158,6 @@ def update_user(request):
     logger.debug('user new email : %s' % email)
     logger.debug('user new password : %s' % password)
 
-
     if user and name and login and email and password:
         # departments = []
         #
@@ -194,8 +194,8 @@ def update_user(request):
         logger.debug('user is updated successfully')
 
         request.session.flash(
-                'success:User <strong>%s</strong> is updated successfully' % name
-            )
+            'success:User <strong>%s</strong> is updated successfully' % name
+        )
         logger.debug('***update user method ends ***')
     else:
         logger.debug('not all parameters are in request.params')
@@ -615,7 +615,7 @@ def login(request):
 )
 @view_config(
     route_name='home',
-    renderer='templates/home.jinja2'
+    renderer='templates/auth/view/view_user.jinja2'
 )
 @view_config(
     route_name='me_menu',
@@ -627,18 +627,6 @@ def home(request):
     studio = Studio.query.first()
     projects = Project.query.all()
 
-    today = datetime.date.today()
-    start = datetime.time(0, 0)
-    end = datetime.time(23, 59, 59)
-
-    start_of_today = datetime.datetime.combine(today, start)
-    end_of_today = datetime.datetime.combine(today, end)
-
-    tasks_today = Task.query.join(User, Task.resources) \
-        .filter(User.id == logged_in_user.id) \
-        .filter(Task.computed_start < end_of_today) \
-        .filter(Task.computed_end > start_of_today).all()
-
     flash_message = request.GET.get('flash')
     if flash_message:
         request.session.flash(flash_message)
@@ -648,9 +636,9 @@ def home(request):
         'studio': studio,
         'logged_in_user': logged_in_user,
         'has_permission': PermissionChecker(request),
+        'milliseconds_since_epoch': milliseconds_since_epoch,
         'projects': projects,
-        'entity': logged_in_user,
-        'tasks_today': tasks_today
+        'entity': logged_in_user
     }
 
 
@@ -701,7 +689,6 @@ def check_email_availability(request):
     renderer='json'
 )
 def get_user_events(request):
-
     logger.debug('get_user_events is running')
     user_id = request.matchdict.get('id', -1)
     user = User.query.filter_by(id=user_id).first()
@@ -716,10 +703,11 @@ def get_user_events(request):
         # assert isinstance(time_log, TimeLog)
         events.append({
             'id': time_log.id,
-            'entity_type':time_log.plural_class_name.lower(),
+            'entity_type': time_log.plural_class_name.lower(),
             'title': '%s (%s)' % (
                 time_log.task.name,
-                ' | '.join(reversed([parent.name for parent in time_log.task.parents]))),
+                ' | '.join(reversed(
+                    [parent.name for parent in time_log.task.parents]))),
             'start': milliseconds_since_epoch(time_log.start),
             'end': milliseconds_since_epoch(time_log.end),
             'className': 'label-success',
@@ -729,17 +717,16 @@ def get_user_events(request):
             # 'notes': time_log.notes
         })
 
-
-    vacations = Vacation.query.filter(Vacation.user==None).all()
+    vacations = Vacation.query.filter(Vacation.user == None).all()
     if isinstance(user, User):
         vacations.extend(user.vacations)
-    # if user.time_logs:
+        # if user.time_logs:
     for vacation in vacations:
         # logger.debug('time_log.task.id : %s' % time_log.task.id)
         # assert isinstance(time_log, TimeLog)
         events.append({
             'id': vacation.id,
-            'entity_type':vacation.plural_class_name.lower(),
+            'entity_type': vacation.plural_class_name.lower(),
             'title': vacation.type.name,
             'start': milliseconds_since_epoch(vacation.start),
             'end': milliseconds_since_epoch(vacation.end),
@@ -747,7 +734,6 @@ def get_user_events(request):
             'allDay': True,
             'status': ''
         })
-
 
     today = datetime.datetime.today()
 
@@ -759,10 +745,11 @@ def get_user_events(request):
         if today < task.end:
             events.append({
                 'id': task.id,
-                'entity_type':task.plural_class_name.lower(),
+                'entity_type': task.plural_class_name.lower(),
                 'title': '%s (%s)' % (
                     task.name,
-                    ' | '.join(reversed([parent.name for parent in task.parents]))),
+                    ' | '.join(
+                        reversed([parent.name for parent in task.parents]))),
                 'start': milliseconds_since_epoch(task.start),
                 'end': milliseconds_since_epoch(task.end),
                 'className': 'label',
@@ -780,7 +767,6 @@ def get_user_events(request):
     renderer='json'
 )
 def get_user_efficiency_graphic(request):
-
     logger.debug('get_user_efficiency_graphic is running')
     user_id = request.matchdict.get('id', -1)
     user = User.query.filter_by(id=user_id).first()
@@ -789,8 +775,12 @@ def get_user_efficiency_graphic(request):
 
     efficiency_list = []
 
-
     return efficiency_list
+
+
+
+
+
 
 
 

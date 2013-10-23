@@ -150,6 +150,11 @@ def create_time_log(request):
             return HTTPServerError()
         else:
             DBSession.add(time_log)
+
+            request.session.flash(
+                'success:Time log for <strong>%s</strong> is saved for resource <strong>%s</strong>.' % (task.name,resource.name)
+            )
+
         logger.debug('no problem here!')
 
     logger.debug('successfully created time log!')
@@ -196,6 +201,9 @@ def update_time_log(request):
             return HTTPServerError()
         else:
             DBSession.add(time_log)
+            request.session.flash(
+                'success:Time log for <strong>%s</strong> is updated..' % (time_log.task.name)
+            )
             logger.debug('successfully updated time log!')
 
     return HTTPOk()
