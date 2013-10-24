@@ -3,34 +3,33 @@
     <div class="span12">
         <!--PAGE CONTENT BEGINS-->
         <div class="row-fluid">
-            <div class="alert alert-info">
-                <i class="icon-hand-right"></i>
-
-                Please note that demo server is not configured to save uploaded
-                files, therefore you may get an error message.
-                <button class="close" data-dismiss="alert">
-                    <i class="icon-remove"></i>
-                </button>
-            </div>
-            <div id="dropzone">
-                <form action="//dummy.html" class="dropzone dz-clickable">
-
-                    <div class="dz-default dz-message"><span><span
-                            class="bigger-150 bolder"><i
-                            class="icon-caret-right red"></i> Drop files</span> to upload <span
-                            class="smaller-80 grey">(or click)</span> <br> <i
-                            class="upload-icon icon-cloud-upload blue icon-3x"></i></span>
-                    </div>
-                </form>
-            </div>
+{#            <div class="alert alert-info">#}
+{#                <i class="icon-hand-right"></i>#}
+{##}
+{#                Please note that demo server is not configured to save uploaded#}
+{#                files, therefore you may get an error message.#}
+{#                <button class="close" data-dismiss="alert">#}
+{#                    <i class="icon-remove"></i>#}
+{#                </button>#}
+{#            </div>#}
+{#            <div id="dropzone">#}
+{#                <form action="//dummy.html" class="dropzone dz-clickable">#}
+{##}
+{#                    <div class="dz-default dz-message"><span><span#}
+{#                            class="bigger-150 bolder"><i#}
+{#                            class="icon-caret-right red"></i> Drop files</span> to upload <span#}
+{#                            class="smaller-80 grey">(or click)</span> <br> <i#}
+{#                            class="upload-icon icon-cloud-upload blue icon-3x"></i></span>#}
+{#                    </div>#}
+{#                </form>#}
+{#            </div>#}
         </div>
         <!--PAGE CONTENT ENDS-->
-                        <ul class="ace-thumbnails">
-                            {% for reference in references %}
-                                {% include 'link/list_item_reference.jinja2' %}
-                            {% endfor %}
-
-                        </ul>
+        <ul class="ace-thumbnails">
+            {% for reference in references %}
+                {% include 'link/list_item_reference.jinja2' %}
+            {% endfor %}
+        </ul>
     </div>
     <!--/.span-->
 </div>

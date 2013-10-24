@@ -761,7 +761,7 @@ def get_project_tasks(request):
             'id': task.id,
             'name': '%s (%s)' % (
                 task.name,
-                ' | '.join(reversed([parent.name for parent in task.parents]))
+                ' | '.join([parent.name for parent in task.parents])
             )
         } for task in Task.query.filter(Task._project == project).all()
     ]
@@ -907,14 +907,10 @@ def create_task(request):
     name = request.params.get('name', None)
     description = request.params.get('description', '')
     # is_milestone = request.params.get('is_milestone', None)
-    # status_id = request.params.get('status_id', None)
-    # if status_id:
-    #     status_id = int(status_id)
 
     schedule_model = request.params.get('schedule_model') # there should be one
     schedule_timing = float(request.params.get('schedule_timing'))
     schedule_unit = request.params.get('schedule_unit')
-    # schedule_constraint = int(request.params.get('schedule_constraint', 0))
 
     # get the resources
     resources = []
@@ -931,17 +927,20 @@ def create_task(request):
 
     priority = request.params.get('priority', 500)
 
-    entity_type = request.params.get('entity_type', None)
-    code = request.params.get('code', None)
-    asset_type = request.params.get('asset_type_name', None)
-    shot_sequence_id = request.params.get('shot_sequence_id', None)
+    code = request.params.get('code', '')
+    entity_type = request.params.get('entity_type')
+    asset_type = request.params.get('asset_type')
+    task_type = request.params.get('task_type')
+    shot_sequence_id = request.params.get('shot_sequence_id')
 
+    logger.debug('entity_type         : %s' % entity_type)
+    logger.debug('asset_type          : %s' % asset_type)
+    logger.debug('task_type           : %s' % task_type)
+    logger.debug('code                : %s' % code)
     logger.debug('project_id          : %s' % project_id)
     logger.debug('parent_id           : %s' % parent_id)
     logger.debug('name                : %s' % name)
     logger.debug('description         : %s' % description)
-    # logger.debug('is_milestone        : %s' % is_milestone)
-    # logger.debug('status_id           : %s' % status_id)
     logger.debug('schedule_model      : %s' % schedule_model)
     logger.debug('schedule_timing     : %s' % schedule_timing)
     logger.debug('schedule_unit       : %s' % schedule_unit)
@@ -949,10 +948,7 @@ def create_task(request):
     logger.debug('resources           : %s' % resources)
     logger.debug('responsible         : %s' % responsible)
     logger.debug('priority            : %s' % priority)
-    # logger.debug('schedule_constraint : %s' % schedule_constraint)
-    logger.debug('entity_type         : %s' % entity_type)
-    logger.debug('code                : %s' % code)
-    logger.debug('asset_type          : %s' % asset_type)
+    logger.debug('shot_sequence_id    : %s' % shot_sequence_id)
 
     kwargs = {}
 
@@ -961,10 +957,8 @@ def create_task(request):
         project = Project.query.filter_by(id=project_id).first()
         kwargs['project'] = project
 
-        # get the parent if exists
-        parent = None
-        if parent_id:
-            parent = Task.query.filter_by(id=parent_id).first()
+        # get the parent if parent_id exists
+        parent = Task.query.filter_by(id=parent_id).first() if parent_id else None
 
         kwargs['parent'] = parent
 
@@ -977,89 +971,77 @@ def create_task(request):
 
         # there should be a status_list
         if status_list is None:
-            return HTTPServerError(
-                detail='No StatusList found'
+            response = Response(
+                'No StatusList found suitable for %s' % entity_type
             )
+            response.status_int = 500
+            return response
 
         status = Status.query.filter_by(name='New').first()
         logger.debug('status: %s' % status)
 
-        # get the dates
-        start = get_date(request, 'start')
-        end = get_date(request, 'end')
-
-        logger.debug('start : %s' % start)
-        logger.debug('end : %s' % end)
-
         # get the dependencies
         depend_ids = get_multi_integer(request, 'depend_ids')
-        depends = Task.query.filter(Task.id.in_(depend_ids)).all()
+        depends = Task.query.filter(Task.id.in_(depend_ids)).all() if depend_ids else []
         logger.debug('depends: %s' % depends)
 
         kwargs['name'] = name
+        kwargs['code'] = code
         kwargs['description'] = description
-        kwargs['status_list'] = status_list
-        kwargs['status'] = status
         kwargs['created_by'] = logged_in_user
 
-        kwargs['start'] = start
-        kwargs['end'] = end
+        kwargs['status_list'] = status_list
+        kwargs['status'] = status
 
         kwargs['schedule_model'] = schedule_model
         kwargs['schedule_timing'] = schedule_timing
         kwargs['schedule_unit'] = schedule_unit
-        # kwargs['schedule_constraint'] = schedule_constraint
 
         kwargs['resources'] = resources
         kwargs['depends'] = depends
 
         kwargs['priority'] = priority
 
-        kwargs['code'] = code
-
+        type_query = Type.query.filter_by(target_entity_type=entity_type)
+        type_name = ''
         if entity_type == 'Asset':
-            type_ = Type.query \
-                .filter_by(target_entity_type='Asset') \
-                .filter_by(name=asset_type) \
-                .first()
+            type_name = asset_type
+        elif entity_type == 'Task':
+            type_name = task_type
 
-            if type_ is None:
-                # create a new Type
-                # TODO: should we check for permission here or will it be already done in the UI (ex. filteringSelect instead of comboBox)
-                type_ = Type(
-                    name=asset_type,
-                    code=asset_type,
-                    target_entity_type='Asset'
-                )
+        type_ = type_query.filter_by(name=type_name).first()
 
-            kwargs['type'] = type_
+        if type_name and type_ is None:
+            # create a new Type
+            logger.debug('creating new %s type: %s' % (
+                entity_type.lower(), type_name)
+            )
+            type_ = Type(
+                name=type_name,
+                code=type_name,
+                target_entity_type=entity_type
+            )
+        kwargs['type'] = type_
 
         if entity_type == 'Shot':
             sequence = Sequence.query.filter_by(id=shot_sequence_id).first()
             kwargs['sequence'] = sequence
 
         try:
-
-            if entity_type == 'Task':
-                new_entity = Task(**kwargs)
-                logger.debug('new_task.name %s' % new_entity.name)
-                # logger.debug('new_task.status: %s' % new_entity.status)
-                DBSession.add(new_entity)
-            elif entity_type == 'Asset':
+            if entity_type == 'Asset':
+                logger.debug('creating a new Asset')
                 new_entity = Asset(**kwargs)
                 logger.debug('new_asset.name %s' % new_entity.name)
-                # logger.debug('new_asset.status: %s' % new_entity.status)
-                DBSession.add(new_entity)
             elif entity_type == 'Shot':
                 new_entity = Shot(**kwargs)
                 logger.debug('new_shot.name %s' % new_entity.name)
-                # logger.debug('new_shot.status: %s' % new_entity.status)
-                DBSession.add(new_entity)
             elif entity_type == 'Sequence':
                 new_entity = Sequence(**kwargs)
                 logger.debug('new_shot.name %s' % new_entity.name)
-                # logger.debug('new_shot.status: %s' % new_entity.status)
-                DBSession.add(new_entity)
+            else:  # entity_type == 'Task'
+                new_entity = Task(**kwargs)
+                logger.debug('new_task.name %s' % new_entity.name)
+            DBSession.add(new_entity)
 
             if responsible:
                 # check if the responsible is different than
@@ -1068,11 +1050,11 @@ def create_task(request):
                     new_entity.responsible = responsible
 
         except (AttributeError, TypeError, CircularDependencyError) as e:
-            logger.debug(e.message)
-            error = HTTPServerError()
-            error.title = str(type(e))
-            error.detail = e.message
-            return error
+            logger.debug('The Error Message: %s' % e.message)
+            response = Response('%s' % e.message)
+            response.status_int = 500
+            transaction.abort()
+            return response
         else:
             DBSession.add(new_entity)
             try:
@@ -1080,7 +1062,9 @@ def create_task(request):
             except IntegrityError as e:
                 logger.debug(e.message)
                 transaction.abort()
-                return HTTPServerError(detail=e.message)
+                response = Response(e.message)
+                response.status_int = 500
+                return response
             else:
                 logger.debug('flushing the DBSession, no problem here!')
                 DBSession.flush()
@@ -1098,18 +1082,19 @@ def create_task(request):
         get_param('name')
         get_param('description')
         # get_param('is_milestone')
-        get_param('resource_ids')
+        #get_param('resource_ids')
         # get_param('status_id')
 
         param_list = ['project_id', 'name', 'description',
                       # 'is_milestone', 'status_id'
-                      'resource_ids']
+                      #'resource_ids'
+                      ]
 
         params = [param for param in param_list if param not in request.params]
 
-        error = HTTPServerError()
-        error.explanation = 'There are missing parameters: %s' % params
-        return error
+        response = Response('There are missing parameters: %s' % params)
+        response.status_int = 500
+        return response
 
     return HTTPOk(detail='Task created successfully')
 

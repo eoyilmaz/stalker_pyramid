@@ -7,9 +7,10 @@ define([
     "dgrid/Keyboard",
     "dgrid/tree",
     "dgrid/extensions/DijitRegistry",
+    "put-selector/put",
     "stalker/GanttColumn"
 ], function (declare, lang, OnDemandGrid, ColumnSet, Selection, Keyboard, tree,
-             DijitRegistry, GanttColumn) {
+             DijitRegistry, put, GanttColumn) {
     // module:
     //     GanttGrid
     // summary:
@@ -112,6 +113,21 @@ define([
                                 template_var.type = object.type;
 
                                 return template(template_var);
+                            },
+                            renderExpando: function (level, hasChildren, expanded, object) {
+                                // summary:
+                                //     Provides default implementation for column.renderExpando.
+
+                                var dir = this.grid.isRTL ? "right" : "left",
+                                    cls = ".dgrid-expando-icon",
+                                    node;
+                                if (hasChildren){
+                                    cls += ".ui-icon.ui-icon-triangle-1-" + (expanded ? "se" : "e");
+                                }
+                                node = put("div" + cls + "[style=margin-" + dir + ": " +
+                                    (level * (this.indentWidth || 9)) + "px; float: " + dir + "; position: inherit]");
+                                node.innerHTML = "&nbsp;"; // for opera to space things properly
+                                return node;
                             }
                         }
                     ),

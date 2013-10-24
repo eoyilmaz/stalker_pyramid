@@ -10,6 +10,8 @@ Stalker Pyramid Changes
   Twitter Bootstrap.
 * **Update:** TaskJuggler error messages are now correctly displayed in the UI.
 * **Update:** Updated the GanttChart theme to ACE.
+* **Fix:** Task dialog is now able to create Tasks, Assets, Shots and
+  Sequences.
 
 0.1.0.b3
 ========

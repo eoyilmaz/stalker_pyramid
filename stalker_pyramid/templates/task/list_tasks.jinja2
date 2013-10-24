@@ -1004,29 +1004,16 @@ require([
     // get the gantt column
     var gantt_column = gantt_chart.columnSets[1][0][0];
 
-    {#            {% if has_permission('Create_Task') %}#}
-    {#                // CREATE TASK#}
-    {#                var create_task_button = dialogCaller({#}
-    {#                    label: 'Create Task',#}
-    {#                    dialog_id: 'task_dialog',#}
-    {#                    content_creator: dialogs.create_task_dialog,#}
-    {#                    attach_to: '{{ entity.entity_type }}_{{ entity.id }}_list_tasks_create_task_button',#}
-    {#                    related_field_updater: gantt_column.refresh,#}
-    {#                    data_id: '{{ entity.id }}'#}
-    {#                });#}
-    {#                create_task_button.startup();#}
-    {#            {% endif %}#}
-
     // Reload Button
     $("#gantt_reload_button").on('click', function(e){
         gantt_column.reload();
-        event.stopPropagation();
+        e.stopPropagation();
     });
 
     // Refresh Button
     $("#gantt_refresh_button").on('click', function(e){
         gantt_column.refresh();
-        event.stopPropagation();
+        e.stopPropagation();
     });
 
     // scroll to button
@@ -1063,8 +1050,6 @@ require([
             
         });
     {% endif %}
-
-
 
     $('#gantt_go_to_today_button').on('click', function(){
        gantt_column.centerOnToday(); 

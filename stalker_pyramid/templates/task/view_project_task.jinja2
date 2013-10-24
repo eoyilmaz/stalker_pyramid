@@ -83,8 +83,7 @@
                                                     : </b> {{ task.updated_by.name }}
                                             </li>
                                         </ul>
-                                         <button class='btn btn-mini btn-info'><i class="icon-edit"></i> Edit
-                </button>
+                                         <button class='btn btn-mini btn-info'><i class="icon-edit"></i> Edit</button>
                                     </div>
                                   {% if task.description %}
                                     <div class="span6">
@@ -145,6 +144,7 @@
                         task_dashboard
                     </div>
                     <div class="tab-pane fade" id="task_tasks">
+                        {% set entity = task %}
                         {% include 'task/list_tasks.jinja2' %}
                     </div>
                     <div class="tab-pane fade" id="task_versions">
@@ -165,33 +165,41 @@
 
 {#EXTRA-SCRIPTS#}
 {% block extrascripts %}
-    <script type="text/javascript" src='{{ request.static_url("stalker_pyramid:static/ace/js/dropzone.min.js") }}'></script>
-    <!--inline scripts related to this page-->
-
-    <script type="text/javascript">
-        jQuery(function ($) {
-            
-            
-            
-            try {
-                $(".dropzone").dropzone({
-                    paramName: "file", // The name that will be used to transfer the file
-                    maxFilesize: 0.5, // MB
-
-                    addRemoveLinks: true,
-                    dictDefaultMessage: '<span class="bigger-150 bolder"><i class="icon-caret-right red"></i> Drop files</span> to upload \
-<span class="smaller-80 grey">(or click)</span> <br /> \
-<i class="upload-icon icon-cloud-upload blue icon-3x"></i>',
-                    dictResponseError: 'Error while uploading file!',
-
-//change the previewTemplate to use Bootstrap progress bars
-                    previewTemplate: "<div class=\"dz-preview dz-file-preview\">\n  <div class=\"dz-details\">\n    <div class=\"dz-filename\"><span data-dz-name></span></div>\n    <div class=\"dz-size\" data-dz-size></div>\n    <img data-dz-thumbnail />\n  </div>\n  <div class=\"progress progress-small progress-success progress-striped active\"><span class=\"bar\" data-dz-uploadprogress></span></div>\n  <div class=\"dz-success-mark\"><span></span></div>\n  <div class=\"dz-error-mark\"><span></span></div>\n  <div class=\"dz-error-message\"><span data-dz-errormessage></span></div>\n</div>"
-                });
-            } catch (e) {
-                //alert('Dropzone.js does not support older browsers!');
-                //alert(e);
-            }
-
+{#    <script type="text/javascript" src='{{ request.static_url("stalker_pyramid:static/ace/js/dropzone.min.js") }}'></script>#}
+{#    <!--inline scripts related to this page-->#}
+{##}
+{#    <script type="text/javascript">#}
+{#        jQuery(function ($) {#}
+{#            try {#}
+{#                $(".dropzone").dropzone({#}
+{#                    paramName: "file", // The name that will be used to transfer the file#}
+{#                    maxFilesize: 0.5, // MB#}
+{##}
+{#                    addRemoveLinks: true,#}
+{#                    dictDefaultMessage: '<span class="bigger-150 bolder"><i class="icon-caret-right red"></i> Drop files</span> to upload \#}
+{#<span class="smaller-80 grey">(or click)</span> <br /> \#}
+{#<i class="upload-icon icon-cloud-upload blue icon-3x"></i>',#}
+{#                    dictResponseError: 'Error while uploading file!',#}
+{##}
+{#//change the previewTemplate to use Bootstrap progress bars#}
+{#                    previewTemplate: "<div class=\"dz-preview dz-file-preview\">\n  <div class=\"dz-details\">\n    <div class=\"dz-filename\"><span data-dz-name></span></div>\n    <div class=\"dz-size\" data-dz-size></div>\n    <img data-dz-thumbnail />\n  </div>\n  <div class=\"progress progress-small progress-success progress-striped active\"><span class=\"bar\" data-dz-uploadprogress></span></div>\n  <div class=\"dz-success-mark\"><span></span></div>\n  <div class=\"dz-error-mark\"><span></span></div>\n  <div class=\"dz-error-message\"><span data-dz-errormessage></span></div>\n</div>"#}
+{#                });#}
+{#            } catch (e) {#}
+{#                //alert('Dropzone.js does not support older browsers!');#}
+{#                //alert(e);#}
+{#            }#}
+{#        });#}
+{#    </script>#}
+    <script>
+        $(function(){
+            // There is a bug in gantt chart when it is included as a secondary
+            // element in another template, where it renders all the items on
+            // top each other
+            $('.nav.nav-tabs a:nth-child(1)').tab().on('shown', function(){
+                console.debug('this is working here!');
+                $('#gantt_refresh_button').trigger('click');
+            });
         });
     </script>
+
 {% endblock extrascripts %}

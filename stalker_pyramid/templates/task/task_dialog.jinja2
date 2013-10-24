@@ -6,7 +6,7 @@
               role='form'
               method='post'
               action="{{ request.route_url('create_task') }}">
-            
+
             {# Entity Type #}
             <div class='control-group'>
                 <label class='span3 control-label' for='task_entity_type'>Entity Type</label>
@@ -212,7 +212,6 @@
                 </div>
             </div>
             
-            
         </form>
 
     </div>
@@ -396,7 +395,7 @@
         {# ***************************************************************** #}
         {# Task Type #}
         $.getJSON('/types/?target_entity_type=Task').then(function(available_types){
-            var asset_type = $('#task_type').autocomplete({
+            var task_type = $('#task_type').autocomplete({
                 delay: 0,
                 source: available_types,
                 minLength: 0
@@ -422,7 +421,7 @@
         });
 
         {% raw %}
-        var sequence_template = doT.template('<option id="{{=it.id}}">{{=it.name}}</option>');
+        var sequence_template = doT.template('<option value="{{=it.id}}">{{=it.name}}</option>');
         {% endraw %}
 
         // and update it on project change
@@ -570,14 +569,23 @@
 
         {# ***************************************************************** #}
         {# Submit Button #}
-        $('#task_dialog_submit_button').on('click', function(){
+        $('#task_dialog_submit_button').on('click', function(e){
+            console.debug('this is running!');
             var task_form = $('#task_form');
+            var form_data = task_form.serialize();
+            console.debug('form_data :', form_data);
             if ( task_form.validate() ){
                 $.post(
                     task_form.attr('action'),
-                    task_form.serialize()
-                );
+                    form_data
+                ).done(function(){
+                    $('#task_dialog').modal('hide');
+                }).fail(function(jqXHR){
+                    bootbox.alert(jqXHR.responseText);
+                });
             }
+            e.stopPropagation();
+            e.preventDefault();
         });
 
         $('#task_form').validate({
@@ -641,9 +649,9 @@
                 else error.insertAfter(element);
             },
 
-            submitHandler: function (form) {
-                form.submit();
-            }
+{#            submitHandler: function (form) {#}
+{#                form.submit();#}
+{#            }#}
 
         });
 
