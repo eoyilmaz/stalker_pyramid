@@ -1,19 +1,19 @@
 # -*- coding: utf-8 -*-
 # Stalker Pyramid a Web Base Production Asset Management System
 # Copyright (C) 2009-2013 Erkan Ozgur Yilmaz
-# 
+#
 # This file is part of Stalker Pyramid.
-# 
+#
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
 # License as published by the Free Software Foundation;
 # version 2.1 of the License.
-# 
+#
 # This library is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # Lesser General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
@@ -35,8 +35,12 @@ from stalker.db import DBSession
 logger = logging.getLogger(__name__)
 logger.setLevel(log.logging_level)
 
-
-colors = {'Waiting To Start':'purple','Work In Progress':'pink', 'New':'red', 'Completed':'green'}
+colors = {
+    'New': 'red',
+    'Waiting To Start': 'purple',
+    'Work In Progress': 'pink',
+    'Completed': 'green'
+}
 
 
 class StdToHTMLConverter():
@@ -198,14 +202,19 @@ def get_logged_in_user(request):
         raise HTTPForbidden(headers=request)
     return user
 
-def get_multi_integer(request, attr_name):
+
+def get_multi_integer(request, attr_name, method='POST'):
     """Extracts multi data from request.POST
 
     :param request: Request object
     :param attr_name: Attribute name to extract data from
     :return:
     """
-    return [int(attr) for attr in request.POST.getall(attr_name)]
+    data = request.POST
+    if method == 'GET':
+        data = request.GET
+
+    return [int(attr) for attr in data.getall(attr_name)]
 
 
 def get_color_as_int(request, attr_name):

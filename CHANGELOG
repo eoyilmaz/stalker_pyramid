@@ -9,9 +9,18 @@ Stalker Pyramid Changes
 * **Update:** Main Navigation Bar is updated both the code and the style to
   Twitter Bootstrap.
 * **Update:** TaskJuggler error messages are now correctly displayed in the UI.
-* **Update:** Updated the GanttChart theme to ACE.
+* **Update:** Updated the GanttChart theme to match the rest of the site.
 * **Fix:** Task dialog is now able to create Tasks, Assets, Shots and
   Sequences.
+* **Fix:** Task dialog is now working properly and it is now possible to add a
+  type for the Tasks to distinguish different type of tasks like Modeling,
+  Animation, Look Development, Lighting, Comp etc.
+* **Fix:** It is now possible to create a child or dependent task from the
+  "Create" menu in **List Tasks** view.
+* **Update:** The ``chosen_field_creator()`` function now sets the field to
+  ``is_updating=true`` mode before filling the data in, and back to
+  ``is_updating=false`` mode after the data arrived and items are created. Also
+  this is used extensively in the Task Dialog.
 
 0.1.0.b3
 ========

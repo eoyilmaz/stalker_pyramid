@@ -17,14 +17,18 @@
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
 
-@import '../../dgrid/css/dgrid.css';
-@import "../../dojox/image/resources/Lightbox.css";
+/*@import '../../dgrid/css/dgrid.css';*/
+/*@import "../../dojox/image/resources/Lightbox.css";*/
 
-.dgrid {
-    position: static;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: auto;
+/*.dgrid {*/
+    /*position: static;*/
+    /*top: 0;*/
+    /*bottom: 0;*/
+    /*left: 0;*/
+    /*right: 0;*/
+    /*height: auto;*/
+/*}*/
+
+.form-horizontal .control-group {
+    margin-bottom: 5px;
 }

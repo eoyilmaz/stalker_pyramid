@@ -263,6 +263,20 @@
                                    data-keyboard=false
                                    href='{{ request.route_url("project_task_dialog", id=entity.id, mode='create') }}'>Task</a></li>
                             <li>
+                                <a id='child_task_button'
+                                   data-target="#task_dialog"
+                                   data-toggle="modal"
+                                   data-keyboard=false
+                                   original-href='{{ request.route_url("project_task_dialog", id=entity.id, mode='create') }}'
+                                   href='{{ request.route_url("project_task_dialog", id=entity.id, mode='create') }}'>Child Task</a></li>
+                            <li>
+                                <a id='dependent_task_button'
+                                   data-target="#task_dialog"
+                                   data-toggle="modal"
+                                   data-keyboard=false
+                                   original-href='{{ request.route_url("project_task_dialog", id=entity.id, mode='create') }}'
+                                   href='{{ request.route_url("project_task_dialog", id=entity.id, mode='create') }}'>Dependent Task</a></li>
+                            <li>
                                 <a data-target="#task_dialog"
                                    data-toggle="modal"
                                    data-keyboard=false
@@ -994,9 +1008,35 @@ require([
     });
 
     // register cell selection function
-{#    gantt_chart.on('dgrid-select', function(e){#}
-{#        console.debug('gantt_chart.selection  : ', gantt_chart.selection);#}
-{#    });#}
+    gantt_chart.on('dgrid-select', function(e){
+        var selection = gantt_chart.selection;
+        var selected_ids = [];
+        for (obj in selection){
+            selected_ids.push(obj);
+        }
+        console.debug('selected_ids: ', selected_ids);
+        if (selected_ids.length > 0){
+            // update create child task
+            var child_task_button = $('#child_task_button');
+            var parent_org_href = child_task_button.attr('original-href');
+            // update parent id
+            var parent_href = parent_org_href + '?parent_id=' + selected_ids[0];
+            console.debug('parent_href: ', parent_href);
+            child_task_button.attr('href', parent_href);
+
+            // update create dependent task buttons
+            var dependent_task_button = $('#dependent_task_button');
+            var dependent_org_href = dependent_task_button.attr('original-href');
+            var dep_ids_param = '?';
+            for (var i=0; i < selected_ids.length; i++){
+                dep_ids_param += (i>0) ? '&' : '';
+                dep_ids_param += 'dependent_id=' + selected_ids[i];
+            }
+            var dependent_href = dependent_org_href + dep_ids_param;
+            console.debug('dependent_href: ', dependent_href);
+            dependent_task_button.attr('href', dependent_href);
+        }
+    });
 
     // create context menus and tooltip dialogs
     create_contextMenus();

@@ -74,7 +74,6 @@ def main(global_config, **settings):
     config.set_session_factory(session_factory)
     pyramid_beaker.set_cache_regions_from_settings(settings)
 
-
     config.include('pyramid_jinja2')
     config.include('pyramid_mailer')
     config.add_static_view('static', 'static', cache_max_age=3600)
@@ -192,8 +191,6 @@ def main(global_config, **settings):
     config.add_route('list_studio_projects',        'studios/{id}/projects/list') # html
     config.add_route('list_studio_departments',     'studios/{id}/departments/list') # html
     config.add_route('list_studio_groups',          'groups/list') # html
-
-
 
     # *************************************************************************
     # Project
@@ -367,7 +364,6 @@ def main(global_config, **settings):
     config.add_route('view_asset',          'assets/{id}/view')
     config.add_route('get_asset_tickets',   'assets/{id}/tickets/')
     config.add_route('list_asset_tickets',  'assets/{id}/tickets/list')
-    config.add_route('get_asset_types',     'assets/types/')
 
     # *************************************************************************
     # Shots
@@ -430,7 +426,6 @@ def main(global_config, **settings):
 
     config.add_route('auto_schedule_tasks', 'auto_schedule_tasks')
 
-    # RESTful test
     config.add_route('get_tasks',         'tasks/')
     config.add_route('get_task',          'tasks/{id}/')
     config.add_route('get_task_children', 'tasks/{id}/children/')
