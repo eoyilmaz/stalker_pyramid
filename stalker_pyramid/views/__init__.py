@@ -36,6 +36,9 @@ logger = logging.getLogger(__name__)
 logger.setLevel(log.logging_level)
 
 
+colors = {'Waiting To Start':'purple','Work In Progress':'pink', 'New':'red', 'Completed':'green'}
+
+
 class StdToHTMLConverter():
     """Converts stderr, stdout messages of TaskJuggler to html
 

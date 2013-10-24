@@ -40,7 +40,7 @@ from stalker import defaults
 import stalker_pyramid
 from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
                                    get_multi_integer, milliseconds_since_epoch,
-                                   get_date, StdToHTMLConverter)
+                                   get_date, StdToHTMLConverter, colors)
 
 
 logger = logging.getLogger(__name__)
@@ -1262,8 +1262,6 @@ def get_entity_tasks_stats(request):
 
 
     join_attr = None
-
-    colors = {'Waiting To Start':'purple','Work In Progress':'pink', 'New':'red', 'Completed':'green'}
 
     if entity.entity_type =='User':
         join_attr = Task.resources

@@ -23,6 +23,14 @@
 
 {% endblock pre_header %}
 
+
+{# MODALS #}
+{% block modals %}
+
+    {% include 'modals/dialog_template.jinja2' %}
+
+{% endblock modals %}
+
 {# PAGE-CONTENT #}
 {% block page_content %}
     {% set users=department.users %}
@@ -71,6 +79,7 @@
                         {% include 'task/list_tasks.jinja2' %}
                     </div>
                     <div class="tab-pane fade" id="department_users">
+                        {% set entity=department %}
                         {% include 'auth/list/list_users.jinja2' %}
                     </div>
 

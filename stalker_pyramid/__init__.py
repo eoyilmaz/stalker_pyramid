@@ -117,6 +117,8 @@ def main(global_config, **settings):
 
     config.add_route('append_users_to_entity_dialog',  'entities/{id}/users/append/dialog')
     config.add_route('append_users_to_entity',         'entities/{id}/users/append')
+    config.add_route('remove_entity_from_entity',      'entities/{id}/{entity_id}/remove')
+
 
 
 
@@ -136,6 +138,7 @@ def main(global_config, **settings):
     config.add_route('get_entity_assets',              'entities/{id}/assets/')
     config.add_route('get_entity_shots',               'entities/{id}/shots/')
     config.add_route('get_entity_vacations',           'entities/{id}/vacations/')
+    config.add_route('get_entity_entities_out_stack',  'entities/{id}/{entities}/out_stack/' )
 
     config.add_route('list_entity_users',              'entities/{id}/users/list')
     config.add_route('list_entity_departments',        'entities/{id}/departments/list') # html
@@ -144,6 +147,10 @@ def main(global_config, **settings):
     config.add_route('list_entity_tickets',            'entities/{id}/tickets/list') # html
     config.add_route('list_entity_projects',           'entities/{id}/projects/list')
     config.add_route('list_entity_references',         'entities/{id}/references/list') # html
+
+    config.add_route('append_entities_to_entity_dialog',  'entities/{id}/{entities}/append/dialog')
+    config.add_route('append_entities_to_entity',         'entities/{id}/append')
+
 
 
     config.add_route('view_entity_nav_bar',            'entities/{id}/nav_bar')
@@ -266,14 +273,13 @@ def main(global_config, **settings):
 
     # dialogs
     config.add_route('user_dialog',             'users/{id}/{mode}/dialog')
-
+    config.add_route('create_user_dialog',      'users/create/dialog')
 
 
     config.add_route('dialog_create_department_user', 'departments/{id}/users/create/dialog')
     config.add_route('dialog_create_group_user',      'groups/{id}/users/create/dialog')
-    config.add_route('dialog_create_user',            'users/create/dialog')
 
-    config.add_route('dialog_update_user',    'users/{id}/update/dialog')
+
 
     config.add_route('append_user_to_departments_dialog', 'users/{id}/departments/append/dialog')
     config.add_route('append_user_to_departments', 'users/{id}/departments/append')

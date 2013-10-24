@@ -7,34 +7,13 @@
     {% include 'breadcrumbs_detail.jinja2' %}
 {% endblock breadcrumbs %}
 
+
 {# MODALS #}
 {% block modals %}
 
-    <div id='group_dialog'
-         aria-labelledby="group_dialog_label"
-         class='modal hide fade'
-         tabIndex='-1'
-         role='dialog'
-         aria-hidden="true">
-        <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-            <h3 id="project_dialog_label">Group Dialog</h3>
-        </div>
-        <div class="modal-body"></div>
-        <div class="modal-footer">
-            <button type="button" class="btn btn-small" data-dismiss="modal">
-                <i class="icon-remove"></i>
-                Cancel
-            </button>
-            <button id='group_dialog_submit_button'
-                    type="button" class="btn btn-small btn-primary">
-                <i class="icon-ok"></i>
-                Ok
-            </button>
-        </div>
-    </div>
+    {% include 'modals/dialog_template.jinja2' %}
 
-{% endblock modals%}
+{% endblock modals %}
 
 {# SIDEBAR #}
 {% block sidebar %}
@@ -91,6 +70,7 @@
                         {% include 'group/list/list_permissions.jinja2' %}
                     </div>
                     <div class="tab-pane fade" id="group_users">
+                        {% set entity=group %}
                         {% include 'auth/list/list_users.jinja2' %}
                     </div>
 
