@@ -43,7 +43,7 @@ colors = {
 }
 
 
-class StdToHTMLConverter():
+class StdErrToHTMLConverter():
     """Converts stderr, stdout messages of TaskJuggler to html
 
     :param error: An exception
@@ -52,14 +52,22 @@ class StdToHTMLConverter():
     formatChars = {
         '\e[1m': '<strong>',
         '\e[21m': '</strong>',
-        '\e[2m':  '<span class="dark">',
-        '\e[22m': '</span>',
-        '\x1b[31m': '<span class="red">',
-        '\x1b[0m': '</span>',
+        '\e[2m':  '<div class="dark">',
+        '\e[22m': '</div>',
+        '\x1b[34m': '<div class="alert alert-info" style="overflow-wrap: break-word">',
+        '\x1b[35m': '<div class="alert alert-warning" style="overflow-wrap: break-word">',
+        '\x1b[31m': '<div class="alert alert-error" style="overflow-wrap: break-word">',
+        '\x1b[0m': '</div>',
+        'Warning:': '<strong>Warning:</strong>',
+        'Info:': '<strong>Info:</strong>',
+        'Error:': '<strong>Error:</strong>',
     }
 
     def __init__(self, error):
-        self.error_message = error.message
+        if isinstance(error, Exception):
+            self.error_message = error.message
+        else:
+            self.error_message = error
 
     def html(self):
         """returns the html version of the message
@@ -69,7 +77,7 @@ class StdToHTMLConverter():
             buffer = []
             for msg in self.error_message:
                 # join the message in to <p> elements
-                buffer.append('<p>%s</p>' % msg.strip())
+                buffer.append('%s' % msg.strip())
 
             # convert the list to string
             strBuffer = ''.join(buffer)

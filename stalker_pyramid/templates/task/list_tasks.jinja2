@@ -251,44 +251,70 @@
                     <div class="btn-group">
                         <button data-toggle="dropdown"
                                 class="btn btn-small btn-danger dropdown-toggle">
-                            <i class="icon-edit bigger-120"></i>
-                            Create
-                            <span class="caret"></span>
+                            <i class="icon-gears bigger-120"></i>Action<span class="caret"></span>
                         </button>
 
                         <ul class="dropdown-menu" role='menu'>
-                            <li>
-                                <a data-target="#task_dialog"
-                                   data-toggle="modal"
-                                   data-keyboard=false
-                                   href='{{ request.route_url("project_task_dialog", id=entity.id, mode='create') }}'>Task</a></li>
-                            <li>
-                                <a id='child_task_button'
-                                   data-target="#task_dialog"
-                                   data-toggle="modal"
-                                   data-keyboard=false
-                                   original-href='{{ request.route_url("project_task_dialog", id=entity.id, mode='create') }}'
-                                   href='{{ request.route_url("project_task_dialog", id=entity.id, mode='create') }}'>Child Task</a></li>
-                            <li>
-                                <a id='dependent_task_button'
-                                   data-target="#task_dialog"
-                                   data-toggle="modal"
-                                   data-keyboard=false
-                                   original-href='{{ request.route_url("project_task_dialog", id=entity.id, mode='create') }}'
-                                   href='{{ request.route_url("project_task_dialog", id=entity.id, mode='create') }}'>Dependent Task</a></li>
-                            <li>
-                                <a data-target="#task_dialog"
-                                   data-toggle="modal"
-                                   data-keyboard=false
-                                   href='{{ request.route_url("project_asset_dialog", id=entity.id, mode='create')}}'>Asset</a></li>
+                            <li class="dropdown-submenu">
+                                <a href="#" tabindex="-1">Create</a>
+
+                                <ul class="dropdown-menu dropdown-danger">
+
+                                <li>
+                                    <a data-target="#task_dialog"
+                                       data-toggle="modal"
+                                       data-keyboard=false
+                                       href='{{ request.route_url("project_task_dialog", id=entity.id, mode='create') }}'>
+                                        <i class="'ui-icon icon-tasks bigger-120">&nbsp</i>Task</a></li>
+                                <li>
+                                    <a id='child_task_button'
+                                       data-target="#task_dialog"
+                                       data-toggle="modal"
+                                       data-keyboard=false
+                                       original-href='{{ request.route_url("project_task_dialog", id=entity.id, mode='create') }}'
+                                       href='{{ request.route_url("project_task_dialog", id=entity.id, mode='create') }}'>
+                                        <i class="'ui-icon icon-tasks bigger-120">&nbsp</i>Child Task</a></li>
+                                <li>
+                                    <a id='dependent_task_button'
+                                       data-target="#task_dialog"
+                                       data-toggle="modal"
+                                       data-keyboard=false
+                                       original-href='{{ request.route_url("project_task_dialog", id=entity.id, mode='create') }}'
+                                       href='{{ request.route_url("project_task_dialog", id=entity.id, mode='create') }}'>
+                                        <i class="'ui-icon icon-tasks bigger-120">&nbsp</i>Dependent Task</a></li>
+                                <li class="divider"></li>
+                                <li>
+                                    <a data-target="#task_dialog"
+                                       data-toggle="modal"
+                                       data-keyboard=false
+                                       href='{{ request.route_url("project_asset_dialog", id=entity.id, mode='create')}}'>
+                                        <i class="'ui-icon icon-puzzle-piece bigger-120">&nbsp</i>Asset</a></li>
+                                <li><a data-target="#task_dialog"
+                                       data-toggle="modal"
+                                       data-keyboard=false
+                                       href='{{ request.route_url("project_shot_dialog", id=entity.id, mode='create')}}'>
+                                        <i class="'ui-icon icon-camera bigger-120">&nbsp</i>Shot</a></li>
+                                <li><a data-target="#task_dialog"
+                                       data-toggle="modal"
+                                       data-keyboard=false
+                                       href='{{ request.route_url("project_sequence_dialog", id=entity.id, mode='create')}}'>
+                                        <i class="'ui-icon icon-film bigger-120">&nbsp</i>Sequence</a></li>
+                                </ul>
+                            </li>
+
+                            <li class="divider"></li>
+
                             <li><a data-target="#task_dialog"
                                    data-toggle="modal"
                                    data-keyboard=false
-                                   href='{{ request.route_url("project_shot_dialog", id=entity.id, mode='create')}}'>Shot</a></li>
+                                   href='{{ request.route_url("project_sequence_dialog", id=entity.id, mode='create')}}'>
+                                    <i class="'ui-icon icon-copy bigger-120">&nbsp</i>Duplicate Task Hierarchy</a></li>
                             <li><a data-target="#task_dialog"
                                    data-toggle="modal"
                                    data-keyboard=false
-                                   href='{{ request.route_url("project_sequence_dialog", id=entity.id, mode='create')}}'>Sequence</a></li>
+                                   href='{{ request.route_url("project_sequence_dialog", id=entity.id, mode='create')}}'>
+                                    <i class="'ui-icon icon-trash bigger-120">&nbsp</i>Delete</a></li>
+
                         </ul>
                     </div>
                 {% endif %}
@@ -303,14 +329,14 @@
                 <div id="gantt_refresh_button" class="btn-group">
                     <button class="btn btn-small btn-info">
                         <span class="icon-refresh bigger-120"></span>
-                        Refresh
+                        Redraw
                     </button>
                 </div>
 
                 {% if has_permission('Update_Task') %}
                     <div id="gantt_schedule_tasks_button" class="btn-group">
                         <button class="btn btn-small btn-purple">
-                            <span class="icon-cogs bigger-120"></span>
+                            <span class="icon-magic bigger-120"></span>
                             Schedule Tasks
                         </button>
                         <div id="schedule-dialog-message" class="hide">
@@ -1077,10 +1103,17 @@ require([
 
             $.post(
                 '{{ request.route_url("auto_schedule_tasks") }}'
-            ).done(function(){
-                bootbox.alert('Scheduling tasks has finished successfully!');
+            ).done(function(data){
+                var message = '<div>Scheduling tasks has finished ' +
+                    '<strong>successfully</strong> with the following message(s):</div><br>' +
+                    '<div>' + data + '</div>'
+                bootbox.alert(message);
             }).fail(function(jqXHR){
-                bootbox.alert(jqXHR.responseText);
+                var message = '<div>Scheduling tasks has finished ' +
+                    '<strong>unsuccessfully</strong> with the following ' +
+                    '<strong>error message(s)</strong>:</div>' +
+                    '<div>' + jqXHR.responseText + '</div>'
+                bootbox.alert(message);
             }).always(function(){
                 dialog.dialog("close");
                 gantt_column.refresh();

@@ -40,7 +40,7 @@ from stalker import defaults
 import stalker_pyramid
 from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
                                    get_multi_integer, milliseconds_since_epoch,
-                                   get_date, StdToHTMLConverter, colors)
+                                   get_date, StdErrToHTMLConverter, colors)
 
 
 logger = logging.getLogger(__name__)
@@ -1109,10 +1109,14 @@ def auto_schedule_tasks(request):
         studio.scheduler = tj_scheduler
 
         try:
-            studio.schedule()
+            stderr = studio.schedule()
+            c = StdErrToHTMLConverter(stderr)
+            response = Response(c.html())
+            response.status_int = 200
+            return response
         except RuntimeError as e:
             logger.debug('%s' % e.message)
-            c = StdToHTMLConverter(e)
+            c = StdErrToHTMLConverter(e)
             response = Response(c.html())
             response.status_int = 500
             return response

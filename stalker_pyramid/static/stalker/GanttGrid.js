@@ -58,7 +58,7 @@ define([
                             var object_type = object.type;
                             var id_template_str = '<div class="action-buttons">' +
                                 '<a onclick="javascript:scrollToTaskItem(' + object.start + ')" class="blue" title="Scroll To"><i class="icon-exchange"></i></a>' +
-                                '<a href="' + object.link + '" class="green" title="View"><i class="icon-eye-open"></i></a>' +
+                                '<a href="' + object.link + '" class="green" title="View"><i class="icon-info-sign"></i></a>' +
                                 '</div>';
 
                             var id_template = doT.template(id_template_str);
