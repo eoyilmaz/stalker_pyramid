@@ -49,6 +49,9 @@ def create_vacation_dialog(request):
     """
     logger.debug('***create_vacation_dialog method starts ***')
 
+    came_from = request.params.get('came_from','/')
+    logger.debug('came_from %s '% came_from)
+
     # get logged in user
     logged_in_user = get_logged_in_user(request)
 
@@ -75,6 +78,7 @@ def create_vacation_dialog(request):
         'studio': studio,
         'logged_in_user': logged_in_user,
         'user': user,
+        'came_from':came_from,
         'types': vacation_types,
         'milliseconds_since_epoch': milliseconds_since_epoch
     }
@@ -88,6 +92,9 @@ def update_vacation_dialog(request):
     """updates a create_vacation_dialog by using the given user
     """
     logger.debug('***update_vacation_dialog method starts ***')
+
+    came_from = request.params.get('came_from','/')
+    logger.debug('came_from %s: '% came_from)
 
     # get logged in user
     logged_in_user = get_logged_in_user(request)
@@ -116,6 +123,7 @@ def update_vacation_dialog(request):
         'logged_in_user': logged_in_user,
         'user': user,
         'vacation': vacation,
+        'came_from':came_from,
         'types': vacation_types,
         'milliseconds_since_epoch': milliseconds_since_epoch
     }
@@ -174,6 +182,11 @@ def create_vacation(request):
                 end=end_date
             )
             DBSession.add(vacation)
+
+            request.session.flash(
+                'success:<strong>%s</strong> vacation is created for <strong>%s</strong>.' % (type_.name, Studio.query.first().name)
+            )
+
         else:
             logger.debug('its a personal vacation')
             vacation = Vacation(
@@ -184,6 +197,10 @@ def create_vacation(request):
                 end=end_date
             )
             DBSession.add(vacation)
+
+            request.session.flash(
+                'success:<strong>%s</strong> vacation is created for <strong>%s</strong>.' % (type_.name, user.name)
+            )
         logger.debug('end of creating vacation')
 
     else:
@@ -239,6 +256,10 @@ def update_vacation(request):
         vacation.end = end_date
 
         DBSession.add(vacation)
+
+        request.session.flash(
+           'success: <strong>%s</strong> vacation is updated for %s.' % (type_.name,(vacation.user.name if vacation.user else Studio.query.first().name ))
+        )
 
         logger.debug('vacation_id    : %s is updated! ' % vacation_id)
 

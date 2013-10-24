@@ -26,7 +26,7 @@ from stalker.db import DBSession
 from stalker import (User, ImageFormat, Repository, Structure, Status,
                      StatusList, Project, Entity, Task)
 from stalker_pyramid.views import (get_date, get_date_range,
-                                   get_logged_in_user, milliseconds_since_epoch)
+                                   get_logged_in_user, milliseconds_since_epoch, colors)
 
 import logging
 
@@ -270,7 +270,7 @@ def get_project_tasks_today(request):
 
     tasks_today = [];
 
-    if action=='start':
+    if action=='progress':
 
         tasks_today = Task.query.join(Project, Task.project) \
             .filter(Project.id == project_id) \
@@ -301,6 +301,7 @@ def get_project_tasks_today(request):
                 'created_by_id':task.created_by.id,
                 'created_by_name':task.created_by.name,
                 'status':task.status.name,
+                'status_color':colors[task.status.name],
                 'percent_complete':task.percent_complete
             })
 

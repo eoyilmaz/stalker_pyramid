@@ -49,6 +49,9 @@
                                 <br>
                             </div>
 
+
+                            {% set came_from=request.current_route_path() %}
+
                             {% include 'auth/dialog/user_basic_information_form.jinja2' %}
 
                         </div>

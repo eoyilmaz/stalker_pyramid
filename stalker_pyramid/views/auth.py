@@ -690,6 +690,7 @@ def check_email_availability(request):
 )
 def get_user_events(request):
     logger.debug('get_user_events is running')
+
     user_id = request.matchdict.get('id', -1)
     user = User.query.filter_by(id=user_id).first()
 

@@ -53,15 +53,14 @@ def create_time_log_dialog(request):
     """
     logger.debug('inside time_log_dialog')
 
-    came_from = request.params.get('came_from', request.url)
+    came_from = request.params.get('came_from','/')
+    logger.debug('came_from %s: '% came_from)
 
     # get logged in user
     logged_in_user = get_logged_in_user(request)
 
     entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
-
-
 
     studio = Studio.query.first()
     if not studio:
@@ -73,8 +72,8 @@ def create_time_log_dialog(request):
         'studio': studio,
         'logged_in_user': logged_in_user,
         'entity': entity,
+        'came_from':came_from,
         'milliseconds_since_epoch': milliseconds_since_epoch,
-        'came_from': came_from
     }
 
 
@@ -86,6 +85,9 @@ def update_time_log_dialog(request):
     """updates a create_time_log_dialog by using the given task
     """
     logger.debug('inside updates_time_log_dialog')
+
+    came_from = request.params.get('came_from','/')
+    logger.debug('came_from %s: '% came_from)
 
     # get logged in user
     logged_in_user = get_logged_in_user(request)
@@ -103,6 +105,7 @@ def update_time_log_dialog(request):
         'studio': studio,
         'logged_in_user': logged_in_user,
         'task': time_log.task,
+        'came_from': came_from,
         'time_log': time_log,
         'milliseconds_since_epoch': milliseconds_since_epoch
     }

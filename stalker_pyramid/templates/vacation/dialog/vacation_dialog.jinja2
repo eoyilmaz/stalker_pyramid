@@ -306,10 +306,13 @@ function init_dialog() {
             var start = start_end[0];
             var end = start_end[1];
 
+
             $.post(
-                    vacation_form.attr('action'),
-                    vacation_form.serialize() + '&' + $.param({ 'start': start.toUTCString(), 'end': end.toUTCString() })
-            );
+                            vacation_form.attr('action'),
+                            vacation_form.serialize() + '&' + $.param({ 'start': start.toUTCString(), 'end': end.toUTCString() })
+                    ).done(function () {
+                        window.location.replace('{{ came_from }}');
+                    });
 
         }
     });
@@ -320,12 +323,6 @@ function init_dialog() {
         focusInvalid: true,
         rules: {
             user_id: {
-                required: true
-            },
-            type_name: {
-                required: true
-            },
-            comment: {
                 required: true
             },
             start_and_end_dates: {

@@ -155,19 +155,6 @@ function init_dialog() {
     }
 
 
-    var came_from = '/'
-
-    {% if entity.entity_type  == 'User' %}
-
-        came_from = '{{ request.route_url('view_user', id=entity.id) }}'
-
-    {% elif entity.entity_type  == 'Task'%}
-
-        came_from = '{{ request.route_url('task_view', id=entity.id) }}'
-
-    {% endif %}
-
-
 
     {% if mode == 'create' %}
 
@@ -264,6 +251,7 @@ function init_dialog() {
     {% elif mode == 'update' %}
 
         $("#time_log_form").attr("action", "{{ request.route_url('update_time_log', id=time_log.id) }}");
+
 
         var time_log_resource = $('#time_log_resource');
         time_log_resource.append('<option value={{ time_log.resource.id }} selected>{{ time_log.resource.name }}</option>');
@@ -492,9 +480,9 @@ function init_dialog() {
                             time_log_form.attr('action'),
                             time_log_form.serialize() + '&' + $.param({ 'start': start.toUTCString(), 'end': end.toUTCString() })
                     ).done(function () {
-                        window.location.replace(came_from);
+                        window.location.replace('{{ came_from }}');
                     });
-            ;
+
 
         }
     });

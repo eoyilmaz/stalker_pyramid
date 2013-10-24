@@ -271,12 +271,12 @@ def main(global_config, **settings):
 
     # dialogs
     config.add_route('user_dialog',             'users/{id}/{mode}/dialog')
-
+    config.add_route('create_user_dialog',      'users/create/dialog')
 
 
     config.add_route('dialog_create_department_user', 'departments/{id}/users/create/dialog')
     config.add_route('dialog_create_group_user',      'groups/{id}/users/create/dialog')
-    config.add_route('dialog_create_user',            'users/create/dialog')
+
 
 
     config.add_route('append_user_to_departments_dialog', 'users/{id}/departments/append/dialog')

@@ -1,18 +1,33 @@
+{% raw %}
+<script id="tmpl_infobox" type="text/x-dot-template">
+    <div class="infobox infobox-{{=it.color }}">
+        <div class="infobox-icon"><i class="{{=it.icon }}"></i></div>
+        <div class="infobox-data"><span class="infobox-data-number">{{=it.count }}</span>
+
+            <div class="infobox-content">{{=it.name }}</div>
+        </div>
+    </div>
+
+</script>
+{% endraw %}
+
 <script class="code" type="text/javascript">
     $(document).ready(function () {
 
-      var infobox = $('#infobox');
+        var infobox = $('#infobox');
+        var infobox_template = doT.template($('#tmpl_infobox').html());
 
-      $.getJSON(infobox.attr('address')).then(function (data) {
+
+        $.getJSON(infobox.attr('address')).then(function (data) {
 
 
-        for(var i=0;i<data.length;i++){
+            for (var i = 0; i < data.length; i++) {
 
-          infobox.append('<div class="infobox infobox-'+ data[i].color+'"><div class="infobox-icon"><i class="'+data[i].icon+'"></i></div><div class="infobox-data"><span class="infobox-data-number">'+data[i].count+'</span><div class="infobox-content">'+data[i].name+'</div></div></div>');
+                infobox.append(infobox_template(data[i]));
 
-        }
+            }
 
-      })
+        })
 
     });
 </script>

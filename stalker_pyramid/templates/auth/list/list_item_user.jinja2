@@ -20,7 +20,7 @@
                 <i class="icon-pencil"></i>
             </a>
 
-            <a href="#">
+            <a href="{{ request.route_url('remove_entity_from_entity', id=user.id, entity_id=entity.id) }}?came_from={{ request.current_route_path() }}">
                 <i class="icon-remove red"></i>
             </a>
         </div>

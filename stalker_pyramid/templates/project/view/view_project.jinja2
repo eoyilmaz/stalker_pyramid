@@ -27,116 +27,90 @@
     {% set page_title='Dashboard' %}
     {% include 'page_header.jinja2' %}
 
-
-    <!--PAGE CONTENT BEGINS-->
     <div class="row-fluid">
-
         <div class="span6">
+            <div id="infobox" address='/entities/{{ entity.id }}/tasks_stats/'
+                 class="infobox-container pull-left"></div>
+        </div>
+        <div class="span6">
+            <h5 class="green"><i class="icon-bolt"></i> Progress</h5>
             <div class="progress progress-success progress-striped"
-                 data-percent='{{ entity.percent_complete }}%'>
+                 data-percent="{{ entity.percent_complete }}%">
                 <div class="bar"
-                     style="width:{{ entity.percent_complete }}%"></div>
+                     style="width: {{ entity.percent_complete }}%;"></div>
             </div>
-            <div class="space-12"></div>
-            <div class="hr hr8 hr-double"></div>
-{#            <div class="space-18"></div>#}
-            <div id="pie_chart"
-                 address='/entities/{{ entity.id }}/tasks_stats/'
-                 class="pull-left"
-                 style="width:250px; height:250px;">
-            </div>
-        </div>
-        <div class="span6">
-            <h4 class="header smaller light-blue">
-                <i class="icon-time"></i>
-                Daily Working Hours
-            </h4>
-
-            <div id="zoom_chart" style="height:200px;"></div>
 
         </div>
     </div>
-
-
     <div class="hr hr8 hr-double"></div>
-
-
-    <div class="row-fluid">
-
-        <div class="span6">
-            <h4 class="header smaller purple">
-                <i class="icon-list"></i>
-                Tasks In Progress Today
-            </h4>
-
-            <div id="loading_spinner_for_start" class="well well-sm">
-
-                <div class="inline middle blue bigger-110"><i
-                        class="icon-spinner icon-spin orange bigger-125"></i>
-                    Loading
-                    content...
-                </div>
-            </div>
-
-            <table id="tasks_supposed_to_start"
-                   class="table table-striped table-bordered table-hover hide">
-                <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Resources</th>
-                    <th>Created By</th>
-                    <th>Completed</th>
-                </tr>
-                </thead>
-                <tbody>
-
-                </tbody>
-            </table>
-        </div>
-        <div class="span6">
-
-            <h4 class="header smaller green">
-                <i class="icon-list"></i>
-                Tasks End Today
-            </h4>
-
-            <div id="loading_spinner_for_end" class="well well-sm">
-
-                <div class="inline middle blue bigger-110"><i
-                        class="icon-spinner icon-spin orange bigger-125"></i>
-                    Loading
-                    content...
-                </div>
-            </div>
-
-            <table id="tasks_supposed_to_end"
-                   class="table table-striped table-bordered table-hover hide">
-                <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Resources</th>
-                    <th>Created By</th>
-                    <th>Completed</th>
-                </tr>
-                </thead>
-                <tbody>
-
-                </tbody>
-            </table>
-        </div>
-
-
-    </div>
+    <div class="space"></div>
+    <div class="row-fluid" id="table_row"></div>
 
 {% endblock page_content %}
 
 {% block extrascripts %}
 
-
-
-
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.dataTables.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.dataTables.bootstrap.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.easy-pie-chart.min.js") }}'></script>
+
+    {# ***************************************************************************************#}
+    {# Table Template#}
+
+    {% raw %}
+    <script id="tmpl_table" type="text/x-dot-template">
+        <div class=" span6">
+            <div class="widget-container-span">
+                <div class="widget-box">
+                    <div class="widget-header widget-header-small header-color-{{=it.table_title_color }}">
+                        <h4 class="header smaller">
+                            <i class="icon-list"></i>
+                            {{=it.table_title }}
+                        </h4>
+
+                        <div class="widget-toolbar">
+                            <a href="#" data-action="collapse">
+                                <i class="icon-chevron-down"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="widget-body">
+                        <div class="widget-main no-padding">
+                            <div id="{{=it.table_spinner_id }}"
+                                 class="well well-sm">
+
+                                <div class="inline middle blue bigger-110"><i
+                                        class="icon-spinner icon-spin orange bigger-125"></i>
+                                    Loading
+                                    content...
+                                </div>
+                            </div>
+
+                            <table id="{{=it.table_id }}"
+                                   class="table table-striped table-bordered table-hover hide"
+                                    >
+                                <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Resources</th>
+                                    <th>Completed</th>
+                                    <th>Status</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </script>
+    {% endraw %}
+
+    {# ***************************************************************************************#}
+    {# Task Row Template#}
 
     {% raw %}
     <script id="tmpl_taskRow" type="text/x-dot-template">
@@ -145,81 +119,75 @@
             </td>
             <td>{{=it.resources}}
             </td>
-            <td><a href='/users/{{=it.created_by_id}}/view'>{{=it.created_by_name}}</a>
+            <td><span class="label label-{{=it.status_color}}">{{=it.percent_complete}}%</span>
             </td>
             <td>
-                <div>
-                    <span>{{=it.status}}</span>
-                </div>
-                <div class="progress progress-success">
-                    <div style="width:{{=it.completed}}%"
-                         class="bar">
-                        <span class="center">{{=it.percent_complete}}%</span>
-                    </div>
-                </div>
-
-                <div class="progress" data-percent="66%">
-                    <div class="progress-bar" style="width:66%;"></div>
-                </div>
-
+                <span class="label label-{{=it.status_color}}">{{=it.status}}</span>
             </td>
         </tr>
     </script>
     {% endraw %}
 
-
+    {# ***************************************************************************************#}
+    {# Table Creation#}
 
     <script>
+        $(document).ready(function () {
+
+            var oldie = /msie\s*(8|7|6)/.test(navigator.userAgent.toLowerCase());
+            $('.easy-pie-chart.percentage').each(function () {
+                $(this).easyPieChart({
+                    barColor: $(this).data('color'),
+                    trackColor: '#EEEEEE',
+                    scaleColor: false,
+                    lineCap: 'butt',
+                    lineWidth: 10,
+                    animate: oldie ? false : 1000,
+                    size: 100
+                }).css('color', $(this).data('color'));
+            });
+        })
         // fill projects table with dynamic data
         $(document).ready(function () {
 
-            $.getJSON('/projects/{{ entity.id }}/tasks/start/today/').then(function (data) {
+            var loadTableData = function (address, tableId, spinnerId) {
+
+                $.getJSON(address).then(function (data) {
 
 
-                var project_template = doT.template($('#tmpl_taskRow').html());
+                    var task_template = doT.template($('#tmpl_taskRow').html());
 
-                // wait until document is ready
-                $(function () {
+                    // wait until document is ready
+                    $(function () {
 
-                    var i;
-                    var table_body = $('#tasks_supposed_to_start>tbody');
-                    for (i = 0; i < data.length; i++) {
+                        var i;
+                        var table_body = $('#' + tableId + '>tbody');
+                        for (i = 0; i < data.length; i++) {
 
-                        // append it to the table
-                        table_body.append(project_template(data[i]));
-                    }
+                            // append it to the table
+                            data[i].percent_complete = data[i].percent_complete.toFixed(1);
+                            //data[i].status_color = '#' + data[i].status_color.toString(16);
 
-                    var oTable1 = $('#tasks_supposed_to_start').dataTable();
+                            table_body.append(task_template(data[i]));
+                        }
 
-                });
-                $('#tasks_supposed_to_start').show();
-                $('#loading_spinner_for_start').hide();
-            });
+                        var oTable1 = $('#' + tableId).dataTable();
 
-
-            $.getJSON('/projects/{{ entity.id }}/tasks/end/today/').then(function (data) {
-
-
-                var project_template = doT.template($('#tmpl_taskRow').html());
-
-                // wait until document is ready
-                $(function () {
-
-                    var i;
-                    var table_body = $('#tasks_supposed_to_end>tbody');
-                    for (i = 0; i < data.length; i++) {
-
-                        // append it to the table
-                        table_body.append(project_template(data[i]));
-                    }
-
-                    var oTable1 = $('#tasks_supposed_to_end').dataTable();
-
+                    });
+                    $('#' + tableId).show();
+                    $('#' + spinnerId).hide();
                 });
 
-                $('#tasks_supposed_to_end').show();
-                $('#loading_spinner_for_end').hide();
-            });
+
+            }
+
+            var table_template = doT.template($('#tmpl_table').html());
+            $('#table_row').append(table_template({'table_title_color': 'red', 'table_title': 'Task In Progress Today', 'table_id': 'tasks_in_progress', 'table_spinner_id': 'loading_spinner_for_progress'}));
+            $('#table_row').append(table_template({'table_title_color': 'green', 'table_title': 'Task Ends Today', 'table_id': 'tasks_supposed_to_end', 'table_spinner_id': 'loading_spinner_for_end'}));
+
+
+            loadTableData('/projects/{{ entity.id }}/tasks/progress/today/', 'tasks_in_progress', 'loading_spinner_for_progress');
+            loadTableData('/projects/{{ entity.id }}/tasks/end/today/', 'tasks_supposed_to_end', 'loading_spinner_for_end');
         });
 
     </script>
@@ -227,7 +195,7 @@
 
     {% include 'charts/chart_extrascripts.jinja2' %}
 
-    {% include 'charts/pie_chart.jinja2' %}
-    {% include 'charts/zoom_chart.jinja2' %}
+    {% include 'charts/infobox.jinja2' %}
+    {#    {% include 'charts/zoom_chart.jinja2' %}#}
 
 {% endblock extrascripts %}
