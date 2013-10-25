@@ -3,26 +3,6 @@
     <div class="span12">
         <!--PAGE CONTENT BEGINS-->
         <div class="row-fluid">
-{#            <div class="alert alert-info">#}
-{#                <i class="icon-hand-right"></i>#}
-{##}
-{#                Please note that demo server is not configured to save uploaded#}
-{#                files, therefore you may get an error message.#}
-{#                <button class="close" data-dismiss="alert">#}
-{#                    <i class="icon-remove"></i>#}
-{#                </button>#}
-{#            </div>#}
-{#            <div id="dropzone">#}
-{#                <form action="//dummy.html" class="dropzone dz-clickable">#}
-{##}
-{#                    <div class="dz-default dz-message"><span><span#}
-{#                            class="bigger-150 bolder"><i#}
-{#                            class="icon-caret-right red"></i> Drop files</span> to upload <span#}
-{#                            class="smaller-80 grey">(or click)</span> <br> <i#}
-{#                            class="upload-icon icon-cloud-upload blue icon-3x"></i></span>#}
-{#                    </div>#}
-{#                </form>#}
-{#            </div>#}
         </div>
         <!--PAGE CONTENT ENDS-->
         <ul class="ace-thumbnails">
@@ -34,4 +14,65 @@
     <!--/.span-->
 </div>
 
+<script type="text/javascript">
+    jQuery(function ($) {
+        var colorbox_params = {
+            reposition: true,
+            scalePhotos: true,
+            scrolling: false,
+            previous: '<i class="icon-arrow-left"></i>',
+            next: '<i class="icon-arrow-right"></i>',
+            close: '&times;',
+            current: '{current} of {total}',
+            maxWidth: '100%',
+            maxHeight: '100%',
+            title: function(){
+                var url = $(this).attr('href');
+                var original_title = $(this).attr('title');
+                return '<a href="' + url + '" target="_blank">' + original_title + ' (Open In New Window)</a>';
+            },
+            onOpen: function () {
+                document.body.style.overflow = 'hidden';
+            },
+            onClosed: function () {
+                document.body.style.overflow = 'auto';
+            },
+            onComplete: function () {
+                $.colorbox.resize();
+            }
+        };
 
+
+        $('.ace-thumbnails [data-rel="colorbox"]').colorbox(colorbox_params);
+        $("#cboxLoadingGraphic").append("<i class='icon-spinner orange'></i>");//let's add a custom loading icon
+
+        /**$(window).on('resize.colorbox', function() {
+            try {
+                //this function has been changed in recent versions of colorbox, so it won't work
+                $.fn.colorbox.load();//to redraw the current frame
+            } catch(e){}
+        });*/
+
+        $('.reference-deleter').on('click', function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            var self = $(this);
+            bootbox.confirm('Delete ?', function(response){
+                if(response){
+                    var ref_id = self.attr('ref_id');
+                    console.debug('will delete ' + ref_id);
+                    // remove the reference in the server
+                    var url = '/references/' + ref_id + '/delete';
+                    $.post(url).done(function(response_text){
+                        // use he response text and give info
+                        
+                        // and also delete the HTML element
+                        $('#Reference_' + ref_id).toggle('slow').remove();
+                    }).fail(function(jqXHR){
+                        // us the jqXHR.response_text and inform user about what is wrong
+                    });
+                }
+            });
+        });
+    });
+</script>

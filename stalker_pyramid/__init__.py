@@ -168,6 +168,8 @@ def main(global_config, **settings):
     config.add_route('get_references',       'references/')
     config.add_route('get_reference',        'references/{id}')
 
+    config.add_route('delete_reference',     'references/{id}/delete')
+
     config.add_route('upload_files',         'upload_files')
     config.add_route('assign_thumbnail',     'assign_thumbnail')
     config.add_route('assign_reference',     'assign_reference')

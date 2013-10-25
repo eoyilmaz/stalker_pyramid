@@ -501,8 +501,8 @@ def get_tasks(request):
     parent_id = request.params.get('parent_id')
     task_id = request.params.get('task_id')
 
-    logger.debug('parent_id: %s' % parent_id)
-    logger.debug('task_id  : %s' % task_id)
+    #logger.debug('parent_id: %s' % parent_id)
+    #logger.debug('task_id  : %s' % task_id)
 
     return_data = []
     # set the content range to prevent JSONRest Store to query the data twice
@@ -554,8 +554,8 @@ def get_entity_tasks(request):
     entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter(Entity.id == entity_id).first()
 
-    logger.debug('entity_id : %s' % entity_id)
-    logger.debug('entity    : %s' % entity)
+    #logger.debug('entity_id : %s' % entity_id)
+    #logger.debug('entity    : %s' % entity)
 
     parent_id = request.params.get('parent_id')
     parent = Entity.query.filter_by(id=parent_id).first()
@@ -569,7 +569,7 @@ def get_entity_tasks(request):
 
     if entity:
         if parent:
-            logger.debug('there is a parent')
+            #logger.debug('there is a parent')
             tasks = []
             if isinstance(entity, User):
                 # get user tasks
@@ -601,7 +601,7 @@ def get_entity_tasks(request):
 
             return_data = convert_to_dgrid_gantt_task_format(tasks)
         else:
-            logger.debug('no parent')
+            #logger.debug('no parent')
             # no parent,
             # just return projects of the entity
             entity_projects = []
@@ -641,7 +641,7 @@ def get_task(request):
     elif isinstance(entity, Project):
         return_data = convert_to_dgrid_gantt_project_format([entity])
 
-    logger.debug('return_data: %s' % return_data)
+    #logger.debug('return_data: %s' % return_data)
 
     return return_data
 
@@ -669,7 +669,7 @@ def get_gantt_tasks(request):
     entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
 
-    logger.debug('entity : %s' % entity)
+    #logger.debug('entity : %s' % entity)
 
     tasks = []
     if entity:
@@ -775,16 +775,16 @@ def get_project_tasks(request):
 def create_data_dialog(request, entity_type='Task'):
     """a generic function which will create a dictionary with enough data
     """
-    logged_in_user = get_logged_in_user(request)
+    #logged_in_user = get_logged_in_user(request)
 
     project_id = request.matchdict.get('id', -1)
-    logger.debug('project_id : %s' % project_id)
+    #logger.debug('project_id : %s' % project_id)
     project = Project.query.filter_by(id=project_id).first()
 
     parent_id = request.params.get('parent_id')
-    logger.debug('parent_id  : %s' % parent_id)
+    #logger.debug('parent_id  : %s' % parent_id)
     parent = Task.query.filter_by(id=parent_id).first()
-    logger.debug('parent     : %s' % parent)
+    #logger.debug('parent     : %s' % parent)
 
     dependent_ids = get_multi_integer(request, 'dependent_id', 'GET')
     dependencies = Task.query.filter(Task.id.in_(dependent_ids)).all()
@@ -1121,7 +1121,7 @@ def auto_schedule_tasks(request):
             response.status_int = 200
             return response
         except RuntimeError as e:
-            logger.debug('%s' % e.message)
+            #logger.debug('%s' % e.message)
             c = StdErrToHTMLConverter(e)
             response = Response(c.html())
             response.status_int = 500
@@ -1260,12 +1260,11 @@ def get_entity_tasks_stats(request):
     entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
 
-    logger.debug('user_id : %s' % entity_id)
+    #logger.debug('user_id : %s' % entity_id)
 
     status_list = StatusList.query.filter_by(
-            target_entity_type='Task'
-        ).first()
-
+        target_entity_type='Task'
+    ).first()
 
     join_attr = None
 
@@ -1276,7 +1275,6 @@ def get_entity_tasks_stats(request):
 
     __class__ = entity.__class__
 
-
     status_count_task=[]
 
     #TODO find the correct solution to filter leaf tasks. This does not work.
@@ -1286,13 +1284,14 @@ def get_entity_tasks_stats(request):
             'color':colors[status.name],
             'icon': 'icon-folder-close-alt',
             'count':Task.query.join(entity.__class__, join_attr) \
-                            .filter(__class__.id == entity_id) \
-                            .filter(Task.status_id == status.id) \
-                            .filter(Task.children == None) \
-                            .count()
+                .filter(__class__.id == entity_id) \
+                .filter(Task.status_id == status.id) \
+                .filter(Task.children == None) \
+                .count()
         })
 
     return status_count_task
+
 
 @view_config(
     route_name='delete_task',

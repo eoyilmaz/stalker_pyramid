@@ -1,19 +1,19 @@
 # -*- coding: utf-8 -*-
 # Stalker Pyramid a Web Base Production Asset Management System
 # Copyright (C) 2009-2013 Erkan Ozgur Yilmaz
-# 
+#
 # This file is part of Stalker Pyramid.
-# 
+#
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
 # License as published by the Free Software Foundation;
 # version 2.1 of the License.
-# 
+#
 # This library is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # Lesser General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
@@ -26,6 +26,7 @@ import Image
 
 from stalker import Entity, Link, defaults
 from stalker.db import DBSession
+from pyramid.response import Response
 
 from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPServerError, HTTPOk
@@ -330,3 +331,53 @@ def upload_files_to_server(request, file_params):
 
     transaction.commit()
     return links
+
+@view_config(
+    route_name='delete_reference',
+    permission='Delete_Link'
+)
+def delete_reference(request):
+    """deletes the reference with the given ID
+    """
+    ref_id = request.matchdict.get('id')
+    ref = Link.query.get(ref_id)
+
+    files_to_remove = []
+    if ref:
+        original_filename = ref.original_filename
+        # check if it has a thumbnail
+        if ref.thumbnail:
+            # remove the file first
+            files_to_remove.append(ref.thumbnail.full_path)
+
+            # delete the thumbnail Link from the database
+            DBSession.delete(ref.thumbnail)
+        # remove the reference itself
+        files_to_remove.append(ref.full_path)
+
+        # delete the ref Link from the database
+        # IMPORTANT: Because there is no link from Link -> Task deleting a Link
+        #            directly will raise an IntegrityError, so remove the Link
+        #            from the associated Task before deleting it
+        from stalker import Task
+        for task in Task.query.filter(Task.references.contains(ref)).all():
+            logger.debug('%s is referencing %s, breaking this relation' % (task, ref))
+            task.references.remove(ref)
+        DBSession.delete(ref)
+
+        # now delete files
+        for f in files_to_remove:
+            # convert the paths to system path
+            f_system = convert_file_link_to_full_path(f)
+            try:
+                os.remove(f_system)
+            except OSError:
+                pass
+
+        response = Response('%s removed successfully' % original_filename)
+        response.status_int = 200
+        return response
+    else:
+        response = Response('No ref with id : %i' % ref_id)
+        response.status_int = 500
+        return response

@@ -1,34 +1,39 @@
-<li>
-    <a href="#"
-       title="Photo Title" data-rel="colorbox"
+<li id="Reference_{{ reference.id }}">
+    <a href="/{{reference.full_path}}"
+       title="{{reference.original_filename}}"
+       data-rel="colorbox"
        class="cboxElement">
-        <img alt="150x150" style="height: 150px"
-             src="{%- if reference.thumbnail -%}
-                    /{{ reference.thumbnail.full_path }}
-                {%- else -%}
-                    {{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_0.png") }}
-           {%- endif -%}">
-        <div class="tags">
-          {% for tag in reference.tags %}
-            <span class="label label-info arrowed-in">{{ tag.name }}</span>
-          {% endfor %}
+        <div style="text-align: center; overflow: hidden; width: 150px">
+            <img alt="150x150"
+                 style="height: 150px; width: auto; max-width: none;
+                        position: relative; left: 100%; margin-left: -200%;"
+                 src="{%- if reference.thumbnail -%}
+                        /{{ reference.thumbnail.full_path }}
+                    {%- else -%}
+                        {{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_0.png") }}
+               {%- endif -%}">
+            <div class="tags">
+              {% for tag in reference.tags %}
+                <span class="label label-info">{{ tag.name }}</span>
+              {% endfor %}
+            </div>
         </div>
     </a>
 
     <div class="tools">
-        <a href="#">
+        <a href="/{{reference.full_path}}" target="_blank">
             <i class="icon-link"></i>
         </a>
 
-        <a href="#">
-            <i class="icon-paper-clip"></i>
-        </a>
+{#        <a href="#">#}
+{#            <i class="icon-paper-clip"></i>#}
+{#        </a>#}
+{##}
+{#        <a href="#">#}
+{#            <i class="icon-pencil"></i>#}
+{#        </a>#}
 
-        <a href="#">
-            <i class="icon-pencil"></i>
-        </a>
-
-        <a href="#">
+        <a class='reference-deleter' ref_id="{{reference.id}}" href="#">
             <i class="icon-remove red"></i>
         </a>
     </div>
