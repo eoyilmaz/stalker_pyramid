@@ -245,15 +245,18 @@ define([
 
         column.scrollToDate = function (date) {
             // scrolls to the given date
-            var header = $(column.headerNode);
-            var position = header.position();
+            var header, position, date_as_millis, date_x, scroller,
+                scroller_width;
 
-            var date_as_millis = +date;
-            var date_x = (date_as_millis - column.start) / column.scale;
+            header = $(column.headerNode);
+            position = header.position();
 
-            var scroller = $('.dgrid-column-set-scroller-1');
+            date_as_millis = +date;
+            date_x = (date_as_millis - column.start) / column.scale;
 
-            var scroller_width = scroller.width();
+            scroller = $('.dgrid-column-set-scroller-1');
+
+            scroller_width = scroller.width();
 
             scroller.scrollLeft(date_x - scroller_width * 0.5);
         };

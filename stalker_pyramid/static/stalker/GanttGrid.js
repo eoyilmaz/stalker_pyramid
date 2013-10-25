@@ -44,6 +44,15 @@ define([
                 this.clearSelection();
             }
         }),
+        selected_ids: function () {
+            var selection, selected_ids, obj;
+            selection = this.selection;
+            selected_ids = [];
+            for (obj in selection) {
+                selected_ids.push(obj);
+            }
+            return selected_ids;
+        },
         columnSets: [
             // Column set to display task and resource
             [

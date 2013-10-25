@@ -213,7 +213,7 @@ def duplicate_task_hierarchy(request):
     :param task: The task that wanted to be duplicated
     :return: A list of stalker.models.task.Task
     """
-    task_id = request.params.get('task_id')
+    task_id = request.matchdict.get('id')
     task = Task.query.filter_by(id=task_id).first()
     if task:
         dup_task = walk_and_duplicate_task_hierarchy(task)
@@ -225,9 +225,13 @@ def duplicate_task_hierarchy(request):
         dup_task.name += ' - Duplicate'
         DBSession.add(dup_task)
     else:
-        raise HTTPServerError()
+        response = Response('No task can be found with the given id: %s' % task_id)
+        response.status_int = 500
+        return response
 
-    return HTTPOk()
+    response = Response('Task %s is duplicated successfully' % task.id)
+    response.status_int = 200
+    return response
 
 
 def convert_to_dgrid_gantt_project_format(projects):

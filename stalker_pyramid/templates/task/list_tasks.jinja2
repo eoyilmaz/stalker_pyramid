@@ -247,77 +247,126 @@
 
             <div class="btn-toolbar">
 
-                {% if has_permission('Create_Task') %}
-                    <div class="btn-group">
-                        <button data-toggle="dropdown"
-                                class="btn btn-small btn-danger dropdown-toggle">
-                            <i class="icon-gears bigger-120"></i>Action<span class="caret"></span>
-                        </button>
+                <div class="btn-group">
+                    <button data-toggle="dropdown"
+                            class="btn btn-small btn-danger dropdown-toggle">
+                        <i class="icon-gears bigger-120"></i>Action<span class="caret"></span>
+                    </button>
 
-                        <ul class="dropdown-menu" role='menu'>
-                            <li class="dropdown-submenu">
-                                <a href="#" tabindex="-1">Create</a>
+                    <ul class="dropdown-menu" role='menu'>
+                        {% if has_permission('Create_Task') %}
+                        <li class="dropdown-submenu">
 
-                                <ul class="dropdown-menu dropdown-danger">
+                            <a href="#" tabindex="-1">
+                                <i class="'ui-icon icon-plus bigger-120">&nbsp</i>
+                                Create
+                            </a>
+
+                            <ul class="dropdown-menu dropdown-danger">
 
                                 <li>
                                     <a data-target="#task_dialog"
                                        data-toggle="modal"
                                        data-keyboard=false
                                        href='{{ request.route_url("project_task_dialog", id=entity.id, mode='create') }}'>
-                                        <i class="'ui-icon icon-tasks bigger-120">&nbsp</i>Task</a></li>
+                                        <i class="'ui-icon icon-tasks bigger-120">&nbsp</i>
+                                        Task
+                                    </a>
+                                </li>
+
                                 <li>
                                     <a id='child_task_button'
-                                       data-target="#task_dialog"
-                                       data-toggle="modal"
-                                       data-keyboard=false
                                        original-href='{{ request.route_url("project_task_dialog", id=entity.id, mode='create') }}'
                                        href='{{ request.route_url("project_task_dialog", id=entity.id, mode='create') }}'>
-                                        <i class="'ui-icon icon-tasks bigger-120">&nbsp</i>Child Task</a></li>
+                                        <i class="'ui-icon icon-tasks bigger-120">&nbsp</i>
+                                        Child Task
+                                    </a>
+                                </li>
+
                                 <li>
                                     <a id='dependent_task_button'
-                                       data-target="#task_dialog"
-                                       data-toggle="modal"
-                                       data-keyboard=false
                                        original-href='{{ request.route_url("project_task_dialog", id=entity.id, mode='create') }}'
                                        href='{{ request.route_url("project_task_dialog", id=entity.id, mode='create') }}'>
-                                        <i class="'ui-icon icon-tasks bigger-120">&nbsp</i>Dependent Task</a></li>
+                                        <i class="'ui-icon icon-tasks bigger-120">&nbsp</i>
+                                        Dependent Task
+                                    </a>
+                                </li>
+
                                 <li class="divider"></li>
+
                                 <li>
                                     <a data-target="#task_dialog"
                                        data-toggle="modal"
                                        data-keyboard=false
                                        href='{{ request.route_url("project_asset_dialog", id=entity.id, mode='create')}}'>
-                                        <i class="'ui-icon icon-puzzle-piece bigger-120">&nbsp</i>Asset</a></li>
-                                <li><a data-target="#task_dialog"
+                                        <i class="'ui-icon icon-puzzle-piece bigger-120">&nbsp</i>
+                                        Asset
+                                    </a>
+                                </li>
+
+                                <li>
+                                    <a data-target="#task_dialog"
                                        data-toggle="modal"
                                        data-keyboard=false
                                        href='{{ request.route_url("project_shot_dialog", id=entity.id, mode='create')}}'>
-                                        <i class="'ui-icon icon-camera bigger-120">&nbsp</i>Shot</a></li>
-                                <li><a data-target="#task_dialog"
+                                        <i class="'ui-icon icon-camera bigger-120">&nbsp</i>
+                                        Shot
+                                    </a>
+                                </li>
+
+                                <li>
+                                    <a data-target="#task_dialog"
                                        data-toggle="modal"
                                        data-keyboard=false
                                        href='{{ request.route_url("project_sequence_dialog", id=entity.id, mode='create')}}'>
-                                        <i class="'ui-icon icon-film bigger-120">&nbsp</i>Sequence</a></li>
-                                </ul>
-                            </li>
+                                        <i class="'ui-icon icon-film bigger-120">&nbsp</i>
+                                        Sequence
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                        {% endif %}
 
-                            <li class="divider"></li>
+                        {% if has_permission('Update_Task') %}
+                        <li>
+                            <a href="#" tabindex="-1">
+                                <i class="'ui-icon icon-pencil bigger-120">&nbsp</i>
+                                Update
+                            </a>
+                        </li>
+                        {% endif %}
 
-                            <li><a data-target="#task_dialog"
-                                   data-toggle="modal"
-                                   data-keyboard=false
-                                   href='{{ request.route_url("project_sequence_dialog", id=entity.id, mode='create')}}'>
-                                    <i class="'ui-icon icon-copy bigger-120">&nbsp</i>Duplicate Task Hierarchy</a></li>
-                            <li><a data-target="#task_dialog"
-                                   data-toggle="modal"
-                                   data-keyboard=false
-                                   href='{{ request.route_url("project_sequence_dialog", id=entity.id, mode='create')}}'>
-                                    <i class="'ui-icon icon-trash bigger-120">&nbsp</i>Delete</a></li>
+                        {% if has_permission('Create_Task') %}
+                        <li>
+                            <a id="duplicate_task_hierarchy_button">
+                                <i class="'ui-icon icon-copy bigger-120">&nbsp</i>
+                                Duplicate Hierarchy
+                            </a>
+                        </li>
+                        {% endif %}
 
-                        </ul>
-                    </div>
-                {% endif %}
+                        {% if has_permission('Delete_Task') %}
+                        <li>
+                            <a id="delete_task_button"
+                                href='#'>
+                                <i class="'ui-icon icon-trash bigger-120">&nbsp</i>
+                                Delete
+                            </a>
+                        </li>
+                        {% endif %}
+
+                        <li class="divider"></li>
+
+                        <li>
+                            <a href='#' class="red">
+                                <i class="'ui-icon icon-comment bigger-120">&nbsp</i>
+                                Request Review
+                            </a>
+                        </li>
+
+
+                    </ul>
+                </div>
 
                 <div id="gantt_reload_button" class="btn-group">
                     <button class="btn btn-small btn-success">
@@ -1035,11 +1084,7 @@ require([
 
     // register cell selection function
     gantt_chart.on('dgrid-select', function(e){
-        var selection = gantt_chart.selection;
-        var selected_ids = [];
-        for (obj in selection){
-            selected_ids.push(obj);
-        }
+        var selected_ids = gantt_chart.selected_ids();
         console.debug('selected_ids: ', selected_ids);
         if (selected_ids.length > 0){
             // update create child task
@@ -1065,21 +1110,93 @@ require([
     });
 
     // create context menus and tooltip dialogs
-    create_contextMenus();
+{#    create_contextMenus();#}
+
+    var select_first_and_do_something = function(e, callback){
+        e.preventDefault();
+        e.stopPropagation();
+        // check if something is selected first
+        var selected_ids = gantt_chart.selected_ids();
+        if (selected_ids.length == 0){
+            bootbox.alert('Please select a task first!');
+        } else {
+            if ( typeof(callback) === 'function'){
+                return callback();
+            } else {
+                return callback;
+            }
+        }
+    };
+
+    var select_first_and_show_task_dialog = function(e){
+        select_first_and_do_something(e, function(){
+            $("#task_dialog").modal({
+                    target: '#task_dialog',
+                    keyboard: false,
+                    remote: $(this).attr('href')
+            });
+        });
+    };
+
+    // create buttons
+    $('#child_task_button').on('click', function(e){select_first_and_show_task_dialog(e);});
+    $('#dependent_task_button').on('click', function(e){select_first_and_show_task_dialog(e);});
+
+    // duplicate hierarchy button
+    $('#duplicate_task_hierarchy_button').on('click', function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        var self = $(this);
+
+        var selected_ids = gantt_chart.selected_ids();
+        {# TODO: update it to display task names in the message #}
+{#        var task_id;#}
+{#        var tasks = [];#}
+{#        for (var i=0; i < selected_ids.length(); i++){#}
+{#            // get task info#}
+{#            task_id = selected_ids[i];#}
+{#            $.get('/tasks/' + task_id + '/').done(function(data){#}
+{#                tasks.push(data);#}
+{#            });#}
+{#        }#}
+
+        // warn the user about what is going to happen and ask if it is ok
+        bootbox.confirm(
+            '<div><p>This will duplicate the task hierarchy including all ' +
+            'the children tasks.For the following tasks:<br><br>' +
+            selected_ids + 
+            '<br><br>Is that ok?</div>', function(result){
+                if (result){
+                    // get the id and send it to the server
+                    var url = '';
+                    for (var i=0; i < selected_ids.length; i++){
+                        url = '/tasks/' + selected_ids[i] + '/duplicate';
+                        console.debug(url);
+                        $.post(url).done(function(){
+                            gantt_column.reload();
+                        }).fail(function(jqXHR){
+                            bootbox.alert(jqXHR.responseText);
+                        });
+                    };
+                };
+        });
+    });
 
     // get the gantt column
     var gantt_column = gantt_chart.columnSets[1][0][0];
 
     // Reload Button
     $("#gantt_reload_button").on('click', function(e){
-        gantt_column.reload();
+        e.preventDefault();
         e.stopPropagation();
+        gantt_column.reload();
     });
 
     // Refresh Button
     $("#gantt_refresh_button").on('click', function(e){
-        gantt_column.refresh();
+        e.preventDefault();
         e.stopPropagation();
+        gantt_column.refresh();
     });
 
     // scroll to button
