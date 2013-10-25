@@ -1123,19 +1123,19 @@ require([
         }
     };
 
-    var select_first_and_show_task_dialog = function(e){
+    var select_first_and_show_task_dialog = function(e, self){
         select_first_and_do_something(e, function(){
             $("#task_dialog").modal({
                 target: '#task_dialog',
                 keyboard: false,
-                remote: $(this).attr('href')
+                remote: self.attr('href')
             });
         });
     };
 
     // create buttons
-    $('#child_task_button').on('click', function(e){select_first_and_show_task_dialog(e);});
-    $('#dependent_task_button').on('click', function(e){select_first_and_show_task_dialog(e);});
+    $('#child_task_button').on('click', function(e){select_first_and_show_task_dialog(e, $(this));});
+    $('#dependent_task_button').on('click', function(e){select_first_and_show_task_dialog(e, $(this));});
 
     // duplicate hierarchy button
     $('#duplicate_task_hierarchy_button').on('click', function(e){
