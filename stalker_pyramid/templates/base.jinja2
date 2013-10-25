@@ -119,6 +119,10 @@
     {% block post_header %}
     {% endblock post_header %}
 
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/stalker/css/stalker.css") }}'/>
+
+
     <!--ace settings handler-->
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/uncompressed/ace-extra.js") }}'></script>
 
@@ -287,8 +291,11 @@
     <script>
         var chosen_field_creator = function (field, url, data_template,
                                              selected_id, chosen_options) {
+            // Creates a chosen field
 
             // fill field with new json data
+            // set the field to updating mode
+            field.attr('is_updating', true);
             return $.getJSON(url).then(function (data) {
                 // remove current data
                 field.empty();
@@ -305,10 +312,8 @@
 
                     field.append(data_template(data[i]));
                 }
-
-
-                // convert it to chosen
-                // field.chosen(chosen_options);
+                // set the field to normal mode
+                field.attr('is_updating', false);
             });
         };
     </script>
@@ -323,7 +328,6 @@
             task_dialog.on('hidden', function () {
                 destruct_task_dialog();
             });
-
         })
     </script>
 
@@ -337,7 +341,6 @@
             event_dialog.on('hidden', function () {
                 destruct_dialog();
             });
-
         })
     </script>
 

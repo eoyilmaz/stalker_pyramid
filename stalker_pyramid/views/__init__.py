@@ -1,19 +1,19 @@
 # -*- coding: utf-8 -*-
 # Stalker Pyramid a Web Base Production Asset Management System
 # Copyright (C) 2009-2013 Erkan Ozgur Yilmaz
-# 
+#
 # This file is part of Stalker Pyramid.
-# 
+#
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
 # License as published by the Free Software Foundation;
 # version 2.1 of the License.
-# 
+#
 # This library is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # Lesser General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
@@ -35,11 +35,15 @@ from stalker.db import DBSession
 logger = logging.getLogger(__name__)
 logger.setLevel(log.logging_level)
 
+colors = {
+    'New': 'red',
+    'Waiting To Start': 'purple',
+    'Work In Progress': 'pink',
+    'Completed': 'green'
+}
 
-colors = {'Waiting To Start':'purple','Work In Progress':'pink', 'New':'red', 'Completed':'green'}
 
-
-class StdToHTMLConverter():
+class StdErrToHTMLConverter():
     """Converts stderr, stdout messages of TaskJuggler to html
 
     :param error: An exception
@@ -48,14 +52,22 @@ class StdToHTMLConverter():
     formatChars = {
         '\e[1m': '<strong>',
         '\e[21m': '</strong>',
-        '\e[2m':  '<span class="dark">',
-        '\e[22m': '</span>',
-        '\x1b[31m': '<span class="red">',
-        '\x1b[0m': '</span>',
+        '\e[2m':  '<div class="dark">',
+        '\e[22m': '</div>',
+        '\x1b[34m': '<div class="alert alert-info" style="overflow-wrap: break-word">',
+        '\x1b[35m': '<div class="alert alert-warning" style="overflow-wrap: break-word">',
+        '\x1b[31m': '<div class="alert alert-error" style="overflow-wrap: break-word">',
+        '\x1b[0m': '</div>',
+        'Warning:': '<strong>Warning:</strong>',
+        'Info:': '<strong>Info:</strong>',
+        'Error:': '<strong>Error:</strong>',
     }
 
     def __init__(self, error):
-        self.error_message = error.message
+        if isinstance(error, Exception):
+            self.error_message = error.message
+        else:
+            self.error_message = error
 
     def html(self):
         """returns the html version of the message
@@ -65,7 +77,7 @@ class StdToHTMLConverter():
             buffer = []
             for msg in self.error_message:
                 # join the message in to <p> elements
-                buffer.append('<p>%s</p>' % msg.strip())
+                buffer.append('%s' % msg.strip())
 
             # convert the list to string
             strBuffer = ''.join(buffer)
@@ -198,14 +210,19 @@ def get_logged_in_user(request):
         raise HTTPForbidden(headers=request)
     return user
 
-def get_multi_integer(request, attr_name):
+
+def get_multi_integer(request, attr_name, method='POST'):
     """Extracts multi data from request.POST
 
     :param request: Request object
     :param attr_name: Attribute name to extract data from
     :return:
     """
-    return [int(attr) for attr in request.POST.getall(attr_name)]
+    data = request.POST
+    if method == 'GET':
+        data = request.GET
+
+    return [int(attr) for attr in data.getall(attr_name)]
 
 def get_multi_string(request, attr_name):
     """Extracts multi data from request.POST

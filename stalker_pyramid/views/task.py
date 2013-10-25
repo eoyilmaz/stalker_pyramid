@@ -40,7 +40,7 @@ from stalker import defaults
 import stalker_pyramid
 from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
                                    get_multi_integer, milliseconds_since_epoch,
-                                   get_date, StdToHTMLConverter, colors)
+                                   get_date, StdErrToHTMLConverter, colors)
 
 
 logger = logging.getLogger(__name__)
@@ -213,7 +213,7 @@ def duplicate_task_hierarchy(request):
     :param task: The task that wanted to be duplicated
     :return: A list of stalker.models.task.Task
     """
-    task_id = request.params.get('task_id')
+    task_id = request.matchdict.get('id')
     task = Task.query.filter_by(id=task_id).first()
     if task:
         dup_task = walk_and_duplicate_task_hierarchy(task)
@@ -225,9 +225,13 @@ def duplicate_task_hierarchy(request):
         dup_task.name += ' - Duplicate'
         DBSession.add(dup_task)
     else:
-        raise HTTPServerError()
+        response = Response('No task can be found with the given id: %s' % task_id)
+        response.status_int = 500
+        return response
 
-    return HTTPOk()
+    response = Response('Task %s is duplicated successfully' % task.id)
+    response.status_int = 200
+    return response
 
 
 def convert_to_dgrid_gantt_project_format(projects):
@@ -548,7 +552,6 @@ def get_tasks(request):
 def get_entity_tasks(request):
     """RESTful version of getting all tasks of an entity
     """
-    logger.debug('request.GET: %s' % request.GET)
     entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter(Entity.id == entity_id).first()
 
@@ -763,9 +766,8 @@ def get_project_tasks(request):
                 task.name,
                 ' | '.join([parent.name for parent in task.parents])
             )
-        } for task in Task.query.filter(Task._project == project).all()
+        } for task in Task.query.filter(Task.project == project).all()
     ]
-
 
 
 def create_data_dialog(request, entity_type='Task'):
@@ -773,21 +775,17 @@ def create_data_dialog(request, entity_type='Task'):
     """
     logged_in_user = get_logged_in_user(request)
 
-    entity_id = request.matchdict.get('id', -1)
-    entity = Entity.query.filter_by(id=entity_id).first()
+    project_id = request.matchdict.get('id', -1)
+    logger.debug('project_id : %s' % project_id)
+    project = Project.query.filter_by(id=project_id).first()
 
-    parent = None
-    project = None
-    if entity:
-        if entity.entity_type == 'Project':
-            project = entity
-        else:
-            try:
-                project = entity.project
-                parent = entity
-            except AttributeError:
-                # entity doesn't have an attribute like project
-                pass
+    parent_id = request.GET.get('parent_id')
+    logger.debug('parent_id  : %s' % parent_id)
+    parent = Task.query.filter_by(id=parent_id).first()
+    logger.debug('parent     : %s' % parent)
+
+    dependent_ids = get_multi_integer(request, 'dependent_id', 'GET')
+    dependencies = Task.query.filter(Task.id.in_(dependent_ids)).all()
 
     mode = request.matchdict.get('mode', None)
 
@@ -799,10 +797,11 @@ def create_data_dialog(request, entity_type='Task'):
         'logged_in_user': logged_in_user,
         'project': project,
         'parent': parent,
+        'dependencies': dependencies,
         'schedule_models': defaults.task_schedule_models,
         'milliseconds_since_epoch': milliseconds_since_epoch,
         'came_from': came_from,
-        'entity_type': entity_type
+        'entity_type': entity_type,
     }
 
 
@@ -1021,6 +1020,7 @@ def create_task(request):
                 code=type_name,
                 target_entity_type=entity_type
             )
+            DBSession.add(type_)
         kwargs['type'] = type_
 
         if entity_type == 'Shot':
@@ -1113,10 +1113,14 @@ def auto_schedule_tasks(request):
         studio.scheduler = tj_scheduler
 
         try:
-            studio.schedule()
+            stderr = studio.schedule()
+            c = StdErrToHTMLConverter(stderr)
+            response = Response(c.html())
+            response.status_int = 200
+            return response
         except RuntimeError as e:
             logger.debug('%s' % e.message)
-            c = StdToHTMLConverter(e)
+            c = StdErrToHTMLConverter(e)
             response = Response(c.html())
             response.status_int = 500
             return response
@@ -1287,7 +1291,3 @@ def get_entity_tasks_stats(request):
         })
 
     return status_count_task
-
-
-
-

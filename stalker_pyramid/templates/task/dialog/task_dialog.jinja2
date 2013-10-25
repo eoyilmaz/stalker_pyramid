@@ -30,6 +30,7 @@
                     <select id='task_project'
                             class='input-block-level'
                             name='project_id'
+                            is_updating=false
                             required></select>
                 </div>
             </div>
@@ -42,8 +43,15 @@
                             name='parent_id'
                             class='input-block-level'
                             name='task_parent_id'
+                            is_updating=false
                             data-placeholder='Parent'></select>
                 </div>
+                <div class='hidden'
+                     id="parent_storage"
+                     parent_id={% if parent %}{{ parent.id }}{% else %}-1{% endif %}>
+                    this is a storage for parent_id, which is set externally by the
+                    template engine
+                 </div>
             </div>
 
             {# Name #}
@@ -79,7 +87,8 @@
                         <input id='task_type'
                                class='input-block-level'
                                name='task_type'
-                               type='text'>
+                               type='text'
+                               is_updating=false>
                     </div>
                 </div>
             </div>
@@ -90,9 +99,10 @@
                     <label class='span3 control-label' for='asset_type'>Asset Type</label>
                     <div class='span9'>
                         <input id='asset_type'
+                               class='input-block-level'
                                name='asset_type'
                                type='text'
-                               class='input-block-level'>
+                               is_updating=false>
                     </div>
                 </div>
             </div>
@@ -104,7 +114,8 @@
                     <div class='span9'>
                         <select id='shot_sequence'
                                 class='input-block-level'
-                                name='shot_sequence_id'></select>
+                                name='shot_sequence_id'
+                                is_updating=false></select>
                     </div>
                 </div>
             </div>
@@ -131,8 +142,15 @@
                             multiple=''
                             class='input-block-level tag-input-style'
                             name='dependency_ids'
-                            data-placeholder='Dependencies'></select>
+                            data-placeholder='Dependencies'
+                            is_updating=false></select>
                 </div>
+                <div class='hidden'
+                     id="dependent_tasks_storage"
+                     dependent_ids="[{% for dep in dependencies %}{% if loop.index0 %},{% endif %}{{ dep.id }}{% endfor %}]">
+                    this is a storage for dependent_ids, which is set externally by the
+                    template engine
+                 </div>
             </div>
 
             {# Resources #}
@@ -143,7 +161,8 @@
                             multiple=''
                             class='input-block-level tag-input-style'
                             name='resource_ids'
-                            data-placeholder='Resources'></select>
+                            data-placeholder='Resources'
+                            is_updating=false></select>
                 </div>
             </div>
 
@@ -154,7 +173,8 @@
                     <select id='task_responsible'
                             class='input-block-level'
                             name='responsible_id'
-                            data-placeholder='Responsible'></select>
+                            data-placeholder='Responsible'
+                            is_updating=false></select>
                 </div>
             </div>
 
@@ -235,6 +255,27 @@
     function init_task_dialog(){
         console.debug('starting to initialize task dialog!!!');
 
+        var submit_button = $('#task_dialog_submit_button');
+
+        var field_update_mode_checker = function(){
+            // checks if the important fields are still updating
+            // check if any of the fields are still in updating mode
+            if ($('#task_project').attr('is_updating') === 'true' ||
+                $('#task_parent').attr('is_updating') === 'true' ||
+                $('#task_type').attr('is_updating') === 'true' ||
+                $('#asset_type').attr('is_updating') === 'true' ||
+                $('#shot_sequence').attr('is_updating') === 'true' ||
+                $('#task_dependencies').attr('is_updating') === 'true' ||
+                $('#task_resources').attr('is_updating') === 'true' ||
+                $('#task_responsible').attr('is_updating') === 'true') {
+                // disable the Submit button
+                setTimeout(function(){submit_button.button('loading')}, 0);
+            } else {
+                // enable the Submit button
+                setTimeout(function(){submit_button.button('reset')}, 0);
+            }
+        };
+
         {# ***************************************************************** #}
         {# Entity Type #}
         {# Update fields according to the selected Entity Type #}
@@ -311,12 +352,20 @@
         if (project_id !== -1){
             deferred.then(function(){
                 task_project.val(project_id).trigger('chosen:updated');
+                // trigger value change
+                task_project_has_changed();
             });
         }
 
         // Updates on project change
-        task_project.on('change', function(){
-            update_task_parent_and_dependency_fields();
+        var task_project_has_changed = function(){
+            console.debug('project has changed');
+            console.debug('task_project.val() : ', task_project.val());
+
+            // update parent and dependency lists
+            update_task_parent_and_dependency_fields({});
+
+            // update resource field
             update_resource_field();
 
             // update responsible
@@ -325,7 +374,9 @@
 
             // update sequences
             shot_sequence_updater();
-        });
+        };
+
+        task_project.on('change', task_project_has_changed);
 
         {# ***************************************************************** #}
         {# Parent and Dependencies#}
@@ -351,8 +402,24 @@
 
             // get the project id
             var project_id = task_project.val();
+            if (project_id === null) {
+                console.debug('project_id is null!!! returning!!!');
+                // just return without doing anything
+                return;
+            }
+
+            // accept any parent or dependent task from the kwargs
+            var current_parent_id = Number($("#parent_storage").attr('parent_id'));
+            var current_dependent_ids = $.parseJSON($("#dependent_tasks_storage").attr('dependent_ids'));
+            console.debug('current_parent_id     : ', current_parent_id);
+            console.debug('current_dependent_ids : ', current_dependent_ids);
 
             // get tasks of that project as json from server
+            // set the submit button to loading state while data is get from the server
+            // set the fields to updating mode
+            task_parent.attr('is_updating', true);
+            task_dependencies.attr('is_updating', true);
+            field_update_mode_checker();
             $.getJSON('/projects/' + project_id + '/tasks/').then(function(data){
                 // now append the data to the task_parent
                 {% raw %}
@@ -368,15 +435,42 @@
                     task_parent.append(rendered_template);
                     task_dependencies.append(rendered_template)
                 }
+
+                // select the given parent
+                if (current_parent_id !== -1) {
+                    task_parent.val(current_parent_id);
+                }
+                
+                if (current_dependent_ids.length > 0) {
+                    task_dependencies.val(current_dependent_ids)
+                }
+
                 // trigger another update
                 task_parent.trigger('liszt:updated');
                 // trigger another update
                 task_dependencies.trigger('liszt:updated');
+
+                // set the fields to normal mode
+                task_parent.attr('is_updating', false);
+                task_dependencies.attr('is_updating', false);
+                field_update_mode_checker();
             });
         };
 
-        // update now
-        setTimeout(update_task_parent_and_dependency_fields, 100); // TODO: This is not good
+        {# Pass the parents and dependencies #}
+        console.debug('code is here 1');
+        var parents_and_dependencies = {
+            parent_id: -1,
+            dependency_ids: [
+                {% for dep in dependencies %}
+                    {{ dep.id }},
+                {% endfor %}
+            ]
+        };
+        console.debug('parents_and_dependencies: ', parents_and_dependencies);
+
+        // update task parent and dependency fields now
+        //update_task_parent_and_dependency_fields(parents_and_dependencies);
 
         // Updates on parent change
         task_parent.on('change', function(){
@@ -394,22 +488,36 @@
 
         {# ***************************************************************** #}
         {# Task Type #}
+        var task_type = $('#task_type');
+        // set the field to updating mode
+        task_type.attr('is_updating', true);
+        field_update_mode_checker();
         $.getJSON('/types/?target_entity_type=Task').then(function(available_types){
-            var task_type = $('#task_type').autocomplete({
+            task_type.autocomplete({
                 delay: 0,
                 source: available_types,
                 minLength: 0
             });
+            // set the field to normal mode
+            task_type.attr('is_updating', false);
+            field_update_mode_checker();
         });
 
         {# ***************************************************************** #}
         {# Asset Type #}
+        var asset_type = $('#asset_type');
+        // set the field to updating mode
+        asset_type.attr('is_updating', true);
+        field_update_mode_checker();
         $.getJSON('/types/?target_entity_type=Asset').then(function(available_types){
-            var asset_type = $('#asset_type').autocomplete({
+            asset_type.autocomplete({
                 delay: 0,
                 source: available_types,
                 minLength: 0
             });
+            // set the field to normal mode
+            asset_type.attr('is_updating', false);
+            field_update_mode_checker();
         });
 
         {# ***************************************************************** #}
@@ -427,6 +535,9 @@
         // and update it on project change
         var shot_sequence_updater = function(){
             var url = '/projects/' + task_project.val() + '/sequences/';
+            // set the field to updating mode
+            shot_sequence.attr('is_updating', true);
+            field_update_mode_checker();
             $.getJSON(url).then(function(data){
                 // remove current options
                 shot_sequence.find('option').remove();
@@ -439,6 +550,10 @@
 
                 // trigger an update
                 shot_sequence.trigger('liszt:updated');
+
+                // set the field to normal mode
+                shot_sequence.attr('is_updating', false);
+                field_update_mode_checker();
             });
         };
 
@@ -462,6 +577,11 @@
             //
             // Updates the resource field
             //
+            
+            // set the field to updating mode
+            task_resources.attr('is_updating', true);
+            field_update_mode_checker();
+            
             var url = '/projects/' + task_project.val() + '/users/?simple=1';
             $.getJSON(url).then(function(data){
                 // remove current elements
@@ -475,6 +595,10 @@
 
                 // update the chosen
                 task_resources.trigger('liszt:updated');
+
+                // set the field to normal mode
+                task_resources.attr('is_updating', false);
+                field_update_mode_checker();
             });
         };
 
@@ -497,6 +621,11 @@
             //
             // Updates the responsible field
             //
+            
+            // set the field to updating mode
+            task_responsible.attr('is_updating', true);
+            field_update_mode_checker();
+
             var url = '/projects/' + task_project.val() + '/users/?simple=1';
             $.getJSON(url).then(function(data){
                 // remove current elements
@@ -511,6 +640,10 @@
                 }
 
                 task_responsible.trigger('liszt:updated');
+
+                // set the field to normal mode
+                task_responsible.attr('is_updating', false);
+                field_update_mode_checker();
             });
         };
 
@@ -529,15 +662,29 @@
             if (curr_parent && curr_parent !== '\xA0') { // check if it is not '&nbsp' (which is \xA0 in javascript)
                 // there is a parent use its responsible
                 console.debug('there is a parent :', curr_parent);
+                // set the field to updating mode
+                task_responsible.attr('is_updating', true);
+                field_update_mode_checker();
+
                 $.getJSON(parent_task_url).then(function(task_data){
                     task_responsible.val(task_data[0].responsible.id);
                     task_responsible.trigger('liszt:updated');
+                    // set the field to normal mode
+                    task_responsible.attr('is_updating', false);
+                    field_update_mode_checker();
                 });
             } else { // no parent use projects lead
                 console.debug('there is no parent, using project lead!');
+                // set the field to updating mode
+                task_responsible.attr('is_updating', true);
+                field_update_mode_checker();
+
                 $.getJSON(project_url).then(function(lead_data){
                     task_responsible.val(lead_data.id);
                     task_responsible.trigger('liszt:updated');
+                    // set the field to normal mode
+                    task_responsible.attr('is_updating', false);
+                    field_update_mode_checker();
                 });
             }
 
@@ -569,7 +716,11 @@
 
         {# ***************************************************************** #}
         {# Submit Button #}
-        $('#task_dialog_submit_button').on('click', function(e){
+
+        submit_button.on('click', function(e){
+            e.stopPropagation();
+            e.preventDefault();
+
             console.debug('this is running!');
             var task_form = $('#task_form');
             var form_data = task_form.serialize();
@@ -584,8 +735,6 @@
                     bootbox.alert(jqXHR.responseText);
                 });
             }
-            e.stopPropagation();
-            e.preventDefault();
         });
 
         $('#task_form').validate({
