@@ -211,11 +211,14 @@ def get_task_versions(request):
     """returns all the Shots of the given Project
     """
     logger.debug('get_versions is running')
+
     task_id = request.matchdict.get('id', -1)
     task = Task.query.filter_by(id=task_id).first()
+
     version_data = []
 
     user_os = get_user_os(request)
+
     logger.debug('entity_id : %s' % task_id)
     logger.debug('user os: %s' % user_os)
 
@@ -252,6 +255,8 @@ def get_task_versions(request):
             # 'hours_to_complete': version.hours_to_complete,
             # 'notes': version.notes
         })
+
+    logger.debug('no p')
 
     return version_data
 

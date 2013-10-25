@@ -207,6 +207,15 @@ def get_multi_integer(request, attr_name):
     """
     return [int(attr) for attr in request.POST.getall(attr_name)]
 
+def get_multi_string(request, attr_name):
+    """Extracts multi data from request.POST
+
+    :param request: Request object
+    :param attr_name: Attribute name to extract data from
+    :return:
+    """
+    return [attr for attr in request.GET.getall(attr_name)]
+
 
 def get_color_as_int(request, attr_name):
     """Extracts a color from request

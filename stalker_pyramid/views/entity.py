@@ -134,7 +134,7 @@ logger.setLevel(logging.DEBUG)
 )
 @view_config(
     route_name='view_user_tasks',
-    renderer='templates/task/list_entity_tasks.jinja2'
+    renderer='templates/task/list/list_entity_tasks.jinja2'
 )
 @view_config(
     route_name='view_entity_nav_bar',
@@ -182,23 +182,23 @@ logger.setLevel(logging.DEBUG)
 )
 @view_config(
     route_name='list_user_tasks',
-    renderer='templates/task/list_entity_tasks.jinja2'
+    renderer='templates/task/list/list_entity_tasks.jinja2'
 )
 @view_config(
     route_name='list_project_tasks',
-    renderer='templates/task/list_entity_tasks.jinja2'
+    renderer='templates/task/list/list_entity_tasks.jinja2'
 )
 @view_config(
     route_name='list_task_tasks',
-    renderer='templates/task/list_entity_tasks.jinja2'
+    renderer='templates/task/list/list_entity_tasks.jinja2'
 )
 @view_config(
     route_name='list_entity_tasks',
-    renderer='templates/task/list_entity_tasks.jinja2'
+    renderer='templates/task/list/list_entity_tasks.jinja2'
 )
 @view_config(
     route_name='list_studio_tasks',
-    renderer='templates/task/list_entity_tasks.jinja2'
+    renderer='templates/task/list/list_entity_tasks.jinja2'
 )
 @view_config(
     route_name='list_entity_references',

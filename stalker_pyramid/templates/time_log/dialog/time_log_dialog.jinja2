@@ -137,10 +137,14 @@ function init_dialog() {
     $('#dialog_template_label').find('span').remove();
     $('#dialog_template_label').append('<span>Timelog</span>')
 
+    $('#dialog_template_body').attr('style',"height: 400px");
+
     {# ***************************************************************** #}
 
 
     var event_dialog = $('#dialog_template')
+
+
 
     var start_date_value = new Date(event_dialog.attr('start'));
     var end_date_value = new Date(event_dialog.attr('end'));

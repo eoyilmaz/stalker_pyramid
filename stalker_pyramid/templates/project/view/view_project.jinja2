@@ -63,7 +63,7 @@
             <div class="widget-container-span">
                 <div class="widget-box">
                     <div class="widget-header widget-header-small header-color-{{=it.table_title_color }}">
-                        <h4 class="header smaller">
+                        <h4 class="smaller">
                             <i class="icon-list"></i>
                             {{=it.table_title }}
                         </h4>
@@ -90,12 +90,12 @@
                                    class="table table-striped table-bordered table-hover hide"
                                     >
                                 <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Resources</th>
-                                    <th>Completed</th>
-                                    <th>Status</th>
-                                </tr>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Resources</th>
+                                        <th>Completed</th>
+                                        <th>Status</th>
+                                    </tr>
                                 </thead>
                                 <tbody>
 
@@ -132,21 +132,7 @@
     {# Table Creation#}
 
     <script>
-        $(document).ready(function () {
 
-            var oldie = /msie\s*(8|7|6)/.test(navigator.userAgent.toLowerCase());
-            $('.easy-pie-chart.percentage').each(function () {
-                $(this).easyPieChart({
-                    barColor: $(this).data('color'),
-                    trackColor: '#EEEEEE',
-                    scaleColor: false,
-                    lineCap: 'butt',
-                    lineWidth: 10,
-                    animate: oldie ? false : 1000,
-                    size: 100
-                }).css('color', $(this).data('color'));
-            });
-        })
         // fill projects table with dynamic data
         $(document).ready(function () {
 

@@ -29,10 +29,10 @@ from sqlalchemy import or_
 
 import stalker_pyramid
 from stalker import (defaults, User, Department, Group, Project, Entity,
-                     Studio, Permission, EntityType, Task, Vacation)
+                     Studio, Permission, EntityType, Task, Vacation, TimeLog)
 from stalker.db import DBSession
 from stalker_pyramid.views import (log_param, get_logged_in_user,
-                                   PermissionChecker, get_multi_integer, get_tags, milliseconds_since_epoch)
+                                   PermissionChecker, get_multi_integer, get_tags, milliseconds_since_epoch, get_multi_string)
 
 import logging
 
@@ -696,101 +696,165 @@ def check_email_availability(request):
     return {
         'available': available
     }
-
-
+@view_config(
+    route_name='get_entity_events',
+    renderer='json'
+)
 @view_config(
     route_name='get_user_events',
     renderer='json'
 )
-def get_user_events(request):
+def get_entity_events(request):
     logger.debug('get_user_events is running')
 
-    user_id = request.matchdict.get('id', -1)
-    user = User.query.filter_by(id=user_id).first()
+    keys = get_multi_string(request,'keys')
 
-    logger.debug('user_id : %s' % user_id)
+    logger.debug('keys: %s'% keys)
+
+    entity_id = request.matchdict.get('id', -1)
+    entity = Entity.query.filter_by(id=entity_id).first()
+
+    logger.debug('entity_id : %s' % entity_id)
 
     events = []
 
-    # if user.time_logs:
-    for time_log in user.time_logs:
-        # logger.debug('time_log.task.id : %s' % time_log.task.id)
-        # assert isinstance(time_log, TimeLog)
-        events.append({
-            'id': time_log.id,
-            'entity_type': time_log.plural_class_name.lower(),
-            'title': '%s (%s)' % (
-                time_log.task.name,
-                ' | '.join(reversed(
-                    [parent.name for parent in time_log.task.parents]))),
-            'start': milliseconds_since_epoch(time_log.start),
-            'end': milliseconds_since_epoch(time_log.end),
-            'className': 'label-success',
-            'allDay': False,
-            'status': time_log.task.status.name
-            # 'hours_to_complete': time_log.hours_to_complete,
-            # 'notes': time_log.notes
-        })
-
-    vacations = Vacation.query.filter(Vacation.user == None).all()
-    if isinstance(user, User):
-        vacations.extend(user.vacations)
-        # if user.time_logs:
-    for vacation in vacations:
-        # logger.debug('time_log.task.id : %s' % time_log.task.id)
-        # assert isinstance(time_log, TimeLog)
-        events.append({
-            'id': vacation.id,
-            'entity_type': vacation.plural_class_name.lower(),
-            'title': vacation.type.name,
-            'start': milliseconds_since_epoch(vacation.start),
-            'end': milliseconds_since_epoch(vacation.end),
-            'className': 'label-yellow',
-            'allDay': True,
-            'status': ''
-        })
-
-    today = datetime.datetime.today()
-
-    # if user.time_logs:
-    for task in user.tasks:
-        # logger.debug('time_log.task.id : %s' % time_log.task.id)
-        # assert isinstance(time_log, TimeLog)
-
-        if today < task.end:
+    # if entity.time_logs:
+    if 'time_log' in keys:
+        for time_log in entity.time_logs:
+            # logger.debug('time_log.task.id : %s' % time_log.task.id)
+            # assert isinstance(time_log, TimeLog)
             events.append({
-                'id': task.id,
-                'entity_type': task.plural_class_name.lower(),
+                'id': time_log.id,
+                'entity_type': time_log.plural_class_name.lower(),
                 'title': '%s (%s)' % (
-                    task.name,
-                    ' | '.join(
-                        reversed([parent.name for parent in task.parents]))),
-                'start': milliseconds_since_epoch(task.start),
-                'end': milliseconds_since_epoch(task.end),
-                'className': 'label',
+                    time_log.task.name,
+                    ' | '.join(reversed(
+                        [parent.name for parent in time_log.task.parents]))),
+                'start': milliseconds_since_epoch(time_log.start),
+                'end': milliseconds_since_epoch(time_log.end),
+                'className': 'label-success',
                 'allDay': False,
-                'status': task.status.name
+                'status': time_log.task.status.name
                 # 'hours_to_complete': time_log.hours_to_complete,
                 # 'notes': time_log.notes
             })
 
+    if 'vacation' in keys:
+        vacations = Vacation.query.filter(Vacation.user == None).all()
+        if isinstance(entity, User):
+            vacations.extend(entity.vacations)
+
+        for vacation in vacations:
+
+            events.append({
+                'id': vacation.id,
+                'entity_type': vacation.plural_class_name.lower(),
+                'title': vacation.type.name,
+                'start': milliseconds_since_epoch(vacation.start),
+                'end': milliseconds_since_epoch(vacation.end),
+                'className': 'label-yellow',
+                'allDay': True,
+                'status': ''
+            })
+
+    if 'task' in keys:
+        today = datetime.datetime.today()
+        for task in entity.tasks:
+
+            if today < task.end:
+                events.append({
+                    'id': task.id,
+                    'entity_type': task.plural_class_name.lower(),
+                    'title': '%s (%s)' % (
+                        task.name,
+                        ' | '.join(
+                            reversed([parent.name for parent in task.parents]))),
+                    'start': milliseconds_since_epoch(task.start),
+                    'end': milliseconds_since_epoch(task.end),
+                    'className': 'label',
+                    'allDay': False,
+                    'status': task.status.name
+                    # 'hours_to_complete': time_log.hours_to_complete,
+                    # 'notes': time_log.notes
+                })
+
     return events
 
-
-@view_config(
-    route_name='get_user_efficiency_graphic',
-    renderer='json'
-)
-def get_user_efficiency_graphic(request):
-    logger.debug('get_user_efficiency_graphic is running')
-    user_id = request.matchdict.get('id', -1)
-    user = User.query.filter_by(id=user_id).first()
-
-    logger.debug('user_id : %s' % user_id)
-
-    efficiency_list = []
-
-    return efficiency_list
+#
+# @view_config(
+#     route_name='get_user_worked_hours',
+#     renderer='json'
+# )
+# def get_user_worked_hours(request):
+#     logger.debug('get_user_worked_hours is running')
+#
+#     user_id = request.matchdict.get('id', -1)
+#     user = User.query.filter_by(id=user_id).first()
+#
+#     logger.debug('user_id : %s' % user_id)
+#
+#     assert isinstance(user, User)
+#
+#
+#
+#     frequency = request.matchdict.get('frequency', -1)
+#     ticks = []
+#
+#     time_log_data = []
+#     vacation_data = []
+#
+#     today = datetime.date.today()
+#
+#     if frequency=='weekly':
+#
+#         ticks = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+#
+#         # get time logs of current week.
+#
+#         time_log_data = [0,0,0,0,0,0]
+#         weekday = today.weekday();
+#
+#         for x in range(0, weekday):
+#             logger.debug('x: %s'% ticks[x])
+#
+#             t_date = today.day - (weekday-x)
+#
+#             time_log = TimeLog.query.filter_by(resource=user).filter_by(start=t_date)
+#
+#             time_log_data[x] = time_log.hour
+#
+#         # get vacations of current week.
+#
+#         vacation_data = [1,5,8,2,9,6]
+#
+#
+#
+#     elif frequency=='monthly':
+#
+#         ticks = ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5']
+#
+#     elif frequency=='yearly':
+#
+#         ticks = ['January', 'February', 'March', 'April', 'June', 'July','August','September','October','November','December']
+#
+#
+#     result_hours = [
+#                     {
+#                         'data':time_log_data,
+#                         'ticks':ticks,
+#                         'color':'#82af6f',
+#                         'label':'Worked'
+#
+#                     },
+#                     {
+#                         'data':vacation_data,
+#                         'ticks':ticks,
+#                         'color':'#fee188',
+#                         'label':'Vacation'
+#                     }
+#     ]
+#
+#     return result_hours
 
 
 

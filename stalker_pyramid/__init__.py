@@ -139,6 +139,7 @@ def main(global_config, **settings):
     config.add_route('get_entity_shots',               'entities/{id}/shots/')
     config.add_route('get_entity_vacations',           'entities/{id}/vacations/')
     config.add_route('get_entity_entities_out_stack',  'entities/{id}/{entities}/out_stack/' )
+    config.add_route('get_entity_events',              'entities/{id}/events/')#json
 
     config.add_route('list_entity_users',              'entities/{id}/users/list')
     config.add_route('list_entity_departments',        'entities/{id}/departments/list') # html
@@ -301,7 +302,7 @@ def main(global_config, **settings):
     config.add_route('get_user_vacations',    'users/{id}/vacations/') # json
     config.add_route('get_user_tickets',      'users/{id}/tickets/') # json
     config.add_route('get_user_events',       'users/{id}/events/')#json
-    config.add_route('get_user_efficiency_graphic','users/{id}/efficiency_graphic/')#json
+    # config.add_route('get_user_worked_hours', 'users/{id}/{frequency}/worked_hours/')#json
 
     config.add_route('list_users',            'users/list') # html
     config.add_route('list_user_tasks',       'users/{id}/tasks/list') # html

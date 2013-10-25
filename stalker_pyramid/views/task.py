@@ -808,7 +808,7 @@ def create_data_dialog(request, entity_type='Task'):
 
 @view_config(
     route_name='project_task_dialog',
-    renderer='templates/task/task_dialog.jinja2'
+    renderer='templates/task/dialog/task_dialog.jinja2'
 )
 def create_task_dialog(request):
     """called when creating tasks
@@ -1184,35 +1184,35 @@ def request_task_review(request):
 
 @view_config(
     route_name='view_project_asset',
-    renderer='templates/task/view_project_task.jinja2'
+    renderer='templates/task/view/view_project_task.jinja2'
 )
 @view_config(
     route_name='view_project_sequence',
-    renderer='templates/task/view_project_task.jinja2'
+    renderer='templates/task/view/view_project_task.jinja2'
 )
 @view_config(
     route_name='view_project_shot',
-    renderer='templates/task/view_project_task.jinja2'
+    renderer='templates/task/view/view_project_task.jinja2'
 )
 @view_config(
     route_name='view_project_task',
-    renderer='templates/task/view_project_task.jinja2'
+    renderer='templates/task/view/view_project_task.jinja2'
 )
 @view_config(
     route_name='view_task',
-    renderer='templates/task/view_project_task.jinja2'
+    renderer='templates/task/view/view_project_task.jinja2'
 )
 @view_config(
     route_name='view_asset',
-    renderer='templates/task/view_project_task.jinja2'
+    renderer='templates/task/view/view_project_task.jinja2'
 )
 @view_config(
     route_name='view_shot',
-    renderer='templates/task/view_project_task.jinja2'
+    renderer='templates/task/view/view_project_task.jinja2'
 )
 @view_config(
     route_name='view_sequence',
-    renderer='templates/task/view_project_task.jinja2'
+    renderer='templates/task/view/view_project_task.jinja2'
 )
 def view_project_task(request):
     """runs when viewing an task

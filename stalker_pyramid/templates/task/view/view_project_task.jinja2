@@ -3,9 +3,9 @@
 {#PRE-HEADER #}
 {% block pre_header %}
 
-    {% include 'task/list_tasks_preheader.jinja2' %}
+    {% include 'task/list/list_tasks_preheader.jinja2' %}
 
-    <link rel="stylesheet" href='{{ request.static_url("stalker_pyramid:static/ace/css/dropzone.css") }}' />
+{#    <link rel="stylesheet" href='{{ request.static_url("stalker_pyramid:static/ace/css/dropzone.css") }}' />#}
 
 {% endblock pre_header %}
 
@@ -29,6 +29,8 @@
 {#PAGE-CONTENT#}
 {% block page_content %}
     <div class="row-fluid">
+
+
 
         <div class="media">
             <a class="pull-left" href="#"
@@ -69,8 +71,7 @@
                                     <div class="span3">
                                         <ul class="unstyled spaced">
                                             <li>
-                                                {{ task.start }} <i
-                                                    class="icon-long-arrow-right blue"></i> {{ task.end }}
+                                                {{ task.start }} <i class="icon-long-arrow-right blue"></i> {{ task.end }}
                                             </li>
 
                                             <li>
@@ -117,6 +118,11 @@
             <div class="tabbable">
                 <ul class="nav nav-tabs">
                     <li class="active">
+                        <a href="#task_versions" data-toggle="tab">
+                            <i class="icon-archive"></i> Versions
+                        </a>
+                    </li>
+                    <li class="">
                         <a href="#task_dashboard" data-toggle="tab">
                             <i class="icon-dashboard"></i> Dashboard
                         </a>
@@ -126,11 +132,7 @@
                             <i class="icon-tasks"></i> Tasks
                         </a>
                     </li>
-                    <li class="">
-                        <a href="#task_versions" data-toggle="tab">
-                            <i class="icon-archive"></i> Versions
-                        </a>
-                    </li>
+
                     <li class="">
                         <a href="#task_references" data-toggle="tab">
                             <i class="icon-picture"></i> References
@@ -139,18 +141,20 @@
                 </ul>
 
 
-                <div id="myTabContent" class="tab-content">
-                    <div class="tab-pane fade active in" id="task_dashboard">
+                <div id="myTabContent" class="tab-content no-padding ">
+                    <div class="tab-pane fade active in" id="task_versions">
+
+                        <div class="row-fluid" id="version_table_row"></div>
+
+                    </div>
+                    <div class="tab-pane fade " id="task_dashboard">
                         task_dashboard
                     </div>
                     <div class="tab-pane fade" id="task_tasks">
                         {% set entity = task %}
-                        {% include 'task/list_tasks.jinja2' %}
+                        {% include 'task/list/list_tasks.jinja2' %}
                     </div>
-                    <div class="tab-pane fade" id="task_versions">
-                        {% set versions=task.versions %}
-                        {% include 'version/list_entity_versions.jinja2' %}
-                    </div>
+
                     <div class="tab-pane fade" id="task_references">
                         {% set references=task.references %}
                         {% include 'link/list_entity_references.jinja2' %}
@@ -165,31 +169,14 @@
 
 {#EXTRA-SCRIPTS#}
 {% block extrascripts %}
-{#    <script type="text/javascript" src='{{ request.static_url("stalker_pyramid:static/ace/js/dropzone.min.js") }}'></script>#}
-{#    <!--inline scripts related to this page-->#}
-{##}
-{#    <script type="text/javascript">#}
-{#        jQuery(function ($) {#}
-{#            try {#}
-{#                $(".dropzone").dropzone({#}
-{#                    paramName: "file", // The name that will be used to transfer the file#}
-{#                    maxFilesize: 0.5, // MB#}
-{##}
-{#                    addRemoveLinks: true,#}
-{#                    dictDefaultMessage: '<span class="bigger-150 bolder"><i class="icon-caret-right red"></i> Drop files</span> to upload \#}
-{#<span class="smaller-80 grey">(or click)</span> <br /> \#}
-{#<i class="upload-icon icon-cloud-upload blue icon-3x"></i>',#}
-{#                    dictResponseError: 'Error while uploading file!',#}
-{##}
-{#//change the previewTemplate to use Bootstrap progress bars#}
-{#                    previewTemplate: "<div class=\"dz-preview dz-file-preview\">\n  <div class=\"dz-details\">\n    <div class=\"dz-filename\"><span data-dz-name></span></div>\n    <div class=\"dz-size\" data-dz-size></div>\n    <img data-dz-thumbnail />\n  </div>\n  <div class=\"progress progress-small progress-success progress-striped active\"><span class=\"bar\" data-dz-uploadprogress></span></div>\n  <div class=\"dz-success-mark\"><span></span></div>\n  <div class=\"dz-error-mark\"><span></span></div>\n  <div class=\"dz-error-message\"><span data-dz-errormessage></span></div>\n</div>"#}
-{#                });#}
-{#            } catch (e) {#}
-{#                //alert('Dropzone.js does not support older browsers!');#}
-{#                //alert(e);#}
-{#            }#}
-{#        });#}
-{#    </script>#}
+
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.dataTables.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.dataTables.bootstrap.js") }}'></script>
+
+
+    {% include 'version/list_entity_versions.jinja2' %}
+
+
     <script>
         $(function(){
             // There is a bug in gantt chart when it is included as a secondary
@@ -201,5 +188,7 @@
             });
         });
     </script>
+
+
 
 {% endblock extrascripts %}
