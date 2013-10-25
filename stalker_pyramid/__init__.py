@@ -183,14 +183,14 @@ def main(global_config, **settings):
     config.add_route('view_studio',           'studios/{id}/view')
 
     config.add_route('get_studio_tasks',      'studios/{id}/tasks/')
-    config.add_route('get_studio_vacations',  'studios/{id}/vacations/') # json
+    config.add_route('get_studio_vacations',  'studios/{id}/vacations/')  # json
 
     config.add_route('list_studio_tasks',           'studios/{id}/tasks/list')
-    config.add_route('list_studio_vacations',       'studios/{id}/vacations/list') # html
-    config.add_route('list_studio_users',           'studios/{id}/users/list') # html
-    config.add_route('list_studio_projects',        'studios/{id}/projects/list') # html
-    config.add_route('list_studio_departments',     'studios/{id}/departments/list') # html
-    config.add_route('list_studio_groups',          'groups/list') # html
+    config.add_route('list_studio_vacations',       'studios/{id}/vacations/list')  # html
+    config.add_route('list_studio_users',           'studios/{id}/users/list')  # html
+    config.add_route('list_studio_projects',        'studios/{id}/projects/list')  # html
+    config.add_route('list_studio_departments',     'studios/{id}/departments/list')  # html
+    config.add_route('list_studio_groups',          'groups/list')  # html
 
     # *************************************************************************
     # Project
@@ -201,8 +201,8 @@ def main(global_config, **settings):
     config.add_route('project_shot_dialog',        'projects/{id}/shots/{mode}/dialog')
     config.add_route('project_sequence_dialog',    'projects/{id}/sequences/{mode}/dialog')
 
-    config.add_route('get_project_tasks',          'projects/{id}/tasks/') # json
-    config.add_route('get_project_lead',           'projects/{id}/lead/') # json
+    config.add_route('get_project_tasks',          'projects/{id}/tasks/')  # json
+    config.add_route('get_project_lead',           'projects/{id}/lead/')  # json
 
     config.add_route('create_project',             'projects/create')
     config.add_route('update_project',             'projects/{id}/update')
@@ -429,6 +429,8 @@ def main(global_config, **settings):
     config.add_route('get_tasks',         'tasks/')
     config.add_route('get_task',          'tasks/{id}/')
     config.add_route('get_task_children', 'tasks/{id}/children/')
+
+    config.add_route('delete_task',       'tasks/{id}/delete')
 
     # *************************************************************************
     # TimeLog

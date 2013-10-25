@@ -348,7 +348,8 @@
                         {% if has_permission('Delete_Task') %}
                         <li>
                             <a id="delete_task_button"
-                                href='#'>
+                               class="red"
+                               href=''>
                                 <i class="'ui-icon icon-trash bigger-120">&nbsp</i>
                                 Delete
                             </a>
@@ -358,7 +359,7 @@
                         <li class="divider"></li>
 
                         <li>
-                            <a href='#' class="red">
+                            <a href='#' class="blue">
                                 <i class="'ui-icon icon-comment bigger-120">&nbsp</i>
                                 Request Review
                             </a>
@@ -992,18 +993,16 @@ require([
         parent_taskrow_menu.startup();
     };
 
-
     // The Memory
     var target = '/tasks/';
     var tasks_memory_store = new Memory();
 
     {% if entity.entity_type == 'User' %}
         target = '{{ request.route_url('get_user_tasks', id=entity.id) }}';
-        console.debug('target : ', target);
     {% elif entity.entity_type == 'Studio' %}
         target = '{{ request.route_url('get_studio_tasks', id=entity.id) }}';
-        console.debug('target : ', target);
     {% endif %}
+{#    console.debug('target : ', target);#}
 
     var tasks_jsonRest_store;
     tasks_jsonRest_store = new JsonRest({
@@ -1036,10 +1035,7 @@ require([
         loadingMessage: "<div style='float: left' class='dijitIconLoading'>&nbsp</div><div>Loading</div>",
         noDataMessage: "",
         pageSkip: 0,
-        cellNavigation: false,
-        onExpand: function(){
-            console.debug('expanding tree');
-        }
+        cellNavigation: false
     }, '{{ entity.entity_type }}_{{ entity.id }}_gantt');
     gantt_chart.startup();
 
@@ -1085,7 +1081,6 @@ require([
     // register cell selection function
     gantt_chart.on('dgrid-select', function(e){
         var selected_ids = gantt_chart.selected_ids();
-        console.debug('selected_ids: ', selected_ids);
         if (selected_ids.length > 0){
             // update create child task
             var child_task_button = $('#child_task_button');
@@ -1131,9 +1126,9 @@ require([
     var select_first_and_show_task_dialog = function(e){
         select_first_and_do_something(e, function(){
             $("#task_dialog").modal({
-                    target: '#task_dialog',
-                    keyboard: false,
-                    remote: $(this).attr('href')
+                target: '#task_dialog',
+                keyboard: false,
+                remote: $(this).attr('href')
             });
         });
     };
@@ -1179,6 +1174,45 @@ require([
                         });
                     };
                 };
+        });
+    });
+
+    $('#delete_task_button').on('click', function(e){
+        e.preventDefault();
+        e.stopPropagation();
+
+        // get the selection list
+        var selected_ids = gantt_chart.selected_ids();
+        if (selected_ids.length == 0){
+            bootbox.alert('Please select at least one item from the ' +
+                'GanttChart!');
+            return;
+        }
+
+        // warn the user about what is going to happen
+        bootbox.confirm('All the selected tasks and their child tasks and ' +
+            'all the TimeLogs entered and all the Versions ' +
+            'created for those tasks are going to be deleted.<br><br>' +
+            'Are you sure?', function(result){
+            if (result){
+                var id;
+                // TODO: users will probably select parent and child items
+                // together and server will not be able to find the child tasks
+                // after the parent has deleted, so consider that in server
+                // side.
+                for (var i=0; i < selected_ids.length; i++){
+                    id = selected_ids[i];
+                    $.post(
+                        '/tasks/' + id + '/delete'
+                    ).done(function(response_text){
+                        bootbox.alert(response_text);
+                        // reload the gantt chart
+                        gantt_column.reload();
+                    }).fail(function(jqXHR){
+                        bootbox.alert(jqXHR.responseText);
+                    });
+                }
+            }
         });
     });
 

@@ -47,10 +47,6 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 
-# def walk_task_hierarchy(starting_task):
-#     """
-#     """
-
 def duplicate_task(task):
     """Duplicates the given task without children.
 
@@ -255,7 +251,7 @@ def convert_to_dgrid_gantt_project_format(projects):
         {
             'bid_timing': project.duration.days,
             'bid_unit': 'd',
-            'completed': project.total_logged_seconds / project.schedule_seconds,
+            'completed': project.total_logged_seconds / project.schedule_seconds if project.schedule_seconds else 0,
             'description': project.description,
             'end': milliseconds_since_epoch(
                 project.computed_end if project.computed_end else project.end),
@@ -502,13 +498,16 @@ def depth_first_flatten(task, task_array=None):
 def get_tasks(request):
     """RESTful version of getting all tasks
     """
-    # logger.debug('request.GET: %s' % request.GET)
-    parent_id = request.GET.get('parent_id')
-    task_id = request.GET.get('task_id')
+    parent_id = request.params.get('parent_id')
+    task_id = request.params.get('task_id')
 
-    return_data = None
+    logger.debug('parent_id: %s' % parent_id)
+    logger.debug('task_id  : %s' % task_id)
+
+    return_data = []
     # set the content range to prevent JSONRest Store to query the data twice
     content_range = '%s-%s/%s'
+    tasks = []
     if task_id:
         task = Entity.query.filter(Entity.id == task_id).first()
         if isinstance(task, Project):
@@ -555,13 +554,16 @@ def get_entity_tasks(request):
     entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter(Entity.id == entity_id).first()
 
-    parent_id = request.GET.get('parent_id')
+    logger.debug('entity_id : %s' % entity_id)
+    logger.debug('entity    : %s' % entity)
+
+    parent_id = request.params.get('parent_id')
     parent = Entity.query.filter_by(id=parent_id).first()
 
     # logger.debug('parent_id : %s' % parent_id)
     # logger.debug('parent    : %s' % parent)
 
-    return_data = None
+    return_data = []
     # set the content range to prevent JSONRest Store to query the data twice
     content_range = '%s-%s/%s'
 
@@ -779,7 +781,7 @@ def create_data_dialog(request, entity_type='Task'):
     logger.debug('project_id : %s' % project_id)
     project = Project.query.filter_by(id=project_id).first()
 
-    parent_id = request.GET.get('parent_id')
+    parent_id = request.params.get('parent_id')
     logger.debug('parent_id  : %s' % parent_id)
     parent = Task.query.filter_by(id=parent_id).first()
     logger.debug('parent     : %s' % parent)
@@ -1291,3 +1293,32 @@ def get_entity_tasks_stats(request):
         })
 
     return status_count_task
+
+@view_config(
+    route_name='delete_task',
+    permission='Delete_Task'
+)
+def delete_task(request):
+    """deletes the task with the given id
+    """
+    task_id = request.matchdict.get('id')
+    task = Task.query.get(task_id)
+
+    if task:
+        try:
+            DBSession.delete(task)
+            transaction.commit()
+        except Exception as e:
+            transaction.abort()
+            c = StdErrToHTMLConverter(e)
+            response = Response(c.html())
+            response.status_int = 500
+            return response
+    else:
+        response = Response('Can not find a Task with id: %s' % task_id)
+        response.status_int = 500
+        return response
+
+    response = Response('Successfully deleted task: %s' % task_id)
+    response.status_int = 200
+    return response
