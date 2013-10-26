@@ -1,6 +1,6 @@
 {% extends "base.jinja2" %}
 
-{#PRE-HEADER #}
+{# Pre-Header #}
 {% block pre_header %}
 
     {% include 'task/list_tasks_preheader.jinja2' %}
@@ -9,14 +9,15 @@
 
 {% endblock pre_header %}
 
-{#SIDEBAR#}
+
+{# Sidebar #}
 {% block sidebar %}
 
     {% include 'sidebar.jinja2' %}
 
 {% endblock sidebar %}
 
-{#BREADCRUMBS#}
+{# Breadcrumbs #}
 {% block breadcrumbs %}
 
     {% set listed_type=task.plural_class_name %}
@@ -25,8 +26,13 @@
 
 {% endblock breadcrumbs %}
 
+{# Modals #}
+{% block modals %}
+    {% include '/modals/dialog_template.jinja2' %}
+{% endblock modals%}
 
-{#PAGE-CONTENT#}
+
+{# Page-Content #}
 {% block page_content %}
     <div class="row-fluid">
 
@@ -115,7 +121,7 @@
     <div class="row-fluid">
         <div class="span12">
             <div class="tabbable">
-                <ul class="nav nav-tabs">
+                <ul class="nav nav-tabs" id="task_tabs">
                     <li class="active">
                         <a href="#task_dashboard" data-toggle="tab">
                             <i class="icon-dashboard"></i> Dashboard
@@ -165,38 +171,15 @@
 
 {#EXTRA-SCRIPTS#}
 {% block extrascripts %}
-{#    <script type="text/javascript" src='{{ request.static_url("stalker_pyramid:static/ace/js/dropzone.min.js") }}'></script>#}
-{#    <!--inline scripts related to this page-->#}
-{##}
-{#    <script type="text/javascript">#}
-{#        jQuery(function ($) {#}
-{#            try {#}
-{#                $(".dropzone").dropzone({#}
-{#                    paramName: "file", // The name that will be used to transfer the file#}
-{#                    maxFilesize: 0.5, // MB#}
-{##}
-{#                    addRemoveLinks: true,#}
-{#                    dictDefaultMessage: '<span class="bigger-150 bolder"><i class="icon-caret-right red"></i> Drop files</span> to upload \#}
-{#<span class="smaller-80 grey">(or click)</span> <br /> \#}
-{#<i class="upload-icon icon-cloud-upload blue icon-3x"></i>',#}
-{#                    dictResponseError: 'Error while uploading file!',#}
-{##}
-{#//change the previewTemplate to use Bootstrap progress bars#}
-{#                    previewTemplate: "<div class=\"dz-preview dz-file-preview\">\n  <div class=\"dz-details\">\n    <div class=\"dz-filename\"><span data-dz-name></span></div>\n    <div class=\"dz-size\" data-dz-size></div>\n    <img data-dz-thumbnail />\n  </div>\n  <div class=\"progress progress-small progress-success progress-striped active\"><span class=\"bar\" data-dz-uploadprogress></span></div>\n  <div class=\"dz-success-mark\"><span></span></div>\n  <div class=\"dz-error-mark\"><span></span></div>\n  <div class=\"dz-error-message\"><span data-dz-errormessage></span></div>\n</div>"#}
-{#                });#}
-{#            } catch (e) {#}
-{#                //alert('Dropzone.js does not support older browsers!');#}
-{#                //alert(e);#}
-{#            }#}
-{#        });#}
-{#    </script>#}
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootstrap-tag.min.js") }}'></script>
+    <script type="text/javascript" src='{{ request.static_url("stalker_pyramid:static/ace/js/dropzone.min.js") }}'></script>
+
     <script>
         $(function(){
             // There is a bug in gantt chart when it is included as a secondary
             // element in another template, where it renders all the items on
             // top each other
-            $('.nav.nav-tabs a:nth-child(1)').tab().on('shown', function(){
-                console.debug('this is working here!');
+            $('#task_tabs li:nth-child(2) a').tab().on('shown', function(){
                 $('#gantt_refresh_button').trigger('click');
             });
         });

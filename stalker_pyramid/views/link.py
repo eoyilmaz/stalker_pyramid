@@ -29,10 +29,12 @@ from stalker.db import DBSession
 from pyramid.response import Response
 
 from pyramid.view import view_config
-from pyramid.httpexceptions import HTTPServerError, HTTPOk
+from pyramid.httpexceptions import HTTPOk
+
 import transaction
 
-from stalker_pyramid.views import PermissionChecker, get_logged_in_user, get_multi_integer, get_tags
+from stalker_pyramid.views import (get_logged_in_user, get_multi_integer,
+                                   get_tags, StdErrToHTMLConverter)
 
 
 logger = logging.getLogger(__name__)
@@ -45,37 +47,29 @@ logger.setLevel(logging.DEBUG)
 )
 def upload_files(request):
     """uploads a list of files to the server, creates Link instances in server
-    and returns the created link ids to the UI to let the front end request a
-    linkage between the entity and the uploaded files
+    and returns the created link ids with a response to let the front end
+    request a linkage between the entity and the uploaded files
     """
     # decide if it is single or multiple files
-    if request.POST.has_key('uploadedfiles[]'):
-        # it is multiple files
-        file_params = request.POST.getall('uploadedfiles[]')
-    else:
-        # it should be single file
-        file_params = [request.POST.get('uploadedfile')]
+    file_params = request.POST.getall('file')
+    logger.debug('file_params: %s ' % file_params)
 
     try:
         new_links = upload_files_to_server(request, file_params)
-    except IOError:
-        HTTPServerError()
+    except IOError as e:
+        c = StdErrToHTMLConverter(e)
+        response = Response(c.html())
+        response.status_int = 500
+        return response
     else:
         # store the link object
         DBSession.add_all(new_links)
 
-        # return [{
-        #     'file': new_link.full_path,
-        #     'name': new_link.original_filename,
-        #     'width': 320,
-        #     'height': 240,
-        #     'type': os.path.splitext(new_link.original_filename)[1],
-        #     'link_id': new_link.id
-        # } for new_link in new_links]
+        logger.debug('created links for uploaded files: %s' % new_links)
+
         return {
             'link_ids': [link.id for link in new_links]
         }
-
 
 @view_config(
     route_name='assign_thumbnail',
@@ -117,22 +111,31 @@ def assign_thumbnail(request):
 def assign_reference(request):
     """assigns the link to the given entity as a new reference
     """
-    link_ids = get_multi_integer(request, 'link_ids')
+    link_ids = get_multi_integer(request, 'link_ids[]')
+    removed_link_ids = get_multi_integer(request, 'removed_link_ids[]')
     entity_id = request.params.get('entity_id', -1)
 
-    links = Link.query.filter(Link.id.in_(link_ids)).all()
     entity = Entity.query.filter_by(id=entity_id).first()
+    links = Link.query.filter(Link.id.in_(link_ids)).all()
+    removed_links = Link.query.filter(Link.id.in_(removed_link_ids)).all()
 
     # Tags
+    logger.debug('request.POST: %s' % request.POST)
     tags = get_tags(request)
 
     logged_in_user = get_logged_in_user(request)
 
-    logger.debug('link_ids  : %s' % link_ids)
-    logger.debug('links     : %s' % links)
-    logger.debug('entity_id : %s' % entity_id)
-    logger.debug('entity    : %s' % entity)
-    logger.debug('tags      : %s' % tags)
+    logger.debug('link_ids      : %s' % link_ids)
+    logger.debug('links         : %s' % links)
+    logger.debug('entity_id     : %s' % entity_id)
+    logger.debug('entity        : %s' % entity)
+    logger.debug('tags          : %s' % tags)
+    logger.debug('removed_links : %s' % removed_links)
+
+    # remove all the removed links
+    for removed_link in removed_links:
+        # no need to search for any linked tasks here
+        DBSession.delete(removed_link)
 
     if entity and links:
         entity.references.extend(links)

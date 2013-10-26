@@ -109,8 +109,8 @@ def main(global_config, **settings):
     # *************************************************************************
     # Entities
 
-    config.add_route('dialog_upload_entity_thumbnail', 'entities/{id}/thumbnail/upload/dialog')
-    config.add_route('dialog_upload_entity_reference', 'entities/{id}/references/upload/dialog')
+    config.add_route('upload_entity_thumbnail_dialog', 'entities/{id}/thumbnail/upload/dialog')
+    config.add_route('upload_entity_reference_dialog', 'entities/{id}/references/upload/dialog')
 
     config.add_route('create_entity_users_dialog',     'entities/{id}/users/create/dialog')
 
@@ -160,10 +160,11 @@ def main(global_config, **settings):
     # *************************************************************************
     # Thumbnail References and Links
 
-    config.add_route('get_task_references',  'tasks/{id}/references/') # json
-    config.add_route('get_asset_references', 'assets/id}/references/') # json
-    config.add_route('get_shot_references',  'shots/{id}/references/') # json
-    config.add_route('get_task_versions',    'tasks/{id}/versions/') # json
+    config.add_route('get_task_versions',    'tasks/{id}/versions/')  # json
+
+    config.add_route('get_task_references',  'tasks/{id}/references/')  # json
+    config.add_route('get_asset_references', 'assets/id}/references/')  # json
+    config.add_route('get_shot_references',  'shots/{id}/references/')  # json
 
     config.add_route('get_references',       'references/')
     config.add_route('get_reference',        'references/{id}')

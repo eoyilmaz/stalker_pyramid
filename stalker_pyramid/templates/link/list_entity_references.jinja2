@@ -1,10 +1,38 @@
+{# Stalker Pyramid a Web Base Production Asset Management System
+ Copyright (C) 2009-2013 Erkan Ozgur Yilmaz
 
+ This file is part of Stalker Pyramid.
+
+ This library is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation;
+ version 2.1 of the License.
+
+ This library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Lesser General Public License for more details.
+
+ You should have received a copy of the GNU Lesser General Public
+ License along with this library; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+#}
 <div class="row-fluid">
     <div class="span12">
         <!--PAGE CONTENT BEGINS-->
         <div class="row-fluid">
         </div>
         <!--PAGE CONTENT ENDS-->
+
+        <button data-target="#dialog_template"
+                data-toggle="modal"
+                data-keyboard="false"
+                href="{{ request.route_url('upload_entity_reference_dialog', id=entity.id) }}"
+                class="btn btn-small btn-danger">
+            <i class="icon-cloud-upload bigger-120"></i>
+            Upload References
+        </button>
+
         <ul class="ace-thumbnails">
             {% for reference in references %}
                 {% include 'link/list_item_reference.jinja2' %}
@@ -67,7 +95,10 @@
                         // use he response text and give info
                         
                         // and also delete the HTML element
-                        $('#Reference_' + ref_id).toggle('slow').remove();
+                        
+                        $('#Reference_' + ref_id).toggle('slow', function(){
+                            $(this).remove();
+                        })
                     }).fail(function(jqXHR){
                         // us the jqXHR.response_text and inform user about what is wrong
                     });

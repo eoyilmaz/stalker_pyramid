@@ -141,12 +141,12 @@ logger.setLevel(logging.DEBUG)
     renderer='templates/content_nav_bar.jinja2',
 )
 @view_config(
-    route_name='dialog_upload_entity_reference',
-    renderer='templates/link/dialog_upload_reference.jinja2'
+    route_name='upload_entity_reference_dialog',
+    renderer='templates/link/dialogs/upload_reference_dialog.jinja2'
 )
 @view_config(
-    route_name='dialog_upload_entity_thumbnail',
-    renderer='templates/link/dialog_upload_thumbnail.jinja2'
+    route_name='upload_entity_thumbnail_dialog',
+    renderer='templates/link/dialogs/upload_thumbnail_dialog.jinja2'
 )
 @view_config(
     route_name='list_task_time_logs',

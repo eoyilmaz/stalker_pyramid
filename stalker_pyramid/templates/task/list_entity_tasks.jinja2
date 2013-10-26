@@ -8,15 +8,6 @@
      {% include 'task/task_dialog_template.jinja2' %}
 {% endblock modals%}
 
-{% block post_header %}
-    <style>
-        /* Fix expando triangle after bootstrap */
-        .dgrid-expando-icon {
-            position: inherit;
-        }
-    </style>
-{% endblock post_header %}
-
 {% block breadcrumbs %}
     {% set page_title='Tasks' %}
     {% include 'breadcrumbs.jinja2' %}
