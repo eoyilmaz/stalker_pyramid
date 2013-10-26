@@ -33,12 +33,6 @@
             Upload References
         </button>
 
-        <button id="refresh_references"
-                class="btn btn-small btn-warning">
-            <i class="icon-refresh"></i>
-            Refresh
-        </button>
-
         <ul class="ace-thumbnails"></ul> {# dynamically filled with jQuery #}
 
     </div>
@@ -160,7 +154,7 @@
 
     jQuery(function ($) {
         draw_reference_items();
-        $('#refresh_references').on('click', function(){
+        $('#dialog_template').on('hidden', function(){
             $('.ace-thumbnails>li').remove();
             draw_reference_items();
         });
