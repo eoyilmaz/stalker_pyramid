@@ -107,6 +107,7 @@ def assign_thumbnail(request):
 
 @view_config(
     route_name='assign_reference',
+    renderer='json'
 )
 def assign_reference(request):
     """assigns the link to the given entity as a new reference
@@ -152,7 +153,17 @@ def assign_reference(request):
         DBSession.add(entity)
         DBSession.add_all(links)
 
-    return HTTPOk()
+    # return new links as json data
+    # in response text
+    return [
+        {
+            'id': link.id,
+            'full_path': link.full_path,
+            'original_filename': link.original_filename,
+            'thumbnail': link.thumbnail.full_path if link.thumbnail else link.full_path,
+            'tags': [tag.name for tag in link.tags]
+        } for link in links
+    ]
 
 
 def convert_file_link_to_full_path(link_path):

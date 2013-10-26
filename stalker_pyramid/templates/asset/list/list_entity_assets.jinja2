@@ -57,7 +57,7 @@
                            data-target="#task_dialog"
                            data-toggle="modal"
                            data-keyboard=false
-                           href='{{ request.route_url("project_task_dialog", id=-1, mode='create') }}'>Create
+                           href='{{ request.route_url("project_asset_dialog", id=entity.id, mode='create') }}'>Create
                         </a>
                     </button>
                 </div>
@@ -99,8 +99,7 @@
     {% raw %}
     <script id="tmpl_assetTypeLink" type="text/x-dot-template">
         <li class="">
-            <a href="#{{=it.type_id }}" data-toggle="tab">{{=it.type_name
-                }}</a>
+            <a href="#{{=it.type_id }}" data-toggle="tab">{{=it.type_name}}</a>
         </li>
     </script>
     {% endraw %}

@@ -171,9 +171,13 @@
                 link_ids: link_ids,
                 removed_link_ids: removed_link_ids,
                 tags: tags_list
-            }).done(function(){
+            }).done(function(jqXHR){
                 // alert the user about the added files
                 // reload references
+                // get the data in jqXHR
+                console.debug('jqXHR : ', jqXHR);
+                $('#new_references_storage').text(JSON.stringify(jqXHR));
+
                 $('#dialog_template').modal('hide');
             }).fail(function(){
                 // alert the user about what is failed

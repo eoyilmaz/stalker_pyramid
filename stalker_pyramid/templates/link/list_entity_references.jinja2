@@ -33,7 +33,10 @@
             Upload References
         </button>
 
+        <div id="new_references_storage" class="hidden"></div>
+
         <ul class="ace-thumbnails"></ul> {# dynamically filled with jQuery #}
+
 
     </div>
 </div>
@@ -102,26 +105,34 @@
         }
     };
 
+    var append_thumbnail = function(data, template, animate){
+        //
+        // adds only one item to the list
+        //
+        // compile the reference item template
+        var ref_item = $($.parseHTML(template(data)));
+        if (animate){
+            ref_item.css({display: 'none'});
+        }
+        $('.ace-thumbnails').append(ref_item);
+        if (animate){
+            ref_item.toggle('slow');
+        }
+    }
 
     var draw_reference_items = function(){
         //
         // Draws reference items
         //
-
-        // compile the reference item template
         var referenceItemTemplate = doT.template(document.getElementById('tmpl_reference_item').text);
-
-        var ace_thumbnails = $('.ace-thumbnails');
 
         // now generate the template items
         $.getJSON('/entities/{{ entity.id }}/references/').then(function(data){
             var ref_count = data.length;
-            var ref_item;
             for (var i=0; i < ref_count; i++){
-                ref_item = $($.parseHTML(referenceItemTemplate(data[i])));
-                ace_thumbnails.append(ref_item);
+                append_thumbnail(data[i], referenceItemTemplate);
             }
-        }).then(function(){
+
             $('.ace-thumbnails [data-rel="colorbox"]').colorbox(colorbox_params);
             $("#cboxLoadingGraphic").append("<i class='icon-spinner orange'></i>");
 
@@ -137,9 +148,8 @@
                         var url = '/references/' + ref_id + '/delete';
                         $.post(url).done(function(response_text){
                             // use he response text and give info
-                            
+
                             // and also delete the HTML element
-                            
                             $('#Reference_' + ref_id).toggle('slow', function(){
                                 $(this).remove();
                             })
@@ -153,10 +163,19 @@
     };
 
     jQuery(function ($) {
+        // for initial one
         draw_reference_items();
+
+        // and add the new thumbnails when uploaded through Dropzone
         $('#dialog_template').on('hidden', function(){
-            $('.ace-thumbnails>li').remove();
-            draw_reference_items();
+            // get the data from the storage
+            var data = $.parseJSON($('#new_references_storage').text());
+            // empty the storage
+            $('#new_references_storage').text('');
+            var referenceItemTemplate = doT.template(document.getElementById('tmpl_reference_item').text);
+            for (var i=0; i < data.length; i++){
+                append_thumbnail(data[i], referenceItemTemplate, true);
+            }
         });
     });
 </script>

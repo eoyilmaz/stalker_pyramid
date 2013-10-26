@@ -775,7 +775,7 @@ def get_project_tasks(request):
 def create_data_dialog(request, entity_type='Task'):
     """a generic function which will create a dictionary with enough data
     """
-    #logged_in_user = get_logged_in_user(request)
+    logged_in_user = get_logged_in_user(request)
 
     project_id = request.matchdict.get('id', -1)
     #logger.debug('project_id : %s' % project_id)
