@@ -148,7 +148,7 @@ define([
                         },
                         formatter: function (object) {
                             var p_complete, p_complete_str, p_complete_rounded, bg_color, font_weight;
-                            p_complete = object.total_logged_seconds / object.schedule_seconds * 100;
+                            p_complete = object.schedule_seconds > 0 ? object.total_logged_seconds / object.schedule_seconds * 100 : 0;
 
                             font_weight = 'normal';
 
@@ -192,25 +192,26 @@ define([
                                 'w': 'Week',
                                 'm': 'Month',
                                 'y': 'Year'
-                            },
-                                timing = '';
+                            }, timing = '';
 
-                            if (!object.hasChildren) {
-                                // do not add schedule model if it is the default (effort)
-                                if (object.schedule_model !== 'effort') {
-                                    timing += object.schedule_model.toUpperCase()[0] + ': ';
-                                }
-                                if (Math.floor(object.schedule_timing) === object.schedule_timing) {
-                                    timing += object.schedule_timing;
-                                } else {
-                                    timing += (object.schedule_timing).toFixed(1);
-                                }
+                            if (object.type !== 'Project') {
+                                if (!object.hasChildren) {
+                                    // do not add schedule model if it is the default (effort)
+                                    if (object.schedule_model !== 'effort') {
+                                        timing += object.schedule_model.toUpperCase()[0] + ': ';
+                                    }
+                                    if (Math.floor(object.schedule_timing) === object.schedule_timing) {
+                                        timing += object.schedule_timing;
+                                    } else {
+                                        timing += (object.schedule_timing).toFixed(1);
+                                    }
 
-                                timing += ' ' + time_unit_names[object.schedule_unit];
+                                    timing += ' ' + time_unit_names[object.schedule_unit];
 
-                                // make it plural
-                                if (object.schedule_timing > 1) {
-                                    timing += 's';
+                                    // make it plural
+                                    if (object.schedule_timing > 1) {
+                                        timing += 's';
+                                    }
                                 }
                             }
                             return timing;

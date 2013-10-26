@@ -225,7 +225,7 @@ def get_users(request):
     """returns all the users in database
     """
     # if there is a simple flag, just return ids and names and login
-    simple = request.GET.get('simple')
+    simple = request.params.get('simple')
 
     # if there is an id it is probably a project
     pid = request.matchdict.get('id')
@@ -287,7 +287,7 @@ def get_users(request):
 #     entity_id = request.matchdict.get('id', -1)
 #     entity = Entity.query.filter_by(id=entity_id).first()
 #
-#     simple = request.GET.get('simple', False)
+#     simple = request.params.get('simple', False)
 #
 #     # works for Departments and Projects or any entity that has users attribute
 #     if simple:
@@ -641,7 +641,7 @@ def home(request):
     studio = Studio.query.first()
     projects = Project.query.all()
 
-    flash_message = request.GET.get('flash')
+    flash_message = request.params.get('flash')
     if flash_message:
         request.session.flash(flash_message)
 

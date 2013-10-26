@@ -28,9 +28,16 @@ from stalker import Tag
 def get_tags(request):
     """returns all the tags in database
     """
-    return [
-        {'name': tag.name,
-         'id': tag.id
-        }
-        for tag in Tag.query.all()
-    ]
+    as_list = request.params.get('as_list')
+    if as_list:
+        return [
+            tag.name
+            for tag in Tag.query.all()
+        ]
+    else:
+        return [
+            {'name': tag.name,
+             'id': tag.id
+            }
+            for tag in Tag.query.all()
+        ]

@@ -240,25 +240,25 @@ def get_color_as_int(request, attr_name):
     return int(request.params.get(attr_name, '#000000')[1:], 16)
 
 
-def get_tags(request):
+def get_tags(request, parameter='tags[]'):
     """Extracts Tags from the given request
 
     :param request: Request object
     :return: A list of stalker.models.tag.Tag instances
     """
-
     # Tags
     tags = []
-    tag_names = request.POST.getall('tag_names')
+    tag_names = request.POST.getall(parameter)
     for tag_name in tag_names:
-        logger.debug('tag_name %s' % tag_name)
+        logger.debug('tag_name : %s' % tag_name)
+        if tag_name == '':
+            continue
         tag = Tag.query.filter(Tag.name == tag_name).first()
         if not tag:
             logger.debug('new tag is created %s' % tag_name)
             tag = Tag(name=tag_name)
             DBSession.add(tag)
         tags.append(tag)
-
     return tags
 
 

@@ -37,11 +37,8 @@
 
 {# MODALS #}
 {% block modals %}
-
-    {% include 'modals/dialog_template.jinja2' %}
-
-{% endblock modals %}
-
+    {% include '/modals/dialog_template.jinja2' %}
+{% endblock modals%}
 
 {#PAGE-CONTENT#}
 {% block page_content %}
@@ -133,7 +130,7 @@
     <div class="row-fluid">
         <div class="span12">
             <div class="tabbable">
-                <ul class="nav nav-tabs">
+                <ul class="nav nav-tabs" id="task_tabs">
                     <li class="active">
                         <a href="#task_versions" data-toggle="tab">
                             <i class="icon-archive"></i> Versions
@@ -193,14 +190,15 @@
 
 
 
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootstrap-tag.min.js") }}'></script>
+    <script type="text/javascript" src='{{ request.static_url("stalker_pyramid:static/ace/js/dropzone.min.js") }}'></script>
 
     <script>
         $(function(){
             // There is a bug in gantt chart when it is included as a secondary
             // element in another template, where it renders all the items on
             // top each other
-            $('.nav.nav-tabs a:nth-child(1)').tab().on('shown', function(){
-                console.debug('this is working here!');
+            $('#task_tabs li:nth-child(2) a').tab().on('shown', function(){
                 $('#gantt_refresh_button').trigger('click');
             });
         });

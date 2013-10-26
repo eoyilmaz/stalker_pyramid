@@ -64,6 +64,8 @@
           href='{{ request.static_url("stalker_pyramid:static/ace/css/jquery-ui-1.10.3.full.min.css") }}'>
     <link rel="stylesheet"
           href='{{ request.static_url("stalker_pyramid:static/ace/css/jquery.gritter.css") }}'>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/colorbox.css") }}'>
 
     <!--fonts-->
     <link rel="stylesheet"
@@ -124,6 +126,8 @@
 
 
     <!--ace settings handler-->
+    <script src='{{ request.static_url("stalker_pyramid:static/jquery/jquery-2.0.3.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.colorbox-min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/uncompressed/ace-extra.js") }}'></script>
 
     {# TEMPLATES #}
@@ -226,16 +230,15 @@
         {% endblock main_container %}
     </div>
 
-    {#        {% block footer %}#}
-    {#            <footer>#}
-    {#                <div id="footer" class='footer'>#}
-    {#                    <div class="container muted credit">#}
-    {#                        <div class="text-center" style='float: left;'>Stalker Pyramid v{{ stalker_pyramid.__version__ }} &copy; 2009-2013 Erkan Ozgur Yilmaz.</div>#}
-    {#                        <div class='text-right' style="float:right;"><a href='http://www.glyphicons.com/'>GLYPHICONS.com</a></div>#}
-    {#                    </div>#}
-    {#                </div>#}
-    {#            </footer>#}
-    {#        {% endblock footer %}#}
+{#        {% block footer %}#}
+{#            <footer>#}
+{#                <div id="footer" class='footer'>#}
+{#                    <div class="container muted credit">#}
+{#                        <div class="text-center" style='float: left;'>Stalker Pyramid &copy; 2009-2013 Erkan Ozgur Yilmaz.</div>#}
+{#                    </div>#}
+{#                </div>#}
+{#            </footer>#}
+{#        {% endblock footer %}#}
 {% endblock content %}
 
 {# MODALS #}
@@ -244,7 +247,7 @@
 
 {# SCRIPTS #}
 {% block scripts %}
-    <script src='{{ request.static_url("stalker_pyramid:static/jquery/jquery-2.0.3.min.js") }}'></script>
+{#    <script src='{{ request.static_url("stalker_pyramid:static/jquery/jquery-2.0.3.min.js") }}'></script>#}
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery-ui-1.10.3.full.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.ui.touch-punch.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootstrap.min.js") }}'></script>

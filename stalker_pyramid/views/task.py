@@ -47,10 +47,6 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 
-# def walk_task_hierarchy(starting_task):
-#     """
-#     """
-
 def duplicate_task(task):
     """Duplicates the given task without children.
 
@@ -255,7 +251,7 @@ def convert_to_dgrid_gantt_project_format(projects):
         {
             'bid_timing': project.duration.days,
             'bid_unit': 'd',
-            'completed': project.total_logged_seconds / project.schedule_seconds,
+            'completed': project.total_logged_seconds / project.schedule_seconds if project.schedule_seconds else 0,
             'description': project.description,
             'end': milliseconds_since_epoch(
                 project.computed_end if project.computed_end else project.end),
@@ -502,13 +498,16 @@ def depth_first_flatten(task, task_array=None):
 def get_tasks(request):
     """RESTful version of getting all tasks
     """
-    # logger.debug('request.GET: %s' % request.GET)
-    parent_id = request.GET.get('parent_id')
-    task_id = request.GET.get('task_id')
+    parent_id = request.params.get('parent_id')
+    task_id = request.params.get('task_id')
 
-    return_data = None
+    #logger.debug('parent_id: %s' % parent_id)
+    #logger.debug('task_id  : %s' % task_id)
+
+    return_data = []
     # set the content range to prevent JSONRest Store to query the data twice
     content_range = '%s-%s/%s'
+    tasks = []
     if task_id:
         task = Entity.query.filter(Entity.id == task_id).first()
         if isinstance(task, Project):
@@ -555,19 +554,22 @@ def get_entity_tasks(request):
     entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter(Entity.id == entity_id).first()
 
-    parent_id = request.GET.get('parent_id')
+    #logger.debug('entity_id : %s' % entity_id)
+    #logger.debug('entity    : %s' % entity)
+
+    parent_id = request.params.get('parent_id')
     parent = Entity.query.filter_by(id=parent_id).first()
 
     # logger.debug('parent_id : %s' % parent_id)
     # logger.debug('parent    : %s' % parent)
 
-    return_data = None
+    return_data = []
     # set the content range to prevent JSONRest Store to query the data twice
     content_range = '%s-%s/%s'
 
     if entity:
         if parent:
-            logger.debug('there is a parent')
+            #logger.debug('there is a parent')
             tasks = []
             if isinstance(entity, User):
                 # get user tasks
@@ -599,7 +601,7 @@ def get_entity_tasks(request):
 
             return_data = convert_to_dgrid_gantt_task_format(tasks)
         else:
-            logger.debug('no parent')
+            #logger.debug('no parent')
             # no parent,
             # just return projects of the entity
             entity_projects = []
@@ -639,7 +641,7 @@ def get_task(request):
     elif isinstance(entity, Project):
         return_data = convert_to_dgrid_gantt_project_format([entity])
 
-    logger.debug('return_data: %s' % return_data)
+    #logger.debug('return_data: %s' % return_data)
 
     return return_data
 
@@ -667,7 +669,7 @@ def get_gantt_tasks(request):
     entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
 
-    logger.debug('entity : %s' % entity)
+    #logger.debug('entity : %s' % entity)
 
     tasks = []
     if entity:
@@ -773,16 +775,16 @@ def get_project_tasks(request):
 def create_data_dialog(request, entity_type='Task'):
     """a generic function which will create a dictionary with enough data
     """
-    logged_in_user = get_logged_in_user(request)
+    #logged_in_user = get_logged_in_user(request)
 
     project_id = request.matchdict.get('id', -1)
-    logger.debug('project_id : %s' % project_id)
+    #logger.debug('project_id : %s' % project_id)
     project = Project.query.filter_by(id=project_id).first()
 
-    parent_id = request.GET.get('parent_id')
-    logger.debug('parent_id  : %s' % parent_id)
+    parent_id = request.params.get('parent_id')
+    #logger.debug('parent_id  : %s' % parent_id)
     parent = Task.query.filter_by(id=parent_id).first()
-    logger.debug('parent     : %s' % parent)
+    #logger.debug('parent     : %s' % parent)
 
     dependent_ids = get_multi_integer(request, 'dependent_id', 'GET')
     dependencies = Task.query.filter(Task.id.in_(dependent_ids)).all()
@@ -1119,7 +1121,7 @@ def auto_schedule_tasks(request):
             response.status_int = 200
             return response
         except RuntimeError as e:
-            logger.debug('%s' % e.message)
+            #logger.debug('%s' % e.message)
             c = StdErrToHTMLConverter(e)
             response = Response(c.html())
             response.status_int = 500
@@ -1258,12 +1260,11 @@ def get_entity_tasks_stats(request):
     entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
 
-    logger.debug('user_id : %s' % entity_id)
+    #logger.debug('user_id : %s' % entity_id)
 
     status_list = StatusList.query.filter_by(
-            target_entity_type='Task'
-        ).first()
-
+        target_entity_type='Task'
+    ).first()
 
     join_attr = None
 
@@ -1274,7 +1275,6 @@ def get_entity_tasks_stats(request):
 
     __class__ = entity.__class__
 
-
     status_count_task=[]
 
     #TODO find the correct solution to filter leaf tasks. This does not work.
@@ -1284,10 +1284,40 @@ def get_entity_tasks_stats(request):
             'color':colors[status.name],
             'icon': 'icon-folder-close-alt',
             'count':Task.query.join(entity.__class__, join_attr) \
-                            .filter(__class__.id == entity_id) \
-                            .filter(Task.status_id == status.id) \
-                            .filter(Task.children == None) \
-                            .count()
+                .filter(__class__.id == entity_id) \
+                .filter(Task.status_id == status.id) \
+                .filter(Task.children == None) \
+                .count()
         })
 
     return status_count_task
+
+
+@view_config(
+    route_name='delete_task',
+    permission='Delete_Task'
+)
+def delete_task(request):
+    """deletes the task with the given id
+    """
+    task_id = request.matchdict.get('id')
+    task = Task.query.get(task_id)
+
+    if task:
+        try:
+            DBSession.delete(task)
+            transaction.commit()
+        except Exception as e:
+            transaction.abort()
+            c = StdErrToHTMLConverter(e)
+            response = Response(c.html())
+            response.status_int = 500
+            return response
+    else:
+        response = Response('Can not find a Task with id: %s' % task_id)
+        response.status_int = 500
+        return response
+
+    response = Response('Successfully deleted task: %s' % task_id)
+    response.status_int = 200
+    return response

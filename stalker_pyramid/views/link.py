@@ -1,19 +1,19 @@
 # -*- coding: utf-8 -*-
 # Stalker Pyramid a Web Base Production Asset Management System
 # Copyright (C) 2009-2013 Erkan Ozgur Yilmaz
-# 
+#
 # This file is part of Stalker Pyramid.
-# 
+#
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
 # License as published by the Free Software Foundation;
 # version 2.1 of the License.
-# 
+#
 # This library is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # Lesser General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
@@ -26,12 +26,15 @@ import Image
 
 from stalker import Entity, Link, defaults
 from stalker.db import DBSession
+from pyramid.response import Response
 
 from pyramid.view import view_config
-from pyramid.httpexceptions import HTTPServerError, HTTPOk
+from pyramid.httpexceptions import HTTPOk
+
 import transaction
 
-from stalker_pyramid.views import PermissionChecker, get_logged_in_user, get_multi_integer, get_tags
+from stalker_pyramid.views import (get_logged_in_user, get_multi_integer,
+                                   get_tags, StdErrToHTMLConverter)
 
 
 logger = logging.getLogger(__name__)
@@ -44,37 +47,29 @@ logger.setLevel(logging.DEBUG)
 )
 def upload_files(request):
     """uploads a list of files to the server, creates Link instances in server
-    and returns the created link ids to the UI to let the front end request a
-    linkage between the entity and the uploaded files
+    and returns the created link ids with a response to let the front end
+    request a linkage between the entity and the uploaded files
     """
     # decide if it is single or multiple files
-    if request.POST.has_key('uploadedfiles[]'):
-        # it is multiple files
-        file_params = request.POST.getall('uploadedfiles[]')
-    else:
-        # it should be single file
-        file_params = [request.POST.get('uploadedfile')]
+    file_params = request.POST.getall('file')
+    logger.debug('file_params: %s ' % file_params)
 
     try:
         new_links = upload_files_to_server(request, file_params)
-    except IOError:
-        HTTPServerError()
+    except IOError as e:
+        c = StdErrToHTMLConverter(e)
+        response = Response(c.html())
+        response.status_int = 500
+        return response
     else:
         # store the link object
         DBSession.add_all(new_links)
 
-        # return [{
-        #     'file': new_link.full_path,
-        #     'name': new_link.original_filename,
-        #     'width': 320,
-        #     'height': 240,
-        #     'type': os.path.splitext(new_link.original_filename)[1],
-        #     'link_id': new_link.id
-        # } for new_link in new_links]
+        logger.debug('created links for uploaded files: %s' % new_links)
+
         return {
             'link_ids': [link.id for link in new_links]
         }
-
 
 @view_config(
     route_name='assign_thumbnail',
@@ -116,22 +111,31 @@ def assign_thumbnail(request):
 def assign_reference(request):
     """assigns the link to the given entity as a new reference
     """
-    link_ids = get_multi_integer(request, 'link_ids')
+    link_ids = get_multi_integer(request, 'link_ids[]')
+    removed_link_ids = get_multi_integer(request, 'removed_link_ids[]')
     entity_id = request.params.get('entity_id', -1)
 
-    links = Link.query.filter(Link.id.in_(link_ids)).all()
     entity = Entity.query.filter_by(id=entity_id).first()
+    links = Link.query.filter(Link.id.in_(link_ids)).all()
+    removed_links = Link.query.filter(Link.id.in_(removed_link_ids)).all()
 
     # Tags
+    logger.debug('request.POST: %s' % request.POST)
     tags = get_tags(request)
 
     logged_in_user = get_logged_in_user(request)
 
-    logger.debug('link_ids  : %s' % link_ids)
-    logger.debug('links     : %s' % links)
-    logger.debug('entity_id : %s' % entity_id)
-    logger.debug('entity    : %s' % entity)
-    logger.debug('tags      : %s' % tags)
+    logger.debug('link_ids      : %s' % link_ids)
+    logger.debug('links         : %s' % links)
+    logger.debug('entity_id     : %s' % entity_id)
+    logger.debug('entity        : %s' % entity)
+    logger.debug('tags          : %s' % tags)
+    logger.debug('removed_links : %s' % removed_links)
+
+    # remove all the removed links
+    for removed_link in removed_links:
+        # no need to search for any linked tasks here
+        DBSession.delete(removed_link)
 
     if entity and links:
         entity.references.extend(links)
@@ -330,3 +334,53 @@ def upload_files_to_server(request, file_params):
 
     transaction.commit()
     return links
+
+@view_config(
+    route_name='delete_reference',
+    permission='Delete_Link'
+)
+def delete_reference(request):
+    """deletes the reference with the given ID
+    """
+    ref_id = request.matchdict.get('id')
+    ref = Link.query.get(ref_id)
+
+    files_to_remove = []
+    if ref:
+        original_filename = ref.original_filename
+        # check if it has a thumbnail
+        if ref.thumbnail:
+            # remove the file first
+            files_to_remove.append(ref.thumbnail.full_path)
+
+            # delete the thumbnail Link from the database
+            DBSession.delete(ref.thumbnail)
+        # remove the reference itself
+        files_to_remove.append(ref.full_path)
+
+        # delete the ref Link from the database
+        # IMPORTANT: Because there is no link from Link -> Task deleting a Link
+        #            directly will raise an IntegrityError, so remove the Link
+        #            from the associated Task before deleting it
+        from stalker import Task
+        for task in Task.query.filter(Task.references.contains(ref)).all():
+            logger.debug('%s is referencing %s, breaking this relation' % (task, ref))
+            task.references.remove(ref)
+        DBSession.delete(ref)
+
+        # now delete files
+        for f in files_to_remove:
+            # convert the paths to system path
+            f_system = convert_file_link_to_full_path(f)
+            try:
+                os.remove(f_system)
+            except OSError:
+                pass
+
+        response = Response('%s removed successfully' % original_filename)
+        response.status_int = 200
+        return response
+    else:
+        response = Response('No ref with id : %i' % ref_id)
+        response.status_int = 500
+        return response
