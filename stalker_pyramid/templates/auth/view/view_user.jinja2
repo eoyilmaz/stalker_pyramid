@@ -63,8 +63,7 @@
 
                     <div class="space"></div>
 
-                    <div id="calendar"
-                         address='/users/{{ entity.id }}/events/'></div>
+                    <div id="calendar"></div>
 
                 </div>
                 <div class="span3">
@@ -227,7 +226,7 @@
                 }
 
                 drawBarChart('bar_chart', [time_log_data, vacation_data], ticks, colors, labels);
-                drawCalendar(events);
+                drawCalendar('calendar',events);
 
 
             });

@@ -8,7 +8,7 @@
 
 <script type="text/javascript">
 
-    function drawCalendar(events) {
+    function drawCalendar(cid,events) {
 
         var update_event_action = function (eType, eId) {
 
@@ -18,7 +18,7 @@
         /* initialize the calendar
          -----------------------------------------------------------------*/
 
-        var calendar = $('#calendar').fullCalendar({
+        var calendar = $('#'+cid).fullCalendar({
             {% if event_type %}
                 {% if has_permission('Create_'+event_type) %}
 

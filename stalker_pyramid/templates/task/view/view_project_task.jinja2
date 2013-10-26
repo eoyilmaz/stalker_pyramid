@@ -5,6 +5,16 @@
 
     {% include 'task/list/list_tasks_preheader.jinja2' %}
 
+     <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/fullcalendar.css") }}'/>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/bootstrap-timepicker.css") }}'/>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/datepicker.css") }}'/>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/daterangepicker.css") }}'/>
+
+
 {#    <link rel="stylesheet" href='{{ request.static_url("stalker_pyramid:static/ace/css/dropzone.css") }}' />#}
 
 {% endblock pre_header %}
@@ -24,6 +34,13 @@
     {% include 'breadcrumbs_detail.jinja2' %}
 
 {% endblock breadcrumbs %}
+
+{# MODALS #}
+{% block modals %}
+
+    {% include 'modals/dialog_template.jinja2' %}
+
+{% endblock modals %}
 
 
 {#PAGE-CONTENT#}
@@ -123,8 +140,8 @@
                         </a>
                     </li>
                     <li class="">
-                        <a href="#task_dashboard" data-toggle="tab">
-                            <i class="icon-dashboard"></i> Dashboard
+                        <a href="#task_timelogs" data-toggle="tab">
+                            <i class="icon-dashboard"></i> Timelogs
                         </a>
                     </li>
                     <li class="">
@@ -147,8 +164,8 @@
                         <div class="row-fluid" id="version_table_row"></div>
 
                     </div>
-                    <div class="tab-pane fade " id="task_dashboard">
-                        task_dashboard
+                    <div class="tab-pane fade " id="task_timelogs">
+                        <div id="calendar"></div>
                     </div>
                     <div class="tab-pane fade" id="task_tasks">
                         {% set entity = task %}
@@ -174,7 +191,7 @@
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.dataTables.bootstrap.js") }}'></script>
 
 
-    {% include 'version/list_entity_versions.jinja2' %}
+
 
 
     <script>
@@ -185,6 +202,48 @@
             $('.nav.nav-tabs a:nth-child(1)').tab().on('shown', function(){
                 console.debug('this is working here!');
                 $('#gantt_refresh_button').trigger('click');
+            });
+        });
+    </script>
+
+    {% include 'version/list_entity_versions.jinja2' %}
+    {% include 'calendar/calendar.jinja2' %}
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            $.getJSON('/entities/{{ task.id }}/events/?keys=time_log').then(function (data) {
+
+
+                var events = [];
+
+
+                for (var i = 0; i < data.length; i++) {
+
+                    var start_date = new Date(parseInt(data[i].start));
+                    var end_date = new Date(parseInt(data[i].end));
+
+                    var event = {
+                        eId: data[i].id,
+                        entity_type: data[i].entity_type,
+                        title: data[i].title,
+                        start: start_date,
+                        end: end_date,
+                        className: data[i].className,
+                        allDay: data[i].allDay
+                    };
+
+
+
+
+
+                    events.push(event);
+
+                }
+
+                drawCalendar('calendar',events);
+
+
             });
         });
     </script>
