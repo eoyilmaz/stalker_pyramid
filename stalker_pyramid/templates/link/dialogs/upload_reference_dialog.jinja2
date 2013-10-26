@@ -173,6 +173,8 @@
                 tags: tags_list
             }).done(function(){
                 // alert the user about the added files
+                // reload references
+                $('#dialog_template').modal('hide');
             }).fail(function(){
                 // alert the user about what is failed
             });

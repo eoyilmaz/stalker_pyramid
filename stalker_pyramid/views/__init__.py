@@ -241,7 +241,9 @@ def get_tags(request, parameter='tags[]'):
     tags = []
     tag_names = request.POST.getall(parameter)
     for tag_name in tag_names:
-        logger.debug('tag_name %s' % tag_name)
+        logger.debug('tag_name : %s' % tag_name)
+        if tag_name == '':
+            continue
         tag = Tag.query.filter(Tag.name == tag_name).first()
         if not tag:
             logger.debug('new tag is created %s' % tag_name)
