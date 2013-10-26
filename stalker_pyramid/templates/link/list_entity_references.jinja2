@@ -33,13 +33,15 @@
             Upload References
         </button>
 
-        <ul class="ace-thumbnails">
-{#            {% for reference in references %}#}
-{#                {% include 'link/list_item_reference.jinja2' %}#}
-{#            {% endfor %}#}
-        </ul>
+        <button id="refresh_references"
+                class="btn btn-small btn-warning">
+            <i class="icon-refresh"></i>
+            Refresh
+        </button>
+
+        <ul class="ace-thumbnails"></ul> {# dynamically filled with jQuery #}
+
     </div>
-    <!--/.span-->
 </div>
 
 {% raw %}
@@ -79,51 +81,56 @@
 
 
 <script type="text/javascript">
-    jQuery(function ($) {
-        var colorbox_params = {
-            reposition: true,
-            scalePhotos: true,
-            scrolling: false,
-            previous: '<i class="icon-arrow-left"></i>',
-            next: '<i class="icon-arrow-right"></i>',
-            close: '&times;',
-            current: '{current} of {total}',
-            maxWidth: '100%',
-            maxHeight: '100%',
-            title: function(){
-                var url = $(this).attr('href');
-                var original_title = $(this).attr('title');
-                return '<a href="' + url + '" target="_blank">' + original_title + ' (Open In New Window)</a>';
-            },
-            onOpen: function () {
-                document.body.style.overflow = 'hidden';
-            },
-            onClosed: function () {
-                document.body.style.overflow = 'auto';
-            },
-            onComplete: function () {
-                $.colorbox.resize();
-            }
-        };
+
+    var colorbox_params = {
+        reposition: true,
+        scalePhotos: true,
+        scrolling: false,
+        previous: '<i class="icon-arrow-left"></i>',
+        next: '<i class="icon-arrow-right"></i>',
+        close: '&times;',
+        current: '{current} of {total}',
+        maxWidth: '100%',
+        maxHeight: '100%',
+        title: function(){
+            var url = $(this).attr('href');
+            var original_title = $(this).attr('title');
+            return '<a href="' + url + '" target="_blank">' + original_title + ' (Open In New Window)</a>';
+        },
+        onOpen: function () {
+            document.body.style.overflow = 'hidden';
+        },
+        onClosed: function () {
+            document.body.style.overflow = 'auto';
+        },
+        onComplete: function () {
+            $.colorbox.resize();
+        }
+    };
+
+
+    var draw_reference_items = function(){
+        //
+        // Draws reference items
+        //
 
         // compile the reference item template
-        var templates = {};
-        templates.referenceItem = doT.template(document.getElementById('tmpl_reference_item').text);
+        var referenceItemTemplate = doT.template(document.getElementById('tmpl_reference_item').text);
 
         var ace_thumbnails = $('.ace-thumbnails');
-        
+
         // now generate the template items
         $.getJSON('/entities/{{ entity.id }}/references/').then(function(data){
             var ref_count = data.length;
             var ref_item;
             for (var i=0; i < ref_count; i++){
-                ref_item = $($.parseHTML(templates.referenceItem(data[i])));
+                ref_item = $($.parseHTML(referenceItemTemplate(data[i])));
                 ace_thumbnails.append(ref_item);
             }
         }).then(function(){
             $('.ace-thumbnails [data-rel="colorbox"]').colorbox(colorbox_params);
             $("#cboxLoadingGraphic").append("<i class='icon-spinner orange'></i>");
-    
+
             $('.reference-deleter').on('click', function(e){
                 e.preventDefault();
                 e.stopPropagation();
@@ -149,7 +156,13 @@
                 });
             });
         });
+    };
 
-
+    jQuery(function ($) {
+        draw_reference_items();
+        $('#refresh_references').on('click', function(){
+            $('.ace-thumbnails>li').remove();
+            draw_reference_items();
+        });
     });
 </script>
