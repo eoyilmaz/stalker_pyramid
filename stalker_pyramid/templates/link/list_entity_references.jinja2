@@ -34,13 +34,49 @@
         </button>
 
         <ul class="ace-thumbnails">
-            {% for reference in references %}
-                {% include 'link/list_item_reference.jinja2' %}
-            {% endfor %}
+{#            {% for reference in references %}#}
+{#                {% include 'link/list_item_reference.jinja2' %}#}
+{#            {% endfor %}#}
         </ul>
     </div>
     <!--/.span-->
 </div>
+
+{% raw %}
+<script id="tmpl_reference_item" type="text/x-dot-template">
+    <li id="Reference_{{=it.id}}">
+        <a href="/{{=it.full_path}}"
+           title="{{=it.original_filename}}"
+           data-rel="colorbox"
+           class="cboxElement">
+            <div style="text-align: center; overflow: hidden; width: 150px">
+                <img alt="150x150"
+                     style="height: 150px; width: auto; max-width: none;
+                            position: relative; left: 100%; margin-left: -200%;"
+                     src="/{{=it.thumbnail ? it.thumbnail : '/static/stalker/images/Placeholder_0.png' }}">
+                <div class="tags">
+                  {{~ it.tags :t}}
+                    <span class="label label-info">{{=t}}</span>
+                  {{~}}
+                </div>
+            </div>
+        </a>
+
+        <div class="tools">
+            <a href="/{{=it.full_path}}" target="_blank">
+                <i class="icon-link"></i>
+            </a>
+    
+            <a class='reference-deleter' ref_id="{{=it.id}}" href="#">
+                <i class="icon-remove red"></i>
+            </a>
+        </div>
+    </li>
+</script>
+{% endraw %}
+
+
+
 
 <script type="text/javascript">
     jQuery(function ($) {
@@ -70,40 +106,50 @@
             }
         };
 
+        // compile the reference item template
+        var templates = {};
+        templates.referenceItem = doT.template(document.getElementById('tmpl_reference_item').text);
 
-        $('.ace-thumbnails [data-rel="colorbox"]').colorbox(colorbox_params);
-        $("#cboxLoadingGraphic").append("<i class='icon-spinner orange'></i>");//let's add a custom loading icon
-
-        /**$(window).on('resize.colorbox', function() {
-            try {
-                //this function has been changed in recent versions of colorbox, so it won't work
-                $.fn.colorbox.load();//to redraw the current frame
-            } catch(e){}
-        });*/
-
-        $('.reference-deleter').on('click', function(e){
-            e.preventDefault();
-            e.stopPropagation();
-            var self = $(this);
-            bootbox.confirm('Delete ?', function(response){
-                if(response){
-                    var ref_id = self.attr('ref_id');
-                    console.debug('will delete ' + ref_id);
-                    // remove the reference in the server
-                    var url = '/references/' + ref_id + '/delete';
-                    $.post(url).done(function(response_text){
-                        // use he response text and give info
-                        
-                        // and also delete the HTML element
-                        
-                        $('#Reference_' + ref_id).toggle('slow', function(){
-                            $(this).remove();
-                        })
-                    }).fail(function(jqXHR){
-                        // us the jqXHR.response_text and inform user about what is wrong
-                    });
-                }
+        var ace_thumbnails = $('.ace-thumbnails');
+        
+        // now generate the template items
+        $.getJSON('/entities/{{ entity.id }}/references/').then(function(data){
+            var ref_count = data.length;
+            var ref_item;
+            for (var i=0; i < ref_count; i++){
+                ref_item = $($.parseHTML(templates.referenceItem(data[i])));
+                ace_thumbnails.append(ref_item);
+            }
+        }).then(function(){
+            $('.ace-thumbnails [data-rel="colorbox"]').colorbox(colorbox_params);
+            $("#cboxLoadingGraphic").append("<i class='icon-spinner orange'></i>");
+    
+            $('.reference-deleter').on('click', function(e){
+                e.preventDefault();
+                e.stopPropagation();
+                var self = $(this);
+                bootbox.confirm('Delete ?', function(response){
+                    if(response){
+                        var ref_id = self.attr('ref_id');
+                        console.debug('will delete ' + ref_id);
+                        // remove the reference in the server
+                        var url = '/references/' + ref_id + '/delete';
+                        $.post(url).done(function(response_text){
+                            // use he response text and give info
+                            
+                            // and also delete the HTML element
+                            
+                            $('#Reference_' + ref_id).toggle('slow', function(){
+                                $(this).remove();
+                            })
+                        }).fail(function(jqXHR){
+                            // us the jqXHR.response_text and inform user about what is wrong
+                        });
+                    }
+                });
             });
         });
+
+
     });
 </script>

@@ -226,13 +226,11 @@ def get_entity_references(request):
     if entity:
         return [
             {
+                'id': link.id,
                 'full_path': link.full_path,
                 'original_filename': link.original_filename,
                 'thumbnail': link.thumbnail.full_path if link.thumbnail else link.full_path,
-                'tags': [{
-                    'id': tag.id,
-                    'name': tag.name
-                } for tag in link.tags]
+                'tags': [tag.name for tag in link.tags]
             } for link in entity.references]
     return []
 
