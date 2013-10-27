@@ -22,7 +22,8 @@ import datetime
 # from deform import widget
 # import deform
 
-from pyramid.httpexceptions import HTTPFound, HTTPOk, HTTPServerError
+from pyramid.httpexceptions import HTTPFound, HTTPOk, HTTPServerError, HTTPForbidden
+from pyramid.response import Response
 from pyramid.security import authenticated_userid, forget, remember
 from pyramid.view import view_config, forbidden_view_config
 from sqlalchemy import or_
@@ -32,7 +33,7 @@ from stalker import (defaults, User, Department, Group, Project, Entity,
                      Studio, Permission, EntityType, Task, Vacation)
 from stalker.db import DBSession
 from stalker_pyramid.views import (log_param, get_logged_in_user,
-                                   PermissionChecker, get_multi_integer, get_tags, milliseconds_since_epoch)
+                                   PermissionChecker, get_multi_integer, get_tags, milliseconds_since_epoch, multi_permission_checker)
 
 import logging
 
@@ -402,16 +403,17 @@ def append_users_to_entity(request):
 
 
 @view_config(
-    route_name='append_user_to_group'
+    route_name='append_user_to_group',
+    permission='Update_Group'
 )
 @view_config(
-    route_name='append_user_to_department'
+    route_name='append_user_to_department',
+    permission='Update_Department'
 )
 def append_user_to_entity(request):
     """appends the given user to the given Project or Department or Group
     """
     # This is an unused method
-
     # user
     user_id = request.params.get('id', None)
     user = User.query.filter(User.id == user_id).first()
@@ -419,6 +421,13 @@ def append_user_to_entity(request):
     # entity
     entity_id = request.params.get('entity_id', None)
     entity = Entity.query.filter(Entity.id == entity_id).first()
+
+    if entity.entity_type == 'Group':
+        multi_permission_checker(request, ['Update_User', 'Update_Group'])
+    else:
+        multi_permission_checker(request, ['Update_User', 'Update_Department'])
+
+
 
     if user and entity:
         entity.users.append(user)
@@ -483,8 +492,16 @@ def append_user_to_groups(request):
 def append_user_to_departments(request):
     """appends the given department to the given User
     """
-    # departments
+    # check required permissions
+    if not multi_permission_checker(
+            request, ['Update_User', 'Update_Department']):
+        response = Response(
+            'You do not have permission to Update User or Deparment'
+        )
+        response.status_int = 500
+        return response
 
+    # departments
     logger.debug('append_user_to_departments')
 
     department_ids = get_multi_integer(request, 'department_ids')
@@ -503,7 +520,12 @@ def append_user_to_departments(request):
         DBSession.add(user)
         DBSession.add_all(departments)
 
-    return HTTPOk()
+    response = Response(
+        'Successfully added user %s to departments %s' % (user_id,
+                                                          department_ids)
+    )
+    response.status_int = 200
+    return response
 
 
 def get_permissions_from_multi_dict(multi_dict):
@@ -566,7 +588,6 @@ def logout(request):
 
 
 @forbidden_view_config(
-    # renderer='templates/auth/no_permission.jinja2'
     renderer='templates/auth/login.jinja2'
 )
 @view_config(
@@ -703,6 +724,10 @@ def check_email_availability(request):
     renderer='json'
 )
 def get_user_events(request):
+    if not multi_permission_checker(
+            request, ['Read_User', 'Read_TimeLog', 'Read_Vacation']):
+        return HTTPForbidden(headers=request)
+
     logger.debug('get_user_events is running')
 
     user_id = request.matchdict.get('id', -1)
@@ -779,7 +804,8 @@ def get_user_events(request):
 
 @view_config(
     route_name='get_user_efficiency_graphic',
-    renderer='json'
+    renderer='json',
+    permission='Read_User'
 )
 def get_user_efficiency_graphic(request):
     logger.debug('get_user_efficiency_graphic is running')

@@ -103,6 +103,11 @@ class PermissionChecker(object):
         return self.has_permission(perm, self.request.context, self.request)
 
 
+def multi_permission_checker(request, permissions):
+    pc = PermissionChecker(request)
+    return all(map(pc, permissions))
+
+
 def log_param(request, param):
     if param in request.params:
         logger.debug('%s: %s' % (param, request.params[param]))

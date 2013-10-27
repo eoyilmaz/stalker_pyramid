@@ -777,17 +777,26 @@ def create_data_dialog(request, entity_type='Task'):
     """
     logged_in_user = get_logged_in_user(request)
 
-    project_id = request.matchdict.get('id', -1)
-    #logger.debug('project_id : %s' % project_id)
-    project = Project.query.filter_by(id=project_id).first()
+    entity_id = request.matchdict.get('id')
+    entity = Entity.query.get(entity_id)
+
+    project_id = request.params.get('project_id')
+    project = Project.query.get(project_id)
+
+    if not project and entity:
+        project = entity.project
 
     parent_id = request.params.get('parent_id')
-    #logger.debug('parent_id  : %s' % parent_id)
-    parent = Task.query.filter_by(id=parent_id).first()
-    #logger.debug('parent     : %s' % parent)
+    parent = Task.query.get(parent_id)
+
+    if not project and parent:
+        project = parent.project
 
     dependent_ids = get_multi_integer(request, 'dependent_id', 'GET')
     dependencies = Task.query.filter(Task.id.in_(dependent_ids)).all()
+
+    if not project and dependencies:
+        project = dependencies[0].project
 
     mode = request.matchdict.get('mode', None)
 
@@ -797,6 +806,7 @@ def create_data_dialog(request, entity_type='Task'):
         'mode': mode,
         'has_permission': PermissionChecker(request),
         'logged_in_user': logged_in_user,
+        'entity': entity,
         'project': project,
         'parent': parent,
         'dependencies': dependencies,
@@ -808,20 +818,25 @@ def create_data_dialog(request, entity_type='Task'):
 
 
 @view_config(
-    route_name='project_task_dialog',
+    route_name='task_dialog',
     renderer='templates/task/task_dialog.jinja2'
 )
-def create_task_dialog(request):
+def task_dialog(request):
     """called when creating tasks
     """
-    return create_data_dialog(request, entity_type='Task')
+    # get the mode and decide which way to go
+    mode = request.matchdict.get('mode')
+    if mode == 'create':
+        return create_data_dialog(request, entity_type='Task')
+    elif mode == 'update':
+        return update_data_dialog(request, entity_type='Task')
 
 
 @view_config(
     route_name='project_asset_dialog',
     renderer='templates/task/task_dialog.jinja2'
 )
-def create_asset_dialog(request):
+def asset_dialog(request):
     """called when creating assets
     """
     return create_data_dialog(request, entity_type='Asset')
@@ -831,7 +846,7 @@ def create_asset_dialog(request):
     route_name='project_shot_dialog',
     renderer='templates/task/task_dialog.jinja2'
 )
-def create_shot_dialog(request):
+def shot_dialog(request):
     """called when creating shots
     """
     return create_data_dialog(request, entity_type='Shot')
@@ -845,52 +860,6 @@ def create_sequence_dialog(request):
     """called when creating sequences
     """
     return create_data_dialog(request, entity_type='Sequence')
-
-
-@view_config(
-    route_name='dialog_create_child_task',
-    renderer='templates/task/dialog_create_task.jinja2'
-)
-def create_child_task_dialog(request):
-    """generates the info from the given parent task
-    """
-    # TODO: update this so it will use the create_data_dialog()
-    parent_task_id = request.matchdict.get('id', -1)
-    parent_task = Task.query.filter_by(id=parent_task_id).first()
-
-    project = parent_task.project if parent_task else None
-
-    return {
-        'mode': 'CREATE',
-        'has_permission': PermissionChecker(request),
-        'project': project,
-        'parent': parent_task,
-        'schedule_models': defaults.task_schedule_models,
-        'milliseconds_since_epoch': milliseconds_since_epoch
-    }
-
-
-@view_config(
-    route_name='dialog_create_dependent_task',
-    renderer='templates/task/dialog_create_task.jinja2'
-)
-def create_dependent_task_dialog(request):
-    """runs when adding a dependent task
-    """
-    # get the dependee task
-    depends_to_task_id = request.matchdict.get('id', -1)
-    depends_to_task = Task.query.filter_by(id=depends_to_task_id).first()
-
-    project = depends_to_task.project if depends_to_task else None
-
-    return {
-        'mode': 'CREATE',
-        'has_permission': PermissionChecker(request),
-        'project': project,
-        'depends_to': depends_to_task,
-        'schedule_models': defaults.task_schedule_models,
-        'milliseconds_since_epoch': milliseconds_since_epoch
-    }
 
 
 @view_config(
@@ -1098,7 +1067,9 @@ def create_task(request):
         response.status_int = 500
         return response
 
-    return HTTPOk(detail='Task created successfully')
+    response = Response('Task created successfully')
+    response.status_int = 200
+    return response
 
 
 @view_config(

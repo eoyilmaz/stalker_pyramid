@@ -77,8 +77,6 @@ def main(global_config, **settings):
     config.include('pyramid_jinja2')
     config.include('pyramid_mailer')
     config.add_static_view('static', 'static', cache_max_age=3600)
-    config.add_static_view('deform', 'deform:static', cache_max_age=3600)
-    config.add_static_view('deform_bootstrap', 'deform_bootstrap:static', cache_max_age=3600)
 
     # *************************************************************************
     # Basics
@@ -97,7 +95,7 @@ def main(global_config, **settings):
     # SPL : Stalker Pyramid Local
     config.add_route(
         'serve_files',
-        'SPL' + '/{partial_file_path:[a-zA-Z0-9/\.]+}'
+        'SPL/{partial_file_path:[a-zA-Z0-9/\.]+}'
     )
 
     logger.debug(defaults.server_side_storage_path + '/{partial_file_path}')
@@ -118,11 +116,7 @@ def main(global_config, **settings):
     config.add_route('append_users_to_entity',         'entities/{id}/users/append')
     config.add_route('remove_entity_from_entity',      'entities/{id}/{entity_id}/remove')
 
-
-
-
     # get routes returns json
-
     config.add_route('get_entity_users',               'entities/{id}/users/')
     config.add_route('get_entity_users_not',           'entities/{id}/users/not')
     config.add_route('get_entity_references',          'entities/{id}/references/')
@@ -199,11 +193,6 @@ def main(global_config, **settings):
     # Project
     config.add_route('project_dialog',             'projects/{id}/{mode}/dialog')
 
-    config.add_route('project_task_dialog',        'projects/{id}/tasks/{mode}/dialog')
-    config.add_route('project_asset_dialog',       'projects/{id}/assets/{mode}/dialog')
-    config.add_route('project_shot_dialog',        'projects/{id}/shots/{mode}/dialog')
-    config.add_route('project_sequence_dialog',    'projects/{id}/sequences/{mode}/dialog')
-
     config.add_route('get_project_tasks',          'projects/{id}/tasks/')  # json
     config.add_route('get_project_lead',           'projects/{id}/lead/')  # json
 
@@ -235,7 +224,6 @@ def main(global_config, **settings):
 
     config.add_route('get_project_tasks_today',    'projects/{id}/tasks/{action}/today/') # json
     config.add_route('get_project_tasks_in_date',  'projects/{id}/tasks/{action}/{date}/') # json
-
 
     # *************************************************************************
     # ImageFormat
@@ -275,11 +263,8 @@ def main(global_config, **settings):
     config.add_route('user_dialog',             'users/{id}/{mode}/dialog')
     config.add_route('create_user_dialog',      'users/create/dialog')
 
-
     config.add_route('dialog_create_department_user', 'departments/{id}/users/create/dialog')
     config.add_route('dialog_create_group_user',      'groups/{id}/users/create/dialog')
-
-
 
     config.add_route('append_user_to_departments_dialog', 'users/{id}/departments/append/dialog')
     config.add_route('append_user_to_departments', 'users/{id}/departments/append')
@@ -312,7 +297,6 @@ def main(global_config, **settings):
     config.add_route('list_user_time_logs',   'users/{id}/time_logs/list') # html
     config.add_route('list_user_tickets',   'users/{id}/tickets/list') # html
 
-
     config.add_route('view_user_tasks',       'users/{id}/tasks/view') # html
     config.add_route('view_user_versions',    'users/{id}/versions/view')
     config.add_route('view_user_tickets',     'users/{id}/tickets/view')
@@ -342,7 +326,6 @@ def main(global_config, **settings):
     config.add_route('get_status_lists',     'status_lists/')
     config.add_route('get_status_lists_for', 'status_lists_for/{target_entity_type}/')
 
-
     # *************************************************************************
     # Status
     # TODO: separate dialog and action
@@ -358,8 +341,7 @@ def main(global_config, **settings):
 
     # *************************************************************************
     # Assets
-
-    config.add_route('dialog_update_asset', 'assets/{id}/update/dialog')
+    config.add_route('asset_dialog',        'assets/{id}/{mode}/dialog')
 
     config.add_route('create_asset',        'assets/create')
     config.add_route('update_asset',        'assets/{id}/update')
@@ -370,8 +352,7 @@ def main(global_config, **settings):
 
     # *************************************************************************
     # Shots
-    config.add_route('dialog_create_shot', 'projects/{id}/shots/create/dialog')
-    config.add_route('dialog_update_shot', 'shots/{id}/update/dialog')
+    config.add_route('shot_dialog',        'shots/{id}/{mode}/dialog')
 
     config.add_route('create_shot',        'shots/create')
     config.add_route('update_shot',        'shots/{id}/update')
@@ -384,11 +365,10 @@ def main(global_config, **settings):
 
     # *************************************************************************
     # Sequence
-    config.add_route('dialog_create_sequence', 'projects/{id}/sequences/create/dialog')
-    config.add_route('dialog_update_sequence', 'sequences/{id}/update/dialog')
+    config.add_route('sequence_dialog',        'sequences/{id}/{mode}/dialog')
 
-    config.add_route('create_sequence', 'sequences/create')
-    config.add_route('update_sequence', 'sequences/{id}/update')
+    config.add_route('create_sequence',        'sequences/create')
+    config.add_route('update_sequence',        'sequences/{id}/update')
 
     config.add_route('view_sequence',          'sequences/{id}/view')
 
@@ -405,17 +385,11 @@ def main(global_config, **settings):
     # Task
 
     # Dialogs
-    config.add_route('create_child_task_dialog',    'tasks/{id}/create/dialog')
-    config.add_route('dialog_create_asset_task',    'assets/{id}/create/dialog')
-    config.add_route('dialog_create_shot_task',     'shots/{id}/create/dialog')
-    config.add_route('dialog_create_sequence_task', 'sequences/{id}/create/dialog')
-
-    config.add_route('dialog_create_child_task',     'tasks/{id}/child_tasks/create/dialog')
-    config.add_route('dialog_create_dependent_task', 'tasks/{id}/dependent_task/create/dialog')
-    config.add_route('dialog_update_task',           'tasks/{id}/update/dialog')
+    config.add_route('task_dialog',                'tasks/{id}/{mode}/dialog')
 
     config.add_route('create_task',              'tasks/create')
     config.add_route('update_task',              'tasks/{id}/update')
+
     config.add_route('duplicate_task_hierarchy', 'tasks/{id}/duplicate')
 
     config.add_route('view_task',                'tasks/{id}/view')

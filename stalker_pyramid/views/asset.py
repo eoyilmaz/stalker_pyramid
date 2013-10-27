@@ -19,99 +19,26 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 import datetime
 
-from pyramid.httpexceptions import HTTPServerError, HTTPOk
+from pyramid.httpexceptions import HTTPOk
+from pyramid.response import Response
 from pyramid.view import view_config
-from stalker import Project, Type, StatusList, Status, Asset, Studio
+from stalker import Type, Status, Asset
 from stalker.db import DBSession
 
 import logging
-from stalker_pyramid.views import get_logged_in_user, milliseconds_since_epoch
+from stalker_pyramid.views import get_logged_in_user, milliseconds_since_epoch, PermissionChecker
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 
 @view_config(
-    route_name='create_asset'
-)
-def create_asset(request):
-    """creates a new Asset
-    """
-    logger.debug('***create_asset method starts ***')
-
-    logged_in_user = get_logged_in_user(request)
-
-    # get params
-    name = request.params.get('name')
-    code = request.params.get('code')
-    description = request.params.get('description')
-    type_name = request.params.get('type_name')
-
-    status_id = request.params.get('status_id')
-    status = Status.query.filter_by(id=status_id).first()
-
-    project_id = request.params.get('project_id')
-    project = Project.query.filter_by(id=project_id).first()
-    logger.debug('project_id   : %s' % project_id)
-
-    if name and code and type_name and status and  project:
-        # get the type
-        type_ = Type.query\
-            .filter_by(target_entity_type='Asset')\
-            .filter_by(name=type_name)\
-            .first()
-
-        if type_ is None:
-            # create a new Type
-            # TODO: should we check for permission here or will it be already done in the UI (ex. filteringSelect instead of comboBox)
-            type_ = Type(
-                name=type_name,
-                code=type_name,
-                target_entity_type='Asset'
-            )
-
-        # get the status_list
-        status_list = StatusList.query.filter_by(
-            target_entity_type='Asset'
-        ).first()
-
-        # there should be a status_list
-        # TODO: you should think about how much possible this is
-        if status_list is None:
-            return HTTPServerError(detail='No StatusList found')
-
-        # create the asset
-        new_asset = Asset(
-            name=name,
-            code=code,
-            description=description,
-            project=project,
-            type=type_,
-            status_list=status_list,
-            status=status,
-            created_by=logged_in_user
-        )
-
-        DBSession.add(new_asset)
-    else:
-        logger.debug('there are missing parameters')
-        logger.debug('name      : %s' % name)
-        logger.debug('code      : %s' % code)
-        logger.debug('type_name : %s' % type_name)
-        logger.debug('status    : %s' % status)
-        logger.debug('project   : %s' % project)
-        HTTPServerError()
-
-    return HTTPOk()
-
-
-@view_config(
-    route_name='update_asset'
+    route_name='update_asset',
+    permission='Update_Asset'
 )
 def update_asset(request):
     """updates an Asset
     """
-
     logger.debug('***update_asset method starts ***')
     logged_in_user = get_logged_in_user(request)
 
@@ -159,11 +86,13 @@ def update_asset(request):
 
 @view_config(
     route_name='get_entity_assets',
-    renderer='json'
+    renderer='json',
+    permission='List_Asset'
 )
 @view_config(
     route_name='get_project_assets',
-    renderer='json'
+    renderer='json',
+    permission='List_Asset'
 )
 def get_assets(request):
     """returns all the Assets of a given Project
