@@ -3,7 +3,7 @@
 {#PRE-HEADER #}
 {% block pre_header %}
 
-     <link rel="stylesheet"
+    <link rel="stylesheet"
           href='{{ request.static_url("stalker_pyramid:static/ace/css/fullcalendar.css") }}'/>
     <link rel="stylesheet"
           href='{{ request.static_url("stalker_pyramid:static/ace/css/bootstrap-timepicker.css") }}'/>
@@ -12,8 +12,7 @@
     <link rel="stylesheet"
           href='{{ request.static_url("stalker_pyramid:static/ace/css/daterangepicker.css") }}'/>
 
-
-{#    <link rel="stylesheet" href='{{ request.static_url("stalker_pyramid:static/ace/css/dropzone.css") }}' />#}
+    {% include 'charts/chart_preheader.jinja2' %}
 
 {% endblock pre_header %}
 
@@ -24,19 +23,18 @@
 
 {% endblock sidebar %}
 
-{#BREADCRUMBS#}
+{# BREADCRUMBS #}
 {% block breadcrumbs %}
 
-    {% set listed_type=entity.plural_class_name %}
-    {% set page_title=entity.name %}
-    {% include 'breadcrumbs_detail.jinja2' %}
+    {% set page_title='Dashboard' %}
+    {% include 'breadcrumbs_task.jinja2' %}
 
 {% endblock breadcrumbs %}
 
 {# MODALS #}
 {% block modals %}
     {% include '/modals/dialog_template.jinja2' %}
-{% endblock modals%}
+{% endblock modals %}
 
 {#PAGE-CONTENT#}
 {% block page_content %}
@@ -60,8 +58,8 @@
                         <div class="widget-header widget-header-small">
                             <h3 class="pull-left position-relative">
                                 {{ entity.name }}
-                              <i class="icon-double-angle-right"></i>
-                              <small class="green">{{ entity.type.name }}</small>
+                                <i class="icon-double-angle-right"></i>
+                                <small class="green">{{ entity.type.name }}</small>
                             </h3>
 
                             <div class="widget-toolbar no-border invoice-info">
@@ -81,7 +79,8 @@
                                     <div class="span3">
                                         <ul class="unstyled spaced">
                                             <li>
-                                                {{ entity.start }} <i class="icon-long-arrow-right blue"></i> {{ entity.end }}
+                                                {{ entity.start }} <i
+                                                    class="icon-long-arrow-right blue"></i> {{ entity.end }}
                                             </li>
 
                                             <li>
@@ -94,27 +93,29 @@
                                                     : </b> {{ entity.updated_by.name }}
                                             </li>
                                         </ul>
-                                         <button class='btn btn-mini btn-info'><i class="icon-edit"></i> Edit</button>
+                                        <button class='btn btn-mini btn-info'>
+                                            <i class="icon-edit"></i> Update
+                                        </button>
                                     </div>
-                                  {% if entity.description %}
-                                    <div class="span6">
-
-                                        <div class="well">
-                                          <h5 class="header smaller lighter grey">Description</h5>
-                                            {{ entity.description }}
+                                    {% if entity.description %}
+                                        <div class="span6">
+                                            <div class="well">
+                                                <h5 class="header smaller lighter grey">
+                                                    Description</h5>
+                                                {{ entity.description }}
+                                            </div>
                                         </div>
-                                    </div>
-                                  {% endif %}
+                                    {% endif %}
                                 </div>
+                                <div class="row-fluid">
 
-                                <!--/span-->
+                                    <div class="hr hr8 hr-double"></div>
 
+                                    <div class="space-32"></div>
+
+                                    <div id="calendar"></div>
+                                </div>
                             </div>
-
-
-                            <!--row-->
-
-
                         </div>
                     </div>
                 </div>
@@ -123,122 +124,51 @@
         </div>
 
     </div>
-{#    <div class="row-fluid">#}
-{#        <div class="span12">#}
-{#            <div class="tabbable">#}
-{#                <ul class="nav nav-tabs" id="task_tabs">#}
-{#                    <li class="active">#}
-{#                        <a href="#task_versions" data-toggle="tab">#}
-{#                            <i class="icon-archive"></i> Versions#}
-{#                        </a>#}
-{#                    </li>#}
-{#                    <li class="">#}
-{#                        <a href="#task_timelogs" data-toggle="tab">#}
-{#                            <i class="icon-dashboard"></i> Timelogs#}
-{#                        </a>#}
-{#                    </li>#}
-{#                    <li class="">#}
-{#                        <a href="#task_tasks" data-toggle="tab">#}
-{#                            <i class="icon-tasks"></i> Tasks#}
-{#                        </a>#}
-{#                    </li>#}
-{##}
-{#                    <li class="">#}
-{#                        <a href="#task_references" data-toggle="tab">#}
-{#                            <i class="icon-picture"></i> References#}
-{#                        </a>#}
-{#                    </li>#}
-{#                </ul>#}
-{##}
-{##}
-{#                <div id="myTabContent" class="tab-content no-padding ">#}
-{#                    <div class="tab-pane fade active in" id="task_versions">#}
-{##}
-{#                        <div class="row-fluid" id="version_table_row"></div>#}
-{##}
-{#                    </div>#}
-{#                    <div class="tab-pane fade " id="task_timelogs">#}
-{#                        <div id="calendar"></div>#}
-{#                    </div>#}
-{#                    <div class="tab-pane fade" id="task_tasks">#}
-{#                        {% set entity = task %}#}
-{#                        {% include 'task/list/list_tasks.jinja2' %}#}
-{#                    </div>#}
-{##}
-{#                    <div class="tab-pane fade" id="task_references">#}
-{#                        {% set references=entity.references %}#}
-{#                        {% include 'link/list_entity_references.jinja2' %}#}
-{#                    </div>#}
-{##}
-{#                </div>#}
-{#            </div>#}
-{#        </div>#}
-{#    </div>#}
+
 
 {% endblock page_content %}
 
 {#EXTRA-SCRIPTS#}
 {% block extrascripts %}
 
-    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.dataTables.min.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.dataTables.bootstrap.js") }}'></script>
+    {% include 'calendar/calendar.jinja2' %}
 
-    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootstrap-tag.min.js") }}'></script>
-    <script type="text/javascript" src='{{ request.static_url("stalker_pyramid:static/ace/js/dropzone.min.js") }}'></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
 
-    <script>
-        $(function(){
-            // There is a bug in gantt chart when it is included as a secondary
-            // element in another template, where it renders all the items on
-            // top each other
-            $('#task_tabs li:nth-child(2) a').tab().on('shown', function(){
-                $('#gantt_refresh_button').trigger('click');
+            $.getJSON('/entities/{{ entity.id }}/events/?keys=time_log').then(function (data) {
+
+
+                var events = [];
+
+
+                for (var i = 0; i < data.length; i++) {
+
+                    var start_date = new Date(parseInt(data[i].start));
+                    var end_date = new Date(parseInt(data[i].end));
+
+                    var event = {
+                        eId: data[i].id,
+                        entity_type: data[i].entity_type,
+                        title: data[i].title,
+                        start: start_date,
+                        end: end_date,
+                        className: data[i].className,
+                        allDay: data[i].allDay
+                    };
+
+
+
+                    events.push(event);
+
+                }
+
+                drawCalendar('calendar',events);
+
+
             });
         });
     </script>
-
-{#    {% include 'version/list_entity_versions.jinja2' %}#}
-{#    {% include 'calendar/calendar.jinja2' %}#}
-
-{#    <script type="text/javascript">#}
-{#        $(document).ready(function () {#}
-{##}
-{#            $.getJSON('/entities/{{ entity.id }}/events/?keys=time_log').then(function (data) {#}
-{##}
-{##}
-{#                var events = [];#}
-{##}
-{##}
-{#                for (var i = 0; i < data.length; i++) {#}
-{##}
-{#                    var start_date = new Date(parseInt(data[i].start));#}
-{#                    var end_date = new Date(parseInt(data[i].end));#}
-{##}
-{#                    var event = {#}
-{#                        eId: data[i].id,#}
-{#                        entity_type: data[i].entity_type,#}
-{#                        title: data[i].title,#}
-{#                        start: start_date,#}
-{#                        end: end_date,#}
-{#                        className: data[i].className,#}
-{#                        allDay: data[i].allDay#}
-{#                    };#}
-{##}
-{##}
-{##}
-{##}
-{##}
-{#                    events.push(event);#}
-{##}
-{#                }#}
-{##}
-{#                drawCalendar('calendar',events);#}
-{##}
-{##}
-{#            });#}
-{#        });#}
-{#    </script>#}
-{##}
 
 
 {% endblock extrascripts %}

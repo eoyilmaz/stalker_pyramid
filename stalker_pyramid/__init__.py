@@ -143,7 +143,7 @@ def main(global_config, **settings):
     config.add_route('list_entity_projects',           'entities/{id}/projects/list')
     config.add_route('list_entity_references',         'entities/{id}/references/list') # html
     config.add_route('list_entity_vacations',          'entities/{id}/vacations/list') # html
-    config.add_route('list_entity_versions',          'entities/{id}/versions/list') # html
+    config.add_route('list_entity_versions',           'entities/{id}/versions/list') # html
 
     config.add_route('append_entities_to_entity_dialog',  'entities/{id}/{entities}/append/dialog')
     config.add_route('append_entities_to_entity',         'entities/{id}/append')
