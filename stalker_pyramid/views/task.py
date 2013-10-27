@@ -1127,7 +1127,10 @@ def auto_schedule_tasks(request):
             response.status_int = 500
             return response
 
-    return HTTPOk()
+    response = Response("There is no Studio instance\n"
+                        "Please create a studio first")
+    response.status_int = 500
+    return response
 
 
 @view_config(

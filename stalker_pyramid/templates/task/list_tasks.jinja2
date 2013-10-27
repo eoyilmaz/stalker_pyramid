@@ -812,16 +812,13 @@ require([
             $.post(
                 '{{ request.route_url("auto_schedule_tasks") }}'
             ).done(function(data){
-                var message = '<div>Scheduling tasks has finished ' +
-                    '<strong>successfully</strong> with the following message(s):</div><br>' +
-                    '<div>' + data + '</div>'
+                var message = '<div>' + data + '</div>';
                 bootbox.alert(message);
+                $('.bootbox').prepend('<div class="modal-header alert-success"><strong>Success</strong></div>');
             }).fail(function(jqXHR){
-                var message = '<div>Scheduling tasks has finished ' +
-                    '<strong>unsuccessfully</strong> with the following ' +
-                    '<strong>error message(s)</strong>:</div>' +
-                    '<div>' + jqXHR.responseText + '</div>'
+                var message = '<div>' + jqXHR.responseText + '</div>';
                 bootbox.alert(message);
+                $('.bootbox').prepend('<div class="modal-header alert-danger"><strong>Fail</strong></div>');
             }).always(function(){
                 dialog.dialog("close");
                 gantt_column.refresh();
