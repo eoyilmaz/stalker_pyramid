@@ -24,16 +24,18 @@
         </div>
         <!--PAGE CONTENT ENDS-->
 
-        <button data-target="#dialog_template"
-                data-toggle="modal"
-                data-keyboard="false"
-                href="{{ request.route_url('upload_entity_reference_dialog', id=entity.id) }}"
-                class="btn btn-small btn-danger">
-            <i class="icon-cloud-upload bigger-120"></i>
-            Upload References
-        </button>
+        <div class="btn-toolbar">
+            <button data-target="#dialog_template"
+                    data-toggle="modal"
+                    data-keyboard="false"
+                    href="{{ request.route_url('upload_entity_reference_dialog', id=entity.id) }}"
+                    class="btn btn-small btn-primary">
+                <i class="icon-cloud-upload bigger-120"></i>
+                Upload References
+            </button>
 
-        <div id="new_references_storage" class="hidden"></div>
+            <div id="new_references_storage" class="hidden"></div>
+        </div>
 
         <ul class="ace-thumbnails"></ul> {# dynamically filled with jQuery #}
 
