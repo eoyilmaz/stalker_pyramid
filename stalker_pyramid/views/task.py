@@ -316,27 +316,6 @@ def convert_to_dgrid_gantt_task_format(tasks):
 
 
 @view_config(
-    route_name='dialog_update_task',
-    renderer='templates/task/dialog_create_task.jinja2'
-)
-def update_task_dialog(request):
-    """runs when updating a task
-    """
-    task_id = request.matchdict.get('id', -1)
-    task = Task.query.filter(Task.id == task_id).first()
-
-    return {
-        'mode': 'update',
-        'has_permission': PermissionChecker(request),
-        'project': task.project,
-        'task': task,
-        'parent': task.parent,
-        'schedule_models': defaults.task_schedule_models,
-        'milliseconds_since_epoch': milliseconds_since_epoch
-    }
-
-
-@view_config(
     route_name='update_task'
 )
 def update_task(request):
@@ -828,7 +807,7 @@ def task_dialog(request):
 
 
 @view_config(
-    route_name='project_asset_dialog',
+    route_name='asset_dialog',
     renderer='templates/task/task_dialog.jinja2'
 )
 def asset_dialog(request):
@@ -838,7 +817,7 @@ def asset_dialog(request):
 
 
 @view_config(
-    route_name='project_shot_dialog',
+    route_name='shot_dialog',
     renderer='templates/task/task_dialog.jinja2'
 )
 def shot_dialog(request):
@@ -848,7 +827,7 @@ def shot_dialog(request):
 
 
 @view_config(
-    route_name='project_sequence_dialog',
+    route_name='sequence_dialog',
     renderer='templates/task/task_dialog.jinja2'
 )
 def create_sequence_dialog(request):
