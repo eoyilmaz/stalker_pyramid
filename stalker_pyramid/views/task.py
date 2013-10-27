@@ -757,16 +757,16 @@ def create_data_dialog(request, entity_type='Task'):
     logged_in_user = get_logged_in_user(request)
 
     entity_id = request.matchdict.get('id')
-    entity = Entity.query.get(entity_id)
+    entity = Entity.query.filter_by(id=entity_id).first()
 
     project_id = request.params.get('project_id')
-    project = Project.query.get(project_id)
+    project = Project.query.filter_by(id=project_id).first()
 
     if not project and entity:
         project = entity.project
 
     parent_id = request.params.get('parent_id')
-    parent = Task.query.get(parent_id)
+    parent = Task.query.filter_by(id=parent_id).first()
 
     if not project and parent:
         project = parent.project
@@ -798,7 +798,7 @@ def create_data_dialog(request, entity_type='Task'):
 
 @view_config(
     route_name='task_dialog',
-    renderer='templates/task/task_dialog.jinja2'
+    renderer='templates/task/dialog/task_dialog.jinja2'
 )
 def task_dialog(request):
     """called when creating tasks
