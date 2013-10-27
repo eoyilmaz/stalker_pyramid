@@ -49,8 +49,8 @@
                 <div class='hidden'
                      id="parent_storage"
                      parent_id={% if parent %}{{ parent.id }}{% else %}-1{% endif %}>
-                    this is a storage for parent_id, which is set externally by the
-                    template engine
+                    {# this is a storage for parent_id, which is set externally by the #}
+                    {# template engine #}
                  </div>
             </div>
 
@@ -63,6 +63,7 @@
                            name='name'
                            type="text"
                            class="form-control"
+                           {% if mode=='update' %}value="{{ entity.name }}"{% endif %}
                            required>
                 </div>
             </div>
@@ -75,7 +76,9 @@
                            class='input-block-level'
                            name='code'
                            type="text"
-                           class="form-control">
+                           class="form-control"
+                           {% if mode=='update' %}value="{{ entity.code }}"{% endif %}
+                            >
                 </div>
             </div>
 
@@ -88,7 +91,9 @@
                                class='input-block-level'
                                name='task_type'
                                type='text'
-                               is_updating=false>
+                               is_updating=false
+                               {% if mode=='update' %}{% if entity.type %}value="{{ entity.type.name }}"{% endif %}{% endif %}
+                               >
                     </div>
                 </div>
             </div>
@@ -102,7 +107,8 @@
                                class='input-block-level'
                                name='asset_type'
                                type='text'
-                               is_updating=false>
+                               is_updating=false
+                               {% if mode=='update' %}{% if entity.type %}value="{{ entity.type.name }}"{% endif %}{% endif %}
                     </div>
                 </div>
             </div>
@@ -130,7 +136,9 @@
                               style="overflow: hidden;
                                      word-wrap: break-word;
                                      resize: horizontal;
-                                     height: 50px;"></textarea>
+                                     height: 50px;"
+                               {% if mode=='update' %}value="{{ entity.description }}"{% endif %}
+                              ></textarea>
                 </div>
             </div>
 
@@ -148,8 +156,8 @@
                 <div class='hidden'
                      id="dependent_tasks_storage"
                      dependent_ids="[{% for dep in dependencies %}{% if loop.index0 %},{% endif %}{{ dep.id }}{% endfor %}]">
-                    this is a storage for dependent_ids, which is set externally by the
-                    template engine
+                    {# this is a storage for dependent_ids, which is set externally by the #}
+                    {# template engine #}
                  </div>
             </div>
 
@@ -164,6 +172,12 @@
                             data-placeholder='Resources'
                             is_updating=false></select>
                 </div>
+                <div class='hidden'
+                     id="resources_storage"
+                     resource_ids="[{% if entity %}{% for resource in entity.resources %}{% if loop.index0 %},{% endif %}{{ resource.id }}{% endfor %}{% endif %}]">
+                    {# this is a storage for resource_ids, which is set externally by the #}
+                    {# template engine #}
+                 </div>
             </div>
 
             {# Responsible #}
@@ -176,6 +190,12 @@
                             data-placeholder='Responsible'
                             is_updating=false></select>
                 </div>
+                <div class='hidden'
+                     id="responsible_storage"
+                     responsible_id="{% if entity %}{{ entity.responsible.id }}{% endif %}">
+                    {# this is a storage for resource_ids, which is set externally by the #}
+                    {# template engine #}
+                 </div>
             </div>
 
             {# Constraints #}
@@ -189,7 +209,7 @@
                                class='input-block-level'
                                name='schedule_timing'
                                type='text'
-                               value=1
+                               value={% if mode=='update' %}{{ entity.schedule_timing }}{% else %}1{% endif %}
                                min=1
                                required>
                     </div>
@@ -197,7 +217,8 @@
                         <select id='task_schedule_unit'
                                class='input-block-level'
                                name='schedule_unit'
-                               val='Days'>
+                               value="{% if mode=='update' %}{{ entity.schedule_unit }}{% else %}d{% endif %}"
+                               >
                             <option value='h'>Hours</option>
                             <option value='d'>Days</option>
                             <option value='w'>Weeks</option>
@@ -208,7 +229,9 @@
                     <div class='span3'>
                         <select id='task_schedule_model'
                                 class='input-block-level'
-                                name='schedule_model'>
+                                name='schedule_model'
+                                value="{% if mode=='update' %}{{ entity.schedule_model }}{% else %}effort{% endif %}"
+                                >
                             <option value='effort'>Effort</option>
                             <option value='duration'>Duration</option>
                             <option value='length'>Length</option>
@@ -225,7 +248,7 @@
                            name='priorty'
                            type='text'
                            placeholder='Priority'
-                           value=500
+                           value={% if mode=='update' %}{{ entity.priority }}{% else %}500{% endif %}
                            min=1
                            max=1000
                            required>
@@ -281,13 +304,9 @@
         {# Update fields according to the selected Entity Type #}
         // convert to chosen
         var task_entity_type = $('#task_entity_type');
-        //  task_entity_type.chosen({disable_search_threshold: 10});
         
         {# set the entity type #}
         task_entity_type.val("{{ entity_type }}");
-
-
-       // task_entity_type.val('Asset');
 
         var task_inputs = $('#task_inputs');
         var shot_inputs = $('#shot_inputs');
@@ -342,7 +361,7 @@
 
         var project_id = -1;
         {% if mode == 'update' %}
-            project_id = {{ task.project.id }};
+            project_id = {{ entity.project.id }};
         {% else %}
             {% if project %}
                 project_id = {{ project.id }};
@@ -351,7 +370,7 @@
 
         if (project_id !== -1){
             deferred.then(function(){
-                task_project.val(project_id).trigger('chosen:updated');
+                task_project.val(project_id).trigger('liszt:updated');
                 // trigger value change
                 task_project_has_changed();
             });
@@ -363,7 +382,7 @@
             console.debug('task_project.val() : ', task_project.val());
 
             // update parent and dependency lists
-            update_task_parent_and_dependency_fields({});
+            update_task_parent_and_dependency_fields();
 
             // update resource field
             update_resource_field();
@@ -720,18 +739,26 @@
         submit_button.on('click', function(e){
             e.stopPropagation();
             e.preventDefault();
-
+            
             console.debug('this is running!');
             var task_form = $('#task_form');
             var form_data = task_form.serialize();
             console.debug('form_data :', form_data);
+            
             if ( task_form.validate() ){
+                // prevent multiple sends
+                if (task_form.attr('is_sending') == 'true'){
+                    return;
+                } else {
+                    task_form.attr('is_sending', true);
+                }
                 $.post(
                     task_form.attr('action'),
                     form_data
                 ).done(function(){
                     $('#task_dialog').modal('hide');
                 }).fail(function(jqXHR){
+                    task_form.attr('is_sending', false);
                     bootbox.alert(jqXHR.responseText);
                 });
             }
@@ -798,12 +825,7 @@
                 else error.insertAfter(element);
             },
 
-{#            submitHandler: function (form) {#}
-{#                form.submit();#}
-{#            }#}
-
         });
-
 
         console.debug('finished initializing the task dialog!')
     }
@@ -811,6 +833,15 @@
 
 <script type="text/javascript">
     function destruct_task_dialog(){
+        // unbind events
+        $('#task_entity_type').unbind();
+        $('#task_project').unbind();
+        $('#task_parent').unbind();
+        $('#task_name').unbind();
+        $('#task_priority').unbind();
+        $('#task_dialog_submit_button').unbind();
+
+        // remove dialog
         $('#task_dialog').data('modal', null);
     }
 </script>

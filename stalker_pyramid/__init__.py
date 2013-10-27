@@ -91,11 +91,20 @@ def main(global_config, **settings):
     config.add_route('busy_dialog', 'dialog/busy')
     config.add_route('flash_message', '/flash_message')
 
-    # addresses like http:/localhost:6543/SPL/{some_path} will let SP to serve those files
-    # SPL : Stalker Pyramid Local
+    # addresses like http:/localhost:6543/SPL/{some_path} will let SP to serve
+    # those files
+    # SPL   : Stalker Pyramid Local
     config.add_route(
         'serve_files',
         'SPL/{partial_file_path:[a-zA-Z0-9/\.]+}'
+    )
+
+    # addresses like http:/localhost:6543/FDSPL/{some_path} will serve the
+    # files with their original filename in a forced download mode.
+    # FDSPL : Forced Download Stalker Pyramid Local
+    config.add_route(
+        'forced_download_files',
+        'FDSPL/{partial_file_path:[a-zA-Z0-9/\.]+}'
     )
 
     logger.debug(defaults.server_side_storage_path + '/{partial_file_path}')

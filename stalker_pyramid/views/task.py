@@ -755,31 +755,38 @@ def create_data_dialog(request, entity_type='Task'):
     """a generic function which will create a dictionary with enough data
     """
     logged_in_user = get_logged_in_user(request)
+    came_from = request.params.get('came_from', request.url)
 
-    entity_id = request.matchdict.get('id')
-    entity = Entity.query.filter_by(id=entity_id).first()
-
-    project_id = request.params.get('project_id')
-    project = Project.query.filter_by(id=project_id).first()
-
-    if not project and entity:
-        project = entity.project
-
-    parent_id = request.params.get('parent_id')
-    parent = Task.query.filter_by(id=parent_id).first()
-
-    if not project and parent:
-        project = parent.project
-
-    dependent_ids = get_multi_integer(request, 'dependent_id', 'GET')
-    dependencies = Task.query.filter(Task.id.in_(dependent_ids)).all()
-
-    if not project and dependencies:
-        project = dependencies[0].project
-
+    # get mode
     mode = request.matchdict.get('mode', None)
 
-    came_from = request.params.get('came_from', request.url)
+    if mode == 'create':
+        project_id = request.params.get('project_id')
+        project = Project.query.filter_by(id=project_id).first()
+
+        parent_id = request.params.get('parent_id')
+        parent = Task.query.filter_by(id=parent_id).first()
+
+        if not project and parent:
+            project = parent.project
+
+        dependent_ids = get_multi_integer(request, 'dependent_id', 'GET')
+        dependencies = Task.query.filter(Task.id.in_(dependent_ids)).all()
+
+        if not project and dependencies:
+            project = dependencies[0].project
+    elif mode == 'update':
+        entity_id = request.matchdict.get('id')
+        entity = Entity.query.filter_by(id=entity_id).first()
+        project = entity.project
+        parent = entity.parent
+        dependencies = entity.depends
+
+    logger.debug('entity_id     : %s' % entity_id)
+    logger.debug('entity        : %s' % entity)
+    logger.debug('project       : %s' % project)
+    logger.debug('parent        : %s' % parent)
+    logger.debug('dependencies  : %s' % dependencies)
 
     return {
         'mode': mode,
