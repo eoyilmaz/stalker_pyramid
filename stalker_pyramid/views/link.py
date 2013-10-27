@@ -26,7 +26,7 @@ import Image
 
 from stalker import Entity, Link, defaults
 from stalker.db import DBSession
-from pyramid.response import Response
+from pyramid.response import Response, FileResponse
 
 from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPOk
@@ -173,7 +173,11 @@ def convert_file_link_to_full_path(link_path):
       (ex: SPL/b0/e6/b0e64b16c6bd4857a91be47fb2517b53.jpg)
     :returns: str
     """
-    link_full_path = link_path[len('SPL/'):]
+    if 'SPL/' in link_path:
+        link_full_path = link_path[len('SPL/'):]
+    else:
+        link_full_path = link_path
+
     file_full_path = os.path.join(
         defaults.server_side_storage_path,
         link_full_path
@@ -393,3 +397,41 @@ def delete_reference(request):
         response = Response('No ref with id : %i' % ref_id)
         response.status_int = 500
         return response
+
+
+@view_config(
+    route_name='serve_files'
+)
+def serve_files(request):
+    """serves files in the stalker server side storage
+    """
+    partial_file_path = request.matchdict['partial_file_path']
+    file_full_path = convert_file_link_to_full_path(partial_file_path)
+    return FileResponse(file_full_path)
+
+
+@view_config(
+    route_name='forced_download_files'
+)
+def force_download_files(request):
+    """serves files but forces to download
+    """
+    partial_file_path = request.matchdict['partial_file_path']
+    file_full_path = convert_file_link_to_full_path(partial_file_path)
+    # get the link to get the original file name
+    link = Link.query.filter(
+        Link.full_path == 'SPL/' + partial_file_path).first()
+    if link:
+        original_filename = link.original_filename
+    else:
+        original_filename = os.path.basename(file_full_path)
+
+    response = FileResponse(
+        file_full_path,
+        request=request,
+        content_type='application/force-download',
+    )
+    # update the content-disposition header
+    response.headers['content-disposition'] = \
+        str('attachment; filename=' + original_filename)
+    return response

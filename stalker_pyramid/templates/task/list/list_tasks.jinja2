@@ -232,11 +232,6 @@
         window.prompt("Copy to clipboard: Ctrl+C, Enter", text);
     };
 
-    var lightBox = function (title, href) {
-        var lb = new dojox.image.Lightbox({ title: title, href: href });
-        lb.startup();
-        lb.show();
-    };
 </script>
 
 <div class="row-fluid">
@@ -329,7 +324,12 @@
 
                         {% if has_permission('Update_Task') %}
                         <li>
-                            <a href="#" tabindex="-1">
+                            <a id='update_task_button'
+                               data-target="#task_dialog"
+                               data-toggle="modal"
+                               data-keyboard=false
+                               href="#"
+                               tabindex="-1">
                                 <i class="'ui-icon icon-pencil bigger-120">&nbsp</i>
                                 Update
                             </a>
@@ -577,7 +577,7 @@ require([
     // allow the gantt to resize with the window
     $(window).on('resize', function(){
         var gantt_height = $(window).height() - 230;
-        $('#{{ entity.entity_type }}_{{ entity.id }}_gantt').css({height: gantt_height});
+        $('#'+'{{ entity.entity_type }}_{{ entity.id }}_gantt').css({height: gantt_height});
     });
     $(window).trigger('resize');
 
@@ -659,6 +659,12 @@ require([
             var dependent_href = dependent_org_href + dep_ids_param;
             console.debug('dependent_href: ', dependent_href);
             dependent_task_button.attr('href', dependent_href);
+
+            // update update button
+            $('#update_task_button').attr(
+                'href',
+                '/tasks/' + selected_ids[0] + '/update/dialog'
+            );
         }
     });
 

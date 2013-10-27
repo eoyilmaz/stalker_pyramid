@@ -20,15 +20,13 @@
 
 import logging
 import datetime
-import os
-from pyramid.exceptions import Forbidden
 
 from pyramid.httpexceptions import HTTPServerError, HTTPForbidden
 from pyramid.view import view_config
-from pyramid.response import Response, FileResponse
+from pyramid.response import Response
 from pyramid.security import has_permission, authenticated_userid
 
-from stalker import log, User, Tag, defaults
+from stalker import log, User, Tag
 from stalker.db import DBSession
 
 
@@ -319,16 +317,3 @@ def from_milliseconds(t):
     """
     return from_microseconds(t * 1000)
 
-
-@view_config(
-    route_name='serve_files'
-)
-def serve_files(request):
-    """serves files in the stalker server side storage
-    """
-    partial_file_path = request.matchdict['partial_file_path']
-    file_full_path = os.path.join(
-        defaults.server_side_storage_path,
-        partial_file_path
-    )
-    return FileResponse(file_full_path)
