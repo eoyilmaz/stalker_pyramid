@@ -111,11 +111,11 @@
 
         $(".dropzone").dropzone({
             init: function(){
-                this.on('addedfile', function(file){
+                this.on("addedfile", function(file){
                     // set the submit button to loading state
                     uploading_file_counter += 1;
-                    $('#dialog_template_submit_button').button('loading');
-                }).on('success', function(file, response){
+                    $("#dialog_template_submit_button").button('loading');
+                }).on("success", function(file, response){
                     console.debug('response :', response);
                     console.debug('files    :', file);
                     // store the Link.id in file object
@@ -124,23 +124,23 @@
                     link_ids.push(response.link_ids[0]);
                     // store the file in files
                     files.push(file);
-                }).on('complete', function(file){
+                }).on("complete", function(file){
                     // restore the button state
                     uploading_file_counter -= 1;
                     if (uploading_file_counter == 0){
                         $('#dialog_template_submit_button').button('reset');
                     }
-                }).on('removedfile', function(file){
+                }).on("removedfile", function(file){
                     console.debug('file has removed:', file);
                     // remove the file 
                     var index = files.indexOf(file);
                     files.splice(1, index);
                     var id = link_ids.splice(1, index);
                     removed_link_ids.push(id);
-                }).on('canceled', function(){
+                }).on("canceled", function(){
                     uploading_file_counter -= 1;
                     if (uploading_file_counter == 0){
-                        $('#dialog_template_submit_button').button('reset');
+                        $("#dialog_template_submit_button").button('reset');
                     }
                 });
             },
@@ -186,7 +186,13 @@
     };
 
     function destruct_dialog(){
+        // reduce counter
         counter -= 1;
+
+        // unbind events
+        $(".dropzone").unbind();
+        $("#dialog_template_submit_button").unbind();
+
         // destroy dialog
         console.debug('destroy dialog from upload_reference.jinja2 running!');
         $('#dialog_template').data('modal', null);

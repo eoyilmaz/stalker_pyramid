@@ -720,18 +720,26 @@
         submit_button.on('click', function(e){
             e.stopPropagation();
             e.preventDefault();
-
+            
             console.debug('this is running!');
             var task_form = $('#task_form');
             var form_data = task_form.serialize();
             console.debug('form_data :', form_data);
+            
             if ( task_form.validate() ){
+                // prevent multiple sends
+                if (task_form.attr('is_sending') == 'true'){
+                    return;
+                } else {
+                    task_form.attr('is_sending', true);
+                }
                 $.post(
                     task_form.attr('action'),
                     form_data
                 ).done(function(){
                     $('#task_dialog').modal('hide');
                 }).fail(function(jqXHR){
+                    task_form.attr('is_sending', false);
                     bootbox.alert(jqXHR.responseText);
                 });
             }
@@ -798,12 +806,7 @@
                 else error.insertAfter(element);
             },
 
-{#            submitHandler: function (form) {#}
-{#                form.submit();#}
-{#            }#}
-
         });
-
 
         console.debug('finished initializing the task dialog!')
     }
@@ -811,6 +814,15 @@
 
 <script type="text/javascript">
     function destruct_task_dialog(){
+        // unbind events
+        $('#task_entity_type').unbind();
+        $('#task_project').unbind();
+        $('#task_parent').unbind();
+        $('#task_name').unbind();
+        $('#task_priority').unbind();
+        $('#task_dialog_submit_button').unbind();
+
+        // remove dialog
         $('#task_dialog').data('modal', null);
     }
 </script>
