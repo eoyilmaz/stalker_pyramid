@@ -160,7 +160,8 @@ def assign_reference(request):
             'id': link.id,
             'full_path': link.full_path,
             'original_filename': link.original_filename,
-            'thumbnail': link.thumbnail.full_path if link.thumbnail else link.full_path,
+            'thumbnail': link.thumbnail.full_path
+            if link.thumbnail else link.full_path,
             'tags': [tag.name for tag in link.tags]
         } for link in links
     ]
@@ -206,7 +207,8 @@ def generate_thumbnail(link):
     img.thumbnail((512, 512)) # TODO: connect this to a config variable
     img.thumbnail((256, 256), Image.ANTIALIAS)
 
-    thumbnail_full_path, thumbnail_link_full_path = generate_local_file_path(extension)
+    thumbnail_full_path, thumbnail_link_full_path = \
+        generate_local_file_path(extension)
 
     # create the dirs before saving
     os.makedirs(os.path.dirname(thumbnail_full_path))
@@ -244,7 +246,8 @@ def get_entity_references(request):
                 'id': link.id,
                 'full_path': link.full_path,
                 'original_filename': link.original_filename,
-                'thumbnail': link.thumbnail.full_path if link.thumbnail else link.full_path,
+                'thumbnail': link.thumbnail.full_path
+                if link.thumbnail else link.full_path,
                 'tags': [tag.name for tag in link.tags]
             } for link in entity.references]
     return []
@@ -299,7 +302,8 @@ def upload_files_to_server(request, file_params):
 
     :param request: The request object.
     :param str file_param_name: The name of the parameter that holds the files.
-    :returns [(str, str)]: The original filename and the file path on the server.
+    :returns [(str, str)]: The original filename and the file path on the
+    server.
     """
     links = []
     # get the file names
@@ -377,7 +381,8 @@ def delete_reference(request):
         #            from the associated Task before deleting it
         from stalker import Task
         for task in Task.query.filter(Task.references.contains(ref)).all():
-            logger.debug('%s is referencing %s, breaking this relation' % (task, ref))
+            logger.debug('%s is referencing %s, '
+                         'breaking this relation' % (task, ref))
             task.references.remove(ref)
         DBSession.delete(ref)
 
