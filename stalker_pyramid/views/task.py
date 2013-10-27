@@ -775,7 +775,7 @@ def get_project_tasks(request):
 def create_data_dialog(request, entity_type='Task'):
     """a generic function which will create a dictionary with enough data
     """
-    #logged_in_user = get_logged_in_user(request)
+    logged_in_user = get_logged_in_user(request)
 
     project_id = request.matchdict.get('id', -1)
     #logger.debug('project_id : %s' % project_id)
@@ -1187,67 +1187,6 @@ def request_task_review(request):
     return HTTPOk()
 
 
-
-@view_config(
-    route_name='view_project_asset',
-    renderer='templates/task/view/view_project_task.jinja2'
-)
-@view_config(
-    route_name='view_project_sequence',
-    renderer='templates/task/view/view_project_task.jinja2'
-)
-@view_config(
-    route_name='view_project_shot',
-    renderer='templates/task/view/view_project_task.jinja2'
-)
-@view_config(
-    route_name='view_project_task',
-    renderer='templates/task/view/view_project_task.jinja2'
-)
-@view_config(
-    route_name='view_task',
-    renderer='templates/task/view/view_project_task.jinja2'
-)
-@view_config(
-    route_name='view_asset',
-    renderer='templates/task/view/view_project_task.jinja2'
-)
-@view_config(
-    route_name='view_shot',
-    renderer='templates/task/view/view_project_task.jinja2'
-)
-@view_config(
-    route_name='view_sequence',
-    renderer='templates/task/view/view_project_task.jinja2'
-)
-def view_project_task(request):
-    """runs when viewing an task
-    """
-    logged_in_user = get_logged_in_user(request)
-
-    task_id = request.matchdict['id']
-    task = Task.query.filter_by(id=task_id).first()
-
-    project_id = request.matchdict.get('pid', None)
-    if project_id:
-        project = Project.query.filter_by(id=project_id).first()
-    else:
-        if task:
-            project = task.project
-
-    studio = Studio.query.first()
-    projects = Project.query.all()
-
-    return {
-        'entity': project,
-        'task': task,
-        'has_permission': PermissionChecker(request),
-        'logged_in_user': logged_in_user,
-        'milliseconds_since_epoch': milliseconds_since_epoch,
-        'stalker_pyramid': stalker_pyramid,
-        'projects': projects,
-        'studio': studio
-    }
 
 
 @view_config(

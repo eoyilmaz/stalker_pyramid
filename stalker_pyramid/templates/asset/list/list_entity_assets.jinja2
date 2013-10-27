@@ -192,7 +192,7 @@
                             var table_names = [];
                             for (i = 0; i < data.length; i++) {
                                 // fix dates
-                                data[i].link = '/projects/{{ entity.id }}/assets/' + data[i].id + '/view';
+                                data[i].link = '/assets/' + data[i].id + '/view/';
 
                                 if (data[i].thumbnail_full_path == null) {
                                     data[i].thumbnail_full_path = '{{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}';

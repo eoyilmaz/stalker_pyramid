@@ -3,8 +3,6 @@
 {#PRE-HEADER #}
 {% block pre_header %}
 
-    {% include 'task/list/list_tasks_preheader.jinja2' %}
-
      <link rel="stylesheet"
           href='{{ request.static_url("stalker_pyramid:static/ace/css/fullcalendar.css") }}'/>
     <link rel="stylesheet"
@@ -29,8 +27,8 @@
 {#BREADCRUMBS#}
 {% block breadcrumbs %}
 
-    {% set listed_type=task.plural_class_name %}
-    {% set page_title=task.name %}
+    {% set listed_type=entity.plural_class_name %}
+    {% set page_title=entity.name %}
     {% include 'breadcrumbs_detail.jinja2' %}
 
 {% endblock breadcrumbs %}
@@ -44,15 +42,13 @@
 {% block page_content %}
     <div class="row-fluid">
 
-
-
         <div class="media">
             <a class="pull-left" href="#"
                style="width: 150px; height: 150px">
                 <img style='width:auto; height: auto;'
                      class="img-thumbnail"
-                     src="{%- if task.thumbnail -%}
-                    /{{ task.thumbnail.full_path }}
+                     src="{%- if entity.thumbnail -%}
+                    /{{ entity.thumbnail.full_path }}
                 {%- else -%}
                     {{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}
                 {%- endif -%}">
@@ -63,13 +59,13 @@
                     <div class="widget-box transparent invoice-box">
                         <div class="widget-header widget-header-small">
                             <h3 class="pull-left position-relative">
-                                {{ task.name }}
+                                {{ entity.name }}
                               <i class="icon-double-angle-right"></i>
-                              <small class="green">{{ task.type.name }}</small>
+                              <small class="green">{{ entity.type.name }}</small>
                             </h3>
 
                             <div class="widget-toolbar no-border invoice-info">
-                                <span class="invoice-info-label">{{ task.status.name }}</span>
+                                <span class="invoice-info-label">{{ entity.status.name }}</span>
                             </div>
 
                             <div class="widget-toolbar hidden-480">
@@ -85,27 +81,27 @@
                                     <div class="span3">
                                         <ul class="unstyled spaced">
                                             <li>
-                                                {{ task.start }} <i class="icon-long-arrow-right blue"></i> {{ task.end }}
+                                                {{ entity.start }} <i class="icon-long-arrow-right blue"></i> {{ entity.end }}
                                             </li>
 
                                             <li>
 
                                                 <b>Created By
-                                                    : </b> {{ task.created_by.name }}
+                                                    : </b> {{ entity.created_by.name }}
                                             </li>
                                             <li>
                                                 <b>Updated By
-                                                    : </b> {{ task.updated_by.name }}
+                                                    : </b> {{ entity.updated_by.name }}
                                             </li>
                                         </ul>
                                          <button class='btn btn-mini btn-info'><i class="icon-edit"></i> Edit</button>
                                     </div>
-                                  {% if task.description %}
+                                  {% if entity.description %}
                                     <div class="span6">
 
                                         <div class="well">
                                           <h5 class="header smaller lighter grey">Description</h5>
-                                            {{ task.description }}
+                                            {{ entity.description }}
                                         </div>
                                     </div>
                                   {% endif %}
@@ -127,57 +123,57 @@
         </div>
 
     </div>
-    <div class="row-fluid">
-        <div class="span12">
-            <div class="tabbable">
-                <ul class="nav nav-tabs" id="task_tabs">
-                    <li class="active">
-                        <a href="#task_versions" data-toggle="tab">
-                            <i class="icon-archive"></i> Versions
-                        </a>
-                    </li>
-                    <li class="">
-                        <a href="#task_timelogs" data-toggle="tab">
-                            <i class="icon-dashboard"></i> Timelogs
-                        </a>
-                    </li>
-                    <li class="">
-                        <a href="#task_tasks" data-toggle="tab">
-                            <i class="icon-tasks"></i> Tasks
-                        </a>
-                    </li>
-
-                    <li class="">
-                        <a href="#task_references" data-toggle="tab">
-                            <i class="icon-picture"></i> References
-                        </a>
-                    </li>
-                </ul>
-
-
-                <div id="myTabContent" class="tab-content no-padding ">
-                    <div class="tab-pane fade active in" id="task_versions">
-
-                        <div class="row-fluid" id="version_table_row"></div>
-
-                    </div>
-                    <div class="tab-pane fade " id="task_timelogs">
-                        <div id="calendar"></div>
-                    </div>
-                    <div class="tab-pane fade" id="task_tasks">
-                        {% set entity = task %}
-                        {% include 'task/list/list_tasks.jinja2' %}
-                    </div>
-
-                    <div class="tab-pane fade" id="task_references">
-                        {% set references=task.references %}
-                        {% include 'link/list_entity_references.jinja2' %}
-                    </div>
-
-                </div>
-            </div>
-        </div>
-    </div>
+{#    <div class="row-fluid">#}
+{#        <div class="span12">#}
+{#            <div class="tabbable">#}
+{#                <ul class="nav nav-tabs" id="task_tabs">#}
+{#                    <li class="active">#}
+{#                        <a href="#task_versions" data-toggle="tab">#}
+{#                            <i class="icon-archive"></i> Versions#}
+{#                        </a>#}
+{#                    </li>#}
+{#                    <li class="">#}
+{#                        <a href="#task_timelogs" data-toggle="tab">#}
+{#                            <i class="icon-dashboard"></i> Timelogs#}
+{#                        </a>#}
+{#                    </li>#}
+{#                    <li class="">#}
+{#                        <a href="#task_tasks" data-toggle="tab">#}
+{#                            <i class="icon-tasks"></i> Tasks#}
+{#                        </a>#}
+{#                    </li>#}
+{##}
+{#                    <li class="">#}
+{#                        <a href="#task_references" data-toggle="tab">#}
+{#                            <i class="icon-picture"></i> References#}
+{#                        </a>#}
+{#                    </li>#}
+{#                </ul>#}
+{##}
+{##}
+{#                <div id="myTabContent" class="tab-content no-padding ">#}
+{#                    <div class="tab-pane fade active in" id="task_versions">#}
+{##}
+{#                        <div class="row-fluid" id="version_table_row"></div>#}
+{##}
+{#                    </div>#}
+{#                    <div class="tab-pane fade " id="task_timelogs">#}
+{#                        <div id="calendar"></div>#}
+{#                    </div>#}
+{#                    <div class="tab-pane fade" id="task_tasks">#}
+{#                        {% set entity = task %}#}
+{#                        {% include 'task/list/list_tasks.jinja2' %}#}
+{#                    </div>#}
+{##}
+{#                    <div class="tab-pane fade" id="task_references">#}
+{#                        {% set references=entity.references %}#}
+{#                        {% include 'link/list_entity_references.jinja2' %}#}
+{#                    </div>#}
+{##}
+{#                </div>#}
+{#            </div>#}
+{#        </div>#}
+{#    </div>#}
 
 {% endblock page_content %}
 
@@ -186,9 +182,6 @@
 
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.dataTables.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.dataTables.bootstrap.js") }}'></script>
-
-
-
 
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootstrap-tag.min.js") }}'></script>
     <script type="text/javascript" src='{{ request.static_url("stalker_pyramid:static/ace/js/dropzone.min.js") }}'></script>
@@ -204,48 +197,48 @@
         });
     </script>
 
-    {% include 'version/list_entity_versions.jinja2' %}
-    {% include 'calendar/calendar.jinja2' %}
+{#    {% include 'version/list_entity_versions.jinja2' %}#}
+{#    {% include 'calendar/calendar.jinja2' %}#}
 
-    <script type="text/javascript">
-        $(document).ready(function () {
-
-            $.getJSON('/entities/{{ task.id }}/events/?keys=time_log').then(function (data) {
-
-
-                var events = [];
-
-
-                for (var i = 0; i < data.length; i++) {
-
-                    var start_date = new Date(parseInt(data[i].start));
-                    var end_date = new Date(parseInt(data[i].end));
-
-                    var event = {
-                        eId: data[i].id,
-                        entity_type: data[i].entity_type,
-                        title: data[i].title,
-                        start: start_date,
-                        end: end_date,
-                        className: data[i].className,
-                        allDay: data[i].allDay
-                    };
-
-
-
-
-
-                    events.push(event);
-
-                }
-
-                drawCalendar('calendar',events);
-
-
-            });
-        });
-    </script>
-
+{#    <script type="text/javascript">#}
+{#        $(document).ready(function () {#}
+{##}
+{#            $.getJSON('/entities/{{ entity.id }}/events/?keys=time_log').then(function (data) {#}
+{##}
+{##}
+{#                var events = [];#}
+{##}
+{##}
+{#                for (var i = 0; i < data.length; i++) {#}
+{##}
+{#                    var start_date = new Date(parseInt(data[i].start));#}
+{#                    var end_date = new Date(parseInt(data[i].end));#}
+{##}
+{#                    var event = {#}
+{#                        eId: data[i].id,#}
+{#                        entity_type: data[i].entity_type,#}
+{#                        title: data[i].title,#}
+{#                        start: start_date,#}
+{#                        end: end_date,#}
+{#                        className: data[i].className,#}
+{#                        allDay: data[i].allDay#}
+{#                    };#}
+{##}
+{##}
+{##}
+{##}
+{##}
+{#                    events.push(event);#}
+{##}
+{#                }#}
+{##}
+{#                drawCalendar('calendar',events);#}
+{##}
+{##}
+{#            });#}
+{#        });#}
+{#    </script>#}
+{##}
 
 
 {% endblock extrascripts %}

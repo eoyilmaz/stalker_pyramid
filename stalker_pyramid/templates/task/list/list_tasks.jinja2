@@ -694,7 +694,7 @@ require([
 
                     var contentPane = registry.byId('tasks_content_pane');
                     contentPane.set(
-                            'href','{{ request.route_url('view_project_task', pid=entity.id, id='134') }}'
+                            'href','{{ request.route_url('view_task', id=entity.id) }}'
                     );
                     contentPane.refresh();
                 }
