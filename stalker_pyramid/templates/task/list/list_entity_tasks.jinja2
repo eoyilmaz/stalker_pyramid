@@ -1,11 +1,11 @@
 {% extends "base.jinja2" %}
 
 {% block pre_header %}
-   {% include 'task/list_tasks_preheader.jinja2' %}
+   {% include 'task/list/list_tasks_preheader.jinja2' %}
 {% endblock pre_header %}
 
 {% block modals %}
-     {% include 'task/task_dialog_template.jinja2' %}
+     {% include 'task/dialog/task_dialog_template.jinja2' %}
 {% endblock modals%}
 
 {% block breadcrumbs %}
@@ -21,5 +21,5 @@
     {% set page_title='Tasks' %}
     {% include 'page_header.jinja2' %}
     <!--/.page-header-->
-    {% include 'task/list_tasks.jinja2' %}
+    {% include 'task/list/list_tasks.jinja2' %}
 {% endblock page_content %}

@@ -181,7 +181,6 @@ def update_time_log(request):
     resource_id = int(request.params.get('resource_id', None))
     resource = User.query.filter(User.id == resource_id).first()
 
-
     start_date = get_date(request, 'start')
     end_date = get_date(request, 'end')
 
@@ -189,8 +188,6 @@ def update_time_log(request):
     logger.debug('resource_id : %s' % resource_id)
     logger.debug('start         : %s' % start_date)
     logger.debug('end           : %s' % end_date)
-
-
 
     if time_log and resource and start_date and end_date:
         # we are ready to create the time log

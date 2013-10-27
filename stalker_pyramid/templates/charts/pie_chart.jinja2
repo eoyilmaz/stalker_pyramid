@@ -2,7 +2,6 @@
 
     $(document).ready(function () {
 
-
         function drawPieChart(placeholder, data, colors) {
 
              $.jqplot(placeholder, [data], {
@@ -61,7 +60,6 @@
         var pie_chart = $('#pie_chart');
 
         $.getJSON(pie_chart.attr('address')).then(function (data) {
-
 
             var content = [];
             var colors = [];

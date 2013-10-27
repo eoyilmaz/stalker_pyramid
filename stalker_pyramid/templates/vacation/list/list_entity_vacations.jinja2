@@ -52,8 +52,7 @@
                 <div class="span9">
 
                     <div class="space"></div>
-                    <div id="calendar"
-                         address='/entities/{{ entity.id }}/vacations/'></div>
+                    <div id="calendar"></div>
 
                 </div>
             </div>
@@ -72,6 +71,43 @@
     {% set event_type='Vacation' %}
 
     {% include 'calendar/calendar.jinja2' %}
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            $.getJSON('/users/{{ entity.id }}/events/?keys=vacation').then(function (data) {
+
+
+                var events = [];
+
+                for (var i = 0; i < data.length; i++) {
+
+                    var start_date = new Date(parseInt(data[i].start));
+                    var end_date = new Date(parseInt(data[i].end));
+
+
+                    var event = {
+                        eId: data[i].id,
+                        entity_type: data[i].entity_type,
+                        title: data[i].title,
+                        start: start_date,
+                        end: end_date,
+                        className: data[i].className,
+                        allDay: data[i].allDay
+                    };
+
+
+
+                    events.push(event);
+
+                }
+
+                drawCalendar('calendar', events);
+
+
+            });
+        });
+    </script>
 
 
 {% endblock extrascripts %}

@@ -121,24 +121,52 @@ logger.setLevel(logging.DEBUG)
     renderer='templates/studio/view/view_studio.jinja2'
 )
 @view_config(
+    route_name='view_task',
+    renderer='templates/task/view/view_task.jinja2'
+)
+@view_config(
+    route_name='list_entity_tasks',
+    renderer='templates/task/list/list_entity_tasks.jinja2'
+)
+@view_config(
+    route_name='list_project_tasks',
+    renderer='templates/task/list/list_entity_tasks.jinja2'
+)
+@view_config(
+    route_name='list_user_tasks',
+    renderer='templates/task/list/list_entity_tasks.jinja2'
+)
+@view_config(
+    route_name='list_task_tasks',
+    renderer='templates/task/list/list_entity_tasks.jinja2'
+)
+@view_config(
+    route_name='list_studio_tasks',
+    renderer='templates/task/list/list_entity_tasks.jinja2'
+)
+@view_config(
+    route_name='view_asset',
+    renderer='templates/task/view/view_task.jinja2'
+)
+@view_config(
     route_name='list_project_assets',
     renderer='templates/asset/list/list_entity_assets.jinja2'
+)
+@view_config(
+    route_name='view_shot',
+    renderer='templates/task/view/view_task.jinja2'
 )
 @view_config(
     route_name='list_project_shots',
     renderer='templates/shot/list/list_entity_shots.jinja2'
 )
 @view_config(
+    route_name='view_sequence',
+    renderer='templates/task/view/view_task.jinja2'
+)
+@view_config(
     route_name='list_project_sequences',
     renderer='templates/sequence/list/list_entity_sequences.jinja2'
-)
-@view_config(
-    route_name='view_user_tasks',
-    renderer='templates/task/list_entity_tasks.jinja2'
-)
-@view_config(
-    route_name='view_entity_nav_bar',
-    renderer='templates/content_nav_bar.jinja2',
 )
 @view_config(
     route_name='upload_entity_reference_dialog',
@@ -147,14 +175,6 @@ logger.setLevel(logging.DEBUG)
 @view_config(
     route_name='upload_entity_thumbnail_dialog',
     renderer='templates/link/dialogs/upload_thumbnail_dialog.jinja2'
-)
-@view_config(
-    route_name='list_task_time_logs',
-    renderer='templates/time_log/content_list_time_logs.jinja2'
-)
-@view_config(
-    route_name='list_user_time_logs',
-    renderer='templates/time_log/content_list_time_logs.jinja2'
 )
 @view_config(
     route_name='list_entity_tickets',
@@ -173,6 +193,14 @@ logger.setLevel(logging.DEBUG)
     renderer='templates/ticket/list_entity_tickets.jinja2'
 )
 @view_config(
+    route_name='view_ticket',
+    renderer='templates/ticket/view_ticket.jinja2'
+)
+@view_config(
+    route_name='list_entity_vacations',
+    renderer='templates/vacation/list/list_entity_vacations.jinja2'
+)
+@view_config(
     route_name='list_studio_vacations',
     renderer='templates/vacation/list/list_entity_vacations.jinja2'
 )
@@ -181,24 +209,12 @@ logger.setLevel(logging.DEBUG)
     renderer='templates/vacation/list/list_entity_vacations.jinja2'
 )
 @view_config(
-    route_name='list_user_tasks',
-    renderer='templates/task/list_entity_tasks.jinja2'
+    route_name='list_project_references',
+    renderer='templates/link/list_entity_references.jinja2'
 )
 @view_config(
-    route_name='list_project_tasks',
-    renderer='templates/task/list_entity_tasks.jinja2'
-)
-@view_config(
-    route_name='list_task_tasks',
-    renderer='templates/task/list_entity_tasks.jinja2'
-)
-@view_config(
-    route_name='list_entity_tasks',
-    renderer='templates/task/list_entity_tasks.jinja2'
-)
-@view_config(
-    route_name='list_studio_tasks',
-    renderer='templates/task/list_entity_tasks.jinja2'
+    route_name='list_task_references',
+    renderer='templates/link/list_entity_references.jinja2'
 )
 @view_config(
     route_name='list_entity_references',
@@ -206,15 +222,7 @@ logger.setLevel(logging.DEBUG)
 )
 @view_config(
     route_name='list_task_versions',
-    renderer='templates/version/content_list_versions.jinja2'
-)
-@view_config(
-    route_name='list_project_references',
-    renderer='templates/link/content_list_references.jinja2'
-)
-@view_config(
-    route_name='view_ticket',
-    renderer='templates/ticket/view_ticket.jinja2'
+    renderer='templates/version/list/list_entity_versions.jinja2'
 )
 def get_entity_related_data(request):
     """lists the time logs of the given task

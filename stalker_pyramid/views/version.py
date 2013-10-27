@@ -202,28 +202,34 @@ def update_version(request):
 
     return HTTPOk()
 
-
+@view_config(
+    route_name='get_entity_versions',
+    renderer='json'
+)
 @view_config(
     route_name='get_task_versions',
     renderer='json'
 )
-def get_task_versions(request):
+def get_entity_versions(request):
     """returns all the Shots of the given Project
     """
     logger.debug('get_versions is running')
-    task_id = request.matchdict.get('id', -1)
-    task = Task.query.filter_by(id=task_id).first()
+
+    entity_id = request.matchdict.get('id', -1)
+    entity = Entity.query.filter_by(id=entity_id).first()
+
     version_data = []
 
     user_os = get_user_os(request)
-    logger.debug('entity_id : %s' % task_id)
+
+    logger.debug('entity_id : %s' % entity_id)
     logger.debug('user os: %s' % user_os)
 
-    repo = task.project.repository
+    repo = entity.project.repository
 
     # if entity.versions:
-    for version in task.versions:
-        logger.debug('version.task.id : %s' % version.task.id)
+    for version in entity.versions:
+        logger.debug('version.entity.id : %s' % version.entity.id)
         assert isinstance(version, Version)
 
         version_absolute_full_path = version.absolute_full_path
@@ -252,6 +258,8 @@ def get_task_versions(request):
             # 'hours_to_complete': version.hours_to_complete,
             # 'notes': version.notes
         })
+
+    logger.debug('no p')
 
     return version_data
 

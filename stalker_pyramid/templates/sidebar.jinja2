@@ -20,6 +20,10 @@
 
         {% include 'studio/view/studio_sidebar.jinja2' %}
 
+    {% elif entity.entity_type == 'Task' or entity.entity_type == 'Asset'%}
+
+        {% include 'task/view/task_sidebar.jinja2' %}
+
     {% endif %}
 
     <div class="sidebar-collapse" id="sidebar-collapse">

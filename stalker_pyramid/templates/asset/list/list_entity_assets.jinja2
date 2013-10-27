@@ -37,7 +37,7 @@
 {# MODALS #}
 {% block modals %}
 
-    {% include 'task/task_dialog_template.jinja2' %}
+    {% include 'task/dialog/task_dialog_template.jinja2' %}
 
 {% endblock modals %}
 
@@ -57,7 +57,7 @@
                            data-target="#task_dialog"
                            data-toggle="modal"
                            data-keyboard=false
-                           href='{{ request.route_url("project_asset_dialog", id=entity.id, mode='create') }}'>Create
+                           href='{{ request.route_url("asset_dialog", id=-1, mode='create') }}'>Create
                         </a>
                     </button>
                 </div>
@@ -78,7 +78,7 @@
         <div class="span12">
             <div class="tabbable" id="asset_types">
                 <ul id="asset_types_ul" class="nav nav-tabs"></ul>
-                <div id="asset_type_tables" class="tab-content"></div>
+                <div id="asset_type_tables" class="tab-content no-padding"></div>
             </div>
         </div>
     </div>
@@ -182,7 +182,7 @@
                             var table_names = [];
                             for (i = 0; i < data.length; i++) {
                                 // fix dates
-                                data[i].link = '/projects/{{ entity.id }}/assets/' + data[i].id + '/view';
+                                data[i].link = '/assets/' + data[i].id + '/view/';
 
                                 if (data[i].thumbnail_full_path == null) {
                                     data[i].thumbnail_full_path = '{{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}';

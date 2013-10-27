@@ -824,12 +824,7 @@ def create_data_dialog(request, entity_type='Task'):
 def task_dialog(request):
     """called when creating tasks
     """
-    # get the mode and decide which way to go
-    mode = request.matchdict.get('mode')
-    if mode == 'create':
-        return create_data_dialog(request, entity_type='Task')
-    elif mode == 'update':
-        return update_data_dialog(request, entity_type='Task')
+    return create_data_dialog(request, entity_type='Task')
 
 
 @view_config(
@@ -1161,67 +1156,6 @@ def request_task_review(request):
     return HTTPOk()
 
 
-
-@view_config(
-    route_name='view_project_asset',
-    renderer='templates/task/view_project_task.jinja2'
-)
-@view_config(
-    route_name='view_project_sequence',
-    renderer='templates/task/view_project_task.jinja2'
-)
-@view_config(
-    route_name='view_project_shot',
-    renderer='templates/task/view_project_task.jinja2'
-)
-@view_config(
-    route_name='view_project_task',
-    renderer='templates/task/view_project_task.jinja2'
-)
-@view_config(
-    route_name='view_task',
-    renderer='templates/task/view_project_task.jinja2'
-)
-@view_config(
-    route_name='view_asset',
-    renderer='templates/task/view_project_task.jinja2'
-)
-@view_config(
-    route_name='view_shot',
-    renderer='templates/task/view_project_task.jinja2'
-)
-@view_config(
-    route_name='view_sequence',
-    renderer='templates/task/view_project_task.jinja2'
-)
-def view_project_task(request):
-    """runs when viewing an task
-    """
-    logged_in_user = get_logged_in_user(request)
-
-    task_id = request.matchdict['id']
-    task = Task.query.filter_by(id=task_id).first()
-
-    project_id = request.matchdict.get('pid', None)
-    if project_id:
-        project = Project.query.filter_by(id=project_id).first()
-    else:
-        if task:
-            project = task.project
-
-    studio = Studio.query.first()
-    projects = Project.query.all()
-
-    return {
-        'entity': project,
-        'task': task,
-        'has_permission': PermissionChecker(request),
-        'logged_in_user': logged_in_user,
-        'milliseconds_since_epoch': milliseconds_since_epoch,
-        'stalker_pyramid': stalker_pyramid,
-        'projects': projects,
-        'studio': studio
-    }
 
 
 @view_config(

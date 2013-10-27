@@ -132,6 +132,8 @@ def main(global_config, **settings):
     config.add_route('get_entity_shots',               'entities/{id}/shots/')
     config.add_route('get_entity_vacations',           'entities/{id}/vacations/')
     config.add_route('get_entity_entities_out_stack',  'entities/{id}/{entities}/out_stack/' )
+    config.add_route('get_entity_events',              'entities/{id}/events/')#json
+    config.add_route('get_entity_versions',            'entities/{id}/versions/')  # json
 
     config.add_route('list_entity_users',              'entities/{id}/users/list')
     config.add_route('list_entity_departments',        'entities/{id}/departments/list') # html
@@ -140,6 +142,8 @@ def main(global_config, **settings):
     config.add_route('list_entity_tickets',            'entities/{id}/tickets/list') # html
     config.add_route('list_entity_projects',           'entities/{id}/projects/list')
     config.add_route('list_entity_references',         'entities/{id}/references/list') # html
+    config.add_route('list_entity_vacations',          'entities/{id}/vacations/list') # html
+    config.add_route('list_entity_versions',          'entities/{id}/versions/list') # html
 
     config.add_route('append_entities_to_entity_dialog',  'entities/{id}/{entities}/append/dialog')
     config.add_route('append_entities_to_entity',         'entities/{id}/append')
@@ -204,13 +208,9 @@ def main(global_config, **settings):
     config.add_route('list_projects',              'projects/list') # html
     config.add_route('list_project_users',         'projects/{id}/users/list')
     config.add_route('list_project_tasks',         'projects/{id}/tasks/list') # html
-    config.add_route('view_project_task',          'projects/{pid}/tasks/{id}/view')
     config.add_route('list_project_assets',        'projects/{id}/assets/list')
-    config.add_route('view_project_asset',         'projects/{pid}/assets/{id}/view')
     config.add_route('list_project_shots',         'projects/{id}/shots/list')
-    config.add_route('view_project_shot',          'projects/{pid}/shots/{id}/view')
     config.add_route('list_project_sequences',     'projects/{id}/sequences/list')
-    config.add_route('view_project_sequence',      'projects/{pid}/sequences/{id}/view')
     config.add_route('list_project_tickets',       'projects/{id}/tickets/list')
     config.add_route('list_project_references',    'projects/{id}/references/list')
 
@@ -286,7 +286,7 @@ def main(global_config, **settings):
     config.add_route('get_user_vacations',    'users/{id}/vacations/') # json
     config.add_route('get_user_tickets',      'users/{id}/tickets/') # json
     config.add_route('get_user_events',       'users/{id}/events/')#json
-    config.add_route('get_user_efficiency_graphic','users/{id}/efficiency_graphic/')#json
+    # config.add_route('get_user_worked_hours', 'users/{id}/{frequency}/worked_hours/')#json
 
     config.add_route('list_users',            'users/list') # html
     config.add_route('list_user_tasks',       'users/{id}/tasks/list') # html
@@ -397,6 +397,7 @@ def main(global_config, **settings):
     config.add_route('list_task_tasks',          'tasks/{id}/tasks/list') # html
     config.add_route('list_task_versions',       'tasks/{id}/versions/list') # html
     config.add_route('list_task_tickets',        'tasks/{id}/tickets/list') # html
+    config.add_route('list_task_references',     'tasks/{id}/references/list') # html
 
     config.add_route('get_gantt_tasks',          'tasks/{id}/gantt')
     config.add_route('get_gantt_task_children',  'tasks/{id}/children/gantt')
