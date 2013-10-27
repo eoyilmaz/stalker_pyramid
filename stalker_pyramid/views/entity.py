@@ -18,13 +18,14 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 import logging
-from pyramid.httpexceptions import HTTPServerError, HTTPFound, HTTPOk
+import datetime
+from pyramid.httpexceptions import HTTPServerError, HTTPFound, HTTPOk, HTTPForbidden
 from pyramid.view import view_config
-from stalker import Entity, Studio, Project, Group, User, Department
+from stalker import Entity, Studio, Project, Group, User, Department, Vacation
 from stalker.db import DBSession
 
 import stalker_pyramid
-from stalker_pyramid.views import PermissionChecker, get_logged_in_user, milliseconds_since_epoch, get_multi_integer
+from stalker_pyramid.views import PermissionChecker, get_logged_in_user, milliseconds_since_epoch, get_multi_integer, multi_permission_checker, get_multi_string
 
 
 logger = logging.getLogger(__name__)
@@ -227,6 +228,8 @@ logger.setLevel(logging.DEBUG)
 def get_entity_related_data(request):
     """lists the time logs of the given task
     """
+
+    logger.debug('get_entity_related_data')
     logged_in_user = get_logged_in_user(request)
 
     studio = Studio.query.first()
@@ -359,46 +362,6 @@ def append_entities_to_entity(request):
 
     return HTTPOk()
 
-@view_config(
-    route_name='append_entities_to_entity',
-)
-def append_entities_to_entity(request):
-    """Appends entities to entity for example appends Projects to user.projects
-    etc.
-    """
-    logger.debug('append_class_to_entity is running')
-
-
-
-    entity_id = request.matchdict.get('id', -1)
-    entity = Entity.query.filter_by(id=entity_id).first()
-
-    selected_list = get_multi_integer(request, 'selected_items[]')
-
-
-    logger.debug('selected_list: %s' % selected_list)
-
-
-    if entity and selected_list:
-
-        appended_entities = Entity.query.filter(Entity.id.in_(selected_list)).all()
-        if appended_entities:
-            attr_name = appended_entities[0].plural_class_name.lower()
-            eval('entity.%(attr_name)s.extend(appended_entities)' % {'attr_name': attr_name})
-            DBSession.add(entity)
-
-            logger.debug('entity is updated successfully')
-
-            request.session.flash(
-                'success:Selected %s are added to %s <strong>%s</strong> \'s %s' % (attr_name,entity.entity_type.lower(),entity.name, attr_name)
-            )
-            logger.debug('***append_entities_to_entity method ends ***')
-    else:
-        logger.debug('not all parameters are in request.params')
-        HTTPServerError()
-
-    return HTTPOk()
-
 
 @view_config(
     route_name='remove_entity_from_entity',
@@ -407,7 +370,7 @@ def remove_entity_from_entity(request):
     """Removes entitiy from entity for example removes selected project from user.projects
     etc.
     """
-    logger.debug('append_class_to_entity is running')
+    logger.debug('remove_entity_from_entity is running')
 
     came_from = request.params.get('came_from', '/')
 
@@ -432,7 +395,7 @@ def remove_entity_from_entity(request):
         request.session.flash(
             'success:%s <strong>%s</strong> is removed from %s \'s %s  successfully' % (selected_entity.entity_type, selected_entity.name, entity.name, attr_name)
         )
-        logger.debug('***append_entities_to_entity method ends ***')
+        logger.debug('***remove_entity_from_entity method ends ***')
     else:
         logger.debug('not all parameters are in request.params')
         HTTPServerError()
@@ -440,3 +403,92 @@ def remove_entity_from_entity(request):
     return HTTPFound(
         location=came_from
     )
+
+
+
+@view_config(
+    route_name='get_entity_events',
+    renderer='json'
+)
+@view_config(
+    route_name='get_user_events',
+    renderer='json'
+)
+def get_entity_events(request):
+    if not multi_permission_checker(
+            request, ['Read_User', 'Read_TimeLog', 'Read_Vacation']):
+        return HTTPForbidden(headers=request)
+
+    logger.debug('get_user_events is running')
+
+    keys = get_multi_string(request,'keys')
+
+    logger.debug('keys: %s'% keys)
+
+    entity_id = request.matchdict.get('id', -1)
+    entity = Entity.query.filter_by(id=entity_id).first()
+
+    logger.debug('entity_id : %s' % entity_id)
+
+    events = []
+
+    # if entity.time_logs:
+    if 'time_log' in keys:
+        for time_log in entity.time_logs:
+            # logger.debug('time_log.task.id : %s' % time_log.task.id)
+            # assert isinstance(time_log, TimeLog)
+            events.append({
+                'id': time_log.id,
+                'entity_type': time_log.plural_class_name.lower(),
+                'title': '%s (%s)' % (
+                    time_log.task.name,
+                    ' | '.join(reversed(
+                        [parent.name for parent in time_log.task.parents]))),
+                'start': milliseconds_since_epoch(time_log.start),
+                'end': milliseconds_since_epoch(time_log.end),
+                'className': 'label-success',
+                'allDay': False,
+                'status': time_log.task.status.name
+                # 'hours_to_complete': time_log.hours_to_complete,
+                # 'notes': time_log.notes
+            })
+
+    if 'vacation' in keys:
+        vacations = Vacation.query.filter(Vacation.user == None).all()
+        if isinstance(entity, User):
+            vacations.extend(entity.vacations)
+
+        for vacation in vacations:
+
+            events.append({
+                'id': vacation.id,
+                'entity_type': vacation.plural_class_name.lower(),
+                'title': vacation.type.name,
+                'start': milliseconds_since_epoch(vacation.start),
+                'end': milliseconds_since_epoch(vacation.end),
+                'className': 'label-yellow',
+                'allDay': True,
+                'status': ''
+            })
+
+    if 'task' in keys:
+        today = datetime.datetime.today()
+        for task in entity.tasks:
+
+            if today < task.end:
+                events.append({
+                    'id': task.id,
+                    'entity_type': task.plural_class_name.lower(),
+                    'title': '%s (%s)' % (
+                        task.name,
+                        ' | '.join([parent.name for parent in task.parents])),
+                    'start': milliseconds_since_epoch(task.start),
+                    'end': milliseconds_since_epoch(task.end),
+                    'className': 'label',
+                    'allDay': False,
+                    'status': task.status.name
+                    # 'hours_to_complete': time_log.hours_to_complete,
+                    # 'notes': time_log.notes
+                })
+
+    return events

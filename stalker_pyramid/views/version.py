@@ -229,7 +229,7 @@ def get_entity_versions(request):
 
     # if entity.versions:
     for version in entity.versions:
-        logger.debug('version.entity.id : %s' % version.entity.id)
+
         assert isinstance(version, Version)
 
         version_absolute_full_path = version.absolute_full_path

@@ -17,167 +17,211 @@
  License along with this library; if not, write to the Free Software
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #}
-<div class="row-fluid">
-    <div class="span12">
+{% extends "base.jinja2" %}
+
+
+{#SIDEBAR#}
+{% block sidebar %}
+
+    {% include 'sidebar.jinja2' %}
+
+{% endblock sidebar %}
+
+{#PRE-HEADER #}
+{% block pre_header %}
+
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/dropzone.css") }}'/>
+
+{% endblock pre_header %}
+
+{# BREADCRUMBS #}
+{% block breadcrumbs %}
+
+    {% set page_title='References' %}
+    {% include 'breadcrumbs.jinja2' %}
+
+{% endblock breadcrumbs %}
+
+{# MODALS #}
+{% block modals %}
+
+    {% include 'modals/dialog_template.jinja2' %}
+
+{% endblock modals %}
+
+{#PAGE-CONTENT#}
+{% block page_content %}
+
+        {% set page_title='References' %}
+    {% include 'page_header.jinja2' %}
+    <div class="row-fluid">
+
         <!--PAGE CONTENT BEGINS-->
-        <div class="row-fluid">
-        </div>
-        <!--PAGE CONTENT ENDS-->
 
-        <div class="btn-toolbar">
             <button data-target="#dialog_template"
-                    data-toggle="modal"
-                    data-keyboard="false"
-                    href="{{ request.route_url('upload_entity_reference_dialog', id=entity.id) }}"
-                    class="btn btn-small btn-primary">
-                <i class="icon-cloud-upload bigger-120"></i>
-                Upload References
-            </button>
-
-            <div id="new_references_storage" class="hidden"></div>
-        </div>
-
-        <ul class="ace-thumbnails"></ul> {# dynamically filled with jQuery #}
+                data-toggle="modal"
+                data-keyboard="false"
+                href="{{ request.route_url('upload_entity_reference_dialog', id=entity.id) }}"
+                class="pull-left btn btn-small btn-primary">
+            <i class="icon-cloud-upload bigger-120"></i>
+            Upload References
+        </button>
 
 
     </div>
-</div>
+    <div class="space-8"></div>
+    <div class="row-fluid">
+        <div id="new_references_storage" class="hidden"></div>
 
-{% raw %}
-<script id="tmpl_reference_item" type="text/x-dot-template">
-    <li id="Reference_{{=it.id}}">
-        <a href="/{{=it.full_path}}"
-           title="{{=it.original_filename}}"
-           data-rel="colorbox"
-           class="cboxElement">
-            <div style="text-align: center; overflow: hidden; width: 150px">
-                <img alt="150x150"
-                     style="height: 150px; width: auto; max-width: none;
+        <ul class="ace-thumbnails"></ul>
+    </div>
+{% endblock page_content %}
+
+{#EXTRA-SCRIPTS#}
+{% block extrascripts %}
+
+
+    <script type="text/javascript"
+            src='{{ request.static_url("stalker_pyramid:static/ace/js/dropzone.min.js") }}'></script>
+    {% raw %}
+    <script id="tmpl_reference_item" type="text/x-dot-template">
+        <li id="Reference_{{=it.id}}">
+            <a href="/{{=it.full_path}}"
+               title="{{=it.original_filename}}"
+               data-rel="colorbox"
+               class="cboxElement">
+                <div style="text-align: center; overflow: hidden; width: 150px">
+                    <img alt="150x150"
+                         style="height: 150px; width: auto; max-width: none;
                             position: relative; left: 100%; margin-left: -200%;"
-                     src="/{{=it.thumbnail ? it.thumbnail : '/static/stalker/images/Placeholder_0.png' }}">
-                <div class="tags">
-                  {{~ it.tags :t}}
-                    <span class="label label-info">{{=t}}</span>
-                  {{~}}
+                         src="/{{=it.thumbnail ? it.thumbnail : '/static/stalker/images/Placeholder_0.png' }}">
+
+                    <div class="tags">
+                        {{~ it.tags :t}}
+                        <span class="label label-info">{{=t}}</span>
+                        {{~}}
+                    </div>
                 </div>
+            </a>
+
+            <div class="tools">
+                <a href="/{{=it.full_path}}" target="_blank">
+                    <i class="icon-link"></i>
+                </a>
+
+                <a class='reference-deleter' ref_id="{{=it.id}}" href="#">
+                    <i class="icon-remove red"></i>
+                </a>
             </div>
-        </a>
-
-        <div class="tools">
-            <a href="/{{=it.full_path}}" target="_blank">
-                <i class="icon-link"></i>
-            </a>
-    
-            <a class='reference-deleter' ref_id="{{=it.id}}" href="#">
-                <i class="icon-remove red"></i>
-            </a>
-        </div>
-    </li>
-</script>
-{% endraw %}
+        </li>
+    </script>
+    {% endraw %}
 
 
 
 
-<script type="text/javascript">
+    <script type="text/javascript">
 
-    var colorbox_params = {
-        reposition: true,
-        scalePhotos: true,
-        scrolling: false,
-        previous: '<i class="icon-arrow-left"></i>',
-        next: '<i class="icon-arrow-right"></i>',
-        close: '&times;',
-        current: '{current} of {total}',
-        maxWidth: '100%',
-        maxHeight: '100%',
-        title: function(){
-            var url = $(this).attr('href');
-            var original_title = $(this).attr('title');
-            return '<a href="' + url + '" target="_blank">' + original_title + ' (Open In New Window)</a>';
-        },
-        onOpen: function () {
-            document.body.style.overflow = 'hidden';
-        },
-        onClosed: function () {
-            document.body.style.overflow = 'auto';
-        },
-        onComplete: function () {
-            $.colorbox.resize();
-        }
-    };
-
-    var append_thumbnail = function(data, template, animate){
-        //
-        // adds only one item to the list
-        //
-        // compile the reference item template
-        var ref_item = $($.parseHTML(template(data)));
-        if (animate){
-            ref_item.css({display: 'none'});
-        }
-        $('.ace-thumbnails').append(ref_item);
-        if (animate){
-            ref_item.toggle('slow');
-        }
-    }
-
-    var draw_reference_items = function(){
-        //
-        // Draws reference items
-        //
-        var referenceItemTemplate = doT.template(document.getElementById('tmpl_reference_item').text);
-
-        // now generate the template items
-        $.getJSON('/entities/{{ entity.id }}/references/').then(function(data){
-            var ref_count = data.length;
-            for (var i=0; i < ref_count; i++){
-                append_thumbnail(data[i], referenceItemTemplate);
+        var colorbox_params = {
+            reposition: true,
+            scalePhotos: true,
+            scrolling: false,
+            previous: '<i class="icon-arrow-left"></i>',
+            next: '<i class="icon-arrow-right"></i>',
+            close: '&times;',
+            current: '{current} of {total}',
+            maxWidth: '100%',
+            maxHeight: '100%',
+            title: function () {
+                var url = $(this).attr('href');
+                var original_title = $(this).attr('title');
+                return '<a href="' + url + '" target="_blank">' + original_title + ' (Open In New Window)</a>';
+            },
+            onOpen: function () {
+                document.body.style.overflow = 'hidden';
+            },
+            onClosed: function () {
+                document.body.style.overflow = 'auto';
+            },
+            onComplete: function () {
+                $.colorbox.resize();
             }
+        };
 
-            $('.ace-thumbnails [data-rel="colorbox"]').colorbox(colorbox_params);
-            $("#cboxLoadingGraphic").append("<i class='icon-spinner orange'></i>");
+        var append_thumbnail = function (data, template, animate) {
+            //
+            // adds only one item to the list
+            //
+            // compile the reference item template
+            var ref_item = $($.parseHTML(template(data)));
+            if (animate) {
+                ref_item.css({display: 'none'});
+            }
+            $('.ace-thumbnails').append(ref_item);
+            if (animate) {
+                ref_item.toggle('slow');
+            }
+        }
 
-            $('.reference-deleter').on('click', function(e){
-                e.preventDefault();
-                e.stopPropagation();
-                var self = $(this);
-                bootbox.confirm('Delete ?', function(response){
-                    if(response){
-                        var ref_id = self.attr('ref_id');
-                        console.debug('will delete ' + ref_id);
-                        // remove the reference in the server
-                        var url = '/references/' + ref_id + '/delete';
-                        $.post(url).done(function(response_text){
-                            // use he response text and give info
+        var draw_reference_items = function () {
+            //
+            // Draws reference items
+            //
+            var referenceItemTemplate = doT.template(document.getElementById('tmpl_reference_item').text);
 
-                            // and also delete the HTML element
-                            $('#Reference_' + ref_id).toggle('slow', function(){
-                                $(this).remove();
-                            })
-                        }).fail(function(jqXHR){
-                            // us the jqXHR.response_text and inform user about what is wrong
-                        });
-                    }
+            // now generate the template items
+            $.getJSON('/entities/{{ entity.id }}/references/').then(function (data) {
+                var ref_count = data.length;
+                for (var i = 0; i < ref_count; i++) {
+                    append_thumbnail(data[i], referenceItemTemplate);
+                }
+
+                $('.ace-thumbnails [data-rel="colorbox"]').colorbox(colorbox_params);
+                $("#cboxLoadingGraphic").append("<i class='icon-spinner orange'></i>");
+
+                $('.reference-deleter').on('click', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    var self = $(this);
+                    bootbox.confirm('Delete ?', function (response) {
+                        if (response) {
+                            var ref_id = self.attr('ref_id');
+                            console.debug('will delete ' + ref_id);
+                            // remove the reference in the server
+                            var url = '/references/' + ref_id + '/delete';
+                            $.post(url).done(function (response_text) {
+                                // use he response text and give info
+
+                                // and also delete the HTML element
+                                $('#Reference_' + ref_id).toggle('slow', function () {
+                                    $(this).remove();
+                                })
+                            }).fail(function (jqXHR) {
+                                        // us the jqXHR.response_text and inform user about what is wrong
+                                    });
+                        }
+                    });
                 });
             });
-        });
-    };
+        };
 
-    jQuery(function ($) {
-        // for initial one
-        draw_reference_items();
+        jQuery(function ($) {
+            // for initial one
+            draw_reference_items();
 
-        // and add the new thumbnails when uploaded through Dropzone
-        $('#dialog_template').on('hidden', function(){
-            // get the data from the storage
-            var data = $.parseJSON($('#new_references_storage').text());
-            // empty the storage
-            $('#new_references_storage').text('');
-            var referenceItemTemplate = doT.template(document.getElementById('tmpl_reference_item').text);
-            for (var i=0; i < data.length; i++){
-                append_thumbnail(data[i], referenceItemTemplate, true);
-            }
+            // and add the new thumbnails when uploaded through Dropzone
+            $('#dialog_template').on('hidden', function () {
+                // get the data from the storage
+                var data = $.parseJSON($('#new_references_storage').text());
+                // empty the storage
+                $('#new_references_storage').text('');
+                var referenceItemTemplate = doT.template(document.getElementById('tmpl_reference_item').text);
+                for (var i = 0; i < data.length; i++) {
+                    append_thumbnail(data[i], referenceItemTemplate, true);
+                }
+            });
         });
-    });
-</script>
+    </script>
+
+{% endblock extrascripts %}
