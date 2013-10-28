@@ -760,6 +760,9 @@ def create_data_dialog(request, entity_type='Task'):
     # get mode
     mode = request.matchdict.get('mode', None)
 
+    entity_id = request.matchdict.get('id')
+    entity = Entity.query.filter_by(id=entity_id).first()
+
     if mode == 'create':
         project_id = request.params.get('project_id')
         project = Project.query.filter_by(id=project_id).first()
@@ -770,23 +773,21 @@ def create_data_dialog(request, entity_type='Task'):
         if not project and parent:
             project = parent.project
 
-        dependent_ids = get_multi_integer(request, 'dependent_id', 'GET')
-        dependencies = Task.query.filter(Task.id.in_(dependent_ids)).all()
+        dependent_ids = get_multi_integer(request, 'dependent_ids', 'GET')
+        depends_to = Task.query.filter(Task.id.in_(dependent_ids)).all()
 
-        if not project and dependencies:
-            project = dependencies[0].project
+        if not project and depends_to:
+            project = depends_to[0].project
     elif mode == 'update':
-        entity_id = request.matchdict.get('id')
-        entity = Entity.query.filter_by(id=entity_id).first()
         project = entity.project
         parent = entity.parent
-        dependencies = entity.depends
+        depends_to = entity.depends
 
-    logger.debug('entity_id     : %s' % entity_id)
-    logger.debug('entity        : %s' % entity)
-    logger.debug('project       : %s' % project)
-    logger.debug('parent        : %s' % parent)
-    logger.debug('dependencies  : %s' % dependencies)
+    logger.debug('entity_id  : %s' % entity_id)
+    logger.debug('entity     : %s' % entity)
+    logger.debug('project    : %s' % project)
+    logger.debug('parent     : %s' % parent)
+    logger.debug('depends_to : %s' % depends_to)
 
     return {
         'mode': mode,
@@ -795,7 +796,7 @@ def create_data_dialog(request, entity_type='Task'):
         'entity': entity,
         'project': project,
         'parent': parent,
-        'dependencies': dependencies,
+        'depends_to': depends_to,
         'schedule_models': defaults.task_schedule_models,
         'milliseconds_since_epoch': milliseconds_since_epoch,
         'came_from': came_from,
@@ -932,8 +933,10 @@ def create_task(request):
         logger.debug('status: %s' % status)
 
         # get the dependencies
-        depend_ids = get_multi_integer(request, 'depend_ids')
-        depends = Task.query.filter(Task.id.in_(depend_ids)).all() if depend_ids else []
+        logger.debug('request.POST: %s' % request.POST)
+        depends_to_ids = get_multi_integer(request, 'dependent_ids')
+
+        depends = Task.query.filter(Task.id.in_(depends_to_ids)).all() if depends_to_ids else []
         logger.debug('depends: %s' % depends)
 
         kwargs['name'] = name

@@ -84,8 +84,7 @@
     <link rel="stylesheet"
           href='{{ request.static_url("stalker_pyramid:static/ace/css/ace-ie.min.css") }}'/>
     <![endif]-->
-
-
+c
     <style>
         .spinner-preview {
             width: 100px;
@@ -270,6 +269,12 @@
         });
     </script>
 
+    {# copyToClipboard #}
+    <script type="text/javascript">
+        var copyToClipboard = function (text) {
+            window.prompt("Copy to clipboard: Ctrl+C, Enter", text);
+        };
+    </script>
 
     {# Pop Flash Messages #}
     <script type='text/javascript'>
