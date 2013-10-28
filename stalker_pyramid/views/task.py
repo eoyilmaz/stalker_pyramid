@@ -322,6 +322,7 @@ def update_task(request):
     """Updates the given task with the data coming from the request
     """
     logged_in_user = get_logged_in_user(request)
+    p_checker = PermissionChecker(request)
 
     # *************************************************************************
     # collect data
@@ -332,18 +333,12 @@ def update_task(request):
         parent = None
     name = str(request.params.get('name', None))
     description = request.params.get('description', '')
-    is_milestone = int(request.params.get('is_milestone', None))
-    status_id = int(request.params.get('status_id', None))
-    status = Status.query.filter_by(id=status_id).first()
     schedule_model = request.params.get('schedule_model') # there should be one
     schedule_timing = float(request.params.get('schedule_timing'))
     schedule_unit = request.params.get('schedule_unit')
-    schedule_constraint = int(request.params.get('schedule_constraint', 0))
-    start = get_date(request, 'start')
-    end = get_date(request, 'end')
-    update_bid = int(request.params.get('update_bid'))
+    update_bid = 1 if request.params.get('update_bid') == 'on' else 0
 
-    depend_ids = get_multi_integer(request, 'depend_ids')
+    depend_ids = get_multi_integer(request, 'dependent_ids')
     depends = Task.query.filter(Task.id.in_(depend_ids)).all()
 
     resource_ids = get_multi_integer(request, 'resource_ids')
@@ -357,9 +352,10 @@ def update_task(request):
 
     entity_type = request.params.get('entity_type', None)
     code = request.params.get('code', None)
-    asset_type = request.params.get('asset_type_name', None)
+    asset_type = request.params.get('asset_type', None)
     shot_sequence_id = request.params.get('shot_sequence_id', None)
 
+    logger.debug('entity_type         : %s' % entity_type)
     logger.debug('parent_id           : %s' % parent_id)
     logger.debug('parent              : %s' % parent)
     logger.debug('depend_ids          : %s' % depend_ids)
@@ -369,18 +365,19 @@ def update_task(request):
     logger.debug('responsible         : %s' % responsible)
     logger.debug('name                : %s' % name)
     logger.debug('description         : %s' % description)
-    logger.debug('is_milestone        : %s' % is_milestone)
-    logger.debug('status_id           : %s' % status_id)
-    logger.debug('status              : %s' % status)
     logger.debug('schedule_model      : %s' % schedule_model)
     logger.debug('schedule_timing     : %s' % schedule_timing)
     logger.debug('schedule_unit       : %s' % schedule_unit)
-    logger.debug('schedule_constraint : %s' % schedule_constraint)
-    logger.debug('start               : %s' % start)
-    logger.debug('end                 : %s' % end)
     logger.debug('update_bid          : %s' % update_bid)
     logger.debug('priority            : %s' % priority)
     logger.debug('code                : %s' % code)
+
+    # before doing anything check permission
+    if not p_checker('Update_' + entity_type):
+        response = Response('You do not have enough permission to update '
+                            'a %s' % entity_type)
+        response.status_int = 500
+        return response
 
     # get task
     task_id = request.matchdict.get('id', -1)
@@ -388,7 +385,9 @@ def update_task(request):
 
     # update the task
     if not task:
-        return HTTPOk(detail='Task not updated')
+        response = Response("No task found with id : %s" % task_id)
+        response.status_int = 500
+        return response
 
     task.name = name
     task.description = description
@@ -398,16 +397,16 @@ def update_task(request):
         task.depends = depends
     except CircularDependencyError:
         transaction.abort()
-        return HTTPServerError()
+        message = '</div>Parent item can not also be a dependent for the ' \
+                  'updated item:<br><br>Parent: %s<br>Depends To: %s</div>' % \
+                  (parent.name, map(lambda x: x.name, depends))
+        response = Response(message)
+        response.status_int = 500
+        return response
 
-    task.start = start
-    task.end = end
-    task.is_milestone = is_milestone
-    task.status = status
     task.schedule_model = schedule_model
     task.schedule_unit = schedule_unit
     task.schedule_timing = schedule_timing
-    task.schedule_constraint = schedule_constraint
     task.resources = resources
     task.priority = priority
     task.code = code
@@ -426,7 +425,11 @@ def update_task(request):
 
         if type_ is None:
             # create a new Type
-            # TODO: should we check for permission here or will it be already done in the UI (ex. filteringSelect instead of comboBox)
+            if not p_checker('Create_Type'):
+                response = Response('You do not have permission to '
+                                    'create a Type instance')
+                response.status_int = 500
+                return response
             type_ = Type(
                 name=asset_type,
                 code=asset_type,
@@ -445,7 +448,9 @@ def update_task(request):
         task.bid_unit = task.schedule_unit
     else:
         logger.debug('not updating bid')
-    return HTTPOk(detail='Task updated successfully')
+    response = Response('Task updated successfully')
+    response.status_int = 200
+    return response
 
 
 def depth_first_flatten(task, task_array=None):
@@ -779,6 +784,7 @@ def create_data_dialog(request, entity_type='Task'):
         if not project and depends_to:
             project = depends_to[0].project
     elif mode == 'update':
+        entity_type = entity.entity_type
         project = entity.project
         parent = entity.parent
         depends_to = entity.depends
@@ -794,13 +800,13 @@ def create_data_dialog(request, entity_type='Task'):
         'has_permission': PermissionChecker(request),
         'logged_in_user': logged_in_user,
         'entity': entity,
+        'entity_type': entity_type,
         'project': project,
         'parent': parent,
         'depends_to': depends_to,
         'schedule_models': defaults.task_schedule_models,
         'milliseconds_since_epoch': milliseconds_since_epoch,
         'came_from': came_from,
-        'entity_type': entity_type,
     }
 
 

@@ -22,7 +22,7 @@
                         <option value="Sequence">Sequence</option>
                     </select>
                     {% else %}
-                        <input type='text' id="task_entity_type" value="{{ entity.entity_type }}" disabled>
+                        <input type='text' id="task_entity_type" value="{{ entity.entity_type }}" disabled="true">
                     {% endif %}
                 </div>
             </div>
@@ -305,7 +305,7 @@
         var schedule_timing = 1;
         var schedule_unit = 'h';
         var schedule_model = 'effort';
-        var url = '{{ request.route_url("create_task") }}';
+        var submit_form_url = '{{ request.route_url("create_task") }}';
         var selected_resources = [];
         var entity_type = 'Task';
         var responsible_id = {{ project.lead.id }};
@@ -338,7 +338,7 @@
             schedule_timing = {{ entity.schedule_timing }};
             schedule_unit = '{{ entity.schedule_unit }}';
             schedule_model = '{{ entity.schedule_model }}';
-            url = '{{ request.route_url('update_task', id=entity.id) }}';
+            submit_form_url = '{{ request.route_url('update_task', id=entity.id) }}';
             selected_resources = [
                 {% for resource in entity.resources %}
                     {{ resource.id }},
@@ -493,11 +493,6 @@
             field_update_mode_checker();
         });
 
-        // Updates on parent change
-        task_parent.on('change', function(){
-            update_responsible_field();
-        });
-
         {# ***************************************************************** #}
         {# Code #}
         var task_name = $('#task_name');
@@ -566,11 +561,10 @@
 
         // and update it on project change
         var shot_sequence_updater = function(){
-            var url = '/projects/' + project.id + '/sequences/';
             // set the field to updating mode
             shot_sequence.attr('is_updating', true);
             field_update_mode_checker();
-            $.getJSON(url).then(function(data){
+            $.getJSON('/projects/' + project.id + '/sequences/').then(function(data){
                 // remove current options
                 shot_sequence.find('option').remove();
 
@@ -622,8 +616,7 @@
         task_responsible.attr('is_updating', true);
         field_update_mode_checker();
 
-        var url = '/projects/' + project.id + '/users/?simple=1';
-        $.getJSON(url).then(function(data){
+        $.getJSON('/projects/' + project.id + '/users/?simple=1').then(function(data){
             // remove current elements
             task_resources.find('option').remove();
             task_responsible.find('option').remove();
@@ -685,12 +678,15 @@
         submit_button.on('click', function(e){
             e.stopPropagation();
             e.preventDefault();
-            
-            console.debug('this is running!');
+
+            // enable fields
+            var entity_type_value = $('#task_entity_type').val();
+
             var task_form = $('#task_form');
             var form_data = task_form.serialize();
+            form_data += '&project_id={{ project.id }}&entity_type='+entity_type_value;
             console.debug('form_data :', form_data);
-            
+
             if ( task_form.validate() ){
                 // prevent multiple sends
                 if (task_form.attr('is_sending') == 'true'){
@@ -699,13 +695,15 @@
                     task_form.attr('is_sending', true);
                 }
                 $.post(
-                    task_form.attr('action'),
+                    submit_form_url,
                     form_data
                 ).done(function(){
                     $('#task_dialog').modal('hide');
                 }).fail(function(jqXHR){
                     task_form.attr('is_sending', false);
                     bootbox.alert(jqXHR.responseText);
+                    // disable fields again
+                    $('#task_entity_type').attr('disabled', true);
                 });
             }
         });
