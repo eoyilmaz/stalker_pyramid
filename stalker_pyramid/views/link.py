@@ -240,17 +240,54 @@ def get_entity_references(request):
     # TODO: there should be a 'get all references' for Projects for example
     #       which returns all the references related to this project.
 
-    if entity:
-        return [
-            {
-                'id': link.id,
-                'full_path': link.full_path,
-                'original_filename': link.original_filename,
-                'thumbnail': link.thumbnail.full_path
-                if link.thumbnail else link.full_path,
-                'tags': [tag.name for tag in link.tags]
-            } for link in entity.references]
-    return []
+    query_text = """
+        SELECT  "Links".id,
+        "Links".full_path,
+        "Links".original_filename,
+        "Thumbnail".thumbnail_full_path
+        FROM "Links" JOIN "Task_References" ON "Links".id = "Task_References".link_id
+        JOIN "Tasks" ON "Task_References".task_id = "Tasks".id
+        JOIN (SELECT "Links".id AS "link_id",  "Links".full_path as "thumbnail_full_path", "SimpleEntities".thumbnail_id AS "thumbnail_id"
+        FROM "SimpleEntities" JOIN "Links" ON "SimpleEntities".id = "Links".id) AS "Thumbnail" ON "Thumbnail".link_id = "Links".id 
+    """
+    if entity.entity_type in ['Task', 'Asset', 'Shot', 'Sequence']:
+        query_text += 'WHERE "Tasks".id = %(entity_id)s' % {'entity_id': entity_id}
+    elif entity.entity_type == 'Project':
+        query_text += 'WHERE "Tasks".project_id = %(project_id)s' % {'project_id': entity_id}
+
+    result = DBSession.connection().execute(query_text)
+    return [
+        {
+            'id': r[0],
+            'full_path': r[1],
+            'original_filename': r[2],
+            'thumbnail': r[3],
+            'tags': [
+                r[0]
+                for r in DBSession.connection().execute(
+                    """select "SimpleEntities".name
+                    from "SimpleEntities"
+                    join "Tags" on "SimpleEntities".id = "Tags".id
+                    join "Entity_Tags" on "Tags".id = "Entity_Tags".tag_id
+                    join "Links" on "Entity_Tags".entity_id = "Links".id
+                    where "Links".id = %s""" % r[0]
+                )
+            ],
+        } for r in result.fetchall()
+    ]
+
+
+    #if entity:
+    #    return [
+    #        {
+    #            'id': link.id,
+    #            'full_path': link.full_path,
+    #            'original_filename': link.original_filename,
+    #            'thumbnail': link.thumbnail.full_path
+    #            if link.thumbnail else link.full_path,
+    #            'tags': [tag.name for tag in link.tags]
+    #        } for link in entity.references]
+    #return []
 
 
 def generate_local_file_path(extension):

@@ -1208,6 +1208,11 @@ def delete_task(request):
 
     if task:
         try:
+            # remove this task from any related Ticket
+            tickets = Ticket.query.filter(Ticket.links.contains(task)).all()
+            for ticket in tickets:
+                ticket.links.remove(task)
+
             DBSession.delete(task)
             transaction.commit()
         except Exception as e:

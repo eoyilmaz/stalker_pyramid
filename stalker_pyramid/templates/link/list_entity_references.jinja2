@@ -84,36 +84,64 @@
 
     <script type="text/javascript"
             src='{{ request.static_url("stalker_pyramid:static/ace/js/dropzone.min.js") }}'></script>
+{#    {% raw %}#}
+{#    <script id="tmpl_reference_item" type="text/x-dot-template">#}
+{#        <li id="Reference_{{=it.id}}">#}
+{#            <a href="/{{=it.full_path}}"#}
+{#               download_href="/FD{{=it.full_path}}"#}
+{#               title="{{=it.original_filename}}"#}
+{#               data-rel="colorbox"#}
+{#               class="cboxElement">#}
+{#                <div style="text-align: center; overflow: hidden; width: 150px">#}
+{#                    <img alt="150x150"#}
+{#                         style="height: 150px; width: auto; max-width: none;#}
+{#                            position: relative; left: 100%; margin-left: -200%;"#}
+{#                         src="/{{=it.thumbnail ? it.thumbnail : '/static/stalker/images/Placeholder_0.png' }}">#}
+{##}
+{#                    <div class="tags">#}
+{#                        {{~ it.tags :t}}#}
+{#                        <span class="label label-info">{{=t}}</span>#}
+{#                        {{~}}#}
+{#                    </div>#}
+{#                </div>#}
+{#            </a>#}
+{##}
+{#            <div class="tools">#}
+{#                <a href="/FD{{=it.full_path}}" title="Download"><i class="icon-cloud-download"></i></a>#}
+{#                <a href="javascript:copyToClipboard('http://' + window.location.host +'/FD{{=it.full_path}}')" title="Copy Download Link"><i class="icon-link"></i></a>#}
+{#                <a class='reference-deleter' ref_id="{{=it.id}}" href="#" title="Delete"><i class="icon-remove red"></i></a>#}
+{#            </div>#}
+{#        </li>#}
+{#    </script>#}
+{#    {% endraw %}#}
+
     {% raw %}
     <script id="tmpl_reference_item" type="text/x-dot-template">
-        <li id="Reference_{{=it.id}}">
-            <a href="/{{=it.full_path}}"
-               download_href="/FD{{=it.full_path}}"
-               title="{{=it.original_filename}}"
+        <li id="Reference_{{=it[0]}}">
+            <a href="/{{=it[1]}}"
+               download_href="/FD{{=it[1]}}"
+               title="{{=it[2]}}"
                data-rel="colorbox"
                class="cboxElement">
                 <div style="text-align: center; overflow: hidden; width: 150px">
                     <img alt="150x150"
                          style="height: 150px; width: auto; max-width: none;
                             position: relative; left: 100%; margin-left: -200%;"
-                         src="/{{=it.thumbnail ? it.thumbnail : '/static/stalker/images/Placeholder_0.png' }}">
-
-                    <div class="tags">
-                        {{~ it.tags :t}}
-                        <span class="label label-info">{{=t}}</span>
-                        {{~}}
+                         src="/{{=it[3] ? it[3] : '/static/stalker/images/Placeholder_0.png' }}">
                     </div>
                 </div>
             </a>
 
             <div class="tools">
-                <a href="/FD{{=it.full_path}}" title="Download"><i class="icon-cloud-download"></i></a>
-                <a href="javascript:copyToClipboard('http://' + window.location.host +'/FD{{=it.full_path}}')" title="Copy Download Link"><i class="icon-link"></i></a>
-                <a class='reference-deleter' ref_id="{{=it.id}}" href="#" title="Delete"><i class="icon-remove red"></i></a>
+                <a href="/FD{{=it[1]}}" title="Download"><i class="icon-cloud-download"></i></a>
+                <a href="javascript:copyToClipboard('http://' + window.location.host +'/FD{{=it[1]}}')" title="Copy Download Link"><i class="icon-link"></i></a>
+                <a class='reference-deleter' ref_id="{{=it[0]}}" href="#" title="Delete"><i class="icon-remove red"></i></a>
             </div>
         </li>
     </script>
     {% endraw %}
+
+
 
     <script type="text/javascript">
         var colorbox_params = {

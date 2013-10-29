@@ -227,41 +227,35 @@ def get_entity_versions(request):
 
     repo = entity.project.repository
 
-    # if entity.versions:
-    for version in entity.versions:
+    path_converter = lambda x: x
+    if repo:
+        if user_os == 'windows':
+            path_converter = repo.to_windows_path
+        elif user_os == 'linux':
+            path_converter = repo.to_linux_path
+        elif user_os == 'osx':
+            path_converter = repo.to_osx_path
 
-        assert isinstance(version, Version)
-
-        version_absolute_full_path = version.absolute_full_path
-        if repo:
-            if user_os == 'windows':
-                version_absolute_full_path = \
-                    repo.to_windows_path(version.absolute_full_path)
-            elif user_os == 'linux':
-                version_absolute_full_path = \
-                    repo.to_linux_path(version.absolute_full_path)
-            elif user_os == 'osx':
-                version_absolute_full_path = \
-                    repo.to_osx_path(version.absolute_full_path)
-
-        version_data.append({
-            'id': version.id,
-            'name': version.name,
-            'task_id': version.task.id,
-            'task_name': version.task.name,
-            'parent_name': ' | '.join([parent.name for parent in version.task.parents]),
-            'absolute_full_path': version_absolute_full_path,
-            'created_by_id': version.created_by_id,
-            'created_by_name': version.created_by.name,
-            'is_published': version.is_published,
-            'version_number': version.version_number
-            # 'hours_to_complete': version.hours_to_complete,
-            # 'notes': version.notes
-        })
-
-    logger.debug('no p')
-
-    return version_data
+    return [{
+        'id': version.id,
+        'task': {
+            'id': version.task.id,
+            'name': version.task.name
+        },
+        'take_name': version.take_name,
+        'parent': {
+            'id': version.parent.id,
+            'version_number': version.parent.version_number,
+            'take_name': version.parent.take_name
+        } if version.parent else None,
+        'absolute_full_path': path_converter(version.absolute_full_path),
+        'created_by': {
+            'id': version.created_by.id,
+            'name': version.created_by.name
+        },
+        'is_published': version.is_published,
+        'version_number': version.version_number,
+    } for version in entity.versions]
 
 
 @view_config(
