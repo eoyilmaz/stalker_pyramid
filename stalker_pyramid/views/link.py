@@ -204,8 +204,8 @@ def generate_thumbnail(link):
 
     # generate thumbnails for those references
     img = Image.open(file_full_path)
-    img.thumbnail((512, 512)) # TODO: connect this to a config variable
-    img.thumbnail((256, 256), Image.ANTIALIAS)
+    img.thumbnail((300, 300))  # TODO: connect this to a config variable
+    img.thumbnail((150, 150), Image.ANTIALIAS)
 
     thumbnail_full_path, thumbnail_link_full_path = \
         generate_local_file_path(extension)
@@ -234,12 +234,12 @@ def get_entity_references(request):
     requested
     """
     entity_id = request.matchdict.get('id', -1)
-    entity = Entity.query.filter(Entity.id==entity_id).first()
+    entity = Entity.query.filter(Entity.id == entity_id).first()
     logger.debug('asking references for entity: %s' % entity)
 
-    # TODO: there should be a 'get all references' for Projects for example
-    #       which returns all the references related to this project.
-
+    # using Raw SQL queries here to fasten things up quite a bit and also do
+    # some fancy queries like getting all the references of tasks of a project
+    # also with their tags
     query_text = """
         SELECT  "Links".id,
         "Links".full_path,
@@ -275,7 +275,6 @@ def get_entity_references(request):
             ],
         } for r in result.fetchall()
     ]
-
 
     #if entity:
     #    return [

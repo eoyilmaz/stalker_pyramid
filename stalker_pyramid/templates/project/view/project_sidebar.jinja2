@@ -137,6 +137,22 @@
         </li>
     {% endif %}
 
+    {# References #}
+    {% if request.current_route_path() == request.route_path('list_entity_references', id=project.id) %}
+        <li class='active'>
+            <a>
+                <i class="icon-book"></i>
+                <span class="menu-text">References</span>
+            </a>
+        </li>
+    {% else %}
+        <li>
+            <a href='{{ request.route_url('list_entity_references', id=project.id) }}'>
+                <i class="icon-book"></i>
+                <span class="menu-text">References</span>
+            </a>
+        </li>
+    {% endif %}
 
 
     {# Users #}
