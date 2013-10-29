@@ -249,14 +249,13 @@ def get_entity_references(request):
         select  "Links".id,
                 "Links".full_path,
                 "Links".original_filename,
-                "Thumbnail".thumbnail_full_path
+                "Thumbnail".full_path
         from "Links" join "Task_References" on "Links".id = "Task_References".link_id
         join "Tasks" on "Task_References".task_id = "Tasks".id
-        join (
-            select "Links".id as "link_id",
-                   "Links".full_path as "thumbnail_full_path",
-                   "SimpleEntities".thumbnail_id as "thumbnail_id"
-        from "SimpleEntities" join "Links" on "SimpleEntities".id = "Links".id) as "Thumbnail" on "Thumbnail".link_id = "Links".id 
+        join (select "Links".id,
+                     "Links".full_path,
+                     "SimpleEntities".id as link_id
+                     from "Links" join "SimpleEntities" on "Links".id = "SimpleEntities".thumbnail_id) as "Thumbnail" on "Thumbnail".link_id = "Links".id
     """
     if entity.entity_type in ['Task', 'Asset', 'Shot', 'Sequence']:
         sql_query += 'where "Tasks".id = %(entity_id)s' % {'entity_id': entity_id}
