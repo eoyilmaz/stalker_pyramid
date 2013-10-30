@@ -380,9 +380,9 @@ function init_dialog() {
 </script>
 
 <script type="text/javascript">
-
     function destruct_dialog() {
+        $('#start_end_date_range_picker').unbind();
+        $('#dialog_template_submit_button').unbind();
         $('#dialog_template').data('modal', null);
     }
-
 </script>

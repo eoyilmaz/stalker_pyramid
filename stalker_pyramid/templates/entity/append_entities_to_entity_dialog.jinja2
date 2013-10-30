@@ -1,23 +1,15 @@
 <div class='row-fluid'>
     <div class='span12'>
 
-
         <form id='append_form'
               class='form-horizontal'
               role='form'
               method='post'>
-
             <div class='row-fluid'>
-                <div id="multiple_select_list">
-
-
-                </div>
-
-
+                <div id="multiple_select_list"></div>
             </div>
-
-
         </form>
+
         <div class="space-5"></div>
         <div class="hr dotted"></div>
         <div class="space-10"></div>
@@ -119,19 +111,15 @@
         $('#dialog_template_label').append('<span>Append {{ entities_name }}</span>')
 
         {# ***************************************************************** #}
-
-
         $(document).ready(function () {
 
             $.getJSON('/entities/{{ entity.id }}/{{ entities_name }}/out_stack/').then(function (data) {
-
 
                 var item_template = doT.template($('#tmpl_item').html());
                 var multiple_select_list = $('#multiple_select_list')
 
                 // append new options to the select
                 for (var i = 0; i < data.length; i++) {
-
 
                     data_ids.push(data[i].id)
 
@@ -173,6 +161,7 @@
 
 <script type="text/javascript">
     function destruct_dialog() {
+        $('#dialog_template_submit_button').unbind();
         $('#dialog_template').data('modal', null);
     }
 </script>

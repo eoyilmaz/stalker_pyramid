@@ -550,6 +550,12 @@ function init_dialog() {
 
 <script type="text/javascript">
     function destruct_dialog() {
+        $('#time_log_task').unbind();
+        $('#time_log_resource').unbind();
+        $('#start_end_date_range_picker').unbind();
+        $('#start_time').unbind();
+        $('#end_time').unbind();
+        $('#dialog_template_submit_button').unbind();
 
         $('#dialog_template').data('modal', null);
 
