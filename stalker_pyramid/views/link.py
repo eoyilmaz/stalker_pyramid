@@ -255,7 +255,8 @@ def get_entity_references(request):
         join (select "Links".id,
                      "Links".full_path,
                      "SimpleEntities".id as link_id
-                     from "Links" join "SimpleEntities" on "Links".id = "SimpleEntities".thumbnail_id) as "Thumbnail" on "Thumbnail".link_id = "Links".id
+                     from "Links" join "SimpleEntities" on "Links".id = "SimpleEntities".thumbnail_id
+             ) as "Thumbnail" on "Thumbnail".link_id = "Links".id
     """
     if entity.entity_type in ['Task', 'Asset', 'Shot', 'Sequence']:
         sql_query += 'where "Tasks".id = %(entity_id)s' % {'entity_id': entity_id}
@@ -283,17 +284,36 @@ def get_entity_references(request):
         } for r in result.fetchall()
     ]
 
-    #if entity:
-    #    return [
-    #        {
-    #            'id': link.id,
-    #            'full_path': link.full_path,
-    #            'original_filename': link.original_filename,
-    #            'thumbnail': link.thumbnail.full_path
-    #            if link.thumbnail else link.full_path,
-    #            'tags': [tag.name for tag in link.tags]
-    #        } for link in entity.references]
-    #return []
+
+@view_config(route_name='get_project_references_count', renderer='json')
+@view_config(route_name='get_task_references_count', renderer='json')
+@view_config(route_name='get_asset_references_count', renderer='json')
+@view_config(route_name='get_shot_references_count', renderer='json')
+@view_config(route_name='get_sequence_references_count', renderer='json')
+@view_config(route_name='get_entity_references_count', renderer='json')
+def get_entity_references_count(request):
+    """called when the count of references to Project/Task/Asset/Shot/Sequence
+    is requested
+    """
+    entity_id = request.matchdict.get('id', -1)
+    entity = Entity.query.filter(Entity.id == entity_id).first()
+    logger.debug('asking references for entity: %s' % entity)
+
+    # using Raw SQL queries here to fasten things up quite a bit and also do
+    # some fancy queries like getting all the references of tasks of a project
+    # also with their tags
+    sql_query = """
+        select  count(*)
+        from "Links" join "Task_References" on "Links".id = "Task_References".link_id
+        join "Tasks" on "Task_References".task_id = "Tasks".id
+    """
+    if entity.entity_type in ['Task', 'Asset', 'Shot', 'Sequence']:
+        sql_query += 'where "Tasks".id = %(entity_id)s' % {'entity_id': entity_id}
+    elif entity.entity_type == 'Project':
+        sql_query += 'where "Tasks".project_id = %(project_id)s' % {'project_id': entity_id}
+
+    result = DBSession.connection().execute(sql_query)
+    return result.fetchone()[0]
 
 
 def generate_local_file_path(extension):

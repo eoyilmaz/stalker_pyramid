@@ -176,21 +176,21 @@
 
 
     {# Chosen Field Updater #}
-    var chosen_field_creator = function (field, url, data_template) {
-        // fill image format with new json data
-        return $.getJSON(url).then(function (data) {
-            // remove current data
-            field.empty();
-
-            // append new options to the select
-            for (var i = 0; i < data.length; i++) {
-                field.append(data_template(data[i]));
-            }
-
-            // convert it to chosen
-            field.chosen();
-        });
-    };
+{#    var chosen_field_creator = function (field, url, data_template) {#}
+{#        // fill image format with new json data#}
+{#        return $.getJSON(url).then(function (data) {#}
+{#            // remove current data#}
+{#            field.empty();#}
+{##}
+{#            // append new options to the select#}
+{#            for (var i = 0; i < data.length; i++) {#}
+{#                field.append(data_template(data[i]));#}
+{#            }#}
+{##}
+{#            // convert it to chosen#}
+{#            field.chosen();#}
+{#        });#}
+{#    };#}
 
 
     {# User #}

@@ -13,6 +13,7 @@
         var update_event_action = function (eType, eId) {
 
             $('#dialog_template').modal({'remote': "/" + eType + "/" + eId + "/update/dialog?came_from={{ request.current_route_path() }}"});
+        };
 
         }
         /* initialize the calendar
@@ -93,16 +94,10 @@
             droppable: false, // this allows things to be dropped onto the calendar !!!
 
             selectable: true,
-            selectHelper: true,
-            escapeHtml: true
+            selectHelper: true
 
 
 
         });
-
-
     }
-
-
-
 </script>
