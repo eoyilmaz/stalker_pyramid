@@ -39,8 +39,6 @@
 {#PAGE-CONTENT#}
 {% block page_content %}
     <div class="row-fluid">
-
-
         <div class="widget-box transparent invoice-box">
             <div class="widget-header widget-header-small">
                 <h3 class="pull-left position-relative">
@@ -48,7 +46,6 @@
                     <i class="icon-double-angle-right"></i>
                     <small class="green">{{ entity.type.name }}</small>
                 </h3>
-
 
                 <div class="widget-toolbar no-border invoice-info">
                     <span class="invoice-info-label">{{ entity.status.name }}</span>
@@ -64,58 +61,84 @@
             <div class="widget-body">
                 <div class="widget-main padding-10">
                     <div class="row-fluid">
-                        <div class="span2">
-                            {% if entity.thumbnail %}
-                                <a class="pull-left" href="#" style="width: 200px; height: 200px">
-                                    <img style='width:auto; height: auto;' class="img-thumbnail"
-                                         src="/{{ entity.thumbnail.full_path }}">
-                                </a>
-                            {% endif %}
-                        </div>
-                        <div class="span4 pull-left">
-                            <ul class="unstyled spaced">
-                                <li>
-                                    {{ entity.start }} <i
-                                        class="icon-long-arrow-right blue"></i> {{ entity.end }}
-                                </li>
+                        <div class="span8">
+                            <div class="row-fluid">
+                                {% if entity.thumbnail %}
+                                    <div class="span3">
 
-                                <li>
+                                        <a class="pull-left" href="#"
+                                           style="width: 200px; height: 200px">
+                                            <img style='width:auto; height: auto;'
+                                                 class="img-thumbnail"
+                                                 src="/{{ entity.thumbnail.full_path }}">
+                                        </a>
 
-                                    <b>Created By
-                                        : </b> {{ entity.created_by.name }}
-                                </li>
-                                <li>
-                                    <b>Updated By
-                                        : </b> {{ entity.updated_by.name }}
-                                </li>
-                            </ul>
-                            <button class='btn btn-mini btn-info'>
-                                <i class="icon-edit"></i> Update
-                            </button>
-                            <div class="space-12"></div>
-                            {% if entity.description %}
+                                    </div>
+                                {% endif %}
+                                <div class="span4 pull-left">
+                                    <ul class="unstyled spaced">
+                                        <li>
+                                            {{ entity.start }} <i
+                                                class="icon-long-arrow-right blue"></i> {{ entity.end }}
+                                        </li>
 
-                                <div class="well">
-                                    <h4 class="green smaller lighter">
-                                        <i class="icon-info"></i> Description
-                                    </h4>
-                                    {{ entity.description }}
+                                        <li>
+
+                                            <b>Created By
+                                                : </b> {{ entity.created_by.name }}
+                                        </li>
+                                        <li>
+                                            <b>Updated By
+                                                : </b> {{ entity.updated_by.name }}
+                                        </li>
+                                    </ul>
+                                    <button class='btn btn-mini btn-info'>
+                                        <i class="icon-edit"></i> Update
+                                    </button>
+                                    <div class="space-12"></div>
+                                    {% if entity.description %}
+
+                                        <div class="well">
+                                            <h4 class="green smaller lighter">
+                                                <i class="icon-info"></i>
+                                                Description
+                                            </h4>
+                                            {{ entity.description }}
+                                        </div>
+
+                                    {% endif %}
+
                                 </div>
 
-                            {% endif %}
+
+                                <div class="span5 pull-left" id="pie_chart"
+                                     style="width: 250px; height: 250px;"></div>
+
+                            </div>
+
+                            <div class="hr hr8 hr-double"></div>
+
+                            <div class="space-32"></div>
+
+                            <div class="row-fluid">
+                                <div id="calendar"></div>
+                            </div>
 
                         </div>
-                        <div class="span6 pull-right" id="pie_chart"
-                             style="width: 250px; height: 250px;"></div>
+                        <div class="span4">
 
-                    </div>
-
-                    <div class="hr hr8 hr-double"></div>
-
-                    <div class="space-32"></div>
-                    <div class="row-fluid">
-                        <div class="no-padding" id="calendar"></div>
-
+                            <div class="widget-box">
+                                <div class="widget-header header-color-red">
+                                    <h4 class="smaller">Resources</h4>
+                                </div>
+                                <div class="widget-body">
+                                    <div class="widget-main padding-12">
+                                        <div id="resource_tree"
+                                             class="tree"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
                     </div>
                 </div>
@@ -123,24 +146,26 @@
         </div>
     </div>
 
-
-
 {% endblock page_content %}
 
 {#EXTRA-SCRIPTS#}
 {% block extrascripts %}
 
-    {% if has_permission('Update_User') and has_permission('Update_Task') %}
+    {% if entity.children | count == 0 %}
+        {% if has_permission('Update_User') and has_permission('Update_Task') %}
 
+            {% set event_type='TimeLog' %}
 
-
-        {% set event_type='TimeLog' %}
-
+        {% endif %}
     {% endif %}
 
     {% include 'charts/chart_extrascripts.jinja2' %}
 
     {% include 'charts/pie_chart.jinja2' %}
+
+    {% include 'components/tree.jinja2' %}
+
+    {% include 'calendar/calendar.jinja2' %}
 
     <script type="text/javascript">
         $(document).ready(function () {
@@ -156,8 +181,6 @@
         });
     </script>
 
-    {% include 'calendar/calendar.jinja2' %}
-
     <script type="text/javascript">
         $(document).ready(function () {
 
@@ -165,6 +188,7 @@
 
 
                 var events = [];
+                var resources = new Object();
 
 
                 for (var i = 0; i < data.length; i++) {
@@ -185,9 +209,39 @@
 
                     events.push(event);
 
+
+                    if (data[i].entity_type == 'tasks') {
+
+                        var prop_id = (data[i].resources[0].id).toString()
+
+                        if (!resources [prop_id]) {
+                            resources [prop_id] = {
+                                'name': data[i].resources[0].name,
+                                'type': 'folder',
+                                'icon-class': 'blue'
+
+                            }
+                        }
+
+                        if (!resources[prop_id]['additionalParameters']) {
+
+                            resources[prop_id]['additionalParameters'] = new Object();
+                            resources[prop_id]['additionalParameters']['children'] = new Object();
+
+                        }
+
+                        resources[prop_id]['additionalParameters']['children'][(data[i].id).toString()] = {name: '<a href="/tasks/' + data[i].id + '/view">' + data[i].title + '</a>', type: 'item'}
+
+
+                    }
+
                 }
+                console.log(resources)
+
 
                 drawCalendar('calendar', events);
+
+                drawTree('resource_tree', resources)
 
 
             });

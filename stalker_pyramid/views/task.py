@@ -1237,21 +1237,32 @@ def get_child_task_time_logs(task):
 
     if task.children:
         for child in task.children:
-            return get_child_task_time_logs(child)
+            task_events.extend(get_child_task_time_logs(child))
+
 
     else:
+
+        resources = []
+
+        for resource in task.resources:
+            resources.append({'name':resource.name, 'id':resource.id})
+
+
+        logger.debug('resources %s' % resources)
 
         task_events.append({
                     'id': task.id,
                     'entity_type': task.plural_class_name.lower(),
-                    'title': '%s (%s)' % (
-                        task.name,
-                        ' | '.join([parent.name for parent in task.parents])),
+                    # 'title': '%s (%s)' % (
+                    #     task.name,
+                    #     ' | '.join([parent.name for parent in task.parents])),
+                    'title': task.name,
                     'start': milliseconds_since_epoch(task.start),
                     'end': milliseconds_since_epoch(task.end),
                     'className': 'label',
                     'allDay': False,
-                    'status': task.status.name
+                    'status': task.status.name,
+                    'resources':resources
                     # 'hours_to_complete': time_log.hours_to_complete,
                     # 'notes': time_log.notes
                 })
@@ -1264,19 +1275,17 @@ def get_child_task_time_logs(task):
             task_events.append({
                 'id': time_log.id,
                 'entity_type': time_log.plural_class_name.lower(),
-                'title': '%s (%s)' % (
-                            time_log.task.name,
-                            ' | '.join(
-                                [parent.name for parent in time_log.task.parents])),
+                'title': time_log.task.name,
+                # 'title': '%s (%s)' % (
+                #             time_log.task.name,
+                #             ' | '.join(
+                #                 [parent.name for parent in time_log.task.parents])),
                 'start': milliseconds_since_epoch(time_log.start),
                 'end': milliseconds_since_epoch(time_log.end),
                 'className': 'label-success',
                 'allDay': False,
                 'status': time_log.task.status.name
              })
-
-
-
 
     return task_events
 
@@ -1301,8 +1310,7 @@ def get_task_events(request):
 
     events = []
 
-    if task.children:
-        for child in task.children:
-            events.extend(get_child_task_time_logs(child))
+    events.extend(get_child_task_time_logs(task))
+
 
     return events

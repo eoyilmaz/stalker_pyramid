@@ -23,7 +23,10 @@
 
             for (var i = 0; i < data.length; i++) {
 
-                infobox.append(infobox_template(data[i]));
+                if (data[i].count > 0) {
+
+                    infobox.append(infobox_template(data[i]));
+                }
 
             }
 

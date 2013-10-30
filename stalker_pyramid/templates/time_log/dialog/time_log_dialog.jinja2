@@ -471,7 +471,10 @@ function init_dialog() {
     {# ***************************************************************** #}
     {# Submit Button #}
 
-    $('#dialog_template_submit_button').on('click', function () {
+    $('#dialog_template_submit_button').on('click', function (e) {
+
+        e.stopPropagation();
+        e.preventDefault();
 
         var time_log_form = $('#time_log_form');
 

@@ -1,0 +1,50 @@
+<script class="include" type="text/javascript"
+        src='{{ request.static_url("stalker_pyramid:static/ace/js/fuelux/fuelux.tree.min.js") }}'></script>
+<script type="text/javascript">
+
+    var DataSourceTree = function (options) {
+        this._data = options.data;
+        this._delay = options.delay;
+    }
+
+    DataSourceTree.prototype.data = function (options, callback) {
+        var self = this;
+        var $data = null;
+
+        if (!("name" in options) && !("type" in options)) {
+            $data = this._data;//the root tree
+            callback({ data: $data });
+            return;
+        }
+        else if ("type" in options && options.type == "folder") {
+            if ("additionalParameters" in options && "children" in options.additionalParameters)
+                $data = options.additionalParameters.children;
+            else $data = {}//no data
+        }
+
+        if ($data != null)//this setTimeout is only for mimicking some random delay
+            setTimeout(function () {
+                callback({ data: $data });
+            }, parseInt(Math.random() * 500) + 200);
+
+        //we have used static data here
+        //but you can retrieve your data dynamically from a server using ajax call
+        //checkout examples/treeview.html and examples/treeview.js for more info
+    };
+
+
+    function drawTree(placeholder, tree_data) {
+
+        console.log(tree_data)
+        $('#' + placeholder).ace_tree({
+            dataSource: new DataSourceTree({data: tree_data}),
+            loadingHTML: '<div class="tree-loading"><i class="icon-refresh icon-spin blue"></i></div>',
+            'open-icon' : 'icon-folder-open',
+            'close-icon' : 'icon-folder-close',
+            'selectable': false,
+            'selected-icon' : null,
+            'unselected-icon' : null
+        });
+    }
+
+</script>

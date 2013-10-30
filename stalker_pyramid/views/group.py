@@ -23,7 +23,7 @@ import datetime
 # import deform
 
 from pyramid.httpexceptions import HTTPFound, HTTPOk, HTTPServerError
-from pyramid.security import authenticated_userid, forget, remember
+from pyramid.security import authenticated_userid, forget, remember, has_permission
 from pyramid.view import view_config, forbidden_view_config
 from sqlalchemy import or_
 
@@ -58,8 +58,21 @@ def group_dialog(request):
         return logout(request)
 
     permissions = Permission.query.all()
-
     entity_types = EntityType.query.all()
+
+    permissions_list = []
+
+    for entity_type in entity_types:
+
+        permission_item = {
+            'label':entity_type.name
+
+        }
+
+        for permission in permissions:
+            permission_item[permission.action] = ''
+
+        permissions_list.append(permission_item)
 
     entity_id = request.matchdict.get('eid', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
@@ -72,8 +85,7 @@ def group_dialog(request):
         'entity' : entity,
         'mode': 'CREATE',
         'actions': defaults.actions,
-        'permissions': permissions,
-        'entity_types': entity_types,
+        'permissions_list': permissions_list,
         'logged_in_user': logged_in_user,
         'stalker_pyramid': stalker_pyramid,
         'has_permission': PermissionChecker(request),
@@ -308,21 +320,25 @@ def list_group_permissions(request):
 )
 def get_group_permissions(request):
 
-    permissions = Permission.query.all()
-    entity_types = EntityType.query.all()
+
 
     group_id = request.matchdict.get('id', -1)
     group = Group.query.filter_by(id=group_id).first()
 
+    permissions = Permission.query.all()
+    entity_types = EntityType.query.all()
 
     permissions_list = []
 
     for entity_type in entity_types:
 
-        permission_item = {'label':entity_type.name}
+        permission_item = {
+            'label':entity_type.name
+
+        }
 
         for permission in permissions:
-            permission_item[permission.action] = None
+            permission_item[permission.action] = ''
 
         permissions_list.append(permission_item)
 
@@ -331,9 +347,9 @@ def get_group_permissions(request):
         label_indexer = dict((p['label'], i) for i, p in enumerate(permissions_list))
         index = label_indexer.get(group_permission.class_name, -1)
 
-        permissions_list[index][group_permission.action] = 'true'
+        permissions_list[index][group_permission.action] = 'checked'
 
-    logger.debug('permissions_list %s' % permissions_list)
+
 
     return permissions_list
 
