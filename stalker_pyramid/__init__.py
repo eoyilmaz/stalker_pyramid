@@ -129,6 +129,7 @@ def main(global_config, **settings):
     config.add_route('get_entity_users',               'entities/{id}/users/')
     config.add_route('get_entity_users_not',           'entities/{id}/users/not')
     config.add_route('get_entity_references',          'entities/{id}/references/')
+    config.add_route('get_entity_references_count',    'entities/{id}/references/count/')
     config.add_route('get_entity_departments',         'entities/{id}/departments/')
     config.add_route('get_entity_groups',              'entities/{id}/groups/')
     config.add_route('get_entity_tasks',               'entities/{id}/tasks/')
@@ -169,9 +170,12 @@ def main(global_config, **settings):
 
     config.add_route('get_task_versions',    'tasks/{id}/versions/')  # json
 
-    config.add_route('get_task_references',  'tasks/{id}/references/')  # json
-    config.add_route('get_asset_references', 'assets/id}/references/')  # json
-    config.add_route('get_shot_references',  'shots/{id}/references/')  # json
+    config.add_route('get_task_references',        'tasks/{id}/references/')  # json
+    config.add_route('get_task_references_count',  'tasks/{id}/references/count/')  # json
+    config.add_route('get_asset_references',       'assets/id}/references/')  # json
+    config.add_route('get_asset_references_count', 'assets/id}/references/count/')  # json
+    config.add_route('get_shot_references',        'shots/{id}/references/')  # json
+    config.add_route('get_shot_references_count',  'shots/{id}/references/count/')  # json
 
     config.add_route('get_references',       'references/')
     config.add_route('get_reference',        'references/{id}')
@@ -229,6 +233,7 @@ def main(global_config, **settings):
     config.add_route('get_project_shots',          'projects/{id}/shots/')
     config.add_route('get_project_sequences',      'projects/{id}/sequences/')
     config.add_route('get_project_references',     'projects/{id}/references/') # json
+    config.add_route('get_project_references_count', 'projects/{id}/references/count/') # json
     config.add_route('get_project_tickets',        'projects/{id}/tickets/') # json
 
     config.add_route('get_project_tasks_today',    'projects/{id}/tasks/{action}/today/') # json
@@ -382,6 +387,7 @@ def main(global_config, **settings):
     config.add_route('view_sequence',          'sequences/{id}/view')
 
     config.add_route('get_sequence_references', 'sequences/{id}/references/')  # json
+    config.add_route('get_sequence_references_count', 'sequences/{id}/references/count/')  # json
     config.add_route('get_sequence_tickets',    'sequences/{id}/tickets/') # json
     config.add_route('get_sequence_tasks',      'sequences/{id}/tasks/') # json
     config.add_route('get_sequences',           'sequences/') # json
@@ -425,6 +431,9 @@ def main(global_config, **settings):
     config.add_route('entity_time_log_dialog', 'entities/{id}/timelogs/create/dialog')
     config.add_route('task_time_log_dialog', 'tasks/{id}/timelogs/create/dialog')
     config.add_route('user_time_log_dialog', 'users/{id}/timelogs/create/dialog')
+    config.add_route('asset_time_log_dialog', 'assets/{id}/timelogs/create/dialog')
+    config.add_route('sequence_time_log_dialog', 'sequences/{id}/timelogs/create/dialog')
+    config.add_route('shot_time_log_dialog', 'shots/{id}/timelogs/create/dialog')
     # TODO: Change the TimeLog Entity plural name so we can use 'time_logs' string here.
     config.add_route('time_log_update_dialog', 'timelogs/{id}/update/dialog')
 

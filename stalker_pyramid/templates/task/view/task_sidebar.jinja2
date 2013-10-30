@@ -70,7 +70,7 @@
             <a>
                 <i class="icon-book"></i>
                 <span class="menu-text">References</span>
-                <span class='badge badge-success'>{{ task.references | count }}</span>
+                <span id='reference_count' class='badge badge-success'></span>
             </a>
         </li>
     {% else %}
@@ -78,7 +78,7 @@
             <a href='{{ request.route_url('list_task_references', id=task.id) }}'>
                 <i class="icon-book"></i>
                 <span class="menu-text">References</span>
-                <span class='badge badge-success'>{{ task.references | count }}</span>
+                <span id='reference_count' class='badge badge-success'></span>
             </a>
         </li>
     {% endif %}

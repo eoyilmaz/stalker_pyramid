@@ -237,9 +237,9 @@ function init_dialog() {
             var time_log_resource = $('#time_log_resource');
             time_log_resource.find('option').remove();
 
-            {% for user in entity.users %}
+            {% for resource in entity.resources %}
 
-                var data = {id: '{{ user.id }}', name: '{{ user.name }}' + parent_name};
+                var data = {id: '{{ resource.id }}', name: '{{ resource.name }}' + parent_name};
                 time_log_resource.append(user_option_template(data));
 
             {% endfor %}

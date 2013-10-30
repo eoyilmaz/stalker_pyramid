@@ -138,21 +138,23 @@
     {% endif %}
 
     {# References #}
-{#    {% if request.current_route_path() == request.route_path('list_entity_references', id=project.id) %}#}
-{#        <li class='active'>#}
-{#            <a>#}
-{#                <i class="icon-book"></i>#}
-{#                <span class="menu-text">References</span>#}
-{#            </a>#}
-{#        </li>#}
-{#    {% else %}#}
-{#        <li>#}
-{#            <a href='{{ request.route_url('list_entity_references', id=project.id) }}'>#}
-{#                <i class="icon-book"></i>#}
-{#                <span class="menu-text">References</span>#}
-{#            </a>#}
-{#        </li>#}
-{#    {% endif %}#}
+    {% if request.current_route_path() == request.route_path('list_entity_references', id=project.id) %}
+        <li class='active'>
+            <a>
+                <i class="icon-book"></i>
+                <span class="menu-text">References</span>
+                <span id='reference_count' class='badge badge-important'></span>
+            </a>
+        </li>
+    {% else %}
+        <li>
+            <a href='{{ request.route_url('list_entity_references', id=project.id) }}'>
+                <i class="icon-book"></i>
+                <span class="menu-text">References</span>
+                <span id='reference_count' class='badge badge-important'></span>
+            </a>
+        </li>
+    {% endif %}
 
 
     {# Users #}
@@ -174,3 +176,11 @@
         </li>
     {% endif %}
 </ul>
+
+<script type="text/javascript">
+    $(function(){
+        $.getJSON('/entities/{{ entity.id }}/references/count/').then(function(data){
+            $('#reference_count').text(data);
+        });
+    });
+</script> 

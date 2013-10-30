@@ -130,7 +130,17 @@
 
 {#EXTRA-SCRIPTS#}
 {% block extrascripts %}
+    
+        {% if has_permission('Update_Task')%}
 
+            <script type="text/javascript">
+            </script>
+
+            {% set event_type='TimeLog' %}
+
+        {% endif %}
+
+    
     {% include 'calendar/calendar.jinja2' %}
 
     <script type="text/javascript">

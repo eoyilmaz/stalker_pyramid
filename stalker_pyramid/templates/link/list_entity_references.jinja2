@@ -55,10 +55,10 @@
 
         {% set page_title='References' %}
     {% include 'page_header.jinja2' %}
+    
+    {% if entity.entity_type != 'Project' %}
     <div class="row-fluid">
-
         <!--PAGE CONTENT BEGINS-->
-
             <button data-target="#dialog_template"
                 data-toggle="modal"
                 data-keyboard="false"
@@ -67,9 +67,8 @@
             <i class="icon-cloud-upload bigger-120"></i>
             Upload References
         </button>
-
-
     </div>
+    {% endif %}
     <div class="space-8"></div>
     <div class="row-fluid">
         <div id="new_references_storage" class="hidden"></div>
