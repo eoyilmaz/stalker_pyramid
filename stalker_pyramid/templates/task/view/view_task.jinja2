@@ -27,7 +27,7 @@
 {% block breadcrumbs %}
 
     {% set page_title='Dashboard' %}
-    {% include 'breadcrumbs_task.jinja2' %}
+    {% include 'breadcrumb/breadcrumbs.jinja2' %}
 
 {% endblock breadcrumbs %}
 
@@ -40,90 +40,89 @@
 {% block page_content %}
     <div class="row-fluid">
 
-        <div class="media">
-            <a class="pull-left" href="#"
-               style="width: 150px; height: 150px">
-                <img style='width:auto; height: auto;'
-                     class="img-thumbnail"
-                     src="{%- if entity.thumbnail -%}
-                    /{{ entity.thumbnail.full_path }}
-                {%- else -%}
-                    {{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}
-                {%- endif -%}">
-            </a>
 
-            <div class="media-body">
-                <div class="span12">
-                    <div class="widget-box transparent invoice-box">
-                        <div class="widget-header widget-header-small">
-                            <h3 class="pull-left position-relative">
-                                {{ entity.name }}
-                                <i class="icon-double-angle-right"></i>
-                                <small class="green">{{ entity.type.name }}</small>
-                            </h3>
+        <div class="widget-box transparent invoice-box">
+            <div class="widget-header widget-header-small">
+                <h3 class="pull-left position-relative">
+                    {{ entity.name }}
+                    <i class="icon-double-angle-right"></i>
+                    <small class="green">{{ entity.type.name }}</small>
+                </h3>
 
-                            <div class="widget-toolbar no-border invoice-info">
-                                <span class="invoice-info-label">{{ entity.status.name }}</span>
-                            </div>
 
-                            <div class="widget-toolbar hidden-480">
-                                <a href="#">
-                                    <i class="icon-info"></i>
-                                </a>
-                            </div>
-                        </div>
+                <div class="widget-toolbar no-border invoice-info">
+                    <span class="invoice-info-label">{{ entity.status.name }}</span>
+                </div>
 
-                        <div class="widget-body">
-                            <div class="widget-main padding-10">
-                                <div class="row-fluid">
-                                    <div class="span3">
-                                        <ul class="unstyled spaced">
-                                            <li>
-                                                {{ entity.start }} <i
-                                                    class="icon-long-arrow-right blue"></i> {{ entity.end }}
-                                            </li>
-
-                                            <li>
-
-                                                <b>Created By
-                                                    : </b> {{ entity.created_by.name }}
-                                            </li>
-                                            <li>
-                                                <b>Updated By
-                                                    : </b> {{ entity.updated_by.name }}
-                                            </li>
-                                        </ul>
-                                        <button class='btn btn-mini btn-info'>
-                                            <i class="icon-edit"></i> Update
-                                        </button>
-                                    </div>
-                                    {% if entity.description %}
-                                        <div class="span6">
-                                            <div class="well">
-                                                <h5 class="header smaller lighter grey">
-                                                    Description</h5>
-                                                {{ entity.description }}
-                                            </div>
-                                        </div>
-                                    {% endif %}
-                                </div>
-                                <div class="row-fluid">
-
-                                    <div class="hr hr8 hr-double"></div>
-
-                                    <div class="space-32"></div>
-
-                                    <div id="calendar"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                <div class="widget-toolbar hidden-480">
+                    <a href="#">
+                        <i class="icon-info"></i>
+                    </a>
                 </div>
             </div>
 
-        </div>
+            <div class="widget-body">
+                <div class="widget-main padding-10">
+                    <div class="row-fluid">
+                        <div class="span2">
+                            {% if entity.thumbnail %}
+                                <a class="pull-left" href="#" style="width: 200px; height: 200px">
+                                    <img style='width:auto; height: auto;' class="img-thumbnail"
+                                         src="/{{ entity.thumbnail.full_path }}">
+                                </a>
+                            {% endif %}
+                        </div>
+                        <div class="span4 pull-left">
+                            <ul class="unstyled spaced">
+                                <li>
+                                    {{ entity.start }} <i
+                                        class="icon-long-arrow-right blue"></i> {{ entity.end }}
+                                </li>
 
+                                <li>
+
+                                    <b>Created By
+                                        : </b> {{ entity.created_by.name }}
+                                </li>
+                                <li>
+                                    <b>Updated By
+                                        : </b> {{ entity.updated_by.name }}
+                                </li>
+                            </ul>
+                            <button class='btn btn-mini btn-info'>
+                                <i class="icon-edit"></i> Update
+                            </button>
+                            <div class="space-12"></div>
+                            {% if entity.description %}
+
+                                <div class="well">
+                                    <h4 class="green smaller lighter">
+                                        <i class="icon-info"></i> Description
+                                    </h4>
+                                    {{ entity.description }}
+                                </div>
+
+                            {% endif %}
+
+                        </div>
+                        <div class="span6 pull-right" id="pie_chart"
+                             style="width: 250px; height: 250px;"></div>
+
+                    </div>
+
+                    <div class="hr hr8 hr-double"></div>
+
+                    <div class="space-32"></div>
+                    <div class="row-fluid">
+                        <div class="no-padding" id="calendar"></div>
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
+
 
 
 {% endblock page_content %}
@@ -131,12 +130,38 @@
 {#EXTRA-SCRIPTS#}
 {% block extrascripts %}
 
+    {% if has_permission('Update_User') and has_permission('Update_Task') %}
+
+
+
+        {% set event_type='TimeLog' %}
+
+    {% endif %}
+
+    {% include 'charts/chart_extrascripts.jinja2' %}
+
+    {% include 'charts/pie_chart.jinja2' %}
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            var percent_complete = parseFloat('{{ entity.percent_complete }}');
+
+            var content = [
+                ['COMPLETED', percent_complete],
+                ['UNCOMPLETED', 100 - percent_complete]
+            ];
+            var colors = ['#82af6f', '#bbb'];
+
+            drawPieChart('pie_chart', content, colors)
+        });
+    </script>
+
     {% include 'calendar/calendar.jinja2' %}
 
     <script type="text/javascript">
         $(document).ready(function () {
 
-            $.getJSON('/entities/{{ entity.id }}/events/?keys=time_log').then(function (data) {
+            $.getJSON('/tasks/{{ entity.id }}/events/').then(function (data) {
 
 
                 var events = [];
@@ -158,12 +183,11 @@
                     };
 
 
-
                     events.push(event);
 
                 }
 
-                drawCalendar('calendar',events);
+                drawCalendar('calendar', events);
 
 
             });

@@ -99,19 +99,21 @@
                     {{ logged_in_user.tasks | count }} Tasks to complete
                 </li>
                 {% for  task in logged_in_user.tasks %}
-                    <li>
-                        <a href='{{ request.route_url('view_task', id=task.id) }}'>
-                            <div class="clearfix">
-                                <span class="pull-left">{{ task.name }}</span>
-                                <span class="pull-right">{{ task.name }}</span>
-                            </div>
+                    {% if  task.percent_complete < 100 %}
+                        <li>
+                            <a href='{{ request.route_url('view_task', id=task.id) }}'>
+                                <div class="clearfix">
+                                    <span class="pull-left">{{ task.name }}</span>
+                                    <span class="pull-right">{{ task.name }}</span>
+                                </div>
 
-                            <div class="progress progress-mini ">
-                                <div style="width:{{ task.total_logged_seconds / task.schedule_seconds * 100 }}%"
-                                     class="bar"></div>
-                            </div>
-                        </a>
-                    </li>
+                                <div class="progress progress-mini ">
+                                    <div style="width:{{ task.total_logged_seconds / task.schedule_seconds * 100 }}%"
+                                         class="bar"></div>
+                                </div>
+                            </a>
+                        </li>
+                    {% endif %}
                 {% endfor %}
                 <li>
                     <a href='{{ request.route_url('list_user_tasks', id=logged_in_user.id) }}'>
@@ -178,7 +180,7 @@
 
         <ul class="user-menu pull-right dropdown-menu dropdown-yellow dropdown-caret dropdown-closer">
             <li>
-                <a href="{{ request.route_url('view_user_settings', id=logged_in_user.id) }}">
+                <a href="{{ request.route_url('user_dialog', id=logged_in_user.id, mode='update') }}">
                     <i class="icon-cog"></i>
                     Settings
                 </a>

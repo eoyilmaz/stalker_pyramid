@@ -24,7 +24,7 @@ import transaction
 
 from pyramid.response import Response
 from pyramid.view import view_config
-from pyramid.httpexceptions import HTTPServerError, HTTPOk
+from pyramid.httpexceptions import HTTPServerError, HTTPOk, HTTPForbidden
 
 from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
@@ -40,7 +40,7 @@ from stalker import defaults
 import stalker_pyramid
 from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
                                    get_multi_integer, milliseconds_since_epoch,
-                                   get_date, StdErrToHTMLConverter, colors)
+                                   get_date, StdErrToHTMLConverter, colors, multi_permission_checker, get_multi_string)
 
 
 logger = logging.getLogger(__name__)
@@ -757,6 +757,8 @@ def create_data_dialog(request, entity_type='Task'):
     logged_in_user = get_logged_in_user(request)
     came_from = request.params.get('came_from', request.url)
 
+    entity_id = request.matchdict.get('id')
+    entity = Entity.query.filter_by(id=entity_id).first()
     # get mode
     mode = request.matchdict.get('mode', None)
 
@@ -776,14 +778,14 @@ def create_data_dialog(request, entity_type='Task'):
         if not project and dependencies:
             project = dependencies[0].project
     elif mode == 'update':
-        entity_id = request.matchdict.get('id')
-        entity = Entity.query.filter_by(id=entity_id).first()
+
         project = entity.project
         parent = entity.parent
         dependencies = entity.depends
 
-    logger.debug('entity_id     : %s' % entity_id)
-    logger.debug('entity        : %s' % entity)
+        logger.debug('entity_id     : %s' % entity_id)
+        logger.debug('entity        : %s' % entity)
+
     logger.debug('project       : %s' % project)
     logger.debug('parent        : %s' % parent)
     logger.debug('dependencies  : %s' % dependencies)
@@ -815,7 +817,7 @@ def task_dialog(request):
 
 @view_config(
     route_name='asset_dialog',
-    renderer='templates/task/task_dialog.jinja2'
+    renderer='templates/task/dialog/task_dialog.jinja2'
 )
 def asset_dialog(request):
     """called when creating assets
@@ -825,7 +827,7 @@ def asset_dialog(request):
 
 @view_config(
     route_name='shot_dialog',
-    renderer='templates/task/task_dialog.jinja2'
+    renderer='templates/task/dialog/task_dialog.jinja2'
 )
 def shot_dialog(request):
     """called when creating shots
@@ -835,7 +837,7 @@ def shot_dialog(request):
 
 @view_config(
     route_name='sequence_dialog',
-    renderer='templates/task/task_dialog.jinja2'
+    renderer='templates/task/dialog/task_dialog.jinja2'
 )
 def create_sequence_dialog(request):
     """called when creating sequences
@@ -1215,3 +1217,80 @@ def delete_task(request):
     response = Response('Successfully deleted task: %s' % task_id)
     response.status_int = 200
     return response
+
+
+def get_child_task_time_logs(task):
+
+    task_events = []
+
+    if task.children:
+        for child in task.children:
+            return get_child_task_time_logs(child)
+
+    else:
+
+        task_events.append({
+                    'id': task.id,
+                    'entity_type': task.plural_class_name.lower(),
+                    'title': '%s (%s)' % (
+                        task.name,
+                        ' | '.join([parent.name for parent in task.parents])),
+                    'start': milliseconds_since_epoch(task.start),
+                    'end': milliseconds_since_epoch(task.end),
+                    'className': 'label',
+                    'allDay': False,
+                    'status': task.status.name
+                    # 'hours_to_complete': time_log.hours_to_complete,
+                    # 'notes': time_log.notes
+                })
+
+
+
+        for time_log in task.time_logs:
+         # logger.debug('time_log.task.id : %s' % time_log.task.id)
+         # assert isinstance(time_log, TimeLog)
+            task_events.append({
+                'id': time_log.id,
+                'entity_type': time_log.plural_class_name.lower(),
+                'title': '%s (%s)' % (
+                            time_log.task.name,
+                            ' | '.join(
+                                [parent.name for parent in time_log.task.parents])),
+                'start': milliseconds_since_epoch(time_log.start),
+                'end': milliseconds_since_epoch(time_log.end),
+                'className': 'label-success',
+                'allDay': False,
+                'status': time_log.task.status.name
+             })
+
+
+
+
+    return task_events
+
+
+
+@view_config(
+    route_name='get_task_events',
+    renderer='json'
+)
+def get_task_events(request):
+    if not multi_permission_checker(
+            request, ['Read_User', 'Read_TimeLog', 'Read_Vacation']):
+        return HTTPForbidden(headers=request)
+
+    logger.debug('get_user_events is running')
+
+
+    task_id = request.matchdict.get('id', -1)
+    task = Task.query.filter_by(id=task_id).first()
+
+    logger.debug('task_id : %s' % task_id)
+
+    events = []
+
+    if task.children:
+        for child in task.children:
+            events.extend(get_child_task_time_logs(child))
+
+    return events

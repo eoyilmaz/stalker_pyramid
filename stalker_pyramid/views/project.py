@@ -294,7 +294,7 @@ def get_project_tasks_today(request):
 
             task_today_list.append({
                 'task_id': task.id,
-                'task_name':'%s (%s)' % (task.name,' | '.join(reversed([parent.name for parent in task.parents]))),
+                'task_name':'%s (%s)' % (task.name,' | '.join([parent.name for parent in task.parents])),
                 'resources': resourcesSTR,
                 'created_by_id':task.created_by.id,
                 'created_by_name':task.created_by.name,

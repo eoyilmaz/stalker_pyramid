@@ -11,7 +11,7 @@
 {% block breadcrumbs %}
 
     {% set page_title='Dashboard' %}
-    {% include 'breadcrumbs.jinja2' %}
+    {% include 'breadcrumb/breadcrumbs.jinja2' %}
 
 {% endblock breadcrumbs %}
 
@@ -35,6 +35,7 @@
         </div>
         <div class="span6">
             <h5 class="green"><i class="icon-bolt"></i> Progress</h5>
+
             <div class="progress progress-success progress-striped"
                  data-percent="{{ entity.percent_complete }}%">
                 <div class="bar"
@@ -91,12 +92,12 @@
                                    class="table table-striped table-bordered table-hover hide"
                                     >
                                 <thead>
-                                    <tr>
-                                        <th>Name</th>
-                                        <th>Resources</th>
-                                        <th>Completed</th>
-                                        <th>Status</th>
-                                    </tr>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Resources</th>
+                                    <th>Completed</th>
+                                    <th>Status</th>
+                                </tr>
                                 </thead>
                                 <tbody>
 
@@ -120,11 +121,18 @@
             </td>
             <td>{{=it.resources}}
             </td>
-            <td><span class="label label-{{=it.status_color}}">{{=it.percent_complete}}%</span>
+            <td>
+                <div class="progress progress-success">
+                    <div style="width:{{=it.percent_complete}}%"
+                         class="bar">
+                        <span class="pull-left">{{=it.percent_complete}}%</span>
+                    </div>
+                </div>
             </td>
             <td>
                 <span class="label label-{{=it.status_color}}">{{=it.status}}</span>
             </td>
+
         </tr>
     </script>
     {% endraw %}

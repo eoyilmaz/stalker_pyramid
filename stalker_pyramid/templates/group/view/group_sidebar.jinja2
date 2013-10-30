@@ -1,0 +1,73 @@
+{# Render Project Side Bar #}
+
+{% set group=entity %}
+
+<ul class='nav nav-list'>
+
+    {# Thumbnail #}
+        <li>
+            <div class="media">
+                <a class="pull-left" href="#" style="width: 100px; height: 100px">
+                    <img style='width:auto; height: 100px;'
+                         class="img-thumbnail"
+                         src="{%- if group.thumbnail -%}
+                        /{{ group.thumbnail.full_path }}
+                    {%- else -%}
+                        {{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}
+                    {%- endif -%}">
+                </a>
+
+                <div class="media-body">
+                    <h5 class="media-heading">{{ group.name }}
+                    </h5>
+
+                  <a href="#" class="menu-text">
+                    <i class="icon-edit"></i>
+                    Edit
+                  </a>
+                </div>
+            </div>
+        </li>
+
+
+    {#Dashboard#}
+    {% if request.current_route_path() == request.route_path('view_group', id=group.id) %}
+        <li class='active'>
+            <a>
+                <i class="icon-dashboard"></i>
+                <span class="menu-text">Permissions</span>
+            </a>
+        </li>
+    {% else %}
+        <li>
+            <a href='{{ request.route_url('view_group', id=group.id) }}'>
+                <i class="icon-dashboard"></i>
+                <span class="menu-text">Permissions</span>
+            </a>
+        </li>
+    {% endif %}
+
+
+
+
+
+
+    {# Users #}
+    {% if request.current_route_path() == request.route_path('list_entity_users', id=group.id) %}
+        <li class='active'>
+            <a>
+                <i class="icon-user"></i>
+                <span class="menu-text">Users</span>
+                <span class='badge badge-success'>{{ group.users | count }}</span>
+            </a>
+        </li>
+    {% else %}
+        <li>
+            <a href='{{ request.route_url('list_entity_users', id=group.id) }}'>
+                <i class="icon-user"></i>
+                <span class="menu-text">Users</span>
+                <span class='badge badge-success'>{{ group.users | count }}</span>
+            </a>
+        </li>
+    {% endif %}
+</ul>

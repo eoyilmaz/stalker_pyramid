@@ -30,7 +30,7 @@ from stalker import User, Sequence, StatusList, Status, Shot, Project
 
 import logging
 from stalker import log
-from stalker_pyramid.views import PermissionChecker, get_logged_in_user, milliseconds_since_epoch
+from stalker_pyramid.views import PermissionChecker, get_logged_in_user, milliseconds_since_epoch, colors
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.WARNING)
@@ -159,13 +159,13 @@ def get_shots(request):
         sequenceStr = ''
 
         for sequence in shot.sequences:
-            sequenceStr += '<a href="javascript:redirectLink(%s, %s)">%s</a><br/>' % \
-                             ("'sequences_content_pane'" , ("'view/sequence/%s'" % sequence.id) , sequence.name)
+            sequenceStr += '<a href="/task/%s/view">%s</a><br/>' % (sequence.id , sequence.name)
         shots.append({
             'id': shot.id,
             'name': shot.name,
             'sequences': sequenceStr,
             'status': shot.status.name,
+            'status_color':colors[shot.status.name]if colors[shot.status.name] else 'grey',
             'status_bg_color': shot.status.bg_color,
             'status_fg_color': shot.status.fg_color,
             'created_by_id': shot.created_by.id,

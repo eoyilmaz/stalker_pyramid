@@ -1,6 +1,5 @@
 <script class="code" type="text/javascript">
 
-    $(document).ready(function () {
 
         function drawPieChart(placeholder, data, colors) {
 
@@ -32,7 +31,8 @@
                         },
                         startAngle: 2
 
-                    }
+                    },
+                    label:'Copmleted'
                 },
                 seriesDefaults: {
                     renderer: $.jqplot.PieRenderer,
@@ -41,7 +41,7 @@
                         showDataLabels: true,
                         sliceMargin: 4,
                         // rotate the starting position of the pie around to 12 o'clock.
-                        startAngle: -90
+                        startAngle: 90
                     }
                 },
                 legend: {
@@ -50,34 +50,34 @@
                     rendererOptions: {
                         numberRows: 5
                     },
-                    location: 'e'
+                    location: 'w'
                 }
 
             });
 
         }
 
-        var pie_chart = $('#pie_chart');
+{#        var pie_chart = $('#pie_chart');#}
+{##}
+{#        $.getJSON(pie_chart.attr('address')).then(function (data) {#}
+{##}
+{#            var content = [];#}
+{#            var colors = [];#}
+{##}
+{#            for (var i = 0; i < data.length; i++) {#}
+{##}
+{##}
+{#                content.push([data[i].name + " (" + data[i].count + ")", data[i].count]);#}
+{#                colors.push('#' + data[i].color.toString(16));#}
+{##}
+{#            }#}
+{##}
+{#            drawPieChart('pie_chart', content, colors)#}
+{##}
+{##}
+{#        })#}
 
-        $.getJSON(pie_chart.attr('address')).then(function (data) {
 
-            var content = [];
-            var colors = [];
-
-            for (var i = 0; i < data.length; i++) {
-
-
-                content.push([data[i].name + " (" + data[i].count + ")", data[i].count]);
-                colors.push('#' + data[i].color.toString(16));
-
-            }
-
-            drawPieChart('pie_chart', content, colors)
-
-
-        })
-
-    });
 </script>
 
 

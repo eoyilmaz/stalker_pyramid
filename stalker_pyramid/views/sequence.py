@@ -28,7 +28,7 @@ from stalker.db import DBSession
 from stalker import User, Project, StatusList, Status, Sequence, Entity
 
 import logging
-from stalker_pyramid.views import PermissionChecker, get_logged_in_user, milliseconds_since_epoch
+from stalker_pyramid.views import PermissionChecker, get_logged_in_user, milliseconds_since_epoch, colors
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -197,6 +197,7 @@ def get_project_sequences(request):
             'id': sequence.id,
             'name': sequence.name,
             'status': sequence.status.name,
+            'status_color':colors[sequence.status.name]if colors[sequence.status.name] else 'grey',
             'status_bg_color': sequence.status.bg_color,
             'status_fg_color': sequence.status.fg_color,
             'created_by_id': sequence.created_by.id,

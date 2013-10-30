@@ -30,7 +30,7 @@
                         event_dialog.attr('end', end);
                         event_dialog.attr('allDay', allDay);
 
-                        event_dialog.modal({'remote': "/{{ entity.plural_class_name.lower() }}/{{ entity.id }}/{{ event_type.lower() }}s/create/dialog?came_from={{ request.current_route_path() }}"});
+                        event_dialog.modal({'remote': "/entities/{{ entity.id }}/{{ event_type.lower() }}s/create/dialog?came_from={{ request.current_route_path() }}"});
 
                         calendar.fullCalendar('unselect');
 
@@ -93,7 +93,8 @@
             droppable: false, // this allows things to be dropped onto the calendar !!!
 
             selectable: true,
-            selectHelper: true
+            selectHelper: true,
+            escapeHtml: true
 
 
 

@@ -23,7 +23,7 @@
 {% block breadcrumbs %}
 
     {% set page_title='Sequences' %}
-    {% include 'breadcrumbs.jinja2' %}
+    {% include 'breadcrumb/breadcrumbs.jinja2' %}
 
 {% endblock breadcrumbs %}
 
@@ -49,22 +49,21 @@
 
     {% if has_permission('Create_Sequence') %}
 
-
-    <div class="row-fluid">
-         <div class="btn-toolbar">
-            <div class="btn-group">
-                <button id="create_btn" class="btn btn-small btn-success">
-                    <i class="icon-edit bigger-120"></i>
-                    <a class="white"
-                       data-target="#task_dialog"
-                       data-toggle="modal"
-                       data-keyboard=false
-                       href='{{ request.route_url("project_task_dialog", id=-1, mode='create') }}'>Create
-                    </a>
-                </button>
+        <div class="row-fluid">
+             <div class="btn-toolbar">
+                <div class="btn-group">
+                    <button id="create_btn" class="btn btn-small btn-success">
+                        <i class="icon-edit bigger-120"></i>
+                        <a class="white"
+                           data-target="#task_dialog"
+                           data-toggle="modal"
+                           data-keyboard=false
+                           href='{{ request.route_url("sequence_dialog", id=-1, mode='create') }}'>Create
+                        </a>
+                    </button>
+                </div>
             </div>
         </div>
-    </div>
 {#        <div class="space-10"></div>#}
     {% endif %}
 
@@ -87,6 +86,7 @@
             <th>Name</th>
             <th>Description</th>
             <th>Completed</th>
+            <th>Status</th>
             <th>Created By</th>
         </tr>
         </thead>
@@ -122,9 +122,9 @@
                         <span class="pull-left">{{=it.percent_complete}}%</span>
                     </div>
                 </div>
-                <div>
-                    <span>{{=it.status}}</span>
-                </div>
+            </td>
+            <td>
+                <span class="label label-{{=it.status_color}}">{{=it.status}}</span>
             </td>
             <td><a href='/users/{{=it.created_by_id}}/view'>{{=it.created_by_name}}</a>
             </td>
@@ -147,7 +147,7 @@
                 var i;
                 var table_body = $('#sequences_table>tbody');
                 for (i = 0; i < data.length; i++) {
-                   data[i].link = '/projects/{{ entity.id }}/sequences/' + data[i].id + '/view';
+                   data[i].link = '/sequences/' + data[i].id + '/view';
                     // fix dates
                     data[i].date_created = new Date(data[i].date_created).format('yyyy-mm-dd HH:MM');
 

@@ -94,6 +94,10 @@ logger.setLevel(logging.DEBUG)
     renderer='templates/department/list/list_entity_departments.jinja2'
 )
 @view_config(
+    route_name='view_department',
+    renderer='templates/department/view/view_department.jinja2'
+)
+@view_config(
     route_name='project_dialog',
     renderer='templates/project/dialog/project_dialog.jinja2',
 )
@@ -442,8 +446,8 @@ def get_entity_events(request):
                 'entity_type': time_log.plural_class_name.lower(),
                 'title': '%s (%s)' % (
                     time_log.task.name,
-                    ' | '.join(reversed(
-                        [parent.name for parent in time_log.task.parents]))),
+                    ' | '.join(
+                        [parent.name for parent in time_log.task.parents])),
                 'start': milliseconds_since_epoch(time_log.start),
                 'end': milliseconds_since_epoch(time_log.end),
                 'className': 'label-success',

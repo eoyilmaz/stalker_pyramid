@@ -188,7 +188,7 @@
                                           {{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}
                                       {%- endif -%}">
                             <a class="user"
-                               href="{{ request.route_url('view_entity_department', eid=user.id, id=department.id) }}">{{ department.name }}</a>
+                               href="{{ request.route_url('view_department',  id=department.id) }}">{{ department.name }}</a>
 
                             <div class="time">
                                 <i class="icon-user bigger-110"></i>
@@ -253,7 +253,7 @@
                                         {{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}
                                     {%- endif -%}">
                             <a class="user"
-                               href="{{ request.route_url('view_entity_group', eid=user.id, id=group.id) }}">{{ group.name }}</a>
+                               href="{{ request.route_url('view_group', id=group.id) }}">{{ group.name }}</a>
 
                             <div class="time">
                                 <i class="icon-user bigger-110"></i>

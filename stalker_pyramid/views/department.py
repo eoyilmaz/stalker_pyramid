@@ -163,7 +163,7 @@ def update_department(request):
 
 @view_config(
     route_name='view_entity_department',
-    renderer='templates/department/view/view_entity_department.jinja2'
+    renderer='templates/department/view/view_department.jinja2'
 )
 def view_entity_department(request):
     """create department dialog

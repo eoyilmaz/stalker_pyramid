@@ -1,0 +1,93 @@
+{# Render Project Side Bar #}
+
+{% set department=entity %}
+
+<ul class='nav nav-list'>
+
+    {# Thumbnail #}
+        <li>
+            <div class="media">
+                <a class="pull-left" href="#" style="width: 100px; height: 100px">
+                    <img style='width:auto; height: 100px;'
+                         class="img-thumbnail"
+                         src="{%- if department.thumbnail -%}
+                        /{{ department.thumbnail.full_path }}
+                    {%- else -%}
+                        {{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}
+                    {%- endif -%}">
+                </a>
+
+                <div class="media-body">
+                    <h5 class="media-heading">{{ department.name }}
+                    </h5>
+
+                  <a href="#" class="menu-text">
+                    <i class="icon-edit"></i>
+                    Edit
+                  </a>
+                </div>
+            </div>
+        </li>
+
+
+    {#Dashboard#}
+    {% if request.current_route_path() == request.route_path('view_department', id=department.id) %}
+        <li class='active'>
+            <a>
+                <i class="icon-dashboard"></i>
+                <span class="menu-text">Dashboard</span>
+            </a>
+        </li>
+    {% else %}
+        <li>
+            <a href='{{ request.route_url('view_department', id=department.id) }}'>
+                <i class="icon-dashboard"></i>
+                <span class="menu-text">Dashboard</span>
+            </a>
+        </li>
+    {% endif %}
+
+
+    {# Tasks #}
+    {% if request.current_route_path() == request.route_path('list_entity_tasks', id=department.id) %}
+        <li class='active'>
+            <a>
+                <i class="icon-tasks"></i>
+                <span class="menu-text">Tasks</span>
+                <span class='badge badge-info'>{{ department.tasks | count }}</span>
+            </a>
+        </li>
+    {% else %}
+        <li>
+            <a href='{{ request.route_url('list_entity_tasks', id=department.id) }}'>
+                <i class="icon-tasks"></i>
+                <span class="menu-text">Tasks</span>
+                <span class='badge badge-info'>{{ department.tasks | count }}</span>
+            </a>
+        </li>
+    {% endif %}
+
+
+
+
+
+
+    {# Users #}
+    {% if request.current_route_path() == request.route_path('list_department_users', id=department.id) %}
+        <li class='active'>
+            <a>
+                <i class="icon-user"></i>
+                <span class="menu-text">Users</span>
+                <span class='badge badge-success'>{{ department.users | count }}</span>
+            </a>
+        </li>
+    {% else %}
+        <li>
+            <a href='{{ request.route_url('list_department_users', id=department.id) }}'>
+                <i class="icon-user"></i>
+                <span class="menu-text">Users</span>
+                <span class='badge badge-success'>{{ department.users | count }}</span>
+            </a>
+        </li>
+    {% endif %}
+</ul>

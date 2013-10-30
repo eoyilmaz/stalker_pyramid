@@ -232,10 +232,10 @@ def list_groups(request):
 
 
 @view_config(
-    route_name='view_entity_group',
-    renderer='templates/group/view/view_entity_group.jinja2'
+    route_name='view_group',
+    renderer='templates/group/view/view_group.jinja2'
 )
-def view_entity_group(request):
+def view_group(request):
     """create group dialog
     """
     logger.debug('***view_entity_group method starts ***')
@@ -245,10 +245,7 @@ def view_entity_group(request):
     permissions = Permission.query.all()
     entity_types = EntityType.query.all()
 
-    entity_id = request.matchdict.get('eid', -1)
-    entity = Entity.query.filter_by(id=entity_id).first()
 
-    logger.debug('entity_type     : %s' % entity.entity_type)
 
     group_id = request.matchdict.get('id', -1)
     group = Group.query.filter_by(id=group_id).first()
@@ -257,8 +254,7 @@ def view_entity_group(request):
     projects = Project.query.all()
 
     return {
-        'entity': entity,
-        'group': group,
+        'entity': group,
         'actions': defaults.actions,
         'permissions': permissions,
         'entity_types': entity_types,
@@ -270,9 +266,84 @@ def view_entity_group(request):
 
     }
 
+
+@view_config(
+    route_name='list_group_permissions',
+    renderer='templates/group/list/list_group_permissions.jinja2'
+)
+def list_group_permissions(request):
+    """create group dialog
+    """
+    logger.debug('***view_entity_group method starts ***')
+
+    logged_in_user = get_logged_in_user(request)
+
+    permissions = Permission.query.all()
+    entity_types = EntityType.query.all()
+
+    group_id = request.matchdict.get('id', -1)
+    group = Group.query.filter_by(id=group_id).first()
+
+    studio = Studio.query.first()
+    projects = Project.query.all()
+
+
+
+    return {
+        'entity': group,
+        'actions': defaults.actions,
+        'permissions': permissions,
+        'entity_types': entity_types,
+        'logged_in_user': logged_in_user,
+        'stalker_pyramid': stalker_pyramid,
+        'has_permission': PermissionChecker(request),
+        'studio': studio,
+        'projects': projects
+
+    }
+
+@view_config(
+    route_name='get_group_permissions',
+    renderer='json'
+)
+def get_group_permissions(request):
+
+    permissions = Permission.query.all()
+    entity_types = EntityType.query.all()
+
+    group_id = request.matchdict.get('id', -1)
+    group = Group.query.filter_by(id=group_id).first()
+
+
+    permissions_list = []
+
+    for entity_type in entity_types:
+
+        permission_item = {'label':entity_type.name}
+
+        for permission in permissions:
+            permission_item[permission.action] = None
+
+        permissions_list.append(permission_item)
+
+    for group_permission in group.permissions:
+
+        label_indexer = dict((p['label'], i) for i, p in enumerate(permissions_list))
+        index = label_indexer.get(group_permission.class_name, -1)
+
+        permissions_list[index][group_permission.action] = 'true'
+
+    logger.debug('permissions_list %s' % permissions_list)
+
+    return permissions_list
+
+
+
+
+
 # @view_config(
 #     route_name='view_group',
-#     renderer='templates/group/view/view_entity_group.jinja2'
+#     renderer='templates/group/view/view_group.jinja2'
 # )
 # def view_group(request):
 #     """create group dialog

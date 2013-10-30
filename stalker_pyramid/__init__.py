@@ -172,6 +172,7 @@ def main(global_config, **settings):
     config.add_route('get_task_references',  'tasks/{id}/references/')  # json
     config.add_route('get_asset_references', 'assets/id}/references/')  # json
     config.add_route('get_shot_references',  'shots/{id}/references/')  # json
+    config.add_route('get_task_events',      'tasks/{id}/events/')  # json
 
     config.add_route('get_references',       'references/')
     config.add_route('get_reference',        'references/{id}')
@@ -498,8 +499,8 @@ def main(global_config, **settings):
 
     config.add_route('group_dialog',             'groups/{id}/{mode}/dialog')
 
-    config.add_route('dialog_create_group', 'groups/create/dialog')
-    config.add_route('dialog_update_group', 'groups/{id}/update/dialog')
+    config.add_route('dialog_create_group',      'groups/create/dialog')
+    config.add_route('dialog_update_group',      'groups/{id}/update/dialog')
 
     config.add_route('create_group',        'groups/create')
     config.add_route('update_group',        'groups/{id}/update')
@@ -509,7 +510,9 @@ def main(global_config, **settings):
 
     config.add_route('list_groups',         'groups/list')
     config.add_route('list_group_users',    'groups/{id}/users/list')
-    config.add_route('list_permissions',    'groups/{id}/permissions/list') # html
+    config.add_route('list_group_permissions',    'groups/{id}/permissions/list') # html
+
+    config.add_route('get_group_permissions',    'groups/{id}/permissions/') # html
 
     # *************************************************************************
     # Tag

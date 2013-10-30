@@ -37,7 +37,8 @@ colors = {
     'New': 'red',
     'Waiting To Start': 'purple',
     'Work In Progress': 'pink',
-    'Completed': 'green'
+    'Completed': 'green',
+    'Planning': 'grey'
 }
 
 

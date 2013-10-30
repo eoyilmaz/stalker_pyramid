@@ -121,7 +121,7 @@
             <ul class="submenu">
                 {% for department in user.departments %}
                     <li>
-                        <a href="{{ request.route_url('view_entity_department', eid=user.id, id=department.id) }}">
+                        <a href="{{ request.route_url('view_department', id=department.id) }}">
                             <i class="icon-double-angle-right"></i>
                             <span class="menu-text">{{ department.name }}</span>
                         </a>
@@ -143,7 +143,7 @@
             <ul class="submenu">
                 {% for group in user.groups %}
                     <li>
-                        <a href="{{ request.route_url('view_entity_group',eid=user.id, id=group.id) }}">
+                        <a href="{{ request.route_url('view_group',id=group.id) }}">
                             <i class="icon-double-angle-right"></i>
                             <span class="menu-text">{{ group.name }}</span>
                         </a>

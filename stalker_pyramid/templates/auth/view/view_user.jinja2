@@ -28,7 +28,7 @@
 {% block breadcrumbs %}
 
     {% set page_title='Dashboard' %}
-    {% include 'breadcrumbs.jinja2' %}
+    {% include 'breadcrumb/breadcrumbs.jinja2' %}
 
 {% endblock breadcrumbs %}
 
@@ -137,8 +137,6 @@
 
         {% if has_permission('Update_User') or logged_in_user.id == entity.id %}
 
-            <script type="text/javascript">
-            </script>
 
             {% set event_type='TimeLog' %}
 

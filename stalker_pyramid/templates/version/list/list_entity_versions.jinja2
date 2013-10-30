@@ -47,7 +47,10 @@
 {% block breadcrumbs %}
 
     {% set page_title='Versions' %}
-    {% include 'breadcrumbs.jinja2' %}
+    {% if entity.entity_type == 'Task' %}
+        {% include 'breadcrumb/breadcrumbs.jinja2' %}
+
+    {% endif %}
 
 {% endblock breadcrumbs %}
 
@@ -130,7 +133,7 @@
             <td>{{=it.name }}</td>
             <td>{{=it.absolute_full_path }}</td>
             <td>
-                <a href="">{{=it.created_by_name}}</a>
+                <a href="/users/{{=it.created_by_id}}/view">{{=it.created_by_name}}</a>
             </td>
         </tr>
     </script>

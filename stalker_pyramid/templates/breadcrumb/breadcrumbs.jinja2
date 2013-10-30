@@ -1,0 +1,9 @@
+{% if entity.entity_type == 'Task' or entity.entity_type == 'Asset'or entity.entity_type == 'Shot'or entity.entity_type == 'Sequence' %}
+
+    {% include 'breadcrumb/breadcrumbs_task.jinja2' %}
+
+{% else %}
+
+    {% include 'breadcrumb/breadcrumbs_base.jinja2' %}
+
+{% endif %}

@@ -26,18 +26,18 @@
 
         {% for parent in entity.parents %}
             <li>
-                <a href="{{ request.route_url('view_task', id=parent.id)}}">{{parent.name}}</a>
+                <a href="{{ request.route_url('view_task', id=parent.id) }}">{{ parent.name }}</a>
                     <span class="divider">
                         <i class="icon-angle-right arrow-icon"></i>
                     </span>
             </li>
         {% endfor %}
-    <li>
-                <a href="{{ request.route_url('view_task', id=entity.id)}}">{{entity.name}}</a>
+        <li>
+            <a href="{{ request.route_url('view_task', id=entity.id) }}">{{ entity.name }}</a>
                     <span class="divider">
                         <i class="icon-angle-right arrow-icon"></i>
                     </span>
-            </li>
+        </li>
 
         <li class="active">{{ page_title }}</li>
     </ul>

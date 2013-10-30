@@ -24,7 +24,7 @@
 {% block breadcrumbs %}
     {% set listed_type=ticket.plural_class_name %}
     {% set page_title='Ticket #%i' % ticket.number %}
-    {% include 'breadcrumbs.jinja2' %}
+    {% include 'breadcrumb/breadcrumbs.jinja2' %}
 {% endblock breadcrumbs %}
 
 {% block sidebar %}

@@ -12,19 +12,17 @@
 
         {% include 'auth/view/user_sidebar.jinja2' %}
 
-    {% elif entity.entity_type == 'Project' %}
-
-        {% include 'project/view/project_sidebar.jinja2' %}
-
-    {% elif entity.entity_type == 'Studio' %}
-
-        {% include 'studio/view/studio_sidebar.jinja2' %}
-
-    {% elif entity.entity_type == 'Task' or entity.entity_type == 'Asset'%}
+    {% elif entity.entity_type == 'Asset'or entity.entity_type == 'Shot'or entity.entity_type == 'Sequence'%}
 
         {% include 'task/view/task_sidebar.jinja2' %}
 
+    {% else %}
+
+        {% include entity.entity_type.lower()+'/view/'+entity.entity_type.lower()+'_sidebar.jinja2' %}
+
     {% endif %}
+
+
 
     <div class="sidebar-collapse" id="sidebar-collapse">
 

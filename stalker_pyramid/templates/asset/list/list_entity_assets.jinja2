@@ -30,7 +30,7 @@
 {% block breadcrumbs %}
 
     {% set page_title='Assets' %}
-    {% include 'breadcrumbs.jinja2' %}
+    {% include 'breadcrumb/breadcrumbs.jinja2' %}
 
 {% endblock breadcrumbs %}
 
@@ -78,7 +78,8 @@
         <div class="span12">
             <div class="tabbable" id="asset_types">
                 <ul id="asset_types_ul" class="nav nav-tabs"></ul>
-                <div id="asset_type_tables" class="tab-content no-padding"></div>
+                <div id="asset_type_tables"
+                     class="tab-content no-padding"></div>
             </div>
         </div>
     </div>
@@ -118,6 +119,7 @@
                     <th>Description</th>
                     <th>Type</th>
                     <th>Completed</th>
+                    <th>Status</th>
                     <th>Created By</th>
                 </tr>
                 </thead>
@@ -146,13 +148,14 @@
                 <div class="progress progress-success">
                     <div style="width:{{=it.percent_complete}}%"
                          class="bar">
-                        <span class="pull-left">{{=it.percent_complete}}%</span>
+                        <span>{{=it.percent_complete}}%</span>
                     </div>
                 </div>
-                <div>
-                    <span>{{=it.status}}</span>
-                </div>
             </td>
+            <td>
+                <span class="label label-{{=it.status_color}}">{{=it.status}}</span>
+            </td>
+
             <td><a href='/users/{{=it.created_by_id}}/view'>{{=it.created_by_name}}</a>
             </td>
         </tr>
@@ -182,6 +185,8 @@
                             var table_names = [];
                             for (i = 0; i < data.length; i++) {
                                 // fix dates
+
+                                console.log(data[i].name + ' : ' + data[i].percent_complete)
                                 data[i].link = '/assets/' + data[i].id + '/view';
 
                                 if (data[i].thumbnail_full_path == null) {
