@@ -88,6 +88,7 @@
     <script id="tmpl_reference_item" type="text/x-dot-template">
         <li id="Reference_{{=it.id}}">
             <a href="/{{=it.full_path}}"
+               download_href="/FD{{=it.full_path}}"
                title="{{=it.original_filename}}"
                data-rel="colorbox"
                class="cboxElement">
@@ -106,23 +107,43 @@
             </a>
 
             <div class="tools">
-                <a href="/{{=it.full_path}}" target="_blank">
-                    <i class="icon-link"></i>
-                </a>
-
-                <a class='reference-deleter' ref_id="{{=it.id}}" href="#">
-                    <i class="icon-remove red"></i>
-                </a>
+                <a href="/FD{{=it.full_path}}" title="Download"><i class="icon-cloud-download"></i></a>
+                <a href="javascript:copyToClipboard('http://' + window.location.host +'/FD{{=it.full_path}}')" title="Copy Download Link"><i class="icon-link"></i></a>
+                <a class='reference-deleter' ref_id="{{=it.id}}" href="#" title="Delete"><i class="icon-remove red"></i></a>
             </div>
         </li>
     </script>
     {% endraw %}
 
+{#    {% raw %}#}
+{#    <script id="tmpl_reference_item" type="text/x-dot-template">#}
+{#        <li id="Reference_{{=it[0]}}">#}
+{#            <a href="/{{=it[1]}}"#}
+{#               download_href="/FD{{=it[1]}}"#}
+{#               title="{{=it[2]}}"#}
+{#               data-rel="colorbox"#}
+{#               class="cboxElement">#}
+{#                <div style="text-align: center; overflow: hidden; width: 150px">#}
+{#                    <img alt="150x150"#}
+{#                         style="height: 150px; width: auto; max-width: none;#}
+{#                            position: relative; left: 100%; margin-left: -200%;"#}
+{#                         src="/{{=it[3] ? it[3] : '/static/stalker/images/Placeholder_0.png' }}">#}
+{#                    </div>#}
+{#                </div>#}
+{#            </a>#}
+{##}
+{#            <div class="tools">#}
+{#                <a href="/FD{{=it[1]}}" title="Download"><i class="icon-cloud-download"></i></a>#}
+{#                <a href="javascript:copyToClipboard('http://' + window.location.host +'/FD{{=it[1]}}')" title="Copy Download Link"><i class="icon-link"></i></a>#}
+{#                <a class='reference-deleter' ref_id="{{=it[0]}}" href="#" title="Delete"><i class="icon-remove red"></i></a>#}
+{#            </div>#}
+{#        </li>#}
+{#    </script>#}
+{#    {% endraw %}#}
 
 
 
     <script type="text/javascript">
-
         var colorbox_params = {
             reposition: true,
             scalePhotos: true,
@@ -136,7 +157,11 @@
             title: function () {
                 var url = $(this).attr('href');
                 var original_title = $(this).attr('title');
-                return '<a href="' + url + '" target="_blank">' + original_title + ' (Open In New Window)</a>';
+                var download_url = $(this).attr('download_href');
+                
+                var download_link = '<span><a href="' + download_url + '">' + original_title + '</a>';
+                var open_in_new_tab_link = '<a href="' + url + '" target="_blank">(Open In New Tab)</a></span>';
+                return download_link + '&nbsp' + open_in_new_tab_link;
             },
             onOpen: function () {
                 document.body.style.overflow = 'hidden';

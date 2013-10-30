@@ -47,10 +47,8 @@
 {% block breadcrumbs %}
 
     {% set page_title='Versions' %}
-    {% if entity.entity_type == 'Task' %}
-        {% include 'breadcrumb/breadcrumbs.jinja2' %}
-
-    {% endif %}
+    
+   {% include 'breadcrumb/breadcrumbs.jinja2' %}
 
 {% endblock breadcrumbs %}
 
@@ -103,13 +101,12 @@
                 >
             <thead>
             <tr>
-                <th>Parent Name</th>
-                <th>Task Name</th>
+                <th>Take</th>
                 <th>#</th>
                 <th>Is Published</th>
-                <th>Name</th>
-                <th>Path</th>
                 <th>Created By</th>
+                <th>Path</th>
+                <th>Parent Version</th>
             </tr>
             </thead>
             <tbody>
@@ -125,15 +122,29 @@
     {% raw %}
     <script id="tmpl_versionRow" type="text/x-dot-template">
 
-        <tr>
-            <td>{{=it.parent_name }}</td>
-            <td>{{=it.name }}</td>
-            <td>{{=it.id }}</td>
-            <td>{{=it.is_published }}</td>
-            <td>{{=it.name }}</td>
-            <td>{{=it.absolute_full_path }}</td>
+        <tr {{=it.is_published? 'class="green"' : '' }}>
+            <td>{{= it.take_name }}</td>
             <td>
-                <a href="/users/{{=it.created_by_id}}/view">{{=it.created_by_name}}</a>
+                <a href="/versions/{{= it.id }}/view">
+                    {{= it.version_number }}
+                </a>
+            </td>
+            <td>{{= it.is_published }}</td>
+            <td>
+                <a href="/users/{{= it.created_by.id }}">
+                    {{= it.created_by.name}}
+                </a>
+            </td>
+            <td>
+                <a href='javascript:copyToClipboard("{{= it.absolute_full_path }}")'>
+                    {{= it.absolute_full_path }}
+                </a>
+            </td>
+            <td>{{? it.parent }}
+                    <a href='/versions/{{= it.parent.id }}/view'>
+                        {{= it.parent.take_name }} | {{= it.parent.version_number }}
+                    </a>
+                {{?}}
             </td>
         </tr>
     </script>

@@ -227,11 +227,6 @@
     templates.ticketNameField = doT.template(document.getElementById('tmpl_ticketNameField').text);
     templates.referenceLink = doT.template(document.getElementById('tmpl_referenceLink').text);
 
-    // ************************************************************************
-    var copyToClipboard = function (text) {
-        window.prompt("Copy to clipboard: Ctrl+C, Enter", text);
-    };
-
 </script>
 
 <div class="row-fluid">
@@ -263,7 +258,11 @@
                                     <a data-target="#task_dialog"
                                        data-toggle="modal"
                                        data-keyboard=false
-                                       href='{{ request.route_url("task_dialog", id=-1, mode='create') }}'>
+                                       {% if entity.entity_type == 'Project' %}
+                                           href='{{ request.route_url("task_dialog", id=-1, mode='create', _query={'project_id': entity.id}) }}'>
+                                       {% elif entity.entity_type in ['Task', 'Shot', 'Sequence', 'Asset'] %}
+                                           href='{{ request.route_url("task_dialog", id=-1, mode='create', _query={'project_id': entity.project.id}) }}'>
+                                       {% endif %}
                                         <i class="'ui-icon icon-tasks bigger-120">&nbsp</i>
                                         Task
                                     </a>

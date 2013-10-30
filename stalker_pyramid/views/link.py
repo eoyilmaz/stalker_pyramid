@@ -71,6 +71,7 @@ def upload_files(request):
             'link_ids': [link.id for link in new_links]
         }
 
+
 @view_config(
     route_name='assign_thumbnail',
 )
@@ -104,6 +105,7 @@ def assign_thumbnail(request):
         DBSession.add(link)
 
     return HTTPOk()
+
 
 @view_config(
     route_name='assign_reference',
@@ -192,6 +194,7 @@ def generate_thumbnail(link):
     :param link: Generates a thumbnail for the given link
     :return:
     """
+    # TODO: support video files (somehow, gif thumbs may be???)
     file_full_path = convert_file_link_to_full_path(link.full_path)
 
     extension = os.path.splitext(file_full_path)[-1]
@@ -199,19 +202,22 @@ def generate_thumbnail(link):
     link_original_filename, link_original_extension = \
         os.path.splitext(link.original_filename)
 
-    thumbnail_original_filename = link_original_filename + '_t' + \
-                                  link_original_extension
+    thumbnail_original_filename = \
+        link_original_filename + '_t' + link_original_extension
 
     # generate thumbnails for those references
     img = Image.open(file_full_path)
-    img.thumbnail((512, 512)) # TODO: connect this to a config variable
-    img.thumbnail((256, 256), Image.ANTIALIAS)
+    img.thumbnail((300, 300))  # TODO: connect this to a config variable
+    img.thumbnail((150, 150), Image.ANTIALIAS)
 
     thumbnail_full_path, thumbnail_link_full_path = \
         generate_local_file_path(extension)
 
     # create the dirs before saving
-    os.makedirs(os.path.dirname(thumbnail_full_path))
+    try:
+        os.makedirs(os.path.dirname(thumbnail_full_path))
+    except OSError:  # path exists
+        pass
     img.save(thumbnail_full_path)
 
     # create a link to be the thumbnail of the original
@@ -220,7 +226,6 @@ def generate_thumbnail(link):
         original_filename=thumbnail_original_filename
     )
     return thumbnail
-
 
 
 @view_config(route_name='get_project_references', renderer='json')
@@ -234,23 +239,61 @@ def get_entity_references(request):
     requested
     """
     entity_id = request.matchdict.get('id', -1)
-    entity = Entity.query.filter(Entity.id==entity_id).first()
+    entity = Entity.query.filter(Entity.id == entity_id).first()
     logger.debug('asking references for entity: %s' % entity)
 
-    # TODO: there should be a 'get all references' for Projects for example
-    #       which returns all the references related to this project.
+    # using Raw SQL queries here to fasten things up quite a bit and also do
+    # some fancy queries like getting all the references of tasks of a project
+    # also with their tags
+    sql_query = """
+        select  "Links".id,
+                "Links".full_path,
+                "Links".original_filename,
+                "Thumbnail".full_path
+        from "Links" join "Task_References" on "Links".id = "Task_References".link_id
+        join "Tasks" on "Task_References".task_id = "Tasks".id
+        join (select "Links".id,
+                     "Links".full_path,
+                     "SimpleEntities".id as link_id
+                     from "Links" join "SimpleEntities" on "Links".id = "SimpleEntities".thumbnail_id) as "Thumbnail" on "Thumbnail".link_id = "Links".id
+    """
+    if entity.entity_type in ['Task', 'Asset', 'Shot', 'Sequence']:
+        sql_query += 'where "Tasks".id = %(entity_id)s' % {'entity_id': entity_id}
+    elif entity.entity_type == 'Project':
+        sql_query += 'where "Tasks".project_id = %(project_id)s' % {'project_id': entity_id}
 
-    if entity:
-        return [
-            {
-                'id': link.id,
-                'full_path': link.full_path,
-                'original_filename': link.original_filename,
-                'thumbnail': link.thumbnail.full_path
-                if link.thumbnail else link.full_path,
-                'tags': [tag.name for tag in link.tags]
-            } for link in entity.references]
-    return []
+    result = DBSession.connection().execute(sql_query)
+    return [
+        {
+            'id': r[0],
+            'full_path': r[1],
+            'original_filename': r[2],
+            'thumbnail': r[3],
+            'tags': [
+                i[0]
+                for i in DBSession.connection().execute(
+                    """select "SimpleEntities".name
+                    from "SimpleEntities"
+                    join "Tags" on "SimpleEntities".id = "Tags".id
+                    join "Entity_Tags" on "Tags".id = "Entity_Tags".tag_id
+                    join "Links" on "Entity_Tags".entity_id = "Links".id
+                    where "Links".id = %s""" % r[0]
+                )
+            ],
+        } for r in result.fetchall()
+    ]
+
+    #if entity:
+    #    return [
+    #        {
+    #            'id': link.id,
+    #            'full_path': link.full_path,
+    #            'original_filename': link.original_filename,
+    #            'thumbnail': link.thumbnail.full_path
+    #            if link.thumbnail else link.full_path,
+    #            'tags': [tag.name for tag in link.tags]
+    #        } for link in entity.references]
+    #return []
 
 
 def generate_local_file_path(extension):
@@ -351,6 +394,7 @@ def upload_files_to_server(request, file_params):
 
     transaction.commit()
     return links
+
 
 @view_config(
     route_name='delete_reference',
