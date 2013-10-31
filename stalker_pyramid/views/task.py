@@ -755,12 +755,12 @@ def get_project_tasks(request):
     sql_query = """select
     parent_data.id,
     "SimpleEntities".name || ' (' ||
-    string_agg(
+    array_to_string(array_agg(
         case
             when "SimpleEntities_parent".entity_type = 'Project'
             then "Projects".code
             else "SimpleEntities_parent".name
-        end,
+        end),
         ' | '
     ) || ')'
     as parent_names
