@@ -1290,7 +1290,6 @@ def get_child_task_time_logs(task):
     return task_events
 
 
-
 @view_config(
     route_name='get_task_events',
     renderer='json'

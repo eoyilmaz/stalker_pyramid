@@ -30,6 +30,7 @@ from pyramid.response import Response, FileResponse
 
 from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPOk
+import time
 
 import transaction
 
@@ -263,8 +264,14 @@ def get_entity_references(request):
     elif entity.entity_type == 'Project':
         sql_query += 'where "Tasks".project_id = %(project_id)s' % {'project_id': entity_id}
 
+    time_time = time.time
+    db_start = time_time()
     result = DBSession.connection().execute(sql_query)
-    return [
+    db_end = time_time()
+    db_time = db_end - db_start
+
+    python_start = time_time()
+    return_val = [
         {
             'id': r[0],
             'full_path': r[1],
@@ -283,6 +290,13 @@ def get_entity_references(request):
             ],
         } for r in result.fetchall()
     ]
+    python_end = time_time()
+    python_time = python_end - python_start
+
+    logger.debug('export tag: db_time     : %s' % db_time)
+    logger.debug('export tag: python_time : %s' % python_time)
+    logger.debug('export tag: total       : %s' % (python_end - db_start))
+    return return_val
 
 
 @view_config(route_name='get_project_references_count', renderer='json')

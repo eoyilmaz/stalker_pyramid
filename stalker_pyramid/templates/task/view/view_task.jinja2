@@ -206,10 +206,7 @@
                         allDay: data[i].allDay
                     };
 
-
-
                     events.push(event);
-
 
                     if (data[i].entity_type == 'tasks') {
 
@@ -233,16 +230,13 @@
 
                         resources[prop_id]['additionalParameters']['children'][(data[i].id).toString()] = {name: '<a href="/tasks/' + data[i].id + '/view">' + data[i].title + '</a>', type: 'item'}
 
-
                     }
 
                 }
-                console.log(resources)
-
+                console.log(resources);
 
                 drawCalendar('calendar', events);
-
-                drawTree('resource_tree', resources)
+                drawTree('resource_tree', resources);
 
 
             });

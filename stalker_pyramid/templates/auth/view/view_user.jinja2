@@ -146,7 +146,6 @@
 
     {% include 'charts/chart_extrascripts.jinja2' %}
 
-
     {% include 'charts/bar_chart.jinja2' %}
     {% include 'calendar/calendar.jinja2' %}
     {% include 'charts/infobox.jinja2' %}
@@ -155,8 +154,6 @@
         $(document).ready(function () {
 
             $.getJSON('/users/{{ entity.id }}/events/?keys=time_log&keys=vacation&keys=task').then(function (data) {
-
-
                 var events = [];
 
                 var time_log_data = [0, 0, 0, 0, 0, 0, 0];
