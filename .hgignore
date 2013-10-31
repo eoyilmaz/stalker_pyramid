@@ -26,11 +26,15 @@ dist/*
 build/*
 stalker_pyramid.egg-info/*
 upload_to_pypi
+lib/*
+bin/*
+include/*
 local
 *.swp
 stalker_pyramid.db*
 .git/
 pyramid.log
 pyramid.pid
+anima.ini
 local_production.ini
 local_production2.ini

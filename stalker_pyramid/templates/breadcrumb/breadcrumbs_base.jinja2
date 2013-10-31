@@ -8,13 +8,7 @@
     </script>
 
     <ul class="breadcrumb">
-        <li>
-            <i class="icon-home home-icon"></i>
-            <a href="{{ request.route_url('view_user', id=logged_in_user.id) }}">Home</a>
-            <span class="divider">
-              <i class="icon-angle-right arrow-icon"></i>
-            </span>
-        </li>
+
         {% if entity %}
             <li>
                 <a href="{{ request.route_url('view_' + entity.entity_type.lower(), id=entity.id) }}">{{ entity.name }}</a>

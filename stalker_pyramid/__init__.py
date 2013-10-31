@@ -422,7 +422,7 @@ def main(global_config, **settings):
     config.add_route('get_tasks',         'tasks/')
     config.add_route('get_task',          'tasks/{id}/')
     config.add_route('get_task_children', 'tasks/{id}/children/')
-    config.add_route('get_task_events',   'tasks/{id}/events/')
+    config.add_route('get_task_events',   'tasks/{id}/events/')  #json
 
     config.add_route('delete_task',       'tasks/{id}/delete')
 
@@ -500,6 +500,9 @@ def main(global_config, **settings):
     config.add_route('get_departments',       'departments/')
 
     config.add_route('list_department_users', 'departments/{id}/users/list')
+    config.add_route('list_department_tasks', 'departments/{id}/tasks/list')
+
+    config.add_route('get_department_tasks',  'departments/{id}/tasks/')
 
     config.add_route('append_departments',   'departments/{id}/append') # TODO: this was not clear
 
