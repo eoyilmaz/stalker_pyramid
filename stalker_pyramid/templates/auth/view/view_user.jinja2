@@ -1,0 +1,231 @@
+{% extends "base.jinja2" %}
+
+{# PRE-HEADER#}
+{% block pre_header %}
+
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/fullcalendar.css") }}'/>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/bootstrap-timepicker.css") }}'/>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/datepicker.css") }}'/>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/daterangepicker.css") }}'/>
+
+    {% include 'charts/chart_preheader.jinja2' %}
+
+{% endblock pre_header %}
+
+{#SIDEBAR#}
+{% block sidebar %}
+
+    {% include 'sidebar.jinja2' %}
+
+{% endblock sidebar %}
+
+
+{#BREADCRUMBS#}
+{% block breadcrumbs %}
+
+    {% set page_title='Dashboard' %}
+    {% include 'breadcrumb/breadcrumbs.jinja2' %}
+
+{% endblock breadcrumbs %}
+
+{# MODALS #}
+{% block modals %}
+
+    {% include 'modals/dialog_template.jinja2' %}
+
+{% endblock modals %}
+
+{#PAGE-CONTENT#}
+{% block page_content %}
+
+    {% set page_title='Dashboard' %}
+
+    {% include 'page_header.jinja2' %}
+    <!--/.page-header-->
+
+    <div class="row-fluid">
+
+        <div class="span12">
+            <!--PAGE CONTENT BEGINS-->
+
+            <div class="row-fluid">
+
+                <div class="span9">
+                    <div id="infobox"
+                         address='/entities/{{ entity.id }}/tasks_stats/'
+                         class="infobox-container"></div>
+
+                    <div class="hr hr8 hr-double"></div>
+
+                    <div class="space"></div>
+
+                    <div id="calendar"></div>
+
+                </div>
+                <div class="span3">
+
+                    <div class="widget-box">
+                        <div class="widget-header widget-header-flat widget-header-small">
+                            <h5>
+                                <i class="icon-signal"></i>
+                                Resource Efficiency
+
+                            </h5>
+
+                            <div class="widget-toolbar no-border">
+
+                                <button class="btn btn-minier btn-info dropdown-toggle"
+                                        data-toggle="dropdown">
+                                    This Week
+                                    <i class="icon-angle-down icon-on-right"></i>
+                                </button>
+
+                                <ul class="dropdown-menu dropdown-info pull-right dropdown-caret">
+                                    <li class="active">
+                                        <a href="#">This Week</a>
+                                    </li>
+
+                                    <li>
+                                        <a href="#">This Month</a>
+                                    </li>
+
+                                    <li>
+                                        <a href="#">This Year</a>
+                                    </li>
+                                </ul>
+
+                            </div>
+                        </div>
+
+                        <div class="widget-body">
+                            <div class="widget-main">
+                                <div id="bar_chart"
+                                     address='/users/{{ entity.id }}/weekly/worked_hours/'></div>
+
+                            </div>
+                            <!--/widget-main-->
+                        </div>
+                        <!--/widget-body-->
+                    </div>
+                    <!--/widget-box-->
+
+                    <div class="space-20"></div>
+
+                </div>
+
+            </div>
+
+        </div>
+        <!--/row-->
+    </div>
+
+    </div>
+    <!--PAGE CONTENT ENDS-->
+
+{% endblock page_content %}
+
+<!--page specific plugin scripts-->
+{#EXTRA-SCRIPTS#}
+{% block extrascripts %}
+
+
+    {% if entity.tasks | count > 0 %}
+
+        {% if has_permission('Update_User') or logged_in_user.id == entity.id %}
+
+
+            {% set event_type='TimeLog' %}
+
+        {% endif %}
+
+    {% endif %}
+
+    {% include 'charts/chart_extrascripts.jinja2' %}
+
+    {% include 'charts/bar_chart.jinja2' %}
+    {% include 'calendar/calendar.jinja2' %}
+    {% include 'charts/infobox.jinja2' %}
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            $.getJSON('/users/{{ entity.id }}/events/?keys=time_log&keys=vacation&keys=task').then(function (data) {
+                var events = [];
+
+                var time_log_data = [0, 0, 0, 0, 0, 0, 0];
+                var vacation_data = [0, 0, 0, 0, 0, 0, 0];
+                var unknown_data = [9, 9, 9, 9, 9, 9, 9];
+
+                var ticks = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+                var colors = ['#82af6f', '#fee188','#e2e2e2'];
+
+                var labels = [
+                    {label: 'Worked'},
+                    {label: 'Vacation'},
+                    {label: 'Bos'}
+                ];
+
+                var today = new Date();
+                today.setHours(0, 0, 0);
+
+                var week_day = today.getDay();
+
+                var first_week_day = new Date(today);
+                first_week_day.setDate(today.getDate() - week_day);
+
+                for (var i = 0; i < data.length; i++) {
+
+                    var start_date = new Date(parseInt(data[i].start));
+                    var end_date = new Date(parseInt(data[i].end));
+
+                    var event = {
+                        eId: data[i].id,
+                        entity_type: data[i].entity_type,
+                        title: data[i].title,
+                        start: start_date,
+                        end: end_date,
+                        className: data[i].className,
+                        allDay: data[i].allDay
+                    };
+
+
+                    if (first_week_day.getTime() <= start_date.getTime() && start_date.getTime() < today.getTime()) {
+
+                        var day_index = parseInt((start_date.getTime() - first_week_day.getTime()) / 1000 / 3600 / 24);
+
+                        var occupied_hours = parseInt((end_date.getTime() - start_date.getTime()) / 1000 / 3600);
+
+                        if(data[i].entity_type == 'timelogs'){
+
+                            time_log_data[day_index] += occupied_hours;
+
+                        }
+                        else if(data[i].entity_type == 'vacations'){
+
+                            vacation_data[day_index] += occupied_hours;
+
+                        }
+
+                        unknown_data[day_index] = unknown_data[day_index]- occupied_hours>0?unknown_data[day_index]- occupied_hours:0;
+
+                    }
+
+
+                    events.push(event);
+
+                }
+
+                drawBarChart('bar_chart', [time_log_data, vacation_data], ticks, colors, labels);
+                drawCalendar('calendar',events);
+
+
+            });
+        });
+    </script>
+
+{% endblock extrascripts %}

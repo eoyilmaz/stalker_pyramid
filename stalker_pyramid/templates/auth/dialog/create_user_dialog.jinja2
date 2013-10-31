@@ -1,0 +1,114 @@
+<div class="row-fluid">
+    <div class="span8">
+        <div class="widget-box">
+            <div class="widget-header widget-header-blue widget-header-flat">
+                <h4 class="lighter">New User</h4>
+            </div>
+
+            <div class="widget-body">
+                <div class="widget-main">
+                    <div id="fuelux-wizard" class="row-fluid hide"
+                         data-target="#step-container">
+                        <ul class="wizard-steps">
+                            <li data-target="#step1" class="active">
+                                <span class="step">1</span>
+                                <span class="title">Basic Information</span>
+                            </li>
+
+                            <li data-target="#step2">
+                                <span class="step">2</span>
+                                <span class="title">Append Project</span>
+                            </li>
+
+                            <li data-target="#step3">
+                                <span class="step">3</span>
+                                <span class="title">Append Department</span>
+                            </li>
+
+                            <li data-target="#step4">
+                                <span class="step">4</span>
+                                <span class="title">Append Group</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <hr>
+                    <div class="step-content row-fluid position-relative"
+                         id="step-container">
+                        <div class="step-pane active" id="step1">
+
+                            <div class="alert alert-info">
+                                <button type="button" class="close"
+                                        data-dismiss="alert">
+                                    <i class="icon-remove"></i>
+                                </button>
+                                <strong>Heads up!</strong>
+
+                                Enter the following information and save form
+                                to pass this step.
+                                <br>
+                            </div>
+
+
+                            {% set came_from=request.current_route_path() %}
+
+                            {% include 'auth/dialog/user_basic_information_form.jinja2' %}
+
+                        </div>
+
+                        <div class="step-pane" id="step2">
+
+                            <div class="row-fluid">
+                                <div class="alert alert-success">
+                                    <button type="button" class="close"
+                                            data-dismiss="alert">
+                                        <i class="icon-remove"></i>
+                                    </button>
+
+                                    <strong>
+                                        <i class="icon-ok"></i>
+                                        Well done!
+                                    </strong>
+
+                                    You successfully read this important alert
+                                    message.
+                                    <br>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <div class="step-pane" id="step3">
+                            <div class="center">
+                                <h3 class="blue lighter">This is step 3</h3>
+                            </div>
+                        </div>
+
+                        <div class="step-pane" id="step4">
+                            <div class="center">
+                                <h3 class="green">Congrats!</h3>
+                                Your product is ready to ship! Click finish to
+                                continue!
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+                    <div class="row-fluid wizard-actions">
+                        <button class="btn btn-prev">
+                            <i class="icon-arrow-left"></i>
+                            Prev
+                        </button>
+
+                        <button class="btn btn-success btn-next"
+                                data-last="Finish ">Next <i
+                                class="icon-arrow-right icon-on-right"></i>
+                        </button>
+                    </div>
+                </div>
+                <!-- /widget-main -->
+            </div>
+            <!-- /widget-body -->
+        </div>
+    </div>
+</div>

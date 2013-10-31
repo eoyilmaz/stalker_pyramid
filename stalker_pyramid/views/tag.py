@@ -17,20 +17,30 @@
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
+
 from pyramid.view import view_config
 from stalker import Tag
 
 
 @view_config(
     route_name='get_tags',
-    renderer='json'
+    renderer='json',
+    permission='Read_Tag'
 )
 def get_tags(request):
     """returns all the tags in database
     """
-    return [
-        {'name': tag.name,
-         'id': tag.id
-        }
-        for tag in Tag.query.all()
-    ]
+    as_list = request.params.get('as_list')
+    if as_list:
+        return [
+            tag.name
+            for tag in Tag.query.all()
+        ]
+    else:
+        return [
+            {
+                'name': tag.name,
+                'id': tag.id
+            }
+            for tag in Tag.query.all()
+        ]

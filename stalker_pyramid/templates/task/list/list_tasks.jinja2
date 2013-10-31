@@ -1,0 +1,840 @@
+
+{% raw %}
+<script id="tmpl_projectEditRow" type="text/x-dot-template">
+    <div class="projectEditRow"
+         dataId="{{=it.id}}"
+         name="{{=it.name}}"
+         start={{=it.start}}
+         end={{=it.end}}
+         type="{{=it.type}}"
+         hasChildren={{=it.hasChildren}}><a href="{{=it.link}}">{{=it.name}} ({{=it.type}})</a>
+    </div>
+</script>
+
+<script id="tmpl_projectBar" type="text/x-dot-template">
+    <div class="projectBox" projectId="{{=it.id}}">
+        <div class="layout">
+            <div class="projectLabel">{{=it.link()}}</div>
+            <div class="projectContextMenu" dataId="{{=it.id}}"></div>
+        </div>
+    </div>
+</script>
+
+
+<script id="tmpl_taskBar" type="text/x-dot-template">
+    <div class="taskBox" dataId="{{=it.id}}">
+        <div class="layout {{=it.hasExternalDep?'extDep':''}}">
+            <div class="taskProgress"
+                 style="width:{{=it.progress > 100 ? 100 : it.progress }}%;"></div>
+            <div class="taskExtraTiming"
+                 style="width:{{=(it.schedule_timing - it.bid_timing)/it.schedule_timing*100}}%;"></div>
+            <div class="taskScheduleModel">
+                {{=it.schedule_model.toUpperCase()[0]}}:
+                {{=it.schedule_timing}}{{=it.schedule_unit}}
+            </div>
+            <div class="taskLabel">{{=it.link()}}</div>
+            <div class="milestone end {{=it.endIsMilestone ? 'active' : ''}}"></div>
+            <div class="taskResourceLabel">{{=it.getResourcesLinks()}}
+            </div>
+            {{=it.clippedStart?'
+            <div class="leftArrowHead">&nbsp</div>
+            ':''}}
+            {{=it.clippedEnd?'
+            <div class="rightArrowHead">&nbsp</div>
+            ':''}}
+            <div class="leafTaskContextMenu"
+                 dataId="{{=it.id}}"
+                 name="{{=it.name}}"
+                 hierarchy_name="{{=it.hierarchy_name}}"
+                 start={{=it.start}}
+                 end={{=it.end}}
+                 type="{{=it.type}}"
+                 priority={{=it.priority}}
+                 bid_timing={{=it.bid_timing}}
+                 bid_unit={{=it.bid_unit}}
+                 schedule_model={{=it.schedule_model}}
+                 schedule_timing={{=it.schedule_timing}}
+                 schedule_unit={{=it.schedule_unit}}
+                 description="{{=it.description}}"
+                 remaining_seconds="{{=it.remaining_seconds}}"
+                 resources="{{=it.getResourcesStr()}}"
+                 responsible_id="{{=it.responsible.id}}"
+                 responsible_name="{{=it.responsible.name}}"
+                    ></div>
+        </div>
+    </div>
+</script>
+
+<script id='tmpl_leafTaskToolTip' type='text/x-dot-template'>
+    <table>
+        <thead style="text-align: center">
+        <h2>{{=it.name}} ({{=it.type}})</h2>
+        <h4>{{=it.hierarchy_name}}</h4>
+        </thead>
+
+        <tbody>
+        <tr>
+            <td class="label_column">Id</td>
+            <td class="input_column">{{=it.dataId}}</td>
+        </tr>
+        <tr>
+            <td class="label_column">Priority</td>
+            <td class="input_column">{{=it.priority}}</td>
+        </tr>
+        <tr>
+            <td class="label_column">BID</td>
+            <td class="input_column">{{=it.bid_timing}} {{=it.bid_unit}}
+            </td>
+        </tr>
+        <tr>
+            <td class="label_column">{{=it.schedule_model}}</td>
+            <td class="input_column">{{=it.schedule_timing}}
+                {{=it.schedule_unit}}
+            </td>
+        </tr>
+        <tr>
+            <td class="label_column">Start</td>
+            <td class="input_column">{{=it.start.format("yyyy-mm-dd
+                HH:00")}}
+            </td>
+        </tr>
+        <tr>
+            <td class="label_column">End</td>
+            <td class="input_column">{{=it.end.format("yyyy-mm-dd
+                HH:00")}}
+            </td>
+        </tr>
+        <tr>
+            <td class="label_column">Description</td>
+            <td class="input_column">{{=it.description}}</td>
+        </tr>
+        <tr>
+            <td class="label_column">Remaining Time</td>
+            <td class="input_column">{{=it.remaining_seconds}}</td>
+        </tr>
+        <tr>
+            <td class="label_column">Responsible</td>
+            <td class="input_column">{{=it.responsible.name}}</td>
+        </tr>
+        </tbody>
+    </table>
+</script>
+
+<script id="tmpl_taskEditRow" type="text/x-dot-template">
+    <a href='/tasks/{{=it.id}}/view'
+
+       data-toggle='tooltip'
+       data-placement='top'
+       title
+       data-original-title='test tooltip'
+
+       name="{{=it.name}}"
+       start={{=it.start}}
+       end={{=it.end}}
+       type="{{=it.type}}"
+    {{ if (!it.hasChildren) { }}
+    responsible_id="{{=it.responsible.id}}"
+    responsible_name="{{=it.responsible.name}}"
+    {{ } }}
+    hasChildren={{=it.hasChildren}}>{{=it.name}} ({{=it.type}})</a>
+</script>
+
+
+<script id="tmpl_parentTaskEditRow" type="text/x-dot-template">
+    <div class="{{=it.contextMenuClass}}"
+         dataId="{{=it.id}}"
+         name="{{=it.name}}"
+         start={{=it.start}}
+         end={{=it.end}}
+         type="{{=it.type}}"
+         hasChildren={{=it.hasChildren}}><a href="{{=it.link}}">{{=it.name}} ({{=it.type}})</a>
+    </div>
+</script>
+
+
+<script id="tmpl_parentTaskBar" type="text/x-dot-template">
+    <div class="parentTaskBox" dataId="{{=it.id}}">
+        <div class="layout {{=it.hasExternalDep?'extDep':''}}">
+            <div class="leftPin"></div>
+            <div class="rightPin"></div>
+            <div class="taskLabel">{{=it.link()}}</div>
+            <div class="parentTaskContextMenu" dataId="{{=it.id}}"></div>
+        </div>
+    </div>
+</script>
+
+<script id="tmpl_taskLink" type="text/x-dot-template">
+    <a href="/tasks/{{=it.id}}/view">{{=it.name}} ({{=it.type}})</a>
+</script>
+
+<script id='tmpl_resourceLink' type='text/x-dot-template'>
+    <a href="/users/{{=it.id}}/view">{{=it.name}}</a>
+</script>
+
+<script id="tmpl_projectLink" type="text/x-dot-template">
+    <a href="/projects/{{=it.id}}/view">{{=it.name}} ({{=it.type}})</a>
+</script>
+
+<script id='tmpl_entityNameField' type="text/x-dot-template">
+    <a href="{{=it.address}}">{{=it.name}} ({{=it.code}})</a>
+</script>
+
+<script id='tmpl_userNameField' type="text/x-dot-template">
+    <a href="{{=it.address}}>{{=it.user_name}}</a>
+</script>
+
+<script id='tmpl_departmentField' type="text/x-dot-template">
+    <a href="{{=it.address}}">{{=it.name}}</a>
+</script>
+
+<script id='tmpl_groupField' type="text/x-dot-template">
+    <a href="{{=it.address}}">{{=it.name}}</a>
+</script>
+
+<script id='tmpl_ticketNameField' type="text/x-dot-template">
+    <a href="{{=it.address}}">#{{=it.number}}</a>
+</script>
+
+<script id='tmpl_referenceLink' type='text/x-dot-template'>
+    <a href="javascript:lightBox('{{=it.original_filename}}', '{{=it.full_path}}');">{{=it.original_filename}}</a>
+</script>
+{% endraw %}
+
+<script type='text/javascript'>
+    // ************************************************************************
+    // load templates with doT.js
+    var templates = {};
+
+    templates.projectBar = doT.template(document.getElementById('tmpl_projectBar').text);
+    templates.parentTaskBar = doT.template(document.getElementById('tmpl_parentTaskBar').text);
+    templates.taskBar = doT.template(document.getElementById('tmpl_taskBar').text);
+
+    templates.projectEditRow = doT.template(document.getElementById('tmpl_projectEditRow').text);
+    templates.parentTaskEditRow = doT.template(document.getElementById('tmpl_parentTaskEditRow').text);
+    templates.taskEditRow = doT.template(document.getElementById('tmpl_taskEditRow').text);
+
+    templates.projectLink = doT.template(document.getElementById('tmpl_projectLink').text);
+    templates.taskLink = doT.template(document.getElementById('tmpl_taskLink').text);
+    templates.resourceLink = doT.template(document.getElementById('tmpl_resourceLink').text);
+
+    templates.leafTaskToolTip = doT.template(document.getElementById('tmpl_leafTaskToolTip').text);
+
+    // for DGrid Headers
+    templates.entityNameField = doT.template(document.getElementById('tmpl_entityNameField').text);
+    templates.userNameField = doT.template(document.getElementById('tmpl_userNameField').text);
+    templates.departmentField = doT.template(document.getElementById('tmpl_departmentField').text);
+    templates.groupField = doT.template(document.getElementById('tmpl_groupField').text);
+    templates.ticketNameField = doT.template(document.getElementById('tmpl_ticketNameField').text);
+    templates.referenceLink = doT.template(document.getElementById('tmpl_referenceLink').text);
+
+</script>
+
+<div class="row-fluid">
+    <div class="span12">
+        <!--PAGE CONTENT BEGINS-->
+
+        <div class="left">
+
+            <div class="btn-toolbar">
+
+                <div class="btn-group">
+                    <button data-toggle="dropdown"
+                            class="btn btn-small btn-danger dropdown-toggle">
+                        <i class="icon-gears bigger-120"></i>Action<span class="caret"></span>
+                    </button>
+
+                    <ul class="dropdown-menu" role='menu'>
+                        {% if has_permission('Create_Task') %}
+                        <li class="dropdown-submenu">
+
+                            <a href="#" tabindex="-1">
+                                <i class="'ui-icon icon-plus bigger-120">&nbsp</i>
+                                Create
+                            </a>
+
+                            <ul class="dropdown-menu dropdown-danger">
+
+                                <li>
+                                    <a data-target="#task_dialog"
+                                       data-toggle="modal"
+                                       data-keyboard=false
+                                       {% if entity.entity_type == 'Project' %}
+                                           href='{{ request.route_url("task_dialog", id=-1, mode='create', _query={'project_id': entity.id}) }}'>
+                                       {% elif entity.entity_type in ['Task', 'Shot', 'Sequence', 'Asset'] %}
+                                           href='{{ request.route_url("task_dialog", id=-1, mode='create', _query={'project_id': entity.project.id}) }}'>
+                                       {% endif %}
+                                        <i class="'ui-icon icon-tasks bigger-120">&nbsp</i>
+                                        Task
+                                    </a>
+                                </li>
+
+                                <li>
+                                    <a id='child_task_button'
+                                       original-href='{{ request.route_url("task_dialog", id=-1, mode='create') }}'
+                                       href='#'>
+                                        <i class="'ui-icon icon-tasks bigger-120">&nbsp</i>
+                                        Child Task
+                                    </a>
+                                </li>
+
+                                <li>
+                                    <a id='dependent_task_button'
+                                       original-href='{{ request.route_url("task_dialog", id=-1, mode='create') }}'
+                                       href='#'>
+                                        <i class="'ui-icon icon-tasks bigger-120">&nbsp</i>
+                                        Dependent Task
+                                    </a>
+                                </li>
+
+                                <li class="divider"></li>
+
+                                <li>
+                                    <a data-target="#task_dialog"
+                                       data-toggle="modal"
+                                       data-keyboard=false
+                                       href='{{ request.route_url("asset_dialog", id=-1, mode='create')}}'>
+                                        <i class="'ui-icon icon-puzzle-piece bigger-120">&nbsp</i>
+                                        Asset
+                                    </a>
+                                </li>
+
+                                <li>
+                                    <a data-target="#task_dialog"
+                                       data-toggle="modal"
+                                       data-keyboard=false
+                                       href='{{ request.route_url("shot_dialog", id=-1, mode='create')}}'>
+                                        <i class="'ui-icon icon-camera bigger-120">&nbsp</i>
+                                        Shot
+                                    </a>
+                                </li>
+
+                                <li>
+                                    <a data-target="#task_dialog"
+                                       data-toggle="modal"
+                                       data-keyboard=false
+                                       href='{{ request.route_url("sequence_dialog", id=-1, mode='create')}}'>
+                                        <i class="'ui-icon icon-film bigger-120">&nbsp</i>
+                                        Sequence
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                        {% endif %}
+
+                        {% if has_permission('Update_Task') %}
+                        <li>
+                            <a id='update_task_button'
+                               data-target="#task_dialog"
+                               data-toggle="modal"
+                               data-keyboard=false
+                               href="#"
+                               tabindex="-1">
+                                <i class="'ui-icon icon-pencil bigger-120">&nbsp</i>
+                                Update
+                            </a>
+                        </li>
+                        {% endif %}
+
+                        {% if has_permission('Create_Task') %}
+                        <li>
+                            <a id="duplicate_task_hierarchy_button">
+                                <i class="'ui-icon icon-copy bigger-120">&nbsp</i>
+                                Duplicate Hierarchy
+                            </a>
+                        </li>
+                        {% endif %}
+
+                        {% if has_permission('Delete_Task') %}
+                        <li>
+                            <a id="delete_task_button"
+                               class="red"
+                               href=''>
+                                <i class="'ui-icon icon-trash bigger-120">&nbsp</i>
+                                Delete
+                            </a>
+                        </li>
+                        {% endif %}
+
+                        <li class="divider"></li>
+
+                        <li>
+                            <a href='#' class="blue">
+                                <i class="'ui-icon icon-comment bigger-120">&nbsp</i>
+                                Request Review
+                            </a>
+                        </li>
+
+
+                    </ul>
+                </div>
+
+                <div id="gantt_reload_button" class="btn-group">
+                    <button class="btn btn-small btn-success">
+                        <span class="icon-retweet bigger-120"></span>
+                        Reload
+                    </button>
+                </div>
+
+                <div id="gantt_refresh_button" class="btn-group">
+                    <button class="btn btn-small btn-info">
+                        <span class="icon-refresh bigger-120"></span>
+                        Redraw
+                    </button>
+                </div>
+
+                {% if has_permission('Update_Task') %}
+                    <div id="gantt_schedule_tasks_button" class="btn-group">
+                        <button class="btn btn-small btn-purple">
+                            <span class="icon-magic bigger-120"></span>
+                            Schedule Tasks
+                        </button>
+                        <div id="schedule-dialog-message" class="hide">
+                            <div class="progress progress-warning progress-small progress-striped active">
+                                <div class="bar" style="width: 100%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <div id="gantt_go_to_today_button" class="btn-group">
+                    <button class="btn btn-small btn-yellow">
+                        <i class="icon-calendar bigger-120"></i>
+                        Go To Today
+                    </button>
+                    <div id="gantt_scroll_to_button" class="hidden" start="0"></div>
+                </div>
+            
+                <div class="btn-group">
+                    <a href="#"
+                       data-toggle="dropdown"
+                       class="btn btn-small btn-warning dropdown-toggle">Toggle Columns<span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <input class="ace" type="checkbox" name="columns[]" id="action_column_toggler" checked=true/>
+                            <label class="lbl" for="action_column_toggler">Action</label>
+                        </li>
+
+                        <li>
+                            <input class="ace" type="checkbox" name="columns[]" id="id_column_toggler" checked=true/>
+                            <label class="lbl" for="id_column_toggler">Id</label>
+                        </li>
+
+                        <li>
+                            <input class="ace" type="checkbox" name="columns[]" id="name_column_toggler" checked=true/>
+                            <label class="lbl" for="name_column_toggler">Name</label>
+                        </li>
+
+                        <li>
+                            <input class="ace" type="checkbox" name="columns[]" id="complete_column_toggler" checked=true/>
+                            <label class="lbl" for="complete_column_toggler">% Complete</label>
+                        </li>
+
+                        <li>
+                            <input class="ace" type="checkbox" name="columns[]" id="resource_column_toggler" checked=true/>
+                            <label class="lbl" for="resource_column_toggler">Resource</label>
+                        </li>
+
+                        <li>
+                            <input class="ace" type="checkbox" name="columns[]" id="timing_column_toggler" checked=true/>
+                            <label class="lbl" for="timing_column_toggler">Timing</label>
+                        </li>
+
+                        <li>
+                            <input class="ace" type="checkbox" name="columns[]" id="start_column_toggler" checked=true/>
+                            <label class="lbl" for="start_column_toggler">Start</label>
+                        </li>
+
+                        <li>
+                            <input class="ace" type="checkbox" name="columns[]" id="end_column_toggler" checked=true/>
+                            <label class="lbl" for="end_column_toggler">End</label>
+                        </li>
+
+                        <li>
+                            <input class="ace" type="checkbox" name="columns[]" id="chart_column_toggler" checked=true/>
+                            <label class="lbl" for="chart_column_toggler">Chart</label>
+                        </li>
+                    </ul>
+                </div>
+
+{#                <div id="task_info_widget" class="widget-box">#}
+{#                    <div class="widget-header">#}
+{#                        <h5>Task Info</h5>#}
+{#                        <div class="widget-toolbar">#}
+{#                            <a href="#" data-action="reload">#}
+{#                                <i class="icon-refresh"></i>#}
+{#                            </a>#}
+{##}
+{#                            <a href="#" data-action="collapse">#}
+{#                                <i class="icon-chevron-up"></i>#}
+{#                            </a>#}
+{##}
+{#                            <a href="#" data-action="close">#}
+{#                                <i class="icon-remove"></i>#}
+{#                            </a>#}
+{#                        </div>#}
+{##}
+{#                        <div class="widget-body">#}
+{#                            <div class="widget-main">#}
+{#                                <table class="table table-striped table-bordered table-hover">#}
+{#                                    <tbody>#}
+{#                                        <tr>#}
+{#                                            <td class="">Alex</td>#}
+{#                                            <td><a href="#">alex@email.com</a></td>#}
+{#                                            <td class="hidden-480"><span class="label label-warning">Pending</span></td>#}
+{#                                        </tr>#}
+{#                                    </tbody>#}
+{#                                </table>#}
+{#                            </div>#}
+{#                        </div>#}
+{##}
+{#                    </div>#}
+{#                </div>#}
+            </div>
+
+
+            <div class="row-fluid">
+                <div id="{{ entity.entity_type }}_{{ entity.id }}_gantt"
+                     class='gantt'
+                     style='height: 700px'></div>
+            </div>
+        </div>
+        <!--PAGE CONTENT ENDS-->
+    </div>
+    <!--/.span-->
+</div>
+
+<script type='text/javascript'
+        data-dojo-config="async: true, parseOnLoad: true"
+        src='{{ request.static_url("stalker_pyramid:static/dojo/dojo.js") }}'>
+</script>
+
+
+<script type="text/javascript">
+
+require([
+    'dijit/registry',
+
+    'dijit/form/Button',
+    'dijit/form/FilteringSelect',
+    'dijit/Menu',
+    'dijit/MenuItem',
+    'dijit/MenuSeparator',
+    'dijit/form/DateTextBox',
+    'dijit/Tooltip',
+
+    'dojo/cookie',
+    'dojo/json',
+    'dojo/query',
+    'dojo/store/Cache',
+    'dojo/store/Memory',
+    'dojo/store/JsonRest',
+    'dojo/request/xhr',
+    'dojo/_base/lang',
+    'dojo/Deferred',
+    'dojo/when',
+    'dojo/date',
+
+    "dgrid/List",
+    "dgrid/Grid",
+    'dojox/data/JsonRestStore',
+
+    'stalker/dialogs',
+    'stalker/dialogCaller',
+    'stalker/dialogCreator',
+    'stalker/GanttGrid',
+
+    'dojo/domReady!'
+], function (registry, Button, FilteringSelect, Menu, MenuItem,
+             MenuSeparator, DateTextBox, Tooltip, cookie, json, query,
+             Cache, Memory, JsonRest, xhr, lang, Deferred, when, date,
+             List, Grid, JsonRestStore, dialogs, dialogCaller,
+             dialogCreator, GanttGrid) {
+
+    // The Memory
+    var target = '/tasks/';
+    var tasks_memory_store = new Memory();
+
+    {% if entity.entity_type == 'User' %}
+        target = '{{ request.route_url('get_user_tasks', id=entity.id) }}';
+    {% elif entity.entity_type == 'Studio' %}
+        target = '{{ request.route_url('get_studio_tasks', id=entity.id) }}';
+    {% endif %}
+{#    console.debug('target : ', target);#}
+
+    var tasks_jsonRest_store = new JsonRest({
+        target: target,
+        getChildren: function (parent, options) {
+            return this.query({parent_id: parent.id}, options);
+        },
+        mayHaveChildren: function (parent) {
+            return parent.hasChildren;
+        }
+    });
+    var tasks_cache_store = new Cache(tasks_jsonRest_store, tasks_memory_store);
+
+    // allow the gantt to resize with the window
+    $(window).on('resize', function(){
+        var gantt_height = $(window).height() - 230;
+        $('#'+'{{ entity.entity_type }}_{{ entity.id }}_gantt').css({height: gantt_height});
+    });
+    $(window).trigger('resize');
+
+    var gantt_chart = new GanttGrid({
+        id: '{{ entity.entity_type }}_{{ entity.id }}_gantt_dgrid',
+        width: '100%',
+        autoHeight: true,
+        store: tasks_cache_store,
+        query: {
+            // initialize with the entity itself
+            task_id: {{ entity.id }}
+        },
+        loadingMessage: "<div style='float: left' class='dijitIconLoading'>&nbsp</div><div>Loading</div>",
+        noDataMessage: "",
+        pageSkip: 0,
+        cellNavigation: false
+    }, '{{ entity.entity_type }}_{{ entity.id }}_gantt');
+    gantt_chart.startup();
+
+    // ceter on today
+    setTimeout(
+        function () {
+            gantt_column.centerOnToday();
+        },
+        0
+    );
+
+    // column togglers
+    // TODO: implement it to the GanttGrid
+    $('#action_column_toggler').on('click', function(e){
+        $(".dgrid-column-action").toggle();
+    });
+    $('#id_column_toggler').on('click', function(e){
+        $(".dgrid-column-id").toggle();
+    });
+    $('#name_column_toggler').on('click', function(e){
+        $(".dgrid-column-name").toggle();
+    });
+    $('#complete_column_toggler').on('click', function(e){
+        $(".dgrid-column-complete").toggle();
+    });
+    $('#resource_column_toggler').on('click', function(e){
+        $(".dgrid-column-resource").toggle();
+    });
+    $('#timing_column_toggler').on('click', function(e){
+        $(".dgrid-column-timing").toggle();
+    });
+    $('#start_column_toggler').on('click', function(e){
+        $(".dgrid-column-start").toggle();
+    });
+    $('#end_column_toggler').on('click', function(e){
+        $(".dgrid-column-end").toggle();
+    });
+    $('#chart_column_toggler').on('click', function(e){
+        $(".dgrid-column-set-1").toggle();
+        $(".dgrid-column-set-scroller.dgrid-scrollbar-height.dgrid-column-set-scroller-1").toggle();
+    });
+
+    // register cell selection function
+    gantt_chart.on('dgrid-select', function(e){
+        var selected_ids = gantt_chart.selected_ids();
+        if (selected_ids.length > 0){
+            // update create child task
+            var child_task_button = $('#child_task_button');
+            var parent_org_href = child_task_button.attr('original-href');
+            // update parent id
+            var parent_href = parent_org_href + '?parent_id=' + selected_ids[0];
+            console.debug('parent_href: ', parent_href);
+            child_task_button.attr('href', parent_href);
+
+            // update create dependent task buttons
+            var dependent_task_button = $('#dependent_task_button');
+            var dependent_org_href = dependent_task_button.attr('original-href');
+            var dep_ids_param = '?';
+            for (var i=0; i < selected_ids.length; i++){
+                dep_ids_param += (i>0) ? '&' : '';
+                dep_ids_param += 'dependent_id=' + selected_ids[i];
+            }
+            var dependent_href = dependent_org_href + dep_ids_param;
+            console.debug('dependent_href: ', dependent_href);
+            dependent_task_button.attr('href', dependent_href);
+
+            // update update button
+            $('#update_task_button').attr(
+                'href',
+                '/tasks/' + selected_ids[0] + '/update/dialog'
+            );
+        }
+    });
+
+    var select_first_and_do_something = function(e, callback){
+        e.preventDefault();
+        e.stopPropagation();
+        // check if something is selected first
+        var selected_ids = gantt_chart.selected_ids();
+        if (selected_ids.length == 0){
+            bootbox.alert('Please select a task first!');
+        } else {
+            if ( typeof(callback) === 'function'){
+                return callback();
+            } else {
+                return callback;
+            }
+        }
+    };
+
+    var select_first_and_show_task_dialog = function(e, self){
+        select_first_and_do_something(e, function(){
+            $("#task_dialog").modal({
+                target: '#task_dialog',
+                keyboard: false,
+                remote: self.attr('href')
+            });
+        });
+    };
+
+    // create buttons
+    $('#child_task_button').on('click', function(e){select_first_and_show_task_dialog(e, $(this));});
+    $('#dependent_task_button').on('click', function(e){select_first_and_show_task_dialog(e, $(this));});
+
+    // duplicate hierarchy button
+    $('#duplicate_task_hierarchy_button').on('click', function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        var self = $(this);
+
+        var selected_ids = gantt_chart.selected_ids();
+        {# TODO: update it to display task names in the message #}
+{#        var task_id;#}
+{#        var tasks = [];#}
+{#        for (var i=0; i < selected_ids.length(); i++){#}
+{#            // get task info#}
+{#            task_id = selected_ids[i];#}
+{#            $.get('/tasks/' + task_id + '/').done(function(data){#}
+{#                tasks.push(data);#}
+{#            });#}
+{#        }#}
+
+        // warn the user about what is going to happen and ask if it is ok
+        bootbox.confirm(
+            '<div><p>This will duplicate the task hierarchy including all ' +
+            'the children tasks.For the following tasks:<br><br>' +
+            selected_ids + 
+            '<br><br>Is that ok?</div>', function(result){
+                if (result){
+                    // get the id and send it to the server
+                    var url = '';
+                    for (var i=0; i < selected_ids.length; i++){
+                        url = '/tasks/' + selected_ids[i] + '/duplicate';
+                        console.debug(url);
+                        $.post(url).done(function(){
+                            gantt_column.reload();
+                        }).fail(function(jqXHR){
+                            bootbox.alert(jqXHR.responseText);
+                        });
+                    };
+                };
+        });
+    });
+
+    $('#delete_task_button').on('click', function(e){
+        e.preventDefault();
+        e.stopPropagation();
+
+        // get the selection list
+        var selected_ids = gantt_chart.selected_ids();
+        if (selected_ids.length == 0){
+            bootbox.alert('Please select at least one item from the ' +
+                'GanttChart!');
+            return;
+        }
+
+        // warn the user about what is going to happen
+        bootbox.confirm('All the selected tasks and their child tasks and ' +
+            'all the TimeLogs entered and all the Versions ' +
+            'created for those tasks are going to be deleted.<br><br>' +
+            'Are you sure?', function(result){
+            if (result){
+                var id;
+                // TODO: users will probably select parent and child items
+                // together and server will not be able to find the child tasks
+                // after the parent has deleted, so consider that in server
+                // side.
+                for (var i=0; i < selected_ids.length; i++){
+                    id = selected_ids[i];
+                    $.post(
+                        '/tasks/' + id + '/delete'
+                    ).done(function(response_text){
+                        bootbox.alert(response_text);
+                        // reload the gantt chart
+                        gantt_column.reload();
+                    }).fail(function(jqXHR){
+                        bootbox.alert(jqXHR.responseText);
+                    });
+                }
+            }
+        });
+    });
+
+    // get the gantt column
+    var gantt_column = gantt_chart.columnSets[1][0][0];
+
+    // Reload Button
+    $("#gantt_reload_button").on('click', function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        gantt_column.reload();
+    });
+
+    // Refresh Button
+    $("#gantt_refresh_button").on('click', function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        gantt_column.refresh();
+    });
+
+    // scroll to button
+    $("#gantt_scroll_to_button").on('click', function(e){
+        var start = $(this).attr('start');
+        gantt_column.scrollToDate(start);
+        e.preventDefault();
+        e.stopPropagation();
+    });
+
+    // Schedule
+    {% if has_permission('Update_Task') %}
+        $('#gantt_schedule_tasks_button').on('click', function(){
+            var dialog = $( "#schedule-dialog-message" ).dialog({
+                modal: true,
+                title: "Scheduling Tasks...",
+                title_html: true,
+                height: 70,
+                width: 350
+            });
+
+            $.post(
+                '{{ request.route_url("auto_schedule_tasks") }}'
+            ).done(function(data){
+                var message = '<div>' + data + '</div>';
+                bootbox.alert(message);
+                $('.bootbox').prepend('<div class="modal-header alert-success"><strong>Success</strong></div>');
+            }).fail(function(jqXHR){
+                var message = '<div>' + jqXHR.responseText + '</div>';
+                bootbox.alert(message);
+                $('.bootbox').prepend('<div class="modal-header alert-danger"><strong>Fail</strong></div>');
+            }).always(function(){
+                dialog.dialog("close");
+                gantt_column.refresh();
+            })
+
+            
+            
+        });
+    {% endif %}
+
+    $('#gantt_go_to_today_button').on('click', function(){
+       gantt_column.centerOnToday(); 
+    });
+
+});
+</script>

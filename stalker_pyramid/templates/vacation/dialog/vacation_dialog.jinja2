@@ -1,0 +1,388 @@
+<div class='row-fluid'>
+
+    <div class='span12'>
+        <div id="message"
+             class="flash-message alert alert-danger text-center hide">
+
+        </div>
+
+
+        <form id='vacation_form'
+              class='form-horizontal'
+              role='form'
+              method='post'>
+
+
+            {# User #}
+            <div class='control-group'>
+                <label class='span2 control-label'
+                       for='vacation_user'>User</label>
+
+                <div class='span10'>
+                    <select id='vacation_user'
+                            class='input-block-level'
+                            name='user_id'
+                            required></select>
+                </div>
+            </div>
+
+            {# Type #}
+            <div class='control-group'>
+                <label class='span2 control-label'
+                       for='vacation_type'>Type</label>
+
+                <div class='span10'>
+                    <select id='vacation_type'
+                            class='input-block-level'
+                            name='type_name'
+                            required></select>
+                </div>
+            </div>
+
+            {# Start & End Dates #}
+            <div class="control-group">
+                <label for="start_end_date_range_picker"
+                       class="span2 control-label">Date</label>
+
+                <div class="span10 input-prepend">
+                    <input id='start_end_date_range_picker'
+                           name='start_and_end_dates'
+                           type="text"
+                           data-date-format="yyyy-mm-dd"
+                           placeholder="Start & End Dates">
+                        <span class="add-on">
+                            <i class="icon-calendar"></i>
+                        </span>
+                </div>
+            </div>
+
+            {# Start Time#}
+            <div class="row-fluid">
+                <div class="control-group">
+                    <label class='span2 control-label'
+                           for='start_time'>From</label>
+
+                    <div class="span2 input-append bootstrap-timepicker">
+                        <input id="start_time" name="start_time" type="text"
+                               class="input-small"/>
+                    <span class="add-on">
+                        <i class="icon-time"></i>
+                        </span>
+                    </div>
+                </div>
+
+                {# End Time#}
+                <div class="control-group">
+                    <label class='span2 control-label'
+                           for="end_time">To</label>
+
+                    <div class="span2 input-append bootstrap-timepicker">
+                        <input id="end_time" name="end_time" type="text"
+                               class="input-small"/>
+                    <span class="add-on">
+                        <i class="icon-time"></i>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/chosen.jquery.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-datepicker.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/moment.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/daterangepicker.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-timepicker.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootstrap-colorpicker.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.autosize-min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.inputlimiter.1.3.1.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.maskedinput.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootstrap-tag.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.validate.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/additional-methods.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/fuelux/fuelux.spinner.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.easy-pie-chart.min.js") }}'></script>
+
+
+<script>
+function init_dialog() {
+    console.debug('starting to initialize vacation dialog!!!');
+
+    $('#dialog_template_label').find('span').remove();
+    $('#dialog_template_label').append('<span>Vacation</span>')
+
+    $('#dialog_template_body').attr('style',"height: 300px");
+
+    {# ***************************************************************** #}
+    var event_dialog = $('#dialog_template')
+
+    var start_date_value = new Date(event_dialog.attr('start'));
+    var end_date_value = new Date(event_dialog.attr('end'));
+
+    var start_time_value = start_date_value;
+    var end_time_value = end_date_value;
+
+
+    if (event_dialog.attr('allDay') == 'true') {
+        start_time_value.setHours(10);
+        end_time_value.setHours(19);
+    }
+
+
+    //*********************************************************
+    //Type
+
+    var vacation_type = $('#vacation_type');
+
+    {% raw %}
+    var type_option_template = doT.template(
+            '<option value={{=it.id}} {{=it.selected}}>{{=it.name}}</option>'
+    );
+    {% endraw %}
+
+
+
+    {% for type in types %}
+
+        var selected = '';
+
+        {% if mode == 'update' %}
+
+            {% if vacation.type.id == type.id %}
+
+                selected = 'selected';
+
+            {% endif %}
+        {% endif %}
+
+
+        var data = {id: '{{ type.name }}', name: '{{ type.name }}', selected: selected};
+        vacation_type.append(type_option_template(data));
+
+    {% endfor %}
+
+
+
+
+    {% if mode == 'create' %}
+        //*********************************************************
+        //Action
+
+        $("#vacation_form").attr("action", "{{ request.route_url('create_vacation') }}");
+
+        //*********************************************************
+        //User
+
+        var vacation_user = $('#vacation_user');
+        vacation_user.append('<option value={{ user.id }} selected>{{ user.name }}</option>');
+
+
+
+    {% elif mode == 'update' %}
+        //*********************************************************
+        //Action
+
+        $("#vacation_form").attr("action", "{{ request.route_url('update_vacation', id=vacation.id) }}");
+
+        //*********************************************************
+        //User
+
+        var vacation_user = $('#vacation_user');
+        vacation_user.append('<option value={{ user.id }} selected>{{ user.name }}</option>');
+
+
+
+        //*********************************************************
+        //Start, End
+
+        start_date_value = new Date(parseInt({{ milliseconds_since_epoch(vacation.start) }}));
+        end_date_value = new Date(parseInt({{ milliseconds_since_epoch(vacation.end) }}));
+
+        start_time_value = start_date_value;
+        end_time_value = end_date_value;
+
+    {% endif %}
+
+    {# ***************************************************************** #}
+    {# Get Start End  #}
+
+    var get_start_end = function () {
+
+
+        var date_range = $('#start_end_date_range_picker').daterangepicker().val().split(' - ');
+        var start_date_string = date_range[0].split('/');
+        var end_date_string = date_range[1].split('/');
+        var start_time_string = $('#start_time').val().split(':');
+        var end_time_string = $('#end_time').val().split(':');
+
+
+        var start = new Date(parseInt(start_date_string[2]), parseInt(start_date_string[0]) - 1, parseInt(start_date_string[1]), parseInt(start_time_string[0]), parseInt(start_time_string[1]), 0, 0);
+        var end = new Date(parseInt(end_date_string[2]), parseInt(end_date_string[0]) - 1, parseInt(end_date_string[1]), parseInt(end_time_string[0]), parseInt(end_time_string[1]), 0, 0);
+
+        return [start, end];
+
+    };
+
+    {# ***************************************************************** #}
+    {# Update Remaining Hours #}
+
+
+
+
+    {# ***************************************************************** #}
+    {# Start & End Date Picker #}
+
+    $(document).ready(function () {
+        // initialize date picker
+        var start_end_date_range_picker = $('#start_end_date_range_picker').daterangepicker();
+
+        // also update the icon
+        start_end_date_range_picker.next().on(ace.click_event, function () {
+            $(this).prev().focus();
+        });
+
+        // fix z-index of the container
+        // start_end_date_range_picker.data().daterangepicker.container.css({'z-index': 1060});
+
+
+        start_end_date_range_picker.val(
+                start_date_value.format('mm/dd/yyyy') + ' - ' + end_date_value.format('mm/dd/yyyy')
+        );
+
+        start_end_date_range_picker.data().daterangepicker.updateFromControl();
+
+
+    });
+
+    {# ***************************************************************** #}
+    {# Start Time #}
+
+    $(document).ready(function () {
+
+        var start_time = $('#start_time');
+        start_time.val(start_time_value.format('HH:MM'));
+        start_time.timepicker({
+            minuteStep: 1,
+            showSeconds: false,
+            showMeridian: false
+        });
+    });
+
+    {# ***************************************************************** #}
+    {# End Time #}
+
+    $(document).ready(function () {
+
+        var end_time = $('#end_time');
+        end_time.val(end_time_value.format('HH:MM'));
+        end_time.timepicker({
+            minuteStep: 1,
+            showSeconds: false,
+            showMeridian: false
+        });
+    });
+
+    {# ***************************************************************** #}
+    {# Submit Button #}
+
+    $('#dialog_template_submit_button').on('click', function () {
+
+        var vacation_form = $('#vacation_form');
+
+        {#        {% if types | count > 0 %}#}
+        {##}
+        {#            if (vacation_type.val() == 'StudioWide') {#}
+        {#                $('#message').show();#}
+        {#                $('#message').append("<p><strong><i class='icon-danger'>You can not create a vacation with type StudioWide</p>")#}
+        {#                return;#}
+        {#            }#}
+        {#        {% endif %}#}
+
+        if (vacation_form.validate()) {
+
+            // merge end_date and end_time
+            var start_end = get_start_end();
+            var start = start_end[0];
+            var end = start_end[1];
+
+
+            $.post(
+                            vacation_form.attr('action'),
+                            vacation_form.serialize() + '&' + $.param({ 'start': start.toUTCString(), 'end': end.toUTCString() })
+                    ).done(function () {
+                        window.location.replace('{{ came_from }}');
+                    });
+
+        }
+    });
+
+    $('#vacation_form').validate({
+        errorElement: 'span',
+        errorClass: 'help-inline',
+        focusInvalid: true,
+        rules: {
+            user_id: {
+                required: true
+            },
+            start_and_end_dates: {
+                required: true
+            },
+            start_time: {
+                required: true
+            },
+            end_time: {
+                required: true
+            }
+
+        },
+
+        messages: {
+        },
+
+        invalidHandler: function (event, validator) { //display error alert on form submit
+            $('.alert-error', $('.login-form')).show();
+        },
+
+        highlight: function (e) {
+            $(e).closest('.control-group').removeClass('info').addClass('error');
+        },
+
+        success: function (e) {
+            $(e).closest('.control-group').removeClass('error').addClass('info');
+            $(e).remove();
+        },
+
+        errorPlacement: function (error, element) {
+            if (element.is(':checkbox') || element.is(':radio')) {
+                var controls = element.closest('.controls');
+                if (controls.find(':checkbox,:radio').length > 1) controls.append(error);
+                else error.insertAfter(element.nextAll('.lbl:eq(0)').eq(0));
+            }
+            else if (element.is('.select2')) {
+                error.insertAfter(element.siblings('[class*="select2-container"]:eq(0)'));
+            }
+            else if (element.is('.chosen-select')) {
+                error.insertAfter(element.siblings('[class*="chosen-container"]:eq(0)'));
+            }
+            else error.insertAfter(element);
+        },
+
+        submitHandler: function (form) {
+            form.submit();
+        }
+
+    });
+
+    console.debug('finished initializing the vacation dialog!')
+}
+</script>
+
+<script type="text/javascript">
+    function destruct_dialog() {
+        $('#start_end_date_range_picker').unbind();
+        $('#dialog_template_submit_button').unbind();
+        $('#dialog_template').data('modal', null);
+    }
+</script>

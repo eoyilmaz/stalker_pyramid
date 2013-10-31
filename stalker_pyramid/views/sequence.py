@@ -28,45 +28,12 @@ from stalker.db import DBSession
 from stalker import User, Project, StatusList, Status, Sequence, Entity
 
 import logging
-from stalker_pyramid.views import PermissionChecker, get_logged_in_user
+from stalker_pyramid.views import PermissionChecker, get_logged_in_user, milliseconds_since_epoch, colors
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.WARNING)
+logger.setLevel(logging.DEBUG)
 
 
-@view_config(
-    route_name='dialog_create_sequence',
-    renderer='templates/sequence/dialog_create_sequence.jinja2'
-)
-def create_sequence_dialog(request):
-    """fills the create sequence dialog
-    """
-    project_id = request.matchdict.get('id', -1)
-    project = Project.query.filter_by(id=project_id).first()
-
-    return {
-        'mode': 'CREATE',
-        'has_permission': PermissionChecker(request),
-        'project': project
-    }
-
-
-@view_config(
-    route_name='dialog_update_sequence',
-    renderer='templates/sequence/dialog_create_sequence.jinja2'
-)
-def update_sequence_dialog(request):
-    """fills the create sequence dialog
-    """
-    sequence_id = request.matchdict.get('id', -1)
-    sequence = Sequence.query.filter_by(id=sequence_id).first()
-
-    return {
-        'mode': 'UPDATE',
-        'sequence': sequence,
-        'has_permission': PermissionChecker(request),
-        'project': sequence.project
-    }
 
 @view_config(
     route_name='create_sequence'
@@ -160,31 +127,31 @@ def update_sequence(request):
         logger.debug('there are missing parameters')
         logger.debug('name      : %s' % name)
         logger.debug('status    : %s' % status)
-        HTTPServerError()
+        HTTPServerError()   
 
     return HTTPOk()
 
 
 
-@view_config(
-    route_name='view_sequence',
-    renderer='templates/sequence/page_view_sequence.jinja2'
-)
-def view_sequence(request):
-    """runs when viewing an sequence
-    """
-
-    login = authenticated_userid(request)
-    logged_in_user = User.query.filter_by(login=login).first()
-
-    sequence_id = request.matchdict.get('id', -1)
-    sequence = Sequence.query.filter_by(id=sequence_id).first()
-
-    return {
-        'user': logged_in_user,
-        'sequence': sequence,
-        'has_permission': PermissionChecker(request)
-    }
+#@view_config(
+#    route_name='view_sequence',
+#    renderer='templates/sequence/page_view_sequence.jinja2'
+#)
+#def view_sequence(request):
+#    """runs when viewing an sequence
+#    """
+#
+#    login = authenticated_userid(request)
+#    logged_in_user = User.query.filter_by(login=login).first()
+#
+#    sequence_id = request.matchdict.get('id', -1)
+#    sequence = Sequence.query.filter_by(id=sequence_id).first()
+#
+#    return {
+#        'user': logged_in_user,
+#        'sequence': sequence,
+#        'has_permission': PermissionChecker(request)
+#    }
 
 
 @view_config(
@@ -225,14 +192,19 @@ def get_project_sequences(request):
 
     return [
         {
+            'thumbnail_path': sequence.thumbnail.full_path if sequence.thumbnail else None,
+            'code': sequence.code,
             'id': sequence.id,
             'name': sequence.name,
             'status': sequence.status.name,
+            'status_color':colors[sequence.status.name]if colors[sequence.status.name] else 'grey',
             'status_bg_color': sequence.status.bg_color,
             'status_fg_color': sequence.status.fg_color,
-            'user_id': sequence.created_by.id,
-            'user_name': sequence.created_by.name,
-            'thumbnail_path': sequence.thumbnail.full_path if sequence.thumbnail else None
+            'created_by_id': sequence.created_by.id,
+            'created_by_name': sequence.created_by.name,
+            'description': sequence.description,
+            'date_created':milliseconds_since_epoch(sequence.date_created),
+            'percent_complete': sequence.percent_complete
         }
         for sequence in entity.sequences
     ]

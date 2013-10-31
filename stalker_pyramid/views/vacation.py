@@ -32,15 +32,25 @@ from stalker_pyramid.views import (get_logged_in_user, PermissionChecker,
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-
 @view_config(
-    route_name='dialog_create_vacation',
-    renderer='templates/vacation/dialog_create_vacation.jinja2',
+    route_name='entity_vacation_dialog',
+    renderer='templates/vacation/dialog/vacation_dialog.jinja2',
+)
+@view_config(
+    route_name='studio_vacation_dialog',
+    renderer='templates/vacation/dialog/vacation_dialog.jinja2',
+)
+@view_config(
+    route_name='user_vacation_dialog',
+    renderer='templates/vacation/dialog/vacation_dialog.jinja2',
 )
 def create_vacation_dialog(request):
     """creates a create_vacation_dialog by using the given user
     """
-    logger.debug('inside create_vacation_dialog')
+    logger.debug('***create_vacation_dialog method starts ***')
+
+    came_from = request.params.get('came_from','/')
+    logger.debug('came_from %s '% came_from)
 
     # get logged in user
     logged_in_user = get_logged_in_user(request)
@@ -49,7 +59,8 @@ def create_vacation_dialog(request):
     user = User.query.filter(User.user_id == user_id).first()
 
     vacation_types = Type.query.filter(
-        Type.target_entity_type == 'Vacation').all()
+        Type.target_entity_type == 'Vacation').filter(Type.name !='StudioWide').all()
+
 
     studio = Studio.query.first()
 
@@ -58,27 +69,32 @@ def create_vacation_dialog(request):
 
     if not user:
         user = studio
-        vacation_types = []
+        vacation_types = Type.query.filter(
+        Type.target_entity_type == 'Vacation').filter(Type.name =='StudioWide').all()
 
     return {
-        'mode': 'CREATE',
+        'mode': 'create',
         'has_permission': PermissionChecker(request),
         'studio': studio,
         'logged_in_user': logged_in_user,
         'user': user,
+        'came_from':came_from,
         'types': vacation_types,
         'milliseconds_since_epoch': milliseconds_since_epoch
     }
 
 
 @view_config(
-    route_name='dialog_update_vacation',
-    renderer='templates/vacation/dialog_create_vacation.jinja2',
+    route_name='vacation_update_dialog',
+    renderer='templates/vacation/dialog/vacation_dialog.jinja2',
 )
 def update_vacation_dialog(request):
     """updates a create_vacation_dialog by using the given user
     """
-    logger.debug('inside updates_vacation_dialog')
+    logger.debug('***update_vacation_dialog method starts ***')
+
+    came_from = request.params.get('came_from','/')
+    logger.debug('came_from %s: '% came_from)
 
     # get logged in user
     logged_in_user = get_logged_in_user(request)
@@ -97,15 +113,17 @@ def update_vacation_dialog(request):
     user = vacation.user
     if not vacation.user:
         user = studio
-        vacation_types = []
+        vacation_types = Type.query.filter(
+        Type.target_entity_type == 'Vacation').filter(Type.name =='StudioWide').all()
 
     return {
-        'mode': 'UPDATE',
+        'mode': 'update',
         'has_permission': PermissionChecker(request),
         'studio': studio,
         'logged_in_user': logged_in_user,
         'user': user,
         'vacation': vacation,
+        'came_from':came_from,
         'types': vacation_types,
         'milliseconds_since_epoch': milliseconds_since_epoch
     }
@@ -119,6 +137,7 @@ def create_vacation(request):
     """
 
     logger.debug('inside create_vacation')
+
     user_id = int(request.params.get('user_id'))
     user = User.query.filter(User.id == user_id).first()
 
@@ -163,6 +182,11 @@ def create_vacation(request):
                 end=end_date
             )
             DBSession.add(vacation)
+
+            request.session.flash(
+                'success:<strong>%s</strong> vacation is created for <strong>%s</strong>.' % (type_.name, Studio.query.first().name)
+            )
+
         else:
             logger.debug('its a personal vacation')
             vacation = Vacation(
@@ -173,6 +197,10 @@ def create_vacation(request):
                 end=end_date
             )
             DBSession.add(vacation)
+
+            request.session.flash(
+                'success:<strong>%s</strong> vacation is created for <strong>%s</strong>.' % (type_.name, user.name)
+            )
         logger.debug('end of creating vacation')
 
     else:
@@ -187,14 +215,14 @@ def create_vacation(request):
 def update_vacation(request):
     """runs when updating a vacation
     """
-
-    vacation_id = request.params.get('vacation_id')
-    vacation = Vacation.query.filter_by(id=vacation_id).first()
-
+    logged_in_user = get_logged_in_user(request)
 
     #**************************************************************************
     # collect data
-    logged_in_user = get_logged_in_user(request)
+
+    vacation_id = request.matchdict.get('id', -1)
+    vacation = Vacation.query.filter_by(id=vacation_id).first()
+
 
     type_name = request.params.get('type_name')
     start_date = get_date(request, 'start')
@@ -202,6 +230,8 @@ def update_vacation(request):
 
     logger.debug('start_date  : %s' % start_date)
     logger.debug('end_date    : %s' % end_date)
+    logger.debug('vacation    : %s' % vacation)
+    logger.debug('vacation_id    : %s' % vacation_id)
 
     if vacation and start_date and end_date:
         # we are ready to create the time log
@@ -224,8 +254,14 @@ def update_vacation(request):
         vacation.type = type_
         vacation.start = start_date
         vacation.end = end_date
+
         DBSession.add(vacation)
 
+        request.session.flash(
+           'success: <strong>%s</strong> vacation is updated for %s.' % (type_.name,(vacation.user.name if vacation.user else Studio.query.first().name ))
+        )
+
+        logger.debug('vacation_id    : %s is updated! ' % vacation_id)
 
     else:
         HTTPServerError()
@@ -257,10 +293,11 @@ def get_vacations(request):
 
     return [{
             'id': vacation.id,
-            'type': vacation.type.name,
-            'user_id': vacation.user.id if vacation.user else None,
-            'created_by_id': vacation.created_by_id,
-            'created_by_name': vacation.created_by.name,
-            'start_date': milliseconds_since_epoch(vacation.start),
-            'end_date': milliseconds_since_epoch(vacation.end)
+            'entity_type':vacation.plural_class_name.lower(),
+            'title': vacation.type.name,
+            'start': milliseconds_since_epoch(vacation.start),
+            'end': milliseconds_since_epoch(vacation.end),
+            'className': 'label-yellow',
+            'allDay': True,
+            'status': ''
         } for vacation in vacations]

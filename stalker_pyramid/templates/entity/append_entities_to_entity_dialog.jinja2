@@ -1,0 +1,167 @@
+<div class='row-fluid'>
+    <div class='span12'>
+
+        <form id='append_form'
+              class='form-horizontal'
+              role='form'
+              method='post'>
+            <div class='row-fluid'>
+                <div id="multiple_select_list"></div>
+            </div>
+        </form>
+
+        <div class="space-5"></div>
+        <div class="hr dotted"></div>
+        <div class="space-10"></div>
+
+    </div>
+</div>
+
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/chosen.jquery.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-datepicker.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/moment.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/daterangepicker.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-timepicker.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootstrap-colorpicker.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.autosize-min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.inputlimiter.1.3.1.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.maskedinput.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootstrap-tag.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.validate.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/additional-methods.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/fuelux/fuelux.spinner.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.easy-pie-chart.min.js") }}'></script>
+
+{% raw %}
+<script id="tmpl_item" type="text/x-dot-template">
+    <div class="profile-activity clearfix" id="stack_item_{{=it.id}}" sel=""
+         onclick="clicked({{=it.id}})">
+
+        <div>
+            <img class="pull-left"
+                 src="{{=it.thumbnail_path }}">
+
+            <div class="user">{{=it.name }}</div>
+
+            <div id="stack_item_{{=it.id }}-ok" class="light-green"
+                 style="position: absolute; right: 12px;bottom: 8px; display: none">
+                <i class="icon-ok icon-2x"></i>
+            </div>
+
+            <div class="time">
+                {{=it.description}}
+            </div>
+
+
+        </div>
+    </div>
+</script>
+{% endraw %}
+
+
+<script type="text/javascript">
+
+    var data_ids = [];
+
+    function submitStackData() {
+        // gather info
+        // and send
+
+        var selected_items = [];
+        for (var i = 0; i < data_ids.length; i++) {
+
+            var selected = $('#stack_item_' + data_ids[i]).attr('sel');
+
+            if (selected != "") {
+                selected_items.push(data_ids[i]);
+            }
+
+        }
+
+        $.post(
+                "{{ request.route_url('append_entities_to_entity', id=entity.id) }}",
+                {'selected_items': selected_items}
+        ).done(function(){
+            window.location.replace('{{ came_from }}');
+        });
+    }
+
+
+    function clicked(id) {
+
+        var selected = $('#stack_item_' + id).attr('sel');
+
+        if (selected == "") {
+            $('#stack_item_' + id).attr('sel', 'ok');
+
+            $('#stack_item_' + id + '-ok').show();
+
+        }
+        else {
+            $('#stack_item_' + id).attr('sel', '')
+            $('#stack_item_' + id + '-ok').hide();
+        }
+
+    }
+    function init_dialog() {
+        console.debug('starting to initialize append_class_to_entity dialog!!!');
+
+
+        $('#dialog_template_label').find('span').remove();
+        $('#dialog_template_label').append('<span>Append {{ entities_name }}</span>')
+
+        {# ***************************************************************** #}
+        $(document).ready(function () {
+
+            $.getJSON('/entities/{{ entity.id }}/{{ entities_name }}/out_stack/').then(function (data) {
+
+                var item_template = doT.template($('#tmpl_item').html());
+                var multiple_select_list = $('#multiple_select_list')
+
+                // append new options to the select
+                for (var i = 0; i < data.length; i++) {
+
+                    data_ids.push(data[i].id)
+
+                    if (data[i].thumbnail_path == null) {
+                        data[i].thumbnail_path = '{{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}';
+                    }
+                    else {
+                        data[i].thumbnail_path = '/' + data[i].thumbnail_path;
+                    }
+
+
+                    if (data[i].description == null) {
+                        data[i].description = '';
+                    }
+                    else {
+                        data[i].description = '<i class="icon-file-text-alt"></i> ' + data[i].description;
+                    }
+
+                    multiple_select_list.append(item_template(data[i]));
+                }
+
+            });
+
+
+        });
+
+
+        $('#dialog_template_submit_button').on('click', function (e) {
+            console.debug('this is running!');
+            submitStackData();
+            e.preventDefault();
+            e.stopPropagation();
+        });
+
+
+        console.debug('finished initializing the append_class_to_entity dialog!')
+    }
+</script>
+
+<script type="text/javascript">
+    function destruct_dialog() {
+        $('#dialog_template_submit_button').unbind();
+        $('#dialog_template').data('modal', null);
+    }
+</script>

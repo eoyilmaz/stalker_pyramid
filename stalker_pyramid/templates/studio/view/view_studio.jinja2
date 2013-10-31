@@ -1,0 +1,48 @@
+{% extends "base.jinja2" %}
+
+{# PRE-HEADER#}
+{% block pre_header %}
+
+   {% include 'charts/chart_preheader.jinja2' %}
+
+{% endblock pre_header %}
+
+{#SIDEBAR#}
+{% block sidebar %}
+
+    {% include 'sidebar.jinja2' %}
+
+{% endblock sidebar %}
+
+{#BREADCRUMBS#}
+{% block breadcrumbs %}
+
+    {% set page_title='Dashboard' %}
+    {% include 'breadcrumb/breadcrumbs.jinja2' %}
+
+{% endblock breadcrumbs %}
+
+{#PAGE-CONTENT#}
+{% block page_content %}
+
+    {% set page_title='Dashboard' %}
+    {% include 'page_header.jinja2' %}
+
+    <div class="row-fluid">
+
+        <div class="span6">
+
+          <div id="pie_chart" style="margin-top:20px; margin-left:20px; width:300px; height:300px;"></div>
+
+        </div>
+    </div>
+
+{% endblock page_content %}
+
+{#EXTRA-SCRIPTS#}
+{% block extrascripts %}
+    {% include 'charts/chart_extrascripts.jinja2' %}
+
+    {% include 'charts/pie_chart.jinja2' %}
+
+{% endblock extrascripts %}

@@ -19,57 +19,20 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 
 import datetime
-from pyramid.httpexceptions import HTTPOk, HTTPServerError
+from pyramid.httpexceptions import HTTPOk, HTTPServerError, HTTPFound
 from pyramid.view import view_config
 
 from stalker.db import DBSession
 from stalker import (User, ImageFormat, Repository, Structure, Status,
-                     StatusList, Project, Entity)
-from stalker_pyramid.views import (get_date, get_logged_in_user,
-                                   PermissionChecker, milliseconds_since_epoch)
+                     StatusList, Project, Entity, Task)
+from stalker_pyramid.views import (get_date, get_date_range,
+                                   get_logged_in_user,
+                                   milliseconds_since_epoch, colors)
 
 import logging
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.WARNING)
-
-
-@view_config(
-    route_name='dialog_create_project',
-    renderer='templates/project/dialog_create_project.jinja2',
-)
-def create_project_dialog(request):
-    """called when the create project dialog is requested
-    """
-    logged_in_user = get_logged_in_user(request)
-
-    return {
-        'mode': 'CREATE',
-        'has_permission': PermissionChecker(request),
-        'logged_in_user': logged_in_user,
-        'milliseconds_since_epoch': milliseconds_since_epoch
-    }
-
-
-@view_config(
-    route_name='dialog_update_project',
-    renderer='templates/project/dialog_create_project.jinja2'
-)
-def update_project_dialog(request):
-    """runs when updating a project
-    """
-    logged_in_user = get_logged_in_user(request)
-
-    project_id = request.matchdict.get('id', -1)
-    project = Project.query.filter_by(id=project_id).first()
-
-    return {
-        'mode': 'UPDATE',
-        'has_permission': PermissionChecker(request),
-        'project': project,
-        'logged_in_user': logged_in_user,
-        'milliseconds_since_epoch': milliseconds_since_epoch
-    }
+logger.setLevel(logging.DEBUG)
 
 
 @view_config(
@@ -80,12 +43,14 @@ def create_project(request):
     """
     logged_in_user = get_logged_in_user(request)
 
+    came_from = request.params.get('came_from', '/')
+
     # parameters
     name = request.params.get('name')
     code = request.params.get('code')
     fps = int(request.params.get('fps'))
 
-    imf_id = request.params.get('image_format', -1)
+    imf_id = request.params.get('image_format_id', -1)
     imf = ImageFormat.query.filter_by(id=imf_id).first()
 
     repo_id = request.params.get('repository_id', -1)
@@ -97,42 +62,66 @@ def create_project(request):
     lead_id = request.params.get('lead_id', -1)
     lead = User.query.filter_by(id=lead_id).first()
 
-    status_id = request.params.get('status_id', -1)
-    status = Status.query.filter_by(id=status_id).first()
+    status = Status.query.filter_by(name='New').first()
 
     # get the dates
-    start = get_date(request, 'start')
-    end = get_date(request, 'end')
+    start, end = get_date_range(request, 'start_and_end_dates')
 
-    if name and code and imf and repo and structure and lead_id and status:
+    logger.debug('create_project          :')
+
+    logger.debug('name          : %s' % name)
+    logger.debug('code          : %s' % code)
+    logger.debug('fps           : %s' % fps)
+    logger.debug('imf_id        : %s' % imf_id)
+    logger.debug('repo_id       : %s' % repo_id)
+    logger.debug('repo          : %s' % repo)
+    logger.debug('structure_id  : %s' % structure_id)
+    logger.debug('structure     : %s' % structure)
+    logger.debug('lead_id       : %s' % lead_id)
+    logger.debug('lead          : %s' % lead)
+    logger.debug('start         : %s' % start)
+    logger.debug('end           : %s' % end)
+
+    if name and code and imf and repo and structure and lead_id:
+        # status is always New
         # lets create the project
 
         # status list
         status_list = StatusList.query \
             .filter_by(target_entity_type='Project').first()
 
-        new_project = Project(
-            name=name,
-            code=code,
-            image_format=imf,
-            repository=repo,
-            created_by=logged_in_user,
-            fps=fps,
-            structure=structure,
-            lead=lead,
-            status_list=status_list,
-            status=status,
-            start=start,
-            end=end
-        )
+        try:
+            new_project = Project(
+                name=name,
+                code=code,
+                image_format=imf,
+                repository=repo,
+                created_by=logged_in_user,
+                fps=fps,
+                structure=structure,
+                lead=lead,
+                status_list=status_list,
+                status=status,
+                start=start,
+                end=end
+            )
 
-        DBSession.add(new_project)
+            DBSession.add(new_project)
+            # flash success message
+            request.session.flash(
+                'success:Project <strong>%s</strong> is created successfully' % name
+            )
+        except BaseException as e:
+            request.session.flash('error:' + e.message)
+            HTTPFound(location=came_from)
 
     else:
         logger.debug('there are missing parameters')
         HTTPServerError()
 
-    return HTTPOk()
+    return HTTPFound(
+        location=came_from
+    )
 
 
 @view_config(
@@ -201,15 +190,28 @@ def update_project(request):
 def get_entity_projects(request):
     """
     """
+
+    logger.debug('***get_entity_projects method starts ***')
+
     entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
 
+    logger.debug('entity.projects count :%s',entity.projects)
+
+
+
     return [
         {
-            'id': project.id,
-            'name': project.name,
-            'thumbnail_path': project.thumbnail.full_path
-            if project.thumbnail else None
+            'project_id': project.id,
+            'project_name': project.name,
+            'lead_id': project.lead.id,
+            'lead_name': project.lead.name,
+            'date_created' : milliseconds_since_epoch(project.date_created),
+            'created_by_id': project.created_by.id,
+            'created_by_name': project.created_by.name,
+            'thumbnail_full_path': project.thumbnail.full_path if project.thumbnail else None,
+            'status': project.status.name,
+            'percent_complete': project.percent_complete
         }
         for project in entity.projects
     ]
@@ -229,3 +231,76 @@ def get_projects(request):
         }
         for proj in Project.query.all()
     ]
+
+@view_config(
+    route_name='get_project_lead',
+    renderer='json'
+)
+def get_project_lead(request):
+    """returns the project lead as a json data
+    """
+    project_id = request.matchdict.get('id', -1)
+    project = Project.query.filter(Project.id==project_id).first()
+    lead_data = {}
+    if project:
+        lead = project.lead
+        lead_data = {
+            'id': lead.id,
+            'name': lead.name,
+            'login': lead.login
+        }
+
+    return lead_data
+
+@view_config(
+    route_name='get_project_tasks_today',
+    renderer='json'
+)
+def get_project_tasks_today(request):
+    """returns the project lead as a json data
+    """
+    project_id = request.matchdict.get('id', -1)
+    action = request.matchdict.get('action', -1)
+
+    today = datetime.date.today()
+    start = datetime.time(0, 0)
+    end = datetime.time(23, 59, 59)
+
+    start_of_today = datetime.datetime.combine(today, start)
+    end_of_today = datetime.datetime.combine(today, end)
+
+    tasks_today = []
+
+    if action == 'progress':
+        tasks_today = Task.query.join(Project, Task.project) \
+            .filter(Project.id == project_id) \
+            .filter(Task.computed_start < end_of_today) \
+            .filter(Task.computed_end > start_of_today).all()
+
+    elif action == 'end':
+        tasks_today = Task.query.join(Project, Task.project) \
+           .filter(Project.id == project_id) \
+           .filter(Task.computed_end > start_of_today) \
+           .filter(Task.computed_end <= end_of_today).all()
+
+    task_today_list = []
+
+    for task in tasks_today:
+        assert isinstance(task, Task)
+        if task.is_leaf:
+            resourcesSTR = ''
+            for user in task.resources:
+                resourcesSTR += '<a href="/users/%s/view">%s</a><br/>' % (user.id , user.name)
+
+            task_today_list.append({
+                'task_id': task.id,
+                'task_name':'%s (%s)' % (task.name,' | '.join([parent.name for parent in task.parents])),
+                'resources': resourcesSTR,
+                'created_by_id':task.created_by.id,
+                'created_by_name':task.created_by.name,
+                'status':task.status.name,
+                'status_color':colors[task.status.name],
+                'percent_complete':task.percent_complete
+            })
+
+    return task_today_list

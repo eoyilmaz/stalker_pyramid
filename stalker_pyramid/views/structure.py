@@ -97,7 +97,6 @@ def create_structure(request):
 def update_structure(request):
     """updates a structure
     """
-
     logged_in_user = get_logged_in_user(request)
 
     # get params

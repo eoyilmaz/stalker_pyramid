@@ -1,19 +1,19 @@
 # -*- coding: utf-8 -*-
 # Stalker Pyramid a Web Base Production Asset Management System
 # Copyright (C) 2009-2013 Erkan Ozgur Yilmaz
-# 
+#
 # This file is part of Stalker Pyramid.
-# 
+#
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
 # License as published by the Free Software Foundation;
 # version 2.1 of the License.
-# 
+#
 # This library is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # Lesser General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
@@ -26,12 +26,16 @@ import Image
 
 from stalker import Entity, Link, defaults
 from stalker.db import DBSession
+from pyramid.response import Response, FileResponse
 
 from pyramid.view import view_config
-from pyramid.httpexceptions import HTTPServerError, HTTPOk
+from pyramid.httpexceptions import HTTPOk
+import time
+
 import transaction
 
-from stalker_pyramid.views import PermissionChecker, get_logged_in_user, get_multi_integer, get_tags
+from stalker_pyramid.views import (get_logged_in_user, get_multi_integer,
+                                   get_tags, StdErrToHTMLConverter)
 
 
 logger = logging.getLogger(__name__)
@@ -44,33 +48,26 @@ logger.setLevel(logging.DEBUG)
 )
 def upload_files(request):
     """uploads a list of files to the server, creates Link instances in server
-    and returns the created link ids to the UI to let the front end request a
-    linkage between the entity and the uploaded files
+    and returns the created link ids with a response to let the front end
+    request a linkage between the entity and the uploaded files
     """
     # decide if it is single or multiple files
-    if request.POST.has_key('uploadedfiles[]'):
-        # it is multiple files
-        file_params = request.POST.getall('uploadedfiles[]')
-    else:
-        # it should be single file
-        file_params = [request.POST.get('uploadedfile')]
+    file_params = request.POST.getall('file')
+    logger.debug('file_params: %s ' % file_params)
 
     try:
         new_links = upload_files_to_server(request, file_params)
-    except IOError:
-        HTTPServerError()
+    except IOError as e:
+        c = StdErrToHTMLConverter(e)
+        response = Response(c.html())
+        response.status_int = 500
+        return response
     else:
         # store the link object
         DBSession.add_all(new_links)
 
-        # return [{
-        #     'file': new_link.full_path,
-        #     'name': new_link.original_filename,
-        #     'width': 320,
-        #     'height': 240,
-        #     'type': os.path.splitext(new_link.original_filename)[1],
-        #     'link_id': new_link.id
-        # } for new_link in new_links]
+        logger.debug('created links for uploaded files: %s' % new_links)
+
         return {
             'link_ids': [link.id for link in new_links]
         }
@@ -110,28 +107,39 @@ def assign_thumbnail(request):
 
     return HTTPOk()
 
+
 @view_config(
     route_name='assign_reference',
+    renderer='json'
 )
 def assign_reference(request):
     """assigns the link to the given entity as a new reference
     """
-    link_ids = get_multi_integer(request, 'link_ids')
+    link_ids = get_multi_integer(request, 'link_ids[]')
+    removed_link_ids = get_multi_integer(request, 'removed_link_ids[]')
     entity_id = request.params.get('entity_id', -1)
 
-    links = Link.query.filter(Link.id.in_(link_ids)).all()
     entity = Entity.query.filter_by(id=entity_id).first()
+    links = Link.query.filter(Link.id.in_(link_ids)).all()
+    removed_links = Link.query.filter(Link.id.in_(removed_link_ids)).all()
 
     # Tags
+    logger.debug('request.POST: %s' % request.POST)
     tags = get_tags(request)
 
     logged_in_user = get_logged_in_user(request)
 
-    logger.debug('link_ids  : %s' % link_ids)
-    logger.debug('links     : %s' % links)
-    logger.debug('entity_id : %s' % entity_id)
-    logger.debug('entity    : %s' % entity)
-    logger.debug('tags      : %s' % tags)
+    logger.debug('link_ids      : %s' % link_ids)
+    logger.debug('links         : %s' % links)
+    logger.debug('entity_id     : %s' % entity_id)
+    logger.debug('entity        : %s' % entity)
+    logger.debug('tags          : %s' % tags)
+    logger.debug('removed_links : %s' % removed_links)
+
+    # remove all the removed links
+    for removed_link in removed_links:
+        # no need to search for any linked tasks here
+        DBSession.delete(removed_link)
 
     if entity and links:
         entity.references.extend(links)
@@ -148,7 +156,18 @@ def assign_reference(request):
         DBSession.add(entity)
         DBSession.add_all(links)
 
-    return HTTPOk()
+    # return new links as json data
+    # in response text
+    return [
+        {
+            'id': link.id,
+            'full_path': link.full_path,
+            'original_filename': link.original_filename,
+            'thumbnail': link.thumbnail.full_path
+            if link.thumbnail else link.full_path,
+            'tags': [tag.name for tag in link.tags]
+        } for link in links
+    ]
 
 
 def convert_file_link_to_full_path(link_path):
@@ -158,7 +177,11 @@ def convert_file_link_to_full_path(link_path):
       (ex: SPL/b0/e6/b0e64b16c6bd4857a91be47fb2517b53.jpg)
     :returns: str
     """
-    link_full_path = link_path[len('SPL/'):]
+    if 'SPL/' in link_path:
+        link_full_path = link_path[len('SPL/'):]
+    else:
+        link_full_path = link_path
+
     file_full_path = os.path.join(
         defaults.server_side_storage_path,
         link_full_path
@@ -172,6 +195,7 @@ def generate_thumbnail(link):
     :param link: Generates a thumbnail for the given link
     :return:
     """
+    # TODO: support video files (somehow, gif thumbs may be???)
     file_full_path = convert_file_link_to_full_path(link.full_path)
 
     extension = os.path.splitext(file_full_path)[-1]
@@ -179,18 +203,22 @@ def generate_thumbnail(link):
     link_original_filename, link_original_extension = \
         os.path.splitext(link.original_filename)
 
-    thumbnail_original_filename = link_original_filename + '_t' + \
-                                  link_original_extension
+    thumbnail_original_filename = \
+        link_original_filename + '_t' + link_original_extension
 
     # generate thumbnails for those references
     img = Image.open(file_full_path)
-    img.thumbnail((512, 512)) # TODO: connect this to a config variable
-    img.thumbnail((256, 256), Image.ANTIALIAS)
+    img.thumbnail((300, 300))  # TODO: connect this to a config variable
+    img.thumbnail((150, 150), Image.ANTIALIAS)
 
-    thumbnail_full_path, thumbnail_link_full_path = generate_local_file_path(extension)
+    thumbnail_full_path, thumbnail_link_full_path = \
+        generate_local_file_path(extension)
 
     # create the dirs before saving
-    os.makedirs(os.path.dirname(thumbnail_full_path))
+    try:
+        os.makedirs(os.path.dirname(thumbnail_full_path))
+    except OSError:  # path exists
+        pass
     img.save(thumbnail_full_path)
 
     # create a link to be the thumbnail of the original
@@ -199,7 +227,6 @@ def generate_thumbnail(link):
         original_filename=thumbnail_original_filename
     )
     return thumbnail
-
 
 
 @view_config(route_name='get_project_references', renderer='json')
@@ -213,24 +240,94 @@ def get_entity_references(request):
     requested
     """
     entity_id = request.matchdict.get('id', -1)
-    entity = Entity.query.filter(Entity.id==entity_id).first()
+    entity = Entity.query.filter(Entity.id == entity_id).first()
     logger.debug('asking references for entity: %s' % entity)
 
-    # TODO: there should be a 'get all references' for Projects for example
-    #       which returns all the references related to this project.
+    # using Raw SQL queries here to fasten things up quite a bit and also do
+    # some fancy queries like getting all the references of tasks of a project
+    # also with their tags
+    sql_query = """
+        select  "Links".id,
+                "Links".full_path,
+                "Links".original_filename,
+                "Thumbnail".full_path
+        from "Links" join "Task_References" on "Links".id = "Task_References".link_id
+        join "Tasks" on "Task_References".task_id = "Tasks".id
+        join (select "Links".id,
+                     "Links".full_path,
+                     "SimpleEntities".id as link_id
+                     from "Links" join "SimpleEntities" on "Links".id = "SimpleEntities".thumbnail_id
+             ) as "Thumbnail" on "Thumbnail".link_id = "Links".id
+    """
+    if entity.entity_type in ['Task', 'Asset', 'Shot', 'Sequence']:
+        sql_query += 'where "Tasks".id = %(entity_id)s' % {'entity_id': entity_id}
+    elif entity.entity_type == 'Project':
+        sql_query += 'where "Tasks".project_id = %(project_id)s' % {'project_id': entity_id}
 
-    if entity:
-        return [
-            {
-                'full_path': link.full_path,
-                'original_filename': link.original_filename,
-                'thumbnail': link.thumbnail.full_path if link.thumbnail else link.full_path,
-                'tags': [{
-                    'id': tag.id,
-                    'name': tag.name
-                } for tag in link.tags]
-            } for link in entity.references]
-    return []
+    time_time = time.time
+    db_start = time_time()
+    result = DBSession.connection().execute(sql_query)
+    db_end = time_time()
+    db_time = db_end - db_start
+
+    python_start = time_time()
+    return_val = [
+        {
+            'id': r[0],
+            'full_path': r[1],
+            'original_filename': r[2],
+            'thumbnail': r[3],
+            'tags': [
+                i[0]
+                for i in DBSession.connection().execute(
+                    """select "SimpleEntities".name
+                    from "SimpleEntities"
+                    join "Tags" on "SimpleEntities".id = "Tags".id
+                    join "Entity_Tags" on "Tags".id = "Entity_Tags".tag_id
+                    join "Links" on "Entity_Tags".entity_id = "Links".id
+                    where "Links".id = %s""" % r[0]
+                )
+            ],
+        } for r in result.fetchall()
+    ]
+    python_end = time_time()
+    python_time = python_end - python_start
+
+    logger.debug('export tag: db_time     : %s' % db_time)
+    logger.debug('export tag: python_time : %s' % python_time)
+    logger.debug('export tag: total       : %s' % (python_end - db_start))
+    return return_val
+
+
+@view_config(route_name='get_project_references_count', renderer='json')
+@view_config(route_name='get_task_references_count', renderer='json')
+@view_config(route_name='get_asset_references_count', renderer='json')
+@view_config(route_name='get_shot_references_count', renderer='json')
+@view_config(route_name='get_sequence_references_count', renderer='json')
+@view_config(route_name='get_entity_references_count', renderer='json')
+def get_entity_references_count(request):
+    """called when the count of references to Project/Task/Asset/Shot/Sequence
+    is requested
+    """
+    entity_id = request.matchdict.get('id', -1)
+    entity = Entity.query.filter(Entity.id == entity_id).first()
+    logger.debug('asking references for entity: %s' % entity)
+
+    # using Raw SQL queries here to fasten things up quite a bit and also do
+    # some fancy queries like getting all the references of tasks of a project
+    # also with their tags
+    sql_query = """
+        select  count(*)
+        from "Links" join "Task_References" on "Links".id = "Task_References".link_id
+        join "Tasks" on "Task_References".task_id = "Tasks".id
+    """
+    if entity.entity_type in ['Task', 'Asset', 'Shot', 'Sequence']:
+        sql_query += 'where "Tasks".id = %(entity_id)s' % {'entity_id': entity_id}
+    elif entity.entity_type == 'Project':
+        sql_query += 'where "Tasks".project_id = %(project_id)s' % {'project_id': entity_id}
+
+    result = DBSession.connection().execute(sql_query)
+    return result.fetchone()[0]
 
 
 def generate_local_file_path(extension):
@@ -282,7 +379,8 @@ def upload_files_to_server(request, file_params):
 
     :param request: The request object.
     :param str file_param_name: The name of the parameter that holds the files.
-    :returns [(str, str)]: The original filename and the file path on the server.
+    :returns [(str, str)]: The original filename and the file path on the
+    server.
     """
     links = []
     # get the file names
@@ -330,3 +428,93 @@ def upload_files_to_server(request, file_params):
 
     transaction.commit()
     return links
+
+
+@view_config(
+    route_name='delete_reference',
+    permission='Delete_Link'
+)
+def delete_reference(request):
+    """deletes the reference with the given ID
+    """
+    ref_id = request.matchdict.get('id')
+    ref = Link.query.get(ref_id)
+
+    files_to_remove = []
+    if ref:
+        original_filename = ref.original_filename
+        # check if it has a thumbnail
+        if ref.thumbnail:
+            # remove the file first
+            files_to_remove.append(ref.thumbnail.full_path)
+
+            # delete the thumbnail Link from the database
+            DBSession.delete(ref.thumbnail)
+        # remove the reference itself
+        files_to_remove.append(ref.full_path)
+
+        # delete the ref Link from the database
+        # IMPORTANT: Because there is no link from Link -> Task deleting a Link
+        #            directly will raise an IntegrityError, so remove the Link
+        #            from the associated Task before deleting it
+        from stalker import Task
+        for task in Task.query.filter(Task.references.contains(ref)).all():
+            logger.debug('%s is referencing %s, '
+                         'breaking this relation' % (task, ref))
+            task.references.remove(ref)
+        DBSession.delete(ref)
+
+        # now delete files
+        for f in files_to_remove:
+            # convert the paths to system path
+            f_system = convert_file_link_to_full_path(f)
+            try:
+                os.remove(f_system)
+            except OSError:
+                pass
+
+        response = Response('%s removed successfully' % original_filename)
+        response.status_int = 200
+        return response
+    else:
+        response = Response('No ref with id : %i' % ref_id)
+        response.status_int = 500
+        return response
+
+
+@view_config(
+    route_name='serve_files'
+)
+def serve_files(request):
+    """serves files in the stalker server side storage
+    """
+    partial_file_path = request.matchdict['partial_file_path']
+    file_full_path = convert_file_link_to_full_path(partial_file_path)
+    return FileResponse(file_full_path)
+
+
+@view_config(
+    route_name='forced_download_files'
+)
+def force_download_files(request):
+    """serves files but forces to download
+    """
+    partial_file_path = request.matchdict['partial_file_path']
+    file_full_path = convert_file_link_to_full_path(partial_file_path)
+    # get the link to get the original file name
+    link = Link.query.filter(
+        Link.full_path == 'SPL/' + partial_file_path).first()
+    if link:
+        original_filename = link.original_filename
+    else:
+        original_filename = os.path.basename(file_full_path)
+
+    response = FileResponse(
+        file_full_path,
+        request=request,
+        content_type='application/force-download',
+    )
+    # update the content-disposition header
+    response.headers['content-disposition'] = \
+        str('attachment; filename=' + original_filename)
+    return response

@@ -121,6 +121,8 @@ def update_version_dialog(request):
 def assign_version(request):
     """assigns the version to the given entity
     """
+    logged_in_user = get_logged_in_user(request)
+
     # TODO: this should be renamed to create version
     # collect data
     link_ids = get_multi_integer(request, 'link_ids')
@@ -128,7 +130,6 @@ def assign_version(request):
 
     link = Link.query.filter(Link.id.in_(link_ids)).first()
     task = Task.query.filter_by(id=task_id).first()
-    logged_in_user = get_logged_in_user(request)
 
     logger.debug('link_ids  : %s' % link_ids)
     logger.debug('link      : %s' % link)
@@ -201,58 +202,60 @@ def update_version(request):
 
     return HTTPOk()
 
-
+@view_config(
+    route_name='get_entity_versions',
+    renderer='json'
+)
 @view_config(
     route_name='get_task_versions',
     renderer='json'
 )
-def get_task_versions(request):
+def get_entity_versions(request):
     """returns all the Shots of the given Project
     """
     logger.debug('get_versions is running')
-    task_id = request.matchdict.get('id', -1)
-    task = Task.query.filter_by(id=task_id).first()
+
+    entity_id = request.matchdict.get('id', -1)
+    entity = Entity.query.filter_by(id=entity_id).first()
+
     version_data = []
 
     user_os = get_user_os(request)
-    logger.debug('entity_id : %s' % task_id)
+
+    logger.debug('entity_id : %s' % entity_id)
     logger.debug('user os: %s' % user_os)
 
-    repo = task.project.repository
+    repo = entity.project.repository
 
-    # if entity.versions:
-    for version in task.versions:
-        logger.debug('version.task.id : %s' % version.task.id)
-        assert isinstance(version, Version)
+    path_converter = lambda x: x
+    if repo:
+        if user_os == 'windows':
+            path_converter = repo.to_windows_path
+        elif user_os == 'linux':
+            path_converter = repo.to_linux_path
+        elif user_os == 'osx':
+            path_converter = repo.to_osx_path
 
-        version_absolute_full_path = version.absolute_full_path
-        if repo:
-            if user_os == 'windows':
-                version_absolute_full_path = \
-                    repo.to_windows_path(version.absolute_full_path)
-            elif user_os == 'linux':
-                version_absolute_full_path = \
-                    repo.to_linux_path(version.absolute_full_path)
-            elif user_os == 'osx':
-                version_absolute_full_path = \
-                    repo.to_osx_path(version.absolute_full_path)
-
-        version_data.append({
-            'id': version.id,
-            'name': version.name,
-            'task_id': version.task.id,
-            'task_name': version.task.name,
-            'parent_name': ' | '.join([parent.name for parent in version.task.parents]),
-            'absolute_full_path': version_absolute_full_path,
-            'created_by_id': version.created_by_id,
-            'created_by_name': version.created_by.name,
-            'is_published': version.is_published,
-            'version_number': version.version_number
-            # 'hours_to_complete': version.hours_to_complete,
-            # 'notes': version.notes
-        })
-
-    return version_data
+    return [{
+        'id': version.id,
+        'task': {
+            'id': version.task.id,
+            'name': version.task.name
+        },
+        'take_name': version.take_name,
+        'parent': {
+            'id': version.parent.id,
+            'version_number': version.parent.version_number,
+            'take_name': version.parent.take_name
+        } if version.parent else None,
+        'absolute_full_path': path_converter(version.absolute_full_path),
+        'created_by': {
+            'id': version.created_by.id,
+            'name': version.created_by.name
+        },
+        'is_published': version.is_published,
+        'version_number': version.version_number,
+    } for version in entity.versions]
 
 
 @view_config(

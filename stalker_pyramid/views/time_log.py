@@ -30,49 +30,64 @@ from stalker.db import DBSession
 from stalker.exceptions import OverBookedError
 from stalker_pyramid.views import (get_logged_in_user,
                                    PermissionChecker, milliseconds_since_epoch,
-                                   get_date)
+                                   get_date, get_date_range)
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 
 @view_config(
-    route_name='dialog_create_time_log',
-    renderer='templates/time_log/dialog_create_time_log.jinja2',
+    route_name='task_time_log_dialog',
+    renderer='templates/time_log/dialog/time_log_dialog.jinja2',
+)
+@view_config(
+    route_name='user_time_log_dialog',
+    renderer='templates/time_log/dialog/time_log_dialog.jinja2',
+)
+@view_config(
+    route_name='entity_time_log_dialog',
+    renderer='templates/time_log/dialog/time_log_dialog.jinja2',
 )
 def create_time_log_dialog(request):
     """creates a create_time_log_dialog by using the given task
     """
-    logger.debug('inside create_time_log_dialog')
+    logger.debug('inside time_log_dialog')
+
+    came_from = request.params.get('came_from','/')
+    logger.debug('came_from %s: '% came_from)
 
     # get logged in user
     logged_in_user = get_logged_in_user(request)
 
-    task_id = request.matchdict.get('id', -1)
-    task = Task.query.filter(Task.task_id == task_id).first()
+    entity_id = request.matchdict.get('id', -1)
+    entity = Entity.query.filter_by(id=entity_id).first()
 
     studio = Studio.query.first()
     if not studio:
         studio = defaults
 
     return {
-        'mode': 'CREATE',
+        'mode': 'create',
         'has_permission': PermissionChecker(request),
         'studio': studio,
         'logged_in_user': logged_in_user,
-        'task': task,
-        'milliseconds_since_epoch': milliseconds_since_epoch
+        'entity': entity,
+        'came_from':came_from,
+        'milliseconds_since_epoch': milliseconds_since_epoch,
     }
 
 
 @view_config(
-    route_name='dialog_update_time_log',
-    renderer='templates/time_log/dialog_create_time_log.jinja2',
+    route_name='time_log_update_dialog',
+    renderer='templates/time_log/dialog/time_log_dialog.jinja2',
 )
 def update_time_log_dialog(request):
     """updates a create_time_log_dialog by using the given task
     """
     logger.debug('inside updates_time_log_dialog')
+
+    came_from = request.params.get('came_from','/')
+    logger.debug('came_from %s: '% came_from)
 
     # get logged in user
     logged_in_user = get_logged_in_user(request)
@@ -85,11 +100,12 @@ def update_time_log_dialog(request):
         studio = defaults
 
     return {
-        'mode': 'UPDATE',
+        'mode': 'update',
         'has_permission': PermissionChecker(request),
         'studio': studio,
         'logged_in_user': logged_in_user,
         'task': time_log.task,
+        'came_from': came_from,
         'time_log': time_log,
         'milliseconds_since_epoch': milliseconds_since_epoch
     }
@@ -114,6 +130,7 @@ def create_time_log(request):
     start_date = get_date(request, 'start')
     end_date = get_date(request, 'end')
 
+
     logger.debug('task_id     : %s' % task_id)
     logger.debug('task        : %s' % task)
     logger.debug('resource_id : %s' % resource_id)
@@ -136,6 +153,11 @@ def create_time_log(request):
             return HTTPServerError()
         else:
             DBSession.add(time_log)
+
+            request.session.flash(
+                'success:Time log for <strong>%s</strong> is saved for resource <strong>%s</strong>.' % (task.name,resource.name)
+            )
+
         logger.debug('no problem here!')
 
     logger.debug('successfully created time log!')
@@ -150,7 +172,8 @@ def update_time_log(request):
     """runs when updating a time_log
     """
     logger.debug('inside update_time_log')
-    time_log_id = int(request.params.get('time_log_id'))
+    # time_log_id = int(request.params.get('time_log_id'))
+    time_log_id = request.matchdict.get('id', -1)
     time_log = TimeLog.query.filter_by(id=time_log_id).first()
 
     #**************************************************************************
@@ -163,8 +186,8 @@ def update_time_log(request):
 
     logger.debug('time_log_id : %s' % time_log_id)
     logger.debug('resource_id : %s' % resource_id)
-    logger.debug('start_date  : %s' % start_date)
-    logger.debug('end_date    : %s' % end_date)
+    logger.debug('start         : %s' % start_date)
+    logger.debug('end           : %s' % end_date)
 
     if time_log and resource and start_date and end_date:
         # we are ready to create the time log
@@ -178,6 +201,10 @@ def update_time_log(request):
             return HTTPServerError()
         else:
             DBSession.add(time_log)
+            request.session.flash(
+                'success:Time log for <strong>%s</strong> is updated..' % (time_log.task.name)
+            )
+            logger.debug('successfully updated time log!')
 
     return HTTPOk()
 
@@ -207,15 +234,19 @@ def get_time_logs(request):
         # assert isinstance(time_log, TimeLog)
         time_log_data.append({
             'id': time_log.id,
+            'entity_type':time_log.plural_class_name.lower(),
             'task_id': time_log.task.id,
             'task_name': time_log.task.name,
+            'task_status': time_log.task.status.name,
             'parent_name': ' | '.join(
                 [parent.name for parent in time_log.task.parents]),
             'resource_id': time_log.resource_id,
             'resource_name': time_log.resource.name,
             'duration': time_log.total_seconds,
-            'start_date': milliseconds_since_epoch(time_log.start),
-            'end_date': milliseconds_since_epoch(time_log.end)
+            'start': milliseconds_since_epoch(time_log.start),
+            'end': milliseconds_since_epoch(time_log.end),
+            'className': 'label-important',
+            'allDay': '0'
 
             # 'hours_to_complete': time_log.hours_to_complete,
             # 'notes': time_log.notes

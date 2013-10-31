@@ -1,39 +1,45 @@
 # -*- coding: utf-8 -*-
 # Stalker Pyramid a Web Base Production Asset Management System
 # Copyright (C) 2009-2013 Erkan Ozgur Yilmaz
-# 
+#
 # This file is part of Stalker Pyramid.
-# 
+#
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
 # License as published by the Free Software Foundation;
 # version 2.1 of the License.
-# 
+#
 # This library is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # Lesser General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 
 import logging
 import datetime
-import os
 
-from pyramid.httpexceptions import HTTPServerError
+from pyramid.httpexceptions import HTTPServerError, HTTPForbidden
 from pyramid.view import view_config
-from pyramid.response import Response, FileResponse
+from pyramid.response import Response
 from pyramid.security import has_permission, authenticated_userid
 
-from stalker import log, User, Tag, defaults
+from stalker import log, User, Tag
 from stalker.db import DBSession
 
 
 logger = logging.getLogger(__name__)
 logger.setLevel(log.logging_level)
 
+colors = {
+    'New': 'red',
+    'Waiting To Start': 'purple',
+    'Work In Progress': 'pink',
+    'Completed': 'green',
+    'Planning': 'grey'
+}
 
 @view_config(
     route_name='test_bootstrap',
@@ -42,6 +48,52 @@ logger.setLevel(log.logging_level)
 def test_bootstrap(request):
     return {}
 
+class StdErrToHTMLConverter():
+    """Converts stderr, stdout messages of TaskJuggler to html
+
+    :param error: An exception
+    """
+
+    formatChars = {
+        '\e[1m': '<strong>',
+        '\e[21m': '</strong>',
+        '\e[2m':  '<div class="dark">',
+        '\e[22m': '</div>',
+        '\x1b[34m': '<div class="alert alert-info" style="overflow-wrap: break-word">',
+        '\x1b[35m': '<div class="alert alert-warning" style="overflow-wrap: break-word">',
+        '\x1b[31m': '<div class="alert alert-error" style="overflow-wrap: break-word">',
+        '\x1b[0m': '</div>',
+        'Warning:': '<strong>Warning:</strong>',
+        'Info:': '<strong>Info:</strong>',
+        'Error:': '<strong>Error:</strong>',
+    }
+
+    def __init__(self, error):
+        if isinstance(error, Exception):
+            self.error_message = error.message
+        else:
+            self.error_message = error
+
+    def html(self):
+        """returns the html version of the message
+        """
+        # convert the error message to a string
+        if isinstance(self.error_message, list):
+            buffer = []
+            for msg in self.error_message:
+                # join the message in to <p> elements
+                buffer.append('%s' % msg.strip())
+
+            # convert the list to string
+            strBuffer = ''.join(buffer)
+        else:
+            strBuffer = self.error_message
+
+        # for each formatChar replace them with an html tag
+        for key in self.formatChars.keys():
+            strBuffer = strBuffer.replace(key, self.formatChars[key])
+
+        return strBuffer
 
 
 class PermissionChecker(object):
@@ -54,6 +106,11 @@ class PermissionChecker(object):
 
     def __call__(self, perm):
         return self.has_permission(perm, self.request.context, self.request)
+
+
+def multi_permission_checker(request, permissions):
+    pc = PermissionChecker(request)
+    return all(map(pc, permissions))
 
 
 def log_param(request, param):
@@ -104,6 +161,19 @@ def get_date(request, date_attr):
         '%a, %d %b %Y %H:%M:%S'
     )
 
+def get_date_range(request, date_range_attr):
+    """Extracts a UTC datetime object from the given request
+
+    :param request: the request instance
+    :param date_range_attr: the attribute name
+    :return: datetime.datetime
+    """
+    date_range_string = request.params.get(date_range_attr)
+    start_str, end_str = date_range_string.split(' - ')
+    start = datetime.datetime.strptime(start_str, '%m/%d/%Y')
+    end = datetime.datetime.strptime(end_str, '%m/%d/%Y')
+    return start, end
+
 
 def get_datetime(request, date_attr, time_attr):
     """Extracts a UTC  datetime object from the given request
@@ -145,17 +215,33 @@ def get_logged_in_user(request):
 
     :param request: Request object
     """
-    return User.query.filter_by(login=authenticated_userid(request)).first()
+    user = User.query.filter_by(login=authenticated_userid(request)).first()
+    if not user:
+        raise HTTPForbidden(headers=request)
+    return user
 
 
-def get_multi_integer(request, attr_name):
+def get_multi_integer(request, attr_name, method='POST'):
     """Extracts multi data from request.POST
 
     :param request: Request object
     :param attr_name: Attribute name to extract data from
     :return:
     """
-    return [int(attr) for attr in request.POST.getall(attr_name)]
+    data = request.POST
+    if method == 'GET':
+        data = request.GET
+
+    return [int(attr) for attr in data.getall(attr_name)]
+
+def get_multi_string(request, attr_name):
+    """Extracts multi data from request.POST
+
+    :param request: Request object
+    :param attr_name: Attribute name to extract data from
+    :return:
+    """
+    return [attr for attr in request.GET.getall(attr_name)]
 
 
 def get_color_as_int(request, attr_name):
@@ -164,25 +250,25 @@ def get_color_as_int(request, attr_name):
     return int(request.params.get(attr_name, '#000000')[1:], 16)
 
 
-def get_tags(request):
+def get_tags(request, parameter='tags[]'):
     """Extracts Tags from the given request
 
     :param request: Request object
     :return: A list of stalker.models.tag.Tag instances
     """
-
     # Tags
     tags = []
-    tag_names = request.POST.getall('tag_names')
+    tag_names = request.POST.getall(parameter)
     for tag_name in tag_names:
-        logger.debug('tag_name %s' % tag_name)
+        logger.debug('tag_name : %s' % tag_name)
+        if tag_name == '':
+            continue
         tag = Tag.query.filter(Tag.name == tag_name).first()
         if not tag:
             logger.debug('new tag is created %s' % tag_name)
             tag = Tag(name=tag_name)
             DBSession.add(tag)
         tags.append(tag)
-
     return tags
 
 
@@ -238,16 +324,3 @@ def from_milliseconds(t):
     """
     return from_microseconds(t * 1000)
 
-
-@view_config(
-    route_name='serve_files'
-)
-def serve_files(request):
-    """serves files in the stalker server side storage
-    """
-    partial_file_path = request.matchdict['partial_file_path']
-    file_full_path = os.path.join(
-        defaults.server_side_storage_path,
-        partial_file_path
-    )
-    return FileResponse(file_full_path)

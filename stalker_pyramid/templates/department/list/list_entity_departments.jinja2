@@ -1,0 +1,37 @@
+{% extends "base.jinja2" %}
+
+{# BREADCRUMBS #}
+{% block breadcrumbs %}
+
+    {% set page_title='Departments' %}
+    {% include 'breadcrumb/breadcrumbs.jinja2' %}
+
+{% endblock breadcrumbs %}
+
+{# SIDE-BAR #}
+{% block sidebar %}
+
+    {% include 'sidebar.jinja2' %}
+
+{% endblock sidebar %}
+
+{# PAGE-CONTENT #}
+{% block page_content %}
+
+    {% set departments=entity.departments %}
+    {% set page_title='Departments' %}
+    {% include 'page_header.jinja2' %}
+
+    <div class="row-fluid">
+        <ul class="thumbnails">
+            {% for department in departments %}
+                <li class="span2">
+                    {% include 'department/list/list_item_department.jinja2' %}
+                </li>
+            {% endfor %}
+
+        </ul>
+    </div>
+
+
+{% endblock page_content %}

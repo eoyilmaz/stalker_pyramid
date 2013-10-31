@@ -1,0 +1,115 @@
+{# Render Task Side Bar #}
+
+{% set task=entity %}
+
+<div class="sidebar-shortcuts" id="sidebar-shortcuts">
+					<div class="sidebar-shortcuts-large" id="sidebar-shortcuts-large">
+						<button class="btn btn-small btn-success">
+							<i class="icon-signal"></i>
+						</button>
+
+						<button class="btn btn-small btn-info">
+							<i class="icon-pencil"></i>
+						</button>
+
+						<button class="btn btn-small btn-warning">
+							<i class="icon-group"></i>
+						</button>
+
+						<button class="btn btn-small btn-danger">
+							<i class="icon-cogs"></i>
+						</button>
+					</div>
+
+					<div class="sidebar-shortcuts-mini" id="sidebar-shortcuts-mini">
+						<span class="btn btn-success"></span>
+
+						<span class="btn btn-info"></span>
+
+						<span class="btn btn-warning"></span>
+
+						<span class="btn btn-danger"></span>
+					</div>
+				</div><!--#sidebar-shortcuts-->
+
+<ul class='nav nav-list'>
+    {# Thumbnail #}
+    <li>
+
+    </li>
+
+    {#Dashboard#}
+    {% if request.current_route_path() == request.route_path('view_task', id=task.id) %}
+        <li class='active'>
+            <a>
+                <i class="icon-dashboard"></i>
+                <span class="menu-text">Dashboard</span>
+            </a>
+        </li>
+    {% else %}
+        <li>
+            <a href='{{ request.route_url('view_task', id=task.id) }}'>
+                <i class="icon-dashboard"></i>
+                <span class="menu-text">Dashboard</span>
+            </a>
+        </li>
+    {% endif %}
+
+
+    {# Tasks #}
+    {% if request.current_route_path() == request.route_path('list_entity_tasks', id=task.id) %}
+        <li class='active'>
+            <a>
+                <i class="icon-tasks"></i>
+                <span class="menu-text">Tasks</span>
+                <span class='badge badge-info'>{{ task.tasks | count }}</span>
+            </a>
+        </li>
+    {% else %}
+        <li>
+            <a href='{{ request.route_url('list_entity_tasks', id=task.id) }}'>
+                <i class="icon-tasks"></i>
+                <span class="menu-text">Tasks</span>
+                <span class='badge badge-info'>{{ task.tasks | count }}</span>
+            </a>
+        </li>
+    {% endif %}
+
+    {# Versions #}
+    {% if request.current_route_path() == request.route_path('list_task_versions', id=task.id) %}
+        <li class='active'>
+            <a>
+                <i class="icon-sitemap"></i>
+                <span class="menu-text">Versions</span>
+                <span class='badge badge-success'>{{ task.versions | count }}</span>
+            </a>
+        </li>
+    {% else %}
+        <li>
+            <a href='{{ request.route_url('list_task_versions', id=task.id) }}'>
+                <i class="icon-sitemap"></i>
+                <span class="menu-text">Versions</span>
+                <span class='badge badge-success'>{{ task.versions | count }}</span>
+            </a>
+        </li>
+    {% endif %}
+
+    {# Referencess #}
+    {% if request.current_route_path() == request.route_path('list_task_references', id=task.id) %}
+        <li class='active'>
+            <a>
+                <i class="icon-book"></i>
+                <span class="menu-text">References</span>
+                <span id='reference_count' class='badge badge-success'></span>
+            </a>
+        </li>
+    {% else %}
+        <li>
+            <a href='{{ request.route_url('list_task_references', id=task.id) }}'>
+                <i class="icon-book"></i>
+                <span class="menu-text">References</span>
+                <span id='reference_count' class='badge badge-success'></span>
+            </a>
+        </li>
+    {% endif %}
+</ul>

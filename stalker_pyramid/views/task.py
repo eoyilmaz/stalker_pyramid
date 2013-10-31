@@ -1,29 +1,30 @@
 # -*- coding: utf-8 -*-
 # Stalker Pyramid a Web Base Production Asset Management System
 # Copyright (C) 2009-2013 Erkan Ozgur Yilmaz
-# 
+#
 # This file is part of Stalker Pyramid.
-# 
+#
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
 # License as published by the Free Software Foundation;
 # version 2.1 of the License.
-# 
+#
 # This library is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # Lesser General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 import logging
+import datetime
 
 import transaction
 
 from pyramid.response import Response
 from pyramid.view import view_config
-from pyramid.httpexceptions import HTTPServerError, HTTPOk
+from pyramid.httpexceptions import HTTPServerError, HTTPOk, HTTPForbidden
 
 from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
@@ -32,21 +33,19 @@ from sqlalchemy.exc import IntegrityError
 
 from stalker.db import DBSession
 from stalker import (User, Task, Entity, Project, StatusList, Status,
-                     TaskJugglerScheduler, Studio, Asset, Shot, Sequence, Type, Ticket, Department)
+                     TaskJugglerScheduler, Studio, Asset, Shot, Sequence, Type,
+                     Ticket)
 from stalker.models.task import CircularDependencyError
 from stalker import defaults
+import stalker_pyramid
 from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
                                    get_multi_integer, milliseconds_since_epoch,
-                                   get_date)
+                                   get_date, StdErrToHTMLConverter, colors, multi_permission_checker, get_multi_string)
 
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-
-# def walk_task_hierarchy(starting_task):
-#     """
-#     """
 
 def duplicate_task(task):
     """Duplicates the given task without children.
@@ -210,7 +209,7 @@ def duplicate_task_hierarchy(request):
     :param task: The task that wanted to be duplicated
     :return: A list of stalker.models.task.Task
     """
-    task_id = request.matchdict.get('id', -1)
+    task_id = request.matchdict.get('id')
     task = Task.query.filter_by(id=task_id).first()
     if task:
         dup_task = walk_and_duplicate_task_hierarchy(task)
@@ -222,9 +221,13 @@ def duplicate_task_hierarchy(request):
         dup_task.name += ' - Duplicate'
         DBSession.add(dup_task)
     else:
-        raise HTTPServerError()
+        response = Response('No task can be found with the given id: %s' % task_id)
+        response.status_int = 500
+        return response
 
-    return HTTPOk()
+    response = Response('Task %s is duplicated successfully' % task.id)
+    response.status_int = 200
+    return response
 
 
 def convert_to_dgrid_gantt_project_format(projects):
@@ -248,11 +251,12 @@ def convert_to_dgrid_gantt_project_format(projects):
         {
             'bid_timing': project.duration.days,
             'bid_unit': 'd',
-            'completed': project.total_logged_seconds / project.schedule_seconds,
+            'completed': project.total_logged_seconds / project.schedule_seconds if project.schedule_seconds else 0,
             'description': project.description,
             'end': milliseconds_since_epoch(
                 project.computed_end if project.computed_end else project.end),
             'id': project.id,
+            'link': '/projects/%s/view' % project.id,
             'name': project.name,
             'hasChildren': hasChildren(project),
             'schedule_seconds': project.schedule_seconds,
@@ -287,6 +291,7 @@ def convert_to_dgrid_gantt_task_format(tasks):
             'hasChildren': task.is_container,
             'hierarchy_name': ' | '.join([parent.name for parent in task.parents]),
             'id': task.id,
+            'link': '/%ss/%s/view' % (task.entity_type.lower(), task.id),
             'name': task.name,
             'parent': task.parent.id if task.parent else task.project.id,
             'priority': task.priority,
@@ -311,34 +316,13 @@ def convert_to_dgrid_gantt_task_format(tasks):
 
 
 @view_config(
-    route_name='dialog_update_task',
-    renderer='templates/task/dialog_create_task.jinja2'
-)
-def update_task_dialog(request):
-    """runs when updating a task
-    """
-    task_id = request.matchdict.get('id', -1)
-    task = Task.query.filter(Task.id == task_id).first()
-
-    return {
-        'mode': 'UPDATE',
-        'has_permission': PermissionChecker(request),
-        'project': task.project,
-        'task': task,
-        'parent': task.parent,
-        'schedule_models': defaults.task_schedule_models,
-        'milliseconds_since_epoch': milliseconds_since_epoch
-    }
-
-
-@view_config(
     route_name='update_task'
 )
 def update_task(request):
     """Updates the given task with the data coming from the request
     """
-
     logged_in_user = get_logged_in_user(request)
+    p_checker = PermissionChecker(request)
 
     # *************************************************************************
     # collect data
@@ -349,18 +333,12 @@ def update_task(request):
         parent = None
     name = str(request.params.get('name', None))
     description = request.params.get('description', '')
-    is_milestone = int(request.params.get('is_milestone', None))
-    status_id = int(request.params.get('status_id', None))
-    status = Status.query.filter_by(id=status_id).first()
     schedule_model = request.params.get('schedule_model') # there should be one
     schedule_timing = float(request.params.get('schedule_timing'))
     schedule_unit = request.params.get('schedule_unit')
-    schedule_constraint = int(request.params.get('schedule_constraint', 0))
-    start = get_date(request, 'start')
-    end = get_date(request, 'end')
-    update_bid = int(request.params.get('update_bid'))
+    update_bid = 1 if request.params.get('update_bid') == 'on' else 0
 
-    depend_ids = get_multi_integer(request, 'depend_ids')
+    depend_ids = get_multi_integer(request, 'dependent_ids')
     depends = Task.query.filter(Task.id.in_(depend_ids)).all()
 
     resource_ids = get_multi_integer(request, 'resource_ids')
@@ -374,11 +352,10 @@ def update_task(request):
 
     entity_type = request.params.get('entity_type', None)
     code = request.params.get('code', None)
-    asset_type = request.params.get('asset_type_name', None)
-    shot_sequence_id = -1
-    if entity_type == 'Shot':
-        shot_sequence_id = int(request.params.get('shot_sequence_id', -1))
+    asset_type = request.params.get('asset_type', None)
+    shot_sequence_id = request.params.get('shot_sequence_id', None)
 
+    logger.debug('entity_type         : %s' % entity_type)
     logger.debug('parent_id           : %s' % parent_id)
     logger.debug('parent              : %s' % parent)
     logger.debug('depend_ids          : %s' % depend_ids)
@@ -388,26 +365,29 @@ def update_task(request):
     logger.debug('responsible         : %s' % responsible)
     logger.debug('name                : %s' % name)
     logger.debug('description         : %s' % description)
-    logger.debug('is_milestone        : %s' % is_milestone)
-    logger.debug('status_id           : %s' % status_id)
-    logger.debug('status              : %s' % status)
     logger.debug('schedule_model      : %s' % schedule_model)
     logger.debug('schedule_timing     : %s' % schedule_timing)
     logger.debug('schedule_unit       : %s' % schedule_unit)
-    logger.debug('schedule_constraint : %s' % schedule_constraint)
-    logger.debug('start               : %s' % start)
-    logger.debug('end                 : %s' % end)
     logger.debug('update_bid          : %s' % update_bid)
     logger.debug('priority            : %s' % priority)
     logger.debug('code                : %s' % code)
 
+    # before doing anything check permission
+    if not p_checker('Update_' + entity_type):
+        response = Response('You do not have enough permission to update '
+                            'a %s' % entity_type)
+        response.status_int = 500
+        return response
+
     # get task
-    task_id = int(request.matchdict.get('id', -1))
+    task_id = request.matchdict.get('id', -1)
     task = Task.query.filter(Task.id == task_id).first()
 
     # update the task
     if not task:
-        return HTTPOk(detail='Task not updated')
+        response = Response("No task found with id : %s" % task_id)
+        response.status_int = 500
+        return response
 
     task.name = name
     task.description = description
@@ -417,16 +397,16 @@ def update_task(request):
         task.depends = depends
     except CircularDependencyError:
         transaction.abort()
-        return HTTPServerError()
+        message = '</div>Parent item can not also be a dependent for the ' \
+                  'updated item:<br><br>Parent: %s<br>Depends To: %s</div>' % \
+                  (parent.name, map(lambda x: x.name, depends))
+        response = Response(message)
+        response.status_int = 500
+        return response
 
-    task.start = start
-    task.end = end
-    task.is_milestone = is_milestone
-    task.status = status
     task.schedule_model = schedule_model
     task.schedule_unit = schedule_unit
     task.schedule_timing = schedule_timing
-    task.schedule_constraint = schedule_constraint
     task.resources = resources
     task.priority = priority
     task.code = code
@@ -445,7 +425,11 @@ def update_task(request):
 
         if type_ is None:
             # create a new Type
-            # TODO: should we check for permission here or will it be already done in the UI (ex. filteringSelect instead of comboBox)
+            if not p_checker('Create_Type'):
+                response = Response('You do not have permission to '
+                                    'create a Type instance')
+                response.status_int = 500
+                return response
             type_ = Type(
                 name=asset_type,
                 code=asset_type,
@@ -455,9 +439,7 @@ def update_task(request):
         task.type = type_
 
     if entity_type == 'Shot':
-        temp_sequence = Sequence.query.filter_by(id=shot_sequence_id).first()
-        if temp_sequence:
-            task.sequences = [temp_sequence]
+        task.sequence = Sequence.query.filter_by(id=shot_sequence_id).first()
 
     task._reschedule(task.schedule_timing, task.schedule_unit)
     if update_bid:
@@ -466,7 +448,9 @@ def update_task(request):
         task.bid_unit = task.schedule_unit
     else:
         logger.debug('not updating bid')
-    return HTTPOk(detail='Task updated successfully')
+    response = Response('Task updated successfully')
+    response.status_int = 200
+    return response
 
 
 def depth_first_flatten(task, task_array=None):
@@ -498,13 +482,16 @@ def depth_first_flatten(task, task_array=None):
 def get_tasks(request):
     """RESTful version of getting all tasks
     """
-    # logger.debug('request.GET: %s' % request.GET)
-    parent_id = request.GET.get('parent_id')
-    task_id = request.GET.get('task_id')
+    parent_id = request.params.get('parent_id')
+    task_id = request.params.get('task_id')
 
-    return_data = None
+    #logger.debug('parent_id: %s' % parent_id)
+    #logger.debug('task_id  : %s' % task_id)
+
+    return_data = []
     # set the content range to prevent JSONRest Store to query the data twice
     content_range = '%s-%s/%s'
+    tasks = []
     if task_id:
         task = Entity.query.filter(Entity.id == task_id).first()
         if isinstance(task, Project):
@@ -533,7 +520,10 @@ def get_tasks(request):
     resp.content_range = content_range
     return resp
 
-
+@view_config(
+    route_name='get_entity_tasks',
+    renderer='json'
+)
 @view_config(
     route_name='get_user_tasks',
     renderer='json'
@@ -542,59 +532,32 @@ def get_tasks(request):
     route_name='get_studio_tasks',
     renderer='json'
 )
-@view_config(
-    route_name='get_department_tasks',
-    renderer='json'
-)
 def get_entity_tasks(request):
     """RESTful version of getting all tasks of an entity
     """
-    # logger.debug('request.GET: %s' % request.GET)
     entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter(Entity.id == entity_id).first()
 
-    parent_id = request.GET.get('parent_id')
+    #logger.debug('entity_id : %s' % entity_id)
+    #logger.debug('entity    : %s' % entity)
+
+    parent_id = request.params.get('parent_id')
     parent = Entity.query.filter_by(id=parent_id).first()
 
     # logger.debug('parent_id : %s' % parent_id)
     # logger.debug('parent    : %s' % parent)
 
-    return_data = None
+    return_data = []
     # set the content range to prevent JSONRest Store to query the data twice
     content_range = '%s-%s/%s'
 
     if entity:
         if parent:
-            logger.debug('there is a parent')
+            #logger.debug('there is a parent')
             tasks = []
             if isinstance(entity, User):
                 # get user tasks
                 entity_tasks = entity.tasks
-
-                # add all parents
-                entity_tasks_and_parents = []
-                for task in entity_tasks:
-                    entity_tasks_and_parents.extend(task.parents)
-                entity_tasks_and_parents.extend(entity_tasks)
-
-                if isinstance(parent, Task):
-                    parents_children = parent.children
-                elif isinstance(parent, Project):
-                    parents_children = parent.root_tasks
-
-                for child in parents_children:
-                    if child in entity_tasks_and_parents:
-                        tasks.append(child)
-
-                if not tasks:
-                    # there are no children
-                    tasks = parents_children
-            if isinstance(entity, Department):
-                # get user tasks
-                entity_tasks = []
-
-                for user in entity.users:
-                    entity_tasks.extend(user.tasks)
 
                 # add all parents
                 entity_tasks_and_parents = []
@@ -620,10 +583,9 @@ def get_entity_tasks(request):
                 elif isinstance(parent, Project):
                     tasks = parent.root_tasks
 
-
             return_data = convert_to_dgrid_gantt_task_format(tasks)
         else:
-            logger.debug('no parent')
+            #logger.debug('no parent')
             # no parent,
             # just return projects of the entity
             entity_projects = []
@@ -631,11 +593,6 @@ def get_entity_tasks(request):
                 entity_projects = entity.projects
             elif isinstance(entity, Studio):
                 entity_projects = Project.query.all()
-            elif isinstance(entity, Department):
-                for user in entity.users:
-                    for project in user.projects:
-                        if project not in entity_projects:
-                            entity_projects.append(project)
 
             return_data = convert_to_dgrid_gantt_project_format(entity_projects)
 
@@ -668,7 +625,7 @@ def get_task(request):
     elif isinstance(entity, Project):
         return_data = convert_to_dgrid_gantt_project_format([entity])
 
-    # logger.debug('return_data: %s' % return_data)
+    #logger.debug('return_data: %s' % return_data)
 
     return return_data
 
@@ -696,7 +653,7 @@ def get_gantt_tasks(request):
     entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
 
-    logger.debug('entity : %s' % entity)
+    #logger.debug('entity : %s' % entity)
 
     tasks = []
     if entity:
@@ -793,84 +750,104 @@ def get_project_tasks(request):
             'id': task.id,
             'name': '%s (%s)' % (
                 task.name,
-                ' | '.join(reversed([parent.name for parent in task.parents]))
+                ' | '.join([parent.name for parent in task.parents])
             )
-        } for task in Task.query.filter(Task._project == project).all()
+        } for task in Task.query.filter(Task.project == project).all()
     ]
 
 
-
-
-@view_config(
-    route_name='dialog_create_project_task',
-    renderer='templates/task/dialog_create_task.jinja2'
-)
-def create_task_dialog(request):
-    """only project information is present
+def create_data_dialog(request, entity_type='Task'):
+    """a generic function which will create a dictionary with enough data
     """
-    entity_id = request.matchdict.get('id', -1)
+    logged_in_user = get_logged_in_user(request)
+    came_from = request.params.get('came_from', request.url)
+
+    # get mode
+    mode = request.matchdict.get('mode', None)
+
+    entity_id = request.matchdict.get('id')
     entity = Entity.query.filter_by(id=entity_id).first()
 
-    parent = None
-    if entity.entity_type == 'Project':
-        project = entity
-    else:
+    if mode == 'create':
+        project_id = request.params.get('project_id')
+        project = Project.query.filter_by(id=project_id).first()
+
+        parent_id = request.params.get('parent_id')
+        parent = Task.query.filter_by(id=parent_id).first()
+
+        if not project and parent:
+            project = parent.project
+
+        dependent_ids = get_multi_integer(request, 'dependent_ids', 'GET')
+        depends_to = Task.query.filter(Task.id.in_(dependent_ids)).all()
+
+        if not project and depends_to:
+            project = depends_to[0].project
+    elif mode == 'update':
+        entity_type = entity.entity_type
         project = entity.project
-        parent = entity
+        parent = entity.parent
+        depends_to = entity.depends
+
+    logger.debug('entity_id  : %s' % entity_id)
+    logger.debug('entity     : %s' % entity)
+    logger.debug('project    : %s' % project)
+    logger.debug('parent     : %s' % parent)
+    logger.debug('depends_to : %s' % depends_to)
 
     return {
-        'mode': 'CREATE',
+        'mode': mode,
         'has_permission': PermissionChecker(request),
+        'logged_in_user': logged_in_user,
+        'entity': entity,
+        'entity_type': entity_type,
         'project': project,
         'parent': parent,
+        'depends_to': depends_to,
         'schedule_models': defaults.task_schedule_models,
-        'milliseconds_since_epoch': milliseconds_since_epoch
+        'milliseconds_since_epoch': milliseconds_since_epoch,
+        'came_from': came_from,
     }
 
 
 @view_config(
-    route_name='dialog_create_child_task',
-    renderer='templates/task/dialog_create_task.jinja2'
+    route_name='task_dialog',
+    renderer='templates/task/dialog/task_dialog.jinja2'
 )
-def create_child_task_dialog(request):
-    """generates the info from the given parent task
+def task_dialog(request):
+    """called when creating tasks
     """
-    parent_task_id = request.matchdict.get('id', -1)
-    parent_task = Task.query.filter_by(id=parent_task_id).first()
-
-    project = parent_task.project if parent_task else None
-
-    return {
-        'mode': 'CREATE',
-        'has_permission': PermissionChecker(request),
-        'project': project,
-        'parent': parent_task,
-        'schedule_models': defaults.task_schedule_models,
-        'milliseconds_since_epoch': milliseconds_since_epoch
-    }
+    return create_data_dialog(request, entity_type='Task')
 
 
 @view_config(
-    route_name='dialog_create_dependent_task',
-    renderer='templates/task/dialog_create_task.jinja2'
+    route_name='asset_dialog',
+    renderer='templates/task/dialog/task_dialog.jinja2'
 )
-def create_dependent_task_dialog(request):
-    """runs when adding a dependent task
+def asset_dialog(request):
+    """called when creating assets
     """
-    # get the dependee task
-    depends_to_task_id = request.matchdict.get('id', -1)
-    depends_to_task = Task.query.filter_by(id=depends_to_task_id).first()
+    return create_data_dialog(request, entity_type='Asset')
 
-    project = depends_to_task.project if depends_to_task else None
 
-    return {
-        'mode': 'CREATE',
-        'has_permission': PermissionChecker(request),
-        'project': project,
-        'depends_to': depends_to_task,
-        'schedule_models': defaults.task_schedule_models,
-        'milliseconds_since_epoch': milliseconds_since_epoch
-    }
+@view_config(
+    route_name='shot_dialog',
+    renderer='templates/task/dialog/task_dialog.jinja2'
+)
+def shot_dialog(request):
+    """called when creating shots
+    """
+    return create_data_dialog(request, entity_type='Shot')
+
+
+@view_config(
+    route_name='sequence_dialog',
+    renderer='templates/task/dialog/task_dialog.jinja2'
+)
+def create_sequence_dialog(request):
+    """called when creating sequences
+    """
+    return create_data_dialog(request, entity_type='Sequence')
 
 
 @view_config(
@@ -887,15 +864,11 @@ def create_task(request):
     parent_id = request.params.get('parent_id', None)
     name = request.params.get('name', None)
     description = request.params.get('description', '')
-    is_milestone = request.params.get('is_milestone', None)
-    status_id = request.params.get('status_id', None)
-    if status_id:
-        status_id = int(status_id)
+    # is_milestone = request.params.get('is_milestone', None)
 
     schedule_model = request.params.get('schedule_model') # there should be one
     schedule_timing = float(request.params.get('schedule_timing'))
     schedule_unit = request.params.get('schedule_unit')
-    schedule_constraint = int(request.params.get('schedule_constraint', 0))
 
     # get the resources
     resources = []
@@ -906,23 +879,26 @@ def create_task(request):
 
     # get responsible
     responsible_id = request.params.get('responsible_id', None)
-    responsible = None 
+    responsible = None
     if responsible_id:
-        responsible = User.query.filter(User.id==responsible_id).first()
+        responsible = User.query.filter(User.id == responsible_id).first()
 
     priority = request.params.get('priority', 500)
 
-    entity_type = request.params.get('entity_type', None)
-    code = request.params.get('code', None)
-    asset_type = request.params.get('asset_type_name', None)
-    shot_sequence_id = request.params.get('shot_sequence_id', None)
+    code = request.params.get('code', '')
+    entity_type = request.params.get('entity_type')
+    asset_type = request.params.get('asset_type')
+    task_type = request.params.get('task_type')
+    shot_sequence_id = request.params.get('shot_sequence_id')
 
+    logger.debug('entity_type         : %s' % entity_type)
+    logger.debug('asset_type          : %s' % asset_type)
+    logger.debug('task_type           : %s' % task_type)
+    logger.debug('code                : %s' % code)
     logger.debug('project_id          : %s' % project_id)
     logger.debug('parent_id           : %s' % parent_id)
     logger.debug('name                : %s' % name)
     logger.debug('description         : %s' % description)
-    logger.debug('is_milestone        : %s' % is_milestone)
-    logger.debug('status_id           : %s' % status_id)
     logger.debug('schedule_model      : %s' % schedule_model)
     logger.debug('schedule_timing     : %s' % schedule_timing)
     logger.debug('schedule_unit       : %s' % schedule_unit)
@@ -930,21 +906,17 @@ def create_task(request):
     logger.debug('resources           : %s' % resources)
     logger.debug('responsible         : %s' % responsible)
     logger.debug('priority            : %s' % priority)
-    logger.debug('schedule_constraint : %s' % schedule_constraint)
-    logger.debug('entity_type         : %s' % entity_type)
-    logger.debug('code                : %s' % code)
+    logger.debug('shot_sequence_id    : %s' % shot_sequence_id)
 
     kwargs = {}
 
-    if project_id and name and status_id:
+    if project_id and name:
         # get the project
         project = Project.query.filter_by(id=project_id).first()
         kwargs['project'] = project
 
-        # get the parent if exists
-        parent = None
-        if parent_id:
-            parent = Task.query.filter_by(id=parent_id).first()
+        # get the parent if parent_id exists
+        parent = Task.query.filter_by(id=parent_id).first() if parent_id else None
 
         kwargs['parent'] = parent
 
@@ -957,89 +929,80 @@ def create_task(request):
 
         # there should be a status_list
         if status_list is None:
-            return HTTPServerError(
-                detail='No StatusList found'
+            response = Response(
+                'No StatusList found suitable for %s' % entity_type
             )
+            response.status_int = 500
+            return response
 
-        status = Status.query.filter_by(id=status_id).first()
+        status = Status.query.filter_by(name='New').first()
         logger.debug('status: %s' % status)
 
-        # get the dates
-        start = get_date(request, 'start')
-        end = get_date(request, 'end')
-
-        logger.debug('start : %s' % start)
-        logger.debug('end : %s' % end)
-
         # get the dependencies
-        depend_ids = get_multi_integer(request, 'depend_ids')
-        depends = Task.query.filter(Task.id.in_(depend_ids)).all()
+        logger.debug('request.POST: %s' % request.POST)
+        depends_to_ids = get_multi_integer(request, 'dependent_ids')
+
+        depends = Task.query.filter(Task.id.in_(depends_to_ids)).all() if depends_to_ids else []
         logger.debug('depends: %s' % depends)
 
         kwargs['name'] = name
+        kwargs['code'] = code
         kwargs['description'] = description
-        kwargs['status_list'] = status_list
-        kwargs['status'] = status
         kwargs['created_by'] = logged_in_user
 
-        kwargs['start'] = start
-        kwargs['end'] = end
+        kwargs['status_list'] = status_list
+        kwargs['status'] = status
 
         kwargs['schedule_model'] = schedule_model
         kwargs['schedule_timing'] = schedule_timing
         kwargs['schedule_unit'] = schedule_unit
-        kwargs['schedule_constraint'] = schedule_constraint
 
         kwargs['resources'] = resources
         kwargs['depends'] = depends
 
         kwargs['priority'] = priority
 
-        kwargs['code'] = code
-
+        type_query = Type.query.filter_by(target_entity_type=entity_type)
+        type_name = ''
         if entity_type == 'Asset':
-            type_ = Type.query \
-                .filter_by(target_entity_type='Asset') \
-                .filter_by(name=asset_type) \
-                .first()
+            type_name = asset_type
+        elif entity_type == 'Task':
+            type_name = task_type
 
-            if type_ is None:
-                # create a new Type
-                # TODO: should we check for permission here or will it be already done in the UI (ex. filteringSelect instead of comboBox)
-                type_ = Type(
-                    name=asset_type,
-                    code=asset_type,
-                    target_entity_type='Asset'
-                )
+        type_ = type_query.filter_by(name=type_name).first()
 
-            kwargs['type'] = type_
+        if type_name and type_ is None:
+            # create a new Type
+            logger.debug('creating new %s type: %s' % (
+                entity_type.lower(), type_name)
+            )
+            type_ = Type(
+                name=type_name,
+                code=type_name,
+                target_entity_type=entity_type
+            )
+            DBSession.add(type_)
+        kwargs['type'] = type_
 
         if entity_type == 'Shot':
             sequence = Sequence.query.filter_by(id=shot_sequence_id).first()
             kwargs['sequence'] = sequence
 
         try:
-
-            if entity_type == 'Task':
-                new_entity = Task(**kwargs)
-                logger.debug('new_task.name %s' % new_entity.name)
-                # logger.debug('new_task.status: %s' % new_entity.status)
-                DBSession.add(new_entity)
-            elif entity_type == 'Asset':
+            if entity_type == 'Asset':
+                logger.debug('creating a new Asset')
                 new_entity = Asset(**kwargs)
                 logger.debug('new_asset.name %s' % new_entity.name)
-                # logger.debug('new_asset.status: %s' % new_entity.status)
-                DBSession.add(new_entity)
             elif entity_type == 'Shot':
                 new_entity = Shot(**kwargs)
                 logger.debug('new_shot.name %s' % new_entity.name)
-                # logger.debug('new_shot.status: %s' % new_entity.status)
-                DBSession.add(new_entity)
             elif entity_type == 'Sequence':
                 new_entity = Sequence(**kwargs)
                 logger.debug('new_shot.name %s' % new_entity.name)
-                # logger.debug('new_shot.status: %s' % new_entity.status)
-                DBSession.add(new_entity)
+            else:  # entity_type == 'Task'
+                new_entity = Task(**kwargs)
+                logger.debug('new_task.name %s' % new_entity.name)
+            DBSession.add(new_entity)
 
             if responsible:
                 # check if the responsible is different than
@@ -1048,11 +1011,11 @@ def create_task(request):
                     new_entity.responsible = responsible
 
         except (AttributeError, TypeError, CircularDependencyError) as e:
-            logger.debug(e.message)
-            error = HTTPServerError()
-            error.title = str(type(e))
-            error.detail = e.message
-            return error
+            logger.debug('The Error Message: %s' % e.message)
+            response = Response('%s' % e.message)
+            response.status_int = 500
+            transaction.abort()
+            return response
         else:
             DBSession.add(new_entity)
             try:
@@ -1060,7 +1023,9 @@ def create_task(request):
             except IntegrityError as e:
                 logger.debug(e.message)
                 transaction.abort()
-                return HTTPServerError(detail=e.message)
+                response = Response(e.message)
+                response.status_int = 500
+                return response
             else:
                 logger.debug('flushing the DBSession, no problem here!')
                 DBSession.flush()
@@ -1077,20 +1042,24 @@ def create_task(request):
         get_param('project_id')
         get_param('name')
         get_param('description')
-        get_param('is_milestone')
-        get_param('resource_ids')
-        get_param('status_id')
+        # get_param('is_milestone')
+        #get_param('resource_ids')
+        # get_param('status_id')
 
         param_list = ['project_id', 'name', 'description',
-                      'is_milestone', 'resource_ids', 'status_id']
+                      # 'is_milestone', 'status_id'
+                      #'resource_ids'
+                      ]
 
         params = [param for param in param_list if param not in request.params]
 
-        error = HTTPServerError()
-        error.explanation = 'There are missing parameters: %s' % params
-        return error
+        response = Response('There are missing parameters: %s' % params)
+        response.status_int = 500
+        return response
 
-    return HTTPOk(detail='Task created successfully')
+    response = Response('Task created successfully')
+    response.status_int = 200
+    return response
 
 
 @view_config(
@@ -1106,17 +1075,23 @@ def auto_schedule_tasks(request):
         tj_scheduler = TaskJugglerScheduler()
         studio.scheduler = tj_scheduler
 
-        # logger.debug('studio.name: %s' % studio.name)
-        # logger.debug('studio.working_hours[0]: %s' % studio.working_hours[0])
-        # logger.debug('studio.daily_working_hours: %s' % studio.daily_working_hours)
-        # logger.debug('studio.to_tjp: %s' % studio.to_tjp)
-
         try:
-            studio.schedule()
-        except RuntimeError:
-            return HTTPServerError()
+            stderr = studio.schedule()
+            c = StdErrToHTMLConverter(stderr)
+            response = Response(c.html())
+            response.status_int = 200
+            return response
+        except RuntimeError as e:
+            #logger.debug('%s' % e.message)
+            c = StdErrToHTMLConverter(e)
+            response = Response(c.html())
+            response.status_int = 500
+            return response
 
-    return HTTPOk()
+    response = Response("There is no Studio instance\n"
+                        "Please create a studio first")
+    response.status_int = 500
+    return response
 
 
 @view_config(
@@ -1125,13 +1100,13 @@ def auto_schedule_tasks(request):
 def request_task_review(request):
     """creates a new ticket and sends an email to the responsible
     """
+    # get logged in user as he review requester
+    logged_in_user = get_logged_in_user(request)
+
     task_id = request.matchdict.get('id', -1)
     task = Task.query.filter(Task.id==task_id).first()
 
     if task:
-        # get logged in user as he review requester
-        logged_in_user = get_logged_in_user(request)
-
         # get the project that the ticket belongs to
         project = task.project
 
@@ -1174,3 +1149,167 @@ def request_task_review(request):
         mailer.send(message)
 
     return HTTPOk()
+
+
+
+
+@view_config(
+    route_name='get_entity_tasks_stats',
+    renderer='json'
+)
+def get_entity_tasks_stats(request):
+    """runs when viewing an task
+    """
+    entity_id = request.matchdict.get('id', -1)
+    entity = Entity.query.filter_by(id=entity_id).first()
+
+    #logger.debug('user_id : %s' % entity_id)
+
+    status_list = StatusList.query.filter_by(
+        target_entity_type='Task'
+    ).first()
+
+    join_attr = None
+
+    if entity.entity_type =='User':
+        join_attr = Task.resources
+    elif entity.entity_type =='Project':
+        join_attr = Task.project
+
+    __class__ = entity.__class__
+
+    status_count_task=[]
+
+    #TODO find the correct solution to filter leaf tasks. This does not work.
+    for status in status_list.statuses:
+        status_count_task.append({
+            'name': status.name,
+            'color':colors[status.name],
+            'icon': 'icon-folder-close-alt',
+            'count':Task.query.join(entity.__class__, join_attr) \
+                .filter(__class__.id == entity_id) \
+                .filter(Task.status_id == status.id) \
+                .filter(Task.children == None) \
+                .count()
+        })
+
+    return status_count_task
+
+
+@view_config(
+    route_name='delete_task',
+    permission='Delete_Task'
+)
+def delete_task(request):
+    """deletes the task with the given id
+    """
+    task_id = request.matchdict.get('id')
+    task = Task.query.get(task_id)
+
+    if task:
+        try:
+            # remove this task from any related Ticket
+            tickets = Ticket.query.filter(Ticket.links.contains(task)).all()
+            for ticket in tickets:
+                ticket.links.remove(task)
+
+            DBSession.delete(task)
+            transaction.commit()
+        except Exception as e:
+            transaction.abort()
+            c = StdErrToHTMLConverter(e)
+            response = Response(c.html())
+            response.status_int = 500
+            return response
+    else:
+        response = Response('Can not find a Task with id: %s' % task_id)
+        response.status_int = 500
+        return response
+
+    response = Response('Successfully deleted task: %s' % task_id)
+    response.status_int = 200
+    return response
+
+
+def get_child_task_time_logs(task):
+
+    task_events = []
+
+    if task.children:
+        for child in task.children:
+            task_events.extend(get_child_task_time_logs(child))
+
+
+    else:
+
+        resources = []
+
+        for resource in task.resources:
+            resources.append({'name':resource.name, 'id':resource.id})
+
+
+        logger.debug('resources %s' % resources)
+
+        task_events.append({
+                    'id': task.id,
+                    'entity_type': task.plural_class_name.lower(),
+                    # 'title': '%s (%s)' % (
+                    #     task.name,
+                    #     ' | '.join([parent.name for parent in task.parents])),
+                    'title': task.name,
+                    'start': milliseconds_since_epoch(task.start),
+                    'end': milliseconds_since_epoch(task.end),
+                    'className': 'label',
+                    'allDay': False,
+                    'status': task.status.name,
+                    'resources':resources
+                    # 'hours_to_complete': time_log.hours_to_complete,
+                    # 'notes': time_log.notes
+                })
+
+
+
+        for time_log in task.time_logs:
+         # logger.debug('time_log.task.id : %s' % time_log.task.id)
+         # assert isinstance(time_log, TimeLog)
+            task_events.append({
+                'id': time_log.id,
+                'entity_type': time_log.plural_class_name.lower(),
+                'title': time_log.task.name,
+                # 'title': '%s (%s)' % (
+                #             time_log.task.name,
+                #             ' | '.join(
+                #                 [parent.name for parent in time_log.task.parents])),
+                'start': milliseconds_since_epoch(time_log.start),
+                'end': milliseconds_since_epoch(time_log.end),
+                'className': 'label-success',
+                'allDay': False,
+                'status': time_log.task.status.name
+             })
+
+    return task_events
+
+
+@view_config(
+    route_name='get_task_events',
+    renderer='json'
+)
+def get_task_events(request):
+    if not multi_permission_checker(
+            request, ['Read_User', 'Read_TimeLog', 'Read_Vacation']):
+        return HTTPForbidden(headers=request)
+
+    logger.debug('get_user_events is running')
+
+
+    task_id = request.matchdict.get('id', -1)
+    task = Task.query.filter_by(id=task_id).first()
+
+    logger.debug('task_id : %s' % task_id)
+
+    events = []
+
+    events.extend(get_child_task_time_logs(task))
+
+
+    return events

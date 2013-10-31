@@ -18,18 +18,26 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 import datetime
+# import colander
+# from deform import widget
+# import deform
 
-from pyramid.httpexceptions import HTTPFound, HTTPOk, HTTPServerError
+from pyramid.httpexceptions import (HTTPFound, HTTPOk, HTTPServerError,
+                                    HTTPForbidden)
+from pyramid.response import Response
 from pyramid.security import authenticated_userid, forget, remember
 from pyramid.view import view_config, forbidden_view_config
 from sqlalchemy import or_
 
 import stalker_pyramid
 from stalker import (defaults, User, Department, Group, Project, Entity,
-                     Studio, Permission, EntityType)
+                     Studio, Permission, EntityType, Task, Vacation, TimeLog)
 from stalker.db import DBSession
 from stalker_pyramid.views import (log_param, get_logged_in_user,
-                                   PermissionChecker, get_multi_integer, get_tags)
+                                   PermissionChecker, get_multi_integer,
+                                   get_tags, milliseconds_since_epoch,
+                                   multi_permission_checker,
+                                   get_multi_string)
 
 import logging
 
@@ -38,69 +46,34 @@ logger.setLevel(logging.DEBUG)
 
 
 @view_config(
-    route_name='dialog_create_user',
-    renderer='templates/auth/dialog_create_user.jinja2'
-)
-@view_config(
-    route_name='dialog_create_department_user',
-    renderer='templates/auth/dialog_create_user.jinja2'
-)
-@view_config(
-    route_name='dialog_create_group_user',
-    renderer='templates/auth/dialog_create_user.jinja2'
-)
-def dialog_create_user(request):
-    """called by create user dialog
-    """
-    logged_in_user = get_logged_in_user(request)
-
-    entity_id = request.matchdict.get('id', -1)
-    entity = Entity.query.filter_by(id=entity_id).first()
-
-    return {
-        'mode': 'CREATE',
-        'has_permission': PermissionChecker(request),
-        'logged_in_user': logged_in_user,
-        'entity': entity
-    }
-
-
-@view_config(
-    route_name='dialog_update_user',
-    renderer='templates/auth/dialog_create_user.jinja2'
-)
-def dialog_update_user(request):
-    """called when updating a user
-    """
-    logged_in_user = get_logged_in_user(request)
-
-    user_id = request.matchdict.get('id', -1)
-    user = User.query.filter_by(id=user_id).first()
-
-    return {
-        'mode': 'UPDATE',
-        'has_permission': PermissionChecker(request),
-        'logged_in_user': logged_in_user,
-        'user': user
-    }
-
-
-@view_config(
     route_name='create_user'
 )
 def create_user(request):
     """called when adding a User
     """
+
+    logger.debug('***create user method starts ***')
+
     logged_in_user = get_logged_in_user(request)
 
+    # get params
+    came_from = request.params.get('came_from', '/')
     name = request.params.get('name', None)
     login = request.params.get('login', None)
     email = request.params.get('email', None)
     password = request.params.get('password', None)
-    department_id = request.params.get('department_id', None)
+
+    logger.debug('came_from : %s' % came_from)
+    logger.debug('new user name : %s' % name)
+    logger.debug('new user login : %s' % login)
+    logger.debug('new user email : %s' % email)
+    logger.debug('new user password : %s' % password)
+
 
     # create and add a new user
     if name and login and email and password:
+
+        department_id = request.params.get('department_id', None)
         departments = []
         if department_id:
             department = Department.query.filter_by(id=department_id).first()
@@ -122,21 +95,34 @@ def create_user(request):
         # Tags
         tags = get_tags(request)
 
-        logger.debug('creating new user')
-        new_user = User(
-            name=request.params['name'],
-            login=request.params['login'],
-            email=request.params['email'],
-            password=request.params['password'],
-            created_by=logged_in_user,
-            departments=departments,
-            groups=groups,
-            tags=tags
-        )
+        logger.debug('new user departments : %s' % departments)
+        logger.debug('new user groups : %s' % groups)
+        logger.debug('new user tags : %s' % tags)
+        try:
+            new_user = User(
+                name=request.params['name'],
+                login=request.params['login'],
+                email=request.params['email'],
+                password=request.params['password'],
+                created_by=logged_in_user,
+                departments=departments,
+                groups=groups,
+                tags=tags
+            )
 
-        logger.debug('adding new user to db')
-        DBSession.add(new_user)
-        logger.debug('added new user successfully')
+            DBSession.add(new_user)
+
+            logger.debug('added new user successfully')
+
+            request.session.flash(
+                'success:User <strong>%s</strong> is created successfully' % name
+            )
+
+            logger.debug('***create user method ends ***')
+
+        except BaseException as e:
+            request.session.flash('error:' + e.message)
+            HTTPFound(location=came_from)
     else:
         logger.debug('not all parameters are in request.params')
         log_param(request, 'name')
@@ -145,7 +131,9 @@ def create_user(request):
         log_param(request, 'password')
         HTTPServerError()
 
-    return HTTPOk()
+    return HTTPFound(
+        location=came_from
+    )
 
 
 @view_config(
@@ -154,9 +142,14 @@ def create_user(request):
 def update_user(request):
     """called when updating a User
     """
+
+    logger.debug('***update user method starts ***')
+
     logged_in_user = get_logged_in_user(request)
 
-    user_id = request.params.get('id', -1)
+    # get params
+    came_from = request.params.get('came_from', '/')
+    user_id = request.matchdict.get('id')
     user = User.query.filter(User.id == user_id).first()
 
     name = request.params.get('name')
@@ -164,22 +157,27 @@ def update_user(request):
     email = request.params.get('email')
     password = request.params.get('password')
 
-    # create and add a new user
+    logger.debug('user : %s' % user)
+    logger.debug('user new name : %s' % name)
+    logger.debug('user new login : %s' % login)
+    logger.debug('user new email : %s' % email)
+    logger.debug('user new password : %s' % password)
+
     if user and name and login and email and password:
-        departments = []
-
-        # Departments
-        if 'department_ids' in request.params:
-            dep_ids = get_multi_integer(request, 'department_ids')
-            departments = Department.query \
-                .filter(Department.id.in_(dep_ids)).all()
-
-        # Groups
-        groups = []
-        if 'group_ids' in request.params:
-            grp_ids = get_multi_integer(request, 'group_ids')
-            groups = Group.query \
-                .filter(Group.id.in_(grp_ids)).all()
+        # departments = []
+        #
+        # # Departments
+        # if 'department_ids' in request.params:
+        #     dep_ids = get_multi_integer(request, 'department_ids')
+        #     departments = Department.query \
+        #         .filter(Department.id.in_(dep_ids)).all()
+        #
+        # # Groups
+        # groups = []
+        # if 'group_ids' in request.params:
+        #     grp_ids = get_multi_integer(request, 'group_ids')
+        #     groups = Group.query \
+        #         .filter(Group.id.in_(grp_ids)).all()
 
         # Tags
         tags = get_tags(request)
@@ -189,16 +187,21 @@ def update_user(request):
         user.email = email
         user.updated_by = logged_in_user
         user.date_updated = datetime.datetime.now()
-        user.departments = departments
-        user.groups = groups
-        user.tags = tags
+        # user.departments = departments
+        # user.groups = groups
+        # user.tags = tags
 
         if password != 'DONTCHANGE':
             user.password = password
 
-        logger.debug('updating user')
         DBSession.add(user)
-        logger.debug('updated user successfully')
+
+        logger.debug('user is updated successfully')
+
+        request.session.flash(
+            'success:User <strong>%s</strong> is updated successfully' % name
+        )
+        logger.debug('***update user method ends ***')
     else:
         logger.debug('not all parameters are in request.params')
         log_param(request, 'user_id')
@@ -208,134 +211,151 @@ def update_user(request):
         log_param(request, 'password')
         HTTPServerError()
 
-    return HTTPOk()
-
-
-
-@view_config(
-    route_name='view_user',
-    renderer='templates/auth/page_view_user.jinja2'
-)
-def view_user(request):
-    logged_in_user = get_logged_in_user(request)
-
-    user_id = request.matchdict.get('id', -1)
-    user = User.query.filter_by(id=user_id).first()
-
-    logger.debug('user_id : %s' % user_id)
-    logger.debug('user    : %s' % user)
-
-    return {
-        'user': user,
-        'logged_in_user': logged_in_user,
-        'has_permission': PermissionChecker(request),
-        'stalker_pyramid' : stalker_pyramid
-    }
-
-
-@view_config(
-    route_name='get_users',
-    renderer='json'
-)
-def get_users(request):
-    """returns all the users in database
-    """
-    return [
-        {
-            'id': user.id,
-            'name': user.name,
-            'login': user.login,
-            'email': user.email,
-            'departments': [
-                {
-                    'id': department.id,
-                    'name': department.name
-                } for department in user.departments
-            ],
-            'groups': [
-                {
-                    'id': group.id,
-                    'name': group.name
-                } for group in user.groups
-            ],
-            'tasksCount': len(user.tasks),
-            'ticketsCount': len(user.open_tickets),
-            'thumbnail_path': user.thumbnail.full_path if user.thumbnail else None
-        }
-        for user in User.query.order_by(User.name.asc()).all()
-    ]
+    return HTTPFound(
+        location=came_from
+    )
 
 
 @view_config(
     route_name='get_project_users',
-    renderer='json'
+    renderer='json',
+    permission='List_User'
 )
 @view_config(
-    route_name='get_entity_users',
-    renderer='json'
+    route_name='get_users',
+    renderer='json',
+    permission='List_User'
 )
-def get_entity_users(request):
-    """returns all the Users of a given Entity
+def get_users(request):
+    """returns all the users in database
     """
-    entity_id = request.matchdict.get('id', -1)
-    entity = Entity.query.filter_by(id=entity_id).first()
+    # if there is a simple flag, just return ids and names and login
+    simple = request.params.get('simple')
 
-    # works for Departments and Projects or any entity that has users attribute
-    return [{
-        'id': user.id,
-        'name': user.name,
-        'login': user.login,
-        'email': user.email,
-        'departments': [
+    # if there is an id it is probably a project
+    pid = request.matchdict.get('id')
+    if pid:
+        project = Project.query.filter(Project.id == pid).first()
+        users = project.users
+    else:
+        users = User.query.order_by(User.name.asc()).all()
+
+    if simple:
+        return [
             {
-                'id': department.id,
-                'name': department.name
-            } for department in user.departments
-        ],
-        'groups': [
+                'id': user.id,
+                'name': user.name,
+                'login': user.login,
+            }
+            for user in users
+        ]
+    else:
+        return [
             {
-                'id': group.id,
-                'name': group.name
-            } for group in user.groups
-        ],
-        'tasksCount': len(user.tasks),
-        'ticketsCount': len(user.open_tickets),
-        'thumbnail_path': user.thumbnail.full_path if user.thumbnail else None
-    } for user in sorted(entity.users, key=lambda x: x.name.lower())]
+                'id': user.id,
+                'name': user.name,
+                'login': user.login,
+                'email': user.email,
+                'departments': [
+                    {
+                        'id': department.id,
+                        'name': department.name
+                    } for department in user.departments
+                ],
+                'groups': [
+                    {
+                        'id': group.id,
+                        'name': group.name
+                    } for group in user.groups
+                ],
+                'tasksCount': len(user.tasks),
+                'ticketsCount': len(user.open_tickets),
+                'thumbnail_path': user.thumbnail.full_path if user.thumbnail else None
+            }
+            for user in users
+        ]
 
 
-
-@view_config(
-    route_name='get_entity_users_not',
-    renderer='json'
-)
-def get_users_not_in_entity(request):
-    """returns all the Users which are not related with the given Entity
-    """
-    entity_id = request.matchdict.get('id', -1)
-    entity = Entity.query.filter_by(id=entity_id).first()
-
-    entity_class = None
-    if entity.entity_type == 'Project':
-        entity_class = Project
-    elif entity.entity_type == 'Department':
-        entity_class = Department
-
-    logger.debug(User.query.filter(User.notin_(entity_class.users)).all())
-
-    # works for Departments and Projects or any entity that has users attribute
-    return [
-        {
-            'id': user.id,
-            'name': user.name,
-            'login': user.login,
-            'tasksCount': len(user.tasks),
-            'ticketsCount': len(user.open_tickets),
-            'thumbnail_path': user.thumbnail.full_path if user.thumbnail else None
-        }
-        for user in entity.users
-    ]
-
+# @view_config(
+#     route_name='get_project_users',
+#     renderer='json',
+#     permission='List_User'
+# )
+# @view_config(
+#     route_name='get_entity_users',
+#     renderer='json',
+#     permission='List_User'
+# )
+# def get_entity_users(request):
+#     """returns all the Users of a given Entity
+#     """
+#     entity_id = request.matchdict.get('id', -1)
+#     entity = Entity.query.filter_by(id=entity_id).first()
+#
+#     simple = request.params.get('simple', False)
+#
+#     # works for Departments and Projects or any entity that has users attribute
+#     if simple:
+#         return [{
+#             'id': user.id,
+#             'name': user.name,
+#             'login': user.login,
+#         } for user in sorted(entity.users, key=lambda x: x.name.lower())]
+#     return [{
+#         'id': user.id,
+#         'name': user.name,
+#         'login': user.login,
+#         'email': user.email,
+#         'departments': [
+#             {
+#                 'id': department.id,
+#                 'name': department.name
+#             } for department in user.departments
+#         ],
+#         'groups': [
+#             {
+#                 'id': group.id,
+#                 'name': group.name
+#             } for group in user.groups
+#         ],
+#         'tasksCount': len(user.tasks),
+#         'ticketsCount': len(user.open_tickets),
+#         'thumbnail_path': user.thumbnail.full_path if user.thumbnail else None
+#     } for user in sorted(entity.users, key=lambda x: x.name.lower())]
+#
+#
+# @view_config(
+#     route_name='get_entity_users_not',
+#     renderer='json',
+#     permission='List_User'
+# )
+# def get_users_not_in_entity(request):
+#     """returns all the Users which are not related with the given Entity
+#     """
+#     entity_id = request.matchdict.get('id', -1)
+#     entity = Entity.query.filter_by(id=entity_id).first()
+#
+#     entity_class = None
+#     if entity.entity_type == 'Project':
+#         entity_class = Project
+#     elif entity.entity_type == 'Department':
+#         entity_class = Department
+#
+#     logger.debug(User.query.filter(User.notin_(entity_class.users)).all())
+#
+#     # works for Departments and Projects or any entity that has users attribute
+#     return [
+#         {
+#             'id': user.id,
+#             'name': user.name,
+#             'login': user.login,
+#             'tasksCount': len(user.tasks),
+#             'ticketsCount': len(user.open_tickets),
+#             'thumbnail_path': user.thumbnail.full_path if user.thumbnail else None
+#         }
+#         for user in entity.users
+#     ]
+#
 
 @view_config(
     route_name='append_users_to_entity_dialog',
@@ -344,21 +364,17 @@ def get_users_not_in_entity(request):
 def append_users_to_entity_dialog(request):
     """runs for append user dialog
     """
-
-    logger.debug('append_users_to_entity_dialog :' )
-
     logged_in_user = get_logged_in_user(request)
 
     entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
-
-    logger.debug('entity_id : %s' % entity_id)
 
     return {
         'logged_in_user': logged_in_user,
         'has_permission': PermissionChecker(request),
         'entity': entity
     }
+
 
 @view_config(
     route_name='append_users_to_entity'
@@ -390,18 +406,18 @@ def append_users_to_entity(request):
     return HTTPOk()
 
 
-
 @view_config(
-    route_name='append_user_to_group'
+    route_name='append_user_to_group',
+    permission='Update_Group'
 )
 @view_config(
-    route_name='append_user_to_department'
+    route_name='append_user_to_department',
+    permission='Update_Department'
 )
 def append_user_to_entity(request):
     """appends the given user to the given Project or Department or Group
     """
     # This is an unused method
-
     # user
     user_id = request.params.get('id', None)
     user = User.query.filter(User.id == user_id).first()
@@ -409,6 +425,11 @@ def append_user_to_entity(request):
     # entity
     entity_id = request.params.get('entity_id', None)
     entity = Entity.query.filter(Entity.id == entity_id).first()
+
+    if entity.entity_type == 'Group':
+        multi_permission_checker(request, ['Update_User', 'Update_Group'])
+    else:
+        multi_permission_checker(request, ['Update_User', 'Update_Department'])
 
 
 
@@ -430,9 +451,6 @@ def append_user_to_entity(request):
 def append_user_to_entity_dialog(request):
     """runs for append user dialog
     """
-
-    logger.debug('append_user_to_entity_dialog')
-
     logged_in_user = get_logged_in_user(request)
 
     user_id = request.matchdict.get('id', -1)
@@ -471,14 +489,23 @@ def append_user_to_groups(request):
 
     return HTTPOk()
 
+
 @view_config(
     route_name='append_user_to_departments'
 )
 def append_user_to_departments(request):
     """appends the given department to the given User
     """
-    # departments
+    # check required permissions
+    if not multi_permission_checker(
+            request, ['Update_User', 'Update_Department']):
+        response = Response(
+            'You do not have permission to Update User or Deparment'
+        )
+        response.status_int = 500
+        return response
 
+    # departments
     logger.debug('append_user_to_departments')
 
     department_ids = get_multi_integer(request, 'department_ids')
@@ -497,10 +524,12 @@ def append_user_to_departments(request):
         DBSession.add(user)
         DBSession.add_all(departments)
 
-    return HTTPOk()
-
-
-
+    response = Response(
+        'Successfully added user %s to departments %s' % (user_id,
+                                                          department_ids)
+    )
+    response.status_int = 200
+    return response
 
 
 def get_permissions_from_multi_dict(multi_dict):
@@ -509,7 +538,8 @@ def get_permissions_from_multi_dict(multi_dict):
     permissions = []
 
     # gather all access, actions, and class_names
-    all_class_names = [entity_type.name for entity_type in EntityType.query.all()]
+    all_class_names = [entity_type.name for entity_type in
+                       EntityType.query.all()]
     all_actions = defaults.actions
 
     logger.debug(all_class_names)
@@ -533,8 +563,8 @@ def get_permissions_from_multi_dict(multi_dict):
         else:
 
             if access in ['Allow', 'Deny'] and \
-                class_name in all_class_names and \
-                action in all_actions:
+                            class_name in all_class_names and \
+                            action in all_actions:
 
                 # get permissions
                 permission = Permission.query \
@@ -542,7 +572,7 @@ def get_permissions_from_multi_dict(multi_dict):
                     .filter_by(action=action) \
                     .filter_by(class_name=class_name) \
                     .first()
-    
+
                 if permission:
                     permissions.append(permission)
 
@@ -550,7 +580,9 @@ def get_permissions_from_multi_dict(multi_dict):
     return permissions
 
 
-@view_config(route_name='logout')
+@view_config(
+    route_name='logout'
+)
 def logout(request):
     headers = forget(request)
     return HTTPFound(
@@ -559,6 +591,9 @@ def logout(request):
     )
 
 
+@forbidden_view_config(
+    renderer='templates/auth/login.jinja2'
+)
 @view_config(
     route_name='login',
     renderer='templates/auth/login.jinja2'
@@ -573,16 +608,13 @@ def login(request):
         referrer = '/'
 
     came_from = request.params.get('came_from', referrer)
-    message = ''
-    login = ''
-    password = ''
 
-    if 'form.submitted' in request.params:
-        login = request.params['login']
-        password = request.params['password']
+    login = request.params.get('login', '')
+    password = request.params.get('password', '')
+    has_error = False
 
-        # need to find the user
-        # check with the login or email attribute
+    if 'submit' in request.params:
+        # get the user again (first got it in validation)
         user_obj = User.query \
             .filter(or_(User.login == login, User.email == login)).first()
 
@@ -591,36 +623,38 @@ def login(request):
 
         if user_obj and user_obj.check_password(password):
             headers = remember(request, login)
+            # form submission succeeded
             return HTTPFound(
                 location=came_from,
                 headers=headers,
             )
+        else:
+            has_error = True
 
-        message = 'Wrong username or password!!!'
-
-    logger.debug('login end')
-    return dict(
-        message=message,
-        url=request.application_url + '/login',
-        came_from=came_from,
-        login=login,
-        password=password,
-        stalker_pyramid=stalker_pyramid
-    )
+    return {
+        'login': login,
+        'password': password,
+        'has_error': has_error,
+        'came_from': came_from
+    }
 
 
-@forbidden_view_config(
-    renderer='templates/auth/no_permission.jinja2'
-)
-def forbidden(request):
-    """runs when user has no permission for the requested page
-    """
-    return {}
+# @forbidden_view_config(
+#     renderer='templates/auth/no_permission.jinja2'
+# )
+# def forbidden(request):
+#     """runs when user has no permission for the requested page
+#     """
+#     return {}
 
 
 @view_config(
+    route_name='flash_message',
+    renderer='templates/home.jinja2'
+)
+@view_config(
     route_name='home',
-    renderer='templates/base.jinja2'
+    renderer='templates/auth/view/view_user.jinja2'
 )
 @view_config(
     route_name='me_menu',
@@ -628,22 +662,22 @@ def forbidden(request):
 )
 def home(request):
     logged_in_user = get_logged_in_user(request)
+
     studio = Studio.query.first()
     projects = Project.query.all()
 
-    logger.debug('logged_in_user     : %s' % logged_in_user)
-    logger.debug('studio   : %s' % studio)
-    logger.debug('projects : %s' % projects)
-
-    if not logged_in_user:
-        return logout(request)
+    flash_message = request.params.get('flash')
+    if flash_message:
+        request.session.flash(flash_message)
 
     return {
         'stalker_pyramid': stalker_pyramid,
-        'logged_in_user': logged_in_user,
-        'projects': projects,
         'studio': studio,
-        'has_permission': PermissionChecker(request)
+        'logged_in_user': logged_in_user,
+        'has_permission': PermissionChecker(request),
+        'milliseconds_since_epoch': milliseconds_since_epoch,
+        'projects': projects,
+        'entity': logged_in_user
     }
 
 
@@ -688,231 +722,3 @@ def check_email_availability(request):
         'available': available
     }
 
-
-@view_config(
-    route_name='dialog_create_group',
-    renderer='templates/auth/dialog_create_group.jinja2'
-)
-def create_group_dialog(request):
-    """create group dialog
-    """
-    logged_in_user = get_logged_in_user(request)
-
-    permissions = Permission.query.all()
-
-    entity_types = EntityType.query.all()
-
-    return {
-        'mode': 'CREATE',
-        'actions': defaults.actions,
-        'permissions': permissions,
-        'entity_types': entity_types,
-        'logged_in_user': logged_in_user,
-        'has_permission': PermissionChecker(request)
-    }
-
-
-@view_config(
-    route_name='dialog_update_group',
-    renderer='templates/auth/dialog_create_group.jinja2'
-)
-def update_group_dialog(request):
-    """update group dialog
-    """
-    logged_in_user = get_logged_in_user(request)
-
-    permissions = Permission.query.all()
-
-    entity_types = EntityType.query.all()
-
-    group_id = request.matchdict.get('id', -1)
-    group = Group.query.filter_by(id=group_id).first()
-
-    return {
-        'mode': 'UPDATE',
-        'group': group,
-        'actions': defaults.actions,
-        'permissions': permissions,
-        'entity_types': entity_types,
-        'logged_in_user': logged_in_user,
-        'has_permission': PermissionChecker(request)
-    }
-
-
-@view_config(
-    route_name='create_group'
-)
-def create_group(request):
-    """runs when creating a new Group
-    """
-    logged_in_user = get_logged_in_user(request)
-
-    # get parameters
-    post_multi_dict = request.POST
-
-    # get name
-    name = post_multi_dict['name']
-
-    # get description
-    description = post_multi_dict['description']
-
-    # remove name and description to leave only permissions in the dictionary
-    post_multi_dict.pop('name')
-    post_multi_dict.pop('description')
-
-    permissions = get_permissions_from_multi_dict(post_multi_dict)
-
-    # create the new group
-    new_group = Group(name=name)
-    new_group.description = description
-    new_group.created_by = logged_in_user
-    new_group.permissions = permissions
-
-    DBSession.add(new_group)
-
-    return HTTPOk()
-
-
-@view_config(
-    route_name='update_group'
-)
-def update_group(request):
-    """updates the group with data from request
-    """
-    logged_in_user = get_logged_in_user(request)
-
-    # get parameters
-    post_multi_dict = request.POST
-
-    # get group_id
-    group_id = int(post_multi_dict['group_id'])
-    group = Group.query.filter_by(id=group_id).first()
-
-    # get name
-    name = post_multi_dict['name']
-
-
-    # get description
-    description = post_multi_dict['description']
-
-
-    # remove name and description to leave only permission in the dictionary
-    post_multi_dict.pop('name')
-    post_multi_dict.pop('description')
-    permissions = get_permissions_from_multi_dict(post_multi_dict)
-
-    if group:
-        group.name = name
-        group.description = description
-        group.permissions = permissions
-        group.updated_by = logged_in_user
-        group.date_updated = datetime.datetime.now()
-        DBSession.add(group)
-
-    return HTTPOk()
-
-
-@view_config(
-    route_name='list_user_groups',
-    renderer='templates/auth/content_list_groups.jinja2'
-)
-def list_groups(request):
-    """
-    """
-    user_id = request.matchdict.get('id', -1)
-    user = User.query.filter_by(id=user_id).first()
-    return {
-        'has_permission': PermissionChecker(request),
-        'user': user
-    }
-
-
-@view_config(
-    route_name='view_group',
-    renderer='templates/auth/page_view_group.jinja2',
-    permission='Read_Group'
-)
-def view_group(request):
-    """runs when viewing a group
-    """
-    logged_in_user = get_logged_in_user(request)
-
-    group_id = request.matchdict.get('id', -1)
-    group = Group.query.filter_by(id=group_id).first()
-
-    return {
-        'user': logged_in_user,
-        'has_permission': PermissionChecker(request),
-        'group': group
-    }
-
-
-@view_config(
-    route_name='get_groups',
-    renderer='json',
-    permission='List_Group'
-)
-def get_groups(request):
-    """returns all the groups in database
-    """
-    return [
-        {
-            'id': group.id,
-            'name': group.name,
-            'thumbnail_path': group.thumbnail.full_path if group.thumbnail else None
-        }
-        for group in Group.query.order_by(Group.name.asc()).all()
-    ]
-
-
-@view_config(
-    route_name='get_entity_groups',
-    renderer='json'
-)
-@view_config(
-    route_name='get_user_groups',
-    renderer='json'
-)
-def get_entity_groups(request):
-    """returns all the groups of a given Entity
-    """
-    entity_id = request.matchdict.get('id', -1)
-    entity = Entity.query.filter_by(id=entity_id).first()
-
-    return [
-        {
-            'id': group.id,
-            'name': group.name,
-            'thumbnail_path': group.thumbnail.full_path if group.thumbnail else None
-        }
-        for group in sorted(entity.groups, key=lambda x: x.name.lower())
-    ]
-
-
-
-
-@view_config(
-    route_name='list_permissions',
-    renderer='templates/auth/content_list_permissions.jinja2'
-)
-def view_permissions(request):
-    """create group dialog
-    """
-    logged_in_user = get_logged_in_user(request)
-
-    permissions = Permission.query.all()
-
-    entity_types = EntityType.query.all()
-
-    group_id = request.matchdict.get('id', -1)
-    group = Group.query.filter_by(id=group_id).first()
-
-    return {
-        'mode': 'UPDATE',
-        'group': group,
-        'actions': defaults.actions,
-        'permissions': permissions,
-        'entity_types': entity_types,
-        'logged_in_user': logged_in_user,
-        'has_permission': PermissionChecker(request)
-    }

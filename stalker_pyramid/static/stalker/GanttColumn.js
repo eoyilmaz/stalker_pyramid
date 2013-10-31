@@ -1,3 +1,20 @@
+// Stalker a Production Asset Management System
+// Copyright (C) 2009-2013 Erkan Ozgur Yilmaz
+//
+// This library is free software; you can redistribute it and/or
+// modify it under the terms of the GNU Lesser General Public
+// License as published by the Free Software Foundation;
+// version 2.1 of the License.
+//
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public
+// License along with this library; if not, write to the Free Software
+// Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+
 define([
     'dojo/dom-construct',
     "dojo/_base/array",
@@ -100,19 +117,21 @@ define([
 
             var taskBar;
             if (task.type === 'Project') {
-                taskBar = $(templates.projectBar(task));
+                taskBar = $($.parseHTML(templates.projectBar(task)));
             } else if (task.type === 'Task' || task.type === 'Asset' ||
                        task.type === 'Shot' || task.type === 'Sequence') {
                 if (task.hasChildren) {
-                    taskBar = $(templates.parentTaskBar(task));
+                    taskBar = $($.parseHTML(templates.parentTaskBar(task)));
                 } else {
-                    taskBar = $(templates.taskBar(task));
+                    taskBar = $($.parseHTML(templates.taskBar(task)));
                 }
             }
+
             taskBar.css({
                 left: left,
                 width: width
             });
+
             $(td).append(taskBar);
 
             // Create the overlay for the amount of the task that has been completed
@@ -130,7 +149,6 @@ define([
             // render today
             var today_as_millis = (new Date()).getTime();
             put(td, "div.today[style=left:" + Math.floor((today_as_millis - column.start) / column.scale) + "px;]");
-
 
             // TODO: enable this part later
 //            // Create arrows for each dependency, but only after all other rows
@@ -227,15 +245,18 @@ define([
 
         column.scrollToDate = function (date) {
             // scrolls to the given date
-            var header = $(column.headerNode);
-            var position = header.position();
+            var header, position, date_as_millis, date_x, scroller,
+                scroller_width;
 
-            var date_as_millis = +date;
-            var date_x = (date_as_millis - column.start) / column.scale;
+            header = $(column.headerNode);
+            position = header.position();
 
-            var scroller = $('.dgrid-column-set-scroller-1');
+            date_as_millis = +date;
+            date_x = (date_as_millis - column.start) / column.scale;
 
-            var scroller_width = scroller.width();
+            scroller = $('.dgrid-column-set-scroller-1');
+
+            scroller_width = scroller.width();
 
             scroller.scrollLeft(date_x - scroller_width * 0.5);
         };
