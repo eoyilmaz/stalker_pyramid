@@ -268,7 +268,7 @@ def get_entity_references(request):
     elif entity.entity_type == 'Project':
         sql_query += 'where "Tasks".project_id = %(project_id)s' % {'project_id': entity_id}
 
-    sql_query += """group by "Links".id, "thumbnail_full_path", "Links".full_path
+    sql_query += """group by "Links".id, "thumbnail_full_path", "Links".full_path, "Links".original_filename
     order by "Links".id
     """
 
