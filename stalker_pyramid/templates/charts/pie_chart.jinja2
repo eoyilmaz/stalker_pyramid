@@ -1,7 +1,7 @@
 <script class="code" type="text/javascript">
 
 
-        function drawPieChart(placeholder, data, colors) {
+        function drawPieChart(placeholder, data, colors, location) {
 
              $.jqplot(placeholder, [data], {
                 fontSize: 50,
@@ -45,12 +45,12 @@
                     }
                 },
                 legend: {
-                    show: true,
+                    show: false,
                     placement: 'outside',
                     rendererOptions: {
                         numberRows: 5
                     },
-                    location: 'se'
+                    location: location
                 }
 
             });

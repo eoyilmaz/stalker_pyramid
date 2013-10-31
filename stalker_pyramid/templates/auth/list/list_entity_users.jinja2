@@ -17,6 +17,42 @@
  License along with this library; if not, write to the Free Software
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #}
+{#{% extends "base.jinja2" %}#}
+{##}
+{# BREADCRUMBS #}
+{#{% block breadcrumbs %}#}
+{##}
+{#    {% set page_title='Users' %}#}
+{#    {% include 'breadcrumb/breadcrumbs.jinja2' %}#}
+{##}
+{#{% endblock breadcrumbs %}#}
+{##}
+{# SIDEBAR #}
+{#{% block sidebar %}#}
+{##}
+{#    {% include 'sidebar.jinja2' %}#}
+{##}
+{#{% endblock sidebar %}#}
+{##}
+{# MODALS #}
+{#{% block modals %}#}
+{##}
+{#    {% include 'modals/dialog_template.jinja2' %}#}
+{##}
+{#{% endblock modals %}#}
+{##}
+{# PAGE-CONTENT #}
+{#{% block page_content %}#}
+{##}
+{#    {% set page_title='Users' %}#}
+{#    {% include 'page_header.jinja2' %}#}
+{##}
+{#    {% set users=entity.users %}#}
+{#    {% include 'auth/list/list_users.jinja2' %}#}
+{##}
+{#{% endblock page_content %}#}
+
+
 {% extends "base.jinja2" %}
 
 {# BREADCRUMBS #}
@@ -47,7 +83,149 @@
     {% set page_title='Users' %}
     {% include 'page_header.jinja2' %}
 
-    {% set users=entity.users %}
-    {% include 'auth/list/list_users.jinja2' %}
+    {% if entity.entity_type == 'Studio' %}
+
+            {% if has_permission('Create_User') %}
+
+                <div class="row-fluid">
+                    <div class="btn-toolbar">
+                        <div class="btn-group">
+                            <button class="btn btn-small btn-success">
+                                <i class="icon-edit bigger-120"></i>
+                                <a class="white"
+{#                                   data-target="#dialog_template"#}
+{#                                   data-toggle="modal"#}
+{#                                   data-keyboard=false#}
+                                   href="{{ request.route_url('user_dialog',id='-1',mode='create') }}">Create User
+                                </a>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            {% endif %}
+        {% else %}
+
+            {% if has_permission('Update_User') %}
+
+                <div class="row-fluid">
+                    <div class="btn-toolbar" >
+                        <div class="btn-group">
+                            <button class="btn btn-small btn-success">
+                                <i class="icon-edit bigger-120"></i>
+                                <a class="white"
+                                   data-target="#dialog_template"
+                                   data-toggle="modal"
+                                   data-keyboard=false
+                                   href="{{ request.route_url('append_entities_to_entity_dialog', id=entity.id, entities='User') }}?came_from={{ request.current_route_path() }}">Append User
+                                </a>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            {% endif %}
+
+        {% endif %}
+
+    <div id="loading_spinner" class="well well-sm">
+
+        <div class="inline middle blue bigger-110"><i
+                class="icon-spinner icon-spin orange bigger-125"></i> Loading
+            content...
+        </div>
+    </div>
+
+    <div id="content" class="row-fluid hide">
+
+        <table id="users_table"
+               class="table table-striped table-bordered table-hover">
+            <thead>
+            <tr>
+                <th>Thumbnail</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Tasks Count</th>
+                <th>Tickets Count</th>
+                <th>Status</th>
+            </tr>
+            </thead>
+            <tbody>
+
+            </tbody>
+        </table>
+    </div>
 
 {% endblock page_content %}
+
+{# EXTRA-SCRIPTS #}
+{% block extrascripts %}
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.dataTables.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.dataTables.bootstrap.js") }}'></script>
+
+
+    {% raw %}
+    <script id="tmpl_userRow" type="text/x-dot-template">
+        <tr>
+            <td><img style='width:auto; height: 100px;'
+                     class="img-thumbnail"
+                     src="{{=it.thumbnail_path }}">
+            </td>
+            <td><a href='{{=it.link}}'>{{=it.name}}</a>
+            </td>
+            <td><a href='{{=it.link}}'>{{=it.email}}</a>
+            </td>
+            <td>{{=it.tasksCount}}
+            </td>
+            <td>{{=it.ticketsCount}}
+            </td>
+            <td>
+                <span class="label label-{{=it.status_color}}">{{=it.status}}</span>
+            </td>
+
+        </tr>
+    </script>
+    {% endraw %}
+
+
+
+    <script>
+        // fill users table with dynamic data
+
+        $.getJSON('/entities/{{ entity.id }}/users/').then(function (data) {
+
+            var users = data;
+            var user_template = doT.template($('#tmpl_userRow').html());
+
+            // wait until document is ready
+            $(function () {
+                var i;
+                var table_body = $('#users_table>tbody');
+                for (i = 0; i < data.length; i++) {
+                    data[i].link = '/users/' + data[i].id + '/view';
+                    // fix dates
+
+
+                    if (data[i].thumbnail_path == null) {
+                        data[i].thumbnail_path = '{{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_0.png") }}';
+                    }
+                    else {
+                        data[i].thumbnail_path = '/' + data[i].thumbnail_path;
+                    }
+                    // append it to the table
+                    table_body.append(user_template(data[i]));
+                }
+
+                var oTable1 = $('#users_table').dataTable();
+
+                $('#loading_spinner').hide();
+                $('#content').show();
+
+            });
+        });
+
+    </script>
+
+
+{% endblock extrascripts %}
+

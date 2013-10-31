@@ -535,10 +535,6 @@ def get_tasks(request):
     renderer='json'
 )
 @view_config(
-    route_name='get_user_tasks',
-    renderer='json'
-)
-@view_config(
     route_name='get_studio_tasks',
     renderer='json'
 )
@@ -802,6 +798,27 @@ def get_project_tasks(request):
     logger.debug('get_project_task took : %s seconds' % (end - start))
     return data
 
+@view_config(
+    route_name='get_user_tasks',
+    renderer='json'
+)
+def get_user_tasks(request):
+    """returns all the tasks in the database related to the given entity in
+    flat json format
+    """
+    # get all the tasks related in the given project
+    user_id = request.matchdict.get('id', -1)
+    user = User.query.filter_by(id=user_id).first()
+
+    return [
+        {
+            'id': task.id,
+            'name': '%s (%s)' % (
+                task.name,
+                ' | '.join([parent.name for parent in task.parents])
+            )
+        } for task in user.tasks
+    ]
 
 def create_data_dialog(request, entity_type='Task'):
     """a generic function which will create a dictionary with enough data
@@ -1263,13 +1280,13 @@ def delete_task(request):
     return response
 
 
-def get_child_task_time_logs(task):
+def get_child_task_events(task):
 
     task_events = []
 
     if task.children:
         for child in task.children:
-            task_events.extend(get_child_task_time_logs(child))
+            task_events.extend(get_child_task_events(child))
 
 
     else:
@@ -1331,7 +1348,7 @@ def get_task_events(request):
             request, ['Read_User', 'Read_TimeLog', 'Read_Vacation']):
         return HTTPForbidden(headers=request)
 
-    logger.debug('get_user_events is running')
+    logger.debug('get_task_events is running')
 
 
     task_id = request.matchdict.get('id', -1)
@@ -1341,7 +1358,7 @@ def get_task_events(request):
 
     events = []
 
-    events.extend(get_child_task_time_logs(task))
+    events.extend(get_child_task_events(task))
 
 
     return events

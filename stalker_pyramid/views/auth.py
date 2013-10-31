@@ -211,7 +211,11 @@ def update_user(request):
         location=came_from
     )
 
-
+@view_config(
+    route_name='get_entity_users',
+    renderer='json',
+    permission='List_User'
+)
 @view_config(
     route_name='get_project_users',
     renderer='json',
@@ -229,7 +233,21 @@ def get_users(request):
     #simple = request.params.get('simple')
 
     # if there is an id it is probably a project
-    pid = request.matchdict.get('id')
+    entity_id = request.matchdict.get('id')
+
+    entity_type = None
+    if entity_id:
+        sql_query = \
+            'select entity_type from "SimpleEntities" where id=%s' % entity_id
+        data = DBSession.connection().execute(sql_query).fetchone()
+        entity_type = data[0] if data else None
+
+    logger.debug('entity_id  : %s' % entity_id)
+    logger.debug('entity_type: %s' % entity_type)
+
+    if entity_id and entity_type not in ['Project', 'Department', 'Group', 'Task']:
+        # there is no entity_type for that entity
+        return []
 
     start = time.time()
     sql_query = """select
@@ -279,10 +297,22 @@ def get_users(request):
     left outer join "Links" on "SimpleEntities".thumbnail_id = "Links".id
     """
 
-    if pid:
+    if entity_type == "Project":
         sql_query += """join "Project_Users" on "Users".id = "Project_Users".user_id
-        where "Project_Users".project_id = %(pid)s
-        """ % {'pid': pid}
+        where "Project_Users".project_id = %(id)s
+        """ % {'id': entity_id}
+    elif entity_type == "Department":
+        sql_query += """join "User_Departments" on "Users".id = "User_Departments".uid
+        where "User_Departments".did = %(id)s
+        """ % {'id': entity_id}
+    elif entity_type == "Group":
+        sql_query += """join "User_Groups" on "Users".id = "User_Groups".uid
+        where "User_Groups".gid = %(id)s
+        """ % {'id': entity_id}
+    elif entity_type == "Task":
+        sql_query += """join "Task_Resources" on "Users".id = "Task_Resources".resource_id
+        where "Task_Resources".task_id = %(id)s
+        """ % {'id': entity_id}
 
     result = DBSession.connection().execute(sql_query)
     data = [
