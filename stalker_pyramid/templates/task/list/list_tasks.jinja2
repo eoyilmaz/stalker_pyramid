@@ -556,7 +556,7 @@ require([
     var tasks_memory_store = new Memory();
 
     {% if entity.entity_type == 'User' %}
-        target = '{{ request.route_url('get_user_tasks', id=entity.id) }}';
+        target = '{{ request.route_url('get_entity_tasks', id=entity.id) }}';
     {% elif entity.entity_type == 'Studio' %}
         target = '{{ request.route_url('get_studio_tasks', id=entity.id) }}';
     {% endif %}
@@ -644,7 +644,6 @@ require([
             var parent_org_href = child_task_button.attr('original-href');
             // update parent id
             var parent_href = parent_org_href + '?parent_id=' + selected_ids[0];
-            console.debug('parent_href: ', parent_href);
             child_task_button.attr('href', parent_href);
 
             // update create dependent task buttons
@@ -656,7 +655,6 @@ require([
                 dep_ids_param += 'dependent_id=' + selected_ids[i];
             }
             var dependent_href = dependent_org_href + dep_ids_param;
-            console.debug('dependent_href: ', dependent_href);
             dependent_task_button.attr('href', dependent_href);
 
             // update update button

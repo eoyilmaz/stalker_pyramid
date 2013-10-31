@@ -530,6 +530,7 @@ def get_tasks(request):
     resp.content_range = content_range
     return resp
 
+
 @view_config(
     route_name='get_entity_tasks',
     renderer='json'
@@ -797,6 +798,7 @@ def get_project_tasks(request):
 
     logger.debug('get_project_task took : %s seconds' % (end - start))
     return data
+
 
 @view_config(
     route_name='get_user_tasks',
