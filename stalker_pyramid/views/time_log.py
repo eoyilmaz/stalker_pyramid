@@ -1,19 +1,19 @@
 # -*- coding: utf-8 -*-
 # Stalker Pyramid a Web Base Production Asset Management System
 # Copyright (C) 2009-2013 Erkan Ozgur Yilmaz
-# 
+#
 # This file is part of Stalker Pyramid.
-# 
+#
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
 # License as published by the Free Software Foundation;
 # version 2.1 of the License.
-# 
+#
 # This library is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # Lesser General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
@@ -22,15 +22,16 @@
 import logging
 
 from pyramid.httpexceptions import HTTPOk, HTTPServerError
+from pyramid.response import Response
 from pyramid.view import view_config
 
-from stalker import defaults, Task, User, Studio, TimeLog, Entity
+from stalker import defaults, Task, User, Studio, TimeLog, Entity, Status
 
 from stalker.db import DBSession
 from stalker.exceptions import OverBookedError
 from stalker_pyramid.views import (get_logged_in_user,
                                    PermissionChecker, milliseconds_since_epoch,
-                                   get_date, get_date_range)
+                                   get_date, StdErrToHTMLConverter)
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -130,7 +131,6 @@ def create_time_log(request):
     start_date = get_date(request, 'start')
     end_date = get_date(request, 'end')
 
-
     logger.debug('task_id     : %s' % task_id)
     logger.debug('task        : %s' % task)
     logger.debug('resource_id : %s' % resource_id)
@@ -148,21 +148,32 @@ def create_time_log(request):
                 start=start_date,
                 end=end_date
             )
-        except OverBookedError:
-            logger.debug('TimeLog thrown OverBookedError!')
-            return HTTPServerError()
+            logger.debug('Updating Task (%s) status to WIP!' % task_id)
+            wip = Status.query.filter(Status.code=="WIP").first()
+            task.status = wip
+            DBSession.add(task)
+        except OverBookedError as e:
+            converter = StdErrToHTMLConverter(e)
+            response = Response(converter.html())
+            response.status_int = 500
+            return response
         else:
             DBSession.add(time_log)
-
             request.session.flash(
                 'success:Time log for <strong>%s</strong> is saved for resource <strong>%s</strong>.' % (task.name,resource.name)
             )
-
         logger.debug('no problem here!')
-
+    else:
+        response = Response(
+            'There are missing parameters: '
+            'task_id: %s, resource_id: %s' % (task_id, resource_id)
+        )
+        response.status_int = 500
+        return response
     logger.debug('successfully created time log!')
-
-    return HTTPOk()
+    response = Response('successfully created time log!')
+    response.status_int = 200
+    return response
 
 
 @view_config(

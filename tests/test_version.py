@@ -135,7 +135,7 @@ class VersionViewTestCase(unittest2.TestCase):
         request.matchdict['id'] = self.test_task.id
 
         info = create_version_dialog(request)
-        self.assertEqual(info['mode'], 'CREATE')
+        self.assertEqual(info['mode'], 'create')
         self.assertIsInstance(info['has_permission'], PermissionChecker)
         self.assertEqual(info['default_take_name'], defaults.version_take_name)
         self.assertEqual(info['take_names'], [defaults.version_take_name])
@@ -152,7 +152,7 @@ class VersionViewTestCase(unittest2.TestCase):
         request.matchdict['id'] = self.test_version.id
 
         info = update_version_dialog(request)
-        self.assertEqual(info['mode'], 'UPDATE')
+        self.assertEqual(info['mode'], 'update')
         self.assertEqual(info['version'], self.test_version)
         self.assertIsInstance(info['has_permission'], PermissionChecker)
 

@@ -192,7 +192,11 @@ function init_dialog() {
 
             if (remaining_hours_after_this_time_log >= 0) {
 
-                remaning_hours.append("<span class='pull_left'>If you enter this time log, <b>" + remaining_hours_after_this_time_log + "</b> hours remains to complete this task. </span>");
+                remaning_hours.append(
+                    "<span class='pull_left'>If you enter this time log, <b>" +
+                    remaining_hours_after_this_time_log +
+                    "</b> hours will remain to complete this task.</span>"
+                );
 
                 completed_percent = (100 - ((remaining_seconds_after_this_time_log / parseFloat(data[0].schedule_seconds)) * 100)).toFixed(1);
 
@@ -347,20 +351,30 @@ function init_dialog() {
     {# Get Start End  #}
 
     var get_start_end = function () {
-
-
         var date_range = $('#start_end_date_range_picker').daterangepicker().val().split(' - ');
         var start_date_string = date_range[0].split('/');
         var end_date_string = date_range[1].split('/');
         var start_time_string = $('#start_time').val().split(':');
         var end_time_string = $('#end_time').val().split(':');
 
-
-        var start = new Date(parseInt(start_date_string[2]), parseInt(start_date_string[0]) - 1, parseInt(start_date_string[1]), parseInt(start_time_string[0]), parseInt(start_time_string[1]), 0, 0);
-        var end = new Date(parseInt(end_date_string[2]), parseInt(end_date_string[0]) - 1, parseInt(end_date_string[1]), parseInt(end_time_string[0]), parseInt(end_time_string[1]), 0, 0);
+        var start = new Date(
+            parseInt(start_date_string[2]),
+            parseInt(start_date_string[0]) - 1,
+            parseInt(start_date_string[1]),
+            parseInt(start_time_string[0]),
+            parseInt(start_time_string[1]),
+            0, 0
+        );
+        var end = new Date(
+            parseInt(end_date_string[2]),
+            parseInt(end_date_string[0]) - 1,
+            parseInt(end_date_string[1]),
+            parseInt(end_time_string[0]),
+            parseInt(end_time_string[1]),
+            0, 0
+        );
 
         return [start, end];
-
     };
 
 
@@ -462,12 +476,12 @@ function init_dialog() {
             var end = start_end[1];
 
             $.post(
-                            time_log_form.attr('action'),
-                            time_log_form.serialize() + '&' + $.param({ 'start': start.toUTCString(), 'end': end.toUTCString() })
-                    ).done(function () {
-                        window.location.replace('{{ came_from }}');
-                    });
-
+                time_log_form.attr('action'),
+                time_log_form.serialize() + '&' +
+                $.param({ 'start': start.toUTCString(), 'end': end.toUTCString() })
+            ).done(function () {
+                window.location.replace('{{ came_from }}');
+            });
 
         }
     });
