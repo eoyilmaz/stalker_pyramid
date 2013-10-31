@@ -259,10 +259,10 @@
                                        data-toggle="modal"
                                        data-keyboard=false
                                        {% if entity.entity_type == 'Project' %}
-                                           href='{{ request.route_url("task_dialog", id=-1, mode='create', _query={'project_id': entity.id}) }}'>
+                                           href='{{ request.route_url("task_dialog", id=-1, mode='create', _query={'project_id': entity.id}) }}'
                                        {% elif entity.entity_type in ['Task', 'Shot', 'Sequence', 'Asset'] %}
-                                           href='{{ request.route_url("task_dialog", id=-1, mode='create', _query={'project_id': entity.project.id}) }}'>
-                                       {% endif %}
+                                           href='{{ request.route_url("task_dialog", id=-1, mode='create', _query={'project_id': entity.project.id}) }}'
+                                       {% endif %}>
                                         <i class="'ui-icon icon-tasks bigger-120">&nbsp</i>
                                         Task
                                     </a>

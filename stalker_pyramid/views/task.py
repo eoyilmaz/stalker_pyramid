@@ -18,7 +18,7 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 import logging
-import datetime
+import time
 
 import transaction
 
@@ -743,17 +743,64 @@ def get_project_tasks(request):
     """
     # get all the tasks related in the given project
     project_id = request.matchdict.get('id', -1)
-    project = Project.query.filter_by(id=project_id).first()
+    # project = Project.query.filter_by(id=project_id).first()
 
-    return [
+    start = time.time()
+    #data = [
+    #    {
+    #        'id': task.id,
+    #        'name': '%s (%s)' % (
+    #            task.name,
+    #            ' | '.join([parent.name for parent in task.parents])
+    #        )
+    #        #'name': task.name
+    #    } for task in Task.query.filter(Task.project == project).all()
+    #]
+    sql_query = """select
+    parent_data.id,
+    "SimpleEntities".name || ' (' ||
+    string_agg(
+        case
+            when "SimpleEntities_parent".entity_type = 'Project'
+            then "Projects".code
+            else "SimpleEntities_parent".name
+        end,
+        ' | '
+    ) || ')'
+    as parent_names
+    from (
+        with recursive parent_ids(id, parent_id, n) as (
+                select task.id, coalesce(task.parent_id, task.project_id), 0
+                from "Tasks" task
+                where task.project_id = %(p_id)s
+            union all
+                select task.id, parent.parent_id, parent.n + 1
+                from "Tasks" task, parent_ids parent
+                where task.parent_id = parent.id and task.project_id = %(p_id)s
+        )
+        select
+            parent_ids.id, parent_id as parent_id, parent_ids.n
+            from parent_ids
+            order by id, parent_ids.n desc
+    ) as parent_data
+    join "SimpleEntities" on "SimpleEntities".id = parent_data.id
+    join "SimpleEntities" as "SimpleEntities_parent" on "SimpleEntities_parent".id = parent_data.parent_id
+    left outer join "Projects" on parent_data.parent_id = "Projects".id
+    group by parent_data.id, "SimpleEntities".name
+    """ % {'p_id': project_id}
+
+    result = DBSession.connection().execute(sql_query)
+    end = time.time()
+
+    data = [
         {
-            'id': task.id,
-            'name': '%s (%s)' % (
-                task.name,
-                ' | '.join([parent.name for parent in task.parents])
-            )
-        } for task in Task.query.filter(Task.project == project).all()
+            'id': r[0],
+            'name': r[1]
+        } for r in result.fetchall()
     ]
+
+    logger.debug('get_project_task took : %s seconds' % (end - start))
+    return data
 
 
 def create_data_dialog(request, entity_type='Task'):
