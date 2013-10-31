@@ -250,19 +250,27 @@ def get_entity_references(request):
         select  "Links".id,
                 "Links".full_path,
                 "Links".original_filename,
-                "Thumbnail".full_path
+                "Thumbnail".full_path as "thumbnail_full_path",
+                array_agg("Tag".tag_name)
         from "Links" join "Task_References" on "Links".id = "Task_References".link_id
-        join "Tasks" on "Task_References".task_id = "Tasks".id
-        join (select "Links".id,
-                     "Links".full_path,
-                     "SimpleEntities".id as link_id
-                     from "Links" join "SimpleEntities" on "Links".id = "SimpleEntities".thumbnail_id
-             ) as "Thumbnail" on "Thumbnail".link_id = "Links".id
+                     join "Tasks" ON "Task_References".task_id = "Tasks".id
+                     join (select "Links".id,
+                                  "Links".full_path,
+                                  "SimpleEntities".id as link_id
+                                  from "Links" join "SimpleEntities" on "Links".id = "SimpleEntities".thumbnail_id) as "Thumbnail" on "Thumbnail".link_id = "Links".id
+                           join (select "SimpleEntities".name as tag_name, "Links".id as "link_id"
+                                 from "SimpleEntities"
+                                 join "Entity_Tags" on "SimpleEntities".id = "Entity_Tags".tag_id
+                                 join "Links" on "Entity_Tags".entity_id = "Links".id) as "Tag" on "Tag".link_id = "Links".id 
     """
     if entity.entity_type in ['Task', 'Asset', 'Shot', 'Sequence']:
         sql_query += 'where "Tasks".id = %(entity_id)s' % {'entity_id': entity_id}
     elif entity.entity_type == 'Project':
         sql_query += 'where "Tasks".project_id = %(project_id)s' % {'project_id': entity_id}
+
+    sql_query += """group by "Links".id, "thumbnail_full_path"
+    order by "Links".id
+    """
 
     time_time = time.time
     db_start = time_time()
@@ -276,18 +284,8 @@ def get_entity_references(request):
             'id': r[0],
             'full_path': r[1],
             'original_filename': r[2],
-            'thumbnail': r[3],
-            'tags': [
-                i[0]
-                for i in DBSession.connection().execute(
-                    """select "SimpleEntities".name
-                    from "SimpleEntities"
-                    join "Tags" on "SimpleEntities".id = "Tags".id
-                    join "Entity_Tags" on "Tags".id = "Entity_Tags".tag_id
-                    join "Links" on "Entity_Tags".entity_id = "Links".id
-                    where "Links".id = %s""" % r[0]
-                )
-            ],
+            'thumbnail_path': r[3],
+            'tags': r[4],
         } for r in result.fetchall()
     ]
     python_end = time_time()
