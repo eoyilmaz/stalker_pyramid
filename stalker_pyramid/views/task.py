@@ -264,7 +264,6 @@ def convert_to_dgrid_gantt_project_format(projects):
                 project.computed_start if project.computed_start else project.start),
             'total_logged_seconds': project.total_logged_seconds,
             'type': project.entity_type
-            # 'children': [{'$ref': task.id} for task in project.root_tasks]
         } for project in projects
     ]
 
@@ -315,6 +314,29 @@ def convert_to_dgrid_gantt_task_format(tasks):
     ]
 
 
+def query_type(entity_type, type_name):
+    """returns a Type instance either it creates a new one or gets it from DB
+    """
+    if not type_name:
+        return None
+
+    type_query = Type.query.filter_by(target_entity_type=entity_type)
+    type_ = type_query.filter_by(name=type_name).first()
+    if type_name and type_ is None:
+        # create a new Type
+        logger.debug('creating new %s type: %s' % (
+            entity_type.lower(), type_name)
+        )
+        type_ = Type(
+            name=type_name,
+            code=type_name,
+            target_entity_type=entity_type
+        )
+        DBSession.add(type_)
+
+    return type_
+
+
 @view_config(
     route_name='update_task'
 )
@@ -353,6 +375,7 @@ def update_task(request):
     entity_type = request.params.get('entity_type', None)
     code = request.params.get('code', None)
     asset_type = request.params.get('asset_type', None)
+    task_type = request.params.get('task_type', None)
     shot_sequence_id = request.params.get('shot_sequence_id', None)
 
     logger.debug('entity_type         : %s' % entity_type)
@@ -417,26 +440,13 @@ def update_task(request):
         if task.responsible != responsible:
             task.responsible = responsible
 
+    type_name = ''
     if entity_type == 'Asset':
-        type_ = Type.query \
-            .filter_by(target_entity_type='Asset') \
-            .filter_by(name=asset_type) \
-            .first()
+        type_name = asset_type
+    elif entity_type == 'Task':
+        type_name = task_type
 
-        if type_ is None:
-            # create a new Type
-            if not p_checker('Create_Type'):
-                response = Response('You do not have permission to '
-                                    'create a Type instance')
-                response.status_int = 500
-                return response
-            type_ = Type(
-                name=asset_type,
-                code=asset_type,
-                target_entity_type='Asset'
-            )
-
-        task.type = type_
+    task.type = query_type(entity_type, type_name)
 
     if entity_type == 'Shot':
         task.sequence = Sequence.query.filter_by(id=shot_sequence_id).first()
@@ -743,19 +753,9 @@ def get_project_tasks(request):
     """
     # get all the tasks related in the given project
     project_id = request.matchdict.get('id', -1)
-    # project = Project.query.filter_by(id=project_id).first()
 
     start = time.time()
-    #data = [
-    #    {
-    #        'id': task.id,
-    #        'name': '%s (%s)' % (
-    #            task.name,
-    #            ' | '.join([parent.name for parent in task.parents])
-    #        )
-    #        #'name': task.name
-    #    } for task in Task.query.filter(Task.project == project).all()
-    #]
+
     sql_query = """select
     parent_data.id,
     "SimpleEntities".name || ' (' ||
@@ -790,7 +790,6 @@ def get_project_tasks(request):
     """ % {'p_id': project_id}
 
     result = DBSession.connection().execute(sql_query)
-    end = time.time()
 
     data = [
         {
@@ -798,6 +797,7 @@ def get_project_tasks(request):
             'name': r[1]
         } for r in result.fetchall()
     ]
+    end = time.time()
 
     logger.debug('get_project_task took : %s seconds' % (end - start))
     return data
@@ -1009,27 +1009,12 @@ def create_task(request):
 
         kwargs['priority'] = priority
 
-        type_query = Type.query.filter_by(target_entity_type=entity_type)
         type_name = ''
         if entity_type == 'Asset':
             type_name = asset_type
         elif entity_type == 'Task':
             type_name = task_type
-
-        type_ = type_query.filter_by(name=type_name).first()
-
-        if type_name and type_ is None:
-            # create a new Type
-            logger.debug('creating new %s type: %s' % (
-                entity_type.lower(), type_name)
-            )
-            type_ = Type(
-                name=type_name,
-                code=type_name,
-                target_entity_type=entity_type
-            )
-            DBSession.add(type_)
-        kwargs['type'] = type_
+        kwargs['type'] = query_type(entity_type, type_name)
 
         if entity_type == 'Shot':
             sequence = Sequence.query.filter_by(id=shot_sequence_id).first()
