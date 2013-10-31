@@ -215,7 +215,11 @@ def update_user(request):
         location=came_from
     )
 
-
+@view_config(
+    route_name='get_entity_users',
+    renderer='json',
+    permission='List_User'
+)
 @view_config(
     route_name='get_project_users',
     renderer='json',
@@ -235,8 +239,8 @@ def get_users(request):
     # if there is an id it is probably a project
     pid = request.matchdict.get('id')
     if pid:
-        project = Project.query.filter(Project.id == pid).first()
-        users = project.users
+        entity = Entity.query.filter(Entity.id == pid).first()
+        users = entity.users
     else:
         users = User.query.order_by(User.name.asc()).all()
 
