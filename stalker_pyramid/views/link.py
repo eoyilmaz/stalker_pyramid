@@ -247,38 +247,42 @@ def get_entity_references(request):
     # some fancy queries like getting all the references of tasks of a project
     # also with their tags
     sql_query = """
-        select
-            "Links".id,
-            "Links".full_path,
-            "Links".original_filename,
-            "Thumbnail".full_path as "thumbnail_full_path",
-            array_agg("Tag".tag_name)
-        from "Links"
-            join "Task_References" on "Links".id = "Task_References".link_id
-            join "Tasks" ON "Task_References".task_id = "Tasks".id
-            join (
-                select
-                    "Links".id,
-                    "Links".full_path,
-                    "SimpleEntities".id as link_id
-                from "Links"
-                    join "SimpleEntities" on "Links".id = "SimpleEntities".thumbnail_id) as "Thumbnail" on "Thumbnail".link_id = "Links".id
-                    left outer join (
-                        select
-                            "SimpleEntities".name as tag_name,
-                            "Links".id as "link_id"
-                        from "SimpleEntities"
-                            join "Entity_Tags" on "SimpleEntities".id = "Entity_Tags".tag_id
-                            join "Links" on "Entity_Tags".entity_id = "Links".id) as "Tag" on "Tag".link_id = "Links".id 
-    """
-    if entity.entity_type in ['Task', 'Asset', 'Shot', 'Sequence']:
-        sql_query += 'where "Tasks".id = %(entity_id)s' % {'entity_id': entity_id}
-    elif entity.entity_type == 'Project':
-        sql_query += 'where "Tasks".project_id = %(project_id)s' % {'project_id': entity_id}
+    -- select all links assigned to a project tasks or assigned to a task and its children
 
-    sql_query += """group by "Links".id, "thumbnail_full_path", "Links".full_path, "Links".original_filename
+    select
+        "Links".id,
+        "Links".full_path,
+        "Links".original_filename,
+        "Thumbnails".full_path as "thumbnail_full_path",
+        array_agg("SimpleEntities_Tags".name)
+    from "Task_References"
+    join (
+        with recursive parent_ids(id, parent_id, project_id) as (
+            select task.id, task.parent_id, task.project_id from "Tasks" task
+        union all
+            select task.id, parent.parent_id, task.project_id
+            from "Tasks" task, parent_ids parent
+            where task.parent_id = parent.id
+        )
+        select
+            distinct parent_ids.id as id --, coalesce(parent_ids.parent_id, parent_ids.project_id) as parent_id
+            from parent_ids
+
+            where parent_ids.id = %(id)s or parent_ids.parent_id = %(id)s or parent_ids.project_id = %(id)s -- show also children references
+            --where parent_ids.id = 2772 -- show only tasks references
+
+            group by parent_ids.id, parent_id, project_id
+            order by parent_ids.id
+    ) as child_tasks on child_tasks.id = "Task_References".task_id
+    join "Links" on "Task_References".link_id = "Links".id
+    join "SimpleEntities" on "Links".id = "SimpleEntities".id
+    join "Links" as "Thumbnails" on "SimpleEntities".thumbnail_id = "Thumbnails".id
+    join "Entity_Tags" on "Links".id = "Entity_Tags".entity_id
+    join "Tags" on "Entity_Tags".tag_id = "Tags".id
+    join "SimpleEntities" as "SimpleEntities_Tags" on "Tags".id = "SimpleEntities_Tags".id
+    group by "Links".id, "thumbnail_full_path", "Links".full_path, "Links".original_filename
     order by "Links".id
-    """
+    """ % {'id': entity_id}
 
     time_time = time.time
     db_start = time_time()
@@ -322,14 +326,38 @@ def get_entity_references_count(request):
     # some fancy queries like getting all the references of tasks of a project
     # also with their tags
     sql_query = """
-        select  count(*)
-        from "Links" join "Task_References" on "Links".id = "Task_References".link_id
-        join "Tasks" on "Task_References".task_id = "Tasks".id
-    """
-    if entity.entity_type in ['Task', 'Asset', 'Shot', 'Sequence']:
-        sql_query += 'where "Tasks".id = %(entity_id)s' % {'entity_id': entity_id}
-    elif entity.entity_type == 'Project':
-        sql_query += 'where "Tasks".project_id = %(project_id)s' % {'project_id': entity_id}
+    select
+        count(distinct("Links".id))
+        --"Links".full_path,
+        --"Links".original_filename,
+        --"Thumbnails".full_path as "thumbnail_full_path",
+        --array_agg("SimpleEntities_Tags".name)
+    from "Task_References"
+    join (
+        with recursive parent_ids(id, parent_id, project_id) as (
+            select task.id, task.parent_id, task.project_id from "Tasks" task
+        union all
+            select task.id, parent.parent_id, task.project_id
+            from "Tasks" task, parent_ids parent
+            where task.parent_id = parent.id
+        )
+        select
+            distinct parent_ids.id as id --, coalesce(parent_ids.parent_id, parent_ids.project_id) as parent_id
+            from parent_ids
+
+            where parent_ids.id = %(id)s or parent_ids.parent_id = %(id)s or parent_ids.project_id = %(id)s -- show also children references
+            -- where parent_ids.id = 2772 -- show only tasks references
+
+            group by parent_ids.id, parent_id, project_id
+            order by parent_ids.id
+    ) as child_tasks on child_tasks.id = "Task_References".task_id
+    join "Links" on "Task_References".link_id = "Links".id
+    join "SimpleEntities" on "Links".id = "SimpleEntities".id
+    join "Links" as "Thumbnails" on "SimpleEntities".thumbnail_id = "Thumbnails".id
+    left outer join "Entity_Tags" on "Links".id = "Entity_Tags".entity_id
+    left outer join "Tags" on "Entity_Tags".tag_id = "Tags".id
+    left outer join "SimpleEntities" as "SimpleEntities_Tags" on "Tags".id = "SimpleEntities_Tags".id
+    """ % {'id': entity_id}
 
     result = DBSession.connection().execute(sql_query)
     return result.fetchone()[0]

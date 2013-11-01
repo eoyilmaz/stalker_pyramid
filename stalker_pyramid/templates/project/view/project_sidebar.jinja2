@@ -5,29 +5,29 @@
 <ul class='nav nav-list'>
 
     {# Thumbnail #}
-        <li>
-            <div class="media">
-                <a class="pull-left" href="#" style="width: 100px; height: 100px">
-                    <img style='width:auto; height: 100px;'
-                         class="img-thumbnail"
-                         src="{%- if project.thumbnail -%}
-                        /{{ project.thumbnail.full_path }}
-                    {%- else -%}
-                        {{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}
-                    {%- endif -%}">
-                </a>
+    <li>
+        <div class="media">
+            <a class="pull-left" href="#" style="width: 100px; height: 100px">
+                <img style='width:auto; height: 100px;'
+                     class="img-thumbnail"
+                     src="{%- if project.thumbnail -%}
+                    /{{ project.thumbnail.full_path }}
+                {%- else -%}
+                    {{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}
+                {%- endif -%}">
+            </a>
 
-                <div class="media-body">
-                    <h5 class="media-heading">{{ project.name }}
-                    </h5>
+            <div class="media-body">
+                <h5 class="media-heading">{{ project.name }}
+                </h5>
 
-                  <a href="#" class="menu-text">
-                    <i class="icon-edit"></i>
-                    Edit
-                  </a>
-                </div>
+              <a href="#" class="menu-text">
+                <i class="icon-edit"></i>
+                Edit
+              </a>
             </div>
-        </li>
+        </div>
+    </li>
 
 
     {#Dashboard#}
