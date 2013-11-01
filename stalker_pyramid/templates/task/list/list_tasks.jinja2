@@ -556,7 +556,7 @@ require([
     var tasks_memory_store = new Memory();
 
     {% if entity.entity_type == 'User' %}
-        target = '{{ request.route_url('get_user_tasks', id=entity.id) }}';
+        target = '{{ request.route_url('get_entity_tasks', id=entity.id) }}';
     {% elif entity.entity_type == 'Studio' %}
         target = '{{ request.route_url('get_studio_tasks', id=entity.id) }}';
     {% endif %}

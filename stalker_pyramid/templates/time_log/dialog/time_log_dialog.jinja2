@@ -391,8 +391,8 @@ function init_dialog() {
         start_end_date_range_picker.data().daterangepicker.updateFromControl();
 
         // TODO: Change the listener action type
-        start_end_date_range_picker.on('hidden', function () {
-
+        start_end_date_range_picker.on('hidden', function (e) {
+            e.stopPropagation();
             update_hours_to_complete()
 
         });
