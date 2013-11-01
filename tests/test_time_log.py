@@ -54,7 +54,7 @@ class TimeLogViewTestCase(unittest2.TestCase):
         self.status2 = Status(name='Work In Progress', code='WIP')
         self.status3 = Status(name='Pending Review', code='PREV')
         self.status4 = Status(name='Has Revisions', code='HREV')
-        self.status5 = Status(name='Complete', code='CMP')
+        self.status5 = Status(name='Complete', code='CMPL')
 
         self.project_status_list = StatusList(
             name='Project Statuses',
@@ -82,7 +82,8 @@ class TimeLogViewTestCase(unittest2.TestCase):
             name='Test Project',
             code='TProj1',
             status_list=self.project_status_list,
-            repository=self.repo
+            repository=self.repo,
+            lead=self.user1
         )
         DBSession.add(self.proj1)
 
@@ -124,10 +125,82 @@ class TimeLogViewTestCase(unittest2.TestCase):
         to be for a task whose depending tasks already has time logs created
         (This test should be in Stalker)
         """
-        self.fail('test is not implemented yet')
+        # create a new task
+        task2 = Task(
+            name='Test Task 2',
+            project=self.proj1,
+            depends=[self.task1],
+            resources=[self.user1],
+            schedule_timing=4,
+            schedule_unit= 'd',
+            schedule_model='effort',
+            status_list=self.task_status_list
+        )
+        DBSession.add(task2)
+        DBSession.flush()
+        transaction.commit()
+
+        # set the status of task1 to complete
+        self.task1.status = self.status5
+        DBSession.flush()
+        transaction.commit()
+
+        # and now create time logs for task2
+        request = testing.DummyRequest()
+        request.params['task_id'] = task2.id
+        request.params['resource_id'] = self.user1.id
+        request.params['start'] = "Fri, 01 Nov 2013 08:00:00 GMT"
+        request.params['end'] = "Fri, 01 Nov 2013 17:00:00 GMT"
+        response = time_log.create_time_log(request)
+        self.assertEqual(response.status_int, 200)
+        DBSession.add(task2)
+        DBSession.flush()
+        transaction.commit()
+
+        # now because task2 is depending on to the task1
+        # and task2 has now started, entering any new time logs to task1
+        # is forbidden
+        request = testing.DummyRequest()
+        request.params['task_id'] = self.task1.id
+        request.params['resource_id'] = self.user1.id
+        request.params['start'] = "Fri, 02 Nov 2013 08:00:00 GMT"
+        request.params['end'] = "Fri, 02 Nov 2013 17:00:00 GMT"
+
+        response = time_log.create_time_log(request)
+        self.assertEqual(
+            response.status_int, 500
+        )
 
     def test_creating_a_time_log_for_a_task_whose_dependent_tasks_has_not_finished_yet(self):
         """testing if a HTTPServer error will be raised when a time log tried
         to be created for a Task whose dependent tasks has not finished yet
         """
-        self.fail('test is not implemented yet')
+        # create a new task
+        task2 = Task(
+            name='Test Task 2',
+            project=self.proj1,
+            depends=[self.task1],
+            resources=[self.user1],
+            schedule_timing=4,
+            schedule_unit='d',
+            schedule_model='effort',
+            status_list=self.task_status_list
+        )
+        DBSession.add(task2)
+        DBSession.flush()
+        transaction.commit()
+
+        # now because task2 is depending on to the task1
+        # and task1 is not finished yet (where the status is not
+        # set to Complete, we should expect an HTTPServerError()
+        # to be raised
+        request = testing.DummyRequest()
+        request.params['task_id'] = task2.id
+        request.params['resource_id'] = self.user1.id
+        request.params['start'] = "Fri, 01 Nov 2013 08:00:00 GMT"
+        request.params['end'] = "Fri, 01 Nov 2013 17:00:00 GMT"
+
+        response = time_log.create_time_log(request)
+        self.assertEqual(
+            response.status_int, 500
+        )

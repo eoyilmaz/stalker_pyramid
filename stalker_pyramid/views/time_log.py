@@ -148,8 +148,39 @@ def create_time_log(request):
                 start=start_date,
                 end=end_date
             )
+
+            # check the dependent tasks has finished
+            compl = Status.query.filter(Status.code == "CMPL").first()
+            for dep_task in task.depends:
+                if dep_task.status != compl:
+                    response = Response(
+                        'Because one of the dependencies (Task: %s (%s)) has '
+                        'not finished, \n'
+                        'You can not create time logs for this task yet!'
+                        '\n\nPlease, inform %s to finish this task!' %
+                        (dep_task.name, dep_task.id,
+                         [r.name for r in dep_task.resources])
+                    )
+                    response.status_int = 500
+                    return response
+
+            # check the depending tasks
+            for dep_task in task.dependent_of:
+                if len(dep_task.time_logs) > 0:
+                    response = Response(
+                        'Because one of the depending (Task: %s (%s)) has '
+                        'already started, \n'
+                        'You can not create any more time logs for this task!'
+                        '\n\nPlease, inform %s about this situation!' %
+                        (dep_task.name, dep_task.id,
+                         task.responsible.name)
+                    )
+                    response.status_int = 500
+                    return response
+
+            # set the status to wip for this task
             logger.debug('Updating Task (%s) status to WIP!' % task_id)
-            wip = Status.query.filter(Status.code=="WIP").first()
+            wip = Status.query.filter(Status.code == "WIP").first()
             task.status = wip
             DBSession.add(task)
         except OverBookedError as e:

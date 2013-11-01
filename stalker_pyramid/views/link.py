@@ -98,8 +98,8 @@ def assign_thumbnail(request):
         # resize the thumbnail
         file_full_path = convert_file_link_to_full_path(link.full_path)
         img = Image.open(file_full_path)
-        img.thumbnail((512, 512))
-        img.thumbnail((256, 256), Image.ANTIALIAS)
+        img.thumbnail((300, 300))
+        img.thumbnail((150, 150), Image.ANTIALIAS)
         img.save(file_full_path)
 
         DBSession.add(entity)

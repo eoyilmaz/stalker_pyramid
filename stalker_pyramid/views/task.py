@@ -267,17 +267,22 @@ def convert_to_dgrid_gantt_project_format(projects):
         } for project in projects
     ]
 
-
 def convert_to_dgrid_gantt_task_format(tasks):
     """Converts the given tasks to the DGrid Gantt compatible json format.
 
     :param tasks: List of Stalker Tasks.
     :return: json compatible dictionary
     """
+    if not isinstance(tasks, list):
+        response = HTTPServerError()
+        response.text = u'This is a not a list of tasks'
+        raise response
+
     return [
         {
             'bid_timing': task.bid_timing,
             'bid_unit': task.bid_unit,
+            #'children': [{'$ref': task.id} for task in task.children],
             'completed': task.total_logged_seconds / task.schedule_seconds,
             'dependencies': [
                 {
@@ -294,12 +299,12 @@ def convert_to_dgrid_gantt_task_format(tasks):
             'name': task.name,
             'parent': task.parent.id if task.parent else task.project.id,
             'priority': task.priority,
+            'resources': [
+                {'id': resource.id, 'name': resource.name} for resource in task.resources] if not task.is_container else [],
             'responsible': {
                 'id': task.responsible.id,
                 'name': task.responsible.name
             },
-            'resources': [
-                {'id': resource.id, 'name': resource.name} for resource in task.resources] if not task.is_container else [],
             'schedule_constraint': task.schedule_constraint,
             'schedule_model': task.schedule_model,
             'schedule_seconds': task.schedule_seconds,
@@ -309,7 +314,6 @@ def convert_to_dgrid_gantt_task_format(tasks):
                 task.computed_start if task.computed_start else task.start),
             'total_logged_seconds': task.total_logged_seconds,
             'type': task.entity_type,
-            # 'children': [{'$ref': task.id} for task in task.children]
         } for task in tasks
     ]
 
