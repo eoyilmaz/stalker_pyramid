@@ -1,31 +1,28 @@
 # -*- coding: utf-8 -*-
 # Stalker Pyramid a Web Base Production Asset Management System
 # Copyright (C) 2009-2013 Erkan Ozgur Yilmaz
-# 
+#
 # This file is part of Stalker Pyramid.
-# 
+#
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
 # License as published by the Free Software Foundation;
 # version 2.1 of the License.
-# 
+#
 # This library is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # Lesser General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
+import time
 import datetime
-# import colander
-# from deform import widget
-# import deform
 
-from pyramid.httpexceptions import (HTTPFound, HTTPOk, HTTPServerError,
-                                    HTTPForbidden)
+from pyramid.httpexceptions import (HTTPFound, HTTPOk, HTTPServerError)
 from pyramid.response import Response
-from pyramid.security import authenticated_userid, forget, remember
+from pyramid.security import forget, remember
 from pyramid.view import view_config, forbidden_view_config
 from sqlalchemy import or_
 
@@ -36,8 +33,7 @@ from stalker.db import DBSession
 from stalker_pyramid.views import (log_param, get_logged_in_user,
                                    PermissionChecker, get_multi_integer,
                                    get_tags, milliseconds_since_epoch,
-                                   multi_permission_checker,
-                                   get_multi_string)
+                                   multi_permission_checker)
 
 import logging
 
@@ -234,50 +230,119 @@ def get_users(request):
     """returns all the users in database
     """
     # if there is a simple flag, just return ids and names and login
-    simple = request.params.get('simple')
+    #simple = request.params.get('simple')
 
     # if there is an id it is probably a project
-    pid = request.matchdict.get('id')
-    if pid:
-        entity = Entity.query.filter(Entity.id == pid).first()
-        users = entity.users
-    else:
-        users = User.query.order_by(User.name.asc()).all()
+    entity_id = request.matchdict.get('id')
 
-    if simple:
-        return [
-            {
-                'id': user.id,
-                'name': user.name,
-                'login': user.login,
-            }
-            for user in users
-        ]
-    else:
-        return [
-            {
-                'id': user.id,
-                'name': user.name,
-                'login': user.login,
-                'email': user.email,
-                'departments': [
-                    {
-                        'id': department.id,
-                        'name': department.name
-                    } for department in user.departments
-                ],
-                'groups': [
-                    {
-                        'id': group.id,
-                        'name': group.name
-                    } for group in user.groups
-                ],
-                'tasksCount': len(user.tasks),
-                'ticketsCount': len(user.open_tickets),
-                'thumbnail_path': user.thumbnail.full_path if user.thumbnail else None
-            }
-            for user in users
-        ]
+    entity_type = None
+    if entity_id:
+        sql_query = \
+            'select entity_type from "SimpleEntities" where id=%s' % entity_id
+        data = DBSession.connection().execute(sql_query).fetchone()
+        entity_type = data[0] if data else None
+
+    logger.debug('entity_id  : %s' % entity_id)
+    logger.debug('entity_type: %s' % entity_type)
+
+    if entity_id and entity_type not in ['Project', 'Department', 'Group', 'Task']:
+        # there is no entity_type for that entity
+        return []
+
+    start = time.time()
+    sql_query = """select
+        "Users".id,
+        "SimpleEntities".name,
+        "Users".login,
+        "Users".email,
+        user_departments."dep_ids",
+        user_departments."dep_names",
+        user_groups."group_ids",
+        user_groups."group_names",
+        tasks.task_count,
+        tickets.ticket_count,
+        "Links".full_path
+    from "SimpleEntities"
+    join "Users" on "SimpleEntities".id = "Users".id
+    left outer join (
+        select
+            uid,
+            array_agg(did) as dep_ids,
+            array_agg(name) as dep_names
+        from "User_Departments"
+        join "SimpleEntities" on "User_Departments".did = "SimpleEntities".id
+        group by uid
+    ) as user_departments on user_departments.uid = "Users".id
+    left outer join (
+        select
+            uid,
+            array_agg(gid) as group_ids,
+            array_agg(name) as group_names
+        from "User_Groups"
+        join "SimpleEntities" on "User_Groups".gid = "SimpleEntities".id
+        group by uid
+    ) as user_groups on user_groups.uid = "Users".id
+    left outer join (
+        select resource_id, count(task_id) as task_count from "Task_Resources" group by resource_id
+    ) as tasks on tasks.resource_id = "Users".id
+    left outer join (
+        select
+            owner_id,
+            count("Tickets".id) as ticket_count
+        from "Tickets"
+        join "SimpleEntities" on "Tickets".status_id = "SimpleEntities".id
+        where "SimpleEntities".name = 'New'
+        group by owner_id, name
+    ) as tickets on tickets.owner_id = "Users".id
+    left outer join "Links" on "SimpleEntities".thumbnail_id = "Links".id
+    """
+
+    if entity_type == "Project":
+        sql_query += """join "Project_Users" on "Users".id = "Project_Users".user_id
+        where "Project_Users".project_id = %(id)s
+        """ % {'id': entity_id}
+    elif entity_type == "Department":
+        sql_query += """join "User_Departments" on "Users".id = "User_Departments".uid
+        where "User_Departments".did = %(id)s
+        """ % {'id': entity_id}
+    elif entity_type == "Group":
+        sql_query += """join "User_Groups" on "Users".id = "User_Groups".uid
+        where "User_Groups".gid = %(id)s
+        """ % {'id': entity_id}
+    elif entity_type == "Task":
+        sql_query += """join "Task_Resources" on "Users".id = "Task_Resources".resource_id
+        where "Task_Resources".task_id = %(id)s
+        """ % {'id': entity_id}
+
+    result = DBSession.connection().execute(sql_query)
+    data = [
+        {
+            'id': r[0],
+            'name': r[1],
+            'login': r[2],
+            'email': r[3],
+            'departments': [
+                {
+                    'id': r[4][i],
+                    'name': r[5][i]
+                } for i, a in enumerate(r[4])
+            ] if r[4] else [],
+            'groups': [
+                {
+                    'id': r[6],
+                    'name': r[7]
+                } for i in range(len(r[6]))
+            ] if r[6] else [],
+            'tasksCount': r[8] or 0,
+            'ticketsCount': r[9] or 0,
+            'thumbnail_path': r[10]
+        } for r in result.fetchall()
+    ]
+
+    end = time.time()
+    logger.debug('get_users took : %s seconds for %s rows' %
+                 ((end - start), len(data)))
+    return data
 
 
 # @view_config(
