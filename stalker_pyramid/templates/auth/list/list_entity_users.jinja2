@@ -85,48 +85,50 @@
 
     {% if entity.entity_type == 'Studio' %}
 
-            {% if has_permission('Create_User') %}
+        {% if has_permission('Create_User') %}
 
-                <div class="row-fluid">
-                    <div class="btn-toolbar">
-                        <div class="btn-group">
-                            <button class="btn btn-small btn-success">
-                                <i class="icon-edit bigger-120"></i>
-                                <a class="white"
-{#                                   data-target="#dialog_template"#}
-{#                                   data-toggle="modal"#}
-{#                                   data-keyboard=false#}
-                                   href="{{ request.route_url('user_dialog',id='-1',mode='create') }}">Create User
-                                </a>
-                            </button>
-                        </div>
+            <div class="row-fluid">
+                <div class="btn-toolbar">
+                    <div class="btn-group">
+                        <button class="btn btn-small btn-success">
+                            <i class="icon-edit bigger-120"></i>
+                            <a class="white"
+                                    {#                                   data-target="#dialog_template"#}
+                                    {#                                   data-toggle="modal"#}
+                                    {#                                   data-keyboard=false#}
+                               href="{{ request.route_url('user_dialog',id='-1',mode='create') }}">Create
+                                User
+                            </a>
+                        </button>
                     </div>
                 </div>
-
-            {% endif %}
-        {% else %}
-
-            {% if has_permission('Update_User') %}
-
-                <div class="row-fluid">
-                    <div class="btn-toolbar" >
-                        <div class="btn-group">
-                            <button class="btn btn-small btn-success">
-                                <i class="icon-edit bigger-120"></i>
-                                <a class="white"
-                                   data-target="#dialog_template"
-                                   data-toggle="modal"
-                                   data-keyboard=false
-                                   href="{{ request.route_url('append_entities_to_entity_dialog', id=entity.id, entities='User') }}?came_from={{ request.current_route_path() }}">Append User
-                                </a>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-            {% endif %}
+            </div>
 
         {% endif %}
+    {% else %}
+
+        {% if has_permission('Update_User') %}
+
+            <div class="row-fluid">
+                <div class="btn-toolbar">
+                    <div class="btn-group">
+                        <button class="btn btn-small btn-success">
+                            <i class="icon-edit bigger-120"></i>
+                            <a class="white"
+                               data-target="#dialog_template"
+                               data-toggle="modal"
+                               data-keyboard=false
+                               href="{{ request.route_url('append_entities_to_entity_dialog', id=entity.id, entities='User') }}?came_from={{ request.current_route_path() }}">Append
+                                User
+                            </a>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        {% endif %}
+
+    {% endif %}
 
     <div id="loading_spinner" class="well well-sm">
 
@@ -189,38 +191,50 @@
 
 
 
-    <script>
-        // fill users table with dynamic data
-
-        $.getJSON('/entities/{{ entity.id }}/users/').then(function (data) {
-
-            var users = data;
-            var user_template = doT.template($('#tmpl_userRow').html());
-
-            // wait until document is ready
-            $(function () {
-                var i;
-                var table_body = $('#users_table>tbody');
-                for (i = 0; i < data.length; i++) {
-                    data[i].link = '/users/' + data[i].id + '/view';
-                    // fix dates
 
 
-                    if (data[i].thumbnail_path == null) {
-                        data[i].thumbnail_path = '{{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_0.png") }}';
+    <script type="text/javascript">
+
+        $(document).ready(function () {
+
+            var address = '';
+
+            {% if entity.entity_type == 'Studio' %}
+                address = '/users/'
+            {% else %}
+                address = '/entities/{{ entity.id }}/users/';
+            {% endif %}
+
+            $.getJSON(address).then(function (data) {
+
+                var users = data;
+                var user_template = doT.template($('#tmpl_userRow').html());
+
+                // wait until document is ready
+                $(function () {
+                    var i;
+                    var table_body = $('#users_table>tbody');
+                    for (i = 0; i < data.length; i++) {
+                        data[i].link = '/users/' + data[i].id + '/view';
+                        // fix dates
+
+
+                        if (data[i].thumbnail_path == null) {
+                            data[i].thumbnail_path = '{{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_0.png") }}';
+                        }
+                        else {
+                            data[i].thumbnail_path = '/' + data[i].thumbnail_path;
+                        }
+                        // append it to the table
+                        table_body.append(user_template(data[i]));
                     }
-                    else {
-                        data[i].thumbnail_path = '/' + data[i].thumbnail_path;
-                    }
-                    // append it to the table
-                    table_body.append(user_template(data[i]));
-                }
 
-                var oTable1 = $('#users_table').dataTable();
+                    var oTable1 = $('#users_table').dataTable();
 
-                $('#loading_spinner').hide();
-                $('#content').show();
+                    $('#loading_spinner').hide();
+                    $('#content').show();
 
+                });
             });
         });
 

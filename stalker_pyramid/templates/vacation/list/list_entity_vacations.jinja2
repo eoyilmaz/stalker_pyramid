@@ -75,7 +75,7 @@
     <script type="text/javascript">
         $(document).ready(function () {
 
-            $.getJSON('/users/{{ entity.id }}/events/?keys=vacation').then(function (data) {
+            $.getJSON('/entities/{{ entity.id }}/events/?keys=vacation').then(function (data) {
 
 
                 var events = [];

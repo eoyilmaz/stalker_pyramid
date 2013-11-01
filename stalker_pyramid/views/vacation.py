@@ -55,8 +55,10 @@ def create_vacation_dialog(request):
     # get logged in user
     logged_in_user = get_logged_in_user(request)
 
-    user_id = int(request.matchdict.get('id', -1))
-    user = User.query.filter(User.user_id == user_id).first()
+    entity_id = int(request.matchdict.get('id', -1))
+    entity = Entity.query.filter(Entity.entity_id == entity_id).first()
+
+    logger.debug('entity %s '% entity)
 
     vacation_types = Type.query.filter(
         Type.target_entity_type == 'Vacation').filter(Type.name !='StudioWide').all()
@@ -67,8 +69,8 @@ def create_vacation_dialog(request):
     if not studio:
         studio = defaults
 
-    if not user:
-        user = studio
+    if entity.entity_type == 'Studio':
+        # user = studio
         vacation_types = Type.query.filter(
         Type.target_entity_type == 'Vacation').filter(Type.name =='StudioWide').all()
 
@@ -77,7 +79,7 @@ def create_vacation_dialog(request):
         'has_permission': PermissionChecker(request),
         'studio': studio,
         'logged_in_user': logged_in_user,
-        'user': user,
+        'entity': entity,
         'came_from':came_from,
         'types': vacation_types,
         'milliseconds_since_epoch': milliseconds_since_epoch
@@ -121,7 +123,7 @@ def update_vacation_dialog(request):
         'has_permission': PermissionChecker(request),
         'studio': studio,
         'logged_in_user': logged_in_user,
-        'user': user,
+        'entity': user,
         'vacation': vacation,
         'came_from':came_from,
         'types': vacation_types,

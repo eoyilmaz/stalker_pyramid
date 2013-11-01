@@ -112,3 +112,29 @@
         </div>
     </div>
 </div>
+
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/fuelux/fuelux.spinner.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/fuelux/fuelux.wizard.min.js") }}'></script>
+
+<script type="text/javascript">
+
+        $(document).ready(function () {
+
+            $('#fuelux-wizard').ace_wizard().on('change',function (e, info) {
+                if (info.step == 1) {
+                    if (!$('#user_form').valid()) return false;
+                }
+            }).on('finished',function (e) {
+                    bootbox.dialog("Thank you! Your information was successfully saved!", [
+                          {
+                              "label": "OK",
+                              "class": "btn-small btn-primary"
+                          }
+                    ]
+                    );
+                }).on('stepclick', function (e) {
+                    //return false;//prevent clicking on steps
+                });
+        });
+
+</script>

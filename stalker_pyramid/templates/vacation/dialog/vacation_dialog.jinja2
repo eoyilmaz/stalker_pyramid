@@ -32,10 +32,18 @@
                        for='vacation_type'>Type</label>
 
                 <div class='span10'>
-                    <select id='vacation_type'
-                            class='input-block-level'
-                            name='type_name'
-                            required></select>
+{#                    <select id='vacation_type'#}
+{#                            class='input-block-level'#}
+{#                            name='type_name'#}
+{#                            required></select>#}
+
+                    <input id='vacation_type'
+                               class='input-block-level'
+                               name='type_name'
+                               type='text'
+                               is_updating=false
+                               {% if mode=='update' %}{% if vacation.type %}value="{{ vacation.type.name }}"{% endif %}{% endif %}
+                               >
                 </div>
             </div>
 
@@ -108,6 +116,8 @@
 
 <script>
 function init_dialog() {
+
+
     console.debug('starting to initialize vacation dialog!!!');
 
     $('#dialog_template_label').find('span').remove();
@@ -135,33 +145,57 @@ function init_dialog() {
     //Type
 
     var vacation_type = $('#vacation_type');
-
-    {% raw %}
-    var type_option_template = doT.template(
-            '<option value={{=it.id}} {{=it.selected}}>{{=it.name}}</option>'
-    );
-    {% endraw %}
+        // set the field to updating mode
 
 
 
-    {% for type in types %}
+    $.getJSON('/types/?target_entity_type=Vacation').then(function(available_types){
+            vacation_type.autocomplete({
+                delay: 0,
+                source: available_types,
+                minLength: 0
+            });
+{#            if (type !== ''){#}
+{#                vacation_type.val(type);#}
+{#            }#}
 
-        var selected = '';
+    });
 
-        {% if mode == 'update' %}
+    {% if entity.entity_type == 'Studio' %}
 
-            {% if vacation.type.id == type.id %}
+        vacation_type.val('{{ types[0].name }}');
+        vacation_type.attr('disabled', true)
 
-                selected = 'selected';
+    {% endif %}
 
-            {% endif %}
-        {% endif %}
-
-
-        var data = {id: '{{ type.name }}', name: '{{ type.name }}', selected: selected};
-        vacation_type.append(type_option_template(data));
-
-    {% endfor %}
+{#    var vacation_type = $('#vacation_type');#}
+{##}
+{#    {% raw %}#}
+{#    var type_option_template = doT.template(#}
+{#            '<option value={{=it.id}} {{=it.selected}}>{{=it.name}}</option>'#}
+{#    );#}
+{#    {% endraw %}#}
+{##}
+{##}
+{##}
+{#    {% for type in types %}#}
+{##}
+{#        var selected = '';#}
+{##}
+{#        {% if mode == 'update' %}#}
+{##}
+{#            {% if vacation.type.id == type.id %}#}
+{##}
+{#                selected = 'selected';#}
+{##}
+{#            {% endif %}#}
+{#        {% endif %}#}
+{##}
+{##}
+{#        var data = {id: '{{ type.name }}', name: '{{ type.name }}', selected: selected};#}
+{#        vacation_type.append(type_option_template(data));#}
+{##}
+{#    {% endfor %}#}
 
 
 
@@ -176,7 +210,7 @@ function init_dialog() {
         //User
 
         var vacation_user = $('#vacation_user');
-        vacation_user.append('<option value={{ user.id }} selected>{{ user.name }}</option>');
+        vacation_user.append('<option value={{ entity.id }} selected>{{ entity.name }}</option>');
 
 
 
@@ -190,7 +224,7 @@ function init_dialog() {
         //User
 
         var vacation_user = $('#vacation_user');
-        vacation_user.append('<option value={{ user.id }} selected>{{ user.name }}</option>');
+        vacation_user.append('<option value={{ entity.id }} selected>{{ entity.name }}</option>');
 
 
 
@@ -204,6 +238,9 @@ function init_dialog() {
         end_time_value = end_date_value;
 
     {% endif %}
+
+
+
 
     {# ***************************************************************** #}
     {# Get Start End  #}
@@ -253,6 +290,11 @@ function init_dialog() {
 
         start_end_date_range_picker.data().daterangepicker.updateFromControl();
 
+        start_end_date_range_picker.on('hidden', function (e) {
+            e.stopPropagation();
+
+        });
+
 
     });
 
@@ -287,18 +329,21 @@ function init_dialog() {
     {# ***************************************************************** #}
     {# Submit Button #}
 
-    $('#dialog_template_submit_button').on('click', function () {
+    $('#dialog_template_submit_button').on('click', function (e) {
+
+        e.stopPropagation();
+        e.preventDefault();
 
         var vacation_form = $('#vacation_form');
+    {% if entity.entity_type != 'Studio' %}
 
-        {#        {% if types | count > 0 %}#}
-        {##}
-        {#            if (vacation_type.val() == 'StudioWide') {#}
-        {#                $('#message').show();#}
-        {#                $('#message').append("<p><strong><i class='icon-danger'>You can not create a vacation with type StudioWide</p>")#}
-        {#                return;#}
-        {#            }#}
-        {#        {% endif %}#}
+        if (vacation_type.val() == 'StudioWide') {
+            $('#message').show();
+            $('#message').append("<p><strong><i class='icon-danger'>You can not create a vacation with type StudioWide</p>")
+            return;
+        }
+        {% endif %}
+
 
         if (vacation_form.validate()) {
 
@@ -381,8 +426,11 @@ function init_dialog() {
 
 <script type="text/javascript">
     function destruct_dialog() {
+        $('#vacation_user').unbind();
+        $('#vacation_type').unbind();
         $('#start_end_date_range_picker').unbind();
         $('#dialog_template_submit_button').unbind();
+
         $('#dialog_template').data('modal', null);
     }
 </script>
