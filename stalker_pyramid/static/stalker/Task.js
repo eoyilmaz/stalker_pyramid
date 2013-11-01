@@ -19,7 +19,7 @@ define([
     "dojo/_base/declare"
 ], function (declare) {
     'use strict';
-    return declare('GanttTask', null, {
+    return declare('Task', null, {
         id: null,
 
         name: '',

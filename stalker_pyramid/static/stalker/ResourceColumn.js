@@ -21,8 +21,9 @@ define([
     'dojo/_base/lang',
     "dojo/date/locale",
     "put-selector/put",
-    'stalker/GanttTask'
-], function (domConstruct, array, lang, locale, put, GanttTask) {
+    'stalker/Resource',
+    'stalker/TimeLog'
+], function (domConstruct, array, lang, locale, put, Resource, TimeLog) {
     // module:
     //     ganttColumn
     // summary:
@@ -91,8 +92,8 @@ define([
             // Add empty content to the cell to avoid it collapsing in IE
             td.innerHTML = "&nbsp;";
 
-            // create a GanttTask instance
-            var task = new GanttTask(data);
+            // create a TimeLog instance
+            var resource = new Resource(data);
 
             // Ensure the start time is always milliseconds since epoch
             // and not a Date object
@@ -103,10 +104,10 @@ define([
             var chartTimeScale = column.scale,
 
             // The start position of the task bar for this task, in pixels
-                left = (task.start - column.start) / chartTimeScale,
+                left = (resource.start - column.start) / chartTimeScale,
 
             // The width of the task bar for this task, in pixels
-                width = (task.end - task.start) / chartTimeScale;
+                width = (resource.end - resource.start) / chartTimeScale;
 
             // Create the colored task bar representing the duration of a task
 
@@ -116,14 +117,14 @@ define([
 //            };
 
             var taskBar;
-            if (task.type === 'Project') {
-                taskBar = $($.parseHTML(templates.projectBar(task)));
-            } else if (task.type === 'Task' || task.type === 'Asset' ||
-                       task.type === 'Shot' || task.type === 'Sequence') {
-                if (task.hasChildren) {
-                    taskBar = $($.parseHTML(templates.parentTaskBar(task)));
+            if (resource.type === 'Project') {
+                taskBar = $($.parseHTML(templates.projectBar(resource)));
+            } else if (resource.type === 'Task' || resource.type === 'Asset' ||
+                       resource.type === 'Shot' || resource.type === 'Sequence') {
+                if (resource.hasChildren) {
+                    taskBar = $($.parseHTML(templates.parentTaskBar(resource)));
                 } else {
-                    taskBar = $($.parseHTML(templates.taskBar(task)));
+                    taskBar = $($.parseHTML(templates.taskBar(resource)));
                 }
             }
 
@@ -133,9 +134,6 @@ define([
             });
 
             $(td).append(taskBar);
-
-            // Create the overlay for the amount of the task that has been completed
-            //var completeBar = put(td, "span.completed-bar[style=left:" + left + "px;width:" + width * object.completed + "px]");
 
             // Save the location of the right-hand edge for drawing depedency lines later
             cell.finished = left + width;
@@ -150,67 +148,6 @@ define([
             var today_as_millis = (new Date()).getTime();
             put(td, "div.today[style=left:" + Math.floor((today_as_millis - column.start) / column.scale) + "px;]");
 
-            // TODO: enable this part later
-//            // Create arrows for each dependency, but only after all other rows
-//            // have been rendered so that they can be retrieved and measured
-//            // properly
-//            setTimeout(function () {
-//                // First, create a special column set row (which contains
-//                // elements that have synced horizontal scrolling) so that all
-//                // the dependency lines can be grouped together and will be
-//                // properly scrolled horizontally along with the rest of the
-//                // rows
-//                if (!dependencyRow) {
-//                    // This intermediate element is necessary for the
-//                    // dependency lines to render outside of the zero height
-//                    // dependency row;
-//                    //    the outer element has a height of zero, the inner
-//                    //    element has height to accommodate all the lines
-//                    dependencyRow = put(getColumnSetElement(firstCell), "-div.dependency-container");
-//
-//                    // Create the scrolling container for the gantt dependency
-//                    // arrows
-//                    dependencyRow = put(dependencyRow, "div.dgrid-column-set.dependency-row[data-dgrid-column-set-id=1]");
-//
-//                    // Create the actual container for the dependency arrows
-//                    // inside the scrolling container this will scroll within
-//                    // the .dependency-row
-//                    dependencyRow = put(dependencyRow, "div.dependencies.dgrid-column-chart");
-//                }
-//
-//                array.forEach(object.dependencies, function (dependency) {
-//                    // This corresponds to the dependency DOM node, the
-//                    // starting point of the dependency line
-//                    var cell = grid.cell(dependency, column.id).element;
-//
-//                    // create the horizontal line part of the arrow
-//                    var hline = put(dependencyRow, "span.dep-horizontal-line");
-//
-//                    // we find the location of the starting cell and use that
-//                    // to place the horizontal line
-//                    var top = getColumnSetElement(cell).offsetTop + 10;
-//                    hline.style.top = top + "px";
-//                    hline.style.left = cell.finished + 5 + "px";
-//
-//                    // the start variable is the starting point of the target
-//                    // dependent cell
-//                    hline.style.width = left - cell.finished - 4 + "px";
-//
-//                    // now we create the vertical line and position it
-//                    var vline = put(dependencyRow, "span.dep-vertical-line");
-//
-//                    vline.style.top = top + 2 + "px";
-//                    vline.style.left = left + "px";
-//
-//                    var tdTop = getColumnSetElement(td).offsetTop - 5;
-//                    vline.style.height = tdTop - getColumnSetElement(cell).offsetTop + "px";
-//                    // now we create the arrow at the end of the line, position
-//                    // it correctly
-//                    var arrow = put(dependencyRow, "span.ui-icon.down-arrow");
-//                    arrow.style.top = tdTop + "px";
-//                    arrow.style.left = left - 7 + "px";
-//                });
-//            }, 0);
         };
 
         column.refresh = function (kwargs) {

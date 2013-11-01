@@ -8,9 +8,9 @@ define([
     "dgrid/tree",
     "dgrid/extensions/DijitRegistry",
     "put-selector/put",
-    "stalker/GanttColumn"
+    "stalker/ResourceColumn"
 ], function (declare, lang, OnDemandGrid, ColumnSet, Selection, Keyboard, tree,
-             DijitRegistry, put, GanttColumn) {
+             DijitRegistry, put, ResourceColumn) {
     // module:
     //     GanttGrid
     // summary:
@@ -130,7 +130,7 @@ define([
                                 var dir = this.grid.isRTL ? "right" : "left",
                                     cls = ".dgrid-expando-icon",
                                     node;
-                                if (hasChildren){
+                                if (hasChildren) {
                                     cls += ".ui-icon.ui-icon-triangle-1-" + (expanded ? "se" : "e");
                                 }
                                 node = put("div" + cls + "[style=margin-" + dir + ": " +
@@ -139,116 +139,8 @@ define([
                                 return node;
                             }
                         }
-                    ),
-                    complete: {
-                        label: '%',
-                        sortable: false,
-                        get: function (object) {
-                            return object;
-                        },
-                        formatter: function (object) {
-                            var p_complete, p_complete_str, p_complete_rounded, bg_color, font_weight;
-                            p_complete = object.schedule_seconds > 0 ? object.total_logged_seconds / object.schedule_seconds * 100 : 0;
+                    )
 
-                            font_weight = 'normal';
-
-                            // check if it has a floating part
-
-                            p_complete_str = p_complete.toFixed(0);
-                            p_complete_rounded = (Math.floor(p_complete / 10) * 10).toFixed(0);
-
-                            return '<div class="percentComplete' + p_complete_rounded + '">' + p_complete_str + '</div>';
-                        }
-                    },
-                    resource: {
-                        label: "Resource",
-                        sortable: false,
-                        get: function (object) {
-                            return object;
-                        },
-                        formatter: function (object) {
-                            var ret = '', i, resource;
-                            if (object.resources) {
-                                for (i = 0; i < object.resources.length; i++) {
-                                    resource = object.resources[i];
-                                    ret = ret + (ret === "" ? "" : ", ") + templates.resourceLink(resource);
-                                }
-                            }
-                            return ret;
-                        }
-                    },
-                    timing: {
-                        label: 'Timing',
-                        sortable: false,
-                        get: function (object) {
-                            return object;
-                        },
-                        formatter: function (object) {
-
-                            // map time unit names
-                            var time_unit_names = {
-                                'h': 'Hour',
-                                'd': 'Day',
-                                'w': 'Week',
-                                'm': 'Month',
-                                'y': 'Year'
-                            }, timing = '';
-
-                            if (object.type !== 'Project') {
-                                if (!object.hasChildren) {
-                                    // do not add schedule model if it is the default (effort)
-                                    if (object.schedule_model !== 'effort') {
-                                        timing += object.schedule_model.toUpperCase()[0] + ': ';
-                                    }
-                                    if (Math.floor(object.schedule_timing) === object.schedule_timing) {
-                                        timing += object.schedule_timing;
-                                    } else {
-                                        timing += (object.schedule_timing).toFixed(1);
-                                    }
-
-                                    timing += ' ' + time_unit_names[object.schedule_unit];
-
-                                    // make it plural
-                                    if (object.schedule_timing > 1) {
-                                        timing += 's';
-                                    }
-                                }
-                            }
-                            return timing;
-                        }
-                    },
-                    start: {
-                        label: 'Start',
-                        sortable: false,
-                        get: function (object) {
-                            return object;
-                        },
-                        formatter: function (object) {
-                            var start_date = new Date(object.start);
-                            return start_date.format("yyyy-mm-dd HH:MM");
-                        }
-                    },
-                    end: {
-                        label: 'End',
-                        sortable: false,
-                        get: function (object) {
-                            return object;
-                        },
-                        formatter: function (object) {
-                            var end_date = new Date(object.end);
-                            return end_date.format("yyyy-mm-dd HH:MM");
-                        }
-                    },
-//                    dependencies: {
-//                        label: 'Dependencies',
-//                        sortable: false,
-//                        get: function(object) {
-//                            return object;
-//                        },
-//                        formatter: function(object) {
-//                            return object;
-//                        }
-//                    }
                 }
             ],
 
@@ -257,7 +149,7 @@ define([
             // render
             [
                 {
-                    chart: new GanttColumn({
+                    chart: new ResourceColumn({
                         scale: 4000000,
                         start: new Date().clearTime().getTime() - 15552000000 * 1.5,
                         end: new Date().clearTime().getTime() + 15552000000 * 3 + 86400000 - 1+(6 - new Date().getDay()) * 86400000,

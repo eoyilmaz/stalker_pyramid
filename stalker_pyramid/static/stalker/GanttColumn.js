@@ -21,8 +21,8 @@ define([
     'dojo/_base/lang',
     "dojo/date/locale",
     "put-selector/put",
-    'stalker/GanttTask'
-], function (domConstruct, array, lang, locale, put, GanttTask) {
+    'stalker/Task'
+], function (domConstruct, array, lang, locale, put, Task) {
     // module:
     //     ganttColumn
     // summary:
@@ -91,8 +91,8 @@ define([
             // Add empty content to the cell to avoid it collapsing in IE
             td.innerHTML = "&nbsp;";
 
-            // create a GanttTask instance
-            var task = new GanttTask(data);
+            // create a Task instance
+            var task = new Task(data);
 
             // Ensure the start time is always milliseconds since epoch
             // and not a Date object
