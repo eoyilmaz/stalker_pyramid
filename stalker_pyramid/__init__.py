@@ -430,10 +430,10 @@ def main(global_config, **settings):
     # *************************************************************************
     # TimeLog
 
-    config.add_route('entity_time_log_dialog', 'entities/{id}/timelogs/create/dialog')
-    config.add_route('task_time_log_dialog', 'tasks/{id}/timelogs/create/dialog')
-    config.add_route('user_time_log_dialog', 'users/{id}/timelogs/create/dialog')
-    config.add_route('asset_time_log_dialog', 'assets/{id}/timelogs/create/dialog')
+    config.add_route('entity_time_log_dialog',   'entities/{id}/timelogs/create/dialog')
+    config.add_route('task_time_log_dialog',     'tasks/{id}/timelogs/create/dialog')
+    config.add_route('user_time_log_dialog',     'users/{id}/timelogs/create/dialog')
+    config.add_route('asset_time_log_dialog',    'assets/{id}/timelogs/create/dialog')
     config.add_route('sequence_time_log_dialog', 'sequences/{id}/timelogs/create/dialog')
     config.add_route('shot_time_log_dialog', 'shots/{id}/timelogs/create/dialog')
     # TODO: Change the TimeLog Entity plural name so we can use 'time_logs' string here.

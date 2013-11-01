@@ -146,13 +146,30 @@
         </button>
         <p>
             <strong>
-                {#                <i class="icon-ok"></i>#}
                 {{ message_type.title() }}!
             </strong>
             {{ message_content|safe }}
         </p>
     </div>
 {% endfor %}
+
+{% raw %}
+<script id="tmpl_flash_message" type="text/x-dot-template">
+    <div class="flash-message alert alert-{{= it.type }} text-center hide">
+        <button type="button" class="close" data-dismiss="alert">
+            <i class="icon-remove"></i>
+        </button>
+        <p>
+            <strong>
+                {{= it.type }}!
+            </strong>
+            {{= it.message }}
+        </p>
+    </div>
+</script>
+{% endraw %}
+
+
 
 {# CONTENT #}
 {% block content %}
@@ -280,6 +297,20 @@
         $(function () {
             $('.flash-message').slideToggle();
         });
+
+        var flash_message = function(settings){
+            console.debug('settings: ', settings);
+            settings.title = settings.title || '';
+            settings.message = settings.message || '';
+            settings.type = settings.type || 'success';
+            console.debug('settings: ', settings);
+
+            var template = doT.template($('#tmpl_flash_message').text());
+            $('body').prepend($.parseHTML(template(settings)));
+
+            var flash_dialog = $('.flash-message');
+            flash_dialog.slideToggle();
+        }
     </script>
 
     {# Add came_from attribute to all a's #}
@@ -343,7 +374,6 @@
         $(function () {
             var event_dialog = $('#dialog_template');
             event_dialog.on('shown', function () {
-
                 init_dialog();
             });
             event_dialog.on('hidden', function () {

@@ -364,6 +364,15 @@
                             </a>
                         </li>
 
+                        <li>
+                            <a id='add_time_log_button'
+                               class="green"
+                               href='#'>
+                                <i class="'ui-icon icon-time bigger-120">&nbsp</i>
+                                Add Time Log
+                            </a>
+                        </li>
+
 
                     </ul>
                 </div>
@@ -662,6 +671,11 @@ require([
                 'href',
                 '/tasks/' + selected_ids[0] + '/update/dialog'
             );
+
+            $('#add_time_log_button').attr(
+                'href',
+                '/entities/' + selected_ids[0] + '/timelogs/create/dialog'
+            )
         }
     });
 
@@ -733,6 +747,32 @@ require([
                     };
                 };
         });
+    });
+
+    $('#add_time_log_button').on('click', function(e){
+        console.debug('this is running 1!');
+        e.preventDefault();
+        e.stopPropagation();
+
+        var start = new Date();
+        start.clearTime();
+        start.setHours(10); // TODO: this is hard coded and not good
+
+        var end = new Date();
+        end.clearTime();
+        end.setHours(19); // TODO: this is hard coded and not good
+
+        var allDay = false;
+        var event_dialog = $('#dialog_template');
+
+        event_dialog.attr('start', start);
+        event_dialog.attr('end', end);
+        event_dialog.attr('allDay', allDay);
+
+        event_dialog.modal({
+            'remote': $(this).attr('href') + '?came_from="' + window.location.pathname + '"'
+        });
+        console.debug('this is running 2!');
     });
 
     $('#delete_task_button').on('click', function(e){
@@ -824,8 +864,6 @@ require([
                 dialog.dialog("close");
                 gantt_column.refresh();
             })
-
-            
             
         });
     {% endif %}
