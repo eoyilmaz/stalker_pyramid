@@ -27,6 +27,7 @@ from sqlalchemy.orm import aliased
 from stalker import User, Ticket, Entity, Project, Status, SimpleEntity, Task
 
 from stalker.db import DBSession
+import time
 from stalker_pyramid.views import (get_logged_in_user, PermissionChecker,
                                    milliseconds_since_epoch)
 
@@ -224,52 +225,84 @@ def update_ticket(request):
 def get_tickets(request):
     """returns all the tickets related to an entity or not
     """
-    entity_id = request.matchdict.get('id', -1)
-    entity = Entity.query.filter_by(id=entity_id).first()
+    entity_id = request.matchdict.get('id')
+    #entity = Entity.query.filter_by(id=entity_id).first()
 
-    tickets = []
-    if entity:
-        if isinstance(entity, User):
-            # return user tickets
-            logger.debug('getting user tickets')
-            tickets = Ticket.query.\
-                filter(Ticket.owner_id==entity_id).\
-                order_by(Ticket.number.asc()).all()
-        elif isinstance(entity, Project):
-            # return project tickets
-            logger.debug('getting project tickets')
-            tickets = Ticket.query.\
-                filter(Ticket.project_id==entity_id).\
-                order_by(Ticket.number.asc()).\
-                all()
+    entity_type = None
+    if entity_id:
+        # get the entity type
+        sql_query = \
+            'select entity_type from "SimpleEntities" where id=%s' % entity_id
+        data = DBSession.connection().execute(sql_query).fetchone()
+        entity_type = data[0] if data else None
+
+    logger.debug('entity_id  : %s' % entity_id)
+    logger.debug('entity_type: %s' % entity_type)
+
+    sql_query = """select
+        "SimpleEntities_Ticket".id,
+        "SimpleEntities_Ticket".name,
+        "Tickets".number,
+        "Tickets".summary,
+        "Tickets".project_id,
+        "SimpleEntities_Project".name as project_name,
+        "Tickets".owner_id as owner_id,
+        "SimpleEntities_Owner".name as owner_name,
+        "SimpleEntities_Ticket".date_created,
+        "SimpleEntities_Ticket".date_updated,
+        "SimpleEntities_Ticket".created_by_id,
+        "SimpleEntities_CreatedBy".name as created_by_name,
+        "SimpleEntities_Ticket".updated_by_id,
+        "SimpleEntities_UpdatedBy".name as updated_by_name,
+        "SimpleEntities_Status".name as status_name,
+        "Tickets".priority,
+        "SimpleEntities_Type".name as type_name
+    from "Tickets"
+    join "SimpleEntities" as "SimpleEntities_Ticket" on "Tickets".id = "SimpleEntities_Ticket".id
+    join "SimpleEntities" as "SimpleEntities_Project" on "Tickets".project_id = "SimpleEntities_Project".id
+    left outer join "SimpleEntities" as "SimpleEntities_Owner" on "Tickets".owner_id = "SimpleEntities_Owner".id
+    left outer join "SimpleEntities" as "SimpleEntities_CreatedBy" on "SimpleEntities_Ticket".created_by_id = "SimpleEntities_CreatedBy".id
+    left outer join "SimpleEntities" as "SimpleEntities_UpdatedBy" on "SimpleEntities_Ticket".updated_by_id = "SimpleEntities_UpdatedBy".id
+    join "SimpleEntities" as "SimpleEntities_Status" on "Tickets".status_id = "SimpleEntities_Status".id
+    left outer join "SimpleEntities" as "SimpleEntities_Type" on "SimpleEntities_Ticket".type_id = "SimpleEntities_Type".id
+    """
+
+    if entity_type:
+        if entity_type == u"Project":
+            sql_query += """where "Tickets".project_id = %s""" % entity_id
+        elif entity_type == u"User":
+            sql_query += """where "Tickets".owner_id = %s""" % entity_id
         else:
-            logger.debug('getting entity linked tickets')
-            # query all the tickets where the Ticket.links collection has the entity
-            simpleEntity_alias = aliased(SimpleEntity)
-            tickets = Ticket.query.join(simpleEntity_alias, Ticket.links).\
-                filter(SimpleEntity.id==entity_id).\
-                order_by(Ticket.number.asc()).all()
-    else:
-        tickets = Ticket.query.all()
+            sql_query += \
+                """join "Ticket_SimpleEntities" on
+                    "Tickets".id = "Ticket_SimpleEntities".ticket_id
+                where "Ticket_SimpleEntities".simple_entity_id = %s
+                """ % entity_id
+    sql_query += 'order by "Tickets".number'
 
-    return [
+    start = time.time()
+    result = DBSession.connection().execute(sql_query)
+    data = [
         {
-            'id': ticket.id,
-            'name': ticket.name,
-            'number': ticket.number,
-            'summary': ticket.summary,
-            'project_id': ticket.project_id,
-            'project_name': ticket.project.name,
-            'owner_id': ticket.owner_id if ticket.owner else -1,
-            'owner_name': ticket.owner.name if ticket.owner else '',
-            'date_created' : milliseconds_since_epoch(ticket.date_created),
-            'date_updated' : milliseconds_since_epoch(ticket.date_updated),
-            'created_by_id': ticket.created_by_id,
-            'created_by_name': ticket.created_by.name,
-            'updated_by_id': ticket.updated_by_id,
-            'updated_by_name': ticket.updated_by.name,
-            'status': ticket.status.name,
-            'priority': ticket.priority,
-            'type': ticket.type.name if ticket.type else None
-        } for ticket in tickets
+            'id': r[0],
+            'name': r[1],
+            'number': r[2],
+            'summary': r[3],
+            'project_id': r[4],
+            'project_name': r[5],
+            'owner_id': r[6],
+            'owner_name': r[7],
+            'date_created' : milliseconds_since_epoch(r[8]),
+            'date_updated' : milliseconds_since_epoch(r[9]),
+            'created_by_id': r[10],
+            'created_by_name': r[11],
+            'updated_by_id': r[12],
+            'updated_by_name': r[13],
+            'status': r[14],
+            'priority': r[15],
+            'type': r[16]
+        } for r in result.fetchall()
     ]
+    end = time.time()
+    logger.debug('get_entity_tickets took : %s seconds for %s rows' % (end - start, len(data)))
+    return data

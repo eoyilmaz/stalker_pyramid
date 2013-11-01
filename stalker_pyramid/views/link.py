@@ -247,21 +247,29 @@ def get_entity_references(request):
     # some fancy queries like getting all the references of tasks of a project
     # also with their tags
     sql_query = """
-        select  "Links".id,
-                "Links".full_path,
-                "Links".original_filename,
-                "Thumbnail".full_path as "thumbnail_full_path",
-                array_agg("Tag".tag_name)
-        from "Links" join "Task_References" on "Links".id = "Task_References".link_id
-                     join "Tasks" ON "Task_References".task_id = "Tasks".id
-                     join (select "Links".id,
-                                  "Links".full_path,
-                                  "SimpleEntities".id as link_id
-                                  from "Links" join "SimpleEntities" on "Links".id = "SimpleEntities".thumbnail_id) as "Thumbnail" on "Thumbnail".link_id = "Links".id
-                           join (select "SimpleEntities".name as tag_name, "Links".id as "link_id"
-                                 from "SimpleEntities"
-                                 join "Entity_Tags" on "SimpleEntities".id = "Entity_Tags".tag_id
-                                 join "Links" on "Entity_Tags".entity_id = "Links".id) as "Tag" on "Tag".link_id = "Links".id 
+        select
+            "Links".id,
+            "Links".full_path,
+            "Links".original_filename,
+            "Thumbnail".full_path as "thumbnail_full_path",
+            array_agg("Tag".tag_name)
+        from "Links"
+            join "Task_References" on "Links".id = "Task_References".link_id
+            join "Tasks" ON "Task_References".task_id = "Tasks".id
+            join (
+                select
+                    "Links".id,
+                    "Links".full_path,
+                    "SimpleEntities".id as link_id
+                from "Links"
+                    join "SimpleEntities" on "Links".id = "SimpleEntities".thumbnail_id) as "Thumbnail" on "Thumbnail".link_id = "Links".id
+                    left outer join (
+                        select
+                            "SimpleEntities".name as tag_name,
+                            "Links".id as "link_id"
+                        from "SimpleEntities"
+                            join "Entity_Tags" on "SimpleEntities".id = "Entity_Tags".tag_id
+                            join "Links" on "Entity_Tags".entity_id = "Links".id) as "Tag" on "Tag".link_id = "Links".id 
     """
     if entity.entity_type in ['Task', 'Asset', 'Shot', 'Sequence']:
         sql_query += 'where "Tasks".id = %(entity_id)s' % {'entity_id': entity_id}
@@ -291,9 +299,8 @@ def get_entity_references(request):
     python_end = time_time()
     python_time = python_end - python_start
 
-    logger.debug('export tag: db_time     : %s' % db_time)
-    logger.debug('export tag: python_time : %s' % python_time)
-    logger.debug('export tag: total       : %s' % (python_end - db_start))
+    logger.debug('get_entity_references took: %s seconds for %s rows' %
+                 (python_end - db_start , len(return_val)))
     return return_val
 
 
