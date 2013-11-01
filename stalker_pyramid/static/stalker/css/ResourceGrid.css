@@ -330,7 +330,7 @@
     background-color: #000;
 }
 
-.gantt .dgrid-column-chart {
+.resource_chart .dgrid-column-chart {
     position: relative;
     overflow: visible;
 }
@@ -344,7 +344,7 @@
     z-index: 10;
 }
 
-.gantt .dgrid .dependency-row {
+.resource_chart .dgrid .dependency-row {
     position: absolute;
     width: 390px;
 }
@@ -376,64 +376,64 @@ th.dgrid-column-chart table {
     overflow: hidden;
 }
 
-.gantt .dgrid {
+.resource_chart .dgrid {
     width: 100%;
     height: 100%;
 }
 
-.gantt .dgrid-column-action {
+.resource_chart .dgrid-column-action {
     width: 40px;
     text-align: center;
 }
 
-.gantt .dgrid-column-id {
+.resource_chart .dgrid-column-id {
     width: 40px;
     text-align: center;
 }
 
-.gantt .dgrid-column-name {
+.resource_chart .dgrid-column-name {
     width: 200px;
 }
 
-.gantt .dgrid-column-timing {
+.resource_chart .dgrid-column-timing {
     width: 45px;
 }
 
-.gantt .dgrid-column-timing {
+.resource_chart .dgrid-column-timing {
     width: 60px;
     text-align: center;
 }
 
-.gantt .dgrid-column-complete {
+.resource_chart .dgrid-column-complete {
     width: 30px;
     text-align: center;
 }
 
-.gantt .dgrid-column-start {
+.resource_chart .dgrid-column-start {
     width: 105px;
 }
 
-.gantt .dgrid-column-end {
+.resource_chart .dgrid-column-end {
     width: 105px;
 }
 
-.gantt .dgrid-column-set-0 {
+.resource_chart .dgrid-column-set-0 {
 width: 40%;
 }
 
-.gantt .dgrid-column-set-1 {
+.resource_chart .dgrid-column-set-1 {
 width: 60%;
 }
 
-/*.gantt .dgrid-column-set-cell .dgrid-column-set-0 .dgrid-cell {*/
+/*.resource_chart .dgrid-column-set-cell .dgrid-column-set-0 .dgrid-cell {*/
 /*background-color: #dedede;*/
 /*}*/
 
-/*.gantt .dgrid-row {*/
+/*.resource_chart .dgrid-row {*/
 /**/
 /*}*/
 
-/*.gantt .dgrid-column-set {*/
+/*.resource_chart .dgrid-column-set {*/
     /*overflow: hidden;*/
     /*width: 100%;*/
     /*position: relative;*/
@@ -441,43 +441,25 @@ width: 60%;
     /*float: left;*/
 /*}*/
 
-/*.gantt .dgrid-cell {*/
+/*.resource_chart .dgrid-cell {*/
     /*border-top: none;*/
     /*border-bottom: none;*/
 /*}*/
 
-.gantt .dgrid-cell {
+.resource_chart .dgrid-cell {
     /*background-color: rgb(240, 240, 240);*/
     /*text-overflow: ellipsis;*/
     text-overflow: clip;
     white-space: nowrap;
 }
 
-.gantt .ganttHead1 {
+.resource_chart .resourceHead1 {
     overflow:hidden;text-overflow:clip;white-space:nowrap;
 }
-.gantt .ganttHead2 {
+.resource_chart .resourceHead2 {
     overflow:hidden;text-overflow:clip;white-space:nowrap;
 }
 
-
-/* to show the drop-down menus in task edit row*/
-/*.gantt .dgrid-cell {*/
-    /*overflow: visible;*/
-/*}*/
-
-/*.gantt .dgrid-column-set-cell.dgrid-column-set-0>div {*/
-    /*overflow: visible;*/
-/*}*/
-
-/*.gantt .dgrid-tree-container {*/
-    /*overflow: visible;*/
-/*}*/
-
-
-/*.gantt .dgrid-cell-padding {*/
-/*padding: 0px;*/
-/*}*/
 
 .project {
     font-weight: bold;

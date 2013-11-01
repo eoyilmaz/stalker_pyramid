@@ -243,7 +243,7 @@ define([
             var table = put(th, "table[style=width:" + table_width + "px]");
 
             // Create the date row
-            var dateRow = put(table, "tr[style=table-layout:fixed].ganttHead1");
+            var dateRow = put(table, "tr[style=table-layout:fixed].resourceHead1");
 
             // start at the time indicated by the column
             var date = new Date(column.start);
@@ -269,7 +269,7 @@ define([
                 date = new Date(date.getTime() + 86400000); // increment a day
             }
             // now we create a row for the days of the week
-            var dayRow = put(table, "tr.ganttHead2");
+            var dayRow = put(table, "tr.resourceHead2");
             // restart the time iteration, and iterate again
             date = new Date(column.start);
             while (date.getTime() < column.end) {
