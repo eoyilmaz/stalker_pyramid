@@ -62,6 +62,7 @@ define([
         //     - scale: number
         //         The number of milliseconds that one pixel represents.
 
+        console.debug('code is here 1');
         var dependencyRow,
             firstCell;
 
@@ -85,6 +86,7 @@ define([
             //         this task depends on.
             // value: unused
             // td: DomNode
+            console.debug('code is here 2');
 
             // IE < 8 receive the inner padding node, not the td directly
             cell = td.tagName === "TD" ? td : td.parentNode;
@@ -93,7 +95,9 @@ define([
             td.innerHTML = "&nbsp;";
 
             // create a TimeLog instance
+            console.debug('code is here 3');
             var resource = new Resource(data);
+            console.debug('code is here 4');
 
             // Ensure the start time is always milliseconds since epoch
             // and not a Date object
@@ -116,30 +120,36 @@ define([
 //                return column.name;
 //            };
 
-            var taskBar;
-            if (resource.type === 'Project') {
-                taskBar = $($.parseHTML(templates.projectBar(resource)));
-            } else if (resource.type === 'Task' || resource.type === 'Asset' ||
-                       resource.type === 'Shot' || resource.type === 'Sequence') {
-                if (resource.hasChildren) {
-                    taskBar = $($.parseHTML(templates.parentTaskBar(resource)));
-                } else {
-                    taskBar = $($.parseHTML(templates.taskBar(resource)));
-                }
-            }
+            console.debug('code is here 5');
+            var resourceBar;
+//            if (resource.type === 'Project') {
+            console.debug('resource:', resource);
+            resourceBar = $($.parseHTML(templates.resourceBar(resource)));
+//            } else if (resource.type === 'Task' || resource.type === 'Asset' ||
+//                       resource.type === 'Shot' || resource.type === 'Sequence') {
+//                if (resource.hasChildren) {
+//                    resourceBar = $($.parseHTML(templates.parentTaskBar(resource)));
+//                } else {
+//                    resourceBar = $($.parseHTML(templates.taskBar(resource)));
+//                }
+//            }
+            console.debug('code is here 6');
 
-            taskBar.css({
+            resourceBar.css({
                 left: left,
                 width: width
             });
+            $(td).append(resourceBar);
+            console.debug('td:', td);
+            console.debug('resourceBar:', resourceBar);
 
-            $(td).append(taskBar);
 
             // Save the location of the right-hand edge for drawing depedency lines later
             cell.finished = left + width;
 
             // This reference is stored
             firstCell = firstCell || td;
+            console.debug('code is here 7');
 
             var grid = column.grid;
 //            console.debug('grid: ', grid);
@@ -148,6 +158,7 @@ define([
             var today_as_millis = (new Date()).getTime();
             put(td, "div.today[style=left:" + Math.floor((today_as_millis - column.start) / column.scale) + "px;]");
 
+            console.debug('code is here 8');
         };
 
         column.refresh = function (kwargs) {
@@ -211,7 +222,8 @@ define([
             //
             // here we render the header for the gantt chart, this will be a row of dates
             // with days of the week in a row underneath
-//            console.debug('inside column.renderHeaderCell');
+            console.debug('inside column.renderHeaderCell');
+            console.debug('code is here 9');
 
             // normalize table scale
 //            var one_day_width = 86400000 / column.scale;
@@ -235,15 +247,19 @@ define([
 //            console.debug('one day width          : ', one_day_width);
 //            console.debug('table_width            : ', table_width);
 
+            console.debug('code is here 10');
             // fix scrolling
             column.grid.addCssRule(".dgrid-column-chart", "width: " + table_width + "px");
+            console.debug('code is here 11');
 
             // calculate table width
 //            var table_width = (column.end - column.start) / column.scale;
             var table = put(th, "table[style=width:" + table_width + "px]");
+            console.debug('code is here 12');
 
             // Create the date row
             var dateRow = put(table, "tr[style=table-layout:fixed].resourceHead1");
+            console.debug('code is here 13');
 
             // start at the time indicated by the column
             var date = new Date(column.start);
@@ -268,6 +284,7 @@ define([
                 lastDay = date.getDay() + 1;
                 date = new Date(date.getTime() + 86400000); // increment a day
             }
+            console.debug('code is here 14');
             // now we create a row for the days of the week
             var dayRow = put(table, "tr.resourceHead2");
             // restart the time iteration, and iterate again
@@ -282,6 +299,7 @@ define([
             // render tod   ay
             var today_as_millis = (new Date()).getTime();
             put(th, "div.today[style=left:" + Math.floor((today_as_millis - column.start) / column.scale) + "px;]");
+            console.debug('code is here 15');
         };
 
         return column;

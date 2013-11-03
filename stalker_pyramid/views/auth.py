@@ -345,87 +345,6 @@ def get_users(request):
     return data
 
 
-# @view_config(
-#     route_name='get_project_users',
-#     renderer='json',
-#     permission='List_User'
-# )
-# @view_config(
-#     route_name='get_entity_users',
-#     renderer='json',
-#     permission='List_User'
-# )
-# def get_entity_users(request):
-#     """returns all the Users of a given Entity
-#     """
-#     entity_id = request.matchdict.get('id', -1)
-#     entity = Entity.query.filter_by(id=entity_id).first()
-#
-#     simple = request.params.get('simple', False)
-#
-#     # works for Departments and Projects or any entity that has users attribute
-#     if simple:
-#         return [{
-#             'id': user.id,
-#             'name': user.name,
-#             'login': user.login,
-#         } for user in sorted(entity.users, key=lambda x: x.name.lower())]
-#     return [{
-#         'id': user.id,
-#         'name': user.name,
-#         'login': user.login,
-#         'email': user.email,
-#         'departments': [
-#             {
-#                 'id': department.id,
-#                 'name': department.name
-#             } for department in user.departments
-#         ],
-#         'groups': [
-#             {
-#                 'id': group.id,
-#                 'name': group.name
-#             } for group in user.groups
-#         ],
-#         'tasksCount': len(user.tasks),
-#         'ticketsCount': len(user.open_tickets),
-#         'thumbnail_path': user.thumbnail.full_path if user.thumbnail else None
-#     } for user in sorted(entity.users, key=lambda x: x.name.lower())]
-#
-#
-# @view_config(
-#     route_name='get_entity_users_not',
-#     renderer='json',
-#     permission='List_User'
-# )
-# def get_users_not_in_entity(request):
-#     """returns all the Users which are not related with the given Entity
-#     """
-#     entity_id = request.matchdict.get('id', -1)
-#     entity = Entity.query.filter_by(id=entity_id).first()
-#
-#     entity_class = None
-#     if entity.entity_type == 'Project':
-#         entity_class = Project
-#     elif entity.entity_type == 'Department':
-#         entity_class = Department
-#
-#     logger.debug(User.query.filter(User.notin_(entity_class.users)).all())
-#
-#     # works for Departments and Projects or any entity that has users attribute
-#     return [
-#         {
-#             'id': user.id,
-#             'name': user.name,
-#             'login': user.login,
-#             'tasksCount': len(user.tasks),
-#             'ticketsCount': len(user.open_tickets),
-#             'thumbnail_path': user.thumbnail.full_path if user.thumbnail else None
-#         }
-#         for user in entity.users
-#     ]
-#
-
 @view_config(
     route_name='append_users_to_entity_dialog',
     renderer='templates/auth/dialog_append_users_to_entity.jinja2'
@@ -708,15 +627,6 @@ def login(request):
     }
 
 
-# @forbidden_view_config(
-#     renderer='templates/auth/no_permission.jinja2'
-# )
-# def forbidden(request):
-#     """runs when user has no permission for the requested page
-#     """
-#     return {}
-
-
 @view_config(
     route_name='flash_message',
     renderer='templates/home.jinja2'
@@ -791,3 +701,101 @@ def check_email_availability(request):
         'available': available
     }
 
+
+@view_config(
+    route_name='get_resources',
+    permission='Read_User',
+    renderer='json'
+)
+@view_config(
+    route_name='get_resource',
+    permission='Read_User',
+    renderer='json'
+)
+def get_resources(request):
+    """returns Users for Resource View
+    """
+    start = time.time()
+    # return users for now
+    # /resources/
+    # /resources/26/
+    resource_id = request.matchdict.get('id')
+    logger.debug('resource_id: %s' % resource_id)
+
+    execute = DBSession.connection().execute
+
+    entity_type = None
+    if resource_id:
+        # get the entity type of that resource
+        data = execute('select entity_type from "SimpleEntities" where id=%s' %
+                       resource_id).fetchone()
+        if data:
+            entity_type = data[0]
+        else:
+            return []
+    else:
+        # default to User
+        entity_type = "User"
+    logger.debug('entity_type : %s' % entity_type)
+
+    # get resource details plus time logs
+    resource_sql_query = """select
+        "SimpleEntities".id,
+        "SimpleEntities".name
+    from "SimpleEntities"
+    where "SimpleEntities".entity_type = '%s'
+    """ % entity_type
+
+    if resource_id:
+        resource_sql_query += "and id=%s" % resource_id
+
+    # if the given entity is a Department return all the time logs of the
+    # users of that department
+    time_log_query = """select
+        "TimeLogs".id,
+        "TimeLogs".task_id,
+        extract(epoch from "TimeLogs".start) * 1000 as start,
+        extract(epoch from "TimeLogs".end) * 1000 as end
+    from "TimeLogs" """
+
+    if entity_type == "User":
+        time_log_query += "where resource_id = %s"
+        hasChildren = False
+    elif entity_type == "Department":
+        time_log_query += """
+        join "User_Departments" on "User_Departments".uid = "TimeLogs".resource_id
+        where did = %s"""
+        hasChildren = True
+    elif entity_type == "Project":
+        # the resource is not a Department nor a User so return all departments
+        time_log_query += """
+        join "User_Departments" on "User_Departments".uid = "TimeLogs".resource_id
+        -- where did = %s
+        """
+        hasChildren = True
+
+    resources_result = execute(resource_sql_query).fetchall()
+
+    link = '/%s/%s/view' % (entity_type.lower(), '%s')
+
+    data = [
+        {
+            'id': rr[0],
+            'name': rr[1],
+            'type': entity_type,
+            'hasChildren': hasChildren,
+            'link': link % rr[0],
+            'time_logs': [
+                {
+                    'id': tr[0],
+                    'task_id': tr[1],
+                    'start': tr[2],
+                    'end': tr[3]
+                } for tr in execute(time_log_query % rr[0]).fetchall()
+            ]
+        } for rr in resources_result
+    ]
+    end = time.time()
+    logger.debug('get_resources took : %s seconds' % (end - start))
+
+    return data

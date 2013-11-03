@@ -28,16 +28,18 @@ define([
         start: null,
         end: null,
 
-        constructor: function (kwargs) {
-            this.grid = kwargs.grid;
+        constructor: function (settings) {
+            //this.grid = kwargs.grid;
 
-            this.id = kwargs.id || null;
-            this.start = kwargs.start || null;
-            this.end = kwargs.end || null;
+            this.id = settings.id || null;
+            this.start = settings.start || null;
+            this.end = settings.end || null;
 
             // some dynamic attributes
-            this.resource = kwargs.resource || null;
-            this.task = kwargs.task || null;
+            this.resource_id = settings.resource_id || null;
+            this.resource = null; // will be filled by the resource itself
+            this.task_id = settings.task_id || null;
+            this.task = null; // do not manage tasks for now
         },
 
         link: function () {

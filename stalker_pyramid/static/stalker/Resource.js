@@ -16,8 +16,9 @@
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
 define([
-    "dojo/_base/declare"
-], function (declare) {
+    "dojo/_base/declare",
+    "stalker/TimeLog"
+], function (declare, TimeLog) {
     'use strict';
     return declare('Resource', null, {
         id: null,
@@ -25,15 +26,25 @@ define([
         tasks: [],
         time_logs: [],
 
-        constructor: function (kwargs) {
-            this.grid = kwargs.grid;
+        constructor: function (settings) {
+            //this.grid = kwargs.grid;
 
-            this.id = kwargs.id || null;
-            this.name = kwargs.name || null;
+            this.id = settings.id || null;
+            this.name = settings.name || null;
+            this.type = settings.type || null;
 
-            // some dynamic attributes
-            this.tasks = kwargs.tasks || [];
-            this.time_logs = kwargs.tasks || [];
+//            this.tasks = kwargs.tasks || [];
+            this.tasks = null; // do not manage tasks for now
+
+            this.time_logs = [];
+
+            var time_log_data = settings.time_logs || [];
+            var temp_time_log = null;
+            for (var i=0; i < time_log_data.length; i++ ){
+                temp_time_log = new TimeLog(time_log_data[i]);
+                temp_time_log.resource = this;
+                this.time_logs.push(temp_time_log);
+            }
         },
 
         link: function () {

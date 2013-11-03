@@ -64,14 +64,20 @@ define([
                             return object;
                         },
                         formatter: function (object) {
-                            var object_type = object.type;
-                            var id_template_str = '<div class="action-buttons">' +
-                                '<a onclick="javascript:scrollToTaskItem(' + object.start + ')" class="blue" title="Scroll To"><i class="icon-exchange"></i></a>' +
-                                '<a href="' + object.link + '" class="green" title="View"><i class="icon-info-sign"></i></a>' +
-                                '</div>';
-
-                            var id_template = doT.template(id_template_str);
-                            return id_template(object);
+//                            console.debug('action formatter start');
+//                            var object_type, id_template_str, id_template;
+//                            object_type = object.type;
+//                            id_template_str = '<div class="action-buttons">' +
+//                                '<a onclick="javascript:scrollToTaskItem(' + object.start + ')" class="blue" title="Scroll To"><i class="icon-exchange"></i></a>' +
+//                                '<a href="' + object.link + '" class="green" title="View"><i class="icon-info-sign"></i></a>' +
+//                                '</div>';
+//
+//                            id_template = doT.template(id_template_str);
+//
+//                            var return_val = id_template(object);
+//                            console.debug('action formatter end');
+//                            return return_val;
+                            return object.name;
                         },
                         resizable: true
                     },
@@ -82,7 +88,11 @@ define([
                             return object;
                         },
                         formatter: function (object) {
-                            return '<a href="' + object.link + '">' + object.id + '</a>';
+//                            console.debug('id formatter start');
+//                            var return_val = '<a href="' + object.link + '">' + object.id + '</a>';
+//                            console.debug('id formatter stop');
+//                            return return_val;
+                            return object.id;
                         },
                         resizable: true
                     },
@@ -94,34 +104,39 @@ define([
                                 return object;
                             },
                             formatter: function (object) {
-                                var template = templates.taskEditRow;
-                                var template_var = {};
-                                template_var.font_weight = object.hasChildren ? 'bold' : 'normal';
-                                template_var.contextMenuClass = 'taskEditRow';
-                                if (object.type === 'Project') {
-                                    template = templates.projectEditRow;
-                                    template_var.contextMenuClass = 'projectEditRow';
-                                } else {
-                                    if (object.hasChildren) {
-                                        template = templates.parentTaskEditRow;
-                                        template_var.contextMenuClass = 'parentTaskEditRow';
-                                    } else {
-                                        template_var.responsible = {
-                                            id: object.responsible.id,
-                                            name: object.responsible.name
-                                        };
-                                    }
-                                }
+                                console.debug('tree formatter start');
+//                                var template = templates.taskEditRow;
+//                                var template_var = {};
+//                                template_var.font_weight = object.hasChildren ? 'bold' : 'normal';
+//                                template_var.contextMenuClass = 'taskEditRow';
+//                                if (object.type === 'Project') {
+//                                    template = templates.projectEditRow;
+//                                    template_var.contextMenuClass = 'projectEditRow';
+//                                } else {
+//                                    if (object.hasChildren) {
+//                                        template = templates.parentTaskEditRow;
+//                                        template_var.contextMenuClass = 'parentTaskEditRow';
+//                                    } else {
+//                                        template_var.responsible = {
+//                                            id: object.responsible.id,
+//                                            name: object.responsible.name
+//                                        };
+//                                    }
+//                                }
+//
+//                                template_var.hasChildren = object.hasChildren;
+//                                template_var.link = object.link;
+//                                template_var.id = object.id;
+//                                template_var.name = object.name;
+//                                template_var.start = object.start;
+//                                template_var.end = object.end;
+//                                template_var.type = object.type;
+//
+//                                var return_val = template(template_var);
+                                var return_val = object.name;
 
-                                template_var.hasChildren = object.hasChildren;
-                                template_var.link = object.link;
-                                template_var.id = object.id;
-                                template_var.name = object.name;
-                                template_var.start = object.start;
-                                template_var.end = object.end;
-                                template_var.type = object.type;
-
-                                return template(template_var);
+                                console.debug('tree formatter end');
+                                return return_val;
                             },
                             renderExpando: function (level, hasChildren, expanded, object) {
                                 // summary:

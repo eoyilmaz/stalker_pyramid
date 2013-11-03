@@ -285,9 +285,9 @@ def get_time_logs(request):
         parent_names.parent_name,
         "TimeLogs".resource_id,
         "SimpleEntities_Resource".name,
-        extract(epoch from "TimeLogs".end - "TimeLogs".start),
-        extract(epoch from "TimeLogs".start) * 1000,
-        extract(epoch from "TimeLogs".end) * 1000
+        extract(epoch from "TimeLogs".end - "TimeLogs".start) as total_seconds,
+        extract(epoch from "TimeLogs".start) * 1000 as start,
+        extract(epoch from "TimeLogs".end) * 1000 as end
     from "TimeLogs"
     join "Tasks" on "TimeLogs".task_id = "Tasks".id
     join "SimpleEntities" as "SimpleEntities_Task" on "Tasks".id = "SimpleEntities_Task".id

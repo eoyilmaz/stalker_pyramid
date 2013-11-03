@@ -301,6 +301,8 @@ def main(global_config, **settings):
     config.add_route('get_user_tickets',      'users/{id}/tickets/') # json
     config.add_route('get_user_events',       'users/{id}/events/')#json
     # config.add_route('get_user_worked_hours', 'users/{id}/{frequency}/worked_hours/')#json
+    config.add_route('get_resources',         'resources/')
+    config.add_route('get_resource',          'resources/{id}/')
 
     config.add_route('list_users',            'users/list') # html
     config.add_route('list_user_tasks',       'users/{id}/tasks/list') # html

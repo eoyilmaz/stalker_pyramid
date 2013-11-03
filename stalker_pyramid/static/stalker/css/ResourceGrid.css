@@ -157,7 +157,7 @@
     background-image: url('../images/hasExternalDeps.png');
 }
 
-/*TASK BOX*/
+/*Resource Box*/
 .taskBox {
     position: absolute;
     height: 20px;
@@ -177,12 +177,12 @@
     background-color: #f5f5f5 !important;
 }
 
-.taskBox .layout {
+.resourceBox .layout {
     /*height: 100%;*/
     height: 18px;
 }
 
-.taskBox .taskStatus {
+.resourceBox .resourceStatus {
     left: 5px;
     top: 4px;
     position: absolute;
@@ -190,45 +190,20 @@
     height: 10px;
 }
 
-.taskBox .layout .milestone {
-    top: 0;
-    position: absolute;
-    width: 16px;
-    background: url('../images/milestone.png') no-repeat;
-    height: 16px;
-    display: none;
-}
-
-.taskBox .layout .milestone.end {
-    right: 0;
-}
-
-.taskBox .layout .milestone.active {
-    display: block;
-}
-
-.taskBox.hasChild .layout {
+.resourceBox.hasChild .layout {
     border-top: 2px solid black;
 }
 
-.taskBox .taskProgress {
-    /*height:3px;*/
+.resourceBox .resourceProgress {
     height: 100%;
     position: absolute;
 
-    /*background-image: linear-gradient(bottom, #6DD900 0%, #99FF33 50%);*/
-    /*background-image: -o-linear-gradient(bottom, #6DD900 0%, #99FF33 50%);*/
-    /*background-image: -moz-linear-gradient(bottom, #6DD900 0%, #99FF33 50%);*/
-    /*background-image: -webkit-linear-gradient(bottom, #6DD900 0%, #99FF33 50%);*/
-    /*background-image: -ms-linear-gradient(bottom, #6DD900 0%, #99FF33 50%);*/
-
-    /*background-image: -webkit-gradient(linear, left bottom, left top, color-stop(0, #6DD900), color-stop(0.50, #99FF33));*/
     background-color: #87b87f !important;
 
     border-radius: 2px;
 }
 
-.taskBox .taskExtraTiming {
+.resourceBox .resourceExtraTiming {
     height: 7px;
     position: absolute;
     border-radius: 2px;
@@ -237,11 +212,7 @@
     background-color: #dd5a43 !important;
 }
 
-.taskBox .layout.extDep {
-    background-image: url('../images/hasExternalDeps.png');
-}
-
-.taskLabel {
+.resourceLabel {
     position: absolute;
     height: 18px;
     color: black;
@@ -254,7 +225,7 @@
     white-space: nowrap;
 }
 
-.taskResourceLabel {
+.resourceResourceLabel {
     color: black;
     height: 18px;
     left: 100%;
@@ -267,7 +238,7 @@
     width: 195px;
 }
 
-.taskDepLabel {
+.resourceDepLabel {
     color: black;
     height: 18px;
     left: 100%;

@@ -65,6 +65,14 @@
     </div>
 </script>
 
+<script id="tmpl_resourceBar" type="text/x-dot-template">
+    <div class="resourceBox" dataId="{{=it.id}}">
+        <div class="layout">
+            <div class="taskLabel">{{=it.link()}}</div>
+        </div>
+    </div>
+</script>
+
 <script id='tmpl_leafTaskToolTip' type='text/x-dot-template'>
     <table>
         <thead style="text-align: center">
@@ -208,6 +216,7 @@
     templates.projectBar = doT.template(document.getElementById('tmpl_projectBar').text);
     templates.parentTaskBar = doT.template(document.getElementById('tmpl_parentTaskBar').text);
     templates.taskBar = doT.template(document.getElementById('tmpl_taskBar').text);
+    templates.resourceBar = doT.template(document.getElementById('tmpl_resourceBar').text);
 
     templates.projectEditRow = doT.template(document.getElementById('tmpl_projectEditRow').text);
     templates.parentTaskEditRow = doT.template(document.getElementById('tmpl_parentTaskEditRow').text);
@@ -258,6 +267,7 @@
                     </button>
                     <div id="resource_scroll_to_button" class="hidden" start="0"></div>
                 </div>
+            </div>
 
             <div class="row-fluid">
                 <div id="{{ entity.entity_type }}_{{ entity.id }}_resource_grid"
@@ -279,70 +289,48 @@
 <script type="text/javascript">
 
 require([
-    'dijit/registry',
-
-    'dijit/form/Button',
-    'dijit/form/FilteringSelect',
-    'dijit/Menu',
-    'dijit/MenuItem',
-    'dijit/MenuSeparator',
-    'dijit/form/DateTextBox',
-    'dijit/Tooltip',
-
-    'dojo/cookie',
-    'dojo/json',
-    'dojo/query',
     'dojo/store/Cache',
     'dojo/store/Memory',
     'dojo/store/JsonRest',
-    'dojo/request/xhr',
-    'dojo/_base/lang',
-    'dojo/Deferred',
-    'dojo/when',
-    'dojo/date',
 
     "dgrid/List",
     "dgrid/Grid",
     'dojox/data/JsonRestStore',
 
-    'stalker/dialogs',
-    'stalker/dialogCaller',
-    'stalker/dialogCreator',
     'stalker/ResourceGrid',
 
     'dojo/domReady!'
-], function (registry, Button, FilteringSelect, Menu, MenuItem,
-             MenuSeparator, DateTextBox, Tooltip, cookie, json, query,
-             Cache, Memory, JsonRest, xhr, lang, Deferred, when, date,
-             List, Grid, JsonRestStore, dialogs, dialogCaller,
-             dialogCreator, ResourceGrid) {
+], function (Cache, Memory, JsonRest, List, Grid, JsonRestStore, ResourceGrid){
 
     // The Memory
-    var target = '/tasks/';
-    var tasks_memory_store = new Memory();
-
-    {% if entity.entity_type == 'User' %}
-        target = '{{ request.route_url('get_entity_tasks', id=entity.id) }}';
-    {% elif entity.entity_type == 'Studio' %}
-        target = '{{ request.route_url('get_studio_tasks', id=entity.id) }}';
+    var target = '{{ request.route_url('get_resources', id=entity.id) }}';
+    {% if entity.entity_type == "User" %}
+        console.debug('entity_type: User');
+    var target = '{{ request.route_url('get_resource', id=entity.id) }}';
+        console.debug('entity_type:', '{{ entity.entity_type }}');
     {% endif %}
-{#    console.debug('target : ', target);#}
 
-    var tasks_jsonRest_store = new JsonRest({
+    var time_logs_memory_store = new Memory();
+    console.debug('target:', target);
+
+    var time_logs_jsonRest_store = new JsonRest({
         target: target,
         getChildren: function (parent, options) {
+            console.debug('getChildren.parent:', parent);
+            console.debug('getChildren.options:', options);
             return this.query({parent_id: parent.id}, options);
         },
         mayHaveChildren: function (parent) {
+            console.debug('mayHaveChildren: parent:', parent)
             return parent.hasChildren;
         }
     });
-    var tasks_cache_store = new Cache(tasks_jsonRest_store, tasks_memory_store);
+    var tasks_cache_store = new Cache(time_logs_jsonRest_store, time_logs_memory_store);
 
     // allow the resource_grid to resize with the window
     $(window).on('resize', function(){
         var resource_grid_height = $(window).height() - 230;
-        $('#'+'{{ entity.entity_type }}_{{ entity.id }}_resource').css({height: resource_grid_height});
+        $('#'+'{{ entity.entity_type }}_{{ entity.id }}_resource_grid').css({height: resource_grid_height});
     });
     $(window).trigger('resize');
 
@@ -353,7 +341,7 @@ require([
         store: tasks_cache_store,
         query: {
             // initialize with the entity itself
-            task_id: {{ entity.id }}
+            id: {{ entity.id }}
         },
         loadingMessage: "<div style='float: left' class='dijitIconLoading'>&nbsp</div><div>Loading</div>",
         noDataMessage: "",
@@ -427,6 +415,5 @@ require([
     $('#resource_go_to_today_button').on('click', function(){
        resource_column.centerOnToday(); 
     });
-
 });
 </script>
