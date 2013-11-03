@@ -263,29 +263,21 @@
     height: 15px;
 }
 
-/*.contextMenu {*/
-    /*height: 100%;*/
-/*}*/
 
+.weekly_log_bar.layout{
+    position: absolute;
+    height: 24px;
+    bottom: 0px;
+    background-color: #d15b47 !important;
+}
 
+.weekly_log_bar.timeLog{
+    position: absolute;
+    width: 100%;
+    background-color: #87b87f !important;
+    bottom: 0px;
+}
 
-/* ------------------------------------------------------- */
-
-/*.task-bar {*/
-/*height: 15px;*/
-/*position: absolute;*/
-/*background-color: #0e0;*/
-/*border-radius: 5px;*/
-/*box-shadow: 2px 2px 3px #aaa;*/
-/*}*/
-
-/*.completed-bar {*/
-/*height: 15px;*/
-/*position: absolute;*/
-/*background-color: #0a0;*/
-/*border-top-left-radius: 5px;*/
-/*border-bottom-left-radius: 5px;*/
-/*}*/
 
 .dep-horizontal-line {
     height: 1px;
@@ -389,11 +381,11 @@ th.dgrid-column-chart table {
 }
 
 .resource_chart .dgrid-column-set-0 {
-width: 40%;
+    width: 20%;
 }
 
 .resource_chart .dgrid-column-set-1 {
-width: 60%;
+    width: 80%;
 }
 
 /*.resource_chart .dgrid-column-set-cell .dgrid-column-set-0 .dgrid-cell {*/

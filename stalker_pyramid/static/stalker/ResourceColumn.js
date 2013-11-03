@@ -62,7 +62,19 @@ define([
         //     - scale: number
         //         The number of milliseconds that one pixel represents.
 
-        console.debug('code is here 1');
+        if (typeof(column.start) === 'function') {
+            column.start = +column.start();
+        } else {
+            column.start = +column.start;
+        }
+
+        if (typeof(column.end) === 'function') {
+            column.end = +column.end();
+        } else {
+            column.end = +column.end;
+        }
+
+
         var dependencyRow,
             firstCell;
 
@@ -86,18 +98,16 @@ define([
             //         this task depends on.
             // value: unused
             // td: DomNode
-            console.debug('code is here 2');
+//            console.debug('ResourceColumn.column.renderCell start');
 
             // IE < 8 receive the inner padding node, not the td directly
             cell = td.tagName === "TD" ? td : td.parentNode;
 
             // Add empty content to the cell to avoid it collapsing in IE
-            td.innerHTML = "&nbsp;";
+            //td.innerHTML = "&nbsp;";
 
             // create a TimeLog instance
-            console.debug('code is here 3');
             var resource = new Resource(data);
-            console.debug('code is here 4');
 
             // Ensure the start time is always milliseconds since epoch
             // and not a Date object
@@ -114,34 +124,59 @@ define([
                 width = (resource.end - resource.start) / chartTimeScale;
 
             // Create the colored task bar representing the duration of a task
-
-//            data.progress = data.completed * 100;
-//            data.link = function () {
-//                return column.name;
-//            };
-
-            console.debug('code is here 5');
             var resourceBar;
-//            if (resource.type === 'Project') {
-            console.debug('resource:', resource);
             resourceBar = $($.parseHTML(templates.resourceBar(resource)));
-//            } else if (resource.type === 'Task' || resource.type === 'Asset' ||
-//                       resource.type === 'Shot' || resource.type === 'Sequence') {
-//                if (resource.hasChildren) {
-//                    resourceBar = $($.parseHTML(templates.parentTaskBar(resource)));
-//                } else {
-//                    resourceBar = $($.parseHTML(templates.taskBar(resource)));
-//                }
-//            }
-            console.debug('code is here 6');
+
+            // iterate the weeks from start to end, choose the week start and
+            // dates correctly
+            var temp_end = new Date(column.end);
+            column.end = temp_end.clearTime().getTime() + 86399999;
+            var range_start = new Date(column.start).clearTime();
+            var dow = range_start.getDay();
+            range_start = range_start.getTime();
+            // one_day =  86400000
+            // one_day - 1 milliseconds = 86399999
+            // one_week = 604800000;
+            // one_week - 1 milliseconds = 604799999;
+            var range_end = range_start + (7 - dow) * 86400000 - 1;
+
+            var total_logged_millies;
+            var weekly_millies_possible = 183600000; // 51 hours for anima
+            var weekly_log_bar;
+            var weekly_log_bar_layout_div;
+            var td_jq = $(td);
+            while (range_start < column.end) {
+                range_end = Math.min(range_end, column.end);
+                total_logged_millies = resource.total_logged_milliseconds(range_start, range_end);
+                // draw a div at that range with the height of total_logged_millies
+
+                if (total_logged_millies > 0) {
+                    weekly_log_bar_layout_div = $($.parseHTML('<div class="weekly_log_bar layout"></div>'));
+                    weekly_log_bar_layout_div.css({
+                        left: Math.floor((range_start - column.start) / chartTimeScale),
+                        width: Math.floor((range_end - range_start) / chartTimeScale)
+                    });
+
+                    weekly_log_bar = $($.parseHTML('<div class="weekly_log_bar timeLog"></div>'));
+                    weekly_log_bar.css({
+                        height: Math.floor(total_logged_millies / weekly_millies_possible * 22)// weekly millies possible
+                    });
+                    weekly_log_bar_layout_div.append(weekly_log_bar);
+                    td_jq.append(
+                        weekly_log_bar_layout_div
+                    );
+                }
+                // get the new start and end values
+                range_start = range_end + 1;
+                range_end += 604800000;
+            }
+
 
             resourceBar.css({
                 left: left,
                 width: width
             });
             $(td).append(resourceBar);
-            console.debug('td:', td);
-            console.debug('resourceBar:', resourceBar);
 
 
             // Save the location of the right-hand edge for drawing depedency lines later
@@ -149,16 +184,14 @@ define([
 
             // This reference is stored
             firstCell = firstCell || td;
-            console.debug('code is here 7');
 
             var grid = column.grid;
-//            console.debug('grid: ', grid);
 
             // render today
             var today_as_millis = (new Date()).getTime();
             put(td, "div.today[style=left:" + Math.floor((today_as_millis - column.start) / column.scale) + "px;]");
 
-            console.debug('code is here 8');
+//            console.debug('ResourceColumn.column.renderCell end');
         };
 
         column.refresh = function (kwargs) {
@@ -203,9 +236,7 @@ define([
             date_x = (date_as_millis - column.start) / column.scale;
 
             scroller = $('.dgrid-column-set-scroller-1');
-
             scroller_width = scroller.width();
-
             scroller.scrollLeft(date_x - scroller_width * 0.5);
         };
 
@@ -222,8 +253,7 @@ define([
             //
             // here we render the header for the gantt chart, this will be a row of dates
             // with days of the week in a row underneath
-            console.debug('inside column.renderHeaderCell');
-            console.debug('code is here 9');
+//            console.debug('ResourceColum.column.renderHeaderCell start');
 
             // normalize table scale
 //            var one_day_width = 86400000 / column.scale;
@@ -247,19 +277,15 @@ define([
 //            console.debug('one day width          : ', one_day_width);
 //            console.debug('table_width            : ', table_width);
 
-            console.debug('code is here 10');
             // fix scrolling
             column.grid.addCssRule(".dgrid-column-chart", "width: " + table_width + "px");
-            console.debug('code is here 11');
 
             // calculate table width
 //            var table_width = (column.end - column.start) / column.scale;
             var table = put(th, "table[style=width:" + table_width + "px]");
-            console.debug('code is here 12');
 
             // Create the date row
             var dateRow = put(table, "tr[style=table-layout:fixed].resourceHead1");
-            console.debug('code is here 13');
 
             // start at the time indicated by the column
             var date = new Date(column.start);
@@ -284,7 +310,6 @@ define([
                 lastDay = date.getDay() + 1;
                 date = new Date(date.getTime() + 86400000); // increment a day
             }
-            console.debug('code is here 14');
             // now we create a row for the days of the week
             var dayRow = put(table, "tr.resourceHead2");
             // restart the time iteration, and iterate again
@@ -296,10 +321,10 @@ define([
                 date = new Date(date.getTime() + 86400000); // increment a day
             }
 
-            // render tod   ay
+            // render today
             var today_as_millis = (new Date()).getTime();
             put(th, "div.today[style=left:" + Math.floor((today_as_millis - column.start) / column.scale) + "px;]");
-            console.debug('code is here 15');
+//            console.debug('ResourceColum.column.renderHeaderCell end');
         };
 
         return column;

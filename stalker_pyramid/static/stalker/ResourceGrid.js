@@ -104,7 +104,7 @@ define([
                                 return object;
                             },
                             formatter: function (object) {
-                                console.debug('tree formatter start');
+//                                console.debug('tree formatter start');
 //                                var template = templates.taskEditRow;
 //                                var template_var = {};
 //                                template_var.font_weight = object.hasChildren ? 'bold' : 'normal';
@@ -135,7 +135,7 @@ define([
 //                                var return_val = template(template_var);
                                 var return_val = object.name;
 
-                                console.debug('tree formatter end');
+//                                console.debug('tree formatter end');
                                 return return_val;
                             },
                             renderExpando: function (level, hasChildren, expanded, object) {
@@ -166,8 +166,22 @@ define([
                 {
                     chart: new ResourceColumn({
                         scale: 4000000,
-                        start: new Date().clearTime().getTime() - 15552000000 * 1.5,
-                        end: new Date().clearTime().getTime() + 15552000000 * 3 + 86400000 - 1+(6 - new Date().getDay()) * 86400000,
+                        start: function () {
+                            var today = new Date();
+                            // clear the time and set the day to the closest sunday
+                            var day = today.getDay();
+                            var closest_sunday = today.getTime() - ((7 - day) % 7) * 8640000;
+                            // go back 1 and a half years
+                            return closest_sunday - 52 * 86400000 * 7 * 1.5;
+                        },
+                        end: function () {
+                            var today = new Date();
+                            // clear the time and set the day to the closest sunday
+                            var day = today.getDay();
+                            var closest_sunday = today.getTime() - ((7 - day) % 7) * 8640000;
+                            // go back 1 and a half years
+                            return closest_sunday + 52 * 86400000 * 7 * 3 - 1;
+                        },
                         sortable: false
                     })
                 }

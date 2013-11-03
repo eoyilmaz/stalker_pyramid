@@ -61,6 +61,18 @@ define([
         //     - scale: number
         //         The number of milliseconds that one pixel represents.
 
+        if (typeof(column.start) === 'function') {
+            column.start = +column.start();
+        } else {
+            column.start = +column.start;
+        }
+
+        if (typeof(column.end) === 'function') {
+            column.end = +column.end();
+        } else {
+            column.end = +column.end;
+        }
+
         var dependencyRow,
             firstCell;
 

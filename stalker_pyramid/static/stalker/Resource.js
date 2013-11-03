@@ -49,6 +49,33 @@ define([
 
         link: function () {
             return templates.resourceLink(this);
+        },
+
+        total_logged_milliseconds: function(start, end) {
+            // returns the amount of logged seconds between the given dates
+            var time_logs = this.time_logs;
+            var time_logs_count = time_logs.length;
+            var total_millies = 0;
+            var range_start = null;
+            var range_end = null;
+            var tlog = null;
+            for (var i = 0; i < time_logs_count; i++){
+                // there are several possibilities
+                // the time_log is in between the range
+                // the time_log started before the range and ended inside the range
+                // the time_log started before the range and ended outside the range
+                // the time_log started inside the range and ended inside the range
+                // the time_log started inside the range and ended outside the range
+                // the time_log started outside the range and ended outside the range
+                tlog = time_logs[i];
+                if (tlog.start <= end && tlog.end >= start){
+                    // we have a candidate now get the millis
+                    range_start = Math.max(tlog.start, start); // take the max of the start 
+                    range_end   = Math.min(tlog.end,   end); // take the min of the end
+                    total_millies += (range_end - range_start);
+                }
+            }
+            return total_millies;
         }
 
     });
