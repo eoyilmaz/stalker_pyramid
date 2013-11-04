@@ -20,7 +20,7 @@
 define(['exports', 'dojox/widget/DialogSimple', 'dijit/registry', 'dojo/domReady!'],
     function (exports, DialogSimple, registry) {
         // module:
-        //      stalker/dialogs
+        //      stalker/js/dialogs
         // summary:
         //      creates the default dialogs
 

@@ -230,8 +230,8 @@ logger.setLevel(logging.DEBUG)
     renderer='templates/version/list/list_entity_versions.jinja2'
 )
 @view_config(
-    route_name='list_entity_time_logs',
-    renderer='templates/time_log/list/list_entity_time_logs.jinja2'
+    route_name='list_entity_resources',
+    renderer='templates/resource/list/list_entity_resources.jinja2'
 )
 def get_entity_related_data(request):
     """lists the time logs of the given task

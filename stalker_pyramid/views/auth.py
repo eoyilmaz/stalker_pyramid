@@ -703,6 +703,11 @@ def check_email_availability(request):
 
 
 @view_config(
+    route_name='get_entity_resources',
+    permission='Read_User',
+    renderer='json'
+)
+@view_config(
     route_name='get_resources',
     permission='Read_User',
     renderer='json'
@@ -715,12 +720,17 @@ def check_email_availability(request):
 def get_resources(request):
     """returns Users for Resource View
     """
+    # TODO: This is a very ugly function, please define the borders and use cases correctly and then clean it
+
     start = time.time()
     # return users for now
     # /resources/
     # /resources/26/
     resource_id = request.matchdict.get('id')
     logger.debug('resource_id: %s' % resource_id)
+
+    parent_id = request.params.get('parent_id')
+    logger.debug('parent_id: %s' % parent_id)
 
     execute = DBSession.connection().execute
 
@@ -739,50 +749,130 @@ def get_resources(request):
     logger.debug('entity_type : %s' % entity_type)
 
     # get resource details plus time logs
-    resource_sql_query = """select
-        "SimpleEntities".id,
-        "SimpleEntities".name
-    from "SimpleEntities"
-    where "SimpleEntities".entity_type = '%s'
-    """ % entity_type
+    if not parent_id:
+        if entity_type == 'Department':
+            resource_sql_query = """select
+                "SimpleEntities".id,
+                "SimpleEntities".name,
+                count(*) as resource_count
+            from "SimpleEntities"
+            join "User_Departments" on "User_Departments".did = "SimpleEntities".id
+            where "SimpleEntities".entity_type = '%s'
+            """ % entity_type
+        elif entity_type == 'User':
+            resource_sql_query = """select
+                "SimpleEntities".id,
+                "SimpleEntities".name,
+                1 as resource_count
+            from "SimpleEntities"
+            where "SimpleEntities".entity_type = '%s'
+            """ % entity_type
 
-    if resource_id:
-        resource_sql_query += "and id=%s" % resource_id
+        if resource_id:
+            resource_sql_query += "and id=%s group by id, name" % resource_id
+        else:
+            resource_sql_query += "group by id, name"
 
-    # if the given entity is a Department return all the time logs of the
-    # users of that department
-    time_log_query = """select
-        "TimeLogs".id,
-        "TimeLogs".task_id,
-        extract(epoch from "TimeLogs".start) * 1000 as start,
-        extract(epoch from "TimeLogs".end) * 1000 as end
-    from "TimeLogs" """
-
-    if entity_type == "User":
-        time_log_query += "where resource_id = %s"
-        hasChildren = False
-    elif entity_type == "Department":
-        time_log_query += """
-        join "User_Departments" on "User_Departments".uid = "TimeLogs".resource_id
-        where did = %s"""
-        hasChildren = True
-    elif entity_type == "Project":
-        # the resource is not a Department nor a User so return all departments
-        time_log_query += """
-        join "User_Departments" on "User_Departments".uid = "TimeLogs".resource_id
-        -- where did = %s
+        # if the given entity is a Department return all the time logs of the
+        # users of that department
+        time_log_query = """select
+            "TimeLogs".id,
+            "TimeLogs".task_id,
+            extract(epoch from "TimeLogs".start) * 1000 as start,
+            extract(epoch from "TimeLogs".end) * 1000 as end
+        from "TimeLogs"
         """
-        hasChildren = True
+
+        tasks_query = """select
+            "Tasks".id,
+            extract(epoch from "Tasks".computed_start) * 1000 as start,
+            extract(epoch from "Tasks".computed_end) * 1000 as end
+        from "Tasks"
+        """
+
+        if entity_type == "User":
+            time_log_query += "where resource_id = %s"
+            tasks_query += """  join "Task_Resources" on "Tasks".id = "Task_Resources".task_id
+                           where resource_id = %s
+                           """
+            hasChildren = False
+        elif entity_type == "Department":
+            time_log_query += """
+            join "User_Departments" on "User_Departments".uid = "TimeLogs".resource_id
+            where did = %s"""
+            tasks_query += """join "Task_Resources" on "Tasks".id = "Task_Resources".task_id
+            join "User_Departments" on "Task_Resources".resource_id = "User_Departments".uid
+            where did = %s
+            group by id, start, "end"
+            order by start
+            """
+            hasChildren = True
+        elif entity_type == "Project":
+            # the resource is a Project return all the project tasks and
+            # return all the time logs of the users in that project
+            time_log_query += """
+            join "User_Departments" on "User_Departments".uid = "TimeLogs".resource_id
+            -- where did = %s
+            """
+            tasks_query += """select
+                "Tasks".id,
+                extract(epoch from "Tasks".computed_start) * 1000 as start,
+                extract(epoch from "Tasks".computed_end) * 1000 as end
+            from "Tasks"
+                where project_id = %s
+            group by id, start, "end"
+            order by start
+            """
+            hasChildren = True
+
+    else:
+        # return departments ??? should also return Groups, Project etc.
+        # that contains users
+        resource_sql_query = """select
+                "Users".id,
+                "SimpleEntities".name,
+                1 as resource_count
+            from "Users"
+            join "SimpleEntities" on "SimpleEntities".id = "Users".id
+            join "User_Departments" on "User_Departments".uid = "Users".id
+            join "Departments" on "User_Departments".did = "Departments".id
+            where "Departments".id = %s
+            """ % (parent_id)
+
+        time_log_query = """select
+            "TimeLogs".id,
+            "TimeLogs".task_id,
+            extract(epoch from "TimeLogs".start) * 1000 as start,
+            extract(epoch from "TimeLogs".end) * 1000 as end
+        from "TimeLogs"
+        where resource_id = %s
+        """
+
+        tasks_query = """select
+            "Tasks".id,
+            extract(epoch from "Tasks".computed_start) * 1000 as start,
+            extract(epoch from "Tasks".computed_end) * 1000 as end
+        from "Tasks"
+            join "Task_Resources" on "Tasks".id = "Task_Resources".task_id
+        where resource_id = %s
+        """
+
+        hasChildren = False
+
+
+    logger.debug('resource_sql_query : %s' % resource_sql_query)
+    logger.debug('time_log_query : %s' % time_log_query)
+    logger.debug('tasks_sql_query : %s' % tasks_query)
 
     resources_result = execute(resource_sql_query).fetchall()
 
     link = '/%s/%s/view' % (entity_type.lower(), '%s')
-
     data = [
         {
             'id': rr[0],
             'name': rr[1],
             'type': entity_type,
+            'resource_count': rr[2],
             'hasChildren': hasChildren,
             'link': link % rr[0],
             'time_logs': [
@@ -792,9 +882,17 @@ def get_resources(request):
                     'start': tr[2],
                     'end': tr[3]
                 } for tr in execute(time_log_query % rr[0]).fetchall()
+            ],
+            'tasks': [
+                {
+                    'id': tr[0],
+                    'start': tr[1],
+                    'end': tr[2]
+                } for tr in execute(tasks_query % rr[0]).fetchall()
             ]
         } for rr in resources_result
     ]
+
     end = time.time()
     logger.debug('get_resources took : %s seconds' % (end - start))
 

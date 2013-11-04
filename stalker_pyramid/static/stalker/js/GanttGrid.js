@@ -8,7 +8,7 @@ define([
     "dgrid/tree",
     "dgrid/extensions/DijitRegistry",
     "put-selector/put",
-    "stalker/GanttColumn"
+    "stalker/js/GanttColumn"
 ], function (declare, lang, OnDemandGrid, ColumnSet, Selection, Keyboard, tree,
              DijitRegistry, put, GanttColumn) {
     // module:

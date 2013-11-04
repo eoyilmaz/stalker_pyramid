@@ -8,7 +8,7 @@ define([
     "dgrid/tree",
     "dgrid/extensions/DijitRegistry",
     "put-selector/put",
-    "stalker/ResourceColumn"
+    "stalker/js/ResourceColumn"
 ], function (declare, lang, OnDemandGrid, ColumnSet, Selection, Keyboard, tree,
              DijitRegistry, put, ResourceColumn) {
     // module:
@@ -57,13 +57,13 @@ define([
             // Column set to display task and resource
             [
                 {
-                    action: {
-                        label: "Action",
-                        sortable: false,
-                        get: function (object) {
-                            return object;
-                        },
-                        formatter: function (object) {
+//                    action: {
+//                        label: "Action",
+//                        sortable: false,
+//                        get: function (object) {
+//                            return object;
+//                        },
+//                        formatter: function (object) {
 //                            console.debug('action formatter start');
 //                            var object_type, id_template_str, id_template;
 //                            object_type = object.type;
@@ -77,10 +77,9 @@ define([
 //                            var return_val = id_template(object);
 //                            console.debug('action formatter end');
 //                            return return_val;
-                            return object.name;
-                        },
-                        resizable: true
-                    },
+//                        },
+//                        resizable: true
+//                    },
                     id: {
                         label: "ID",
                         sortable: false,

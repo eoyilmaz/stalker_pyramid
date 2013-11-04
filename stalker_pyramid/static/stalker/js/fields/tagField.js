@@ -18,8 +18,8 @@
 
 define([
     'dojo/store/JsonRest',
-    'stalker/TagSelect',
-    'stalker/fieldUpdater'
+    'stalker/js/TagSelect',
+    'stalker/js/fieldUpdater'
 ], function (JsonRest, TagSelect, fieldUpdater) {
 
     // ********************************************************************

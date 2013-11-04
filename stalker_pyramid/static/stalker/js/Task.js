@@ -56,12 +56,10 @@ define([
 
         progress: 0,
 
-        bid_timing: null,
-        bid_unit: null,
+        bid_timing: 10,
+        bid_unit: 'h',
 
         is_milestone: false,
-        startIsMilestone: false,
-        endIsMilestone: false,
 
         clippedStart: false,
         clippedEnd: false,
@@ -75,65 +73,61 @@ define([
         time_logs: [],
         time_log_ids: [],
 
-        hasExternalDep: false,
+        constructor: function (settings) {
+            this.grid = settings.grid || null;
 
-        constructor: function (kwargs) {
-            this.grid = kwargs.grid;
+            this.id = settings.id || null;
+            this.name = settings.name || null;
+            this.hierarchy_name = settings.hierarchy_name || '';
+            this.description = settings.description || null;
 
-            this.id = kwargs.id || null;
-            this.name = kwargs.name || null;
-            this.hierarchy_name = kwargs.hierarchy_name || '';
-            this.description = kwargs.description || null;
+            this.priority = settings.priority || 500;
 
-            this.priority = kwargs.priority || 500;
+            this.type = settings.type || 'Task';
 
-            this.type = kwargs.type || 'Task';
+            this.parent_id = settings.parent_id || null;
+            this.parent = settings.parent || null;
 
-            this.parent_id = kwargs.parent_id || null;
-            this.parent = kwargs.parent || null;
+            this.hasChildren = settings.hasChildren || false;
 
-            this.hasChildren = kwargs.hasChildren || false;
+            this.depend_ids = settings.depend_ids || [];
 
-            this.depend_ids = kwargs.depend_ids || [];
+            this.start = settings.start || null;
+            this.duration = settings.duration || null;
+            this.end = settings.end || null;
 
-            this.start = kwargs.start || null;
-            this.duration = kwargs.duration || null;
-            this.end = kwargs.end || null;
+            this.schedule_model = settings.schedule_model || this.schedule_model;
+            this.schedule_timing = (settings.schedule_timing || 10).toFixed(1) || this.schedule_timing;
+            this.schedule_unit = settings.schedule_unit || this.schedule_unit;
+            this.schedule_constraint = settings.schedule_constraint || 0;
 
-            this.schedule_model = kwargs.schedule_model;
-            this.schedule_timing = (kwargs.schedule_timing || 10).toFixed(1);
-            this.schedule_unit = kwargs.schedule_unit || 'h';
-            this.schedule_constraint = kwargs.schedule_constraint || 0;
-
-            this.schedule_seconds = kwargs.schedule_seconds || 0;
-            this.total_logged_seconds = kwargs.total_logged_seconds || 0;
+            this.schedule_seconds = settings.schedule_seconds || 0;
+            this.total_logged_seconds = settings.total_logged_seconds || 0;
 
             this.remaining_seconds = ((this.schedule_seconds - this.total_logged_seconds) / 3600 ).toFixed(1) + ' h';
 
             this.progress = this.schedule_seconds > 0 ? this.total_logged_seconds / this.schedule_seconds * 100 : 0;
 
-            this.bid_timing = (kwargs.bid_timing).toFixed(1);
-            this.bid_unit = kwargs.bid_unit;
+            this.bid_timing = settings.bid_timing ? (settings.bid_timing).toFixed(1) : this.bid_timing;
+            this.bid_unit = settings.bid_unit || this.bid_unit;
 
             this.is_milestone = false;
-            this.startIsMilestone = false;
-            this.endIsMilestone = false;
 
             // some dynamic attributes
-            this.resources = kwargs.resources || [];
-            this.resource_ids = kwargs.resource_ids || [];
+            this.resources = settings.resources || [];
+            this.resource_ids = settings.resource_ids || [];
 
-            this.responsible = kwargs.responsible;
+            this.responsible = settings.responsible || null;
 
             var i;
             if (this.resource_ids.length === 0) {
                 // no problem if there are no resources
-                for (i = 0; i < this.resources.length; i++) {
+                for (i = 0; i < this.resources.length; i += 1) {
                     this.resource_ids.push(this.resources[i].id);
                 }
             } else {
                 if (this.grid !== null) {
-                    for (i = 0; i < this.resource_ids.length; i++) {
+                    for (i = 0; i < this.resource_ids.length; i += 1) {
                         this.resources.push(this.master.getResource(this.resource_ids[i]));
                     }
                 }
@@ -141,8 +135,6 @@ define([
 
             this.time_logs = [];
             this.time_log_ids = [];
-
-            this.hasExternalDep = kwargs.hasExternalDep || false;
         },
 
         link: function () {

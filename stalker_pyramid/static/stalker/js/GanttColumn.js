@@ -21,9 +21,8 @@ define([
     'dojo/_base/lang',
     "dojo/date/locale",
     "put-selector/put",
-    'stalker/Resource',
-    'stalker/TimeLog'
-], function (domConstruct, array, lang, locale, put, Resource, TimeLog) {
+    'stalker/js/Task'
+], function (domConstruct, array, lang, locale, put, Task) {
     // module:
     //     ganttColumn
     // summary:
@@ -74,7 +73,6 @@ define([
             column.end = +column.end;
         }
 
-
         var dependencyRow,
             firstCell;
 
@@ -98,16 +96,15 @@ define([
             //         this task depends on.
             // value: unused
             // td: DomNode
-//            console.debug('ResourceColumn.column.renderCell start');
 
             // IE < 8 receive the inner padding node, not the td directly
             cell = td.tagName === "TD" ? td : td.parentNode;
 
             // Add empty content to the cell to avoid it collapsing in IE
-            //td.innerHTML = "&nbsp;";
+            td.innerHTML = "&nbsp;";
 
-            // create a TimeLog instance
-            var resource = new Resource(data);
+            // create a Task instance
+            var task = new Task(data);
 
             // Ensure the start time is always milliseconds since epoch
             // and not a Date object
@@ -118,66 +115,39 @@ define([
             var chartTimeScale = column.scale,
 
             // The start position of the task bar for this task, in pixels
-                left = (resource.start - column.start) / chartTimeScale,
+                left = (task.start - column.start) / chartTimeScale,
 
             // The width of the task bar for this task, in pixels
-                width = (resource.end - resource.start) / chartTimeScale;
+                width = (task.end - task.start) / chartTimeScale;
 
             // Create the colored task bar representing the duration of a task
-            var resourceBar;
-            resourceBar = $($.parseHTML(templates.resourceBar(resource)));
 
-            // iterate the weeks from start to end, choose the week start and
-            // dates correctly
-            var temp_end = new Date(column.end);
-            column.end = temp_end.clearTime().getTime() + 86399999;
-            var range_start = new Date(column.start).clearTime();
-            var dow = range_start.getDay();
-            range_start = range_start.getTime();
-            // one_day =  86400000
-            // one_day - 1 milliseconds = 86399999
-            // one_week = 604800000;
-            // one_week - 1 milliseconds = 604799999;
-            var range_end = range_start + (7 - dow) * 86400000 - 1;
+//            data.progress = data.completed * 100;
+//            data.link = function () {
+//                return column.name;
+//            };
 
-            var total_logged_millies;
-            var weekly_millies_possible = 183600000; // 51 hours for anima
-            var weekly_log_bar;
-            var weekly_log_bar_layout_div;
-            var td_jq = $(td);
-            while (range_start < column.end) {
-                range_end = Math.min(range_end, column.end);
-                total_logged_millies = resource.total_logged_milliseconds(range_start, range_end);
-                // draw a div at that range with the height of total_logged_millies
-
-                if (total_logged_millies > 0) {
-                    weekly_log_bar_layout_div = $($.parseHTML('<div class="weekly_log_bar layout"></div>'));
-                    weekly_log_bar_layout_div.css({
-                        left: Math.floor((range_start - column.start) / chartTimeScale),
-                        width: Math.floor((range_end - range_start) / chartTimeScale)
-                    });
-
-                    weekly_log_bar = $($.parseHTML('<div class="weekly_log_bar timeLog"></div>'));
-                    weekly_log_bar.css({
-                        height: Math.floor(total_logged_millies / weekly_millies_possible * 22)// weekly millies possible
-                    });
-                    weekly_log_bar_layout_div.append(weekly_log_bar);
-                    td_jq.append(
-                        weekly_log_bar_layout_div
-                    );
+            var taskBar;
+            if (task.type === 'Project') {
+                taskBar = $($.parseHTML(templates.projectBar(task)));
+            } else if (task.type === 'Task' || task.type === 'Asset' ||
+                       task.type === 'Shot' || task.type === 'Sequence') {
+                if (task.hasChildren) {
+                    taskBar = $($.parseHTML(templates.parentTaskBar(task)));
+                } else {
+                    taskBar = $($.parseHTML(templates.taskBar(task)));
                 }
-                // get the new start and end values
-                range_start = range_end + 1;
-                range_end += 604800000;
             }
 
-
-            resourceBar.css({
+            taskBar.css({
                 left: left,
                 width: width
             });
-            $(td).append(resourceBar);
 
+            $(td).append(taskBar);
+
+            // Create the overlay for the amount of the task that has been completed
+            //var completeBar = put(td, "span.completed-bar[style=left:" + left + "px;width:" + width * object.completed + "px]");
 
             // Save the location of the right-hand edge for drawing depedency lines later
             cell.finished = left + width;
@@ -186,12 +156,73 @@ define([
             firstCell = firstCell || td;
 
             var grid = column.grid;
+//            console.debug('grid: ', grid);
 
             // render today
             var today_as_millis = (new Date()).getTime();
             put(td, "div.today[style=left:" + Math.floor((today_as_millis - column.start) / column.scale) + "px;]");
 
-//            console.debug('ResourceColumn.column.renderCell end');
+            // TODO: enable this part later
+//            // Create arrows for each dependency, but only after all other rows
+//            // have been rendered so that they can be retrieved and measured
+//            // properly
+//            setTimeout(function () {
+//                // First, create a special column set row (which contains
+//                // elements that have synced horizontal scrolling) so that all
+//                // the dependency lines can be grouped together and will be
+//                // properly scrolled horizontally along with the rest of the
+//                // rows
+//                if (!dependencyRow) {
+//                    // This intermediate element is necessary for the
+//                    // dependency lines to render outside of the zero height
+//                    // dependency row;
+//                    //    the outer element has a height of zero, the inner
+//                    //    element has height to accommodate all the lines
+//                    dependencyRow = put(getColumnSetElement(firstCell), "-div.dependency-container");
+//
+//                    // Create the scrolling container for the gantt dependency
+//                    // arrows
+//                    dependencyRow = put(dependencyRow, "div.dgrid-column-set.dependency-row[data-dgrid-column-set-id=1]");
+//
+//                    // Create the actual container for the dependency arrows
+//                    // inside the scrolling container this will scroll within
+//                    // the .dependency-row
+//                    dependencyRow = put(dependencyRow, "div.dependencies.dgrid-column-chart");
+//                }
+//
+//                array.forEach(object.dependencies, function (dependency) {
+//                    // This corresponds to the dependency DOM node, the
+//                    // starting point of the dependency line
+//                    var cell = grid.cell(dependency, column.id).element;
+//
+//                    // create the horizontal line part of the arrow
+//                    var hline = put(dependencyRow, "span.dep-horizontal-line");
+//
+//                    // we find the location of the starting cell and use that
+//                    // to place the horizontal line
+//                    var top = getColumnSetElement(cell).offsetTop + 10;
+//                    hline.style.top = top + "px";
+//                    hline.style.left = cell.finished + 5 + "px";
+//
+//                    // the start variable is the starting point of the target
+//                    // dependent cell
+//                    hline.style.width = left - cell.finished - 4 + "px";
+//
+//                    // now we create the vertical line and position it
+//                    var vline = put(dependencyRow, "span.dep-vertical-line");
+//
+//                    vline.style.top = top + 2 + "px";
+//                    vline.style.left = left + "px";
+//
+//                    var tdTop = getColumnSetElement(td).offsetTop - 5;
+//                    vline.style.height = tdTop - getColumnSetElement(cell).offsetTop + "px";
+//                    // now we create the arrow at the end of the line, position
+//                    // it correctly
+//                    var arrow = put(dependencyRow, "span.ui-icon.down-arrow");
+//                    arrow.style.top = tdTop + "px";
+//                    arrow.style.left = left - 7 + "px";
+//                });
+//            }, 0);
         };
 
         column.refresh = function (kwargs) {
@@ -236,7 +267,9 @@ define([
             date_x = (date_as_millis - column.start) / column.scale;
 
             scroller = $('.dgrid-column-set-scroller-1');
+
             scroller_width = scroller.width();
+
             scroller.scrollLeft(date_x - scroller_width * 0.5);
         };
 
@@ -253,7 +286,7 @@ define([
             //
             // here we render the header for the gantt chart, this will be a row of dates
             // with days of the week in a row underneath
-//            console.debug('ResourceColum.column.renderHeaderCell start');
+//            console.debug('inside column.renderHeaderCell');
 
             // normalize table scale
 //            var one_day_width = 86400000 / column.scale;
@@ -285,7 +318,7 @@ define([
             var table = put(th, "table[style=width:" + table_width + "px]");
 
             // Create the date row
-            var dateRow = put(table, "tr[style=table-layout:fixed].resourceHead1");
+            var dateRow = put(table, "tr[style=table-layout:fixed].ganttHead1");
 
             // start at the time indicated by the column
             var date = new Date(column.start);
@@ -311,7 +344,7 @@ define([
                 date = new Date(date.getTime() + 86400000); // increment a day
             }
             // now we create a row for the days of the week
-            var dayRow = put(table, "tr.resourceHead2");
+            var dayRow = put(table, "tr.ganttHead2");
             // restart the time iteration, and iterate again
             date = new Date(column.start);
             while (date.getTime() < column.end) {
@@ -321,10 +354,9 @@ define([
                 date = new Date(date.getTime() + 86400000); // increment a day
             }
 
-            // render today
+            // render tod   ay
             var today_as_millis = (new Date()).getTime();
             put(th, "div.today[style=left:" + Math.floor((today_as_millis - column.start) / column.scale) + "px;]");
-//            console.debug('ResourceColum.column.renderHeaderCell end');
         };
 
         return column;

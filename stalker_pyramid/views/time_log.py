@@ -184,7 +184,7 @@ def create_time_log(request):
             wip = Status.query.filter(Status.code == "WIP").first()
             task.status = wip
             DBSession.add(task)
-        except OverBookedError as e:
+        except (OverBookedError, TypeError) as e:
             converter = StdErrToHTMLConverter(e)
             response = Response(converter.html())
             response.status_int = 500

@@ -155,7 +155,7 @@ def main(global_config, **settings):
     config.add_route('list_entity_references',         'entities/{id}/references/list') # html
     config.add_route('list_entity_vacations',          'entities/{id}/vacations/list') # html
     config.add_route('list_entity_versions',           'entities/{id}/versions/list') # html
-    config.add_route('list_entity_time_logs',          'entities/{id}/time_logs/list') # html
+    config.add_route('list_entity_resources',          'entities/{id}/resources/list') # html
 
     config.add_route('append_entities_to_entity_dialog',  'entities/{id}/{entities}/append/dialog')
     config.add_route('append_entities_to_entity',         'entities/{id}/append')
@@ -302,6 +302,7 @@ def main(global_config, **settings):
     config.add_route('get_user_events',       'users/{id}/events/')#json
     # config.add_route('get_user_worked_hours', 'users/{id}/{frequency}/worked_hours/')#json
     config.add_route('get_resources',         'resources/')
+    config.add_route('get_entity_resources',  'entities/{id}/resources/')
     config.add_route('get_resource',          'resources/{id}/')
 
     config.add_route('list_users',            'users/list') # html

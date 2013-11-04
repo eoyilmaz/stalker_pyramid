@@ -1,7 +1,7 @@
 {% extends "base.jinja2" %}
 
 {% block pre_header %}
-   {% include 'time_log/list/list_time_logs_preheader.jinja2' %}
+   {% include 'resource/list/list_resources_preheader.jinja2' %}
 {% endblock pre_header %}
 
 {#{% block modals %}#}
@@ -21,6 +21,6 @@
     {% set page_title='Tasks' %}
     {% include 'page_header.jinja2' %}
     <!--/.page-header-->
-    {% include 'time_log/list/list_time_logs.jinja2' %}
+    {% include 'resource/list/list_resources.jinja2' %}
     {% include 'modals/dialog_template.jinja2' %}
 {% endblock page_content %}

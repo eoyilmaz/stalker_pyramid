@@ -280,10 +280,16 @@
     <!--/.span-->
 </div>
 
+
 <script type='text/javascript'
         data-dojo-config="async: true, parseOnLoad: true"
         src='{{ request.static_url("stalker_pyramid:static/dojo/dojo.js") }}'>
 </script>
+
+<script type='text/javascript'
+        src='{{ request.static_url("stalker_pyramid:static/stalker/js/Studio.js") }}'>
+</script>
+
 
 
 <script type="text/javascript">
@@ -297,23 +303,25 @@ require([
     "dgrid/Grid",
     'dojox/data/JsonRestStore',
 
-    'stalker/ResourceGrid',
+    'stalker/js/ResourceGrid',
 
     'dojo/domReady!'
 ], function (Cache, Memory, JsonRest, List, Grid, JsonRestStore, ResourceGrid){
 
     // The Memory
-    var target = '{{ request.route_url('get_resources', id=entity.id) }}';
+    var target = '{{ request.route_url('get_resource', id=entity.id) }}';
     {% if entity.entity_type == "User" %}
         console.debug('entity_type: User');
     var target = '{{ request.route_url('get_resource', id=entity.id) }}';
         console.debug('entity_type:', '{{ entity.entity_type }}');
+    {% elif entity.entity_type == "Department" %}
+        var target = '{{ request.route_url('get_resource', id=entity.id) }}';
     {% endif %}
 
-    var time_logs_memory_store = new Memory();
+    var resources_memory_store = new Memory();
     console.debug('target:', target);
 
-    var time_logs_jsonRest_store = new JsonRest({
+    var resources_jsonRest_store = new JsonRest({
         target: target,
         getChildren: function (parent, options) {
             return this.query({parent_id: parent.id}, options);
@@ -322,7 +330,7 @@ require([
             return parent.hasChildren;
         }
     });
-    var tasks_cache_store = new Cache(time_logs_jsonRest_store, time_logs_memory_store);
+    var tasks_cache_store = new Cache(resources_jsonRest_store, resources_memory_store);
 
     // allow the resource_grid to resize with the window
     $(window).on('resize', function(){

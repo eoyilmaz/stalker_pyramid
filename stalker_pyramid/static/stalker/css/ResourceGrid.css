@@ -266,7 +266,7 @@
 
 .weekly_log_bar.layout{
     position: absolute;
-    height: 24px;
+    height: 26px;
     bottom: 0px;
     background-color: #d15b47 !important;
 }
@@ -414,6 +414,7 @@ th.dgrid-column-chart table {
     /*text-overflow: ellipsis;*/
     text-overflow: clip;
     white-space: nowrap;
+    height: 26px;
 }
 
 .resource_chart .resourceHead1 {

@@ -58,7 +58,7 @@ GanttDrawer.prototype.zoomGantt = function (isPlus) {
 
     // refresh links
     // TODO: do not use gotoLink, replace it with the new script
-    require(['stalker/gotoLink'], function (gotoLink) {
+    require(['stalker/js/gotoLink'], function (gotoLink) {
         gotoLink();
     });
 
