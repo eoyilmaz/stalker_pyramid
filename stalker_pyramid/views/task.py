@@ -221,7 +221,8 @@ def duplicate_task_hierarchy(request):
         dup_task.name += ' - Duplicate'
         DBSession.add(dup_task)
     else:
-        response = Response('No task can be found with the given id: %s' % task_id)
+        response = Response(
+            'No task can be found with the given id: %s' % task_id)
         response.status_int = 500
         return response
 
@@ -288,7 +289,8 @@ def convert_to_dgrid_gantt_task_format(tasks):
             'end': milliseconds_since_epoch(
                 task.computed_end if task.computed_end else task.end),
             'hasChildren': task.is_container,
-            'hierarchy_name': ' | '.join([parent.name for parent in task.parents]),
+            'hierarchy_name': ' | '.join(
+                [parent.name for parent in task.parents]),
             'id': task.id,
             'link': '/%ss/%s/view' % (task.entity_type.lower(), task.id),
             'name': task.name,
@@ -299,7 +301,8 @@ def convert_to_dgrid_gantt_task_format(tasks):
                 'name': task.responsible.name
             },
             'resources': [
-                {'id': resource.id, 'name': resource.name} for resource in task.resources] if not task.is_container else [],
+                {'id': resource.id, 'name': resource.name} for resource in
+                task.resources] if not task.is_container else [],
             'schedule_constraint': task.schedule_constraint,
             'schedule_model': task.schedule_model,
             'schedule_seconds': task.schedule_seconds,
@@ -368,7 +371,7 @@ def update_task(request):
 
     # get responsible
     responsible_id = request.params.get('responsible_id', -1)
-    responsible = User.query.filter(User.id==responsible_id).first()
+    responsible = User.query.filter(User.id == responsible_id).first()
 
     priority = request.params.get('priority', 500)
 
@@ -516,7 +519,8 @@ def get_tasks(request):
         if isinstance(parent, Project):
             tasks = parent.root_tasks
         elif isinstance(parent, Task):
-            tasks = Task.query.filter(Task.parent_id == parent_id).order_by(Task.name).all()
+            tasks = Task.query.filter(Task.parent_id == parent_id).order_by(
+                Task.name).all()
 
         content_range = content_range % (0, len(tasks) - 1, len(tasks))
         # logger.debug(tasks)
@@ -601,7 +605,8 @@ def get_entity_tasks(request):
             elif isinstance(entity, Studio):
                 entity_projects = Project.query.all()
 
-            return_data = convert_to_dgrid_gantt_project_format(entity_projects)
+            return_data = convert_to_dgrid_gantt_project_format(
+                entity_projects)
 
         content_range = content_range % (0,
                                          len(return_data) - 1,
@@ -822,6 +827,7 @@ def get_user_tasks(request):
         } for task in user.tasks
     ]
 
+
 def create_data_dialog(request, entity_type='Task'):
     """a generic function which will create a dictionary with enough data
     """
@@ -982,7 +988,8 @@ def create_task(request):
         kwargs['project'] = project
 
         # get the parent if parent_id exists
-        parent = Task.query.filter_by(id=parent_id).first() if parent_id else None
+        parent = Task.query.filter_by(
+            id=parent_id).first() if parent_id else None
 
         kwargs['parent'] = parent
 
@@ -1008,7 +1015,8 @@ def create_task(request):
         logger.debug('request.POST: %s' % request.POST)
         depends_to_ids = get_multi_integer(request, 'dependent_ids')
 
-        depends = Task.query.filter(Task.id.in_(depends_to_ids)).all() if depends_to_ids else []
+        depends = Task.query.filter(
+            Task.id.in_(depends_to_ids)).all() if depends_to_ids else []
         logger.debug('depends: %s' % depends)
 
         kwargs['name'] = name
@@ -1100,7 +1108,7 @@ def create_task(request):
         param_list = ['project_id', 'name', 'description',
                       # 'is_milestone', 'status_id'
                       #'resource_ids'
-                      ]
+        ]
 
         params = [param for param in param_list if param not in request.params]
 
@@ -1155,7 +1163,7 @@ def request_task_review(request):
     logged_in_user = get_logged_in_user(request)
 
     task_id = request.matchdict.get('id', -1)
-    task = Task.query.filter(Task.id==task_id).first()
+    task = Task.query.filter(Task.id == task_id).first()
 
     if task:
         # get the project that the ticket belongs to
@@ -1164,11 +1172,11 @@ def request_task_review(request):
         summary_text = 'Review Request: "%s"' % task.name
         description_text = '%s has requested you to do a review for ' \
                            '"%s (%s) - (%s)"' % (
-            logged_in_user.name,
-            task.name,
-            task.entity_type,
-            "|".join(map(lambda x: x.name, task.parents))
-        )
+                               logged_in_user.name,
+                               task.name,
+                               task.entity_type,
+                               "|".join(map(lambda x: x.name, task.parents))
+                           )
 
         responsible = task.responsible
 
@@ -1202,8 +1210,6 @@ def request_task_review(request):
     return HTTPOk()
 
 
-
-
 @view_config(
     route_name='get_entity_tasks_stats',
     renderer='json'
@@ -1222,22 +1228,22 @@ def get_entity_tasks_stats(request):
 
     join_attr = None
 
-    if entity.entity_type =='User':
+    if entity.entity_type == 'User':
         join_attr = Task.resources
-    elif entity.entity_type =='Project':
+    elif entity.entity_type == 'Project':
         join_attr = Task.project
 
     __class__ = entity.__class__
 
-    status_count_task=[]
+    status_count_task = []
 
     #TODO find the correct solution to filter leaf tasks. This does not work.
     for status in status_list.statuses:
         status_count_task.append({
             'name': status.name,
-            'color':colors[status.name],
+            'color': colors[status.name],
             'icon': 'icon-folder-close-alt',
-            'count':Task.query.join(entity.__class__, join_attr) \
+            'count': Task.query.join(entity.__class__, join_attr) \
                 .filter(__class__.id == entity_id) \
                 .filter(Task.status_id == status.id) \
                 .filter(Task.children == None) \
@@ -1283,7 +1289,6 @@ def delete_task(request):
 
 
 def get_child_task_events(task):
-
     task_events = []
 
     if task.children:
@@ -1296,47 +1301,47 @@ def get_child_task_events(task):
         resources = []
 
         for resource in task.resources:
-            resources.append({'name':resource.name, 'id':resource.id})
+            resources.append({'name': resource.name, 'id': resource.id})
 
 
-        logger.debug('resources %s' % resources)
+        # logger.debug('resources %s' % resources)
 
         task_events.append({
-                    'id': task.id,
-                    'entity_type': task.plural_class_name.lower(),
-                    # 'title': '%s (%s)' % (
-                    #     task.name,
-                    #     ' | '.join([parent.name for parent in task.parents])),
-                    'title': task.name,
-                    'start': milliseconds_since_epoch(task.start),
-                    'end': milliseconds_since_epoch(task.end),
-                    'className': 'label',
-                    'allDay': False,
-                    'status': task.status.name,
-                    'resources':resources
-                    # 'hours_to_complete': time_log.hours_to_complete,
-                    # 'notes': time_log.notes
-                })
-
-
+            'id': task.id,
+            'entity_type': task.plural_class_name.lower(),
+            # 'title': '%s (%s)' % (
+            #     task.name,
+            #     ' | '.join([parent.name for parent in task.parents])),
+            'title': task.name,
+            'start': milliseconds_since_epoch(task.start),
+            'end': milliseconds_since_epoch(task.end),
+            'className': 'label',
+            'allDay': False,
+            'status': task.status.name,
+            'resources': resources,
+            'percent_complete': task.percent_complete,
+            'total_logged_seconds': task.total_logged_seconds,
+            'schedule_seconds': task.schedule_seconds
+            # 'hours_to_complete': time_log.hours_to_complete,
+            # 'notes': time_log.notes
+        })
 
         for time_log in task.time_logs:
-         # logger.debug('time_log.task.id : %s' % time_log.task.id)
-         # assert isinstance(time_log, TimeLog)
+        # logger.debug('time_log.task.id : %s' % time_log.task.id)
+        # assert isinstance(time_log, TimeLog)
             task_events.append({
                 'id': time_log.id,
                 'entity_type': time_log.plural_class_name.lower(),
+                'resource_name': time_log.resource.name,
                 'title': time_log.task.name,
-                # 'title': '%s (%s)' % (
-                #             time_log.task.name,
-                #             ' | '.join(
-                #                 [parent.name for parent in time_log.task.parents])),
                 'start': milliseconds_since_epoch(time_log.start),
                 'end': milliseconds_since_epoch(time_log.end),
                 'className': 'label-success',
                 'allDay': False,
                 'status': time_log.task.status.name
-             })
+            })
+            logger.debug('resource_id %s' % time_log.resource.id)
+            logger.debug('resource_name %s' % time_log.resource.name)
 
     return task_events
 
@@ -1352,7 +1357,6 @@ def get_task_events(request):
 
     logger.debug('get_task_events is running')
 
-
     task_id = request.matchdict.get('id', -1)
     task = Task.query.filter_by(id=task_id).first()
 
@@ -1362,5 +1366,89 @@ def get_task_events(request):
 
     events.extend(get_child_task_events(task))
 
-
     return events
+
+
+#
+# @view_config(
+#     route_name='get_task_depends_of',
+#     renderer='json'
+# )
+# def get_task_depends_of(request):
+#     if not multi_permission_checker(
+#             request, ['Read_User', 'Read_TimeLog']):
+#         return HTTPForbidden(headers=request)
+#
+#     logger.debug('get_task_depends_of is running')
+#
+#     task_id = request.matchdict.get('id', -1)
+#     task = Task.query.filter_by(id=task_id).first()
+#
+#
+#     depends_of=[]
+#
+#     assert isinstance(task, Task) # dependent_of
+#     for dep_task in task.depends_of:
+#
+#         resources = []
+#
+#         for resource in dep_task.resources:
+#             resources.append({'name': resource.name, 'id': resource.id})
+#
+#         depends_of.append(
+#             {
+#                 'id': dep_task.id,
+#                 'name': dep_task.name,
+#                 'resources': resources
+#             }
+#         )
+#
+#     return depends_of
+
+
+@view_config(
+    route_name='get_task_depends',
+    renderer='json'
+)
+def get_task_depends(request):
+    if not multi_permission_checker(
+            request, ['Read_User', 'Read_TimeLog']):
+        return HTTPForbidden(headers=request)
+
+    logger.debug('get_task_depends is running')
+
+    task_id = request.matchdict.get('id', -1)
+    task = Task.query.filter_by(id=task_id).first()
+
+
+
+    depends =[]
+
+    for dep_task in task.depends:
+
+        resources = []
+
+        for resource in dep_task.resources:
+            resources.append({'name': resource.name, 'id': resource.id})
+
+        depends.append(
+            {
+                'id': dep_task.id,
+                'name': dep_task.name,
+                'percent_complete': dep_task.percent_complete,
+                'total_logged_seconds': dep_task.total_logged_seconds,
+                'schedule_seconds': dep_task.schedule_seconds,
+                'resources': resources
+            }
+        )
+
+    return depends
+
+
+
+
+
+
+
+
+
