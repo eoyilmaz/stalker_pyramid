@@ -17,30 +17,6 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
-// extend the Date object to include getClock(), setClock()
-/**
- * Returns the UTC clock as milliseconds
- * 
- * @returns {Number}
- */
-Date.prototype.getClock = function () {
-    return this.getTime() % 86400000;
-};
-
-/**
- * Sets the UTC clock of the Date object
- * 
- * @param {Number} clock
- *  The clock in milliseconds
- * 
- */
-Date.prototype.setClock = function (clock) {
-    'use strict';
-    var time = this.getTime();
-    this.setTime(time - time % 86400000 + clock % 86400000);
-    // TODO: this can be faster like this: this.setTime(time - (time - clock) % 86400000)
-    return this;
-};
 
 function Studio() {
     'use strict';

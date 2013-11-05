@@ -767,11 +767,19 @@ def get_resources(request):
             from "SimpleEntities"
             where "SimpleEntities".entity_type = '%s'
             """ % entity_type
+        elif entity_type == 'Studio':
+            resource_sql_query = """select
+                "SimpleEntities".id,
+                "SimpleEntities".name,
+                count(*) as resource_count
+            from "SimpleEntities"
+            join "User_Departments" on "User_Departments".did = "SimpleEntities".id
+            """
 
-        if resource_id:
-            resource_sql_query += "and id=%s group by id, name" % resource_id
+        if resource_id and entity_type != "Studio":
+            resource_sql_query += "and id=%s group by id, name order by name" % resource_id
         else:
-            resource_sql_query += "group by id, name"
+            resource_sql_query += "group by id, name order by name"
 
         # if the given entity is a Department return all the time logs of the
         # users of that department
@@ -810,7 +818,7 @@ def get_resources(request):
             """
 
             has_children = False
-        elif entity_type == "Department":
+        elif entity_type in ["Department", "Studio"]:
             time_log_query += """
             join "User_Departments" on "User_Departments".uid = "TimeLogs".resource_id
             where did = %s"""
@@ -870,15 +878,16 @@ def get_resources(request):
         # return departments ??? should also return Groups, Project etc.
         # that contains users
         resource_sql_query = """select
-                "Users".id,
-                "SimpleEntities".name,
-                1 as resource_count
-            from "Users"
-            join "SimpleEntities" on "SimpleEntities".id = "Users".id
-            join "User_Departments" on "User_Departments".uid = "Users".id
-            join "Departments" on "User_Departments".did = "Departments".id
-            where "Departments".id = %s
-            """ % parent_id
+            "Users".id,
+            "SimpleEntities".name,
+            1 as resource_count
+        from "Users"
+        join "SimpleEntities" on "SimpleEntities".id = "Users".id
+        join "User_Departments" on "User_Departments".uid = "Users".id
+        join "Departments" on "User_Departments".did = "Departments".id
+        where "Departments".id = %s
+        order by name
+        """ % parent_id
 
         time_log_query = """select
             "TimeLogs".id,
@@ -916,6 +925,8 @@ def get_resources(request):
     logger.debug('tasks_sql_query : %s' % tasks_query)
 
     resources_result = execute(resource_sql_query).fetchall()
+
+    logger.debug('resources_result : %s' % resources_result)
 
     link = '/%s/%s/view' % (entity_type.lower(), '%s')
     data = [

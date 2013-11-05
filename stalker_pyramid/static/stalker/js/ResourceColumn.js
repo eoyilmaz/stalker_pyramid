@@ -165,13 +165,13 @@ define([
 
                 if (total_logged_millies > 0 || added_first_time_log) {
                     added_first_time_log = true;
-                    weekly_log_bar_layout_div = $(parseHTML('<div class="weekly_log_bar layout"></div>'));
+                    weekly_log_bar_layout_div = $($.parseHTML('<div class="log_bar layout"></div>'));
                     weekly_log_bar_layout_div.css({
                         left: Math_floor((range_start - column.start) / chartTimeScale),
                         width: Math_floor((range_end - range_start) / chartTimeScale)
                     });
 
-                    weekly_log_bar = $(parseHTML('<div class="weekly_log_bar timeLog"></div>'));
+                    weekly_log_bar = $($.parseHTML('<div class="log_bar timeLog"></div>'));
                     weekly_log_bar.css({
                         height: Math_floor(total_logged_millies / weekly_millies_possible * 22 / resource_count)// weekly millies possible
                     });

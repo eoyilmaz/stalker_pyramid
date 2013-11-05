@@ -18,32 +18,20 @@
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
 
-// extend the Date object to include getClock(), setClock()
-/**
- * Returns the UTC clock as milliseconds
- * 
- * @returns {Number}
- */
-Date.prototype.getClock = function () {
-    return this.getTime() % 86400000;
+var Date = require('../date.stalker').Date;
+
+exports['test Date.getClock() is working properly'] = function (test) {
+    var test_date = new Date(1383579474543);
+    test.equal(
+        test_date.getClock(),
+        56274543
+    );
+    test.done();
 };
 
-/**
- * Sets the UTC clock of the Date object
- * 
- * @param {Number} clock
- *  The clock in milliseconds
- * 
- */
-Date.prototype.setClock = function (clock) {
-    'use strict';
-    var temp_clock = +clock,
-        time = this.getTime();
-    this.setTime(time - time % 86400000 + temp_clock % 86400000);
-    return this;
+exports['test Date.setClock() is working properly'] = function (test) {
+    var test_date = new Date(2013, 10, 4, 10, 0);
+    test_date.setClock(56274543);
+    test.equal(test_date.getTime(), 1383579474543);
+    test.done();
 };
-
-try {
-    module.exports.Date = Date;
-} catch (e) {
-}
