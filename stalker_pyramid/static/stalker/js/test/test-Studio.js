@@ -110,28 +110,34 @@ exports['test_get_working_hours_between_dates'] = function (test) {
         [
             new Date(2013, 10, 4, 10, 0), // start
             new Date(2013, 10, 4, 19, 0), // end
-            32400000// expected result : 9 hours
+            32400000 // expected result : 9 hours
         ],
         [
             new Date(2013, 10, 4, 16, 0), // start
             new Date(2013, 10, 4, 22, 0), // end
-            10800000// expected result : 3 hours 16:00 - 19:00
+            10800000 // expected result : 3 hours 16:00 - 19:00
         ],
         [
             new Date(2013, 10, 4, 5, 0), // start
             new Date(2013, 10, 4, 14, 0), // end
-            14400000// expected result : 4 hours from 10:00
+            14400000 // expected result : 4 hours from 10:00
         ],
         [
             new Date(2013, 10, 3, 10, 0), // start
             new Date(2013, 10, 4, 19, 0), // end
-            32400000// expected result : 9 hours from monday 10:00 - monday 19:00
+            32400000 // expected result : 9 hours from monday 10:00 - monday 19:00
         ],
         [
             new Date(2013, 10, 4, 15, 0), // start
             new Date(2013, 10, 6, 19, 0), // end
-            79200000// expected result : 22 hours from monday 15:00 - wednesday 19:00
+            79200000 // expected result : 22 hours from monday 15:00 - wednesday 19:00
         ],
+        [
+            // a bug from the page
+            new Date(2014, 2, 23, 2), // start
+            new Date(2014, 2, 30, 1, 59, 59, 999), // end
+            183600000 // expected : 51 hours from sunday to sunday
+        ]
     ];
 
     var start, end, expected;

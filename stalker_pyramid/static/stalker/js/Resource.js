@@ -31,9 +31,9 @@ define([
 
         constructor: function (settings) {
             //this.grid = settings.grid;
-            console.log('code is here 1');
+//            console.log('code is here 1');
             this.studio = new Studio();
-            console.log('code is here 2');
+//            console.log('code is here 2');
             this.id = settings.id || null;
             this.name = settings.name || null;
             this.type = settings.type || null;
@@ -62,7 +62,7 @@ define([
                 this.tasks.push(temp_task);
             }
 
-            console.log('code is here 3');
+//            console.log('code is here 3');
         },
 
         link: function () {

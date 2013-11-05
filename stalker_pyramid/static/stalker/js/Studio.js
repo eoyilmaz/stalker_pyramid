@@ -17,7 +17,6 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
-
 // extend the Date object to include getClock(), setClock()
 /**
  * Returns the UTC clock as milliseconds
@@ -40,6 +39,7 @@ Date.prototype.setClock = function (clock) {
     var time = this.getTime();
     this.setTime(time - time % 86400000 + clock % 86400000);
     // TODO: this can be faster like this: this.setTime(time - (time - clock) % 86400000)
+    return this;
 };
 
 function Studio() {
@@ -53,7 +53,7 @@ function Studio() {
         3: [28800000, 61200000],  // wednesday 9 : 10:00 - 19:00 in Turkey 08:00 - 17:00 in UTC
         4: [28800000, 61200000],  // thursday  9 : 10:00 - 19:00 in Turkey 08:00 - 17:00 in UTC
         5: [28800000, 61200000],  // friday    9 : 10:00 - 19:00 in Turkey 08:00 - 17:00 in UTC
-        6: [36000000, 61200000]   // saturday  6 : 12:00 - 18:00 in Turkey 10:00 - 16:00 in UTC
+        6: [36000000, 57600000]   // saturday  6 : 12:00 - 18:00 in Turkey 10:00 - 16:00 in UTC
     };
     this.vacations = [];
 }
@@ -77,12 +77,12 @@ Studio.prototype.get_working_hours_between_dates = function (start, end) {
         temp_end = +start,
         end_date = +end,
         total_working_millies = 0;
-
     while (temp_start < end_date) {
         total_working_millies += temp_end - temp_start;
         temp_start = this.get_closest_working_hour_start(temp_end);
         temp_end = this.get_closest_working_hour_end(temp_start);
         temp_end = Math.min(temp_end, end_date);
+        temp_start = Math.min(temp_start, temp_end);
     }
     return total_working_millies;
 };
@@ -96,7 +96,7 @@ Studio.prototype.get_working_hours_between_dates = function (start, end) {
  */
 Studio.prototype.get_closest_working_hour_start = function (date) {
     'use strict';
-    var temp_date, is_working_hour, return_val;
+    var temp_date, is_working_hour, return_val, clock;
     // ensure it is a Date instance
     // because it is the start value, to prevent the last millisecond of the
     // working day to be counted as a working hour we add 1 milliseconds to the
@@ -117,13 +117,17 @@ Studio.prototype.get_closest_working_hour_start = function (date) {
         var working_hours = this.working_hours[day_of_week];
         // if date.hour is lower than start return start
         // else check if the next day is a working day
-        var clock = temp_date.getClock();
+        clock = (temp_date.getTime() % 86400000);
         if (working_hours[0] !== null && clock <= working_hours[0]) {
             temp_date.setClock(working_hours[0]);
             return +temp_date;
         } else {
             // we should check the next day
-            temp_date.setClock(0);
+            // because of the time offsets there is very weird things going on
+            // when daylight saving is active,
+            // and as a shortcut directly set to the next days working hours start
+            var next_day_working_hour_start = this.working_hours[(day_of_week + 1) % 7][0] || 0;
+            temp_date.setClock(next_day_working_hour_start);
             temp_date.setDate(temp_date.getDate() + 1);
             return +this.get_closest_working_hour_start(temp_date);
         }
@@ -187,5 +191,7 @@ Studio.prototype.is_working_hour = function (date) {
         clock <= working_hours_of_week_day[1];
 };
 
-
-//module.exports.Studio = Studio;
+try {
+    module.exports.Studio = Studio;
+} catch (e) {
+}

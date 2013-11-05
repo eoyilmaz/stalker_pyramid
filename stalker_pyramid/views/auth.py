@@ -790,23 +790,50 @@ def get_resources(request):
         from "Tasks"
         """
 
+        has_children = False
+
         if entity_type == "User":
             time_log_query += "where resource_id = %s"
-            tasks_query += """  join "Task_Resources" on "Tasks".id = "Task_Resources".task_id
-                           where resource_id = %s
-                           """
-            hasChildren = False
+
+            tasks_query += """join "Task_Resources" on "Tasks".id = "Task_Resources".task_id
+                where not (
+                    exists (
+                        select 1
+                        from (
+                            select "Tasks".parent_id
+                            from "SimpleEntities"
+                                join "Tasks" on "SimpleEntities".id = "Tasks".id
+                            ) AS all_tasks
+                        where all_tasks.parent_id = "Tasks".id
+                    )
+                ) and resource_id = %s
+            """
+
+            has_children = False
         elif entity_type == "Department":
             time_log_query += """
             join "User_Departments" on "User_Departments".uid = "TimeLogs".resource_id
             where did = %s"""
+
             tasks_query += """join "Task_Resources" on "Tasks".id = "Task_Resources".task_id
             join "User_Departments" on "Task_Resources".resource_id = "User_Departments".uid
-            where did = %s
-            group by id, start, "end"
+            where not (
+                exists (
+                    select 1
+                    from (
+                        select "Tasks".parent_id
+                        from "SimpleEntities"
+                            join "Tasks" on "SimpleEntities".id = "Tasks".id
+                        ) AS all_tasks
+                    where all_tasks.parent_id = "Tasks".id
+                )
+            )
+            and did = %s
+            group by "Tasks".id, "Tasks".start, "Tasks".end
             order by start
             """
-            hasChildren = True
+
+            has_children = True
         elif entity_type == "Project":
             # the resource is a Project return all the project tasks and
             # return all the time logs of the users in that project
@@ -814,16 +841,30 @@ def get_resources(request):
             join "User_Departments" on "User_Departments".uid = "TimeLogs".resource_id
             -- where did = %s
             """
-            tasks_query += """select
+
+            tasks_query += """
+            -- select all the leaf tasks of the users of a specific Project
+            select
                 "Tasks".id,
                 extract(epoch from "Tasks".computed_start) * 1000 as start,
                 extract(epoch from "Tasks".computed_end) * 1000 as end
             from "Tasks"
-                where project_id = %s
+                where not (
+                    exists (
+                        select 1
+                        from (
+                            select "Tasks".parent_id
+                            from "SimpleEntities"
+                                join "Tasks" on "SimpleEntities".id = "Tasks".id
+                            ) AS all_tasks
+                        where all_tasks.parent_id = "Tasks".id
+                    )
+                ) and project_id = %s
             group by id, start, "end"
             order by start
             """
-            hasChildren = True
+
+            has_children = True
 
     else:
         # return departments ??? should also return Groups, Project etc.
@@ -837,7 +878,7 @@ def get_resources(request):
             join "User_Departments" on "User_Departments".uid = "Users".id
             join "Departments" on "User_Departments".did = "Departments".id
             where "Departments".id = %s
-            """ % (parent_id)
+            """ % parent_id
 
         time_log_query = """select
             "TimeLogs".id,
@@ -854,11 +895,21 @@ def get_resources(request):
             extract(epoch from "Tasks".computed_end) * 1000 as end
         from "Tasks"
             join "Task_Resources" on "Tasks".id = "Task_Resources".task_id
-        where resource_id = %s
+        where
+            not (
+                exists (
+                    select 1
+                    from (
+                        select "Tasks".parent_id
+                        from "SimpleEntities"
+                            join "Tasks" on "SimpleEntities".id = "Tasks".id
+                        ) AS all_tasks
+                    where all_tasks.parent_id = "Tasks".id
+                )
+            ) and resource_id = %s
         """
 
-        hasChildren = False
-
+        has_children = False
 
     logger.debug('resource_sql_query : %s' % resource_sql_query)
     logger.debug('time_log_query : %s' % time_log_query)
@@ -873,7 +924,7 @@ def get_resources(request):
             'name': rr[1],
             'type': entity_type,
             'resource_count': rr[2],
-            'hasChildren': hasChildren,
+            'hasChildren': has_children,
             'link': link % rr[0],
             'time_logs': [
                 {

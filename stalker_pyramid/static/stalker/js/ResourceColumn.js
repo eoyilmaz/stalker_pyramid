@@ -129,12 +129,9 @@ define([
 
             // iterate the weeks from start to end, choose the week start and
             // dates correctly
-            console.log('code is here U1');
             var temp_end = new Date(column.end);
             column.end = temp_end.setClock(0).getTime() + 86399999;
-            console.log('code is here U2');
             var range_start = new Date(column.start).setClock(0);
-            console.log('code is here U3');
             var dow = range_start.getDay();
             range_start = range_start.getTime();
             // one_day =  86400000
@@ -160,14 +157,9 @@ define([
             var end_date = column.end;
 
             var resource_count = resource.resource_count;
-            console.log('resource_count: ', resource_count);
 
-            console.log('range_start : ', new Date(range_start));
-            console.log('end_date    : ', new Date(end_date));
-            
             while (range_start < end_date) {
                 range_end = Math.min(range_end, column.end);
-                console.log('getting resource.total_logged_milliseconds for:', new Date(range_start), new Date(range_end));
                 total_logged_millies = resource.total_logged_milliseconds(range_start, range_end);
                 // draw a div at that range with the height of total_logged_millies
 
@@ -192,8 +184,6 @@ define([
                 range_start = range_end + 1;
                 range_end += 604800000;
             }
-
-            console.log('code is here 4');
 
 //            resourceBar.css({
 //                left: left,
