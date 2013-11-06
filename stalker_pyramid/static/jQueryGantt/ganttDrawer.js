@@ -27,7 +27,7 @@ function GanttDrawer(zoom, startmillis, endMillis, master, minGanttSize) {
     this.zoom = zoom;
     this.minGanttSize = minGanttSize;
     this.includeToday = true; //when true today is always visible. If false boundaries comes from tasks periods
-    
+
     this.computedTableWidth = null;
 
     this.zoomLevels = ['h', "d", "w", "m", "q", "s", "y"];
@@ -198,7 +198,7 @@ GanttDrawer.prototype.create = function (zoom, originalStartMillis, originalEndM
 
         } else if (zoom == "q") {
             //quarter
-            computedTableWidth = Math.floor(((endPeriod - startPeriod) / (3600000 * 24 * 30)) * 300); //1 month= 300px
+            computedTableWidth = Math.floor(((endPeriod - startPeriod) / (3600000 * 24 * 30)) * 300); // 1 month= 300px
             iterate(function (date) {
                 var end = new Date(date.getTime());
                 end.setMonth(end.getMonth() + 3);
@@ -260,7 +260,7 @@ GanttDrawer.prototype.create = function (zoom, originalStartMillis, originalEndM
             });
         } else if (zoom == "h") {
             // hours
-            computedTableWidth = Math.floor(((endPeriod - startPeriod ) / 3600000) * 40); // 1 hour= 50px
+            computedTableWidth = Math.floor(((endPeriod - startPeriod ) / 3600000) * 40); // 1 hour= 40px
             iterate(function (date) {
                 //tr1.append(createHeadCell(date.format('EEE d MMMM yyyy'), 24, isHoliday(date) ? 'holyH': null));
                 tr1.append(createHeadCell(date.format('ddd d mmm yyyy'), 24, date.getDay() == 0 ? 'holyH' : null));

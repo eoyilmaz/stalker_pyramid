@@ -45,6 +45,8 @@ exports['test_is_working_hour'] = function (test) {
     var test_values = [
         [new Date(2013, 10, 4, 16, 38), true],
         [new Date(2013, 10, 3, 10, 0), false],
+        [new Date(2013, 10, 4, 10, 0), true],
+        [new Date(2013, 10, 4, 19, 0), true],
         [new Date(2013, 10, 4, 20, 0), false]
     ];
 

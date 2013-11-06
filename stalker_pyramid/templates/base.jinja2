@@ -124,11 +124,12 @@
     <link rel="stylesheet"
           href='{{ request.static_url("stalker_pyramid:static/stalker/css/stalker.css") }}'/>
 
-
-    <!--ace settings handler-->
+    {# TODO: some scripts need to be here - will fix later #}
     <script src='{{ request.static_url("stalker_pyramid:static/jquery/jquery-2.0.3.min.js") }}'></script>
+    <!--ace settings handler-->
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.colorbox-min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/uncompressed/ace-extra.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/moment/moment.min.js") }}'></script>
 
     {# TEMPLATES #}
     {% block templates %}
@@ -273,7 +274,6 @@
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootbox.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/date.format.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/date.stalker.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/moment/moment.min.js") }}'></script>
 
     <script type="text/javascript">
         if ("ontouchend" in document) document.write("<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.mobile.custom.min.js") }}'>" + "<" + "/script>");

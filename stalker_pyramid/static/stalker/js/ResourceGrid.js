@@ -164,7 +164,7 @@ define([
             [
                 {
                     chart: new ResourceColumn({
-                        scale: 4000000,
+                        scale: 'w',
                         start: function () {
                             var today = new Date();
                             // clear the time and set the day to the closest sunday

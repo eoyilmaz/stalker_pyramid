@@ -120,18 +120,29 @@ th.dgrid-column-chart table {
 
 
 .resource_chart .dgrid-cell {
-    /*background-color: rgb(240, 240, 240);*/
-    /*text-overflow: ellipsis;*/
     text-overflow: clip;
     white-space: nowrap;
     height: 26px;
 }
 
 .resource_chart .resourceHead1 {
-    overflow:hidden;text-overflow:clip;white-space:nowrap;
+    overflow:hidden;
+    text-overflow:clip;
+    white-space:nowrap;
 }
+
 .resource_chart .resourceHead2 {
-    overflow:hidden;text-overflow:clip;white-space:nowrap;
+    overflow:hidden;
+    text-overflow:clip;
+    white-space:nowrap;
+}
+
+.resource_chart .headerCell {
+    position: absolute;
+}
+
+.center {
+    text-align: center;
 }
 
 

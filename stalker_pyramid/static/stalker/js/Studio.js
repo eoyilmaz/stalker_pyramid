@@ -17,19 +17,23 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 
+try {
+    var moment = require('../../moment/moment.min');
+} catch (e) {};
+
 
 function Studio() {
     'use strict';
     this.daily_working_hours = 9;
     this.weekly_working_hours = 51;
     this.working_hours = { // these should be in UTC time/hours
-        0: [null, null],                // sunday    0 : day off
         1: [28800000, 61200000],  // monday    9 : 10:00 - 19:00 in Turkey 08:00 - 17:00 in UTC
         2: [28800000, 61200000],  // tuesday   9 : 10:00 - 19:00 in Turkey 08:00 - 17:00 in UTC
         3: [28800000, 61200000],  // wednesday 9 : 10:00 - 19:00 in Turkey 08:00 - 17:00 in UTC
         4: [28800000, 61200000],  // thursday  9 : 10:00 - 19:00 in Turkey 08:00 - 17:00 in UTC
         5: [28800000, 61200000],  // friday    9 : 10:00 - 19:00 in Turkey 08:00 - 17:00 in UTC
-        6: [36000000, 57600000]   // saturday  6 : 12:00 - 18:00 in Turkey 10:00 - 16:00 in UTC
+        6: [36000000, 57600000],  // saturday  6 : 12:00 - 18:00 in Turkey 10:00 - 16:00 in UTC
+        7: [null, null]           // sunday    0 : day off
     };
     this.vacations = [];
 }
@@ -72,39 +76,38 @@ Studio.prototype.get_working_hours_between_dates = function (start, end) {
  */
 Studio.prototype.get_closest_working_hour_start = function (date) {
     'use strict';
-    var temp_date, is_working_hour, return_val, clock;
     // ensure it is a Date instance
     // because it is the start value, to prevent the last millisecond of the
     // working day to be counted as a working hour we add 1 milliseconds to the
     // start value to correctly get the next working days start value as the
     // return value
-    is_working_hour = this.is_working_hour(date + 1);
+    var is_working_hour = this.is_working_hour(date + 1);
 
-    temp_date = +date;
+    var temp_date = +date;
 
     if (is_working_hour) {
         return temp_date;
     } else {
         // get the day and the working hours for that day, if no working hours
         // go to the next day
-        temp_date = new Date(date);
-        var day_of_week = temp_date.getDay();
+        temp_date = moment.utc(date);
+        var day_of_week = temp_date.isoWeekday();
         // now get the working hours for that day
         var working_hours = this.working_hours[day_of_week];
         // if date.hour is lower than start return start
         // else check if the next day is a working day
-        clock = (temp_date.getTime() % 86400000);
+        var clock = (temp_date.valueOf() % 86400000);
         if (working_hours[0] !== null && clock <= working_hours[0]) {
-            temp_date.setClock(working_hours[0]);
-            return +temp_date;
+            return temp_date.startOf('day') + working_hours[0];
         } else {
             // we should check the next day
             // because of the time offsets there is very weird things going on
             // when daylight saving is active,
             // and as a shortcut directly set to the next days working hours start
-            var next_day_working_hour_start = this.working_hours[(day_of_week + 1) % 7][0] || 0;
-            temp_date.setClock(next_day_working_hour_start);
-            temp_date.setDate(temp_date.getDate() + 1);
+            var next_day_of_week = temp_date.add(1, 'day').isoWeekday();
+            var next_day_working_hour_start = this.working_hours[next_day_of_week][0] || 0;
+
+            temp_date = temp_date.startOf('day') + next_day_working_hour_start;
             return +this.get_closest_working_hour_start(temp_date);
         }
     }
@@ -119,27 +122,24 @@ Studio.prototype.get_closest_working_hour_start = function (date) {
  */
 Studio.prototype.get_closest_working_hour_end = function (date) {
     'use strict';
-    var temp_date, is_working_hour;
     // ensure it is a Date instance
-    is_working_hour = this.is_working_hour(date);
+    var is_working_hour = this.is_working_hour(date);
 
     // get the day and the working hours for that day, if no working hours
     // go to the next day
-    temp_date = new Date(date);
-    var day_of_week = temp_date.getDay();
+    var temp_date = moment.utc(date);
+    var day_of_week = temp_date.isoWeekday();
     // now get the working hours for that day
     var working_hours = this.working_hours[day_of_week];
     // if date.hour is lower than end return end
     // else check if the next day is a working day
-    var clock = temp_date.getClock();
+    var clock = (temp_date.valueOf() % 86400000);
     if (working_hours[1] !== null && clock <= working_hours[1]) {
-        temp_date.setClock(working_hours[1]);
-        return +temp_date;
+        return temp_date.startOf('day') + working_hours[1];
     } else {
         // we should check the next day
-        temp_date.setDate(temp_date.getDate() + 1);
-        temp_date.setClock(0);
-        return +this.get_closest_working_hour_end(temp_date);
+        temp_date.add(1, 'day').startOf('day');
+        return +this.get_closest_working_hour_end(+temp_date);
     }
 };
 
@@ -156,10 +156,13 @@ Studio.prototype.is_working_hour = function (date) {
     // get the working hours of the week day
     var week_day, clock, working_hours_of_week_day, temp_date;
     // ensure that it is a Date object
-    temp_date = new Date(date);
 
-    week_day = temp_date.getDay();
-    clock = temp_date.getClock();
+    var temp_date = moment.utc(date);
+
+    week_day = temp_date.isoWeekday();
+    clock = temp_date - moment.utc(temp_date).startOf('day');
+
+//    clock = temp_date.getClock();
     working_hours_of_week_day = this.working_hours[week_day];
     return working_hours_of_week_day[0] !== null &&
         working_hours_of_week_day[1] !== null &&
