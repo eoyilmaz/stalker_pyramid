@@ -1,5 +1,7 @@
-// Stalker a Production Asset Management System
-// Copyright (C) 2009-2013 Erkan Ozgur Yilmaz
+// Stalker Pyramid
+// Copyright (C) 2013 Erkan Ozgur Yilmaz
+//
+// This file is part of Stalker Pyramid.
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -59,8 +61,6 @@ define([
             end_date.add(step_size - 1, step_unit);
             period_end.add(step_size - 1, period_unit);
         }
-        
-        console.log('Math.floor((start_date - original_start) / scale):', Math.floor((start_date - original_start) / scale));
 
         // create the first div elements using start_date and week_end
         var parent_div = $($.parseHTML('<div class="headerCell"></div>'));
@@ -236,6 +236,7 @@ define([
 
             ],
             'chart': {
+                'element_width': 30, // in px
                 'draw': function (parent, data, start, end) {
                     return draw_cell({
                         parent: parent,
@@ -253,7 +254,7 @@ define([
             }
         },
         "d": {
-            scale: 120000, // 1 day is 30 px
+            scale: 2880000, // 1 day is 30 px
             table_width: function (start, end) {
                 var start_date = moment(start).startOf('day');
                 var end_date = moment(end).endOf('day');
@@ -322,6 +323,7 @@ define([
                 }
             ],
             'chart': {
+                'element_width': 30, // in px
                 'draw': function (parent, data, start, end) {
                     return draw_cell({
                         parent: parent,
@@ -393,6 +395,7 @@ define([
                 }
             ],
             'chart': {
+                'element_width': 28, // in px
                 'draw': function (parent, data, start, end) {
                     return draw_cell({
                         parent: parent,
@@ -434,7 +437,6 @@ define([
                 },
 //                { // quarters
 //                    draw: function (parent, start, end) {
-//                        console.log(+moment(start).startOf('year'));
 //                        return draw_header_cell({
 //                            parent: parent,
 //                            start: +moment(start).startOf('year'),
@@ -467,6 +469,7 @@ define([
                 }
             ],
             'chart': {
+                'element_width': 30, // in px
                 'draw': function (parent, data, start, end) {
                     return draw_cell({
                         parent: parent,
@@ -508,6 +511,7 @@ define([
                 }
             ],
             'chart': {
+                'element_width': 100, // in px
                 'draw': function (parent, data, start, end) {
                     return draw_cell({
                         parent: parent,
@@ -570,6 +574,22 @@ define([
             $(parent).append(today_element);
         };
 
+        /**
+         * Calculates the number of div element going to be rendered for one
+         * row when the start and end dates and zoom level is set to given
+         * parameters. So one can use it to calculate how much is it going to
+         * take.
+         * 
+         * @param start
+         * @param end
+         * @param zoom_level
+         * @returns {number}
+         */
+        column.guess_element_count = function(start, end, zoom_level) {
+            var table_width = zoom_levels[zoom_level].table_width(start, end);
+            var element_width = zoom_levels[zoom_level].chart.element_width;
+            return Math.floor(table_width / element_width);
+        };
 
         /**
          * summary:
@@ -609,27 +629,32 @@ define([
 
         };
 
-        column.refresh = function (kwargs) {
+        column.refresh = function (options) {
             // summary:
             //     Refreshes the header cell
             // remove the header contents
 
             // set some defaults
-            kwargs = lang.mixin(
+            options = lang.mixin(
                 { // default values
                     'start': column.start,
-                    'end': column.end
+                    'end': column.end,
+                    'scale': column.scale
                 },
-                kwargs
+                options
             );
 
             domConstruct.empty(column.headerNode);
             column.renderHeaderCell(column.headerNode);
 
-            column.start = kwargs.start;
-            column.end = kwargs.end;
+            column.start = options.start;
+            column.end = options.end;
+            column.scale = options.scale;
 
-            // let it adjust the scrollbars
+//            // adjust the table with
+//            column.grid.addCssRule(".dgrid-column-chart", "width: " + table_width + "px");
+
+            // let it adjust the scroll bars
             column.grid.resize();
         };
 
@@ -672,6 +697,10 @@ define([
             // fix scrolling
             var table_width = zoom_levels[column.scale].table_width(column.start, column.end);
             column.grid.addCssRule(".dgrid-column-chart", "width: " + table_width + "px");
+            
+            $(th).css({
+                width: table_width
+            });
 
             // get element width
             // render headers

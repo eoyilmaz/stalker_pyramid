@@ -1,6 +1,5 @@
 <div class='row-fluid'>
 
-
     <form id='time_log_form'
           class='form-horizontal'
           role='form'
@@ -388,7 +387,7 @@ function init_dialog() {
         var start_end_date_range_picker = $('#start_end_date_range_picker').daterangepicker();
 
         // also update the icon
-        start_end_date_range_picker.next().on(ace.click_event, function () {
+        start_end_date_range_picker.next().on('click', function () {
             $(this).prev().focus();
         });
 
@@ -397,7 +396,7 @@ function init_dialog() {
 
 
         start_end_date_range_picker.val(
-                start_date_value.format('mm/dd/yyyy') + ' - ' + end_date_value.format('mm/dd/yyyy')
+            start_date_value.format('mm/dd/yyyy') + ' - ' + end_date_value.format('mm/dd/yyyy')
         );
 
         start_end_date_range_picker.data().daterangepicker.updateFromControl();

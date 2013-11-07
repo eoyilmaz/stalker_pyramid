@@ -246,6 +246,42 @@
 
             <div class="btn-toolbar">
 
+                <div class="input-prepend"
+                     style="height: 30px;
+                            margin-bottom: 0px;">
+                    <input id='start_end_date_range_picker'
+                           name='start_and_end_dates'
+                           type="text"
+                           data-date-format="yyyy-mm-dd"
+                           placeholder="Start & End Dates">
+                        <span class="add-on">
+                            <i class="icon-calendar"></i>
+                        </span>
+                </div>
+
+                <div class="input-prepend"
+                     style="height: 30px;
+                            margin-bottom: 0px;
+                            margin-left: 7px;
+                            margin-right: 7px;
+                            ">
+                    <select id='zoom_level'
+                           name='start_and_end_dates'>
+                        <option value="h">Hours</option>
+                        <option value="d">Days</option>
+                        <option value="w" selected>Weeks</option>
+                        <option value="m">Months</option>
+                        <option value="y">Years</option>
+                    </select>
+                </div>
+
+                <div id="resource_update_button" class="btn-group">
+                    <button class="btn btn-small btn-success">
+                        <span class="icon-retweet bigger-120"></span>
+                        Update
+                    </button>
+                </div>
+
                 <div id="resource_reload_button" class="btn-group">
                     <button class="btn btn-small btn-success">
                         <span class="icon-retweet bigger-120"></span>
@@ -253,7 +289,7 @@
                     </button>
                 </div>
 
-                <div id="resource_refresh_button" class="btn-group">
+                <div id="resource_redraw_button" class="btn-group">
                     <button class="btn btn-small btn-info">
                         <span class="icon-refresh bigger-120"></span>
                         Redraw
@@ -289,6 +325,9 @@
 <script type='text/javascript'
         src='{{ request.static_url("stalker_pyramid:static/stalker/js/Studio.js") }}'>
 </script>
+
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/daterangepicker.min.js") }}'></script>
+
 
 
 <script type="text/javascript">
@@ -365,6 +404,47 @@ require([
     // get the resource column
     var resource_column = resource_grid.columnSets[1][0][0];
 
+    // Update Button
+    $("#resource_update_button").on('click', function(e){
+        // update date values
+        var start_and_end_dates_as_string = $('#start_end_date_range_picker').val();
+        var dates = start_and_end_dates_as_string.split(' - ');
+        var start_date = moment(dates[0], 'MM-DD-YYYY').startOf('day');
+        var end_date = moment(dates[1], 'MM-DD-YYYY').endOf('day');
+
+        // get zoom level
+        var zoom_level = $('#zoom_level').val();
+
+        // get the total amount of element going to be rendered
+        var element_count = resource_column.guess_element_count(+start_date, +end_date, zoom_level);
+
+        var do_update = function(){
+            resource_column.start = +start_date;
+            resource_column.end   = +end_date;
+            resource_column.scale = zoom_level; 
+            resource_column.reload();
+            resource_column.refresh();
+        }
+
+        if (element_count > 100){
+            // confirm the user that it is going to take too much time
+            bootbox.confirm(
+                '<div><p><strong>' + element_count +
+                ' elements</strong> per row are going to be rendered'+
+                '<br><br>Which will take long,' +
+                '<br><br>Is that ok?',
+            function(result){
+                if (result){
+                    do_update();
+                }
+            });
+        } else {
+            do_update();
+        }
+
+    });
+
+
     // Reload Button
     $("#resource_reload_button").on('click', function(e){
         e.preventDefault();
@@ -373,7 +453,7 @@ require([
     });
 
     // Refresh Button
-    $("#resource_refresh_button").on('click', function(e){
+    $("#resource_redraw_button").on('click', function(e){
         e.preventDefault();
         e.stopPropagation();
         resource_column.refresh();
@@ -420,4 +500,40 @@ require([
        resource_column.centerOnToday(); 
     });
 });
+</script>
+
+
+<script>
+    {# ***************************************************************** #}
+    {# Start & End Date Picker #}
+
+    $(function () {
+        // initialize date picker
+        var start_end_date_range_picker = $('#start_end_date_range_picker').daterangepicker();
+
+        // also update the icon
+        start_end_date_range_picker.next().on('click', function () {
+            $(this).prev().focus();
+        });
+
+        // fix z-index of the container
+        // start_end_date_range_picker.data().daterangepicker.container.css({'z-index': 1060});
+
+        var start_date = moment().subtract(6, 'month').startOf('day');
+        var end_date = moment().add(6, 'month').endOf('day');
+        start_end_date_range_picker.val(
+            start_date.format('MM/DD/YYYY') + ' - ' + end_date.format('MM/DD/YYYY')
+        );
+
+        start_end_date_range_picker.data().daterangepicker.updateFromControl();
+
+        // TODO: Change the listener action type
+        start_end_date_range_picker.on('shown', function (e) {
+            e.stopPropagation();
+        });
+        start_end_date_range_picker.on('hidden', function (e) {
+            e.stopPropagation();
+        });
+    });
+
 </script>
