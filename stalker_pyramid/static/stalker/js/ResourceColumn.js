@@ -29,6 +29,12 @@ define([
     //     A dgrid column plugin that generates resource charts in a column.
     'use strict';
 
+    /**
+     * Renders header cells under the given parent
+     * 
+     * @param options
+     * @returns {*|jQuery|HTMLElement}
+     */
     var draw_header_cell = function (options) {
         var parent = options.parent;
         var start = options.start;
@@ -38,7 +44,6 @@ define([
         var step_unit = options.step_unit;
         var period_unit = options.period_unit;
         var height = options.height;
-        var top = options.top;
         var format = options.format;
 
         var original_start = moment(start).startOf('day');
@@ -50,22 +55,37 @@ define([
         var period_start = moment(start_date.startOf(period_unit));
         var period_end = moment(start_date.endOf(period_unit));
 
+        if (step_size > 1) {
+            end_date.add(step_size - 1, step_unit);
+            period_end.add(step_size - 1, period_unit);
+        }
+        
+        console.log('Math.floor((start_date - original_start) / scale):', Math.floor((start_date - original_start) / scale));
+
         // create the first div elements using start_date and week_end
         var parent_div = $($.parseHTML('<div class="headerCell"></div>'));
         parent_div.css({
             width: Math.floor((end_date - start_date) / scale),
             left: Math.floor((start_date - original_start) / scale),
             height: height,
-            top: top,
             position: 'absolute'
         });
         $(parent).append(parent_div);
 
         var header_div_element;
         // now wee need to iterate until the end_date is bigger than end
+
+        var formatter = function(ps, pe) {
+            return ps.format(format);
+        };
+
+        if (typeof (format) === 'function') {
+            formatter = format;
+        }
+
         while (period_start < end_date) {
             // create the first div elements using start_date and week_end
-            header_div_element = $($.parseHTML('<div class="headerCell center">' + period_start.format(format) + '</div>'));
+            header_div_element = $($.parseHTML('<div class="headerCell center">' + formatter(period_start, period_end) + '</div>'));
             header_div_element.css({
                 width: Math.floor((period_end - period_start) / scale),
                 left: Math.floor((period_start - start_date) / scale)
@@ -78,6 +98,12 @@ define([
         return parent_div;
     };
 
+    /**
+     * Render the given time log data under to the given parent
+     * 
+     * @param options
+     * @returns {*|jQuery|HTMLElement}
+     */
     var draw_cell = function (options) {
         var parent = options.parent;
         var data = options.data;
@@ -103,10 +129,10 @@ define([
         var period_end = moment(start_date.endOf(period_unit));
 
         var total_logged_millies;
-        var log_bar;
+        var log_bar, data_bar;
         var log_bar_container;
 
-        var parent_div = $($.parseHTML('<div class="headerCell"></div>'));
+        var parent_div = $($.parseHTML('<div class="logContainer"></div>'));
         parent_div.css({
             width: Math.floor((end_date - start_date) / scale),
             left: Math.floor((start_date - original_start) / scale), // offset as neccessary
@@ -124,7 +150,7 @@ define([
         while (period_start < end_date) {
             total_logged_millies = resource.total_logged_milliseconds(+period_start, +period_end);
             // draw a div at that range with the height of total_logged_millies
-            if (total_logged_millies > 0 || added_first_time_log) {
+//            if (total_logged_millies > 0 || added_first_time_log) {
                 added_first_time_log = true;
                 log_bar_container = $($.parseHTML('<div class="log_bar layout"></div>'));
                 log_bar_container.css({
@@ -132,71 +158,30 @@ define([
                     width: Math.floor((period_end - period_start) / scale)
                 });
 
-                log_bar = $($.parseHTML('<div class="log_bar timeLog"></div>'));
+                log_bar = $($.parseHTML('<div class="log_bar log"></div>'));
                 log_bar.css({
                     height: Math.floor(total_logged_millies * denominator)
                 });
+
+                data_bar = $($.parseHTML('<div class="data_bar"></div>'));
+                var total_hours = (total_logged_millies / 3600000).toFixed(0);
+                data_bar.text(total_hours);
                 log_bar_container.append(log_bar);
+                log_bar_container.append(data_bar);
                 parent_div.append(
                     log_bar_container
                 );
-            }
+//            }
             // get the new start and end values
             period_start.add(step_size, step_unit).startOf(step_unit);
             period_end.add(step_size, step_unit).endOf(step_unit);
-        }        
+        }
+        return parent_div;
     };
 
     var zoom_levels = {
-//        "h": {
-//            table_width: function (start, end) {
-//                // 1 hour = 40 px
-//                return Math.floor((end - start) / 3600000 * 40);
-//            },
-//            headers: [
-//                {
-//                    title: function (start, end) {
-//                        // return the start day in DD-MM-YYYY format
-//                        var start_date = moment(start);
-//                        return start_date.format('DD-MM-YYYY');
-//                    },
-//                    time_step: 864000000 // 24 hours
-//                },
-//                {
-//                    title: function (start, end) {
-//                        // return the start day in DD-MM-YYYY format
-//                        var start_date = moment(start);
-//                        return start_date.format('HH:00');
-//                    },
-//                    time_step: 3600000 // 1 hour
-//                }
-//            ]
-//        },
-//        "d": {
-//            table_width: function (start, end) {
-//                return Math.floor((end - start) / 21600000 * 50);
-//            },
-//            headers: [
-//                {
-//                    title: function (start, end) {
-//                        // return the start day in DD-MM-YYYY format
-//                        var start_date = moment(start);
-//                        return start_date.format('DD-MM-YYYY');
-//                    },
-//                    time_step: 864000000 // 24 hours
-//                },
-//                {
-//                    title: function (start, end) {
-//                        // return the start day in DD-MM-YYYY format
-//                        var start_date = moment(start);
-//                        return start_date.format('H');
-//                    },
-//                    time_step: 21600000 // 6 hours
-//                }
-//            ]
-//        },
-        "w": {
-            scale: 21600000, // 1 day is 4 px
+        "h": {
+            scale: 120000, // 1 hour is 30 px
             table_width: function (start, end) {
                 var start_date = moment(start).startOf('day');
                 var end_date = moment(end).endOf('day');
@@ -205,7 +190,180 @@ define([
             headers: [
                 {
                     draw: function (parent, start, end) {
-                        draw_header_cell({
+                        return draw_header_cell({
+                            parent: parent,
+                            start: start,
+                            end: end,
+                            scale: 120000,
+                            step_size: 7,
+                            step_unit: 'day',
+                            period_unit: 'isoweek',
+                            height: 26,
+                            format: '[Week] w'
+                        });
+                    }
+                },
+                {
+                    draw: function (parent, start, end) {
+                        return draw_header_cell({
+                            parent: parent,
+                            start: start,
+                            end: end,
+                            scale: 120000,
+                            step_size: 1,
+                            step_unit: 'day',
+                            period_unit: 'day',
+                            height: 26,
+                            format: 'ddd, DD-MMM-YYYY'
+                        });
+                    }
+                },
+                {
+                    draw: function (parent, start, end) {
+                        return draw_header_cell({
+                            parent: parent,
+                            start: start,
+                            end: end,
+                            scale: 120000,
+                            step_size: 1,
+                            step_unit: 'hour',
+                            period_unit: 'hour',
+                            height: 26,
+                            format: 'H'
+                        });
+                    }
+                }
+
+            ],
+            'chart': {
+                'draw': function (parent, data, start, end) {
+                    return draw_cell({
+                        parent: parent,
+                        data: data,
+                        start: start,
+                        end: end,
+                        scale: 120000,
+                        step_size: 1,
+                        step_unit: 'hour',
+                        period_unit: 'hour',
+                        height: 24,
+                        millies_possible_in_period: 3600000 // 1 hours for anima
+                    });
+                }
+            }
+        },
+        "d": {
+            scale: 120000, // 1 day is 30 px
+            table_width: function (start, end) {
+                var start_date = moment(start).startOf('day');
+                var end_date = moment(end).endOf('day');
+                return Math.floor((end_date - start_date) / this.scale);
+            },
+            headers: [
+                {
+                    draw: function (parent, start, end) {
+                        return draw_header_cell({
+                            parent: parent,
+                            start: start,
+                            end: end,
+                            scale: 2880000,
+                            step_size: 1,
+                            step_unit: 'month',
+                            period_unit: 'month',
+                            height: 26,
+                            format: 'MMM YYYY'
+                        });
+                    }
+                },
+                {
+                    draw: function (parent, start, end) {
+                        return draw_header_cell({
+                            parent: parent,
+                            start: start,
+                            end: end,
+                            scale: 2880000,
+                            step_size: 7,
+                            step_unit: 'day',
+                            period_unit: 'isoweek',
+                            height: 26,
+                            format: '[Week] w'
+                        });
+                    }
+                },
+                {
+                    draw: function (parent, start, end) {
+                        return draw_header_cell({
+                            parent: parent,
+                            start: start,
+                            end: end,
+                            scale: 2880000,
+                            step_size: 1,
+                            step_unit: 'day',
+                            period_unit: 'day',
+                            height: 26,
+                            format: 'D'
+                        });
+                    }
+                },
+                {
+                    draw: function (parent, start, end) {
+                       return draw_header_cell({
+                            parent: parent,
+                            start: start,
+                            end: end,
+                            scale: 2880000,
+                            step_size: 1,
+                            step_unit: 'day',
+                            period_unit: 'day',
+                            height: 26,
+                            format: 'dd'
+                        });
+                    }
+                }
+            ],
+            'chart': {
+                'draw': function (parent, data, start, end) {
+                    return draw_cell({
+                        parent: parent,
+                        data: data,
+                        start: start,
+                        end: end,
+                        scale: 2880000,
+                        step_size: 1,
+                        step_unit: 'day',
+                        period_unit: 'day',
+                        height: 24,
+                        millies_possible_in_period: 9 * 3600000 // 9 hours for anima
+                    });
+                }
+            }
+        },
+        "w": {
+            scale: 21600000, // 1 week is 28 px
+            table_width: function (start, end) {
+                var start_date = moment(start).startOf('day');
+                var end_date = moment(end).endOf('day');
+                return Math.floor((end_date - start_date) / this.scale);
+            },
+            headers: [
+                {
+                    draw: function (parent, start, end) {
+                        return draw_header_cell({
+                            parent: parent,
+                            start: start,
+                            end: end,
+                            scale: 21600000,
+                            step_size: 1,
+                            step_unit: 'year',
+                            period_unit: 'year',
+                            height: 26,
+                            format: 'YYYY'
+                        });
+                    }
+                },
+                {
+                    draw: function (parent, start, end) {
+                        return draw_header_cell({
                             parent: parent,
                             start: start,
                             end: end,
@@ -214,14 +372,13 @@ define([
                             step_unit: 'month',
                             period_unit: 'month',
                             height: 26,
-                            top: 0,
-                            format: 'MMM YYYY'
+                            format: 'MMM'
                         });
                     }
                 },
                 {
                     draw: function (parent, start, end) {
-                        draw_header_cell({
+                        return draw_header_cell({
                             parent: parent,
                             start: start,
                             end: end,
@@ -230,20 +387,19 @@ define([
                             step_unit: 'day',
                             period_unit: 'isoweek',
                             height: 26,
-                            top: 27,
                             format: 'w'
                         });
                     }
                 }
             ],
             'chart': {
-                'draw': function (parent, data, start, end, scale) {
-                    draw_cell({
+                'draw': function (parent, data, start, end) {
+                    return draw_cell({
                         parent: parent,
                         data: data,
                         start: start,
                         end: end,
-                        scale: scale,
+                        scale: 21600000,
                         step_size: 7,
                         step_unit: 'day',
                         period_unit: 'isoweek',
@@ -252,12 +408,122 @@ define([
                     });
                 }
             }
+        },
+        "m": { // 
+            scale: 86400000, // 1 month is 30 px
+            table_width: function (start, end) {
+                var start_date = moment(start).startOf('day');
+                var end_date = moment(end).endOf('day');
+                return Math.floor((end_date - start_date) / this.scale);
+            },
+            headers: [
+                { // years
+                    draw: function (parent, start, end) {
+                        return draw_header_cell({
+                            parent: parent,
+                            start: start,
+                            end: end,
+                            scale: 86400000,
+                            step_size: 1,
+                            step_unit: 'year',
+                            period_unit: 'year',
+                            height: 26,
+                            format: 'YYYY'
+                        });
+                    }
+                },
+//                { // quarters
+//                    draw: function (parent, start, end) {
+//                        console.log(+moment(start).startOf('year'));
+//                        return draw_header_cell({
+//                            parent: parent,
+//                            start: +moment(start).startOf('year'),
+//                            end: end,
+//                            scale: 86400000,
+//                            step_size: 3,
+//                            step_unit: 'month',
+//                            period_unit: 'month',
+//                            height: 26,
+//                            format: function (region_start, region_end) {
+//                                return 'Q' + Math.floor(moment(region_start).month() / 4);
+//                            }
+//                        });
+//                    }
+//                },
+                { // months
+                    draw: function (parent, start, end) {
+                        return draw_header_cell({
+                            parent: parent,
+                            start: start,
+                            end: end,
+                            scale: 86400000,
+                            step_size: 1,
+                            step_unit: 'month',
+                            period_unit: 'month',
+                            height: 26,
+                            format: 'M'
+                        });
+                    }
+                }
+            ],
+            'chart': {
+                'draw': function (parent, data, start, end) {
+                    return draw_cell({
+                        parent: parent,
+                        data: data,
+                        start: start,
+                        end: end,
+                        scale: 86400000,
+                        step_size: 1,
+                        step_unit: 'month',
+                        period_unit: 'month',
+                        height: 24,
+                        millies_possible_in_period: 183600000 * 4 // 204 hours for anima
+                    });
+                }
+            }
+        },
+        "y": { // 
+            scale: 315360000, // 1 year is 100 px 31536000000/100
+            table_width: function (start, end) {
+                var start_date = moment(start).startOf('day');
+                var end_date = moment(end).endOf('day');
+                return Math.floor((end_date - start_date) / this.scale);
+            },
+            headers: [
+                { // years
+                    draw: function (parent, start, end) {
+                        return draw_header_cell({
+                            parent: parent,
+                            start: start,
+                            end: end,
+                            scale: 315360000,
+                            step_size: 1,
+                            step_unit: 'year',
+                            period_unit: 'year',
+                            height: 26,
+                            format: 'YYYY'
+                        });
+                    }
+                }
+            ],
+            'chart': {
+                'draw': function (parent, data, start, end) {
+                    return draw_cell({
+                        parent: parent,
+                        data: data,
+                        start: start,
+                        end: end,
+                        scale: 315360000,
+                        step_size: 1,
+                        step_unit: 'year',
+                        period_unit: 'year',
+                        height: 24,
+                        millies_possible_in_period: 9573418080 // 6 * 52.1428 * 51 * 3600000
+                    });
+                }
+            }
         }
-//        "m": { // every week in a box
-//        },
-//        "q": {},
-//        "s": {},
-//        "y": {}
     };
 
     return function (column) {
@@ -335,9 +601,8 @@ define([
             // IE < 8 receive the inner padding node, not the td directly
             var cell = td.tagName === "TD" ? td : td.parentNode;
 
-            var scale = zoom_levels[column.scale].scale;
             // render cells
-            zoom_levels[column.scale].chart.draw(td, data, column.start, column.end, scale);
+            zoom_levels[column.scale].chart.draw(td, data, column.start, column.end);
 
             // render today
             render_today(td, column.start, zoom_levels[column.scale].scale);
@@ -380,10 +645,10 @@ define([
                 scroller_width;
 
             header = $(column.headerNode);
-            position = header.position();
 
             date_as_millis = +date;
-            date_x = (date_as_millis - column.start) / zoom_levels[column.scale].scale;
+            var start_date = moment(column.start).startOf('day');
+            date_x = (date_as_millis - start_date) / zoom_levels[column.scale].scale;
 
             scroller = $('.dgrid-column-set-scroller-1');
             scroller_width = scroller.width();
@@ -412,8 +677,12 @@ define([
             // render headers
             var i;
             var header_count = zoom_levels[column.scale].headers.length;
+            var parent_div;
             for (i = 0; i < header_count; i += 1) {
-                zoom_levels[column.scale].headers[i].draw(th, column.start, column.end);
+                parent_div = zoom_levels[column.scale].headers[i].draw(th, column.start, column.end);
+                parent_div.css({
+                    top: i * 27
+                })
             }
             // extend the height of the table header
             $(th).css({

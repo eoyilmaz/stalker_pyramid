@@ -7,20 +7,28 @@
     z-index: 100;
 }
 
-.log_bar.layout{
+.log_bar.layout {
     position: absolute;
     height: 26px;
     bottom: 0px;
     background-color: #87b87f !important;
-    opacity: 50;
 }
 
-.log_bar.timeLog{
+.log_bar.log {
     position: absolute;
     width: 100%;
     bottom: 0px;
     background-color: #d15b47 !important;
-    opacity: 50;
+    /*opacity: 0.5;*/
+}
+
+.data_bar {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    text-align: center;
 }
 
 .resource_chart .dgrid-column-chart {
@@ -139,12 +147,18 @@ th.dgrid-column-chart table {
 
 .resource_chart .headerCell {
     position: absolute;
+    border: 1px none #AAA;
+    border-left-style: solid;
+    margin-left: -1px;
+}
+
+.resource_chart .logContainer {
+    position: absolute;
 }
 
 .center {
     text-align: center;
 }
-
 
 .project {
     font-weight: bold;

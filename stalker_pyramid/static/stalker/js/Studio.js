@@ -26,6 +26,9 @@ function Studio() {
     'use strict';
     this.daily_working_hours = 9;
     this.weekly_working_hours = 51;
+    this.weekly_working_days = 6;
+    this.yearly_working_days = 312.8568; // 6 * 52.1428
+
     this.working_hours = { // these should be in UTC time/hours
         1: [28800000, 61200000],  // monday    9 : 10:00 - 19:00 in Turkey 08:00 - 17:00 in UTC
         2: [28800000, 61200000],  // tuesday   9 : 10:00 - 19:00 in Turkey 08:00 - 17:00 in UTC
