@@ -754,6 +754,7 @@ def get_resources(request):
             resource_sql_query = """select
                 "SimpleEntities".id,
                 "SimpleEntities".name,
+                "SimpleEntities".entity_type,
                 count(*) as resource_count
             from "SimpleEntities"
             join "User_Departments" on "User_Departments".did = "SimpleEntities".id
@@ -763,6 +764,7 @@ def get_resources(request):
             resource_sql_query = """select
                 "SimpleEntities".id,
                 "SimpleEntities".name,
+                "SimpleEntities".entity_type,
                 1 as resource_count
             from "SimpleEntities"
             where "SimpleEntities".entity_type = '%s'
@@ -771,6 +773,7 @@ def get_resources(request):
             resource_sql_query = """select
                 "SimpleEntities".id,
                 "SimpleEntities".name,
+                "SimpleEntities".entity_type,
                 count(*) as resource_count
             from "SimpleEntities"
             join "User_Departments" on "User_Departments".did = "SimpleEntities".id
@@ -880,6 +883,7 @@ def get_resources(request):
         resource_sql_query = """select
             "Users".id,
             "SimpleEntities".name,
+            "SimpleEntities".entity_type,
             1 as resource_count
         from "Users"
         join "SimpleEntities" on "SimpleEntities".id = "Users".id
@@ -933,8 +937,8 @@ def get_resources(request):
         {
             'id': rr[0],
             'name': rr[1],
-            'type': entity_type,
-            'resource_count': rr[2],
+            'type': rr[2],
+            'resource_count': rr[3],
             'hasChildren': has_children,
             'link': link % rr[0],
             'time_logs': [

@@ -122,38 +122,12 @@ define([
                                 return object;
                             },
                             formatter: function (object) {
-//                                console.debug('tree formatter start');
-//                                var template = templates.taskEditRow;
-//                                var template_var = {};
-//                                template_var.font_weight = object.hasChildren ? 'bold' : 'normal';
-//                                template_var.contextMenuClass = 'taskEditRow';
-//                                if (object.type === 'Project') {
-//                                    template = templates.projectEditRow;
-//                                    template_var.contextMenuClass = 'projectEditRow';
-//                                } else {
-//                                    if (object.hasChildren) {
-//                                        template = templates.parentTaskEditRow;
-//                                        template_var.contextMenuClass = 'parentTaskEditRow';
-//                                    } else {
-//                                        template_var.responsible = {
-//                                            id: object.responsible.id,
-//                                            name: object.responsible.name
-//                                        };
-//                                    }
-//                                }
-//
-//                                template_var.hasChildren = object.hasChildren;
-//                                template_var.link = object.link;
-//                                template_var.id = object.id;
-//                                template_var.name = object.name;
-//                                template_var.start = object.start;
-//                                template_var.end = object.end;
-//                                template_var.type = object.type;
-//
-//                                var return_val = template(template_var);
-                                var return_val = object.name;
-
-//                                console.debug('tree formatter end');
+                                var return_val;
+                                if (object.type === 'Department') {
+                                    return_val = '<div><i class="icon-group"></i>&nbsp<a href="/departments/'+ object.id + '/view">' + object.name + '</a></div>';
+                                } else {
+                                    return_val = '<div><i class="icon-user"></i>&nbsp<a href="/users/'+ object.id + '/view">' + object.name + '</a></div>';
+                                }
                                 return return_val;
                             },
                             renderExpando: function (level, hasChildren, expanded, object) {

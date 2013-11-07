@@ -7,7 +7,19 @@
          start={{=it.start}}
          end={{=it.end}}
          type="{{=it.type}}"
-         hasChildren={{=it.hasChildren}}><a href="{{=it.link}}">{{=it.name}} ({{=it.type}})</a>
+         hasChildren={{=it.hasChildren}}>
+        <i class="{{? it.type == 'Task' }}
+          icon-tasks
+          {{?? it.type == 'Asset' }}
+          icon-puzzle-piece
+          {{?? it.type == 'Shot' }}
+          icon-camera
+          {{?? it.type == 'Sequence' }}
+          icon-film
+          {{?? it.type == 'Project' }}
+          icon-folder-close-alt
+          {{?}}"</i>&nbsp
+        <a href="{{=it.link}}">{{=it.name}}</a>
     </div>
 </script>
 
@@ -121,22 +133,20 @@
 </script>
 
 <script id="tmpl_taskEditRow" type="text/x-dot-template">
-    <a href='/tasks/{{=it.id}}/view'
-
-       data-toggle='tooltip'
-       data-placement='top'
-       title
-       data-original-title='test tooltip'
-
-       name="{{=it.name}}"
-       start={{=it.start}}
-       end={{=it.end}}
-       type="{{=it.type}}"
-    {{ if (!it.hasChildren) { }}
-    responsible_id="{{=it.responsible.id}}"
-    responsible_name="{{=it.responsible.name}}"
-    {{ } }}
-    hasChildren={{=it.hasChildren}}>{{=it.name}} ({{=it.type}})</a>
+<i class="{{? it.type == 'Task' }}
+          icon-tasks
+          {{?? it.type == 'Asset' }}
+          icon-puzzle-piece
+          {{?? it.type == 'Shot' }}
+          icon-camera
+          {{?? it.type == 'Sequence' }}
+          icon-film
+          {{?? it.type == 'Project' }}
+          icon-folder-close-alt
+          {{?}}"</i>&nbsp
+<a href="/tasks/{{=it.id}}/view"
+   name="{{=it.id}}"
+   type="{{=it.type}}">{{=it.name}}</a>
 </script>
 
 
@@ -147,7 +157,19 @@
          start={{=it.start}}
          end={{=it.end}}
          type="{{=it.type}}"
-         hasChildren={{=it.hasChildren}}><a href="{{=it.link}}">{{=it.name}} ({{=it.type}})</a>
+         hasChildren={{=it.hasChildren}}>
+            <i class="{{? it.type == 'Task' }}
+            icon-tasks
+            {{?? it.type == 'Asset' }}
+            icon-puzzle-piece
+            {{?? it.type == 'Shot' }}
+            icon-camera
+            {{?? it.type == 'Sequence' }}
+            icon-film
+            {{?? it.type == 'Project' }}
+            icon-folder-close-alt
+            {{?}}"</i>&nbsp
+        <a href="{{=it.link}}">{{=it.name}}</a>
     </div>
 </script>
 
@@ -377,6 +399,14 @@
                     </ul>
                 </div>
 
+                <div id="gantt_update_button" class="btn-group">
+                    <button class="btn btn-small btn-warning">
+                        <span class="icon-refresh bigger-120"></span>
+                        Update
+                    </button>
+                </div>
+
+            
                 <div id="gantt_reload_button" class="btn-group">
                     <button class="btn btn-small btn-success">
                         <span class="icon-retweet bigger-120"></span>
@@ -386,7 +416,7 @@
 
                 <div id="gantt_refresh_button" class="btn-group">
                     <button class="btn btn-small btn-info">
-                        <span class="icon-refresh bigger-120"></span>
+                        <span class="icon-undo bigger-120"></span>
                         Redraw
                     </button>
                 </div>
@@ -394,7 +424,7 @@
                 {% if has_permission('Update_Task') %}
                     <div id="gantt_schedule_tasks_button" class="btn-group">
                         <button class="btn btn-small btn-purple">
-                            <span class="icon-magic bigger-120"></span>
+                            <span class="icon-wrench bigger-120"></span>
                             Schedule Tasks
                         </button>
                         <div id="schedule-dialog-message" class="hide">
@@ -406,17 +436,17 @@
                 {% endif %}
 
                 <div id="gantt_go_to_today_button" class="btn-group">
-                    <button class="btn btn-small btn-yellow">
-                        <i class="icon-calendar bigger-120"></i>
+                    <button class="btn btn-small btn-default">
+                        <i class="icon-arrow-right bigger-120"></i>
                         Go To Today
                     </button>
                     <div id="gantt_scroll_to_button" class="hidden" start="0"></div>
                 </div>
             
-                <div class="btn-group">
+                <div class="btn-group hidden">
                     <a href="#"
                        data-toggle="dropdown"
-                       class="btn btn-small btn-warning dropdown-toggle">Toggle Columns<span class="caret"></span>
+                       class="btn btn-small btn-info dropdown-toggle">Toggle Columns<span class="caret"></span>
                     </a>
                     <ul class="dropdown-menu">
                         <li>
