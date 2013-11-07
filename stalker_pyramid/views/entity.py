@@ -21,7 +21,7 @@ import logging
 import datetime
 from pyramid.httpexceptions import HTTPServerError, HTTPFound, HTTPOk, HTTPForbidden
 from pyramid.view import view_config
-from stalker import Entity, Studio, Project, Group, User, Department, Vacation
+from stalker import Entity, Studio, Project, Group, User, Department, Vacation, SimpleEntity
 from stalker.db import DBSession
 
 import stalker_pyramid
@@ -496,3 +496,30 @@ def get_entity_events(request):
                 })
 
     return events
+
+
+@view_config(
+    route_name='get_search_result',
+    renderer='json'
+)
+def get_search_result(request):
+
+    logger.debug('get_search_result is running')
+
+    qString = request.matchdict.get('str', -1)
+
+    entities = SimpleEntity.query.filter(SimpleEntity.name.ilike(sString)).all()
+
+    search_result = []
+
+
+    for entity in entities:
+
+        search_result.append({
+             'id': entity.id,
+            'name':entity.name,
+            'entity_type':entity.entity_type
+        })
+
+    return search_result
+

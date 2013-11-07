@@ -1,59 +1,25 @@
-<div class="breadcrumbs breadcrumbs-fixed"
-     id="breadcrumbs">
-    <script type="text/javascript">
-        try {
-            ace.settings.check('breadcrumbs', 'fixed')
-        } catch (e) {
-        }
-    </script>
+<ul id="breadcrumb_task" class="breadcrumb">
 
-    <ul id="breadcrumb_task" class="breadcrumb">
-
-        <li>
-            <a href="{{ request.route_url('view_project', id=entity.project.id) }}">{{ entity.project.name }}</a>
+    <li>
+        <a href="{{ request.route_url('view_project', id=entity.project.id) }}">{{ entity.project.name }}</a>
 
                             <span class="divider">
                               <i class="icon-angle-right arrow-icon"></i>
                             </span>
-        </li>
+    </li>
 
-        {% for parent in entity.parents %}
-            <li>
-                <a href="{{ request.route_url('view_task', id=parent.id) }}">{{ parent.name }}</a>
+    {% for parent in entity.parents %}
+        <li>
+            <a href="{{ request.route_url('view_task', id=parent.id) }}">{{ parent.name }}</a>
                     <span class="divider">
                         <i class="icon-angle-right arrow-icon"></i>
                     </span>
-            </li>
-        {% endfor %}
-        <li class="active">{{ entity.name }}
-
         </li>
-    </ul>
-    <!--.breadcrumb-->
+    {% endfor %}
+    <li class="active">{{ entity.name }}
 
-    <div class="nav-search" id="nav-search">
-        <form class="form-search">
-                            <span class="input-icon">
-                            <input type="text" placeholder="Search ..."
-                                   class="input-small nav-search-input"
-                                   id="nav-search-input"
-                                   autocomplete="on">
-                            <i class="icon-search nav-search-icon"></i>
-                            </span>
-        </form>
-    </div>
-    <!--#nav-search-->
-</div>
-
-{% raw %}
-<script id="tmpl_nav_link" type="text/x-dot-template">
-
-    <li>
-        <a href="{{ request.route_url('view_task', id={=it.id} }}">{=it.name}</a>
-        <span class="divider">
-            <i class="icon-angle-right arrow-icon"></i>
-        </span>
     </li>
+</ul>
+<!--.breadcrumb-->
 
-</script>
-{% endraw %}
+

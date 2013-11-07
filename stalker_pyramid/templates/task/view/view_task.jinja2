@@ -268,7 +268,7 @@
                             if (!resources [prop_id]) {
 
                                 resources [prop_id] = {
-                                    'name': data[i].resources[k].name,
+                                    'name': '<span><a href="/users/' + data[i].resources[k].id + '/view">' + data[i].resources[k].name + '  </a></span>',
                                     'type': 'folder',
                                     'icon-class': 'blue'
 
@@ -395,7 +395,7 @@
             });
         });
 
-    
+
     </script>
 
 
