@@ -75,6 +75,16 @@
 
                 }
 
+                else if (calEvent.entity_type == 'tasks') {
+
+                    {% if has_permission('Read_Task') %}
+
+                        window.location.replace("/tasks/"+calEvent.eId+"/view");
+
+                    {% endif %}
+
+                }
+
             },
 
 

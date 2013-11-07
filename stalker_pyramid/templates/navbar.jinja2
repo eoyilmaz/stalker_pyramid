@@ -126,7 +126,12 @@
     </li>
     <li class="purple">
         <a data-toggle="dropdown" class="dropdown-toggle" href="#">
-            <i class="icon-bell-alt icon-animated-bell"></i>
+            {% if logged_in_user.open_tickets | count > 0 %}
+                <i class="icon-bell-alt icon-animated-bell"></i>
+            {% else %}
+                <i class="icon-bell-alt icon-bell light-grey"></i>
+            {% endif %}
+
             <span class="badge badge-important">{{ logged_in_user.open_tickets | count }}</span>
         </a>
         {% if  logged_in_user.open_tickets | count > 0 %}

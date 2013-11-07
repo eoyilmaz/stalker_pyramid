@@ -1,9 +1,96 @@
-{% if entity.entity_type == 'Task' or entity.entity_type == 'Asset'or entity.entity_type == 'Shot'or entity.entity_type == 'Sequence' %}
+<div class="breadcrumbs breadcrumbs-fixed"
+     id="breadcrumbs">
+    <script type="text/javascript">
+        try {
+            ace.settings.check('breadcrumbs', 'fixed')
+        } catch (e) {
+        }
+    </script>
 
-    {% include 'breadcrumb/breadcrumbs_task.jinja2' %}
+    {% if entity.entity_type == 'Task' or entity.entity_type == 'Asset'or entity.entity_type == 'Shot'or entity.entity_type == 'Sequence' %}
 
-{% else %}
+        {% include 'breadcrumb/breadcrumbs_task.jinja2' %}
 
-    {% include 'breadcrumb/breadcrumbs_base.jinja2' %}
+    {% else %}
 
-{% endif %}
+        {% include 'breadcrumb/breadcrumbs_base.jinja2' %}
+
+    {% endif %}
+
+    <div class="nav-search" id="nav-search">
+        <form class="form">
+        <span class="input-icon">
+        <input type="text" placeholder="Search ..."
+               class="input-block-level"
+               id="nav-search-input">
+        <i class="icon-search nav-search-icon"></i>
+        </span>
+        </form>
+    </div>
+    <!--#nav-search-->
+</div>
+
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/chosen.jquery.min.js") }}'></script>
+
+<script type="text/javascript">
+{#    $(document).ready(function () {#}
+{##}
+{##}
+{#        var search_input = $("#nav-search-input").chosen({#}
+{#            search_contains: true,#}
+{#            enable_split_word_search: true,#}
+{#            allow_single_deselect: true#}
+{#        });#}
+{##}
+{#        console.log('dd', search_input)#}
+{##}
+{##}
+{#        {% raw %}#}
+{#        var search_option_template = doT.template('<option value="{{=it.id}}">{{=it.name}}</option>');#}
+{#        {% endraw %}#}
+{##}
+{##}
+{#        search_input.on('keyup', function () {#}
+{##}
+{#            var search_str = search_input.val();#}
+{#            console.log(search_str);#}
+{##}
+{#            $.getJSON('/search/%' + search_str + '%/').then(function (data) {#}
+{##}
+{#                var input_source = [];#}
+{#                for (var i = 0; i < data.length; i++) {#}
+{#                    input_source.push(data[i].name);#}
+{##}
+{#                }#}
+{##}
+{##}
+{#                search_input.autocomplete({#}
+{#                    delay: 0,#}
+{#                    source: input_source,#}
+{#                    minLength: 0#}
+{#                });#}
+{#                search_input.find('option').unbind().remove();#}
+{##}
+{#                // add new ones#}
+{#                var data_count = data.length;#}
+{#                for (var i=0 ; i < data_count; i++){#}
+{#                    search_input.append(search_option_template(data[i]));#}
+{#                }#}
+{##}
+{#                // trigger an update#}
+{#                search_input.trigger('liszt:updated');#}
+{##}
+{#                // add option onClick handler#}
+{#                search_input.find('option').on('click', function(){#}
+{#                    console.log('this.attr(id)', this.attr(id));#}
+{#                });#}
+{##}
+{#            });#}
+{##}
+{#        }).on('keyPress', function(e){#}
+{#            console.log('e', e);#}
+{#        });#}
+{##}
+{##}
+{#    });#}
+</script>

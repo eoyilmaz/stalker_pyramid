@@ -64,10 +64,10 @@
                         <div class="span8">
                             <div class="row-fluid">
                                 {% if entity.thumbnail %}
-                                    <div class="span3">
+                                    <div class="span2">
 
                                         <a class="pull-left" href="#"
-                                           style="width: 200px; height: 200px">
+                                           style="width: 180px; height: 180px">
                                             <img style='width:auto; height: auto;'
                                                  class="img-thumbnail"
                                                  src="/{{ entity.thumbnail.full_path }}">
@@ -78,8 +78,9 @@
                                 <div class="span4 pull-left">
                                     <ul class="unstyled spaced">
                                         <li>
-                                            {{ entity.start }} <i
-                                                class="icon-long-arrow-right blue"></i> {{ entity.end }}
+                                            <h5><b> {{ entity.start }} <i
+                                                    class="icon-long-arrow-right blue"></i> {{ entity.end }}
+                                            </b></h5>
                                         </li>
 
                                         <li>
@@ -92,7 +93,7 @@
                                                 : </b> {{ entity.updated_by.name }}
                                         </li>
                                     </ul>
-                                    <button class='btn btn-mini btn-info'>
+                                    <button id='task_update_submit_button' class='btn btn-mini btn-info'>
                                         <i class="icon-edit"></i> Update
                                     </button>
                                     <div class="space-12"></div>
@@ -109,8 +110,32 @@
                                     {% endif %}
 
                                 </div>
-                                <div class="pull-right" id="pie_chart"
-                                     style="width: 200px; height: 200px;"></div>
+                                <div class="span3 pull-left">
+                                    <ul class="unstyled spaced">
+                                        <li>
+
+                                            <b>Schedule Hours
+                                                : </b> {{ entity.schedule_seconds/3600 }}
+                                            h
+                                        </li>
+                                        <li>
+                                            <b>Total Logged Hours
+                                                : </b> {{ entity.total_logged_seconds/3600 }}
+                                            h
+                                        </li>
+                                        <li>
+                                            <b>Hours to Complete
+                                                : </b> {{ (entity.schedule_seconds - entity.total_logged_seconds)/3600 }}
+                                            h
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="span3">
+
+                                    <div class="pull-right" id="pie_chart"
+                                         style="width: 200px; height: 200px;"></div>
+
+                                </div>
 
 
                             </div>
@@ -127,13 +152,29 @@
                         <div class="span4">
 
                             <div class="row-fluid">
-                                <div id="resources_box" class="widget-box hide">
+                                <div id="resources_box"
+                                     class="widget-box hide">
                                     <div class="widget-header header-color-red">
                                         <h4 class="smaller">Resources</h4>
                                     </div>
                                     <div class="widget-body">
                                         <div class="widget-main padding-12">
                                             <div id="resource_tree"
+                                                 class="tree"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="space-12"></div>
+                            <div class="row-fluid">
+                                <div id="depends_box"
+                                     class="widget-box hide">
+                                    <div class="widget-header header-color-orange">
+                                        <h4 class="smaller">Depends</h4>
+                                    </div>
+                                    <div class="widget-body">
+                                        <div class="widget-main padding-12">
+                                            <div id="depends_tree"
                                                  class="tree"></div>
                                         </div>
                                     </div>
@@ -181,6 +222,21 @@
             drawPieChart('pie_chart', content, colors, 'nw')
         });
     </script>
+    <script type="text/javascript">
+
+    </script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+{#            $.getJSON('/tasks/{{ entity.id }}/depends_of/').then(function (data) {#}
+{#                for (var i = 0; i < data.length; i++) {#}
+{##}
+{##}
+{#                }#}
+{##}
+{##}
+{#            });#}
+        });
+    </script>
 
     <script type="text/javascript">
         $(document).ready(function () {
@@ -198,37 +254,28 @@
                     var start_date = new Date(parseInt(data[i].start));
                     var end_date = new Date(parseInt(data[i].end));
 
-                    var event = {
-                        eId: data[i].id,
-                        entity_type: data[i].entity_type,
-                        title: data[i].title,
-                        start: start_date,
-                        end: end_date,
-                        className: data[i].className,
-                        allDay: data[i].allDay
-                    };
+                    var title = data[i].title;
 
-                    console.log(i+' : '+data[i].entity_type)
-
-                    events.push(event);
 
                     if (data[i].entity_type == 'tasks') {
 
+
                         for (var k = 0; k < data[i].resources.length; k++) {
+
                             var prop_id = (data[i].resources[k].id).toString();
-
-
+                            title += ' - ' + data[i].resources[k].name;
 
                             if (!resources [prop_id]) {
 
                                 resources [prop_id] = {
-                                    'name': data[i].resources[k].name,
+                                    'name': '<span><a href="/users/' + data[i].resources[k].id + '/view">' + data[i].resources[k].name + '  </a></span>',
                                     'type': 'folder',
                                     'icon-class': 'blue'
 
                                 }
-                                console.log(i+' : '+resources [prop_id].name)
+
                             }
+
 
                             if (!resources[prop_id]['additionalParameters']) {
 
@@ -237,7 +284,20 @@
 
                             }
 
-                            resources[prop_id]['additionalParameters']['children'][(data[i].id).toString()] = {name: '<a href="/tasks/' + data[i].id + '/view">' + data[i].title + '</a>', type: 'item'}
+                            var hours_to_complete = (data[i].schedule_seconds - data[i].total_logged_seconds) / 3600;
+                            var hour_to_complete_str = '';
+
+                            if (hours_to_complete > 0) {
+                                hour_to_complete_str = '<span> ( ' + hours_to_complete + ' h needs to complete )</span>'
+                            }
+
+                            var percent_complete_str = ' <span class="label label-yellow">' + data[i].status + '</span>'
+
+                            if (parseInt(data[i].percent_complete) == 100) {
+                                percent_complete_str = ' <span class="label label-success">Completed</span>'
+                            }
+
+                            resources[prop_id]['additionalParameters']['children'][(data[i].id).toString()] = {name: '<span  class="pull-left"><a href="/tasks/' + data[i].id + '/view">' + data[i].title + '  </a></span>' + hour_to_complete_str + percent_complete_str, type: 'item'}
 
 
                             $('#resources_box').show();
@@ -247,8 +307,26 @@
 
                     }
 
-                }
+                    if (data[i].resource_name)
+                        title = data[i].title + ' - ' + data[i].resource_name;
 
+
+                    var event = {
+
+                        eId: data[i].id,
+                        entity_type: data[i].entity_type,
+                        title: title,
+                        start: start_date,
+                        end: end_date,
+                        className: data[i].className,
+                        allDay: data[i].allDay
+
+                    };
+
+
+                    events.push(event);
+
+                }
 
 
                 drawCalendar('calendar', events);
@@ -257,6 +335,67 @@
 
             });
         });
+
+     $(document).ready(function () {
+            $.getJSON('/tasks/{{ entity.id }}/depends/').then(function (data) {
+
+                var depends = new Object();
+                for (var i = 0; i < data.length; i++) {
+
+                    var task_id = (data[i].id).toString();
+
+                     var hours_to_complete = (data[i].schedule_seconds - data[i].total_logged_seconds) / 3600;
+                            var hour_to_complete_str = '';
+
+                            if (hours_to_complete > 0) {
+                                hour_to_complete_str = '<span> ( ' + hours_to_complete + ' h needs to complete )</span>'
+                            }
+
+                            var percent_complete_str = ''
+
+                            if (parseInt(data[i].percent_complete) == 100) {
+                                percent_complete_str = '  <span class="label label-success">Completed</span>'
+                            }
+
+
+                    if (!depends[task_id]) {
+
+                        depends[task_id] = {
+                            'name': '<span><a href="/tasks/' + data[i].id + '/view">' + data[i].name + '  </a></span>'+hour_to_complete_str+percent_complete_str,
+                            'type': 'folder',
+                            'icon-class': 'blue'
+                        }
+
+
+
+                    }
+
+                    if (!depends[task_id]['additionalParameters']) {
+
+                        depends[task_id]['additionalParameters'] = new Object();
+                        depends[task_id]['additionalParameters']['children'] = new Object();
+
+                    }
+
+                    for (var k = 0; k < data[i].resources.length; k++) {
+
+
+                           depends[task_id]['additionalParameters']['children'][(data[i].resources[k].id).toString()] = {name: '<span  class="pull-left"><a href="/users/' + data[i].resources[k].id + '/view">' + data[i].resources[k].name + '  </a></span>', type: 'item'}
+
+                    }
+
+                    console.log(depends[task_id])
+
+                     $('#depends_box').show();
+
+
+                }
+
+                drawTree('depends_tree', depends);
+            });
+        });
+
+
     </script>
 
 
