@@ -27,6 +27,7 @@ define([
     //     ResourceColumn
     // summary:
     //     A dgrid column plugin that generates resource charts in a column.
+    'use strict';
 
     var draw_header_cell = function (options) {
         var parent = options.parent;
@@ -35,7 +36,7 @@ define([
         var scale = options.scale;
         var step_size = options.step_size;
         var step_unit = options.step_unit;
-        var period_unit = options.preiod_unit;
+        var period_unit = options.period_unit;
         var height = options.height;
         var top = options.top;
         var format = options.format;
@@ -45,13 +46,12 @@ define([
         var start_date = moment(start).startOf(period_unit).startOf('day');
         var end_date = moment(end).endOf(period_unit).endOf('day');
 
-        // find the end of the first week
+        // find the start and end of the period
         var period_start = moment(start_date.startOf(period_unit));
         var period_end = moment(start_date.endOf(period_unit));
-        // create the first div elements using start_date and week_end
 
+        // create the first div elements using start_date and week_end
         var parent_div = $($.parseHTML('<div class="headerCell"></div>'));
-        // fix scroll
         parent_div.css({
             width: Math.floor((end_date - start_date) / scale),
             left: Math.floor((start_date - original_start) / scale),
@@ -76,6 +76,75 @@ define([
             period_end.add(step_size, step_unit).endOf(step_unit);
         }
         return parent_div;
+    };
+
+    var draw_cell = function (options) {
+        var parent = options.parent;
+        var data = options.data;
+        var start = options.start;
+        var end = options.end;
+        var scale = options.scale;
+        var step_size = options.step_size;
+        var step_unit = options.step_unit;
+        var period_unit = options.period_unit;
+        var height = options.height;
+        var millies_possible_in_period = options.millies_possible_in_period;
+
+        // create a TimeLog instance
+        var resource = new Resource(data);
+
+        var original_start = moment(start).startOf('day');
+
+        var start_date = moment(start).startOf(period_unit).startOf('day');
+        var end_date = moment(end).endOf(period_unit).endOf('day');
+
+        // find the start and end of the period
+        var period_start = moment(start_date.startOf(period_unit));
+        var period_end = moment(start_date.endOf(period_unit));
+
+        var total_logged_millies;
+        var log_bar;
+        var log_bar_container;
+
+        var parent_div = $($.parseHTML('<div class="headerCell"></div>'));
+        parent_div.css({
+            width: Math.floor((end_date - start_date) / scale),
+            left: Math.floor((start_date - original_start) / scale), // offset as neccessary
+            height: height,
+            position: 'absolute'
+        });
+        $(parent).append(parent_div);
+
+        var added_first_time_log = false;
+        var resource_count = resource.resource_count;
+
+        // calculate once
+        var denominator = height / (millies_possible_in_period * resource_count);
+
+        while (period_start < end_date) {
+            total_logged_millies = resource.total_logged_milliseconds(+period_start, +period_end);
+            // draw a div at that range with the height of total_logged_millies
+            if (total_logged_millies > 0 || added_first_time_log) {
+                added_first_time_log = true;
+                log_bar_container = $($.parseHTML('<div class="log_bar layout"></div>'));
+                log_bar_container.css({
+                    left: Math.floor((period_start - start_date) / scale),
+                    width: Math.floor((period_end - period_start) / scale)
+                });
+
+                log_bar = $($.parseHTML('<div class="log_bar timeLog"></div>'));
+                log_bar.css({
+                    height: Math.floor(total_logged_millies * denominator)
+                });
+                log_bar_container.append(log_bar);
+                parent_div.append(
+                    log_bar_container
+                );
+            }
+            // get the new start and end values
+            period_start.add(step_size, step_unit).startOf(step_unit);
+            period_end.add(step_size, step_unit).endOf(step_unit);
+        }        
     };
 
     var zoom_levels = {
@@ -168,62 +237,19 @@ define([
                 }
             ],
             'chart': {
-                'draw': function(parent, data, start, end, scale) {
-                    // create a TimeLog instance
-                    var resource = new Resource(data);
-                    var original_start = moment(start).startOf('day');
-                    var original_end = moment(end).endOf('day');
-
-                    var start_date = moment(start).startOf('isoweek').startOf('day');
-                    var end_date = moment(end).endOf('isoweek').endOf('day');
-
-                    // iterate the weeks from start to end, choose the week start and
-                    // dates correctly
-                    var range_start = moment(start_date).startOf('isoweek');
-                    var range_end = moment(range_start).add(7, 'days');
-
-                    var total_logged_millies;
-                    var weekly_millies_possible = 183600000; // 51 hours for anima
-                    var weekly_log_bar;
-                    var weekly_log_bar_layout_div;
-
-                    var parent_div = $($.parseHTML('<div class="headerCell"></div>'));
-                    parent_div.css({
-                        width: Math.floor((end_date - start_date) / scale),
-                        left: Math.floor((start_date - original_start) / scale), // offset as neccessary
+                'draw': function (parent, data, start, end, scale) {
+                    draw_cell({
+                        parent: parent,
+                        data: data,
+                        start: start,
+                        end: end,
+                        scale: scale,
+                        step_size: 7,
+                        step_unit: 'day',
+                        period_unit: 'isoweek',
                         height: 24,
-                        position: 'absolute'
+                        millies_possible_in_period: 183600000 // 51 hours for anima
                     });
-                    $(parent).append(parent_div);
-
-                    var Math_floor = Math.floor;
-                    var added_first_time_log = false;
-                    var resource_count = resource.resource_count;
-
-                    while (range_start < end_date) {
-                        total_logged_millies = resource.total_logged_milliseconds(+range_start, +range_end);
-                        // draw a div at that range with the height of total_logged_millies
-                        if (total_logged_millies > 0 || added_first_time_log) {
-                            added_first_time_log = true;
-                            weekly_log_bar_layout_div = $($.parseHTML('<div class="log_bar layout"></div>'));
-                            weekly_log_bar_layout_div.css({
-                                left: Math_floor((range_start - start_date) / scale),
-                                width: Math_floor((range_end - range_start) / scale) - 1 // just to give a feeling of border
-                            });
-
-                            weekly_log_bar = $($.parseHTML('<div class="log_bar timeLog"></div>'));
-                            weekly_log_bar.css({
-                                height: Math_floor(total_logged_millies / weekly_millies_possible * 22 / resource_count)// weekly millies possible
-                            });
-                            weekly_log_bar_layout_div.append(weekly_log_bar);
-                            parent_div.append(
-                                weekly_log_bar_layout_div
-                            );
-                        }
-                        // get the new start and end values
-                        range_start.add(7, 'day');
-                        range_end.add(7, 'day');
-                    }
                 }
             }
         }
