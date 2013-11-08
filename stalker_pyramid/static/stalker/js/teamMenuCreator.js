@@ -25,8 +25,8 @@ define([
     'dijit/PopupMenuItem',
     'dijit/PopupMenuBarItem',
 
-    'stalker/dialogs',
-    'stalker/dialogCaller'
+    'stalker/js/dialogs',
+    'stalker/js/dialogCaller'
 ], function (JsonRest, MenuItem, MenuSeparator, DropDownMenu, PopupMenuItem,
              PopupMenuBarItem, dialogs, dialogCaller) {
 

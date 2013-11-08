@@ -162,11 +162,10 @@ def main(global_config, **settings):
     config.add_route('list_entity_references',         'entities/{id}/references/list') # html
     config.add_route('list_entity_vacations',          'entities/{id}/vacations/list') # html
     config.add_route('list_entity_versions',           'entities/{id}/versions/list') # html
+    config.add_route('list_entity_resources',          'entities/{id}/resources/list') # html
 
     config.add_route('append_entities_to_entity_dialog',  'entities/{id}/{entities}/append/dialog')
     config.add_route('append_entities_to_entity',         'entities/{id}/append')
-
-
 
     config.add_route('view_entity_nav_bar',            'entities/{id}/nav_bar')
     config.add_route('view_entity_tasks',              'entities/{id}/tasks/view')
@@ -301,7 +300,8 @@ def main(global_config, **settings):
     config.add_route('view_user',             'users/{id}/view')
     config.add_route('view_user_settings',    'users/{id}/view_settings')
 
-    config.add_route('get_users',             'users/') # json
+    config.add_route('get_user',              'users/{id}/')  # json
+    config.add_route('get_users',             'users/')  # json
     config.add_route('get_user_departments',  'users/{id}/departments/') # json
     config.add_route('get_user_groups',       'users/{id}/groups/') # json
     config.add_route('get_user_tasks',        'users/{id}/tasks/') # json
@@ -309,6 +309,9 @@ def main(global_config, **settings):
     config.add_route('get_user_tickets',      'users/{id}/tickets/') # json
     config.add_route('get_user_events',       'users/{id}/events/')#json
     # config.add_route('get_user_worked_hours', 'users/{id}/{frequency}/worked_hours/')#json
+    config.add_route('get_resources',         'resources/')
+    config.add_route('get_entity_resources',  'entities/{id}/resources/')
+    config.add_route('get_resource',          'resources/{id}/')
 
     config.add_route('list_users',            'users/list') # html
     config.add_route('list_user_tasks',       'users/{id}/tasks/list') # html
@@ -439,10 +442,10 @@ def main(global_config, **settings):
     # *************************************************************************
     # TimeLog
 
-    config.add_route('entity_time_log_dialog', 'entities/{id}/timelogs/create/dialog')
-    config.add_route('task_time_log_dialog', 'tasks/{id}/timelogs/create/dialog')
-    config.add_route('user_time_log_dialog', 'users/{id}/timelogs/create/dialog')
-    config.add_route('asset_time_log_dialog', 'assets/{id}/timelogs/create/dialog')
+    config.add_route('entity_time_log_dialog',   'entities/{id}/timelogs/create/dialog')
+    config.add_route('task_time_log_dialog',     'tasks/{id}/timelogs/create/dialog')
+    config.add_route('user_time_log_dialog',     'users/{id}/timelogs/create/dialog')
+    config.add_route('asset_time_log_dialog',    'assets/{id}/timelogs/create/dialog')
     config.add_route('sequence_time_log_dialog', 'sequences/{id}/timelogs/create/dialog')
     config.add_route('shot_time_log_dialog', 'shots/{id}/timelogs/create/dialog')
     # TODO: Change the TimeLog Entity plural name so we can use 'time_logs' string here.

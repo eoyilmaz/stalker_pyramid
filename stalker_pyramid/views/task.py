@@ -275,6 +275,11 @@ def convert_to_dgrid_gantt_task_format(tasks):
     :param tasks: List of Stalker Tasks.
     :return: json compatible dictionary
     """
+    if not isinstance(tasks, list):
+        response = HTTPServerError()
+        response.text = u'This is a not a list of tasks'
+        raise response
+
     return [
         {
             'bid_timing': task.bid_timing,
@@ -296,13 +301,12 @@ def convert_to_dgrid_gantt_task_format(tasks):
             'name': task.name,
             'parent': task.parent.id if task.parent else task.project.id,
             'priority': task.priority,
+            'resources': [
+                {'id': resource.id, 'name': resource.name} for resource in task.resources] if not task.is_container else [],
             'responsible': {
                 'id': task.responsible.id,
                 'name': task.responsible.name
             },
-            'resources': [
-                {'id': resource.id, 'name': resource.name} for resource in
-                task.resources] if not task.is_container else [],
             'schedule_constraint': task.schedule_constraint,
             'schedule_model': task.schedule_model,
             'schedule_seconds': task.schedule_seconds,
@@ -312,7 +316,6 @@ def convert_to_dgrid_gantt_task_format(tasks):
                 task.computed_start if task.computed_start else task.start),
             'total_logged_seconds': task.total_logged_seconds,
             'type': task.entity_type,
-            # 'children': [{'$ref': task.id} for task in task.children]
         } for task in tasks
     ]
 
@@ -519,8 +522,9 @@ def get_tasks(request):
         if isinstance(parent, Project):
             tasks = parent.root_tasks
         elif isinstance(parent, Task):
-            tasks = Task.query.filter(Task.parent_id == parent_id).order_by(
-                Task.name).all()
+            tasks = Task.query\
+                        .filter(Task.parent_id == parent_id)\
+                        .order_by(Task.name).all()
 
         content_range = content_range % (0, len(tasks) - 1, len(tasks))
         # logger.debug(tasks)
@@ -605,8 +609,8 @@ def get_entity_tasks(request):
             elif isinstance(entity, Studio):
                 entity_projects = Project.query.all()
 
-            return_data = convert_to_dgrid_gantt_project_format(
-                entity_projects)
+            return_data = \
+                convert_to_dgrid_gantt_project_format(entity_projects)
 
         content_range = content_range % (0,
                                          len(return_data) - 1,
@@ -1367,6 +1371,7 @@ def get_task_events(request):
     events.extend(get_child_task_events(task))
 
     return events
+
 
 
 #

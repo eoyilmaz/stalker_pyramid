@@ -211,6 +211,7 @@ def update_user(request):
         location=came_from
     )
 
+
 @view_config(
     route_name='get_entity_users',
     renderer='json',
@@ -226,8 +227,13 @@ def update_user(request):
     renderer='json',
     permission='List_User'
 )
+@view_config(
+    route_name='get_user',
+    renderer='json',
+    permission='Read_User'
+)
 def get_users(request):
-    """returns all the users in database
+    """returns all users or one particular user from database
     """
     # if there is a simple flag, just return ids and names and login
     #simple = request.params.get('simple')
@@ -245,7 +251,7 @@ def get_users(request):
     logger.debug('entity_id  : %s' % entity_id)
     logger.debug('entity_type: %s' % entity_type)
 
-    if entity_id and entity_type not in ['Project', 'Department', 'Group', 'Task']:
+    if entity_id and entity_type not in ['Project', 'Department', 'Group', 'Task', 'User']:
         # there is no entity_type for that entity
         return []
 
@@ -313,6 +319,8 @@ def get_users(request):
         sql_query += """join "Task_Resources" on "Users".id = "Task_Resources".resource_id
         where "Task_Resources".task_id = %(id)s
         """ % {'id': entity_id}
+    elif entity_type == "User":
+        sql_query += 'where "Users".id = %s' % entity_id
 
     result = DBSession.connection().execute(sql_query)
     data = [
@@ -344,87 +352,6 @@ def get_users(request):
                  ((end - start), len(data)))
     return data
 
-
-# @view_config(
-#     route_name='get_project_users',
-#     renderer='json',
-#     permission='List_User'
-# )
-# @view_config(
-#     route_name='get_entity_users',
-#     renderer='json',
-#     permission='List_User'
-# )
-# def get_entity_users(request):
-#     """returns all the Users of a given Entity
-#     """
-#     entity_id = request.matchdict.get('id', -1)
-#     entity = Entity.query.filter_by(id=entity_id).first()
-#
-#     simple = request.params.get('simple', False)
-#
-#     # works for Departments and Projects or any entity that has users attribute
-#     if simple:
-#         return [{
-#             'id': user.id,
-#             'name': user.name,
-#             'login': user.login,
-#         } for user in sorted(entity.users, key=lambda x: x.name.lower())]
-#     return [{
-#         'id': user.id,
-#         'name': user.name,
-#         'login': user.login,
-#         'email': user.email,
-#         'departments': [
-#             {
-#                 'id': department.id,
-#                 'name': department.name
-#             } for department in user.departments
-#         ],
-#         'groups': [
-#             {
-#                 'id': group.id,
-#                 'name': group.name
-#             } for group in user.groups
-#         ],
-#         'tasksCount': len(user.tasks),
-#         'ticketsCount': len(user.open_tickets),
-#         'thumbnail_path': user.thumbnail.full_path if user.thumbnail else None
-#     } for user in sorted(entity.users, key=lambda x: x.name.lower())]
-#
-#
-# @view_config(
-#     route_name='get_entity_users_not',
-#     renderer='json',
-#     permission='List_User'
-# )
-# def get_users_not_in_entity(request):
-#     """returns all the Users which are not related with the given Entity
-#     """
-#     entity_id = request.matchdict.get('id', -1)
-#     entity = Entity.query.filter_by(id=entity_id).first()
-#
-#     entity_class = None
-#     if entity.entity_type == 'Project':
-#         entity_class = Project
-#     elif entity.entity_type == 'Department':
-#         entity_class = Department
-#
-#     logger.debug(User.query.filter(User.notin_(entity_class.users)).all())
-#
-#     # works for Departments and Projects or any entity that has users attribute
-#     return [
-#         {
-#             'id': user.id,
-#             'name': user.name,
-#             'login': user.login,
-#             'tasksCount': len(user.tasks),
-#             'ticketsCount': len(user.open_tickets),
-#             'thumbnail_path': user.thumbnail.full_path if user.thumbnail else None
-#         }
-#         for user in entity.users
-#     ]
-#
 
 @view_config(
     route_name='append_users_to_entity_dialog',
@@ -708,15 +635,6 @@ def login(request):
     }
 
 
-# @forbidden_view_config(
-#     renderer='templates/auth/no_permission.jinja2'
-# )
-# def forbidden(request):
-#     """runs when user has no permission for the requested page
-#     """
-#     return {}
-
-
 @view_config(
     route_name='flash_message',
     renderer='templates/home.jinja2'
@@ -791,3 +709,265 @@ def check_email_availability(request):
         'available': available
     }
 
+
+@view_config(
+    route_name='get_entity_resources',
+    permission='Read_User',
+    renderer='json'
+)
+@view_config(
+    route_name='get_resources',
+    permission='Read_User',
+    renderer='json'
+)
+@view_config(
+    route_name='get_resource',
+    permission='Read_User',
+    renderer='json'
+)
+def get_resources(request):
+    """returns Users for Resource View
+    """
+    # TODO: This is a very ugly function, please define the borders and use cases correctly and then clean it
+
+    start = time.time()
+    # return users for now
+    # /resources/
+    # /resources/26/
+    resource_id = request.matchdict.get('id')
+    logger.debug('resource_id: %s' % resource_id)
+
+    parent_id = request.params.get('parent_id')
+    logger.debug('parent_id: %s' % parent_id)
+
+    execute = DBSession.connection().execute
+
+    entity_type = None
+    if resource_id:
+        # get the entity type of that resource
+        data = execute('select entity_type from "SimpleEntities" where id=%s' %
+                       resource_id).fetchone()
+        if data:
+            entity_type = data[0]
+        else:
+            return []
+    else:
+        # default to User
+        entity_type = "User"
+    logger.debug('entity_type : %s' % entity_type)
+
+    # get resource details plus time logs
+    if not parent_id:
+        if entity_type == 'Department':
+            resource_sql_query = """select
+                "SimpleEntities".id,
+                "SimpleEntities".name,
+                "SimpleEntities".entity_type,
+                count(*) as resource_count
+            from "SimpleEntities"
+            join "User_Departments" on "User_Departments".did = "SimpleEntities".id
+            where "SimpleEntities".entity_type = '%s'
+            """ % entity_type
+        elif entity_type == 'User':
+            resource_sql_query = """select
+                "SimpleEntities".id,
+                "SimpleEntities".name,
+                "SimpleEntities".entity_type,
+                1 as resource_count
+            from "SimpleEntities"
+            where "SimpleEntities".entity_type = '%s'
+            """ % entity_type
+        elif entity_type == 'Studio':
+            resource_sql_query = """select
+                "SimpleEntities".id,
+                "SimpleEntities".name,
+                "SimpleEntities".entity_type,
+                count(*) as resource_count
+            from "SimpleEntities"
+            join "User_Departments" on "User_Departments".did = "SimpleEntities".id
+            """
+
+        if resource_id and entity_type != "Studio":
+            resource_sql_query += "and id=%s group by id, name order by name" % resource_id
+        else:
+            resource_sql_query += "group by id, name order by name"
+
+        # if the given entity is a Department return all the time logs of the
+        # users of that department
+        time_log_query = """select
+            "TimeLogs".id,
+            "TimeLogs".task_id,
+            extract(epoch from "TimeLogs".start) * 1000 as start,
+            extract(epoch from "TimeLogs".end) * 1000 as end
+        from "TimeLogs"
+        """
+
+        tasks_query = """select
+            "Tasks".id,
+            extract(epoch from "Tasks".computed_start) * 1000 as start,
+            extract(epoch from "Tasks".computed_end) * 1000 as end
+        from "Tasks"
+        """
+
+        has_children = False
+
+        if entity_type == "User":
+            time_log_query += "where resource_id = %s"
+
+            tasks_query += """join "Task_Resources" on "Tasks".id = "Task_Resources".task_id
+                where not (
+                    exists (
+                        select 1
+                        from (
+                            select "Tasks".parent_id
+                            from "SimpleEntities"
+                                join "Tasks" on "SimpleEntities".id = "Tasks".id
+                            ) AS all_tasks
+                        where all_tasks.parent_id = "Tasks".id
+                    )
+                ) and resource_id = %s
+            """
+
+            has_children = False
+        elif entity_type in ["Department", "Studio"]:
+            time_log_query += """
+            join "User_Departments" on "User_Departments".uid = "TimeLogs".resource_id
+            where did = %s"""
+
+            tasks_query += """join "Task_Resources" on "Tasks".id = "Task_Resources".task_id
+            join "User_Departments" on "Task_Resources".resource_id = "User_Departments".uid
+            where not (
+                exists (
+                    select 1
+                    from (
+                        select "Tasks".parent_id
+                        from "SimpleEntities"
+                            join "Tasks" on "SimpleEntities".id = "Tasks".id
+                        ) AS all_tasks
+                    where all_tasks.parent_id = "Tasks".id
+                )
+            )
+            and did = %s
+            group by "Tasks".id, "Tasks".start, "Tasks".end
+            order by start
+            """
+
+            has_children = True
+        elif entity_type == "Project":
+            # the resource is a Project return all the project tasks and
+            # return all the time logs of the users in that project
+            time_log_query += """
+            join "User_Departments" on "User_Departments".uid = "TimeLogs".resource_id
+            -- where did = %s
+            """
+
+            tasks_query += """
+            -- select all the leaf tasks of the users of a specific Project
+            select
+                "Tasks".id,
+                extract(epoch from "Tasks".computed_start) * 1000 as start,
+                extract(epoch from "Tasks".computed_end) * 1000 as end
+            from "Tasks"
+                where not (
+                    exists (
+                        select 1
+                        from (
+                            select "Tasks".parent_id
+                            from "SimpleEntities"
+                                join "Tasks" on "SimpleEntities".id = "Tasks".id
+                            ) AS all_tasks
+                        where all_tasks.parent_id = "Tasks".id
+                    )
+                ) and project_id = %s
+            group by id, start, "end"
+            order by start
+            """
+
+            has_children = True
+
+    else:
+        # return departments ??? should also return Groups, Project etc.
+        # that contains users
+        resource_sql_query = """select
+            "Users".id,
+            "SimpleEntities".name,
+            "SimpleEntities".entity_type,
+            1 as resource_count
+        from "Users"
+        join "SimpleEntities" on "SimpleEntities".id = "Users".id
+        join "User_Departments" on "User_Departments".uid = "Users".id
+        join "Departments" on "User_Departments".did = "Departments".id
+        where "Departments".id = %s
+        order by name
+        """ % parent_id
+
+        time_log_query = """select
+            "TimeLogs".id,
+            "TimeLogs".task_id,
+            extract(epoch from "TimeLogs".start) * 1000 as start,
+            extract(epoch from "TimeLogs".end) * 1000 as end
+        from "TimeLogs"
+        where resource_id = %s
+        """
+
+        tasks_query = """select
+            "Tasks".id,
+            extract(epoch from "Tasks".computed_start) * 1000 as start,
+            extract(epoch from "Tasks".computed_end) * 1000 as end
+        from "Tasks"
+            join "Task_Resources" on "Tasks".id = "Task_Resources".task_id
+        where
+            not (
+                exists (
+                    select 1
+                    from (
+                        select "Tasks".parent_id
+                        from "SimpleEntities"
+                            join "Tasks" on "SimpleEntities".id = "Tasks".id
+                        ) AS all_tasks
+                    where all_tasks.parent_id = "Tasks".id
+                )
+            ) and resource_id = %s
+        """
+
+        has_children = False
+
+    logger.debug('resource_sql_query : %s' % resource_sql_query)
+    logger.debug('time_log_query : %s' % time_log_query)
+    logger.debug('tasks_sql_query : %s' % tasks_query)
+
+    resources_result = execute(resource_sql_query).fetchall()
+
+    logger.debug('resources_result : %s' % resources_result)
+
+    link = '/%s/%s/view' % (entity_type.lower(), '%s')
+    data = [
+        {
+            'id': rr[0],
+            'name': rr[1],
+            'type': rr[2],
+            'resource_count': rr[3],
+            'hasChildren': has_children,
+            'link': link % rr[0],
+            'time_logs': [
+                {
+                    'id': tr[0],
+                    'task_id': tr[1],
+                    'start': tr[2],
+                    'end': tr[3]
+                } for tr in execute(time_log_query % rr[0]).fetchall()
+            ],
+            'tasks': [
+                {
+                    'id': tr[0],
+                    'start': tr[1],
+                    'end': tr[2]
+                } for tr in execute(tasks_query % rr[0]).fetchall()
+            ]
+        } for rr in resources_result
+    ]
+
+    end = time.time()
+    logger.debug('get_resources took : %s seconds' % (end - start))
+
+    return data

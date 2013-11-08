@@ -8,7 +8,7 @@ define([
     "dgrid/tree",
     "dgrid/extensions/DijitRegistry",
     "put-selector/put",
-    "stalker/GanttColumn"
+    "stalker/js/GanttColumn"
 ], function (declare, lang, OnDemandGrid, ColumnSet, Selection, Keyboard, tree,
              DijitRegistry, put, GanttColumn) {
     // module:
@@ -258,9 +258,15 @@ define([
             [
                 {
                     chart: new GanttColumn({
-                        scale: 4000000,
-                        start: new Date().clearTime().getTime() - 15552000000 * 1.5,
-                        end: new Date().clearTime().getTime() + 15552000000 * 3 + 86400000 - 1+(6 - new Date().getDay()) * 86400000,
+                        scale: 'w',
+                        start: function () {
+                            var today = moment();
+                            return today.subtract(6, 'month').startOf('isoweek');
+                        },
+                        end: function () {
+                            var today = moment();
+                            return today.add(6, 'month').endOf('isoweek');
+                        },
                         sortable: false
                     })
                 }

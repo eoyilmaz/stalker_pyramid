@@ -20,7 +20,7 @@
 define(['exports',  'dojo/domReady!'],
     function (exports) {
         // module:
-        //      stalker/dialogs
+        //      stalker/js/dialogs
         // summary:
         //      Some useful utility functions
 

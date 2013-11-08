@@ -19,8 +19,8 @@ define([
     'dijit/Menu',
     'dijit/MenuItem',
 
-    'stalker/dialogs',
-    'stalker/dialogCreator',
+    'stalker/js/dialogs',
+    'stalker/js/dialogCreator',
 
     'dojo/domReady!'
 ], function (Menu, MenuItem, dialogs, dialogCreator) {

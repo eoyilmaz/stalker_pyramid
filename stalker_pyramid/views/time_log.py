@@ -1,19 +1,19 @@
 # -*- coding: utf-8 -*-
 # Stalker Pyramid a Web Base Production Asset Management System
 # Copyright (C) 2009-2013 Erkan Ozgur Yilmaz
-# 
+#
 # This file is part of Stalker Pyramid.
-# 
+#
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
 # License as published by the Free Software Foundation;
 # version 2.1 of the License.
-# 
+#
 # This library is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # Lesser General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
@@ -22,15 +22,17 @@
 import logging
 
 from pyramid.httpexceptions import HTTPOk, HTTPServerError
+from pyramid.response import Response
 from pyramid.view import view_config
 
-from stalker import defaults, Task, User, Studio, TimeLog, Entity
+from stalker import defaults, Task, User, Studio, TimeLog, Entity, Status
 
 from stalker.db import DBSession
 from stalker.exceptions import OverBookedError
+import time
 from stalker_pyramid.views import (get_logged_in_user,
                                    PermissionChecker, milliseconds_since_epoch,
-                                   get_date, get_date_range)
+                                   get_date, StdErrToHTMLConverter)
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -130,7 +132,6 @@ def create_time_log(request):
     start_date = get_date(request, 'start')
     end_date = get_date(request, 'end')
 
-
     logger.debug('task_id     : %s' % task_id)
     logger.debug('task        : %s' % task)
     logger.debug('resource_id : %s' % resource_id)
@@ -148,21 +149,63 @@ def create_time_log(request):
                 start=start_date,
                 end=end_date
             )
-        except OverBookedError:
-            logger.debug('TimeLog thrown OverBookedError!')
-            return HTTPServerError()
+
+            # check the dependent tasks has finished
+            compl = Status.query.filter(Status.code == "CMPL").first()
+            for dep_task in task.depends:
+                if dep_task.status != compl:
+                    response = Response(
+                        'Because one of the dependencies (Task: %s (%s)) has '
+                        'not finished, \n'
+                        'You can not create time logs for this task yet!'
+                        '\n\nPlease, inform %s to finish this task!' %
+                        (dep_task.name, dep_task.id,
+                         [r.name for r in dep_task.resources])
+                    )
+                    response.status_int = 500
+                    return response
+
+            # check the depending tasks
+            for dep_task in task.dependent_of:
+                if len(dep_task.time_logs) > 0:
+                    response = Response(
+                        'Because one of the depending (Task: %s (%s)) has '
+                        'already started, \n'
+                        'You can not create any more time logs for this task!'
+                        '\n\nPlease, inform %s about this situation!' %
+                        (dep_task.name, dep_task.id,
+                         task.responsible.name)
+                    )
+                    response.status_int = 500
+                    return response
+
+            # set the status to wip for this task
+            logger.debug('Updating Task (%s) status to WIP!' % task_id)
+            wip = Status.query.filter(Status.code == "WIP").first()
+            task.status = wip
+            DBSession.add(task)
+        except (OverBookedError, TypeError) as e:
+            converter = StdErrToHTMLConverter(e)
+            response = Response(converter.html())
+            response.status_int = 500
+            return response
         else:
             DBSession.add(time_log)
-
             request.session.flash(
                 'success:Time log for <strong>%s</strong> is saved for resource <strong>%s</strong>.' % (task.name,resource.name)
             )
-
         logger.debug('no problem here!')
-
+    else:
+        response = Response(
+            'There are missing parameters: '
+            'task_id: %s, resource_id: %s' % (task_id, resource_id)
+        )
+        response.status_int = 500
+        return response
     logger.debug('successfully created time log!')
-
-    return HTTPOk()
+    response = Response('successfully created time log!')
+    response.status_int = 200
+    return response
 
 
 @view_config(
@@ -222,35 +265,95 @@ def get_time_logs(request):
     """
     logger.debug('get_time_logs is running')
     entity_id = request.matchdict.get('id', -1)
-    entity = Entity.query.filter_by(id=entity_id).first()
-
     logger.debug('entity_id : %s' % entity_id)
 
-    time_log_data = []
+    data = DBSession.connection().execute(
+        'select entity_type from "SimpleEntities" where id=%s' % entity_id
+    ).fetchone()
 
-    # if entity.time_logs:
-    for time_log in entity.time_logs:
-        # logger.debug('time_log.task.id : %s' % time_log.task.id)
-        # assert isinstance(time_log, TimeLog)
-        time_log_data.append({
-            'id': time_log.id,
-            'entity_type':time_log.plural_class_name.lower(),
-            'task_id': time_log.task.id,
-            'task_name': time_log.task.name,
-            'task_status': time_log.task.status.name,
-            'parent_name': ' | '.join(
-                [parent.name for parent in time_log.task.parents]),
-            'resource_id': time_log.resource_id,
-            'resource_name': time_log.resource.name,
-            'duration': time_log.total_seconds,
-            'start': milliseconds_since_epoch(time_log.start),
-            'end': milliseconds_since_epoch(time_log.end),
+    entity_type = None
+    if len(data):
+        entity_type = data[0]
+
+    logger.debug('entity_type : %s' % entity_type)
+
+    sql_query = """select
+        "TimeLogs".id,
+        "TimeLogs".task_id,
+        "SimpleEntities_Task".name,
+        "SimpleEntities_Status".name,
+        parent_names.parent_name,
+        "TimeLogs".resource_id,
+        "SimpleEntities_Resource".name,
+        extract(epoch from "TimeLogs".end - "TimeLogs".start) as total_seconds,
+        extract(epoch from "TimeLogs".start) * 1000 as start,
+        extract(epoch from "TimeLogs".end) * 1000 as end
+    from "TimeLogs"
+    join "Tasks" on "TimeLogs".task_id = "Tasks".id
+    join "SimpleEntities" as "SimpleEntities_Task" on "Tasks".id = "SimpleEntities_Task".id
+    join "SimpleEntities" as "SimpleEntities_Status" on "Tasks".status_id = "SimpleEntities_Status".id
+    join "SimpleEntities" as "SimpleEntities_Resource" on "TimeLogs".resource_id = "SimpleEntities_Resource".id
+    join (
+        select
+            parent_data.id,
+            "SimpleEntities".name,
+            array_to_string(array_agg(
+                case
+                    when "SimpleEntities_parent".entity_type = 'Project'
+                    then "Projects".code
+                    else "SimpleEntities_parent".name
+                end),
+                ' | '
+            ) as parent_name
+            from (
+                with recursive parent_ids(id, parent_id, n) as (
+                        select task.id, coalesce(task.parent_id, task.project_id), 0
+                        from "Tasks" task
+                    union
+                        select task.id, parent.parent_id, parent.n + 1
+                        from "Tasks" task, parent_ids parent
+                        where task.parent_id = parent.id
+                )
+                select
+                    parent_ids.id, parent_id as parent_id, parent_ids.n
+                    from parent_ids
+                    order by id, parent_ids.n desc
+            ) as parent_data
+            join "SimpleEntities" on "SimpleEntities".id = parent_data.id
+            join "SimpleEntities" as "SimpleEntities_parent" on "SimpleEntities_parent".id = parent_data.parent_id
+            left outer join "Projects" on parent_data.parent_id = "Projects".id
+            group by parent_data.id, "SimpleEntities".name
+    ) as parent_names on "TimeLogs".task_id = parent_names.id
+    """
+
+    if entity_type == u'User':
+        sql_query += 'where "TimeLogs".resource_id = %s' % entity_id
+    elif entity_type == u'Task':
+        sql_query += 'where "TimeLogs".task_id = %s' % entity_id
+    elif entity_type is None:
+        return []
+
+    result = DBSession.connection().execute(sql_query)
+
+    start = time.time()
+    data = [
+        {
+            'id': r[0],
+            'entity_type': 'timelogs',
+            'task_id': r[1],
+            'task_name': r[2],
+            'task_status': r[3],
+            'parent_name': r[4],
+            'resource_id': r[5],
+            'resource_name': r[6],
+            'duration': r[7],
+            'start': r[8],
+            'end': r[9],
             'className': 'label-important',
             'allDay': '0'
-
-            # 'hours_to_complete': time_log.hours_to_complete,
-            # 'notes': time_log.notes
-        })
-
-    return time_log_data
+        } for r in result.fetchall()
+    ]
+    end = time.time()
+    logger.debug('get_entity_time_logs took: %s seconds' % (end - start))
+    return data
 
