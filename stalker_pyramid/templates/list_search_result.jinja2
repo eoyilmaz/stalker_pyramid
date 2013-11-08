@@ -1,0 +1,44 @@
+{% extends "base.jinja2" %}
+
+{% block pre_header %}
+
+{% endblock pre_header %}
+
+{% block breadcrumbs %}
+    {% include 'breadcrumb/breadcrumbs.jinja2' %}
+{% endblock breadcrumbs %}
+
+{% block sidebar %}
+    {% include 'sidebar.jinja2' %}
+{% endblock sidebar %}
+
+{% block page_content %}
+
+    <div class="widget-box transparent">
+        <div class="widget-header widget-header-small header-color-green">
+            <h4 class="smaller">
+                Results
+            </h4>
+
+        </div>
+        <div class="widget-body">
+            <div class="widget-main">
+                {% for result in results %}
+                    <div class="profile-activity clearfix">
+                        <div>
+<i class="icon-angle-right bigger-80"></i>
+                            <a class=""
+                               href="{{ request.route_url('view_'+result.entity_type.lower(), id=result.id) }}">
+                                {{ result.name }}{% if result.parents %}
+                                {% for parent in result.parents %}
+                                   | {{ parent.name }}
+                                {% endfor %}
+                            {% endif %}
+                            </a>({{ result.entity_type }})
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+{% endblock page_content %}

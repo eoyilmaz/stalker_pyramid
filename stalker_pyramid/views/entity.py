@@ -506,9 +506,11 @@ def get_search_result(request):
 
     logger.debug('get_search_result is running')
 
-    qString = request.matchdict.get('str', -1)
+    qString = request.params.get('str', -1)
 
-    entities = SimpleEntity.query.filter(SimpleEntity.name.ilike(sString)).all()
+    logger.debug('qString: %s'% qString)
+
+    entities = Entity.query.filter(Entity.name.ilike(qString)).all()
 
     search_result = []
 
@@ -518,8 +520,73 @@ def get_search_result(request):
         search_result.append({
              'id': entity.id,
             'name':entity.name,
-            'entity_type':entity.entity_type
+            'entity_type':entity.plural_class_name.lower()
         })
 
     return search_result
 
+
+@view_config(
+    route_name='submit_search',
+    renderer='json'
+)
+def submit_search(request):
+    """called when adding a User
+    """
+    logger.debug('***submit_search user method starts ***')
+
+    logged_in_user = get_logged_in_user(request)
+
+    # get params
+
+    qString = request.params.get('str', None)
+    entity_id = request.params.get('id', None)
+
+    logger.debug('qString : %s' % qString)
+
+    result_location ='/'
+
+    # create and add a new user
+    if qString:
+        entities = SimpleEntity.query.filter(SimpleEntity.name.ilike(qString)).all()
+        result_location ='/'
+
+        if len(entities)>1:
+            result_location = '/list/search_results?str=%s&eid=%s'%(qString,entity_id)
+        elif len(entities) == 1:
+            entity = entities[0]
+            result_location = '/%s/%s/view' % (entity.plural_class_name.lower(),entity.id)
+
+    logger.debug('result_location : %s' % result_location)
+
+    return {
+        'url': result_location
+    }
+
+
+@view_config(
+    route_name='list_search_result',
+    renderer='list_search_result.jinja2'
+)
+def list_search_result(request):
+    qString = request.params.get('str', None)
+    entity_id = request.params.get('eid', None)
+    entity = Entity.query.filter_by(id=entity_id).first()
+
+    results = Entity.query.filter(Entity.name.ilike(qString)).all()
+
+    projects = Project.query.all()
+    logged_in_user = get_logged_in_user(request)
+
+    studio = Studio.query.first()
+
+    return {
+        'entity': entity,
+        'has_permission': PermissionChecker(request),
+        'logged_in_user': logged_in_user,
+        'milliseconds_since_epoch': milliseconds_since_epoch,
+        'stalker_pyramid': stalker_pyramid,
+        'projects': projects,
+        'studio': studio,
+        'results':results
+    }
