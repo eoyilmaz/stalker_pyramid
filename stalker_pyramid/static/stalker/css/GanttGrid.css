@@ -25,7 +25,7 @@
 .projectBox {
     position: absolute;
     top: 0px;
-    margin-top: 1px;
+    margin-top: 0px;
     z-index: 100;
 }
 
@@ -87,7 +87,7 @@
     position: absolute;
     /*height: 6px;*/
     top: 0px;
-    margin-top: 2px;
+    margin-top: 0px;
     z-index: 100;
 }
 
@@ -162,7 +162,7 @@
     position: absolute;
     height: 20px;
     top: 0px;
-    margin-top: 2px;
+    margin-top: 0px;
     z-index: 100;
     border-radius: 3px;
     border: 1px solid #AAAAAA;
@@ -425,32 +425,11 @@ width: 40%;
 width: 60%;
 }
 
-/*.gantt .dgrid-column-set-cell .dgrid-column-set-0 .dgrid-cell {*/
-/*background-color: #dedede;*/
-/*}*/
-
-/*.gantt .dgrid-row {*/
-/**/
-/*}*/
-
-/*.gantt .dgrid-column-set {*/
-    /*overflow: hidden;*/
-    /*width: 100%;*/
-    /*position: relative;*/
-    /*left: 0px;*/
-    /*float: left;*/
-/*}*/
-
-/*.gantt .dgrid-cell {*/
-    /*border-top: none;*/
-    /*border-bottom: none;*/
-/*}*/
 
 .gantt .dgrid-cell {
-    /*background-color: rgb(240, 240, 240);*/
-    /*text-overflow: ellipsis;*/
     text-overflow: clip;
     white-space: nowrap;
+    height: 26px;
 }
 
 .gantt .ganttHead1 {
@@ -460,24 +439,21 @@ width: 60%;
     overflow:hidden;text-overflow:clip;white-space:nowrap;
 }
 
-
-/* to show the drop-down menus in task edit row*/
-/*.gantt .dgrid-cell {*/
-    /*overflow: visible;*/
-/*}*/
-
-/*.gantt .dgrid-column-set-cell.dgrid-column-set-0>div {*/
-    /*overflow: visible;*/
-/*}*/
-
-/*.gantt .dgrid-tree-container {*/
-    /*overflow: visible;*/
-/*}*/
+.gantt .headerCell {
+    position: absolute;
+    border: 1px none #AAA;
+    border-left-style: solid;
+    margin-left: -1px;
+}
 
 
-/*.gantt .dgrid-cell-padding {*/
-/*padding: 0px;*/
-/*}*/
+.gantt .taskContainer {
+    position: absolute;
+    height: 24px;
+    left: 0;
+    top: 2px;
+}
+
 
 .project {
     font-weight: bold;

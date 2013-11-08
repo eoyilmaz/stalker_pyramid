@@ -258,22 +258,14 @@ define([
             [
                 {
                     chart: new GanttColumn({
-                        scale: 4000000,
+                        scale: 'w',
                         start: function () {
-                            var today = new Date();
-                            // clear the time and set the day to the closest sunday
-                            var day = today.getDay();
-                            var closest_sunday = today.getTime() - ((7 - day) % 7) * 8640000;
-                            // go back 1 and a half years
-                            return closest_sunday - 52 * 86400000 * 7 * 1.5;
+                            var today = moment();
+                            return today.subtract(6, 'month').startOf('isoweek');
                         },
                         end: function () {
-                            var today = new Date();
-                            // clear the time and set the day to the closest sunday
-                            var day = today.getDay();
-                            var closest_sunday = today.getTime() - ((7 - day) % 7) * 8640000;
-                            // go back 1 and a half years
-                            return closest_sunday + 52 * 86400000 * 7 * 3 - 1;
+                            var today = moment();
+                            return today.add(6, 'month').endOf('isoweek');
                         },
                         sortable: false
                     })

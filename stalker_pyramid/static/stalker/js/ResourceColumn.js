@@ -22,81 +22,14 @@ define([
     "dojo/_base/array",
     'dojo/_base/lang',
     "dojo/date/locale",
-    "put-selector/put",
-    'stalker/js/Resource'
-], function (domConstruct, array, lang, locale, put, Resource) {
+    'stalker/js/Resource',
+    'stalker/js/HeaderCell'
+], function (domConstruct, array, lang, locale, Resource, draw_header_cell) {
     // module:
     //     ResourceColumn
     // summary:
     //     A dgrid column plugin that generates resource charts in a column.
     'use strict';
-
-    /**
-     * Renders header cells under the given parent
-     * 
-     * @param options
-     * @returns {*|jQuery|HTMLElement}
-     */
-    var draw_header_cell = function (options) {
-        var parent = options.parent;
-        var start = options.start;
-        var end = options.end;
-        var scale = options.scale;
-        var step_size = options.step_size;
-        var step_unit = options.step_unit;
-        var period_unit = options.period_unit;
-        var height = options.height;
-        var format = options.format;
-
-        var original_start = moment(start).startOf('day');
-
-        var start_date = moment(start).startOf(period_unit).startOf('day');
-        var end_date = moment(end).endOf(period_unit).endOf('day');
-
-        // find the start and end of the period
-        var period_start = moment(start_date.startOf(period_unit));
-        var period_end = moment(start_date.endOf(period_unit));
-
-        if (step_size > 1) {
-            end_date.add(step_size - 1, step_unit);
-            period_end.add(step_size - 1, period_unit);
-        }
-
-        // create the first div elements using start_date and week_end
-        var parent_div = $($.parseHTML('<div class="headerCell"></div>'));
-        parent_div.css({
-            width: Math.floor((end_date - start_date) / scale),
-            left: Math.floor((start_date - original_start) / scale),
-            height: height,
-            position: 'absolute'
-        });
-        $(parent).append(parent_div);
-
-        var header_div_element;
-        // now wee need to iterate until the end_date is bigger than end
-
-        var formatter = function(ps, pe) {
-            return ps.format(format);
-        };
-
-        if (typeof (format) === 'function') {
-            formatter = format;
-        }
-
-        while (period_start < end_date) {
-            // create the first div elements using start_date and week_end
-            header_div_element = $($.parseHTML('<div class="headerCell center">' + formatter(period_start, period_end) + '</div>'));
-            header_div_element.css({
-                width: Math.floor((period_end - period_start) / scale),
-                left: Math.floor((period_start - start_date) / scale)
-            });
-            parent_div.append(header_div_element);
-            // go to next step
-            period_start.add(step_size, step_unit).startOf(step_unit);
-            period_end.add(step_size, step_unit).endOf(step_unit);
-        }
-        return parent_div;
-    };
 
     /**
      * Render the given time log data under to the given parent
@@ -618,15 +551,11 @@ define([
          *     DomNode
          */
         column.renderCell = function (data, value, td) {
-            // IE < 8 receive the inner padding node, not the td directly
-            var cell = td.tagName === "TD" ? td : td.parentNode;
-
             // render cells
             zoom_levels[column.scale].chart.draw(td, data, column.start, column.end);
 
             // render today
             render_today(td, column.start, zoom_levels[column.scale].scale);
-
         };
 
         column.refresh = function (options) {
@@ -651,9 +580,6 @@ define([
             column.end = options.end;
             column.scale = options.scale;
 
-//            // adjust the table with
-//            column.grid.addCssRule(".dgrid-column-chart", "width: " + table_width + "px");
-
             // let it adjust the scroll bars
             column.grid.resize();
         };
@@ -666,10 +592,7 @@ define([
 
         column.scrollToDate = function (date) {
             // scrolls to the given date
-            var header, position, date_as_millis, date_x, scroller,
-                scroller_width;
-
-            header = $(column.headerNode);
+            var date_as_millis, date_x, scroller, scroller_width;
 
             date_as_millis = +date;
             var start_date = moment(column.start).startOf('day');
@@ -697,7 +620,7 @@ define([
             // fix scrolling
             var table_width = zoom_levels[column.scale].table_width(column.start, column.end);
             column.grid.addCssRule(".dgrid-column-chart", "width: " + table_width + "px");
-            
+
             $(th).css({
                 width: table_width
             });
@@ -711,7 +634,7 @@ define([
                 parent_div = zoom_levels[column.scale].headers[i].draw(th, column.start, column.end);
                 parent_div.css({
                     top: i * 27
-                })
+                });
             }
             // extend the height of the table header
             $(th).css({

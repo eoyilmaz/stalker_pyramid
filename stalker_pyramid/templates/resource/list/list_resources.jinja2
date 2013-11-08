@@ -1,70 +1,5 @@
 
 {% raw %}
-<script id="tmpl_projectEditRow" type="text/x-dot-template">
-    <div class="projectEditRow"
-         dataId="{{=it.id}}"
-         name="{{=it.name}}"
-         start={{=it.start}}
-         end={{=it.end}}
-         type="{{=it.type}}"
-         hasChildren={{=it.hasChildren}}><a href="{{=it.link}}">{{=it.name}} ({{=it.type}})</a>
-    </div>
-</script>
-
-<script id="tmpl_projectBar" type="text/x-dot-template">
-    <div class="projectBox" projectId="{{=it.id}}">
-        <div class="layout">
-            <div class="projectLabel">{{=it.link()}}</div>
-            <div class="projectContextMenu" dataId="{{=it.id}}"></div>
-        </div>
-    </div>
-</script>
-
-
-<script id="tmpl_taskBar" type="text/x-dot-template">
-    <div class="taskBox" dataId="{{=it.id}}">
-        <div class="layout {{=it.hasExternalDep?'extDep':''}}">
-            <div class="taskProgress"
-                 style="width:{{=it.progress > 100 ? 100 : it.progress }}%;"></div>
-            <div class="taskExtraTiming"
-                 style="width:{{=(it.schedule_timing - it.bid_timing)/it.schedule_timing*100}}%;"></div>
-            <div class="taskScheduleModel">
-                {{=it.schedule_model.toUpperCase()[0]}}:
-                {{=it.schedule_timing}}{{=it.schedule_unit}}
-            </div>
-            <div class="taskLabel">{{=it.link()}}</div>
-            <div class="milestone end {{=it.endIsMilestone ? 'active' : ''}}"></div>
-            <div class="taskResourceLabel">{{=it.getResourcesLinks()}}
-            </div>
-            {{=it.clippedStart?'
-            <div class="leftArrowHead">&nbsp</div>
-            ':''}}
-            {{=it.clippedEnd?'
-            <div class="rightArrowHead">&nbsp</div>
-            ':''}}
-            <div class="leafTaskContextMenu"
-                 dataId="{{=it.id}}"
-                 name="{{=it.name}}"
-                 hierarchy_name="{{=it.hierarchy_name}}"
-                 start={{=it.start}}
-                 end={{=it.end}}
-                 type="{{=it.type}}"
-                 priority={{=it.priority}}
-                 bid_timing={{=it.bid_timing}}
-                 bid_unit={{=it.bid_unit}}
-                 schedule_model={{=it.schedule_model}}
-                 schedule_timing={{=it.schedule_timing}}
-                 schedule_unit={{=it.schedule_unit}}
-                 description="{{=it.description}}"
-                 remaining_seconds="{{=it.remaining_seconds}}"
-                 resources="{{=it.getResourcesStr()}}"
-                 responsible_id="{{=it.responsible.id}}"
-                 responsible_name="{{=it.responsible.name}}"
-                    ></div>
-        </div>
-    </div>
-</script>
-
 <script id="tmpl_resourceBar" type="text/x-dot-template">
     <div class="resourceBox" dataId="{{=it.id}}">
         <div class="layout">
@@ -72,170 +7,13 @@
         </div>
     </div>
 </script>
-
-<script id='tmpl_leafTaskToolTip' type='text/x-dot-template'>
-    <table>
-        <thead style="text-align: center">
-        <h2>{{=it.name}} ({{=it.type}})</h2>
-        <h4>{{=it.hierarchy_name}}</h4>
-        </thead>
-
-        <tbody>
-        <tr>
-            <td class="label_column">Id</td>
-            <td class="input_column">{{=it.dataId}}</td>
-        </tr>
-        <tr>
-            <td class="label_column">Priority</td>
-            <td class="input_column">{{=it.priority}}</td>
-        </tr>
-        <tr>
-            <td class="label_column">BID</td>
-            <td class="input_column">{{=it.bid_timing}} {{=it.bid_unit}}
-            </td>
-        </tr>
-        <tr>
-            <td class="label_column">{{=it.schedule_model}}</td>
-            <td class="input_column">{{=it.schedule_timing}}
-                {{=it.schedule_unit}}
-            </td>
-        </tr>
-        <tr>
-            <td class="label_column">Start</td>
-            <td class="input_column">{{=it.start.format("yyyy-mm-dd
-                HH:00")}}
-            </td>
-        </tr>
-        <tr>
-            <td class="label_column">End</td>
-            <td class="input_column">{{=it.end.format("yyyy-mm-dd
-                HH:00")}}
-            </td>
-        </tr>
-        <tr>
-            <td class="label_column">Description</td>
-            <td class="input_column">{{=it.description}}</td>
-        </tr>
-        <tr>
-            <td class="label_column">Remaining Time</td>
-            <td class="input_column">{{=it.remaining_seconds}}</td>
-        </tr>
-        <tr>
-            <td class="label_column">Responsible</td>
-            <td class="input_column">{{=it.responsible.name}}</td>
-        </tr>
-        </tbody>
-    </table>
-</script>
-
-<script id="tmpl_taskEditRow" type="text/x-dot-template">
-    <a href='/tasks/{{=it.id}}/view'
-
-       data-toggle='tooltip'
-       data-placement='top'
-       title
-       data-original-title='test tooltip'
-
-       name="{{=it.name}}"
-       start={{=it.start}}
-       end={{=it.end}}
-       type="{{=it.type}}"
-    {{ if (!it.hasChildren) { }}
-    responsible_id="{{=it.responsible.id}}"
-    responsible_name="{{=it.responsible.name}}"
-    {{ } }}
-    hasChildren={{=it.hasChildren}}>{{=it.name}} ({{=it.type}})</a>
-</script>
-
-
-<script id="tmpl_parentTaskEditRow" type="text/x-dot-template">
-    <div class="{{=it.contextMenuClass}}"
-         dataId="{{=it.id}}"
-         name="{{=it.name}}"
-         start={{=it.start}}
-         end={{=it.end}}
-         type="{{=it.type}}"
-         hasChildren={{=it.hasChildren}}><a href="{{=it.link}}">{{=it.name}} ({{=it.type}})</a>
-    </div>
-</script>
-
-
-<script id="tmpl_parentTaskBar" type="text/x-dot-template">
-    <div class="parentTaskBox" dataId="{{=it.id}}">
-        <div class="layout {{=it.hasExternalDep?'extDep':''}}">
-            <div class="leftPin"></div>
-            <div class="rightPin"></div>
-            <div class="taskLabel">{{=it.link()}}</div>
-            <div class="parentTaskContextMenu" dataId="{{=it.id}}"></div>
-        </div>
-    </div>
-</script>
-
-<script id="tmpl_taskLink" type="text/x-dot-template">
-    <a href="/tasks/{{=it.id}}/view">{{=it.name}} ({{=it.type}})</a>
-</script>
-
-<script id='tmpl_resourceLink' type='text/x-dot-template'>
-    <a href="/users/{{=it.id}}/view">{{=it.name}}</a>
-</script>
-
-<script id="tmpl_projectLink" type="text/x-dot-template">
-    <a href="/projects/{{=it.id}}/view">{{=it.name}} ({{=it.type}})</a>
-</script>
-
-<script id='tmpl_entityNameField' type="text/x-dot-template">
-    <a href="{{=it.address}}">{{=it.name}} ({{=it.code}})</a>
-</script>
-
-<script id='tmpl_userNameField' type="text/x-dot-template">
-    <a href="{{=it.address}}>{{=it.user_name}}</a>
-</script>
-
-<script id='tmpl_departmentField' type="text/x-dot-template">
-    <a href="{{=it.address}}">{{=it.name}}</a>
-</script>
-
-<script id='tmpl_groupField' type="text/x-dot-template">
-    <a href="{{=it.address}}">{{=it.name}}</a>
-</script>
-
-<script id='tmpl_ticketNameField' type="text/x-dot-template">
-    <a href="{{=it.address}}">#{{=it.number}}</a>
-</script>
-
-<script id='tmpl_referenceLink' type='text/x-dot-template'>
-    <a href="javascript:lightBox('{{=it.original_filename}}', '{{=it.full_path}}');">{{=it.original_filename}}</a>
-</script>
 {% endraw %}
 
 <script type='text/javascript'>
     // ************************************************************************
     // load templates with doT.js
     var templates = {};
-
-    templates.projectBar = doT.template(document.getElementById('tmpl_projectBar').text);
-    templates.parentTaskBar = doT.template(document.getElementById('tmpl_parentTaskBar').text);
-    templates.taskBar = doT.template(document.getElementById('tmpl_taskBar').text);
     templates.resourceBar = doT.template(document.getElementById('tmpl_resourceBar').text);
-
-    templates.projectEditRow = doT.template(document.getElementById('tmpl_projectEditRow').text);
-    templates.parentTaskEditRow = doT.template(document.getElementById('tmpl_parentTaskEditRow').text);
-    templates.taskEditRow = doT.template(document.getElementById('tmpl_taskEditRow').text);
-
-    templates.projectLink = doT.template(document.getElementById('tmpl_projectLink').text);
-    templates.taskLink = doT.template(document.getElementById('tmpl_taskLink').text);
-    templates.resourceLink = doT.template(document.getElementById('tmpl_resourceLink').text);
-
-    templates.leafTaskToolTip = doT.template(document.getElementById('tmpl_leafTaskToolTip').text);
-
-    // for DGrid Headers
-    templates.entityNameField = doT.template(document.getElementById('tmpl_entityNameField').text);
-    templates.userNameField = doT.template(document.getElementById('tmpl_userNameField').text);
-    templates.departmentField = doT.template(document.getElementById('tmpl_departmentField').text);
-    templates.groupField = doT.template(document.getElementById('tmpl_groupField').text);
-    templates.ticketNameField = doT.template(document.getElementById('tmpl_ticketNameField').text);
-    templates.referenceLink = doT.template(document.getElementById('tmpl_referenceLink').text);
-
 </script>
 
 <div class="row-fluid">
@@ -275,7 +53,7 @@
                     </select>
                 </div>
 
-                <div id="resource_update_button" class="btn-group">
+                <div id="resource_update_zoom_level_button" class="btn-group">
                     <button class="btn btn-small btn-warning">
                         <span class="icon-refresh bigger-120"></span>
                         Update
@@ -405,7 +183,7 @@ require([
     var resource_column = resource_grid.columnSets[1][0][0];
 
     // Update Button
-    $("#resource_update_button").on('click', function(e){
+    $("#resource_update_zoom_level_button").on('click', function(e){
         // update date values
         var start_and_end_dates_as_string = $('#start_end_date_range_picker').val();
         var dates = start_and_end_dates_as_string.split(' - ');
@@ -424,7 +202,7 @@ require([
             resource_column.scale = zoom_level; 
             resource_column.reload();
             resource_column.refresh();
-        }
+        };
 
         if (element_count > 100){
             // confirm the user that it is going to take too much time
@@ -535,5 +313,4 @@ require([
             e.stopPropagation();
         });
     });
-
 </script>

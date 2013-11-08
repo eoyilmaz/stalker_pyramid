@@ -21,8 +21,9 @@ define([
     'dojo/_base/lang',
     "dojo/date/locale",
     "put-selector/put",
-    'stalker/js/Task'
-], function (domConstruct, array, lang, locale, put, Task) {
+    'stalker/js/Task',
+    'stalker/js/HeaderCell'
+], function (domConstruct, array, lang, locale, put, Task, draw_header_cell) {
     // module:
     //     ganttColumn
     // summary:
@@ -45,6 +46,381 @@ define([
         }
         return element;
     }
+
+    /**
+     * Render the given time log data under to the given parent
+     * 
+     * @param options
+     * @returns {*|jQuery|HTMLElement}
+     */
+    var draw_cell = function (options) {
+            var parent = options.parent;
+            var data = options.data;
+            var start = options.start;
+            var end = options.end;
+            var scale = options.scale;
+
+        // create a Task instance
+        var task = new Task(data);
+
+        var start_date = moment(start).startOf('day');
+        var end_date = moment(end).endOf('day');
+
+        // The start position of the task bar for this task, in pixels
+        var task_bar;
+
+        var parent_div = $($.parseHTML('<div class="taskContainer"></div>'));
+        parent_div.css({
+            width: Math.floor((end_date - start_date) / scale),
+        });
+        $(parent).append(parent_div);
+
+        if (task.type === 'Project') {
+            task_bar = $($.parseHTML(templates.projectBar(task)));
+        } else if (task.type === 'Task' || task.type === 'Asset' ||
+                   task.type === 'Shot' || task.type === 'Sequence') {
+            if (task.hasChildren) {
+                task_bar = $($.parseHTML(templates.parentTaskBar(task)));
+            } else {
+                task_bar = $($.parseHTML(templates.taskBar(task)));
+            }
+        }
+
+        task_bar.css({
+            width: Math.floor((task.end - task.start) / scale),
+            left: Math.floor((task.start - start_date) / scale)
+        });
+
+        parent_div.append(task_bar);
+        return parent_div;
+    };
+
+    var zoom_levels = {
+        "h": {
+            scale: 120000, // 1 hour is 30 px
+            table_width: function (start, end) {
+                var start_date = moment(start).startOf('day');
+                var end_date = moment(end).endOf('day');
+                return Math.floor((end_date - start_date) / this.scale);
+            },
+            headers: [
+                {
+                    draw: function (parent, start, end) {
+                        return draw_header_cell({
+                            parent: parent,
+                            start: start,
+                            end: end,
+                            scale: 120000,
+                            step_size: 7,
+                            step_unit: 'day',
+                            period_unit: 'isoweek',
+                            height: 26,
+                            format: '[Week] w'
+                        });
+                    }
+                },
+                {
+                    draw: function (parent, start, end) {
+                        return draw_header_cell({
+                            parent: parent,
+                            start: start,
+                            end: end,
+                            scale: 120000,
+                            step_size: 1,
+                            step_unit: 'day',
+                            period_unit: 'day',
+                            height: 26,
+                            format: 'ddd, DD-MMM-YYYY'
+                        });
+                    }
+                },
+                {
+                    draw: function (parent, start, end) {
+                        return draw_header_cell({
+                            parent: parent,
+                            start: start,
+                            end: end,
+                            scale: 120000,
+                            step_size: 1,
+                            step_unit: 'hour',
+                            period_unit: 'hour',
+                            height: 26,
+                            format: 'H'
+                        });
+                    }
+                }
+
+            ],
+            'chart': {
+                'element_width': 30, // in px
+                'draw': function (parent, data, start, end) {
+                    return draw_cell({
+                        parent: parent,
+                        data: data,
+                        start: start,
+                        end: end,
+                        scale: 120000
+                    });
+                }
+            }
+        },
+        "d": {
+            scale: 2880000, // 1 day is 30 px
+            table_width: function (start, end) {
+                var start_date = moment(start).startOf('day');
+                var end_date = moment(end).endOf('day');
+                return Math.floor((end_date - start_date) / this.scale);
+            },
+            headers: [
+                {
+                    draw: function (parent, start, end) {
+                        return draw_header_cell({
+                            parent: parent,
+                            start: start,
+                            end: end,
+                            scale: 2880000,
+                            step_size: 1,
+                            step_unit: 'month',
+                            period_unit: 'month',
+                            height: 26,
+                            format: 'MMM YYYY'
+                        });
+                    }
+                },
+                {
+                    draw: function (parent, start, end) {
+                        return draw_header_cell({
+                            parent: parent,
+                            start: start,
+                            end: end,
+                            scale: 2880000,
+                            step_size: 7,
+                            step_unit: 'day',
+                            period_unit: 'isoweek',
+                            height: 26,
+                            format: '[Week] w'
+                        });
+                    }
+                },
+                {
+                    draw: function (parent, start, end) {
+                        return draw_header_cell({
+                            parent: parent,
+                            start: start,
+                            end: end,
+                            scale: 2880000,
+                            step_size: 1,
+                            step_unit: 'day',
+                            period_unit: 'day',
+                            height: 26,
+                            format: 'D'
+                        });
+                    }
+                },
+                {
+                    draw: function (parent, start, end) {
+                       return draw_header_cell({
+                            parent: parent,
+                            start: start,
+                            end: end,
+                            scale: 2880000,
+                            step_size: 1,
+                            step_unit: 'day',
+                            period_unit: 'day',
+                            height: 26,
+                            format: 'dd'
+                        });
+                    }
+                }
+            ],
+            'chart': {
+                'element_width': 30, // in px
+                'draw': function (parent, data, start, end) {
+                    return draw_cell({
+                        parent: parent,
+                        data: data,
+                        start: start,
+                        end: end,
+                        scale: 2880000
+                    });
+                }
+            }
+        },
+        "w": {
+            scale: 21600000, // 1 week is 28 px
+            table_width: function (start, end) {
+                var start_date = moment(start).startOf('day');
+                var end_date = moment(end).endOf('day');
+                return Math.floor((end_date - start_date) / this.scale);
+            },
+            headers: [
+                {
+                    draw: function (parent, start, end) {
+                        return draw_header_cell({
+                            parent: parent,
+                            start: start,
+                            end: end,
+                            scale: 21600000,
+                            step_size: 1,
+                            step_unit: 'year',
+                            period_unit: 'year',
+                            height: 26,
+                            format: 'YYYY'
+                        });
+                    }
+                },
+                {
+                    draw: function (parent, start, end) {
+                        return draw_header_cell({
+                            parent: parent,
+                            start: start,
+                            end: end,
+                            scale: 21600000,
+                            step_size: 1,
+                            step_unit: 'month',
+                            period_unit: 'month',
+                            height: 26,
+                            format: 'MMM'
+                        });
+                    }
+                },
+                {
+                    draw: function (parent, start, end) {
+                        return draw_header_cell({
+                            parent: parent,
+                            start: start,
+                            end: end,
+                            scale: 21600000,
+                            step_size: 7,
+                            step_unit: 'day',
+                            period_unit: 'isoweek',
+                            height: 26,
+                            format: 'w'
+                        });
+                    }
+                }
+            ],
+            'chart': {
+                'element_width': 28, // in px
+                'draw': function (parent, data, start, end) {
+                    return draw_cell({
+                        parent: parent,
+                        data: data,
+                        start: start,
+                        end: end,
+                        scale: 21600000
+                    });
+                }
+            }
+        },
+        "m": { // 
+            scale: 86400000, // 1 month is 30 px
+            table_width: function (start, end) {
+                var start_date = moment(start).startOf('day');
+                var end_date = moment(end).endOf('day');
+                return Math.floor((end_date - start_date) / this.scale);
+            },
+            headers: [
+                { // years
+                    draw: function (parent, start, end) {
+                        return draw_header_cell({
+                            parent: parent,
+                            start: start,
+                            end: end,
+                            scale: 86400000,
+                            step_size: 1,
+                            step_unit: 'year',
+                            period_unit: 'year',
+                            height: 26,
+                            format: 'YYYY'
+                        });
+                    }
+                },
+//                { // quarters
+//                    draw: function (parent, start, end) {
+//                        return draw_header_cell({
+//                            parent: parent,
+//                            start: +moment(start).startOf('year'),
+//                            end: end,
+//                            scale: 86400000,
+//                            step_size: 3,
+//                            step_unit: 'month',
+//                            period_unit: 'month',
+//                            height: 26,
+//                            format: function (region_start, region_end) {
+//                                return 'Q' + Math.floor(moment(region_start).month() / 4);
+//                            }
+//                        });
+//                    }
+//                },
+                { // months
+                    draw: function (parent, start, end) {
+                        return draw_header_cell({
+                            parent: parent,
+                            start: start,
+                            end: end,
+                            scale: 86400000,
+                            step_size: 1,
+                            step_unit: 'month',
+                            period_unit: 'month',
+                            height: 26,
+                            format: 'M'
+                        });
+                    }
+                }
+            ],
+            'chart': {
+                'element_width': 30, // in px
+                'draw': function (parent, data, start, end) {
+                    return draw_cell({
+                        parent: parent,
+                        data: data,
+                        start: start,
+                        end: end,
+                        scale: 86400000
+                    });
+                }
+            }
+        },
+        "y": { // 
+            scale: 315360000, // 1 year is 100 px 31536000000/100
+            table_width: function (start, end) {
+                var start_date = moment(start).startOf('day');
+                var end_date = moment(end).endOf('day');
+                return Math.floor((end_date - start_date) / this.scale);
+            },
+            headers: [
+                { // years
+                    draw: function (parent, start, end) {
+                        return draw_header_cell({
+                            parent: parent,
+                            start: start,
+                            end: end,
+                            scale: 315360000,
+                            step_size: 1,
+                            step_unit: 'year',
+                            period_unit: 'year',
+                            height: 26,
+                            format: 'YYYY'
+                        });
+                    }
+                }
+            ],
+            'chart': {
+                'element_width': 100, // in px
+                'draw': function (parent, data, start, end) {
+                    return draw_cell({
+                        parent: parent,
+                        data: data,
+                        start: start,
+                        end: end,
+                        scale: 315360000
+                    });
+                }
+            }
+        }
+    };
+
 
     return function (column) {
         // summary:
@@ -76,6 +452,40 @@ define([
         var dependencyRow,
             firstCell;
 
+        /**
+         * Renders the today line under to the given parent
+         * 
+         * @param {object} parent
+         * @param {number} start
+         * @param {number} scale
+         */
+        var render_today = function (parent, start, scale) {
+            var today = moment();
+            var start_date = moment(start).startOf('day');
+            var today_element = $($.parseHTML('<div></div>'));
+            today_element.addClass('today').css({
+                left: Math.floor((today - start_date) / scale)
+            });
+            $(parent).append(today_element);
+        };
+
+        /**
+         * Calculates the number of div element going to be rendered for one
+         * row when the start and end dates and zoom level is set to given
+         * parameters. So one can use it to calculate how much is it going to
+         * take.
+         * 
+         * @param start
+         * @param end
+         * @param zoom_level
+         * @returns {number}
+         */
+        column.guess_element_count = function(start, end, zoom_level) {
+            var table_width = zoom_levels[zoom_level].table_width(start, end);
+            var element_width = zoom_levels[zoom_level].chart.element_width;
+            return Math.floor(table_width / element_width);
+        };
+
         column.renderCell = function (data, value, td) {
             // summary:
             //     Renders a task.
@@ -97,153 +507,34 @@ define([
             // value: unused
             // td: DomNode
 
-            // IE < 8 receive the inner padding node, not the td directly
-            cell = td.tagName === "TD" ? td : td.parentNode;
-
-            // Add empty content to the cell to avoid it collapsing in IE
-            td.innerHTML = "&nbsp;";
-
-            // create a Task instance
-            var task = new Task(data);
-
-            // Ensure the start time is always milliseconds since epoch
-            // and not a Date object
-            column.start = +column.start;
-            column.end = +column.end;
-
-            // This is the number of milliseconds per pixel rendered
-            var chartTimeScale = column.scale,
-
-            // The start position of the task bar for this task, in pixels
-                left = (task.start - column.start) / chartTimeScale,
-
-            // The width of the task bar for this task, in pixels
-                width = (task.end - task.start) / chartTimeScale;
-
-            // Create the colored task bar representing the duration of a task
-
-//            data.progress = data.completed * 100;
-//            data.link = function () {
-//                return column.name;
-//            };
-
-            var taskBar;
-            if (task.type === 'Project') {
-                taskBar = $($.parseHTML(templates.projectBar(task)));
-            } else if (task.type === 'Task' || task.type === 'Asset' ||
-                       task.type === 'Shot' || task.type === 'Sequence') {
-                if (task.hasChildren) {
-                    taskBar = $($.parseHTML(templates.parentTaskBar(task)));
-                } else {
-                    taskBar = $($.parseHTML(templates.taskBar(task)));
-                }
-            }
-
-            taskBar.css({
-                left: left,
-                width: width
-            });
-
-            $(td).append(taskBar);
-
-            // Create the overlay for the amount of the task that has been completed
-            //var completeBar = put(td, "span.completed-bar[style=left:" + left + "px;width:" + width * object.completed + "px]");
-
-            // Save the location of the right-hand edge for drawing depedency lines later
-            cell.finished = left + width;
-
-            // This reference is stored
-            firstCell = firstCell || td;
-
-            var grid = column.grid;
-//            console.debug('grid: ', grid);
+            // render cells
+            zoom_levels[column.scale].chart.draw(td, data, column.start, column.end);
 
             // render today
-            var today_as_millis = (new Date()).getTime();
-            put(td, "div.today[style=left:" + Math.floor((today_as_millis - column.start) / column.scale) + "px;]");
-
-            // TODO: enable this part later
-//            // Create arrows for each dependency, but only after all other rows
-//            // have been rendered so that they can be retrieved and measured
-//            // properly
-//            setTimeout(function () {
-//                // First, create a special column set row (which contains
-//                // elements that have synced horizontal scrolling) so that all
-//                // the dependency lines can be grouped together and will be
-//                // properly scrolled horizontally along with the rest of the
-//                // rows
-//                if (!dependencyRow) {
-//                    // This intermediate element is necessary for the
-//                    // dependency lines to render outside of the zero height
-//                    // dependency row;
-//                    //    the outer element has a height of zero, the inner
-//                    //    element has height to accommodate all the lines
-//                    dependencyRow = put(getColumnSetElement(firstCell), "-div.dependency-container");
-//
-//                    // Create the scrolling container for the gantt dependency
-//                    // arrows
-//                    dependencyRow = put(dependencyRow, "div.dgrid-column-set.dependency-row[data-dgrid-column-set-id=1]");
-//
-//                    // Create the actual container for the dependency arrows
-//                    // inside the scrolling container this will scroll within
-//                    // the .dependency-row
-//                    dependencyRow = put(dependencyRow, "div.dependencies.dgrid-column-chart");
-//                }
-//
-//                array.forEach(object.dependencies, function (dependency) {
-//                    // This corresponds to the dependency DOM node, the
-//                    // starting point of the dependency line
-//                    var cell = grid.cell(dependency, column.id).element;
-//
-//                    // create the horizontal line part of the arrow
-//                    var hline = put(dependencyRow, "span.dep-horizontal-line");
-//
-//                    // we find the location of the starting cell and use that
-//                    // to place the horizontal line
-//                    var top = getColumnSetElement(cell).offsetTop + 10;
-//                    hline.style.top = top + "px";
-//                    hline.style.left = cell.finished + 5 + "px";
-//
-//                    // the start variable is the starting point of the target
-//                    // dependent cell
-//                    hline.style.width = left - cell.finished - 4 + "px";
-//
-//                    // now we create the vertical line and position it
-//                    var vline = put(dependencyRow, "span.dep-vertical-line");
-//
-//                    vline.style.top = top + 2 + "px";
-//                    vline.style.left = left + "px";
-//
-//                    var tdTop = getColumnSetElement(td).offsetTop - 5;
-//                    vline.style.height = tdTop - getColumnSetElement(cell).offsetTop + "px";
-//                    // now we create the arrow at the end of the line, position
-//                    // it correctly
-//                    var arrow = put(dependencyRow, "span.ui-icon.down-arrow");
-//                    arrow.style.top = tdTop + "px";
-//                    arrow.style.left = left - 7 + "px";
-//                });
-//            }, 0);
+            render_today(td, column.start, zoom_levels[column.scale].scale);
         };
 
-        column.refresh = function (kwargs) {
+        column.refresh = function (options) {
             // summary:
             //     Refreshes the header cell
             // remove the header contents
 
             // set some defaults
-            kwargs = lang.mixin(
+            options = lang.mixin(
                 { // default values
                     'start': column.start,
-                    'end': column.end
+                    'end': column.end,
+                    'scale': column.scale
                 },
-                kwargs
+                options
             );
 
             domConstruct.empty(column.headerNode);
             column.renderHeaderCell(column.headerNode);
 
-            column.start = kwargs.start;
-            column.end = kwargs.end;
+            column.start = options.start;
+            column.end = options.end;
+            column.scale = options.scale;
 
             // let it adjust the scrollbars
             column.grid.resize();
@@ -257,19 +548,16 @@ define([
 
         column.scrollToDate = function (date) {
             // scrolls to the given date
-            var header, position, date_as_millis, date_x, scroller,
-                scroller_width;
+            var date_as_millis, date_x, scroller, scroller_width;
 
             header = $(column.headerNode);
-            position = header.position();
 
             date_as_millis = +date;
-            date_x = (date_as_millis - column.start) / column.scale;
+            var start_date = moment(column.start).startOf('day');
+            date_x = (date_as_millis - start_date) / zoom_levels[column.scale].scale;
 
             scroller = $('.dgrid-column-set-scroller-1');
-
             scroller_width = scroller.width();
-
             scroller.scrollLeft(date_x - scroller_width * 0.5);
         };
 
@@ -280,83 +568,32 @@ define([
         };
 
         column.renderHeaderCell = function (th) {
-            // summary:
-            //     Creates a header cell that contains the dates corresponding to the time lines that are being rendered in the main content
-            // th: DomNode
-            //
-            // here we render the header for the gantt chart, this will be a row of dates
-            // with days of the week in a row underneath
-//            console.debug('inside column.renderHeaderCell');
-
-            // normalize table scale
-//            var one_day_width = 86400000 / column.scale;
-            var one_day_width = 20;
-            var number_of_days = (column.end - column.start) / 86400000;
-
-//            // floor one_day_width
-//            one_day_width = Math.floor(one_day_width);
-
-            var one_week_width = 7 * one_day_width;
-
-            // recalculate scale
-            var table_width = number_of_days * (one_day_width + 1); // add 1px per day for border (ugly!)
-            column.scale = (column.end - column.start) / table_width;
-
-//            console.debug('column.start           : ', column.start);
-//            console.debug('column.end             : ', column.end);
-//            console.debug('column.scale (norm)    : ', column.scale);
-//            console.debug('number of days         : ', number_of_days);
-//            console.debug('one week width         : ', one_week_width);
-//            console.debug('one day width          : ', one_day_width);
-//            console.debug('table_width            : ', table_width);
-
             // fix scrolling
+            var table_width = zoom_levels[column.scale].table_width(column.start, column.end);
             column.grid.addCssRule(".dgrid-column-chart", "width: " + table_width + "px");
 
-            // calculate table width
-//            var table_width = (column.end - column.start) / column.scale;
-            var table = put(th, "table[style=width:" + table_width + "px]");
+            $(th).css({
+                width: table_width
+            });
 
-            // Create the date row
-            var dateRow = put(table, "tr[style=table-layout:fixed].ganttHead1");
-
-            // start at the time indicated by the column
-            var date = new Date(column.start);
-            var lastDay = 7;
-
-            var lastDay_minus_day;
-            // now we iterate through the time span, incrementing by date
-            while (date.getTime() < column.end) {
-                // each time a new week is started, we write a new date for the week
-                lastDay_minus_day = lastDay - date.getDay();
-                if (date.getDay() < lastDay) {
-                    put(
-                        dateRow,
-                        "td",
-                        {
-                            innerHTML: lastDay_minus_day > 2 ? date.format('dd-mm-yyyy') : "",
-                            colSpan: lastDay_minus_day
-                        }
-                    );
-                }
-                // get the day of the week before incrementing
-                lastDay = date.getDay() + 1;
-                date = new Date(date.getTime() + 86400000); // increment a day
-            }
-            // now we create a row for the days of the week
-            var dayRow = put(table, "tr.ganttHead2");
-            // restart the time iteration, and iterate again
-            date = new Date(column.start);
-            while (date.getTime() < column.end) {
-                put(dayRow, "td", {
-                    innerHTML: locale.format(date, {selector: "date", datePattern: "EEE"}).substring(0, 1)
+            // get element width
+            // render headers
+            var i;
+            var header_count = zoom_levels[column.scale].headers.length;
+            var parent_div;
+            for (i = 0; i < header_count; i += 1) {
+                parent_div = zoom_levels[column.scale].headers[i].draw(th, column.start, column.end);
+                parent_div.css({
+                    top: i * 27
                 });
-                date = new Date(date.getTime() + 86400000); // increment a day
             }
+            // extend the height of the table header
+            $(th).css({
+                height: header_count * 27 // 27 px each
+            });
 
-            // render tod   ay
-            var today_as_millis = (new Date()).getTime();
-            put(th, "div.today[style=left:" + Math.floor((today_as_millis - column.start) / column.scale) + "px;]");
+            // render today
+            render_today(th, column.start, zoom_levels[column.scale].scale);
         };
 
         return column;

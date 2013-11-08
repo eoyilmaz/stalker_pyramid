@@ -18,7 +18,7 @@
           icon-film
           {{?? it.type == 'Project' }}
           icon-folder-close-alt
-          {{?}}"</i>&nbsp
+          {{?}}">&nbsp</i>
         <a href="{{=it.link}}">{{=it.name}}</a>
     </div>
 </script>
@@ -26,8 +26,19 @@
 <script id="tmpl_projectBar" type="text/x-dot-template">
     <div class="projectBox" projectId="{{=it.id}}">
         <div class="layout">
-            <div class="projectLabel">{{=it.link()}}</div>
-            <div class="projectContextMenu" dataId="{{=it.id}}"></div>
+            <div class="projectLabel">
+                <i class="{{? it.type == 'Task' }}
+                    icon-tasks
+                    {{?? it.type == 'Asset' }}
+                    icon-puzzle-piece
+                    {{?? it.type == 'Shot' }}
+                    icon-camera
+                    {{?? it.type == 'Sequence' }}
+                    icon-film
+                    {{?? it.type == 'Project' }}
+                    icon-folder-close-alt
+                    {{?}}">&nbsp</i>
+                {{=it.link()}}</div>
         </div>
     </div>
 </script>
@@ -44,7 +55,20 @@
                 {{=it.schedule_model.toUpperCase()[0]}}:
                 {{=it.schedule_timing}}{{=it.schedule_unit}}
             </div>
-            <div class="taskLabel">{{=it.link()}}</div>
+            <div class="taskLabel">
+            <i class="{{? it.type == 'Task' }}
+              icon-tasks
+              {{?? it.type == 'Asset' }}
+              icon-puzzle-piece
+              {{?? it.type == 'Shot' }}
+              icon-camera
+              {{?? it.type == 'Sequence' }}
+              icon-film
+              {{?? it.type == 'Project' }}
+              icon-folder-close-alt
+              {{?}}">&nbsp</i>
+                {{=it.link()}}
+            </div>
             <div class="milestone end {{=it.endIsMilestone ? 'active' : ''}}"></div>
             <div class="taskResourceLabel">{{=it.getResourcesLinks()}}
             </div>
@@ -54,82 +78,8 @@
             {{=it.clippedEnd?'
             <div class="rightArrowHead">&nbsp</div>
             ':''}}
-            <div class="leafTaskContextMenu"
-                 dataId="{{=it.id}}"
-                 name="{{=it.name}}"
-                 hierarchy_name="{{=it.hierarchy_name}}"
-                 start={{=it.start}}
-                 end={{=it.end}}
-                 type="{{=it.type}}"
-                 priority={{=it.priority}}
-                 bid_timing={{=it.bid_timing}}
-                 bid_unit={{=it.bid_unit}}
-                 schedule_model={{=it.schedule_model}}
-                 schedule_timing={{=it.schedule_timing}}
-                 schedule_unit={{=it.schedule_unit}}
-                 description="{{=it.description}}"
-                 remaining_seconds="{{=it.remaining_seconds}}"
-                 resources="{{=it.getResourcesStr()}}"
-                 responsible_id="{{=it.responsible.id}}"
-                 responsible_name="{{=it.responsible.name}}"
-                    ></div>
         </div>
     </div>
-</script>
-
-<script id='tmpl_leafTaskToolTip' type='text/x-dot-template'>
-    <table>
-        <thead style="text-align: center">
-        <h2>{{=it.name}} ({{=it.type}})</h2>
-        <h4>{{=it.hierarchy_name}}</h4>
-        </thead>
-
-        <tbody>
-        <tr>
-            <td class="label_column">Id</td>
-            <td class="input_column">{{=it.dataId}}</td>
-        </tr>
-        <tr>
-            <td class="label_column">Priority</td>
-            <td class="input_column">{{=it.priority}}</td>
-        </tr>
-        <tr>
-            <td class="label_column">BID</td>
-            <td class="input_column">{{=it.bid_timing}} {{=it.bid_unit}}
-            </td>
-        </tr>
-        <tr>
-            <td class="label_column">{{=it.schedule_model}}</td>
-            <td class="input_column">{{=it.schedule_timing}}
-                {{=it.schedule_unit}}
-            </td>
-        </tr>
-        <tr>
-            <td class="label_column">Start</td>
-            <td class="input_column">{{=it.start.format("yyyy-mm-dd
-                HH:00")}}
-            </td>
-        </tr>
-        <tr>
-            <td class="label_column">End</td>
-            <td class="input_column">{{=it.end.format("yyyy-mm-dd
-                HH:00")}}
-            </td>
-        </tr>
-        <tr>
-            <td class="label_column">Description</td>
-            <td class="input_column">{{=it.description}}</td>
-        </tr>
-        <tr>
-            <td class="label_column">Remaining Time</td>
-            <td class="input_column">{{=it.remaining_seconds}}</td>
-        </tr>
-        <tr>
-            <td class="label_column">Responsible</td>
-            <td class="input_column">{{=it.responsible.name}}</td>
-        </tr>
-        </tbody>
-    </table>
 </script>
 
 <script id="tmpl_taskEditRow" type="text/x-dot-template">
@@ -143,10 +93,10 @@
           icon-film
           {{?? it.type == 'Project' }}
           icon-folder-close-alt
-          {{?}}"</i>&nbsp
-<a href="/tasks/{{=it.id}}/view"
-   name="{{=it.id}}"
-   type="{{=it.type}}">{{=it.name}}</a>
+          {{?}}">&nbsp</i>
+    <a href="/tasks/{{=it.id}}/view"
+       name="{{=it.id}}"
+       type="{{=it.type}}">{{=it.name}}</a>
 </script>
 
 
@@ -168,7 +118,7 @@
             icon-film
             {{?? it.type == 'Project' }}
             icon-folder-close-alt
-            {{?}}"</i>&nbsp
+            {{?}}">&nbsp</i>
         <a href="{{=it.link}}">{{=it.name}}</a>
     </div>
 </script>
@@ -179,8 +129,19 @@
         <div class="layout {{=it.hasExternalDep?'extDep':''}}">
             <div class="leftPin"></div>
             <div class="rightPin"></div>
-            <div class="taskLabel">{{=it.link()}}</div>
-            <div class="parentTaskContextMenu" dataId="{{=it.id}}"></div>
+            <div class="taskLabel">
+                <i class="{{? it.type == 'Task' }}
+                    icon-tasks
+                    {{?? it.type == 'Asset' }}
+                    icon-puzzle-piece
+                    {{?? it.type == 'Shot' }}
+                    icon-camera
+                    {{?? it.type == 'Sequence' }}
+                    icon-film
+                    {{?? it.type == 'Project' }}
+                    icon-folder-close-alt
+                    {{?}}">&nbsp</i>
+                      {{=it.link()}}</div>
         </div>
     </div>
 </script>
@@ -197,29 +158,6 @@
     <a href="/projects/{{=it.id}}/view">{{=it.name}} ({{=it.type}})</a>
 </script>
 
-<script id='tmpl_entityNameField' type="text/x-dot-template">
-    <a href="{{=it.address}}">{{=it.name}} ({{=it.code}})</a>
-</script>
-
-<script id='tmpl_userNameField' type="text/x-dot-template">
-    <a href="{{=it.address}}>{{=it.user_name}}</a>
-</script>
-
-<script id='tmpl_departmentField' type="text/x-dot-template">
-    <a href="{{=it.address}}">{{=it.name}}</a>
-</script>
-
-<script id='tmpl_groupField' type="text/x-dot-template">
-    <a href="{{=it.address}}">{{=it.name}}</a>
-</script>
-
-<script id='tmpl_ticketNameField' type="text/x-dot-template">
-    <a href="{{=it.address}}">#{{=it.number}}</a>
-</script>
-
-<script id='tmpl_referenceLink' type='text/x-dot-template'>
-    <a href="javascript:lightBox('{{=it.original_filename}}', '{{=it.full_path}}');">{{=it.original_filename}}</a>
-</script>
 {% endraw %}
 
 <script type='text/javascript'>
@@ -238,16 +176,6 @@
     templates.projectLink = doT.template(document.getElementById('tmpl_projectLink').text);
     templates.taskLink = doT.template(document.getElementById('tmpl_taskLink').text);
     templates.resourceLink = doT.template(document.getElementById('tmpl_resourceLink').text);
-
-    templates.leafTaskToolTip = doT.template(document.getElementById('tmpl_leafTaskToolTip').text);
-
-    // for DGrid Headers
-    templates.entityNameField = doT.template(document.getElementById('tmpl_entityNameField').text);
-    templates.userNameField = doT.template(document.getElementById('tmpl_userNameField').text);
-    templates.departmentField = doT.template(document.getElementById('tmpl_departmentField').text);
-    templates.groupField = doT.template(document.getElementById('tmpl_groupField').text);
-    templates.ticketNameField = doT.template(document.getElementById('tmpl_ticketNameField').text);
-    templates.referenceLink = doT.template(document.getElementById('tmpl_referenceLink').text);
 
 </script>
 
@@ -399,7 +327,37 @@
                     </ul>
                 </div>
 
-                <div id="gantt_update_button" class="btn-group">
+                <div class="input-prepend"
+                     style="height: 30px;
+                            margin-left: 5px;
+                            margin-bottom: 0px;">
+                    <input id='start_end_date_range_picker'
+                           name='start_and_end_dates'
+                           type="text"
+                           data-date-format="yyyy-mm-dd"
+                           placeholder="Start & End Dates">
+                        <span class="add-on">
+                            <i class="icon-calendar"></i>
+                        </span>
+                </div>
+
+                <div class="input-prepend"
+                     style="height: 30px;
+                            margin-bottom: 0px;
+                            margin-left: 6px;
+                            margin-right: 5px;
+                            ">
+                    <select id='zoom_level'
+                           name='start_and_end_dates'>
+                        <option value="h">Hours</option>
+                        <option value="d">Days</option>
+                        <option value="w" selected>Weeks</option>
+                        <option value="m">Months</option>
+                        <option value="y">Years</option>
+                    </select>
+                </div>
+
+                <div id="gantt_update_zoom_level_button" class="btn-group">
                     <button class="btn btn-small btn-warning">
                         <span class="icon-refresh bigger-120"></span>
                         Update
@@ -548,6 +506,7 @@
         src='{{ request.static_url("stalker_pyramid:static/dojo/dojo.js") }}'>
 </script>
 
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/daterangepicker.min.js") }}'></script>
 
 <script type="text/javascript">
 
@@ -847,6 +806,45 @@ require([
     // get the gantt column
     var gantt_column = gantt_chart.columnSets[1][0][0];
 
+    $("#gantt_update_zoom_level_button").on('click', function(e){
+        // update date values
+        var start_and_end_dates_as_string = $('#start_end_date_range_picker').val();
+        var dates = start_and_end_dates_as_string.split(' - ');
+        var start_date = moment(dates[0], 'MM-DD-YYYY').startOf('day');
+        var end_date = moment(dates[1], 'MM-DD-YYYY').endOf('day');
+
+        // get zoom level
+        var zoom_level = $('#zoom_level').val();
+
+        // get the total amount of element going to be rendered
+        var element_count = gantt_column.guess_element_count(+start_date, +end_date, zoom_level);
+
+        var do_update = function(){
+            gantt_column.start = +start_date;
+            gantt_column.end   = +end_date;
+            gantt_column.scale = zoom_level; 
+            gantt_column.reload();
+            gantt_column.refresh();
+        };
+
+        if (element_count > 100){
+            // confirm the user that it is going to take too much time
+            bootbox.confirm(
+                '<div><p><strong>' + element_count +
+                ' elements</strong> per row are going to be rendered'+
+                '<br><br>Which will take long,' +
+                '<br><br>Is that ok?',
+            function(result){
+                if (result){
+                    do_update();
+                }
+            });
+        } else {
+            do_update();
+        }
+
+    });
+
     // Reload Button
     $("#gantt_reload_button").on('click', function(e){
         e.preventDefault();
@@ -903,4 +901,38 @@ require([
     });
 
 });
+</script>
+
+<script>
+    {# ***************************************************************** #}
+    {# Start & End Date Picker #}
+
+    $(function () {
+        // initialize date picker
+        var start_end_date_range_picker = $('#start_end_date_range_picker').daterangepicker();
+
+        // also update the icon
+        start_end_date_range_picker.next().on('click', function () {
+            $(this).prev().focus();
+        });
+
+        // fix z-index of the container
+        // start_end_date_range_picker.data().daterangepicker.container.css({'z-index': 1060});
+
+        var start_date = moment().subtract(6, 'month').startOf('day');
+        var end_date = moment().add(6, 'month').endOf('day');
+        start_end_date_range_picker.val(
+            start_date.format('MM/DD/YYYY') + ' - ' + end_date.format('MM/DD/YYYY')
+        );
+
+        start_end_date_range_picker.data().daterangepicker.updateFromControl();
+
+        // TODO: Change the listener action type
+        start_end_date_range_picker.on('shown', function (e) {
+            e.stopPropagation();
+        });
+        start_end_date_range_picker.on('hidden', function (e) {
+            e.stopPropagation();
+        });
+    });
 </script>
