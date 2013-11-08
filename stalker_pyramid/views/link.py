@@ -79,7 +79,7 @@ def upload_files(request):
 def assign_thumbnail(request):
     """assigns the thumbnail to the given entity
     """
-    link_ids = get_multi_integer(request, 'link_ids')
+    link_ids = get_multi_integer(request, 'link_ids[]')
     entity_id = request.params.get('entity_id', -1)
 
     link = Link.query.filter(Link.id.in_(link_ids)).first()
@@ -124,7 +124,6 @@ def assign_reference(request):
     removed_links = Link.query.filter(Link.id.in_(removed_link_ids)).all()
 
     # Tags
-    logger.debug('request.POST: %s' % request.POST)
     tags = get_tags(request)
 
     logged_in_user = get_logged_in_user(request)

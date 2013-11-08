@@ -211,6 +211,7 @@ def update_user(request):
         location=came_from
     )
 
+
 @view_config(
     route_name='get_entity_users',
     renderer='json',
@@ -226,8 +227,13 @@ def update_user(request):
     renderer='json',
     permission='List_User'
 )
+@view_config(
+    route_name='get_user',
+    renderer='json',
+    permission='Read_User'
+)
 def get_users(request):
-    """returns all the users in database
+    """returns all users or one particular user from database
     """
     # if there is a simple flag, just return ids and names and login
     #simple = request.params.get('simple')
@@ -245,7 +251,7 @@ def get_users(request):
     logger.debug('entity_id  : %s' % entity_id)
     logger.debug('entity_type: %s' % entity_type)
 
-    if entity_id and entity_type not in ['Project', 'Department', 'Group', 'Task']:
+    if entity_id and entity_type not in ['Project', 'Department', 'Group', 'Task', 'User']:
         # there is no entity_type for that entity
         return []
 
@@ -313,6 +319,8 @@ def get_users(request):
         sql_query += """join "Task_Resources" on "Users".id = "Task_Resources".resource_id
         where "Task_Resources".task_id = %(id)s
         """ % {'id': entity_id}
+    elif entity_type == "User":
+        sql_query += 'where "Users".id = %s' % entity_id
 
     result = DBSession.connection().execute(sql_query)
     data = [

@@ -7,8 +7,12 @@
     {# Thumbnail #}
     <li>
         <div class="media">
-            <a class="pull-left" href="#" style="width: 100px; height: 100px">
-                <img style='width:auto; height: 100px;'
+            <a class="pull-left"
+               href="#"
+               style="text-align: center; overflow: hidden; width: 100px">
+                <img id="user_sidebar_avatar"
+                     style="height: 100px; width: auto; max-width: none;
+                      position: relative; left: 100%; margin-left: -200%"
                      class="img-thumbnail"
                      src="{%- if project.thumbnail -%}
                     /{{ project.thumbnail.full_path }}

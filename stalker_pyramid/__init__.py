@@ -295,7 +295,8 @@ def main(global_config, **settings):
     config.add_route('view_user',             'users/{id}/view')
     config.add_route('view_user_settings',    'users/{id}/view_settings')
 
-    config.add_route('get_users',             'users/') # json
+    config.add_route('get_user',              'users/{id}/')  # json
+    config.add_route('get_users',             'users/')  # json
     config.add_route('get_user_departments',  'users/{id}/departments/') # json
     config.add_route('get_user_groups',       'users/{id}/groups/') # json
     config.add_route('get_user_tasks',        'users/{id}/tasks/') # json

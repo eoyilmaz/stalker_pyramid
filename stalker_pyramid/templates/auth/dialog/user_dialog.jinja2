@@ -71,7 +71,7 @@
     {% include 'page_header.jinja2' %}
 
     {% set user=entity %}
-    {% include 'auth/dialog/'+mode.title().lower()+'_user_dialog.jinja2' %}
+    {% include 'auth/dialog/' + mode.title().lower() + '_user_dialog.jinja2' %}
 
 {% endblock page_content %}
 

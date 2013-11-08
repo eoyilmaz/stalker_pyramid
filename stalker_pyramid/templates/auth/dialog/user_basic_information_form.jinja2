@@ -10,21 +10,19 @@
         >
     <div class="row-fluid">
         <div class="span3">
-            {##}
-            {#        <div class="span3">#}
-            {#            <input id='thumbnail' name='thumbnail'#}
-            {#                   type="file"/>#}
-            {#        </div>#}
-            <span class="profile-picture">
+            <div class="profile-picture"
+                style="text-align: center; overflow: hidden; width: 150px">
                 <img id="avatar"
                      class="editable"
-                     alt="Alex's Avatar"
+                     alt="Avatar"
+                     style="height: 150px; width: auto; max-width: none;
+                      position: relative; left: 100%; margin-left: -200%"
                      src="{%- if user.thumbnail -%}
-                                        /{{ user.thumbnail.full_path }}
-                                    {%- else -%}
-                                        {{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_0.png") }}
-                                    {%- endif -%}"/>
-            </span>
+                            /{{ user.thumbnail.full_path }}
+                        {%- else -%}
+                            {{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_0.png") }}
+                        {%- endif -%}"/>
+            </div>
         </div>
 
         <div class="span6">
@@ -184,8 +182,8 @@ return true;
                  */
 
                 //and a few extra ones here
-                name: 'avatar',//put the field name here as well, will be used inside the custom plugin
-                max_size: 110000,//~100Kb
+                name: 'file',//put the field name here as well, will be used inside the custom plugin
+                max_size: 11000000,//~100Kb
                 on_error: function (code) {//on_error function will be called when the selected file has a problem
                     if (last_gritter) $.gritter.remove(last_gritter);
                     if (code == 1) {//file format error
@@ -250,8 +248,7 @@ return true;
                             deferred.reject({'status': 'fail', 'message': 'Timeout!'});
                         }
                     }, 60000);
-                }
-                else {
+                } else {
                     var fd = null;
                     try {
                         fd = new FormData($form.get(0));
@@ -275,6 +272,8 @@ return true;
                             fd.append(file_input.attr('name'), files[0]);
                         }
                     }
+                    
+                    console.log('fd:', fd);
 
                     deferred = $.ajax({
                         url: submit_url,
@@ -282,6 +281,7 @@ return true;
                         processData: false,
                         contentType: false,
                         dataType: 'json',
+                        enctype: "multipart/form-data",
                         data: fd,
                         xhr: function () {
                             var req = $.ajaxSettings.xhr();
@@ -299,25 +299,47 @@ return true;
                         beforeSend: function () {
                             //bar.css('width', '0%').parent().attr('data-percent', '0%');
                         },
-                        success: function () {
-                            //bar.css('width', '100%').parent().attr('data-percent', '100%');
+                        success: function (data) {
+                            // file is uploaded successfully
+                            // and hopefully a link is created (data.link_ids[0])
+                            // now attach it to this user as a thumbnail
+                            $.post('/assign_thumbnail',
+                                $.param({
+                                    'link_ids': data.link_ids,
+                                    'entity_id': {{ user.id }}
+                                })
+                            ).done(function (data1) {
+                                // and get back user data so we can now
+                                // where to set the current thumbnail
+                                // update the thumbnail
+                                $.getJSON('/users/{{ user.id }}/').done(function (data2) {
+                                    var new_thumb_path = '/' + data2[0].thumbnail_path;
+                                    $('#avatar').attr('src', new_thumb_path);
+                                    // also update side bar
+                                    $('#user_sidebar_avatar').attr('src', new_thumb_path)
+                                });
+                            });
                         }
-                    })
+                    });
                 }
 
-
                 deferred.done(function (res) {
-                    if (res.status == 'OK') $('#avatar').get(0).src = res.url;
-                    else alert(res.message);
+{#                    console.log('code is here 1');#}
+{#                    if (res.status == 'OK'){#}
+{#                        $('#avatar').get(0).src = res.url;#}
+{#                    } else {#}
+{#                        alert(res.message);#}
+{#                    }#}
+{#                    console.log('code is here 2');#}
                 }).fail(function (res) {
-                            alert("Failure");
-                        });
-
+{#                    alert("Failure");#}
+                });
 
                 return deferred.promise();
             },
 
             success: function (response, newValue) {
+                
             }
         })
     } catch (e) {
