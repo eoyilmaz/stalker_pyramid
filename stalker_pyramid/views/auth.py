@@ -777,7 +777,7 @@ def get_resources(request):
             from "SimpleEntities"
             where "SimpleEntities".entity_type = '%s'
             """ % entity_type
-        elif entity_type == 'Studio':
+        elif entity_type in ['Studio', 'Project']:
             resource_sql_query = """select
                 "SimpleEntities".id,
                 "SimpleEntities".name,
@@ -787,7 +787,7 @@ def get_resources(request):
             join "User_Departments" on "User_Departments".did = "SimpleEntities".id
             """
 
-        if resource_id and entity_type != "Studio":
+        if resource_id and entity_type not in ["Studio", "Project"]:
             resource_sql_query += "and id=%s group by id, name order by name" % resource_id
         else:
             resource_sql_query += "group by id, name order by name"
