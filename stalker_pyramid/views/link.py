@@ -253,7 +253,10 @@ def get_entity_references(request):
         "Links".full_path,
         "Links".original_filename,
         "Thumbnails".full_path as "thumbnail_full_path",
-        array_agg("SimpleEntities_Tags".name)
+        array_agg("SimpleEntities_Tags".name),
+        "Task_References".task_id as entity_id,
+        "SimpleEntities_Tasks".name as name,
+        "SimpleEntities_Tasks".entity_type as entity_type
     from "Task_References"
     join (
         with recursive parent_ids(id, parent_id, project_id) as (
@@ -279,7 +282,10 @@ def get_entity_references(request):
     join "Entity_Tags" on "Links".id = "Entity_Tags".entity_id
     join "Tags" on "Entity_Tags".tag_id = "Tags".id
     join "SimpleEntities" as "SimpleEntities_Tags" on "Tags".id = "SimpleEntities_Tags".id
-    group by "Links".id, "thumbnail_full_path", "Links".full_path, "Links".original_filename
+    join "SimpleEntities" as "SimpleEntities_Tasks" on "Task_References".task_id = "SimpleEntities_Tasks".id
+    group by "Links".id, "thumbnail_full_path", "Links".full_path,
+             "Links".original_filename, "Task_References".task_id,
+             "SimpleEntities_Tasks".name, "SimpleEntities_Tasks".entity_type
     order by "Links".id
     """ % {'id': entity_id}
 
@@ -297,6 +303,9 @@ def get_entity_references(request):
             'original_filename': r[2],
             'thumbnail_path': r[3],
             'tags': r[4],
+            'entity_id': r[5],
+            'entity_name': r[6],
+            'entity_type': r[7]
         } for r in result.fetchall()
     ]
     python_end = time_time()

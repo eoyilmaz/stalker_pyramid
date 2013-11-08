@@ -88,7 +88,7 @@
         <li id="Reference_{{=it.id}}">
             <a href="/{{=it.full_path}}"
                download_href="/FD{{=it.full_path}}"
-               title="{{=it.original_filename}}"
+               title="{{=it.original_filename}} | {{=it.entity_name}}"
                data-rel="colorbox"
                class="cboxElement">
                 <div style="text-align: center; overflow: hidden; width: 150px">
@@ -108,6 +108,7 @@
             <div class="tools">
                 <a href="/FD{{=it.full_path}}" title="Download"><i class="icon-cloud-download"></i></a>
                 <a href="javascript:copyToClipboard('http://' + window.location.host +'/FD{{=it.full_path}}')" title="Copy Download Link"><i class="icon-link"></i></a>
+                <a href="/entities/{{=it.entity_id}}/references/list" title="Go To Related Entity"><i class="icon-external-link"></i></a>
                 <a class='reference-deleter' ref_id="{{=it.id}}" href="#" title="Delete"><i class="icon-remove red"></i></a>
             </div>
         </li>
