@@ -18,7 +18,7 @@
     {% endif %}
 
     <div class="nav-search" id="nav-search">
-        <form class="form">
+        <form class="form" onsubmit="javascript:submitForm();return false;">
         <span class="input-icon">
         <input type="text" placeholder="Search ..."
                class="input-block-level"
@@ -33,64 +33,58 @@
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/chosen.jquery.min.js") }}'></script>
 
 <script type="text/javascript">
-{#    $(document).ready(function () {#}
-{##}
-{##}
-{#        var search_input = $("#nav-search-input").chosen({#}
-{#            search_contains: true,#}
-{#            enable_split_word_search: true,#}
-{#            allow_single_deselect: true#}
-{#        });#}
-{##}
-{#        console.log('dd', search_input)#}
-{##}
-{##}
-{#        {% raw %}#}
-{#        var search_option_template = doT.template('<option value="{{=it.id}}">{{=it.name}}</option>');#}
-{#        {% endraw %}#}
-{##}
-{##}
-{#        search_input.on('keyup', function () {#}
-{##}
-{#            var search_str = search_input.val();#}
-{#            console.log(search_str);#}
-{##}
-{#            $.getJSON('/search/%' + search_str + '%/').then(function (data) {#}
-{##}
-{#                var input_source = [];#}
-{#                for (var i = 0; i < data.length; i++) {#}
-{#                    input_source.push(data[i].name);#}
-{##}
-{#                }#}
-{##}
-{##}
-{#                search_input.autocomplete({#}
-{#                    delay: 0,#}
-{#                    source: input_source,#}
-{#                    minLength: 0#}
-{#                });#}
-{#                search_input.find('option').unbind().remove();#}
-{##}
-{#                // add new ones#}
-{#                var data_count = data.length;#}
-{#                for (var i=0 ; i < data_count; i++){#}
-{#                    search_input.append(search_option_template(data[i]));#}
-{#                }#}
-{##}
-{#                // trigger an update#}
-{#                search_input.trigger('liszt:updated');#}
-{##}
-{#                // add option onClick handler#}
-{#                search_input.find('option').on('click', function(){#}
-{#                    console.log('this.attr(id)', this.attr(id));#}
-{#                });#}
-{##}
-{#            });#}
-{##}
-{#        }).on('keyPress', function(e){#}
-{#            console.log('e', e);#}
-{#        });#}
-{##}
-{##}
-{#    });#}
+
+    function submitForm() {
+
+        var search_input = $("#nav-search-input");
+
+        var search_str = search_input.val();
+
+
+        $.getJSON('/submit_search', {str: '%'+search_str+'%', id:'{{entity.id}}'}).then(function (data) {
+
+            window.location.replace(data.url);
+
+        });
+
+    }
+    $(document).ready(function () {
+
+        var search_input = $("#nav-search-input");
+        search_input.typeahead({source: [], updater: function (b) {
+            search_input.focus();
+            return b
+        }})
+
+
+        search_input.on('keyup', function () {
+
+            var search_str = search_input.val();
+
+
+            if (search_str.length > 3) {
+
+
+                $.getJSON('/search', {str: '%'+search_str+'%'}).then(function (data) {
+
+                    var input_source = [];
+                    for (var i = 0; i < data.length; i++) {
+                        input_source.push(data[i].name);
+
+                    }
+
+
+                    search_input.autocomplete({
+                        delay: 0,
+                        source: input_source,
+                        minLength: 0
+                    });
+
+                });
+            }
+
+        })
+
+
+    });
 </script>

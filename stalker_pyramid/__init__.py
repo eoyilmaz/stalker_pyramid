@@ -117,7 +117,12 @@ def main(global_config, **settings):
     # *************************************************************************
     # Entities
 
-    config.add_route('get_search_result', '/search/{str}/') #json
+    config.add_route('get_search_result', '/search') #json
+    config.add_route('list_search_result', '/list/search_results')
+    config.add_route('submit_search', '/submit_search')
+
+
+
 
     config.add_route('upload_entity_thumbnail_dialog', 'entities/{id}/thumbnail/upload/dialog')
     config.add_route('upload_entity_reference_dialog', 'entities/{id}/references/upload/dialog')
