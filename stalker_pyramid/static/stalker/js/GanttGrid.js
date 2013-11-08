@@ -8,18 +8,20 @@ define([
     "dgrid/tree",
     "dgrid/extensions/DijitRegistry",
     "put-selector/put",
-    "stalker/js/GanttColumn"
+    "stalker/js/GanttColumn",
+    "dgrid/extensions/ColumnResizer"
 ], function (declare, lang, OnDemandGrid, ColumnSet, Selection, Keyboard, tree,
-             DijitRegistry, put, GanttColumn) {
+             DijitRegistry, put, GanttColumn, ColumnResizer) {
     // module:
     //     GanttGrid
     // summary:
-    //     A dgrid extension to create a gantt chart, with columns for tasks, resources, and timelines
+    //     A dgrid extension to create a gantt chart, with columns for tasks,
+    //     resources, and time lines
 
     // Creates a new grid with one column set definition to display tasks & resources and a second
     // column set for the actual gantt chart
     "use strict";
-    return declare([OnDemandGrid, ColumnSet, Selection, Keyboard, DijitRegistry], {
+    return declare([OnDemandGrid, ColumnSet, Selection, Keyboard, DijitRegistry, ColumnResizer], {
         keyMap: lang.mixin({}, Keyboard.defaultKeyMap, {
             //    37 - left
             //    38 - up
@@ -73,7 +75,7 @@ define([
                             var id_template = doT.template(id_template_str);
                             return id_template(object);
                         },
-                        resizable: true
+                        resizable: false
                     },
                     id: {
                         label: "ID",
@@ -90,6 +92,7 @@ define([
                         {
                             label: "Name",
                             sortable: false,
+                            resizable: true,
                             get: function (object) {
                                 return object;
                             },
@@ -143,6 +146,7 @@ define([
                     complete: {
                         label: '%',
                         sortable: false,
+                        resizable: true,
                         get: function (object) {
                             return object;
                         },
@@ -163,6 +167,7 @@ define([
                     resource: {
                         label: "Resource",
                         sortable: false,
+                        resizable: true,
                         get: function (object) {
                             return object;
                         },
@@ -180,6 +185,7 @@ define([
                     timing: {
                         label: 'Timing',
                         sortable: false,
+                        resizable: true,
                         get: function (object) {
                             return object;
                         },
@@ -220,6 +226,7 @@ define([
                     start: {
                         label: 'Start',
                         sortable: false,
+                        resizable: true,
                         get: function (object) {
                             return object;
                         },
@@ -231,6 +238,7 @@ define([
                     end: {
                         label: 'End',
                         sortable: false,
+                        resizable: true,
                         get: function (object) {
                             return object;
                         },
@@ -259,6 +267,7 @@ define([
                 {
                     chart: new GanttColumn({
                         scale: 'w',
+                        resizable: true,
                         start: function () {
                             var today = moment();
                             return today.subtract(6, 'month').startOf('isoweek');
