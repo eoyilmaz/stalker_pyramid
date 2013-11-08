@@ -44,6 +44,23 @@
         </li>
     {% endif %}
 
+    {#Resources#}
+    {% if request.current_route_path() == request.route_path('list_entity_resources', id=studio.id) %}
+        <li class='active'>
+            <a>
+                <i class="icon-calendar"></i>
+                <span class="menu-text">Resources</span>
+            </a>
+        </li>
+    {% else %}
+        <li>
+            <a href='{{ request.route_url('list_entity_resources', id=studio.id) }}'>
+                <i class="icon-calendar"></i>
+                <span class="menu-text">Resources</span>
+            </a>
+        </li>
+    {% endif %}
+
 
     {# Tasks #}
     {% if request.current_route_path() == request.route_path('list_studio_tasks', id=studio.id) %}

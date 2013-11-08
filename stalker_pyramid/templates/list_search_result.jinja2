@@ -19,14 +19,13 @@
             <h4 class="smaller">
                 Results
             </h4>
-
         </div>
         <div class="widget-body">
             <div class="widget-main">
                 {% for result in results %}
                     <div class="profile-activity clearfix">
                         <div>
-<i class="icon-angle-right bigger-80"></i>
+                            <i class="icon-angle-right bigger-80"></i>
                             <a class=""
                                href="{{ request.route_url('view_'+result.entity_type.lower(), id=result.id) }}">
                                 {{ result.name }}{% if result.parents %}
