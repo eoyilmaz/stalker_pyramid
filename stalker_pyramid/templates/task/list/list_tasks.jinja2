@@ -402,7 +402,8 @@
                 </div>
 
                 <div id="gantt_zoom_selection" class="btn-group">
-                    <button class="btn btn-small btn-default">
+                    <button class="btn btn-small btn-danger"
+                            data-loading-text='<i class="icon-search bigger-120"></i>Zooming...'>
                         <i class="icon-search bigger-120"></i>
                         Zoom To Selection
                     </button>
@@ -909,11 +910,13 @@ require([
 
     // create the zoom window
     $('#gantt_zoom_selection').on('click', function(e){
-        
+
+        // change button state
+        $('#gantt_zoom_selection').find('button').button('loading');
+
         var dragDetector = $($.parseHTML('<div class="dragDetector"></div>'));
         var zoomBox = $($.parseHTML('<div class="zoomBox"></div>'));
         $('div.dgrid-content.ui-widget-content').append(zoomBox).append(dragDetector);
-    
     
         $('.dragDetector').mousedown(function(e){
             e.stopPropagation();
@@ -951,14 +954,15 @@ require([
             var zoomed_dates = gantt_column.convert_pixel_to_millies(left, left + width);
             // get the zoom level
             var zoom_level = gantt_column.guess_zoom_level(zoomed_dates.start, zoomed_dates.end);
-            
+
             // update interface elements
             var formatted_start_date = moment(zoomed_dates.start).format('MM/DD/YYYY');
             var formatted_end_date = moment(zoomed_dates.end).format('MM/DD/YYYY');
-            $('#start_end_date_range_picker').val(formatted_start_date + ' - ' + formatted_end_date);
-            $('#start_end_date_range_picker').data().daterangepicker.updateFromControl();
+            var start_end_date_range_picker = $('#start_end_date_range_picker');
+            start_end_date_range_picker.val(formatted_start_date + ' - ' + formatted_end_date);
+            start_end_date_range_picker.data().daterangepicker.updateFromControl();
             $('#zoom_level').val(zoom_level);
-            
+
             // zoom the gantt chart
             gantt_column.start = +zoomed_dates.start;
             gantt_column.end   = +zoomed_dates.end;
@@ -968,6 +972,9 @@ require([
 
             // scroll to the middle of the dates
             gantt_column.scrollToDate( (zoomed_dates.end + zoomed_dates.start) * 0.5 );
+
+            // restore button
+            $('#gantt_zoom_selection').find('button').button('reset');
         });
     });
 

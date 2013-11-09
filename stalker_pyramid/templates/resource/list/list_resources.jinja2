@@ -81,6 +81,15 @@
                     </button>
                     <div id="resource_scroll_to_button" class="hidden" start="0"></div>
                 </div>
+
+                <div id="resource_zoom_selection" class="btn-group">
+                    <button class="btn btn-small btn-danger"
+                            data-loading-text='<i class="icon-search bigger-120"></i>Zooming...'>
+                        <i class="icon-search bigger-120"></i>
+                        Zoom To Selection
+                    </button>
+                </div>
+
             </div>
 
             <div class="row-fluid">
@@ -277,6 +286,77 @@ require([
     $('#resource_go_to_today_button').on('click', function(){
        resource_column.centerOnToday(); 
     });
+
+    // create the zoom window
+    $('#resource_zoom_selection').on('click', function(e){
+        
+        // change button state
+        $('#resource_zoom_selection').find('button').button('loading');
+
+        var dragDetector = $($.parseHTML('<div class="dragDetector"></div>'));
+        var zoomBox = $($.parseHTML('<div class="zoomBox"></div>'));
+        $('div.dgrid-content.ui-widget-content').append(zoomBox).append(dragDetector);
+    
+        $('.dragDetector').mousedown(function(e){
+            e.stopPropagation();
+            e.preventDefault();
+            this.start_pos = e.offsetX;
+            this.start_resizing = true;
+        }).mousemove(function(e){
+            e.stopPropagation();
+            e.preventDefault();
+            if(this.start_resizing){
+                var x1 = this.start_pos;
+                var x2 = e.offsetX;
+                var left = Math.min(x1, x2);
+                var width = Math.abs(x1 - x2);
+                zoomBox.css({
+                    left: left,
+                    width: width
+                });
+            };
+        }).mouseup(function(e){
+            this.start_resizing = false;
+            // get the left and width of the zoomBox
+            var start_x = $('.dgrid-column-set-cell.dgrid-column-set-1').offset().left;
+            var scroll_left = $('.dgrid-column-set-cell.dgrid-column-set-1>div').scrollLeft();
+            var left = zoomBox.offset().left - start_x + scroll_left;
+            var width = zoomBox.width();
+
+            // unbind events
+            $('.dragDetector').unbind();
+
+            // delete the elements
+            zoomBox.remove();
+            dragDetector.remove();
+
+            var zoomed_dates = resource_column.convert_pixel_to_millies(left, left + width);
+            // get the zoom level
+            var zoom_level = resource_column.guess_zoom_level(zoomed_dates.start, zoomed_dates.end);
+            
+            // update interface elements
+            var formatted_start_date = moment(zoomed_dates.start).format('MM/DD/YYYY');
+            var formatted_end_date = moment(zoomed_dates.end).format('MM/DD/YYYY');
+            var start_end_date_range_picker = $('#start_end_date_range_picker');
+            start_end_date_range_picker.val(formatted_start_date + ' - ' + formatted_end_date);
+            start_end_date_range_picker.data().daterangepicker.updateFromControl();
+            $('#zoom_level').val(zoom_level);
+
+            // zoom the gantt chart
+            resource_column.start = +zoomed_dates.start;
+            resource_column.end   = +zoomed_dates.end;
+            resource_column.scale = zoom_level; 
+            resource_column.reload();
+            resource_column.refresh();
+
+            // scroll to the middle of the dates
+            resource_column.scrollToDate( (zoomed_dates.end + zoomed_dates.start) * 0.5 );
+
+            // restore button
+            $('#resource_zoom_selection').find('button').button('reset');
+        });
+    });
+
 });
 </script>
 
