@@ -308,13 +308,6 @@
                         <li class="divider"></li>
 
                         <li>
-                            <a href='#' class="blue">
-                                <i class="'ui-icon icon-comment bigger-120">&nbsp</i>
-                                Request Review
-                            </a>
-                        </li>
-
-                        <li>
                             <a id='add_time_log_button'
                                class="green"
                                href='#'>
@@ -323,6 +316,14 @@
                             </a>
                         </li>
 
+                        <li>
+                            <a id='request_review_button'
+                               class="blue"
+                               href="#">
+                                <i class="'ui-icon icon-comment bigger-120">&nbsp</i>
+                                Request Review
+                            </a>
+                        </li>
 
                     </ul>
                 </div>
@@ -676,10 +677,42 @@ require([
                 'href',
                 '/entities/' + selected_ids[0] + '/timelogs/create/dialog'
             )
+
+            $('#request_review_button').attr(
+                'href',
+                '/tasks/' + selected_ids[0] + '/request_review'
+            )
         }
     });
 
-    var select_first_and_do_something = function(e, callback){
+    $('#request_review_button').on('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        var selected_ids = gantt_chart.selected_ids();
+
+        bootbox.confirm(
+            '<div><p>This will send the responsible of this task a ' +
+            '<strong>review request</strong> and you will ' +
+            '<strong>not</strong> be able to ' +
+            '<strong>create any TimeLogs</strong> for this task ' +
+            'after this point<br><br><strong>Are you sure?</strong></div>',
+            function (result) {
+                if (result) {
+                    // get the ids and send it to the server
+                    var url = '';
+                    for (var i=0; i < selected_ids.length; i += 1){
+                        url = '/tasks/' + selected_ids[i] + '/request_review';
+                        $.post(url).fail(function(jqXHR){
+                            bootbox.alert(jqXHR.responseText);
+                        });
+                    }
+                }
+            }
+        )
+    });
+
+    var select_first_and_do_something = function (e, callback){
         e.preventDefault();
         e.stopPropagation();
         // check if something is selected first
@@ -744,9 +777,10 @@ require([
                         }).fail(function(jqXHR){
                             bootbox.alert(jqXHR.responseText);
                         });
-                    };
-                };
-        });
+                    }
+                }
+            }
+        );
     });
 
     $('#add_time_log_button').on('click', function(e){

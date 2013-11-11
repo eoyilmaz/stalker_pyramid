@@ -38,14 +38,18 @@ from stalker import (User, Task, Entity, Project, StatusList, Status,
                      Ticket)
 from stalker.models.task import CircularDependencyError
 from stalker import defaults
-import stalker_pyramid
+
 from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
                                    get_multi_integer, milliseconds_since_epoch,
-                                   get_date, StdErrToHTMLConverter, colors, multi_permission_checker, get_multi_string)
+                                   StdErrToHTMLConverter, colors,
+                                   multi_permission_checker)
 
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
+
+
+default_email_address = "Stalker Pyramid <stalker.pyramid@stalker.pyramid.com>"
 
 
 def duplicate_task(task):
@@ -1169,19 +1173,36 @@ def request_review(request):
 
     task_id = request.matchdict.get('id', -1)
     task = Task.query.filter(Task.id == task_id).first()
+    send_email = request.params.get('send_email', 1)
 
     if task:
+        if task.is_container:
+            response = Response('Can not request review for a container task')
+            response.status_int = 500
+            return response
+
         # get the project that the ticket belongs to
         project = task.project
 
+        user_link = '<a href="/users/%s/view">%s</a>' % (logged_in_user.id,
+                                                         logged_in_user.name)
+        task_link = \
+            '<a href="/tasks/%(task_id)s/view">%(task_name)s ' \
+            '(%(task_entity_type)s) - (%(task_parent_names)s)' % {
+                "task_id": task.id,
+                "task_name": task.name,
+                "task_entity_type": task.entity_type,
+                "task_parent_names": "|".join(map(lambda x: x.name,
+                                                  task.parents))
+            }
+
         summary_text = 'Review Request: "%s"' % task.name
-        description_text = '%s has requested you to do a review for ' \
-                           '"%s (%s) - (%s)"' % (
-                               logged_in_user.name,
-                               task.name,
-                               task.entity_type,
-                               "|".join(map(lambda x: x.name, task.parents))
-                           )
+        description_text = \
+            '%(user_link)s has requested you to do a review for ' \
+            '"%(task_link)s"\ ' % {
+                "user_link": user_link,
+                "task_link": task_link
+            }
 
         responsible = task.responsible
 
@@ -1199,22 +1220,23 @@ def request_review(request):
 
         DBSession.add(review_ticket)
 
-        # send email to responsible and resources of the task
-        mailer = get_mailer(request)
+        if send_email:
+            # send email to responsible and resources of the task
+            mailer = get_mailer(request)
 
-        recipients = [logged_in_user.email]
-        if responsible.email not in recipients:
-            recipients.append(responsible.email)
+            recipients = [logged_in_user.email]
+            if responsible.email not in recipients:
+                recipients.append(responsible.email)
 
-        for resource in task.resources:
-            recipients.append(resource.email)
+            for resource in task.resources:
+                recipients.append(resource.email)
 
-        message = Message(
-            subject=summary_text,
-            sender="Anima Stalker <anima.stalker.pyramid@stalker.com>",
-            recipients=recipients,
-            body=description_text)
-        mailer.send(message)
+            message = Message(
+                subject=summary_text,
+                sender=default_email_address,
+                recipients=recipients,
+                body=description_text)
+            mailer.send(message)
 
         # set task status to Pending Review
         status_prev = Status.query.filter(Status.code == "PREV").first()
@@ -1229,7 +1251,9 @@ def request_review(request):
         response.status_int = 200
         return response
 
-    return HTTPOk()
+    response = Response('There is no task with id : %s' % task_id)
+    response.status_int = 500
+    return response
 
 
 @view_config(
@@ -1245,40 +1269,60 @@ def request_extra_time(request):
     task_id = request.matchdict.get('id', -1)
     task = Task.query.filter(Task.id == task_id).first()
 
-    extra_time = request.params('extra_time', -1)
+    send_email = request.params.get('send_email', 1)
+
+    extra_time = request.params.get('extra_time', -1)
 
     if task and extra_time:
+        # no extra hours for a container task
+        if task.is_container:
+            response = Response('Can not request extra time for a container '
+                                'task')
+            response.status_int = 500
+            return response
+
         # TODO: increase task extra time request counter
 
-        # get the project that the ticket belongs to
-        summary_text = 'Extra Time Request: "%s"' % task.name
-        description_text = \
-        """%s has requested extra %s hours for %s (%s) - (%s)" """ % (
-            logged_in_user.name,
-            task.name,
-            task.entity_type,
-            "|".join(map(lambda x: x.name, task.parents))
-        )
+        if send_email:
+            # get the project that the ticket belongs to
+            summary_text = 'Extra Time Request: "%s"' % task.name
+            description_text = \
+            """%(user_name)s has requested %(extra_time)s extra hours for 
+            %(task_name)s (%(task_link)s)" """ % {
+                "user_name": logged_in_user.name,
+                "extra_time": extra_time,
+                "task_name": task.name,
+                "task_link": request.route_url('view_task', id=task.id)
+            }
 
-        responsible = task.responsible
+            responsible = task.responsible
 
-        # send email to responsible and resources of the task
-        mailer = get_mailer(request)
+            # send email to responsible and resources of the task
+            mailer = get_mailer(request)
 
-        recipients = [logged_in_user.email]
-        if responsible.email not in recipients:
-            recipients.append(responsible.email)
-        for resource in task.resources:
-            recipients.append(resource.email)
+            recipients = [logged_in_user.email]
+            if responsible.email not in recipients:
+                recipients.append(responsible.email)
+            for resource in task.resources:
+                recipients.append(resource.email)
 
-        message = Message(
-            subject=summary_text,
-            sender="Anima Stalker <anima.stalker.pyramid@stalker.com>",
-            recipients=recipients,
-            body=description_text)
-        mailer.send(message)
+            message = Message(
+                subject=summary_text,
+                sender=default_email_address,
+                recipients=recipients,
+                body=description_text)
+            mailer.send(message)
 
-    return HTTPOk()
+        response = Response('You have successfully requested extra time for '
+                            'your task')
+        response.status_int = 200
+        return response
+
+    response = Response(
+        'There is no task with id : %s' % task_id
+    )
+    response.status_int = 500
+    return response
 
 
 @view_config(
@@ -1393,8 +1437,8 @@ def request_revision(request):
                 "revision_task_name": rev_task.name,
                 "revision_task_link": request.route_url('view_task',
                                                         id=rev_task.id),
-                "description": description 
-                    if description else "(No Description)"
+                "description": description
+                if description else "(No Description)"
             }
 
             responsible = task.responsible
@@ -1409,7 +1453,7 @@ def request_revision(request):
 
             message = Message(
                 subject=summary_text,
-                sender="Anima Stalker <anima.stalker.pyramid@stalker.com>",
+                sender=default_email_address,
                 recipients=recipients,
                 body=description_text
             )

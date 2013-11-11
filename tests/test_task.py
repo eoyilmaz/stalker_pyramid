@@ -776,7 +776,8 @@ class TaskViewTestCase(unittest2.TestCase):
         self.assertEqual(response.status_int, 500)
         self.assertEqual(
             response.body,
-            'You can not request a review for a task with status is set to "New"'
+            'You can not request a review for a task with status is set to '
+            '"New"'
         )
 
     def test_request_revision_should_not_work_for_tasks_with_the_status_is_set_to_has_revision(self):
@@ -803,7 +804,8 @@ class TaskViewTestCase(unittest2.TestCase):
         self.assertEqual(response.status_int, 500)
         self.assertEqual(
             response.body,
-            'You can not request a review for a task with status is set to "Has Revision"'
+            'You can not request a review for a task with status is set to '
+            '"Has Revision"'
         )
 
     def test_request_revision_should_not_work_for_tasks_with_the_status_is_set_to_completed(self):
@@ -830,12 +832,12 @@ class TaskViewTestCase(unittest2.TestCase):
         self.assertEqual(response.status_int, 500)
         self.assertEqual(
             response.body,
-            'You can not request a review for a task with status is set to "Completed"'
+            'You can not request a review for a task with status is set to '
+            '"Completed"'
         )
 
     def test_request_revision_is_working_properly(self):
-        """testing if the request_revision function is working
-        properly
+        """testing if the request_revision function is working properly
         """
         admin = User.query.filter(User.login == 'admin').first()
 
@@ -901,3 +903,120 @@ class TaskViewTestCase(unittest2.TestCase):
             self.test_task4.dependent_of, [rev_task]
         )
 
+    def test_request_review_returns_code_500_if_no_task_found(self):
+        """testing if a response with code 500 is returned back when there is
+        no such task
+        """
+        # request review for self.test_task4
+        request = testing.DummyRequest()
+        request.matchdict['id'] = 123123123
+        request.params['send_email'] = 0
+
+        # patch get_logged_in_user
+        admin = User.query.filter(User.login == 'admin').first()
+        m = mocker.Mocker()
+        obj = m.replace("stalker_pyramid.views.auth.get_logged_in_user")
+        obj(request)
+        m.result(admin)
+        m.replay()
+
+        response = task.request_review(request)
+        self.assertEqual(response.status_int, 500)
+        self.assertEqual(response.body, 'There is no task with id : 123123123')
+
+    def test_request_review_is_working_for_only_leaf_tasks(self):
+        """testing if the request_review will only work for leaf tasks
+        """
+        # create a time log before asking review
+        time_log = TimeLog(
+            resource=self.test_task4.resources[0],
+            task=self.test_task4,
+            start=datetime.datetime(2013, 6, 20, 10, 0),
+            end=datetime.datetime(2013, 6, 20, 19, 0)
+        )
+        DBSession.add(time_log)
+        self.test_task1.status = self.status_wip
+
+        # request review for self.test_task1
+        request = testing.DummyRequest()
+        request.matchdict['id'] = self.test_task1.id
+        request.params['send_email'] = 0
+
+        # patch get_logged_in_user
+        admin = User.query.filter(User.login == 'admin').first()
+        m = mocker.Mocker()
+        obj = m.replace("stalker_pyramid.views.auth.get_logged_in_user")
+        obj(request)
+        m.result(admin)
+        m.replay()
+
+        # also patch route_url of request
+        request.route_url = lambda x, id: 'localhost:6453/tasks/23/view'
+
+        response = task.request_review(request)
+        self.assertEqual(response.status_int, 500)
+        self.assertEqual(response.body, 'Can not request review for a '
+                                        'container task')
+
+    def test_request_review_is_working_properly(self):
+        """testing if the request_review function is working properly
+        """
+        # create a time log before asking review
+        time_log = TimeLog(
+            resource=self.test_task4.resources[0],
+            task=self.test_task4,
+            start=datetime.datetime(2013, 6, 20, 10, 0),
+            end=datetime.datetime(2013, 6, 20, 19, 0)
+        )
+        DBSession.add(time_log)
+        self.test_task4.status = self.status_wip
+
+        # request review for self.test_task4
+        request = testing.DummyRequest()
+        request.matchdict['id'] = self.test_task4.id
+        request.params['send_email'] = 0
+
+        # patch get_logged_in_user
+        admin = User.query.filter(User.login == 'admin').first()
+        m = mocker.Mocker()
+        obj = m.replace("stalker_pyramid.views.auth.get_logged_in_user")
+        obj(request)
+        m.result(admin)
+        m.replay()
+
+        # also patch route_url of request
+        request.route_url = lambda x, id: 'localhost:6453/tasks/23/view'
+
+        response = task.request_review(request)
+        self.assertEqual(response.status_int, 200)
+
+        # check if the status of the original task is set to Pending Revision
+        #self.test_task4 = Task.query.get(self.test_task4.id)
+        self.assertEqual(self.test_task4.status, self.status_prev)
+
+        # check if the task percent_complete is 100
+        self.assertEqual(self.test_task4.percent_complete, 100)
+
+    def test_request_extra_time_works_only_for_leaf_tasks(self):
+        """testing if task.request_extra_time works only for leaf tasks
+        """
+        # request extra time for self.test_task1
+        request = testing.DummyRequest()
+        request.matchdict['id'] = self.test_task1.id
+        request.params['send_email'] = 0
+
+        # patch get_logged_in_user
+        admin = User.query.filter(User.login == 'admin').first()
+        m = mocker.Mocker()
+        obj = m.replace("stalker_pyramid.views.auth.get_logged_in_user")
+        obj(request)
+        m.result(admin)
+        m.replay()
+
+        # also patch route_url of request
+        request.route_url = lambda x, id: 'localhost:6453/tasks/23/view'
+
+        response = task.request_extra_time(request)
+        self.assertEqual(response.status_int, 500)
+        self.assertEqual(response.body,
+                         'Can not request extra time for a container task')

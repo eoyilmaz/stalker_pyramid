@@ -9,6 +9,10 @@ Stalker Pyramid Changes
 * **New:** Added Resource Chart.
 * **New:** Added the ability to zoom in Gantt Chart.
 * **Fix:** Fixed avatar uploads in user info update page.
+* **Update:** Added status and status list creation for Project, Task, Asset,
+  Shot and Sequence entity types and New, Work In Progress, Pending Review,
+  Has Revision and Completed to
+  ``stalker_pyramid.scripts.initializedb.main()``.
 
 0.1.0.b4
 ========
