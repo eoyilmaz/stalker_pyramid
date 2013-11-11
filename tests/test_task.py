@@ -17,6 +17,9 @@
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
+
+import mocker
+
 import datetime
 
 import unittest2
@@ -25,13 +28,13 @@ import transaction
 from pyramid import testing
 from pyramid.httpexceptions import HTTPServerError
 
-from stalker import db, Project, Status, StatusList, Repository, Task, User, Asset, Type, defaults
+from stalker import (db, Project, Status, StatusList, Repository, Task, User,
+                     Asset, Type, TimeLog)
 from stalker.db.session import DBSession
 
-from stalker_pyramid.views import task, PermissionChecker, milliseconds_since_epoch
+from stalker_pyramid.views import task, milliseconds_since_epoch
 
 import logging
-from stalker_pyramid.views.auth import login
 
 logger = logging.getLogger(__name__)
 
@@ -66,26 +69,30 @@ class TaskViewTestCase(unittest2.TestCase):
         DBSession.add(self.test_user2)
 
         # create a couple of tasks
-        self.test_status1 = Status(name='Status1', code='STS1')
-        self.test_status2 = Status(name='Status2', code='STS1')
-        self.test_status3 = Status(name='Status3', code='STS1')
+        self.status_new = Status(name='New', code='NEW')
+        self.status_wip = Status(name='Work In Progress', code='WIP')
+        self.status_prev = Status(name='Pending Review', code='PREV')
+        self.status_hrev = Status(name='Has Revision', code='HREV')
+        self.status_completed = Status(name='Completed', code='CMPL')
         DBSession.add_all([
-            self.test_status1, self.test_status2, self.test_status3
+            self.status_new, self.status_wip, self.status_prev,
+            self.status_hrev, self.status_completed
         ])
 
         self.test_project_status_list = StatusList(
             name='Project Statuses',
             target_entity_type='Project',
-            statuses=[self.test_status1, self.test_status2,
-                      self.test_status3]
+            statuses=[self.status_new, self.status_wip,
+                      self.status_completed]
         )
         DBSession.add(self.test_project_status_list)
 
         self.test_task_statuses = StatusList(
             name='Task Statuses',
             target_entity_type='Task',
-            statuses=[self.test_status1, self.test_status2,
-                      self.test_status3]
+            statuses=[self.status_new, self.status_wip,
+                      self.status_prev, self.status_hrev,
+                      self.status_completed]
         )
         DBSession.add(self.test_task_statuses)
 
@@ -154,8 +161,10 @@ class TaskViewTestCase(unittest2.TestCase):
         self.test_task4 = Task(
             name='Test Task 4',
             parent=self.test_task1,
+            status=self.status_new,
             status_list=self.test_task_statuses,
             resources=[self.test_user1],
+            depends=[self.test_task3],
             start=datetime.datetime(2013, 6, 20, 0, 0),
             end=datetime.datetime(2013, 6, 30, 0, 0),
             schedule_model='effort',
@@ -169,6 +178,7 @@ class TaskViewTestCase(unittest2.TestCase):
             parent=self.test_task1,
             status_list=self.test_task_statuses,
             resources=[self.test_user1],
+            depends=[self.test_task4],
             start=datetime.datetime(2013, 6, 20, 0, 0),
             end=datetime.datetime(2013, 6, 30, 0, 0),
             schedule_model='effort',
@@ -218,8 +228,8 @@ class TaskViewTestCase(unittest2.TestCase):
         DBSession.add(self.test_task8)
 
         self.test_asset_status_list = StatusList(
-            statuses=[self.test_status1, self.test_status2,
-                      self.test_status3],
+            statuses=[self.status_new, self.status_wip,
+                      self.status_prev],
             target_entity_type='Asset'
         )
         DBSession.add(self.test_asset_status_list)
@@ -260,12 +270,6 @@ class TaskViewTestCase(unittest2.TestCase):
             self.test_task7, self.test_task8, self.test_task9,
             self.test_asset1
         ]
-        #new_session = DBSession()
-        #new_session.add_all([
-        #    self.test_user1, self.test_user2,
-        #    self.test_proj1
-        #])
-        #new_session.add_all(self.all_tasks)
 
     def tearDown(self):
         DBSession.remove()
@@ -313,10 +317,10 @@ class TaskViewTestCase(unittest2.TestCase):
                 'end': milliseconds_since_epoch(self.test_task1.end),
                 'hasChildren': True,
                 'hierarchy_name': '',
-                'id': 23,
-                'link': '/tasks/23/view',
+                'id': self.test_task1.id,
+                'link': '/tasks/%s/view' % self.test_task1.id,
                 'name': 'Test Task 1',
-                'parent': 22,
+                'parent': self.test_task1.project.id,
                 'priority': 500,
                 'resources': [],
                 'responsible': {
@@ -340,11 +344,11 @@ class TaskViewTestCase(unittest2.TestCase):
                 'description': '',
                 'end': milliseconds_since_epoch(self.test_task2.end),
                 'hierarchy_name': '',
-                'id': 24,
+                'id': self.test_task2.id,
                 'hasChildren': True,
-                'link': '/tasks/24/view',
+                'link': '/tasks/%s/view' % self.test_task2.id,
                 'name': 'Test Task 2',
-                'parent': 22,
+                'parent': self.test_task2.project.id,
                 'priority': 500,
                 'resources': [],
                 'responsible': {
@@ -369,39 +373,40 @@ class TaskViewTestCase(unittest2.TestCase):
                 'end': milliseconds_since_epoch(self.test_task3.end),
                 'hasChildren': False,
                 'hierarchy_name': '',
-                'id': 25, 'schedule_seconds': 324000,
-                'link': '/tasks/25/view',
+                'id': self.test_task3.id,
+                'link': '/tasks/%s/view' % self.test_task3.id,
                 'name': 'Test Task 3', 'total_logged_seconds': 0,
-                'responsible': {'id': 12, 'name': 'Test User 1'},
-                'parent': 22,
+                'parent': self.test_task3.project.id,
                 'priority': 500,
-                'schedule_constraint': 0,
-                'schedule_model': 'effort',
-                'schedule_timing': 10,
-                'schedule_unit': 'd',
-                'start': milliseconds_since_epoch(self.test_task3.start),
                 'resources': [
                     {'id': 12, 'name': 'Test User 1'},
                     {'id': 13, 'name': 'Test User 2'}
                 ],
+                'responsible': {'id': 12, 'name': 'Test User 1'},
+                'schedule_constraint': 0,
+                'schedule_model': 'effort',
+                'schedule_seconds': 324000,
+                'schedule_timing': 10,
+                'schedule_unit': 'd',
+                'start': milliseconds_since_epoch(self.test_task3.start),
                 'type': 'Task',
             },
             {
                 'bid_timing': 10,
                 'bid_unit': 'd',
                 'completed': 0,
-                'dependencies': [],
+                'dependencies': [{'id': 27, 'name': 'Test Task 3'}],
                 'description': '',
                 'end': milliseconds_since_epoch(self.test_task4.end),
                 'hasChildren': False,
                 'hierarchy_name': 'Test Task 1',
-                'id': 26,
-                'link': '/tasks/26/view',
+                'id': self.test_task4.id,
+                'link': '/tasks/%s/view' % self.test_task4.id,
                 'name': 'Test Task 4',
                 'priority': 500,
                 'resources': [{'id': 12, 'name': 'Test User 1'}],
                 'responsible': {'id': 12, 'name': 'Test User 1'},
-                'parent': 23,
+                'parent': self.test_task4.parent.id,
                 'schedule_model': 'effort',
                 'schedule_constraint': 0,
                 'schedule_seconds': 324000,
@@ -415,19 +420,20 @@ class TaskViewTestCase(unittest2.TestCase):
                 'bid_timing': 10,
                 'bid_unit': 'd',
                 'completed': 0,
-                'dependencies': [],
-                'description': '', 'parent': 23,
-                'hierarchy_name': 'Test Task 1',
-                'id': 27,
+                'dependencies': [{'id': 28, 'name': 'Test Task 4'}],
+                'description': '',
                 'end': milliseconds_since_epoch(self.test_task5.end),
+                'id': self.test_task5.id,
                 'hasChildren': False,
-                'link': '/tasks/27/view',
+                'hierarchy_name': 'Test Task 1',
+                'link': '/tasks/%s/view' % self.test_task5.id,
                 'name': 'Test Task 5',
+                'parent': self.test_task5.parent.id,
+                'priority': 500,
+                'resources': [{'id': 12, 'name': 'Test User 1'}],
                 'responsible': {
                     'id': 12, 'name': 'Test User 1'
                 },
-                'priority': 500,
-                'resources': [{'id': 12, 'name': 'Test User 1'}],
                 'schedule_constraint': 0,
                 'schedule_model': 'effort',
                 'schedule_seconds': 324000,
@@ -446,10 +452,10 @@ class TaskViewTestCase(unittest2.TestCase):
                 'end': milliseconds_since_epoch(self.test_task6.end),
                 'hasChildren': False,
                 'hierarchy_name': 'Test Task 1',
-                'id': 28,
-                'link': '/tasks/28/view',
+                'id': self.test_task6.id,
+                'link': '/tasks/%s/view' % self.test_task6.id,
                 'name': 'Test Task 6',
-                'parent': 23,
+                'parent': self.test_task6.parent.id,
                 'priority': 500,
                 'resources': [{'id': 12, 'name': 'Test User 1'}],
                 'responsible': {'id': 12, 'name': 'Test User 1'},
@@ -469,14 +475,14 @@ class TaskViewTestCase(unittest2.TestCase):
                 'dependencies': [],
                 'description': '',
                 'end': milliseconds_since_epoch(self.test_task7.end),
-                'id': 29,
+                'id': self.test_task7.id,
                 'hasChildren': True,
                 'hierarchy_name': 'Test Task 2',
-                'link': '/tasks/29/view',
+                'link': '/tasks/%s/view' % self.test_task7.id,
                 'name': 'Test Task 7',
                 'resources': [],
                 'responsible': {'id': 12, 'name': 'Test User 1'},
-                'parent': 24,
+                'parent': self.test_task7.parent.id,
                 'priority': 500,
                 'schedule_constraint': 0,
                 'schedule_model': 'effort',
@@ -493,13 +499,13 @@ class TaskViewTestCase(unittest2.TestCase):
                 'completed': 0,
                 'dependencies': [],
                 'hierarchy_name': 'Test Task 2',
-                'id': 30,
+                'id': self.test_task8.id,
                 'description': '',
                 'end': milliseconds_since_epoch(self.test_task8.end),
                 'hasChildren': False,
-                'link': '/tasks/30/view',
+                'link': '/tasks/%s/view' % self.test_task8.id,
                 'name': 'Test Task 8',
-                'parent': 24,
+                'parent': self.test_task8.parent.id,
                 'priority': 500,
                 'resources': [{'id': 13, 'name': 'Test User 2'}],
                 'responsible': {'id': 12, 'name': 'Test User 1'},
@@ -521,10 +527,10 @@ class TaskViewTestCase(unittest2.TestCase):
                 'end': milliseconds_since_epoch(self.test_task9.end),
                 'hasChildren': False,
                 'hierarchy_name': 'Test Task 2 | Test Task 7 | Test Asset 1',
-                'id': 32,
-                'link': '/tasks/32/view',
+                'id': self.test_task9.id,
+                'link': '/tasks/%s/view' % self.test_task9.id,
                 'name': 'Test Task 9',
-                'parent': 31,
+                'parent': self.test_task9.parent.id,
                 'priority': 500,
                 'resources': [],
                 'responsible': {'id': 12, 'name': 'Test User 1'},
@@ -546,10 +552,10 @@ class TaskViewTestCase(unittest2.TestCase):
                 'end': milliseconds_since_epoch(self.test_asset1.end),
                 'hasChildren': True,
                 'hierarchy_name': 'Test Task 2 | Test Task 7',
-                'id': 31,
-                'link': '/assets/31/view',
+                'id': self.test_asset1.id,
+                'link': '/assets/%s/view' % self.test_asset1.id,
                 'name': 'Test Asset 1',
-                'parent': 29,
+                'parent': self.test_asset1.parent.id,
                 'priority': 500,
                 'resources': [],
                 'responsible': {'id': 12, 'name': 'Test User 1'},
@@ -737,8 +743,6 @@ class TaskViewTestCase(unittest2.TestCase):
                          self.test_task7.schedule_model)
         self.assertEqual(dup_task7.schedule_constraint,
                          self.test_task7.schedule_constraint)
-        #self.assertEqual(dup_task7.start, self.test_task7.start)
-        #self.assertEqual(dup_task7.end, self.test_task7.end)
 
         # task8
         self.assertEqual(dup_task8.schedule_timing,
@@ -747,56 +751,153 @@ class TaskViewTestCase(unittest2.TestCase):
                          self.test_task8.schedule_model)
         self.assertEqual(dup_task8.schedule_constraint,
                          self.test_task8.schedule_constraint)
-        #self.assertEqual(dup_task8.start, self.test_task8.start)
-        #self.assertEqual(dup_task8.end, self.test_task8.end)
 
-    #def test_walk_hierarchy_is_working_properly(self):
-    #    """testing if walk_hierarchy is working properly
-    #    """
-    #    # Before:
-    #    # task1
-    #    #   task4
-    #    #   task5
-    #    #   task6
-    #    # task2
-    #    #   task7
-    #    #   task8
-    #    # task3
-    #
-    #    # make it complex
-    #    self.test_task3.parent = self.test_task8
-    #    self.test_task1.parent = self.test_task2
-    #    # After:
-    #    # task2
-    #    #   task7
-    #    #   task8
-    #    #     task3
-    #    #   task1
-    #    #     task4
-    #    #     task5
-    #    #     task6
-    #
-    #    for t in task.walk_hierarchy(self.test_task2):
-    #        logger.debug(t)
-    #    self.fail('test and implementation is not finished yet')
+    def test_request_revision_should_not_work_for_tasks_with_the_status_is_set_to_new(self):
+        """testing if a server error will be returned if the task issued in
+        request_review has a status of "new"
+        """
+        # request revision for self.test_task4
+        self.test_task4.status = self.status_new
+        request = testing.DummyRequest()
+        request.matchdict['id'] = self.test_task4.id
+        request.params['send_email'] = 0
+        request.params['schedule_timing'] = 5
+        request.params['schedule_unit'] = 'h'
 
-    #def test_task_dialog(self):
-    #    """testing if the create_task_dialog view is working properly
-    #    """
-    #    request = testing.DummyRequest()
-    #    # login first
-    #    request.params['login'] = 'admin'
-    #    request.params['password'] = 'admin'
-    #    login(request)
-    #    request = testing.DummyRequest()
-    #
-    #    request.matchdict['id'] = -1
-    #    response = task.task_dialog(request)
-    #    self.assertEqual(response['mode'], 'create')
-    #    self.assertIsInstance(response['has_permission'], PermissionChecker)
-    #    self.assertEqual(response['project'], self.test_proj1)
-    #    self.assertIsNone(response['parent'])
-    #    self.assertEqual(response['schedule_models'],
-    #                     defaults.task_schedule_models)
-    #    self.assertEqual(response['milliseconds_since_epoch'],
-    #                     milliseconds_since_epoch)
+        # patch get_logged_in_user
+        admin = User.query.filter(User.login == 'admin').first()
+        m = mocker.Mocker()
+        obj = m.replace("stalker_pyramid.views.auth.get_logged_in_user")
+        obj(request)
+        m.result(admin)
+        m.replay()
+
+        response = task.request_revision(request)
+        self.assertEqual(response.status_int, 500)
+        self.assertEqual(
+            response.body,
+            'You can not request a review for a task with status is set to "New"'
+        )
+
+    def test_request_revision_should_not_work_for_tasks_with_the_status_is_set_to_has_revision(self):
+        """testing if a server error will be returned if the task issued in
+        request_review has a status of "has revision"
+        """
+        # request revision for self.test_task4
+        self.test_task4.status = self.status_hrev
+        request = testing.DummyRequest()
+        request.matchdict['id'] = self.test_task4.id
+        request.params['send_email'] = 0
+        request.params['schedule_timing'] = 5
+        request.params['schedule_unit'] = 'h'
+
+        # patch get_logged_in_user
+        admin = User.query.filter(User.login == 'admin').first()
+        m = mocker.Mocker()
+        obj = m.replace("stalker_pyramid.views.auth.get_logged_in_user")
+        obj(request)
+        m.result(admin)
+        m.replay()
+
+        response = task.request_revision(request)
+        self.assertEqual(response.status_int, 500)
+        self.assertEqual(
+            response.body,
+            'You can not request a review for a task with status is set to "Has Revision"'
+        )
+
+    def test_request_revision_should_not_work_for_tasks_with_the_status_is_set_to_completed(self):
+        """testing if a server error will be returned if the task issued in
+        request_review has a status of "completed"
+        """
+        # request revision for self.test_task4
+        self.test_task4.status = self.status_completed
+        request = testing.DummyRequest()
+        request.matchdict['id'] = self.test_task4.id
+        request.params['send_email'] = 0
+        request.params['schedule_timing'] = 5
+        request.params['schedule_unit'] = 'h'
+
+        # patch get_logged_in_user
+        admin = User.query.filter(User.login == 'admin').first()
+        m = mocker.Mocker()
+        obj = m.replace("stalker_pyramid.views.auth.get_logged_in_user")
+        obj(request)
+        m.result(admin)
+        m.replay()
+
+        response = task.request_revision(request)
+        self.assertEqual(response.status_int, 500)
+        self.assertEqual(
+            response.body,
+            'You can not request a review for a task with status is set to "Completed"'
+        )
+
+    def test_request_revision_is_working_properly(self):
+        """testing if the request_revision function is working
+        properly
+        """
+        admin = User.query.filter(User.login == 'admin').first()
+
+        # create a time log before asking review
+        time_log = TimeLog(
+            resource=self.test_task4.resources[0],
+            task=self.test_task4,
+            start=datetime.datetime(2013, 6, 20, 10, 0),
+            end=datetime.datetime(2013, 6, 20, 19, 0)
+        )
+        DBSession.add(time_log)
+        self.test_task4.status = self.status_wip
+
+        # request revision for self.test_task4
+        request = testing.DummyRequest()
+        request.matchdict['id'] = self.test_task4.id
+        request.params['send_email'] = 0
+        request.params['schedule_timing'] = 5
+        request.params['schedule_unit'] = 'h'
+
+        # patch get_logged_in_user
+        m = mocker.Mocker()
+        obj = m.replace("stalker_pyramid.views.auth.get_logged_in_user")
+        obj(request)
+        m.result(admin)
+        m.replay()
+
+        # also patch route_url of request
+        request.route_url = lambda x, id: 'localhost:6453/tasks/23/view'
+
+        response = task.request_revision(request)
+        self.assertEqual(response.status_int, 200)
+
+        # check if the status of the original task is set to Has Revision
+        #self.test_task4 = Task.query.get(self.test_task4.id)
+        self.assertEqual(self.test_task4.status, self.status_hrev)
+
+        # check if the task percent_complete is 100
+        assert isinstance(self.test_task4, Task)
+        self.assertEqual(self.test_task4.percent_complete, 100)
+
+        # check if a new task with the same name but has a postfix of
+        # " - Rev 1" is created
+        rev_task = Task.query.filter(
+            Task.name == self.test_task4.name + ' - Rev 1').first()
+        self.assertIsNotNone(rev_task)
+
+        # check if the rev task has the same dependencies plus the original
+        # task in its depends list
+        self.assertItemsEqual(
+            rev_task.depends,
+            [self.test_task3, self.test_task4]
+        )
+
+        # check if the dependent tasks to original task are now depending to
+        # the revision task
+        self.assertItemsEqual(
+            rev_task.dependent_of, [self.test_task5]
+        )
+
+        # and the original tasks dependency links are broken
+        self.assertItemsEqual(
+            self.test_task4.dependent_of, [rev_task]
+        )
+

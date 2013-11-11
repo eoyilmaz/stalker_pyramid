@@ -242,6 +242,9 @@ def get_entity_references(request):
     entity = Entity.query.filter(Entity.id == entity_id).first()
     logger.debug('asking references for entity: %s' % entity)
 
+    offset = request.params.get('offset')
+    limit = request.params.get('limit')
+
     # using Raw SQL queries here to fasten things up quite a bit and also do
     # some fancy queries like getting all the references of tasks of a project
     # also with their tags
@@ -271,7 +274,6 @@ def get_entity_references(request):
             from parent_ids
 
             where parent_ids.id = %(id)s or parent_ids.parent_id = %(id)s or parent_ids.project_id = %(id)s -- show also children references
-            --where parent_ids.id = 2772 -- show only tasks references
 
             group by parent_ids.id, parent_id, project_id
             order by parent_ids.id
@@ -288,6 +290,9 @@ def get_entity_references(request):
              "SimpleEntities_Tasks".name, "SimpleEntities_Tasks".entity_type
     order by "Links".id
     """ % {'id': entity_id}
+
+    if offset and limit:
+        sql_query += "offset %s limit %s" % (offset, limit)
 
     time_time = time.time
     db_start = time_time()
@@ -334,37 +339,36 @@ def get_entity_references_count(request):
     # some fancy queries like getting all the references of tasks of a project
     # also with their tags
     sql_query = """
-    select
-        count(distinct("Links".id))
-        --"Links".full_path,
-        --"Links".original_filename,
-        --"Thumbnails".full_path as "thumbnail_full_path",
-        --array_agg("SimpleEntities_Tags".name)
-    from "Task_References"
-    join (
-        with recursive parent_ids(id, parent_id, project_id) as (
-            select task.id, task.parent_id, task.project_id from "Tasks" task
-        union all
-            select task.id, parent.parent_id, task.project_id
-            from "Tasks" task, parent_ids parent
-            where task.parent_id = parent.id
-        )
+    select count(*) from (
         select
-            distinct parent_ids.id as id --, coalesce(parent_ids.parent_id, parent_ids.project_id) as parent_id
-            from parent_ids
+            "Links".id
+        from "Task_References"
+        join (
+            with recursive parent_ids(id, parent_id, project_id) as (
+                select task.id, task.parent_id, task.project_id from "Tasks" task
+            union all
+                select task.id, parent.parent_id, task.project_id
+                from "Tasks" task, parent_ids parent
+                where task.parent_id = parent.id
+            )
+            select
+                distinct parent_ids.id as id --, coalesce(parent_ids.parent_id, parent_ids.project_id) as parent_id
+                from parent_ids
 
-            where parent_ids.id = %(id)s or parent_ids.parent_id = %(id)s or parent_ids.project_id = %(id)s -- show also children references
-            -- where parent_ids.id = 2772 -- show only tasks references
+                where parent_ids.id = %(id)s or parent_ids.parent_id = %(id)s or parent_ids.project_id = %(id)s -- show also children references
 
-            group by parent_ids.id, parent_id, project_id
-            order by parent_ids.id
-    ) as child_tasks on child_tasks.id = "Task_References".task_id
-    join "Links" on "Task_References".link_id = "Links".id
-    join "SimpleEntities" on "Links".id = "SimpleEntities".id
-    join "Links" as "Thumbnails" on "SimpleEntities".thumbnail_id = "Thumbnails".id
-    left outer join "Entity_Tags" on "Links".id = "Entity_Tags".entity_id
-    left outer join "Tags" on "Entity_Tags".tag_id = "Tags".id
-    left outer join "SimpleEntities" as "SimpleEntities_Tags" on "Tags".id = "SimpleEntities_Tags".id
+                group by parent_ids.id, parent_id, project_id
+                order by parent_ids.id
+        ) as child_tasks on child_tasks.id = "Task_References".task_id
+        join "Links" on "Task_References".link_id = "Links".id
+        join "SimpleEntities" on "Links".id = "SimpleEntities".id
+        join "Links" as "Thumbnails" on "SimpleEntities".thumbnail_id = "Thumbnails".id
+        join "Entity_Tags" on "Links".id = "Entity_Tags".entity_id
+        join "Tags" on "Entity_Tags".tag_id = "Tags".id
+        join "SimpleEntities" as "SimpleEntities_Tags" on "Tags".id = "SimpleEntities_Tags".id
+        join "SimpleEntities" as "SimpleEntities_Tasks" on "Task_References".task_id = "SimpleEntities_Tasks".id
+        group by "Links".id
+    ) as data
     """ % {'id': entity_id}
 
     result = DBSession.connection().execute(sql_query)

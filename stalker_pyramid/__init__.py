@@ -413,6 +413,7 @@ def main(global_config, **settings):
     # Dialogs
     config.add_route('task_dialog',                'tasks/{id}/{mode}/dialog')
 
+    # Actions
     config.add_route('create_task',              'tasks/create')
     config.add_route('update_task',              'tasks/{id}/update')
 
@@ -435,7 +436,12 @@ def main(global_config, **settings):
     config.add_route('get_task_children', 'tasks/{id}/children/')
     config.add_route('get_task_events',   'tasks/{id}/events/')  #json
     # config.add_route('get_task_depends_of', 'tasks/{id}/depends_of/')
-    config.add_route('get_task_depends', 'tasks/{id}/depends/')
+    config.add_route('get_task_depends',  'tasks/{id}/depends/')
+    config.add_route('get_task_tickets',  'tasks/{id}/tickets') # json
+
+    config.add_route('request_review',     'tasks/{id}/request_review')
+    config.add_route('request_revision',   'tasks/{id}/request_revision')
+    config.add_route('request_extra_time', 'tasks/{id}/request_extra_time')
 
     config.add_route('delete_task',       'tasks/{id}/delete')
 
@@ -469,10 +475,7 @@ def main(global_config, **settings):
 
     config.add_route('get_tickets',      'tickets/')
 
-    config.add_route('get_task_tickets',    'tasks/{id}/tickets') # json
     config.add_route('list_ticket_tickets', 'tickets/{id}/tickets/') # html
-
-    config.add_route('request_task_review', 'tasks/{id}/request_review')
 
     # *************************************************************************
     # Vacation

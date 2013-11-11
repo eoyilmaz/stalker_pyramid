@@ -157,15 +157,18 @@ require([
     });
     var tasks_cache_store = new Cache(resources_jsonRest_store, resources_memory_store);
 
+    var resource_chart_dom_id = '{{ entity.entity_type }}_{{ entity.id }}_resource_grid';
+    var resource_chart_dgrid_id = '{{ entity.entity_type }}_{{ entity.id }}_resource_grid';
+
     // allow the resource_grid to resize with the window
     $(window).on('resize', function(){
         var resource_grid_height = $(window).height() - 230;
-        $('#'+'{{ entity.entity_type }}_{{ entity.id }}_resource_grid').css({height: resource_grid_height});
+        $('#' + resource_chart_dom_id).css({height: resource_grid_height});
     });
     $(window).trigger('resize');
 
     var resource_grid = new ResourceGrid({
-        id: '{{ entity.entity_type }}_{{ entity.id }}_resource_grid',
+        id: resource_chart_dgrid_id,
         width: '100%',
         autoHeight: true,
         store: tasks_cache_store,
@@ -177,7 +180,7 @@ require([
         noDataMessage: "",
         pageSkip: 0,
         cellNavigation: false
-    }, '{{ entity.entity_type }}_{{ entity.id }}_resource_grid');
+    }, resource_chart_dom_id);
     resource_grid.startup();
 
     // ceter on today
@@ -295,8 +298,8 @@ require([
 
         var dragDetector = $($.parseHTML('<div class="dragDetector"></div>'));
         var zoomBox = $($.parseHTML('<div class="zoomBox"></div>'));
-        $('div.dgrid-content.ui-widget-content').append(zoomBox).append(dragDetector);
-    
+        $('#' + resource_chart_dom_id).append(zoomBox).append(dragDetector);
+
         $('.dragDetector').mousedown(function(e){
             e.stopPropagation();
             e.preventDefault();
@@ -305,7 +308,7 @@ require([
         }).mousemove(function(e){
             e.stopPropagation();
             e.preventDefault();
-            if(this.start_resizing){
+            if (this.start_resizing) {
                 var x1 = this.start_pos;
                 var x2 = e.offsetX;
                 var left = Math.min(x1, x2);
@@ -314,7 +317,7 @@ require([
                     left: left,
                     width: width
                 });
-            };
+            }
         }).mouseup(function(e){
             this.start_resizing = false;
             // get the left and width of the zoomBox

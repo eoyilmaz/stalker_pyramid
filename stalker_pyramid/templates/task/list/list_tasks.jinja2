@@ -579,15 +579,18 @@ require([
     });
     var tasks_cache_store = new Cache(tasks_jsonRest_store, tasks_memory_store);
 
+    var gantt_chart_dom_id = '{{ entity.entity_type }}_{{ entity.id }}_gantt';
+    var gantt_chart_dgrid_id = '{{ entity.entity_type }}_{{ entity.id }}_gantt_dgrid';
+
     // allow the gantt to resize with the window
     $(window).on('resize', function(){
         var gantt_height = $(window).height() - 230;
-        $('#'+'{{ entity.entity_type }}_{{ entity.id }}_gantt').css({height: gantt_height});
+        $('#' + gantt_chart_dom_id).css({height: gantt_height});
     });
     $(window).trigger('resize');
 
     var gantt_chart = new GanttGrid({
-        id: '{{ entity.entity_type }}_{{ entity.id }}_gantt_dgrid',
+        id: gantt_chart_dgrid_id,
         width: '100%',
         autoHeight: true,
         store: tasks_cache_store,
@@ -599,7 +602,7 @@ require([
         noDataMessage: "",
         pageSkip: 0,
         cellNavigation: false
-    }, '{{ entity.entity_type }}_{{ entity.id }}_gantt');
+    }, gantt_chart_dom_id);
     gantt_chart.startup();
 
     // ceter on today
@@ -835,7 +838,7 @@ require([
             gantt_column.refresh();
         };
 
-        if (element_count > 100){
+        if (element_count > 1000){
             // confirm the user that it is going to take too much time
             bootbox.confirm(
                 '<div><p><strong>' + element_count +
@@ -916,8 +919,8 @@ require([
 
         var dragDetector = $($.parseHTML('<div class="dragDetector"></div>'));
         var zoomBox = $($.parseHTML('<div class="zoomBox"></div>'));
-        $('div.dgrid-content.ui-widget-content').append(zoomBox).append(dragDetector);
-    
+        $('#' + gantt_chart_dom_id).append(zoomBox).append(dragDetector);
+        
         $('.dragDetector').mousedown(function(e){
             e.stopPropagation();
             e.preventDefault();
@@ -926,7 +929,7 @@ require([
         }).mousemove(function(e){
             e.stopPropagation();
             e.preventDefault();
-            if(this.start_resizing){
+            if (this.start_resizing) {
                 var x1 = this.start_pos;
                 var x2 = e.offsetX;
                 var left = Math.min(x1, x2);
@@ -935,7 +938,7 @@ require([
                     left: left,
                     width: width
                 });
-            };
+            }
         }).mouseup(function(e){
             this.start_resizing = false;
             // get the left and width of the zoomBox

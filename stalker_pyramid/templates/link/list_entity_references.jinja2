@@ -52,23 +52,46 @@
 
 {#PAGE-CONTENT#}
 {% block page_content %}
-
-        {% set page_title='References' %}
+    {% set page_title='References' %}
     {% include 'page_header.jinja2' %}
-    
-    {% if entity.entity_type != 'Project' %}
+
     <div class="row-fluid">
         <!--PAGE CONTENT BEGINS-->
+        {% if entity.entity_type != 'Project' %}
             <button data-target="#dialog_template"
                 data-toggle="modal"
                 data-keyboard="false"
                 href="{{ request.route_url('upload_entity_reference_dialog', id=entity.id) }}"
                 class="pull-left btn btn-small btn-primary">
-            <i class="icon-cloud-upload bigger-120"></i>
-            Upload References
-        </button>
+                <i class="icon-cloud-upload bigger-120"></i>
+                Upload References
+            </button>
+        {% endif %}
+
+        <div class="pagination">
+            <ul>
+                <li class="disabled">
+                    <a href="#">
+                        <i class="icon-double-angle-left"></i>
+                    </a>
+                </li>
+
+                <li class="active">
+                    <a href="#">1</a>
+                </li>
+
+
+
+                <li>
+                    <a href="#">
+                        <i class="icon-double-angle-right"></i>
+                    </a>
+                </li>
+
+            </ul>
+        </div>
+    
     </div>
-    {% endif %}
     <div class="space-8"></div>
     <div class="row-fluid">
         <div id="new_references_storage" class="hidden"></div>
@@ -82,6 +105,8 @@
 
     <script type="text/javascript"
             src='{{ request.static_url("stalker_pyramid:static/ace/js/dropzone.min.js") }}'></script>
+    <script type="text/javascript"
+            src='{{ request.static_url("stalker_pyramid:static/stalker/js/Paginator.js") }}'></script>
 
     {% raw %}
     <script id="tmpl_reference_item" type="text/x-dot-template">
@@ -115,34 +140,6 @@
     </script>
     {% endraw %}
 
-{#    {% raw %}#}
-{#    <script id="tmpl_reference_item" type="text/x-dot-template">#}
-{#        <li id="Reference_{{=it[0]}}">#}
-{#            <a href="/{{=it[1]}}"#}
-{#               download_href="/FD{{=it[1]}}"#}
-{#               title="{{=it[2]}}"#}
-{#               data-rel="colorbox"#}
-{#               class="cboxElement">#}
-{#                <div style="text-align: center; overflow: hidden; width: 150px">#}
-{#                    <img alt="150x150"#}
-{#                         style="height: 150px; width: auto; max-width: none;#}
-{#                            position: relative; left: 100%; margin-left: -200%;"#}
-{#                         src="/{{=it[3] ? it[3] : '/static/stalker/images/Placeholder_0.png' }}">#}
-{#                    </div>#}
-{#                </div>#}
-{#            </a>#}
-{##}
-{#            <div class="tools">#}
-{#                <a href="/FD{{=it[1]}}" title="Download"><i class="icon-cloud-download"></i></a>#}
-{#                <a href="javascript:copyToClipboard('http://' + window.location.host +'/FD{{=it[1]}}')" title="Copy Download Link"><i class="icon-link"></i></a>#}
-{#                <a class='reference-deleter' ref_id="{{=it[0]}}" href="#" title="Delete"><i class="icon-remove red"></i></a>#}
-{#            </div>#}
-{#        </li>#}
-{#    </script>#}
-{#    {% endraw %}#}
-
-
-
     <script type="text/javascript">
         var colorbox_params = {
             reposition: true,
@@ -174,6 +171,9 @@
             }
         };
 
+        /**
+         * Appends a new item to the thumbnail list
+         */
         var append_thumbnail = function (data, template, animate) {
             //
             // adds only one item to the list
@@ -187,16 +187,26 @@
             if (animate) {
                 ref_item.toggle('slow');
             }
-        }
+        };
 
-        var draw_reference_items = function () {
-            //
-            // Draws reference items
-            //
+        /**
+         * Draws reference items
+         */
+        var draw_reference_items = function (options) {
             var referenceItemTemplate = doT.template(document.getElementById('tmpl_reference_item').text);
+            
+            var current_page = options.current_page || 1;
+            var items_per_page = options.items_per_page || 100;
+
+            var offset = (current_page - 1) * items_per_page;
+            var limit = items_per_page;
 
             // now generate the template items
-            $.getJSON('/entities/{{ entity.id }}/references/').then(function (data) {
+            $.getJSON('/entities/{{ entity.id }}/references/',
+                      $.param({
+                          'offset': offset,
+                          'limit': limit
+                      })).then(function (data) {
                 var ref_count = data.length;
                 for (var i = 0; i < ref_count; i++) {
                     append_thumbnail(data[i], referenceItemTemplate);
@@ -231,9 +241,24 @@
             });
         };
 
-        jQuery(function ($) {
+        $(function () {
+            // create pagination
+            var items_per_page = 100;
+            var current_page = parseInt($('.pagination>ul').find('li.active').text()) || 1;
+            var total_number_of_results;
+
+            // get total number of references
+            $.getJSON('/entities/{{ entity.id }}/references/count/', function(data){
+                total_number_of_results = data;
+                console.log('total_number_of_results:', total_number_of_results);
+                // remove all pages first
+                $('#pagination');
+                
+                // 
+            });
+
             // for initial one
-            draw_reference_items();
+            draw_reference_items({});
 
             // and add the new thumbnails when uploaded through Dropzone
             $('#dialog_template').on('hidden', function () {

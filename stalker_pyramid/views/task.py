@@ -18,6 +18,7 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 import logging
+import re
 import time
 
 import transaction
@@ -1158,9 +1159,9 @@ def auto_schedule_tasks(request):
 
 
 @view_config(
-    route_name='request_task_review',
+    route_name='request_review',
 )
-def request_task_review(request):
+def request_review(request):
     """creates a new ticket and sends an email to the responsible
     """
     # get logged in user as he review requester
@@ -1201,8 +1202,12 @@ def request_task_review(request):
         # send email to responsible and resources of the task
         mailer = get_mailer(request)
 
-        recipients = [logged_in_user.email, responsible.email]
-        # recipients.extend(task.resources)
+        recipients = [logged_in_user.email]
+        if responsible.email not in recipients:
+            recipients.append(responsible.email)
+
+        for resource in task.resources:
+            recipients.append(resource.email)
 
         message = Message(
             subject=summary_text,
@@ -1210,6 +1215,209 @@ def request_task_review(request):
             recipients=recipients,
             body=description_text)
         mailer.send(message)
+
+        # set task status to Pending Review
+        status_prev = Status.query.filter(Status.code == "PREV").first()
+        task.status = status_prev
+
+        # set task effort to the total_logged_seconds
+        task.schedule_timing = task.total_logged_seconds / 3600
+        task.schedule_unit = 'h'
+
+        response = Response('Your review request has been sent to %s' %
+                            responsible.name)
+        response.status_int = 200
+        return response
+
+    return HTTPOk()
+
+
+@view_config(
+    route_name='request_extra_time',
+)
+def request_extra_time(request):
+    """creates sends an email to the responsible about the user has requested
+    extra time
+    """
+    # get logged in user as he review requester
+    logged_in_user = get_logged_in_user(request)
+
+    task_id = request.matchdict.get('id', -1)
+    task = Task.query.filter(Task.id == task_id).first()
+
+    extra_time = request.params('extra_time', -1)
+
+    if task and extra_time:
+        # TODO: increase task extra time request counter
+
+        # get the project that the ticket belongs to
+        summary_text = 'Extra Time Request: "%s"' % task.name
+        description_text = \
+        """%s has requested extra %s hours for %s (%s) - (%s)" """ % (
+            logged_in_user.name,
+            task.name,
+            task.entity_type,
+            "|".join(map(lambda x: x.name, task.parents))
+        )
+
+        responsible = task.responsible
+
+        # send email to responsible and resources of the task
+        mailer = get_mailer(request)
+
+        recipients = [logged_in_user.email]
+        if responsible.email not in recipients:
+            recipients.append(responsible.email)
+        for resource in task.resources:
+            recipients.append(resource.email)
+
+        message = Message(
+            subject=summary_text,
+            sender="Anima Stalker <anima.stalker.pyramid@stalker.com>",
+            recipients=recipients,
+            body=description_text)
+        mailer.send(message)
+
+    return HTTPOk()
+
+
+@view_config(
+    route_name='request_revision'
+)
+def request_revision(request):
+    """creates a revision task for the given task and sends an email to the
+    task resources
+    """
+    # get logged in user as he review requester
+    logged_in_user = get_logged_in_user(request)
+
+    task_id = request.matchdict.get('id', -1)
+    task = Task.query.filter(Task.id == task_id).first()
+
+    send_email = request.params.get('send_email', 1)
+    description = request.params.get('description', -1)
+    schedule_timing = float(request.params.get('schedule_timing'))
+    schedule_unit = request.params.get('schedule_unit')
+
+    logger.debug('schedule_timing: %s' % schedule_timing)
+    logger.debug('schedule_unit  : %s' % schedule_unit)
+
+    # get statuses
+    wip = Status.query.filter(Status.code == 'WIP').first()
+
+    if task:
+        # check if the task has some time logs
+        if task.status != wip:
+            response = Response('You can not request a review for a task with '
+                                'status is set to "%s"' % task.status.name)
+            response.status_int = 500
+            return response
+
+        # set task status to Has Revision (HREV)
+        status_hrev = Status.query.filter(Status.code == 'HREV').first()
+        if not status_hrev:
+            response = Response('There is no status with name "Has Revision" '
+                                'and code "HREV" please inform your site '
+                                'admin to create this status and include it '
+                                'to Task status list.')
+            response.status_int = 500
+            return response
+
+        task.status = status_hrev
+        # close this task by setting its effort to its time logs
+        task.schedule_timing = task.total_logged_seconds / 3600
+        task.schedule_unit = 'h'
+
+        # create a new task with the same name but have a postfix of " - Rev #"
+        rev_number = 1
+        # remove any " - Rev #"
+        task_base_name = re.sub(r' \- Rev [0-9]+', '', task.name)
+        rev_task_name = task_base_name + ' - Rev %s' % rev_number
+        rev_task_query = Task.query.filter(Task.name == rev_task_name)\
+            .filter(Task.parent == task.parent)\
+            .filter(Task.project == task.project)
+        rev_task = rev_task_query.first()
+        while rev_task is not None:
+            rev_number += 1
+            rev_task_name = task_base_name + ' - Rev %s' % rev_number
+            rev_task_query = Task.query.filter(Task.name == rev_task_name)\
+                .filter(Task.parent == task.parent)\
+                .filter(Task.project == task.project)
+            rev_task = rev_task_query.first()
+
+        rev_task = Task(
+            name=rev_task_name,
+            type=task.type,
+            description=task.description,
+            project=task.project,
+            parent=task.parent,
+            depends=task.depends,
+            resources=task.resources,
+            schedule_model=task.schedule_model,
+            schedule_timing=schedule_timing,
+            schedule_unit=schedule_unit,
+            responsible=task.responsible,
+            watchers=task.watchers,
+            priority=task.priority,
+            created_by=logged_in_user
+        )
+        task.updated_by = logged_in_user
+        DBSession.add(rev_task)
+
+        # set the dependencies to the same ones and set the depending tasks to
+        # the newly created revision task
+        for dep_task in task.dependent_of:
+            dep_task.depends.remove(task)
+            dep_task.depends.append(rev_task)
+            dep_task.updated_by = logged_in_user
+
+        # also add the original task as a dependent task
+        rev_task.depends.append(task)
+
+        transaction.commit()
+        DBSession.add_all([task, rev_task, logged_in_user])
+
+        if send_email:
+            # and send emails to the resources
+            summary_text = 'Revision Request: "%s"' % task.name
+
+            description_text = \
+            """%(requester_name)s has requested a revision to the original task
+            %(task_name)s on %(task_link)s and created the revision task
+            %(revision_task_name)s on %(revision_task_link)s and supplied the
+            following description for the revision request:\n\n
+            %(description)s""" % {
+                "requester_name": logged_in_user.name,
+                "task_name": task.name,
+                "task_link": request.route_url('view_task', id=task.id),
+                "revision_task_name": rev_task.name,
+                "revision_task_link": request.route_url('view_task',
+                                                        id=rev_task.id),
+                "description": description 
+                    if description else "(No Description)"
+            }
+
+            responsible = task.responsible
+            # send email to responsible and resources of the task
+            mailer = get_mailer(request)
+
+            recipients = [logged_in_user.email]
+            if responsible.email not in recipients:
+                recipients.append(responsible.email)
+            for resource in task.resources:
+                recipients.append(resource.email)
+
+            message = Message(
+                subject=summary_text,
+                sender="Anima Stalker <anima.stalker.pyramid@stalker.com>",
+                recipients=recipients,
+                body=description_text
+            )
+            mailer.send(message)
+    else:
+        response = Response('There is no task with id: %s' % task_id)
+        response.status_int = 500
+        return response
 
     return HTTPOk()
 
