@@ -46,7 +46,8 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 
-default_email_address = "Stalker Pyramid <stalker.pyramid@stalker.pyramid.com>"
+# this is a dummy mail address change it in the config (*.ini) file
+dummy_email_address = "Stalker Pyramid <stalker.pyramid@stalker.pyramid.com>"
 
 
 def duplicate_task(task):
@@ -492,7 +493,8 @@ def get_tasks(request):
                         .filter(Task.parent_id == parent_id)\
                         .order_by(Task.name).all()
 
-        content_range = content_range % (0, len(tasks) - 1, len(tasks))
+        task_count = len(tasks)
+        content_range = content_range % (0, task_count - 1, task_count)
         # logger.debug(tasks)
         return_data = convert_to_dgrid_gantt_task_format(tasks)
 
@@ -1132,7 +1134,7 @@ def request_review(request):
     }
     task_link = \
         '<a href="/tasks/%(task_id)s/view">%(task_name)s ' \
-        '(%(task_entity_type)s) - (%(task_parent_names)s)' % {
+        '(%(task_entity_type)s) - (%(task_parent_names)s)</a>' % {
             "task_id": task.id,
             "task_name": task.name,
             "task_entity_type": task.entity_type,
@@ -1142,7 +1144,7 @@ def request_review(request):
     summary_text = 'Review Request: "%s"' % task.name
     description_template = \
         '%(user)s has requested you to do a review for ' \
-        '"%(task)s"'
+        '%(task)s'
     description_text = description_template % {
         "user": logged_in_user.name,
         "task": task_name_as_text
@@ -1161,7 +1163,7 @@ def request_review(request):
         description=description_html,
         created_by=logged_in_user
     )
-    review_ticket.set_owner(responsible)
+    review_ticket.reassign(logged_in_user, responsible)
 
     # link the task to the review
     review_ticket.links.append(task)
@@ -1181,7 +1183,7 @@ def request_review(request):
 
         message = Message(
             subject=summary_text,
-            sender=default_email_address,
+            sender=dummy_email_address,
             recipients=recipients,
             body=description_text,
             html=description_html)
@@ -1196,7 +1198,7 @@ def request_review(request):
     task.schedule_unit = 'h'
 
     return Response('Your review request has been sent to %s' %
-                        responsible.name)
+                    responsible.name)
 
 
 @view_config(
@@ -1258,7 +1260,7 @@ def request_extra_time(request):
 
             message = Message(
                 subject=summary_text,
-                sender=default_email_address,
+                sender=dummy_email_address,
                 recipients=recipients,
                 body=description_text,
                 html=description_html,
@@ -1413,7 +1415,7 @@ def request_revision(request):
 
         message = Message(
             subject=summary_text,
-            sender=default_email_address,
+            sender=dummy_email_address,
             recipients=recipients,
             body=description_text
         )

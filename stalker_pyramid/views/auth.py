@@ -970,4 +970,11 @@ def get_resources(request):
     end = time.time()
     logger.debug('get_resources took : %s seconds' % (end - start))
 
-    return data
+    data_count = len(data)
+    content_range = '%s-%s/%s' % (0, data_count - 1, data_count)
+
+    resp = Response(
+        json_body=data
+    )
+    resp.content_range = content_range
+    return resp

@@ -183,23 +183,23 @@ logger.setLevel(logging.DEBUG)
 )
 @view_config(
     route_name='list_entity_tickets',
-    renderer='templates/ticket/list_entity_tickets.jinja2'
+    renderer='templates/ticket/list/list_entity_tickets.jinja2'
 )
 @view_config(
     route_name='list_user_tickets',
-    renderer='templates/ticket/list_entity_tickets.jinja2'
+    renderer='templates/ticket/list/list_entity_tickets.jinja2'
 )
 @view_config(
     route_name='list_project_tickets',
-    renderer='templates/ticket/list_entity_tickets.jinja2'
+    renderer='templates/ticket/list/list_entity_tickets.jinja2'
 )
 @view_config(
     route_name='list_task_tickets',
-    renderer='templates/ticket/list_entity_tickets.jinja2'
+    renderer='templates/ticket/list/list_entity_tickets.jinja2'
 )
 @view_config(
     route_name='view_ticket',
-    renderer='templates/ticket/view_ticket.jinja2'
+    renderer='templates/ticket/view/view_ticket.jinja2'
 )
 @view_config(
     route_name='list_entity_vacations',
@@ -234,9 +234,8 @@ logger.setLevel(logging.DEBUG)
     renderer='templates/resource/list/list_entity_resources.jinja2'
 )
 def get_entity_related_data(request):
-    """lists the time logs of the given task
+    """view for generic data
     """
-
     logger.debug('get_entity_related_data')
     logged_in_user = get_logged_in_user(request)
 
@@ -249,9 +248,7 @@ def get_entity_related_data(request):
         entity = Entity.query.filter_by(id=entity_id).first()
 
     projects = Project.query.all()
-
     mode = request.matchdict.get('mode', None)
-
     came_from = request.params.get('came_from', request.url)
 
     return {

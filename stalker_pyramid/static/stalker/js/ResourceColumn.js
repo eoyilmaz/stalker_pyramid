@@ -558,7 +558,6 @@ define([
                 if (level !== null) {
                     current_element_count = this.guess_element_count(start, end, level);
                     current_ratio = desired_element_count / current_element_count + current_element_count / desired_element_count - 2;
-//                    console.log('level:', level,'ratio:', current_ratio);
                     if (current_ratio < min_ratio) {
                         min_ratio = current_ratio;
                         desired_level = level;

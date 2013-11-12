@@ -703,7 +703,9 @@ require([
                     var url = '';
                     for (var i=0; i < selected_ids.length; i += 1){
                         url = '/tasks/' + selected_ids[i] + '/request_review';
-                        $.post(url).fail(function(jqXHR){
+                        $.post(url).done(function(response){
+                            bootbox.alert(response);
+                        }).fail(function(jqXHR){
                             bootbox.alert(jqXHR.responseText);
                         });
                     }

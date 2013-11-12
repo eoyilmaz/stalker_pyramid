@@ -22,17 +22,40 @@ import logging
 
 from pyramid.httpexceptions import HTTPOk
 from pyramid.view import view_config
-from sqlalchemy.orm import aliased
 
-from stalker import User, Ticket, Entity, Project, Status, SimpleEntity, Task
+from stalker import User, Ticket, Entity, Project, Status, Studio
 
 from stalker.db import DBSession
 import time
+import stalker_pyramid
 from stalker_pyramid.views import (get_logged_in_user, PermissionChecker,
                                    milliseconds_since_epoch)
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
+
+
+@view_config(
+    route_name='get_ticket_resolutions',
+    renderer='json'
+)
+def get_ticket_resolutions(request):
+    """returns the ticket resolutions defined in the system
+    """
+    from stalker import defaults
+    return defaults.ticket_resolutions
+
+
+@view_config(
+    route_name='get_ticket_workflow',
+    renderer='json'
+)
+def get_ticket_workflow(request):
+    """returns the ticket workflow defined in the config
+    """
+    from stalker import defaults
+    return defaults.ticket_workflow
+
 
 @view_config(
     route_name='dialog_create_ticket',
@@ -49,12 +72,13 @@ def create_ticket_dialog(request):
     # TODO: remove 'mode': 'CREATE' by considering it the default mode
 
     return {
-        'mode': 'CREATE',
+        'mode': 'create',
         'has_permission': PermissionChecker(request),
         'logged_in_user': logged_in_user,
         'entity': entity,
         'milliseconds_since_epoch': milliseconds_since_epoch
     }
+
 
 @view_config(
     route_name='dialog_update_ticket',
@@ -182,24 +206,6 @@ def update_ticket(request):
     logger.debug('returning from update_ticket')
 
     return HTTPOk()
-
-# @view_config(
-#     route_name='view_ticket',
-#     renderer='templates/ticket/view_ticket.jinja2'
-# )
-# def view_ticket(request):
-#     """runs when viewing an ticket
-#     """
-#     logged_in_user = get_logged_in_user(request)
-# 
-#     ticket_id = request.matchdict.get('id', -1)
-#     ticket = Ticket.query.filter_by(id=ticket_id).first()
-# 
-#     return {
-#         'user': logged_in_user,
-#         'has_permission': PermissionChecker(request),
-#         'ticket': ticket
-#     }
 
 
 @view_config(

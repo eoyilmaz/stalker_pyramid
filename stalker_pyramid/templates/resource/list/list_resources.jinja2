@@ -136,15 +136,12 @@ require([
     // The Memory
     var target = '{{ request.route_url('get_resource', id=entity.id) }}';
     {% if entity.entity_type == "User" %}
-        console.debug('entity_type: User');
     var target = '{{ request.route_url('get_resource', id=entity.id) }}';
-        console.debug('entity_type:', '{{ entity.entity_type }}');
     {% elif entity.entity_type == "Department" %}
         var target = '{{ request.route_url('get_resource', id=entity.id) }}';
     {% endif %}
 
     var resources_memory_store = new Memory();
-    console.debug('target:', target);
 
     var resources_jsonRest_store = new JsonRest({
         target: target,
@@ -212,7 +209,7 @@ require([
             resource_column.start = +start_date;
             resource_column.end   = +end_date;
             resource_column.scale = zoom_level; 
-            resource_column.reload();
+{#            resource_column.reload();#}
             resource_column.refresh();
         };
 
@@ -239,7 +236,7 @@ require([
     $("#resource_reload_button").on('click', function(e){
         e.preventDefault();
         e.stopPropagation();
-        resource_column.reload();
+        resource_column.refresh();
     });
 
     // Refresh Button
@@ -251,10 +248,10 @@ require([
 
     // scroll to button
     $("#resource_scroll_to_button").on('click', function(e){
-        var start = $(this).attr('start');
-        resourse_column.scrollToDate(start);
         e.preventDefault();
         e.stopPropagation();
+        var start = $(this).attr('start');
+        resourse_column.scrollToDate(start);
     });
 
     // Schedule

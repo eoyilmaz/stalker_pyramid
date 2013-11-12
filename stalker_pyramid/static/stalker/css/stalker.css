@@ -32,3 +32,47 @@
 .form-horizontal .control-group {
     margin-bottom: 5px;
 }
+
+
+.ticket_Fixed, .ticket_Closed {
+    text-decoration: line-through;
+}
+
+tr.even>td.ticket_TRIVIAL {
+}
+
+tr.odd>td.ticket_TRIVIAL {
+}
+
+
+.ticket_MINOR {
+    
+}
+
+.ticket_MAJOR {
+    
+}
+
+tr.even>td.ticket_CRITICAL {
+    background: none repeat scroll 0 0 #FFDDCC;
+    border-color: #EE8888;
+    color: #AA2222;
+}
+
+tr.odd>td.ticket_CRITICAL {
+    background: none repeat scroll 0 0 #FFEEDD;
+    border-color: #EE9999;
+    color: #AA2222;
+}
+
+tr.even>td.ticket_BLOCKER {
+    background: none repeat scroll 0 0 #FFDDCC;
+    border-color: #EE8888;
+    color: #AA2222;
+}
+
+tr.odd>td.ticket_BLOCKER {
+    background: none repeat scroll 0 0 #FFEEDD;
+    border-color: #EE9999;
+    color: #AA2222;
+}
