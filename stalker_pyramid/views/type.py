@@ -17,8 +17,15 @@
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
+
 from pyramid.view import view_config
+
 from stalker import Type
+from stalker.db import DBSession
+
+import logging
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 
 @view_config(
@@ -39,3 +46,26 @@ def get_types(request):
         ]
     else:
         return [type_.name for type_ in Type.query.all()]
+
+
+def query_type(entity_type, type_name):
+    """returns a Type instance either it creates a new one or gets it from DB
+    """
+    if not type_name:
+        return None
+
+    type_query = Type.query.filter_by(target_entity_type=entity_type)
+    type_ = type_query.filter_by(name=type_name).first()
+    if type_name and type_ is None:
+        # create a new Type
+        logger.debug('creating new %s type: %s' % (
+            entity_type.lower(), type_name)
+        )
+        type_ = Type(
+            name=type_name,
+            code=type_name,
+            target_entity_type=entity_type
+        )
+        DBSession.add(type_)
+
+    return type_

@@ -752,157 +752,6 @@ class TaskViewTestCase(unittest2.TestCase):
         self.assertEqual(dup_task8.schedule_constraint,
                          self.test_task8.schedule_constraint)
 
-    def test_request_revision_should_not_work_for_tasks_with_the_status_is_set_to_new(self):
-        """testing if a server error will be returned if the task issued in
-        request_review has a status of "new"
-        """
-        # request revision for self.test_task4
-        self.test_task4.status = self.status_new
-        request = testing.DummyRequest()
-        request.matchdict['id'] = self.test_task4.id
-        request.params['send_email'] = 0
-        request.params['schedule_timing'] = 5
-        request.params['schedule_unit'] = 'h'
-
-        # patch get_logged_in_user
-        admin = User.query.filter(User.login == 'admin').first()
-        m = mocker.Mocker()
-        obj = m.replace("stalker_pyramid.views.auth.get_logged_in_user")
-        obj(request)
-        m.result(admin)
-        m.replay()
-
-        response = task.request_revision(request)
-        self.assertEqual(response.status_int, 500)
-        self.assertEqual(
-            response.body,
-            'You can not request a review for a task with status is set to '
-            '"New"'
-        )
-
-    def test_request_revision_should_not_work_for_tasks_with_the_status_is_set_to_has_revision(self):
-        """testing if a server error will be returned if the task issued in
-        request_review has a status of "has revision"
-        """
-        # request revision for self.test_task4
-        self.test_task4.status = self.status_hrev
-        request = testing.DummyRequest()
-        request.matchdict['id'] = self.test_task4.id
-        request.params['send_email'] = 0
-        request.params['schedule_timing'] = 5
-        request.params['schedule_unit'] = 'h'
-
-        # patch get_logged_in_user
-        admin = User.query.filter(User.login == 'admin').first()
-        m = mocker.Mocker()
-        obj = m.replace("stalker_pyramid.views.auth.get_logged_in_user")
-        obj(request)
-        m.result(admin)
-        m.replay()
-
-        response = task.request_revision(request)
-        self.assertEqual(response.status_int, 500)
-        self.assertEqual(
-            response.body,
-            'You can not request a review for a task with status is set to '
-            '"Has Revision"'
-        )
-
-    def test_request_revision_should_not_work_for_tasks_with_the_status_is_set_to_completed(self):
-        """testing if a server error will be returned if the task issued in
-        request_review has a status of "completed"
-        """
-        # request revision for self.test_task4
-        self.test_task4.status = self.status_completed
-        request = testing.DummyRequest()
-        request.matchdict['id'] = self.test_task4.id
-        request.params['send_email'] = 0
-        request.params['schedule_timing'] = 5
-        request.params['schedule_unit'] = 'h'
-
-        # patch get_logged_in_user
-        admin = User.query.filter(User.login == 'admin').first()
-        m = mocker.Mocker()
-        obj = m.replace("stalker_pyramid.views.auth.get_logged_in_user")
-        obj(request)
-        m.result(admin)
-        m.replay()
-
-        response = task.request_revision(request)
-        self.assertEqual(response.status_int, 500)
-        self.assertEqual(
-            response.body,
-            'You can not request a review for a task with status is set to '
-            '"Completed"'
-        )
-
-    def test_request_revision_is_working_properly(self):
-        """testing if the request_revision function is working properly
-        """
-        admin = User.query.filter(User.login == 'admin').first()
-
-        # create a time log before asking review
-        time_log = TimeLog(
-            resource=self.test_task4.resources[0],
-            task=self.test_task4,
-            start=datetime.datetime(2013, 6, 20, 10, 0),
-            end=datetime.datetime(2013, 6, 20, 19, 0)
-        )
-        DBSession.add(time_log)
-        self.test_task4.status = self.status_wip
-
-        # request revision for self.test_task4
-        request = testing.DummyRequest()
-        request.matchdict['id'] = self.test_task4.id
-        request.params['send_email'] = 0
-        request.params['schedule_timing'] = 5
-        request.params['schedule_unit'] = 'h'
-
-        # patch get_logged_in_user
-        m = mocker.Mocker()
-        obj = m.replace("stalker_pyramid.views.auth.get_logged_in_user")
-        obj(request)
-        m.result(admin)
-        m.replay()
-
-        # also patch route_url of request
-        request.route_url = lambda x, id: 'localhost:6453/tasks/23/view'
-
-        response = task.request_revision(request)
-        self.assertEqual(response.status_int, 200)
-
-        # check if the status of the original task is set to Has Revision
-        #self.test_task4 = Task.query.get(self.test_task4.id)
-        self.assertEqual(self.test_task4.status, self.status_hrev)
-
-        # check if the task percent_complete is 100
-        assert isinstance(self.test_task4, Task)
-        self.assertEqual(self.test_task4.percent_complete, 100)
-
-        # check if a new task with the same name but has a postfix of
-        # " - Rev 1" is created
-        rev_task = Task.query.filter(
-            Task.name == self.test_task4.name + ' - Rev 1').first()
-        self.assertIsNotNone(rev_task)
-
-        # check if the rev task has the same dependencies plus the original
-        # task in its depends list
-        self.assertItemsEqual(
-            rev_task.depends,
-            [self.test_task3, self.test_task4]
-        )
-
-        # check if the dependent tasks to original task are now depending to
-        # the revision task
-        self.assertItemsEqual(
-            rev_task.dependent_of, [self.test_task5]
-        )
-
-        # and the original tasks dependency links are broken
-        self.assertItemsEqual(
-            self.test_task4.dependent_of, [rev_task]
-        )
-
     def test_request_review_returns_code_500_if_no_task_found(self):
         """testing if a response with code 500 is returned back when there is
         no such task
@@ -922,9 +771,115 @@ class TaskViewTestCase(unittest2.TestCase):
 
         response = task.request_review(request)
         self.assertEqual(response.status_int, 500)
-        self.assertEqual(response.body, 'There is no task with id : 123123123')
+        self.assertEqual(response.body, 'There is no task with id: 123123123')
 
-    def test_request_review_is_working_for_only_leaf_tasks(self):
+    def test_request_review_should_not_work_for_tasks_with_the_status_is_set_to_new(self):
+        """testing if a server error will be returned if the task issued in
+        request_review has a status of "new"
+        """
+        # request revision for self.test_task4
+        self.test_task4.status = self.status_new
+        request = testing.DummyRequest()
+        request.matchdict['id'] = self.test_task4.id
+        request.params['send_email'] = 0
+
+        # patch get_logged_in_user
+        admin = User.query.filter(User.login == 'admin').first()
+        m = mocker.Mocker()
+        obj = m.replace("stalker_pyramid.views.auth.get_logged_in_user")
+        obj(request)
+        m.result(admin)
+        m.replay()
+
+        response = task.request_review(request)
+        self.assertEqual(response.status_int, 500)
+        self.assertEqual(
+            response.body,
+            'You can not request a review for a task with status is set to '
+            '"New"'
+        )
+
+    def test_request_review_should_not_work_for_tasks_with_the_status_is_set_to_pending_review(self):
+        """testing if a server error will be returned if the task issued in
+        request_revision has a status of "prev"
+        """
+        # request revision for self.test_task4
+        self.test_task4.status = self.status_prev
+        request = testing.DummyRequest()
+        request.matchdict['id'] = self.test_task4.id
+        request.params['send_email'] = 0
+
+        # patch get_logged_in_user
+        admin = User.query.filter(User.login == 'admin').first()
+        m = mocker.Mocker()
+        obj = m.replace("stalker_pyramid.views.auth.get_logged_in_user")
+        obj(request)
+        m.result(admin)
+        m.replay()
+
+        response = task.request_review(request)
+        self.assertEqual(response.status_int, 500)
+        self.assertEqual(
+            response.body,
+            'You can not request a review for a task with status is set to '
+            '"Pending Review"'
+        )
+
+    def test_request_review_should_not_work_for_tasks_with_the_status_is_set_to_has_revision(self):
+        """testing if a server error will be returned if the task issued in
+        request_review has a status of "has revision"
+        """
+        # request revision for self.test_task4
+        self.test_task4.status = self.status_hrev
+        request = testing.DummyRequest()
+        request.matchdict['id'] = self.test_task4.id
+        request.params['send_email'] = 0
+
+        # patch get_logged_in_user
+        admin = User.query.filter(User.login == 'admin').first()
+        m = mocker.Mocker()
+        obj = m.replace("stalker_pyramid.views.auth.get_logged_in_user")
+        obj(request)
+        m.result(admin)
+        m.replay()
+
+        response = task.request_review(request)
+        self.assertEqual(response.status_int, 500)
+        self.assertEqual(
+            response.body,
+            'You can not request a review for a task with status is set to '
+            '"Has Revision"'
+        )
+
+    def test_request_review_should_not_work_for_tasks_with_the_status_is_set_to_completed(self):
+        """testing if a server error will be returned if the task issued in
+        request_review has a status of "completed"
+        """
+        # request revision for self.test_task4
+        self.test_task4.status = self.status_completed
+        request = testing.DummyRequest()
+        request.matchdict['id'] = self.test_task4.id
+        request.params['send_email'] = 0
+        request.params['schedule_timing'] = 5
+        request.params['schedule_unit'] = 'h'
+
+        # patch get_logged_in_user
+        admin = User.query.filter(User.login == 'admin').first()
+        m = mocker.Mocker()
+        obj = m.replace("stalker_pyramid.views.auth.get_logged_in_user")
+        obj(request)
+        m.result(admin)
+        m.replay()
+
+        response = task.request_review(request)
+        self.assertEqual(response.status_int, 500)
+        self.assertEqual(
+            response.body,
+            'You can not request a review for a task with status is set to '
+            '"Completed"'
+        )
+
+    def test_request_review_will_work_only_for_leaf_tasks(self):
         """testing if the request_review will only work for leaf tasks
         """
         # create a time log before asking review
@@ -996,6 +951,302 @@ class TaskViewTestCase(unittest2.TestCase):
 
         # check if the task percent_complete is 100
         self.assertEqual(self.test_task4.percent_complete, 100)
+
+    def test_request_revision_returns_code_500_if_no_task_found(self):
+        """testing if a response with code 500 is returned back when there is
+        no such task
+        """
+        # request review for self.test_task4
+        request = testing.DummyRequest()
+        request.matchdict['id'] = 123123123
+        request.params['send_email'] = 0
+
+        # patch get_logged_in_user
+        admin = User.query.filter(User.login == 'admin').first()
+        m = mocker.Mocker()
+        obj = m.replace("stalker_pyramid.views.auth.get_logged_in_user")
+        obj(request)
+        m.result(admin)
+        m.replay()
+
+        response = task.request_revision(request)
+        self.assertEqual(response.status_int, 500)
+        self.assertEqual(response.body, 'There is no task with id: 123123123')
+
+    def test_request_revision_returns_code_500_if_no_schedule_timing_found(self):
+        """testing if a response with code 500 is returned back when there is
+        no schedule_timing parameter
+        """
+        # request review for self.test_task4
+        request = testing.DummyRequest()
+        request.matchdict['id'] = self.test_task4.id
+        request.params['send_email'] = 0
+        request.params['schedule_unit'] = 'h'
+
+        # patch get_logged_in_user
+        admin = User.query.filter(User.login == 'admin').first()
+        m = mocker.Mocker()
+        obj = m.replace("stalker_pyramid.views.auth.get_logged_in_user")
+        obj(request)
+        m.result(admin)
+        m.replay()
+
+        response = task.request_revision(request)
+        self.assertEqual(response.status_int, 500)
+        self.assertEqual(response.body,
+                         'There are missing parameters: schedule_timing')
+
+    def test_request_revision_returns_code_500_if_schedule_timing_is_not_an_int_or_float(self):
+        """testing if a response with code 500 is returned back when the
+        schedule_timing is not an integer or float
+        """
+        # request review for self.test_task4
+        request = testing.DummyRequest()
+        request.matchdict['id'] = self.test_task4.id
+        request.params['send_email'] = 0
+        request.params['schedule_unit'] = 'h'
+        request.params['schedule_timing'] = 'this is not an integer or float'
+
+        # patch get_logged_in_user
+        admin = User.query.filter(User.login == 'admin').first()
+        m = mocker.Mocker()
+        obj = m.replace("stalker_pyramid.views.auth.get_logged_in_user")
+        obj(request)
+        m.result(admin)
+        m.replay()
+
+        response = task.request_revision(request)
+        self.assertEqual(response.status_int, 500)
+        self.assertEqual(response.body,
+                         'Please supply a float or integer value for '
+                         'schedule_timing parameter')
+
+    def test_request_revision_returns_code_500_if_no_schedule_unit_found(self):
+        """testing if a response with code 500 is returned back when there is
+        no schedule_unit parameter
+        """
+        # request review for self.test_task4
+        request = testing.DummyRequest()
+        request.matchdict['id'] = self.test_task4.id
+        request.params['send_email'] = 0
+        request.params['schedule_timing'] = 1.0
+
+        # patch get_logged_in_user
+        admin = User.query.filter(User.login == 'admin').first()
+        m = mocker.Mocker()
+        obj = m.replace("stalker_pyramid.views.auth.get_logged_in_user")
+        obj(request)
+        m.result(admin)
+        m.replay()
+
+        response = task.request_revision(request)
+        self.assertEqual(response.status_int, 500)
+        self.assertEqual(response.body,
+                         'There are missing parameters: schedule_unit')
+
+    def test_request_revision_returns_code_500_if_no_schedule_unit_value_is_wrong(self):
+        """testing if a response with code 500 is returned back when the value
+        of schedule_unit parameter is not one of ['h', 'd', 'w', 'm', 'y']
+        """
+        # request review for self.test_task4
+        request = testing.DummyRequest()
+        request.matchdict['id'] = self.test_task4.id
+        request.params['send_email'] = 0
+        request.params['schedule_timing'] = 1.0
+        request.params['schedule_unit'] = 'min'
+
+        # patch get_logged_in_user
+        admin = User.query.filter(User.login == 'admin').first()
+        m = mocker.Mocker()
+        obj = m.replace("stalker_pyramid.views.auth.get_logged_in_user")
+        obj(request)
+        m.result(admin)
+        m.replay()
+
+        response = task.request_revision(request)
+        self.assertEqual(response.status_int, 500)
+        self.assertEqual(response.body,
+                         "schedule_unit parameter should be one of ['h', 'd', "
+                         "'w', 'm', 'y']")
+
+    def test_request_revision_should_not_work_for_tasks_with_the_status_is_set_to_new(self):
+        """testing if a server error will be returned if the task issued in
+        request_review has a status of "new"
+        """
+        # request revision for self.test_task4
+        self.test_task4.status = self.status_new
+        request = testing.DummyRequest()
+        request.matchdict['id'] = self.test_task4.id
+        request.params['send_email'] = 0
+        request.params['schedule_timing'] = 5
+        request.params['schedule_unit'] = 'h'
+
+        # patch get_logged_in_user
+        admin = User.query.filter(User.login == 'admin').first()
+        m = mocker.Mocker()
+        obj = m.replace("stalker_pyramid.views.auth.get_logged_in_user")
+        obj(request)
+        m.result(admin)
+        m.replay()
+
+        response = task.request_revision(request)
+        self.assertEqual(response.status_int, 500)
+        self.assertEqual(
+            response.body,
+            'You can not request a revision for a task with status is set to '
+            '"New"'
+        )
+
+    def test_request_revision_should_not_work_for_tasks_with_the_status_is_set_to_wip(self):
+        """testing if a server error will be returned if the task issued in
+        request_revision has a status of "wip"
+        """
+        # request revision for self.test_task4
+        self.test_task4.status = self.status_wip
+        request = testing.DummyRequest()
+        request.matchdict['id'] = self.test_task4.id
+        request.params['send_email'] = 0
+        request.params['schedule_timing'] = 5
+        request.params['schedule_unit'] = 'h'
+
+        # patch get_logged_in_user
+        admin = User.query.filter(User.login == 'admin').first()
+        m = mocker.Mocker()
+        obj = m.replace("stalker_pyramid.views.auth.get_logged_in_user")
+        obj(request)
+        m.result(admin)
+        m.replay()
+
+        response = task.request_revision(request)
+        self.assertEqual(response.status_int, 500)
+        self.assertEqual(
+            response.body,
+            'You can not request a revision for a task with status is set to '
+            '"Work In Progress"'
+        )
+
+    def test_request_revision_should_not_work_for_tasks_with_the_status_is_set_to_has_revision(self):
+        """testing if a server error will be returned if the task issued in
+        request_revision has a status of "has revision"
+        """
+        # request revision for self.test_task4
+        self.test_task4.status = self.status_hrev
+        request = testing.DummyRequest()
+        request.matchdict['id'] = self.test_task4.id
+        request.params['send_email'] = 0
+        request.params['schedule_timing'] = 5
+        request.params['schedule_unit'] = 'h'
+
+        # patch get_logged_in_user
+        admin = User.query.filter(User.login == 'admin').first()
+        m = mocker.Mocker()
+        obj = m.replace("stalker_pyramid.views.auth.get_logged_in_user")
+        obj(request)
+        m.result(admin)
+        m.replay()
+
+        response = task.request_revision(request)
+        self.assertEqual(response.status_int, 500)
+        self.assertEqual(
+            response.body,
+            'You can not request a revision for a task with status is set to '
+            '"Has Revision"'
+        )
+
+    def test_request_revision_should_not_work_for_tasks_with_the_status_is_set_to_completed(self):
+        """testing if a server error will be returned if the task issued in
+        request_revision has a status of "completed"
+        """
+        # request revision for self.test_task4
+        self.test_task4.status = self.status_completed
+        request = testing.DummyRequest()
+        request.matchdict['id'] = self.test_task4.id
+        request.params['send_email'] = 0
+        request.params['schedule_timing'] = 5
+        request.params['schedule_unit'] = 'h'
+
+        # patch get_logged_in_user
+        admin = User.query.filter(User.login == 'admin').first()
+        m = mocker.Mocker()
+        obj = m.replace("stalker_pyramid.views.auth.get_logged_in_user")
+        obj(request)
+        m.result(admin)
+        m.replay()
+
+        response = task.request_revision(request)
+        self.assertEqual(response.status_int, 500)
+        self.assertEqual(
+            response.body,
+            'You can not request a revision for a task with status is set to '
+            '"Completed"'
+        )
+
+    def test_request_revision_is_working_properly_for_tasks_with_status_pending_review(self):
+        """testing if the request_revision function is working properly
+        """
+        admin = User.query.filter(User.login == 'admin').first()
+
+        # create a time log before asking review
+        time_log = TimeLog(
+            resource=self.test_task4.resources[0],
+            task=self.test_task4,
+            start=datetime.datetime(2013, 6, 20, 10, 0),
+            end=datetime.datetime(2013, 6, 20, 19, 0)
+        )
+        DBSession.add(time_log)
+        self.test_task4.status = self.status_prev
+
+        # request revision for self.test_task4
+        request = testing.DummyRequest()
+        request.matchdict['id'] = self.test_task4.id
+        request.params['send_email'] = 0
+        request.params['schedule_timing'] = 5
+        request.params['schedule_unit'] = 'h'
+
+        # patch get_logged_in_user
+        m = mocker.Mocker()
+        obj = m.replace("stalker_pyramid.views.auth.get_logged_in_user")
+        obj(request)
+        m.result(admin)
+        m.replay()
+
+        # also patch route_url of request
+        request.route_url = lambda x, id: 'localhost:6453/tasks/23/view'
+
+        response = task.request_revision(request)
+        self.assertEqual(response.status_int, 200)
+
+        # check if the status of the original task is set to Has Revision
+        #self.test_task4 = Task.query.get(self.test_task4.id)
+        self.assertEqual(self.test_task4.status, self.status_hrev)
+
+        # check if the task percent_complete is 100
+        assert isinstance(self.test_task4, Task)
+        self.assertEqual(self.test_task4.percent_complete, 100)
+
+        # check if a new task with the same name but has a postfix of
+        # " - Rev 1" is created
+        rev_task = Task.query.filter(
+            Task.name == self.test_task4.name + ' - Rev 1').first()
+        self.assertIsNotNone(rev_task)
+
+        # check if the rev task has the same dependencies plus the original
+        # task in its depends list
+        self.assertItemsEqual(
+            rev_task.depends,
+            [self.test_task3, self.test_task4]
+        )
+
+        # check if the dependent tasks to original task are now depending to
+        # the revision task
+        self.assertItemsEqual(
+            rev_task.dependent_of, [self.test_task5]
+        )
+
+        # and the original tasks dependency links are broken
+        self.assertItemsEqual(
+            self.test_task4.dependent_of, [rev_task]
+        )
 
     def test_request_extra_time_works_only_for_leaf_tasks(self):
         """testing if task.request_extra_time works only for leaf tasks
