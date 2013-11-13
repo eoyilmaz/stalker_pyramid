@@ -18,16 +18,16 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 
+import time
 import logging
 
 from pyramid.httpexceptions import HTTPOk
+from pyramid.response import Response
 from pyramid.view import view_config
 
-from stalker import User, Ticket, Entity, Project, Status, Studio
+from stalker import User, Ticket, Entity, Project, Status, Note
 
 from stalker.db import DBSession
-import time
-import stalker_pyramid
 from stalker_pyramid.views import (get_logged_in_user, PermissionChecker,
                                    milliseconds_since_epoch)
 
@@ -167,45 +167,35 @@ def update_ticket(request):
 
     #**************************************************************************
     # collect data
-    description = request.params.get('description')
-    summary = request.params.get('summary')
+    comment = request.params.get('comment')
+    action = request.params.get('action')
 
-    project_id = request.params.get('project_id', None)
-    project = Project.query.filter(Project.id==project_id).first()
+    logger.debug('updating ticket')
+    if not ticket:
+        return Response('No ticket with id : %s' % ticket_id, 500)
 
-    owner_id = request.params.get('owner_id', None)
-    owner = User.query.filter(User.id==owner_id).first()
+    if comment:
+        note = Note(
+            content=comment,
+            created_by=logged_in_user,
+        )
+        ticket.comments.append(note)
+        DBSession.add(note)
 
-    status_id = request.params.get('status_id')
-    status = Status.query.filter_by(id=status_id).first()
+    if action.startswith('resolve_as'):
+        resolution = action.split(':')[1]
+        ticket.resolve(logged_in_user, resolution)
+    elif action.startswith('set_owner'):
+        user_id = int(action.split(':')[1])
+        assign_to = User.query.get(user_id)
+        ticket.reassign(logged_in_user, assign_to)
+    elif action.startswith('delete_resolution'):
+        ticket.reopen(logged_in_user)
 
-    logger.debug('*******************************')
-    logger.debug('update_ticket is running')
-    logger.debug('ticket: %s' % ticket)
-    logger.debug('project_id : %s' % project_id)
-    logger.debug('owner_id : %s' % owner_id)
-    logger.debug('owner: %s' % owner)
-    logger.debug('project: %s' % project)
-    logger.debug('summary: %s' % summary)
-    logger.debug('description: %s' % description)
+    logger.debug('successfully updated ticket')
 
-    if ticket and description and project and owner:
-        logger.debug('updating ticket')
-        # we are ready to create the time log
-        # Ticket should handle the extension of the effort
-        ticket.summary = summary
-        ticket.description = description
-        ticket.status = status
-        if ticket.owner != owner:
-            ticket.set_owner(owner)
-        ticket.updated_by = logged_in_user
-
-        DBSession.add(ticket)
-        logger.debug('successfully updated ticket')
-
-    logger.debug('returning from update_ticket')
-
-    return HTTPOk()
+    request.session.flash('Success: Successfully updated ticket')
+    return Response('Successfully updated ticket')
 
 
 @view_config(

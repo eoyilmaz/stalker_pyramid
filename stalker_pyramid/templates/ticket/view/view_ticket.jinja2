@@ -73,6 +73,8 @@
                                 <td id='date_created'></td>
                             </tr>
                             <tr>
+                                <th>Resolution</th>
+                                <td>{{ ticket.resolution }}</td>
                                 <th>Links</th>
                                 <td>
                                     {%- for link in ticket.links -%}
@@ -99,7 +101,7 @@
                     <h6><strong>{{ comment.created_by.name }}</strong> at {{ comment.date_created }}</h6>
                 </div>
                 <div class='widget-body'>
-                    {{ comment.description }}
+                    {{ comment.content | safe }}
                 </div>
             </div>
         {% endfor %}
@@ -112,14 +114,15 @@
 
             {# Editor #}
             <div class="control-group">
-                <div class="wysiwyg-editor" id="editor1"></div>
+                <div id="alerts"></div>
+                <div class="wysiwyg-editor" id="comment_editor"></div>
             </div>
 
             <div class="control-group">
                 <label class="control-label">Action</label>
                 <div class="controls">
                     <label>
-                        <input id="ticket_leave_as" type="radio" name="action_radio" class="ace" checked>
+                        <input id="ticket_leave_as" type="radio" name="action_radio" class="ace" value="leave_as:{{ ticket.status.name.lower() }}" checked>
                         <span class="lbl">Leave As {{ ticket.status.name }}</span>
                     </label>
                     <label>
@@ -131,11 +134,11 @@
                     <label>
                         <input id="ticket_set_owner" type="radio" name="action_radio" class="ace">
                         <span class="lbl">Assign To
-                            <select></select>
+                            <select id="project_users"></select>
                         </span>
                     </label>
                     <label>
-                        <input id="ticket_del_resolution" type="radio" name="action_radio" class="ace">
+                        <input id="ticket_del_resolution" type="radio" name="action_radio" class="ace" value="delete_resolution">
                         <span class="lbl">Delete Resolution</span>
                     </label>
                 </div>
@@ -143,7 +146,7 @@
 
             <div class="form-actions">
                 <div class="pull-right">
-                    <button class='btn'>Submit Changes</button>
+                    <button id="submit-button" class="btn">Submit Changes</button>
                 </div>
             </div>
         </form>
@@ -158,30 +161,31 @@
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/markdown/markdown.min.js") }}'></script>
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/markdown/bootstrap-markdown.min.js") }}'></script>
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.hotkeys.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootstrap-wysiwyg.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/bootstrap-wysiwyg.js") }}'></script>
 
 <script type="text/javascript">
 
-    function showErrorAlert(reason, detail) {
-        var msg = '';
-        if (reason === 'unsupported-file-type') {
-            msg = "Unsupported format " + detail;
-        }
-        else {
-            console.log("error uploading file", reason, detail);
-        }
-        $('<div class="alert"> <button type="button" class="close" data-dismiss="alert">&times;</button>' +
-                '<strong>File upload error</strong> ' + msg + ' </div>').prependTo('#alerts');
-    }
-    
     {# update date_created #}
     $(function(){
         var date_created = new Date({{ milliseconds_since_epoch(ticket.date_created) }}).format('yyyy-mm-dd HH:MM');
         $('#date_created').html(date_created);
     });
 
+    function showErrorAlert(reason, detail) {
+        var msg = '';
+        if (reason === 'unsupported-file-type') {
+            msg = "Unsupported format " + detail;
+        } else if (reason === 'big-file-size') {
+            msg = "File is too big " + detail + ' bytes';
+        } else {
+            console.log("error uploading file", reason, detail);
+        }
+        $('<div class="alert"> <button type="button" class="close" data-dismiss="alert">&times;</button>' +
+                '<strong>File upload error</strong> ' + msg + ' </div>').prependTo('#alerts');
+    }
+
     $(function(){
-        $('#editor1').ace_wysiwyg({
+        $('#comment_editor').ace_wysiwyg({
             toolbar: [
                 'font',
                 null,
@@ -213,66 +217,178 @@
                 {name: 'redo', className: 'btn-grey'}
             ],
             'wysiwyg': {
+                maxFileSize : 100000,
                 fileUploadError: showErrorAlert
             }
-        }).prev().addClass('wysiwyg-style1');
+        }).prev().addClass('wysiwyg-style1')
+
+        //Add Image Resize Functionality to Chrome and Safari
+        //webkit browsers don't have image resize functionality when content is editable
+        //so let's add something using jQuery UI resizable
+        //another option would be opening a dialog for user to enter dimensions.
+        if (typeof jQuery.ui !== 'undefined' && /applewebkit/.test(navigator.userAgent.toLowerCase())) {
+
+            var lastResizableImg = null;
+
+            function destroyResizable() {
+                if (lastResizableImg == null) return;
+                lastResizableImg.resizable("destroy");
+                lastResizableImg.removeData('resizable');
+                lastResizableImg = null;
+            };
+
+            var enableImageResize = function () {
+                $('.wysiwyg-editor').on('mousedown', function (e) {
+                    var target = $(e.target);
+                    if (e.target instanceof HTMLImageElement) {
+                        if (!target.data('resizable')) {
+                            target.resizable({
+                                aspectRatio: e.target.width / e.target.height
+                            });
+                            target.data('resizable', true);
+
+                            if (lastResizableImg != null) {//disable previous resizable image
+                                lastResizableImg.resizable("destroy");
+                                lastResizableImg.removeData('resizable');
+                            }
+                            lastResizableImg = target;
+                        }
+                    }
+                }).on('click', function (e) {
+                    if (lastResizableImg != null && !(e.target instanceof HTMLImageElement)) {
+                        destroyResizable();
+                    }
+                }).on('keydown', function () {
+                    destroyResizable();
+                });
+            };
+
+            enableImageResize();
+
+
+            /**
+             //or we can load the jQuery UI dynamically only if needed
+             if (typeof jQuery.ui !== 'undefined') enableImageResize();
+             else {//load jQuery UI if not loaded
+            $.getScript($path_assets+"/js/jquery-ui-1.10.3.custom.min.js", function(data, textStatus, jqxhr) {
+               if('ontouchend' in document) {//also load touch-punch for touch devices
+                   $.getScript($path_assets+"/js/jquery.ui.touch-punch.min.js", function(data, textStatus, jqxhr) {
+                       enableImageResize();
+                   });
+               } else	enableImageResize();
+           });
+        }*/
+        }
+
+
     });
 </script>
 
 <script type="text/javascript">
-    $(function(){
-        {# radio buttons #}
+$(function(){
+    {# radio buttons #}
+
+    {# fill ticket resolutions #}
+    var ticket_resolutions = $("#ticket_resolutions");
+    $.getJSON('/tickets/resolutions/', function(data) {
+        // remove all previous options
+        ticket_resolutions.find('option').remove();
         
-        {# fill ticket resolutions #}
-        var ticket_resolutions = $("#ticket_resolutions");
-        $.getJSON('/tickets/resolutions/', function(data) {
-            // remove all previous options
-            ticket_resolutions.find('option').remove();
-            
-            {% raw %}
-            var option_template = doT.template(
-                "<option value={{= it }}>{{= it }}</option>"
-            );
-            {% endraw %}
+        {% raw %}
+        var option_template = doT.template(
+            "<option value={{= it }}>{{= it }}</option>"
+        );
+        {% endraw %}
 
-            for (var i = 0; i < data.length; i += 1) {
-                ticket_resolutions.append($($.parseHTML(option_template(data[i]))));
-            }
-        });
+        for (var i = 0; i < data.length; i += 1) {
+            ticket_resolutions.append($($.parseHTML(option_template(data[i]))));
+        }
+        $('#ticket_set_resolution').val('resolve_as:' + data[0]);
+    });
 
-        $('#ticket_set_resolution').parent().hide();
-        $('#ticket_set_owner').parent().hide();
-        $('#ticket_del_resolution').parent().hide();
+    // also changing this should set the value of radio group
+    ticket_resolutions.on('change', function() {
+        $('#ticket_set_resolution').val('resolve_as:' + $(this).val());
+    });
 
-        $.getJSON('/tickets/workflow/', function(data) {
-            var ticket_action;
-            var action;
-            var current_ticket_status = "{{ ticket.status.code.lower() }}";
+    {# fill users #}
+    var project_users = $('#project_users');
 
-            for (var i in data) {
-                ticket_action = data[i];
-                console.log('ticket_action :', ticket_action);
-                if (ticket_action[current_ticket_status] != undefined){
-                    action = ticket_action[current_ticket_status].action
-                    if (action === 'set_resolution') {
-                        // show resolve as field
-                        $('#ticket_set_resolution').parent().show();
-                    } else if (action === 'set_owner') {
-                        // show assign field
-                        $('#ticket_set_owner').parent().show();
-                    } else if (action === 'del_resolution') {
-                        // show delete resolution field
-                        $('#ticket_del_resolution').parent().show();
-                    }
+    // also set value of the radio button
+    project_users.on('change', function() {
+        $('#ticket_set_owner').val(
+            'set_owner:' + $(this).val()
+        )
+    });
+
+    {% raw %}
+    var project_users_template = doT.template('<option value="{{= it.id }}">{{= it.name }}</option>');
+    {% endraw %}
+    chosen_field_creator(
+        project_users,
+        "{{ request.route_url('get_project_users', id=ticket.project.id) }}",
+        project_users_template, -1, {}
+    ).then(function(){
+        // trigger a change event to refresh the radio button value
+        project_users.trigger('change');
+    });
+
+    {# show or hide controls #}
+    $('#ticket_set_resolution').parent().hide();
+    $('#ticket_set_owner').parent().hide();
+    $('#ticket_del_resolution').parent().hide();
+
+    $.getJSON('/tickets/workflow/', function(data) {
+        var ticket_action;
+        var action;
+        var current_ticket_status = "{{ ticket.status.code.lower() }}";
+
+        for (var i in data) {
+            ticket_action = data[i];
+            if (ticket_action[current_ticket_status] != undefined){
+                action = ticket_action[current_ticket_status].action
+                if (action === 'set_resolution') {
+                    // show resolve as field
+                    $('#ticket_set_resolution').parent().show();
+                } else if (action === 'set_owner') {
+                    // show assign field
+                    $('#ticket_set_owner').parent().show();
+                } else if (action === 'del_resolution') {
+                    // show delete resolution field
+                    $('#ticket_del_resolution').parent().show();
                 }
             }
-        });
-
-        {# fill users #}
-        
+        }
     });
-</script>
 
+    // prevent default
+    $("#ticket_form").on("submit", function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    });
+
+    $("#submit-button").on("click", function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        console.log('code is here 1');
+        // submit changes
+        var comment = $('.wysiwyg-editor').cleanHtml();
+        var action = $('input[name="action_radio"]:checked').val();
+        var url = '/tickets/{{ ticket.id }}/update';
+        var params = $.param({comment: comment, action: action});
+        $.post(url, params)
+        .done(function(data) {
+            // reload page
+            window.location.reload();
+        })
+        .fail(function(jqXHR) {
+            bootbox.alert(jqXHR.message);
+        });
+        console.log('code is here 2');
+    });
+
+});
+</script>
 
 
 {% endblock extrascripts %}
