@@ -38,16 +38,13 @@ from stalker import defaults
 from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
                                    get_multi_integer, milliseconds_since_epoch,
                                    StdErrToHTMLConverter, colors,
-                                   multi_permission_checker)
+                                   multi_permission_checker,
+                                   dummy_email_address)
 from stalker_pyramid.views.type import query_type
 
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
-
-
-# this is a dummy mail address change it in the config (*.ini) file
-dummy_email_address = "Stalker Pyramid <stalker.pyramid@stalker.pyramid.com>"
 
 
 def duplicate_task(task):

@@ -36,121 +36,173 @@
 
 <div class="row-fluid">
 
-    <div class='span8 offset2'>
-        <div class='widget'>
-            <div class="widget-header widget-header-small header-color-orange">
-                <h6>
-                    Ticket #{{ ticket.number }}
-                </h6>
+    <div class="row-fluid">
+        <div class="span8 offset2">
+            <div class='widget'>
+                <div class="widget-header widget-header-small header-color-orange">
+                    <h6>
+                        Ticket #{{ ticket.number }}
+                    </h6>
+                </div>
+                <div class="widget-body">
+                    <div class="widget-body-inner" style="display: block;">
+                        <div class="widget-main">
+                            <h2>{{ ticket.summary }}</h2>
+                            <table class='table'>
+                                <tr>
+                                    <th>Project</th>
+                                    <td><a href='/projects/{{ ticket.project.id }}/view'>{{ ticket.project.name }}</a></td>
+                                    <th>Related Tickets</th>
+                                    <td>{% for r_ticket in ticket.related_tickets%}{{ r_ticket.number }},{% endfor %}</td>
+                                </tr>
+                                <tr>
+                                    <th>Type</th>
+                                    <td>{{ ticket.type.name }}</td>
+                                    <th>Priority</th>
+                                    <td>{{ ticket.priority }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Status</th>
+                                    <td>{{ ticket.status.name }}</td>
+                                    <th>Reported By</th>
+                                    <td><a href='/users/{{ ticket.created_by.id }}/view'>{{ ticket.created_by.name }}</a></td>
+                                </tr>
+                                <tr>
+                                    <th>Owner</th>
+                                    <td><a href='/users/{{ ticket.owner.id }}/view'>{{ ticket.owner.name }}</a></td>
+                                    <th>Date Created</th>
+                                    <td id='date_created' class="date"></td>
+                                </tr>
+                                <tr>
+                                    <th>Resolution</th>
+                                    <td>{{ ticket.resolution }}</td>
+                                    <th>Links</th>
+                                    <td>
+                                        {%- for link in ticket.links -%}
+                                            {%- if loop.index0 > 0 %},{% endif -%}
+                                            <a href='/{{ link.plural_class_name.lower() }}/{{ link.id }}/view'>
+                                            {{ link.name }} ({{ link.entity_type }})</a>
+                                        {%- endfor -%}
+                                    </td>
+                                </tr>
+                            </table>
+                            <hr>
+                            <h4>Description</h4>
+                            <p>{{ ticket.description | safe }}</p>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="widget-body">
-                <div class="widget-body-inner" style="display: block;">
-                    <div class="widget-main">
-                        <h2>{{ ticket.summary }}</h2>
-                        <table class='table'>
-                            <tr>
-                                <th>Project</th>
-                                <td><a href='/projects/{{ ticket.project.id }}/view'>{{ ticket.project.name }}</a></td>
-                                <th>Related Tickets</th>
-                                <td>{% for r_ticket in ticket.related_tickets%}{{ r_ticket.number }},{% endfor %}</td>
-                            </tr>
-                            <tr>
-                                <th>Type</th>
-                                <td>{{ ticket.type.name }}</td>
-                                <th>Priority</th>
-                                <td>{{ ticket.priority }}</td>
-                            </tr>
-                            <tr>
-                                <th>Status</th>
-                                <td>{{ ticket.status.name }}</td>
-                                <th>Reported By</th>
-                                <td><a href='/users/{{ ticket.created_by.id }}/view'>{{ ticket.created_by.name }}</a></td>
-                            </tr>
-                            <tr>
-                                <th>Owner</th>
-                                <td><a href='/users/{{ ticket.owner.id }}/view'>{{ ticket.owner.name }}</a></td>
-                                <th>Date Created</th>
-                                <td id='date_created'></td>
-                            </tr>
-                            <tr>
-                                <th>Resolution</th>
-                                <td>{{ ticket.resolution }}</td>
-                                <th>Links</th>
-                                <td>
-                                    {%- for link in ticket.links -%}
-                                        {%- if loop.index0 > 0 %},{% endif -%}
-                                        <a href='/{{ link.plural_class_name.lower() }}/{{ link.id }}/view'>
-                                        {{ link.name }} ({{ link.entity_type }})</a>
-                                    {%- endfor -%}
-                                </td>
-                            </tr>
-                        </table>
-                        <hr>
-                        <h4>Description</h4>
-                        <p>{{ ticket.description | safe }}</p>
+        </div>
+    </div>
+
+    <hr>
+
+    <div class="row-fluid">
+        <div class="span6 offset2">
+            <div class='widget'>
+                <div class="widget-header widget-header-small header-color-blue">
+                    <h6>Comments</h6>
+                </div>
+                <div class="widget-body">
+                    <div class="widget-body-inner" style="display: block;">
+                        <div class="widget-main">
+                            {# Messages / Notes #}
+                            {% for comment in ticket.comments|sort(attribute='date_created') %}
+                                <hr>
+                                <div class='widget-box transparent'>
+                                    <div class='widget-header widget-header-small'>
+                                        <h6><strong>{{ comment.created_by.name }}</strong> at <span class='date'>{{ comment.date_created }}</span></h6>
+                                    </div>
+                                    <div class='widget-body'>
+                                        {{ comment.content | safe }}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        {# Messages / Notes #}
-        {% for comment in ticket.comments %}
-            <hr>
-            <div class='widget-box transparent'>
-                <div class='widget-header widget-header-small'>
-                    <h6><strong>{{ comment.created_by.name }}</strong> at {{ comment.date_created }}</h6>
+        <div class="span2">
+            <div class='widget'>
+                <div class="widget-header widget-header-small header-color-red">
+                    <h6>History</h6>
                 </div>
-                <div class='widget-body'>
-                    {{ comment.content | safe }}
-                </div>
-            </div>
-        {% endfor %}
-
-        {#  #}
-
-        <hr>
-        <form id="ticket_form"
-              class='form-horizontal'>
-
-            {# Editor #}
-            <div class="control-group">
-                <div id="alerts"></div>
-                <div class="wysiwyg-editor" id="comment_editor"></div>
-            </div>
-
-            <div class="control-group">
-                <label class="control-label">Action</label>
-                <div class="controls">
-                    <label>
-                        <input id="ticket_leave_as" type="radio" name="action_radio" class="ace" value="leave_as:{{ ticket.status.name.lower() }}" checked>
-                        <span class="lbl">Leave As {{ ticket.status.name }}</span>
-                    </label>
-                    <label>
-                        <input id="ticket_set_resolution" type="radio" name="action_radio" class="ace">
-                        <span class="lbl">Resolve As
-                            <select id="ticket_resolutions"></select>
-                        </span>
-                    </label>
-                    <label>
-                        <input id="ticket_set_owner" type="radio" name="action_radio" class="ace">
-                        <span class="lbl">Assign To
-                            <select id="project_users"></select>
-                        </span>
-                    </label>
-                    <label>
-                        <input id="ticket_del_resolution" type="radio" name="action_radio" class="ace" value="delete_resolution">
-                        <span class="lbl">Delete Resolution</span>
-                    </label>
+                <div class="widget-body">
+                    <div class="widget-body-inner" style="display: block;">
+                        <div class="widget-main">
+                            {# Logs #}
+                            {% for log in ticket.logs|sort(attribute='date_created') %}
+                                <div class='widget-box transparent'>
+                                    <div class='widget-header widget-header-small'>
+                                        <h6><strong>{{ log.created_by.name }}</strong> at <span class="date">{{ log.date_created }}</span></h6>
+                                    </div>
+                                    <div class='widget-body'>
+                                        <span>{{ log.action }}</span><br>
+                                        <span>{{ log.from_status.name }} -> {{ log.to_status.name }}</span>
+                                    </div>
+                                </div>
+                                {% if loop.index0 > 0%}
+                                    <hr>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
                 </div>
             </div>
-
-            <div class="form-actions">
-                <div class="pull-right">
-                    <button id="submit-button" class="btn">Submit Changes</button>
-                </div>
-            </div>
-        </form>
+        </div>
     </div>
+
+    <hr>
+
+    <div class="row-fluid">
+        <div class="span8 offset2">
+            <form id="ticket_form"
+                  class='form-horizontal'>
+
+                {# Editor #}
+                <div class="control-group">
+                    <div id="alerts"></div>
+                    <div class="wysiwyg-editor" id="comment_editor"></div>
+                </div>
+
+                <div class="control-group">
+                    <label class="control-label">Action</label>
+                    <div class="controls">
+                        <label>
+                            <input id="ticket_leave_as" type="radio" name="action_radio" class="ace" value="leave_as:{{ ticket.status.name.lower() }}" checked>
+                            <span class="lbl">Leave As {{ ticket.status.name }}</span>
+                        </label>
+                        <label>
+                            <input id="ticket_set_resolution" type="radio" name="action_radio" class="ace">
+                            <span class="lbl">Resolve As
+                                <select id="ticket_resolutions"></select>
+                            </span>
+                        </label>
+                        <label>
+                            <input id="ticket_set_owner" type="radio" name="action_radio" class="ace">
+                            <span class="lbl">Assign To
+                                <select id="project_users"></select>
+                            </span>
+                        </label>
+                        <label>
+                            <input id="ticket_del_resolution" type="radio" name="action_radio" class="ace" value="delete_resolution">
+                            <span class="lbl">Delete Resolution</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <div class="pull-right">
+                        <button id="submit-button" class="btn">Submit Changes</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
 </div>
 
 {% endblock page_content %}
@@ -218,7 +270,8 @@
             ],
             'wysiwyg': {
                 maxFileSize : 100000,
-                fileUploadError: showErrorAlert
+                fileUploadError: showErrorAlert,
+                "speech-input": false
             }
         }).prev().addClass('wysiwyg-style1')
 
@@ -266,20 +319,31 @@
             enableImageResize();
 
 
-            /**
-             //or we can load the jQuery UI dynamically only if needed
-             if (typeof jQuery.ui !== 'undefined') enableImageResize();
-             else {//load jQuery UI if not loaded
-            $.getScript($path_assets+"/js/jquery-ui-1.10.3.custom.min.js", function(data, textStatus, jqxhr) {
-               if('ontouchend' in document) {//also load touch-punch for touch devices
-                   $.getScript($path_assets+"/js/jquery.ui.touch-punch.min.js", function(data, textStatus, jqxhr) {
-                       enableImageResize();
-                   });
-               } else	enableImageResize();
-           });
-        }*/
+{#            //or we can load the jQuery UI dynamically only if needed#}
+{#            if (typeof jQuery.ui !== 'undefined') enableImageResize();#}
+{#            else {//load jQuery UI if not loaded#}
+{#                $.getScript($path_assets + "/js/jquery-ui-1.10.3.custom.min.js", function (data,#}
+{#                                                                                           textStatus,#}
+{#                                                                                           jqxhr) {#}
+{#                    if ('ontouchend' in document) {//also load touch-punch for touch devices#}
+{#                        $.getScript($path_assets + "/js/jquery.ui.touch-punch.min.js", function (data,#}
+{#                                                                                                 textStatus,#}
+{#                                                                                                 jqxhr) {#}
+{#                            enableImageResize();#}
+{#                        });#}
+{#                    } else    enableImageResize();#}
+{#                });#}
+{#            }#}
         }
 
+        // remove speech input
+        $('.wysiwyg-speech-input').remove();
+
+        // convert all dates to moment
+        $('.date').each(function(){
+            var date = moment($(this).text());
+            $(this).text(date.fromNow());
+        });
 
     });
 </script>
@@ -373,9 +437,14 @@ $(function(){
         console.log('code is here 1');
         // submit changes
         var comment = $('.wysiwyg-editor').cleanHtml();
+        var comment_as_text = $('.wysiwyg-editor').text();
         var action = $('input[name="action_radio"]:checked').val();
         var url = '/tickets/{{ ticket.id }}/update';
-        var params = $.param({comment: comment, action: action});
+        var params = $.param({
+            comment: comment,
+            comment_as_text: comment_as_text,
+            action: action
+        });
         $.post(url, params)
         .done(function(data) {
             // reload page

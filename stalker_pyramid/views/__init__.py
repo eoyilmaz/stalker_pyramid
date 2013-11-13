@@ -42,6 +42,9 @@ colors = {
     'Completed': 'green',
 }
 
+# this is a dummy mail address change it in the config (*.ini) file
+dummy_email_address = "Stalker Pyramid <stalker.pyramid@stalker.pyramid.com>"
+
 
 class StdErrToHTMLConverter():
     """Converts stderr, stdout messages of TaskJuggler to html
