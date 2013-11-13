@@ -82,6 +82,10 @@ logger.setLevel(logging.DEBUG)
     renderer='templates/department/dialog/department_dialog.jinja2',
 )
 @view_config(
+    route_name='create_department_dialog',
+    renderer='templates/department/dialog/create_department_dialog.jinja2',
+)
+@view_config(
     route_name='list_entity_departments',
     renderer='templates/department/list/list_entity_departments.jinja2'
 )

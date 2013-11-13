@@ -504,8 +504,8 @@ def main(global_config, **settings):
 
     config.add_route('department_dialog',             'departments/{id}/{mode}/dialog')
 
-    config.add_route('dialog_create_department', 'departments/create/dialog')
-    config.add_route('dialog_update_department', 'departments/{id}/update/dialog')
+    config.add_route('create_department_dialog', 'departments/create/dialog')
+    config.add_route('update_department_dialog', 'departments/{id}/update/dialog')
 
     config.add_route('create_department',     'departments/create')
     config.add_route('update_department',     'departments/update')

@@ -11,7 +11,7 @@
     <div class="row-fluid">
         <div class="span3">
             <div class="profile-picture"
-                style="text-align: center; overflow: hidden; width: 150px">
+                 style="text-align: center; overflow: hidden; width: 150px">
                 <img id="avatar"
                      class="editable"
                      alt="Avatar"
@@ -129,18 +129,6 @@
 
     </div>
 
-
-    <input type='hidden' name='came_from' value='{{ came_from }}'>
-
-    {#    Form Buttons #}
-    <div class="form-actions">
-        <button type="submit" class="btn btn-info btn-primary">
-            <i class="icon-ok"></i>Ok
-        </button>
-        <button type="button" class="btn">
-            <i class="icon-remove"></i>Cancel
-        </button>
-    </div>
 </form>
 
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.validate.min.js") }}'></script>
@@ -154,10 +142,7 @@
 <script type="text/javascript">
 $(document).ready(function () {
 
-    $.fn.editable.defaults.mode = 'inline';
-    $.fn.editableform.loading = "<div class='editableform-loading'><i class='light-blue icon-2x icon-spinner icon-spin'></i></div>";
-    $.fn.editableform.buttons = '<button type="submit" class="btn btn-info editable-submit"><i class="icon-ok icon-white"></i></button>' +
-            '<button type="button" class="btn editable-cancel"><i class="icon-remove"></i></button>';
+    //$.fn.editable.defaults.mode = 'inline';
 
     try {//ie8 throws some harmless exception, so let's catch it
 
@@ -272,7 +257,7 @@ return true;
                             fd.append(file_input.attr('name'), files[0]);
                         }
                     }
-                    
+
                     console.log('fd:', fd);
 
                     deferred = $.ajax({
@@ -304,42 +289,42 @@ return true;
                             // and hopefully a link is created (data.link_ids[0])
                             // now attach it to this user as a thumbnail
                             $.post('/assign_thumbnail',
-                                $.param({
-                                    'link_ids': data.link_ids,
-                                    'entity_id': {{ user.id }}
-                                })
-                            ).done(function (data1) {
-                                // and get back user data so we can now
-                                // where to set the current thumbnail
-                                // update the thumbnail
-                                $.getJSON('/users/{{ user.id }}/').done(function (data2) {
-                                    var new_thumb_path = '/' + data2[0].thumbnail_path;
-                                    $('#avatar').attr('src', new_thumb_path);
-                                    // also update side bar
-                                    $('#user_sidebar_avatar').attr('src', new_thumb_path)
-                                });
-                            });
+                                            $.param({
+                                                'link_ids': data.link_ids,
+                                                'entity_id': {{ user.id }}
+                                            })
+                                    ).done(function (data1) {
+                                        // and get back user data so we can now
+                                        // where to set the current thumbnail
+                                        // update the thumbnail
+                                        $.getJSON('/users/{{ user.id }}/').done(function (data2) {
+                                            var new_thumb_path = '/' + data2[0].thumbnail_path;
+                                            $('#avatar').attr('src', new_thumb_path);
+                                            // also update side bar
+                                            $('#user_sidebar_avatar').attr('src', new_thumb_path)
+                                        });
+                                    });
                         }
                     });
                 }
 
                 deferred.done(function (res) {
-{#                    console.log('code is here 1');#}
-{#                    if (res.status == 'OK'){#}
-{#                        $('#avatar').get(0).src = res.url;#}
-{#                    } else {#}
-{#                        alert(res.message);#}
-{#                    }#}
-{#                    console.log('code is here 2');#}
+                    console.log('code is here 1');
+                    {#                    if (res.status == 'OK'){#}
+                    {#                        $('#avatar').get(0).src = res.url;#}
+                    {#                    } else {#}
+                    {#                        alert(res.message);#}
+                    {#                    }#}
+                    console.log('code is here 2');
                 }).fail(function (res) {
-{#                    alert("Failure");#}
-                });
+                            {#                    alert("Failure");#}
+                        });
 
                 return deferred.promise();
             },
 
             success: function (response, newValue) {
-                
+
             }
         })
     } catch (e) {

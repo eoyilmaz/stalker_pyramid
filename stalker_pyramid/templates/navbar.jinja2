@@ -24,11 +24,22 @@
             {% endif %}
             {% if has_permission('Create_User') %}
                 <li class="divider"></li>
-                <li><a href="/users/-1/create/dialog">New User</a>
+                <li><a class=""
+                           data-target="#dialog_template"
+                           data-toggle="modal"
+                           data-keyboard=false
+                           href='{{ request.route_url('create_user_dialog') }}?came_from={{ request.current_route_path() }}'>New User
+                        </a>
                 </li>
             {% endif %}
             {% if has_permission('Create_Department') %}
-                <li><a href="/departments/-1/create/dialog">New Department</a>
+                <li><a class=""
+                           data-target="#dialog_template"
+                           data-toggle="modal"
+                           data-keyboard=false
+                           href='{{ request.route_url('create_department_dialog') }}?came_from={{ request.current_route_path() }}'>New Department
+                        </a>
+
                 </li>
             {% endif %}
             {% if has_permission('Create_Group') %}

@@ -11,6 +11,16 @@
         <div class="widget-body">
             <div class="widget-main">
                 {% include 'auth/dialog/user_basic_information_form.jinja2' %}
+                <div class="form-actions">
+                    <button id='submit_button' type="button"
+                            class="btn btn-info btn-primary">
+                        <i class="icon-ok"></i>Ok
+                    </button>
+                    <button type="button" class="btn">
+                        <i class="icon-remove"></i>Cancel
+                    </button>
+                </div>
+
             </div>
         </div>
     </div>
@@ -246,7 +256,32 @@
 <script type="text/javascript">
 
 
+
+
     $(document).ready(function () {
+
+        {# ***************************************************************** #}
+        {# Submit Button #}
+
+        $('#submit_button').on('click', function (e) {
+
+            e.stopPropagation();
+            e.preventDefault();
+
+            var user_form = $('#user_form');
+
+            if (user_form.validate()) {
+
+                $.post(
+                                user_form.attr('action'),
+                                user_form.serialize()
+                ).done(function () {
+
+                            window.location.replace('{{ came_from }}');
+                        });
+
+            }
+        });
 
 
     });
