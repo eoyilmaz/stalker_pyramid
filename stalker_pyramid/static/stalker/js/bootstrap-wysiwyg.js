@@ -99,8 +99,8 @@
                             $.when(readFileIntoDataUrl(fileInfo)).done(function (dataUrl) {
                                 execCommand('insertimage', dataUrl);
                             }).fail(function (e) {
-                                    options.fileUploadError("file-reader", e);
-                                });
+                                options.fileUploadError("file-reader", e);
+                            });
                         } else {
                             options.fileUploadError("unsupported-file-type", fileInfo.type);
                         }

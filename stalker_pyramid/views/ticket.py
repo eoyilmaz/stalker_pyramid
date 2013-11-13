@@ -174,6 +174,8 @@ def update_ticket(request):
     comment_as_text = request.params.get('comment_as_text')
     action = request.params.get('action')
 
+    # TODO: filter all images in the comment and create appropriate links
+
     logger.debug('updating ticket')
     if not ticket:
         return Response('No ticket with id : %s' % ticket_id, 500)

@@ -196,7 +196,7 @@
 
                 <div class="form-actions">
                     <div class="pull-right">
-                        <button id="submit-button" class="btn">Submit Changes</button>
+                        <button id="submit-button" class="btn" >Submit Changes</button>
                     </div>
                 </div>
             </form>
@@ -237,6 +237,7 @@
     }
 
     $(function(){
+        
         $('#comment_editor').ace_wysiwyg({
             toolbar: [
                 'font',
@@ -270,8 +271,7 @@
             ],
             'wysiwyg': {
                 maxFileSize : 100000,
-                fileUploadError: showErrorAlert,
-                "speech-input": false
+                fileUploadError: showErrorAlert
             }
         }).prev().addClass('wysiwyg-style1')
 
@@ -431,10 +431,12 @@ $(function(){
         e.stopPropagation();
     });
 
-    $("#submit-button").on("click", function(e) {
+    var submit_button = $("#submit-button");
+    submit_button.on("click", function(e) {
         e.preventDefault();
         e.stopPropagation();
-        console.log('code is here 1');
+        // change button state
+        submit_button.button('loading');
         // submit changes
         var comment = $('.wysiwyg-editor').cleanHtml();
         var comment_as_text = $('.wysiwyg-editor').text();
@@ -445,15 +447,13 @@ $(function(){
             comment_as_text: comment_as_text,
             action: action
         });
-        $.post(url, params)
-        .done(function(data) {
+        $.post(url, params).done(function(data) {
             // reload page
             window.location.reload();
-        })
-        .fail(function(jqXHR) {
+        }).fail(function(jqXHR) {
+            submit_button.button('reset');
             bootbox.alert(jqXHR.message);
         });
-        console.log('code is here 2');
     });
 
 });
