@@ -28,7 +28,7 @@ from sqlalchemy import or_
 
 import stalker_pyramid
 from stalker import (defaults, User, Department, Group, Project, Entity,
-                     Studio, Permission, EntityType, Task, Vacation, TimeLog)
+                     Studio, Permission, EntityType)
 from stalker.db import DBSession
 from stalker_pyramid.views import (log_param, get_logged_in_user,
                                    PermissionChecker, get_multi_integer,
@@ -321,6 +321,8 @@ def get_users(request):
         """ % {'id': entity_id}
     elif entity_type == "User":
         sql_query += 'where "Users".id = %s' % entity_id
+
+    sql_query += 'order by "SimpleEntities".name'
 
     result = DBSession.connection().execute(sql_query)
     data = [

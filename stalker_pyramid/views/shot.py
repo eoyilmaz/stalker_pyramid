@@ -1,39 +1,36 @@
 # -*- coding: utf-8 -*-
 # Stalker a Production Shot Management System
 # Copyright (C) 2009-2013 Erkan Ozgur Yilmaz
-# 
+#
 # This file is part of Stalker Pyramid.
-# 
+#
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
 # License as published by the Free Software Foundation;
 # version 2.1 of the License.
-# 
+#
 # This library is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # Lesser General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 import datetime
 
 from pyramid.httpexceptions import HTTPServerError, HTTPOk
-from pyramid.security import authenticated_userid
 from pyramid.view import view_config
-from sqlalchemy.exc import IntegrityError
-import transaction
 
 from stalker.db import DBSession
-from stalker import User, Sequence, StatusList, Status, Shot, Project
+from stalker import Sequence, StatusList, Status, Shot, Project
 
 import logging
-from stalker import log
-from stalker_pyramid.views import PermissionChecker, get_logged_in_user, milliseconds_since_epoch, colors
+from stalker_pyramid.views import get_logged_in_user, milliseconds_since_epoch
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.WARNING)
+
 
 @view_config(
     route_name='create_shot'
@@ -53,7 +50,7 @@ def create_shot(request):
     project = Project.query.filter_by(id=project_id).first()
     logger.debug('project_id   : %s' % project_id)
 
-    if name and code  and status and  project:
+    if name and code and status and project:
         # get descriptions
         description = request.params.get('description')
 
@@ -70,20 +67,19 @@ def create_shot(request):
         if status_list is None:
             return HTTPServerError(detail='No StatusList found')
 
-
         new_shot = Shot(
-                        name=name,
-                        code=code,
-                        description=description,
-                        sequence=sequence,
-                        status_list=status_list,
-                        status=status,
-                        created_by=logged_in_user,
-                        project=project
-                    )
+            name=name,
+            code=code,
+            description=description,
+            sequence=sequence,
+            status_list=status_list,
+            status=status,
+            created_by=logged_in_user,
+            project=project
+        )
 
         DBSession.add(new_shot)
-    
+
     else:
         logger.debug('there are missing parameters')
         logger.debug('name      : %s' % name)
@@ -93,6 +89,7 @@ def create_shot(request):
         HTTPServerError()
 
     return HTTPOk()
+
 
 @view_config(
     route_name='update_shot'
@@ -111,8 +108,7 @@ def update_shot(request):
     status_id = request.params.get('status_id')
     status = Status.query.filter_by(id=status_id).first()
 
-
-    if shot and code and name  and status:
+    if shot and code and name and status:
         # get descriptions
         description = request.params.get('description')
 
@@ -140,7 +136,6 @@ def update_shot(request):
     return HTTPOk()
 
 
-
 @view_config(
     route_name='get_entity_shots',
     renderer='json'
@@ -156,23 +151,27 @@ def get_shots(request):
     shots = []
 
     for shot in Shot.query.filter_by(project_id=project_id).all():
-        sequenceStr = ''
+        sequence_str = ''
 
         for sequence in shot.sequences:
-            sequenceStr += '<a href="/task/%s/view">%s</a><br/>' % (sequence.id , sequence.name)
+            sequence_str += \
+                '<a href="/task/%s/view">%s</a><br/>' % (sequence.id,
+                                                         sequence.name)
         shots.append({
             'id': shot.id,
             'name': shot.name,
-            'sequences': sequenceStr,
+            'sequences': sequence_str,
             'status': shot.status.name,
-            'status_color':colors[shot.status.name]if colors[shot.status.name] else 'grey',
+            'status_color': shot.status.html_class
+            if shot.status.html_class else 'grey',
             'status_bg_color': shot.status.bg_color,
             'status_fg_color': shot.status.fg_color,
             'created_by_id': shot.created_by.id,
             'created_by_name': shot.created_by.name,
             'description': shot.description,
-            'date_created':milliseconds_since_epoch(shot.date_created),
-            'thumbnail_path': shot.thumbnail.full_path if shot.thumbnail else None,
+            'date_created': milliseconds_since_epoch(shot.date_created),
+            'thumbnail_path': shot.thumbnail.full_path
+            if shot.thumbnail else None,
             'percent_complete': shot.percent_complete
         })
 

@@ -37,7 +37,7 @@ from stalker import defaults
 
 from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
                                    get_multi_integer, milliseconds_since_epoch,
-                                   StdErrToHTMLConverter, colors,
+                                   StdErrToHTMLConverter,
                                    multi_permission_checker,
                                    dummy_email_address)
 from stalker_pyramid.views.type import query_type
@@ -206,7 +206,8 @@ def duplicate_task_hierarchy(request):
     Walks through the hierarchy of the given task and duplicates every
     instance it finds in a new task.
 
-    :param task: The task that wanted to be duplicated
+    task: The task that wanted to be duplicated
+
     :return: A list of stalker.models.task.Task
     """
     task_id = request.matchdict.get('id')
@@ -1452,7 +1453,7 @@ def get_entity_tasks_stats(request):
     for status in status_list.statuses:
         status_count_task.append({
             'name': status.name,
-            'color': colors[status.name],
+            'color': status.html_class,
             'icon': 'icon-folder-close-alt',
             'count': Task.query.join(entity.__class__, join_attr) \
                 .filter(__class__.id == entity_id) \

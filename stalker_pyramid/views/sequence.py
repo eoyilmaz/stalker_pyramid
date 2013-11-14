@@ -1,38 +1,36 @@
 # -*- coding: utf-8 -*-
 # Stalker Pyramid a Web Base Production Asset Management System
 # Copyright (C) 2009-2013 Erkan Ozgur Yilmaz
-# 
+#
 # This file is part of Stalker Pyramid.
-# 
+#
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
 # License as published by the Free Software Foundation;
 # version 2.1 of the License.
-# 
+#
 # This library is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # Lesser General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 import datetime
 
 from pyramid.httpexceptions import HTTPServerError, HTTPOk
-from pyramid.security import authenticated_userid
 from pyramid.view import view_config
 
 
 from stalker.db import DBSession
-from stalker import User, Project, StatusList, Status, Sequence, Entity
+from stalker import Project, StatusList, Status, Sequence, Entity
 
 import logging
-from stalker_pyramid.views import PermissionChecker, get_logged_in_user, milliseconds_since_epoch, colors
+from stalker_pyramid.views import get_logged_in_user, milliseconds_since_epoch
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
-
 
 
 @view_config(
@@ -54,7 +52,7 @@ def create_sequence(request):
 
     logger.debug('project_id   : %s' % project_id)
 
-    if name and code  and status and  project:
+    if name and code and status and project:
         # get descriptions
         description = request.params.get('description')
 
@@ -68,16 +66,15 @@ def create_sequence(request):
         if status_list is None:
             return HTTPServerError(detail='No StatusList found')
 
-
         new_sequence = Sequence(
-                        name=name,
-                        code=code,
-                        description=description,
-                        status_list=status_list,
-                        status=status,
-                        created_by=logged_in_user,
-                        project=project
-                    )
+            name=name,
+            code=code,
+            description=description,
+            status_list=status_list,
+            status=status,
+            created_by=logged_in_user,
+            project=project
+        )
 
         DBSession.add(new_sequence)
 
@@ -90,6 +87,7 @@ def create_sequence(request):
         HTTPServerError()
 
     return HTTPOk()
+
 
 @view_config(
     route_name='update_sequence'
@@ -108,8 +106,7 @@ def update_sequence(request):
     status_id = request.params.get('status_id')
     status = Status.query.filter_by(id=status_id).first()
 
-
-    if sequence and code and name  and status:
+    if sequence and code and name and status:
         # get descriptions
         description = request.params.get('description')
 
@@ -127,31 +124,9 @@ def update_sequence(request):
         logger.debug('there are missing parameters')
         logger.debug('name      : %s' % name)
         logger.debug('status    : %s' % status)
-        HTTPServerError()   
+        HTTPServerError()
 
     return HTTPOk()
-
-
-
-#@view_config(
-#    route_name='view_sequence',
-#    renderer='templates/sequence/page_view_sequence.jinja2'
-#)
-#def view_sequence(request):
-#    """runs when viewing an sequence
-#    """
-#
-#    login = authenticated_userid(request)
-#    logged_in_user = User.query.filter_by(login=login).first()
-#
-#    sequence_id = request.matchdict.get('id', -1)
-#    sequence = Sequence.query.filter_by(id=sequence_id).first()
-#
-#    return {
-#        'user': logged_in_user,
-#        'sequence': sequence,
-#        'has_permission': PermissionChecker(request)
-#    }
 
 
 @view_config(
@@ -170,7 +145,8 @@ def get_sequences(request):
             'status_fg_color': sequence.status.fg_color,
             'user_id': sequence.created_by.id,
             'user_name': sequence.created_by.name,
-            'thumbnail_path': sequence.thumbnail.full_path if sequence.thumbnail else None
+            'thumbnail_path': sequence.thumbnail.full_path
+            if sequence.thumbnail else None
         }
         for sequence in Sequence.query.all()
     ]
@@ -192,18 +168,20 @@ def get_project_sequences(request):
 
     return [
         {
-            'thumbnail_path': sequence.thumbnail.full_path if sequence.thumbnail else None,
+            'thumbnail_path': sequence.thumbnail.full_path
+            if sequence.thumbnail else None,
             'code': sequence.code,
             'id': sequence.id,
             'name': sequence.name,
             'status': sequence.status.name,
-            'status_color':colors[sequence.status.name]if colors[sequence.status.name] else 'grey',
+            'status_color': sequence.status.html_class
+            if sequence.status.html_class else 'grey',
             'status_bg_color': sequence.status.bg_color,
             'status_fg_color': sequence.status.fg_color,
             'created_by_id': sequence.created_by.id,
             'created_by_name': sequence.created_by.name,
             'description': sequence.description,
-            'date_created':milliseconds_since_epoch(sequence.date_created),
+            'date_created': milliseconds_since_epoch(sequence.date_created),
             'percent_complete': sequence.percent_complete
         }
         for sequence in entity.sequences

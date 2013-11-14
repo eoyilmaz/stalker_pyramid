@@ -26,7 +26,8 @@ from stalker import Type, Status, Asset
 from stalker.db import DBSession
 
 import logging
-from stalker_pyramid.views import get_logged_in_user, milliseconds_since_epoch, PermissionChecker, colors
+from stalker_pyramid.views import (get_logged_in_user,
+                                   milliseconds_since_epoch)
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -108,7 +109,7 @@ def get_assets(request):
             'id': asset.id,
             'name': asset.name,
             'code': asset.code,
-            'status_color':colors[asset.status.name]if colors[asset.status.name] else 'grey',
+            'status_color': asset.status.html_class if asset.status.html_class else 'grey',
             'type_name': asset.type.name,
             'type_id': asset.type.id,
             'status': asset.status.name,

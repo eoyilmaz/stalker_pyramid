@@ -1,19 +1,19 @@
 # -*- coding: utf-8 -*-
 # Stalker Pyramid a Web Base Production Asset Management System
 # Copyright (C) 2009-2013 Erkan Ozgur Yilmaz
-# 
+#
 # This file is part of Stalker Pyramid.
-# 
+#
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
 # License as published by the Free Software Foundation;
 # version 2.1 of the License.
-# 
+#
 # This library is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # Lesser General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
@@ -27,7 +27,7 @@ from stalker import (User, ImageFormat, Repository, Structure, Status,
                      StatusList, Project, Entity, Task)
 from stalker_pyramid.views import (get_date, get_date_range,
                                    get_logged_in_user,
-                                   milliseconds_since_epoch, colors)
+                                   milliseconds_since_epoch)
 
 import logging
 
@@ -109,7 +109,8 @@ def create_project(request):
             DBSession.add(new_project)
             # flash success message
             request.session.flash(
-                'success:Project <strong>%s</strong> is created successfully' % name
+                'success:Project <strong>%s</strong> is created '
+                'successfully' % name
             )
         except BaseException as e:
             request.session.flash('error:' + e.message)
@@ -196,9 +197,7 @@ def get_entity_projects(request):
     entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
 
-    logger.debug('entity.projects count :%s',entity.projects)
-
-
+    logger.debug('entity.projects count :%s', entity.projects)
 
     return [
         {
@@ -206,10 +205,11 @@ def get_entity_projects(request):
             'project_name': project.name,
             'lead_id': project.lead.id,
             'lead_name': project.lead.name,
-            'date_created' : milliseconds_since_epoch(project.date_created),
+            'date_created': milliseconds_since_epoch(project.date_created),
             'created_by_id': project.created_by.id,
             'created_by_name': project.created_by.name,
-            'thumbnail_full_path': project.thumbnail.full_path if project.thumbnail else None,
+            'thumbnail_full_path': project.thumbnail.full_path
+            if project.thumbnail else None,
             'status': project.status.name,
             'percent_complete': project.percent_complete
         }
@@ -232,6 +232,7 @@ def get_projects(request):
         for proj in Project.query.all()
     ]
 
+
 @view_config(
     route_name='get_project_lead',
     renderer='json'
@@ -240,7 +241,7 @@ def get_project_lead(request):
     """returns the project lead as a json data
     """
     project_id = request.matchdict.get('id', -1)
-    project = Project.query.filter(Project.id==project_id).first()
+    project = Project.query.filter(Project.id == project_id).first()
     lead_data = {}
     if project:
         lead = project.lead
@@ -251,6 +252,7 @@ def get_project_lead(request):
         }
 
     return lead_data
+
 
 @view_config(
     route_name='get_project_tasks_today',
@@ -279,28 +281,32 @@ def get_project_tasks_today(request):
 
     elif action == 'end':
         tasks_today = Task.query.join(Project, Task.project) \
-           .filter(Project.id == project_id) \
-           .filter(Task.computed_end > start_of_today) \
-           .filter(Task.computed_end <= end_of_today).all()
+            .filter(Project.id == project_id) \
+            .filter(Task.computed_end > start_of_today) \
+            .filter(Task.computed_end <= end_of_today).all()
 
     task_today_list = []
 
     for task in tasks_today:
         assert isinstance(task, Task)
         if task.is_leaf:
-            resourcesSTR = ''
+            resources_str = ''
             for user in task.resources:
-                resourcesSTR += '<a href="/users/%s/view">%s</a><br/>' % (user.id , user.name)
+                resources_str += \
+                    '<a href="/users/%s/view">%s</a><br/>' % (user.id,
+                                                              user.name)
 
             task_today_list.append({
                 'task_id': task.id,
-                'task_name':'%s (%s)' % (task.name,' | '.join([parent.name for parent in task.parents])),
-                'resources': resourcesSTR,
-                'created_by_id':task.created_by.id,
-                'created_by_name':task.created_by.name,
-                'status':task.status.name,
-                'status_color':colors[task.status.name],
-                'percent_complete':task.percent_complete
+                'task_name': '%s (%s)' %
+                             (task.name, ' | '.join([
+                                 parent.name for parent in task.parents])),
+                'resources': resources_str,
+                'created_by_id': task.created_by.id,
+                'created_by_name': task.created_by.name,
+                'status': task.status.name,
+                'status_color': task.status.html_class,
+                'percent_complete': task.percent_complete
             })
 
     return task_today_list
