@@ -8,13 +8,11 @@
     </script>
 
     {% if entity.entity_type == 'Task' or entity.entity_type == 'Asset'or entity.entity_type == 'Shot'or entity.entity_type == 'Sequence' %}
-
         {% include 'breadcrumb/breadcrumbs_task.jinja2' %}
-
+    {% elif entity.entity_type == 'Ticket' %}
+        {% include 'breadcrumb/breadcrumbs_ticket.jinja2' %}
     {% else %}
-
         {% include 'breadcrumb/breadcrumbs_base.jinja2' %}
-
     {% endif %}
 
     <div class="nav-search" id="nav-search">
@@ -35,56 +33,39 @@
 <script type="text/javascript">
 
     function submitForm() {
-
         var search_input = $("#nav-search-input");
-
         var search_str = search_input.val();
 
-
         $.getJSON('/submit_search', {str: '%'+search_str+'%', id:'{{entity.id}}'}).then(function (data) {
-
             window.location.replace(data.url);
-
         });
 
     }
     $(document).ready(function () {
-
         var search_input = $("#nav-search-input");
         search_input.typeahead({source: [], updater: function (b) {
             search_input.focus();
             return b
-        }})
-
+        }});
 
         search_input.on('keyup', function () {
-
             var search_str = search_input.val();
 
-
             if (search_str.length > 3) {
-
-
                 $.getJSON('/search', {str: '%'+search_str+'%'}).then(function (data) {
 
                     var input_source = [];
                     for (var i = 0; i < data.length; i++) {
                         input_source.push(data[i].name);
-
                     }
-
 
                     search_input.autocomplete({
                         delay: 0,
                         source: input_source,
                         minLength: 0
                     });
-
                 });
             }
-
         })
-
-
     });
 </script>

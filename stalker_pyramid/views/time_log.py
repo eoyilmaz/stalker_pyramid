@@ -30,6 +30,7 @@ from stalker import defaults, Task, User, Studio, TimeLog, Entity, Status
 from stalker.db import DBSession
 from stalker.exceptions import OverBookedError
 import time
+import transaction
 from stalker_pyramid.views import (get_logged_in_user,
                                    PermissionChecker, milliseconds_since_epoch,
                                    get_date, StdErrToHTMLConverter)
@@ -150,10 +151,26 @@ def create_time_log(request):
                 end=end_date
             )
 
+            status_new = Status.query.filter(Status.code == "NEW").first()
+            status_wip = Status.query.filter(Status.code == "WIP").first()
+            status_completed = Status.query.filter(Status.code == "CMPL")\
+                .first()
+            status_has_revision = Status.query.filter(Status.code == "HREV")\
+                .first()
+
+            # check if the task status is not completed
+            if task.status not in [status_new, status_wip]:
+                DBSession.rollback()
+                # it is not possible to create a time log for completed tasks
+                response = Response('It is only possible to create time log '
+                                    'for a task with status is set to '
+                                    '"NEW" or "WIP"')
+                response.status_int = 500
+                return response
+
             # check the dependent tasks has finished
-            compl = Status.query.filter(Status.code == "CMPL").first()
             for dep_task in task.depends:
-                if dep_task.status != compl:
+                if dep_task.status != status_completed:
                     response = Response(
                         'Because one of the dependencies (Task: %s (%s)) has '
                         'not finished, \n'

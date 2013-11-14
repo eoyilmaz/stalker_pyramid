@@ -2,6 +2,18 @@
 Stalker Pyramid Changes
 =======================
 
+0.1.1
+=====
+
+* **Update:** Moved to Ace, a Bootstrap derived template.
+* **New:** Added Resource Chart.
+* **New:** Added the ability to zoom in Gantt Chart.
+* **Fix:** Fixed avatar uploads in user info update page.
+* **Update:** Added status and status list creation for Project, Task, Asset,
+  Shot and Sequence entity types and New, Work In Progress, Pending Review,
+  Has Revision and Completed to
+  ``stalker_pyramid.scripts.initializedb.main()``.
+
 0.1.0.b4
 ========
 
@@ -39,7 +51,7 @@ Stalker Pyramid Changes
 * **New:** It is now possible to create new Version files by uploading files to
   the server. Though the stalker server now needs to have a link to the file
   server.
-* **Update:** Updating a Studiowide Vacation is not allowed in user vacation
+* **Update:** Updating a StudioWide Vacation is not allowed in user vacation
   list.
 * **Update:** All the DGrid table columns are now resizable.
 * **Update:** GanttColumn now scrolls to the desired date so that the date will

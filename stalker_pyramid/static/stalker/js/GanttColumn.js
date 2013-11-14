@@ -486,6 +486,57 @@ define([
             return Math.floor(table_width / element_width);
         };
 
+        /**
+         * Converts the given start and end pixel values to start and end dates
+         * in millies
+         * 
+         * @param start
+         * @param end
+         */
+        column.convert_pixel_to_millies = function (start, end) {
+            var scale = zoom_levels[column.scale].scale;
+            var start_date = moment(column.start).startOf('day');
+            return {
+                start: start * scale + start_date,
+                end: end * scale + start_date
+            };
+        };
+
+        /**
+         * Returns the best zoom level for the given start and end range
+         * @param start
+         * @param end
+         */
+        column.guess_zoom_level = function(start, end) {
+            // get the zoom level with the desired scale so the range will have
+            // around 100 boxes
+            var range = end - start;
+            var desired_element_count = 100;
+            var min_ratio = 1e10;
+            var current_ratio;
+            var current_element_count;
+            var desired_level = null;
+            for (var level in zoom_levels) {
+                if (level !== null) {
+                    current_element_count = this.guess_element_count(start, end, level);
+                    current_ratio = desired_element_count / current_element_count + current_element_count / desired_element_count - 2;
+//                    console.log('level:', level,'ratio:', current_ratio);
+                    if (current_ratio < min_ratio) {
+                        min_ratio = current_ratio;
+                        desired_level = level;
+                    }
+                }
+            }
+            return desired_level;
+        };
+
+        /**
+         * Renders one row
+         * 
+         * @param data
+         * @param value
+         * @param td
+         */
         column.renderCell = function (data, value, td) {
             // summary:
             //     Renders a task.

@@ -18,21 +18,48 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 
+import time
 import logging
 
 from pyramid.httpexceptions import HTTPOk
+from pyramid.response import Response
+from pyramid.url import resource_url
 from pyramid.view import view_config
-from sqlalchemy.orm import aliased
+from pyramid_mailer import get_mailer
+from pyramid_mailer.message import Message
 
-from stalker import User, Ticket, Entity, Project, Status, SimpleEntity, Task
+from stalker import User, Ticket, Entity, Project, Status, Note
 
 from stalker.db import DBSession
-import time
 from stalker_pyramid.views import (get_logged_in_user, PermissionChecker,
-                                   milliseconds_since_epoch)
+                                   milliseconds_since_epoch,
+                                   dummy_email_address)
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
+
+
+@view_config(
+    route_name='get_ticket_resolutions',
+    renderer='json'
+)
+def get_ticket_resolutions(request):
+    """returns the ticket resolutions defined in the system
+    """
+    from stalker import defaults
+    return defaults.ticket_resolutions
+
+
+@view_config(
+    route_name='get_ticket_workflow',
+    renderer='json'
+)
+def get_ticket_workflow(request):
+    """returns the ticket workflow defined in the config
+    """
+    from stalker import defaults
+    return defaults.ticket_workflow
+
 
 @view_config(
     route_name='dialog_create_ticket',
@@ -49,12 +76,13 @@ def create_ticket_dialog(request):
     # TODO: remove 'mode': 'CREATE' by considering it the default mode
 
     return {
-        'mode': 'CREATE',
+        'mode': 'create',
         'has_permission': PermissionChecker(request),
         'logged_in_user': logged_in_user,
         'entity': entity,
         'milliseconds_since_epoch': milliseconds_since_epoch
     }
+
 
 @view_config(
     route_name='dialog_update_ticket',
@@ -104,7 +132,6 @@ def create_ticket(request):
     status_id = request.params.get('status_id')
     status = Status.query.filter_by(id=status_id).first()
 
-
     logger.debug('*******************************')
 
     logger.debug('create_ticket is running')
@@ -117,7 +144,7 @@ def create_ticket(request):
         # we are ready to create the time log
         # Ticket should handle the extension of the effort
         ticket = Ticket(
-            status = status,
+            status=status,
             summary=summary,
             description=description,
             project=project,
@@ -131,7 +158,7 @@ def create_ticket(request):
 
 
 @view_config(
-    route_name='update_ticket'
+    route_name='update_ticket',
 )
 def update_ticket(request):
     """runs when updating a ticket
@@ -143,63 +170,87 @@ def update_ticket(request):
 
     #**************************************************************************
     # collect data
-    description = request.params.get('description')
-    summary = request.params.get('summary')
+    comment = request.params.get('comment')
+    comment_as_text = request.params.get('comment_as_text')
+    action = request.params.get('action')
 
-    project_id = request.params.get('project_id', None)
-    project = Project.query.filter(Project.id==project_id).first()
+    # TODO: filter all images in the comment and create appropriate links
 
-    owner_id = request.params.get('owner_id', None)
-    owner = User.query.filter(User.id==owner_id).first()
+    logger.debug('updating ticket')
+    if not ticket:
+        return Response('No ticket with id : %s' % ticket_id, 500)
 
-    status_id = request.params.get('status_id')
-    status = Status.query.filter_by(id=status_id).first()
+    if not action.startswith('leave_as'):
+        if logged_in_user == ticket.owner or \
+           logged_in_user == ticket.created_by:
+            if action.startswith('resolve_as'):
+                resolution = action.split(':')[1]
+                ticket.resolve(logged_in_user, resolution)
+            elif action.startswith('set_owner'):
+                user_id = int(action.split(':')[1])
+                assign_to = User.query.get(user_id)
+                ticket.reassign(logged_in_user, assign_to)
+                # send mail to the new owner
+            elif action.startswith('delete_resolution'):
+                ticket.reopen(logged_in_user)
+        else:
+            request.session.flash(
+                'Error: You do not have permission to update the ticket'
+            )
 
-    logger.debug('*******************************')
-    logger.debug('update_ticket is running')
-    logger.debug('ticket: %s' % ticket)
-    logger.debug('project_id : %s' % project_id)
-    logger.debug('owner_id : %s' % owner_id)
-    logger.debug('owner: %s' % owner)
-    logger.debug('project: %s' % project)
-    logger.debug('summary: %s' % summary)
-    logger.debug('description: %s' % description)
+    if comment:
+        note = Note(
+            content=comment,
+            created_by=logged_in_user,
+        )
+        ticket.comments.append(note)
+        DBSession.add(note)
 
-    if ticket and description and project and owner:
-        logger.debug('updating ticket')
-        # we are ready to create the time log
-        # Ticket should handle the extension of the effort
-        ticket.summary = summary
-        ticket.description = description
-        ticket.status = status
-        if ticket.owner != owner:
-            ticket.set_owner(owner)
-        ticket.updated_by = logged_in_user
+        # send email to the owner about the new comment
+        mailer = get_mailer(request)
 
-        DBSession.add(ticket)
-        logger.debug('successfully updated ticket')
+        recipients = [logged_in_user.email]
+        if ticket.created_by.email not in recipients:
+            recipients.append(ticket.created_by.email)
 
-    logger.debug('returning from update_ticket')
+        message_body = "%(who)s has added a the following comment to " \
+            "#%(ticket)s:\n\n%(comment)s"
 
-    return HTTPOk()
+        message_body_text = message_body % \
+            {
+                'who': logged_in_user.name,
+                'ticket': "Ticket #%s" % ticket.number,
+                'comment': comment_as_text
+            }
 
-# @view_config(
-#     route_name='view_ticket',
-#     renderer='templates/ticket/view_ticket.jinja2'
-# )
-# def view_ticket(request):
-#     """runs when viewing an ticket
-#     """
-#     logged_in_user = get_logged_in_user(request)
-# 
-#     ticket_id = request.matchdict.get('id', -1)
-#     ticket = Ticket.query.filter_by(id=ticket_id).first()
-# 
-#     return {
-#         'user': logged_in_user,
-#         'has_permission': PermissionChecker(request),
-#         'ticket': ticket
-#     }
+        message_body_html = message_body % \
+            {
+                'who': '<a href="%(link)s">%(name)s</a>' % {
+                    'link': request.route_url('view_user',
+                                              id=logged_in_user.id),
+                    'name': logged_in_user.name
+                },
+                'ticket': '<a href="%(link)s">%(name)s</a>' % {
+                    'link': request.route_url('view_ticket', id=ticket.id),
+                    'name': "Ticket #%s" % ticket.number
+                },
+                'comment': comment_as_text
+            }
+
+        message = Message(
+            subject="Stalker Pyramid: New comment on Ticket #%s" %
+                    ticket.number,
+            sender=dummy_email_address,
+            recipients=recipients,
+            body=message_body_text,
+            html=message_body_html
+        )
+        mailer.send(message)
+
+    logger.debug('successfully updated ticket')
+
+    request.session.flash('Success: Successfully updated ticket')
+    return Response('Successfully updated ticket')
 
 
 @view_config(

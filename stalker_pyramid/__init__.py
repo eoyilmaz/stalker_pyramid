@@ -24,7 +24,7 @@ Animation and VFX Studios. See docs for more information.
 import pyramid_beaker
 from zope.sqlalchemy import ZopeTransactionExtension
 
-__version__ = '0.1.0.b4'
+__version__ = '0.1.1'
 
 
 # before anything about stalker create the defaults
@@ -87,9 +87,7 @@ def main(global_config, **settings):
     config.add_route('signin', '/signin')
     config.add_route('login', '/login')
     config.add_route('logout', '/logout')
-    config.add_route('test_bootstrap', '/testBootstrap')
 
-    config.add_route('busy_dialog', 'dialog/busy')
     config.add_route('flash_message', '/flash_message')
 
     # addresses like http:/localhost:6543/SPL/{some_path} will let SP to serve
@@ -117,12 +115,9 @@ def main(global_config, **settings):
     # *************************************************************************
     # Entities
 
-    config.add_route('get_search_result', '/search') #json
+    config.add_route('get_search_result', '/search')  # json
     config.add_route('list_search_result', '/list/search_results')
     config.add_route('submit_search', '/submit_search')
-
-
-
 
     config.add_route('upload_entity_thumbnail_dialog', 'entities/{id}/thumbnail/upload/dialog')
     config.add_route('upload_entity_reference_dialog', 'entities/{id}/references/upload/dialog')
@@ -150,19 +145,19 @@ def main(global_config, **settings):
     config.add_route('get_entity_shots',               'entities/{id}/shots/')
     config.add_route('get_entity_vacations',           'entities/{id}/vacations/')
     config.add_route('get_entity_entities_out_stack',  'entities/{id}/{entities}/out_stack/' )
-    config.add_route('get_entity_events',              'entities/{id}/events/')#json
+    config.add_route('get_entity_events',              'entities/{id}/events/')  #json
     config.add_route('get_entity_versions',            'entities/{id}/versions/')  # json
 
     config.add_route('list_entity_users',              'entities/{id}/users/list')
-    config.add_route('list_entity_departments',        'entities/{id}/departments/list') # html
-    config.add_route('list_entity_groups',             'entities/{id}/groups/list') # html
-    config.add_route('list_entity_tasks',              'entities/{id}/tasks/list') # html
-    config.add_route('list_entity_tickets',            'entities/{id}/tickets/list') # html
+    config.add_route('list_entity_departments',        'entities/{id}/departments/list')  # html
+    config.add_route('list_entity_groups',             'entities/{id}/groups/list')  # html
+    config.add_route('list_entity_tasks',              'entities/{id}/tasks/list')  # html
+    config.add_route('list_entity_tickets',            'entities/{id}/tickets/list')  # html
     config.add_route('list_entity_projects',           'entities/{id}/projects/list')
-    config.add_route('list_entity_references',         'entities/{id}/references/list') # html
-    config.add_route('list_entity_vacations',          'entities/{id}/vacations/list') # html
-    config.add_route('list_entity_versions',           'entities/{id}/versions/list') # html
-    config.add_route('list_entity_resources',          'entities/{id}/resources/list') # html
+    config.add_route('list_entity_references',         'entities/{id}/references/list')  # html
+    config.add_route('list_entity_vacations',          'entities/{id}/vacations/list')  # html
+    config.add_route('list_entity_versions',           'entities/{id}/versions/list')  # html
+    config.add_route('list_entity_resources',          'entities/{id}/resources/list')  # html
 
     config.add_route('append_entities_to_entity_dialog',  'entities/{id}/{entities}/append/dialog')
     config.add_route('append_entities_to_entity',         'entities/{id}/append')
@@ -225,9 +220,9 @@ def main(global_config, **settings):
 
     config.add_route('view_project',               'projects/{id}/view')
 
-    config.add_route('list_projects',              'projects/list') # html
+    config.add_route('list_projects',              'projects/list')  # html
     config.add_route('list_project_users',         'projects/{id}/users/list')
-    config.add_route('list_project_tasks',         'projects/{id}/tasks/list') # html
+    config.add_route('list_project_tasks',         'projects/{id}/tasks/list')  # html
     config.add_route('list_project_assets',        'projects/{id}/assets/list')
     config.add_route('list_project_shots',         'projects/{id}/shots/list')
     config.add_route('list_project_sequences',     'projects/{id}/sequences/list')
@@ -239,12 +234,12 @@ def main(global_config, **settings):
     config.add_route('get_project_assets',         'projects/{id}/assets/')
     config.add_route('get_project_shots',          'projects/{id}/shots/')
     config.add_route('get_project_sequences',      'projects/{id}/sequences/')
-    config.add_route('get_project_references',     'projects/{id}/references/') # json
-    config.add_route('get_project_references_count', 'projects/{id}/references/count/') # json
-    config.add_route('get_project_tickets',        'projects/{id}/tickets/') # json
+    config.add_route('get_project_references',     'projects/{id}/references/')  # json
+    config.add_route('get_project_references_count', 'projects/{id}/references/count/')  # json
+    config.add_route('get_project_tickets',        'projects/{id}/tickets/')  # json
 
-    config.add_route('get_project_tasks_today',    'projects/{id}/tasks/{action}/today/') # json
-    config.add_route('get_project_tasks_in_date',  'projects/{id}/tasks/{action}/{date}/') # json
+    config.add_route('get_project_tasks_today',    'projects/{id}/tasks/{action}/today/')  # json
+    config.add_route('get_project_tasks_in_date',  'projects/{id}/tasks/{action}/{date}/')  # json
 
     # *************************************************************************
     # ImageFormat
@@ -254,8 +249,8 @@ def main(global_config, **settings):
     config.add_route('create_image_format', 'image_formats/create')
     config.add_route('update_image_format', 'image_formats/{id}/update')
 
-    config.add_route('list_image_formats', 'image_formats/list') # html
-    config.add_route('get_image_formats', 'image_formats/') # json
+    config.add_route('list_image_formats', 'image_formats/list')  # html
+    config.add_route('get_image_formats', 'image_formats/')  # json
 
     # *************************************************************************
     # Repository
@@ -265,8 +260,8 @@ def main(global_config, **settings):
     config.add_route('create_repository', 'repositories/create')
     config.add_route('update_repository', 'repositories/{id}/update')
 
-    config.add_route('list_repositories', 'repositories/list') # html
-    config.add_route('get_repositories', 'repositories/') # json
+    config.add_route('list_repositories', 'repositories/list')  # html
+    config.add_route('get_repositories', 'repositories/')  # json
 
     # *************************************************************************
     # Structure
@@ -275,7 +270,7 @@ def main(global_config, **settings):
 
     config.add_route('create_structure', 'structures/create')
     config.add_route('update_structure', 'structures/{id}/update')
-    config.add_route('get_structures',   'structures/') # json
+    config.add_route('get_structures',   'structures/')  # json
 
     # *************************************************************************
     # User
@@ -289,11 +284,11 @@ def main(global_config, **settings):
 
     config.add_route('append_user_to_departments_dialog', 'users/{id}/departments/append/dialog')
     config.add_route('append_user_to_departments', 'users/{id}/departments/append')
-    config.add_route('append_user_to_department',  'users/{uid}/department/{did}/append') # unused
+    config.add_route('append_user_to_department',  'users/{uid}/department/{did}/append')  # unused
 
     config.add_route('append_user_to_groups_dialog', 'users/{id}/groups/append/dialog')
     config.add_route('append_user_to_groups', 'users/{id}/groups/append')
-    config.add_route('append_user_to_group',  'users/{uid}/groups/{gid}/append')# unused
+    config.add_route('append_user_to_group',  'users/{uid}/groups/{gid}/append')  # unused
 
     config.add_route('create_user',           'users/create')
     config.add_route('update_user',           'users/{id}/update')
@@ -302,27 +297,27 @@ def main(global_config, **settings):
 
     config.add_route('get_user',              'users/{id}/')  # json
     config.add_route('get_users',             'users/')  # json
-    config.add_route('get_user_departments',  'users/{id}/departments/') # json
-    config.add_route('get_user_groups',       'users/{id}/groups/') # json
-    config.add_route('get_user_tasks',        'users/{id}/tasks/') # json
-    config.add_route('get_user_vacations',    'users/{id}/vacations/') # json
-    config.add_route('get_user_tickets',      'users/{id}/tickets/') # json
-    config.add_route('get_user_events',       'users/{id}/events/')#json
-    # config.add_route('get_user_worked_hours', 'users/{id}/{frequency}/worked_hours/')#json
+    config.add_route('get_user_departments',  'users/{id}/departments/')  # json
+    config.add_route('get_user_groups',       'users/{id}/groups/')  # json
+    config.add_route('get_user_tasks',        'users/{id}/tasks/')  # json
+    config.add_route('get_user_vacations',    'users/{id}/vacations/')  # json
+    config.add_route('get_user_tickets',      'users/{id}/tickets/')  # json
+    config.add_route('get_user_events',       'users/{id}/events/')  # json
+    # config.add_route('get_user_worked_hours', 'users/{id}/{frequency}/worked_hours/')  # json
     config.add_route('get_resources',         'resources/')
     config.add_route('get_entity_resources',  'entities/{id}/resources/')
     config.add_route('get_resource',          'resources/{id}/')
 
-    config.add_route('list_users',            'users/list') # html
-    config.add_route('list_user_tasks',       'users/{id}/tasks/list') # html
-    config.add_route('list_user_vacations',   'users/{id}/vacations/list') # html
-    config.add_route('list_user_departments', 'users/{id}/departments/list') # html
-    config.add_route('list_user_groups',      'users/{id}/groups/list') # html
-    config.add_route('list_user_projects',    'users/{id}/projects/list') # html
-    config.add_route('list_user_time_logs',   'users/{id}/time_logs/list') # html
-    config.add_route('list_user_tickets',   'users/{id}/tickets/list') # html
+    config.add_route('list_users',            'users/list')  # html
+    config.add_route('list_user_tasks',       'users/{id}/tasks/list')  # html
+    config.add_route('list_user_vacations',   'users/{id}/vacations/list')  # html
+    config.add_route('list_user_departments', 'users/{id}/departments/list')  # html
+    config.add_route('list_user_groups',      'users/{id}/groups/list')  # html
+    config.add_route('list_user_projects',    'users/{id}/projects/list')  # html
+    config.add_route('list_user_time_logs',   'users/{id}/time_logs/list')  # html
+    config.add_route('list_user_tickets',   'users/{id}/tickets/list')  # html
 
-    config.add_route('view_user_tasks',       'users/{id}/tasks/view') # html
+    config.add_route('view_user_tasks',       'users/{id}/tasks/view')  # html
     config.add_route('view_user_versions',    'users/{id}/versions/view')
     config.add_route('view_user_tickets',     'users/{id}/tickets/view')
 
@@ -337,9 +332,9 @@ def main(global_config, **settings):
     config.add_route('create_filename_template', 'filename_templates/create')
     config.add_route('update_filename_template', 'filename_templates/{id}/update')
 
-    config.add_route('get_filename_templates', 'filename_templates/') # json
+    config.add_route('get_filename_templates', 'filename_templates/')  # json
 
-    # ************************************************************************* 
+    # *************************************************************************
     # StatusList
     config.add_route('dialog_create_status_list',     'status_lists/create/dialog')
     config.add_route('dialog_create_status_list_for', 'status_lists/{target_entity_type}/create/dialog')
@@ -360,9 +355,9 @@ def main(global_config, **settings):
     config.add_route('create_status', 'statuses/create')
     config.add_route('update_status', 'statuses/{id}/update')
 
-    config.add_route('get_statuses',     'statuses/') # json
-    config.add_route('get_statuses_for', 'statuses/{target_entity_type}/') # json
-    config.add_route('get_statuses_of',  'status_lists/{id}/statuses/') # json
+    config.add_route('get_statuses',     'statuses/')  # json
+    config.add_route('get_statuses_for', 'statuses/{target_entity_type}/')  # json
+    config.add_route('get_statuses_of',  'status_lists/{id}/statuses/')  # json
 
     # *************************************************************************
     # Assets
@@ -384,9 +379,9 @@ def main(global_config, **settings):
 
     config.add_route('view_shot',          'shots/{id}/view')
 
-    config.add_route('list_shot_tasks',    'shots/{id}/tasks/list') # html
-    config.add_route('list_shot_tickets',  'shots/{id}/tickets/list') # html
-    config.add_route('list_shot_versions', 'shots/{id}/versions/list') # html
+    config.add_route('list_shot_tasks',    'shots/{id}/tasks/list')  # html
+    config.add_route('list_shot_tickets',  'shots/{id}/tickets/list')  # html
+    config.add_route('list_shot_versions', 'shots/{id}/versions/list')  # html
 
     # *************************************************************************
     # Sequence
@@ -399,13 +394,13 @@ def main(global_config, **settings):
 
     config.add_route('get_sequence_references', 'sequences/{id}/references/')  # json
     config.add_route('get_sequence_references_count', 'sequences/{id}/references/count/')  # json
-    config.add_route('get_sequence_tickets',    'sequences/{id}/tickets/') # json
-    config.add_route('get_sequence_tasks',      'sequences/{id}/tasks/') # json
-    config.add_route('get_sequences',           'sequences/') # json
+    config.add_route('get_sequence_tickets',    'sequences/{id}/tickets/')  # json
+    config.add_route('get_sequence_tasks',      'sequences/{id}/tasks/')  # json
+    config.add_route('get_sequences',           'sequences/')  # json
 
-    config.add_route('list_sequence_tickets',   'sequences/{id}/tickets/list') # html
-    config.add_route('list_sequence_tasks',     'sequences/{id}/tasks/list') # html
-    config.add_route('list_sequence_versions',  'sequences/{id}/versions/list') # html
+    config.add_route('list_sequence_tickets',   'sequences/{id}/tickets/list')  # html
+    config.add_route('list_sequence_tasks',     'sequences/{id}/tasks/list')  # html
+    config.add_route('list_sequence_versions',  'sequences/{id}/versions/list')  # html
 
     # *************************************************************************
     # Task
@@ -413,6 +408,7 @@ def main(global_config, **settings):
     # Dialogs
     config.add_route('task_dialog',                'tasks/{id}/{mode}/dialog')
 
+    # Actions
     config.add_route('create_task',              'tasks/create')
     config.add_route('update_task',              'tasks/{id}/update')
 
@@ -420,10 +416,10 @@ def main(global_config, **settings):
 
     config.add_route('view_task',                'tasks/{id}/view')
 
-    config.add_route('list_task_tasks',          'tasks/{id}/tasks/list') # html
-    config.add_route('list_task_versions',       'tasks/{id}/versions/list') # html
-    config.add_route('list_task_tickets',        'tasks/{id}/tickets/list') # html
-    config.add_route('list_task_references',     'tasks/{id}/references/list') # html
+    config.add_route('list_task_tasks',          'tasks/{id}/tasks/list')  # html
+    config.add_route('list_task_versions',       'tasks/{id}/versions/list')  # html
+    config.add_route('list_task_tickets',        'tasks/{id}/tickets/list')  # html
+    config.add_route('list_task_references',     'tasks/{id}/references/list')  # html
 
     config.add_route('get_gantt_tasks',          'tasks/{id}/gantt')
     config.add_route('get_gantt_task_children',  'tasks/{id}/children/gantt')
@@ -435,7 +431,12 @@ def main(global_config, **settings):
     config.add_route('get_task_children', 'tasks/{id}/children/')
     config.add_route('get_task_events',   'tasks/{id}/events/')  #json
     # config.add_route('get_task_depends_of', 'tasks/{id}/depends_of/')
-    config.add_route('get_task_depends', 'tasks/{id}/depends/')
+    config.add_route('get_task_depends',  'tasks/{id}/depends/')
+    config.add_route('get_task_tickets',  'tasks/{id}/tickets')  # json
+
+    config.add_route('request_review',     'tasks/{id}/request_review')
+    config.add_route('request_revision',   'tasks/{id}/request_revision')
+    config.add_route('request_extra_time', 'tasks/{id}/request_extra_time')
 
     config.add_route('delete_task',       'tasks/{id}/delete')
 
@@ -454,25 +455,24 @@ def main(global_config, **settings):
     config.add_route('create_time_log', 'time_logs/create')
     config.add_route('update_time_log', 'time_logs/{id}/update')
 
-    config.add_route('get_task_time_logs',  'task/{id}/time_logs/') # json
-    config.add_route('list_task_time_logs', 'task/{id}/time_logs/list') # html
+    config.add_route('get_task_time_logs',  'task/{id}/time_logs/')  # json
+    config.add_route('list_task_time_logs', 'task/{id}/time_logs/list')  # html
 
     # *************************************************************************
     # Ticket
-    config.add_route('dialog_create_ticket', 'projects/{id}/tickets/create/dialog')
-    config.add_route('dialog_update_ticket', 'tickets/{id}/update/dialog')
+    config.add_route('dialog_create_ticket',   'projects/{id}/tickets/create/dialog')
+    config.add_route('dialog_update_ticket',   'tickets/{id}/update/dialog')
 
-    config.add_route('create_ticket', 'tickets/create')
-    config.add_route('update_ticket', 'tickets/{id}/update')
+    config.add_route('create_ticket',          'tickets/create')
+    config.add_route('update_ticket',          'tickets/{id}/update')
 
-    config.add_route('view_ticket',         'tickets/{id}/view')
+    config.add_route('list_ticket_tickets',    'tickets/{id}/tickets/')  # html
 
-    config.add_route('get_tickets',      'tickets/')
+    config.add_route('view_ticket',            'tickets/{id}/view')
 
-    config.add_route('get_task_tickets',    'tasks/{id}/tickets') # json
-    config.add_route('list_ticket_tickets', 'tickets/{id}/tickets/') # html
-
-    config.add_route('request_task_review', 'tasks/{id}/request_review')
+    config.add_route('get_tickets',            'tickets/')
+    config.add_route('get_ticket_resolutions', 'tickets/resolutions/')
+    config.add_route('get_ticket_workflow',    'tickets/workflow/')
 
     # *************************************************************************
     # Vacation
@@ -495,9 +495,9 @@ def main(global_config, **settings):
     config.add_route('assign_version', 'assign_version') # TODO: update this address
 
     config.add_route('view_version',          'versions/{id}/view')
-    config.add_route('list_version_outputs',  'versions/{id}/outputs/list') # html
-    config.add_route('list_version_inputs',   'versions/{id}/inputs/list') # html
-    config.add_route('list_version_children', 'versions/{id}/children/list') # html
+    config.add_route('list_version_outputs',  'versions/{id}/outputs/list')  # html
+    config.add_route('list_version_inputs',   'versions/{id}/inputs/list')  # html
+    config.add_route('list_version_children', 'versions/{id}/children/list')  # html
 
     # *************************************************************************
     # Department
@@ -517,7 +517,7 @@ def main(global_config, **settings):
 
     config.add_route('get_department_tasks',  'departments/{id}/tasks/')
 
-    config.add_route('append_departments',   'departments/{id}/append') # TODO: this was not clear
+    config.add_route('append_departments',   'departments/{id}/append')  # TODO: this was not clear
 
     # *************************************************************************
     # Group
@@ -535,9 +535,9 @@ def main(global_config, **settings):
 
     config.add_route('list_groups',         'groups/list')
     config.add_route('list_group_users',    'groups/{id}/users/list')
-    config.add_route('list_group_permissions',    'groups/{id}/permissions/list') # html
+    config.add_route('list_group_permissions',    'groups/{id}/permissions/list')  # html
 
-    config.add_route('get_group_permissions',    'groups/{id}/permissions/') # html
+    config.add_route('get_group_permissions',    'groups/{id}/permissions/')  # html
 
     # *************************************************************************
     # Tag

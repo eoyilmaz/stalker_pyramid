@@ -147,7 +147,7 @@
 </script>
 
 <script id="tmpl_taskLink" type="text/x-dot-template">
-    <a href="/tasks/{{=it.id}}/view">{{=it.name}} ({{=it.type}})</a>
+    <a href="/tasks/{{=it.id}}/view">{{=it.name}}</a>
 </script>
 
 <script id='tmpl_resourceLink' type='text/x-dot-template'>
@@ -155,7 +155,7 @@
 </script>
 
 <script id="tmpl_projectLink" type="text/x-dot-template">
-    <a href="/projects/{{=it.id}}/view">{{=it.name}} ({{=it.type}})</a>
+    <a href="/projects/{{=it.id}}/view">{{=it.name}}</a>
 </script>
 
 {% endraw %}
@@ -308,13 +308,6 @@
                         <li class="divider"></li>
 
                         <li>
-                            <a href='#' class="blue">
-                                <i class="'ui-icon icon-comment bigger-120">&nbsp</i>
-                                Request Review
-                            </a>
-                        </li>
-
-                        <li>
                             <a id='add_time_log_button'
                                class="green"
                                href='#'>
@@ -323,6 +316,14 @@
                             </a>
                         </li>
 
+                        <li>
+                            <a id='request_review_button'
+                               class="blue"
+                               href="#">
+                                <i class="'ui-icon icon-comment bigger-120">&nbsp</i>
+                                Request Review
+                            </a>
+                        </li>
 
                     </ul>
                 </div>
@@ -399,6 +400,14 @@
                         Go To Today
                     </button>
                     <div id="gantt_scroll_to_button" class="hidden" start="0"></div>
+                </div>
+
+                <div id="gantt_zoom_selection" class="btn-group">
+                    <button class="btn btn-small btn-danger"
+                            data-loading-text='<i class="icon-search bigger-120"></i>Zooming...'>
+                        <i class="icon-search bigger-120"></i>
+                        Zoom To Selection
+                    </button>
                 </div>
             
                 <div class="btn-group hidden">
@@ -571,15 +580,18 @@ require([
     });
     var tasks_cache_store = new Cache(tasks_jsonRest_store, tasks_memory_store);
 
+    var gantt_chart_dom_id = '{{ entity.entity_type }}_{{ entity.id }}_gantt';
+    var gantt_chart_dgrid_id = '{{ entity.entity_type }}_{{ entity.id }}_gantt_dgrid';
+
     // allow the gantt to resize with the window
     $(window).on('resize', function(){
         var gantt_height = $(window).height() - 230;
-        $('#'+'{{ entity.entity_type }}_{{ entity.id }}_gantt').css({height: gantt_height});
+        $('#' + gantt_chart_dom_id).css({height: gantt_height});
     });
     $(window).trigger('resize');
 
     var gantt_chart = new GanttGrid({
-        id: '{{ entity.entity_type }}_{{ entity.id }}_gantt_dgrid',
+        id: gantt_chart_dgrid_id,
         width: '100%',
         autoHeight: true,
         store: tasks_cache_store,
@@ -591,7 +603,7 @@ require([
         noDataMessage: "",
         pageSkip: 0,
         cellNavigation: false
-    }, '{{ entity.entity_type }}_{{ entity.id }}_gantt');
+    }, gantt_chart_dom_id);
     gantt_chart.startup();
 
     // ceter on today
@@ -665,10 +677,44 @@ require([
                 'href',
                 '/entities/' + selected_ids[0] + '/timelogs/create/dialog'
             )
+
+            $('#request_review_button').attr(
+                'href',
+                '/tasks/' + selected_ids[0] + '/request_review'
+            )
         }
     });
 
-    var select_first_and_do_something = function(e, callback){
+    $('#request_review_button').on('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        var selected_ids = gantt_chart.selected_ids();
+
+        bootbox.confirm(
+            '<div><p>This will send the responsible of this task a ' +
+            '<strong>review request</strong> and you will ' +
+            '<strong>not</strong> be able to ' +
+            '<strong>create any TimeLogs</strong> for this task ' +
+            'after this point<br><br><strong>Are you sure?</strong></div>',
+            function (result) {
+                if (result) {
+                    // get the ids and send it to the server
+                    var url = '';
+                    for (var i=0; i < selected_ids.length; i += 1){
+                        url = '/tasks/' + selected_ids[i] + '/request_review';
+                        $.post(url).done(function(response){
+                            bootbox.alert(response);
+                        }).fail(function(jqXHR){
+                            bootbox.alert(jqXHR.responseText);
+                        });
+                    }
+                }
+            }
+        )
+    });
+
+    var select_first_and_do_something = function (e, callback){
         e.preventDefault();
         e.stopPropagation();
         // check if something is selected first
@@ -733,9 +779,10 @@ require([
                         }).fail(function(jqXHR){
                             bootbox.alert(jqXHR.responseText);
                         });
-                    };
-                };
-        });
+                    }
+                }
+            }
+        );
     });
 
     $('#add_time_log_button').on('click', function(e){
@@ -827,7 +874,7 @@ require([
             gantt_column.refresh();
         };
 
-        if (element_count > 100){
+        if (element_count > 1000){
             // confirm the user that it is going to take too much time
             bootbox.confirm(
                 '<div><p><strong>' + element_count +
@@ -898,6 +945,76 @@ require([
 
     $('#gantt_go_to_today_button').on('click', function(){
        gantt_column.centerOnToday(); 
+    });
+
+    // create the zoom window
+    $('#gantt_zoom_selection').on('click', function(e){
+
+        // change button state
+        $('#gantt_zoom_selection').find('button').button('loading');
+
+        var dragDetector = $($.parseHTML('<div class="dragDetector"></div>'));
+        var zoomBox = $($.parseHTML('<div class="zoomBox"></div>'));
+        $('#' + gantt_chart_dom_id).append(zoomBox).append(dragDetector);
+        
+        $('.dragDetector').mousedown(function(e){
+            e.stopPropagation();
+            e.preventDefault();
+            this.start_pos = e.offsetX;
+            this.start_resizing = true;
+        }).mousemove(function(e){
+            e.stopPropagation();
+            e.preventDefault();
+            if (this.start_resizing) {
+                var x1 = this.start_pos;
+                var x2 = e.offsetX;
+                var left = Math.min(x1, x2);
+                var width = Math.abs(x1 - x2);
+                zoomBox.css({
+                    left: left,
+                    width: width
+                });
+            }
+        }).mouseup(function(e){
+            this.start_resizing = false;
+            // get the left and width of the zoomBox
+            var start_x = $('.dgrid-column-set-cell.dgrid-column-set-1').offset().left;
+            var scroll_left = $('.dgrid-column-set-cell.dgrid-column-set-1>div').scrollLeft();
+            var left = zoomBox.offset().left - start_x + scroll_left;
+            var width = zoomBox.width();
+
+            // unbind events
+            $('.dragDetector').unbind();
+
+            // delete the elements
+            zoomBox.remove();
+            dragDetector.remove();
+
+            var zoomed_dates = gantt_column.convert_pixel_to_millies(left, left + width);
+            // get the zoom level
+            var zoom_level = gantt_column.guess_zoom_level(zoomed_dates.start, zoomed_dates.end);
+
+            // update interface elements
+            var formatted_start_date = moment(zoomed_dates.start).format('MM/DD/YYYY');
+            var formatted_end_date = moment(zoomed_dates.end).format('MM/DD/YYYY');
+            var start_end_date_range_picker = $('#start_end_date_range_picker');
+            start_end_date_range_picker.val(formatted_start_date + ' - ' + formatted_end_date);
+            start_end_date_range_picker.data().daterangepicker.updateFromControl();
+            $('#zoom_level').val(zoom_level);
+
+            // zoom the gantt chart
+            gantt_column.start = +zoomed_dates.start;
+            gantt_column.end   = +zoomed_dates.end;
+            gantt_column.scale = zoom_level; 
+            gantt_column.reload();
+            gantt_column.refresh();
+
+            // scroll to the middle of the dates
+            gantt_column.scrollToDate( (zoomed_dates.end + zoomed_dates.start) * 0.5 );
+
+            // restore button
+            $('#gantt_zoom_selection').find('button').button('reset');
+        });
     });
 
 });

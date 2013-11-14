@@ -20,27 +20,27 @@
 import logging
 import time
 
+import re
 import transaction
-
 from pyramid.response import Response
 from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPServerError, HTTPOk, HTTPForbidden
-
 from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
-
 from sqlalchemy.exc import IntegrityError
-
 from stalker.db import DBSession
 from stalker import (User, Task, Entity, Project, StatusList, Status,
-                     TaskJugglerScheduler, Studio, Asset, Shot, Sequence, Type,
+                     TaskJugglerScheduler, Studio, Asset, Shot, Sequence,
                      Ticket)
 from stalker.models.task import CircularDependencyError
 from stalker import defaults
-import stalker_pyramid
+
 from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
                                    get_multi_integer, milliseconds_since_epoch,
-                                   get_date, StdErrToHTMLConverter, colors, multi_permission_checker, get_multi_string)
+                                   StdErrToHTMLConverter, colors,
+                                   multi_permission_checker,
+                                   dummy_email_address)
+from stalker_pyramid.views.type import query_type
 
 
 logger = logging.getLogger(__name__)
@@ -221,14 +221,10 @@ def duplicate_task_hierarchy(request):
         dup_task.name += ' - Duplicate'
         DBSession.add(dup_task)
     else:
-        response = Response(
-            'No task can be found with the given id: %s' % task_id)
-        response.status_int = 500
-        return response
+        return Response('No task can be found with the given id: %s' % task_id,
+                        500)
 
-    response = Response('Task %s is duplicated successfully' % task.id)
-    response.status_int = 200
-    return response
+    return Response('Task %s is duplicated successfully' % task.id)
 
 
 def convert_to_dgrid_gantt_project_format(projects):
@@ -319,30 +315,6 @@ def convert_to_dgrid_gantt_task_format(tasks):
         } for task in tasks
     ]
 
-
-def query_type(entity_type, type_name):
-    """returns a Type instance either it creates a new one or gets it from DB
-    """
-    if not type_name:
-        return None
-
-    type_query = Type.query.filter_by(target_entity_type=entity_type)
-    type_ = type_query.filter_by(name=type_name).first()
-    if type_name and type_ is None:
-        # create a new Type
-        logger.debug('creating new %s type: %s' % (
-            entity_type.lower(), type_name)
-        )
-        type_ = Type(
-            name=type_name,
-            code=type_name,
-            target_entity_type=entity_type
-        )
-        DBSession.add(type_)
-
-    return type_
-
-
 @view_config(
     route_name='update_task'
 )
@@ -403,10 +375,8 @@ def update_task(request):
 
     # before doing anything check permission
     if not p_checker('Update_' + entity_type):
-        response = Response('You do not have enough permission to update '
-                            'a %s' % entity_type)
-        response.status_int = 500
-        return response
+        return Response('You do not have enough permission to update a %s' %
+                        entity_type, 500)
 
     # get task
     task_id = request.matchdict.get('id', -1)
@@ -414,9 +384,7 @@ def update_task(request):
 
     # update the task
     if not task:
-        response = Response("No task found with id : %s" % task_id)
-        response.status_int = 500
-        return response
+        return Response("No task found with id : %s" % task_id, 500)
 
     task.name = name
     task.description = description
@@ -429,9 +397,7 @@ def update_task(request):
         message = '</div>Parent item can not also be a dependent for the ' \
                   'updated item:<br><br>Parent: %s<br>Depends To: %s</div>' % \
                   (parent.name, map(lambda x: x.name, depends))
-        response = Response(message)
-        response.status_int = 500
-        return response
+        return Response(message, 500)
 
     task.schedule_model = schedule_model
     task.schedule_unit = schedule_unit
@@ -464,9 +430,7 @@ def update_task(request):
         task.bid_unit = task.schedule_unit
     else:
         logger.debug('not updating bid')
-    response = Response('Task updated successfully')
-    response.status_int = 200
-    return response
+    return Response('Task updated successfully')
 
 
 def depth_first_flatten(task, task_array=None):
@@ -526,7 +490,8 @@ def get_tasks(request):
                         .filter(Task.parent_id == parent_id)\
                         .order_by(Task.name).all()
 
-        content_range = content_range % (0, len(tasks) - 1, len(tasks))
+        task_count = len(tasks)
+        content_range = content_range % (0, task_count - 1, task_count)
         # logger.debug(tasks)
         return_data = convert_to_dgrid_gantt_task_format(tasks)
 
@@ -926,9 +891,7 @@ def create_sequence_dialog(request):
     return create_data_dialog(request, entity_type='Sequence')
 
 
-@view_config(
-    route_name='create_task'
-)
+@view_config(route_name='create_task')
 def create_task(request):
     """runs when adding a new task
     """
@@ -986,114 +949,7 @@ def create_task(request):
 
     kwargs = {}
 
-    if project_id and name:
-        # get the project
-        project = Project.query.filter_by(id=project_id).first()
-        kwargs['project'] = project
-
-        # get the parent if parent_id exists
-        parent = Task.query.filter_by(
-            id=parent_id).first() if parent_id else None
-
-        kwargs['parent'] = parent
-
-        # get the status_list
-        status_list = StatusList.query.filter_by(
-            target_entity_type=entity_type
-        ).first()
-
-        logger.debug('status_list: %s' % status_list)
-
-        # there should be a status_list
-        if status_list is None:
-            response = Response(
-                'No StatusList found suitable for %s' % entity_type
-            )
-            response.status_int = 500
-            return response
-
-        status = Status.query.filter_by(name='New').first()
-        logger.debug('status: %s' % status)
-
-        # get the dependencies
-        logger.debug('request.POST: %s' % request.POST)
-        depends_to_ids = get_multi_integer(request, 'dependent_ids')
-
-        depends = Task.query.filter(
-            Task.id.in_(depends_to_ids)).all() if depends_to_ids else []
-        logger.debug('depends: %s' % depends)
-
-        kwargs['name'] = name
-        kwargs['code'] = code
-        kwargs['description'] = description
-        kwargs['created_by'] = logged_in_user
-
-        kwargs['status_list'] = status_list
-        kwargs['status'] = status
-
-        kwargs['schedule_model'] = schedule_model
-        kwargs['schedule_timing'] = schedule_timing
-        kwargs['schedule_unit'] = schedule_unit
-
-        kwargs['resources'] = resources
-        kwargs['depends'] = depends
-
-        kwargs['priority'] = priority
-
-        type_name = ''
-        if entity_type == 'Asset':
-            type_name = asset_type
-        elif entity_type == 'Task':
-            type_name = task_type
-        kwargs['type'] = query_type(entity_type, type_name)
-
-        if entity_type == 'Shot':
-            sequence = Sequence.query.filter_by(id=shot_sequence_id).first()
-            kwargs['sequence'] = sequence
-
-        try:
-            if entity_type == 'Asset':
-                logger.debug('creating a new Asset')
-                new_entity = Asset(**kwargs)
-                logger.debug('new_asset.name %s' % new_entity.name)
-            elif entity_type == 'Shot':
-                new_entity = Shot(**kwargs)
-                logger.debug('new_shot.name %s' % new_entity.name)
-            elif entity_type == 'Sequence':
-                new_entity = Sequence(**kwargs)
-                logger.debug('new_shot.name %s' % new_entity.name)
-            else:  # entity_type == 'Task'
-                new_entity = Task(**kwargs)
-                logger.debug('new_task.name %s' % new_entity.name)
-            DBSession.add(new_entity)
-
-            if responsible:
-                # check if the responsible is different than
-                # the parents responsible
-                if new_entity.responsible != responsible:
-                    new_entity.responsible = responsible
-
-        except (AttributeError, TypeError, CircularDependencyError) as e:
-            logger.debug('The Error Message: %s' % e.message)
-            response = Response('%s' % e.message)
-            response.status_int = 500
-            transaction.abort()
-            return response
-        else:
-            DBSession.add(new_entity)
-            try:
-                transaction.commit()
-            except IntegrityError as e:
-                logger.debug(e.message)
-                transaction.abort()
-                response = Response(e.message)
-                response.status_int = 500
-                return response
-            else:
-                logger.debug('flushing the DBSession, no problem here!')
-                DBSession.flush()
-                logger.debug('finished adding Task')
-    else:
+    if not project_id or not name:
         logger.debug('there are missing parameters')
 
         def get_param(param):
@@ -1105,62 +961,141 @@ def create_task(request):
         get_param('project_id')
         get_param('name')
         get_param('description')
-        # get_param('is_milestone')
-        #get_param('resource_ids')
-        # get_param('status_id')
 
-        param_list = ['project_id', 'name', 'description',
-                      # 'is_milestone', 'status_id'
-                      #'resource_ids'
-        ]
-
+        param_list = ['project_id', 'name', 'description']
         params = [param for param in param_list if param not in request.params]
+        return Response('There are missing parameters: %s' % params, 500)
 
-        response = Response('There are missing parameters: %s' % params)
-        response.status_int = 500
+    # get the project
+    project = Project.query.filter_by(id=project_id).first()
+    kwargs['project'] = project
+
+    # get the parent if parent_id exists
+    parent = Task.query.filter_by(id=parent_id).first() if parent_id else None
+
+    kwargs['parent'] = parent
+
+    # get the status_list
+    status_list = StatusList.query\
+        .filter_by(target_entity_type=entity_type)\
+        .first()
+
+    logger.debug('status_list: %s' % status_list)
+
+    # there should be a status_list
+    if status_list is None:
+        return Response('No StatusList found suitable for %s' % entity_type,
+                        500)
+
+    status = Status.query.filter_by(name='New').first()
+    logger.debug('status: %s' % status)
+
+    # get the dependencies
+    logger.debug('request.POST: %s' % request.POST)
+    depends_to_ids = get_multi_integer(request, 'dependent_ids')
+
+    depends = Task.query.filter(
+        Task.id.in_(depends_to_ids)).all() if depends_to_ids else []
+    logger.debug('depends: %s' % depends)
+
+    kwargs['name'] = name
+    kwargs['code'] = code
+    kwargs['description'] = description
+    kwargs['created_by'] = logged_in_user
+
+    kwargs['status_list'] = status_list
+    kwargs['status'] = status
+
+    kwargs['schedule_model'] = schedule_model
+    kwargs['schedule_timing'] = schedule_timing
+    kwargs['schedule_unit'] = schedule_unit
+
+    kwargs['resources'] = resources
+    kwargs['depends'] = depends
+
+    kwargs['priority'] = priority
+
+    type_name = ''
+    if entity_type == 'Asset':
+        type_name = asset_type
+    elif entity_type == 'Task':
+        type_name = task_type
+    kwargs['type'] = query_type(entity_type, type_name)
+
+    if entity_type == 'Shot':
+        sequence = Sequence.query.filter_by(id=shot_sequence_id).first()
+        kwargs['sequence'] = sequence
+
+    try:
+        if entity_type == 'Asset':
+            logger.debug('creating a new Asset')
+            new_entity = Asset(**kwargs)
+            logger.debug('new_asset.name %s' % new_entity.name)
+        elif entity_type == 'Shot':
+            new_entity = Shot(**kwargs)
+            logger.debug('new_shot.name %s' % new_entity.name)
+        elif entity_type == 'Sequence':
+            new_entity = Sequence(**kwargs)
+            logger.debug('new_shot.name %s' % new_entity.name)
+        else:  # entity_type == 'Task'
+            new_entity = Task(**kwargs)
+            logger.debug('new_task.name %s' % new_entity.name)
+        DBSession.add(new_entity)
+
+        if responsible:
+            # check if the responsible is different than
+            # the parents responsible
+            if new_entity.responsible != responsible:
+                new_entity.responsible = responsible
+
+    except (AttributeError, TypeError, CircularDependencyError) as e:
+        logger.debug('The Error Message: %s' % e.message)
+        response = Response('%s' % e.message, 500)
+        transaction.abort()
         return response
+    else:
+        DBSession.add(new_entity)
+        try:
+            transaction.commit()
+        except IntegrityError as e:
+            logger.debug(e.message)
+            transaction.abort()
+            return Response(e.message, 500)
+        else:
+            logger.debug('flushing the DBSession, no problem here!')
+            DBSession.flush()
+            logger.debug('finished adding Task')
 
-    response = Response('Task created successfully')
-    response.status_int = 200
-    return response
+    return Response('Task created successfully')
 
 
-@view_config(
-    route_name='auto_schedule_tasks',
-)
+@view_config(route_name='auto_schedule_tasks')
 def auto_schedule_tasks(request):
     """schedules all the tasks of active projects
     """
     # get the studio
     studio = Studio.query.first()
 
-    if studio:
-        tj_scheduler = TaskJugglerScheduler()
-        studio.scheduler = tj_scheduler
+    if not studio:
+        return Response("There is no Studio instance\n"
+                        "Please create a studio first", 500)
 
-        try:
-            stderr = studio.schedule()
-            c = StdErrToHTMLConverter(stderr)
-            response = Response(c.html())
-            response.status_int = 200
-            return response
-        except RuntimeError as e:
-            #logger.debug('%s' % e.message)
-            c = StdErrToHTMLConverter(e)
-            response = Response(c.html())
-            response.status_int = 500
-            return response
+    tj_scheduler = TaskJugglerScheduler()
+    studio.scheduler = tj_scheduler
 
-    response = Response("There is no Studio instance\n"
-                        "Please create a studio first")
-    response.status_int = 500
-    return response
+    try:
+        stderr = studio.schedule()
+        c = StdErrToHTMLConverter(stderr)
+        return Response(c.html())
+    except RuntimeError as e:
+        c = StdErrToHTMLConverter(e)
+        return Response(c.html(), 500)
 
 
 @view_config(
-    route_name='request_task_review',
+    route_name='request_review',
 )
-def request_task_review(request):
+def request_review(request):
     """creates a new ticket and sends an email to the responsible
     """
     # get logged in user as he review requester
@@ -1168,47 +1103,319 @@ def request_task_review(request):
 
     task_id = request.matchdict.get('id', -1)
     task = Task.query.filter(Task.id == task_id).first()
+    send_email = request.params.get('send_email', 1)
 
-    if task:
-        # get the project that the ticket belongs to
-        project = task.project
+    if not task:
+        return Response('There is no task with id: %s' % task_id, 500)
 
-        summary_text = 'Review Request: "%s"' % task.name
-        description_text = '%s has requested you to do a review for ' \
-                           '"%s (%s) - (%s)"' % (
-                               logged_in_user.name,
-                               task.name,
-                               task.entity_type,
-                               "|".join(map(lambda x: x.name, task.parents))
-                           )
+    if task.is_container:
+        return Response('Can not request review for a container task', 500)
 
-        responsible = task.responsible
+    # check if the task status is wip
+    status_wip = Status.query.filter(Status.code == 'WIP').first()
+    if task.status != status_wip:
+        return Response('You can not request a review for a task with status '
+                        'is set to "%s"' % task.status.name, 500)
 
-        # create a Ticket with the owner set to the responsible
-        review_ticket = Ticket(
-            project=project,
-            summary=summary_text,
-            description=description_text,
-            created_by=logged_in_user
-        )
-        review_ticket.set_owner(responsible)
+    # get the project that the ticket belongs to
+    project = task.project
 
-        # link the task to the review
-        review_ticket.links.append(task)
+    user_link = '<a href="/users/%s/view">%s</a>' % (logged_in_user.id,
+                                                     logged_in_user.name)
+    task_parent_names = "|".join(map(lambda x: x.name, task.parents))
 
-        DBSession.add(review_ticket)
+    task_name_as_text = "%(name)s (%(entity_type)s) - (%(parents)s)" % {
+        "name": task.name,
+        "entity_type": task.entity_type,
+        "parents": task_parent_names
+    }
+    task_link = \
+        '<a href="/tasks/%(task_id)s/view">%(task_name)s ' \
+        '(%(task_entity_type)s) - (%(task_parent_names)s)</a>' % {
+            "task_id": task.id,
+            "task_name": task.name,
+            "task_entity_type": task.entity_type,
+            "task_parent_names": task_parent_names
+        }
 
+    summary_text = 'Review Request: "%s"' % task.name
+    description_template = \
+        '%(user)s has requested you to do a review for ' \
+        '%(task)s'
+    description_text = description_template % {
+        "user": logged_in_user.name,
+        "task": task_name_as_text
+    }
+    description_html = description_template % {
+        "user": user_link,
+        "task": task_link
+    }
+
+    responsible = task.responsible
+
+    # create a Ticket with the owner set to the responsible
+    review_ticket = Ticket(
+        project=project,
+        summary=summary_text,
+        description=description_html,
+        created_by=logged_in_user
+    )
+    review_ticket.reassign(logged_in_user, responsible)
+
+    # link the task to the review
+    review_ticket.links.append(task)
+
+    DBSession.add(review_ticket)
+
+    if send_email:
         # send email to responsible and resources of the task
         mailer = get_mailer(request)
 
-        recipients = [logged_in_user.email, responsible.email]
-        # recipients.extend(task.resources)
+        recipients = [logged_in_user.email]
+        if responsible.email not in recipients:
+            recipients.append(responsible.email)
+
+        for resource in task.resources:
+            recipients.append(resource.email)
 
         message = Message(
             subject=summary_text,
-            sender="Anima Stalker <anima.stalker.pyramid@stalker.com>",
+            sender=dummy_email_address,
             recipients=recipients,
-            body=description_text)
+            body=description_text,
+            html=description_html)
+        mailer.send(message)
+
+    # set task status to Pending Review
+    status_prev = Status.query.filter(Status.code == "PREV").first()
+    task.status = status_prev
+
+    # set task effort to the total_logged_seconds
+    task.schedule_timing = task.total_logged_seconds / 3600
+    task.schedule_unit = 'h'
+
+    return Response('Your review request has been sent to %s' %
+                    responsible.name)
+
+
+@view_config(
+    route_name='request_extra_time',
+)
+def request_extra_time(request):
+    """creates sends an email to the responsible about the user has requested
+    extra time
+    """
+    # get logged in user as he review requester
+    logged_in_user = get_logged_in_user(request)
+
+    task_id = request.matchdict.get('id', -1)
+    task = Task.query.filter(Task.id == task_id).first()
+
+    send_email = request.params.get('send_email', 1)
+
+    extra_time = request.params.get('extra_time', -1)
+
+    if task and extra_time:
+        # no extra hours for a container task
+        if task.is_container:
+            return Response('Can not request extra time for a container '
+                                'task', 500)
+
+        # TODO: increase task extra time request counter
+
+        if send_email:
+            # get the project that the ticket belongs to
+            summary_text = 'Extra Time Request: "%s"' % task.name
+            description_text = \
+            """%(user_name)s has requested %(extra_time)s extra hours for 
+            %(task_name)s (%(task_link)s)" """ % {
+                "user_name": logged_in_user.name,
+                "extra_time": extra_time,
+                "task_name": task.name,
+                "task_link": request.route_url('view_task', id=task.id)
+            }
+
+            description_html = \
+            """%(user_name)s has requested %(extra_time)s extra hours for 
+            %(task_name)s (%(task_link)s)" """ % {
+                "user_name": logged_in_user.name,
+                "extra_time": extra_time,
+                "task_name": task.name,
+                "task_link": request.route_url('view_task', id=task.id)
+            }
+
+            responsible = task.responsible
+
+            # send email to responsible and resources of the task
+            mailer = get_mailer(request)
+
+            recipients = [logged_in_user.email]
+            if responsible.email not in recipients:
+                recipients.append(responsible.email)
+            for resource in task.resources:
+                recipients.append(resource.email)
+
+            message = Message(
+                subject=summary_text,
+                sender=dummy_email_address,
+                recipients=recipients,
+                body=description_text,
+                html=description_html,
+            )
+            mailer.send(message)
+
+        return Response('You have successfully requested extra time for '
+                            'your task')
+
+    return Response('There is no task with id : %s' % task_id, 500)
+
+
+@view_config(
+    route_name='request_revision'
+)
+def request_revision(request):
+    """creates a revision task for the given task and sends an email to the
+    task resources
+    """
+    # get logged in user as he review requester
+    logged_in_user = get_logged_in_user(request)
+
+    task_id = request.matchdict.get('id', -1)
+    task = Task.query.filter(Task.id == task_id).first()
+
+    # check if we have a task
+    if not task:
+        return Response('There is no task with id: %s' % task_id, 500)
+
+    send_email = request.params.get('send_email', 1)
+    description = request.params.get('description', -1)
+    schedule_timing = request.params.get('schedule_timing')
+    schedule_unit = request.params.get('schedule_unit')
+
+    if not schedule_timing:
+        return Response('There are missing parameters: schedule_timing', 500)
+    else:
+        try:
+            schedule_timing = float(schedule_timing)
+        except ValueError:
+            return Response('Please supply a float or integer value for '
+                            'schedule_timing parameter', 500)
+
+    if not schedule_unit:
+        return Response('There are missing parameters: schedule_unit', 500)
+    else:
+        if schedule_unit not in ['h', 'd', 'w', 'm', 'y']:
+            return Response("schedule_unit parameter should be one of ['h', "
+                            "'d', 'w', 'm', 'y']", 500)
+
+    logger.debug('schedule_timing: %s' % schedule_timing)
+    logger.debug('schedule_unit  : %s' % schedule_unit)
+
+    # get statuses
+    status_prev = Status.query.filter(Status.code == 'PREV').first()
+
+    # check if the task has some time logs
+    if task.status != status_prev:
+        return Response('You can not request a revision for a task with '
+                        'status is set to "%s"' % task.status.name, 500)
+
+    # set task status to Has Revision (HREV)
+    status_hrev = Status.query.filter(Status.code == 'HREV').first()
+    if not status_hrev:
+        return Response('There is no status with name "Has Revision" and code '
+                        '"HREV" please inform your Stalker admin to create '
+                        'this status and include it to Task status list.', 500)
+
+    task.status = status_hrev
+    # close this task by setting its effort to its time logs
+    task.schedule_timing = task.total_logged_seconds / 3600
+    task.schedule_unit = 'h'
+
+    # create a new task with the same name but have a postfix of " - Rev #"
+    rev_number = 1
+    # remove any " - Rev #"
+    task_base_name = re.sub(r' \- Rev [0-9]+', '', task.name)
+    rev_task_name = task_base_name + ' - Rev %s' % rev_number
+    rev_task_query = Task.query.filter(Task.name == rev_task_name)\
+        .filter(Task.parent == task.parent)\
+        .filter(Task.project == task.project)
+    rev_task = rev_task_query.first()
+    while rev_task is not None:
+        rev_number += 1
+        rev_task_name = task_base_name + ' - Rev %s' % rev_number
+        rev_task_query = Task.query.filter(Task.name == rev_task_name)\
+            .filter(Task.parent == task.parent)\
+            .filter(Task.project == task.project)
+        rev_task = rev_task_query.first()
+
+    rev_task = Task(
+        name=rev_task_name,
+        type=task.type,
+        description=task.description,
+        project=task.project,
+        parent=task.parent,
+        depends=task.depends,
+        resources=task.resources,
+        schedule_model=task.schedule_model,
+        schedule_timing=schedule_timing,
+        schedule_unit=schedule_unit,
+        responsible=task.responsible,
+        watchers=task.watchers,
+        priority=task.priority,
+        created_by=logged_in_user
+    )
+    task.updated_by = logged_in_user
+    DBSession.add(rev_task)
+
+    # set the dependencies to the same ones and set the depending tasks to
+    # the newly created revision task
+    for dep_task in task.dependent_of:
+        dep_task.depends.remove(task)
+        dep_task.depends.append(rev_task)
+        dep_task.updated_by = logged_in_user
+
+    # also add the original task as a dependent task
+    rev_task.depends.append(task)
+
+    transaction.commit()
+    DBSession.add_all([task, rev_task, logged_in_user])
+
+    if send_email:
+        # and send emails to the resources
+        summary_text = 'Revision Request: "%s"' % task.name
+
+        description_text = \
+        """%(requester_name)s has requested a revision to the original task
+        %(task_name)s on %(task_link)s and created the revision task
+        %(revision_task_name)s on %(revision_task_link)s and supplied the
+        following description for the revision request:\n\n
+        %(description)s""" % {
+            "requester_name": logged_in_user.name,
+            "task_name": task.name,
+            "task_link": request.route_url('view_task', id=task.id),
+            "revision_task_name": rev_task.name,
+            "revision_task_link": request.route_url('view_task',
+                                                    id=rev_task.id),
+            "description": description
+            if description else "(No Description)"
+        }
+
+        responsible = task.responsible
+        # send email to responsible and resources of the task
+        mailer = get_mailer(request)
+
+        recipients = [logged_in_user.email]
+        if responsible.email not in recipients:
+            recipients.append(responsible.email)
+        for resource in task.resources:
+            recipients.append(resource.email)
+
+        message = Message(
+            subject=summary_text,
+            sender=dummy_email_address,
+            recipients=recipients,
+            body=description_text
+        )
         mailer.send(message)
 
     return HTTPOk()
@@ -1279,17 +1486,11 @@ def delete_task(request):
         except Exception as e:
             transaction.abort()
             c = StdErrToHTMLConverter(e)
-            response = Response(c.html())
-            response.status_int = 500
-            return response
+            return Response(c.html(), 500)
     else:
-        response = Response('Can not find a Task with id: %s' % task_id)
-        response.status_int = 500
-        return response
+        return Response('Can not find a Task with id: %s' % task_id, 500)
 
-    response = Response('Successfully deleted task: %s' % task_id)
-    response.status_int = 200
-    return response
+    return Response('Successfully deleted task: %s' % task_id)
 
 
 def get_child_task_events(task):
@@ -1298,18 +1499,12 @@ def get_child_task_events(task):
     if task.children:
         for child in task.children:
             task_events.extend(get_child_task_events(child))
-
-
     else:
-
         resources = []
-
         for resource in task.resources:
             resources.append({'name': resource.name, 'id': resource.id})
 
-
         # logger.debug('resources %s' % resources)
-
         task_events.append({
             'id': task.id,
             'entity_type': task.plural_class_name.lower(),
@@ -1367,48 +1562,8 @@ def get_task_events(request):
     logger.debug('task_id : %s' % task_id)
 
     events = []
-
     events.extend(get_child_task_events(task))
-
     return events
-
-
-
-#
-# @view_config(
-#     route_name='get_task_depends_of',
-#     renderer='json'
-# )
-# def get_task_depends_of(request):
-#     if not multi_permission_checker(
-#             request, ['Read_User', 'Read_TimeLog']):
-#         return HTTPForbidden(headers=request)
-#
-#     logger.debug('get_task_depends_of is running')
-#
-#     task_id = request.matchdict.get('id', -1)
-#     task = Task.query.filter_by(id=task_id).first()
-#
-#
-#     depends_of=[]
-#
-#     assert isinstance(task, Task) # dependent_of
-#     for dep_task in task.depends_of:
-#
-#         resources = []
-#
-#         for resource in dep_task.resources:
-#             resources.append({'name': resource.name, 'id': resource.id})
-#
-#         depends_of.append(
-#             {
-#                 'id': dep_task.id,
-#                 'name': dep_task.name,
-#                 'resources': resources
-#             }
-#         )
-#
-#     return depends_of
 
 
 @view_config(
@@ -1425,12 +1580,8 @@ def get_task_depends(request):
     task_id = request.matchdict.get('id', -1)
     task = Task.query.filter_by(id=task_id).first()
 
-
-
     depends =[]
-
     for dep_task in task.depends:
-
         resources = []
 
         for resource in dep_task.resources:
@@ -1448,12 +1599,3 @@ def get_task_depends(request):
         )
 
     return depends
-
-
-
-
-
-
-
-
-

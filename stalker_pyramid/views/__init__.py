@@ -34,19 +34,17 @@ logger = logging.getLogger(__name__)
 logger.setLevel(log.logging_level)
 
 colors = {
+    'Planning': 'grey',
     'New': 'red',
-    'Waiting To Start': 'purple',
-    'Work In Progress': 'pink',
+    'Work In Progress': 'orange',
+    'Pending Review': 'blue',
+    'Has Revision': 'purple',
     'Completed': 'green',
-    'Planning': 'grey'
 }
 
-@view_config(
-    route_name='test_bootstrap',
-    renderer='templates/test_bootstrap.jinja2'
-)
-def test_bootstrap(request):
-    return {}
+# this is a dummy mail address change it in the config (*.ini) file
+dummy_email_address = "Stalker Pyramid <stalker.pyramid@stalker.pyramid.com>"
+
 
 class StdErrToHTMLConverter():
     """Converts stderr, stdout messages of TaskJuggler to html
@@ -79,21 +77,21 @@ class StdErrToHTMLConverter():
         """
         # convert the error message to a string
         if isinstance(self.error_message, list):
-            buffer = []
+            output_buffer = []
             for msg in self.error_message:
                 # join the message in to <p> elements
-                buffer.append('%s' % msg.strip())
+                output_buffer.append('%s' % msg.strip())
 
             # convert the list to string
-            strBuffer = ''.join(buffer)
+            str_buffer = ''.join(output_buffer)
         else:
-            strBuffer = self.error_message
+            str_buffer = self.error_message
 
         # for each formatChar replace them with an html tag
         for key in self.formatChars.keys():
-            strBuffer = strBuffer.replace(key, self.formatChars[key])
+            str_buffer = str_buffer.replace(key, self.formatChars[key])
 
-        return strBuffer
+        return str_buffer
 
 
 class PermissionChecker(object):
@@ -161,6 +159,7 @@ def get_date(request, date_attr):
         '%a, %d %b %Y %H:%M:%S'
     )
 
+
 def get_date_range(request, date_range_attr):
     """Extracts a UTC datetime object from the given request
 
@@ -200,16 +199,6 @@ def get_datetime(request, date_attr, time_attr):
     )
 
 
-@view_config(
-    route_name='busy_dialog',
-    renderer='templates/busy_dialog.jinja2'
-)
-def busy_dialog(request):
-    """generates a busy dialog
-    """
-    return {}
-
-
 def get_logged_in_user(request):
     """Returns the logged in user
 
@@ -233,6 +222,7 @@ def get_multi_integer(request, attr_name, method='POST'):
         data = request.GET
 
     return [int(attr) for attr in data.getall(attr_name)]
+
 
 def get_multi_string(request, attr_name):
     """Extracts multi data from request.POST
@@ -323,4 +313,3 @@ def from_milliseconds(t):
     instance
     """
     return from_microseconds(t * 1000)
-

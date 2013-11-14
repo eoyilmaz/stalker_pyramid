@@ -50,24 +50,24 @@ class TimeLogViewTestCase(unittest2.TestCase):
         DBSession.add(self.user1)
 
         # create a couple of tasks
-        self.status1 = Status(name='New', code='NEW')
-        self.status2 = Status(name='Work In Progress', code='WIP')
-        self.status3 = Status(name='Pending Review', code='PREV')
-        self.status4 = Status(name='Has Revisions', code='HREV')
-        self.status5 = Status(name='Complete', code='CMPL')
+        self.status_new = Status(name='New', code='NEW')
+        self.status_wip = Status(name='Work In Progress', code='WIP')
+        self.status_prev = Status(name='Pending Review', code='PREV')
+        self.status_hrev = Status(name='Has Revisions', code='HREV')
+        self.status_completed = Status(name='Complete', code='CMPL')
 
         self.project_status_list = StatusList(
             name='Project Statuses',
             target_entity_type='Project',
-            statuses=[self.status1, self.status2, self.status5]
+            statuses=[self.status_new, self.status_wip, self.status_completed]
         )
         DBSession.add(self.project_status_list)
 
         self.task_status_list = StatusList(
             name='Task Statuses',
             target_entity_type='Task',
-            statuses=[self.status1, self.status2, self.status3,
-                      self.status4, self.status5]
+            statuses=[self.status_new, self.status_wip, self.status_prev,
+                      self.status_hrev, self.status_completed]
         )
         DBSession.add(self.task_status_list)
 
@@ -92,7 +92,7 @@ class TimeLogViewTestCase(unittest2.TestCase):
             name='Test Task 1',
             project=self.proj1,
             status_list=self.task_status_list,
-            status=self.status1,
+            status=self.status_new,
             resources=[self.user1],
             schedule_timing=5,
             schedule_unit='d',
@@ -116,9 +116,57 @@ class TimeLogViewTestCase(unittest2.TestCase):
         request.params['start'] = "Fri, 01 Nov 2013 08:00:00 GMT"
         request.params['end'] = "Fri, 01 Nov 2013 17:00:00 GMT"
 
-        self.assertEqual(self.task1.status, self.status1)
+        self.assertEqual(self.task1.status, self.status_new)
         time_log.create_time_log(request)
-        self.assertEqual(self.task1.status, self.status2)
+        self.assertEqual(self.task1.status, self.status_wip)
+
+    def test_creating_a_time_log_for_a_task_with_status_pending_review(self):
+        """testing if an error response will be returned when trying to create
+        time log for a task with status "pending review"
+        """
+        request = testing.DummyRequest()
+        self.task1 = Task.query.filter(Task.name == self.task1.name).first()
+        self.task1.status = self.status_prev
+
+        request.params['task_id'] = self.task1.id
+        request.params['resource_id'] = self.task1.resources[0].id
+        request.params['start'] = "Fri, 01 Nov 2013 08:00:00 GMT"
+        request.params['end'] = "Fri, 01 Nov 2013 17:00:00 GMT"
+
+        response = time_log.create_time_log(request)
+        self.assertEqual(response.status_code, 500)
+
+    def test_creating_a_time_log_for_a_task_with_status_completed(self):
+        """testing if an error response will be returned when trying to create
+        time log for a completed task
+        """
+        request = testing.DummyRequest()
+        self.task1 = Task.query.filter(Task.name == self.task1.name).first()
+        self.task1.status = self.status_completed
+
+        request.params['task_id'] = self.task1.id
+        request.params['resource_id'] = self.task1.resources[0].id
+        request.params['start'] = "Fri, 01 Nov 2013 08:00:00 GMT"
+        request.params['end'] = "Fri, 01 Nov 2013 17:00:00 GMT"
+
+        response = time_log.create_time_log(request)
+        self.assertEqual(response.status_code, 500)
+
+    def test_creating_a_time_log_for_a_task_with_status_has_revision(self):
+        """testing if an error response will be returned when trying to create
+        time log for a task with status "has revision"
+        """
+        request = testing.DummyRequest()
+        self.task1 = Task.query.filter(Task.name == self.task1.name).first()
+        self.task1.status = self.status_hrev
+
+        request.params['task_id'] = self.task1.id
+        request.params['resource_id'] = self.task1.resources[0].id
+        request.params['start'] = "Fri, 01 Nov 2013 08:00:00 GMT"
+        request.params['end'] = "Fri, 01 Nov 2013 17:00:00 GMT"
+
+        response = time_log.create_time_log(request)
+        self.assertEqual(response.status_code, 500)
 
     def test_creating_a_time_log_for_a_task_whose_dependending_tasks_already_has_time_logs(self):
         """testing if a HTTPServer error will be raised when a time log tried
@@ -141,7 +189,7 @@ class TimeLogViewTestCase(unittest2.TestCase):
         transaction.commit()
 
         # set the status of task1 to complete
-        self.task1.status = self.status5
+        self.task1.status = self.status_completed
         DBSession.flush()
         transaction.commit()
 
@@ -204,3 +252,5 @@ class TimeLogViewTestCase(unittest2.TestCase):
         self.assertEqual(
             response.status_int, 500
         )
+
+

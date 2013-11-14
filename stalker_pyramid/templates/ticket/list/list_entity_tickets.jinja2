@@ -45,7 +45,7 @@
             <th>Project</th>
             <th class="hidden-480">Summary</th>
             <th>Type</th>
-            <th>Severity</th>
+            <th>Priority</th>
             <th>Status</th>
             <th>Owner</th>
             <th>Created By</th>
@@ -70,15 +70,37 @@
 {% raw %}
 <script id="tmpl_ticketRow" type="text/x-dot-template">
     <tr>
-        <td><a href='/tickets/{{=it.id }}/view'>#{{=it.number}}</a></td>
-        <td><a href='/projects/{{=it.project_id }}/view'>{{=it.project_name}}</a></td>
-        <td class="hidden-480"><a href='/tickets/{{=it.id }}/view'>{{=it.summary}}</a></td>
-        <td>{{=it.type}}</td>
-        <td>{{=it.priority}}</td>
-        <td>{{=it.status}}</td>
-        <td><a href='/users/{{=it.owner_id}}/view'>{{=it.owner_name}}</a></td>
-        <td><a href='/users/{{=it.created_by_id}}/view'>{{=it.created_by_name}}</a></td>
-        <td class="hidden-phone">{{=it.date_created}}</td>
+        <td class='ticket_{{= it.priority }}'>
+            <div class='ticket_{{= it.status }}'>
+                <a href='/tickets/{{=it.id }}/view'>{{=it.number}}</a>
+            </div>
+        </td>
+        <td class='ticket_{{= it.priority }}'>
+            <div class='ticket_{{= it.status }}'>
+                <a href='/projects/{{=it.project_id }}/view'>{{=it.project_name}}</a></td>
+            </div>
+        <td class="ticket_{{= it.priority }} hidden-480">
+            <div class='ticket_{{= it.status }}'>
+                <a href='/tickets/{{=it.id }}/view'>{{=it.summary}}</a></td>
+            </div>
+        <td>
+            <div class='ticket_{{= it.status }}'>{{=it.type}}</div>
+        </td>
+        <td><div class='ticket_{{= it.status }}'>{{=it.priority}}</div></td>
+        <td><div class='ticket_{{= it.status }}'>{{=it.status}}</div></td>
+        <td>
+            <div class='ticket_{{= it.status }}'>
+                <a href='/users/{{=it.owner_id}}/view'>{{=it.owner_name}}</a>
+            </div>
+        </td>
+        <td>
+            <div class='ticket_{{= it.status }}'>
+                <a href='/users/{{=it.created_by_id}}/view'>{{=it.created_by_name}}</a>
+            </div>
+        </td>
+        <td class="hidden-phone">
+            <div class='ticket_{{= it.status }}'>{{=it.date_created}}</div>
+        </td>
     </tr>
 </script>
 {% endraw %}

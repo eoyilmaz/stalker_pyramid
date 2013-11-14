@@ -19,7 +19,7 @@ requires = [
     'jinja2',
     'pyramid_jinja2',
     'pil',
-    'stalker>=0.2.2'
+    'stalker>=0.2.2', 'webtest', 'mocker'
 ]
 
 setup(name='stalker_pyramid',
