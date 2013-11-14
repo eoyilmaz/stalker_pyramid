@@ -181,7 +181,7 @@
             var referenceItemTemplate = doT.template(document.getElementById('tmpl_reference_item').text);
             
             var current_page = options.current_page || 1;
-            var items_per_page = options.items_per_page || 100;
+            var items_per_page = options.items_per_page || 100000;
 
             var offset = (current_page - 1) * items_per_page;
             var limit = items_per_page;
@@ -227,7 +227,7 @@
 
         $(function () {
             // create pagination
-            var items_per_page = 100;
+            var items_per_page = 10000;
             var current_page = parseInt($('.pagination>ul').find('li.active').text()) || 1;
             var total_number_of_results;
 
