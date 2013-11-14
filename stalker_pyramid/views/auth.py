@@ -115,10 +115,16 @@ def create_user(request):
             )
 
             logger.debug('***create user method ends ***')
+            response = Response('Task created successfully')
+            response.status_int = 200
+            return response
 
         except BaseException as e:
-            request.session.flash('error:' + e.message)
-            HTTPFound(location=came_from)
+            # request.session.flash('error:' + e.message)
+            # HTTPFound(location=came_from)
+            response = Response('BaseException: %s'%e.message)
+            response.status_int = 500
+            return response
     else:
         logger.debug('not all parameters are in request.params')
         log_param(request, 'name')
@@ -126,10 +132,15 @@ def create_user(request):
         log_param(request, 'email')
         log_param(request, 'password')
         HTTPServerError()
+        
+        response = Response('There are missing parameters: ')
+        response.status_int = 500
+        return response
 
-    return HTTPFound(
-        location=came_from
-    )
+
+    response = Response('Task created successfully')
+    response.status_int = 200
+    return response
 
 
 @view_config(

@@ -272,12 +272,14 @@
 
             if (user_form.validate()) {
 
+                alert('fdsfs')
+
                 $.post(
                                 user_form.attr('action'),
                                 user_form.serialize()
                 ).done(function () {
 
-                            window.location.replace('{{ came_from }}');
+                           window.location.replace('{{ came_from }}');
                         });
 
             }

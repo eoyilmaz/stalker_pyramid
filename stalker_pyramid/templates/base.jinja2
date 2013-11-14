@@ -305,13 +305,14 @@
 
         var flash_message = function(settings){
             console.debug('settings: ', settings);
+            settings.container = settings.container || 'body';
             settings.title = settings.title || '';
             settings.message = settings.message || '';
             settings.type = settings.type || 'success';
             console.debug('settings: ', settings);
 
             var template = doT.template($('#tmpl_flash_message').text());
-            $('body').prepend($.parseHTML(template(settings)));
+            $(settings.container).prepend($.parseHTML(template(settings)));
 
             var flash_dialog = $('.flash-message');
             flash_dialog.slideToggle();
