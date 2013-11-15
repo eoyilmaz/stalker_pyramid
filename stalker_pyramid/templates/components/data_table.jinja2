@@ -1,0 +1,89 @@
+<div class="widget-box">
+    <div class="widget-header widget-header-small header-color-{{ items_table_color }}">
+        <h5 id="items_header" class="smaller"></h5>
+
+        {% if has_permission('Create_'+list_item_type) %}
+            <div class="widget-toolbar">
+                &nbsp
+                <a data-target="#dialog_template"
+                   data-toggle="modal"
+                   data-keyboard=false
+                   href="{{ add_button_address }}"
+                   class="white">
+                    <i class="icon-plus"></i>
+                    New
+                </a>
+                &nbsp&nbsp
+            </div>
+        {% endif %}
+    </div>
+    <div class="widget-body">
+        <div class="widget-main no-padding">
+
+            <table id="items_table"
+                   class="table table-striped table-bordered table-hover">
+
+                <thead>
+
+                </thead>
+
+                <tbody>
+
+                </tbody>
+
+            </table>
+
+        </div>
+    </div>
+</div>
+
+
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.dataTables.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.dataTables.bootstrap.js") }}'></script>
+
+
+<script>
+    $(document).ready(function () {
+
+        var icon_name = get_icon('{{ list_item_type.lower() }}');
+        $('#items_header').append('<i class=' + icon_name + '></i>');
+
+
+        // fill items table with dynamic data
+        $.getJSON('{{ address }}').then(function (data) {
+
+
+            var thead_template = doT.template($('#tmpl_itemThead').html());
+            var table_head = $('#items_table>thead');
+            table_head.append(thead_template({}));
+
+
+            var items = data;
+            var row_template = doT.template($('#tmpl_itemRow').html());
+
+            // wait until document is ready
+            $(function () {
+
+                var i;
+                var table_body = $('#items_table>tbody');
+                for (i = 0; i < data.length; i++) {
+                    // fix dates
+                    // data[i].date_created = new Date(data[i].date_created).format('yyyy-mm-dd HH:MM');
+
+                    if (data[i].thumbnail_full_path == null) {
+                        data[i].thumbnail_full_path = '{{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}';
+                    }
+                    else {
+                        data[i].thumbnail_full_path = '/' + data[i].thumbnail_full_path;
+                    }
+
+                    // append it to the table
+                    table_body.append(row_template(data[i]));
+                }
+
+                var oTable1 = $('#items_table').dataTable();
+
+            });
+        });
+    });
+</script>

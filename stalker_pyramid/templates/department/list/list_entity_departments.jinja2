@@ -1,4 +1,30 @@
+{# Stalker Pyramid a Web Base Production Asset Management System
+ Copyright (C) 2009-2013 Erkan Ozgur Yilmaz
+
+ This file is part of Stalker Pyramid.
+
+ This library is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation;
+ version 2.1 of the License.
+
+ This library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Lesser General Public License for more details.
+
+ You should have received a copy of the GNU Lesser General Public
+ License along with this library; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+#}
 {% extends "base.jinja2" %}
+
+{# SIDEBAR #}
+{% block sidebar %}
+
+    {% include 'sidebar.jinja2' %}
+
+{% endblock sidebar %}
 
 {# BREADCRUMBS #}
 {% block breadcrumbs %}
@@ -8,30 +34,54 @@
 
 {% endblock breadcrumbs %}
 
-{# SIDE-BAR #}
-{% block sidebar %}
-
-    {% include 'sidebar.jinja2' %}
-
-{% endblock sidebar %}
 
 {# PAGE-CONTENT #}
 {% block page_content %}
-
-    {% set departments=entity.departments %}
     {% set page_title='Departments' %}
     {% include 'page_header.jinja2' %}
 
-    <div class="row-fluid">
-        <ul class="thumbnails">
-            {% for department in departments %}
-                <li class="span2">
-                    {% include 'department/list/list_item_department.jinja2' %}
-                </li>
-            {% endfor %}
 
-        </ul>
-    </div>
-
+    {% set add_button_address=request.route_path('department_dialog', id=-1, mode='create') %}
+    {% set address=request.route_path('get_entity_departments', id=entity.id) %}
+    {% set items_table_color='blue' %}
+    {% set list_item_type='Department' %}
+    {% include 'components/data_table.jinja2' %}
 
 {% endblock page_content %}
+
+{# EXTRA-SCRIPTS #}
+{% block extrascripts %}
+
+    {% raw %}
+    <script id="tmpl_itemThead" type="text/x-dot-template">
+
+    <tr>
+        <th>Thumbnail</th>
+        <th>Department</th>
+        <th>Lead</th>
+        <th>Users</th>
+        <th>Created By</th>
+    </tr>
+    </script>
+    {% endraw %}
+
+    {% raw %}
+    <script id="tmpl_itemRow" type="text/x-dot-template">
+        <tr>
+            <td><img style='width:auto; height: 50px;'
+                     class="img-thumbnail"
+                     src="{{=it.thumbnail_full_path }}">
+            </td>
+            <td><a href='/departments/{{=it.department_id }}/view'>{{=it.department_name}}</a>
+            </td>
+            <td><a href='/users/{{=it.lead_id}}/view'>{{=it.lead_name}}</a>
+            </td>
+            <td>{{=it.users_count}}</td>
+            <td><a href='/users/{{=it.created_by_id}}/view'>{{=it.created_by_name}}</a>
+            </td>
+
+        </tr>
+    </script>
+    {% endraw %}
+
+{% endblock extrascripts %}

@@ -71,6 +71,8 @@
     <!--fonts-->
     <link rel="stylesheet"
           href='{{ request.static_url("stalker_pyramid:static/stalker/css/stalker_bootstrap.css") }}'>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/stalker/css/stalker.css") }}'>
     {#    <link rel="stylesheet"#} {#
           href='{{ request.static_url("stalker_pyramid:static/stalker/css/ace-fonts.css") }}'/#}
     <!--ace styles-->
@@ -168,7 +170,6 @@
 {% endraw %}
 
 
-
 {# CONTENT #}
 {% block content %}
 
@@ -246,15 +247,15 @@
 
     {% include 'modals/dialog_template.jinja2' %}
 
-{#        {% block footer %}#}
-{#            <footer>#}
-{#                <div id="footer" class='footer'>#}
-{#                    <div class="container muted credit">#}
-{#                        <div class="text-center" style='float: left;'>Stalker Pyramid &copy; 2009-2013 Erkan Ozgur Yilmaz.</div>#}
-{#                    </div>#}
-{#                </div>#}
-{#            </footer>#}
-{#        {% endblock footer %}#}
+    {#        {% block footer %}#}
+    {#            <footer>#}
+    {#                <div id="footer" class='footer'>#}
+    {#                    <div class="container muted credit">#}
+    {#                        <div class="text-center" style='float: left;'>Stalker Pyramid &copy; 2009-2013 Erkan Ozgur Yilmaz.</div>#}
+    {#                    </div>#}
+    {#                </div>#}
+    {#            </footer>#}
+    {#        {% endblock footer %}#}
 {% endblock content %}
 
 
@@ -265,7 +266,7 @@
 
 {# SCRIPTS #}
 {% block scripts %}
-{#    <script src='{{ request.static_url("stalker_pyramid:static/jquery/jquery-2.0.3.min.js") }}'></script>#}
+    {#    <script src='{{ request.static_url("stalker_pyramid:static/jquery/jquery-2.0.3.min.js") }}'></script>#}
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery-ui-1.10.3.full.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.ui.touch-punch.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootstrap.min.js") }}'></script>
@@ -281,6 +282,29 @@
         if ("ontouchend" in document) document.write("<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.mobile.custom.min.js") }}'>" + "<" + "/script>");
     </script>
 
+
+    {# Ace Settings Box #}
+    <script type="text/javascript">
+        var get_icon = function (entity_type) {
+            switch (entity_type) {
+                case 'project':
+                    return 'icon-folder-close-alt';
+                    break;
+                 case 'department':
+                    return 'icon-group';
+                    break;
+                 case 'group':
+                    return 'icon-key';
+                    break;
+                case 'user':
+                    return 'icon-user';
+                    break;
+                default:
+                    return 'icon-key';
+                    break;
+            }
+        };
+    </script>
 
     {# Ace Settings Box #}
     <script type="text/javascript">
@@ -303,7 +327,7 @@
             $('.flash-message').slideToggle();
         });
 
-        var flash_message = function(settings){
+        var flash_message = function (settings) {
             console.debug('settings: ', settings);
             settings.container = settings.container || 'body';
             settings.title = settings.title || '';
@@ -385,8 +409,8 @@
                 init_dialog();
             });
             event_dialog.on('hidden', function (e) {
-                 e.stopPropagation();
-            e.preventDefault();
+                e.stopPropagation();
+                e.preventDefault();
                 destruct_dialog();
             });
         })

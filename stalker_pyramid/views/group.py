@@ -396,48 +396,54 @@ def get_group_permissions(request):
 #
 #
 #
-# @view_config(
-#     route_name='get_groups',
-#     renderer='json',
-#     permission='List_Group'
-# )
-# def get_groups(request):
-#     """returns all the groups in database
-#     """
-#     return [
-#         {
-#             'id': group.id,
-#             'name': group.name,
-#             'thumbnail_path': group.thumbnail.full_path if group.thumbnail else None
-#         }
-#         for group in Group.query.order_by(Group.name.asc()).all()
-#     ]
-#
-#
-# @view_config(
-#     route_name='get_entity_groups',
-#     renderer='json',
-#     permission='List_Group'
-# )
-# @view_config(
-#     route_name='get_user_groups',
-#     renderer='json',
-#     permission='List_Group'
-# )
-# def get_entity_groups(request):
-#     """returns all the groups of a given Entity
-#     """
-#     entity_id = request.matchdict.get('id', -1)
-#     entity = Entity.query.filter_by(id=entity_id).first()
-#
-#     return [
-#         {
-#             'id': group.id,
-#             'name': group.name,
-#             'thumbnail_path': group.thumbnail.full_path if group.thumbnail else None
-#         }
-#         for group in sorted(entity.groups, key=lambda x: x.name.lower())
-#     ]
-#
-#
-#
+@view_config(
+    route_name='get_groups',
+    renderer='json',
+    permission='List_Group'
+)
+def get_groups(request):
+    """returns all the groups in database
+    """
+    return [
+        {
+            'group_id': group.id,
+            'group_name': group.name,
+            'thumbnail_full_path': group.thumbnail.full_path if group.thumbnail else None,
+            'created_by_id': group.created_by.id,
+            'created_by_name': group.created_by.name,
+            'users_count': len(group.users)
+        }
+        for group in Group.query.order_by(Group.name.asc()).all()
+    ]
+
+
+@view_config(
+    route_name='get_entity_groups',
+    renderer='json',
+    permission='List_Group'
+)
+@view_config(
+    route_name='get_user_groups',
+    renderer='json',
+    permission='List_Group'
+)
+def get_entity_groups(request):
+    """returns all the groups of a given Entity
+    """
+    entity_id = request.matchdict.get('id', -1)
+    entity = Entity.query.filter_by(id=entity_id).first()
+
+    return [
+        {
+            'group_id': group.id,
+            'group_name': group.name,
+            'thumbnail_full_path': group.thumbnail.full_path if group.thumbnail else None,
+            'created_by_id': group.created_by.id,
+            'created_by_name': group.created_by.name,
+            'users_count': len(group.users)
+        }
+        for group in sorted(entity.groups, key=lambda x: x.name.lower())
+    ]
+
+
+

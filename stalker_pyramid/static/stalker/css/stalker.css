@@ -76,3 +76,12 @@ tr.odd>td.ticket_BLOCKER {
     border-color: #EE9999;
     color: #AA2222;
 }
+
+.header-color-blue0 {
+    background: #e1e5ea;
+    border-color: #eff3f8;
+}
+
+.header-color-blue0+.widget-body {
+    border-color: #eff3f8;
+}

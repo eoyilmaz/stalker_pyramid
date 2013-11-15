@@ -213,30 +213,36 @@ def view_entity_department(request):
 #
 #
 #
-# @view_config(
-#     route_name='get_entity_departments',
-#     renderer='json'
-# )
-# @view_config(
-#     route_name='get_user_departments',
-#     renderer='json'
-# )
-# def get_entity_departments(request):
-#     """
-#     """
-#     entity_id = request.matchdict.get('id', -1)
-#     entity = Entity.query.filter_by(id=entity_id).first()
-#
-#     return [
-#         {
-#             'name': department.name,
-#             'id': department.id,
-#             'thumbnail_path': department.thumbnail.full_path if department.thumbnail else None
-#
-#         }
-#         for department in entity.departments
-#     ]
-#
+@view_config(
+    route_name='get_entity_departments',
+    renderer='json'
+)
+@view_config(
+    route_name='get_user_departments',
+    renderer='json'
+)
+def get_entity_departments(request):
+    """
+    """
+    entity_id = request.matchdict.get('id', -1)
+    entity = Entity.query.filter_by(id=entity_id).first()
+
+    return [
+        {
+            'department_name': department.name,
+            'department_id': department.id,
+            'lead_id': department.lead.id if department.lead else None,
+            'lead_name': department.lead.name if department.lead else None,
+            'thumbnail_full_path': department.thumbnail.full_path if department.thumbnail else None,
+            'created_by_id': department.created_by.id,
+            'created_by_name': department.created_by.name,
+            'users_count': len(department.users)
+
+
+        }
+        for department in entity.departments
+    ]
+
 
 
 

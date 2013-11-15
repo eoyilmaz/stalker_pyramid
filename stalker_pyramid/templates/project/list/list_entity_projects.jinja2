@@ -37,39 +37,36 @@
     {% set page_title='Projects' %}
     {% include 'page_header.jinja2' %}
 
-    {% set projects=entity.projects %}
 
-    {#    <div class="table-header transparent">#}
-    {#        Projects#}
-    {#    </div>#}
-
-    <table id="projects_table"
-           class="table table-striped table-bordered table-hover">
-        <thead>
-        <tr>
-            <th>Thumbnail</th>
-            <th>Project</th>
-            <th>Lead</th>
-            <th>Created By</th>
-            <th>Completed</th>
-        </tr>
-        </thead>
-        <tbody>
-
-        </tbody>
-    </table>
+    {% set add_button_address=request.route_path('project_dialog', id=-1, mode='create') %}
+    {% set address=request.route_path('get_entity_projects', id=entity.id) %}
+    {% set items_table_color='green' %}
+    {% set list_item_type='Project' %}
+    {% include 'components/data_table.jinja2' %}
 
 {% endblock page_content %}
 
 {# EXTRA-SCRIPTS #}
 {% block extrascripts %}
-    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.dataTables.min.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.dataTables.bootstrap.js") }}'></script>
 
     {% raw %}
-    <script id="tmpl_projectRow" type="text/x-dot-template">
+    <script id="tmpl_itemThead" type="text/x-dot-template">
+
+    <tr>
+        <th>Thumbnail</th>
+        <th>Project</th>
+        <th>Lead</th>
+        <th>Created By</th>
+        <th>Users</th>
+        <th>Completed</th>
+    </tr>
+    </script>
+    {% endraw %}
+
+    {% raw %}
+    <script id="tmpl_itemRow" type="text/x-dot-template">
         <tr>
-            <td><img style='width:auto; height: 100px;'
+            <td><img style='width:auto; height: 50px;'
                      class="img-thumbnail"
                      src="{{=it.thumbnail_full_path }}">
             </td>
@@ -79,6 +76,7 @@
             </td>
             <td><a href='/users/{{=it.created_by_id}}/view'>{{=it.created_by_name}}</a>
             </td>
+            <td>{{=it.users_count}}</td>
             <td>
                 <div>
                     <span>{{=it.status}}</span>
@@ -94,43 +92,5 @@
         </tr>
     </script>
     {% endraw %}
-
-
-
-    <script>
-        // fill projects table with dynamic data
-        $.getJSON('/entities/{{ entity.id }}/projects/').then(function (data) {
-
-
-            var projects = data;
-            var project_template = doT.template($('#tmpl_projectRow').html());
-
-            // wait until document is ready
-            $(function () {
-
-                var i;
-                var table_body = $('#projects_table>tbody');
-                for (i = 0; i < data.length; i++) {
-                    // fix dates
-                    data[i].date_created = new Date(data[i].date_created).format('yyyy-mm-dd HH:MM');
-
-                    if (data[i].thumbnail_full_path == null) {
-                        data[i].thumbnail_full_path = '{{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}';
-                    }
-                    else {
-                        data[i].thumbnail_full_path = '/' + data[i].thumbnail_full_path;
-                    }
-
-                    // append it to the table
-                    table_body.append(project_template(data[i]));
-                }
-
-                var oTable1 = $('#projects_table').dataTable();
-
-            });
-        });
-
-    </script>
-
 
 {% endblock extrascripts %}

@@ -354,7 +354,7 @@ def get_users(request):
             ] if r[6] else [],
             'tasksCount': r[8] or 0,
             'ticketsCount': r[9] or 0,
-            'thumbnail_path': r[10]
+            'thumbnail_full_path': r[10]
         } for r in result.fetchall()
     ]
 
