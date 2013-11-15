@@ -99,23 +99,37 @@
     <hr>
 
     <div class="row-fluid">
-        <div class="span6 offset2">
+        <div class="span5 offset2">
             <div class='widget'>
                 <div class="widget-header widget-header-small header-color-blue">
-                    <h6>Comments</h6>
+                    <h6 class="lighter smaller"><i class="icon-comment"></i>Comments</h6>
                 </div>
                 <div class="widget-body">
                     <div class="widget-body-inner" style="display: block;">
-                        <div class="widget-main">
+                        <div class="widget-main no-padding">
                             {# Messages / Notes #}
                             {% for comment in ticket.comments|sort(attribute='date_created') %}
-                                <hr>
-                                <div class='widget-box transparent'>
-                                    <div class='widget-header widget-header-small'>
-                                        <h6><strong>{{ comment.created_by.name }}</strong> at <span class='date'>{{ comment.date_created }}</span></h6>
+                                <div class="itemdiv dialogdiv">
+                                    <div class="user">
+                                        <img alt="{{ comment.created_by.name }}'s Avatar" src="/{{ comment.created_by.thumbnail.full_path }}" />
                                     </div>
-                                    <div class='widget-body'>
-                                        {{ comment.content | safe }}
+        
+                                    <div class="body">
+                                        <div class="time">
+                                            <i class="icon-time"></i>
+                                            <span class="date green">{{ comment.date_created }}</span>
+                                        </div>
+        
+                                        <div class="name">
+                                            <a href="{{ request.route_url('view_user', id=comment.created_by.id) }}">{{ comment.created_by.name }}</a>
+                                        </div>
+                                        <div class="text">{{ comment.content | safe }}</div>
+        
+                                        <div class="tools">
+                                            <a href="#" class="btn btn-minier btn-info">
+                                                <i class="icon-only icon-share-alt"></i>
+                                            </a>
+                                        </div>
                                     </div>
                                 </div>
                             {% endfor %}
@@ -125,7 +139,7 @@
             </div>
         </div>
 
-        <div class="span2">
+        <div class="span3">
             <div class='widget'>
                 <div class="widget-header widget-header-small header-color-red">
                     <h6>History</h6>
@@ -137,7 +151,11 @@
                             {% for log in ticket.logs|sort(attribute='date_created') %}
                                 <div class='widget-box transparent'>
                                     <div class='widget-header widget-header-small'>
-                                        <h6><strong>{{ log.created_by.name }}</strong> at <span class="date">{{ log.date_created }}</span></h6>
+                                        <h6 class="lighter smaller">Changed
+                                            <span class="date">{{ log.date_created }}</span>
+                                            by
+                                            <a href="{{ request.route_url('view_user', id=log.created_by.id) }}">{{ log.created_by.name }}</a>
+                                        </h6>
                                     </div>
                                     <div class='widget-body'>
                                         <span>{{ log.action }}</span><br>
