@@ -1,261 +1,57 @@
 <div class="row-fluid">
 
-<div class="span5">
-    <div class="widget-box">
-        <div class="widget-header widget-header-small header-color-grey">
-            <h4 class="smaller">
-                <i class="icon-info-sign"></i>
-                Basic Information
-            </h4>
-        </div>
-        <div class="widget-body">
-            <div class="widget-main">
-                {% include 'auth/dialog/user_basic_information_form.jinja2' %}
-                <div class="form-actions">
-                    <button id='submit_button' type="button"
-                            class="btn btn-info btn-primary">
-                        <i class="icon-ok"></i>Ok
-                    </button>
-                    <button type="button" class="btn">
-                        <i class="icon-remove"></i>Cancel
-                    </button>
-                </div>
-
+    <div class="span5">
+        <div class="widget-box">
+            <div class="widget-header widget-header-small header-color-grey">
+                <h4 class="smaller">
+                    <i class="icon-info-sign"></i>
+                    Basic Information
+                </h4>
             </div>
-        </div>
-    </div>
-</div>
-
-<div class="span7">
-<div class="row-fluid">
-<div class="span4">
-    <div class="widget-box">
-        <div class="widget-header widget-header-small header-color-green">
-            <h4 class="smaller">
-                <i class="icon-folder-close-alt"></i>
-                Projects
-            </h4>
-            {% if has_permission('Update_Project') %}
-                <div class="widget-toolbar action-buttons">
-                    <a href="#" data-action="reload">
-                        <i class="icon-refresh white"></i>
-                    </a>
-
-                    &nbsp;
-                    <a data-target="#dialog_template"
-                       data-toggle="modal"
-                       data-keyboard=false
-                       href="{{ request.route_url('append_entities_to_entity_dialog', id=user.id, entities='Project') }}?came_from={{ request.current_route_path() }}"
-                       class="white">
-                        <i class="icon-plus"></i>
-                    </a>
-                </div>
-            {% endif %}
-        </div>
-        <div class="widget-body">
-            <div class="widget-main">
-                {% if user.projects %}
-                    {% for project in user.projects %}
-                        <div class="profile-activity clearfix">
-                            <div>
-                                <img class="pull-left"
-                                     src="{%- if project.thumbnail -%}
-                                                    /{{ project.thumbnail.full_path }}
-                                                {%- else -%}
-                                                    {{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}
-                                                {%- endif -%}">
-                                <a class="user"
-                                   href="{{ request.route_url('view_project', id=project.id) }}">{{ project.name }} </a>
-
-                                <div class="time">
-                                    <i class="icon-user bigger-110"></i>
-                                    {{ project.users | count }} users
-                                </div>
-                            </div>
-
-                            {% if has_permission('Delete_Project') and has_permission('Update_User') %}
-
-                                <div class="tools action-buttons">
-                                    <a href="#" class="blue">
-                                        <i class="icon-pencil bigger-125"></i>
-                                    </a>
-
-                                    <a href="{{ request.route_url('remove_entity_from_entity', id=user.id, entity_id=project.id) }}?came_from={{ request.current_route_path() }}"
-                                       class="red">
-                                        <i class="icon-remove bigger-125"></i>
-                                    </a>
-                                </div>
-                            {% endif %}
-                        </div>
-                    {% endfor %}
-                {% else %}
-                    <div class="profile-activity clearfix">
-                        No Project to list
+            <div class="widget-body">
+                <div class="widget-main">
+                    {% include 'auth/dialog/user_basic_information_form.jinja2' %}
+                    <div class="form-actions">
+                        <button id='submit_button' type="button"
+                                class="btn btn-info btn-primary">
+                            <i class="icon-ok"></i>Ok
+                        </button>
+                        <button type="button" class="btn">
+                            <i class="icon-remove"></i>Cancel
+                        </button>
                     </div>
-                {% endif %}
 
-
-            </div>
-        </div>
-    </div>
-    <div class="space-6"></div>
-</div>
-<div class="span4">
-    <div class="widget-box">
-        <div class="widget-header widget-header-small header-color-blue">
-
-            <h4 class="smaller">
-                <i class="icon-group"></i>
-                Departments
-            </h4>
-            {% if has_permission('Update_Department') %}
-                <div class="widget-toolbar action-buttons">
-                    <a href="#" data-action="reload">
-                        <i class="icon-refresh"></i>
-                    </a>
-
-                    &nbsp;
-                    <a data-target="#dialog_template"
-                       data-toggle="modal"
-                       data-keyboard=false
-                       href="{{ request.route_url('append_entities_to_entity_dialog', id=user.id, entities='Department') }}?came_from={{ request.current_route_path() }}"
-                       class="white">
-                        <i class="icon-plus"></i>
-                    </a>
                 </div>
-            {% endif %}
-        </div>
-        <div class="widget-body">
-            <div class="widget-main">
-                {% if user.departments %}
-                    {% for department in user.departments %}
-                        <div class="profile-activity clearfix">
-                            <div>
-                                <img class="pull-left"
-                                     src="{%- if department.thumbnail -%}
-                                                      /{{ department.thumbnail.full_path }}
-                                                  {%- else -%}
-                                                      {{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}
-                                                  {%- endif -%}">
-                                <a class="user"
-                                   href="{{ request.route_url('view_department',  id=department.id) }}">{{ department.name }}</a>
-
-                                <div class="time">
-                                    <i class="icon-user bigger-110"></i>
-                                    {{ department.users | count }} users
-                                </div>
-                            </div>
-
-                            {% if has_permission('Delete_Department') and has_permission('Update_User') %}
-
-                                <div class="tools action-buttons">
-                                    <a href="#" class="blue">
-                                        <i class="icon-pencil bigger-125"></i>
-                                    </a>
-
-                                    <a href="{{ request.route_url('remove_entity_from_entity', id=user.id, entity_id=department.id) }}?came_from={{ request.current_route_path() }}"
-                                       class="red">
-                                        <i class="icon-remove bigger-125"></i>
-                                    </a>
-                                </div>
-                                </div>
-                            {% endif %}
-                    {% endfor %}
-                {% else %}
-                    <div class="profile-activity clearfix">
-                        No Department to list
-                    </div>
-                {% endif %}
-
-
             </div>
         </div>
     </div>
-    <div class="space-6"></div>
-</div>
-<div class="span4">
-    <div class="widget-box">
-        <div class="widget-header widget-header-small header-color-purple">
 
-            <h4 class="smaller">
-                <i class="icon-key"></i>
-                Groups
-            </h4>
-            {% if has_permission('Update_Group') %}
-                <div class="widget-toolbar action-buttons">
-                    <a href="#" data-action="reload">
-                        <i class="icon-refresh"></i>
-                    </a>
+    <div class="span7">
+        <div class="row-fluid">
+            <div class="span4">
+                {% set address=request.route_path('get_entity_projects', id=user.id) %}
+                {% set list_item_type='Project' %}
+                {% include 'components/editable_list.jinja2' %}
+                <div class="space-6"></div>
+            </div>
+            <div class="span4">
+                {% set address=request.route_path('get_entity_departments', id=user.id) %}
+                {% set list_item_type='Department' %}
+                {% include 'components/editable_list.jinja2' %}
+                <div class="space-6"></div>
+            </div>
+            <div class="span4">
 
-                    &nbsp;
-                    <a data-target="#dialog_template"
-                       data-toggle="modal"
-                       data-keyboard=false
-                       href="{{ request.route_url('append_entities_to_entity_dialog', id=user.id, entities='Group') }}?came_from={{ request.current_route_path() }}"
-                       class="white">
-                        <i class="icon-plus"></i>
-                    </a>
-                </div>
-            {% endif %}
-        </div>
-        <div class="widget-body">
-            <div class="widget-main">
-                {% if user.groups %}
-                    {% for group in user.groups %}
-                        <div class="profile-activity clearfix">
-                            <div>
-                                <img class="pull-left"
-                                     src="{%- if group.thumbnail -%}
-                                                    /{{ group.thumbnail.full_path }}
-                                                {%- else -%}
-                                                    {{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}
-                                                {%- endif -%}">
-                                <a class="user"
-                                   href="{{ request.route_url('view_group', id=group.id) }}">{{ group.name }}</a>
-
-                                <div class="time">
-                                    <i class="icon-user bigger-110"></i>
-                                    {{ group.users | count }} users
-                                </div>
-                            </div>
-
-                            {% if has_permission('Delete_Group') and has_permission('Update_User') %}
-
-                                <div class="tools action-buttons">
-                                    <a href="#" class="blue">
-                                        <i class="icon-pencil bigger-125"></i>
-                                    </a>
-
-                                    <a href="{{ request.route_url('remove_entity_from_entity', id=user.id, entity_id=group.id) }}?came_from={{ request.current_route_path() }}"
-                                       class="red">
-                                        <i class="icon-remove bigger-125"></i>
-                                    </a>
-                                </div>
-
-                            {% endif %}
-                        </div>
-                    {% endfor %}
-                {% else %}
-                    <div class="profile-activity clearfix">
-                        No Group to list
-                    </div>
-                {% endif %}
-
-
+                {% set address=request.route_path('get_entity_groups', id=user.id) %}
+                {% set list_item_type='Group' %}
+                {% include 'components/editable_list.jinja2' %}
+                <div class="space-6"></div>
             </div>
         </div>
     </div>
-    <div class="space-6"></div>
-</div>
-</div>
-</div>
 </div>
 
-{#<script src="{{ request.static_url("stalker_pyramid:static/ace/js/bootbox.min.js") }}"></script>#}
-{##}
 <script type="text/javascript">
-
-
 
 
     $(document).ready(function () {
@@ -277,9 +73,9 @@
                 $.post(
                                 user_form.attr('action'),
                                 user_form.serialize()
-                ).done(function () {
+                        ).done(function () {
 
-                           window.location.replace('{{ came_from }}');
+                            window.location.replace('{{ came_from }}');
                         });
 
             }

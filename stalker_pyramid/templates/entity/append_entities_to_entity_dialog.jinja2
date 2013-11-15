@@ -17,23 +17,10 @@
     </div>
 </div>
 
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/chosen.jquery.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-datepicker.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/moment.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/daterangepicker.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-timepicker.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootstrap-colorpicker.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.autosize-min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.inputlimiter.1.3.1.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.maskedinput.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootstrap-tag.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.validate.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/additional-methods.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/fuelux/fuelux.spinner.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.easy-pie-chart.min.js") }}'></script>
+
 
 {% raw %}
-<script id="tmpl_item" type="text/x-dot-template">
+<script id="tmpl_append_item" type="text/x-dot-template">
     <div class="profile-activity clearfix" id="stack_item_{{=it.id}}" sel=""
          onclick="clicked({{=it.id}})">
 
@@ -115,7 +102,7 @@
 
             $.getJSON('/entities/{{ entity.id }}/{{ entities_name }}/out_stack/').then(function (data) {
 
-                var item_template = doT.template($('#tmpl_item').html());
+                var item_template = doT.template($('#tmpl_append_item').html());
                 var multiple_select_list = $('#multiple_select_list')
 
                 // append new options to the select

@@ -77,11 +77,38 @@ tr.odd>td.ticket_BLOCKER {
     color: #AA2222;
 }
 
-.header-color-blue0 {
-    background: #e1e5ea;
-    border-color: #eff3f8;
+.header-color-project {
+    background: #82af6f;
+    border-color: #82af6f
 }
 
-.header-color-blue0+.widget-body {
-    border-color: #eff3f8;
+.header-color-project+.widget-body {
+    border-color: #82af6f
+}
+
+.header-color-group {
+    background: #7e6eb0;
+    border-color: #7e6eb0
+}
+
+.header-color-group+.widget-body {
+    border-color: #7e6eb0
+}
+
+.header-color-department {
+    background: #6379aa;
+    border-color: #6379aa
+}
+
+.header-color-department+.widget-body {
+    border-color: #6379aa
+}
+
+.header-color-user {
+    background: #d15b47;
+    border-color: #d15b47
+}
+
+.header-color-user+.widget-body {
+    border-color: #d15b47
 }

@@ -40,7 +40,6 @@
 
     {% set add_button_address=request.route_path('project_dialog', id=-1, mode='create') %}
     {% set address=request.route_path('get_entity_projects', id=entity.id) %}
-    {% set items_table_color='green' %}
     {% set list_item_type='Project' %}
     {% include 'components/data_table.jinja2' %}
 
@@ -70,7 +69,7 @@
                      class="img-thumbnail"
                      src="{{=it.thumbnail_full_path }}">
             </td>
-            <td><a href='/projects/{{=it.project_id }}/view'>{{=it.project_name}}</a>
+            <td><a href='/projects/{{=it.id }}/view'>{{=it.name}}</a>
             </td>
             <td><a href='/users/{{=it.lead_id}}/view'>{{=it.lead_name}}</a>
             </td>

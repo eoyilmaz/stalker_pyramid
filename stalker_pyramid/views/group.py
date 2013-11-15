@@ -406,8 +406,8 @@ def get_groups(request):
     """
     return [
         {
-            'group_id': group.id,
-            'group_name': group.name,
+            'id': group.id,
+            'name': group.name,
             'thumbnail_full_path': group.thumbnail.full_path if group.thumbnail else None,
             'created_by_id': group.created_by.id,
             'created_by_name': group.created_by.name,
@@ -435,8 +435,8 @@ def get_entity_groups(request):
 
     return [
         {
-            'group_id': group.id,
-            'group_name': group.name,
+            'id': group.id,
+            'name': group.name,
             'thumbnail_full_path': group.thumbnail.full_path if group.thumbnail else None,
             'created_by_id': group.created_by.id,
             'created_by_name': group.created_by.name,

@@ -201,15 +201,14 @@ def get_entity_projects(request):
 
     return [
         {
-            'project_id': project.id,
-            'project_name': project.name,
+            'id': project.id,
+            'name': project.name,
             'lead_id': project.lead.id,
             'lead_name': project.lead.name,
             'date_created': milliseconds_since_epoch(project.date_created),
             'created_by_id': project.created_by.id,
             'created_by_name': project.created_by.name,
-            'thumbnail_full_path': project.thumbnail.full_path
-            if project.thumbnail else None,
+            'thumbnail_full_path': project.thumbnail.full_path if project.thumbnail else None,
             'status': project.status.name,
             'users_count': len(project.users),
             'percent_complete': project.percent_complete

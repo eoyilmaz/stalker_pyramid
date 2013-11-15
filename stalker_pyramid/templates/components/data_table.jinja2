@@ -1,5 +1,5 @@
 <div class="widget-box">
-    <div class="widget-header widget-header-small header-color-{{ items_table_color }}">
+    <div class="widget-header widget-header-small header-color-{{ list_item_type.lower() }}">
         <h5 id="items_header" class="smaller"></h5>
 
         {% if has_permission('Create_'+list_item_type) %}

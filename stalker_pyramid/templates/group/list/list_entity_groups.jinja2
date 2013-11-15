@@ -34,7 +34,6 @@
          {% set address=request.route_path('get_groups') %}
     {% endif %}
     {% set add_button_address=request.route_path('group_dialog', id=-1, mode='create') %}
-    {% set items_table_color='purple' %}
     {% set list_item_type='Group' %}
     {% include 'components/data_table.jinja2' %}
 
@@ -63,7 +62,7 @@
                      class="img-thumbnail"
                      src="{{=it.thumbnail_full_path }}">
             </td>
-            <td><a href='/groups/{{=it.group_id }}/view'>{{=it.group_name}}</a>
+            <td><a href='/groups/{{=it.id }}/view'>{{=it.name}}</a>
             </td>
             <td><a href='/users/{{=it.created_by_id}}/view'>{{=it.created_by_name}}</a>
             </td>

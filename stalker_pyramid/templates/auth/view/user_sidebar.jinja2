@@ -2,7 +2,7 @@
 
 {% set user=entity %}
 
-<ul class='nav nav-list'>
+<ul id="user_sidebar_list" class='nav nav-list'>
     {# Thumbnail #}
     <li>
         <div class="media">
@@ -32,147 +32,136 @@
             </div>
         </div>
     </li>
-
-    {#Dashboard#}
-    {% if request.current_route_path() == request.route_path('view_user', id=user.id) %}
-        <li class='active'>
-            <a>
-                <i class="icon-dashboard"></i>
-                <span class="menu-text">Dashboard</span>
-            </a>
-        </li>
-    {% else %}
-        <li>
-            <a href='{{ request.route_url('view_user', id=user.id) }}'>
-                <i class="icon-dashboard"></i>
-                <span class="menu-text">Dashboard</span>
-            </a>
-        </li>
-    {% endif %}
-
-
-    {# Tasks #}
-    {% if request.current_route_path() == request.route_path('list_user_tasks', id=user.id) %}
-        <li class='active'>
-            <a>
-                <i class="icon-tasks"></i>
-                <span class="menu-text">Tasks</span>
-                <span class='badge badge-info'>{{ user.tasks | count }}</span>
-            </a>
-        </li>
-    {% else %}
-        <li>
-            <a href='{{ request.route_url('list_user_tasks', id=user.id) }}'>
-                <i class="icon-tasks"></i>
-                <span class="menu-text">Tasks</span>
-                <span class='badge badge-info'>{{ user.tasks | count }}</span>
-            </a>
-        </li>
-    {% endif %}
-
-    {# Tickets #}
-    {% if request.current_route_path() == request.route_path('list_user_tickets', id=user.id) %}
-        <li class='active'>
-            <a>
-                <i class="icon-ticket"></i>
-                <span class="menu-text">Tickets</span>
-                <span class='badge badge-important'>{{ user.open_tickets | count }}</span>
-            </a>
-        </li>
-    {% else %}
-        <li>
-            <a href='{{ request.route_url('list_user_tickets', id=user.id) }}'>
-                <i class="icon-ticket"></i>
-                <span class="menu-text">Tickets</span>
-                <span class='badge badge-important'>{{ user.open_tickets | count }}</span>
-            </a>
-        </li>
-    {% endif %}
-
-    {# Projects #}
-    {% if user.projects|count >0 %}
-        <li>
-            <a href="#" class="dropdown-toggle">
-                <i class="icon-folder-close-alt"></i>
-                <span class="menu-text"> Projects </span>
-
-                <b class="arrow icon-angle-down"></b>
-            </a>
-
-            <ul class="submenu">
-                {% for project in user.projects %}
-                    <li>
-                        <a href="{{ request.route_url('view_project', id=project.id) }}">
-                            <i class="icon-double-angle-right"></i>
-                            {{ project.name }}
-                            <small>({{ project.code }})</small>
-                        </a>
-                    </li>
-                {% endfor %}
-            </ul>
-        </li>
-    {% endif %}
-
-    {#    Departments #}
-    {% if user.departments|count >0 %}
-        <li>
-            <a href="#" class="dropdown-toggle">
-                <i class="icon-group"></i>
-                <span class="menu-text"> Departments </span>
-
-                <b class="arrow icon-angle-down"></b>
-            </a>
-            <ul class="submenu">
-                {% for department in user.departments %}
-                    <li>
-                        <a href="{{ request.route_url('view_department', id=department.id) }}">
-                            <i class="icon-double-angle-right"></i>
-                            <span class="menu-text">{{ department.name }}</span>
-                        </a>
-                    </li>
-                {% endfor %}
-            </ul>
-        </li>
-    {% endif %}
-
-    {# Permission Groups #}
-    {% if user.groups|count >0 %}
-        <li>
-            <a href="#" class="dropdown-toggle">
-                <i class="icon-key"></i>
-                <span class="menu-text"> Permisson Groups </span>
-
-                <b class="arrow icon-angle-down"></b>
-            </a>
-            <ul class="submenu">
-                {% for group in user.groups %}
-                    <li>
-                        <a href="{{ request.route_url('view_group',id=group.id) }}">
-                            <i class="icon-double-angle-right"></i>
-                            <span class="menu-text">{{ group.name }}</span>
-                        </a>
-                    </li>
-                {% endfor %}
-            </ul>
-        </li>
-    {% endif %}
-
-    {# Vacations #}
-    {% if request.current_route_path() == request.route_path('list_user_vacations', id=user.id) %}
-        <li class='active'>
-            <a>
-                <i class="icon-sun"></i>
-                <span class="menu-text">Vacations</span>
-                <span class="badge badge-success">{{ user.vacations | count }}</span>
-            </a>
-        </li>
-    {% else %}
-        <li>
-            <a href='{{ request.route_url('list_user_vacations', id=user.id) }}'>
-                <i class="icon-sun"></i>
-                <span class="menu-text">Vacations</span>
-                <span class="badge badge-success">{{ user.vacations | count }}</span>
-            </a>
-        </li>
-    {% endif %}
 </ul>
+
+{% raw %}
+<script id="tmpl_sidebar_tree_link" type="text/x-dot-template">
+    <li>
+        <a href="#" class="dropdown-toggle">
+            <i class={{=it.icon}}></i>
+            <span class="menu-text">{{=it.title}} </span>
+
+            <b class="arrow icon-angle-down"></b>
+        </a>
+
+        <ul id='{{=it.title}}_sublink' class="submenu">
+
+        </ul>
+    </li>
+
+</script>
+{% endraw %}
+
+{% raw %}
+<script id="tmpl_sidebar_tree_sublink" type="text/x-dot-template">
+    <li>
+        <a href={{=it.link }}>
+        <i class="icon-double-angle-right"></i>
+        {{=it.name }}
+        </a>
+    </li>
+
+</script>
+{% endraw %}
+
+{% raw %}
+<script id="tmpl_sidebar_link" type="text/x-dot-template">
+    <li class={{=it.state}}>
+        <a href={{=it.link}}>
+            <i class={{=it.icon}}></i>
+            <span class="menu-text">{{=it.title}}</span>
+            <span class="badge badge-success">{{=it.count}}</span>
+        </a>
+    </li>
+</script>
+{% endraw %}
+
+
+<script>
+
+    $(document).ready(function () {
+
+
+        var submenu_of = function (treeItemType) {
+
+            $.getJSON('/entities/{{ user.id }}/' + treeItemType.toLowerCase() + 's/').then(function (data) {
+                var user_sidebar_list = $('#user_sidebar_list');
+                var tree_link_template = doT.template($('#tmpl_sidebar_tree_link').html());
+                var data_counts = data.length;
+                if (data_counts > 0) {
+
+                    user_sidebar_list.append(tree_link_template({
+                        'title': treeItemType + 's',
+                        'icon': get_icon(treeItemType.toLowerCase())
+                    }));
+
+                }
+                var item_sublink = $('#' + treeItemType + 's_sublink');
+                var tree_sublink_template = doT.template($('#tmpl_sidebar_tree_sublink').html());
+
+
+                for (var i = 0; i < data_counts; i++) {
+
+                    data[i].link = '/' + treeItemType.toLowerCase() + 's/' + data[i].id + '/view'
+
+                    item_sublink.append(tree_sublink_template(data[i]))
+
+                }
+            });
+        }
+
+        var menu_of = function (title, state, address, icon, count) {
+            var user_sidebar_list = $('#user_sidebar_list');
+            var link_template = doT.template($('#tmpl_sidebar_link').html());
+
+            var istate = '';
+
+            {% if request.current_route_path() == request.route_path('list_entity_tickets', id=user.id) %}
+                istate = 'active'
+            {% endif %}
+
+            user_sidebar_list.append(link_template({
+                'title': title,
+                'state':state,
+                'link': address,
+                'icon': icon,
+                'count': count
+            }));
+        }
+
+
+
+        menu_of('Dashboard',
+                "{%- if request.current_route_path() == request.route_path('view_user', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
+                '{{ request.route_url('view_user', id=user.id) }}',
+                'icon-dashboard',
+                '')
+
+        menu_of('Tasks',
+                "{%- if request.current_route_path() == request.route_path('list_entity_tasks', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
+                '{{ request.route_url('list_entity_tasks', id=user.id) }}',
+                'icon-tasks',
+                '{{ user.tasks | count }}')
+
+        menu_of('Tickets',
+                "{%- if request.current_route_path() == request.route_path('list_entity_tickets', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
+                '{{ request.route_url('list_entity_tickets', id=user.id) }}',
+                'icon-ticket',
+                '{{ user.tickets | count }}')
+
+        menu_of('Vacations',
+                "{%- if request.current_route_path() == request.route_path('list_entity_vacations', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
+                '{{ request.route_url('list_entity_vacations', id=user.id) }}',
+                'icon-sun',
+                '{{ user.vacations | count }}')
+
+        submenu_of('Project')
+
+        submenu_of('Department')
+
+        submenu_of('Group')
+
+    })
+
+</script>
+

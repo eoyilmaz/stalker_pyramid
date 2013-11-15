@@ -229,8 +229,8 @@ def get_entity_departments(request):
 
     return [
         {
-            'department_name': department.name,
-            'department_id': department.id,
+            'name': department.name,
+            'id': department.id,
             'lead_id': department.lead.id if department.lead else None,
             'lead_name': department.lead.name if department.lead else None,
             'thumbnail_full_path': department.thumbnail.full_path if department.thumbnail else None,
