@@ -67,42 +67,27 @@
                 Upload References
             </button>
         {% endif %}
-
-        <div class="pagination">
-            <ul>
-                <li class="disabled">
-                    <a href="#">
-                        <i class="icon-double-angle-left"></i>
-                    </a>
-                </li>
-
-                <li class="active">
-                    <a href="#">1</a>
-                </li>
-
-
-
-                <li>
-                    <a href="#">
-                        <i class="icon-double-angle-right"></i>
-                    </a>
-                </li>
-
-            </ul>
-        </div>
-    
     </div>
     <div class="space-8"></div>
     <div class="row-fluid">
-        <div id="new_references_storage" class="hidden"></div>
+        <div class="row-fluid">
+            <div id="new_references_storage" class="hidden"></div>
+            <ul class="ace-thumbnails"></ul>
+        </div>
 
-        <ul class="ace-thumbnails"></ul>
+        <div class="row-fluid pull-right">
+            <div class="pagination"></div>
+        </div>
+
     </div>
 {% endblock page_content %}
 
 {#EXTRA-SCRIPTS#}
 {% block extrascripts %}
 
+    
+    <script type="text/javascript"
+            src='{{ request.static_url("stalker_pyramid:static/ace/js/bootstrap-tag.min.js") }}'></script>
     <script type="text/javascript"
             src='{{ request.static_url("stalker_pyramid:static/ace/js/dropzone.min.js") }}'></script>
     <script type="text/javascript"
@@ -196,7 +181,7 @@
             var referenceItemTemplate = doT.template(document.getElementById('tmpl_reference_item').text);
             
             var current_page = options.current_page || 1;
-            var items_per_page = options.items_per_page || 100;
+            var items_per_page = options.items_per_page || 100000;
 
             var offset = (current_page - 1) * items_per_page;
             var limit = items_per_page;
@@ -227,14 +212,13 @@
                             var url = '/references/' + ref_id + '/delete';
                             $.post(url).done(function (response_text) {
                                 // use he response text and give info
-
                                 // and also delete the HTML element
                                 $('#Reference_' + ref_id).toggle('slow', function () {
                                     $(this).remove();
                                 })
                             }).fail(function (jqXHR) {
-                                        // us the jqXHR.response_text and inform user about what is wrong
-                                    });
+                                // use the jqXHR.response_text and inform user about what went wrong
+                            });
                         }
                     });
                 });
@@ -243,7 +227,7 @@
 
         $(function () {
             // create pagination
-            var items_per_page = 100;
+            var items_per_page = 10000;
             var current_page = parseInt($('.pagination>ul').find('li.active').text()) || 1;
             var total_number_of_results;
 
@@ -252,9 +236,7 @@
                 total_number_of_results = data;
                 console.log('total_number_of_results:', total_number_of_results);
                 // remove all pages first
-                $('#pagination');
-                
-                // 
+                $('#pagination').paginator();
             });
 
             // for initial one

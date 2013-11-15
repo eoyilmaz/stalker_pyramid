@@ -13,6 +13,8 @@ Stalker Pyramid Changes
   Shot and Sequence entity types and New, Work In Progress, Pending Review,
   Has Revision and Completed to
   ``stalker_pyramid.scripts.initializedb.main()``.
+* **Update:** Status colors are now coming from SimpleEntity.html_class
+  attribute.
 
 0.1.0.b4
 ========

@@ -33,14 +33,14 @@ from stalker.db import DBSession
 logger = logging.getLogger(__name__)
 logger.setLevel(log.logging_level)
 
-colors = {
-    'Planning': 'grey',
-    'New': 'red',
-    'Work In Progress': 'orange',
-    'Pending Review': 'blue',
-    'Has Revision': 'purple',
-    'Completed': 'green',
-}
+#colors = {
+#    'Planning': 'grey',
+#    'New': 'red',
+#    'Work In Progress': 'orange',
+#    'Pending Review': 'blue',
+#    'Has Revision': 'purple',
+#    'Completed': 'green',
+#}
 
 # this is a dummy mail address change it in the config (*.ini) file
 dummy_email_address = "Stalker Pyramid <stalker.pyramid@stalker.pyramid.com>"
