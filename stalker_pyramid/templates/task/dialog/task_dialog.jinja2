@@ -287,9 +287,12 @@
 
 
 <script>
-    function init_task_dialog(){
-        console.debug('starting to initialize task dialog!!!');
+    function init_dialog(){
+        console.log('initialize task dialog start');
 
+        // update dialog header
+        $('#dialog_template_label').text('{{ mode.title() }} Task Dialog');
+    
         // generate default values;
         var project = {
             id: {{ project.id }},
@@ -348,7 +351,7 @@
             responsible_id = {{ entity.responsible.id }};
             entity_type = '{{ entity.entity_type }}';
         {% endif %}
-        console.debug('depends_to :', depends_to);
+        console.log('depends_to :', depends_to);
 
 
         var submit_button = $('#task_dialog_submit_button');
@@ -446,21 +449,21 @@
         task_depends_to.attr('is_updating', true);
         field_update_mode_checker();
         $.getJSON('{{ request.route_url("get_project_tasks", id=project.id) }}').then(function(data){
-            console.debug('data.length:', data.length);
+            console.log('data.length:', data.length);
             {# remove self from the list #}
             {% if entity %}
                 var index = -1;
                 for(var i = 0; i < data.length; i++){
                     if (data[i].id === {{ entity.id }}){
                         index = i;
-                        console.debug
+                        console.log
                         break;
                     }
                 }
                 if (index !== -1){
                     data.splice(index, 1);
                 }
-                console.debug('data.length:', data.length);
+                console.log('data.length:', data.length);
             {% endif %}
 
             // now append the data to the task_parent
@@ -609,7 +612,7 @@
         //
         // Update the resource field
         //
-        console.debug('selected_resources : ', selected_resources);
+        console.log('selected_resources : ', selected_resources);
 
         // set the field to updating mode
         task_resources.attr('is_updating', true);
@@ -685,7 +688,7 @@
             var task_form = $('#task_form');
             var form_data = task_form.serialize();
             form_data += '&project_id={{ project.id }}&entity_type='+entity_type_value;
-            console.debug('form_data :', form_data);
+            console.log('form_data :', form_data);
 
             if ( task_form.validate() ){
                 // prevent multiple sends
@@ -771,21 +774,23 @@
 
         });
 
-        console.debug('finished initializing the task dialog!')
+        console.log('initialize task dialog end')
     }
 </script>
 
 <script type="text/javascript">
-    function destruct_task_dialog(){
+    function destruct_dialog(){
+        console.log('destruct task dialog start');
         // unbind events
         $('#task_entity_type').unbind();
         $('#task_project').unbind();
         $('#task_parent').unbind();
         $('#task_name').unbind();
         $('#task_priority').unbind();
-        $('#task_dialog_submit_button').unbind();
+        $('#dialog_template_submit_button').unbind();
 
         // remove dialog
-        $('#task_dialog').data('modal', null);
+        $('#dialog_template').data('modal', null);
+        console.log('destruct task dialog end');
     }
 </script>

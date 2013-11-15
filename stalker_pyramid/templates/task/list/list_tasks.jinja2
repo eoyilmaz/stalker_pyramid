@@ -205,7 +205,7 @@
                             <ul class="dropdown-menu dropdown-danger">
 
                                 <li>
-                                    <a data-target="#task_dialog"
+                                    <a data-target="#dialog_template"
                                        data-toggle="modal"
                                        data-keyboard=false
                                        {% if entity.entity_type == 'Project' %}
@@ -239,7 +239,7 @@
                                 <li class="divider"></li>
 
                                 <li>
-                                    <a data-target="#task_dialog"
+                                    <a data-target="#dialog_template"
                                        data-toggle="modal"
                                        data-keyboard=false
                                        href='{{ request.route_url("asset_dialog", id=-1, mode='create')}}'>
@@ -249,7 +249,7 @@
                                 </li>
 
                                 <li>
-                                    <a data-target="#task_dialog"
+                                    <a data-target="#dialog_template"
                                        data-toggle="modal"
                                        data-keyboard=false
                                        href='{{ request.route_url("shot_dialog", id=-1, mode='create')}}'>
@@ -259,7 +259,7 @@
                                 </li>
 
                                 <li>
-                                    <a data-target="#task_dialog"
+                                    <a data-target="#dialog_template"
                                        data-toggle="modal"
                                        data-keyboard=false
                                        href='{{ request.route_url("sequence_dialog", id=-1, mode='create')}}'>
@@ -274,7 +274,7 @@
                         {% if has_permission('Update_Task') %}
                         <li>
                             <a id='update_task_button'
-                               data-target="#task_dialog"
+                               data-target="#dialog_template"
                                data-toggle="modal"
                                data-keyboard=false
                                href="#"
@@ -732,8 +732,8 @@ require([
 
     var select_first_and_show_task_dialog = function(e, self){
         select_first_and_do_something(e, function(){
-            $("#task_dialog").modal({
-                target: '#task_dialog',
+            $("#dialog_template").modal({
+                target: '#dialog_template',
                 keyboard: false,
                 remote: self.attr('href')
             });

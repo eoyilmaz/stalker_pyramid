@@ -1465,6 +1465,22 @@ def get_entity_tasks_stats(request):
     return status_count_task
 
 
+def unbind_task_hierarchy_from_tickets(task):
+    """unbinds the given task and any child of it from any ticket
+    """
+    for child_task in task.children:
+        unbind_task_hierarchy_from_tickets(child_task)
+    unbind_task_from_tickets(task)
+
+
+def unbind_task_from_tickets(task):
+    """unbinds the given task from any tickets related to it
+    """
+    tickets = Ticket.query.filter(Ticket.links.contains(task)).all()
+    for ticket in tickets:
+        ticket.links.remove(task)
+
+
 @view_config(
     route_name='delete_task',
     permission='Delete_Task'
@@ -1477,10 +1493,7 @@ def delete_task(request):
 
     if task:
         try:
-            # remove this task from any related Ticket
-            tickets = Ticket.query.filter(Ticket.links.contains(task)).all()
-            for ticket in tickets:
-                ticket.links.remove(task)
+            unbind_task_hierarchy_from_tickets(task)
 
             DBSession.delete(task)
             transaction.commit()
