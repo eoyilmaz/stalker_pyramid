@@ -329,36 +329,37 @@ function init_dialog() {
     {# ***************************************************************** #}
     {# Submit Button #}
 
-    $('#dialog_template_submit_button').on('click', function (e) {
-
+    var submit_button = $('#dialog_template_submit_button');
+    submit_button.on('click', function (e) {
         e.stopPropagation();
         e.preventDefault();
 
+        submit_button.button('loading');
         var vacation_form = $('#vacation_form');
-    {% if entity.entity_type != 'Studio' %}
-
-        if (vacation_type.val() == 'StudioWide') {
-            $('#message').show();
-            $('#message').append("<p><strong><i class='icon-danger'>You can not create a vacation with type StudioWide</p>")
-            return;
-        }
+        {% if entity.entity_type != 'Studio' %}
+            if (vacation_type.val() == 'StudioWide') {
+                $('#message').show();
+                $('#message').append("<p><strong><i class='icon-danger'>You can not create a vacation with type StudioWide</p>");
+                submit_button.button('reset');
+                return;
+            }
         {% endif %}
 
-
         if (vacation_form.validate()) {
-
             // merge end_date and end_time
             var start_end = get_start_end();
             var start = start_end[0];
             var end = start_end[1];
 
-
             $.post(
-                            vacation_form.attr('action'),
-                            vacation_form.serialize() + '&' + $.param({ 'start': start.toUTCString(), 'end': end.toUTCString() })
-                    ).done(function () {
-                        window.location.replace('{{ came_from }}');
-                    });
+                vacation_form.attr('action'),
+                vacation_form.serialize() + '&' + $.param({ 'start': start.toUTCString(), 'end': end.toUTCString() })
+            ).done(function () {
+                window.location.replace('{{ came_from }}');
+            }).fail(function (jqXHR) {
+                bootbox.alert(jqXHR.responseText);
+                submit_button.button('reset');
+            });
 
         }
     });

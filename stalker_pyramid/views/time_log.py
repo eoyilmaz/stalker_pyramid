@@ -120,10 +120,15 @@ def update_time_log_dialog(request):
 def create_time_log(request):
     """runs when creating a time_log
     """
-
     logger.debug('inside create_time_log')
     task_id = request.params.get('task_id')
+
+    logger.debug('task_id : %s' % task_id)
+
     task = Task.query.filter(Task.id == task_id).first()
+
+    if not task:
+        return Response('No task with id %s found' % task_id, 500)
 
     #**************************************************************************
     # collect data

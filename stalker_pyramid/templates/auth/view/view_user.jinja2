@@ -2,7 +2,6 @@
 
 {# PRE-HEADER#}
 {% block pre_header %}
-
     <link rel="stylesheet"
           href='{{ request.static_url("stalker_pyramid:static/ace/css/fullcalendar.css") }}'/>
     <link rel="stylesheet"
@@ -13,29 +12,18 @@
           href='{{ request.static_url("stalker_pyramid:static/ace/css/daterangepicker.css") }}'/>
 
     {% include 'charts/chart_preheader.jinja2' %}
-
 {% endblock pre_header %}
 
 {#SIDEBAR#}
 {% block sidebar %}
-
     {% include 'sidebar.jinja2' %}
-
 {% endblock sidebar %}
-
 
 {#BREADCRUMBS#}
 {% block breadcrumbs %}
-
     {% set page_title='Dashboard' %}
     {% include 'breadcrumb/breadcrumbs.jinja2' %}
-
 {% endblock breadcrumbs %}
-
-{# MODALS #}
-{% block modals %}
-    {% include 'modals/dialog_template.jinja2' %}
-{% endblock modals %}
 
 {#PAGE-CONTENT#}
 {% block page_content %}
@@ -129,17 +117,10 @@
 <!--page specific plugin scripts-->
 {#EXTRA-SCRIPTS#}
 {% block extrascripts %}
-
-
     {% if entity.tasks | count > 0 %}
-
         {% if has_permission('Update_User') or logged_in_user.id == entity.id %}
-
-
             {% set event_type='TimeLog' %}
-
         {% endif %}
-
     {% endif %}
 
     {% include 'charts/chart_extrascripts.jinja2' %}
@@ -191,36 +172,23 @@
                         allDay: data[i].allDay
                     };
 
-
                     if (first_week_day.getTime() <= start_date.getTime() && start_date.getTime() < today.getTime()) {
-
                         var day_index = parseInt((start_date.getTime() - first_week_day.getTime()) / 1000 / 3600 / 24);
-
                         var occupied_hours = parseInt((end_date.getTime() - start_date.getTime()) / 1000 / 3600);
 
-                        if(data[i].entity_type == 'timelogs'){
-
+                        if (data[i].entity_type == 'timelogs') {
                             time_log_data[day_index] += occupied_hours;
-
-                        }
-                        else if(data[i].entity_type == 'vacations'){
-
+                        } else if (data[i].entity_type == 'vacations') {
                             vacation_data[day_index] += occupied_hours;
-
                         }
 
-                        unknown_data[day_index] = unknown_data[day_index]- occupied_hours>0?unknown_data[day_index]- occupied_hours:0;
-
+                        unknown_data[day_index] = unknown_data[day_index] - occupied_hours > 0 ? unknown_data[day_index] - occupied_hours : 0;
                     }
-
-
                     events.push(event);
-
                 }
 
                 drawBarChart('bar_chart', [time_log_data, vacation_data], ticks, colors, labels);
-                drawCalendar('calendar',events);
-
+                drawCalendar('calendar', events);
 
             });
         });

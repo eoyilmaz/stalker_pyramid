@@ -1,0 +1,142 @@
+<div class="widget-box">
+    <div class="widget-header widget-header-small header-color-{{ list_item_type.lower() }}">
+
+        <h4 id="{{ list_item_type.lower() }}_items_header" class="smaller">
+
+        </h4>
+        {% if has_permission('Update_'+list_item_type) %}
+            <div class="widget-toolbar action-buttons">
+                <a href="#" data-action="reload">
+                    <i class="icon-refresh"></i>
+                </a>
+
+                &nbsp;
+                <a data-target="#dialog_template"
+                   data-toggle="modal"
+                   data-keyboard=false
+                   href="{{ request.route_url('append_entities_to_entity_dialog', id=user.id, entities=list_item_type) }}?came_from={{ request.current_route_path() }}"
+                   class="white">
+                    <i class="icon-plus"></i>
+                </a>
+            </div>
+        {% endif %}
+    </div>
+    <div class="widget-body">
+        <div id="{{ list_item_type.lower() }}_editable_list" class="widget-main"></div>
+    </div>
+</div>
+
+{% raw %}
+<script id="tmpl_list_item" type="text/x-dot-template">
+    <div class="profile-activity clearfix">
+        <div>
+            <img class="pull-left"
+                 src='{{=it.thumbnail_full_path }}'>
+            <a class="user"
+               href={{=it.item_view_link}}>{{=it.name }}</a>
+
+            <div class="time">
+                <i class="icon-user bigger-110"></i>
+                {{=it.users_count }}
+            </div>
+        </div>
+        <div id="editable_list_item_actions_{{=it.id}}"
+             class="tools action-buttons">
+
+        </div>
+    </div>
+
+</script>
+{% endraw %}
+
+
+{% raw %}
+<script id="tmpl_item_edit" type="text/x-dot-template">
+    <a data-target="#dialog_template"
+       data-toggle="modal"
+       data-keyboard=false
+       href='{{=it.item_edit_link }}' class="blue">
+        <i class="icon-pencil bigger-125"></i>
+    </a>
+</script>
+{% endraw %}
+
+{% raw %}
+<script id="tmpl_item_delete" type="text/x-dot-template">
+    <a href='{{=it.item_delete_link }}' class="red">
+        <i class="icon-remove bigger-125"></i>
+    </a>
+</script>
+{% endraw %}
+
+
+<script>
+    $(document).ready(function () {
+
+        var icon_name = get_icon('{{ list_item_type.lower() }}');
+        $('#'+'{{ list_item_type.lower() }}'+'_items_header').append('<i class=' + icon_name + '></i>{{ list_item_type }}s');
+
+
+        // fill items table with dynamic data
+        $.getJSON('{{ address }}').then(function (data) {
+
+
+            var items = data;
+            var row_template = doT.template($('#tmpl_list_item').html());
+
+            // wait until document is ready
+            $(function () {
+
+                var i = 0;
+                var editable_list = $('#'+'{{ list_item_type.lower() }}'+'_editable_list');
+                for (i = 0; i < data.length; i++) {
+
+                    // fix dates
+                    // data[i].date_created = new Date(data[i].date_created).format('yyyy-mm-dd HH:MM');
+
+                    if (data[i].thumbnail_full_path == null) {
+                        data[i].thumbnail_full_path = '{{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}';
+                    }
+                    else {
+                        data[i].thumbnail_full_path = '/' + data[i].thumbnail_full_path;
+                    }
+
+                    data[i].item_view_link = '#'
+
+                    {% if has_permission('Read_'+list_item_type)%}
+
+                        data[i].item_view_link = '/{{ list_item_type.lower() }}s/' + data[i].id + '/view';
+
+                    {% endif %}
+
+                    // append it to the table
+                    editable_list.append(row_template(data[i]));
+
+
+                    {% if has_permission('Update_'+list_item_type)%}
+
+                        var edit_template = doT.template($('#tmpl_item_edit').html());
+                        data[i].item_edit_link = '/departments/'+data[i].id+'/update/dialog?came_from={{ request.current_route_path() }}';
+                        $('#editable_list_item_actions_' + data[i].id).append(edit_template(data[i]));
+
+                    {% endif %}
+
+                    {% if has_permission('Delete_'+list_item_type)%}
+
+                        var delete_template = doT.template($('#tmpl_item_delete').html());
+                        data[i].item_delete_link = '/entities/'+data[i].id+'/{{user.id}}/remove?came_from={{ request.current_route_path() }}';
+                        $('#editable_list_item_actions_' + data[i].id).append(delete_template(data[i]));
+
+                    {% endif %}
+
+
+                }
+
+                if (i == 0) {
+                    editable_list.append('<div class="profile-activity clearfix">No {{ list_item_type }} to list</div>');
+                }
+
+            });
+        });
+    });
+</script>

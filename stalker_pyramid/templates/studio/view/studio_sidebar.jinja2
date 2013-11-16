@@ -85,7 +85,7 @@
     {% if request.current_route_path() == request.route_path('list_studio_projects', id=studio.id) %}
         <li class='active'>
             <a>
-                <i class="icon-user"></i>
+                <i class="icon-folder-close-alt"></i>
                 <span class="menu-text">Projects</span>
                 <span class='badge badge-success'>{{ studio.projects | count }}</span>
             </a>
@@ -93,7 +93,7 @@
     {% else %}
         <li>
             <a href='{{ request.route_url('list_studio_projects', id=studio.id) }}'>
-                <i class="icon-user"></i>
+                <i class="icon-folder-close-alt"></i>
                 <span class="menu-text">Projects</span>
                 <span class='badge badge-success'>{{ studio.projects | count }}</span>
             </a>
@@ -124,6 +124,7 @@
             <a>
                 <i class="icon-group"></i>
                 <span class="menu-text">Department</span>
+                <span class='badge badge-success'>{{ studio.departments | count }}</span>
             </a>
         </li>
     {% else %}
@@ -131,6 +132,7 @@
             <a href='{{ request.route_url('list_studio_departments', id=studio.id) }}'>
                 <i class="icon-group"></i>
                 <span class="menu-text">Departments</span>
+                <span class='badge badge-success'>{{ studio.departments | count }}</span>
             </a>
         </li>
     {% endif %}

@@ -4,10 +4,6 @@
    {% include 'resource/list/list_resources_preheader.jinja2' %}
 {% endblock pre_header %}
 
-{#{% block modals %}#}
-{#     {% include 'modals/dialog_template.jinja2' %}#}
-{#{% endblock modals%}#}
-
 {% block breadcrumbs %}
     {% set page_title='Tasks' %}
     {% include 'breadcrumb/breadcrumbs.jinja2' %}
@@ -22,5 +18,4 @@
     {% include 'page_header.jinja2' %}
     <!--/.page-header-->
     {% include 'resource/list/list_resources.jinja2' %}
-    {% include 'modals/dialog_template.jinja2' %}
 {% endblock page_content %}

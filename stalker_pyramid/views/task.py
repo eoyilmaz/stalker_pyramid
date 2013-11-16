@@ -565,14 +565,8 @@ def get_entity_tasks(request):
     entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter(Entity.id == entity_id).first()
 
-    #logger.debug('entity_id : %s' % entity_id)
-    #logger.debug('entity    : %s' % entity)
-
     parent_id = request.params.get('parent_id')
     parent = Entity.query.filter_by(id=parent_id).first()
-
-    # logger.debug('parent_id : %s' % parent_id)
-    # logger.debug('parent    : %s' % parent)
 
     return_data = []
     # set the content range to prevent JSONRest Store to query the data twice
@@ -604,6 +598,7 @@ def get_entity_tasks(request):
                 if not tasks:
                     # there are no children
                     tasks = parents_children
+
             elif isinstance(entity, Studio):
                 if isinstance(parent, Task):
                     tasks = parent.children
@@ -627,8 +622,6 @@ def get_entity_tasks(request):
         content_range = content_range % (0,
                                          len(return_data) - 1,
                                          len(return_data))
-
-    # logger.debug('return_data: %s' % return_data)
 
     resp = Response(
         json_body=return_data
@@ -833,6 +826,16 @@ def get_user_tasks(request):
     user_id = request.matchdict.get('id', -1)
     user = User.query.filter_by(id=user_id).first()
 
+    statuses = []
+    status_codes = request.GET.getall('status')
+    if status_codes:
+        statuses = Status.query.filter(Status.code.in_(status_codes)).all()
+
+    if statuses:
+        tasks = [task for task in user.tasks if task.status in statuses]
+    else:
+        tasks = user.tasks
+
     return [
         {
             'id': task.id,
@@ -840,7 +843,7 @@ def get_user_tasks(request):
                 task.name,
                 ' | '.join([parent.name for parent in task.parents])
             )
-        } for task in user.tasks
+        } for task in tasks
     ]
 
 

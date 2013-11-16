@@ -145,7 +145,7 @@ def get_sequences(request):
             'status_fg_color': sequence.status.fg_color,
             'user_id': sequence.created_by.id,
             'user_name': sequence.created_by.name,
-            'thumbnail_path': sequence.thumbnail.full_path
+            'thumbnail_full_path': sequence.thumbnail.full_path
             if sequence.thumbnail else None
         }
         for sequence in Sequence.query.all()
@@ -168,7 +168,7 @@ def get_project_sequences(request):
 
     return [
         {
-            'thumbnail_path': sequence.thumbnail.full_path
+            'thumbnail_full_path': sequence.thumbnail.full_path
             if sequence.thumbnail else None,
             'code': sequence.code,
             'id': sequence.id,

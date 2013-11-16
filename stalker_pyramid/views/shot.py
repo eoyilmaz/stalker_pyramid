@@ -170,10 +170,9 @@ def get_shots(request):
             'created_by_name': shot.created_by.name,
             'description': shot.description,
             'date_created': milliseconds_since_epoch(shot.date_created),
-            'thumbnail_path': shot.thumbnail.full_path
+            'thumbnail_full_path': shot.thumbnail.full_path
             if shot.thumbnail else None,
             'percent_complete': shot.percent_complete
         })
-
 
     return shots

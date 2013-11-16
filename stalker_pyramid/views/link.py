@@ -307,7 +307,7 @@ def get_entity_references(request):
             'id': r[0],
             'full_path': r[1],
             'original_filename': r[2],
-            'thumbnail_path': r[3],
+            'thumbnail_full_path': r[3],
             'tags': r[4],
             'entity_id': r[5],
             'entity_name': r[6],

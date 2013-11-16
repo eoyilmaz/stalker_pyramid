@@ -5,6 +5,7 @@ Stalker Pyramid Changes
 0.1.2
 =====
 
+* **Update:** Upgraded to `stalker v0.2.3.1`.
 * **Update:** Separated the create/update/review dialog routes for Task, Asset,
   Shot and Sequences.
 * **New:** Added utc_to_local() and local_to_utc() functions to
@@ -21,7 +22,8 @@ Stalker Pyramid Changes
 * **Fix:** When a review request is made for a task, the resulting Ticket is
   created in UTC time.
 * **New:** Added `description` field to TimeLog create/update dialog.
-* **Update:** Upgraded to `stalker v0.2.3.1`.
+* **Update:** Included `dialog_template.jinja2` in `base.jinja2` by default.
+* **Update:** TimeLog dialog now only lists tasks with NEW or WIP status.
 
 0.1.1
 =====

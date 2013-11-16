@@ -172,7 +172,6 @@
 {% endraw %}
 
 
-
 {# CONTENT #}
 {% block content %}
 
@@ -243,19 +242,17 @@
                 </div>
             {% endblock main_content %}
 
-
-
         {% endblock main_container %}
     </div>
 {% endblock content %}
 
 {# MODALS #}
 {% block modals %}
+    {% include 'modals/dialog_template.jinja2' %}
 {% endblock modals %}
 
 {# SCRIPTS #}
 {% block scripts %}
-{#    <script src='{{ request.static_url("stalker_pyramid:static/jquery/jquery-2.0.3.min.js") }}'></script>#}
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery-ui-1.10.3.full.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.ui.touch-punch.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootstrap.min.js") }}'></script>
@@ -269,6 +266,27 @@
         if ("ontouchend" in document) document.write("<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.mobile.custom.min.js") }}'>" + "<" + "/script>");
     </script>
 
+    <script type="text/javascript">
+        var get_icon = function (entity_type) {
+            switch (entity_type) {
+                case 'project':
+                    return 'icon-folder-close-alt';
+                    break;
+                 case 'department':
+                    return 'icon-group';
+                    break;
+                 case 'group':
+                    return 'icon-key';
+                    break;
+                case 'user':
+                    return 'icon-user';
+                    break;
+                default:
+                    return 'icon-key';
+                    break;
+            }
+        };
+    </script>
 
     {# Ace Settings Box #}
     <script type="text/javascript">
@@ -291,7 +309,7 @@
             $('.flash-message').slideToggle().removeClass('hide');
         });
 
-        var flash_message = function(settings){
+        var flash_message = function (settings) {
             console.debug('settings: ', settings);
             settings.container = settings.container || 'body';
             settings.title = settings.title || '';
@@ -354,10 +372,14 @@
     <script type="text/javascript">
         $(function () {
             var event_dialog = $('#dialog_template');
-            event_dialog.on('shown', function () {
+            event_dialog.on('shown', function (e) {
+                e.stopPropagation();
+                e.preventDefault();
                 init_dialog();
             });
-            event_dialog.on('hidden', function () {
+            event_dialog.on('hidden', function (e) {
+                e.stopPropagation();
+                e.preventDefault();
                 destruct_dialog();
             });
         })

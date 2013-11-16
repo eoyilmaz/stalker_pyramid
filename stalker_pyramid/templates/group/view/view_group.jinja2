@@ -6,14 +6,6 @@
     {% include 'breadcrumb/breadcrumbs.jinja2' %}
 {% endblock breadcrumbs %}
 
-
-{# MODALS #}
-{% block modals %}
-
-    {% include 'modals/dialog_template.jinja2' %}
-
-{% endblock modals %}
-
 {# SIDEBAR #}
 {% block sidebar %}
     {% include 'sidebar.jinja2' %}
@@ -154,17 +146,12 @@
         $(document).ready(function () {
 
             $.getJSON('/groups/{{ entity.id }}/permissions/').then(function (data) {
-
                 var permission_template = doT.template($('#tmpl_permission').html());
-
                 var table_body = $('#permission>tbody');
-
                 for (var i = 0; i < data.length; i++) {
-
                     data[i].disabled = 'disabled'
                     table_body.append(permission_template(data[i]));
                 }
-
             });
 
             $('.ace-checkbox-2').attr('disabled', false);
@@ -172,32 +159,32 @@
             {% if has_permission('Update_Group') %}
                 $('#skip-validation').removeAttr('checked').on('click', function () {
                     console.log('#skip-validation')
-
                     if (this.checked) {
                         $('.ace-checkbox-2').attr('disabled', false);
-                    }
-                    else {
+                    } else {
                         $('.ace-checkbox-2').attr('disabled', true);
                     }
                 });
             {% endif %}
         });
-        $(document).ready(function () {
-            $('#permissions_submit_button').on('click', function (e) {
 
+        $(document).ready(function () {
+            var submit_button = $('#permissions_submit_button');
+            submit_button.on('click', function (e) {
                 e.stopPropagation();
                 e.preventDefault();
 
+                submit_button.button('loading');
 
-                    $.post('',
-                                    time_log_form.serialize() + '&' + $.param({ 'start': start.toUTCString(), 'end': end.toUTCString() })
-                            ).done(function () {
-                                window.location.replace('{{ came_from }}');
-                            });
-
-
-                }
-            });
+                $.post('',
+                    time_log_form.serialize() + '&' + $.param({ 'start': start.toUTCString(), 'end': end.toUTCString() })
+                ).done(function () {
+                    window.location.assign('{{ came_from }}');
+                }).fail(function(jqXHR) {
+                    bootbox.alert(jqXHR.responseText);
+                    submit_button.button('reset');
+                });
+            }
         });
     </script>
 

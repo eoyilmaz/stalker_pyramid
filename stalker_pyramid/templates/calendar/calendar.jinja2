@@ -1,14 +1,14 @@
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery-ui-1.10.3.custom.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.ui.touch-punch.min.js") }}'></script>
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery-ui-1.10.3.custom.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.ui.touch-punch.min.js") }}'></script>#}
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/fullcalendar.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootbox.min.js") }}'></script>
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootbox.min.js") }}'></script>#}
 
 
 <!--inline scripts related to this page-->
 
 <script type="text/javascript">
 
-    function drawCalendar(cid,events) {
+    function drawCalendar(cid, events) {
 
         var update_event_action = function (eType, eId) {
             $('#dialog_template').modal({
@@ -18,7 +18,7 @@
 
         /* initialize the calendar
         -----------------------------------------------------------------*/
-        var calendar = $('#'+cid).fullCalendar({
+        var calendar = $('#' + cid).fullCalendar({
             {% if event_type %}
                 {% if has_permission('Create_'+event_type) %}
 
@@ -35,58 +35,32 @@
 
                         calendar.fullCalendar('unselect');
                     },
-
                 {% endif %}
             {% endif %}
 
 
 
             eventClick: function (calEvent, jsEvent, view) {
-
                 if (calEvent.entity_type == 'vacations') {
-
                     {% if has_permission('Update_Vacation') %}
-
                         if (calEvent.title == 'StudioWide') {
-
                             {% if has_permission('Update_Studio') %}
-
                                 update_event_action(calEvent.entity_type, calEvent.eId);
-
                             {% endif %}
-
-                        }
-                        else {
-
+                        } else {
                             update_event_action(calEvent.entity_type, calEvent.eId);
-
                         }
-
                     {% endif %}
-
-                }
-                else if (calEvent.entity_type == 'timelogs') {
-
+                } else if (calEvent.entity_type == 'timelogs') {
                     {% if has_permission('Update_TimeLog') %}
-
                         update_event_action(calEvent.entity_type, calEvent.eId);
-
                     {% endif %}
-
-                }
-
-                else if (calEvent.entity_type == 'tasks') {
-
+                } else if (calEvent.entity_type == 'tasks') {
                     {% if has_permission('Read_Task') %}
-
-                        window.location.replace("/tasks/"+calEvent.eId+"/view");
-
+                        window.location.assign("/tasks/" + calEvent.eId + "/view");
                     {% endif %}
-
                 }
-
             },
-
 
             buttonText: {
                 prev: '<i class="icon-chevron-left"></i>',

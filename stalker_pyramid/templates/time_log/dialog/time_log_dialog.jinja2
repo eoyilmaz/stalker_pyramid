@@ -59,12 +59,12 @@
                     </span>
                 </div>
             </div>
-    
+
             {# End Time#}
             <div class="control-group">
                 <label class='span2 control-label'
                        for="end_time">To</label>
-    
+
                 <div class="span10 input-append bootstrap-timepicker">
                     <input id="end_time" name="end_time" type="text"
                            class="input-small"/>
@@ -117,8 +117,6 @@ function init_dialog() {
     var dialog_template_label = $('#dialog_template_label');
     dialog_template_label.find('span').remove();
     dialog_template_label.append('<span>Timelog</span>');
-
-{#    $('#dialog_template_body').attr('style', "height: 300px");#}
 
     {# ***************************************************************** #}
     var event_dialog = $('#dialog_template');
@@ -204,17 +202,19 @@ function init_dialog() {
             );
             {% endraw %}
 
-
             time_log_task.find('option').remove();
 
-            $.getJSON('/users/{{ entity.id }}/tasks/').then(function (data) {
+            $.getJSON('/users/{{ entity.id }}/tasks/?status=NEW&status=WIP').then(function (data) {
+                // append an empty one first
+                time_log_task.append('<option value="-1">&nbsp;</option>');
                 for (var i = 0; i < data.length; i++) {
                     time_log_task.append(task_option_template(data[i]));
                 }
 
                 time_log_task.chosen({
                     search_contains: true,
-                    enable_split_word_search: true
+                    enable_split_word_search: true,
+                    allow_single_deselect: true
                 });
 
                 time_log_task.on('change', function () {
@@ -398,7 +398,7 @@ function init_dialog() {
                 time_log_form.serialize() + '&' +
                 $.param({ 'start': start.toUTCString(), 'end': end.toUTCString() })
             ).done(function () {
-                window.location.replace('{{ came_from }}');
+                window.location.assign('{{ came_from }}');
             }).fail(function (jqXHR) {
                 bootbox.alert(jqXHR.responseText);
                 submit_button.button('reset');
