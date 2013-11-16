@@ -24,7 +24,7 @@ Animation and VFX Studios. See docs for more information.
 import pyramid_beaker
 from zope.sqlalchemy import ZopeTransactionExtension
 
-__version__ = '0.1.1'
+__version__ = '0.1.2'
 
 
 # before anything about stalker create the defaults
@@ -361,7 +361,9 @@ def main(global_config, **settings):
 
     # *************************************************************************
     # Assets
-    config.add_route('asset_dialog',        'assets/{id}/{mode}/dialog')
+    config.add_route('create_asset_dialog', 'assets/{id}/create/dialog')
+    config.add_route('update_asset_dialog', 'assets/{id}/update/dialog')
+    config.add_route('review_asset_dialog', 'assets/{id}/review/dialog')
 
     config.add_route('create_asset',        'assets/create')
     config.add_route('update_asset',        'assets/{id}/update')
@@ -372,7 +374,9 @@ def main(global_config, **settings):
 
     # *************************************************************************
     # Shots
-    config.add_route('shot_dialog',        'shots/{id}/{mode}/dialog')
+    config.add_route('create_shot_dialog', 'shots/{id}/create/dialog')
+    config.add_route('update_shot_dialog', 'shots/{id}/update/dialog')
+    config.add_route('review_shot_dialog', 'shots/{id}/review/dialog')
 
     config.add_route('create_shot',        'shots/create')
     config.add_route('update_shot',        'shots/{id}/update')
@@ -385,7 +389,9 @@ def main(global_config, **settings):
 
     # *************************************************************************
     # Sequence
-    config.add_route('sequence_dialog',        'sequences/{id}/{mode}/dialog')
+    config.add_route('create_sequence_dialog', 'sequences/{id}/create/dialog')
+    config.add_route('update_sequence_dialog', 'sequences/{id}/update/dialog')
+    config.add_route('review_sequence_dialog', 'sequences/{id}/review/dialog')
 
     config.add_route('create_sequence',        'sequences/create')
     config.add_route('update_sequence',        'sequences/{id}/update')
@@ -406,11 +412,14 @@ def main(global_config, **settings):
     # Task
 
     # Dialogs
-    config.add_route('task_dialog',                'tasks/{id}/{mode}/dialog')
+    config.add_route('create_task_dialog',       'tasks/{id}/create/dialog')
+    config.add_route('update_task_dialog',       'tasks/{id}/update/dialog')
+    config.add_route('review_task_dialog',       'tasks/{id}/review/dialog')
 
     # Actions
     config.add_route('create_task',              'tasks/create')
     config.add_route('update_task',              'tasks/{id}/update')
+    config.add_route('review_task',              'tasks/{id}/review')
 
     config.add_route('duplicate_task_hierarchy', 'tasks/{id}/duplicate')
 

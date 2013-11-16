@@ -7,26 +7,22 @@
 
         <div class='row-fluid'>
 
-
             {# Task #}
             <div class='control-group'>
                 <label class='span2 control-label'
                        for='time_log_task'>Task</label>
-
                 <div class='span10'>
                     <select id='time_log_task'
                             name='task_id'
                             class='input-block-level'
                             data-placeholder='Task'></select>
                 </div>
-
             </div>
 
             {# Resource #}
             <div class='control-group'>
                 <label class='span2 control-label'
                        for='time_log_resource'>Resource</label>
-
                 <div class='span10'>
                     <select id='time_log_resource'
                             class='input-block-level'
@@ -35,51 +31,40 @@
                 </div>
             </div>
 
-
-        </div>
-
-
-        {# Start & End Dates #}
-        <div class="row-fluid">
-
+            {# Start & End Dates #}
             <div class="control-group">
                 <label for="start_end_date_range_picker"
                        class="span2 control-label">Date</label>
-
                 <div class="span10 input-prepend">
                     <input id='start_end_date_range_picker'
                            name='start_and_end_dates'
                            type="text"
                            data-date-format="yyyy-mm-dd"
                            placeholder="Start & End Dates">
-                        <span class="add-on">
-                            <i class="icon-calendar"></i>
-                        </span>
+                    <span class="add-on">
+                        <i class="icon-calendar"></i>
+                    </span>
                 </div>
             </div>
-        </div>
 
-        {# Start Time#}
-        <div class="row-fluid">
+            {# Start Time#}
             <div class="control-group">
                 <label class='span2 control-label'
                        for='start_time'>From</label>
-
                 <div class="span10 input-append bootstrap-timepicker">
                     <input id="start_time" name="start_time" type="text"
                            class="input-small"/>
                     <span class="add-on">
                         <i class="icon-time"></i>
-                        </span>
+                    </span>
                 </div>
             </div>
-        </div>
-        <div class="row-fluid">
+    
             {# End Time#}
             <div class="control-group">
                 <label class='span2 control-label'
                        for="end_time">To</label>
-
+    
                 <div class="span10 input-append bootstrap-timepicker">
                     <input id="end_time" name="end_time" type="text"
                            class="input-small"/>
@@ -88,23 +73,32 @@
                         </span>
                 </div>
             </div>
+
+            {# Description #}
+            <div class="control-group">
+                <label class="span2 control-label" for="description">
+                    Description</label>
+                <div class="span10">
+                    <textarea id="time_log_description"
+                              name="description" rows="3"
+                              style="width: inherit"></textarea>
+                </div>
+            </div>
+
         </div>
+
     </form>
     <div class="space-5"></div>
     <div class="hr dotted"></div>
     <div class="space-10"></div>
     <div class="row-fluid padding18">
-
         <div class="progress progress-mini progress-success">
             <div id="percent_bar" class="bar" style="width: 35%;"></div>
         </div>
-        <div id="remaning_hours" class="infobox-content">
-            </div>
-
+        <div id="remaining_hours" class="infobox-content"></div>
     </div>
 
 </div>
-
 
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/chosen.jquery.min.js") }}'></script>
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-datepicker.min.js") }}'></script>
@@ -116,29 +110,24 @@
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.validate.min.js") }}'></script>
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.easy-pie-chart.min.js") }}'></script>
 
-
 <script>
 function init_dialog() {
     console.debug('starting to initialize time_log dialog!!!');
 
+    var dialog_template_label = $('#dialog_template_label');
+    dialog_template_label.find('span').remove();
+    dialog_template_label.append('<span>Timelog</span>');
 
-    $('#dialog_template_label').find('span').remove();
-    $('#dialog_template_label').append('<span>Timelog</span>')
-
-    $('#dialog_template_body').attr('style', "height: 300px");
+{#    $('#dialog_template_body').attr('style', "height: 300px");#}
 
     {# ***************************************************************** #}
-
-
-    var event_dialog = $('#dialog_template')
-
+    var event_dialog = $('#dialog_template');
 
     var start_date_value = new Date(event_dialog.attr('start'));
     var end_date_value = new Date(event_dialog.attr('end'));
 
     var start_time_value = start_date_value;
     var end_time_value = end_date_value;
-
 
     if (event_dialog.attr('allDay') == 'true') {
         start_time_value.setHours(10);
@@ -147,19 +136,12 @@ function init_dialog() {
 
     {# ***************************************************************** #}
     {# Update Remaining Hours #}
-
     // Calculate remaining hours
     var update_hours_to_complete = function () {
-
         // total hours of time_logs should have been given by Stalker
         // calculate the remaining hours
-
-
         $.getJSON('/tasks/' + time_log_task.val() + '/').then(function (data) {
-
-
             var remaining_seconds = parseFloat(data[0].schedule_seconds) - parseFloat(data[0].total_logged_seconds);
-
 
             var start_end = get_start_end();
             var start = start_end[0];
@@ -168,14 +150,11 @@ function init_dialog() {
             var timing_resolution = 3600000; // 1 hour
             var duration_millis = end.getTime() - start.getTime();
 
-
             // round the duration millis
             duration_millis = (((duration_millis + timing_resolution * 0.5) / timing_resolution) >> 0 ) * timing_resolution;
 
             {% if mode == 'update' %}
-
                 duration_millis -= (end_date_value.getTime() - start_date_value.getTime());
-
             {% endif %}
 
             var duration_seconds = duration_millis / 1000;
@@ -184,70 +163,52 @@ function init_dialog() {
             var remaining_seconds_after_this_time_log = remaining_seconds - duration_seconds;
             var remaining_hours_after_this_time_log = parseInt(remaining_seconds_after_this_time_log / 3600);
 
-            var remaning_hours = $('#remaning_hours');
-            remaning_hours.find('span').remove();
-
+            var remaining_hours = $('#remaining_hours');
+            remaining_hours.find('span').remove();
             var completed_percent;
 
             if (remaining_hours_after_this_time_log >= 0) {
-
-                remaning_hours.append(
-                    "<span class='pull_left'>If you enter this time log, <b>" +
+                remaining_hours.append(
+                    "<span class='pull_left'>If you enter this time log, <strong>" +
                     remaining_hours_after_this_time_log +
-                    "</b> hours will remain to complete this task.</span>"
+                    "</strong> hours will remain to complete this task.</span>"
                 );
-
                 completed_percent = (100 - ((remaining_seconds_after_this_time_log / parseFloat(data[0].schedule_seconds)) * 100)).toFixed(1);
-
-            }
-
-            else {
-
-                remaning_hours.append("<span class='pull_left'>You entered <b>" + remaining_hours_after_this_time_log + "</b> extra hours. </span>");
-
+            } else {
+                remaining_hours.append("<span class='pull_left'>You entered <strong>" + remaining_hours_after_this_time_log + "</strong> extra hours. </span>");
                 completed_percent = 100;
-
             }
-
-
             $('#percent_bar').attr('style','width:'+completed_percent+'%')
-
-
         });
-
-
     };
 
-
+    var time_log_form = $("#time_log_form");
+    var time_log_task = $('#time_log_task');
+    var time_log_resource = $('#time_log_resource');
+    var parent_name = '';
+    var parent = '';
 
     {% if mode == 'create' %}
-        $("#time_log_form").attr("action", "{{ request.route_url('create_time_log') }}");
+        time_log_form.attr("action", "{{ request.route_url('create_time_log') }}");
 
         {% if entity.entity_type  == 'User' %}
-
             {# ***************************************************************** #}
             {# Resource #}
-
-            var time_log_resource = $('#time_log_resource');
             time_log_resource.append('<option value={{ entity.id }} selected>{{ entity.name }}</option>');
 
             {# ***************************************************************** #}
             {# Task #}
-
             {% raw %}
             var task_option_template = doT.template(
-                    '<option value={{=it.id}}>{{=it.name}}</option>'
+                '<option value={{=it.id}}>{{=it.name}}</option>'
             );
             {% endraw %}
 
-            var time_log_task = $('#time_log_task');
+
             time_log_task.find('option').remove();
 
             $.getJSON('/users/{{ entity.id }}/tasks/').then(function (data) {
-
-
                 for (var i = 0; i < data.length; i++) {
-
                     time_log_task.append(task_option_template(data[i]));
                 }
 
@@ -257,15 +218,10 @@ function init_dialog() {
                 });
 
                 time_log_task.on('change', function () {
-
                     update_hours_to_complete()
-
                 });
 
-
                 update_hours_to_complete();
-
-
             });
 
         {% elif entity.entity_type  == 'Task'%}
@@ -273,35 +229,25 @@ function init_dialog() {
             {# ***************************************************************** #}
             {# Task #}
 
-
-            var time_log_task = $('#time_log_task');
-            var parent_name = '';
-
             {% for parent in entity.parents %}
-
-                parent_name += " | " + '{{parent.name }}'
-
+                parent_name += " | " + '{{parent.name }}';
             {% endfor %}
 
             time_log_task.append('<option value={{ entity.id }} selected>{{ entity.name }}' + parent_name + '</option>');
 
             {# ***************************************************************** #}
             {# Resource #}
-
             {% raw %}
             var user_option_template = doT.template(
-                    '<option value={{=it.id}}>{{=it.name}}</option>'
+                '<option value={{=it.id}}>{{=it.name}}</option>'
             );
             {% endraw %}
 
-            var time_log_resource = $('#time_log_resource');
             time_log_resource.find('option').remove();
 
             {% for resource in entity.resources %}
-
                 var data = {id: '{{ resource.id }}', name: '{{ resource.name }}'};
                 time_log_resource.append(user_option_template(data));
-
             {% endfor %}
 
             time_log_resource.chosen({
@@ -311,25 +257,16 @@ function init_dialog() {
 
             update_hours_to_complete();
 
-
-
         {% endif %}
 
     {% elif mode == 'update' %}
-
-        $("#time_log_form").attr("action", "{{ request.route_url('update_time_log', id=time_log.id) }}");
-
-
-        var time_log_resource = $('#time_log_resource');
+        time_log_form.attr("action", "{{ request.route_url('update_time_log', id=time_log.id) }}");
         time_log_resource.append('<option value={{ time_log.resource.id }} selected>{{ time_log.resource.name }}</option>');
 
-        var time_log_task = $('#time_log_task');
-        var parent_name = '';
+        $('#time_log_description').text("{{ time_log.description }}");
 
         {% for parent in time_log.task.parents %}
-
             parent_name += " | " + '{{parent.name }}';
-
         {% endfor %}
 
         time_log_task.append('<option value={{ time_log.task.id }} selected>{{ time_log.task.name }}' + parent_name + '</option>');
@@ -341,7 +278,6 @@ function init_dialog() {
         end_time_value = end_date_value;
 
         update_hours_to_complete();
-
     {% endif %}
 
     {# ***************************************************************** #}
@@ -374,14 +310,8 @@ function init_dialog() {
         return [start, end];
     };
 
-
-
-
-
-
     {# ***************************************************************** #}
     {# Start & End Date Picker #}
-
     $(document).ready(function () {
         // initialize date picker
         var start_end_date_range_picker = $('#start_end_date_range_picker').daterangepicker();
@@ -393,8 +323,6 @@ function init_dialog() {
 
         // fix z-index of the container
         // start_end_date_range_picker.data().daterangepicker.container.css({'z-index': 1060});
-
-
         start_end_date_range_picker.val(
             start_date_value.format('mm/dd/yyyy') + ' - ' + end_date_value.format('mm/dd/yyyy')
         );
@@ -416,7 +344,6 @@ function init_dialog() {
     {# Start Time #}
 
     $(document).ready(function () {
-
         var start_time = $('#start_time');
         start_time.val(start_time_value.format('HH:MM'));
         start_time.timepicker({
@@ -425,21 +352,15 @@ function init_dialog() {
             showMeridian: false
         });
 
-
         // TODO: Change the listener action type
         start_time.on('hide.timepicker', function () {
-
             update_hours_to_complete()
-
         });
-
     });
 
     {# ***************************************************************** #}
     {# End Time #}
-
     $(document).ready(function () {
-
         var end_time = $('#end_time');
         end_time.val(end_time_value.format('HH:MM'));
         end_time.timepicker({
@@ -450,19 +371,19 @@ function init_dialog() {
 
         // TODO: Change the listener action type
         end_time.on('hide.timepicker', function () {
-
             update_hours_to_complete()
-
         });
-
     });
 
     {# ***************************************************************** #}
     {# Submit Button #}
-
     $('#dialog_template_submit_button').on('click', function (e) {
         e.stopPropagation();
         e.preventDefault();
+
+        // disable the submit_button
+        var submit_button = $(this);
+        submit_button.button('loading');
 
         var time_log_form = $('#time_log_form');
 
@@ -478,8 +399,10 @@ function init_dialog() {
                 $.param({ 'start': start.toUTCString(), 'end': end.toUTCString() })
             ).done(function () {
                 window.location.replace('{{ came_from }}');
+            }).fail(function (jqXHR) {
+                bootbox.alert(jqXHR.responseText);
+                submit_button.button('reset');
             });
-
         }
     });
 

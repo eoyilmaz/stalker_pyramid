@@ -2,6 +2,27 @@
 Stalker Pyramid Changes
 =======================
 
+0.1.2
+=====
+
+* **Update:** Separated the create/update/review dialog routes for Task, Asset,
+  Shot and Sequences.
+* **New:** Added utc_to_local() and local_to_utc() functions to
+  stalker_pyramid.views module.
+* **Fix:** Added ``transaction.abort()`` statements before all return
+  statements when the return value
+  is a Response instance with a status integer of 500.
+* **Update:** Replaced task_dialog_template.jinja2 with dialog_template.jinja2
+* **New:** Added Review Task dialog.
+* **Fix:** Fixed Create/Update TimeLog dialog by disabling the submit button
+  when it is hit once.
+* **Update:** GanttChart now shows the status of the task as the background
+  color in `percent complete` column.
+* **Fix:** When a review request is made for a task, the resulting Ticket is
+  created in UTC time.
+* **New:** Added `description` field to TimeLog create/update dialog.
+* **Update:** Upgraded to `stalker v0.2.3.1`.
+
 0.1.1
 =====
 

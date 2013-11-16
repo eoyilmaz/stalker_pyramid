@@ -163,7 +163,7 @@
         </button>
         <p>
             <strong>
-                {{= it.type }}!
+                {{= it.title }}!
             </strong>
             {{= it.message }}
         </p>
@@ -288,21 +288,22 @@
     {# Pop Flash Messages #}
     <script type='text/javascript'>
         $(function () {
-            $('.flash-message').slideToggle();
+            $('.flash-message').slideToggle().removeClass('hide');
         });
 
         var flash_message = function(settings){
             console.debug('settings: ', settings);
+            settings.container = settings.container || 'body';
             settings.title = settings.title || '';
             settings.message = settings.message || '';
             settings.type = settings.type || 'success';
             console.debug('settings: ', settings);
 
             var template = doT.template($('#tmpl_flash_message').text());
-            $('body').prepend($.parseHTML(template(settings)));
+            $(settings.container).prepend($.parseHTML(template(settings)));
 
-            var flash_dialog = $('.flash-message');
-            flash_dialog.slideToggle();
+            var visible_flash_messages = $('.flash-message.hide');
+            visible_flash_messages.slideToggle().removeClass('hide');
         }
     </script>
 
@@ -349,19 +350,6 @@
         };
     </script>
 
-    {# Task Dialog Initialize #}
-    <script type="text/javascript">
-        $(function () {
-            var task_dialog = $('#task_dialog');
-            task_dialog.on('shown', function () {
-                init_task_dialog();
-            });
-            task_dialog.on('hidden', function () {
-                destruct_task_dialog();
-            });
-        })
-    </script>
-
     {# Event Dialog Initialize #}
     <script type="text/javascript">
         $(function () {
@@ -384,11 +372,9 @@
 
 {% endblock scripts %}
 
-
 {# EXTRA-SCRIPTS #}
 {% block extrascripts %}
 {% endblock extrascripts %}
-
 
 </body>
 </html>

@@ -76,3 +76,29 @@ tr.odd>td.ticket_BLOCKER {
     border-color: #EE9999;
     color: #AA2222;
 }
+
+
+.new {
+    background-color: #d53f40;
+    color: white;
+}
+
+.wip {
+    background-color: #e8b110;
+    color: white;
+}
+
+.prev {
+    background-color: #6fb3e0;
+    color: white;
+}
+
+.hrev {
+    background-color: #6f3cc4;
+    color: white;
+}
+
+.cmpl {
+    background-color: #9abc32;
+    color: white;
+}

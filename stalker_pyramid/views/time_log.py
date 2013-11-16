@@ -133,6 +133,8 @@ def create_time_log(request):
     start_date = get_date(request, 'start')
     end_date = get_date(request, 'end')
 
+    description = request.params.get('description', '')
+
     logger.debug('task_id     : %s' % task_id)
     logger.debug('task        : %s' % task)
     logger.debug('resource_id : %s' % resource_id)
@@ -148,15 +150,16 @@ def create_time_log(request):
                 task=task,
                 resource=resource,
                 start=start_date,
-                end=end_date
+                end=end_date,
+                description=description
             )
 
             status_new = Status.query.filter(Status.code == "NEW").first()
             status_wip = Status.query.filter(Status.code == "WIP").first()
-            status_completed = Status.query.filter(Status.code == "CMPL")\
-                .first()
-            status_has_revision = Status.query.filter(Status.code == "HREV")\
-                .first()
+            status_completed = \
+                Status.query.filter(Status.code == "CMPL").first()
+            status_has_revision = \
+                Status.query.filter(Status.code == "HREV").first()
 
             # check if the task status is not completed
             if task.status not in [status_new, status_wip]:
@@ -164,22 +167,23 @@ def create_time_log(request):
                 # it is not possible to create a time log for completed tasks
                 response = Response('It is only possible to create time log '
                                     'for a task with status is set to '
-                                    '"NEW" or "WIP"')
-                response.status_int = 500
+                                    '"NEW" or "WIP"', 500)
+                transaction.abort()
                 return response
 
             # check the dependent tasks has finished
             for dep_task in task.depends:
-                if dep_task.status != status_completed:
+                if dep_task.status not in [status_completed,
+                                           status_has_revision]:
                     response = Response(
                         'Because one of the dependencies (Task: %s (%s)) has '
                         'not finished, \n'
                         'You can not create time logs for this task yet!'
                         '\n\nPlease, inform %s to finish this task!' %
                         (dep_task.name, dep_task.id,
-                         [r.name for r in dep_task.resources])
+                         [r.name for r in dep_task.resources]), 500
                     )
-                    response.status_int = 500
+                    transaction.abort()
                     return response
 
             # check the depending tasks
@@ -191,9 +195,9 @@ def create_time_log(request):
                         'You can not create any more time logs for this task!'
                         '\n\nPlease, inform %s about this situation!' %
                         (dep_task.name, dep_task.id,
-                         task.responsible.name)
+                         task.responsible.name), 500
                     )
-                    response.status_int = 500
+                    transaction.abort()
                     return response
 
             # set the status to wip for this task
@@ -203,8 +207,8 @@ def create_time_log(request):
             DBSession.add(task)
         except (OverBookedError, TypeError) as e:
             converter = StdErrToHTMLConverter(e)
-            response = Response(converter.html())
-            response.status_int = 500
+            response = Response(converter.html(), 500)
+            transaction.abort()
             return response
         else:
             DBSession.add(time_log)
@@ -215,13 +219,12 @@ def create_time_log(request):
     else:
         response = Response(
             'There are missing parameters: '
-            'task_id: %s, resource_id: %s' % (task_id, resource_id)
+            'task_id: %s, resource_id: %s' % (task_id, resource_id), 500
         )
-        response.status_int = 500
+        transaction.abort()
         return response
     logger.debug('successfully created time log!')
     response = Response('successfully created time log!')
-    response.status_int = 200
     return response
 
 
@@ -244,6 +247,8 @@ def update_time_log(request):
     start_date = get_date(request, 'start')
     end_date = get_date(request, 'end')
 
+    description = request.params.get('description', '')
+
     logger.debug('time_log_id : %s' % time_log_id)
     logger.debug('resource_id : %s' % resource_id)
     logger.debug('start         : %s' % start_date)
@@ -257,8 +262,11 @@ def update_time_log(request):
             time_log.resource = resource
             time_log.start = start_date
             time_log.end = end_date
-        except OverBookedError:
-            return HTTPServerError()
+            time_log.description = description
+        except OverBookedError as e:
+            response = Response(e.message, 500)
+            transaction.abort()
+            return response
         else:
             DBSession.add(time_log)
             request.session.flash(

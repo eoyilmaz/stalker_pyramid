@@ -23,7 +23,6 @@ import logging
 
 from pyramid.httpexceptions import HTTPOk
 from pyramid.response import Response
-from pyramid.url import resource_url
 from pyramid.view import view_config
 from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
@@ -31,6 +30,7 @@ from pyramid_mailer.message import Message
 from stalker import User, Ticket, Entity, Project, Status, Note
 
 from stalker.db import DBSession
+import transaction
 from stalker_pyramid.views import (get_logged_in_user, PermissionChecker,
                                    milliseconds_since_epoch,
                                    dummy_email_address)
@@ -178,6 +178,7 @@ def update_ticket(request):
 
     logger.debug('updating ticket')
     if not ticket:
+        transaction.abort()
         return Response('No ticket with id : %s' % ticket_id, 500)
 
     if not action.startswith('leave_as'):

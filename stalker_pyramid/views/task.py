@@ -19,6 +19,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 import logging
 import time
+import datetime
 
 import re
 import transaction
@@ -39,7 +40,7 @@ from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
                                    get_multi_integer, milliseconds_since_epoch,
                                    StdErrToHTMLConverter,
                                    multi_permission_checker,
-                                   dummy_email_address)
+                                   dummy_email_address, local_to_utc)
 from stalker_pyramid.views.type import query_type
 
 
@@ -222,8 +223,9 @@ def duplicate_task_hierarchy(request):
         dup_task.name += ' - Duplicate'
         DBSession.add(dup_task)
     else:
-        return Response('No task can be found with the given id: %s' % task_id,
-                        500)
+        transaction.abort()
+        return Response(
+            'No task can be found with the given id: %s' % task_id, 500)
 
     return Response('Task %s is duplicated successfully' % task.id)
 
@@ -261,7 +263,8 @@ def convert_to_dgrid_gantt_project_format(projects):
             'start': milliseconds_since_epoch(
                 project.computed_start if project.computed_start else project.start),
             'total_logged_seconds': project.total_logged_seconds,
-            'type': project.entity_type
+            'type': project.entity_type,
+            'status': project.status.code.lower()
         } for project in projects
     ]
 
@@ -311,6 +314,7 @@ def convert_to_dgrid_gantt_task_format(tasks):
             'schedule_unit': task.schedule_unit,
             'start': milliseconds_since_epoch(
                 task.computed_start if task.computed_start else task.start),
+            'status': task.status.code.lower(),
             'total_logged_seconds': task.total_logged_seconds,
             'type': task.entity_type,
         } for task in tasks
@@ -376,6 +380,7 @@ def update_task(request):
 
     # before doing anything check permission
     if not p_checker('Update_' + entity_type):
+        transaction.abort()
         return Response('You do not have enough permission to update a %s' %
                         entity_type, 500)
 
@@ -385,6 +390,7 @@ def update_task(request):
 
     # update the task
     if not task:
+        transaction.abourt()
         return Response("No task found with id : %s" % task_id, 500)
 
     task.name = name
@@ -398,6 +404,7 @@ def update_task(request):
         message = '</div>Parent item can not also be a dependent for the ' \
                   'updated item:<br><br>Parent: %s<br>Depends To: %s</div>' % \
                   (parent.name, map(lambda x: x.name, depends))
+        transaction.abort()
         return Response(message, 500)
 
     task.schedule_model = schedule_model
@@ -432,6 +439,45 @@ def update_task(request):
     else:
         logger.debug('not updating bid')
     return Response('Task updated successfully')
+
+
+@view_config(
+    route_name='review_task'
+)
+def review_task(request):
+    """review task
+    """
+    task_id = request.matchdict.get('id')
+    task = Task.query.filter(Task.id == task_id).first()
+
+    if not task:
+        transaction.abort()
+        return Response('There is no task with id: %s' % task_id, 500)
+
+    review = request.params.get('review')
+
+    if not review:
+        transaction.abort()
+        return Response('No revision is specified', 500)
+
+    if review == 'Approve':
+        # change the task status to complete
+        status_cmpl = Status.query.filter(Status.code == 'CMPL').first()
+        if not status_cmpl:
+            transaction.abort()
+            return Response('There is no status with code CMPL, please inform '
+                            'your Stalker admin to create a task with code '
+                            'CMPL and assign it to Task', 500)
+        try:
+            task.status = status_cmpl
+        except ValueError as e:
+            transaction.abort()
+            return Response(e.message, 500)
+    elif review == 'Request Revision':
+        # so request a revision
+        request_revision(request)
+
+    return Response('Successfully reviewed task')
 
 
 def depth_first_flatten(task, task_array=None):
@@ -798,14 +844,11 @@ def get_user_tasks(request):
     ]
 
 
-def create_data_dialog(request, entity_type='Task'):
+def data_dialog(request, mode='create', entity_type='Task'):
     """a generic function which will create a dictionary with enough data
     """
     logged_in_user = get_logged_in_user(request)
     came_from = request.params.get('came_from', request.url)
-
-    # get mode
-    mode = request.matchdict.get('mode', None)
 
     entity_id = request.matchdict.get('id')
     entity = Entity.query.filter_by(id=entity_id).first()
@@ -825,7 +868,7 @@ def create_data_dialog(request, entity_type='Task'):
 
         if not project and depends_to:
             project = depends_to[0].project
-    elif mode == 'update':
+    elif mode in ['update', 'review']:
         entity_type = entity.entity_type
         project = entity.project
         parent = entity.parent
@@ -853,43 +896,123 @@ def create_data_dialog(request, entity_type='Task'):
 
 
 @view_config(
-    route_name='task_dialog',
+    route_name='create_task_dialog',
     renderer='templates/task/dialog/task_dialog.jinja2'
 )
-def task_dialog(request):
+def create_task_dialog(request):
     """called when creating tasks
     """
-    return create_data_dialog(request, entity_type='Task')
+    return data_dialog(request, mode='create', entity_type='Task')
 
 
 @view_config(
-    route_name='asset_dialog',
+    route_name='update_task_dialog',
     renderer='templates/task/dialog/task_dialog.jinja2'
 )
-def asset_dialog(request):
+def update_task_dialog(request):
+    """called when updating tasks
+    """
+    return data_dialog(request, mode='update', entity_type='Task')
+
+
+@view_config(
+    route_name='review_task_dialog',
+    renderer='templates/task/dialog/review_task_dialog.jinja2'
+)
+def review_task_dialog(request):
+    """called when reviewing tasks
+    """
+    return data_dialog(request, mode='review', entity_type='Task')
+
+
+@view_config(
+    route_name='create_asset_dialog',
+    renderer='templates/task/dialog/task_dialog.jinja2'
+)
+def create_asset_dialog(request):
     """called when creating assets
     """
-    return create_data_dialog(request, entity_type='Asset')
+    return data_dialog(request, mode='create', entity_type='Asset')
 
 
 @view_config(
-    route_name='shot_dialog',
+    route_name='update_asset_dialog',
     renderer='templates/task/dialog/task_dialog.jinja2'
 )
-def shot_dialog(request):
-    """called when creating shots
+def update_asset_dialog(request):
+    """called when updating assets
     """
-    return create_data_dialog(request, entity_type='Shot')
+    return data_dialog(request, mode='update', entity_type='Asset')
 
 
 @view_config(
-    route_name='sequence_dialog',
+    route_name='review_asset_dialog',
+    renderer='templates/task/dialog/review_task_dialog.jinja2'
+)
+def review_asset_dialog(request):
+    """called when reviewing assets
+    """
+    return data_dialog(request, mode='review', entity_type='Asset')
+
+
+@view_config(
+    route_name='create_shot_dialog',
+    renderer='templates/task/dialog/task_dialog.jinja2'
+)
+def create_shot_dialog(request):
+    """called when creating shots
+    """
+    return data_dialog(request, mode='create', entity_type='Shot')
+
+
+@view_config(
+    route_name='update_shot_dialog',
+    renderer='templates/task/dialog/task_dialog.jinja2'
+)
+def update_shot_dialog(request):
+    """called when updating shots
+    """
+    return data_dialog(request, mode='update', entity_type='Shot')
+
+
+@view_config(
+    route_name='review_shot_dialog',
+    renderer='templates/task/dialog/review_task_dialog.jinja2'
+)
+def review_shot_dialog(request):
+    """called when reviewing shots
+    """
+    return data_dialog(request, mode='review', entity_type='Shot')
+
+
+@view_config(
+    route_name='create_sequence_dialog',
     renderer='templates/task/dialog/task_dialog.jinja2'
 )
 def create_sequence_dialog(request):
     """called when creating sequences
     """
-    return create_data_dialog(request, entity_type='Sequence')
+    return data_dialog(request, mode='create', entity_type='Sequence')
+
+
+@view_config(
+    route_name='update_sequence_dialog',
+    renderer='templates/task/dialog/task_dialog.jinja2'
+)
+def update_sequence_dialog(request):
+    """called when updating sequences
+    """
+    return data_dialog(request, mode='update', entity_type='Sequence')
+
+
+@view_config(
+    route_name='review_sequence_dialog',
+    renderer='templates/task/dialog/review_task_dialog.jinja2'
+)
+def review_sequence_dialog(request):
+    """called when reviewing sequences
+    """
+    return data_dialog(request, mode='review', entity_type='Sequence')
 
 
 @view_config(route_name='create_task')
@@ -965,6 +1088,7 @@ def create_task(request):
 
         param_list = ['project_id', 'name', 'description']
         params = [param for param in param_list if param not in request.params]
+        transaction.abort()
         return Response('There are missing parameters: %s' % params, 500)
 
     # get the project
@@ -985,8 +1109,9 @@ def create_task(request):
 
     # there should be a status_list
     if status_list is None:
-        return Response('No StatusList found suitable for %s' % entity_type,
-                        500)
+        transaction.abort()
+        return Response(
+            'No StatusList found suitable for %s' % entity_type, 500)
 
     status = Status.query.filter_by(name='New').first()
     logger.debug('status: %s' % status)
@@ -1078,6 +1203,7 @@ def auto_schedule_tasks(request):
     studio = Studio.query.first()
 
     if not studio:
+        transaction.abort()
         return Response("There is no Studio instance\n"
                         "Please create a studio first", 500)
 
@@ -1090,6 +1216,7 @@ def auto_schedule_tasks(request):
         return Response(c.html())
     except RuntimeError as e:
         c = StdErrToHTMLConverter(e)
+        transaction.abort()
         return Response(c.html(), 500)
 
 
@@ -1107,14 +1234,17 @@ def request_review(request):
     send_email = request.params.get('send_email', 1)
 
     if not task:
+        transaction.abort()
         return Response('There is no task with id: %s' % task_id, 500)
 
     if task.is_container:
+        transaction.abort()
         return Response('Can not request review for a container task', 500)
 
     # check if the task status is wip
     status_wip = Status.query.filter(Status.code == 'WIP').first()
     if task.status != status_wip:
+        transaction.abort()
         return Response('You can not request a review for a task with status '
                         'is set to "%s"' % task.status.name, 500)
 
@@ -1155,11 +1285,14 @@ def request_review(request):
     responsible = task.responsible
 
     # create a Ticket with the owner set to the responsible
+    utc_now = local_to_utc(datetime.datetime.now())
     review_ticket = Ticket(
         project=project,
         summary=summary_text,
         description=description_html,
-        created_by=logged_in_user
+        created_by=logged_in_user,
+        date_created=utc_now,
+        date_updated=utc_now
     )
     review_ticket.reassign(logged_in_user, responsible)
 
@@ -1219,6 +1352,7 @@ def request_extra_time(request):
     if task and extra_time:
         # no extra hours for a container task
         if task.is_container:
+            transaction.abort()
             return Response('Can not request extra time for a container '
                                 'task', 500)
 
@@ -1266,8 +1400,8 @@ def request_extra_time(request):
             mailer.send(message)
 
         return Response('You have successfully requested extra time for '
-                            'your task')
-
+                        'your task')
+    transaction.abort()
     return Response('There is no task with id : %s' % task_id, 500)
 
 
@@ -1286,43 +1420,62 @@ def request_revision(request):
 
     # check if we have a task
     if not task:
+        transaction.abort()
         return Response('There is no task with id: %s' % task_id, 500)
 
     send_email = request.params.get('send_email', 1)
     description = request.params.get('description', -1)
+
     schedule_timing = request.params.get('schedule_timing')
     schedule_unit = request.params.get('schedule_unit')
+    schedule_model = request.params.get('schedule_model')
 
     if not schedule_timing:
+        transaction.abort()
         return Response('There are missing parameters: schedule_timing', 500)
     else:
         try:
             schedule_timing = float(schedule_timing)
         except ValueError:
+            transaction.abort()
             return Response('Please supply a float or integer value for '
                             'schedule_timing parameter', 500)
 
     if not schedule_unit:
+        transaction.abort()
         return Response('There are missing parameters: schedule_unit', 500)
     else:
         if schedule_unit not in ['h', 'd', 'w', 'm', 'y']:
+            transaction.abort()
             return Response("schedule_unit parameter should be one of ['h', "
                             "'d', 'w', 'm', 'y']", 500)
 
+    if not schedule_model:
+        transaction.abort()
+        return Response('There are missing parameters: schedule_model', 500)
+    else:
+        if schedule_model not in ['effort', 'duration', 'length']:
+            transaction.abort()
+            return Response("schedule_model parameter should be on of "
+                            "['effort', 'duration', 'length']", 500)
+
     logger.debug('schedule_timing: %s' % schedule_timing)
     logger.debug('schedule_unit  : %s' % schedule_unit)
+    logger.debug('schedule_model : %s' % schedule_model)
 
     # get statuses
     status_prev = Status.query.filter(Status.code == 'PREV').first()
 
     # check if the task has some time logs
     if task.status != status_prev:
+        transaction.abort()
         return Response('You can not request a revision for a task with '
                         'status is set to "%s"' % task.status.name, 500)
 
     # set task status to Has Revision (HREV)
     status_hrev = Status.query.filter(Status.code == 'HREV').first()
     if not status_hrev:
+        transaction.abort()
         return Response('There is no status with name "Has Revision" and code '
                         '"HREV" please inform your Stalker admin to create '
                         'this status and include it to Task status list.', 500)
@@ -1357,7 +1510,7 @@ def request_revision(request):
         parent=task.parent,
         depends=task.depends,
         resources=task.resources,
-        schedule_model=task.schedule_model,
+        schedule_model=schedule_model,
         schedule_timing=schedule_timing,
         schedule_unit=schedule_unit,
         responsible=task.responsible,
@@ -1491,18 +1644,20 @@ def delete_task(request):
     task_id = request.matchdict.get('id')
     task = Task.query.get(task_id)
 
-    if task:
-        try:
-            unbind_task_hierarchy_from_tickets(task)
-
-            DBSession.delete(task)
-            transaction.commit()
-        except Exception as e:
-            transaction.abort()
-            c = StdErrToHTMLConverter(e)
-            return Response(c.html(), 500)
-    else:
+    if not task:
+        transaction.abort()
         return Response('Can not find a Task with id: %s' % task_id, 500)
+
+    try:
+        unbind_task_hierarchy_from_tickets(task)
+
+        DBSession.delete(task)
+        transaction.commit()
+    except Exception as e:
+        transaction.abort()
+        c = StdErrToHTMLConverter(e)
+        transaction.abort()
+        return Response(c.html(), 500)
 
     return Response('Successfully deleted task: %s' % task_id)
 

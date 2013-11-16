@@ -1,0 +1,185 @@
+<div class='row-fluid'>
+    <div class='span12'>
+
+        <form id="review_task_form"
+              class='form-horizontal'
+              role='form'
+              method='post'
+              action="{{ request.route_url('create_task') }}">
+
+            {# Review Type #}
+            <div class="control-group">
+                <label class="span3 control-label" for="task_review_mode">Review Type</label>
+                <div class="span9">
+                    <select id='task_review_mode'
+                            class='input-block-level'
+                            name='review'>
+                        <option val="Approve">Approve</option>
+                        <option val="Request Revision">Request Revision</option>
+                    </select>
+                </div>
+            </div>
+
+            {# Description #}
+            <div id="revision_controls" class="hide">
+                <div class='control-group'>
+                    <label class='span3 control-label' for='task_description'>Description</label>
+                    <div class='span9'>
+                        <textarea id="task_description"
+                                  name='description'
+                                  class="autosize-transition span12"
+                                  style="overflow: hidden;
+                                         word-wrap: break-word;
+                                         resize: horizontal;
+                                         height: 50px;"
+                                  >{% if mode=='update' %}{{ entity.description }}{% endif %}</textarea>
+                    </div>
+                </div>
+
+                {# Schedule Timing #}
+                <div class='control-group'>
+                    <label class='span3 control-label' for='task_schedule_timing'>Schedule Timing</label>
+                    <div class='span9'>
+                        <div class='span2'>
+                            <input id='task_schedule_timing'
+                                   class='input-block-level'
+                                   name='schedule_timing'
+                                   type='text'
+                                   value={{ entity.schedule_timing }}
+                                   min=1
+                                   required>
+                        </div>
+                        <div class='span3'>
+                            <select id='task_schedule_unit'
+                                   class='input-block-level'
+                                   name='schedule_unit'>
+                                <option value='h'>Hours</option>
+                                <option value='d'>Days</option>
+                                <option value='w'>Weeks</option>
+                                <option value='m'>Months</option>
+                                <option value='y'>Years</option>
+                            </select>
+                        </div>
+                        <div class='span3'>
+                            <select id='task_schedule_model'
+                                    class='input-block-level'
+                                    name='schedule_model'>
+                                <option value='effort'>Effort</option>
+                                <option value='duration'>Duration</option>
+                                <option value='length'>Length</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/chosen.jquery.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/moment.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.autosize-min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.inputlimiter.1.3.1.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.maskedinput.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/additional-methods.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/fuelux/fuelux.spinner.min.js") }}'></script>
+
+
+<script>
+    function init_dialog(){
+        console.log('initialize review task dialog start');
+
+        // update dialog header
+        $('#dialog_template_label').text('{{ mode.title() }} Task Dialog');
+    
+        // generate default values;
+        var project = {
+            id: {{ project.id }},
+            name: "{{ project.name }}"
+        };
+        var submit_form_url = '{{ request.route_url("review_task", id=entity.id) }}';
+
+        var schedule_timing = {{ entity.schedule_timing }};
+        var schedule_unit = '{{ entity.schedule_unit }}';
+        var schedule_model = '{{ entity.schedule_model }}';
+
+        var submit_button = $('#dialog_template_submit_button');
+
+        $('#task_review_mode').on('change', function() {
+            // disable or enable revision_controls
+            $('#revision_controls').toggle();
+        });
+        
+        {# ***************************************************************** #}
+        {# Schedule Unit and Model #}
+        $('#task_schedule_unit').val(schedule_unit);
+        $('#task_schedule_model').val(schedule_model);
+
+
+        {# ***************************************************************** #}
+        {# Priority Spinner #}
+        var priority = 500;
+        priority = {{ entity.priority }};
+
+        $('#task_priority').ace_spinner({
+            value: priority,
+            min: 1,
+            max: 1000,
+            step: 1,
+            btn_up_class: 'btn-info',
+            btn_down_class: 'btn-info'
+        }).on('change', function(){
+            // check if it is in the range
+            var curr_value = $(this).val();
+            $(this).val(curr_value <= 1000 ? curr_value >= 1 ? curr_value : 1 : 1000 );
+        });
+
+        {# ***************************************************************** #}
+        {# Submit Button #}
+
+        submit_button.on('click', function(e){
+            e.stopPropagation();
+            e.preventDefault();
+
+            // enable fields
+
+            var task_form = $('#review_task_form');
+            var form_data = task_form.serialize();
+            console.log('form_data :', form_data);
+
+            // prevent multiple sends
+            if (task_form.attr('is_sending') == 'true'){
+                return;
+            } else {
+                task_form.attr('is_sending', true);
+            }
+            $.post(
+                submit_form_url,
+                form_data
+            ).done(function(){
+                $('#dialog_template').modal('hide');
+            }).fail(function(jqXHR){
+                task_form.attr('is_sending', false);
+                bootbox.alert(jqXHR.responseText);
+                // disable fields again
+            });
+        });
+
+        console.log('initialize review task dialog end')
+    }
+</script>
+
+<script type="text/javascript">
+    function destruct_dialog(){
+        console.log('destruct review task dialog start');
+        // unbind events
+        $('#task_review_mode').unbind();
+        $('#task_priority').unbind();
+        $('#dialog_template_submit_button').unbind();
+
+        // remove dialog
+        $('#dialog_template').data('modal', null);
+        console.log('destruct review task dialog end');
+    }
+</script>

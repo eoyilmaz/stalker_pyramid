@@ -25,6 +25,7 @@ from pyramid.response import Response
 from pyramid.security import forget, remember
 from pyramid.view import view_config, forbidden_view_config
 from sqlalchemy import or_
+import transaction
 
 import stalker_pyramid
 from stalker import (defaults, User, Department, Group, Project, Entity,
@@ -501,6 +502,7 @@ def append_user_to_departments(request):
             'You do not have permission to Update User or Deparment'
         )
         response.status_int = 500
+        transaction.abort()
         return response
 
     # departments

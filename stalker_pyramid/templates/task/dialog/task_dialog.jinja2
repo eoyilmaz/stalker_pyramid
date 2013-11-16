@@ -354,7 +354,7 @@
         console.log('depends_to :', depends_to);
 
 
-        var submit_button = $('#task_dialog_submit_button');
+        var submit_button = $('#dialog_template_submit_button');
 
         var field_update_mode_checker = function(){
             // checks if the important fields are still updating
@@ -701,7 +701,7 @@
                     submit_form_url,
                     form_data
                 ).done(function(){
-                    $('#task_dialog').modal('hide');
+                    $('#dialog_template').modal('hide');
                 }).fail(function(jqXHR){
                     task_form.attr('is_sending', false);
                     bootbox.alert(jqXHR.responseText);

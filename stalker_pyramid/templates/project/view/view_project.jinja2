@@ -29,15 +29,16 @@
     {% include 'page_header.jinja2' %}
 
     <div class="row-fluid">
-        <div class="span6">
-            <div id="infobox" address='/entities/{{ entity.id }}/tasks_stats/'
+        <div class="span8">
+            <div id="infobox"
+                 address='/entities/{{ entity.id }}/tasks_stats/'
                  class="infobox-container pull-left"></div>
         </div>
-        <div class="span6">
+        <div class="span4">
             <h5 class="green"><i class="icon-bolt"></i> Progress</h5>
 
             <div class="progress progress-success progress-striped"
-                 data-percent="{{ entity.percent_complete }}%">
+                 data-percent="{{ "%2.1f" | format(entity.percent_complete) }}%">
                 <div class="bar"
                      style="width: {{ entity.percent_complete }}%;"></div>
             </div>
@@ -149,7 +150,6 @@
 
                 $.getJSON(address).then(function (data) {
 
-
                     var task_template = doT.template($('#tmpl_taskRow').html());
 
                     // wait until document is ready
@@ -177,8 +177,21 @@
             }
 
             var table_template = doT.template($('#tmpl_table').html());
-            $('#table_row').append(table_template({'table_title_color': 'red', 'table_title': 'Task In Progress Today', 'table_id': 'tasks_in_progress', 'table_spinner_id': 'loading_spinner_for_progress'}));
-            $('#table_row').append(table_template({'table_title_color': 'green', 'table_title': 'Task Ends Today', 'table_id': 'tasks_supposed_to_end', 'table_spinner_id': 'loading_spinner_for_end'}));
+            var table_row = $('#table_row');
+            table_row.append(
+                table_template({
+                    'table_title_color': 'red',
+                    'table_title': 'Task In Progress Today',
+                    'table_id': 'tasks_in_progress',
+                    'table_spinner_id': 'loading_spinner_for_progress'
+            })).append(
+                table_template({
+                    'table_title_color': 'green',
+                    'table_title': 'Task Ends Today',
+                    'table_id': 'tasks_supposed_to_end',
+                    'table_spinner_id': 'loading_spinner_for_end'
+                })
+            );
 
 
             loadTableData('/projects/{{ entity.id }}/tasks/progress/today/', 'tasks_in_progress', 'loading_spinner_for_progress');

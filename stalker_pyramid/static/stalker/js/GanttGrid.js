@@ -161,7 +161,8 @@ define([
                             p_complete_str = p_complete.toFixed(0);
                             p_complete_rounded = (Math.floor(p_complete / 10) * 10).toFixed(0);
 
-                            return '<div class="percentComplete' + p_complete_rounded + '">' + p_complete_str + '</div>';
+//                            return '<div class="percentComplete' + p_complete_rounded + '">' + p_complete_str + '</div>';
+                            return '<div class="' + object.status + '">' + p_complete_str + '</div>';
                         }
                     },
                     resource: {

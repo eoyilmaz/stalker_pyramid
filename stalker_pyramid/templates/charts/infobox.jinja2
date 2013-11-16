@@ -3,7 +3,6 @@
     <div class="infobox infobox-{{=it.color }}" style="width:190px">
         <div class="infobox-icon"><i class="{{=it.icon }}"></i></div>
         <div class="infobox-data"><span class="infobox-data-number">{{=it.count }}</span>
-
             <div class="infobox-content">{{=it.name }}</div>
         </div>
     </div>
@@ -17,19 +16,10 @@
         var infobox = $('#infobox');
         var infobox_template = doT.template($('#tmpl_infobox').html());
 
-
         $.getJSON(infobox.attr('address')).then(function (data) {
-
-
             for (var i = 0; i < data.length; i++) {
-
-                if (data[i].count > 0) {
-
-                    infobox.append(infobox_template(data[i]));
-                }
-
+                infobox.append(infobox_template(data[i]));
             }
-
         })
 
     });

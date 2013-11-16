@@ -209,9 +209,9 @@
                                        data-toggle="modal"
                                        data-keyboard=false
                                        {% if entity.entity_type == 'Project' %}
-                                           href='{{ request.route_url("task_dialog", id=-1, mode='create', _query={'project_id': entity.id}) }}'
+                                           href='{{ request.route_url("create_task_dialog", id=-1, _query={'project_id': entity.id}) }}'
                                        {% elif entity.entity_type in ['Task', 'Shot', 'Sequence', 'Asset'] %}
-                                           href='{{ request.route_url("task_dialog", id=-1, mode='create', _query={'project_id': entity.project.id}) }}'
+                                           href='{{ request.route_url("create_task_dialog", id=-1, _query={'project_id': entity.project.id}) }}'
                                        {% endif %}>
                                         <i class="'ui-icon icon-tasks bigger-120">&nbsp</i>
                                         Task
@@ -220,7 +220,7 @@
 
                                 <li>
                                     <a id='child_task_button'
-                                       original-href='{{ request.route_url("task_dialog", id=-1, mode='create') }}'
+                                       original-href='{{ request.route_url("create_task_dialog", id=-1) }}'
                                        href='#'>
                                         <i class="'ui-icon icon-tasks bigger-120">&nbsp</i>
                                         Child Task
@@ -229,7 +229,7 @@
 
                                 <li>
                                     <a id='dependent_task_button'
-                                       original-href='{{ request.route_url("task_dialog", id=-1, mode='create') }}'
+                                       original-href='{{ request.route_url("create_task_dialog", id=-1) }}'
                                        href='#'>
                                         <i class="'ui-icon icon-tasks bigger-120">&nbsp</i>
                                         Dependent Task
@@ -242,7 +242,7 @@
                                     <a data-target="#dialog_template"
                                        data-toggle="modal"
                                        data-keyboard=false
-                                       href='{{ request.route_url("asset_dialog", id=-1, mode='create')}}'>
+                                       href='{{ request.route_url("create_asset_dialog", id=-1)}}'>
                                         <i class="'ui-icon icon-puzzle-piece bigger-120">&nbsp</i>
                                         Asset
                                     </a>
@@ -252,7 +252,7 @@
                                     <a data-target="#dialog_template"
                                        data-toggle="modal"
                                        data-keyboard=false
-                                       href='{{ request.route_url("shot_dialog", id=-1, mode='create')}}'>
+                                       href='{{ request.route_url("create_shot_dialog", id=-1)}}'>
                                         <i class="'ui-icon icon-camera bigger-120">&nbsp</i>
                                         Shot
                                     </a>
@@ -262,7 +262,7 @@
                                     <a data-target="#dialog_template"
                                        data-toggle="modal"
                                        data-keyboard=false
-                                       href='{{ request.route_url("sequence_dialog", id=-1, mode='create')}}'>
+                                       href='{{ request.route_url("create_sequence_dialog", id=-1)}}'>
                                         <i class="'ui-icon icon-film bigger-120">&nbsp</i>
                                         Sequence
                                     </a>

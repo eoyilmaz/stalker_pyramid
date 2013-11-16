@@ -71,7 +71,7 @@
                                     <th>Owner</th>
                                     <td><a href='/users/{{ ticket.owner.id }}/view'>{{ ticket.owner.name }}</a></td>
                                     <th>Date Created</th>
-                                    <td id='date_created' class="date"></td>
+                                    <td id='date_created' class="date">{{ ticket.date_created }}</td>
                                 </tr>
                                 <tr>
                                     <th>Resolution</th>
@@ -235,12 +235,6 @@
 
 <script type="text/javascript">
 
-    {# update date_created #}
-    $(function(){
-        var date_created = new Date({{ milliseconds_since_epoch(ticket.date_created) }}).format('yyyy-mm-dd HH:MM');
-        $('#date_created').html(date_created);
-    });
-
     function showErrorAlert(reason, detail) {
         var msg = '';
         if (reason === 'unsupported-file-type') {
@@ -359,7 +353,7 @@
 
         // convert all dates to moment
         $('.date').each(function(){
-            var date = moment($(this).text());
+            var date = moment.utc($(this).text());
             $(this).text(date.fromNow());
         });
 

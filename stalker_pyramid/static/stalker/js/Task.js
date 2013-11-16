@@ -56,6 +56,8 @@ define([
 
         progress: 0,
 
+        status: 'new',
+
         bid_timing: 10,
         bid_unit: 'h',
 
@@ -135,6 +137,8 @@ define([
 
             this.time_logs = [];
             this.time_log_ids = [];
+    
+            this.status = settings.status || 'new';
         },
 
         link: function () {

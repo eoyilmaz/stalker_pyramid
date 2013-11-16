@@ -37,7 +37,7 @@
 {# MODALS #}
 {% block modals %}
 
-    {% include 'task/dialog/task_dialog_template.jinja2' %}
+    {% include 'modals/dialog_template.jinja2' %}
 
 {% endblock modals %}
 
@@ -54,7 +54,7 @@
                     <button class="btn btn-small btn-success">
                         <i class="icon-edit bigger-120"></i>
                         <a class="white"
-                           data-target="#task_dialog"
+                           data-target="#dialog_template"
                            data-toggle="modal"
                            data-keyboard=false
                            href='{{ request.route_url("shot_dialog", id=-1, mode='create') }}'>Create

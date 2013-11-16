@@ -54,11 +54,11 @@ define([
      * @returns {*|jQuery|HTMLElement}
      */
     var draw_cell = function (options) {
-            var parent = options.parent;
-            var data = options.data;
-            var start = options.start;
-            var end = options.end;
-            var scale = options.scale;
+        var parent = options.parent;
+        var data = options.data;
+        var start = options.start;
+        var end = options.end;
+        var scale = options.scale;
 
         // create a Task instance
         var task = new Task(data);
@@ -71,7 +71,7 @@ define([
 
         var parent_div = $($.parseHTML('<div class="taskContainer"></div>'));
         parent_div.css({
-            width: Math.floor((end_date - start_date) / scale),
+            width: Math.floor((end_date - start_date) / scale)
         });
         $(parent).append(parent_div);
 

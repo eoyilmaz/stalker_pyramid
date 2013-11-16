@@ -94,10 +94,22 @@
                                             data-target="#dialog_template"
                                             data-toggle="modal"
                                             data-keyboard="false"
-                                            href='{{ request.route_url("task_dialog", id=entity.id, mode='update') }}'
+                                            href='{{ request.route_url("update_task_dialog", id=entity.id) }}'
                                             >
                                         <i class="icon-edit"></i> Update
                                     </button>
+                                    {% if entity.responsible == logged_in_user and entity.status.code == 'PREV' %}
+                                        <button id='task_review_button'
+                                                class='btn btn-mini btn-info'
+                                                data-target="#dialog_template"
+                                                data-toggle="modal"
+                                                data-keyboard="false"
+                                                href='{{ request.route_url("review_task_dialog", id=entity.id) }}'
+                                                >
+                                            <i class="icon-comment"></i> Review
+                                        </button>
+                                    {% endif %}
+                                    
                                     <div class="space-12"></div>
                                     {% if entity.description %}
 
@@ -207,10 +219,25 @@
     {% include 'calendar/calendar.jinja2' %}
 
     <script type="text/javascript">
-        {# Task Update Dialog#}
-        $('#task_update_button').on('click', function() {
-            
-        });
+        {# task reviews :
+        
+        if the current user is the responsible of this task show a 
+        flash message about he/she is the responsible and the task awaits
+        him/her review
+        #}
+        {% if entity.responsible == logged_in_user and entity.status.code == 'PREV' %}
+            $(function(){
+                flash_message({
+                    container: 'body',
+                    title: 'Warning',
+                    message: 'You are the responsible of this task and it ' +
+                            'is awaiting your ' +
+                            '<a data-target="#dialog_template" data-toggle="modal" data-keyboard=false'+
+                            ' href="{{ request.route_url('review_task_dialog', id=entity.id) }}">review</a>',
+                    type: 'error'
+                });
+            });
+        {% endif %}
     </script>
 
     <script type="text/javascript">
@@ -229,8 +256,8 @@
     <script type="text/javascript">
 
     </script>
-    <script type="text/javascript">
-        $(document).ready(function () {
+{#    <script type="text/javascript">#}
+{#        $(document).ready(function () {#}
 {#            $.getJSON('/tasks/{{ entity.id }}/depends_of/').then(function (data) {#}
 {#                for (var i = 0; i < data.length; i++) {#}
 {##}
@@ -239,8 +266,8 @@
 {##}
 {##}
 {#            });#}
-        });
-    </script>
+{#        });#}
+{#    </script>#}
 
     <script type="text/javascript">
         $(document).ready(function () {

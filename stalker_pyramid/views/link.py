@@ -61,6 +61,7 @@ def upload_files(request):
         c = StdErrToHTMLConverter(e)
         response = Response(c.html())
         response.status_int = 500
+        transaction.abort()
         return response
     else:
         # store the link object
@@ -524,6 +525,7 @@ def delete_reference(request):
     else:
         response = Response('No ref with id : %i' % ref_id)
         response.status_int = 500
+        transaction.abort()
         return response
 
 
