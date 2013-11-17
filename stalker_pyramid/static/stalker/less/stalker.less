@@ -1,0 +1,176 @@
+/* Copyright (C) 2009-2013 Erkan Ozgur Yilmaz
+ 
+ This file is part of Stalker Pyramid.
+ 
+ This library is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation;
+ version 2.1 of the License.
+ 
+ This library is distributed in the hope that it will be useful,
+            but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Lesser General Public License for more details.
+ 
+ You should have received a copy of the GNU Lesser General Public
+ License along with this library; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+*/
+
+@red: #d53f40;
+@red2: #d15b47;
+@orange: #e8b110;
+@light-green: #9abc32;
+@green: #82af6f;
+@blue3: #6379aa;
+@light-blue: #6fb3e0;
+@purple: #6f3cc4;
+@purple2: #7e6eb0;
+
+@ticket_color: #AA2222;
+@even_ticket_border_color: #EE8888;
+@even_ticket_background: none repeat scroll 0 0 #FFDDCC;
+@odd_ticket_border_color: #EE9999;
+@odd_ticket_background: none repeat scroll 0 0 #FFEEDD;
+
+.form-horizontal .control-group {
+    margin-bottom: 5px;
+}
+
+.ticket_Fixed, .ticket_Closed {
+    text-decoration: line-through;
+}
+
+tr {
+    .even {
+        >td{
+            .ticket_TRIVIAL {
+            }
+            .ticket_MINOR {
+            }
+            .ticket_CRITICAL {
+                background: @even_ticket_background;
+                border-color: @even_ticket_border_color;
+                color: @ticket_color;
+            }
+            .ticket_BLOCKER {
+                background: @even_ticket_background;
+                border-color: @even_ticket_border_color;
+                color: @ticket_color;
+            }
+            .ticket_MAJOR {
+            }
+        }
+    }
+    
+    .odd{
+        >td{
+            .ticket_TRIVIAL {
+            }
+            .ticket_MINOR {
+            }
+            .ticket_CRITICAL {
+                background: @odd_ticket_background;
+                border-color: @odd_ticket_border_color;
+                color: @ticket_color;
+            }
+            .ticket_BLOCKER {
+                background: @odd_ticket_background;
+                border-color: @odd_ticket_border_color;
+                color: @ticket_color;
+            }
+            .ticket_MAJOR {
+            }
+        }
+    }
+    
+}
+
+
+
+
+
+.header-color-project {
+    background: @green;
+    border-color: @green;
+}
+
+.header-color-project+.widget-body {
+    border-color: @green;
+}
+
+.header-color-group {
+    background: @purple2;
+    border-color: @purple2;
+
+    + .widget-body {
+        border-color: @purple2;
+    }
+}
+
+.header-color-department {
+    background: @blue3;
+    border-color: @blue3;
+
+    + .widget-body {
+        border-color: @blue3;
+    }
+}
+
+.header-color-user {
+    background: @red2;
+    border-color: @red2;
+
+    +.widget-body {
+        border-color: @red2;
+    }
+}
+
+.new {
+    background-color: @red;
+    color: white;
+}
+
+.wip {
+    background-color: @orange;
+    color: white;
+}
+
+.prev {
+    background-color: @light-blue;
+    color: white;
+}
+
+.hrev {
+    background-color: @purple;
+    color: white;
+}
+
+.cmpl {
+    background-color: @green;
+    color: white;
+}
+
+.icon-task {
+
+}
+
+.label-red {
+    background-color: @red !important;
+}
+
+.label-orange {
+    background-color: @orange !important;    
+}
+
+.label-blue {
+    background-color: @light-blue !important;
+}
+
+.label-purple {
+    background-color: @purple !important;
+}
+
+.label-green {
+    background-color: @green !important;
+}

@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
+
+import time
 import datetime
 
 from pyramid.httpexceptions import HTTPOk
@@ -98,28 +100,59 @@ def update_asset(request):
 def get_assets(request):
     """returns all the Assets of a given Project
     """
-    # TODO: this should be paginated
     logger.debug('*** get_assets method starts ***')
 
     project_id = request.matchdict.get('id', -1)
 
-    return [
+    start = time.time()
+    sql_query = """select
+        "Assets".id,
+        "SimpleEntities".name,
+        "Assets".code,
+        "SimpleEntities".description,
+        "Types".id as type_id,
+        "SimpleEntities_Types".name as type_name,
+        extract(epoch from "SimpleEntities".date_created) * 1000,
+        "SimpleEntities".created_by_id,
+        "SimpleEntities_CreatedBy".name as created_by_name,
+        "Links".full_path as thumbnail_full_path,
+        "SimpleEntities_Statuses".name as status_name,
+        "SimpleEntities_Statuses".html_class as status_html_class,
+        "Tasks"._total_logged_seconds::float / "Tasks"._schedule_seconds * 100 as percent_complete
+    from "Assets"
+        join "Tasks" on "Assets".id = "Tasks".id
+        join "SimpleEntities" on "Assets".id = "SimpleEntities".id
+        left outer join "Links" on "SimpleEntities".thumbnail_id = "Links".id
+        join "Statuses" on "Tasks".status_id = "Statuses".id
+        left outer join "SimpleEntities" as "SimpleEntities_Statuses" on "Statuses".id = "SimpleEntities_Statuses".id
+        left outer join "Types" on "SimpleEntities".type_id = "Types".id
+        join "SimpleEntities" as "SimpleEntities_Types" on "Types".id = "SimpleEntities_Types".id
+        left outer join "SimpleEntities" as "SimpleEntities_CreatedBy" on "SimpleEntities".created_by_id = "SimpleEntities_CreatedBy".id
+    where "Tasks".project_id = %(project_id)s
+    order by type_name, name
+    """ % {'project_id': project_id}
+
+    result = DBSession.connection().execute(sql_query)
+
+    data = [
         {
-            'thumbnail_full_path': asset.thumbnail.full_path if asset.thumbnail else None,
-            'id': asset.id,
-            'name': asset.name,
-            'code': asset.code,
-            'status_color': asset.status.html_class if asset.status.html_class else 'grey',
-            'type_name': asset.type.name,
-            'type_id': asset.type.id,
-            'status': asset.status.name,
-            'status_bg_color': asset.status.bg_color,
-            'status_fg_color': asset.status.fg_color,
-            'created_by_id': asset.created_by.id,
-            'created_by_name': asset.created_by.name,
-            'description': asset.description,
-            'date_created':milliseconds_since_epoch(asset.date_created),
-            'percent_complete': asset.percent_complete
-        }
-        for asset in Asset.query.filter_by(project_id=project_id).all()
+            'id': r[0],
+            'name': r[1],
+            'code': r[2],
+            'description': r[3],
+            'type_id': r[4],
+            'type_name': r[5],
+            'date_created': r[6],
+            'created_by_id': r[7],
+            'created_by_name': r[8],
+            'thumbnail_full_path': r[9],
+            'status': r[10],
+            'status_color': r[11],
+            'percent_complete': r[12]
+        } for r in result.fetchall()
     ]
+
+    end = time.time()
+    logger.debug('%s rows retrieved in : %s seconds' % (len(data), (end - start)))
+
+    return data

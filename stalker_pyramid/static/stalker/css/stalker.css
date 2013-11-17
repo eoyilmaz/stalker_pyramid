@@ -16,124 +16,93 @@
  License along with this library; if not, write to the Free Software
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 */
-
-/*@import '../../dgrid/css/dgrid.css';*/
-/*@import "../../dojox/image/resources/Lightbox.css";*/
-
-/*.dgrid {*/
-    /*position: static;*/
-    /*top: 0;*/
-    /*bottom: 0;*/
-    /*left: 0;*/
-    /*right: 0;*/
-    /*height: auto;*/
-/*}*/
-
 .form-horizontal .control-group {
-    margin-bottom: 5px;
+  margin-bottom: 5px;
 }
-
-
-.ticket_Fixed, .ticket_Closed {
-    text-decoration: line-through;
+.ticket_Fixed,
+.ticket_Closed {
+  text-decoration: line-through;
 }
-
-tr.even>td.ticket_TRIVIAL {
+tr .even > td .ticket_CRITICAL {
+  background: none repeat scroll 0 0 #ffddcc;
+  border-color: #ee8888;
+  color: #aa2222;
 }
-
-tr.odd>td.ticket_TRIVIAL {
+tr .even > td .ticket_BLOCKER {
+  background: none repeat scroll 0 0 #ffddcc;
+  border-color: #ee8888;
+  color: #aa2222;
 }
-
-
-.ticket_MINOR {
-    
+tr .odd > td .ticket_CRITICAL {
+  background: none repeat scroll 0 0 #ffeedd;
+  border-color: #ee9999;
+  color: #aa2222;
 }
-
-.ticket_MAJOR {
-    
+tr .odd > td .ticket_BLOCKER {
+  background: none repeat scroll 0 0 #ffeedd;
+  border-color: #ee9999;
+  color: #aa2222;
 }
-
-tr.even>td.ticket_CRITICAL {
-    background: none repeat scroll 0 0 #FFDDCC;
-    border-color: #EE8888;
-    color: #AA2222;
-}
-
-tr.odd>td.ticket_CRITICAL {
-    background: none repeat scroll 0 0 #FFEEDD;
-    border-color: #EE9999;
-    color: #AA2222;
-}
-
-tr.even>td.ticket_BLOCKER {
-    background: none repeat scroll 0 0 #FFDDCC;
-    border-color: #EE8888;
-    color: #AA2222;
-}
-
-tr.odd>td.ticket_BLOCKER {
-    background: none repeat scroll 0 0 #FFEEDD;
-    border-color: #EE9999;
-    color: #AA2222;
-}
-
 .header-color-project {
-    background: #82af6f;
-    border-color: #82af6f
+  background: #82af6f;
+  border-color: #82af6f;
 }
-
-.header-color-project+.widget-body {
-    border-color: #82af6f
+.header-color-project + .widget-body {
+  border-color: #82af6f;
 }
-
 .header-color-group {
-    background: #7e6eb0;
-    border-color: #7e6eb0
+  background: #7e6eb0;
+  border-color: #7e6eb0;
 }
-
-.header-color-group+.widget-body {
-    border-color: #7e6eb0
+.header-color-group + .widget-body {
+  border-color: #7e6eb0;
 }
-
 .header-color-department {
-    background: #6379aa;
-    border-color: #6379aa
+  background: #6379aa;
+  border-color: #6379aa;
 }
-
-.header-color-department+.widget-body {
-    border-color: #6379aa
+.header-color-department + .widget-body {
+  border-color: #6379aa;
 }
-
 .header-color-user {
-    background: #d15b47;
-    border-color: #d15b47
+  background: #d15b47;
+  border-color: #d15b47;
 }
-
-.header-color-user+.widget-body {
-    border-color: #d15b47
+.header-color-user + .widget-body {
+  border-color: #d15b47;
 }
-
 .new {
-    background-color: #d53f40;
-    color: white;
+  background-color: #d53f40;
+  color: white;
 }
-
 .wip {
-    background-color: #e8b110;
-    color: white;
+  background-color: #e8b110;
+  color: white;
 }
-
 .prev {
-    background-color: #6fb3e0;
-    color: white;
+  background-color: #6fb3e0;
+  color: white;
 }
-
 .hrev {
-    background-color: #6f3cc4;
-    color: white;
+  background-color: #6f3cc4;
+  color: white;
 }
-
 .cmpl {
-    background-color: #9abc32;
-    color: white;
+  background-color: #82af6f;
+  color: white;
+}
+.label-red {
+  background-color: #d53f40 !important;
+}
+.label-orange {
+  background-color: #e8b110 !important;
+}
+.label-blue {
+  background-color: #6fb3e0 !important;
+}
+.label-purple {
+  background-color: #6f3cc4 !important;
+}
+.label-green {
+  background-color: #82af6f !important;
 }

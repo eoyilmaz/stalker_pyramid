@@ -18,13 +18,14 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 
+import time
 import datetime
 from pyramid.httpexceptions import HTTPOk, HTTPServerError, HTTPFound
 from pyramid.view import view_config
 
 from stalker.db import DBSession
 from stalker import (User, ImageFormat, Repository, Structure, Status,
-                     StatusList, Project, Entity, Task)
+                     StatusList, Project, Entity, Task, defaults, Studio)
 from stalker_pyramid.views import (get_date, get_date_range,
                                    get_logged_in_user,
                                    milliseconds_since_epoch)
@@ -271,42 +272,97 @@ def get_project_tasks_today(request):
     start_of_today = datetime.datetime.combine(today, start)
     end_of_today = datetime.datetime.combine(today, end)
 
-    tasks_today = []
+    start = time.time()
+
+    sql_query = """select "Tasks".id,
+           "SimpleEntities".name,
+           array_agg(distinct("SimpleEntities_Resource".id)),
+           array_agg(distinct("SimpleEntities_Resource".name)),
+           "SimpleEntities_Status".name,
+           "SimpleEntities_Status".html_class,
+           (coalesce("Task_TimeLogs".duration, 0.0))::float /
+           ("Tasks".schedule_timing * (case "Tasks".schedule_unit
+                when 'h' then %(working_seconds_per_hour)s
+                when 'd' then %(working_seconds_per_day)s
+                when 'w' then %(working_seconds_per_week)s
+                when 'm' then %(working_seconds_per_month)s
+                when 'y' then %(working_seconds_per_year)s
+                else 0
+            end)) * 100.0 as percent_complete
+    from "Tasks"
+        join "SimpleEntities" on "Tasks".id = "SimpleEntities".id
+        join "Task_Resources" on "Tasks".id = "Task_Resources".task_id
+        join "SimpleEntities" as "SimpleEntities_Resource" on "Task_Resources".resource_id = "SimpleEntities_Resource".id
+        join "Statuses" on "Tasks".status_id = "Statuses".id
+        join "SimpleEntities" as "SimpleEntities_Status" on "Statuses".id = "SimpleEntities_Status".id
+        left outer join (
+            select
+                "TimeLogs".task_id,
+                extract(epoch from sum("TimeLogs".end - "TimeLogs".start)) as duration
+            from "TimeLogs"
+            group by task_id
+        ) as "Task_TimeLogs" on "Task_TimeLogs".task_id = "Tasks".id
+        left outer join "TimeLogs" on "Tasks".id = "TimeLogs".task_id
+        """
 
     if action == 'progress':
-        tasks_today = Task.query.join(Project, Task.project) \
-            .filter(Project.id == project_id) \
-            .filter(Task.computed_start < end_of_today) \
-            .filter(Task.computed_end > start_of_today).all()
-
+        sql_query += """where
+            "Tasks".computed_start < '%(end_of_today)s' and
+            "Tasks".computed_end > '%(start_of_today)s'"""
     elif action == 'end':
-        tasks_today = Task.query.join(Project, Task.project) \
-            .filter(Project.id == project_id) \
-            .filter(Task.computed_end > start_of_today) \
-            .filter(Task.computed_end <= end_of_today).all()
+        sql_query += """where
+            "Tasks".computed_end > '%(start_of_today)s' and
+            "Tasks".computed_end <= '%(end_of_today)s'
+            """
 
-    task_today_list = []
+    sql_query += """   and "Tasks".project_id = %(project_id)s
+        group by "Tasks".id,
+             "SimpleEntities".name,
+             "SimpleEntities_Status".name,
+             "SimpleEntities_Status".html_class,
+             "Task_TimeLogs".duration"""
 
-    for task in tasks_today:
-        assert isinstance(task, Task)
-        if task.is_leaf:
-            resources_str = ''
-            for user in task.resources:
-                resources_str += \
-                    '<a href="/users/%s/view">%s</a><br/>' % (user.id,
-                                                              user.name)
+    studio = Studio.query.first()
+    assert isinstance(studio, Studio)
 
-            task_today_list.append({
-                'task_id': task.id,
-                'task_name': '%s (%s)' %
-                             (task.name, ' | '.join([
-                                 parent.name for parent in task.parents])),
-                'resources': resources_str,
-                'created_by_id': task.created_by.id,
-                'created_by_name': task.created_by.name,
-                'status': task.status.name,
-                'status_color': task.status.html_class,
-                'percent_complete': task.percent_complete
-            })
+    ws_per_hour = 3600
+    ws_per_day = studio.daily_working_hours * ws_per_hour
+    ws_per_week = studio.weekly_working_days * ws_per_day
+    ws_per_month = ws_per_week * 4
+    ws_per_year = studio.yearly_working_days * ws_per_day
 
-    return task_today_list
+    sql_query = sql_query % {
+        'project_id': project_id,
+        'start_of_today': start_of_today.strftime('%Y-%m-%d %H:%M:%S'),
+        'end_of_today': end_of_today.strftime('%Y-%m-%d %H:%M:%S'),
+        'working_seconds_per_hour': ws_per_hour,
+        'working_seconds_per_day': ws_per_day,
+        'working_seconds_per_week': ws_per_week,
+        'working_seconds_per_month': ws_per_month,
+        'working_seconds_per_year': ws_per_year
+    }
+
+    logger.debug('sql_query : %s' % sql_query)
+
+    result = DBSession.connection().execute(sql_query)
+
+    data = [
+        {
+            'task_id': r[0],
+            'task_name': r[1],
+            'resources': [
+                '<a href="/users/%(id)s/view">%(name)s</a>' % {
+                    'id': r[2][i],
+                    'name': r[3][i]
+                } for i in range(len(r[2]))
+            ],
+            'status': r[4],
+            'status_color': r[5],
+            'percent_complete': r[6]
+        } for r in result.fetchall()
+    ]
+
+    end = time.time()
+    logger.debug('%s rows took : %s seconds' % (len(data), (end - start)))
+
+    return data

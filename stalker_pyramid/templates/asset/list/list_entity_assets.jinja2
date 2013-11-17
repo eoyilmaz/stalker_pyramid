@@ -131,17 +131,13 @@
                      class="img-thumbnail"
                      src="{{=it.thumbnail_full_path }}">
             </td>
-            <td><a href='{{=it.link}}'>{{=it.name}}</a>
-            </td>
-            <td>{{=it.description}}
-            </td>
-            <td>{{=it.type_name}}
-            </td>
+            <td><a href='{{=it.link}}'>{{=it.name}}</a></td>
+            <td>{{=it.description}}</td>
+            <td>{{=it.type_name}}</td>
             <td>
                 <div class="progress progress-success">
-                    <div style="width:{{=it.percent_complete}}%"
-                         class="bar">
-                        <span>{{=it.percent_complete}}%</span>
+                    <div style="width:{{=it.percent_complete}}%" class="bar">
+                        <span>{{= it.percent_complete.toFixed(0) }}%</span>
                     </div>
                 </div>
             </td>
@@ -166,59 +162,51 @@
                 var asset_template = doT.template($('#tmpl_assetRow').html());
 
                 var asset_types_li_template = doT.template($('#tmpl_assetTypeLink').html());
-                var asset_types_table_template = doT.template($('#tmpl_assetTypeTable').html())
+                var asset_types_table_template = doT.template($('#tmpl_assetTypeTable').html());
 
-                var asset_types_ul = $('#asset_types>ul');
-                var asset_type_tables = $('#asset_type_tables')
+                var asset_types_ul = $('#asset_types').find('ul');
+                var asset_type_tables = $('#asset_type_tables');
 
                 // wait until document is ready
                 $(function () {
-                            var i;
-                            var table_body;
-                            var table_names = [];
-                            for (i = 0; i < data.length; i++) {
-                                // fix dates
+                    var i;
+                    var table_body;
+                    var table_names = [];
+                    for (i = 0; i < data.length; i++) {
+                        // fix dates
 
-                                console.log(data[i].name + ' : ' + data[i].percent_complete)
-                                data[i].link = '/assets/' + data[i].id + '/view';
+                        console.log(data[i].name + ' : ' + data[i].percent_complete);
+                        data[i].link = '/assets/' + data[i].id + '/view';
 
-                                if (data[i].thumbnail_full_path == null) {
-                                    data[i].thumbnail_full_path = '{{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}';
-                                }
-                                else {
-                                    data[i].thumbnail_full_path = '/' + data[i].thumbnail_full_path;
-                                }
-
-                                // create table if it does not exist
-                                if ($('#' + data[i].type_id).length == 0) {
-
-                                    data[i].class = i == 0 ? 'active' : '';
-                                    table_names.push('#' + data[i].type_id);
-
-                                    asset_types_ul.append(asset_types_li_template(data[i]));
-                                    asset_type_tables.append(asset_types_table_template(data[i]));
-                                }
-
-                                // append it to the table
-                                table_body = $('#' + data[i].type_id + '_table>tbody');
-                                table_body.append(asset_template(data[i]));
-                            }
-
-                            for (j = 0; j < table_names.length; j++) {
-                                $(table_names[j] + '_table').dataTable();
-
-                            }
-
-
-                            $('#tabs').show();
-
-                            $("ul.nav-tabs li:first").addClass("active").show(); //Activate first tab
-                            $(".tab-pane:first").addClass("in active").show(); //Show first tab content
-
+                        if (data[i].thumbnail_full_path == null) {
+                            data[i].thumbnail_full_path = '{{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}';
+                        }
+                        else {
+                            data[i].thumbnail_full_path = '/' + data[i].thumbnail_full_path;
                         }
 
+                        // create table if it does not exist
+                        if ($('#' + data[i].type_id).length == 0) {
+                            data[i].class = i == 0 ? 'active' : '';
+                            table_names.push('#' + data[i].type_id);
 
-                );
+                            asset_types_ul.append(asset_types_li_template(data[i]));
+                            asset_type_tables.append(asset_types_table_template(data[i]));
+                        }
+
+                        // append it to the table
+                        table_body = $('#' + data[i].type_id + '_table>tbody');
+                        table_body.append(asset_template(data[i]));
+                    }
+
+                    for (j = 0; j < table_names.length; j++) {
+                        $(table_names[j] + '_table').dataTable();
+                    }
+
+                    $('#tabs').show();
+                    $("ul.nav-tabs li:first").addClass("active").show(); //Activate first tab
+                    $(".tab-pane:first").addClass("in active").show(); //Show first tab content
+                });
 
             } else {
                 $('#no-data').show();

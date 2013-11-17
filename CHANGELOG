@@ -24,6 +24,13 @@ Stalker Pyramid Changes
 * **New:** Added `description` field to TimeLog create/update dialog.
 * **Update:** Included `dialog_template.jinja2` in `base.jinja2` by default.
 * **Update:** TimeLog dialog now only lists tasks with NEW or WIP status.
+* **Update:** Replaced the queries inside
+  ``stalker_pyramid.views.project.get_project_tasks_today()`` with pure sql
+  queries which are ~100x faster.
+* **Update:** Replaced the queries inside
+  ``stalker_pyramid.views.asset.get_asset()`` with pure sql queries which are
+  over ~450x faster.
+* **New:** Added `stalker.less` file for the main `stalker.css` generation.
 
 0.1.1
 =====
