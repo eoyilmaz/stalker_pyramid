@@ -1356,7 +1356,7 @@ def request_review(request):
     task_id = request.matchdict.get('id', -1)
     logger.debug('task_id : %s' % task_id)
     task = Task.query.filter(Task.id == task_id).first()
-    send_email = request.params.get('send_email', 1)
+    send_email = request.params.get('send_email', 1)  # for testing purposes
 
     if not task:
         transaction.abort()
@@ -1374,12 +1374,12 @@ def request_review(request):
                         'is set to "%s"' % task.status.name, 500)
 
     # check if the user is one of the resources of this task or the responsible
-    if not logged_in_user in task.resources or \
-       not logged_in_user == task.responsible:
+    if logged_in_user not in task.resources and \
+       logged_in_user != task.responsible:
         transaction.abort()
         return Response('You are not one of the resources nor the '
-                         'responsible of this task, so you can not request a '
-                         'review for this task', 500)
+                        'responsible of this task, so you can not request a '
+                        'review for this task', 500)
 
     # get the project that the ticket belongs to
     project = task.project
