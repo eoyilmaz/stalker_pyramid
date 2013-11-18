@@ -320,7 +320,10 @@ def get_project_tasks_today(request):
              "SimpleEntities".name,
              "SimpleEntities_Status".name,
              "SimpleEntities_Status".html_class,
-             "Task_TimeLogs".duration"""
+             "Task_TimeLogs".duration,
+             "Tasks".schedule_timing,
+             "Tasks".schedule_unit
+        """
 
     studio = Studio.query.first()
     assert isinstance(studio, Studio)
