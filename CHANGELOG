@@ -38,6 +38,8 @@ Stalker Pyramid Changes
   log has been entered to a child task.
 * **New:** Review request only can be made by one of the resources or by the
   responsible of a task.
+* **New:** ``stalker_pyramid.views.task.review_task()`` will now send emails if
+  the task is approved.
 
 0.1.1
 =====

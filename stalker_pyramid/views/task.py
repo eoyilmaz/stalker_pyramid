@@ -96,10 +96,10 @@ def update_task_statuses(task):
     binary_status = '%(NEW)s%(WIP)s%(PREV)s%(HREV)s%(CMPL)s' % status_codes
 
     status_lut = {
-        '00000': status_new,
+        '00000': status_new,  # this will not happen
         '00001': status_cmpl,
 
-        '00010': status_cmpl, # this one is interesting all tasks are hrev
+        '00010': status_cmpl,  # this one is interesting all tasks are hrev
         '00011': status_cmpl,
 
         '00100': status_wip,
@@ -138,7 +138,8 @@ def update_task_statuses(task):
     # go to parents
     update_task_statuses(task.parent)
     # commit the changes
-    DBSession.commit()
+    #DBSession.commit()
+    # leave the commits to transaction.manager
 
 
 def duplicate_task(task):
@@ -543,6 +544,8 @@ def review_task(request):
     task_id = request.matchdict.get('id')
     task = Task.query.filter(Task.id == task_id).first()
 
+    send_email = request.params.get('send_email', 1)
+
     if not task:
         transaction.abort()
         return Response('There is no task with id: %s' % task_id, 500)
@@ -566,14 +569,31 @@ def review_task(request):
         except ValueError as e:
             transaction.abort()
             return Response(e.message, 500)
+
+        # update parent statuses
+        update_task_statuses(task.parent)
+
+        if send_email:
+            # send email to resources of the task
+            mailer = get_mailer(request)
+            recipients = task.resources
+            message = Message(
+                subject='Task Reviewed: Your task has been approved!',
+                sender=dummy_email_address,
+                recipients=recipients,
+                body='%s has been approved' % task.name,
+                html='%(task_link)s has been approved' % {
+                    'task_link': '<a href="%s">%s</a>' % (
+                        request.route_url('view_task', id=task.id),
+                        task.name
+                    )
+                }
+            )
+            mailer.send(message)
+
     elif review == 'Request Revision':
         # so request a revision
         request_revision(request)
-
-    # update parent statuses
-    update_task_statuses(task.parent)
-
-    # TODO: send e-mails about the conclusion of the review
 
     return Response('Successfully reviewed task')
 
