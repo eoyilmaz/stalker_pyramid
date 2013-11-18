@@ -196,6 +196,9 @@ def update_ticket(request):
                 ticket.reopen(logged_in_user)
         else:
             transaction.abort()
+            request.session.flash(
+                'Error: You do not have permission to update the ticket'
+            )
             return Response(
                 'Error: You do not have permission to update the ticket', 500
             )
