@@ -31,6 +31,9 @@ Stalker Pyramid Changes
   ``stalker_pyramid.views.asset.get_asset()`` with pure sql queries which are
   over ~450x faster.
 * **New:** Added `stalker.less` file for the main `stalker.css` generation.
+* **New:** GanttChart now displays rows in status color.
+* **New:** Added ``stalker_pyramid.views.asset.get_assets_count()`` to easily
+  get the asset counts.
 
 0.1.1
 =====

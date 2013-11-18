@@ -96,6 +96,7 @@
             <a>
                 <i class="icon-puzzle-piece"></i>
                 <span class="menu-text">Assets</span>
+                <span id='assets_count' class='badge badge-important'></span>
             </a>
         </li>
     {% else %}
@@ -103,11 +104,12 @@
             <a href='{{ request.route_url('list_project_assets', id=project.id) }}'>
                 <i class="icon-puzzle-piece"></i>
                 <span class="menu-text">Assets</span>
+                <span id='assets_count' class='badge badge-important'></span>
             </a>
         </li>
     {% endif %}
 
-     {# Sequences #}
+    {# Sequences #}
     {% if request.current_route_path() == request.route_path('list_project_sequences', id=project.id) %}
         <li class='active'>
             <a>
@@ -183,9 +185,14 @@
 </ul>
 
 <script type="text/javascript">
-    $(function(){
-        $.getJSON('/entities/{{ entity.id }}/references/count/').then(function(data){
+    $(function ( ){
+        $.getJSON('/entities/{{ entity.id }}/references/count/').then(function (data) {
             $('#reference_count').text(data);
+        });
+    });
+    $(function () {
+        $.getJSON('/projects/{{ entity.id }}/assets/count/').then(function (data) {
+            $('#assets_count').text(data);
         });
     });
 </script> 

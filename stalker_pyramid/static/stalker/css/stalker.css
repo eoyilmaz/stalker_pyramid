@@ -71,31 +71,53 @@ tr .odd > td .ticket_BLOCKER {
 .header-color-user + .widget-body {
   border-color: #d15b47;
 }
+.pln {
+  background-color: #abbac3;
+  color: white;
+}
+.pln a {
+  color: white;
+}
 .new {
-  background-color: #d53f40;
+  background-color: #d15b47;
+  color: white;
+}
+.new a {
   color: white;
 }
 .wip {
-  background-color: #e8b110;
+  background-color: #ffb752;
+  color: white;
+}
+.wip a {
   color: white;
 }
 .prev {
   background-color: #6fb3e0;
   color: white;
 }
+.prev a {
+  color: white;
+}
 .hrev {
-  background-color: #6f3cc4;
+  background-color: #7e6eb0;
+  color: white;
+}
+.hrev a {
   color: white;
 }
 .cmpl {
   background-color: #82af6f;
   color: white;
 }
+.cmpl a {
+  color: white;
+}
 .label-red {
   background-color: #d53f40 !important;
 }
 .label-orange {
-  background-color: #e8b110 !important;
+  background-color: #ffb752 !important;
 }
 .label-blue {
   background-color: #6fb3e0 !important;

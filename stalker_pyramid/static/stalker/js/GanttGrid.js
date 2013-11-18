@@ -65,15 +65,17 @@ define([
                         get: function (object) {
                             return object;
                         },
-                        formatter: function (object) {
+                        renderCell: function (object, value, node, options) {
                             var object_type = object.type;
                             var id_template_str = '<div class="action-buttons">' +
-                                '<a onclick="javascript:scrollToTaskItem(' + object.start + ')" class="blue" title="Scroll To"><i class="icon-exchange"></i></a>' +
-                                '<a href="' + object.link + '" class="green" title="View"><i class="icon-info-sign"></i></a>' +
+                                '<a onclick="javascript:scrollToTaskItem(' + object.start + ')" title="Scroll To"><i class="icon-exchange"></i></a>' +
+                                '<a href="' + object.link + '" title="View"><i class="icon-info-sign"></i></a>' +
                                 '</div>';
 
                             var id_template = doT.template(id_template_str);
-                            return id_template(object);
+                            $(node).addClass(object.status).append(
+                                $.parseHTML(id_template(object))
+                            );
                         },
                         resizable: false
                     },
@@ -83,8 +85,10 @@ define([
                         get: function (object) {
                             return object;
                         },
-                        formatter: function (object) {
-                            return '<a href="' + object.link + '">' + object.id + '</a>';
+                        renderCell: function (object, value, node, options) {
+                            $(node).addClass(object.status).append(
+                                $.parseHTML('<a href="' + object.link + '">' + object.id + '</a>')
+                            );
                         },
                         resizable: true
                     },
@@ -96,7 +100,7 @@ define([
                             get: function (object) {
                                 return object;
                             },
-                            formatter: function (object) {
+                            renderCell: function (object, value, node, options) {
                                 var template = templates.taskEditRow;
                                 var template_var = {};
                                 template_var.font_weight = object.hasChildren ? 'bold' : 'normal';
@@ -124,7 +128,9 @@ define([
                                 template_var.end = object.end;
                                 template_var.type = object.type;
 
-                                return template(template_var);
+                                $(node).addClass(object.status).append(
+                                    $.parseHTML(template(template_var))
+                                );
                             },
                             renderExpando: function (level, hasChildren, expanded, object) {
                                 // summary:
@@ -150,19 +156,15 @@ define([
                         get: function (object) {
                             return object;
                         },
-                        formatter: function (object) {
+                        renderCell: function (object, value, node, options) {
                             var p_complete, p_complete_str, p_complete_rounded, bg_color, font_weight;
                             p_complete = object.schedule_seconds > 0 ? object.total_logged_seconds / object.schedule_seconds * 100 : 0;
-
-                            font_weight = 'normal';
-
                             // check if it has a floating part
-
                             p_complete_str = p_complete.toFixed(0);
-                            p_complete_rounded = (Math.floor(p_complete / 10) * 10).toFixed(0);
 
-//                            return '<div class="percentComplete' + p_complete_rounded + '">' + p_complete_str + '</div>';
-                            return '<div class="' + object.status + '">' + p_complete_str + '</div>';
+                            $(node).addClass(object.status).append(
+                                $.parseHTML('<div class="' + object.status + '">' + p_complete_str + '</div>')
+                            );
                         }
                     },
                     resource: {
@@ -172,7 +174,7 @@ define([
                         get: function (object) {
                             return object;
                         },
-                        formatter: function (object) {
+                        renderCell: function (object, value, node, options) {
                             var ret = '', i, resource;
                             if (object.resources) {
                                 for (i = 0; i < object.resources.length; i++) {
@@ -180,7 +182,9 @@ define([
                                     ret = ret + (ret === "" ? "" : ", ") + templates.resourceLink(resource);
                                 }
                             }
-                            return ret;
+                            $(node).addClass(object.status).append(
+                                $.parseHTML(ret)
+                            );
                         }
                     },
                     timing: {
@@ -190,8 +194,7 @@ define([
                         get: function (object) {
                             return object;
                         },
-                        formatter: function (object) {
-
+                        renderCell: function (object, value, node, options) {
                             // map time unit names
                             var time_unit_names = {
                                 'h': 'Hour',
@@ -221,7 +224,7 @@ define([
                                     }
                                 }
                             }
-                            return timing;
+                            $(node).addClass(object.status).text(timing);
                         }
                     },
                     start: {
@@ -231,10 +234,14 @@ define([
                         get: function (object) {
                             return object;
                         },
-                        formatter: function (object) {
+                        renderCell: function (object, value, node, options) {
                             var start_date = new Date(object.start);
-                            return start_date.format("yyyy-mm-dd HH:MM");
+                            $(node).addClass(object.status);
+                            $(node).text(
+                                start_date.format("yyyy-mm-dd HH:MM")
+                            );
                         }
+
                     },
                     end: {
                         label: 'End',
@@ -243,11 +250,28 @@ define([
                         get: function (object) {
                             return object;
                         },
-                        formatter: function (object) {
+                        renderCell: function (object, value, node, options) {
                             var end_date = new Date(object.end);
-                            return end_date.format("yyyy-mm-dd HH:MM");
+                            $(node).addClass(object.status);
+                            $(node).text(
+                                end_date.format("yyyy-mm-dd HH:MM")
+                            );
                         }
                     },
+                    status: {
+                        label: 'Status',
+                        sortable: false,
+                        resizable: true,
+                        get: function (object) {
+                            return object;
+                        },
+                        renderCell: function (object, value, node, options) {
+                            $(node).addClass(object.status);
+                            $(node).append(
+                                $.parseHTML('<span class="' + object.status + '">' + object.status + '</span>')
+                            );
+                        }
+                    }
 //                    dependencies: {
 //                        label: 'Dependencies',
 //                        sortable: false,

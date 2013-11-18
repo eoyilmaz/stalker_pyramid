@@ -138,11 +138,15 @@ def main(global_config, **settings):
     config.add_route('get_entity_tasks',               'entities/{id}/tasks/')
     config.add_route('get_entity_tasks_stats',         'entities/{id}/tasks_stats/')
     config.add_route('get_entity_tickets',             'entities/{id}/tickets/')
+    config.add_route('get_entity_tickets_count',       'entities/{id}/tickets/count/')
     config.add_route('get_entity_time_logs',           'entities/{id}/time_logs/')
     config.add_route('get_entity_projects',            'entities/{id}/projects/')
     config.add_route('get_entity_sequences',           'entities/{id}/sequences/')
+    config.add_route('get_entity_sequences_count',     'entities/{id}/sequences/count/')
     config.add_route('get_entity_assets',              'entities/{id}/assets/')
+    config.add_route('get_entity_assets_count',        'entities/{id}/assets/count/')
     config.add_route('get_entity_shots',               'entities/{id}/shots/')
+    config.add_route('get_entity_shots_count',         'entities/{id}/shots/count/')
     config.add_route('get_entity_vacations',           'entities/{id}/vacations/')
     config.add_route('get_entity_entities_out_stack',  'entities/{id}/{entities}/out_stack/' )
     config.add_route('get_entity_events',              'entities/{id}/events/')  #json
@@ -232,11 +236,15 @@ def main(global_config, **settings):
     config.add_route('get_projects',               'projects/')
     config.add_route('get_project_users',          'projects/{id}/users/')
     config.add_route('get_project_assets',         'projects/{id}/assets/')
+    config.add_route('get_project_assets_count',   'projects/{id}/assets/count/')
     config.add_route('get_project_shots',          'projects/{id}/shots/')
+    config.add_route('get_project_shots_count',    'projects/{id}/shots/count/')
     config.add_route('get_project_sequences',      'projects/{id}/sequences/')
+    config.add_route('get_project_sequences_count', 'projects/{id}/sequences/count/')
     config.add_route('get_project_references',     'projects/{id}/references/')  # json
     config.add_route('get_project_references_count', 'projects/{id}/references/count/')  # json
     config.add_route('get_project_tickets',        'projects/{id}/tickets/')  # json
+    config.add_route('get_project_tickets_count',  'projects/{id}/tickets/count/')  # json
 
     config.add_route('get_project_tasks_today',    'projects/{id}/tasks/{action}/today/')  # json
     config.add_route('get_project_tasks_in_date',  'projects/{id}/tasks/{action}/{date}/')  # json

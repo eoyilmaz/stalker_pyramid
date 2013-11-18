@@ -88,6 +88,31 @@ def update_asset(request):
 
 
 @view_config(
+    route_name='get_entity_assets_count',
+    renderer='json',
+    permission='List_Asset'
+)
+@view_config(
+    route_name='get_project_assets_count',
+    renderer='json',
+    permission='List_Asset'
+)
+def get_assets_count(request):
+    """returns the count of assets in a project
+    """
+    project_id = request.matchdict.get('id', -1)
+
+    sql_query = """select count(1)
+    from "Assets"
+    join "Tasks" on "Assets".id = "Tasks".id
+    where "Tasks".project_id = %s
+    """ % project_id
+
+    result = DBSession.connection().execute(sql_query)
+    return result.fetchone()[0]
+
+
+@view_config(
     route_name='get_entity_assets',
     renderer='json',
     permission='List_Asset'
