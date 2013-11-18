@@ -167,6 +167,8 @@
                         }
 
                         var oTable1 = $('#' + tableId).dataTable();
+                        // sort asc to completed column
+                        oTable1.fnSort([[2, 'desc']]);
 
                     });
                     $('#' + tableId).show();
