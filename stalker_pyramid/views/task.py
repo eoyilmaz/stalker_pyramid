@@ -576,7 +576,10 @@ def review_task(request):
         if send_email:
             # send email to resources of the task
             mailer = get_mailer(request)
-            recipients = task.resources
+            recipients = []
+            for resource in task.resources:
+                recipients.append(resource.email)
+
             message = Message(
                 subject='Task Reviewed: Your task has been approved!',
                 sender=dummy_email_address,
@@ -1381,8 +1384,10 @@ def request_review(request):
     # get the project that the ticket belongs to
     project = task.project
 
-    user_link = '<a href="/users/%s/view">%s</a>' % (logged_in_user.id,
-                                                     logged_in_user.name)
+    user_link = '<a href="%(url)s">%(name)s</a>' % {
+        'url': request.route_url('view_user', id=logged_in_user.id),
+        'name': logged_in_user.name
+    }
     task_parent_names = "|".join(map(lambda x: x.name, task.parents))
 
     task_name_as_text = "%(name)s (%(entity_type)s) - (%(parents)s)" % {
@@ -1391,10 +1396,10 @@ def request_review(request):
         "parents": task_parent_names
     }
     task_link = \
-        '<a href="/tasks/%(task_id)s/view">%(task_name)s ' \
+        '<a href="%(url)s">%(name)s ' \
         '(%(task_entity_type)s) - (%(task_parent_names)s)</a>' % {
-            "task_id": task.id,
-            "task_name": task.name,
+            "url": request.route_url('view_task', id=task.id),
+            "name": task.name,
             "task_entity_type": task.entity_type,
             "task_parent_names": task_parent_names
         }

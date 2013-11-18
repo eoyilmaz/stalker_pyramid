@@ -40,6 +40,7 @@ Stalker Pyramid Changes
   responsible of a task.
 * **New:** ``stalker_pyramid.views.task.review_task()`` will now send emails if
   the task is approved.
+* **New:** Added "Request Review" button to task view.
 
 0.1.1
 =====
