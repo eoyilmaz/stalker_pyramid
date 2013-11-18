@@ -89,26 +89,20 @@
                 var tree_link_template = doT.template($('#tmpl_sidebar_tree_link').html());
                 var data_counts = data.length;
                 if (data_counts > 0) {
-
                     user_sidebar_list.append(tree_link_template({
                         'title': treeItemType + 's',
                         'icon': get_icon(treeItemType.toLowerCase())
                     }));
-
                 }
                 var item_sublink = $('#' + treeItemType + 's_sublink');
                 var tree_sublink_template = doT.template($('#tmpl_sidebar_tree_sublink').html());
 
-
                 for (var i = 0; i < data_counts; i++) {
-
-                    data[i].link = '/' + treeItemType.toLowerCase() + 's/' + data[i].id + '/view'
-
+                    data[i].link = '/' + treeItemType.toLowerCase() + 's/' + data[i].id + '/view';
                     item_sublink.append(tree_sublink_template(data[i]))
-
                 }
             });
-        }
+        };
 
         var menu_of = function (title, state, address, icon, count) {
             var user_sidebar_list = $('#user_sidebar_list');
@@ -117,7 +111,7 @@
             var istate = '';
 
             {% if request.current_route_path() == request.route_path('list_entity_tickets', id=user.id) %}
-                istate = 'active'
+                istate = 'active';
             {% endif %}
 
             user_sidebar_list.append(link_template({
@@ -127,40 +121,37 @@
                 'icon': icon,
                 'count': count
             }));
-        }
-
-
+        };
 
         menu_of('Dashboard',
                 "{%- if request.current_route_path() == request.route_path('view_user', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
                 '{{ request.route_url('view_user', id=user.id) }}',
                 'icon-dashboard',
-                '')
+                '');
 
         menu_of('Tasks',
                 "{%- if request.current_route_path() == request.route_path('list_entity_tasks', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
                 '{{ request.route_url('list_entity_tasks', id=user.id) }}',
                 'icon-tasks',
-                '{{ user.tasks | count }}')
+                '{{ user.tasks | count }}');
 
         menu_of('Tickets',
                 "{%- if request.current_route_path() == request.route_path('list_entity_tickets', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
                 '{{ request.route_url('list_entity_tickets', id=user.id) }}',
                 'icon-ticket',
-                '{{ user.tickets | count }}')
+                '{{ user.open_tickets | count }}');
 
         menu_of('Vacations',
                 "{%- if request.current_route_path() == request.route_path('list_entity_vacations', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
                 '{{ request.route_url('list_entity_vacations', id=user.id) }}',
                 'icon-sun',
-                '{{ user.vacations | count }}')
+                '{{ user.vacations | count }}');
 
-        submenu_of('Project')
+        submenu_of('Project');
 
-        submenu_of('Department')
+        submenu_of('Department');
 
-        submenu_of('Group')
-
+        submenu_of('Group');
     })
 
 </script>
