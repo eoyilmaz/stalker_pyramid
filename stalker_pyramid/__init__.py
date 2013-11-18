@@ -217,6 +217,7 @@ def main(global_config, **settings):
     config.add_route('project_dialog',             'projects/{id}/{mode}/dialog')
 
     config.add_route('get_project_tasks',          'projects/{id}/tasks/')  # json
+    config.add_route('get_project_tasks_count',    'projects/{id}/tasks/count/')  # json
     config.add_route('get_project_lead',           'projects/{id}/lead/')  # json
 
     config.add_route('create_project',             'projects/create')

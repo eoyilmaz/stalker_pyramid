@@ -876,6 +876,25 @@ def get_gantt_task_children(request):
 
 
 @view_config(
+    route_name='get_project_tasks_count',
+    renderer='json'
+)
+def get_project_tasks_count(request):
+    """returns all the tasks in the database related to the given entity in
+    flat json format
+    """
+    project_id = request.matchdict.get('id', -1)
+
+    sql_query = """select
+        count(1)
+    from "Tasks"
+    where "Tasks".project_id = %s
+    """ % project_id
+
+    return DBSession.connection().execute(sql_query).fetchone()[0]
+
+
+@view_config(
     route_name='get_project_tasks',
     renderer='json'
 )

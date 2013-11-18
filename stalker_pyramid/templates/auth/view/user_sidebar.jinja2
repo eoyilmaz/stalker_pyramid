@@ -78,13 +78,9 @@
 
 
 <script>
-
-    $(document).ready(function () {
-
-
-        var submenu_of = function (treeItemType) {
-
-            $.getJSON('/entities/{{ user.id }}/' + treeItemType.toLowerCase() + 's/').then(function (data) {
+    var submenu_of = function (treeItemType) {
+        $.getJSON('/entities/{{ user.id }}/' + treeItemType.toLowerCase() + 's/').then(function (data) {
+            $(document).ready(function () {
                 var user_sidebar_list = $('#user_sidebar_list');
                 var tree_link_template = doT.template($('#tmpl_sidebar_tree_link').html());
                 var data_counts = data.length;
@@ -102,9 +98,11 @@
                     item_sublink.append(tree_sublink_template(data[i]))
                 }
             });
-        };
+        });
+    };
 
-        var menu_of = function (title, state, address, icon, count) {
+    var menu_of = function (title, state, address, icon, count) {
+        $(document).ready(function(){
             var user_sidebar_list = $('#user_sidebar_list');
             var link_template = doT.template($('#tmpl_sidebar_link').html());
 
@@ -121,38 +119,36 @@
                 'icon': icon,
                 'count': count
             }));
-        };
+        });
+    };
 
-        menu_of('Dashboard',
-                "{%- if request.current_route_path() == request.route_path('view_user', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
-                '{{ request.route_url('view_user', id=user.id) }}',
-                'icon-dashboard',
-                '');
+    menu_of('Dashboard',
+            "{%- if request.current_route_path() == request.route_path('view_user', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
+            '{{ request.route_url('view_user', id=user.id) }}',
+            'icon-dashboard',
+            '');
 
-        menu_of('Tasks',
-                "{%- if request.current_route_path() == request.route_path('list_entity_tasks', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
-                '{{ request.route_url('list_entity_tasks', id=user.id) }}',
-                'icon-tasks',
-                '{{ user.tasks | count }}');
+    menu_of('Tickets',
+            "{%- if request.current_route_path() == request.route_path('list_entity_tickets', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
+            '{{ request.route_url('list_entity_tickets', id=user.id) }}',
+            'icon-ticket',
+            '{{ user.open_tickets | count }}');
 
-        menu_of('Tickets',
-                "{%- if request.current_route_path() == request.route_path('list_entity_tickets', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
-                '{{ request.route_url('list_entity_tickets', id=user.id) }}',
-                'icon-ticket',
-                '{{ user.open_tickets | count }}');
+    menu_of('Tasks',
+            "{%- if request.current_route_path() == request.route_path('list_entity_tasks', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
+            '{{ request.route_url('list_entity_tasks', id=user.id) }}',
+            'icon-tasks',
+            '{{ user.tasks | count }}');
 
-        menu_of('Vacations',
-                "{%- if request.current_route_path() == request.route_path('list_entity_vacations', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
-                '{{ request.route_url('list_entity_vacations', id=user.id) }}',
-                'icon-sun',
-                '{{ user.vacations | count }}');
+    menu_of('Vacations',
+            "{%- if request.current_route_path() == request.route_path('list_entity_vacations', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
+            '{{ request.route_url('list_entity_vacations', id=user.id) }}',
+            'icon-sun',
+            '{{ user.vacations | count }}');
 
-        submenu_of('Project');
-
-        submenu_of('Department');
-
-        submenu_of('Group');
-    })
+    submenu_of('Project');
+    submenu_of('Department');
+    submenu_of('Group');
 
 </script>
 

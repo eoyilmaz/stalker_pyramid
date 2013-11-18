@@ -80,15 +80,11 @@ def create_status(request):
     # get parameters
     name = request.params.get('name')
     code = request.params.get('code')
-    bg_color = get_color_as_int(request, 'bg_color')
-    fg_color = get_color_as_int(request, 'fg_color')
 
     if name and code:
         new_status = Status(
             name=name,
             code=code,
-            fg_color=fg_color,
-            bg_color=bg_color,
             created_by=logged_in_user,
         )
         DBSession.add(new_status)
@@ -107,8 +103,6 @@ def update_status(request):
     # get parameters
     name = request.params.get('name')
     code = request.params.get('code')
-    bg_color = get_color_as_int(request, 'bg_color')
-    fg_color = get_color_as_int(request, 'fg_color')
 
     # just update the given Status
     st_id = request.matchdict.get('id', -1)
@@ -117,8 +111,6 @@ def update_status(request):
     if status and name and code:
         status.name = name
         status.code = code
-        status.fg_color = fg_color
-        status.bg_color = bg_color
         status.updated_by = logged_in_user
         status.date_updated = datetime.datetime.now()
         DBSession.add(status)
@@ -127,9 +119,7 @@ def update_status(request):
 
 
 # *******************
-#
 # Status List Dialogs
-#
 # *******************
 
 @view_config(

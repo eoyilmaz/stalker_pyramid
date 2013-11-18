@@ -52,25 +52,6 @@
     {% endif %}
 
 
-    {# Tasks #}
-    {% if request.current_route_path() == request.route_path('list_project_tasks', id=project.id) %}
-        <li class='active'>
-            <a>
-                <i class="icon-tasks"></i>
-                <span class="menu-text">Tasks</span>
-                <span class='badge badge-info'>{{ project.tasks | count }}</span>
-            </a>
-        </li>
-    {% else %}
-        <li>
-            <a href='{{ request.route_url('list_project_tasks', id=project.id) }}'>
-                <i class="icon-tasks"></i>
-                <span class="menu-text">Tasks</span>
-                <span class='badge badge-info'>{{ project.tasks | count }}</span>
-            </a>
-        </li>
-    {% endif %}
-
     {# Tickets #}
     {% if request.current_route_path() == request.route_path('list_project_tickets', id=project.id) %}
         <li class='active'>
@@ -86,6 +67,25 @@
                 <i class="icon-ticket"></i>
                 <span class="menu-text">Tickets</span>
                 <span class='badge badge-important'>{{ project.open_tickets | count }}</span>
+            </a>
+        </li>
+    {% endif %}
+
+    {# Tasks #}
+    {% if request.current_route_path() == request.route_path('list_project_tasks', id=project.id) %}
+        <li class='active'>
+            <a>
+                <i class="icon-tasks"></i>
+                <span class="menu-text">Tasks</span>
+                <span id='tasks_count' class='badge badge-important'></span>
+            </a>
+        </li>
+    {% else %}
+        <li>
+            <a href='{{ request.route_url('list_project_tasks', id=project.id) }}'>
+                <i class="icon-tasks"></i>
+                <span class="menu-text">Tasks</span>
+                <span id='tasks_count' class='badge badge-important'></span>
             </a>
         </li>
     {% endif %}
@@ -115,6 +115,7 @@
             <a>
                 <i class="icon-film"></i>
                 <span class="menu-text">Sequences</span>
+                <span id='sequences_count' class='badge badge-important'></span>
             </a>
         </li>
     {% else %}
@@ -122,6 +123,7 @@
             <a href='{{ request.route_url('list_project_sequences', id=project.id) }}'>
                 <i class="icon-film"></i>
                 <span class="menu-text">Sequences</span>
+                <span id='sequences_count' class='badge badge-important'></span>
             </a>
         </li>
     {% endif %}
@@ -132,6 +134,7 @@
             <a>
                 <i class="icon-camera"></i>
                 <span class="menu-text">Shots</span>
+                <span id='shots_count' class='badge badge-important'></span>
             </a>
         </li>
     {% else %}
@@ -139,6 +142,7 @@
             <a href='{{ request.route_url('list_project_shots', id=project.id) }}'>
                 <i class="icon-camera"></i>
                 <span class="menu-text">Shots</span>
+                <span id='shots_count' class='badge badge-important'></span>
             </a>
         </li>
     {% endif %}
@@ -185,14 +189,41 @@
 </ul>
 
 <script type="text/javascript">
-    $(function ( ){
-        $.getJSON('/entities/{{ entity.id }}/references/count/').then(function (data) {
-            $('#reference_count').text(data);
+    $.getJSON('/projects/{{ entity.id }}/tasks/count/').then(function (data) {
+        $(function(){
+            $('#tasks_count').text(data);
+        })
+    });
+</script>
+
+<script type="text/javascript">
+    $.getJSON('/projects/{{ entity.id }}/assets/count/').then(function (data) {
+        $(function(){
+            $('#assets_count').text(data);
+        })
+    });
+</script>
+
+<script type="text/javascript">
+    $.getJSON('/projects/{{ entity.id }}/sequences/count/').then(function (data) {
+        $(function () {
+            $('#sequences_count').text(data);
         });
     });
-    $(function () {
-        $.getJSON('/projects/{{ entity.id }}/assets/count/').then(function (data) {
-            $('#assets_count').text(data);
+</script>
+
+<script type="text/javascript">
+    $.getJSON('/projects/{{ entity.id }}/shots/count/').then(function (data) {
+        $(function () {
+            $('#shots_count').text(data);
+        });
+    });
+</script>
+
+<script type="text/javascript">
+    $.getJSON('/entities/{{ entity.id }}/references/count/').then(function (data) {
+        $(function (){
+            $('#reference_count').text(data);
         });
     });
 </script> 

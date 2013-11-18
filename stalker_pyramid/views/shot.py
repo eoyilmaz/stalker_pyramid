@@ -137,6 +137,28 @@ def update_shot(request):
 
 
 @view_config(
+    route_name='get_entity_shots_count',
+    renderer='json'
+)
+@view_config(
+    route_name='get_project_shots_count',
+    renderer='json'
+)
+def get_shots_count(request):
+    """returns the count of Shots in the given Project
+    """
+    project_id = request.matchdict.get('id', -1)
+
+    sql_query = """select
+        count(1)
+    from "Shots"
+        join "Tasks" on "Shots".id = "Tasks".id
+    where "Tasks".project_id = %s""" % project_id
+
+    return DBSession.connection().execute(sql_query).fetchone()[0]
+
+
+@view_config(
     route_name='get_entity_shots',
     renderer='json'
 )
@@ -164,8 +186,6 @@ def get_shots(request):
             'status': shot.status.name,
             'status_color': shot.status.html_class
             if shot.status.html_class else 'grey',
-            'status_bg_color': shot.status.bg_color,
-            'status_fg_color': shot.status.fg_color,
             'created_by_id': shot.created_by.id,
             'created_by_name': shot.created_by.name,
             'description': shot.description,

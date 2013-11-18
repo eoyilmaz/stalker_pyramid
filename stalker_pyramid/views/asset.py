@@ -104,12 +104,11 @@ def get_assets_count(request):
 
     sql_query = """select count(1)
     from "Assets"
-    join "Tasks" on "Assets".id = "Tasks".id
+        join "Tasks" on "Assets".id = "Tasks".id
     where "Tasks".project_id = %s
     """ % project_id
 
-    result = DBSession.connection().execute(sql_query)
-    return result.fetchone()[0]
+    return DBSession.connection().execute(sql_query).fetchone()[0]
 
 
 @view_config(

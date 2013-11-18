@@ -41,6 +41,9 @@ Stalker Pyramid Changes
 * **New:** ``stalker_pyramid.views.task.review_task()`` will now send emails if
   the task is approved.
 * **New:** Added "Request Review" button to task view.
+* **Update:** Optimized the load times of the project_sidebar and user_sidebar
+  menus by both using raw sql queries and changing the query and dom element
+  modification orders in javascript.
 
 0.1.1
 =====
