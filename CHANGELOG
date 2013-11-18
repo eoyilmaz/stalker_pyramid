@@ -5,7 +5,7 @@ Stalker Pyramid Changes
 0.1.2
 =====
 
-* **Update:** Upgraded to `stalker v0.2.3.1`.
+* **Update:** Upgraded to `stalker v0.2.3.2`.
 * **Update:** Separated the create/update/review dialog routes for Task, Asset,
   Shot and Sequences.
 * **New:** Added utc_to_local() and local_to_utc() functions to
