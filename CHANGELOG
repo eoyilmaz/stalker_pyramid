@@ -34,6 +34,10 @@ Stalker Pyramid Changes
 * **New:** GanttChart now displays rows in status color.
 * **New:** Added ``stalker_pyramid.views.asset.get_assets_count()`` to easily
   get the asset counts.
+* **New:** Parent task statuses are now updated when a review is made or a time
+  log has been entered to a child task.
+* **New:** Review request only can be made by one of the resources or by the
+  responsible of a task.
 
 0.1.1
 =====

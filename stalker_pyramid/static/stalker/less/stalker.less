@@ -123,7 +123,9 @@ tr {
     }
 }
 
-
+// *********************************
+// Statuses
+// *********************************
 .pln { // planning
     background-color: @grey;
     color: white;
@@ -169,6 +171,33 @@ tr {
     color: white;
     a {
         color: white;
+    }
+}
+
+@dgrid-focus-color: #114;
+.dgrid-focus, .dgrid-selected {
+    .pln {
+        background-color: @grey + @dgrid-focus-color;
+    }
+
+    .new {
+        background-color: @red2 + @dgrid-focus-color;
+    }
+
+    .wip {
+        background-color: @orange + @dgrid-focus-color;
+    }
+
+    .prev {
+        background-color: @light-blue + @dgrid-focus-color;
+    }
+
+    .hrev {
+        background-color: @purple + @dgrid-focus-color;
+    }
+
+    .cmpl {
+        background-color: @green + @dgrid-focus-color;
     }
 }
 

@@ -93,7 +93,7 @@
                                             >
                                         <i class="icon-edit"></i> Update
                                     </button>
-                                    {% if entity.responsible == logged_in_user and entity.status.code == 'PREV' %}
+                                    {% if logged_in_user == entity.responsible and entity.status.code == 'PREV' %}
                                         <button id='task_review_button'
                                                 class='btn btn-mini btn-info'
                                                 data-target="#dialog_template"

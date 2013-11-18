@@ -113,6 +113,30 @@ tr .odd > td .ticket_BLOCKER {
 .cmpl a {
   color: white;
 }
+.dgrid-focus .pln,
+.dgrid-selected .pln {
+  background-color: #bccbff;
+}
+.dgrid-focus .new,
+.dgrid-selected .new {
+  background-color: #e26c8b;
+}
+.dgrid-focus .wip,
+.dgrid-selected .wip {
+  background-color: #ffc896;
+}
+.dgrid-focus .prev,
+.dgrid-selected .prev {
+  background-color: #80c4ff;
+}
+.dgrid-focus .hrev,
+.dgrid-selected .hrev {
+  background-color: #804dff;
+}
+.dgrid-focus .cmpl,
+.dgrid-selected .cmpl {
+  background-color: #93c0b3;
+}
 .label-red {
   background-color: #d53f40 !important;
 }

@@ -333,6 +333,7 @@ class TaskViewTestCase(unittest2.TestCase):
                 'schedule_timing': 10,
                 'schedule_unit': 'd',
                 'start': milliseconds_since_epoch(self.test_task1.start),
+                'status': 'new',
                 'total_logged_seconds': 0,
                 'type': 'Task',
             },
@@ -361,6 +362,7 @@ class TaskViewTestCase(unittest2.TestCase):
                 'schedule_seconds': 651600,
                 'schedule_timing': 10,
                 'start': milliseconds_since_epoch(self.test_task2.start),
+                'status': 'new',
                 'total_logged_seconds': 0,
                 'type': 'Task',
             },
@@ -389,6 +391,7 @@ class TaskViewTestCase(unittest2.TestCase):
                 'schedule_timing': 10,
                 'schedule_unit': 'd',
                 'start': milliseconds_since_epoch(self.test_task3.start),
+                'status': 'new',
                 'type': 'Task',
             },
             {
@@ -413,6 +416,7 @@ class TaskViewTestCase(unittest2.TestCase):
                 'schedule_timing': 10,
                 'schedule_unit': 'd',
                 'start': milliseconds_since_epoch(self.test_task4.start),
+                'status': 'new',
                 'total_logged_seconds': 0,
                 'type': 'Task',
             },
@@ -440,6 +444,7 @@ class TaskViewTestCase(unittest2.TestCase):
                 'schedule_timing': 10,
                 'schedule_unit': 'd',
                 'start': milliseconds_since_epoch(self.test_task5.start),
+                'status': 'new',
                 'total_logged_seconds': 0,
                 'type': 'Task',
             },
@@ -465,6 +470,7 @@ class TaskViewTestCase(unittest2.TestCase):
                 'schedule_timing': 10,
                 'schedule_unit': 'd',
                 'start': milliseconds_since_epoch(self.test_task6.start),
+                'status': 'new',
                 'type': 'Task',
                 'total_logged_seconds': 0,
             },
@@ -490,6 +496,7 @@ class TaskViewTestCase(unittest2.TestCase):
                 'schedule_timing': 10,
                 'schedule_unit': 'd',
                 'start': milliseconds_since_epoch(self.test_task7.start),
+                'status': 'new',
                 'total_logged_seconds': 0,
                 'type': 'Task',
             },
@@ -515,6 +522,7 @@ class TaskViewTestCase(unittest2.TestCase):
                 'schedule_timing': 10,
                 'schedule_unit': 'd',
                 'start': milliseconds_since_epoch(self.test_task8.start),
+                'status': 'new',
                 'total_logged_seconds': 0,
                 'type': 'Task',
             },
@@ -540,6 +548,7 @@ class TaskViewTestCase(unittest2.TestCase):
                 'schedule_timing': 10,
                 'schedule_unit': 'd',
                 'start': milliseconds_since_epoch(self.test_task9.start),
+                'status': 'new',
                 'total_logged_seconds': 0,
                 'type': 'Task',
             },
@@ -565,6 +574,7 @@ class TaskViewTestCase(unittest2.TestCase):
                 'schedule_timing': 1,
                 'schedule_unit': 'h',
                 'start': milliseconds_since_epoch(self.test_asset1.start),
+                'status': 'new',
                 'total_logged_seconds': 0,
                 'type': 'Asset',
             }
@@ -913,8 +923,9 @@ class TaskViewTestCase(unittest2.TestCase):
         self.assertEqual(response.body, 'Can not request review for a '
                                         'container task')
 
-    def test_request_review_is_working_properly(self):
-        """testing if the request_review function is working properly
+    def test_request_review_should_not_work_for_users_who_are_not_a_resource_nor_responsible_of_the_task(self):
+        """testing if request_review() will not work for users who are not a
+        resource nor the responsible of the task
         """
         # create a time log before asking review
         time_log = TimeLog(
@@ -937,6 +948,41 @@ class TaskViewTestCase(unittest2.TestCase):
         obj = m.replace("stalker_pyramid.views.auth.get_logged_in_user")
         obj(request)
         m.result(admin)
+        m.replay()
+
+        # also patch route_url of request
+        request.route_url = lambda x, id: 'localhost:6453/tasks/23/view'
+
+        response = task.request_review(request)
+        self.assertEqual(response.status_int, 500)
+        self.assertEqual(response.body,
+                         'You are not one of the resources nor the '
+                         'responsible of this task, so you can not request a '
+                         'review for this task')
+
+    def test_request_review_is_working_properly(self):
+        """testing if the request_review function is working properly
+        """
+        # create a time log before asking review
+        time_log = TimeLog(
+            resource=self.test_task4.resources[0],
+            task=self.test_task4,
+            start=datetime.datetime(2013, 6, 20, 10, 0),
+            end=datetime.datetime(2013, 6, 20, 19, 0)
+        )
+        DBSession.add(time_log)
+        self.test_task4.status = self.status_wip
+
+        # request review for self.test_task4
+        request = testing.DummyRequest()
+        request.matchdict['id'] = self.test_task4.id
+        request.params['send_email'] = 0
+
+        # patch get_logged_in_user
+        m = mocker.Mocker()
+        obj = m.replace("stalker_pyramid.views.auth.get_logged_in_user")
+        obj(request)
+        m.result(self.test_task4.resources[0])
         m.replay()
 
         # also patch route_url of request
@@ -982,6 +1028,7 @@ class TaskViewTestCase(unittest2.TestCase):
         request.matchdict['id'] = self.test_task4.id
         request.params['send_email'] = 0
         request.params['schedule_unit'] = 'h'
+        request.params['schedule_model'] = 'effort'
 
         # patch get_logged_in_user
         admin = User.query.filter(User.login == 'admin').first()
@@ -1006,6 +1053,7 @@ class TaskViewTestCase(unittest2.TestCase):
         request.params['send_email'] = 0
         request.params['schedule_unit'] = 'h'
         request.params['schedule_timing'] = 'this is not an integer or float'
+        request.params['schedule_model'] = 'effort'
 
         # patch get_logged_in_user
         admin = User.query.filter(User.login == 'admin').first()
@@ -1030,6 +1078,7 @@ class TaskViewTestCase(unittest2.TestCase):
         request.matchdict['id'] = self.test_task4.id
         request.params['send_email'] = 0
         request.params['schedule_timing'] = 1.0
+        request.params['schedule_model'] = 'effort'
 
         # patch get_logged_in_user
         admin = User.query.filter(User.login == 'admin').first()
@@ -1054,6 +1103,7 @@ class TaskViewTestCase(unittest2.TestCase):
         request.params['send_email'] = 0
         request.params['schedule_timing'] = 1.0
         request.params['schedule_unit'] = 'min'
+        request.params['schedule_model'] = 'effort'
 
         # patch get_logged_in_user
         admin = User.query.filter(User.login == 'admin').first()
@@ -1080,13 +1130,13 @@ class TaskViewTestCase(unittest2.TestCase):
         request.params['send_email'] = 0
         request.params['schedule_timing'] = 5
         request.params['schedule_unit'] = 'h'
+        request.params['schedule_model'] = 'effort'
 
         # patch get_logged_in_user
-        admin = User.query.filter(User.login == 'admin').first()
         m = mocker.Mocker()
         obj = m.replace("stalker_pyramid.views.auth.get_logged_in_user")
         obj(request)
-        m.result(admin)
+        m.result(self.test_task4.resources[0])
         m.replay()
 
         response = task.request_revision(request)
@@ -1108,6 +1158,7 @@ class TaskViewTestCase(unittest2.TestCase):
         request.params['send_email'] = 0
         request.params['schedule_timing'] = 5
         request.params['schedule_unit'] = 'h'
+        request.params['schedule_model'] = 'effort'
 
         # patch get_logged_in_user
         admin = User.query.filter(User.login == 'admin').first()
@@ -1136,13 +1187,13 @@ class TaskViewTestCase(unittest2.TestCase):
         request.params['send_email'] = 0
         request.params['schedule_timing'] = 5
         request.params['schedule_unit'] = 'h'
+        request.params['schedule_model'] = 'effort'
 
         # patch get_logged_in_user
-        admin = User.query.filter(User.login == 'admin').first()
         m = mocker.Mocker()
         obj = m.replace("stalker_pyramid.views.auth.get_logged_in_user")
         obj(request)
-        m.result(admin)
+        m.result(self.test_task4.resources[0])
         m.replay()
 
         response = task.request_revision(request)
@@ -1164,13 +1215,13 @@ class TaskViewTestCase(unittest2.TestCase):
         request.params['send_email'] = 0
         request.params['schedule_timing'] = 5
         request.params['schedule_unit'] = 'h'
+        request.params['schedule_model'] = 'effort'
 
         # patch get_logged_in_user
-        admin = User.query.filter(User.login == 'admin').first()
         m = mocker.Mocker()
         obj = m.replace("stalker_pyramid.views.auth.get_logged_in_user")
         obj(request)
-        m.result(admin)
+        m.result(self.test_task4.resources[0])
         m.replay()
 
         response = task.request_revision(request)
@@ -1184,8 +1235,6 @@ class TaskViewTestCase(unittest2.TestCase):
     def test_request_revision_is_working_properly_for_tasks_with_status_pending_review(self):
         """testing if the request_revision function is working properly
         """
-        admin = User.query.filter(User.login == 'admin').first()
-
         # create a time log before asking review
         time_log = TimeLog(
             resource=self.test_task4.resources[0],
@@ -1202,18 +1251,20 @@ class TaskViewTestCase(unittest2.TestCase):
         request.params['send_email'] = 0
         request.params['schedule_timing'] = 5
         request.params['schedule_unit'] = 'h'
+        request.params['schedule_model'] = 'effort'
 
         # patch get_logged_in_user
         m = mocker.Mocker()
         obj = m.replace("stalker_pyramid.views.auth.get_logged_in_user")
         obj(request)
-        m.result(admin)
+        m.result(self.test_task4.resources[0])
         m.replay()
 
         # also patch route_url of request
         request.route_url = lambda x, id: 'localhost:6453/tasks/23/view'
 
         response = task.request_revision(request)
+        logger.debug(response.body)
         self.assertEqual(response.status_int, 200)
 
         # check if the status of the original task is set to Has Revision
