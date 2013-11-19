@@ -219,12 +219,12 @@ define([
                                     if (object.hasChildren) {
                                         template = templates.parentTaskEditRow;
                                         template_var.contextMenuClass = 'parentTaskEditRow';
-                                    } else {
-                                        template_var.responsible = {
-                                            id: object.responsible.id,
-                                            name: object.responsible.name
-                                        };
-                                    }
+                                    }// else {
+//                                        template_var.responsible = {
+//                                            id: object.responsible.id,
+//                                            name: object.responsible.name
+//                                        };
+                                    //}
                                 }
 
                                 template_var.hasChildren = object.hasChildren;
