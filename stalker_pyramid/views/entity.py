@@ -487,7 +487,7 @@ def get_entity_events(request):
             if today < task.end:
                 events.append({
                     'id': task.id,
-                    'entity_type': task.plural_class_name.lower(),
+                    'entity_type': 'tasks',
                     'title': '%s (%s)' % (
                         task.name,
                         ' | '.join([parent.name for parent in task.parents])),

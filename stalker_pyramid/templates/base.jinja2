@@ -172,6 +172,143 @@
 {% endraw %}
 
 
+    {% raw %}
+    <script id="tmpl_sidebar_media" type="text/x-dot-template">
+        <li>
+            <div class="media">
+                <a class="pull-left"
+                   href="#"
+                   style="text-align: center; overflow: hidden; width: 100px">
+                    <img id="sidebar_avatar"
+                         style="height: 100px; width: auto; max-width: none;
+                      position: relative; left: 100%; margin-left: -200%"
+                         class="img-thumbnail"
+                         src={{=it.thumbnail_full_path}}>
+                </a>
+
+                <div class="media-body">
+                    <h5 class="media-heading">{{=it.name}}
+                        <small>{{=it.code}}</small>
+                    </h5>
+                    <a href={{=it.update_link}}
+                       class="menu-text">
+                        <i class="icon-edit"></i>
+                        Update
+                    </a>
+                </div>
+            </div>
+        </li>
+    </script>
+    {% endraw %}
+
+    {% raw %}
+    <script id="tmpl_sidebar_tree_link" type="text/x-dot-template">
+        <li>
+            <a href="#" class="dropdown-toggle">
+                <i class={{=it.icon}}></i>
+                <span class="menu-text">{{=it.title}} </span>
+
+                <b class="arrow icon-angle-down"></b>
+            </a>
+
+            <ul id='{{=it.title}}_sublink' class="submenu">
+
+            </ul>
+        </li>
+
+    </script>
+    {% endraw %}
+
+    {% raw %}
+    <script id="tmpl_sidebar_tree_sublink" type="text/x-dot-template">
+        <li>
+            <a href={{=it.link}}>
+                <i class="icon-double-angle-right"></i>
+                {{=it.name }}
+            </a>
+        </li>
+
+    </script>
+    {% endraw %}
+
+    {% raw %}
+    <script id="tmpl_sidebar_link" type="text/x-dot-template">
+        <li class={{=it.state}}>
+            <a href={{=it.link}}>
+                <i class={{=it.icon}}></i>
+                <span class="menu-text">{{=it.title}}</span>
+                <span class="badge badge-info">{{=it.count}}</span>
+            </a>
+        </li>
+    </script>
+    {% endraw %}
+
+    <script>
+        var page_of = function (name, code, thumbnail_full_path, update_link) {
+            var sidebar_list = $('#sidebar_list');
+            var media_template = doT.template($('#tmpl_sidebar_media').html());
+
+
+            sidebar_list.append(media_template({
+                'name': name,
+                'thumbnail_full_path': thumbnail_full_path,
+                'code': code,
+                'update_link': update_link
+            }));
+        }
+    </script>
+    <script>
+        var menu_of = function (title, state, address, icon, count) {
+            var sidebar_list = $('#sidebar_list');
+            var link_template = doT.template($('#tmpl_sidebar_link').html());
+
+
+            sidebar_list.append(link_template({
+                'title': title,
+                'state': state,
+                'link': address,
+                'icon': icon,
+                'count': count
+            }));
+        }
+    </script>
+    <script>
+        var submenu_of = function (id, treeItemType) {
+
+            $.getJSON('/entities/' + id + '/' + treeItemType.toLowerCase() + 's/').then(function (data) {
+
+                $(document).ready(function () {
+
+                    var sidebar_list = $('#sidebar_list');
+                    var tree_link_template = doT.template($('#tmpl_sidebar_tree_link').html());
+                    var data_counts = data.length;
+
+                    if (data_counts > 0) {
+
+                        sidebar_list.append(tree_link_template({
+                            'title': treeItemType + 's',
+                            'icon': get_icon(treeItemType.toLowerCase())
+                        }));
+
+                    }
+
+                    var item_sublink = $('#' + treeItemType + 's_sublink');
+                    var tree_sublink_template = doT.template($('#tmpl_sidebar_tree_sublink').html());
+
+
+                    for (var i = 0; i < data_counts; i++) {
+
+                        data[i].link = '/' + treeItemType.toLowerCase() + 's/' + data[i].id + '/view'
+
+                        item_sublink.append(tree_sublink_template(data[i]))
+
+                    }
+                });
+            });
+        }
+    </script>
+
+
 {# CONTENT #}
 {% block content %}
 
@@ -404,136 +541,6 @@
         })
     </script>
 
-    {% raw %}
-    <script id="tmpl_sidebar_media" type="text/x-dot-template">
-        <li>
-            <div class="media">
-                <a class="pull-left"
-                   href="#"
-                   style="text-align: center; overflow: hidden; width: 100px">
-                    <img id="sidebar_avatar"
-                         style="height: 100px; width: auto; max-width: none;
-                      position: relative; left: 100%; margin-left: -200%"
-                         class="img-thumbnail"
-                         src={{=it.thumbnail_full_path}}>
-                </a>
-
-                <div class="media-body">
-                    <h5 class="media-heading">{{=it.name}}
-                        <small>{{=it.code}}</small>
-                    </h5>
-                    <a href={{=it.update_link}}
-                       class="menu-text">
-                        <i class="icon-edit"></i>
-                        Update
-                    </a>
-                </div>
-            </div>
-        </li>
-    </script>
-    {% endraw %}
-
-
-
-    {% raw %}
-    <script id="tmpl_sidebar_tree_link" type="text/x-dot-template">
-        <li>
-            <a href="#" class="dropdown-toggle">
-                <i class={{=it.icon}}></i>
-                <span class="menu-text">{{=it.title}} </span>
-
-                <b class="arrow icon-angle-down"></b>
-            </a>
-
-            <ul id='{{=it.title}}_sublink' class="submenu">
-
-            </ul>
-        </li>
-
-    </script>
-    {% endraw %}
-
-    {% raw %}
-    <script id="tmpl_sidebar_tree_sublink" type="text/x-dot-template">
-        <li>
-            <a href={{=it.link}}>
-                <i class="icon-double-angle-right"></i>
-                {{=it.name }}
-            </a>
-        </li>
-
-    </script>
-    {% endraw %}
-
-    {% raw %}
-    <script id="tmpl_sidebar_link" type="text/x-dot-template">
-        <li class={{=it.state}}>
-            <a href={{=it.link}}>
-                <i class={{=it.icon}}></i>
-                <span class="menu-text">{{=it.title}}</span>
-                <span class="badge badge-success">{{=it.count}}</span>
-            </a>
-        </li>
-    </script>
-    {% endraw %}
-    <script>
-        var page_of = function (name, code, thumbnail_full_path,  update_link) {
-            var sidebar_list = $('#sidebar_list');
-            var media_template = doT.template($('#tmpl_sidebar_media').html());
-
-
-            sidebar_list.append(media_template({
-                'name': name,
-                'thumbnail_full_path': thumbnail_full_path,
-                'code': code,
-                'update_link': update_link
-            }));
-        }
-    </script>
-    <script>
-        var menu_of = function (title, state, address, icon, count) {
-            var sidebar_list = $('#sidebar_list');
-            var link_template = doT.template($('#tmpl_sidebar_link').html());
-
-
-            sidebar_list.append(link_template({
-                'title': title,
-                'state': state,
-                'link': address,
-                'icon': icon,
-                'count': count
-            }));
-        }
-    </script>
-    <script>
-        var submenu_of = function (id, treeItemType) {
-
-            $.getJSON('/entities/' + id + '/' + treeItemType.toLowerCase() + 's/').then(function (data) {
-                var sidebar_list = $('#sidebar_list');
-                var tree_link_template = doT.template($('#tmpl_sidebar_tree_link').html());
-                var data_counts = data.length;
-                if (data_counts > 0) {
-
-                    sidebar_list.append(tree_link_template({
-                        'title': treeItemType + 's',
-                        'icon': get_icon(treeItemType.toLowerCase())
-                    }));
-
-                }
-                var item_sublink = $('#' + treeItemType + 's_sublink');
-                var tree_sublink_template = doT.template($('#tmpl_sidebar_tree_sublink').html());
-
-
-                for (var i = 0; i < data_counts; i++) {
-
-                    data[i].link = '/' + treeItemType.toLowerCase() + 's/' + data[i].id + '/view'
-
-                    item_sublink.append(tree_sublink_template(data[i]))
-
-                }
-            });
-        }
-    </script>
 
 
 {% endblock scripts %}

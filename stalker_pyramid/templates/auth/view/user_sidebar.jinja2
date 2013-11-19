@@ -11,36 +11,38 @@
 
 <script>
 
-    $(document).ready(function () {
+        $(document).ready(function () {
 
-        page_of('{{ user.name }}',
-                '{{ user.login }}',
-                "{%- if user.thumbnail -%}/{{ user.thumbnail.full_path }}{%- else -%}{{ request.static_url(" stalker_pyramid:static/stalker/images/Placeholder_0.png")}}{%- endif -%}",
-                '/users/{{ user.id }}/update/dialog')
+            page_of('{{ user.name }}',
+                    '{{ user.login }}',
+                    "{%- if user.thumbnail -%}/{{ user.thumbnail.full_path }}{%- else -%}{{ request.static_url(" stalker_pyramid:static/stalker/images/Placeholder_0.png")}}{%- endif -%}",
+                    '/users/{{ user.id }}/update/dialog')
 
-        menu_of('Dashboard',
-                "{%- if request.current_route_path() == request.route_path('view_user', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
-                '{{ request.route_url('view_user', id=user.id) }}',
-                'icon-dashboard',
-                '')
+            menu_of('Dashboard',
+                    "{%- if request.current_route_path() == request.route_path('view_user', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
+                    '{{ request.route_url('view_user', id=user.id) }}',
+                    'icon-dashboard',
+                    '')
 
-        menu_of('Tasks',
-                "{%- if request.current_route_path() == request.route_path('list_entity_tasks', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
-                '{{ request.route_url('list_entity_tasks', id=user.id) }}',
-                'icon-tasks',
-                '{{ user.tasks | count }}')
+            menu_of('Tasks',
+                    "{%- if request.current_route_path() == request.route_path('list_entity_tasks', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
+                    '{{ request.route_url('list_entity_tasks', id=user.id) }}',
+                    'icon-tasks',
+                    '{{ user.tasks | count }}')
 
-        menu_of('Tickets',
-                "{%- if request.current_route_path() == request.route_path('list_entity_tickets', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
-                '{{ request.route_url('list_entity_tickets', id=user.id) }}',
-                'icon-ticket',
-                '{{ user.tickets | count }}')
+            menu_of('Tickets',
+                    "{%- if request.current_route_path() == request.route_path('list_entity_tickets', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
+                    '{{ request.route_url('list_entity_tickets', id=user.id) }}',
+                    'icon-ticket',
+                    '{{ user.tickets | count }}')
 
-        menu_of('Vacations',
-                "{%- if request.current_route_path() == request.route_path('list_entity_vacations', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
-                '{{ request.route_url('list_entity_vacations', id=user.id) }}',
-                'icon-sun',
-                '{{ user.vacations | count }}')
+            menu_of('Vacations',
+                    "{%- if request.current_route_path() == request.route_path('list_entity_vacations', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
+                    '{{ request.route_url('list_entity_vacations', id=user.id) }}',
+                    'icon-sun',
+                    '{{ user.vacations | count }}')
+
+        })
 
         submenu_of('{{ user.id }}','Project')
 
@@ -48,7 +50,7 @@
 
         submenu_of('{{ user.id }}','Group')
 
-    })
+
 
 </script>
 
