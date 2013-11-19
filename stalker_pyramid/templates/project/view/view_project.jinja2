@@ -55,6 +55,7 @@
 
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.dataTables.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.dataTables.bootstrap.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/dataTable_num-html_sort.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.easy-pie-chart.min.js") }}'></script>
 
     {# ***************************************************************************************#}
@@ -166,6 +167,8 @@
                         }
 
                         var oTable1 = $('#' + tableId).dataTable();
+                        // sort asc to completed column
+                        oTable1.fnSort([[2, 'desc']]);
 
                     });
                     $('#' + tableId).show();

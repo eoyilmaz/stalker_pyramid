@@ -34,6 +34,7 @@ import transaction
 from stalker_pyramid.views import (get_logged_in_user,
                                    PermissionChecker, milliseconds_since_epoch,
                                    get_date, StdErrToHTMLConverter)
+from stalker_pyramid.views.task import update_task_statuses
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -161,7 +162,7 @@ def create_time_log(request):
 
             status_new = Status.query.filter(Status.code == "NEW").first()
             status_wip = Status.query.filter(Status.code == "WIP").first()
-            status_completed = \
+            status_cmpl = \
                 Status.query.filter(Status.code == "CMPL").first()
             status_has_revision = \
                 Status.query.filter(Status.code == "HREV").first()
@@ -178,7 +179,7 @@ def create_time_log(request):
 
             # check the dependent tasks has finished
             for dep_task in task.depends:
-                if dep_task.status not in [status_completed,
+                if dep_task.status not in [status_cmpl,
                                            status_has_revision]:
                     response = Response(
                         'Because one of the dependencies (Task: %s (%s)) has '
@@ -217,6 +218,8 @@ def create_time_log(request):
             return response
         else:
             DBSession.add(time_log)
+            # check parent task statuses
+            update_task_statuses(task.parent)
             request.session.flash(
                 'success:Time log for <strong>%s</strong> is saved for resource <strong>%s</strong>.' % (task.name,resource.name)
             )

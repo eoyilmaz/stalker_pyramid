@@ -85,16 +85,7 @@
                                                 : </b> {{ entity.updated_by.name }}
                                         </li>
                                     </ul>
-                                    <button id='task_update_button'
-                                            class='btn btn-mini btn-info'
-                                            data-target="#dialog_template"
-                                            data-toggle="modal"
-                                            data-keyboard="false"
-                                            href='{{ request.route_url("update_task_dialog", id=entity.id) }}'
-                                            >
-                                        <i class="icon-edit"></i> Update
-                                    </button>
-                                    {% if entity.responsible == logged_in_user and entity.status.code == 'PREV' %}
+                                    {% if logged_in_user == entity.responsible and entity.status.code == 'PREV' %}
                                         <button id='task_review_button'
                                                 class='btn btn-mini btn-info'
                                                 data-target="#dialog_template"
@@ -105,6 +96,21 @@
                                             <i class="icon-comment"></i> Review
                                         </button>
                                     {% endif %}
+                                    {% if (logged_in_user in entity.resources or logged_in_user == entity.responsible) and entity.status.code == 'WIP' and entity.is_leaf %}
+                                        <button id='task_request_review_button'
+                                            class='btn btn-mini btn-danger'>
+                                            <i class="icon-comment"></i> Request Review
+                                        </button>
+                                    {% endif %}
+                                    <button id='task_update_button'
+                                            class='btn btn-mini btn-info'
+                                            data-target="#dialog_template"
+                                            data-toggle="modal"
+                                            data-keyboard="false"
+                                            href='{{ request.route_url("update_task_dialog", id=entity.id) }}'
+                                            >
+                                        <i class="icon-edit"></i> Update
+                                    </button>
                                     
                                     <div class="space-12"></div>
                                     {% if entity.description %}
@@ -208,12 +214,12 @@
             {% set event_type='TimeLog' %}
         {% endif %}
     {% endif %}
-
+    
     {% include 'charts/chart_extrascripts.jinja2' %}
     {% include 'charts/pie_chart.jinja2' %}
     {% include 'components/tree.jinja2' %}
     {% include 'calendar/calendar.jinja2' %}
-
+    
     <script type="text/javascript">
         {# task reviews :
         
@@ -235,53 +241,85 @@
             });
         {% endif %}
     </script>
-
+    
     <script type="text/javascript">
         $(document).ready(function () {
             var percent_complete = parseFloat('{{ entity.percent_complete }}');
-
+    
             var content = [
                 ['COMPLETED', percent_complete],
                 ['UNCOMPLETED', 100 - percent_complete]
             ];
             var colors = ['#82af6f', '#bbb'];
-
+    
             drawPieChart('pie_chart', content, colors, 'nw')
         });
     </script>
+    
+        
     <script type="text/javascript">
+        $( function () {
+            $('#task_request_review_button').on('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
 
+                var entity_id = {{ entity.id }};
+        
+                bootbox.confirm(
+                    '<div><p>This will send the responsible of this task a ' +
+                    '<strong>review request</strong> and you will ' +
+                    '<strong>not</strong> be able to ' +
+                    '<strong>create any TimeLogs</strong> for this task ' +
+                    'after this point<br><br><strong>Are you sure?</strong></div>',
+                    function (result) {
+                        if (result) {
+                            // get the ids and send it to the server
+                            var url;
+                            url = '/tasks/' + entity_id + '/request_review';
+                            $.post(url).done(function(response){
+                                bootbox.alert(response);
+                            }).fail(function(jqXHR){
+                                bootbox.alert(jqXHR.responseText);
+                            });
+                        }
+                    }
+                )
+            });
+
+        });
     </script>
-{#    <script type="text/javascript">#}
-{#        $(document).ready(function () {#}
-{#            $.getJSON('/tasks/{{ entity.id }}/depends_of/').then(function (data) {#}
-{#                for (var i = 0; i < data.length; i++) {#}
-{##}
-{##}
-{#                }#}
-{##}
-{##}
-{#            });#}
-{#        });#}
-{#    </script>#}
-
+    
+    
+    {#<script type="text/javascript">#}
+    {#    $(document).ready(function () {#}
+    {#        $.getJSON('/tasks/{{ entity.id }}/depends_of/').then(function (data) {#}
+    {#            for (var i = 0; i < data.length; i++) {#}
+    {##}
+    {##}
+    {#            }#}
+    {##}
+    {##}
+    {#        });#}
+    {#    });#}
+    {#</script>#}
+    
     <script type="text/javascript">
         $(document).ready(function () {
             
             $.getJSON('/tasks/{{ entity.id }}/events/').then(function (data) {
                 var events = [];
                 var resources = new Object();
-
+    
                 for (var i = 0; i < data.length; i++) {
                     var start_date = new Date(parseInt(data[i].start));
                     var end_date = new Date(parseInt(data[i].end));
                     var title = data[i].title;
-
+    
                     if (data[i].entity_type == 'tasks') {
                         for (var k = 0; k < data[i].resources.length; k++) {
                             var prop_id = (data[i].resources[k].id).toString();
                             title += ' - ' + data[i].resources[k].name;
-
+    
                             if (!resources [prop_id]) {
                                 resources [prop_id] = {
                                     'name': '<span><a href="/users/' + data[i].resources[k].id + '/view">' + data[i].resources[k].name + '  </a></span>',
@@ -289,35 +327,35 @@
                                     'icon-class': 'blue'
                                 }
                             }
-
+    
                             if (!resources[prop_id]['additionalParameters']) {
                                 resources[prop_id]['additionalParameters'] = new Object();
                                 resources[prop_id]['additionalParameters']['children'] = new Object();
                             }
-
+    
                             var hours_to_complete = (data[i].schedule_seconds - data[i].total_logged_seconds) / 3600;
                             var hour_to_complete_str = '';
-
+    
                             if (hours_to_complete > 0) {
                                 hour_to_complete_str = '<span> ( ' + hours_to_complete + ' h needs to complete )</span>'
                             }
-
+    
                             var percent_complete_str = ' <span class="label label-yellow">' + data[i].status + '</span>'
-
+    
                             if (parseInt(data[i].percent_complete) == 100) {
                                 percent_complete_str = ' <span class="label label-success">Completed</span>'
                             }
-
+    
                             resources[prop_id]['additionalParameters']['children'][(data[i].id).toString()] = {name: '<span  class="pull-left"><a href="/tasks/' + data[i].id + '/view">' + data[i].title + '  </a></span>' + hour_to_complete_str + percent_complete_str, type: 'item'}
-
+    
                             $('#resources_box').show();
                         }
                     }
-
+    
                     if (data[i].resource_name) {
                         title = data[i].title + ' - ' + data[i].resource_name;
                     }
-
+    
                     var event = {
                         eId: data[i].id,
                         entity_type: data[i].entity_type,
@@ -329,32 +367,32 @@
                     };
                     events.push(event);
                 }
-
+    
                 drawCalendar('calendar', events);
                 drawTree('resource_tree', resources);
             });
         });
-
-     $(document).ready(function () {
+    
+        $(document).ready(function () {
             $.getJSON('/tasks/{{ entity.id }}/depends/').then(function (data) {
-
+            
                 var depends = new Object();
                 for (var i = 0; i < data.length; i++) {
-
+            
                     var task_id = (data[i].id).toString();
-
+            
                      var hours_to_complete = (data[i].schedule_seconds - data[i].total_logged_seconds) / 3600;
                             var hour_to_complete_str = '';
-
+            
                             if (hours_to_complete > 0) {
                                 hour_to_complete_str = '<span> ( ' + hours_to_complete + ' h needs to complete )</span>'
                             }
-
+            
                             var percent_complete_str = '';
                             if (parseInt(data[i].percent_complete) == 100) {
                                 percent_complete_str = '  <span class="label label-success">Completed</span>'
                             }
-
+            
                     if (!depends[task_id]) {
                         depends[task_id] = {
                             'name': '<span><a href="/tasks/' + data[i].id + '/view">' + data[i].name + '  </a></span>'+hour_to_complete_str+percent_complete_str,
@@ -362,16 +400,16 @@
                             'icon-class': 'blue'
                         }
                     }
-
+            
                     if (!depends[task_id]['additionalParameters']) {
                         depends[task_id]['additionalParameters'] = new Object();
                         depends[task_id]['additionalParameters']['children'] = new Object();
                     }
-
+            
                     for (var k = 0; k < data[i].resources.length; k++) {
                            depends[task_id]['additionalParameters']['children'][(data[i].resources[k].id).toString()] = {name: '<span  class="pull-left"><a href="/users/' + data[i].resources[k].id + '/view">' + data[i].resources[k].name + '  </a></span>', type: 'item'}
                     }
-
+            
                     console.log(depends[task_id])
                     $('#depends_box').show();
                 }
@@ -379,4 +417,5 @@
             });
         });
     </script>
+
 {% endblock extrascripts %}

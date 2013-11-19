@@ -5,7 +5,7 @@ Stalker Pyramid Changes
 0.1.2
 =====
 
-* **Update:** Upgraded to `stalker v0.2.3.1`.
+* **Update:** Upgraded to `stalker v0.2.3.2`.
 * **Update:** Separated the create/update/review dialog routes for Task, Asset,
   Shot and Sequences.
 * **New:** Added utc_to_local() and local_to_utc() functions to
@@ -31,6 +31,19 @@ Stalker Pyramid Changes
   ``stalker_pyramid.views.asset.get_asset()`` with pure sql queries which are
   over ~450x faster.
 * **New:** Added `stalker.less` file for the main `stalker.css` generation.
+* **New:** GanttChart now displays rows in status color.
+* **New:** Added ``stalker_pyramid.views.asset.get_assets_count()`` to easily
+  get the asset counts.
+* **New:** Parent task statuses are now updated when a review is made or a time
+  log has been entered to a child task.
+* **New:** Review request only can be made by one of the resources or by the
+  responsible of a task.
+* **New:** ``stalker_pyramid.views.task.review_task()`` will now send emails if
+  the task is approved.
+* **New:** Added "Request Review" button to task view.
+* **Update:** Optimized the load times of the project_sidebar and user_sidebar
+  menus by both using raw sql queries and changing the query and dom element
+  modification orders in javascript.
 
 0.1.1
 =====

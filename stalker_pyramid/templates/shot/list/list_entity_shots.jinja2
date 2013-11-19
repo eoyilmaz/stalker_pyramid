@@ -46,7 +46,7 @@
                            data-target="#dialog_template"
                            data-toggle="modal"
                            data-keyboard=false
-                           href='{{ request.route_url("shot_dialog", id=-1, mode='create') }}'>Create
+                           href='{{ request.route_url("create_shot_dialog", id=-1) }}'>Create
                         </a>
                     </button>
                 </div>
@@ -89,6 +89,7 @@
 {% block extrascripts %}
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.dataTables.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.dataTables.bootstrap.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/dataTable_num-html_sort.js") }}'></script>
 
 
     {% raw %}

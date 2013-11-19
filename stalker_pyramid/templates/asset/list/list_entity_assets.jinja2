@@ -89,6 +89,7 @@
 {% block extrascripts %}
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.dataTables.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.dataTables.bootstrap.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/dataTable_num-html_sort.js") }}'></script>
 
     {% raw %}
     <script id="tmpl_assetTypeLink" type="text/x-dot-template">
@@ -175,7 +176,7 @@
                     for (i = 0; i < data.length; i++) {
                         // fix dates
 
-                        console.log(data[i].name + ' : ' + data[i].percent_complete);
+{#                        console.log(data[i].name + ' : ' + data[i].percent_complete);#}
                         data[i].link = '/assets/' + data[i].id + '/view';
 
                         if (data[i].thumbnail_full_path == null) {

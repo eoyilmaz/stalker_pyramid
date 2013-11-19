@@ -464,7 +464,7 @@ $(function(){
             window.location.reload();
         }).fail(function(jqXHR) {
             submit_button.button('reset');
-            bootbox.alert(jqXHR.message);
+            bootbox.alert(jqXHR.responseText);
         });
     });
 

@@ -141,8 +141,7 @@ def get_sequences(request):
             'id': sequence.id,
             'name': sequence.name,
             'status': sequence.status.name,
-            'status_bg_color': sequence.status.bg_color,
-            'status_fg_color': sequence.status.fg_color,
+            'status_color': sequence.status.html_class,
             'user_id': sequence.created_by.id,
             'user_name': sequence.created_by.name,
             'thumbnail_full_path': sequence.thumbnail.full_path
@@ -150,6 +149,28 @@ def get_sequences(request):
         }
         for sequence in Sequence.query.all()
     ]
+
+
+@view_config(
+    route_name='get_project_sequences_count',
+    renderer='json'
+)
+@view_config(
+    route_name='get_entity_sequences_count',
+    renderer='json'
+)
+def get_project_sequences_count(request):
+    """returns the count of sequences in a project
+    """
+    project_id = request.matchdict.get('id', -1)
+
+    sql_query = """select
+        count(1)
+    from "Sequences"
+        join "Tasks" on "Sequences".id = "Tasks".id
+    where "Tasks".project_id = %s""" % project_id
+
+    return DBSession.connection().execute(sql_query).fetchone()[0]
 
 
 @view_config(
@@ -176,8 +197,6 @@ def get_project_sequences(request):
             'status': sequence.status.name,
             'status_color': sequence.status.html_class
             if sequence.status.html_class else 'grey',
-            'status_bg_color': sequence.status.bg_color,
-            'status_fg_color': sequence.status.fg_color,
             'created_by_id': sequence.created_by.id,
             'created_by_name': sequence.created_by.name,
             'description': sequence.description,

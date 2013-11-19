@@ -142,7 +142,8 @@
             e.stopPropagation();
             e.preventDefault();
 
-            // enable fields
+            // disable submit button
+            submit_button.button('loading');
 
             var task_form = $('#review_task_form');
             var form_data = task_form.serialize();
@@ -161,8 +162,10 @@
                 $('#dialog_template').modal('hide');
             }).fail(function(jqXHR){
                 task_form.attr('is_sending', false);
+
+                // reset submit button
+                submit_button.button('reset');
                 bootbox.alert(jqXHR.responseText);
-                // disable fields again
             });
         });
 

@@ -48,6 +48,100 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 
+def update_task_statuses(task):
+    """updates the task status according to its children statuses
+    """
+    if not task:
+        # None is given
+        return
+
+    if not task.is_container:
+        # do nothing
+        return
+
+    # first look to children statuses and if all of them are CMPL or HREV
+    # then set this tasks status to CMPL
+    # and update parents status
+
+    status_new = Status.query.filter(Status.code == 'NEW').first()
+    status_wip = Status.query.filter(Status.code == 'WIP').first()
+    status_cmpl = Status.query.filter(Status.code == 'CMPL').first()
+
+    # use pure sql
+    sql_query = """select
+        "Statuses".code,
+        count(1)
+    from "Tasks"
+    join "Statuses" on "Tasks".status_id = "Statuses".id
+    where "Tasks".parent_id = %s
+    group by "Statuses".code
+    """ % task.id
+
+    result = DBSession.connection().execute(sql_query)
+
+    status_codes = {
+        'NEW': 0,
+        'WIP': 0,
+        'PREV': 0,
+        'HREV': 0,
+        'CMPL': 0
+    }
+
+    # update statuses
+    for r in result.fetchall():
+        if r[1]:
+            status_codes[r[0]] = 1
+
+    # convert it to a binary number
+    binary_status = '%(NEW)s%(WIP)s%(PREV)s%(HREV)s%(CMPL)s' % status_codes
+
+    status_lut = {
+        '00000': status_new,  # this will not happen
+        '00001': status_cmpl,
+
+        '00010': status_cmpl,  # this one is interesting all tasks are hrev
+        '00011': status_cmpl,
+
+        '00100': status_wip,
+        '00101': status_wip,
+        '00110': status_wip,
+        '00111': status_wip,
+
+        '01000': status_wip,
+        '01001': status_wip,
+        '01010': status_wip,
+        '01011': status_wip,
+        '01100': status_wip,
+        '01101': status_wip,
+        '01110': status_wip,
+        '01111': status_wip,
+
+        '10000': status_new,
+        '10001': status_wip,
+        '10010': status_wip,
+        '10011': status_wip,
+        '10100': status_wip,
+        '10101': status_wip,
+        '10110': status_wip,
+        '10111': status_wip,
+        '11000': status_wip,
+        '11001': status_wip,
+        '11010': status_wip,
+        '11011': status_wip,
+        '11100': status_wip,
+        '11101': status_wip,
+        '11110': status_wip,
+        '11111': status_wip
+    }
+
+    task.status = status_lut[binary_status]
+    # go to parents
+    update_task_statuses(task.parent)
+    # commit the changes
+    #DBSession.commit()
+    # leave the commits to transaction.manager
+
+
 def duplicate_task(task):
     """Duplicates the given task without children.
 
@@ -450,6 +544,8 @@ def review_task(request):
     task_id = request.matchdict.get('id')
     task = Task.query.filter(Task.id == task_id).first()
 
+    send_email = request.params.get('send_email', 1)
+
     if not task:
         transaction.abort()
         return Response('There is no task with id: %s' % task_id, 500)
@@ -473,6 +569,31 @@ def review_task(request):
         except ValueError as e:
             transaction.abort()
             return Response(e.message, 500)
+
+        # update parent statuses
+        update_task_statuses(task.parent)
+
+        if send_email:
+            # send email to resources of the task
+            mailer = get_mailer(request)
+            recipients = []
+            for resource in task.resources:
+                recipients.append(resource.email)
+
+            message = Message(
+                subject='Task Reviewed: Your task has been approved!',
+                sender=dummy_email_address,
+                recipients=recipients,
+                body='%s has been approved' % task.name,
+                html='%(task_link)s has been approved' % {
+                    'task_link': '<a href="%s">%s</a>' % (
+                        request.route_url('view_task', id=task.id),
+                        task.name
+                    )
+                }
+            )
+            mailer.send(message)
+
     elif review == 'Request Revision':
         # so request a revision
         request_revision(request)
@@ -752,6 +873,25 @@ def get_gantt_task_children(request):
     if isinstance(entity, Task):
         return convert_to_dgrid_gantt_task_format(entity.children)
     return []
+
+
+@view_config(
+    route_name='get_project_tasks_count',
+    renderer='json'
+)
+def get_project_tasks_count(request):
+    """returns all the tasks in the database related to the given entity in
+    flat json format
+    """
+    project_id = request.matchdict.get('id', -1)
+
+    sql_query = """select
+        count(1)
+    from "Tasks"
+    where "Tasks".project_id = %s
+    """ % project_id
+
+    return DBSession.connection().execute(sql_query).fetchone()[0]
 
 
 @view_config(
@@ -1233,8 +1373,9 @@ def request_review(request):
     logged_in_user = get_logged_in_user(request)
 
     task_id = request.matchdict.get('id', -1)
+    logger.debug('task_id : %s' % task_id)
     task = Task.query.filter(Task.id == task_id).first()
-    send_email = request.params.get('send_email', 1)
+    send_email = request.params.get('send_email', 1)  # for testing purposes
 
     if not task:
         transaction.abort()
@@ -1251,11 +1392,21 @@ def request_review(request):
         return Response('You can not request a review for a task with status '
                         'is set to "%s"' % task.status.name, 500)
 
+    # check if the user is one of the resources of this task or the responsible
+    if logged_in_user not in task.resources and \
+       logged_in_user != task.responsible:
+        transaction.abort()
+        return Response('You are not one of the resources nor the '
+                        'responsible of this task, so you can not request a '
+                        'review for this task', 500)
+
     # get the project that the ticket belongs to
     project = task.project
 
-    user_link = '<a href="/users/%s/view">%s</a>' % (logged_in_user.id,
-                                                     logged_in_user.name)
+    user_link = '<a href="%(url)s">%(name)s</a>' % {
+        'url': request.route_url('view_user', id=logged_in_user.id),
+        'name': logged_in_user.name
+    }
     task_parent_names = "|".join(map(lambda x: x.name, task.parents))
 
     task_name_as_text = "%(name)s (%(entity_type)s) - (%(parents)s)" % {
@@ -1264,10 +1415,10 @@ def request_review(request):
         "parents": task_parent_names
     }
     task_link = \
-        '<a href="/tasks/%(task_id)s/view">%(task_name)s ' \
+        '<a href="%(url)s">%(name)s ' \
         '(%(task_entity_type)s) - (%(task_parent_names)s)</a>' % {
-            "task_id": task.id,
-            "task_name": task.name,
+            "url": request.route_url('view_task', id=task.id),
+            "name": task.name,
             "task_entity_type": task.entity_type,
             "task_parent_names": task_parent_names
         }

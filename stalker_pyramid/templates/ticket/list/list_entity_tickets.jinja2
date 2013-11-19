@@ -60,11 +60,10 @@
 {% endblock page_content %}
 
 
-
-
 {% block extrascripts %}
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.dataTables.min.js") }}'></script>
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.dataTables.bootstrap.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/dataTable_num-html_sort.js") }}'></script>
 
 
 {% raw %}
@@ -125,7 +124,13 @@
                 table_body.append(ticket_template(data[i]));
             }
 
-            var oTable1 = $('#tickets_table').dataTable();
+            var oTable1 = $('#tickets_table').dataTable({
+                "aoColumns": [
+                        {'sType': 'num-html'}, null, null, null, null, null,
+                        null, null, null
+                    ]
+            });
+            oTable1.fnSort([[0, 'asc']]);
 
         });
     });

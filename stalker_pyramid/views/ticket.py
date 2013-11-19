@@ -195,8 +195,10 @@ def update_ticket(request):
             elif action.startswith('delete_resolution'):
                 ticket.reopen(logged_in_user)
         else:
-            request.session.flash(
-                'Error: You do not have permission to update the ticket'
+            transaction.abort()
+            return Response(
+                'Error: You are not the owner nor the creator of this ticket'
+                '\n\nSo, you do not have permission to update the ticket', 500
             )
 
     if comment:
