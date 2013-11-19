@@ -9,9 +9,10 @@ define([
     "dgrid/extensions/DijitRegistry",
     "put-selector/put",
     "stalker/js/GanttColumn",
+    "stalker/js/Task",
     "dgrid/extensions/ColumnResizer"
 ], function (declare, lang, OnDemandGrid, ColumnSet, Selection, Keyboard, tree,
-             DijitRegistry, put, GanttColumn, ColumnResizer) {
+             DijitRegistry, put, GanttColumn, Task, ColumnResizer) {
     // module:
     //     GanttGrid
     // summary:
@@ -46,6 +47,7 @@ define([
                 this.clearSelection();
             }
         }),
+
         selected_ids: function () {
             var selection, selected_ids, obj;
             selection = this.selection;
@@ -55,6 +57,96 @@ define([
             }
             return selected_ids;
         },
+
+        /**
+         * Storage for hidden column ids
+         */
+        hidden_columns: [],
+
+        /**
+         * Returns true or false according to the display state of the column
+         * with the given column_id
+         * 
+         * @param {string} column_id
+         * @returns {boolean}
+         */
+        is_hidden_column: function (column_id) {
+            return this.hidden_columns.indexOf(column_id) !== -1;
+        },
+
+        /**
+         * Toggles column visibility
+         * @param {string} column_id
+         */
+        toggle_column: function (column_id) {
+            if (this.is_hidden_column(column_id)) {
+                this.show_column(column_id);
+            } else {
+                this.hide_column(column_id);
+            }
+        },
+
+        /**
+         * Displays the given column
+         * 
+         * @param {string} column_id
+         *   The column id
+         */
+        show_column: function (column_id) {
+            var full_id = '.dgrid-column-' + column_id;
+            $(full_id).filter(function () {
+                return $(this).css('display') === 'none';
+            }).css({'display': ''});
+            // remove from hidden_columns
+            var index = this.hidden_columns.indexOf(column_id);
+            if (index !== -1) {
+                this.hidden_columns.splice(index, 1);
+            }
+        },
+
+        /**
+         * Hides the given column
+         * 
+         * @param {string} column_id
+         *   The column id
+         */
+        hide_column: function (column_id) {
+            setTimeout( // wait until dom actions finished, especially needed for chart
+                function () {
+                    var full_id = '.dgrid-column-' + column_id;
+                    var data = $(full_id).filter(function () {
+                        return $(this).css('display') !== 'none';
+                    });
+                    data.css({'display': 'none'});
+
+                }, 0
+            );
+
+            // add to hidden_columns
+            if (this.hidden_columns.indexOf(column_id) === -1) {
+                this.hidden_columns.push(column_id);
+            }
+
+        },
+
+        /**
+         * Returns the cookie name that stores the column visibility settings
+         */
+        cookie_name: function () {
+        },
+
+        /**
+         * Stores the column visibility states in a cookie
+         */
+        load_column_visibility_state: function () {
+        },
+
+        /**
+         * Stores the column visibility states in a cookie
+         */
+        save_column_visibility_state: function () {
+        },
+
         columnSets: [
             // Column set to display task and resource
             [
@@ -73,9 +165,17 @@ define([
                                 '</div>';
 
                             var id_template = doT.template(id_template_str);
-                            $(node).addClass(object.status).append(
+                            var node_js = $(node);
+                            node_js.addClass(object.status).append(
                                 $.parseHTML(id_template(object))
                             );
+                            // check if hidden
+                            var column_id = 'action';
+                            var grid = this.grid;
+                            if (grid.is_hidden_column(column_id)) {
+                                // also hide this one by default
+                                node_js.css({'display': 'none'});
+                            }
                         },
                         resizable: false
                     },
@@ -89,6 +189,13 @@ define([
                             $(node).addClass(object.status).append(
                                 $.parseHTML('<a href="' + object.link + '">' + object.id + '</a>')
                             );
+                            // check if hidden
+                            var column_id = 'id';
+                            var grid = this.grid;
+                            if (grid.is_hidden_column(column_id)) {
+                                // also hide this one by default
+                                $(node).css({'display': 'none'});
+                            }
                         },
                         resizable: true
                     },
@@ -131,6 +238,13 @@ define([
                                 $(node).addClass(object.status).append(
                                     $.parseHTML(template(template_var))
                                 );
+                                // check if hidden
+                                var column_id = 'name';
+                                var grid = this.grid;
+                                if (grid.is_hidden_column(column_id)) {
+                                    // also hide this one by default
+                                    $(node).css({'display': 'none'});
+                                }
                             },
                             renderExpando: function (level, hasChildren, expanded, object) {
                                 // summary:
@@ -165,6 +279,13 @@ define([
                             $(node).addClass(object.status).append(
                                 $.parseHTML('<div class="' + object.status + '">' + p_complete_str + '</div>')
                             );
+                            // check if hidden
+                            var column_id = 'complete';
+                            var grid = this.grid;
+                            if (grid.is_hidden_column(column_id)) {
+                                // also hide this one by default
+                                $(node).css({'display': 'none'});
+                            }
                         }
                     },
                     resource: {
@@ -185,6 +306,13 @@ define([
                             $(node).addClass(object.status).append(
                                 $.parseHTML(ret)
                             );
+                            // check if hidden
+                            var column_id = 'resource';
+                            var grid = this.grid;
+                            if (grid.is_hidden_column(column_id)) {
+                                // also hide this one by default
+                                $(node).css({'display': 'none'});
+                            }
                         }
                     },
                     timing: {
@@ -225,6 +353,13 @@ define([
                                 }
                             }
                             $(node).addClass(object.status).text(timing);
+                            // check if hidden
+                            var column_id = 'timing';
+                            var grid = this.grid;
+                            if (grid.is_hidden_column(column_id)) {
+                                // also hide this one by default
+                                $(node).css({'display': 'none'});
+                            }
                         }
                     },
                     start: {
@@ -240,8 +375,14 @@ define([
                             $(node).text(
                                 start_date.format("yyyy-mm-dd HH:MM")
                             );
+                            // check if hidden
+                            var column_id = 'start';
+                            var grid = this.grid;
+                            if (grid.is_hidden_column(column_id)) {
+                                // also hide this one by default
+                                $(node).css({'display': 'none'});
+                            }
                         }
-
                     },
                     end: {
                         label: 'End',
@@ -256,6 +397,13 @@ define([
                             $(node).text(
                                 end_date.format("yyyy-mm-dd HH:MM")
                             );
+                            // check if hidden
+                            var column_id = 'end';
+                            var grid = this.grid;
+                            if (grid.is_hidden_column(column_id)) {
+                                // also hide this one by default
+                                $(node).css({'display': 'none'});
+                            }
                         }
                     },
                     status: {
@@ -270,18 +418,43 @@ define([
                             $(node).append(
                                 $.parseHTML('<span class="' + object.status + '">' + object.status + '</span>')
                             );
+                            // check if hidden
+                            var column_id = 'status';
+                            var grid = this.grid;
+                            if (grid.is_hidden_column(column_id)) {
+                                // also hide this one by default
+                                $(node).css({'display': 'none'});
+                            }
+                        }
+                    },
+                    dependencies: {
+                        label: 'Dependencies',
+                        sortable: false,
+                        get: function(object) {
+                            return object;
+                        },
+                        renderCell: function(object, value, node, options) {
+                            $(node).addClass(object.status);
+
+                            if (object.type !== 'Project') {
+                                var link_template = doT.template('<a href="/tasks/{{= it.id}}/view">{{= it.name}}</a>');
+                                var link_string = '';
+                                for (var i = 0; i < object.dependencies.length; i += 1) {
+                                    link_string += i > 0 ? ', ' : '';
+                                    link_string += link_template(object.dependencies[i]);
+                                }
+    
+                                $(node).append($.parseHTML(link_string));
+                            }
+                            // check if hidden
+                            var column_id = 'dependencies';
+                            var grid = this.grid;
+                            if (grid.is_hidden_column(column_id)) {
+                                // also hide this one by default
+                                $(node).css({'display': 'none'});
+                            }
                         }
                     }
-//                    dependencies: {
-//                        label: 'Dependencies',
-//                        sortable: false,
-//                        get: function(object) {
-//                            return object;
-//                        },
-//                        formatter: function(object) {
-//                            return object;
-//                        }
-//                    }
                 }
             ],
 

@@ -563,6 +563,15 @@ define([
 
             // render today
             render_today(td, column.start, zoom_levels[column.scale].scale);
+
+            // display toggle
+
+            var column_set = 'set-1'; // this is a hardcoded dirty fix
+            if (column.grid.is_hidden_column(column_set)){
+                // add as hidden
+                console.log('hiding :', column_set);
+                column.grid.hide_column('set-1');
+            }
         };
 
         column.refresh = function (options) {
@@ -589,6 +598,11 @@ define([
 
             // let it adjust the scrollbars
             column.grid.resize();
+
+            if (column.grid.is_hidden_column(column_set)){
+                column.grid.hide_column('set-1');
+            }
+
         };
 
         column.reload = function () {

@@ -260,9 +260,14 @@ class TimeLogViewTestCase(unittest2.TestCase):
         """
         # TODO: This is also testing some functionality from view.task, slit it
         # create two new task
+        task0 = Task(
+            name='Test Task 0',
+            project=self.proj1,
+            status_list=self.task_status_list
+        )
         task1 = Task(
             name='Test Task 1',
-            project=self.proj1,
+            parent=task0,
             status_list=self.task_status_list
         )
         task2 = Task(
@@ -277,14 +282,22 @@ class TimeLogViewTestCase(unittest2.TestCase):
             resources=[self.user1],
             status_list=self.task_status_list
         )
-        DBSession.add_all([task1, task2, task3])
+        task4 = Task(
+            name='Test Task 4',
+            parent=task0,
+            resources=[self.user1],
+            status_list=self.task_status_list
+        )
+        DBSession.add_all([task0, task1, task2, task3, task4])
         DBSession.commit()
         DBSession.flush()
         transaction.commit()
 
+        self.assertEqual(task0.status, self.status_new)
         self.assertEqual(task1.status, self.status_new)
         self.assertEqual(task2.status, self.status_new)
         self.assertEqual(task3.status, self.status_new)
+        self.assertEqual(task4.status, self.status_new)
 
         # now add a time log for task3 through create_time_log view
         request = testing.DummyRequest()
@@ -296,8 +309,9 @@ class TimeLogViewTestCase(unittest2.TestCase):
         obj = m.replace("stalker_pyramid.views.auth.get_logged_in_user")
         obj(request)
         m.result(self.user1)
-        m.replay()
         m.count(1, 1000000000)
+        m.replay()
+        request.route_url = lambda x, id=1: 'view_user'
 
         request.params['task_id'] = task3.id
         request.params['resource_id'] = self.user1.id
@@ -310,6 +324,8 @@ class TimeLogViewTestCase(unittest2.TestCase):
         self.assertEqual(task3.status, self.status_wip)
         self.assertEqual(task2.status, self.status_new)
         self.assertEqual(task1.status, self.status_wip)
+        self.assertEqual(task0.status, self.status_wip)
+        self.assertEqual(task4.status, self.status_new)
 
         request.params['task_id'] = task2.id
         request.params['resource_id'] = self.user1.id
@@ -322,6 +338,8 @@ class TimeLogViewTestCase(unittest2.TestCase):
         self.assertEqual(task3.status, self.status_wip)
         self.assertEqual(task2.status, self.status_wip)
         self.assertEqual(task1.status, self.status_wip)
+        self.assertEqual(task0.status, self.status_wip)
+        self.assertEqual(task4.status, self.status_new)
 
         # now request a review and approve the task2 and task3 and expect the
         # task1 status is complete
@@ -342,6 +360,8 @@ class TimeLogViewTestCase(unittest2.TestCase):
         self.assertEqual(task3.status, self.status_prev)
         self.assertEqual(task2.status, self.status_prev)
         self.assertEqual(task1.status, self.status_wip)
+        self.assertEqual(task0.status, self.status_wip)
+        self.assertEqual(task4.status, self.status_new)
 
         # approve the task2
         request.matchdict['id'] = task2.id
@@ -353,6 +373,8 @@ class TimeLogViewTestCase(unittest2.TestCase):
         self.assertEqual(task3.status, self.status_prev)
         self.assertEqual(task2.status, self.status_cmpl)
         self.assertEqual(task1.status, self.status_wip)
+        self.assertEqual(task0.status, self.status_wip)
+        self.assertEqual(task4.status, self.status_new)
 
         # approve the task3
         request.matchdict['id'] = task3.id
@@ -364,3 +386,5 @@ class TimeLogViewTestCase(unittest2.TestCase):
         self.assertEqual(task3.status, self.status_cmpl)
         self.assertEqual(task2.status, self.status_cmpl)
         self.assertEqual(task1.status, self.status_cmpl)
+        self.assertEqual(task0.status, self.status_wip)
+        self.assertEqual(task4.status, self.status_new)
