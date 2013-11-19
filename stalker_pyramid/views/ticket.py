@@ -197,8 +197,7 @@ def update_ticket(request):
         else:
             transaction.abort()
             return Response(
-                'Error: You are not the owner nor the creator of this ticket'
-                '\n\nSo, you do not have permission to update the ticket', 500
+                'Error: You are not the owner nor the creator of this ticket\n\nSo, you do not have permission to update the ticket', 500
             )
 
     if comment:

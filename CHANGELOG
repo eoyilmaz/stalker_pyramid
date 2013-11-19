@@ -44,6 +44,10 @@ Stalker Pyramid Changes
 * **Update:** Optimized the load times of the project_sidebar and user_sidebar
   menus by both using raw sql queries and changing the query and dom element
   modification orders in javascript.
+* **New:** Added ``fix_task_statuses`` view to fix a particular task and its
+  parent statuses according to the task/status pipeline.
+* **New:** GanttChart columns can now be toggled without any problem in tree
+  expansion.
 
 0.1.1
 =====

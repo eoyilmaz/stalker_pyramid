@@ -456,7 +456,9 @@ def main(global_config, **settings):
     config.add_route('request_revision',   'tasks/{id}/request_revision')
     config.add_route('request_extra_time', 'tasks/{id}/request_extra_time')
 
-    config.add_route('delete_task',       'tasks/{id}/delete')
+    config.add_route('delete_task',        'tasks/{id}/delete')
+
+    config.add_route('fix_task_statuses', 'tasks/{id}/fix/statuses/')
 
     # *************************************************************************
     # TimeLog

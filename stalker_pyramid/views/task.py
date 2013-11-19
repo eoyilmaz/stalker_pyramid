@@ -48,6 +48,18 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 
+@view_config(
+    route_name='fix_task_statuses'
+)
+def fix_task_statuses(request):
+    """the view correspondence of the update_task_statuses function
+    """
+    task_id = request.matchdict.get('id')
+    task = Task.query.filter(Task.id == task_id).first()
+    update_task_statuses(task)
+    return HTTPOk()
+
+
 def update_task_statuses(task):
     """updates the task status according to its children statuses
     """
@@ -828,7 +840,7 @@ def get_gantt_tasks(request):
             for project in projects:
                 # get the tasks who is a root task
                 root_tasks = Task.query \
-                    .filter(Task._project == project) \
+                    .filter(Task.project == project) \
                     .filter(Task.parent == None).all()
 
                 # do a depth first search for child tasks

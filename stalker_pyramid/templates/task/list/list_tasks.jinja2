@@ -410,7 +410,7 @@
                     </button>
                 </div>
             
-                <div class="btn-group hidden">
+                <div class="btn-group">
                     <a href="#"
                        data-toggle="dropdown"
                        class="btn btn-small btn-info dropdown-toggle">Toggle Columns<span class="caret"></span>
@@ -454,6 +454,16 @@
                         <li>
                             <input class="ace" type="checkbox" name="columns[]" id="end_column_toggler" checked=true/>
                             <label class="lbl" for="end_column_toggler">End</label>
+                        </li>
+
+                        <li>
+                            <input class="ace" type="checkbox" name="columns[]" id="status_column_toggler" checked=true/>
+                            <label class="lbl" for="status_column_toggler">Status</label>
+                        </li>
+
+                        <li>
+                            <input class="ace" type="checkbox" name="columns[]" id="dependencies_column_toggler" checked=true/>
+                            <label class="lbl" for="dependencies_column_toggler">Dependencies</label>
                         </li>
 
                         <li>
@@ -617,32 +627,39 @@ require([
     // column togglers
     // TODO: implement it to the GanttGrid
     $('#action_column_toggler').on('click', function(e){
-        $(".dgrid-column-action").toggle();
+        gantt_chart.toggle_column('action');
     });
     $('#id_column_toggler').on('click', function(e){
-        $(".dgrid-column-id").toggle();
+        gantt_chart.toggle_column('id');
     });
     $('#name_column_toggler').on('click', function(e){
-        $(".dgrid-column-name").toggle();
+        gantt_chart.toggle_column('name');
     });
     $('#complete_column_toggler').on('click', function(e){
-        $(".dgrid-column-complete").toggle();
+        gantt_chart.toggle_column('complete');
     });
     $('#resource_column_toggler').on('click', function(e){
-        $(".dgrid-column-resource").toggle();
+        gantt_chart.toggle_column('resource');
     });
     $('#timing_column_toggler').on('click', function(e){
-        $(".dgrid-column-timing").toggle();
+        gantt_chart.toggle_column('timing');
     });
     $('#start_column_toggler').on('click', function(e){
-        $(".dgrid-column-start").toggle();
+        gantt_chart.toggle_column('start');
     });
     $('#end_column_toggler').on('click', function(e){
-        $(".dgrid-column-end").toggle();
+        gantt_chart.toggle_column('end');
+    });
+    $('#status_column_toggler').on('click', function(e){
+        gantt_chart.toggle_column('status');
+    });
+    $('#dependencies_column_toggler').on('click', function(e){
+        gantt_chart.toggle_column('dependencies');
     });
     $('#chart_column_toggler').on('click', function(e){
-        $(".dgrid-column-set-1").toggle();
+        gantt_chart.toggle_column('set-1');
         $(".dgrid-column-set-scroller.dgrid-scrollbar-height.dgrid-column-set-scroller-1").toggle();
+        $(".dgrid-column-set-scroller-1").toggle();
     });
 
     // register cell selection function

@@ -106,7 +106,7 @@ define([
             this.schedule_seconds = settings.schedule_seconds || 0;
             this.total_logged_seconds = settings.total_logged_seconds || 0;
 
-            this.remaining_seconds = ((this.schedule_seconds - this.total_logged_seconds) / 3600 ).toFixed(1) + ' h';
+            this.remaining_seconds = ((this.schedule_seconds - this.total_logged_seconds) / 3600).toFixed(1) + ' h';
 
             this.progress = this.schedule_seconds > 0 ? this.total_logged_seconds / this.schedule_seconds * 100 : 0;
 
@@ -137,7 +137,7 @@ define([
 
             this.time_logs = [];
             this.time_log_ids = [];
-    
+
             this.status = settings.status || 'new';
         },
 
@@ -154,7 +154,7 @@ define([
         getResourcesLinks: function () {
             var ret = '', i, resource;
             if (this.resources) {
-                for (i = 0; i < this.resources.length; i++) {
+                for (i = 0; i < this.resources.length; i += 1) {
                     resource = this.resources[i];
                     ret = ret + (ret === "" ? "" : ", ") + templates.resourceLink(resource);
                 }
@@ -165,7 +165,7 @@ define([
         getResourcesStr: function () {
             var ret = '', i, resource;
             if (this.resources) {
-                for (i = 0; i < this.resources.length; i++) {
+                for (i = 0; i < this.resources.length; i += 1) {
                     resource = this.resources[i];
                     ret = ret + (ret === "" ? "" : ", ") + resource.name;
                 }

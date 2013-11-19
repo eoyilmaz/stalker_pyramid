@@ -392,20 +392,20 @@ th.dgrid-column-chart table {
 }
 
 .gantt .dgrid-column-name {
-    width: 200px;
-}
-
-.gantt .dgrid-column-timing {
-    width: 45px;
-}
-
-.gantt .dgrid-column-timing {
-    width: 60px;
-    text-align: center;
+    width: 300px;
 }
 
 .gantt .dgrid-column-complete {
     width: 30px;
+    text-align: center;
+}
+
+.gantt .dgrid-column-resource {
+    width: 150px;
+}
+
+.gantt .dgrid-column-timing {
+    width: 60px;
     text-align: center;
 }
 
@@ -416,6 +416,15 @@ th.dgrid-column-chart table {
 .gantt .dgrid-column-end {
     width: 105px;
 }
+
+.gantt .dgrid-column-status {
+    width: 30px;
+}
+
+.gantt .dgrid-column-dependencies {
+    width: 200px;
+}
+
 
 .gantt .dgrid-column-set-0 {
 width: 40%;
