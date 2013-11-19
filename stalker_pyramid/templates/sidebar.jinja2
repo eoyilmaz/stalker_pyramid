@@ -9,10 +9,15 @@
     </script>
 
     {% if entity.entity_type == 'User' %}
+        {% set user=entity %}
         {% include 'auth/view/user_sidebar.jinja2' %}
     {% elif entity.entity_type == 'Asset'or entity.entity_type == 'Shot'or entity.entity_type == 'Sequence'%}
+
         {% include 'task/view/task_sidebar.jinja2' %}
     {% else %}
+        {% if entity.entity_type =='Project' %}
+            {% set project=entity %}
+        {% endif %}
         {% include entity.entity_type.lower()+'/view/'+entity.entity_type.lower()+'_sidebar.jinja2' %}
     {% endif %}
 

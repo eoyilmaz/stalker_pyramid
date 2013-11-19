@@ -2,176 +2,67 @@
 
 {% set studio=entity %}
 
-<ul class='nav nav-list'>
-    {# Thumbnail #}
-        <li>
-            <div class="media">
-                <a class="pull-left" href="#" style="width: 100px; height: 100px">
-                    <img style='width:auto; height: 100px;'
-                         class="img-thumbnail"
-                         src="{%- if studio.thumbnail -%}
-                        /{{ studio.thumbnail.full_path }}
-                    {%- else -%}
-                        {{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_0.png") }}
-                    {%- endif -%}">
-                </a>
 
-                <div class="media-body">
-                    <h5 class="media-heading">{{ studio.name }}
-                    </h5>
-
-                  <a href="#" class="menu-text">
-                    <i class="icon-edit"></i>
-                    Edit
-                  </a>
-                </div>
-            </div>
-        </li>
-    {#Dashboard#}
-    {% if request.current_route_path() == request.route_path('view_studio', id=studio.id) %}
-        <li class='active'>
-            <a>
-                <i class="icon-dashboard"></i>
-                <span class="menu-text">Dashboard</span>
-            </a>
-        </li>
-    {% else %}
-        <li>
-            <a href='{{ request.route_url('view_studio', id=studio.id) }}'>
-                <i class="icon-dashboard"></i>
-                <span class="menu-text">Dashboard</span>
-            </a>
-        </li>
-    {% endif %}
-
-    {#Resources#}
-    {% if request.current_route_path() == request.route_path('list_entity_resources', id=studio.id) %}
-        <li class='active'>
-            <a>
-                <i class="icon-calendar"></i>
-                <span class="menu-text">Resources</span>
-            </a>
-        </li>
-    {% else %}
-        <li>
-            <a href='{{ request.route_url('list_entity_resources', id=studio.id) }}'>
-                <i class="icon-calendar"></i>
-                <span class="menu-text">Resources</span>
-            </a>
-        </li>
-    {% endif %}
-
-
-    {# Tasks #}
-    {% if request.current_route_path() == request.route_path('list_studio_tasks', id=studio.id) %}
-        <li class='active'>
-            <a>
-                <i class="icon-tasks"></i>
-                <span class="menu-text">Tasks</span>
-                <span class='badge badge-info'>{{ studio.tasks | count }}</span>
-            </a>
-        </li>
-    {% else %}
-        <li>
-            <a href='{{ request.route_url('list_studio_tasks', id=studio.id) }}'>
-                <i class="icon-tasks"></i>
-                <span class="menu-text">Tasks</span>
-                <span class='badge badge-info'>{{ studio.tasks | count }}</span>
-            </a>
-        </li>
-    {% endif %}
-
-    {# Projects #}
-    {% if request.current_route_path() == request.route_path('list_studio_projects', id=studio.id) %}
-        <li class='active'>
-            <a>
-                <i class="icon-folder-close-alt"></i>
-                <span class="menu-text">Projects</span>
-                <span class='badge badge-success'>{{ studio.projects | count }}</span>
-            </a>
-        </li>
-    {% else %}
-        <li>
-            <a href='{{ request.route_url('list_studio_projects', id=studio.id) }}'>
-                <i class="icon-folder-close-alt"></i>
-                <span class="menu-text">Projects</span>
-                <span class='badge badge-success'>{{ studio.projects | count }}</span>
-            </a>
-        </li>
-    {% endif %}
-    {# Users #}
-    {% if request.current_route_path() == request.route_path('list_studio_users', id=studio.id) %}
-        <li class='active'>
-            <a>
-                <i class="icon-user"></i>
-                <span class="menu-text">Users</span>
-                <span class='badge badge-success'>{{ studio.users | count }}</span>
-            </a>
-        </li>
-    {% else %}
-        <li>
-            <a href='{{ request.route_url('list_studio_users', id=studio.id) }}'>
-                <i class="icon-user"></i>
-                <span class="menu-text">Users</span>
-                <span class='badge badge-success'>{{ studio.users | count }}</span>
-            </a>
-        </li>
-    {% endif %}
-
-    {# Department #}
-    {% if request.current_route_path() == request.route_path('list_studio_departments', id=studio.id) %}
-        <li class='active'>
-            <a>
-                <i class="icon-group"></i>
-                <span class="menu-text">Department</span>
-                <span class='badge badge-success'>{{ studio.departments | count }}</span>
-            </a>
-        </li>
-    {% else %}
-        <li>
-            <a href='{{ request.route_url('list_studio_departments', id=studio.id) }}'>
-                <i class="icon-group"></i>
-                <span class="menu-text">Departments</span>
-                <span class='badge badge-success'>{{ studio.departments | count }}</span>
-            </a>
-        </li>
-    {% endif %}
-
-    {# Groups #}
-    {% if request.current_route_path() == request.route_path('list_groups') %}
-        <li class='active'>
-            <a>
-                <i class="icon-key"></i>
-                <span class="menu-text">Groups</span>
-            </a>
-        </li>
-    {% else %}
-        <li>
-            <a href='{{ request.route_url('list_groups') }}'>
-                <i class="icon-key"></i>
-                <span class="menu-text">Groups</span>
-            </a>
-        </li>
-    {% endif %}
-
-    {# Vacations #}
-    {% if request.current_route_path() == request.route_path('list_studio_vacations', id=studio.id) %}
-        <li class='active'>
-            <a>
-                <i class="icon-sun"></i>
-                <span class="menu-text">Vacations</span>
-                <span class="badge badge-success">{{ studio.vacations | count }}</span>
-            </a>
-        </li>
-    {% else %}
-        <li>
-            <a href='{{ request.route_url('list_studio_vacations', id=studio.id) }}'>
-                <i class="icon-sun"></i>
-                <span class="menu-text">Vacations</span>
-                <span class="badge badge-success">{{ studio.vacations | count }}</span>
-            </a>
-        </li>
-    {% endif %}
+<ul id="sidebar_list" class='nav nav-list'>
 
 
 </ul>
+
+<script type="text/javascript">
+
+
+    $(document).ready(function () {
+
+        page_of('{{ studio.name }}',
+                '',
+                "{%- if studio.thumbnail -%}/{{ studio.thumbnail.full_path }}{%- else -%}{{ request.static_url(" stalker_pyramid:static/stalker/images/Placeholder_0.png")}}{%- endif -%}",
+                '/studios/{{ studio.id }}/update/dialog')
+
+        menu_of('Dashboard',
+                "{%- if request.current_route_path() == request.route_path('view_studio', id=studio.id) -%}'active',{%- else -%},{%- endif -%}",
+                '{{ request.route_url('view_studio', id=studio.id) }}',
+                'icon-dashboard',
+                '')
+
+        menu_of('Resources',
+                    "{%- if request.current_route_path() == request.route_path('list_entity_resources', id=studio.id) -%}'active',{%- else -%},{%- endif -%}",
+                    '{{ request.route_url('list_entity_resources', id=studio.id) }}',
+                    'icon-calendar',
+                    '')
+
+        menu_of('Tasks',
+                "{%- if request.current_route_path() == request.route_path('list_entity_tasks', id=studio.id) -%}'active',{%- else -%},{%- endif -%}",
+                '{{ request.route_url('list_entity_tasks', id=studio.id) }}',
+                'icon-tasks',
+                '{{ studio.tasks | count }}')
+
+        menu_of('Projects',
+                "{%- if request.current_route_path() == request.route_path('list_studio_projects', id=studio.id) -%}'active',{%- else -%},{%- endif -%}",
+                '{{ request.route_url('list_studio_projects', id=studio.id) }}',
+                'icon-folder-close-alt',
+                '{{ studio.projects | count }}')
+        menu_of('Users',
+                "{%- if request.current_route_path() == request.route_path('list_studio_users', id=studio.id) -%}'active',{%- else -%},{%- endif -%}",
+                '{{ request.route_url('list_studio_users', id=studio.id) }}',
+                'icon-user',
+                '{{ studio.users | count }}')
+        menu_of('Departments',
+                "{%- if request.current_route_path() == request.route_path('list_studio_departments', id=studio.id) -%}'active',{%- else -%},{%- endif -%}",
+                '{{ request.route_url('list_studio_departments', id=studio.id) }}',
+                'icon-group',
+                '')
+        menu_of('Groups',
+                "{%- if request.current_route_path() == request.route_path('list_groups') -%}'active',{%- else -%},{%- endif -%}",
+                '{{ request.route_url('list_groups') }}',
+                'icon-camera',
+                '')
+        menu_of('Vacations',
+                    "{%- if request.current_route_path() == request.route_path('list_studio_vacations', id=studio.id) -%}'active',{%- else -%},{%- endif -%}",
+                    '{{ request.route_url('list_studio_vacations', id=studio.id) }}',
+                    'icon-sun',
+                    '{{ studio.vacations | count }}')
+
+
+    })
+</script>
+

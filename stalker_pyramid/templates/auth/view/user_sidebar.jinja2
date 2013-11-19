@@ -2,134 +2,21 @@
 
 {% set user=entity %}
 
-<ul id="user_sidebar_list" class='nav nav-list'>
-    {# Thumbnail #}
-    <li>
-        <div class="media">
-            <a class="pull-left"
-               href="#"
-               style="text-align: center; overflow: hidden; width: 100px">
-                <img id="user_sidebar_avatar"
-                     style="height: 100px; width: auto; max-width: none;
-                      position: relative; left: 100%; margin-left: -200%"
-                     class="img-thumbnail"
-                     src="{%- if user.thumbnail -%}
-                        /{{ user.thumbnail.full_path }}
-                    {%- else -%}
-                        {{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_0.png") }}
-                    {%- endif -%}">
-            </a>
+<ul id="sidebar_list" class='nav nav-list'>
 
-            <div class="media-body">
-                <h5 class="media-heading">{{ user.name }}
-                    <small>({{ user.login }})</small>
-                </h5>
-                <a href="/users/{{ user.id }}/update/dialog" class="menu-text">
-
-                    <i class="icon-edit"></i>
-                    Update
-                </a>
-            </div>
-        </div>
-    </li>
 </ul>
 
-{% raw %}
-<script id="tmpl_sidebar_tree_link" type="text/x-dot-template">
-    <li>
-        <a href="#" class="dropdown-toggle">
-            <i class={{=it.icon}}></i>
-            <span class="menu-text">{{=it.title}} </span>
 
-            <b class="arrow icon-angle-down"></b>
-        </a>
-
-        <ul id='{{=it.title}}_sublink' class="submenu">
-
-        </ul>
-    </li>
-
-</script>
-{% endraw %}
-
-{% raw %}
-<script id="tmpl_sidebar_tree_sublink" type="text/x-dot-template">
-    <li>
-        <a href={{=it.link }}>
-        <i class="icon-double-angle-right"></i>
-        {{=it.name }}
-        </a>
-    </li>
-
-</script>
-{% endraw %}
-
-{% raw %}
-<script id="tmpl_sidebar_link" type="text/x-dot-template">
-    <li class={{=it.state}}>
-        <a href={{=it.link}}>
-            <i class={{=it.icon}}></i>
-            <span class="menu-text">{{=it.title}}</span>
-            <span class="badge badge-success">{{=it.count}}</span>
-        </a>
-    </li>
-</script>
-{% endraw %}
 
 
 <script>
 
     $(document).ready(function () {
 
-
-        var submenu_of = function (treeItemType) {
-
-            $.getJSON('/entities/{{ user.id }}/' + treeItemType.toLowerCase() + 's/').then(function (data) {
-                var user_sidebar_list = $('#user_sidebar_list');
-                var tree_link_template = doT.template($('#tmpl_sidebar_tree_link').html());
-                var data_counts = data.length;
-                if (data_counts > 0) {
-
-                    user_sidebar_list.append(tree_link_template({
-                        'title': treeItemType + 's',
-                        'icon': get_icon(treeItemType.toLowerCase())
-                    }));
-
-                }
-                var item_sublink = $('#' + treeItemType + 's_sublink');
-                var tree_sublink_template = doT.template($('#tmpl_sidebar_tree_sublink').html());
-
-
-                for (var i = 0; i < data_counts; i++) {
-
-                    data[i].link = '/' + treeItemType.toLowerCase() + 's/' + data[i].id + '/view'
-
-                    item_sublink.append(tree_sublink_template(data[i]))
-
-                }
-            });
-        }
-
-        var menu_of = function (title, state, address, icon, count) {
-            var user_sidebar_list = $('#user_sidebar_list');
-            var link_template = doT.template($('#tmpl_sidebar_link').html());
-
-            var istate = '';
-
-            {% if request.current_route_path() == request.route_path('list_entity_tickets', id=user.id) %}
-                istate = 'active'
-            {% endif %}
-
-            user_sidebar_list.append(link_template({
-                'title': title,
-                'state':state,
-                'link': address,
-                'icon': icon,
-                'count': count
-            }));
-        }
-
-
+        page_of('{{ user.name }}',
+                '{{ user.login }}',
+                "{%- if user.thumbnail -%}/{{ user.thumbnail.full_path }}{%- else -%}{{ request.static_url(" stalker_pyramid:static/stalker/images/Placeholder_0.png")}}{%- endif -%}",
+                '/users/{{ user.id }}/update/dialog')
 
         menu_of('Dashboard',
                 "{%- if request.current_route_path() == request.route_path('view_user', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
@@ -155,11 +42,11 @@
                 'icon-sun',
                 '{{ user.vacations | count }}')
 
-        submenu_of('Project')
+        submenu_of('{{ user.id }}','Project')
 
-        submenu_of('Department')
+        submenu_of('{{ user.id }}','Department')
 
-        submenu_of('Group')
+        submenu_of('{{ user.id }}','Group')
 
     })
 
