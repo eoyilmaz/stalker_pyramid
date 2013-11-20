@@ -219,12 +219,12 @@ define([
                                     if (object.hasChildren) {
                                         template = templates.parentTaskEditRow;
                                         template_var.contextMenuClass = 'parentTaskEditRow';
-                                    } else {
-                                        template_var.responsible = {
-                                            id: object.responsible.id,
-                                            name: object.responsible.name
-                                        };
-                                    }
+                                    }// else {
+//                                        template_var.responsible = {
+//                                            id: object.responsible.id,
+//                                            name: object.responsible.name
+//                                        };
+                                    //}
                                 }
 
                                 template_var.hasChildren = object.hasChildren;
@@ -271,7 +271,7 @@ define([
                             return object;
                         },
                         renderCell: function (object, value, node, options) {
-                            var p_complete, p_complete_str, p_complete_rounded, bg_color, font_weight;
+                            var p_complete, p_complete_str;
                             p_complete = object.schedule_seconds > 0 ? object.total_logged_seconds / object.schedule_seconds * 100 : 0;
                             // check if it has a floating part
                             p_complete_str = p_complete.toFixed(0);

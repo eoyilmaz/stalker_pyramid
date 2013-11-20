@@ -47,7 +47,7 @@ define([
         schedule_model: 'effort',
         schedule_timing: 10,
         schedule_unit: 'h',
-        schedule_constraint: 0,
+//        schedule_constraint: 0,
 
         schedule_seconds: 0,
         total_logged_seconds: 0,
@@ -80,7 +80,7 @@ define([
 
             this.id = settings.id || null;
             this.name = settings.name || null;
-            this.hierarchy_name = settings.hierarchy_name || '';
+//            this.hierarchy_name = settings.hierarchy_name || '';
             this.description = settings.description || null;
 
             this.priority = settings.priority || 500;
@@ -101,7 +101,7 @@ define([
             this.schedule_model = settings.schedule_model || this.schedule_model;
             this.schedule_timing = (settings.schedule_timing || 10).toFixed(1) || this.schedule_timing;
             this.schedule_unit = settings.schedule_unit || this.schedule_unit;
-            this.schedule_constraint = settings.schedule_constraint || 0;
+//            this.schedule_constraint = settings.schedule_constraint || 0;
 
             this.schedule_seconds = settings.schedule_seconds || 0;
             this.total_logged_seconds = settings.total_logged_seconds || 0;
@@ -119,7 +119,7 @@ define([
             this.resources = settings.resources || [];
             this.resource_ids = settings.resource_ids || [];
 
-            this.responsible = settings.responsible || null;
+//            this.responsible = settings.responsible || null;
 
             var i;
             if (this.resource_ids.length === 0) {
