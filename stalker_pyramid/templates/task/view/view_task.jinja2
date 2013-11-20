@@ -87,7 +87,12 @@
                                         {% if (logged_in_user in entity.resources or logged_in_user == entity.responsible) and entity.status.code == 'WIP' and entity.is_leaf %}
 
                                             <button id='task_request_review_button'
-                                                    class='btn btn-mini btn-warning'>
+                                                    class='btn btn-mini btn-warning'
+                                                    data-target="#dialog_template"
+                                                    data-toggle="modal"
+                                                    data-keyboard="false"
+                                                    href='{{ request.route_url("request_review", id=entity.id) }}'
+                                                    >
                                                 <i class="icon-comment-alt"></i>
                                                 Request Review
                                             </button>
