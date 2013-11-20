@@ -1,9 +1,10 @@
-<div class="widget-box">
+<div class="widget-box {{ collapsed }}">
     <div class="widget-header widget-header-small header-color-{{ list_item_type.lower() }}">
         <h5 id="items_header" class="smaller"></h5>
 
-        {% if has_permission('Create_'+list_item_type) %}
-            <div class="widget-toolbar">
+        <div class="widget-toolbar">
+            {% if has_permission('Create_'+list_item_type) and  add_button_address %}
+
                 &nbsp
                 <a data-target="#dialog_template"
                    data-toggle="modal"
@@ -14,8 +15,13 @@
                     New
                 </a>
                 &nbsp&nbsp
-            </div>
-        {% endif %}
+
+            {% endif %}
+            <a href="#" data-action="collapse">
+                <i class="icon-chevron-down"></i>
+            </a>
+        </div>
+
     </div>
     <div class="widget-body">
         <div class="widget-main no-padding">
@@ -49,6 +55,9 @@
         var icon_name = get_icon('{{ list_item_type.lower() }}');
         $('#items_header').append('<i class=' + icon_name + '></i>');
 
+        {% if collapsed %}
+            $('#items_header').append('<small class="white">List of {{ list_item_type }}s</small>')
+        {% endif %}
 
         // fill items table with dynamic data
         $.getJSON('{{ address }}').then(function (data) {

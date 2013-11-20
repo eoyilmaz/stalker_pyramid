@@ -6,16 +6,13 @@
 
 </ul>
 
-
-
-
 <script>
 
         $(document).ready(function () {
 
             page_of('{{ user.name }}',
                     '{{ user.login }}',
-                    "{%- if user.thumbnail -%}/{{ user.thumbnail.full_path }}{%- else -%}{{ request.static_url(" stalker_pyramid:static/stalker/images/Placeholder_0.png")}}{%- endif -%}",
+                    "{%- if user.thumbnail -%}/{{ user.thumbnail.full_path }}{%- else -%}{{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_0.png")}}{%- endif -%}",
                     '/users/{{ user.id }}/update/dialog')
 
             menu_of('Dashboard',

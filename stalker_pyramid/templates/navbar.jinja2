@@ -155,13 +155,13 @@
 
                 {% for  ticket in logged_in_user.open_tickets %}
                     <li>
-                        <a href="#">
-                            <div class="clearfix">
-                                <span class="pull-left">
+                        <a href="/tickets/{{ ticket.id }}/view">
+                            <div class="clearfix wr">
+{#                                <span class="pull-left">#}
                                 <i class="btn btn-mini no-hover btn-pink icon-comment"></i>
-                                {{ ticket.id }}
-                                </span>
-                                <span class="pull-right badge badge-info">+12</span>
+                                {{ ticket.summary }}
+{#                                </span>#}
+{#                                <span class="pull-right badge badge-info">+12</span>#}
                             </div>
                         </a>
                     </li>

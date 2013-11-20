@@ -1229,6 +1229,8 @@ def get_user_tasks(request):
     return [
         {
             'id': task.id,
+            'status': task.status.name,
+            'status_color': task.status.html_class,
             'name': '%s (%s)' % (
                 task.name,
                 ' | '.join([parent.name for parent in task.parents])
@@ -2090,6 +2092,7 @@ def get_child_task_events(task):
             'className': 'label',
             'allDay': False,
             'status': task.status.name,
+            'status_color': task.status.html_class,
             'resources': resources,
             'percent_complete': task.percent_complete,
             'total_logged_seconds': task.total_logged_seconds,
@@ -2110,7 +2113,8 @@ def get_child_task_events(task):
                 'end': milliseconds_since_epoch(time_log.end),
                 'className': 'label-success',
                 'allDay': False,
-                'status': time_log.task.status.name
+                'status': time_log.task.status.name,
+                'status_color': time_log.task.status.html_class
             })
             logger.debug('resource_id %s' % time_log.resource.id)
             logger.debug('resource_name %s' % time_log.resource.name)
@@ -2164,6 +2168,8 @@ def get_task_depends(request):
             {
                 'id': dep_task.id,
                 'name': dep_task.name,
+                'status': dep_task.status.name,
+                'status_color': dep_task.status.html_class,
                 'percent_complete': dep_task.percent_complete,
                 'total_logged_seconds': dep_task.total_logged_seconds,
                 'schedule_seconds': dep_task.schedule_seconds,
