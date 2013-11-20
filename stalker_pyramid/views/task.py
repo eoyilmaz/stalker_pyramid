@@ -828,7 +828,8 @@ def get_tasks(request):
         "Tasks".computed_start,
         "Tasks".start,
         "Task_Status".code,
-        "Parent_Tasks".id
+        "Parent_Tasks".id,
+        "Tasks".project_id
     order by "SimpleEntities".name
             """
 
