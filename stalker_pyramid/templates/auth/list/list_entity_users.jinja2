@@ -50,6 +50,7 @@
         {% set add_button_address=request.route_url('append_entities_to_entity_dialog', id=entity.id, entities='User')+'?came_from='+request.current_route_path() %}
     {% endif %}
 
+
     {% set list_item_type='User' %}
     {% include 'components/data_table.jinja2' %}
 

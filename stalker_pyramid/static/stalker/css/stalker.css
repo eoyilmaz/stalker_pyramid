@@ -71,6 +71,15 @@ tr .odd > td .ticket_BLOCKER {
 .header-color-user + .widget-body {
   border-color: #d15b47;
 }
+.header-color-task {
+    background: #aeaeae;
+    border-color: #989898
+}
+
+.header-color-task+.widget-body {
+    border-color: #aaa
+}
+
 .pln {
   background-color: #abbac3;
   color: white;

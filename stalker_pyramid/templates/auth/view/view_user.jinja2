@@ -45,7 +45,15 @@
                          address='/entities/{{ entity.id }}/tasks_stats/'
                          class="infobox-container"></div>
 
-                    <div class="hr hr8 hr-double"></div>
+                    <div class="space"></div>
+
+                    {% set collapsed='collapsed'%}
+                    {% set address=request.route_path('get_user_tasks', id=entity.id) %}
+                    {% set add_button_address='' %}
+                    {% set list_item_type='Task' %}
+                    {% include 'components/data_table.jinja2' %}
+
+                     <div class="hr hr8 hr-double"></div>
 
                     <div class="space"></div>
 
@@ -54,6 +62,7 @@
                 </div>
                 <div class="span3">
 
+
                     <div class="widget-box">
                         <div class="widget-header widget-header-flat widget-header-small">
                             <h5>
@@ -61,6 +70,8 @@
                                 Resource Efficiency
 
                             </h5>
+
+
 
                             <div class="widget-toolbar no-border">
 
@@ -117,6 +128,34 @@
 <!--page specific plugin scripts-->
 {#EXTRA-SCRIPTS#}
 {% block extrascripts %}
+
+    {% raw %}
+    <script id="tmpl_itemThead" type="text/x-dot-template">
+
+        <tr>
+             <th>Id</th>
+             <th>Name</th>
+            <th>Status</th>
+
+        </tr>
+    </script>
+    {% endraw %}
+
+
+    {% raw %}
+    <script id="tmpl_itemRow" type="text/x-dot-template">
+        <tr>
+            <td><a href='/tasks/{{=it.id}}/view'>{{=it.id}}</a>
+
+            <td><a href='/tasks/{{=it.id}}/view'>{{=it.name}}</a>
+            <td>
+                <span class="label label-{{=it.status_color}}">{{=it.status}}</span>
+            </td>
+            </td>
+        </tr>
+    </script>
+    {% endraw %}
+
     {% if entity.tasks | count > 0 %}
         {% if has_permission('Update_User') or logged_in_user.id == entity.id %}
             {% set event_type='TimeLog' %}

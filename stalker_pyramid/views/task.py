@@ -1228,6 +1228,8 @@ def get_user_tasks(request):
     return [
         {
             'id': task.id,
+            'status': task.status.name,
+            'status_color': task.status.html_class,
             'name': '%s (%s)' % (
                 task.name,
                 ' | '.join([parent.name for parent in task.parents])
