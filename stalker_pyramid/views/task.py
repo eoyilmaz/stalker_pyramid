@@ -671,6 +671,7 @@ def raw_data_to_array(raw_data):
 def get_tasks(request):
     """RESTful version of getting all tasks
     """
+    logger.debug('using raw sql query')
     start = time.time()
 
     parent_id = request.params.get('parent_id')
@@ -835,10 +836,16 @@ def get_tasks(request):
 
     if task_id:
         task = Entity.query.filter(Entity.id == task_id).first()
-        if isinstance(task, Project):
-            return_data = convert_to_dgrid_gantt_project_format([task])
-            # just return here to avoid any further error
-            content_range = content_range % (0, 1, 1)
+        if isinstance(task, (Project, Studio)):
+            if isinstance(task, Project):
+                return_data = convert_to_dgrid_gantt_project_format([task])
+                # just return here to avoid any further error
+                content_range = content_range % (0, 1, 1)
+            else:
+                convert_data = Project.query.all()
+                return_data = convert_to_dgrid_gantt_project_format(convert_data)
+                # just return here to avoid any further error
+                content_range = content_range % (0, len(convert_data)-1, len(convert_data))
             resp = Response(
                 json_body=return_data
             )
@@ -847,6 +854,7 @@ def get_tasks(request):
             logger.debug('%s rows retrieved in %s seconds' % (len(return_data),
                                                               (end - start)))
             return resp
+
         elif isinstance(task, Task):
             where_condition = '"Tasks".id = %s' % task_id
 
@@ -919,6 +927,7 @@ def get_tasks(request):
 def get_entity_tasks(request):
     """RESTful version of getting all tasks of an entity
     """
+    logger.debug('get_entity_tasks is running')
     entity_id = request.matchdict.get('id', -1)
     start = time.time()
     entity = Entity.query.filter(Entity.id == entity_id).first()

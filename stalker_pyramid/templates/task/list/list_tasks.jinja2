@@ -574,8 +574,8 @@ require([
 
     {% if entity.entity_type == 'User' %}
         target = '{{ request.route_url('get_entity_tasks', id=entity.id) }}';
-    {% elif entity.entity_type == 'Studio' %}
-        target = '{{ request.route_url('get_studio_tasks', id=entity.id) }}';
+{#    {% elif entity.entity_type == 'Studio' %}#}
+{#        target = '{{ request.route_url('get_studio_tasks', id=entity.id) }}';#}
     {% endif %}
 {#    console.debug('target : ', target);#}
 
