@@ -24,7 +24,9 @@ define([
     "use strict";
     return declare([OnDemandGrid, ColumnSet, Selection, Keyboard, DijitRegistry, ColumnResizer], {
         keyMap: lang.mixin({}, Keyboard.defaultKeyMap, {
-            38: function () { // up arrow
+            38: function (event) { // up arrow
+                event.preventDefault();
+                event.stopPropagation();
                 var id, selection = [];
                 for (id in this.selection) {
                     selection.push(id);
@@ -39,12 +41,17 @@ define([
                             grid.clearSelection();
                         }, 0);
                         setTimeout(function () {
+                            grid.focus(upper_row);
+                        }, 0);
+                        setTimeout(function () {
                             grid.select(upper_row);
                         }, 0);
                     }
                 }
             },
             40: function () { // down arrow
+                event.preventDefault();
+                event.stopPropagation();
                 var id, selection = [];
                 for (id in this.selection) {
                     selection.push(id);
@@ -59,6 +66,9 @@ define([
                             grid.clearSelection();
                         }, 0);
                         setTimeout(function () {
+                            grid.focus(down_row);
+                        }, 0);
+                        setTimeout(function () {
                             grid.select(down_row);
                         }, 0);
                     }
@@ -70,28 +80,50 @@ define([
                     this.expand(obj, true);
                 }
             },
+            /**
+             * collapses an expanded row or goes to a parent row if it is
+             * already collapsed or is not expandable
+             * 
+             * @param event
+             */
             37: function (event) {  // left arrow
-                var obj_id, row, expanded, parent_id;
+                var row_id, row, expanded, parent_id;
 
-                console.log('this.selection :', this.selection);
+                var grid = this;
+                var jump_to_row = function (row) {
+                    setTimeout(function () {
+                        grid.clearSelection();
+                    }, 0);
+                    setTimeout(function () {
+                        grid.focus(row);
+                    }, 0);
+                    setTimeout(function () {
+                        grid.select(row);
+                    }, 0);
+                };
 
-                for (obj_id in this.selection) {
-                    row = this.row(obj_id);
+                var selected_row_ids = [];
+                for (row_id in this.selection) {
+                    selected_row_ids.push(row_id);
+                }
+                var num_of_selection = selected_row_ids.length;
 
-                    // if it is an expanded column collapse it
-                    expanded = this._expanded[row.id];
+                for (var i = 0; i < num_of_selection ; i += 1) {
+                    row_id = selected_row_ids[i];
+                    row = this.row(row_id);
+                    // if it is an expanded column just collapse it
+                    expanded = this._expanded[row_id];
                     if (expanded) {
-                        this.expand(obj_id, false);
+                        this.expand(row_id, false);
                     } else {
-                        parent_id = row.data.parent_id;
-                        if (parent_id) {
-                            var grid = this;
-                            setTimeout(function () {
-                                grid.clearSelection();
-                            }, 0);
-                            setTimeout(function () {
-                                grid.select(grid.row(parent_id));
-                            }, 0);
+                        // do a special thing just for the last row
+                        if ( i === num_of_selection - 1) {
+                            // it is not expanded so go to parent
+                            parent_id = row.data.parent_id;
+                            if (parent_id) {
+                                var parent_row = grid.row(parent_id);
+                                jump_to_row(parent_row);
+                            }
                         }
                     }
                 }
