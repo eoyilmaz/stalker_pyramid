@@ -131,7 +131,7 @@ def create_user(request):
         log_param(request, 'login')
         log_param(request, 'email')
         log_param(request, 'password')
-        
+
         response = Response('There are missing parameters: ')
         response.status_int = 500
         return response
@@ -219,6 +219,104 @@ def update_user(request):
     return HTTPFound(
         location=came_from
     )
+
+
+@view_config(
+    route_name='get_entity_users_count',
+    renderer='json',
+    permission='List_User'
+)
+@view_config(
+    route_name='get_project_users_count',
+    renderer='json',
+    permission='List_User'
+)
+@view_config(
+    route_name='get_users_count',
+    renderer='json',
+    permission='List_User'
+)
+def get_users_count(request):
+    """returns all users or one particular user from database
+    """
+    # if there is a simple flag, just return ids and names and login
+    #simple = request.params.get('simple')
+
+    # if there is an id it is probably a project
+    entity_id = request.matchdict.get('id')
+
+    entity_type = None
+    if entity_id:
+        sql_query = \
+            'select entity_type from "SimpleEntities" where id=%s' % entity_id
+        data = DBSession.connection().execute(sql_query).fetchone()
+        entity_type = data[0] if data else None
+
+    logger.debug('entity_id  : %s' % entity_id)
+    logger.debug('entity_type: %s' % entity_type)
+
+    if entity_id and entity_type not in ['Project', 'Department', 'Group', 'Task', 'User']:
+        # there is no entity_type for that entity
+        return []
+
+    start = time.time()
+    sql_query = """select
+        count("Users".id)
+    from "SimpleEntities"
+    join "Users" on "SimpleEntities".id = "Users".id
+    left outer join (
+        select
+            uid,
+            array_agg(did) as dep_ids,
+            array_agg(name) as dep_names
+        from "User_Departments"
+        join "SimpleEntities" on "User_Departments".did = "SimpleEntities".id
+        group by uid
+    ) as user_departments on user_departments.uid = "Users".id
+    left outer join (
+        select
+            uid,
+            array_agg(gid) as group_ids,
+            array_agg(name) as group_names
+        from "User_Groups"
+        join "SimpleEntities" on "User_Groups".gid = "SimpleEntities".id
+        group by uid
+    ) as user_groups on user_groups.uid = "Users".id
+    left outer join (
+        select resource_id, count(task_id) as task_count from "Task_Resources" group by resource_id
+    ) as tasks on tasks.resource_id = "Users".id
+    left outer join (
+        select
+            owner_id,
+            count("Tickets".id) as ticket_count
+        from "Tickets"
+        join "SimpleEntities" on "Tickets".status_id = "SimpleEntities".id
+        where "SimpleEntities".name = 'New'
+        group by owner_id, name
+    ) as tickets on tickets.owner_id = "Users".id
+    left outer join "Links" on "SimpleEntities".thumbnail_id = "Links".id
+    """
+
+    if entity_type == "Project":
+        sql_query += """join "Project_Users" on "Users".id = "Project_Users".user_id
+        where "Project_Users".project_id = %(id)s
+        """ % {'id': entity_id}
+    elif entity_type == "Department":
+        sql_query += """join "User_Departments" on "Users".id = "User_Departments".uid
+        where "User_Departments".did = %(id)s
+        """ % {'id': entity_id}
+    elif entity_type == "Group":
+        sql_query += """join "User_Groups" on "Users".id = "User_Groups".uid
+        where "User_Groups".gid = %(id)s
+        """ % {'id': entity_id}
+    elif entity_type == "Task":
+        sql_query += """join "Task_Resources" on "Users".id = "Task_Resources".resource_id
+        where "Task_Resources".task_id = %(id)s
+        """ % {'id': entity_id}
+    elif entity_type == "User":
+        sql_query += 'where "Users".id = %s' % entity_id
+
+    return DBSession.connection().execute(sql_query).fetchone()[0]
 
 
 @view_config(
