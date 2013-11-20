@@ -599,7 +599,7 @@ define([
             // let it adjust the scrollbars
             column.grid.resize();
 
-            if (column.grid.is_hidden_column(column_set)){
+            if (column.grid.is_hidden_column('set-1')){
                 column.grid.hide_column('set-1');
             }
 
