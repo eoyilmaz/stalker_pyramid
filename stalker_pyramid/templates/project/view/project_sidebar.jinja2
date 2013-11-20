@@ -40,7 +40,7 @@
                 "{%- if request.current_route_path() == request.route_path('list_entity_tickets', id=project.id) -%}'active',{%- else -%},{%- endif -%}",
                 '{{ request.route_url('list_entity_tickets', id=project.id) }}',
                 'icon-ticket',
-                '{{ project.tickets | count }}')
+                '{{ project.open_tickets | count }}')
         menu_of('Assets',
                 "{%- if request.current_route_path() == request.route_path('list_project_assets', id=project.id) -%}'active',{%- else -%},{%- endif -%}",
                 '{{ request.route_url('list_project_assets', id=project.id) }}',
