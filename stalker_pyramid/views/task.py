@@ -676,225 +676,225 @@ def get_tasks(request):
     parent_id = request.params.get('parent_id')
     task_id = request.params.get('task_id')
 
-    #logger.debug('parent_id: %s' % parent_id)
-    #logger.debug('task_id  : %s' % task_id)
-
-    return_data = []
-    # set the content range to prevent JSONRest Store to query the data twice
-    content_range = '%s-%s/%s'
-    tasks = []
-    if task_id:
-        task = Entity.query.filter(Entity.id == task_id).first()
-        if isinstance(task, Project):
-            return_data = convert_to_dgrid_gantt_project_format([task])
-            content_range = content_range % (0, 0, 1)
-        elif isinstance(task, Task):
-            return_data = convert_to_dgrid_gantt_task_format([task])
-            content_range = content_range % (0, 0, 1)
-    elif parent_id:
-        parent = Entity.query.filter(Entity.id == parent_id).first()
-
-        if isinstance(parent, Project):
-            tasks = parent.root_tasks
-        elif isinstance(parent, Task):
-            #tasks = Task.query\
-            #            .filter(Task.parent_id == parent_id)\
-            #            .order_by(Task.name).all()
-
-            # do your magic here
-            sql_query = """select
-    "Tasks".bid_timing as bid_timing,
-    "Tasks".bid_unit as bid_unit,
-    coalesce(
-        -- for parent tasks
-        "Tasks"._total_logged_seconds::float / "Tasks"._schedule_seconds * 100,
-        -- for child tasks we need to count the total seconds of related TimeLogs
-        (coalesce("Task_TimeLogs".duration, 0.0))::float /
-            ("Tasks".schedule_timing * (case "Tasks".schedule_unit
+    sql_query = """select
+        "Tasks".bid_timing as bid_timing,
+        "Tasks".bid_unit as bid_unit,
+        coalesce(
+            -- for parent tasks
+            "Tasks"._total_logged_seconds::float / "Tasks"._schedule_seconds * 100,
+            -- for child tasks we need to count the total seconds of related TimeLogs
+            (coalesce("Task_TimeLogs".duration, 0.0))::float /
+                ("Tasks".schedule_timing * (case "Tasks".schedule_unit
+                    when 'h' then 3600
+                    when 'd' then 32400
+                    when 'w' then 147600
+                    when 'm' then 590400
+                    when 'y' then 7696277
+                    else 0
+                end)) * 100.0
+        ) as percent_complete,
+        array_agg(
+            distinct(
+                "Task_Dependencies".id,
+                "Task_Dependencies".name
+            )
+        ) as dependencies,
+        "SimpleEntities".description,
+        extract(epoch from coalesce("Tasks".computed_end, "Tasks".end)) * 1000 as end,
+        exists (
+           select 1
+            from "Tasks" as "Child_Tasks"
+            where "Child_Tasks".parent_id = "Tasks".id
+        ) as hasChildren,
+        "Task_Hierarchy".parent_names as hierarchy_name,
+        "Tasks".id as id,
+        '/' || lower("SimpleEntities".entity_type) || 's/' || "Tasks".id || '/view' as link,
+        "SimpleEntities".name,
+        "Tasks".id as parent_id,
+        "Tasks".priority as priority,
+        array_agg(
+            distinct(
+                "Task_Resources".resource_id,
+                "Task_Resources".resource_name
+            )
+        ) as reources,
+        "Tasks".schedule_model,
+        coalesce("Tasks"._schedule_seconds,
+            "Tasks".schedule_timing * (case "Tasks".schedule_unit
                 when 'h' then 3600
                 when 'd' then 32400
                 when 'w' then 147600
                 when 'm' then 590400
                 when 'y' then 7696277
                 else 0
-            end)) * 100.0
-    ) as percent_complete,
-    array_agg(
-        distinct(
-            "Task_Dependencies".id,
-            "Task_Dependencies".name
-        )
-    ) as dependencies,
-    "SimpleEntities".description,
-    extract(epoch from coalesce("Tasks".computed_end, "Tasks".end)) * 1000 as end,
-    exists (
-       select 1
-        from "Tasks" as "Child_Tasks"
-        where "Child_Tasks".parent_id = "Tasks".id
-    ) as hasChildren,
-    "Task_Hierarchy".parent_names as hierarchy_name,
-    "Tasks".id as id,
-    '/' || lower("SimpleEntities".entity_type) || 's/' || "Tasks".id || '/view' as link,
-    "SimpleEntities".name,
-    "Tasks".id as parent_id,
-    "Tasks".priority as priority,
-    array_agg(
-        distinct(
-            "Task_Resources".resource_id,
-            "Task_Resources".resource_name
-        )
-    ) as reources,
-    "Tasks".schedule_model,
-    coalesce("Tasks"._schedule_seconds,
-        "Tasks".schedule_timing * (case "Tasks".schedule_unit
-            when 'h' then 3600
-            when 'd' then 32400
-            when 'w' then 147600
-            when 'm' then 590400
-            when 'y' then 7696277
-            else 0
-        end)
-    ) as schedule_seconds,
-    "Tasks".schedule_timing,
-    "Tasks".schedule_unit,
-    extract(epoch from coalesce("Tasks".computed_start, "Tasks".start)) * 1000 as start,
-    lower("Task_Status".code) as status,
-    coalesce(
-        -- for parent tasks
+            end)
+        ) as schedule_seconds,
+        "Tasks".schedule_timing,
+        "Tasks".schedule_unit,
+        extract(epoch from coalesce("Tasks".computed_start, "Tasks".start)) * 1000 as start,
+        lower("Task_Status".code) as status,
+        coalesce(
+            -- for parent tasks
+            "Tasks"._total_logged_seconds,
+            -- for child tasks we need to count the total seconds of related TimeLogs
+            coalesce("Task_TimeLogs".duration, 0.0)
+        ) as total_logged_seconds,
+        "SimpleEntities".entity_type
+    from "Tasks"
+        left outer join "Tasks" as "Parent_Tasks" on "Tasks".parent_id = "Parent_Tasks".id
+        -- TimeLogs for Leaf Tasks
+        left outer join (
+            select
+                "TimeLogs".task_id,
+                extract(epoch from sum("TimeLogs".end - "TimeLogs".start)) as duration
+            from "TimeLogs"
+            group by task_id
+        ) as "Task_TimeLogs" on "Task_TimeLogs".task_id = "Tasks".id
+        -- Dependencies
+        left outer join (
+            select
+                "SimpleEntities".id as id,
+                "SimpleEntities".name as name,
+                "Task_Dependencies".task_id
+            from "Task_Dependencies"
+                join "SimpleEntities" on "Task_Dependencies".depends_to_task_id = "SimpleEntities".id
+        ) as "Task_Dependencies" on "Tasks".id = "Task_Dependencies".task_id
+        join "SimpleEntities" on "Tasks".id = "SimpleEntities".id
+        -- hierarcy name
+        join (
+            select
+                parent_data.id as id,
+                "SimpleEntities".name || ' (' ||
+                array_to_string(array_agg(
+                    case
+                        when "SimpleEntities_parent".entity_type = 'Project'
+                        then "Projects".code
+                        else "SimpleEntities_parent".name
+                    end),
+                    ' | '
+                ) || ')'
+                as parent_names
+                from (
+                    with recursive parent_ids(id, parent_id, n) as (
+                            select task.id, coalesce(task.parent_id, task.project_id), 0
+                            from "Tasks" task
+                        union all
+                            select task.id, parent.parent_id, parent.n + 1
+                            from "Tasks" task, parent_ids parent
+                            where task.parent_id = parent.id
+                    )
+                    select
+                        parent_ids.id, parent_id as parent_id, parent_ids.n
+                        from parent_ids
+                        order by id, parent_ids.n desc
+                ) as parent_data
+                join "SimpleEntities" on "SimpleEntities".id = parent_data.id
+                join "SimpleEntities" as "SimpleEntities_parent" on "SimpleEntities_parent".id = parent_data.parent_id
+                left outer join "Projects" on parent_data.parent_id = "Projects".id
+                group by parent_data.id, "SimpleEntities".name
+        ) as "Task_Hierarchy" on "Tasks".id = "Task_Hierarchy".id
+        -- resources
+        left outer join (
+            select
+                "SimpleEntities".id as resource_id,
+                "SimpleEntities".name as resource_name,
+                "Task_Resources".task_id as task_id
+            from "Task_Resources"
+            join "SimpleEntities" on "Task_Resources".resource_id = "SimpleEntities".id
+        ) as "Task_Resources" on "Tasks".id = "Task_Resources".task_id
+        -- status
+        join "Statuses" as "Task_Status" on "Tasks".status_id = "Task_Status".id
+    where %(where_condition)s
+    group by
+        "Tasks".bid_timing,
+        "Tasks".bid_unit,
         "Tasks"._total_logged_seconds,
-        -- for child tasks we need to count the total seconds of related TimeLogs
-        coalesce("Task_TimeLogs".duration, 0.0)
-    ) as total_logged_seconds,
-    "SimpleEntities".entity_type
-from "Tasks"
-    join "Tasks" as "Parent_Tasks" on "Tasks".parent_id = "Parent_Tasks".id
-    -- TimeLogs for Leaf Tasks
-    left outer join (
-        select
-            "TimeLogs".task_id,
-            extract(epoch from sum("TimeLogs".end - "TimeLogs".start)) as duration
-        from "TimeLogs"
-        group by task_id
-    ) as "Task_TimeLogs" on "Task_TimeLogs".task_id = "Tasks".id
-    -- Dependencies
-    left outer join (
-        select
-            "SimpleEntities".id as id,
-            "SimpleEntities".name as name,
-            "Task_Dependencies".task_id
-        from "Task_Dependencies"
-            join "SimpleEntities" on "Task_Dependencies".depends_to_task_id = "SimpleEntities".id
-    ) as "Task_Dependencies" on "Tasks".id = "Task_Dependencies".task_id
-    join "SimpleEntities" on "Tasks".id = "SimpleEntities".id
-    -- hierarcy name
-    join (
-        select
-            parent_data.id as id,
-            "SimpleEntities".name || ' (' ||
-            array_to_string(array_agg(
-                case
-                    when "SimpleEntities_parent".entity_type = 'Project'
-                    then "Projects".code
-                    else "SimpleEntities_parent".name
-                end),
-                ' | '
-            ) || ')'
-            as parent_names
-            from (
-                with recursive parent_ids(id, parent_id, n) as (
-                        select task.id, coalesce(task.parent_id, task.project_id), 0
-                        from "Tasks" task
-                    union all
-                        select task.id, parent.parent_id, parent.n + 1
-                        from "Tasks" task, parent_ids parent
-                        where task.parent_id = parent.id
-                )
-                select
-                    parent_ids.id, parent_id as parent_id, parent_ids.n
-                    from parent_ids
-                    order by id, parent_ids.n desc
-            ) as parent_data
-            join "SimpleEntities" on "SimpleEntities".id = parent_data.id
-            join "SimpleEntities" as "SimpleEntities_parent" on "SimpleEntities_parent".id = parent_data.parent_id
-            left outer join "Projects" on parent_data.parent_id = "Projects".id
-            group by parent_data.id, "SimpleEntities".name
-    ) as "Task_Hierarchy" on "Tasks".id = "Task_Hierarchy".id
-    -- resources
-    left outer join (
-        select
-            "SimpleEntities".id as resource_id,
-            "SimpleEntities".name as resource_name,
-            "Task_Resources".task_id as task_id
-        from "Task_Resources"
-        join "SimpleEntities" on "Task_Resources".resource_id = "SimpleEntities".id
-    ) as "Task_Resources" on "Tasks".id = "Task_Resources".task_id
-    -- status
-    join "Statuses" as "Task_Status" on "Tasks".status_id = "Task_Status".id
-where "Parent_Tasks".id = %(parent_id)s
-group by
-    "Tasks".bid_timing,
-    "Tasks".bid_unit,
-    "Tasks"._total_logged_seconds,
-    "Tasks"._schedule_seconds,
-    "Tasks".id,
-    "Task_TimeLogs".duration,
-    "Tasks".schedule_timing,
-    "Tasks".schedule_unit,
-    "SimpleEntities".description,
-    "Tasks".computed_end,
-    "Tasks".end,
-    "Task_Hierarchy".parent_names,
-    "SimpleEntities".entity_type,
-    "SimpleEntities".name,
-    "Tasks".id,
-    "Tasks".priority,
-    "Tasks".responsible_id,
-    "Tasks".schedule_model,
-    "Tasks".computed_start,
-    "Tasks".start,
-    "Task_Status".code
-order by "SimpleEntities".name
-            """ % {'parent_id': parent_id}
+        "Tasks"._schedule_seconds,
+        "Tasks".id,
+        "Task_TimeLogs".duration,
+        "Tasks".schedule_timing,
+        "Tasks".schedule_unit,
+        "SimpleEntities".description,
+        "Tasks".computed_end,
+        "Tasks".end,
+        "Task_Hierarchy".parent_names,
+        "SimpleEntities".entity_type,
+        "SimpleEntities".name,
+        "Tasks".id,
+        "Tasks".priority,
+        "Tasks".responsible_id,
+        "Tasks".schedule_model,
+        "Tasks".computed_start,
+        "Tasks".start,
+        "Task_Status".code
+    order by "SimpleEntities".name
+            """
 
-            # convert to dgrid format here in place
-            result = DBSession.connection().execute(sql_query)
+    # set the content range to prevent JSONRest Store to query the data twice
+    content_range = '%s-%s/%s'
 
-            # use local functions to speed things up
-            local_raw_data_to_array = raw_data_to_array
-            return_data = [
-                {
-                    'bid_timing': r[0],
-                    'bid_unit': r[1],
-                    'completed': r[2],
-                    'dependencies': local_raw_data_to_array(r[3]),
-                    'description': r[4],
-                    'end': r[5],
-                    'hasChildren': r[6],
-                    'hierarchy_name': r[7],
-                    'id': r[8],
-                    'link': r[9],
-                    'name': r[10],
-                    'parent': r[11],
-                    'priority': r[12],
-                    'resources': local_raw_data_to_array(r[13]),
-                    'schedule_model': r[14],
-                    'schedule_seconds': r[15],
-                    'schedule_timing': r[16],
-                    'schedule_unit': r[17],
-                    'start': r[18],
-                    'status': r[19],
-                    'total_logged_seconds': r[20],
-                    'type': r[21],
-                }
-                for r in result.fetchall()
-            ]
+    if task_id:
+        task = Entity.query.filter(Entity.id == task_id).first()
+        if isinstance(task, Project):
+            return_data = convert_to_dgrid_gantt_project_format([task])
+            # just return here to avoid any further error
+            content_range = content_range % (0, 1, 1)
+            resp = Response(
+                json_body=return_data
+            )
+            resp.content_range = content_range
+            end = time.time()
+            logger.debug('%s rows retrieved in %s seconds' % (len(return_data),
+                                                              (end - start)))
+            return resp
+        elif isinstance(task, Task):
+            where_condition = '"Tasks".id = %s' % task_id
 
-        # logger.debug(tasks)
-        if not return_data:
-            return_data = convert_to_dgrid_gantt_task_format(tasks)
+    elif parent_id:
+        parent = Entity.query.filter(Entity.id == parent_id).first()
 
-        task_count = len(return_data)
-        content_range = content_range % (0, task_count - 1, task_count)
+        if isinstance(parent, Project):
+            where_condition = '"Parent_Tasks".id is NULL and "Tasks".project_id = %s' % parent_id
+        elif isinstance(parent, Task):
+            where_condition = '"Parent_Tasks".id = %s' % parent_id
+
+    sql_query = sql_query % {'where_condition': where_condition}
+
+    # convert to dgrid format right here in place
+    result = DBSession.connection().execute(sql_query)
+
+    # use local functions to speed things up
+    local_raw_data_to_array = raw_data_to_array
+    return_data = [
+        {
+            'bid_timing': r[0],
+            'bid_unit': r[1],
+            'completed': r[2],
+            'dependencies': local_raw_data_to_array(r[3]),
+            'description': r[4],
+            'end': r[5],
+            'hasChildren': r[6],
+            'hierarchy_name': r[7],
+            'id': r[8],
+            'link': r[9],
+            'name': r[10],
+            'parent': r[11],
+            'priority': r[12],
+            'resources': local_raw_data_to_array(r[13]),
+            'schedule_model': r[14],
+            'schedule_seconds': r[15],
+            'schedule_timing': r[16],
+            'schedule_unit': r[17],
+            'start': r[18],
+            'status': r[19],
+            'total_logged_seconds': r[20],
+            'type': r[21],
+        }
+        for r in result.fetchall()
+    ]
+
+    task_count = len(return_data)
+    content_range = content_range % (0, task_count - 1, task_count)
 
     # logger.debug('return_data: %s' % return_data)
     end = time.time()
