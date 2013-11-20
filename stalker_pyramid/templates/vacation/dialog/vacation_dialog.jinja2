@@ -32,18 +32,19 @@
                        for='vacation_type'>Type</label>
 
                 <div class='span10'>
-{#                    <select id='vacation_type'#}
-{#                            class='input-block-level'#}
-{#                            name='type_name'#}
-{#                            required></select>#}
+                    {#                    <select id='vacation_type'#}
+                    {#                            class='input-block-level'#}
+                    {#                            name='type_name'#}
+                    {#                            required></select>#}
 
                     <input id='vacation_type'
-                               class='input-block-level'
-                               name='type_name'
-                               type='text'
-                               is_updating=false
-                               {% if mode=='update' %}{% if vacation.type %}value="{{ vacation.type.name }}"{% endif %}{% endif %}
-                               >
+                           class='input-block-level'
+                           name='type_name'
+                           type='text'
+                           is_updating=false
+                           {% if mode=='update' %}{% if vacation.type %}value="{{ vacation.type.name }}"
+                           {% endif %}{% endif %}
+                            >
                 </div>
             </div>
 
@@ -123,7 +124,8 @@ function init_dialog() {
     $('#dialog_template_label').find('span').remove();
     $('#dialog_template_label').append('<span>Vacation</span>')
 
-    $('#dialog_template_body').attr('style',"height: 300px");
+    $('#dialog_template_body').attr('style', "height: 300px");
+    $('#dialog_template_delete_button').hide()
 
     {# ***************************************************************** #}
     var event_dialog = $('#dialog_template')
@@ -145,19 +147,18 @@ function init_dialog() {
     //Type
 
     var vacation_type = $('#vacation_type');
-        // set the field to updating mode
+    // set the field to updating mode
 
 
-
-    $.getJSON('/types/?target_entity_type=Vacation').then(function(available_types){
-            vacation_type.autocomplete({
-                delay: 0,
-                source: available_types,
-                minLength: 0
-            });
-{#            if (type !== ''){#}
-{#                vacation_type.val(type);#}
-{#            }#}
+    $.getJSON('/types/?target_entity_type=Vacation').then(function (available_types) {
+        vacation_type.autocomplete({
+            delay: 0,
+            source: available_types,
+            minLength: 0
+        });
+        {#            if (type !== ''){#}
+        {#                vacation_type.val(type);#}
+        {#            }#}
 
     });
 
@@ -168,34 +169,34 @@ function init_dialog() {
 
     {% endif %}
 
-{#    var vacation_type = $('#vacation_type');#}
-{##}
-{#    {% raw %}#}
-{#    var type_option_template = doT.template(#}
-{#            '<option value={{=it.id}} {{=it.selected}}>{{=it.name}}</option>'#}
-{#    );#}
-{#    {% endraw %}#}
-{##}
-{##}
-{##}
-{#    {% for type in types %}#}
-{##}
-{#        var selected = '';#}
-{##}
-{#        {% if mode == 'update' %}#}
-{##}
-{#            {% if vacation.type.id == type.id %}#}
-{##}
-{#                selected = 'selected';#}
-{##}
-{#            {% endif %}#}
-{#        {% endif %}#}
-{##}
-{##}
-{#        var data = {id: '{{ type.name }}', name: '{{ type.name }}', selected: selected};#}
-{#        vacation_type.append(type_option_template(data));#}
-{##}
-{#    {% endfor %}#}
+    {#    var vacation_type = $('#vacation_type');#}
+    {##}
+    {#    {% raw %}#}
+    {#    var type_option_template = doT.template(#}
+    {#            '<option value={{=it.id}} {{=it.selected}}>{{=it.name}}</option>'#}
+    {#    );#}
+    {#    {% endraw %}#}
+    {##}
+    {##}
+    {##}
+    {#    {% for type in types %}#}
+    {##}
+    {#        var selected = '';#}
+    {##}
+    {#        {% if mode == 'update' %}#}
+    {##}
+    {#            {% if vacation.type.id == type.id %}#}
+    {##}
+    {#                selected = 'selected';#}
+    {##}
+    {#            {% endif %}#}
+    {#        {% endif %}#}
+    {##}
+    {##}
+    {#        var data = {id: '{{ type.name }}', name: '{{ type.name }}', selected: selected};#}
+    {#        vacation_type.append(type_option_template(data));#}
+    {##}
+    {#    {% endfor %}#}
 
 
 
@@ -236,6 +237,49 @@ function init_dialog() {
 
         start_time_value = start_date_value;
         end_time_value = end_date_value;
+
+        {% if has_permission('Delete_Vacation') %}
+
+            $('#dialog_template_delete_button').show();
+
+            $('#dialog_template_delete_button').on('click', function (e) {
+                e.stopPropagation();
+                e.preventDefault();
+
+                // disable the submit_button
+                var delete_button = $(this);
+                delete_button.button('loading');
+
+                bootbox.confirm('This vacation will be deleted <br><br>' +
+                        'Are you sure?', function (result) {
+                    if (result) {
+
+
+                        $.post(
+                                        '/vacations/{{ vacation.id}}/delete'
+                                ).done(function (response_text) {
+                                    bootbox.alert(response_text);
+                                    window.location.assign('{{ came_from }}');
+                                }).fail(function (jqXHR) {
+                                    bootbox.alert(jqXHR.responseText);
+                                    delete_button.button('reset');
+                                });
+
+                    }
+                    else {
+                        delete_button.button('reset');
+                    }
+                });
+
+
+            });
+        {% endif %}
+
+        {% if entity.entity_type != 'Studio' %}
+            if (vacation_type.val() == 'StudioWide') {
+                $('#dialog_template_delete_button').hide();
+            }
+        {% endif %}
 
     {% endif %}
 
@@ -338,8 +382,9 @@ function init_dialog() {
         var vacation_form = $('#vacation_form');
         {% if entity.entity_type != 'Studio' %}
             if (vacation_type.val() == 'StudioWide') {
-                $('#message').show();
-                $('#message').append("<p><strong><i class='icon-danger'>You can not create a vacation with type StudioWide</p>");
+
+                bootbox.alert("<p><strong><i class='icon-danger'>You can not create a vacation with type StudioWide</p>");
+
                 submit_button.button('reset');
                 return;
             }
@@ -347,19 +392,22 @@ function init_dialog() {
 
         if (vacation_form.validate()) {
             // merge end_date and end_time
+
+            vacation_type.attr('disabled', false)
+
             var start_end = get_start_end();
             var start = start_end[0];
             var end = start_end[1];
 
             $.post(
-                vacation_form.attr('action'),
-                vacation_form.serialize() + '&' + $.param({ 'start': start.toUTCString(), 'end': end.toUTCString() })
-            ).done(function () {
-                window.location.replace('{{ came_from }}');
-            }).fail(function (jqXHR) {
-                bootbox.alert(jqXHR.responseText);
-                submit_button.button('reset');
-            });
+                            vacation_form.attr('action'),
+                            vacation_form.serialize() + '&' + $.param({ 'start': start.toUTCString(), 'end': end.toUTCString() })
+                    ).done(function () {
+                        window.location.replace('{{ came_from }}');
+                    }).fail(function (jqXHR) {
+                        bootbox.alert(jqXHR.responseText);
+                        submit_button.button('reset');
+                    });
 
         }
     });

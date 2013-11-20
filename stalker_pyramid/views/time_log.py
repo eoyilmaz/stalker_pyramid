@@ -390,3 +390,31 @@ def get_time_logs(request):
     logger.debug('get_entity_time_logs took: %s seconds' % (end - start))
     return data
 
+@view_config(
+    route_name='delete_time_log',
+    permission='Delete_TimeLog'
+)
+def delete_time_log(request):
+    """deletes the time_log with the given id
+    """
+    time_log_id = request.matchdict.get('id')
+    time_log = TimeLog.query.get(time_log_id)
+
+    logger.debug('delete_time_log: %s' % time_log_id)
+
+    if not time_log:
+        transaction.abort()
+        return Response('Can not find a Time_log with id: %s' % time_log_id, 500)
+
+    try:
+        DBSession.delete(time_log)
+        transaction.commit()
+    except Exception as e:
+        transaction.abort()
+        c = StdErrToHTMLConverter(e)
+        transaction.abort()
+        return Response(c.html(), 500)
+
+    return Response('Successfully deleted time_log: %s' % time_log_id)
+
+

@@ -475,6 +475,8 @@ def main(global_config, **settings):
     config.add_route('create_time_log', 'time_logs/create')
     config.add_route('update_time_log', 'time_logs/{id}/update')
 
+    config.add_route('delete_time_log',  'time_logs/{id}/delete')
+
     config.add_route('get_task_time_logs',  'task/{id}/time_logs/')  # json
     config.add_route('list_task_time_logs', 'task/{id}/time_logs/list')  # html
 
@@ -503,6 +505,7 @@ def main(global_config, **settings):
 
     config.add_route('create_vacation', 'vacations/create')
     config.add_route('update_vacation', 'vacations/{id}/update')
+    config.add_route('delete_vacation',  'vacations/{id}/delete')
 
     # *************************************************************************
     # Version

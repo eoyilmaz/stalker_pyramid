@@ -26,8 +26,10 @@ from stalker import User, Studio, Vacation, Type, Entity
 from stalker import defaults
 
 from stalker.db import DBSession
+import transaction
+from webob import Response
 from stalker_pyramid.views import (get_logged_in_user, PermissionChecker,
-                                   milliseconds_since_epoch, get_date)
+                                   milliseconds_since_epoch, get_date, StdErrToHTMLConverter)
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -151,12 +153,13 @@ def create_vacation(request):
     start_date = get_date(request, 'start')
     end_date = get_date(request, 'end')
 
-    logger.debug('user_id     : %s' % user_id)
+    logger.debug('type_name     : %s' % type_name)
     logger.debug('user        : %s' % user)
     logger.debug('start_date  : %s' % start_date)
     logger.debug('end_date    : %s' % end_date)
+    logger.debug('user_id     : %s' % user_id)
 
-    if start_date and end_date:
+    if start_date and end_date and type_name:
         # we are ready to create the time log
         # Vacation should handle the extension of the effort
 
@@ -185,9 +188,9 @@ def create_vacation(request):
             )
             DBSession.add(vacation)
 
-            request.session.flash(
-                'success:<strong>%s</strong> vacation is created for <strong>%s</strong>.' % (type_.name, Studio.query.first().name)
-            )
+            # request.session.flash(
+            #     'success:<strong>%s</strong> vacation is created for <strong>%s</strong>.' % (type_.name, Studio.query.first().name)
+            # )
 
         else:
             logger.debug('its a personal vacation')
@@ -303,3 +306,31 @@ def get_vacations(request):
             'allDay': True,
             'status': ''
         } for vacation in vacations]
+
+
+@view_config(
+    route_name='delete_vacation',
+    permission='Delete_TimeLog'
+)
+def delete_vacation(request):
+    """deletes the vacation with the given id
+    """
+    vacation_id = request.matchdict.get('id')
+    vacation = Vacation.query.get(vacation_id)
+
+    logger.debug('delete_vacation: %s' % vacation_id)
+
+    if not vacation:
+        transaction.abort()
+        return Response('Can not find a Vacation with id: %s' % vacation_id, 500)
+
+    try:
+        DBSession.delete(vacation)
+        transaction.commit()
+    except Exception as e:
+        transaction.abort()
+        c = StdErrToHTMLConverter(e)
+        transaction.abort()
+        return Response(c.html(), 500)
+
+    return Response('Successfully deleted vacation: %s' % vacation_id)

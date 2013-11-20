@@ -11,6 +11,7 @@
             <div class='control-group'>
                 <label class='span2 control-label'
                        for='time_log_task'>Task</label>
+
                 <div class='span10'>
                     <select id='time_log_task'
                             name='task_id'
@@ -23,6 +24,7 @@
             <div class='control-group'>
                 <label class='span2 control-label'
                        for='time_log_resource'>Resource</label>
+
                 <div class='span10'>
                     <select id='time_log_resource'
                             class='input-block-level'
@@ -35,6 +37,7 @@
             <div class="control-group">
                 <label for="start_end_date_range_picker"
                        class="span2 control-label">Date</label>
+
                 <div class="span10 input-prepend">
                     <input id='start_end_date_range_picker'
                            name='start_and_end_dates'
@@ -51,6 +54,7 @@
             <div class="control-group">
                 <label class='span2 control-label'
                        for='start_time'>From</label>
+
                 <div class="span10 input-append bootstrap-timepicker">
                     <input id="start_time" name="start_time" type="text"
                            class="input-small"/>
@@ -76,8 +80,9 @@
 
             {# Description #}
             <div class="control-group">
-                <label class="span2 control-label" for="description">
+                <label class="span2 control-label" for="time_log_description">
                     Description</label>
+
                 <div class="span10">
                     <textarea id="time_log_description"
                               name="description" rows="3"
@@ -93,7 +98,7 @@
     <div class="space-10"></div>
     <div class="row-fluid padding18">
         <div class="progress progress-mini progress-success">
-            <div id="percent_bar" class="bar" style="width: 35%;"></div>
+            <div id="percent_bar" class="bar" style="width: 0%;"></div>
         </div>
         <div id="remaining_hours" class="infobox-content"></div>
     </div>
@@ -117,6 +122,7 @@ function init_dialog() {
     var dialog_template_label = $('#dialog_template_label');
     dialog_template_label.find('span').remove();
     dialog_template_label.append('<span>Timelog</span>');
+
 
     {# ***************************************************************** #}
     var event_dialog = $('#dialog_template');
@@ -167,16 +173,16 @@ function init_dialog() {
 
             if (remaining_hours_after_this_time_log >= 0) {
                 remaining_hours.append(
-                    "<span class='pull_left'>If you enter this time log, <strong>" +
-                    remaining_hours_after_this_time_log +
-                    "</strong> hours will remain to complete this task.</span>"
+                        "<span class='pull_left'>If you enter this time log, <strong>" +
+                                remaining_hours_after_this_time_log +
+                                "</strong> hours will remain to complete this task.</span>"
                 );
                 completed_percent = (100 - ((remaining_seconds_after_this_time_log / parseFloat(data[0].schedule_seconds)) * 100)).toFixed(1);
             } else {
                 remaining_hours.append("<span class='pull_left'>You entered <strong>" + remaining_hours_after_this_time_log + "</strong> extra hours. </span>");
                 completed_percent = 100;
             }
-            $('#percent_bar').attr('style','width:'+completed_percent+'%')
+            $('#percent_bar').attr('style', 'width:' + completed_percent + '%')
         });
     };
 
@@ -198,7 +204,7 @@ function init_dialog() {
             {# Task #}
             {% raw %}
             var task_option_template = doT.template(
-                '<option value={{=it.id}}>{{=it.name}}</option>'
+                    '<option value={{=it.id}}>{{=it.name}}</option>'
             );
             {% endraw %}
 
@@ -239,7 +245,7 @@ function init_dialog() {
             {# Resource #}
             {% raw %}
             var user_option_template = doT.template(
-                '<option value={{=it.id}}>{{=it.name}}</option>'
+                    '<option value={{=it.id}}>{{=it.name}}</option>'
             );
             {% endraw %}
 
@@ -278,6 +284,43 @@ function init_dialog() {
         end_time_value = end_date_value;
 
         update_hours_to_complete();
+
+        {% if has_permission('Delete_TimeLog') %}
+            $('#dialog_template_delete_button').show();
+
+            $('#dialog_template_delete_button').on('click', function (e) {
+                e.stopPropagation();
+                e.preventDefault();
+
+                // disable the submit_button
+                var delete_button = $(this);
+                delete_button.button('loading');
+
+                bootbox.confirm('This time log will be deleted <br><br>' +
+                        'Are you sure?', function (result) {
+                    if (result) {
+
+
+                        $.post(
+                                        '/time_logs/{{ time_log.id}}/delete'
+                                ).done(function (response_text) {
+                                    bootbox.alert(response_text);
+                                    window.location.assign('{{ came_from }}');
+                                }).fail(function (jqXHR) {
+                                    bootbox.alert(jqXHR.responseText);
+                                    delete_button.button('reset');
+                                });
+
+                    }
+                    else {
+                        delete_button.button('reset');
+                    }
+                });
+
+
+            });
+        {% endif %}
+
     {% endif %}
 
     {# ***************************************************************** #}
@@ -291,20 +334,20 @@ function init_dialog() {
         var end_time_string = $('#end_time').val().split(':');
 
         var start = new Date(
-            parseInt(start_date_string[2]),
-            parseInt(start_date_string[0]) - 1,
-            parseInt(start_date_string[1]),
-            parseInt(start_time_string[0]),
-            parseInt(start_time_string[1]),
-            0, 0
+                parseInt(start_date_string[2]),
+                parseInt(start_date_string[0]) - 1,
+                parseInt(start_date_string[1]),
+                parseInt(start_time_string[0]),
+                parseInt(start_time_string[1]),
+                0, 0
         );
         var end = new Date(
-            parseInt(end_date_string[2]),
-            parseInt(end_date_string[0]) - 1,
-            parseInt(end_date_string[1]),
-            parseInt(end_time_string[0]),
-            parseInt(end_time_string[1]),
-            0, 0
+                parseInt(end_date_string[2]),
+                parseInt(end_date_string[0]) - 1,
+                parseInt(end_date_string[1]),
+                parseInt(end_time_string[0]),
+                parseInt(end_time_string[1]),
+                0, 0
         );
 
         return [start, end];
@@ -324,7 +367,7 @@ function init_dialog() {
         // fix z-index of the container
         // start_end_date_range_picker.data().daterangepicker.container.css({'z-index': 1060});
         start_end_date_range_picker.val(
-            start_date_value.format('mm/dd/yyyy') + ' - ' + end_date_value.format('mm/dd/yyyy')
+                start_date_value.format('mm/dd/yyyy') + ' - ' + end_date_value.format('mm/dd/yyyy')
         );
 
         start_end_date_range_picker.data().daterangepicker.updateFromControl();
@@ -394,15 +437,15 @@ function init_dialog() {
             var end = start_end[1];
 
             $.post(
-                time_log_form.attr('action'),
-                time_log_form.serialize() + '&' +
-                $.param({ 'start': start.toUTCString(), 'end': end.toUTCString() })
-            ).done(function () {
-                window.location.assign('{{ came_from }}');
-            }).fail(function (jqXHR) {
-                bootbox.alert(jqXHR.responseText);
-                submit_button.button('reset');
-            });
+                            time_log_form.attr('action'),
+                            time_log_form.serialize() + '&' +
+                                    $.param({ 'start': start.toUTCString(), 'end': end.toUTCString() })
+                    ).done(function () {
+                        window.location.assign('{{ came_from }}');
+                    }).fail(function (jqXHR) {
+                        bootbox.alert(jqXHR.responseText);
+                        submit_button.button('reset');
+                    });
         }
     });
 

@@ -529,6 +529,7 @@
         $(function () {
             var event_dialog = $('#dialog_template');
             event_dialog.on('shown', function (e) {
+                $('#dialog_template_delete_button').hide()
                 e.stopPropagation();
                 e.preventDefault();
                 init_dialog();
