@@ -48,6 +48,10 @@ Stalker Pyramid Changes
   parent statuses according to the task/status pipeline.
 * **New:** GanttChart columns can now be toggled without any problem in tree
   expansion.
+* **Update:** ``stalker_pyramid.views.tasks.get_tasks()`` is now using raw sql
+  query which is around ~300x faster then previous pure Python implementation.
+* **New:** It is now possible to select a parent task in GanttGrid by left
+  clicking from keyboard, and then collapsing the parent with a second click.
 
 0.1.1
 =====

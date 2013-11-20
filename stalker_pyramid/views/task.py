@@ -711,7 +711,7 @@ def get_tasks(request):
         "Tasks".id as id,
         '/' || lower("SimpleEntities".entity_type) || 's/' || "Tasks".id || '/view' as link,
         "SimpleEntities".name,
-        "Tasks".id as parent_id,
+        coalesce("Parent_Tasks".id, "Tasks".project_id) as parent_id,
         "Tasks".priority as priority,
         array_agg(
             distinct(
@@ -827,7 +827,8 @@ def get_tasks(request):
         "Tasks".schedule_model,
         "Tasks".computed_start,
         "Tasks".start,
-        "Task_Status".code
+        "Task_Status".code,
+        "Parent_Tasks".id
     order by "SimpleEntities".name
             """
 
@@ -886,7 +887,7 @@ def get_tasks(request):
             'id': r[8],
             'link': r[9],
             'name': r[10],
-            'parent': r[11],
+            'parent_id': r[11],
             'priority': r[12],
             'resources': local_raw_data_to_array(r[13]),
             'schedule_model': r[14],

@@ -34,7 +34,7 @@
                     "{%- if request.current_route_path() == request.route_path('list_entity_tickets', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
                     '{{ request.route_url('list_entity_tickets', id=user.id) }}',
                     'icon-ticket',
-                    '{{ user.tickets | count }}')
+                    '{{ user.open_tickets | count }}')
 
             menu_of('Vacations',
                     "{%- if request.current_route_path() == request.route_path('list_entity_vacations', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
