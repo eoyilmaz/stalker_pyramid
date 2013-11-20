@@ -4,20 +4,47 @@
 
 <div class="sidebar-shortcuts" id="sidebar-shortcuts">
     <div class="sidebar-shortcuts-large" id="sidebar-shortcuts-large">
-        <button class="btn btn-small btn-success">
-            <i class="icon-signal"></i>
-        </button>
+        {% if has_permission('Update_Task') %}
+            <button data-target="#dialog_template"
+                    data-toggle="modal"
+                    data-keyboard="false"
+                    href='{{ request.route_url("update_task_dialog", id=entity.id) }}'
+                    class="btn btn-small btn-info tooltip-info"
+                    data-rel="tooltip" data-placement="bottom"
+                    title="Update Task">
+                <i class="icon-pencil"></i>
+            </button>
+        {% endif %}
 
-        <button class="btn btn-small btn-info">
-            <i class="icon-pencil"></i>
-        </button>
+        {% if logged_in_user in entity.resources  and entity.status.code == 'WIP' %}
+            <button id='task_review_button'
+                    class="btn btn-small btn-warning tooltip-success"
+                    data-rel="tooltip"
+                    data-placement="bottom"
+                    title="Request Review"
+                    href='/tasks/{{ task.id }}/request_review'
+                    >
+                <i class="icon-reply"></i>
+            </button>
+        {% endif %}
 
-        <button class="btn btn-small btn-warning">
-            <i class="icon-group"></i>
-        </button>
-
-        <button class="btn btn-small btn-danger">
-            <i class="icon-cogs"></i>
+        {% if entity.responsible == logged_in_user and entity.status.code == 'PREV' %}
+            <button id='task_review_button'
+                    class="btn btn-small btn-success tooltip-success"
+                    data-rel="tooltip"
+                    data-placement="bottom"
+                    title="Review Task"
+                    data-target="#dialog_template"
+                    data-toggle="modal"
+                    data-keyboard="false"
+                    href='{{ request.route_url("review_task_dialog", id=entity.id) }}'
+                    >
+                <i class="icon-comment"></i> Review
+            </button>
+        {% endif %}
+        <button class="btn btn-small btn-danger tooltip-success"
+                data-rel="tooltip" data-placement="bottom" title="Delete Task">
+            <i class="icon-trash"></i>
         </button>
     </div>
 
@@ -32,92 +59,59 @@
     </div>
 </div><!--#sidebar-shortcuts-->
 
-<ul class='nav nav-list'>
-    {# Thumbnail #}
-    <li>
-
-    </li>
-
-    {#Dashboard#}
-    {% if request.current_route_path() == request.route_path('view_task', id=task.id) %}
-        <li class='active'>
-            <a>
-                <i class="icon-dashboard"></i>
-                <span class="menu-text">Dashboard</span>
-            </a>
-        </li>
-    {% else %}
-        <li>
-            <a href='{{ request.route_url('view_task', id=task.id) }}'>
-                <i class="icon-dashboard"></i>
-                <span class="menu-text">Dashboard</span>
-            </a>
-        </li>
-    {% endif %}
+<ul id="sidebar_list" class='nav nav-list'>
 
 
-    {# Tasks #}
-    {% if request.current_route_path() == request.route_path('list_entity_tasks', id=task.id) %}
-        <li class='active'>
-            <a>
-                <i class="icon-tasks"></i>
-                <span class="menu-text">Tasks</span>
-                <span class='badge badge-info'>{{ task.tasks | count }}</span>
-            </a>
-        </li>
-    {% else %}
-        <li>
-            <a href='{{ request.route_url('list_entity_tasks', id=task.id) }}'>
-                <i class="icon-tasks"></i>
-                <span class="menu-text">Tasks</span>
-                <span class='badge badge-info'>{{ task.tasks | count }}</span>
-            </a>
-        </li>
-    {% endif %}
-
-    {# Versions #}
-    {% if request.current_route_path() == request.route_path('list_task_versions', id=task.id) %}
-        <li class='active'>
-            <a>
-                <i class="icon-sitemap"></i>
-                <span class="menu-text">Versions</span>
-                <span class='badge badge-success'>{{ task.versions | count }}</span>
-            </a>
-        </li>
-    {% else %}
-        <li>
-            <a href='{{ request.route_url('list_task_versions', id=task.id) }}'>
-                <i class="icon-sitemap"></i>
-                <span class="menu-text">Versions</span>
-                <span class='badge badge-success'>{{ task.versions | count }}</span>
-            </a>
-        </li>
-    {% endif %}
-
-    {# References #}
-    {% if request.current_route_path() == request.route_path('list_task_references', id=task.id) %}
-        <li class='active'>
-            <a>
-                <i class="icon-book"></i>
-                <span class="menu-text">References</span>
-                <span id='reference_count' class='badge badge-important'></span>
-            </a>
-        </li>
-    {% else %}
-        <li>
-            <a href='{{ request.route_url('list_task_references', id=task.id) }}'>
-                <i class="icon-book"></i>
-                <span class="menu-text">References</span>
-                <span id='reference_count' class='badge badge-important'></span>
-            </a>
-        </li>
-    {% endif %}
 </ul>
 
 <script type="text/javascript">
-    $(function(){
-        $.getJSON('/entities/{{ entity.id }}/references/count/').then(function(data){
+    $(function () {
+        $.getJSON('/entities/{{ entity.id }}/references/count/').then(function (data) {
             $('#reference_count').text(data);
+
+            menu_of('References',
+                    "
+                            {%- if request.current_route_path() == request.route_path('list_task_references', id=task.id) -%}
+                                'active',{%- else -%},{%- endif -%}",
+                    '{{ request.route_url('list_task_references', id=task.id) }}',
+                    'icon-user',
+                    data)
         });
     });
-</script> 
+</script>
+
+<script type="text/javascript">
+
+
+    $(document).ready(function () {
+
+        menu_of('Dashboard',
+                "
+                        {%- if request.current_route_path() == request.route_path('view_task', id=task.id) -%}
+                            'active',{%- else -%},{%- endif -%}",
+                '{{ request.route_url('view_task', id=task.id) }}',
+                'icon-dashboard',
+                '')
+
+
+        menu_of('Tasks',
+                "
+                        {%- if request.current_route_path() == request.route_path('list_entity_tasks', id=task.id) -%}
+                            'active',{%- else -%},{%- endif -%}",
+                '{{ request.route_url('list_entity_tasks', id=task.id) }}',
+                'icon-tasks',
+                '{{ task.tasks | count }}')
+
+        menu_of('Versions',
+                "
+                        {%- if request.current_route_path() == request.route_path('list_task_versions', id=task.id) -%}
+                            'active',{%- else -%},{%- endif -%}",
+                '{{ request.route_url('list_task_versions', id=task.id) }}',
+                'icon-sitemap',
+                '{{ task.versions | count }}')
+
+
+    })
+</script>
+
+

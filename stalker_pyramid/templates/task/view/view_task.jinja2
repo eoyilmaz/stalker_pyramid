@@ -18,6 +18,7 @@
 
 {#SIDEBAR#}
 {% block sidebar %}
+
     {% include 'sidebar.jinja2' %}
 {% endblock sidebar %}
 
@@ -265,7 +266,7 @@
                 var entity_id = {{ entity.id }};
         
                 bootbox.confirm(
-                    '<div><p>This will send the responsible of this task a ' +
+                    '<div class="alert alert-info bigger-110">This will send the responsible of this task a ' +
                     '<strong>review request</strong> and you will ' +
                     '<strong>not</strong> be able to ' +
                     '<strong>create any TimeLogs</strong> for this task ' +
