@@ -595,7 +595,7 @@ require([
 
     // allow the gantt to resize with the window
     $(window).on('resize', function(){
-        var gantt_height = $(window).height() - 230;
+        var gantt_height = $(window).height() - 170; {# 230 #}
         $('#' + gantt_chart_dom_id).css({height: gantt_height});
     });
     $(window).trigger('resize');
