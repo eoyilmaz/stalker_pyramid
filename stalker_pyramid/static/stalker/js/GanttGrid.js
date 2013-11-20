@@ -24,20 +24,76 @@ define([
     "use strict";
     return declare([OnDemandGrid, ColumnSet, Selection, Keyboard, DijitRegistry, ColumnResizer], {
         keyMap: lang.mixin({}, Keyboard.defaultKeyMap, {
-            //    37 - left
-            //    38 - up
-            //    39 - right
-            //    40 - down
+            38: function () { // up arrow
+                var id, selection = [];
+                for (id in this.selection) {
+                    selection.push(id);
+                }
+                var selected_count = selection.length;
+                if (selected_count) {
+                    var last_selected_row = selection[selected_count - 1];
+                    var upper_row = this.up(last_selected_row, 1, true);
+                    if (upper_row) {
+                        var grid = this;
+                        setTimeout(function () {
+                            grid.clearSelection();
+                        }, 0);
+                        setTimeout(function () {
+                            grid.select(upper_row);
+                        }, 0);
+                    }
+                }
+            },
+            40: function () { // down arrow
+                var id, selection = [];
+                for (id in this.selection) {
+                    selection.push(id);
+                }
+                var selected_count = selection.length;
+                if (selected_count) {
+                    var last_selected_row = selection[selected_count - 1];
+                    var down_row = this.down(last_selected_row, 1, true);
+                    if (down_row) {
+                        var grid = this;
+                        setTimeout(function () {
+                            grid.clearSelection();
+                        }, 0);
+                        setTimeout(function () {
+                            grid.select(down_row);
+                        }, 0);
+                    }
+                }
+            },
             39: function () { // right arrow
                 var obj;
                 for (obj in this.selection) {
                     this.expand(obj, true);
                 }
             },
-            37: function () {  // left arrow
-                var obj;
-                for (obj in this.selection) {
-                    this.expand(obj, false);
+            37: function (event) {  // left arrow
+                var obj_id, row, expanded, parent_id;
+
+                console.log('this.selection :', this.selection);
+
+                for (obj_id in this.selection) {
+                    row = this.row(obj_id);
+
+                    // if it is an expanded column collapse it
+                    expanded = this._expanded[row.id];
+                    if (expanded) {
+                        this.expand(obj_id, false);
+                    } else {
+                        parent_id = row.data.parent_id;
+                        if (parent_id) {
+                            var grid = this;
+                            setTimeout(function () {
+                                grid.clearSelection();
+                            }, 0);
+                            setTimeout(function () {
+                                grid.select(grid.row(parent_id));
+                            }, 0);
+                        }
+                    }
                 }
             },
             65: function () { // "a"

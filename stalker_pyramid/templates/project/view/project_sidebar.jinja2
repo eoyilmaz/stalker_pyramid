@@ -65,4 +65,52 @@
     })
 </script>
 
+<script type="text/javascript">
+    $.getJSON('/projects/{{ entity.id }}/tasks/count/').then(function (data) {
+        $(function(){
+            $('#Tasks_count').text(data);
+        })
+    });
+</script>
+
+<script type="text/javascript">
+    $.getJSON('/projects/{{ entity.id }}/assets/count/').then(function (data) {
+        $(function(){
+            $('#Assets_count').text(data);
+        })
+    });
+</script>
+
+<script type="text/javascript">
+    $.getJSON('/projects/{{ entity.id }}/sequences/count/').then(function (data) {
+        $(function () {
+            $('#Sequences_count').text(data);
+        });
+    });
+</script>
+
+<script type="text/javascript">
+    $.getJSON('/projects/{{ entity.id }}/shots/count/').then(function (data) {
+        $(function () {
+            $('#Shots_count').text(data);
+        });
+    });
+</script>
+
+<script type="text/javascript">
+    $.getJSON('/entities/{{ entity.id }}/references/count/').then(function (data) {
+        $(function (){
+            $('#References_count').text(data);
+        });
+    });
+</script>
+
+<script type="text/javascript">
+    $.getJSON('/entities/{{ entity.id }}/users/count/').then(function (data) {
+        $(function (){
+            $('#Users_count').text(data);
+        });
+    });
+</script>
+
 

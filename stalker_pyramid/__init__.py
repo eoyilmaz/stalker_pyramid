@@ -130,6 +130,7 @@ def main(global_config, **settings):
 
     # get routes returns json
     config.add_route('get_entity_users',               'entities/{id}/users/')
+    config.add_route('get_entity_users_count',         'entities/{id}/users/count/')
     config.add_route('get_entity_users_not',           'entities/{id}/users/not')
     config.add_route('get_entity_references',          'entities/{id}/references/')
     config.add_route('get_entity_references_count',    'entities/{id}/references/count/')
@@ -236,6 +237,7 @@ def main(global_config, **settings):
 
     config.add_route('get_projects',               'projects/')
     config.add_route('get_project_users',          'projects/{id}/users/')
+    config.add_route('get_project_users_count',    'projects/{id}/users/count/')
     config.add_route('get_project_assets',         'projects/{id}/assets/')
     config.add_route('get_project_assets_count',   'projects/{id}/assets/count/')
     config.add_route('get_project_shots',          'projects/{id}/shots/')
@@ -306,6 +308,7 @@ def main(global_config, **settings):
 
     config.add_route('get_user',              'users/{id}/')  # json
     config.add_route('get_users',             'users/')  # json
+    config.add_route('get_users_count',       'users/count/')  # json
     config.add_route('get_user_departments',  'users/{id}/departments/')  # json
     config.add_route('get_user_groups',       'users/{id}/groups/')  # json
     config.add_route('get_user_tasks',        'users/{id}/tasks/')  # json

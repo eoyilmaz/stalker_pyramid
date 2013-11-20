@@ -406,7 +406,7 @@
                     <button class="btn btn-small btn-danger"
                             data-loading-text='<i class="icon-search bigger-120"></i>Zooming...'>
                         <i class="icon-search bigger-120"></i>
-                        Zoom
+                        Drag To Zoom
                     </button>
                 </div>
             
@@ -1030,7 +1030,9 @@ require([
             gantt_column.scrollToDate( (zoomed_dates.end + zoomed_dates.start) * 0.5 );
 
             // restore button
-            $('#gantt_zoom_selection').find('button').button('reset');
+            setTimeout(function(){ 
+                $('#gantt_zoom_selection').find('button').button('reset');
+            });
         });
     });
 
