@@ -1520,6 +1520,9 @@ def create_task(request):
         Task.id.in_(depends_to_ids)).all() if depends_to_ids else []
     logger.debug('depends: %s' % depends)
 
+    if not schedule_timing:
+        return Response('schedule_timing can not be 0', 500)
+
     kwargs['name'] = name
     kwargs['code'] = code
     kwargs['description'] = description
