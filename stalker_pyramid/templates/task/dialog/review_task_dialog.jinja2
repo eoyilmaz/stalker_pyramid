@@ -160,6 +160,10 @@
                 form_data
             ).done(function(){
                 $('#dialog_template').modal('hide');
+                // reload page
+                setTimeout(function () { // wait for hide event to finish
+                    window.location.reload();
+                }, 0);
             }).fail(function(jqXHR){
                 task_form.attr('is_sending', false);
 

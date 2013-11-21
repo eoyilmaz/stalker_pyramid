@@ -2,6 +2,16 @@
 Stalker Pyramid Changes
 =======================
 
+0.1.3
+=====
+
+* **Update:** Upgraded to `stalker v0.2.3.3`.
+* **Fix:** Any TicketLog created for a Ticket is now created with UTC time.
+* **Update:** When a Ticket is updated all of the previous commenters will also
+  receive emails.
+* **New:** Ticket status changes are also emailed to anybody related to the
+  particular ticket.
+
 0.1.2
 =====
 
