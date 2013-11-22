@@ -1233,6 +1233,7 @@ def get_user_tasks(request):
             'responsible_name': task.responsible.name,
             'responsible_id': task.responsible.id,
             'percent_complete': task.percent_complete,
+            'type':  task.type.name if task.type else '',
             'status': task.status.name,
             'status_color': task.status.html_class,
             'name': '%s (%s)' % (
