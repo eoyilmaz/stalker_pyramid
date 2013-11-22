@@ -1230,6 +1230,9 @@ def get_user_tasks(request):
     return [
         {
             'id': task.id,
+            'responsible_name': task.responsible.name,
+            'responsible_id': task.responsible.id,
+            'percent_complete': task.percent_complete,
             'status': task.status.name,
             'status_color': task.status.html_class,
             'name': '%s (%s)' % (
