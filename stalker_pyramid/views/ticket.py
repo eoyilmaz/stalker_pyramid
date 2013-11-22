@@ -20,6 +20,7 @@
 
 import time
 import logging
+import datetime
 
 from pyramid.httpexceptions import HTTPOk
 from pyramid.response import Response
@@ -33,7 +34,7 @@ from stalker.db import DBSession
 import transaction
 from stalker_pyramid.views import (get_logged_in_user, PermissionChecker,
                                    milliseconds_since_epoch,
-                                   dummy_email_address)
+                                   dummy_email_address, local_to_utc)
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -181,29 +182,47 @@ def update_ticket(request):
         transaction.abort()
         return Response('No ticket with id : %s' % ticket_id, 500)
 
+    utc_now = local_to_utc(datetime.datetime.now())
+    ticket_log = None
+
     if not action.startswith('leave_as'):
         if logged_in_user == ticket.owner or \
            logged_in_user == ticket.created_by:
             if action.startswith('resolve_as'):
                 resolution = action.split(':')[1]
-                ticket.resolve(logged_in_user, resolution)
+                ticket_log = ticket.resolve(logged_in_user, resolution)
             elif action.startswith('set_owner'):
                 user_id = int(action.split(':')[1])
                 assign_to = User.query.get(user_id)
-                ticket.reassign(logged_in_user, assign_to)
-                # send mail to the new owner
+                ticket_log = ticket.reassign(logged_in_user, assign_to)
             elif action.startswith('delete_resolution'):
-                ticket.reopen(logged_in_user)
+                ticket_log = ticket.reopen(logged_in_user)
+            ticket.date_updated = utc_now
+            if ticket_log:
+                ticket_log.date_created = utc_now
+                ticket_log.date_updated = utc_now
         else:
             transaction.abort()
             return Response(
-                'Error: You are not the owner nor the creator of this ticket\n\nSo, you do not have permission to update the ticket', 500
+                'Error: You are not the owner nor the creator of this ticket'
+                '\n\nSo, you do not have permission to update the ticket', 500
             )
 
+    # mail
+    recipients = [logged_in_user.email]
+    if ticket.created_by.email not in recipients:
+        recipients.append(ticket.created_by.email)
+
+    # inform the ticket owner
+    if ticket.owner not in recipients:
+        recipients.append(ticket.owner.email)
+
+    # mail the comment to anybody related to the ticket
     if comment:
         note = Note(
             content=comment,
             created_by=logged_in_user,
+            date_created=utc_now
         )
         ticket.comments.append(note)
         DBSession.add(note)
@@ -211,21 +230,25 @@ def update_ticket(request):
         # send email to the owner about the new comment
         mailer = get_mailer(request)
 
-        recipients = [logged_in_user.email]
-        if ticket.created_by.email not in recipients:
-            recipients.append(ticket.created_by.email)
+        # also inform ticket commenter
+        for t_comment in ticket.comments:
+            if t_comment.created_by not in recipients:
+                recipients.append(t_comment.created_by.email)
 
-        message_body = "%(who)s has added a the following comment to " \
-            "#%(ticket)s:\n\n%(comment)s"
+        message_body_text = "%(who)s has added a the following comment to " \
+            "%(ticket)s:\n\n%(comment)s"
 
-        message_body_text = message_body % \
+        message_body_html = "<div>%(who)s has added a the following comment " \
+            "to %(ticket)s:<br><br>%(comment)s</div>"
+
+        message_body_text = message_body_text % \
             {
                 'who': logged_in_user.name,
                 'ticket': "Ticket #%s" % ticket.number,
                 'comment': comment_as_text
             }
 
-        message_body_html = message_body % \
+        message_body_html = message_body_html % \
             {
                 'who': '<a href="%(link)s">%(name)s</a>' % {
                     'link': request.route_url('view_user',
@@ -236,11 +259,57 @@ def update_ticket(request):
                     'link': request.route_url('view_ticket', id=ticket.id),
                     'name': "Ticket #%s" % ticket.number
                 },
-                'comment': comment_as_text
+                'comment': comment  # use the raw html comment
             }
 
         message = Message(
             subject="Stalker Pyramid: New comment on Ticket #%s" %
+                    ticket.number,
+            sender=dummy_email_address,
+            recipients=recipients,
+            body=message_body_text,
+            html=message_body_html
+        )
+        mailer.send(message)
+
+    # mail about changes in ticket status
+    if ticket_log:
+        from stalker import TicketLog
+        assert isinstance(ticket_log, TicketLog)
+        mailer = get_mailer(request)
+
+        # just inform anybody in the previously created recipients list
+
+        message_body_text = \
+            '%(user)s has changed the status of %(ticket)s\n\n' \
+            'from "%(from)s" to "%(to)s"'
+
+        message_body_html =\
+            '''<div>%(user)s has changed the status of
+            %(ticket)s:<br><br>from "%(from)s" to "%(to)s"'''
+
+        message_body_text = message_body_text % {
+            'user': ticket_log.created_by.name,
+            'ticket': "Ticket #%s" % ticket.number,
+            'from': ticket_log.from_status.name,
+            'to': ticket_log.to_status.name
+        }
+
+        message_body_html = message_body_html % {
+            'user': '<a href="%(link)s">%(name)s</a>' % {
+                'link': request.route_url('view_user',
+                                          id=ticket_log.created_by.id),
+                'name': ticket_log.created_by.name
+            },
+            'ticket': '<a href="%(link)s">%(name)s</a>' % {
+                'link': request.route_url('view_ticket', id=ticket.id),
+                'name': "Ticket #%s" % ticket.number
+            },
+            'from': ticket_log.from_status.name,
+            'to': ticket_log.to_status.name
+        }
+        message = Message(
+            subject="Stalker Pyramid: Status Update on Ticket #%s" %
                     ticket.number,
             sender=dummy_email_address,
             recipients=recipients,

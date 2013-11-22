@@ -145,16 +145,11 @@
 
         // fill projects table with dynamic data
         $(document).ready(function () {
-
             var loadTableData = function (address, tableId, spinnerId) {
-
                 $.getJSON(address).then(function (data) {
-
                     var task_template = doT.template($('#tmpl_taskRow').html());
-
                     // wait until document is ready
                     $(function () {
-
                         var i;
                         var table_body = $('#' + tableId + '>tbody');
                         for (i = 0; i < data.length; i++) {
@@ -166,17 +161,18 @@
                             table_body.append(task_template(data[i]));
                         }
 
-                        var oTable1 = $('#' + tableId).dataTable();
-                        // sort asc to completed column
+                        var oTable1 = $('#' + tableId).dataTable({
+                            "aoColumns": [
+                                null, null, {'sType': 'num-html'}, null
+                            ]
+                        });
+                        // sort desc to completed column
                         oTable1.fnSort([[2, 'desc']]);
-
                     });
                     $('#' + tableId).show();
                     $('#' + spinnerId).hide();
                 });
-
-
-            }
+            };
 
             var table_template = doT.template($('#tmpl_table').html());
             var table_row = $('#table_row');
@@ -194,7 +190,6 @@
                     'table_spinner_id': 'loading_spinner_for_end'
                 })
             );
-
 
             loadTableData('/projects/{{ entity.id }}/tasks/progress/today/', 'tasks_in_progress', 'loading_spinner_for_progress');
             loadTableData('/projects/{{ entity.id }}/tasks/end/today/', 'tasks_supposed_to_end', 'loading_spinner_for_end');
