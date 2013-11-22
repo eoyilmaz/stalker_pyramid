@@ -870,7 +870,7 @@ def get_tasks(request):
 
     sql_query = sql_query % {'where_condition': where_condition}
 
-    logger.debug('sql_query : ' % sql_query)
+    logger.debug('sql_query : %s' % sql_query)
 
     # convert to dgrid format right here in place
     result = DBSession.connection().execute(sql_query)
