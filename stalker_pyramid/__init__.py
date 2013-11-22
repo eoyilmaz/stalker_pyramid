@@ -138,6 +138,8 @@ def main(global_config, **settings):
     config.add_route('get_entity_groups',              'entities/{id}/groups/')
     config.add_route('get_entity_tasks',               'entities/{id}/tasks/')
     config.add_route('get_entity_tasks_stats',         'entities/{id}/tasks_stats/')
+    # config.add_route('get_entity_tasks_by_status',     'entities/{id}/tasks/stats/{s_id}/')
+
     config.add_route('get_entity_tickets',             'entities/{id}/tickets/')
     config.add_route('get_entity_tickets_count',       'entities/{id}/tickets/count/')
     config.add_route('get_entity_time_logs',           'entities/{id}/time_logs/')

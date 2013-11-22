@@ -2016,6 +2016,7 @@ def get_entity_tasks_stats(request):
     for status in status_list.statuses:
         status_count_task.append({
             'name': status.name,
+            'id': status.id,
             'color': status.html_class,
             'icon': 'icon-folder-close-alt',
             'count': Task.query.join(entity.__class__, join_attr) \
@@ -2026,6 +2027,38 @@ def get_entity_tasks_stats(request):
         })
 
     return status_count_task
+
+#
+# @view_config(
+#     route_name='get_entity_tasks_by_status',
+#     renderer='json'
+# )
+# def get_entity_tasks_by_status(request):
+#     """runs when viewing an task
+#     """
+#     entity_id = request.matchdict.get('id', -1)
+#     entity = Entity.query.filter_by(id=entity_id).first()
+#
+#     __class__ = entity.__class__
+#
+#     join_attr = None
+#
+#     if entity.entity_type == 'User':
+#         join_attr = Task.resources
+#     elif entity.entity_type == 'Project':
+#         join_attr = Task.project
+#
+#     status_id = request.matchdict.get('s_id', -1)
+#
+#     tasks = Task.query.join(entity.__class__, join_attr) \
+#                 .filter(__class__.id == entity_id) \
+#                 .filter(Task.status_id ==status_id) \
+#                 .filter(Task.children == None)
+
+
+
+
+
 
 
 def unbind_task_hierarchy_from_tickets(task):
