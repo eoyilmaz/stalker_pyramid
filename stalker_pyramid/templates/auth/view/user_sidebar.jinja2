@@ -51,3 +51,21 @@
 
 </script>
 
+
+
+<script type="text/javascript">
+    $.getJSON('/users/{{ entity.id }}/tasks/count/').then(function (data) {
+        $(function(){
+            $('#Tasks_count').text(data);
+        })
+    });
+</script>
+
+<script type="text/javascript">
+    $.getJSON('/users/{{ entity.id }}/vacations/count/').then(function (data) {
+        $(function(){
+            $('#Vacations_count').text(data);
+        })
+    });
+</script>
+

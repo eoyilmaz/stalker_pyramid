@@ -133,8 +133,11 @@
     <script id="tmpl_itemThead" type="text/x-dot-template">
 
         <tr>
-             <th>Id</th>
+
              <th>Name</th>
+            <th>Responsible</th>
+            <th>Type</th>
+            <th>Completed</th>
             <th>Status</th>
 
         </tr>
@@ -145,13 +148,21 @@
     {% raw %}
     <script id="tmpl_itemRow" type="text/x-dot-template">
         <tr>
-            <td><a href='/tasks/{{=it.id}}/view'>{{=it.id}}</a>
-
             <td><a href='/tasks/{{=it.id}}/view'>{{=it.name}}</a>
+            <td><a href='/tasks/{{=it.responsible_id}}/view'>{{=it.responsible_name}}</a>
+            <td>{{=it.type}}</td>
+            <td>
+                <div class="progress progress-success">
+                    <div style="width:{{=it.percent_complete}}%"
+                         class="bar">
+                        <span class="pull-left">{{=it.percent_complete}}%</span>
+                    </div>
+                </div>
+            </td>
             <td>
                 <span class="label label-{{=it.status_color}}">{{=it.status}}</span>
             </td>
-            </td>
+
         </tr>
     </script>
     {% endraw %}
