@@ -552,7 +552,7 @@ def main(global_config, **settings):
 
     config.add_route('group_dialog',             'groups/{id}/{mode}/dialog')
 
-    config.add_route('dialog_create_group',      'groups/create/dialog')
+    config.add_route('create_group_dialog',      'groups/create/dialog')
     config.add_route('dialog_update_group',      'groups/{id}/update/dialog')
 
     config.add_route('create_group',        'groups/create')

@@ -40,7 +40,6 @@ logger.setLevel(logging.DEBUG)
     route_name='create_user_dialog',
     renderer='templates/auth/dialog/create_user_dialog.jinja2',
 )
-
 @view_config(
     route_name='list_entity_users',
     renderer='templates/auth/list/list_entity_users.jinja2'
@@ -68,6 +67,14 @@ logger.setLevel(logging.DEBUG)
 @view_config(
     route_name='view_user',
     renderer='templates/auth/view/view_user.jinja2'
+)
+@view_config(
+    route_name='group_dialog',
+    renderer='templates/group/dialog/group_dialog.jinja2',
+)
+@view_config(
+    route_name='create_group_dialog',
+    renderer='templates/group/dialog/create_group_dialog.jinja2',
 )
 @view_config(
     route_name='list_user_groups',

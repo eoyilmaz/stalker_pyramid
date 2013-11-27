@@ -43,7 +43,13 @@
                 </li>
             {% endif %}
             {% if has_permission('Create_Group') %}
-                <li><a href="/groups/-1/create/dialog">New Group</a>
+                <li><a class=""
+                           data-target="#dialog_template"
+                           data-toggle="modal"
+                           data-keyboard=false
+                           href='{{ request.route_url('create_group_dialog') }}?came_from={{ request.current_route_path() }}'>New Group
+                        </a>
+{#                    <a href="/groups/-1/create/dialog">New Group</a>#}
                 </li>
             {% endif %}
         </ul>
