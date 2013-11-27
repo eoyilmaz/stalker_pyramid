@@ -240,6 +240,7 @@
             </div>
 
             {# Update Bid #}
+            {% if mode == 'update' %}
             <div class='control-group'>
                 <label class="span3 control-label" for="task_update_bid">Update Bid</label>
                 <div class="span9">
@@ -251,6 +252,7 @@
                            />
                 </div>
             </div>
+            {% endif %}
 
             {# Priority #}
             <div class='control-group'>
