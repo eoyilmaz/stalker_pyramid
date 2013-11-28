@@ -1,27 +1,11 @@
 <div class="row-fluid">
 
-    <form id='group_form'
+    <form id='group_create_form'
           class='form-horizontal'
           role='form'
-          method="post"
-          action="{{ request.route_url('create_group') }}">
+          method='post'>
 
-
-        {#        Thumbnail #}
-        <div class="control-group">
-            <label class="span2 control-label"
-                   for="group_thumbnail">Thumbnail</label>
-
-            <div class="span3">
-                <input id="group_thumbnail"
-                       name='thumbnail'
-                       type="file"
-                       class="form-control"
-                        >
-            </div>
-        </div>
-
-        {#        Name #}
+        {#Name #}
         <div class="control-group">
             <label class="span2 control-label"
                    for="group_name">Name</label>
@@ -36,9 +20,10 @@
             </div>
         </div>
 
-        {#        Description #}
+        {#Description #}
         <div class='control-group'>
-            <label class='span2 control-label' for='group_description'>Description</label>
+            <label class='span2 control-label'
+                   for='group_description'>Description</label>
 
             <div class='span6'>
                 <textarea id="group_description"
@@ -48,17 +33,13 @@
                                      word-wrap: break-word;
                                      resize: horizontal;
                                      height: 50px;"
-                        >{% if mode=='update' %}
-                    {{ entity.description }}{% endif %}</textarea>
+                        ></textarea>
             </div>
         </div>
-    </form>
 
-    <form id='group_permission_create_form'
-          class='form-horizontal'
-          role='form'
-          method='post'>
-{% set mode='Create' %}
+        <div class="space-10"></div>
+        {#Permissions #}
+        {% set mode='Create' %}
         {% set address=request.route_url('get_group_permissions', id=-1) %}
         {% include 'group/list/list_group_permissions.jinja2' %}
 
@@ -73,7 +54,7 @@
 
     var permissions_loaded = function () {
 
-        $('.ace-checkbox-2').attr('disabled', false);
+
 
     }
 
@@ -83,35 +64,26 @@
         $('#dialog_template_label').find('span').remove();
         $('#dialog_template_label').append('<span>New Group</span>')
 
-        //$('#dialog_template').attr('style', "width:700px; height:800px");
+$('#dialog_template_body').attr('style', "height: 600px");
 
-        $('.ace-checkbox-2').on('click', function () {
 
-            console.log(this.id + ' ' + this.checked)
-            if (!this.checked) {
-                this.value = '';
-                return;
-            }
-            this.value = 'Allow';
-        });
 
         {# Submit Button #}
-        $('#dialog_template_submit_button').on('click', function (e) {
+        var submit_button = $('#dialog_template_submit_button');
+        submit_button.on('click', function (e) {
             e.stopPropagation();
             e.preventDefault();
 
             // disable the submit_button
-            var submit_button = $(this);
+
             submit_button.button('loading');
 
 
-            var group_form = $('#group_form');
-            var group_permission_form = $('#group_permission_create_form')
+            var group_create_form = $('#group_create_form')
 
             $.post(
                             "{{ request.route_url('create_group') }}",
-                            group_permission_form.serialize() + '&' +
-                                    $.param({ 'name': $('#group_name').val(), 'description': $('#group_name').val()})
+                            group_create_form.serialize()
                     ).done(function () {
 
                         window.location.assign('{{ came_from }}');
@@ -132,15 +104,12 @@
 <script type="text/javascript">
 
     function destruct_dialog() {
+
         $('.ace-checkbox-2').attr('disabled', true);
-        $('#group_form').unbind();
-        {#        $('#user_name').unbind();#}
-        {#        $('#user_login').unbind();#}
-        {#        $('#user_email').unbind();#}
-        {#        $('#user_password').unbind();#}
-        {#        $('#user_password2').unbind();#}
-        {#        $('#dialog_template_submit_button').unbind();#}
-        {##}
+        $('#group_create_form').unbind();
+        $('#group_name').unbind();
+        $('#group_description').unbind();
+        $('#dialog_template_submit_button').unbind();
         $('#dialog_template').data('modal', null);
 
     }

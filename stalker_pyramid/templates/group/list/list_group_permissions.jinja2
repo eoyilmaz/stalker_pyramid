@@ -27,7 +27,7 @@
                        name="Create_{{=it.label }}"
                        type="checkbox"
                        class="ace ace-checkbox-2"
-                       {{=it.Create}}>
+                {{=it.Create}}>
                 <span class="lbl"></span>
             </label>
         </td>
@@ -37,7 +37,7 @@
                        name="Read_{{=it.label }}"
                        type="checkbox"
                        class="ace ace-checkbox-2"
-                       {{=it.Read}}>
+                {{=it.Read}}>
                 <span class="lbl"></span>
             </label>
         </td>
@@ -47,7 +47,7 @@
                        name="Update_{{=it.label }}"
                        type="checkbox"
                        class="ace ace-checkbox-2"
-                       {{=it.Update}}>
+                {{=it.Update}}>
                 <span class="lbl"></span>
             </label>
         </td>
@@ -57,7 +57,7 @@
                        name="Delete_{{=it.label }}"
                        type="checkbox"
                        class="ace ace-checkbox-2"
-                        {{=it.Delete}}>
+                {{=it.Delete}}>
                 <span class="lbl"></span>
             </label>
         </td>
@@ -67,7 +67,7 @@
                        name="List_{{=it.label }}"
                        type="checkbox"
                        class="ace ace-checkbox-2"
-                       {{=it.List}}>
+                {{=it.List}}>
                 <span class="lbl"></span>
             </label>
         </td>
@@ -80,28 +80,78 @@
 
 
     $(document).ready(function () {
+
+        var label_data;
+
+        var checkedAll = function (isChecked, type) {
+
+            var mode = '{{ mode }}';
+
+
+            var checked = isChecked?'checked':'';
+
+            for (var k = 0; k < label_data.length; k++) {
+
+                $('#' + mode + '_' + type + '_' + label_data[k].label).prop('checked',isChecked);
+                $('#' + mode + '_' + type + '_' + label_data[k].label).attr('value', isChecked ? 'Allow' : '');
+            }
+
+
+        }
+
         $.getJSON('{{ address }}').then(function (data) {
+
+            label_data = data;
             var permission_template = doT.template($('#tmpl_permission').html());
 
             var table_id = '{{mode }}_permission'
-            var table_body = $('#'+table_id+'>tbody');
+            var table_body = $('#' + table_id + '>tbody');
 
+            table_body.append(permission_template({'label': 'All', 'mode': '{{mode}}', 'Create': '', 'Read': '', 'Update': '', 'Delete': '', 'List': ''}));
 
             for (var i = 0; i < data.length; i++) {
 
-{#                data[i].disabled = false#}
-
                 data[i].mode = '{{ mode }}'
+
                 table_body.append(permission_template(data[i]));
 
-                $('#'+data[i].mode+'_Create_' + data[i].label).val( data[i].Create == 'checked' ? 'Allow' : '');
-                $('#'+data[i].mode+'_Read_' + data[i].label).val( data[i].Read == 'checked' ? 'Allow' : '');
-                $('#'+data[i].mode+'_Update_' + data[i].label).val( data[i].Update == 'checked' ? 'Allow' : '');
-                $('#'+data[i].mode+'_Delete_' + data[i].label).val( data[i].Delete == 'checked' ? 'Allow' : '');
-                $('#'+data[i].mode+'_List_' + data[i].label).val( data[i].List == 'checked' ? 'Allow' : '');
+                $('#' + data[i].mode + '_Create_' + data[i].label).val(data[i].Create == 'checked' ? 'Allow' : '');
+                $('#' + data[i].mode + '_Read_' + data[i].label).val(data[i].Read == 'checked' ? 'Allow' : '');
+                $('#' + data[i].mode + '_Update_' + data[i].label).val(data[i].Update == 'checked' ? 'Allow' : '');
+                $('#' + data[i].mode + '_Delete_' + data[i].label).val(data[i].Delete == 'checked' ? 'Allow' : '');
+                $('#' + data[i].mode + '_List_' + data[i].label).val(data[i].List == 'checked' ? 'Allow' : '');
             }
 
-            permissions_loaded();
+            $('.ace-checkbox-2').on('click', function () {
+
+                console.log(this.id + ' ' + this.checked)
+                if (!this.checked) {
+                    this.value = '';
+                    return;
+                }
+                this.value = 'Allow';
+            });
+
+            var mode = '{{ mode }}';
+
+
+            $('#' + mode + '_Create_All').on('click', function () {
+                checkedAll(this.checked, 'Create')
+            });
+            $('#' + mode + '_Read_All').on('click', function () {
+                checkedAll(this.checked, 'Read')
+            });
+            $('#' + mode + '_Update_All').on('click', function () {
+                checkedAll(this.checked, 'Update')
+            });
+            $('#' + mode + '_Delete_All').on('click', function () {
+                checkedAll(this.checked, 'Delete')
+            });
+            $('#' + mode + '_List_All').on('click', function () {
+                checkedAll(this.checked, 'List')
+            });
+
+            permissions_loaded()
         });
 
     });

@@ -2,10 +2,10 @@
       class='form-horizontal'
       role='form'
       method="post"
-        {% if mode.title() == 'Create' %}
-      action="{{ request.route_url(mode.title().lower()+'_user') }}"
-        {% elif mode.title() == 'Update' %}
-      action="{{ request.route_url(mode.title().lower()+'_user', id=user.id) }}"
+        {% if mode == 'Create' %}
+      action="{{ request.route_url(mode.lower()+'_user') }}"
+        {% elif mode == 'Update' %}
+      action="{{ request.route_url(mode.lower()+'_user', id=user.id) }}"
         {% endif %}
         >
     <div class="row-fluid">
@@ -37,7 +37,7 @@
                            type="text"
                            class="form-control"
                            placeholder="Name"
-                            {% if mode.title() == 'Update' %}
+                            {% if mode == 'Update' %}
                            value='{{ user.name }}'
                             {% endif %}
                            required>
@@ -54,7 +54,7 @@
                            type="text"
                            class="form-control"
                            placeholder="Login"
-                            {% if mode.title() == 'Update' %}
+                            {% if mode == 'Update' %}
                            value='{{ user.login }}'
                             {% endif %}
                            required>
@@ -78,7 +78,7 @@
                                  type="email"
                                  class="form-control"
                                  placeholder="Email"
-                                  {% if mode.title() == 'Update' %}
+                                  {% if mode == 'Update' %}
                                  value='{{ user.email }}'
                                   {% endif %}
                                  required>
@@ -102,7 +102,7 @@
                        type="password"
                        class="form-control"
                        placeholder="Password"
-                        {% if mode.title() == 'Update' %}
+                        {% if mode == 'Update' %}
                        value='DONTCHANGE'
                         {% endif %}
                        required>
@@ -120,7 +120,7 @@
                        type="password"
                        class="form-control"
                        placeholder="Confirm Password"
-                        {% if mode.title() == 'Update' %}
+                        {% if mode == 'Update' %}
                        value='DONTCHANGE'
                         {% endif %}
                        required>
@@ -297,11 +297,15 @@ return true;
                                         // and get back user data so we can now
                                         // where to set the current thumbnail
                                         // update the thumbnail
+
+
                                         $.getJSON('/users/{{ user.id }}/').done(function (data2) {
                                             var new_thumb_path = '/' + data2[0].thumbnail_full_path;
                                             $('#avatar').attr('src', new_thumb_path);
                                             // also update side bar
-                                            $('#user_sidebar_avatar').attr('src', new_thumb_path)
+                                            $('#sidebar_avatar').attr('src', new_thumb_path);
+                                            $('#logged_in_user_avatar').attr('src', new_thumb_path);
+
                                         });
                                     });
                         }
@@ -331,17 +335,6 @@ return true;
     }
 });
 
-{# Thumbnail #}
-{#    $(document).ready(function () {#}
-{#        $('#thumbnail').ace_file_input({#}
-{#            style: 'well',#}
-{#            btn_choose: 'Change Avatar',#}
-{#            btn_change: null,#}
-{#            no_icon: 'icon-picture',#}
-{#            droppable: true,#}
-{#            thumbnail: 'fit'#}
-{#        });#}
-{#    });#}
 
 {# Form #}
 $(document).ready(function () {

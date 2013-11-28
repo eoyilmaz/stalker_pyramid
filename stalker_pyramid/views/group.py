@@ -397,6 +397,7 @@ def get_group_permissions(request):
 def get_groups(request):
     """returns all the groups in database
     """
+
     return [
         {
             'id': group.id,
@@ -407,6 +408,29 @@ def get_groups(request):
             'users_count': len(group.users)
         }
         for group in Group.query.order_by(Group.name.asc()).all()
+    ]
+
+@view_config(
+    route_name='get_group',
+    renderer='json',
+    permission='Read_Group'
+)
+def get_group(request):
+    """returns all the groups in database
+    """
+
+    group_id = request.matchdict.get('id', -1)
+    group = Group.query.filter_by(id=group_id).first()
+
+    return [
+        {
+            'id': group.id,
+            'name': group.name,
+            'thumbnail_full_path': group.thumbnail.full_path if group.thumbnail else None,
+            'created_by_id': group.created_by.id,
+            'created_by_name': group.created_by.name,
+            'users_count': len(group.users)
+        }
     ]
 
 
