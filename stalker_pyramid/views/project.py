@@ -298,7 +298,7 @@ def get_project_tasks_today(request):
         left outer join (
             select
                 "TimeLogs".task_id,
-                extract(epoch from sum("TimeLogs".end - "TimeLogs".start)) as duration
+                extract(epoch from sum("TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC')) as duration
             from "TimeLogs"
             group by task_id
         ) as "Task_TimeLogs" on "Task_TimeLogs".task_id = "Tasks".id
@@ -307,12 +307,12 @@ def get_project_tasks_today(request):
 
     if action == 'progress':
         sql_query += """where
-            "Tasks".computed_start < '%(end_of_today)s' and
-            "Tasks".computed_end > '%(start_of_today)s'"""
+            "Tasks".computed_start::timestamp AT TIME ZONE 'UTC' < '%(end_of_today)s' and
+            "Tasks".computed_end::timestamp AT TIME ZONE 'UTC' > '%(start_of_today)s'"""
     elif action == 'end':
         sql_query += """where
-            "Tasks".computed_end > '%(start_of_today)s' and
-            "Tasks".computed_end <= '%(end_of_today)s'
+            "Tasks".computed_end::timestamp AT TIME ZONE 'UTC' > '%(start_of_today)s' and
+            "Tasks".computed_end::timestamp AT TIME ZONE 'UTC' <= '%(end_of_today)s'
             """
 
     sql_query += """   and "Tasks".project_id = %(project_id)s

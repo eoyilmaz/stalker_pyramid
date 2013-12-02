@@ -721,7 +721,7 @@ def get_tasks(request):
             )
         ) as dependencies,
         "SimpleEntities".description,
-        extract(epoch from coalesce("Tasks".computed_end, "Tasks".end)) * 1000 as end,
+        extract(epoch from coalesce("Tasks".computed_end::timestamp AT TIME ZONE 'UTC', "Tasks".end::timestamp AT TIME ZONE 'UTC')) * 1000 as end,
         exists (
            select 1
             from "Tasks" as "Child_Tasks"
@@ -752,7 +752,7 @@ def get_tasks(request):
         ) as schedule_seconds,
         "Tasks".schedule_timing,
         "Tasks".schedule_unit,
-        extract(epoch from coalesce("Tasks".computed_start, "Tasks".start)) * 1000 as start,
+        extract(epoch from coalesce("Tasks".computed_start::timestamp AT TIME ZONE 'UTC', "Tasks".start::timestamp AT TIME ZONE 'UTC')) * 1000 as start,
         lower("Task_Status".code) as status,
         coalesce(
             -- for parent tasks
@@ -767,7 +767,7 @@ def get_tasks(request):
         left outer join (
             select
                 "TimeLogs".task_id,
-                extract(epoch from sum("TimeLogs".end - "TimeLogs".start)) as duration
+                extract(epoch from sum("TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC')) as duration
             from "TimeLogs"
             group by task_id
         ) as "Task_TimeLogs" on "Task_TimeLogs".task_id = "Tasks".id
