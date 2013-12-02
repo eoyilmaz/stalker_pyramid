@@ -151,11 +151,11 @@
             <td><a href='/tasks/{{=it.id}}/view'>{{=it.name}}</a>
             <td><a href='/tasks/{{=it.responsible_id}}/view'>{{=it.responsible_name}}</a>
             <td>{{=it.type}}</td>
-            <td>
+            <td data-sType="num-html">
                 <div class="progress progress-success">
                     <div style="width:{{=it.percent_complete}}%"
                          class="bar">
-                        <span class="pull-left">{{=it.percent_complete}}%</span>
+                        <span class="pull-left">{{= it.percent_complete.toFixed(0) }}%</span>
                     </div>
                 </div>
             </td>

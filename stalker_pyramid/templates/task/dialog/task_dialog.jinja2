@@ -684,6 +684,9 @@
             e.stopPropagation();
             e.preventDefault();
 
+            // disable submit button
+            setTimeout(function(){submit_button.button('loading')}, 0);
+
             // enable fields
             var entity_type_value = $('#task_entity_type').val();
 
@@ -709,6 +712,8 @@
                     bootbox.alert(jqXHR.responseText);
                     // disable fields again
                     $('#task_entity_type').attr('disabled', true);
+                    // enable submit button again
+                    setTimeout(function(){submit_button.button('reset')}, 0);
                 });
             }
         });

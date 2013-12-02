@@ -62,7 +62,6 @@
         // fill items table with dynamic data
         $.getJSON('{{ address }}').then(function (data) {
 
-
             var thead_template = doT.template($('#tmpl_itemThead').html());
             var table_head = $('#items_table>thead');
             table_head.append(thead_template({}));

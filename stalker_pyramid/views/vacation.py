@@ -275,6 +275,31 @@ def update_vacation(request):
 
 
 @view_config(
+    route_name='get_entity_vacations_count',
+    renderer='json'
+)
+@view_config(
+    route_name='get_studio_vacations_count',
+    renderer='json'
+)
+@view_config(
+    route_name='get_user_vacations_count',
+    renderer='json'
+)
+def get_vacations_count(request):
+    """returns the count of vacations of the given entity
+    """
+    entity_id = request.matchdict.get('id', -1)
+    entity = Entity.query.filter(Entity.id == entity_id).first()
+
+    vacations = Vacation.query.filter(Vacation.user == None).all()
+    if isinstance(entity, User):
+        vacations.extend(entity.vacations)
+
+    return len(vacations)
+
+
+@view_config(
     route_name='get_entity_vacations',
     renderer='json'
 )

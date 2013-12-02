@@ -155,6 +155,22 @@ def update_task_statuses(task):
     # leave the commits to transaction.manager
 
 
+@view_config(
+    route_name='fix_task_schedule_info'
+)
+def fix_task_schedule_info(request):
+    """fixes a tasks percent_complete value
+    """
+    task_id = request.matchdict.get('id')
+    task = Task.query.filter(Task.id == task_id).first()
+
+    if task:
+        assert isinstance(task, Task)
+        task.update_schedule_info()
+
+    return HTTPOk()
+
+
 def duplicate_task(task):
     """Duplicates the given task without children.
 
@@ -1205,6 +1221,32 @@ def get_project_tasks(request):
 
     logger.debug('get_project_task took : %s seconds' % (end - start))
     return data
+
+
+@view_config(
+    route_name='get_user_tasks_count',
+    renderer='json'
+)
+def get_user_tasks_count(request):
+    """returns all the tasks in the database related to the given entity in
+    flat json format
+    """
+    # get all the tasks related in the given project
+    user_id = request.matchdict.get('id', -1)
+    user = User.query.filter_by(id=user_id).first()
+
+    statuses = []
+    status_codes = request.GET.getall('status')
+    if status_codes:
+        statuses = Status.query.filter(Status.code.in_(status_codes)).all()
+
+    tasks = []
+    if statuses:
+        tasks = [task for task in user.tasks if task.status in statuses]
+    else:
+        tasks = user.tasks
+
+    return len(tasks)
 
 
 @view_config(
