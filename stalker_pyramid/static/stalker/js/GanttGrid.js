@@ -458,10 +458,10 @@ define([
                             return object;
                         },
                         renderCell: function (object, value, node, options) {
-                            var start_date = new Date(object.start);
+                            var start_date = moment.utc(object.start);
                             $(node).addClass(object.status);
                             $(node).text(
-                                start_date.format("yyyy-mm-dd HH:MM")
+                                start_date.format("YYYY-MM-DD HH:mm")
                             );
                             // check if hidden
                             var column_id = 'start';
@@ -480,10 +480,10 @@ define([
                             return object;
                         },
                         renderCell: function (object, value, node, options) {
-                            var end_date = new Date(object.end);
+                            var end_date = moment.utc(object.end);
                             $(node).addClass(object.status);
                             $(node).text(
-                                end_date.format("yyyy-mm-dd HH:MM")
+                                end_date.format("YYYY-MM-DD HH:mm")
                             );
                             // check if hidden
                             var column_id = 'end';
