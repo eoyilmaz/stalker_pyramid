@@ -458,7 +458,7 @@ define([
                             return object;
                         },
                         renderCell: function (object, value, node, options) {
-                            var start_date = moment.utc(object.start);
+                            var start_date = moment(object.start);
                             $(node).addClass(object.status);
                             $(node).text(
                                 start_date.format("YYYY-MM-DD HH:mm")
@@ -480,7 +480,7 @@ define([
                             return object;
                         },
                         renderCell: function (object, value, node, options) {
-                            var end_date = moment.utc(object.end);
+                            var end_date = moment(object.end);
                             $(node).addClass(object.status);
                             $(node).text(
                                 end_date.format("YYYY-MM-DD HH:mm")
