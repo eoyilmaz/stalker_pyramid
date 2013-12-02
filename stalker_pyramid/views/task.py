@@ -196,6 +196,9 @@ def duplicate_task(task):
             'code': task.code
         }
 
+    # all duplicated tasks are new tasks
+    new = Status.query.filter(Status.code == 'NEW').first()
+
     dup_task = class_(
         name=task.name,
         project=task.project,
@@ -212,10 +215,11 @@ def duplicate_task(task):
         schedule_model=task.schedule_model,
         schedule_timing=task.schedule_timing,
         schedule_unit=task.schedule_unit,
-        status=task.status,
+        status=new,
         status_list=task.status_list,
         notes=task.notes,
         tags=task.tags,
+        responsible=task.responsible,
         references=task.references,
         start=task.start,
         end=task.end,
