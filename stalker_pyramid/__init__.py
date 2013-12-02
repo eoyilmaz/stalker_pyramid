@@ -291,8 +291,8 @@ def main(global_config, **settings):
     # User
 
     # dialogs
-    config.add_route('user_dialog',             'users/{id}/{mode}/dialog')
     config.add_route('create_user_dialog',      'users/create/dialog')
+    config.add_route('update_user_dialog',      'users/{id}/update/dialog')
 
     config.add_route('dialog_create_department_user', 'departments/{id}/users/create/dialog')
     config.add_route('dialog_create_group_user',      'groups/{id}/users/create/dialog')
@@ -555,15 +555,16 @@ def main(global_config, **settings):
     # *************************************************************************
     # Group
 
-    config.add_route('group_dialog',             'groups/{id}/{mode}/dialog')
+    # config.add_route('group_dialog',             'groups/{id}/{mode}/dialog')
 
-    config.add_route('dialog_create_group',      'groups/create/dialog')
-    config.add_route('dialog_update_group',      'groups/{id}/update/dialog')
+    config.add_route('create_group_dialog',      'groups/create/dialog')
+    config.add_route('update_group_dialog',      'groups/{id}/update/dialog')
 
     config.add_route('create_group',        'groups/create')
     config.add_route('update_group',        'groups/{id}/update')
     config.add_route('view_group',          'groups/{id}/view')
 
+    config.add_route('get_group',           'groups/{id}/')  # json
     config.add_route('get_groups',          'groups/')
 
     config.add_route('list_groups',         'groups/list')

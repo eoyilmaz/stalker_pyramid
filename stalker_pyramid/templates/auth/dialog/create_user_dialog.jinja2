@@ -4,6 +4,7 @@
 <div class="row-fluid">
 
     <div class="span12">
+        {% set mode='Create' %}
         {% include 'auth/dialog/user_basic_information_form.jinja2' %}
     </div>
 
@@ -18,6 +19,7 @@
         $('#dialog_template_label').append('<span>New User</span>')
 
         //$('#dialog_template').attr('style', "width:700px; height:800px");
+
 
         {# ***************************************************************** #}
         {# Submit Button #}

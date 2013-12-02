@@ -1,97 +1,160 @@
-<div class='dataTables_wrapper'>
-    <div class="span7">
-        <!-- Table -->
-    <div class="table-header header-color-red">
-            Permissions
-        </div>
-        <table class="table table-striped table-bordered table-hover dataTable">
-            <thead>
-            <tr>
-                <th>Action Name</th>
-                <th>Create</th>
-                <th>Read</th>
-                <th>Update</th>
-                <th>Delete</th>
-                <th>List</th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for entity_type in entity_types %}
-                <tr>
-                    <td>{{ entity_type.name }}</td>
-                    <td>
+<table id="{{ mode }}_permission"
+       class="table table-striped table-bordered table-hover dataTable">
 
-                        {% for permission in entity.permissions %}
-                            {% if permission.action == 'Create' and  permission.class_name == entity_type.name %}
-                                <label>
-                                    <input name="form-field-checkbox" type="checkbox" checked="true"
-                                           class="ace ace-checkbox-2">
-                                    <span class="lbl"></span>
-                                </label>
-                            {% endif %}
-                        {% endfor %}
-                    </td>
-                    <td>
-
-                        {% for permission in entity.permissions %}
-                            {% if permission.action == 'Read' and  permission.class_name == entity_type.name %}
-                               <label>
-                                    <input name="form-field-checkbox" type="checkbox" checked="true"
-                                           class="ace ace-checkbox-2">
-                                    <span class="lbl"></span>
-                                </label>
-
-                            {% endif %}
-                        {% endfor %}
-
-                    </td>
-                    <td>
-
-                        {% for permission in entity.permissions %}
-                            {% if permission.action == 'Update' and  permission.class_name == entity_type.name %}
-                                <label>
-                                    <input name="form-field-checkbox" type="checkbox" checked="true"
-                                           class="ace ace-checkbox-2">
-                                    <span class="lbl"></span>
-                                </label>
-
-                            {% endif %}
-                        {% endfor %}
-
-                    </td>
-                    <td>
+    <thead>
+    <tr>
+        <th>Action Name</th>
+        <th>Create</th>
+        <th>Read</th>
+        <th>Update</th>
+        <th>Delete</th>
+        <th>List</th>
+    </tr>
+    </thead>
+    <tbody>
 
 
-                        {% for permission in entity.permissions %}
-                            {% if permission.action == 'Delete' and  permission.class_name == entity_type.name %}
-                                <label>
-                                    <input name="form-field-checkbox" type="checkbox" checked="true"
-                                           class="ace ace-checkbox-2">
-                                    <span class="lbl"></span>
-                                </label>
+    </tbody>
+</table>
 
-                            {% endif %}
-                        {% endfor %}
+{% raw %}
+<script id="tmpl_permission" type="text/x-dot-template">
+    <tr>
+        <td>{{=it.label}}</td>
+        <td>
+            <label>
+                <input id="{{=it.mode }}_Create_{{=it.label }}"
+                       name="Create_{{=it.label }}"
+                       type="checkbox"
+                       class="ace ace-checkbox-2"
+                {{=it.Create}}>
+                <span class="lbl"></span>
+            </label>
+        </td>
+        <td>
+            <label>
+                <input id="{{=it.mode }}_Read_{{=it.label }}"
+                       name="Read_{{=it.label }}"
+                       type="checkbox"
+                       class="ace ace-checkbox-2"
+                {{=it.Read}}>
+                <span class="lbl"></span>
+            </label>
+        </td>
+        <td>
+            <label>
+                <input id="{{=it.mode }}_Update_{{=it.label }}"
+                       name="Update_{{=it.label }}"
+                       type="checkbox"
+                       class="ace ace-checkbox-2"
+                {{=it.Update}}>
+                <span class="lbl"></span>
+            </label>
+        </td>
+        <td>
+            <label>
+                <input id="{{=it.mode }}_Delete_{{=it.label }}"
+                       name="Delete_{{=it.label }}"
+                       type="checkbox"
+                       class="ace ace-checkbox-2"
+                {{=it.Delete}}>
+                <span class="lbl"></span>
+            </label>
+        </td>
+        <td>
+            <label>
+                <input id="{{=it.mode }}_List_{{=it.label }}"
+                       name="List_{{=it.label }}"
+                       type="checkbox"
+                       class="ace ace-checkbox-2"
+                {{=it.List}}>
+                <span class="lbl"></span>
+            </label>
+        </td>
 
-                    </td>
-                    <td>
+    </tr>
+</script>
+{% endraw %}
 
-                        {% for permission in entity.permissions %}
-                            {% if permission.action == 'List' and  permission.class_name == entity_type.name %}
-                                <label>
-                                    <input name="form-field-checkbox" type="checkbox" checked="true"
-                                           class="ace ace-checkbox-2">
-                                    <span class="lbl"></span>
-                                </label>
+<script type="text/javascript">
 
-                            {% endif %}
-                        {% endfor %}
 
-                    </td>
-                </tr>
-            {% endfor %}
+    $(document).ready(function () {
 
-            </tbody>
-        </table>
-    </div>
-</div>
+        var label_data;
+
+        var checkedAll = function (isChecked, type) {
+
+            var mode = '{{ mode }}';
+
+
+            var checked = isChecked?'checked':'';
+
+            for (var k = 0; k < label_data.length; k++) {
+
+                $('#' + mode + '_' + type + '_' + label_data[k].label).prop('checked',isChecked);
+                $('#' + mode + '_' + type + '_' + label_data[k].label).attr('value', isChecked ? 'Allow' : '');
+            }
+
+
+        }
+
+        $.getJSON('{{ address }}').then(function (data) {
+
+            label_data = data;
+            var permission_template = doT.template($('#tmpl_permission').html());
+
+            var table_id = '{{mode }}_permission'
+            var table_body = $('#' + table_id + '>tbody');
+
+            table_body.append(permission_template({'label': 'All', 'mode': '{{mode}}', 'Create': '', 'Read': '', 'Update': '', 'Delete': '', 'List': ''}));
+
+            for (var i = 0; i < data.length; i++) {
+
+                data[i].mode = '{{ mode }}'
+
+                table_body.append(permission_template(data[i]));
+
+                $('#' + data[i].mode + '_Create_' + data[i].label).val(data[i].Create == 'checked' ? 'Allow' : '');
+                $('#' + data[i].mode + '_Read_' + data[i].label).val(data[i].Read == 'checked' ? 'Allow' : '');
+                $('#' + data[i].mode + '_Update_' + data[i].label).val(data[i].Update == 'checked' ? 'Allow' : '');
+                $('#' + data[i].mode + '_Delete_' + data[i].label).val(data[i].Delete == 'checked' ? 'Allow' : '');
+                $('#' + data[i].mode + '_List_' + data[i].label).val(data[i].List == 'checked' ? 'Allow' : '');
+            }
+
+            $('.ace-checkbox-2').on('click', function () {
+
+                console.log(this.id + ' ' + this.checked)
+                if (!this.checked) {
+                    this.value = '';
+                    return;
+                }
+                this.value = 'Allow';
+            });
+
+            var mode = '{{ mode }}';
+
+
+            $('#' + mode + '_Create_All').on('click', function () {
+                checkedAll(this.checked, 'Create')
+            });
+            $('#' + mode + '_Read_All').on('click', function () {
+                checkedAll(this.checked, 'Read')
+            });
+            $('#' + mode + '_Update_All').on('click', function () {
+                checkedAll(this.checked, 'Update')
+            });
+            $('#' + mode + '_Delete_All').on('click', function () {
+                checkedAll(this.checked, 'Delete')
+            });
+            $('#' + mode + '_List_All').on('click', function () {
+                checkedAll(this.checked, 'List')
+            });
+
+            permissions_loaded()
+        });
+
+    });
+
+
+</script>

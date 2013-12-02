@@ -1,100 +1,117 @@
 <div class="row-fluid">
-    <div class="span8">
-        <div class="widget-box">
-            <div class="widget-header widget-header-blue widget-header-flat">
-                <h4 class="lighter">New Group</h4>
+
+    <form id='group_create_form'
+          class='form-horizontal'
+          role='form'
+          method='post'>
+
+        {#Name #}
+        <div class="control-group">
+            <label class="span2 control-label"
+                   for="group_name">Name</label>
+
+            <div class="span6">
+                <input id="group_name"
+                       name='name'
+                       type="text"
+                       class="form-control"
+                       placeholder="Name"
+                       required>
             </div>
-
-            <div class="widget-body">
-                <div class="widget-main">
-                    {{ mode.title().lower() }}
-                    <form id='user_form'
-                          class='form-horizontal'
-                          role='form'
-                          method="post"
-                            {% if mode.title() == 'Create' %}
-                          action="{{ request.route_url(mode.title().lower()+'_group') }}"
-                            {% elif mode.title() == 'Update' %}
-                          action="{{ request.route_url(mode.title().lower()+'_group', id=group.id) }}"
-                            {% endif %}
-                            >
-
-
-                        {# Thumbnail #}
-                        <div class="control-group">
-                            <label class="span2 control-label"
-                                   for="group_thumbnail">Thumbnail</label>
-
-                            <div class="span3">
-                                <input id="group_thumbnail"
-                                       name='thumbnail'
-                                       type="file"
-                                       class="form-control"
-                                        >
-                            </div>
-                        </div>
-
-                        {# Name #}
-                        <div class="control-group">
-                            <label class="span2 control-label"
-                                   for="group_name">Name</label>
-
-                            <div class="span6">
-                                <input id="group_name"
-                                       name='name'
-                                       type="text"
-                                       class="form-control"
-                                       placeholder="Name"
-                                        {% if mode.title() == 'Update' %}
-                                       value='{{ group.name }}'
-                                        {% endif %}
-                                       required>
-                            </div>
-                        </div>
-
-                        {# Description #}
-                        <div class="control-group">
-                            <label for="group_description"
-                                   class="span2 control-label">Description</label>
-
-                            <div class="span10">
-                                <div class="wysiwyg-editor"
-                                     id="group_description"
-                                     name="description"></div>
-                            </div>
-                        </div>
-
-                        {# Permissions #}
-                        <div class="control-group">
-                            <label for="group_description"
-                                   class="span2 control-label">Permissions</label>
-
-                            <div class="span10">
-                                {% include 'group/list/list_group_permissions.jinja2' %}
-                            </div>
-                        </div>
-
-
-                        <input type='hidden' name='came_from'
-                               value='{{ came_from }}'>
-
-                        {#    Form Buttons #}
-                        <div class="form-actions">
-                            <button type="submit"
-                                    class="btn btn-info btn-primary">
-                                <i class="icon-ok"></i>Ok
-                            </button>
-                            <button type="button" class="btn">
-                                <i class="icon-remove"></i>Cancel
-                            </button>
-                        </div>
-                    </form>
-
-
-                </div>
-                <!-- /widget-main -->
-            </div>
-            <!-- /widget-body -->
         </div>
-    </div>
+
+        {#Description #}
+        <div class='control-group'>
+            <label class='span2 control-label'
+                   for='group_description'>Description</label>
+
+            <div class='span6'>
+                <textarea id="group_description"
+                          name='description'
+                          class="autosize-transition span12"
+                          style="overflow: hidden;
+                                     word-wrap: break-word;
+                                     resize: horizontal;
+                                     height: 50px;"
+                        ></textarea>
+            </div>
+        </div>
+
+        <div class="space-10"></div>
+        {#Permissions #}
+        {% set mode='Create' %}
+        {% set address=request.route_url('get_group_permissions', id=-1) %}
+        {% include 'group/list/list_group_permissions.jinja2' %}
+
+
+    </form>
+
 </div>
+
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootstrap-wysiwyg.min.js") }}'></script>
+
+<script type="text/javascript">
+
+    var permissions_loaded = function () {
+
+
+
+    }
+
+    function init_dialog() {
+        console.debug('starting to initialize group dialog!!!');
+
+        $('#dialog_template_label').find('span').remove();
+        $('#dialog_template_label').append('<span>New Group</span>')
+
+$('#dialog_template_body').attr('style', "height: 600px");
+
+
+
+        {# Submit Button #}
+        var submit_button = $('#dialog_template_submit_button');
+        submit_button.on('click', function (e) {
+            e.stopPropagation();
+            e.preventDefault();
+
+            // disable the submit_button
+
+            submit_button.button('loading');
+
+
+            var group_create_form = $('#group_create_form')
+
+            $.post(
+                            "{{ request.route_url('create_group') }}",
+                            group_create_form.serialize()
+                    ).done(function () {
+
+                        window.location.assign('{{ came_from }}');
+
+                    }).fail(function (jqXHR) {
+
+                        bootbox.alert(jqXHR.responseText);
+                        submit_button.button('reset');
+
+                    });
+        });
+
+
+        console.debug('finished initializing the user dialog!')
+    }
+</script>
+
+<script type="text/javascript">
+
+    function destruct_dialog() {
+
+        $('.ace-checkbox-2').attr('disabled', true);
+        $('#group_create_form').unbind();
+        $('#group_name').unbind();
+        $('#group_description').unbind();
+        $('#dialog_template_submit_button').unbind();
+        $('#dialog_template').data('modal', null);
+
+    }
+</script>
+

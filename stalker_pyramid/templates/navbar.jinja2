@@ -43,7 +43,13 @@
                 </li>
             {% endif %}
             {% if has_permission('Create_Group') %}
-                <li><a href="/groups/-1/create/dialog">New Group</a>
+                <li><a class=""
+                           data-target="#dialog_template"
+                           data-toggle="modal"
+                           data-keyboard=false
+                           href='{{ request.route_url('create_group_dialog') }}?came_from={{ request.current_route_path() }}'>New Group
+                        </a>
+{#                    <a href="/groups/-1/create/dialog">New Group</a>#}
                 </li>
             {% endif %}
         </ul>
@@ -180,7 +186,7 @@
     </li>
     <li class="light-blue">
         <a data-toggle="dropdown" href="#" class="dropdown-toggle">
-            <img class="nav-user-photo"
+            <img id="logged_in_user_avatar" class="nav-user-photo"
                  src="{%- if logged_in_user.thumbnail -%}
                     /{{ logged_in_user.thumbnail.full_path }}
                 {%- else -%}
@@ -196,7 +202,7 @@
 
         <ul class="user-menu pull-right dropdown-menu dropdown-yellow dropdown-caret dropdown-closer">
             <li>
-                <a href="{{ request.route_url('user_dialog', id=logged_in_user.id, mode='update') }}">
+                <a href="{{ request.route_url('update_user_dialog', id=logged_in_user.id, mode='update') }}">
                     <i class="icon-cog"></i>
                     Settings
                 </a>

@@ -26,6 +26,8 @@ from pyramid.httpexceptions import HTTPFound, HTTPOk, HTTPServerError
 from pyramid.security import authenticated_userid, forget, remember, has_permission
 from pyramid.view import view_config, forbidden_view_config
 from sqlalchemy import or_
+import transaction
+from webob import Response
 
 import stalker_pyramid
 from stalker import (defaults, User, Department, Group, Project, Entity,
@@ -42,56 +44,37 @@ logger.setLevel(logging.DEBUG)
 
 
 
-@view_config(
-    route_name='group_dialog',
-    renderer='templates/group/dialog/group_dialog.jinja2',
-)
-def group_dialog(request):
-    """create group dialog
-    """
-
-    logger.debug('***group_dialog method starts ***')
-
-    logged_in_user = get_logged_in_user(request)
-
-    if not logged_in_user:
-        return logout(request)
-
-    permissions = Permission.query.all()
-    entity_types = EntityType.query.all()
-
-    permissions_list = []
-
-    for entity_type in entity_types:
-
-        permission_item = {
-            'label':entity_type.name
-
-        }
-
-        for permission in permissions:
-            permission_item[permission.action] = ''
-
-        permissions_list.append(permission_item)
-
-    entity_id = request.matchdict.get('eid', -1)
-    entity = Entity.query.filter_by(id=entity_id).first()
-
-
-    studio = Studio.query.first()
-    projects = Project.query.all()
-
-    return {
-        'entity' : entity,
-        'mode': 'CREATE',
-        'actions': defaults.actions,
-        'permissions_list': permissions_list,
-        'logged_in_user': logged_in_user,
-        'stalker_pyramid': stalker_pyramid,
-        'has_permission': PermissionChecker(request),
-        'studio': studio,
-        'projects': projects
-    }
+# @view_config(
+#     route_name='group_dialog',
+#     renderer='templates/group/dialog/group_dialog.jinja2',
+# )
+# def group_dialog(request):
+#     """create group dialog
+#     """
+#
+#     logger.debug('***group_dialog method starts ***')
+#
+#     logged_in_user = get_logged_in_user(request)
+#
+#     if not logged_in_user:
+#         return logout(request)
+#
+#     entity_id = request.matchdict.get('id', -1)
+#     entity = Entity.query.filter_by(id=entity_id).first()
+#
+#
+#     studio = Studio.query.first()
+#     projects = Project.query.all()
+#
+#     return {
+#         'entity' : entity,
+#         'mode': 'CREATE',
+#         'logged_in_user': logged_in_user,
+#         'stalker_pyramid': stalker_pyramid,
+#         'has_permission': PermissionChecker(request),
+#         'studio': studio,
+#         'projects': projects
+#     }
 
 
 @view_config(
@@ -150,11 +133,15 @@ def create_group(request):
     else:
         logger.debug('not all parameters are in request.params')
         log_param(request, 'name')
-        HTTPServerError()
+        response = Response(
+            'There are missing parameters: '
+            'name: %s' % name, 500
+        )
+        transaction.abort()
+        return response
 
-    return HTTPFound(
-        location=came_from
-    )
+    response = Response('successfully updated %s group!' % name)
+    return response
 
 
 @view_config(
@@ -206,11 +193,15 @@ def update_group(request):
         logger.debug('not all parameters are in request.params')
         log_param(request, 'group_id')
         log_param(request, 'name')
-        HTTPServerError()
+        response = Response(
+            'There are missing parameters: '
+            'group_id: %s, name: %s' % (group_id, name), 500
+        )
+        transaction.abort()
+        return response
 
-    return HTTPFound(
-        location=came_from
-    )
+    response = Response('successfully updated %s group!' % name)
+    return response
 
 
 @view_config(
@@ -333,6 +324,7 @@ def get_group_permissions(request):
     for entity_type in entity_types:
 
         permission_item = {
+
             'label':entity_type.name
 
         }
@@ -342,12 +334,13 @@ def get_group_permissions(request):
 
         permissions_list.append(permission_item)
 
-    for group_permission in group.permissions:
+    if group:
+        for group_permission in group.permissions:
 
-        label_indexer = dict((p['label'], i) for i, p in enumerate(permissions_list))
-        index = label_indexer.get(group_permission.class_name, -1)
+            label_indexer = dict((p['label'], i) for i, p in enumerate(permissions_list))
+            index = label_indexer.get(group_permission.class_name, -1)
 
-        permissions_list[index][group_permission.action] = 'checked'
+            permissions_list[index][group_permission.action] = 'checked'
 
 
 
@@ -404,6 +397,7 @@ def get_group_permissions(request):
 def get_groups(request):
     """returns all the groups in database
     """
+
     return [
         {
             'id': group.id,
@@ -414,6 +408,29 @@ def get_groups(request):
             'users_count': len(group.users)
         }
         for group in Group.query.order_by(Group.name.asc()).all()
+    ]
+
+@view_config(
+    route_name='get_group',
+    renderer='json',
+    permission='Read_Group'
+)
+def get_group(request):
+    """returns all the groups in database
+    """
+
+    group_id = request.matchdict.get('id', -1)
+    group = Group.query.filter_by(id=group_id).first()
+
+    return [
+        {
+            'id': group.id,
+            'name': group.name,
+            'thumbnail_full_path': group.thumbnail.full_path if group.thumbnail else None,
+            'created_by_id': group.created_by.id,
+            'created_by_name': group.created_by.name,
+            'users_count': len(group.users)
+        }
     ]
 
 

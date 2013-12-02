@@ -19,10 +19,10 @@
                 "{%- if group.thumbnail -%}/{{ group.thumbnail.full_path }}{%- else -%}{{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}{%- endif -%}",
                 '/groups/{{ group.id }}/update/dialog')
 
-        menu_of('Dashboard',
+        menu_of('Permissions',
                 "{%- if request.current_route_path() == request.route_path('view_group', id=group.id) -%}'active',{%- else -%},{%- endif -%}",
                 '{{ request.route_url('view_group', id=group.id) }}',
-                'icon-dashboard',
+                'icon-key',
                 '')
 
         menu_of('Users',
