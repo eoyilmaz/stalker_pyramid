@@ -1,0 +1,101 @@
+<form id='department_form'
+      class='form-horizontal'
+      role='form'
+      method="post"
+        >
+
+    <div class="row-fluid">
+        {# Name #}
+        <div class="control-group">
+            <label class="span4 control-label"
+                   for="department_name">Name</label>
+
+            <div class="span8">
+                <input id="department_name"
+                       name='name'
+                       type="text"
+                       class="form-control"
+                       placeholder="Name"
+                        {% if mode == 'Update' %}
+                       value='{{ department.name }}'
+                        {% endif %}
+
+                       required>
+            </div>
+        </div>
+
+        {# Lead #}
+        <div class="control-group">
+            <label for="department_lead"
+                   class="span4 control-label">Lead</label>
+
+            <div class="span8">
+                <select id="department_lead"
+                        name='lead'
+                        type="lead"
+                        class="form-control"
+                        placeholder="Lead"
+                        >
+                </select>
+
+            </div>
+        </div>
+    </div>
+
+
+    {#Description #}
+    <div class='control-group'>
+        <label class='span4 control-label'
+               for='department_description'>Description</label>
+
+        <div class='span8'>
+            <textarea id="department_description"
+                      name='description'
+                      class="autosize-transition span12"
+                      style="overflow: hidden;
+                                     word-wrap: break-word;
+                                     resize: horizontal;
+                                     height: 50px;"
+                    >{% if mode == 'Update' %}{{ department.name }}{% endif %}</textarea>
+        </div>
+    </div>
+
+
+</form>
+
+
+<script type="text/javascript">
+
+
+    {# Chosen Field Updater #}
+    var chosen_field_creator = function (field, url, data_template) {
+        // fill image format with new json data
+        return $.getJSON(url).then(function (data) {
+            // remove current data
+            field.empty();
+
+            // append new options to the select
+            for (var i = 0; i < data.length; i++) {
+                field.append(data_template(data[i]));
+            }
+
+            // convert it to chosen
+            field.chosen();
+        });
+    };
+
+
+    {# ***************************************************************** #}
+    {# User #}
+    $(document).ready(function () {
+        {% raw %}
+        var user_option_template = doT.template(
+                '<option value={{=it.id}}>{{=it.name}}</option>'
+        );
+        {% endraw %}
+
+        var user = $('#department_lead');
+        var deferred = chosen_field_creator(user, '/users/', user_option_template);
+
+    });
+</script>

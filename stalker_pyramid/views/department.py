@@ -26,6 +26,8 @@ from stalker.db import DBSession
 from stalker import User, Department, Entity, Studio, Project, defaults
 
 import logging
+import transaction
+from webob import Response
 import stalker_pyramid
 from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
                                    log_param, get_tags)
@@ -90,11 +92,15 @@ def create_department(request):
     else:
         logger.debug('not all parameters are in request.params')
         log_param(request, 'name')
-        HTTPServerError()
+        response = Response(
+            'There are missing parameters: '
+            'name: %s' % name, 500
+        )
+        transaction.abort()
+        return response
 
-    return HTTPFound(
-        location=came_from
-    )
+    response = Response('successfully updated %s department!' % name)
+    return response
 
 
 @view_config(

@@ -1,87 +1,14 @@
 {% set department=entity %}
 <div class="row-fluid">
-    <form id='department_form'
-          class='form-horizontal'
-          role='form'
-          method="post"
-            >
 
-        <div class="row-fluid">
-            {# Name #}
-            <div class="control-group">
-                <label class="span2 control-label"
-                       for="department_name">Name</label>
-
-                <div class="span6">
-                    <input id="department_name"
-                           name='name'
-                           type="text"
-                           class="form-control"
-                           placeholder="Name"
-
-                           required>
-                </div>
-            </div>
-
-            {# Lead #}
-            <div class="control-group">
-                <label for="department_lead"
-                       class="span2 control-label">Lead</label>
-
-                <div class="span6">
-                    <select id="department_lead"
-                            name='lead'
-                            type="lead"
-                            class="form-control"
-                            placeholder="Lead"
-                            >
-                    </select>
-
-                </div>
-            </div>
-        </div>
-
-
-        {# TAGS #}
-        <div class="control-group">
-            <label class="span2 control-label" for="form-field-tags">Tag
-                input</label>
-
-            <div class="span6">
-                <input id="department_tags"
-                       type="text"
-                       name="tags"
-                       id="form-field-tags"
-                       placeholder="Enter tags ..."/>
-            </div>
-        </div>
-
-        {#Description #}
-        <div class='control-group'>
-            <label class='span2 control-label'
-                   for='department_description'>Description</label>
-
-            <div class='span6'>
-                <textarea id="department_description"
-                          name='description'
-                          class="autosize-transition span12"
-                          style="overflow: hidden;
-                                     word-wrap: break-word;
-                                     resize: horizontal;
-                                     height: 50px;"
-                        ></textarea>
-            </div>
-        </div>
-
-
-    </form>
+    {% set mode='Create' %}
+    {% include 'department/dialog/department_basic_information_form.jinja2' %}
 
 
 </div>
 
 
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootstrap-tag.min.js") }}'></script>
-
 
 
 <script type="text/javascript">
@@ -96,39 +23,6 @@
         $('#dialog_template_body').attr('style', "height: 350px");
 
 
-
-        {# Chosen Field Updater #}
-        var chosen_field_creator = function (field, url, data_template) {
-            // fill image format with new json data
-            return $.getJSON(url).then(function (data) {
-                // remove current data
-                field.empty();
-
-                // append new options to the select
-                for (var i = 0; i < data.length; i++) {
-                    field.append(data_template(data[i]));
-                }
-
-                // convert it to chosen
-                field.chosen();
-            });
-        };
-
-
-        {# ***************************************************************** #}
-        {# User #}
-        $(document).ready(function () {
-            {% raw %}
-            var user_option_template = doT.template(
-                    '<option value={{=it.id}}>{{=it.name}}</option>'
-            );
-            {% endraw %}
-
-            var user = $('#department_lead');
-            var deferred = chosen_field_creator(user, '/users/', user_option_template);
-
-        });
-
         {# ***************************************************************** #}
         {# Submit Button #}
 
@@ -140,17 +34,15 @@
             submit_button.button('loading');
             var department_form = $('#department_form');
 
-            if (department_form.validate()) {
-                $.post(
+            $.post(
                                 "{{ request.route_url('create_department') }}",
                                 department_form.serialize()
                         ).done(function () {
                             window.location.assign('{{ came_from }}');
-                        }).fail(function () {
+                        }).fail(function (jqXHR) {
                             bootbox.alert(jqXHR.responseText);
                             submit_button.button('reset');
                         });
-            }
         });
 
 

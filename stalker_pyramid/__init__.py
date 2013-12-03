@@ -531,7 +531,7 @@ def main(global_config, **settings):
     # *************************************************************************
     # Department
 
-    config.add_route('department_dialog',             'departments/{id}/{mode}/dialog')
+    # config.add_route('department_dialog',             'departments/{id}/{mode}/dialog')
 
     config.add_route('create_department_dialog', 'departments/create/dialog')
     config.add_route('update_department_dialog', 'departments/{id}/update/dialog')
