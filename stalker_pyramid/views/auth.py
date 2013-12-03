@@ -732,15 +732,15 @@ def get_resources(request):
         time_log_query = """select
             "TimeLogs".id,
             "TimeLogs".task_id,
-            extract(epoch from "TimeLogs".start) * 1000 as start,
-            extract(epoch from "TimeLogs".end) * 1000 as end
+            extract(epoch from "TimeLogs".start::timestamp AT TIME ZONE 'UTC') * 1000 as start,
+            extract(epoch from "TimeLogs".end::timestamp AT TIME ZONE 'UTC') * 1000 as end
         from "TimeLogs"
         """
 
         tasks_query = """select
             "Tasks".id,
-            extract(epoch from "Tasks".computed_start) * 1000 as start,
-            extract(epoch from "Tasks".computed_end) * 1000 as end
+            extract(epoch from "Tasks".computed_start::timestamp AT TIME ZONE 'UTC') * 1000 as start,
+            extract(epoch from "Tasks".computed_end::timestamp AT TIME ZONE 'UTC') * 1000 as end
         from "Tasks"
         """
 
@@ -800,8 +800,8 @@ def get_resources(request):
             -- select all the leaf tasks of the users of a specific Project
             select
                 "Tasks".id,
-                extract(epoch from "Tasks".computed_start) * 1000 as start,
-                extract(epoch from "Tasks".computed_end) * 1000 as end
+                extract(epoch from "Tasks".computed_start::timestamp AT TIME ZONE 'UTC') * 1000 as start,
+                extract(epoch from "Tasks".computed_end::timestamp AT TIME ZONE 'UTC') * 1000 as end
             from "Tasks"
                 where not (
                     exists (
@@ -839,16 +839,16 @@ def get_resources(request):
         time_log_query = """select
             "TimeLogs".id,
             "TimeLogs".task_id,
-            extract(epoch from "TimeLogs".start) * 1000 as start,
-            extract(epoch from "TimeLogs".end) * 1000 as end
+            extract(epoch from "TimeLogs".start::timestamp AT TIME ZONE 'UTC') * 1000 as start,
+            extract(epoch from "TimeLogs".end::timestamp AT TIME ZONE 'UTC') * 1000 as end
         from "TimeLogs"
         where resource_id = %s
         """
 
         tasks_query = """select
             "Tasks".id,
-            extract(epoch from "Tasks".computed_start) * 1000 as start,
-            extract(epoch from "Tasks".computed_end) * 1000 as end
+            extract(epoch from "Tasks".computed_start::timestamp AT TIME ZONE 'UTC') * 1000 as start,
+            extract(epoch from "Tasks".computed_end::timestamp AT TIME ZONE 'UTC') * 1000 as end
         from "Tasks"
             join "Task_Resources" on "Tasks".id = "Task_Resources".task_id
         where

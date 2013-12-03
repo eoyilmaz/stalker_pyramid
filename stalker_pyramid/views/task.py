@@ -155,6 +155,22 @@ def update_task_statuses(task):
     # leave the commits to transaction.manager
 
 
+@view_config(
+    route_name='fix_task_schedule_info'
+)
+def fix_task_schedule_info(request):
+    """fixes a tasks percent_complete value
+    """
+    task_id = request.matchdict.get('id')
+    task = Task.query.filter(Task.id == task_id).first()
+
+    if task:
+        assert isinstance(task, Task)
+        task.update_schedule_info()
+
+    return HTTPOk()
+
+
 def duplicate_task(task):
     """Duplicates the given task without children.
 
@@ -180,6 +196,9 @@ def duplicate_task(task):
             'code': task.code
         }
 
+    # all duplicated tasks are new tasks
+    new = Status.query.filter(Status.code == 'NEW').first()
+
     dup_task = class_(
         name=task.name,
         project=task.project,
@@ -196,10 +215,11 @@ def duplicate_task(task):
         schedule_model=task.schedule_model,
         schedule_timing=task.schedule_timing,
         schedule_unit=task.schedule_unit,
-        status=task.status,
+        status=new,
         status_list=task.status_list,
         notes=task.notes,
         tags=task.tags,
+        responsible=task.responsible,
         references=task.references,
         start=task.start,
         end=task.end,
@@ -701,7 +721,7 @@ def get_tasks(request):
             )
         ) as dependencies,
         "SimpleEntities".description,
-        extract(epoch from coalesce("Tasks".computed_end, "Tasks".end)) * 1000 as end,
+        extract(epoch from coalesce("Tasks".computed_end::timestamp AT TIME ZONE 'UTC', "Tasks".end::timestamp AT TIME ZONE 'UTC')) * 1000 as end,
         exists (
            select 1
             from "Tasks" as "Child_Tasks"
@@ -732,7 +752,7 @@ def get_tasks(request):
         ) as schedule_seconds,
         "Tasks".schedule_timing,
         "Tasks".schedule_unit,
-        extract(epoch from coalesce("Tasks".computed_start, "Tasks".start)) * 1000 as start,
+        extract(epoch from coalesce("Tasks".computed_start::timestamp AT TIME ZONE 'UTC', "Tasks".start::timestamp AT TIME ZONE 'UTC')) * 1000 as start,
         lower("Task_Status".code) as status,
         coalesce(
             -- for parent tasks
@@ -747,7 +767,7 @@ def get_tasks(request):
         left outer join (
             select
                 "TimeLogs".task_id,
-                extract(epoch from sum("TimeLogs".end - "TimeLogs".start)) as duration
+                extract(epoch from sum("TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC')) as duration
             from "TimeLogs"
             group by task_id
         ) as "Task_TimeLogs" on "Task_TimeLogs".task_id = "Tasks".id
@@ -1205,6 +1225,32 @@ def get_project_tasks(request):
 
     logger.debug('get_project_task took : %s seconds' % (end - start))
     return data
+
+
+@view_config(
+    route_name='get_user_tasks_count',
+    renderer='json'
+)
+def get_user_tasks_count(request):
+    """returns all the tasks in the database related to the given entity in
+    flat json format
+    """
+    # get all the tasks related in the given project
+    user_id = request.matchdict.get('id', -1)
+    user = User.query.filter_by(id=user_id).first()
+
+    statuses = []
+    status_codes = request.GET.getall('status')
+    if status_codes:
+        statuses = Status.query.filter(Status.code.in_(status_codes)).all()
+
+    tasks = []
+    if statuses:
+        tasks = [task for task in user.tasks if task.status in statuses]
+    else:
+        tasks = user.tasks
+
+    return len(tasks)
 
 
 @view_config(

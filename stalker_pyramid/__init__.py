@@ -151,6 +151,7 @@ def main(global_config, **settings):
     config.add_route('get_entity_shots',               'entities/{id}/shots/')
     config.add_route('get_entity_shots_count',         'entities/{id}/shots/count/')
     config.add_route('get_entity_vacations',           'entities/{id}/vacations/')
+    config.add_route('get_entity_vacations_count',     'entities/{id}/vacations/count/')
     config.add_route('get_entity_entities_out_stack',  'entities/{id}/{entities}/out_stack/' )
     config.add_route('get_entity_events',              'entities/{id}/events/')  #json
     config.add_route('get_entity_versions',            'entities/{id}/versions/')  # json
@@ -207,6 +208,7 @@ def main(global_config, **settings):
 
     config.add_route('get_studio_tasks',      'studios/{id}/tasks/')
     config.add_route('get_studio_vacations',  'studios/{id}/vacations/')  # json
+    config.add_route('get_studio_vacations_count',  'studios/{id}/vacations/count/')  # json
 
     config.add_route('list_studio_tasks',           'studios/{id}/tasks/list')
     config.add_route('list_studio_vacations',       'studios/{id}/vacations/list')  # html
@@ -289,7 +291,6 @@ def main(global_config, **settings):
     # User
 
     # dialogs
-
     config.add_route('create_user_dialog',      'users/create/dialog')
     config.add_route('update_user_dialog',      'users/{id}/update/dialog')
 
@@ -315,7 +316,9 @@ def main(global_config, **settings):
     config.add_route('get_user_departments',  'users/{id}/departments/')  # json
     config.add_route('get_user_groups',       'users/{id}/groups/')  # json
     config.add_route('get_user_tasks',        'users/{id}/tasks/')  # json
+    config.add_route('get_user_tasks_count',  'users/{id}/tasks/count/')  # json
     config.add_route('get_user_vacations',    'users/{id}/vacations/')  # json
+    config.add_route('get_user_vacations_count', 'users/{id}/vacations/count/')  # json
     config.add_route('get_user_tickets',      'users/{id}/tickets/')  # json
     config.add_route('get_user_events',       'users/{id}/events/')  # json
     # config.add_route('get_user_worked_hours', 'users/{id}/{frequency}/worked_hours/')  # json
@@ -464,7 +467,8 @@ def main(global_config, **settings):
 
     config.add_route('delete_task',        'tasks/{id}/delete')
 
-    config.add_route('fix_task_statuses', 'tasks/{id}/fix/statuses/')
+    config.add_route('fix_task_statuses',      'tasks/{id}/fix/statuses/')
+    config.add_route('fix_task_schedule_info', 'tasks/{id}/fix/schedule_info/')
 
     # *************************************************************************
     # TimeLog
