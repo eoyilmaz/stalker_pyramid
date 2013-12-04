@@ -18,6 +18,8 @@ Stalker Pyramid Changes
 * **New:** Link statuses are now shown in ``view_ticket.jinja2`` if the link is
   a Task derivative.
 * **Fix:** Fixed a bug in the sql query in ``views.auth.get_resources()`` view.
+* **New:** Added new Ticket type called "Review" and updated
+  ``task.request_review()`` to use this type for newly created Review Tickets.
 
 0.1.3
 =====

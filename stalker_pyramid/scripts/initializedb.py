@@ -6,7 +6,7 @@ from pyramid.paster import (
     setup_logging,
 )
 
-from stalker import db, StatusList, Status
+from stalker import db, StatusList, Status, Type
 
 
 def usage(argv):
@@ -85,9 +85,20 @@ def create_statuses_and_status_lists():
     shot_status_list.statuses = [new, wip, prev, hrev, completed]
     sequence_status_list.statuses = [new, wip, prev, hrev, completed]
 
+    # create Review ticket type
+    review = Type.query.filter_by(name='Review').first()
+    if not review:
+        # create the review type for Tickets
+        review = Type(
+            target_entity_type='Ticket',
+            name='Review',
+            code='Review'
+        )
+
     db.DBSession.add_all([
         project_status_list, task_status_list, asset_status_list,
-        shot_status_list, sequence_status_list, new, wip, hrev, prev, completed
+        shot_status_list, sequence_status_list, new, wip, hrev, prev,
+        completed, review
     ])
     db.DBSession.commit()
 

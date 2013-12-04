@@ -33,7 +33,7 @@ from sqlalchemy.exc import IntegrityError
 from stalker.db import DBSession
 from stalker import (User, Task, Entity, Project, StatusList, Status,
                      TaskJugglerScheduler, Studio, Asset, Shot, Sequence,
-                     Ticket)
+                     Ticket, Type)
 from stalker.models.task import CircularDependencyError
 from stalker import defaults
 
@@ -1767,6 +1767,7 @@ def request_review(request):
     }
 
     responsible = task.responsible
+    review_type = Type.query.filter_by(name='Review').first()
 
     # create a Ticket with the owner set to the responsible
     utc_now = local_to_utc(datetime.datetime.now())
@@ -1774,6 +1775,7 @@ def request_review(request):
         project=project,
         summary=summary_text,
         description=ticket_description,
+        type=review_type,
         created_by=logged_in_user,
         date_created=utc_now,
         date_updated=utc_now
