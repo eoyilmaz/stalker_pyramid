@@ -179,6 +179,14 @@
 
 </script>
 
+{# Some default variables before doing anything #}
+{% if entity.entity_type == 'Project' %}
+    {% set project = entity %}
+{% elif entity.entity_type in ['Task', 'Asset', 'Shot', 'Sequence'] %}
+    {% set project = entity.project %}
+{% endif %}
+
+
 <div class="row-fluid">
     <div class="span12">
         <!--PAGE CONTENT BEGINS-->
@@ -208,11 +216,7 @@
                                     <a data-target="#dialog_template"
                                        data-toggle="modal"
                                        data-keyboard=false
-                                       {% if entity.entity_type == 'Project' %}
-                                           href='{{ request.route_url("create_task_dialog", id=-1, _query={'project_id': entity.id}) }}'
-                                       {% elif entity.entity_type in ['Task', 'Shot', 'Sequence', 'Asset'] %}
-                                           href='{{ request.route_url("create_task_dialog", id=-1, _query={'project_id': entity.project.id}) }}'
-                                       {% endif %}>
+                                       href='{{ request.route_url("create_task_dialog", id=-1, _query={'project_id': project.id}) }}'>
                                         <i class="'ui-icon icon-tasks bigger-120">&nbsp</i>
                                         Task
                                     </a>
@@ -242,7 +246,7 @@
                                     <a data-target="#dialog_template"
                                        data-toggle="modal"
                                        data-keyboard=false
-                                       href='{{ request.route_url("create_asset_dialog", id=-1)}}'>
+                                       href='{{ request.route_url("create_asset_dialog", id=-1, _query={'project_id': project.id})}}'>
                                         <i class="'ui-icon icon-puzzle-piece bigger-120">&nbsp</i>
                                         Asset
                                     </a>
@@ -252,7 +256,7 @@
                                     <a data-target="#dialog_template"
                                        data-toggle="modal"
                                        data-keyboard=false
-                                       href='{{ request.route_url("create_shot_dialog", id=-1)}}'>
+                                       href='{{ request.route_url("create_shot_dialog", id=-1, _query={'project_id': project.id})}}'>
                                         <i class="'ui-icon icon-camera bigger-120">&nbsp</i>
                                         Shot
                                     </a>
@@ -262,7 +266,7 @@
                                     <a data-target="#dialog_template"
                                        data-toggle="modal"
                                        data-keyboard=false
-                                       href='{{ request.route_url("create_sequence_dialog", id=-1)}}'>
+                                       href='{{ request.route_url("create_sequence_dialog", id=-1, _query={'project_id': project.id})}}'>
                                         <i class="'ui-icon icon-film bigger-120">&nbsp</i>
                                         Sequence
                                     </a>

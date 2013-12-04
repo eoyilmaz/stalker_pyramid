@@ -85,19 +85,18 @@
                 </div>
             </div>
 
-            {# Task Type #}
-            <div id='task_inputs'>
-                <div class='control-group'>
-                    <label class='span3 control-label' for='task_type'>Task Type</label>
-                    <div class='span9'>
-                        <input id='task_type'
-                               class='input-block-level'
-                               name='task_type'
-                               type='text'
-                               is_updating=false
-                               {% if mode=='update' %}{% if entity.type %}value="{{ entity.type.name }}"{% endif %}{% endif %}
-                               >
-                    </div>
+            {# Description #}
+            <div class='control-group'>
+                <label class='span3 control-label' for='task_description'>Description</label>
+                <div class='span9'>
+                    <textarea id="task_description"
+                              name='description'
+                              class="autosize-transition span12"
+                              style="overflow: hidden;
+                                     word-wrap: break-word;
+                                     resize: horizontal;
+                                     height: 50px;"
+                              >{% if mode=='update' %}{{ entity.description }}{% endif %}</textarea>
                 </div>
             </div>
 
@@ -130,129 +129,129 @@
                 </div>
             </div>
 
-            {# Description #}
-            <div class='control-group'>
-                <label class='span3 control-label' for='task_description'>Description</label>
-                <div class='span9'>
-                    <textarea id="task_description"
-                              name='description'
-                              class="autosize-transition span12"
-                              style="overflow: hidden;
-                                     word-wrap: break-word;
-                                     resize: horizontal;
-                                     height: 50px;"
-                              >{% if mode=='update' %}{{ entity.description }}{% endif %}</textarea>
-                </div>
-            </div>
-
-            {# Depends_to #}
-            <div class='control-group'>
-                <label class='span3 control-label' for='task_depends_to'>Depends To</label>
-                <div class='span9'>
-                    <select id='task_depends_to'
-                            multiple=''
-                            class='input-block-level tag-input-style'
-                            name='dependent_ids'
-                            data-placeholder='Depends To'
-                            is_updating=false></select>
-                </div>
-                <div class='hidden'
-                     id="dependent_tasks_storage"
-                     dependent_ids="[{% for dep in depends_to %}{% if loop.index0 %},{% endif %}{{ dep.id }}{% endfor %}]">
-                    {# this is a storage for dependent_ids, which is set externally by the #}
-                    {# template engine #}
-                 </div>
-            </div>
-
-            {# Resources #}
-            <div class='control-group'>
-                <label class='span3 control-label' for='task_resources'>Resources</label>
-                <div class='span9'>
-                    <select id='task_resources'
-                            multiple=''
-                            class='input-block-level tag-input-style'
-                            name='resource_ids'
-                            data-placeholder='Resources'
-                            is_updating=false></select>
-                </div>
-                <div class='hidden'
-                     id="resources_storage"
-                     resource_ids="[{% if entity %}{% for resource in entity.resources %}{% if loop.index0 %},{% endif %}{{ resource.id }}{% endfor %}{% endif %}]">
-                    {# this is a storage for resource_ids, which is set externally by the #}
-                    {# template engine #}
-                 </div>
-            </div>
-
-            {# Responsible #}
-            <div class='control-group'>
-                <label class='span3 control-label' for='task_responsible'>Responsible</label>
-                <div class='span9'>
-                    <select id='task_responsible'
-                            class='input-block-level'
-                            name='responsible_id'
-                            data-placeholder='Responsible'
-                            is_updating=false></select>
-                </div>
-                <div class='hidden'
-                     id="responsible_storage"
-                     responsible_id="{% if entity %}{{ entity.responsible.id }}{% else %}-1{% endif %}">
-                    {# this is a storage for resource_ids, which is set externally by the #}
-                    {# template engine #}
-                 </div>
-            </div>
-
-            {# Constraints #}
-
-            {# Schedule Timing #}
-            <div class='control-group'>
-                <label class='span3 control-label' for='task_schedule_timing'>Schedule Timing</label>
-                <div class='span9'>
-                    <div class='span2'>
-                        <input id='task_schedule_timing'
+            <div id='task_inputs'>
+                {# Task Type #}
+                <div class='control-group'>
+                    <label class='span3 control-label' for='task_type'>Task Type</label>
+                    <div class='span9'>
+                        <input id='task_type'
                                class='input-block-level'
-                               name='schedule_timing'
+                               name='task_type'
                                type='text'
-                               value={% if mode=='update' %}{{ entity.schedule_timing }}{% else %}1{% endif %}
-                               min=1
-                               required>
-                    </div>
-                    <div class='span3'>
-                        <select id='task_schedule_unit'
-                               class='input-block-level'
-                               name='schedule_unit'>
-                            <option value='h'>Hours</option>
-                            <option value='d'>Days</option>
-                            <option value='w'>Weeks</option>
-                            <option value='m'>Months</option>
-                            <option value='y'>Years</option>
-                        </select>
-                    </div>
-                    <div class='span3'>
-                        <select id='task_schedule_model'
-                                class='input-block-level'
-                                name='schedule_model'>
-                            <option value='effort'>Effort</option>
-                            <option value='duration'>Duration</option>
-                            <option value='length'>Length</option>
-                        </select>
+                               is_updating=false
+                               {% if mode=='update' %}{% if entity.type %}value="{{ entity.type.name }}"{% endif %}{% endif %}
+                               >
                     </div>
                 </div>
-            </div>
 
-            {# Update Bid #}
-            {% if mode == 'update' %}
-            <div class='control-group'>
-                <label class="span3 control-label" for="task_update_bid">Update Bid</label>
-                <div class="span9">
-                    <input id="task_update_bid"
-                           type="checkbox"
-{#                           class="ace"#}
-                           name="update_bid"
-                           checked="true"
-                           />
+                {# Depends_to #}
+                <div class='control-group'>
+                    <label class='span3 control-label' for='task_depends_to'>Depends To</label>
+                    <div class='span9'>
+                        <select id='task_depends_to'
+                                multiple=''
+                                class='input-block-level tag-input-style'
+                                name='dependent_ids'
+                                data-placeholder='Depends To'
+                                is_updating=false></select>
+                    </div>
+                    <div class='hidden'
+                         id="dependent_tasks_storage"
+                         dependent_ids="[{% for dep in depends_to %}{% if loop.index0 %},{% endif %}{{ dep.id }}{% endfor %}]">
+                        {# this is a storage for dependent_ids, which is set externally by the #}
+                        {# template engine #}
+                     </div>
                 </div>
+    
+                {# Resources #}
+                <div class='control-group'>
+                    <label class='span3 control-label' for='task_resources'>Resources</label>
+                    <div class='span9'>
+                        <select id='task_resources'
+                                multiple=''
+                                class='input-block-level tag-input-style'
+                                name='resource_ids'
+                                data-placeholder='Resources'
+                                is_updating=false></select>
+                    </div>
+                    <div class='hidden'
+                         id="resources_storage"
+                         resource_ids="[{% if entity %}{% for resource in entity.resources %}{% if loop.index0 %},{% endif %}{{ resource.id }}{% endfor %}{% endif %}]">
+                        {# this is a storage for resource_ids, which is set externally by the #}
+                        {# template engine #}
+                     </div>
+                </div>
+    
+                {# Responsible #}
+                <div class='control-group'>
+                    <label class='span3 control-label' for='task_responsible'>Responsible</label>
+                    <div class='span9'>
+                        <select id='task_responsible'
+                                class='input-block-level'
+                                name='responsible_id'
+                                data-placeholder='Responsible'
+                                is_updating=false></select>
+                    </div>
+                    <div class='hidden'
+                         id="responsible_storage"
+                         responsible_id="{% if entity %}{{ entity.responsible.id }}{% else %}-1{% endif %}">
+                        {# this is a storage for resource_ids, which is set externally by the #}
+                        {# template engine #}
+                     </div>
+                </div>
+
+                {# Constraints #}
+    
+                {# Schedule Timing #}
+                <div class='control-group'>
+                    <label class='span3 control-label' for='task_schedule_timing'>Schedule Timing</label>
+                    <div class='span9'>
+                        <div class='span2'>
+                            <input id='task_schedule_timing'
+                                   class='input-block-level'
+                                   name='schedule_timing'
+                                   type='text'
+                                   value={% if mode=='update' %}{{ entity.schedule_timing }}{% else %}1{% endif %}
+                                   min=1
+                                   required>
+                        </div>
+                        <div class='span3'>
+                            <select id='task_schedule_unit'
+                                   class='input-block-level'
+                                   name='schedule_unit'>
+                                <option value='h'>Hours</option>
+                                <option value='d'>Days</option>
+                                <option value='w'>Weeks</option>
+                                <option value='m'>Months</option>
+                                <option value='y'>Years</option>
+                            </select>
+                        </div>
+                        <div class='span3'>
+                            <select id='task_schedule_model'
+                                    class='input-block-level'
+                                    name='schedule_model'>
+                                <option value='effort'>Effort</option>
+                                <option value='duration'>Duration</option>
+                                <option value='length'>Length</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                {# Update Bid #}
+                {% if mode == 'update' %}
+                <div class='control-group'>
+                    <label class="span3 control-label" for="task_update_bid">Update Bid</label>
+                    <div class="span9">
+                        <input id="task_update_bid"
+                               type="checkbox"
+                               name="update_bid"
+                               checked="true"/>
+                    </div>
+                </div>
+                {% endif %}
+
             </div>
-            {% endif %}
 
             {# Priority #}
             <div class='control-group'>
@@ -268,7 +267,7 @@
                            required>
                 </div>
             </div>
-            
+
         </form>
 
     </div>
@@ -294,7 +293,7 @@
 
         // update dialog header
         $('#dialog_template_label').text('{{ mode.title() }} Task Dialog');
-    
+
         // generate default values;
         var project = {
             id: {{ project.id }},
