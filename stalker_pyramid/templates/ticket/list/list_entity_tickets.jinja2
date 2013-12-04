@@ -34,6 +34,21 @@
 
     {% set tickets=entity.tickets %}
 
+    {% if has_permission('Create_Ticket') %}
+    <div class="btn-toolbar">
+        <div class="btn-group">
+            <button class="btn btn-small btn-danger"
+                    data-target="#dialog_template"
+                    data-toggle="modal"
+                    data-keyboard=false
+                    href='{{ request.route_url("create_ticket_dialog", id=-1, _query={'project_id': entity.id})}}'>
+                <i class="'ui-icon icon-ticket bigger-120">&nbsp</i>
+                Create
+            </button>
+        </div>
+    </div>
+    {% endif %}
+
     <div class="table-header">
         Tickets
     </div>

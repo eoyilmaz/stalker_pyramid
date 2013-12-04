@@ -2,6 +2,23 @@
 Stalker Pyramid Changes
 =======================
 
+0.1.4
+=====
+
+* **New:** Added "Create" button to ``view_ticket.jinja2`` template. So it is
+  now possible to create a new ticket using the dialog.
+* **Fix:** Fixed "Asset", "Shot", "Sequence" menu entries under "Create" sub
+  menu under "Actions" menu in ``list_tasks.jinja2`` template.
+* **Fix:** Fixed "Create" button address in ``list_entity_assets.jinja2``,
+  ``list_entity_shots.jinja2`` and ``list_entity_sequences.jinja2`` templates.
+* **Update:** Removed schedule related fields from Task Dialog when the entity
+  type is Asset, Shot or Sequence.
+* **Fix:** Replaced "?came_from=" statements with proper "_query()" arguments
+  in several templates.
+* **New:** Link statuses are now shown in ``view_ticket.jinja2`` if the link is
+  a Task derivative.
+* **Fix:** Fixed a bug in the sql query in ``views.auth.get_resources()`` view.
+
 0.1.3
 =====
 

@@ -22,19 +22,19 @@ import time
 import logging
 import datetime
 
-from pyramid.httpexceptions import HTTPOk
 from pyramid.response import Response
 from pyramid.view import view_config
 from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
 
-from stalker import User, Ticket, Entity, Project, Status, Note
+from stalker import User, Ticket, Project, Note, Type, Task
 
 from stalker.db import DBSession
 import transaction
 from stalker_pyramid.views import (get_logged_in_user, PermissionChecker,
                                    milliseconds_since_epoch,
-                                   dummy_email_address, local_to_utc)
+                                   dummy_email_address, local_to_utc,
+                                   get_multi_integer)
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -63,50 +63,34 @@ def get_ticket_workflow(request):
 
 
 @view_config(
-    route_name='dialog_create_ticket',
-    renderer='templates/ticket/dialog_create_ticket.jinja2',
+    route_name='create_ticket_dialog',
+    renderer='templates/ticket/dialog/ticket_dialog.jinja2',
 )
 def create_ticket_dialog(request):
     """creates a create_ticket_dialog by using the given task
     """
     logged_in_user = get_logged_in_user(request)
 
-    entity_id = request.matchdict.get('id', -1)
-    entity = Entity.query.filter(Entity.entity_id==entity_id).first()
+    project_id = request.params.get('project_id', -1)
+    project = Project.query.filter(Project.id == project_id).first()
 
-    # TODO: remove 'mode': 'CREATE' by considering it the default mode
+    if not project:
+        return Response('No project found with id: %s' % project_id, 500)
 
     return {
         'mode': 'create',
         'has_permission': PermissionChecker(request),
         'logged_in_user': logged_in_user,
-        'entity': entity,
-        'milliseconds_since_epoch': milliseconds_since_epoch
-    }
-
-
-@view_config(
-    route_name='dialog_update_ticket',
-    renderer='templates/ticket/dialog_create_ticket.jinja2',
-)
-def update_ticket_dialog(request):
-    """updates a create_ticket_dialog by using the given task
-    """
-    logger.debug('inside updates_ticket_dialog')
-
-    # get logged in user
-    logged_in_user = get_logged_in_user(request)
-
-    ticket_id = request.matchdict.get('id', -1)
-    ticket = Ticket.query.filter_by(id=ticket_id).first()
-
-    return {
-        'mode': 'UPDATE',
-        'has_permission': PermissionChecker(request),
-        'logged_in_user': logged_in_user,
-        'ticket': ticket,
-        'entity': ticket.project,
-        'milliseconds_since_epoch': milliseconds_since_epoch
+        'project': project,
+        'ticket_types':
+            Type.query.filter_by(target_entity_type='Ticket').all(),
+        'ticket_priorities': [
+            "TRIVIAL",
+            "MINOR",
+            "MAJOR",
+            "CRITICAL",
+            "BLOCKER"
+        ]
     }
 
 
@@ -125,13 +109,15 @@ def create_ticket(request):
     summary = request.params.get('summary')
 
     project_id = request.params.get('project_id', None)
-    project = Project.query.filter(Project.id==project_id).first()
+    project = Project.query.filter(Project.id == project_id).first()
 
     owner_id = request.params.get('owner_id', None)
-    owner = User.query.filter(User.id==owner_id).first()
+    owner = User.query.filter(User.id == owner_id).first()
 
-    status_id = request.params.get('status_id')
-    status = Status.query.filter_by(id=status_id).first()
+    priority = request.params.get('priority', "TRIVIAL")
+    type_name = request.params.get('type')
+
+    send_email = request.params.get('send_email', 1)  # for testing purposes
 
     logger.debug('*******************************')
 
@@ -141,21 +127,87 @@ def create_ticket(request):
     logger.debug('owner_id : %s' % owner_id)
     logger.debug('owner: %s' % owner)
 
-    if description and project and owner:
-        # we are ready to create the time log
-        # Ticket should handle the extension of the effort
-        ticket = Ticket(
-            status=status,
-            summary=summary,
-            description=description,
-            project=project,
-            created_by=logged_in_user,
+    if not summary:
+        return Response('Please supply a summary', 500)
+
+    if not description:
+        return Response('Please supply a description', 500)
+
+    if not type_name:
+        return Response('Please supply a type for this ticket', 500)
+
+    type_ = Type.query.filter_by(name=type_name).first()
+
+    if not project:
+        return Response('There is no project with id: %s' % project_id, 500)
+
+    if owner_id:
+        if not owner:
+            # there is an owner id but no resource found
+            return Response('There is no user with id: %s' % owner_id, 500)
+    else:
+        return Response('Please supply an owner for this ticket', 500)
+
+    link_ids = get_multi_integer(request, 'link_ids')
+    links = Task.query.filter(Task.id.in_(link_ids)).all()
+
+    # we are ready to create the time log
+    # Ticket should handle the extension of the effort
+    utc_now = local_to_utc(datetime.datetime.now())
+    ticket = Ticket(
+        project=project,
+        summary=summary,
+        description=description,
+        priority=priority,
+        type=type_,
+        created_by=logged_in_user,
+        date_created=utc_now,
+        date_updated=utc_now
+    )
+    ticket.links = links
+    ticket.set_owner(owner)
+
+    # email the ticket to the owner and to the created by
+    if send_email:
+        # send email to responsible and resources of the task
+        mailer = get_mailer(request)
+
+        recipients = [logged_in_user.email, owner.email]
+
+        # append link resources
+        for link in links:
+            for resource in link.resources:
+                recipients.append(resource.email)
+
+        # make recipients unique
+        recipients = list(set(recipients))
+
+        description_text = \
+            'A New Ticket for project "%s" has been created by %s with the ' \
+            'following description:\n\n%s' % (
+                project.name, logged_in_user.name, description
+            )
+
+        # TODO: add project link, after the server can be reached outside
+        description_html = \
+            'A <strong>New Ticket</strong> for project <strong>%s</strong> ' \
+            'has been created by <strong>%s</strong> and assigned to ' \
+            '<strong>%s</strong> with the following description:<br><br>%s' % (
+                project.name, logged_in_user.name, owner.name, description
+            )
+
+        message = Message(
+            subject='New Ticket: %s' % summary,
+            sender=dummy_email_address,
+            recipients=recipients,
+            body=description_text,
+            html=description_html
         )
-        ticket.set_owner(owner)
+        mailer.send(message)
 
-        DBSession.add(ticket)
+    DBSession.add(ticket)
 
-    return HTTPOk()
+    return Response('Ticket Created successfully')
 
 
 @view_config(
@@ -209,13 +261,11 @@ def update_ticket(request):
             )
 
     # mail
-    recipients = [logged_in_user.email]
-    if ticket.created_by.email not in recipients:
-        recipients.append(ticket.created_by.email)
-
-    # inform the ticket owner
-    if ticket.owner not in recipients:
-        recipients.append(ticket.owner.email)
+    recipients = [
+        logged_in_user.email,
+        ticket.created_by.email,
+        ticket.owner.email
+    ]
 
     # mail the comment to anybody related to the ticket
     if comment:
@@ -232,8 +282,7 @@ def update_ticket(request):
 
         # also inform ticket commenter
         for t_comment in ticket.comments:
-            if t_comment.created_by not in recipients:
-                recipients.append(t_comment.created_by.email)
+            recipients.append(t_comment.created_by.email)
 
         message_body_text = "%(who)s has added a the following comment to " \
             "%(ticket)s:\n\n%(comment)s"
@@ -262,6 +311,8 @@ def update_ticket(request):
                 'comment': comment  # use the raw html comment
             }
 
+        # make recipients unique
+        recipients = list(set(recipients))
         message = Message(
             subject="Stalker Pyramid: New comment on Ticket #%s" %
                     ticket.number,

@@ -1721,6 +1721,10 @@ def request_review(request):
         'url': request.route_url('view_user', id=logged_in_user.id),
         'name': logged_in_user.name
     }
+    user_link_internal = '<a href="%(url)s">%(name)s</a>' % {
+        'url': request.route_path('view_user', id=logged_in_user.id),
+        'name': logged_in_user.name
+    }
     task_parent_names = "|".join(map(lambda x: x.name, task.parents))
 
     task_name_as_text = "%(name)s (%(entity_type)s) - (%(parents)s)" % {
@@ -1732,6 +1736,14 @@ def request_review(request):
         '<a href="%(url)s">%(name)s ' \
         '(%(task_entity_type)s) - (%(task_parent_names)s)</a>' % {
             "url": request.route_url('view_task', id=task.id),
+            "name": task.name,
+            "task_entity_type": task.entity_type,
+            "task_parent_names": task_parent_names
+        }
+    task_link_internal = \
+        '<a href="%(url)s">%(name)s ' \
+        '(%(task_entity_type)s) - (%(task_parent_names)s)</a>' % {
+            "url": request.route_path('view_task', id=task.id),
             "name": task.name,
             "task_entity_type": task.entity_type,
             "task_parent_names": task_parent_names
@@ -1749,6 +1761,10 @@ def request_review(request):
         "user": user_link,
         "task": task_link
     }
+    ticket_description = description_template % {
+        "user": user_link_internal,
+        "task": task_link_internal
+    }
 
     responsible = task.responsible
 
@@ -1757,7 +1773,7 @@ def request_review(request):
     review_ticket = Ticket(
         project=project,
         summary=summary_text,
-        description=description_html,
+        description=ticket_description,
         created_by=logged_in_user,
         date_created=utc_now,
         date_updated=utc_now

@@ -789,7 +789,7 @@ require([
             'the children tasks.For the following tasks:<br><br>' +
             selected_ids + 
             '<br><br>Is that ok?</div>', function(result){
-                if (result){
+                if (result) {
                     // get the id and send it to the server
                     var url = '';
                     for (var i=0; i < selected_ids.length; i++){

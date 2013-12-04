@@ -24,7 +24,7 @@ Animation and VFX Studios. See docs for more information.
 import pyramid_beaker
 from zope.sqlalchemy import ZopeTransactionExtension
 
-__version__ = '0.1.2'
+__version__ = '0.1.4'
 
 
 # before anything about stalker create the defaults
@@ -492,8 +492,7 @@ def main(global_config, **settings):
 
     # *************************************************************************
     # Ticket
-    config.add_route('dialog_create_ticket',   'projects/{id}/tickets/create/dialog')
-    config.add_route('dialog_update_ticket',   'tickets/{id}/update/dialog')
+    config.add_route('create_ticket_dialog',   'tickets/{id}/create/dialog')
 
     config.add_route('create_ticket',          'tickets/create')
     config.add_route('update_ticket',          'tickets/{id}/update')

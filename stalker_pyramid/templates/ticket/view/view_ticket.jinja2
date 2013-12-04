@@ -74,14 +74,14 @@
                                     <td id='date_created' class="date">{{ ticket.date_created }}</td>
                                 </tr>
                                 <tr>
-                                    <th>Resolution</th>
-                                    <td>{{ ticket.resolution }}</td>
-                                    <th>Links</th>
-                                    <td>
+                                    <th class="span2">Resolution</th>
+                                    <td class="span4">{{ ticket.resolution }}</td>
+                                    <th class="span2">Links</th>
+                                    <td class="span4">
                                         {%- for link in ticket.links -%}
-                                            {%- if loop.index0 > 0 %},{% endif -%}
+                                            {%- if loop.index0 > 0 %}<br>{% endif -%}
                                             <a href='/{{ link.plural_class_name.lower() }}/{{ link.id }}/view'>
-                                            {{ link.name }} ({{ link.entity_type }}) {% if link.entity_type in ['Task', 'Asset', 'Shot', 'Sequence'] %}({{ link.status.name }}){% endif %}</a>
+                                            {{- link.name }} ({{ link.entity_type }}) {% if link.entity_type in ['Task', 'Asset', 'Shot', 'Sequence'] %}({{ link.status.name }}){% endif %}</a>
                                         {%- endfor -%}
                                     </td>
                                 </tr>

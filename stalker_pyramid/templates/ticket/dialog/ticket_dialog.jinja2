@@ -1,0 +1,257 @@
+<div class='row-fluid'>
+    <div class='span12'>
+
+        <form id="ticket_form"
+              class='form-horizontal'
+              role='form'
+              method='post'
+              action="{{ request.route_url('create_ticket') }}">
+
+            <input type="hidden" name="project_id" value="{{ project.id }}">
+
+            {# Summary #}
+            <div class="control-group">
+                <label class="span3 control-label" for="ticket_summary">Summary</label>
+                <div class="span9">
+                    <input type="text" name="summary">
+                </div>
+            </div>
+
+            {# Type #}
+            <div class="control-group">
+                <label class="span3 control-label" for="ticket_type">Type</label>
+                <div class="span9">
+                    <select id="ticket_type" name="type">
+                        {% for type in ticket_types %}
+                            <option val="{{ type.name }}">{{ type.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            {# Priority #}
+            <div class="control-group">
+                <label class="span3 control-label" for="ticket_priority">Priority</label>
+                <div class="span9">
+                    <select id="ticket_priority"
+                            name="priority">
+                        {% for priority in ticket_priorities %}
+                            <option val="{{ priority }}">{{ priority }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            {# Owner #}
+            <div class='control-group'>
+                <label class='span3 control-label' for='ticket_owner'>Owner</label>
+                <div class='span9'>
+                    <select id='ticket_owner'
+                            class='input-block-level'
+                            name='owner_id'
+                            data-placeholder='Owner'
+                            is_updating=false></select>
+                </div>
+            </div>
+
+            {# Links #}
+            <div class='control-group'>
+                <label class='span3 control-label' for='ticket_links'>Links</label>
+                <div class='span9'>
+                    <select id='ticket_links'
+                            multiple=''
+                            class='input-block-level tag-input-style'
+                            name='link_ids'
+                            data-placeholder='Links'
+                            is_updating=false></select>
+                </div>
+            </div>
+
+            {# Description #}
+            <div class='control-group'>
+                <label class='span3 control-label' for='ticket_description'>Description</label>
+                <div class='span9'>
+                    <textarea id="ticket_description" rows="12"
+                              name='description'
+                              class="autosize-transition span12"
+                              style="overflow: hidden;
+                                     word-wrap: break-word;
+                                     resize: horizontal;"></textarea>
+                </div>
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/chosen.jquery.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/moment.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.autosize-min.js") }}'></script>
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootstrap-tag.min.js") }}'></script>#}
+
+
+<script>
+    function init_dialog(){
+        console.log('initialize ticket dialog start');
+
+        // generate default values;
+        var project = {
+            id: {{ project.id }},
+            name: "{{ project.name }}"
+        };
+
+        // update dialog header
+        $('#dialog_template_label').text('Create Ticket Dialog');
+
+        var submit_button = $('#dialog_template_submit_button');
+
+        var field_update_mode_checker = function(){
+            // checks if the important fields are still updating
+            // check if any of the fields are still in updating mode
+            if ($('#ticket_owner').attr('is_updating') === 'true' ||
+                $('#ticket_links').attr('is_updating') === 'true') {
+                // disable the Submit button
+                setTimeout(function(){submit_button.button('loading')}, 0);
+            } else {
+                // enable the Submit button
+                setTimeout(function(){submit_button.button('reset')}, 0);
+            }
+        };
+
+
+        {# ***************************************************************** #}
+        {# Owner #}
+        var ticket_owner = $('#ticket_owner');
+
+        ticket_owner.chosen({
+            search_contains: true,
+            enable_split_word_search: true
+        });
+
+        {% raw %}
+        var owner_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
+        {% endraw %}
+
+        //
+        // Update the owner field
+        //
+
+        // set the field to updating mode
+        ticket_owner.attr('is_updating', true);
+        field_update_mode_checker();
+
+        $.getJSON('/projects/' + project.id + '/users/?simple=1').then(function(data){
+            // remove current elements
+            ticket_owner.find('option').remove();
+
+            // append new ones
+            var data_count = data.length;
+            // append a single empty option to the owner field
+            ticket_owner.append('<option value=""></option>');
+            for (var i=0; i < data_count; i++){
+                ticket_owner.append(owner_template(data[i]));
+            }
+
+            // update the chosen fields
+            ticket_owner.trigger('liszt:updated');
+
+            // set the field to normal mode
+            ticket_owner.attr('is_updating', false);
+            field_update_mode_checker();
+        });
+
+        {# ***************************************************************** #}
+        {# Links #}
+        // create a chosen first
+        var ticket_links = $('#ticket_links').chosen({
+            search_contains: true,
+            enable_split_word_search: true
+        });
+
+        // ********************************************************************
+        // get tasks of that project as json from server
+        // set the submit button to loading state while data is get from the server
+        // set the fields to updating mode
+        ticket_links.attr('is_updating', true);
+        field_update_mode_checker();
+        $.getJSON('{{ request.route_url("get_project_tasks", id=project.id) }}').then(function(data){
+            console.log('data.length:', data.length);
+
+            // now append the data to the ticket_links
+            {% raw %}
+            var ticket_link_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
+            {% endraw %}
+
+            var task_count = data.length;
+            var rendered_template = null;
+            // add and empty option
+            ticket_links.append('<option val="">&nbsp;</option>');
+            for (var i=0; i < task_count; i++){
+                rendered_template = ticket_link_template(data[i]);
+                ticket_links.append(rendered_template)
+            }
+
+            // trigger another update
+            ticket_links.trigger('liszt:updated');
+
+            // set the fields to normal mode
+            ticket_links.attr('is_updating', false);
+            field_update_mode_checker();
+        });
+
+
+        {# ***************************************************************** #}
+        {# Submit Button #}
+
+        var submit_form_url = '{{ request.route_url("create_ticket") }}';
+        submit_button.on('click', function(e){
+            e.stopPropagation();
+            e.preventDefault();
+
+            // disable submit button
+            submit_button.button('loading');
+
+            var form = $('#ticket_form');
+            var form_data = form.serialize();
+            console.log('form_data :', form_data);
+
+            // prevent multiple sends
+            if (form.attr('is_sending') == 'true'){
+                return;
+            } else {
+                form.attr('is_sending', true);
+            }
+            $.post(
+                submit_form_url,
+                form_data
+            ).done(function(){
+                $('#dialog_template').modal('hide');
+                // reload page
+                setTimeout(function () { // wait for hide event to finish
+                    window.location.reload();
+                }, 0);
+            }).fail(function(jqXHR){
+                form.attr('is_sending', false);
+
+                // reset submit button
+                submit_button.button('reset');
+                bootbox.alert(jqXHR.responseText);
+            });
+        });
+
+        console.log('initialize ticket dialog end')
+    }
+</script>
+
+<script type="text/javascript">
+    function destruct_dialog(){
+        console.log('destruct ticket dialog start');
+        // unbind events
+        $('#dialog_template_submit_button').unbind();
+
+        // remove dialog
+        $('#dialog_template').data('modal', null);
+        console.log('destruct ticket dialog end');
+    }
+</script>
