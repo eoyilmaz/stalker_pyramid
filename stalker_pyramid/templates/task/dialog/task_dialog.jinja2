@@ -259,10 +259,10 @@
                 <label class='span3 control-label' for='task_priority'>Priority</label>
                 <div class='span9'>
                     <input id='task_priority'
-                           name='priorty'
+                           name='priority'
                            type='text'
                            placeholder='Priority'
-                           value={% if mode=='update' %}{{ entity.priority }}{% else %}500{% endif %}
+                           value={% if mode == 'update' %}{{ entity.priority }}{% else %}500{% endif %}
                            min=1
                            max=1000
                            required>
@@ -659,11 +659,6 @@
         
         {# ***************************************************************** #}
         {# Priority Spinner #}
-        var priority = 500;
-        {% if mode == 'update' %}
-            priority = {{ entity.priority }};
-        {% endif %}
-
         $('#task_priority').ace_spinner({
             value: priority,
             min: 1,
@@ -676,6 +671,7 @@
             var curr_value = $(this).val();
             $(this).val(curr_value <= 1000 ? curr_value >= 1 ? curr_value : 1 : 1000 );
         });
+        console.log('entity.priority : ', priority);
 
         {# ***************************************************************** #}
         {# Submit Button #}
