@@ -44,15 +44,13 @@
         <div class="row-fluid">
             <div class="btn-toolbar">
                 <div class="btn-group">
-                    <button class="btn btn-small btn-success">
+                    <button class="btn btn-small btn-success"
+                       data-target="#dialog_template"
+                       data-toggle="modal"
+                       data-keyboard=false
+                       href='{{ request.route_url("create_asset_dialog", id=-1, _query={'project_id': entity.id }) }}'>
                         <i class="icon-edit bigger-120"></i>
-                        <a class="white"
-                           data-target="#dialog_template"
-                           data-toggle="modal"
-                           data-keyboard=false
-                           href='{{ request.route_url("create_asset_dialog", id=-1, _query={'project_id': entity.id }) }}'>
-                            Create
-                        </a>
+                        Create
                     </button>
                 </div>
             </div>

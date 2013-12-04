@@ -43,14 +43,13 @@
         <div class="row-fluid">
              <div class="btn-toolbar">
                 <div class="btn-group">
-                    <button id="create_btn" class="btn btn-small btn-success">
+                    <button id="create_btn" class="btn btn-small btn-success"
+                       data-target="#dialog_template"
+                       data-toggle="modal"
+                       data-keyboard=false
+                       href='{{ request.route_url("create_sequence_dialog", id=-1, _query={'project_id': entity.id }) }}'>
                         <i class="icon-edit bigger-120"></i>
-                        <a class="white"
-                           data-target="#dialog_template"
-                           data-toggle="modal"
-                           data-keyboard=false
-                           href='{{ request.route_url("create_sequence_dialog", id=-1) }}'>Create
-                        </a>
+                        Create
                     </button>
                 </div>
             </div>
@@ -160,9 +159,6 @@
 
             });
 
-            $('#create_btn').on('click', function (e) {
-
-            })
         });
 
     </script>
