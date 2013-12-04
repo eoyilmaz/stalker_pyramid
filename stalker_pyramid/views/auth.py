@@ -783,7 +783,7 @@ def get_resources(request):
                 )
             )
             and did = %s
-            group by "Tasks".id, "Tasks".start, "Tasks".end
+            group by "Tasks".id, "Tasks".start, "Tasks".end, "Tasks".computed_start, "Tasks".computed_end
             order by start
             """
 
@@ -814,7 +814,7 @@ def get_resources(request):
                         where all_tasks.parent_id = "Tasks".id
                     )
                 ) and project_id = %s
-            group by id, start, "end"
+            group by id, start, "end", "Tasks".computed_start, "Tasks".computed_end
             order by start
             """
 
