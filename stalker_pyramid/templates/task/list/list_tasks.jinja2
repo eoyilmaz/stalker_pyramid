@@ -202,7 +202,7 @@
                     </button>
 
                     <ul class="dropdown-menu" role='menu'>
-                        {% if has_permission('Create_Task') %}
+                        {% if project and has_permission('Create_Task') %}
                         <li class="dropdown-submenu">
 
                             <a href="#" tabindex="-1">
