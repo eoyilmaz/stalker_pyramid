@@ -14,7 +14,7 @@
                 <a data-target="#dialog_template"
                    data-toggle="modal"
                    data-keyboard=false
-                   href="{{ request.route_url('append_entities_to_entity_dialog', id=user.id, entities=list_item_type) }}?came_from={{ request.current_route_path() }}"
+                   href="{{ request.route_url('append_entities_to_entity_dialog', id=user.id, entities=list_item_type, _query={'came_from': request.current_route_path()}) }}"
                    class="white">
                     <i class="icon-plus"></i>
                 </a>

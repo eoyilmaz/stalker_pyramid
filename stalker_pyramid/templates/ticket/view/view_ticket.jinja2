@@ -81,7 +81,7 @@
                                         {%- for link in ticket.links -%}
                                             {%- if loop.index0 > 0 %},{% endif -%}
                                             <a href='/{{ link.plural_class_name.lower() }}/{{ link.id }}/view'>
-                                            {{ link.name }} ({{ link.entity_type }})</a>
+                                            {{ link.name }} ({{ link.entity_type }}) {% if link.entity_type in ['Task', 'Asset', 'Shot', 'Sequence'] %}({{ link.status.name }}){% endif %}</a>
                                         {%- endfor -%}
                                     </td>
                                 </tr>

@@ -33,7 +33,7 @@
     {% else %}
          {% set address=request.route_path('get_groups') %}
     {% endif %}
-    {% set add_button_address='/groups/create/dialog?came_from='+ request.current_route_path()  %}
+    {% set add_button_address='/groups/create/dialog?came_from='+ request.current_route_path() %}
     {% set list_item_type='Group' %}
     {% include 'components/data_table.jinja2' %}
 

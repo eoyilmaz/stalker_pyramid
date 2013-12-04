@@ -544,8 +544,14 @@ def update_task(request):
 
     # update responsible
     if responsible:
-        if task.responsible != responsible:
-            task.responsible = responsible
+        if task.parent:
+            if task.parent.responsible == responsible:
+                task.responsible = None
+            else:
+                task.responsible = responsible
+        else:
+            if task.responsible != responsible:
+                task.responsible = responsible
 
     type_name = ''
     if entity_type == 'Asset':
@@ -851,14 +857,15 @@ def get_tasks(request):
         "Parent_Tasks".id,
         "Tasks".project_id
     order by "SimpleEntities".name
-            """
+    """
 
     # set the content range to prevent JSONRest Store to query the data twice
     content_range = '%s-%s/%s'
-
+    where_condition = ''
     if task_id:
         task = Entity.query.filter(Entity.id == task_id).first()
         if isinstance(task, (Project, Studio)):
+            # no where condition
             if isinstance(task, Project):
                 return_data = convert_to_dgrid_gantt_project_format([task])
                 # just return here to avoid any further error
@@ -882,7 +889,6 @@ def get_tasks(request):
 
     elif parent_id:
         parent = Entity.query.filter(Entity.id == parent_id).first()
-
         if isinstance(parent, Project):
             where_condition = '"Parent_Tasks".id is NULL and "Tasks".project_id = %s' % parent_id
         elif isinstance(parent, Task):

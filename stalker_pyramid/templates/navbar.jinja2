@@ -28,7 +28,7 @@
                            data-target="#dialog_template"
                            data-toggle="modal"
                            data-keyboard=false
-                           href='{{ request.route_url('create_user_dialog') }}?came_from={{ request.current_route_path() }}'>New User
+                           href='{{ request.route_url('create_user_dialog', _query={'came_from': request.current_route_path()} ) }}'>New User
                         </a>
                 </li>
             {% endif %}
@@ -37,7 +37,7 @@
                            data-target="#dialog_template"
                            data-toggle="modal"
                            data-keyboard=false
-                           href='{{ request.route_url('create_department_dialog') }}?came_from={{ request.current_route_path() }}'>New Department
+                           href='{{ request.route_url('create_department_dialog', _query={'came_from': request.current_route_path()}) }}'>New Department
                         </a>
 
                 </li>
@@ -47,7 +47,7 @@
                            data-target="#dialog_template"
                            data-toggle="modal"
                            data-keyboard=false
-                           href='{{ request.route_url('create_group_dialog') }}?came_from={{ request.current_route_path() }}'>New Group
+                           href='{{ request.route_url('create_group_dialog', _query={'came_from': request.current_route_path()}) }}'>New Group
                         </a>
 {#                    <a href="/groups/-1/create/dialog">New Group</a>#}
                 </li>

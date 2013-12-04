@@ -50,7 +50,8 @@
                            data-target="#dialog_template"
                            data-toggle="modal"
                            data-keyboard=false
-                           href='{{ request.route_url("create_asset_dialog", id=-1) }}'>Create
+                           href='{{ request.route_url("create_asset_dialog", id=-1, _query={'project_id': entity.id }) }}'>
+                            Create
                         </a>
                     </button>
                 </div>
