@@ -201,24 +201,59 @@ def view_entity_department(request):
         'projects': projects
     }
 
-#
-# @view_config(
-#     route_name='get_departments',
-#     renderer='json'
-# )
-# def get_departments(request):
-#     """returns all the departments in the database
-#     """
-#     return [
-#         {
-#             'id': dep.id,
-#             'name': dep.name
-#         }
-#         for dep in Department.query.order_by(Department.name.asc()).all()
-#     ]
-#
-#
-#
+
+@view_config(
+    route_name='get_departments',
+    renderer='json'
+)
+def get_departments(request):
+    """returns all the departments in the database
+    """
+    return [
+        {
+            'id': dep.id,
+            'name': dep.name
+        }
+        for dep in Department.query.order_by(Department.name.asc()).all()
+    ]
+
+@view_config(
+    route_name='get_department',
+    renderer='json'
+)
+def get_department(request):
+    """returns all the departments in the database
+    """
+    department_id = request.matchdict.get('id', -1)
+    department = Department.query.filter_by(id=department_id).first()
+
+    return[
+        {
+            'id': department.id,
+            'name': department.name,
+            'thumbnail_full_path': department.thumbnail.full_path if department.thumbnail else None,
+        }
+    ]
+
+
+
+
+@view_config(
+    route_name='get_departments',
+    renderer='json'
+)
+def get_departments(request):
+    """returns all the departments in the database
+    """
+    return [
+        {
+            'id': dep.id,
+            'name': dep.name
+        }
+        for dep in Department.query.order_by(Department.name.asc()).all()
+    ]
+
+
 @view_config(
     route_name='get_entity_departments',
     renderer='json'

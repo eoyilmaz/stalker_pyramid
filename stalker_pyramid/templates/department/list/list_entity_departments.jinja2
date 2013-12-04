@@ -41,7 +41,7 @@
     {% include 'page_header.jinja2' %}
 
 
-    {% set add_button_address=request.route_path('department_dialog', id=-1, mode='create') %}
+    {% set add_button_address='/departments/create/dialog?came_from='+ request.current_route_path() %}
     {% set address=request.route_path('get_entity_departments', id=entity.id) %}
     {% set list_item_type='Department' %}
     {% include 'components/data_table.jinja2' %}

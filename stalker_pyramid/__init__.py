@@ -544,6 +544,7 @@ def main(global_config, **settings):
     config.add_route('update_department',     'departments/update')
     config.add_route('view_department',       'departments/{id}/view')
     config.add_route('get_departments',       'departments/')
+    config.add_route('get_department',       'departments/{id}/')
 
     config.add_route('list_department_users', 'departments/{id}/users/list')
     config.add_route('list_department_tasks', 'departments/{id}/tasks/list')

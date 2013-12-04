@@ -7,10 +7,10 @@
     <div class="row-fluid">
         {# Name #}
         <div class="control-group">
-            <label class="span4 control-label"
+            <label class="span3 control-label"
                    for="department_name">Name</label>
 
-            <div class="span8">
+            <div class="span9">
                 <input id="department_name"
                        name='name'
                        type="text"
@@ -27,9 +27,9 @@
         {# Lead #}
         <div class="control-group">
             <label for="department_lead"
-                   class="span4 control-label">Lead</label>
+                   class="span3 control-label">Lead</label>
 
-            <div class="span8">
+            <div class="span9">
                 <select id="department_lead"
                         name='lead'
                         type="lead"
@@ -40,26 +40,26 @@
 
             </div>
         </div>
-    </div>
 
 
-    {#Description #}
-    <div class='control-group'>
-        <label class='span4 control-label'
-               for='department_description'>Description</label>
+        {#Description #}
+        <div class="control-group'">
+            <label for="department_description"
+                   class="span3 control-label">Description</label>
 
-        <div class='span8'>
-            <textarea id="department_description"
-                      name='description'
-                      class="autosize-transition span12"
-                      style="overflow: hidden;
+            <div class="span9">
+                <textarea id="department_description"
+                          name='description'
+                          class="autosize-transition"
+                          style="overflow: hidden;
                                      word-wrap: break-word;
                                      resize: horizontal;
                                      height: 50px;"
-                    >{% if mode == 'Update' %}{{ department.name }}{% endif %}</textarea>
+                        >{% if mode == 'Update' %}
+                    {{ department.name }}{% endif %}</textarea>
+            </div>
         </div>
     </div>
-
 
 </form>
 
