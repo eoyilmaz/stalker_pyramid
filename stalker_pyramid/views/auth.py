@@ -723,9 +723,9 @@ def get_resources(request):
             """
 
         if resource_id and entity_type not in ["Studio", "Project"]:
-            resource_sql_query += "and id=%s group by id, name order by name" % resource_id
+            resource_sql_query += "and id=%s group by id, name, entity_type order by name" % resource_id
         else:
-            resource_sql_query += "group by id, name order by name"
+            resource_sql_query += "group by id, name, entity_type order by name"
 
         # if the given entity is a Department return all the time logs of the
         # users of that department
