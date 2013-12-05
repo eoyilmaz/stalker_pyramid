@@ -21,6 +21,7 @@ import logging
 import datetime
 from pyramid.httpexceptions import HTTPServerError, HTTPFound, HTTPOk, HTTPForbidden
 from pyramid.view import view_config
+from sqlalchemy import or_
 from stalker import Entity, Studio, Project, Group, User, Department, Vacation, SimpleEntity
 from stalker.db import DBSession
 
@@ -547,10 +548,7 @@ def submit_search(request):
     """
     logger.debug('***submit_search user method starts ***')
 
-    logged_in_user = get_logged_in_user(request)
-
     # get params
-
     qString = request.params.get('str', None)
     entity_id = request.params.get('id', None)
 
@@ -560,14 +558,18 @@ def submit_search(request):
 
     # create and add a new user
     if qString:
-        entities = SimpleEntity.query.filter(SimpleEntity.name.ilike(qString)).all()
-        result_location ='/'
+        entities = SimpleEntity.query.filter(
+            Entity.name.ilike('%' + qString + '%')
+        ).all()
+        result_location = '/'
 
-        if len(entities)>1:
-            result_location = '/list/search_results?str=%s&eid=%s'%(qString,entity_id)
+        if len(entities) > 1:
+            result_location = \
+                '/list/search_results?str=%s&eid=%s' % (qString, entity_id)
         elif len(entities) == 1:
             entity = entities[0]
-            result_location = '/%s/%s/view' % (entity.plural_class_name.lower(),entity.id)
+            result_location = \
+                '/%s/%s/view' % (entity.plural_class_name.lower(), entity.id)
 
     logger.debug('result_location : %s' % result_location)
 
@@ -585,7 +587,9 @@ def list_search_result(request):
     entity_id = request.params.get('eid', None)
     entity = Entity.query.filter_by(id=entity_id).first()
 
-    results = Entity.query.filter(Entity.name.ilike(qString)).all()
+    results = Entity.query.filter(
+        Entity.name.ilike('%' + qString + '%')
+    ).all()
 
     projects = Project.query.all()
     logged_in_user = get_logged_in_user(request)

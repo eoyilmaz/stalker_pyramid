@@ -591,6 +591,8 @@ def update_task(request):
     task.name = name
     task.description = description
 
+    prev_parent = task.parent
+
     try:
         task.parent = parent
         task.depends = depends
@@ -601,6 +603,19 @@ def update_task(request):
                   (parent.name, map(lambda x: x.name, depends))
         transaction.abort()
         return Response(message, 500)
+    # if the current parent and the previous parents are different
+    # also update the previous parents status
+    if parent != prev_parent:
+        update_task_statuses(prev_parent)
+
+    # also update parent status
+    update_task_statuses(parent)
+
+    # update status of this task according to its dependencies
+    update_task_statuses_with_dependencies(task)
+    # also update all task depends to this one
+    for dep in task.dependent_of:
+        update_task_statuses_with_dependencies(dep)
 
     task.schedule_model = schedule_model
     task.schedule_unit = schedule_unit

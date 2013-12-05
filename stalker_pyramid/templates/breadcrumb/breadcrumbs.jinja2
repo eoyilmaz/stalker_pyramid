@@ -36,7 +36,7 @@
         var search_input = $("#nav-search-input");
         var search_str = search_input.val();
 
-        $.getJSON('/submit_search', {str: '%'+search_str+'%', id:'{{entity.id}}'}).then(function (data) {
+        $.getJSON('/submit_search', {str: search_str, id:'{{entity.id}}'}).then(function (data) {
             window.location.assign(data.url);
         });
 

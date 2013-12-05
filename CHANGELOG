@@ -11,6 +11,10 @@ Stalker Pyramid Changes
   are in "Complete | CMPL" status, then the newly created tasks status will be
   NEW, otherwise its status will be RTS. And the status of all the dependent
   tasks will be updated on any review has been made to a task.
+* **Fix:** Fixed ``GanttGrid.js`` where the event argument was not set for
+  right arrow and down arrow key functions.
+* **Fix:** A bug is fixed in ``views.entity.submit_search()`` and
+  ``views.entity.list_search_result()`` views.
 
 0.1.4
 =====

@@ -1715,3 +1715,234 @@ class TaskViewTestCase(unittest2.TestCase):
         task.update_task_statuses_with_dependencies(self.test_task5)
         self.assertEqual(self.test_task5.status, self.status_cmpl)
 
+    def test_update_task_RTS_task_updated_to_have_a_dependency_of_NEW(self):
+        """testing if in update_task() it is possible to set a dependency
+        between a task with RTS status to a task with NEW status but the status
+        of the task is updated from RTS to NEW
+        """
+        self.fail('test is not implemented yet')
+
+    def test_update_task_RTS_task_updated_to_have_a_dependency_of_RTS(self):
+        """testing if in update_task() it is possible to set a dependency
+        between a task with RTS status to a task with RTS status but the status
+        of the task is updated from RTS to NEW
+        """
+        self.fail('test is not implemented yet')
+
+    def test_update_task_RTS_task_updated_to_have_a_dependency_of_WIP(self):
+        """testing if in update_task() it is possible to set a dependency
+        between a task with RTS status to a task with WIP status but the status
+        of the task is updated from RTS to NEW
+        """
+        self.fail('test is not implemented yet')
+
+    def test_update_task_RTS_task_updated_to_have_a_dependency_of_PREV(self):
+        """testing if in update_task() it is possible to set a dependency
+        between a task with RTS status to a task with PREV status but the
+        status of the task is updated from RTS to NEW
+        """
+        self.fail('test is not implemented yet')
+
+    def test_update_task_RTS_task_updated_to_have_a_dependency_of_HREV(self):
+        """testing if in update_task() it is not possible to set a dependency
+        between a task with RTS status to a task with HREV status
+        """
+        self.fail('test is not implemented yet')
+
+    def test_update_task_RTS_task_updated_to_have_a_dependency_of_CMPL(self):
+        """testing if in update_task() it is possible to set a dependency
+        between a task with RTS status to a task with CMPL status and the
+        status of the task will stay RTS
+        """
+        self.fail('test is not implemented yet')
+
+
+
+
+    def test_update_task_WIP_task_updated_to_have_a_dependency_of_NEW(self):
+        """testing if in update_task() it is not possible to set a dependency
+        between a task with WIP status to a task with NEW status
+        """
+        self.fail('test is not implemented yet')
+
+    def test_update_task_WIP_task_updated_to_have_a_dependency_of_RTS(self):
+        """testing if in update_task() it is not possible to set a dependency
+        between a task with WIP status to a task with RTS status
+        """
+        self.fail('test is not implemented yet')
+
+    def test_update_task_WIP_task_updated_to_have_a_dependency_of_WIP(self):
+        """testing if in update_task() it is not possible to set a dependency
+        between a task with WIP status to a task with WIP status
+        """
+        self.fail('test is not implemented yet')
+
+    def test_update_task_WIP_task_updated_to_have_a_dependency_of_PREV(self):
+        """testing if in update_task() it is not possible to set a dependency
+        between a task with WIP status to a task with PREV status
+        """
+        self.fail('test is not implemented yet')
+
+    def test_update_task_WIP_task_updated_to_have_a_dependency_of_HREV(self):
+        """testing if in update_task() it is not possible to set a dependency
+        between a task with WIP status to a task with HREV status
+        """
+        self.fail('test is not implemented yet')
+
+    def test_update_task_WIP_task_updated_to_have_a_dependency_of_CMPL(self):
+        """testing if in update_task() it is possible to set a dependency
+        between a task with WIP status to a task with CMPL status
+        """
+        self.fail('test is not implemented yet')
+
+
+
+
+    def test_update_task_PREV_task_updated_to_have_a_dependency_of_NEW(self):
+        """testing if in update_task() it is not possible to set a dependency
+        between a task with PREV status to a task with NEW status
+        """
+        self.fail('test is not implemented yet')
+
+    def test_update_task_PREV_task_updated_to_have_a_dependency_of_RTS(self):
+        """testing if in update_task() it is not possible to set a dependency
+        between a task with PREV status to a task with RTS status
+        """
+        self.fail('test is not implemented yet')
+
+    def test_update_task_PREV_task_updated_to_have_a_dependency_of_WIP(self):
+        """testing if in update_task() it is not possible to set a dependency
+        between a task with PREV status to a task with WIP status
+        """
+        self.fail('test is not implemented yet')
+
+    def test_update_task_PREV_task_updated_to_have_a_dependency_of_PREV(self):
+        """testing if in update_task() it is not possible to set a dependency
+        between a task with PREV status to a task with PREV status
+        """
+        self.fail('test is not implemented yet')
+
+    def test_update_task_PREV_task_updated_to_have_a_dependency_of_HREV(self):
+        """testing if in update_task() it is not possible to set a dependency
+        between a task with PREV status to a task with HREV status
+        """
+        self.fail('test is not implemented yet')
+
+    def test_update_task_PREV_task_updated_to_have_a_dependency_of_CMPL(self):
+        """testing if in update_task() it is possible to set a dependency
+        between a task with PREV status to a task with CMPL status
+        """
+        self.fail('test is not implemented yet')
+
+
+
+
+    def test_update_task_HREV_task_updated_to_have_a_dependency_of_NEW(self):
+        """testing if in update_task() it is not possible to set a dependency
+        between a task with HREV status to a task with NEW status
+        """
+        self.fail('test is not implemented yet')
+
+    def test_update_task_HREV_task_updated_to_have_a_dependency_of_RTS(self):
+        """testing if in update_task() it is not possible to set a dependency
+        between a task with HREV status to a task with RTS status
+        """
+        self.fail('test is not implemented yet')
+
+    def test_update_task_HREV_task_updated_to_have_a_dependency_of_WIP(self):
+        """testing if in update_task() it is not possible to set a dependency
+        between a task with HREV status to a task with WIP status
+        """
+        self.fail('test is not implemented yet')
+
+    def test_update_task_HREV_task_updated_to_have_a_dependency_of_PREV(self):
+        """testing if in update_task() it is not possible to set a dependency
+        between a task with HREV status to a task with PREV status
+        """
+        self.fail('test is not implemented yet')
+
+    def test_update_task_HREV_task_updated_to_have_a_dependency_of_HREV(self):
+        """testing if in update_task() it is possible to set a dependency
+        between a task with HREV status to a task with HREV status
+        """
+        self.fail('test is not implemented yet')
+
+    def test_update_task_HREV_task_updated_to_have_a_dependency_of_CMPL(self):
+        """testing if in update_task() it is possible to set a dependency
+        between a task with HREV status to a task with CMPL status
+        """
+        self.fail('test is not implemented yet')
+
+
+
+
+    def test_update_task_CMPL_task_updated_to_have_a_dependency_of_NEW(self):
+        """testing if in update_task() it is not possible to set a dependency
+        between a task with CMPL status to a task with NEW status
+        """
+        self.fail('test is not implemented yet')
+
+    def test_update_task_CMPL_task_updated_to_have_a_dependency_of_RTS(self):
+        """testing if in update_task() it is not possible to set a dependency
+        between a task with CMPL status to a task with RTS status
+        """
+        self.fail('test is not implemented yet')
+
+    def test_update_task_CMPL_task_updated_to_have_a_dependency_of_WIP(self):
+        """testing if in update_task() it is not possible to set a dependency
+        between a task with CMPL status to a task with WIP status
+        """
+        self.fail('test is not implemented yet')
+
+    def test_update_task_CMPL_task_updated_to_have_a_dependency_of_PREV(self):
+        """testing if in update_task() it is not possible to set a dependency
+        between a task with CMPL status to a task with PREV status
+        """
+        self.fail('test is not implemented yet')
+
+    def test_update_task_CMPL_task_updated_to_have_a_dependency_of_HREV(self):
+        """testing if in update_task() it is not possible to set a dependency
+        between a task with CMPL status to a task with HREV status
+        """
+        self.fail('test is not implemented yet')
+
+    def test_update_task_CMPL_task_updated_to_have_a_dependency_of_CMPL(self):
+        """testing if in update_task() it is possible to set a dependency
+        between a task with HREV status to a task with CMPL status
+        """
+        self.fail('test is not implemented yet')
+
+
+
+
+    def test_update_task_wip_task_updated_to_have_a_new_dependency_which_is_not_complete(self):
+        """testing if in update_task() it is not possible to set a dependency
+        which is not complete for a wip task
+        """
+        self.fail('test is not implemented yet')
+
+    def test_update_task_task_updated_to_have_a_new_dependency_which_has_revision(self):
+        """testing if in update_task() it is not possible to set a dependency
+        with status is hrev
+        """
+        self.fail('test is not implemented yet')
+
+    def test_update_task_task_status_is_changed_and_depending_task_statuses_updated_correctly(self):
+        """testing if in update_task() task status is changed due to a change
+        in parent or dependency, the depending task statuses are updated
+        correctly
+        """
+        self.fail('test is not implemented yet')
+
+    def test_update_task_task_parent_is_changed_and_previous_parent_status_updated_correctly(self):
+        """testing if in update_task() task parent is changed and the previous
+        parent status is updated correctly
+        """
+        self.fail('test is not implemented yet')
+
+    def test_update_task_task_parent_is_changed_and_new_parent_status_updated_correctly(self):
+        """testing if in update_task() task parent is changed and the new
+        parent status is updated correctly
+        """
+        self.fail('test is not implemented yet')
+

@@ -49,7 +49,7 @@ define([
                     }
                 }
             },
-            40: function () { // down arrow
+            40: function (event) { // down arrow
                 event.preventDefault();
                 event.stopPropagation();
                 var id, selection = [];
@@ -74,7 +74,9 @@ define([
                     }
                 }
             },
-            39: function () { // right arrow
+            39: function (event) { // right arrow
+                event.preventDefault();
+                event.stopPropagation();
                 var obj;
                 for (obj in this.selection) {
                     this.expand(obj, true);
@@ -87,6 +89,8 @@ define([
              * @param event
              */
             37: function (event) {  // left arrow
+                event.preventDefault();
+                event.stopPropagation();
                 var row_id, row, expanded, parent_id;
 
                 var grid = this;
