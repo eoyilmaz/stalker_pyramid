@@ -62,6 +62,10 @@ def create_statuses_and_status_lists():
     new = Status.query.filter(Status.code == 'NEW').first()  # from ticket
                                                              # statuses
 
+    rts = Status.query.filter_by(code='RTS').first()
+    if not rts:
+        rts = Status(name='Ready To Start', code='RTS')
+
     wip = Status.query.filter_by(code='WIP').first()
     if not wip:
         wip = Status(name='Work In Progress', code='WIP')
@@ -80,11 +84,22 @@ def create_statuses_and_status_lists():
 
     # now use them in status lists
     project_status_list = [new, wip, completed]
-    task_status_list.statuses = [new, wip, prev, hrev, completed]
-    asset_status_list.statuses = [new, wip, prev, hrev, completed]
-    shot_status_list.statuses = [new, wip, prev, hrev, completed]
-    sequence_status_list.statuses = [new, wip, prev, hrev, completed]
+    task_status_list.statuses = [new, rts, wip, prev, hrev, completed]
+    asset_status_list.statuses = [new, rts, wip, prev, hrev, completed]
+    shot_status_list.statuses = [new, rts, wip, prev, hrev, completed]
+    sequence_status_list.statuses = [new, rts, wip, prev, hrev, completed]
 
+    db.DBSession.add_all([
+        project_status_list, task_status_list, asset_status_list,
+        shot_status_list, sequence_status_list, new, rts, wip, hrev, prev,
+        completed
+    ])
+    db.DBSession.commit()
+
+
+def create_ticket_types():
+    """Creates the extra ticket types
+    """
     # create Review ticket type
     review = Type.query.filter_by(name='Review').first()
     if not review:
@@ -95,11 +110,7 @@ def create_statuses_and_status_lists():
             code='Review'
         )
 
-    db.DBSession.add_all([
-        project_status_list, task_status_list, asset_status_list,
-        shot_status_list, sequence_status_list, new, wip, hrev, prev,
-        completed, review
-    ])
+    db.DBSession.add(review)
     db.DBSession.commit()
 
 
@@ -116,6 +127,7 @@ def main(argv=sys.argv):
 
     # create statuses
     create_statuses_and_status_lists()
+    create_ticket_types()
 
 
 if __name__ == '__main__':

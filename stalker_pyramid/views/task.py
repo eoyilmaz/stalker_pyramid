@@ -57,7 +57,10 @@ def fix_task_statuses(request):
     """
     task_id = request.matchdict.get('id')
     task = Task.query.filter(Task.id == task_id).first()
+    # check for children
     update_task_statuses(task)
+    # check fo dependencies
+    update_task_statuses_with_dependencies(task)
     return HTTPOk()
 
 
@@ -94,6 +97,7 @@ def update_task_statuses(task):
 
     status_codes = {
         'NEW': 0,
+        'RTS': 0,
         'WIP': 0,
         'PREV': 0,
         'HREV': 0,
@@ -105,46 +109,81 @@ def update_task_statuses(task):
         if r[1]:
             status_codes[r[0]] = 1
 
-    # convert it to a binary number
-    binary_status = '%(NEW)s%(WIP)s%(PREV)s%(HREV)s%(CMPL)s' % status_codes
+    # convert it to a binary number (represented as string)
+    binary_status = \
+        '%(NEW)s%(RTS)s%(WIP)s%(PREV)s%(HREV)s%(CMPL)s' % status_codes
 
     status_lut = {
-        '00000': status_new,  # this will not happen
-        '00001': status_cmpl,
+        '000000': status_new,  # this will not happen
+        '000001': status_cmpl,
 
-        '00010': status_cmpl,  # this one is interesting all tasks are hrev
-        '00011': status_cmpl,
+        '000010': status_cmpl,  # this one is interesting all tasks are hrev
+        '000011': status_cmpl,
 
-        '00100': status_wip,
-        '00101': status_wip,
-        '00110': status_wip,
-        '00111': status_wip,
+        '000100': status_wip,
+        '000101': status_wip,
+        '000110': status_wip,
+        '000111': status_wip,
 
-        '01000': status_wip,
-        '01001': status_wip,
-        '01010': status_wip,
-        '01011': status_wip,
-        '01100': status_wip,
-        '01101': status_wip,
-        '01110': status_wip,
-        '01111': status_wip,
+        '001000': status_wip,
+        '001001': status_wip,
+        '001010': status_wip,
+        '001011': status_wip,
+        '001100': status_wip,
+        '001101': status_wip,
+        '001110': status_wip,
+        '001111': status_wip,
 
-        '10000': status_new,
-        '10001': status_wip,
-        '10010': status_wip,
-        '10011': status_wip,
-        '10100': status_wip,
-        '10101': status_wip,
-        '10110': status_wip,
-        '10111': status_wip,
-        '11000': status_wip,
-        '11001': status_wip,
-        '11010': status_wip,
-        '11011': status_wip,
-        '11100': status_wip,
-        '11101': status_wip,
-        '11110': status_wip,
-        '11111': status_wip
+        # RTS extension
+        '010000': status_new,  # this will not happen
+        '010001': status_wip,
+        '010010': status_wip,
+        '010011': status_wip,
+        '010100': status_wip,
+        '010101': status_wip,
+        '010110': status_wip,
+        '010111': status_wip,
+        '011000': status_wip,
+        '011001': status_wip,
+        '011010': status_wip,
+        '011011': status_wip,
+        '011100': status_wip,
+        '011101': status_wip,
+        '011110': status_wip,
+        '011111': status_wip,
+
+        '100000': status_new,
+        '100001': status_wip,
+        '100010': status_wip,
+        '100011': status_wip,
+        '100100': status_wip,
+        '100101': status_wip,
+        '100110': status_wip,
+        '100111': status_wip,
+        '101000': status_wip,
+        '101001': status_wip,
+        '101010': status_wip,
+        '101011': status_wip,
+        '101100': status_wip,
+        '101101': status_wip,
+        '101110': status_wip,
+        '101111': status_wip,
+        '110000': status_new,
+        '110001': status_wip,
+        '110010': status_wip,
+        '110011': status_wip,
+        '110100': status_wip,
+        '110101': status_wip,
+        '110110': status_wip,
+        '110111': status_wip,
+        '111000': status_wip,
+        '111001': status_wip,
+        '111010': status_wip,
+        '111011': status_wip,
+        '111100': status_wip,
+        '111101': status_wip,
+        '111110': status_wip,
+        '111111': status_wip
     }
 
     task.status = status_lut[binary_status]
@@ -153,6 +192,35 @@ def update_task_statuses(task):
     # commit the changes
     #DBSession.commit()
     # leave the commits to transaction.manager
+
+
+def update_task_statuses_with_dependencies(task):
+    """updates the task status according to its dependencies
+    """
+    if not task:
+        # None is given
+        return
+
+    if task.is_container:
+        # do nothing, its status will be decided by its children
+        return
+
+    status_new = Status.query.filter(Status.code == 'NEW').first()
+    status_rts = Status.query.filter(Status.code == 'RTS').first()
+    status_cmpl = Status.query.filter(Status.code == 'CMPL').first()
+
+    if not task.depends:
+        # doesn't have any dependency
+        # convert its status from NEW to RTS if necessary
+        if task.status == status_new:
+            task.status = status_rts
+        return
+
+    if task.status == status_new:
+        # check all of its dependencies
+        # and decide if it is ready to start or not
+        if all([dep.status == status_cmpl for dep in task.depends]):
+            task.status = status_rts
 
 
 @view_config(
@@ -612,6 +680,10 @@ def review_task(request):
         # update parent statuses
         update_task_statuses(task.parent)
 
+        # update dependent_of statuses
+        for dep in task.dependent_of:
+            update_task_statuses_with_dependencies(dep)
+
         if send_email:
             # send email to resources of the task
             mailer = get_mailer(request)
@@ -636,6 +708,8 @@ def review_task(request):
     elif review == 'Request Revision':
         # so request a revision
         request_revision(request)
+        # no need to update the child and dependent_of statuses,
+        # they will not change
 
     return Response('Successfully reviewed task')
 
@@ -1561,15 +1635,6 @@ def create_task(request):
 
     logger.debug('status_list: %s' % status_list)
 
-    # there should be a status_list
-    if status_list is None:
-        transaction.abort()
-        return Response(
-            'No StatusList found suitable for %s' % entity_type, 500)
-
-    status = Status.query.filter_by(name='New').first()
-    logger.debug('status: %s' % status)
-
     # get the dependencies
     logger.debug('request.POST: %s' % request.POST)
     depends_to_ids = get_multi_integer(request, 'dependent_ids')
@@ -1577,6 +1642,28 @@ def create_task(request):
     depends = Task.query.filter(
         Task.id.in_(depends_to_ids)).all() if depends_to_ids else []
     logger.debug('depends: %s' % depends)
+    # TODO: check if any of the dependent tasks are in HREV status,
+    #       then prevent depending to those tasks and ask the user to remove
+    #       that dependency
+
+    # there should be a status_list
+    if status_list is None:
+        transaction.abort()
+        return Response(
+            'No StatusList found suitable for %s' % entity_type, 500)
+
+    # check the statuses of the dependencies to decide the newly created task
+    # status
+    status_new = Status.query.filter_by(code='NEW').first()
+    status_rts = Status.query.filter_by(code='RTS').first()
+    status_cmpl = Status.query.filter_by(code='CMPL').first()
+    status = status_rts
+    if depends:
+        for dependent_task in depends:
+            if dependent_task.status != status_cmpl:
+                status = status_new
+
+    logger.debug('status: %s' % status)
 
     if not schedule_timing:
         return Response('schedule_timing can not be 0', 500)

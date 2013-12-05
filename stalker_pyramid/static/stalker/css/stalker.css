@@ -71,15 +71,6 @@ tr .odd > td .ticket_BLOCKER {
 .header-color-user + .widget-body {
   border-color: #d15b47;
 }
-.header-color-task {
-    background: #aeaeae;
-    border-color: #989898
-}
-
-.header-color-task+.widget-body {
-    border-color: #aaa
-}
-
 .pln {
   background-color: #abbac3;
   color: white;
@@ -88,10 +79,17 @@ tr .odd > td .ticket_BLOCKER {
   color: white;
 }
 .new {
-  background-color: #d15b47;
+  background-color: #abbac3;
   color: white;
 }
 .new a {
+  color: white;
+}
+.rts {
+  background-color: #d15b47;
+  color: white;
+}
+.rts a {
   color: white;
 }
 .wip {
@@ -126,6 +124,9 @@ tr .odd > td .ticket_BLOCKER {
   background-color: #cddce5;
 }
 .dgrid-selected .new {
+  background-color: #cddce5;
+}
+.dgrid-selected .rts {
   background-color: #f37d69;
 }
 .dgrid-selected .wip {

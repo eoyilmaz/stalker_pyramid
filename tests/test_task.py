@@ -35,6 +35,7 @@ from stalker.db.session import DBSession
 from stalker_pyramid.views import task, milliseconds_since_epoch
 
 import logging
+from tests import DummyMultiDict
 
 logger = logging.getLogger(__name__)
 
@@ -70,29 +71,30 @@ class TaskViewTestCase(unittest2.TestCase):
 
         # create a couple of tasks
         self.status_new = Status(name='New', code='NEW')
+        self.status_rts = Status(name='Ready To Start', code='RTS')
         self.status_wip = Status(name='Work In Progress', code='WIP')
         self.status_prev = Status(name='Pending Review', code='PREV')
         self.status_hrev = Status(name='Has Revision', code='HREV')
-        self.status_completed = Status(name='Completed', code='CMPL')
+        self.status_cmpl = Status(name='Completed', code='CMPL')
         DBSession.add_all([
-            self.status_new, self.status_wip, self.status_prev,
-            self.status_hrev, self.status_completed
+            self.status_new, self.status_rts, self.status_wip,
+            self.status_prev, self.status_hrev, self.status_cmpl
         ])
 
         self.test_project_status_list = StatusList(
             name='Project Statuses',
             target_entity_type='Project',
             statuses=[self.status_new, self.status_wip,
-                      self.status_completed]
+                      self.status_cmpl]
         )
         DBSession.add(self.test_project_status_list)
 
         self.test_task_statuses = StatusList(
             name='Task Statuses',
             target_entity_type='Task',
-            statuses=[self.status_new, self.status_wip,
+            statuses=[self.status_new, self.status_rts, self.status_wip,
                       self.status_prev, self.status_hrev,
-                      self.status_completed]
+                      self.status_cmpl]
         )
         DBSession.add(self.test_task_statuses)
 
@@ -106,7 +108,7 @@ class TaskViewTestCase(unittest2.TestCase):
         DBSession.add(self.test_repo)
 
         # proj1
-        self.test_proj1 = Project(
+        self.test_project1 = Project(
             name='Test Project 1',
             code='TProj1',
             status_list=self.test_project_status_list,
@@ -115,12 +117,12 @@ class TaskViewTestCase(unittest2.TestCase):
             end=datetime.datetime(2013, 6, 30, 0, 0, 0),
             lead=self.test_user1
         )
-        DBSession.add(self.test_proj1)
+        DBSession.add(self.test_project1)
 
         # root tasks
         self.test_task1 = Task(
             name='Test Task 1',
-            project=self.test_proj1,
+            project=self.test_project1,
             status_list=self.test_task_statuses,
             start=datetime.datetime(2013, 6, 20, 0, 0),
             end=datetime.datetime(2013, 6, 30, 0, 0),
@@ -132,7 +134,7 @@ class TaskViewTestCase(unittest2.TestCase):
 
         self.test_task2 = Task(
             name='Test Task 2',
-            project=self.test_proj1,
+            project=self.test_project1,
             status_list=self.test_task_statuses,
             start=datetime.datetime(2013, 6, 20, 0, 0),
             end=datetime.datetime(2013, 6, 30, 0, 0),
@@ -144,7 +146,7 @@ class TaskViewTestCase(unittest2.TestCase):
 
         self.test_task3 = Task(
             name='Test Task 3',
-            project=self.test_proj1,
+            project=self.test_project1,
             status_list=self.test_task_statuses,
             resources=[self.test_user1, self.test_user2],
             start=datetime.datetime(2013, 6, 20, 0, 0),
@@ -340,7 +342,7 @@ class TaskViewTestCase(unittest2.TestCase):
             {
                 'bid_timing': 10,
                 'bid_unit': 'd',
-                'completed': 0,
+                'completed': 0.0,
                 'dependencies': [],
                 'description': '',
                 'end': milliseconds_since_epoch(self.test_task2.end),
@@ -359,7 +361,7 @@ class TaskViewTestCase(unittest2.TestCase):
                 'schedule_constraint': 0,
                 'schedule_model': 'effort',
                 'schedule_unit': 'd',
-                'schedule_seconds': 651600,
+                'schedule_seconds': 651600.0,
                 'schedule_timing': 10,
                 'start': milliseconds_since_epoch(self.test_task2.start),
                 'status': 'new',
@@ -398,7 +400,7 @@ class TaskViewTestCase(unittest2.TestCase):
                 'bid_timing': 10,
                 'bid_unit': 'd',
                 'completed': 0,
-                'dependencies': [{'id': 27, 'name': 'Test Task 3'}],
+                'dependencies': [{'id': 28, 'name': 'Test Task 3'}],
                 'description': '',
                 'end': milliseconds_since_epoch(self.test_task4.end),
                 'hasChildren': False,
@@ -424,7 +426,7 @@ class TaskViewTestCase(unittest2.TestCase):
                 'bid_timing': 10,
                 'bid_unit': 'd',
                 'completed': 0,
-                'dependencies': [{'id': 28, 'name': 'Test Task 4'}],
+                'dependencies': [{'id': 29, 'name': 'Test Task 4'}],
                 'description': '',
                 'end': milliseconds_since_epoch(self.test_task5.end),
                 'id': self.test_task5.id,
@@ -477,7 +479,7 @@ class TaskViewTestCase(unittest2.TestCase):
             {
                 'bid_timing': 10,
                 'bid_unit': 'd',
-                'completed': 0,
+                'completed': 0.0,
                 'dependencies': [],
                 'description': '',
                 'end': milliseconds_since_epoch(self.test_task7.end),
@@ -492,7 +494,7 @@ class TaskViewTestCase(unittest2.TestCase):
                 'priority': 500,
                 'schedule_constraint': 0,
                 'schedule_model': 'effort',
-                'schedule_seconds': 324000,
+                'schedule_seconds': 324000.0,
                 'schedule_timing': 10,
                 'schedule_unit': 'd',
                 'start': milliseconds_since_epoch(self.test_task7.start),
@@ -553,7 +555,7 @@ class TaskViewTestCase(unittest2.TestCase):
                 'type': 'Task',
             },
             {
-                'bid_timing': 1,
+                'bid_timing': 1.0,
                 'bid_unit': 'h',
                 'completed': 0,
                 'dependencies': [],
@@ -571,7 +573,7 @@ class TaskViewTestCase(unittest2.TestCase):
                 'schedule_constraint': 0,
                 'schedule_model': 'effort',
                 'schedule_seconds': 324000,
-                'schedule_timing': 1,
+                'schedule_timing': 1.0,
                 'schedule_unit': 'h',
                 'start': milliseconds_since_epoch(self.test_asset1.start),
                 'status': 'new',
@@ -809,6 +811,32 @@ class TaskViewTestCase(unittest2.TestCase):
             '"New"'
         )
 
+    def test_request_review_should_not_work_for_tasks_with_the_status_is_set_to_ready_to_start(self):
+        """testing if a server error will be returned if the task issued in
+        request_review has a status of "rts"
+        """
+        # request revision for self.test_task4
+        self.test_task4.status = self.status_rts
+        request = testing.DummyRequest()
+        request.matchdict['id'] = self.test_task4.id
+        request.params['send_email'] = 0
+
+        # patch get_logged_in_user
+        admin = User.query.filter(User.login == 'admin').first()
+        m = mocker.Mocker()
+        obj = m.replace("stalker_pyramid.views.auth.get_logged_in_user")
+        obj(request)
+        m.result(admin)
+        m.replay()
+
+        response = task.request_review(request)
+        self.assertEqual(response.status_int, 500)
+        self.assertEqual(
+            response.body,
+            'You can not request a review for a task with status is set to '
+            '"Ready To Start"'
+        )
+
     def test_request_review_should_not_work_for_tasks_with_the_status_is_set_to_pending_review(self):
         """testing if a server error will be returned if the task issued in
         request_revision has a status of "prev"
@@ -866,7 +894,7 @@ class TaskViewTestCase(unittest2.TestCase):
         request_review has a status of "completed"
         """
         # request revision for self.test_task4
-        self.test_task4.status = self.status_completed
+        self.test_task4.status = self.status_cmpl
         request = testing.DummyRequest()
         request.matchdict['id'] = self.test_task4.id
         request.params['send_email'] = 0
@@ -987,6 +1015,9 @@ class TaskViewTestCase(unittest2.TestCase):
 
         # also patch route_url of request
         request.route_url = lambda x, id: 'localhost:6453/tasks/23/view'
+
+        # also patch route_url of request
+        request.route_path = lambda x, id: '/tasks/23/view'
 
         response = task.request_review(request)
         self.assertEqual(response.status_int, 200)
@@ -1147,6 +1178,34 @@ class TaskViewTestCase(unittest2.TestCase):
             '"New"'
         )
 
+    def test_request_revision_should_not_work_for_tasks_with_the_status_is_set_to_rts(self):
+        """testing if a server error will be returned if the task issued in
+        request_review has a status of "rts"
+        """
+        # request revision for self.test_task4
+        self.test_task4.status = self.status_rts
+        request = testing.DummyRequest()
+        request.matchdict['id'] = self.test_task4.id
+        request.params['send_email'] = 0
+        request.params['schedule_timing'] = 5
+        request.params['schedule_unit'] = 'h'
+        request.params['schedule_model'] = 'effort'
+
+        # patch get_logged_in_user
+        m = mocker.Mocker()
+        obj = m.replace("stalker_pyramid.views.auth.get_logged_in_user")
+        obj(request)
+        m.result(self.test_task4.resources[0])
+        m.replay()
+
+        response = task.request_revision(request)
+        self.assertEqual(response.status_int, 500)
+        self.assertEqual(
+            response.body,
+            'You can not request a revision for a task with status is set to '
+            '"Ready To Start"'
+        )
+
     def test_request_revision_should_not_work_for_tasks_with_the_status_is_set_to_wip(self):
         """testing if a server error will be returned if the task issued in
         request_revision has a status of "wip"
@@ -1209,7 +1268,7 @@ class TaskViewTestCase(unittest2.TestCase):
         request_revision has a status of "completed"
         """
         # request revision for self.test_task4
-        self.test_task4.status = self.status_completed
+        self.test_task4.status = self.status_cmpl
         request = testing.DummyRequest()
         request.matchdict['id'] = self.test_task4.id
         request.params['send_email'] = 0
@@ -1322,3 +1381,337 @@ class TaskViewTestCase(unittest2.TestCase):
         self.assertEqual(response.status_int, 500)
         self.assertEqual(response.body,
                          'Can not request extra time for a container task')
+
+    def test_create_task_leaf_task_with_no_dependency(self):
+        """testing if create_task with no dependency will set the newly created
+        task status to RTS
+        """
+        request = testing.DummyRequest()
+        request.params = DummyMultiDict()
+        request.POST = request.params
+        request.params['project_id'] = self.test_project1.id
+        request.params['name'] = 'New Task 1'
+        request.params['entity_type'] = 'Task'
+        request.params['schedule_timing'] = 1.0
+        request.params['schedule_unit'] = 'h'
+        request.params['schedule_model'] = 'effort'
+
+        # patch get_logged_in_user
+        admin = User.query.filter(User.login == 'admin').first()
+        m = mocker.Mocker()
+        obj = m.replace("stalker_pyramid.views.auth.get_logged_in_user")
+        obj(request)
+        m.result(admin)
+        m.replay()
+
+        # now create the task
+        response = task.create_task(request)
+        self.assertEqual(response.status_int, 200)
+
+        # find the newly created task
+        new_task = Task.query.filter(Task.name == 'New Task 1').first()
+        self.assertIsNotNone(new_task)
+
+        # now check the status
+        self.assertEqual(
+            self.status_rts,
+            new_task.status
+        )
+
+    def test_create_task_leaf_task_with_dependency_with_status_not_complete(self):
+        """testing if create_task with dependency will set the newly created
+        task status to NEW if dependencies are not in Status:Complete
+        """
+        request = testing.DummyRequest()
+
+        request.params = DummyMultiDict()
+        request.POST = request.params
+        request.params['project_id'] = self.test_project1.id
+        request.params['name'] = 'New Task 1'
+        request.params['entity_type'] = 'Task'
+        request.params['schedule_timing'] = 1.0
+        request.params['schedule_unit'] = 'h'
+        request.params['schedule_model'] = 'effort'
+        request.params['dependent_ids'] = [self.test_task1.id]
+        self.assertNotEqual(
+            self.status_cmpl,
+            self.test_task1.status
+        )
+
+        # patch get_logged_in_user
+        admin = User.query.filter(User.login == 'admin').first()
+        m = mocker.Mocker()
+        obj = m.replace("stalker_pyramid.views.auth.get_logged_in_user")
+        obj(request)
+        m.result(admin)
+        m.replay()
+
+        # now create the task
+        response = task.create_task(request)
+        self.assertEqual(response.status_int, 200)
+
+        # find the newly created task
+        new_task = Task.query.filter(Task.name == 'New Task 1').first()
+        self.assertIsNotNone(new_task)
+
+        # now check the status
+        self.assertEqual(
+            self.status_new,
+            new_task.status
+        )
+
+    def test_create_task_leaf_task_with_dependency_with_status_complete(self):
+        """testing if create_task with dependency will set the newly created
+        task status to RTS if dependencies are all in Status:Complete
+        """
+        request = testing.DummyRequest()
+        request.params = DummyMultiDict()
+        request.POST = request.params
+        request.params['project_id'] = self.test_project1.id
+        request.params['name'] = 'New Task 1'
+        request.params['entity_type'] = 'Task'
+        request.params['schedule_timing'] = 1.0
+        request.params['schedule_unit'] = 'h'
+        request.params['schedule_model'] = 'effort'
+        request.params['dependent_ids'] = [self.test_task1.id]
+        self.test_task1.status = self.status_cmpl
+        self.assertEqual(
+            self.status_cmpl,
+            self.test_task1.status
+        )
+
+        # patch get_logged_in_user
+        admin = User.query.filter(User.login == 'admin').first()
+        m = mocker.Mocker()
+        obj = m.replace("stalker_pyramid.views.auth.get_logged_in_user")
+        obj(request)
+        m.result(admin)
+        m.replay()
+
+        # now create the task
+        response = task.create_task(request)
+        self.assertEqual(response.status_int, 200)
+
+        # find the newly created task
+        new_task = Task.query.filter(Task.name == 'New Task 1').first()
+        self.assertIsNotNone(new_task)
+
+        # now check the status
+        self.assertEqual(
+            self.status_rts,
+            new_task.status
+        )
+
+    def test_create_task_leaf_task_with_dependency_with_mixed_statuses(self):
+        """testing if create_task with dependency will set the newly created
+        task status to RTS if dependencies are all in Status:Complete
+        """
+        request = testing.DummyRequest()
+        request.params = DummyMultiDict()
+        request.POST = request.params
+        request.params['project_id'] = self.test_project1.id
+        request.params['name'] = 'New Task 1'
+        request.params['entity_type'] = 'Task'
+        request.params['schedule_timing'] = 1.0
+        request.params['schedule_unit'] = 'h'
+        request.params['schedule_model'] = 'effort'
+        request.params['dependent_ids'] = [self.test_task1.id,
+                                           self.test_task2.id]
+        self.test_task1.status = self.status_cmpl
+        self.test_task2.status = self.status_wip
+        self.assertEqual(
+            self.status_cmpl,
+            self.test_task1.status
+        )
+        self.assertEqual(
+            self.status_wip,
+            self.test_task2.status
+        )
+
+        # patch get_logged_in_user
+        admin = User.query.filter(User.login == 'admin').first()
+        m = mocker.Mocker()
+        obj = m.replace("stalker_pyramid.views.auth.get_logged_in_user")
+        obj(request)
+        m.result(admin)
+        m.replay()
+
+        # now create the task
+        response = task.create_task(request)
+        self.assertEqual(response.status_int, 200)
+
+        # find the newly created task
+        new_task = Task.query.filter(Task.name == 'New Task 1').first()
+        self.assertIsNotNone(new_task)
+
+        # now check the status
+        self.assertEqual(
+            self.status_new,
+            new_task.status
+        )
+
+    def test_review_task_changes_dependent_task_statuses_to_rts_if_completed(self):
+        """testing if review_task() will change the dependent task statuses
+        from new to rts if the current task is completed and there are no other
+        dependencies for dependent tasks
+        """
+        self.fail('test is not implemented yet')
+
+    def test_review_task_changes_dependent_task_statuses_to_new_if_has_revision(self):
+        """testing if review_task() will change the dependent task statuses to
+        new if the current task has revisions and there are no other
+        dependencies for dependent tasks
+        """
+        self.fail('test is not implemented yet')
+
+    def test_update_task_statuses_with_dependencies_for_a_task_with_no_dependencies(self):
+        """testing if the task status is going to be updated to RTS if the task
+        has not any dependencies for a leaf task
+        """
+        self.assertEqual(self.test_task8.status, self.status_new)
+        task.update_task_statuses_with_dependencies(self.test_task8)
+        self.assertEqual(self.test_task8.status, self.status_rts)
+
+    def test_update_task_statuses_with_dependencies_for_a_container_task(self):
+        """testing if container task statuses will not be changed if they do
+        not have any dependencies and even if their statuses are NEW
+        """
+        self.assertEqual(self.test_task2.status, self.status_new)
+        task.update_task_statuses_with_dependencies(self.test_task2)
+        self.assertEqual(self.test_task2.status, self.status_new)
+
+    def test_update_task_statuses_with_dependencies_with_completed_dependencies(self):
+        """testing if the task status is going to be updated to RTS if all of
+        the dependent tasks are in CMPL status for a task
+        """
+        # the hero task
+        self.assertEqual(self.test_task5.status, self.status_new)
+
+        # the dependencies
+        self.test_task4.status = self.status_cmpl
+        self.test_task6.status = self.status_cmpl
+        self.test_task7.status = self.status_cmpl
+        self.assertEqual(self.test_task4.status, self.status_cmpl)
+        self.assertEqual(self.test_task6.status, self.status_cmpl)
+        self.assertEqual(self.test_task7.status, self.status_cmpl)
+        self.test_task5.depends.append(self.test_task4)
+        self.test_task5.depends.append(self.test_task6)
+        self.test_task5.depends.append(self.test_task7)
+
+        task.update_task_statuses_with_dependencies(self.test_task5)
+        self.assertEqual(self.test_task5.status, self.status_rts)
+
+    def test_update_task_statuses_with_dependencies_with_half_completed_dependencies(self):
+        """testing if the task status will be set to NEW if dependencies are
+        still not all CMPL
+        """
+        # the hero task
+        self.test_task5.status = self.status_new
+        self.assertEqual(self.test_task5.status, self.status_new)
+
+        # the dependencies
+        self.test_task4.status = self.status_cmpl
+        self.test_task6.status = self.status_cmpl
+        self.test_task7.status = self.status_wip
+        self.assertEqual(self.test_task4.status, self.status_cmpl)
+        self.assertEqual(self.test_task6.status, self.status_cmpl)
+        self.assertEqual(self.test_task7.status, self.status_wip)
+        self.test_task5.depends.append(self.test_task4)
+        self.test_task5.depends.append(self.test_task6)
+        self.test_task5.depends.append(self.test_task7)
+
+        task.update_task_statuses_with_dependencies(self.test_task5)
+        self.assertEqual(self.test_task5.status, self.status_new)
+
+    def test_update_task_statuses_with_dependencies_with_half_completed_dependencies_and_status_wip(self):
+        """testing if the task status will be not changed if the task status is
+        not NEW even if dependencies are still not all CMPL, this is for
+        backward compatibility
+        """
+        # the hero task
+        self.test_task5.status = self.status_wip
+        self.assertEqual(self.test_task5.status, self.status_wip)
+
+        # the dependencies
+        self.test_task4.status = self.status_cmpl
+        self.test_task6.status = self.status_cmpl
+        self.test_task7.status = self.status_wip
+        self.assertEqual(self.test_task4.status, self.status_cmpl)
+        self.assertEqual(self.test_task6.status, self.status_cmpl)
+        self.assertEqual(self.test_task7.status, self.status_wip)
+        self.test_task5.depends.append(self.test_task4)
+        self.test_task5.depends.append(self.test_task6)
+        self.test_task5.depends.append(self.test_task7)
+
+        task.update_task_statuses_with_dependencies(self.test_task5)
+        self.assertEqual(self.test_task5.status, self.status_wip)
+
+    def test_update_task_statuses_with_dependencies_with_half_completed_dependencies_and_status_prev(self):
+        """testing if the task status will be not changed if the task status is
+        not NEW even if dependencies are still not all CMPL, this is for
+        backward compatibility
+        """
+        # the hero task
+        self.test_task5.status = self.status_prev
+        self.assertEqual(self.test_task5.status, self.status_prev)
+
+        # the dependencies
+        self.test_task4.status = self.status_cmpl
+        self.test_task6.status = self.status_cmpl
+        self.test_task7.status = self.status_wip
+        self.assertEqual(self.test_task4.status, self.status_cmpl)
+        self.assertEqual(self.test_task6.status, self.status_cmpl)
+        self.assertEqual(self.test_task7.status, self.status_wip)
+        self.test_task5.depends.append(self.test_task4)
+        self.test_task5.depends.append(self.test_task6)
+        self.test_task5.depends.append(self.test_task7)
+
+        task.update_task_statuses_with_dependencies(self.test_task5)
+        self.assertEqual(self.test_task5.status, self.status_prev)
+
+    def test_update_task_statuses_with_dependencies_with_half_completed_dependencies_and_status_hrev(self):
+        """testing if the task status will be not changed if the task status is
+        not NEW even if dependencies are still not all CMPL, this is for
+        backward compatibility
+        """
+        # the hero task
+        self.test_task5.status = self.status_hrev
+        self.assertEqual(self.test_task5.status, self.status_hrev)
+
+        # the dependencies
+        self.test_task4.status = self.status_cmpl
+        self.test_task6.status = self.status_cmpl
+        self.test_task7.status = self.status_wip
+        self.assertEqual(self.test_task4.status, self.status_cmpl)
+        self.assertEqual(self.test_task6.status, self.status_cmpl)
+        self.assertEqual(self.test_task7.status, self.status_wip)
+        self.test_task5.depends.append(self.test_task4)
+        self.test_task5.depends.append(self.test_task6)
+        self.test_task5.depends.append(self.test_task7)
+
+        task.update_task_statuses_with_dependencies(self.test_task5)
+        self.assertEqual(self.test_task5.status, self.status_hrev)
+
+    def test_update_task_statuses_with_dependencies_with_half_completed_dependencies_and_status_cmpl(self):
+        """testing if the task status will be not changed if the task status is
+        not NEW even if dependencies are still not all CMPL, this is for
+        backward compatibility
+        """
+        # the hero task
+        self.test_task5.status = self.status_cmpl
+        self.assertEqual(self.test_task5.status, self.status_cmpl)
+
+        # the dependencies
+        self.test_task4.status = self.status_cmpl
+        self.test_task6.status = self.status_cmpl
+        self.test_task7.status = self.status_wip
+        self.assertEqual(self.test_task4.status, self.status_cmpl)
+        self.assertEqual(self.test_task6.status, self.status_cmpl)
+        self.assertEqual(self.test_task7.status, self.status_wip)
+        self.test_task5.depends.append(self.test_task4)
+        self.test_task5.depends.append(self.test_task6)
+        self.test_task5.depends.append(self.test_task7)
+
+        task.update_task_statuses_with_dependencies(self.test_task5)
+        self.assertEqual(self.test_task5.status, self.status_cmpl)
+

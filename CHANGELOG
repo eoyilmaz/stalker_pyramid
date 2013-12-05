@@ -2,6 +2,16 @@
 Stalker Pyramid Changes
 =======================
 
+0.1.5
+=====
+
+* **New:** Added a new status called "Ready To Start | RTS" which sits in
+  between NEW and WIP. Any newly created task will have its status set to RTS
+  if no dependencies has given. If there are dependencies and not all of them
+  are in "Complete | CMPL" status, then the newly created tasks status will be
+  NEW, otherwise its status will be RTS. And the status of all the dependent
+  tasks will be updated on any review has been made to a task.
+
 0.1.4
 =====
 

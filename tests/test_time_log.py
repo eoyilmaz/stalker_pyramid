@@ -17,16 +17,17 @@
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
-import datetime
+
 import mocker
 
 import unittest2
 import transaction
 
 from pyramid import testing
-from stalker import db, User, Status, StatusList, Repository, Project, Task, Group
+from stalker import (db, User, Status, StatusList, Repository, Project, Task,\
+                    Group)
 from stalker.db import DBSession
-from stalker_pyramid.views import time_log, milliseconds_since_epoch
+from stalker_pyramid.views import time_log
 
 
 class TimeLogViewTestCase(unittest2.TestCase):
@@ -52,6 +53,7 @@ class TimeLogViewTestCase(unittest2.TestCase):
 
         # create a couple of tasks
         self.status_new = Status(name='New', code='NEW')
+        self.status_rts = Status(name='Ready To Start', code='RTS')
         self.status_wip = Status(name='Work In Progress', code='WIP')
         self.status_prev = Status(name='Pending Review', code='PREV')
         self.status_hrev = Status(name='Has Revisions', code='HREV')
@@ -67,8 +69,8 @@ class TimeLogViewTestCase(unittest2.TestCase):
         self.task_status_list = StatusList(
             name='Task Statuses',
             target_entity_type='Task',
-            statuses=[self.status_new, self.status_wip, self.status_prev,
-                      self.status_hrev, self.status_cmpl]
+            statuses=[self.status_new, self.status_rts, self.status_wip,
+                      self.status_prev, self.status_hrev, self.status_cmpl]
         )
         DBSession.add(self.task_status_list)
 
@@ -106,9 +108,9 @@ class TimeLogViewTestCase(unittest2.TestCase):
         DBSession.remove()
         testing.tearDown()
 
-    def test_creating_a_time_log_for_a_new_task(self):
-        """testing if the status of the time log will be set to WIP if a time
-        log has been created to that task for that task
+    def test_creating_a_time_log_for_a_task_with_status_new(self):
+        """testing if an error response will be returned when trying to create
+        time log for a task with status "new"
         """
         request = testing.DummyRequest()
         self.task1 = Task.query.filter(Task.name == self.task1.name).first()
@@ -118,6 +120,22 @@ class TimeLogViewTestCase(unittest2.TestCase):
         request.params['end'] = "Fri, 01 Nov 2013 17:00:00 GMT"
 
         self.assertEqual(self.task1.status, self.status_new)
+        time_log.create_time_log(request)
+        self.assertEqual(self.task1.status, self.status_wip)
+
+    def test_creating_a_time_log_for_a_task_with_status_rts(self):
+        """testing if the status of the time log will be set to WIP if the
+        status of that task is rts
+        """
+        request = testing.DummyRequest()
+        self.task1 = Task.query.filter(Task.name == self.task1.name).first()
+        request.params['task_id'] = self.task1.id
+        request.params['resource_id'] = self.task1.resources[0].id
+        request.params['start'] = "Fri, 01 Nov 2013 08:00:00 GMT"
+        request.params['end'] = "Fri, 01 Nov 2013 17:00:00 GMT"
+
+        self.task1.status = self.status_rts
+        self.assertEqual(self.task1.status, self.status_rts)
         time_log.create_time_log(request)
         self.assertEqual(self.task1.status, self.status_wip)
 
@@ -274,19 +292,22 @@ class TimeLogViewTestCase(unittest2.TestCase):
             name='Test Task 2',
             parent=task1,
             resources=[self.user1],
-            status_list=self.task_status_list
+            status_list=self.task_status_list,
+            status=self.status_rts
         )
         task3 = Task(
             name='Test Task 3',
             parent=task1,
             resources=[self.user1],
-            status_list=self.task_status_list
+            status_list=self.task_status_list,
+            status=self.status_rts
         )
         task4 = Task(
             name='Test Task 4',
             parent=task0,
             resources=[self.user1],
-            status_list=self.task_status_list
+            status_list=self.task_status_list,
+            status=self.status_rts
         )
         DBSession.add_all([task0, task1, task2, task3, task4])
         DBSession.commit()
@@ -295,9 +316,9 @@ class TimeLogViewTestCase(unittest2.TestCase):
 
         self.assertEqual(task0.status, self.status_new)
         self.assertEqual(task1.status, self.status_new)
-        self.assertEqual(task2.status, self.status_new)
-        self.assertEqual(task3.status, self.status_new)
-        self.assertEqual(task4.status, self.status_new)
+        self.assertEqual(task2.status, self.status_rts)
+        self.assertEqual(task3.status, self.status_rts)
+        self.assertEqual(task4.status, self.status_rts)
 
         # now add a time log for task3 through create_time_log view
         request = testing.DummyRequest()
@@ -322,10 +343,10 @@ class TimeLogViewTestCase(unittest2.TestCase):
 
         # now expect to have the status of task1 to be wip
         self.assertEqual(task3.status, self.status_wip)
-        self.assertEqual(task2.status, self.status_new)
+        self.assertEqual(task2.status, self.status_rts)
         self.assertEqual(task1.status, self.status_wip)
         self.assertEqual(task0.status, self.status_wip)
-        self.assertEqual(task4.status, self.status_new)
+        self.assertEqual(task4.status, self.status_rts)
 
         request.params['task_id'] = task2.id
         request.params['resource_id'] = self.user1.id
@@ -339,7 +360,7 @@ class TimeLogViewTestCase(unittest2.TestCase):
         self.assertEqual(task2.status, self.status_wip)
         self.assertEqual(task1.status, self.status_wip)
         self.assertEqual(task0.status, self.status_wip)
-        self.assertEqual(task4.status, self.status_new)
+        self.assertEqual(task4.status, self.status_rts)
 
         # now request a review and approve the task2 and task3 and expect the
         # task1 status is complete
@@ -347,6 +368,9 @@ class TimeLogViewTestCase(unittest2.TestCase):
         #request = testing.DummyRequest()
         request.matchdict['id'] = task2.id
         request.params['send_email'] = 0
+        request.route_url = lambda x, id: 'localhost:6453/tasks/23/view'
+        request.route_path = lambda x, id: '/tasks/23/view'
+
         response = request_review(request)
         self.assertEqual(response.status_int, 200)
 
@@ -361,7 +385,7 @@ class TimeLogViewTestCase(unittest2.TestCase):
         self.assertEqual(task2.status, self.status_prev)
         self.assertEqual(task1.status, self.status_wip)
         self.assertEqual(task0.status, self.status_wip)
-        self.assertEqual(task4.status, self.status_new)
+        self.assertEqual(task4.status, self.status_rts)
 
         # approve the task2
         request.matchdict['id'] = task2.id
@@ -374,7 +398,7 @@ class TimeLogViewTestCase(unittest2.TestCase):
         self.assertEqual(task2.status, self.status_cmpl)
         self.assertEqual(task1.status, self.status_wip)
         self.assertEqual(task0.status, self.status_wip)
-        self.assertEqual(task4.status, self.status_new)
+        self.assertEqual(task4.status, self.status_rts)
 
         # approve the task3
         request.matchdict['id'] = task3.id
@@ -387,4 +411,4 @@ class TimeLogViewTestCase(unittest2.TestCase):
         self.assertEqual(task2.status, self.status_cmpl)
         self.assertEqual(task1.status, self.status_cmpl)
         self.assertEqual(task0.status, self.status_wip)
-        self.assertEqual(task4.status, self.status_new)
+        self.assertEqual(task4.status, self.status_rts)

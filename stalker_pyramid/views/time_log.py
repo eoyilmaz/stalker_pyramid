@@ -21,7 +21,6 @@
 
 import logging
 
-from pyramid.httpexceptions import HTTPOk, HTTPServerError
 from pyramid.response import Response
 from pyramid.view import view_config
 
@@ -34,7 +33,8 @@ import transaction
 from stalker_pyramid.views import (get_logged_in_user,
                                    PermissionChecker, milliseconds_since_epoch,
                                    get_date, StdErrToHTMLConverter)
-from stalker_pyramid.views.task import update_task_statuses
+from stalker_pyramid.views.task import (update_task_statuses,
+                                        update_task_statuses_with_dependencies)
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -161,6 +161,7 @@ def create_time_log(request):
             )
 
             status_new = Status.query.filter(Status.code == "NEW").first()
+            status_rts = Status.query.filter(Status.code == "RTS").first()
             status_wip = Status.query.filter(Status.code == "WIP").first()
             status_cmpl = \
                 Status.query.filter(Status.code == "CMPL").first()
@@ -168,12 +169,12 @@ def create_time_log(request):
                 Status.query.filter(Status.code == "HREV").first()
 
             # check if the task status is not completed
-            if task.status not in [status_new, status_wip]:
+            if task.status not in [status_rts, status_wip]:
                 DBSession.rollback()
                 # it is not possible to create a time log for completed tasks
                 response = Response('It is only possible to create time log '
                                     'for a task with status is set to '
-                                    '"NEW" or "WIP"', 500)
+                                    '"RTS" or "WIP"', 500)
                 transaction.abort()
                 return response
 
@@ -198,7 +199,7 @@ def create_time_log(request):
                     response = Response(
                         'Because one of the depending (Task: %s (%s)) has '
                         'already started, \n'
-                        'You can not create any more time logs for this task!'
+                        'You can not create time logs for this task any more!'
                         '\n\nPlease, inform %s about this situation!' %
                         (dep_task.name, dep_task.id,
                          task.responsible.name), 500
@@ -220,6 +221,7 @@ def create_time_log(request):
             DBSession.add(time_log)
             # check parent task statuses
             update_task_statuses(task.parent)
+
             request.session.flash(
                 'success:Time log for <strong>%s</strong> is saved for resource <strong>%s</strong>.' % (task.name,resource.name)
             )
@@ -282,7 +284,7 @@ def update_time_log(request):
             )
             logger.debug('successfully updated time log!')
 
-    return HTTPOk()
+    return Response('TimeLog has been updated successfully')
 
 
 @view_config(
