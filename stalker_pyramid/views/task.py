@@ -1818,6 +1818,14 @@ def request_review(request):
                         'responsible of this task, so you can not request a '
                         'review for this task', 500)
 
+    # set task status to Pending Review
+    status_prev = Status.query.filter(Status.code == "PREV").first()
+    task.status = status_prev
+
+    # set task effort to the total_logged_seconds
+    task.schedule_timing = task.total_logged_seconds / 3600
+    task.schedule_unit = 'h'
+
     # get the project that the ticket belongs to
     project = task.project
 
@@ -1909,14 +1917,6 @@ def request_review(request):
             body=description_text,
             html=description_html)
         mailer.send(message)
-
-    # set task status to Pending Review
-    status_prev = Status.query.filter(Status.code == "PREV").first()
-    task.status = status_prev
-
-    # set task effort to the total_logged_seconds
-    task.schedule_timing = task.total_logged_seconds / 3600
-    task.schedule_unit = 'h'
 
     return Response('Your review request has been sent to %s' %
                     responsible.name)
