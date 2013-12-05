@@ -100,23 +100,29 @@
                                         {% endif %}
                                         {% if has_permission('Update_Task') %}
 
-                                            <button id='task_update_button'
-                                                    class='btn btn-mini btn-info'
-                                                    data-target="#dialog_template"
-                                                    data-toggle="modal"
-                                                    data-keyboard="false"
-                                                    href='{{ request.route_url("update_task_dialog", id=entity.id) }}'
-                                                    >
-                                                <i class="icon-edit"></i> Update
-                                            </button>
+                                            <div class="btn-toolbar">
+                                                <button id='task_update_button'
+                                                        class='btn btn-mini btn-info'
+                                                        data-target="#dialog_template"
+                                                        data-toggle="modal"
+                                                        data-keyboard="false"
+                                                        href='{{ request.route_url("update_task_dialog", id=entity.id) }}'
+                                                        >
+                                                    <i class="icon-edit"></i> Update
+                                                </button>
+                                            </div>
 
                                         {% endif %}
 
                                         <ul class="unstyled spaced  pull-left">
                                             <li>
-                                                <h5><b> {{ entity.start }} <i
-                                                        class="icon-long-arrow-right blue"></i> {{ entity.end }}
-                                                </b></h5>
+                                                <h5>
+                                                    <strong>
+                                                        <span class="date">{{ entity.start }}</span>
+                                                        <i class="icon-long-arrow-right blue"></i>
+                                                        <span class="date">{{ entity.end }}</span>
+                                                    </strong>
+                                                </h5>
                                             </li>
                                             <li>
 
@@ -248,6 +254,14 @@
     {% include 'charts/pie_chart.jinja2' %}
     {% include 'components/tree.jinja2' %}
     {% include 'calendar/calendar.jinja2' %}
+
+    <script type="text/javascript">
+        // convert all dates to moment
+        $('.date').each(function(){
+            var date = moment.utc($(this).text());
+            $(this).text(date.fromNow());
+        });
+    </script>
 
     <script type="text/javascript">
         {# task reviews :
