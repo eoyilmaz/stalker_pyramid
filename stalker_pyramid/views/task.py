@@ -1774,11 +1774,11 @@ def auto_schedule_tasks(request):
     try:
         stderr = studio.schedule()
         c = StdErrToHTMLConverter(stderr)
-        return Response(c.html())
+        return Response(c.html(replace_links=True))
     except RuntimeError as e:
         c = StdErrToHTMLConverter(e)
         transaction.abort()
-        return Response(c.html(), 500)
+        return Response(c.html(replace_links=True), 500)
 
 
 @view_config(
