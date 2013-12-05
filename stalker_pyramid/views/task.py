@@ -207,6 +207,7 @@ def update_task_statuses_with_dependencies(task):
 
     status_new = Status.query.filter(Status.code == 'NEW').first()
     status_rts = Status.query.filter(Status.code == 'RTS').first()
+    status_hrev = Status.query.filter(Status.code == 'HREV').first()
     status_cmpl = Status.query.filter(Status.code == 'CMPL').first()
 
     if not task.depends:
@@ -219,7 +220,8 @@ def update_task_statuses_with_dependencies(task):
     if task.status == status_new:
         # check all of its dependencies
         # and decide if it is ready to start or not
-        if all([dep.status == status_cmpl for dep in task.depends]):
+        if all([dep.status == status_cmpl or dep.status == status_hrev
+                for dep in task.depends]):
             task.status = status_rts
 
 
