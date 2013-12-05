@@ -15,6 +15,8 @@ Stalker Pyramid Changes
   right arrow and down arrow key functions.
 * **Fix:** A bug is fixed in ``views.entity.submit_search()`` and
   ``views.entity.list_search_result()`` views.
+* **Update:** The tjp ids in the error messages of TaskJuggler are now replaced
+  with correct links to the related task.
 
 0.1.4
 =====

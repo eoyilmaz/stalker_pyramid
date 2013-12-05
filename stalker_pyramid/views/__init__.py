@@ -92,7 +92,42 @@ class StdErrToHTMLConverter():
         else:
             self.error_message = error
 
-    def html(self):
+    def replace_tjp_ids(self, message):
+        """replaces tjp ids in error messages with proper links
+        """
+        import re
+        from stalker import Entity
+        pattern = r"Project[\w0-9\._]+[0-9]"
+
+        all_tjp_ids = re.findall(pattern, message)
+        new_message = message
+        for tjp_id in all_tjp_ids:
+            entity_type_and_id = tjp_id.split('.')[-1]
+            entity_type = entity_type_and_id.split('_')[0]
+            entity_id = entity_type_and_id.split('_')[1]
+
+            # get the entity
+            # entity = Entity.query.filter(Entity.id == entity_id).first()
+            # assert isinstance(entity, Entity)
+
+            link = '/%(class_name)ss/%(id)s/view' % {
+                'class_name': entity_type.lower(),
+                'id': entity_id
+            }
+            name = '%(name)s' % {
+                'name': entity_type_and_id,
+                # 'type': entity.entity_type
+            }
+
+            path = '<a href="%(link)s">%(name)s</a>' % {
+                'link': link,
+                'name': name
+            }
+
+            new_message = new_message.replace(tjp_id, path)
+        return new_message
+
+    def html(self, replace_links=False):
         """returns the html version of the message
         """
         # convert the error message to a string
@@ -106,6 +141,9 @@ class StdErrToHTMLConverter():
             str_buffer = ''.join(output_buffer)
         else:
             str_buffer = self.error_message
+
+        if replace_links:
+            str_buffer = self.replace_tjp_ids(str_buffer)
 
         # for each formatChar replace them with an html tag
         for key in self.formatChars.keys():
