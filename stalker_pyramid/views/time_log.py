@@ -173,7 +173,7 @@ def create_time_log(request):
                 DBSession.rollback()
                 # it is not possible to create a time log for completed tasks
                 response = Response('It is only possible to create time log '
-                                    'for a task with status is set to '
+                                    'for a task with status is not set to '
                                     '"RTS" or "WIP"', 500)
                 transaction.abort()
                 return response
