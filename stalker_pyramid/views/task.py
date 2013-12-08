@@ -22,7 +22,6 @@ import time
 import datetime
 import json
 
-import re
 import transaction
 from pyramid.response import Response
 from pyramid.view import view_config
@@ -80,6 +79,7 @@ def update_task_statuses(task):
     # and update parents status
 
     status_new = Status.query.filter(Status.code == 'NEW').first()
+    status_rts = Status.query.filter(Status.code == 'RTS').first()
     status_wip = Status.query.filter(Status.code == 'WIP').first()
     status_cmpl = Status.query.filter(Status.code == 'CMPL').first()
 
@@ -117,8 +117,8 @@ def update_task_statuses(task):
         '000000': status_new,  # this will not happen
         '000001': status_cmpl,
 
-        '000010': status_cmpl,  # this one is interesting all tasks are hrev
-        '000011': status_cmpl,
+        '000010': status_wip,  # with the new implementation this could happen
+        '000011': status_wip,
 
         '000100': status_wip,
         '000101': status_wip,
@@ -135,7 +135,7 @@ def update_task_statuses(task):
         '001111': status_wip,
 
         # RTS extension
-        '010000': status_new,  # this will not happen
+        '010000': status_rts,
         '010001': status_wip,
         '010010': status_wip,
         '010011': status_wip,
@@ -168,7 +168,7 @@ def update_task_statuses(task):
         '101101': status_wip,
         '101110': status_wip,
         '101111': status_wip,
-        '110000': status_new,
+        '110000': status_rts,
         '110001': status_wip,
         '110010': status_wip,
         '110011': status_wip,

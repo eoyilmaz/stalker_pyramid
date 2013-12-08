@@ -532,12 +532,20 @@
                 $('#dialog_template_delete_button').hide()
                 e.stopPropagation();
                 e.preventDefault();
-                init_dialog();
+                try {
+                    init_dialog();
+                } catch(e) {
+                    console.log(e)
+                }
             });
             event_dialog.on('hidden', function (e) {
                 e.stopPropagation();
                 e.preventDefault();
-                destruct_dialog();
+                try {
+                    destruct_dialog();
+                } catch(e) {
+                    console.log(e)
+                }
             });
         })
     </script>

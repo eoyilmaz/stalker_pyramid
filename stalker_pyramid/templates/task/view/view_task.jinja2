@@ -309,42 +309,27 @@
                 var entity_id = {{ entity.id }};
 
                 bootbox.confirm(
-                        '<div class="alert alert-info bigger-110">This will send the responsible of this task a ' +
-                                '<strong>review request</strong> and you will ' +
-                                '<strong>not</strong> be able to ' +
-                                '<strong>create any TimeLogs</strong> for this task ' +
-                                'after this point<br><br><strong>Are you sure?</strong></div>',
-                        function (result) {
-                            if (result) {
-                                // get the ids and send it to the server
-                                var url;
-                                url = '/tasks/' + entity_id + '/request_review';
-                                $.post(url).done(function (response) {
-                                    bootbox.alert(response);
-                                }).fail(function (jqXHR) {
-                                            bootbox.alert(jqXHR.responseText);
-                                        });
-                            }
+                    '<div class="alert alert-info bigger-110">This will send the responsible of this task a ' +
+                            '<strong>review request</strong> and you will ' +
+                            '<strong>not</strong> be able to ' +
+                            '<strong>create any TimeLogs</strong> for this task ' +
+                            'after this point<br><br><strong>Are you sure?</strong></div>',
+                    function (result) {
+                        if (result) {
+                            // get the ids and send it to the server
+                            var url;
+                            url = '/tasks/' + entity_id + '/request_review';
+                            $.post(url).done(function (response) {
+                                bootbox.alert(response);
+                            }).fail(function (jqXHR) {
+                                bootbox.alert(jqXHR.responseText);
+                            });
                         }
+                    }
                 )
             });
-
         });
     </script>
-
-
-    {#<script type="text/javascript">#}
-    {#    $(document).ready(function () {#}
-    {#        $.getJSON('/tasks/{{ entity.id }}/depends_of/').then(function (data) {#}
-    {#            for (var i = 0; i < data.length; i++) {#}
-    {##}
-    {##}
-    {#            }#}
-    {##}
-    {##}
-    {#        });#}
-    {#    });#}
-    {#</script>#}
 
     <script type="text/javascript">
         $(document).ready(function () {
