@@ -1309,7 +1309,7 @@ class TaskViewTestCase(unittest2.TestCase):
         request.matchdict['id'] = self.test_task4.id
         request.params['send_email'] = 0
         request.params['schedule_timing'] = 5
-        request.params['schedule_unit'] = 'h'
+        request.params['schedule_unit'] = 'd'
         request.params['schedule_model'] = 'effort'
 
         # patch get_logged_in_user
@@ -1327,35 +1327,31 @@ class TaskViewTestCase(unittest2.TestCase):
         self.assertEqual(response.status_int, 200)
 
         # check if the status of the original task is set to Has Revision
-        #self.test_task4 = Task.query.get(self.test_task4.id)
         self.assertEqual(self.test_task4.status, self.status_hrev)
 
-        # check if the task percent_complete is 100
-        assert isinstance(self.test_task4, Task)
-        self.assertEqual(self.test_task4.percent_complete, 100)
-
-        # check if a new task with the same name but has a postfix of
-        # " - Rev 1" is created
-        rev_task = Task.query.filter(
-            Task.name == self.test_task4.name + ' - Rev 1').first()
-        self.assertIsNotNone(rev_task)
-
-        # check if the rev task has the same dependencies plus the original
-        # task in its depends list
-        self.assertItemsEqual(
-            rev_task.depends,
-            [self.test_task3, self.test_task4]
+        # # check if the task percent_complete is 100
+        # assert isinstance(self.test_task4, Task)
+        # self.assertEqual(self.test_task4.percent_complete, 100)
+        # check if the task is extended with the given revision timing
+        self.assertEqual(
+            self.test_task4.schedule_timing,
+            54
+        )
+        # and the unit is converted to hours
+        self.assertEqual(
+            self.test_task4.schedule_unit,
+            'h'
         )
 
-        # check if the dependent tasks to original task are now depending to
-        # the revision task
+        # check if the task dependency list is intact
         self.assertItemsEqual(
-            rev_task.dependent_of, [self.test_task5]
+            self.test_task4.depends,
+            [self.test_task3]
         )
 
-        # and the original tasks dependency links are broken
+        # check if the dependent tasks are intact
         self.assertItemsEqual(
-            self.test_task4.dependent_of, [rev_task]
+            self.test_task4.dependent_of, [self.test_task5]
         )
 
     def test_request_extra_time_works_only_for_leaf_tasks(self):

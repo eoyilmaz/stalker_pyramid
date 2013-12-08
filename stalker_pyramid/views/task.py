@@ -1999,8 +1999,7 @@ def request_extra_time(request):
     route_name='request_revision'
 )
 def request_revision(request):
-    """creates a revision task for the given task and sends an email to the
-    task resources
+    """updates task timing and status and sends an email to the task resources
     """
     # get logged in user as he review requester
     logged_in_user = get_logged_in_user(request)
@@ -2071,75 +2070,58 @@ def request_revision(request):
                         'this status and include it to Task status list.', 500)
 
     task.status = status_hrev
-    # close this task by setting its effort to its time logs
+    # first set its effort to its time logs
     task.schedule_timing = task.total_logged_seconds / 3600
     task.schedule_unit = 'h'
 
-    # create a new task with the same name but have a postfix of " - Rev #"
-    rev_number = 1
-    # remove any " - Rev #"
-    task_base_name = re.sub(r' \- Rev [0-9]+', '', task.name)
-    rev_task_name = task_base_name + ' - Rev %s' % rev_number
-    rev_task_query = Task.query.filter(Task.name == rev_task_name)\
-        .filter(Task.parent == task.parent)\
-        .filter(Task.project == task.project)
-    rev_task = rev_task_query.first()
-    while rev_task is not None:
-        rev_number += 1
-        rev_task_name = task_base_name + ' - Rev %s' % rev_number
-        rev_task_query = Task.query.filter(Task.name == rev_task_name)\
-            .filter(Task.parent == task.parent)\
-            .filter(Task.project == task.project)
-        rev_task = rev_task_query.first()
+    # and expand it with the given revision timing
+    # convert the given revision unit to hours
+    studio = Studio.query.first()
+    if not studio:
+        studio = defaults
 
-    rev_task = Task(
-        name=rev_task_name,
-        type=task.type,
-        description=task.description,
-        project=task.project,
-        parent=task.parent,
-        depends=task.depends,
-        resources=task.resources,
-        schedule_model=schedule_model,
-        schedule_timing=schedule_timing,
-        schedule_unit=schedule_unit,
-        responsible=task.responsible,
-        watchers=task.watchers,
-        priority=task.priority,
-        created_by=logged_in_user
-    )
+    #assert isinstance(studio, Studio)
+    if schedule_unit == 'h':
+        # do nothing just add the timing
+        task.schedule_timing += schedule_timing
+    elif schedule_unit == 'd':
+        task.schedule_timing += schedule_timing * studio.daily_working_hours
+    elif schedule_unit == 'w':
+        task.schedule_timing += schedule_timing * studio.weekly_working_hours
+    elif schedule_unit == 'm':
+        task.schedule_timing += schedule_timing * 4 * \
+            studio.weekly_working_hours
+    elif schedule_unit == 'y':
+        task.schedule_timing += \
+            int(schedule_timing * studio.yearly_working_days *
+                studio.weekly_working_hours)
+
     task.updated_by = logged_in_user
-    DBSession.add(rev_task)
-
-    # set the dependencies to the same ones and set the depending tasks to
-    # the newly created revision task
-    for dep_task in task.dependent_of:
-        dep_task.depends.remove(task)
-        dep_task.depends.append(rev_task)
-        dep_task.updated_by = logged_in_user
-
-    # also add the original task as a dependent task
-    rev_task.depends.append(task)
 
     transaction.commit()
-    DBSession.add_all([task, rev_task, logged_in_user])
+    DBSession.add_all([task, logged_in_user])
 
     if send_email:
         # and send emails to the resources
         summary_text = 'Revision Request: "%s"' % task.name
 
         description_text = \
-        """%(requester_name)s has requested a revision to the original task
-        %(task_name)s on %(task_link)s and created the revision task
-        %(revision_task_name)s on %(revision_task_link)s and supplied the
-        following description for the revision request:\n\n
-        %(description)s""" % {
+        '%(requester_name)s has requested a revision to the task' \
+        '%(task_name)s on %(task_link)s and expanded the timing of the task ' \
+        'by %(timing) %(unit). The following description is supplied for ' \
+        'the revision request:\n\n' \
+        '%(description)s' % {
             "requester_name": logged_in_user.name,
             "task_name": task.name,
             "task_link": request.route_url('view_task', id=task.id),
-            "revision_task_name": rev_task.name,
-            "revision_task_link": request.route_url('view_task',
-                                                    id=rev_task.id),
+            "timing": schedule_timing,
+            "unit": {
+                'h': 'hours',
+                'd': 'days',
+                'w': 'weeks',
+                'm': 'months',
+                'y': 'years'
+            }[schedule_unit],
             "description": description
             if description else "(No Description)"
         }

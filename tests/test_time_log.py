@@ -120,8 +120,12 @@ class TimeLogViewTestCase(unittest2.TestCase):
         request.params['end'] = "Fri, 01 Nov 2013 17:00:00 GMT"
 
         self.assertEqual(self.task1.status, self.status_new)
-        time_log.create_time_log(request)
-        self.assertEqual(self.task1.status, self.status_wip)
+        response = time_log.create_time_log(request)
+        self.assertEqual(response.status_int, 500)
+        self.assertEqual(response.body,
+                         'It is only possible to create time log for a task '
+                         'with status is not set to "RTS", "WIP" or "HREV"')
+        self.assertEqual(self.task1.status, self.status_new)
 
     def test_creating_a_time_log_for_a_task_with_status_rts(self):
         """testing if the status of the time log will be set to WIP if the
@@ -172,8 +176,8 @@ class TimeLogViewTestCase(unittest2.TestCase):
         self.assertEqual(response.status_code, 500)
 
     def test_creating_a_time_log_for_a_task_with_status_has_revision(self):
-        """testing if an error response will be returned when trying to create
-        time log for a task with status "has revision"
+        """testing if the task status will be converted to wip when a time log
+        is eneter for a task with status "has revision"
         """
         request = testing.DummyRequest()
         self.task1 = Task.query.filter(Task.name == self.task1.name).first()
@@ -185,7 +189,12 @@ class TimeLogViewTestCase(unittest2.TestCase):
         request.params['end'] = "Fri, 01 Nov 2013 17:00:00 GMT"
 
         response = time_log.create_time_log(request)
-        self.assertEqual(response.status_code, 500)
+        self.assertEqual(response.status_code, 200)
+
+        self.assertEqual(
+            self.task1.status,
+            self.status_wip
+        )
 
     def test_creating_a_time_log_for_a_task_whose_dependending_tasks_already_has_time_logs(self):
         """testing if a HTTPServer error will be raised when a time log tried
@@ -209,6 +218,8 @@ class TimeLogViewTestCase(unittest2.TestCase):
 
         # set the status of task1 to complete
         self.task1.status = self.status_cmpl
+        # artificially update task2 status to rts
+        task2.status = self.status_rts
         DBSession.flush()
         transaction.commit()
 

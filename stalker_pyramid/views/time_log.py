@@ -160,28 +160,26 @@ def create_time_log(request):
                 description=description
             )
 
-            status_new = Status.query.filter(Status.code == "NEW").first()
             status_rts = Status.query.filter(Status.code == "RTS").first()
             status_wip = Status.query.filter(Status.code == "WIP").first()
             status_cmpl = \
                 Status.query.filter(Status.code == "CMPL").first()
-            status_has_revision = \
+            status_hrev = \
                 Status.query.filter(Status.code == "HREV").first()
 
             # check if the task status is not completed
-            if task.status not in [status_rts, status_wip]:
+            if task.status not in [status_rts, status_wip, status_hrev]:
                 DBSession.rollback()
                 # it is not possible to create a time log for completed tasks
                 response = Response('It is only possible to create time log '
                                     'for a task with status is not set to '
-                                    '"RTS" or "WIP"', 500)
+                                    '"RTS", "WIP" or "HREV"', 500)
                 transaction.abort()
                 return response
 
             # check the dependent tasks has finished
             for dep_task in task.depends:
-                if dep_task.status not in [status_cmpl,
-                                           status_has_revision]:
+                if dep_task.status not in [status_cmpl]:
                     response = Response(
                         'Because one of the dependencies (Task: %s (%s)) has '
                         'not finished, \n'
