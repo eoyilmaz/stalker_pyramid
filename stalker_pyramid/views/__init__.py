@@ -75,12 +75,12 @@ class StdErrToHTMLConverter():
     formatChars = {
         '\e[1m': '<strong>',
         '\e[21m': '</strong>',
-        '\e[2m':  '<div class="dark">',
-        '\e[22m': '</div>',
-        '\x1b[34m': '<div class="alert alert-info" style="overflow-wrap: break-word">',
-        '\x1b[35m': '<div class="alert alert-warning" style="overflow-wrap: break-word">',
-        '\x1b[31m': '<div class="alert alert-error" style="overflow-wrap: break-word">',
-        '\x1b[0m': '</div>',
+        '\e[2m':  '<span class="dark">',
+        '\e[22m': '</span>',
+        '\x1b[34m': '<span class="alert alert-info" style="overflow-wrap: break-word">',
+        '\x1b[35m': '<span class="alert alert-warning" style="overflow-wrap: break-word">',
+        '\x1b[31m': '<span class="alert alert-error" style="overflow-wrap: break-word">',
+        '\x1b[0m': '</span>',
         'Warning:': '<strong>Warning:</strong>',
         'Info:': '<strong>Info:</strong>',
         'Error:': '<strong>Error:</strong>',
@@ -148,6 +148,8 @@ class StdErrToHTMLConverter():
         # for each formatChar replace them with an html tag
         for key in self.formatChars.keys():
             str_buffer = str_buffer.replace(key, self.formatChars[key])
+        # put everything inside a span
+        str_buffer = '<span>%s</span>' % str_buffer
 
         return str_buffer
 
