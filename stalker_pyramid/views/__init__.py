@@ -139,7 +139,7 @@ class StdErrToHTMLConverter():
                 output_buffer.append('%s' % msg.strip())
 
             # convert the list to string
-            str_buffer = ''.join(output_buffer)
+            str_buffer = '\n'.join(output_buffer)
         else:
             str_buffer = self.error_message
 
