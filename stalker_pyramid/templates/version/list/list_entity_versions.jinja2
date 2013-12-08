@@ -166,15 +166,17 @@
                         var table_body = $('#' + tableId + '>tbody');
 
                         for (i = 0; i < data.length; i++) {
-
                             // append it to the table
-
-
                             table_body.append(version_template(data[i]));
                         }
-
-                        var oTable1 = $('#' + tableId).dataTable();
-
+                        var oTable1 = $('#' + tableId).dataTable({
+                            "aoColumns": [
+                                null, {'sType': 'num-html'}, null, null, null, null
+                            ]
+                        });
+                        // sort ascending according to version number and then
+                        // the take name
+                        oTable1.fnSort([[1, 'asc'], [0, 'asc']]);
                     });
                     $('#' + tableId).show();
                     $('#' + spinnerId).hide();
