@@ -77,6 +77,7 @@ class StdErrToHTMLConverter():
         '\e[21m': '</strong>',
         '\e[2m':  '<span class="dark">',
         '\e[22m': '</span>',
+        '\n': '<br>',
         '\x1b[34m': '<span class="alert alert-info" style="overflow-wrap: break-word">',
         '\x1b[35m': '<span class="alert alert-warning" style="overflow-wrap: break-word">',
         '\x1b[31m': '<span class="alert alert-error" style="overflow-wrap: break-word">',
