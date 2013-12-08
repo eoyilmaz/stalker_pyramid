@@ -404,7 +404,20 @@ def delete_time_log(request):
 
     if not time_log:
         transaction.abort()
-        return Response('Can not find a Time_log with id: %s' % time_log_id, 500)
+        return Response(
+            'Can not find a Time_log with id: %s' % time_log_id, 500
+        )
+
+    status_cmpl = Status.query.filter(Status.code == 'CMPL').first()
+
+    if time_log.task.status == status_cmpl:
+        transaction.abort()
+        return Response(
+            'Error: You can not delete a TimeLog of a Task with status CMPL',
+            500
+        )
+
+    task_id = time_log.task.id
 
     try:
         DBSession.delete(time_log)
@@ -414,6 +427,14 @@ def delete_time_log(request):
         c = StdErrToHTMLConverter(e)
         transaction.abort()
         return Response(c.html(), 500)
+    else:
+        # update the status of the task if there is no time log any more
+        task = Task.query.get(task_id)
+        assert isinstance(task, Task)
+        if not task.time_logs:
+            status_new = Status.query.filter(Status.code == 'NEW').first()
+            task.status = status_new
+            update_task_statuses_with_dependencies(task)
 
     return Response('Successfully deleted time_log: %s' % time_log_id)
 

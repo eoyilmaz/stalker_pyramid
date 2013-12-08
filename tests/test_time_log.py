@@ -423,3 +423,63 @@ class TimeLogViewTestCase(unittest2.TestCase):
         self.assertEqual(task1.status, self.status_cmpl)
         self.assertEqual(task0.status, self.status_wip)
         self.assertEqual(task4.status, self.status_rts)
+
+    def test_deleting_time_log_for_a_task_with_status_complete(self):
+        """testing if it is not allowed to delete a time log of a task with
+        status completed
+        """
+        # TODO: This is also testing some functionality from view.task, slit it
+        # create two new task
+        task0 = Task(
+            name='Test Task 0',
+            project=self.proj1,
+            status_list=self.task_status_list
+        )
+        task1 = Task(
+            name='Test Task 1',
+            parent=task0,
+            status_list=self.task_status_list,
+            resources=[self.user1]
+        )
+        task1.status = self.status_wip
+        DBSession.add_all([task0, task1])
+        DBSession.commit()
+        DBSession.flush()
+        transaction.commit()
+
+        self.assertEqual(task0.status, self.status_new)
+        self.assertEqual(task1.status, self.status_wip)
+
+        # now add a time log for task3 through create_time_log view
+        request = testing.DummyRequest()
+
+        # patch get_logged_in_user
+        admins = Group.query.filter(Group.name == 'admins').first()
+        self.user1.groups.append(admins)
+        m = mocker.Mocker()
+        obj = m.replace("stalker_pyramid.views.auth.get_logged_in_user")
+        obj(request)
+        m.result(self.user1)
+        m.count(1, 1000000000)
+        m.replay()
+        request.route_url = lambda x, id=1: 'view_user'
+
+        request.params['task_id'] = task1.id
+        request.params['resource_id'] = self.user1.id
+        request.params['start'] = "Fri, 19 Nov 2013 08:00:00 GMT"
+        request.params['end'] = "Fri, 19 Nov 2013 17:00:00 GMT"
+        response = time_log.create_time_log(request)
+        self.assertEqual(response.status_int, 200)
+
+        # set it to complete
+        task1.status = self.status_cmpl
+
+        # now try to remove it
+        request.matchdict['id'] = task1.time_logs[0].id
+        response = time_log.delete_time_log(request)
+        self.assertEqual(response.status_int, 500)
+        self.assertEqual(
+            response.body,
+            'Error: You can not delete a TimeLog of a Task with status CMPL'
+        )
+

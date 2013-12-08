@@ -10,6 +10,8 @@ Stalker Pyramid Changes
 * **Update:** ``view.time_log.create_time_log()`` will allow to create time
   logs for tasks with "hrev" status, and as usual it will convert the status
   to "wip" for that particular task.
+* **Update:** ``view.tim_log.delete_time_log()`` now doesn't allow to delete
+  time logs of a completed task.
 
 0.1.5
 =====
