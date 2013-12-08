@@ -632,49 +632,71 @@ require([
     // TODO: implement it to the GanttGrid
     $('#action_column_toggler').on('click', function(e){
         gantt_chart.toggle_column('action');
-        gantt_column.refresh();
+        setTimeout(function(){
+            gantt_column.refresh();
+        }, 0);
     });
     $('#id_column_toggler').on('click', function(e){
         gantt_chart.toggle_column('id');
-        gantt_column.refresh();
+        setTimeout(function(){
+            gantt_column.refresh();
+        }, 0);
     });
     $('#name_column_toggler').on('click', function(e){
         gantt_chart.toggle_column('name');
-        gantt_column.refresh();
+        setTimeout(function(){
+            gantt_column.refresh();
+        }, 0);
     });
     $('#complete_column_toggler').on('click', function(e){
         gantt_chart.toggle_column('complete');
-        gantt_column.refresh();
+        setTimeout(function(){
+            gantt_column.refresh();
+        }, 0);
     });
     $('#resource_column_toggler').on('click', function(e){
         gantt_chart.toggle_column('resource');
-        gantt_column.refresh();
+        setTimeout(function(){
+            gantt_column.refresh();
+        }, 0);
     });
     $('#timing_column_toggler').on('click', function(e){
         gantt_chart.toggle_column('timing');
-        gantt_column.refresh();
+        setTimeout(function(){
+            gantt_column.refresh();
+        }, 0);
     });
     $('#start_column_toggler').on('click', function(e){
         gantt_chart.toggle_column('start');
-        gantt_column.refresh();
+        setTimeout(function(){
+            gantt_column.refresh();
+        }, 0);
     });
     $('#end_column_toggler').on('click', function(e){
         gantt_chart.toggle_column('end');
-        gantt_column.refresh();
+        setTimeout(function(){
+            gantt_column.refresh();
+        }, 0);
     });
     $('#status_column_toggler').on('click', function(e){
         gantt_chart.toggle_column('status');
-        gantt_column.refresh();
+        setTimeout(function(){
+            gantt_column.refresh();
+        }, 0);
     });
     $('#dependencies_column_toggler').on('click', function(e){
         gantt_chart.toggle_column('dependencies');
-        gantt_column.refresh();
+        setTimeout(function(){
+            gantt_column.refresh();
+        }, 0);
     });
     $('#chart_column_toggler').on('click', function(e){
         gantt_chart.toggle_column('set-1');
         $(".dgrid-column-set-scroller.dgrid-scrollbar-height.dgrid-column-set-scroller-1").toggle();
         $(".dgrid-column-set-scroller-1").toggle();
-        gantt_column.refresh();
+        setTimeout(function(){
+            gantt_column.refresh();
+        }, 0);
     });
 
     // register cell selection function
