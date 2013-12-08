@@ -174,9 +174,8 @@
                                 null, {'sType': 'num-html'}, null, null, null, null
                             ]
                         });
-                        // sort ascending according to version number and then
-                        // the take name
-                        oTable1.fnSort([[1, 'asc'], [0, 'asc']]);
+                        // sort ascending according to take name and then the version number
+                        oTable1.fnSort([[0, 'asc'], [1, 'asc']]);
                     });
                     $('#' + tableId).show();
                     $('#' + spinnerId).hide();
