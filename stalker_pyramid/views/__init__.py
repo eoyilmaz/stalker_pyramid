@@ -148,8 +148,8 @@ class StdErrToHTMLConverter():
         # for each formatChar replace them with an html tag
         for key in self.formatChars.keys():
             str_buffer = str_buffer.replace(key, self.formatChars[key])
-        # put everything inside a span
-        str_buffer = '<span>%s</span>' % str_buffer
+        # put everything inside a p
+        str_buffer = '<p>%s</p>' % str_buffer
 
         return str_buffer
 
