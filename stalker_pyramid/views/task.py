@@ -32,7 +32,7 @@ from sqlalchemy.exc import IntegrityError
 from stalker.db import DBSession
 from stalker import (User, Task, Entity, Project, StatusList, Status,
                      TaskJugglerScheduler, Studio, Asset, Shot, Sequence,
-                     Ticket, Type)
+                     Ticket, Type, Note)
 from stalker.models.task import CircularDependencyError
 from stalker import defaults
 
@@ -2098,17 +2098,12 @@ def request_revision(request):
 
     task.updated_by = logged_in_user
 
-    transaction.commit()
     DBSession.add_all([task, logged_in_user])
 
-    if send_email:
-        # and send emails to the resources
-        summary_text = 'Revision Request: "%s"' % task.name
-
-        description_text = \
-        '%(requester_name)s has requested a revision to the task' \
+    description_text = \
+        '%(requester_name)s has requested a revision to the task ' \
         '%(task_name)s on %(task_link)s and expanded the timing of the task ' \
-        'by %(timing) %(unit). The following description is supplied for ' \
+        'by %(timing)s %(unit)s. The following description is supplied for ' \
         'the revision request:\n\n' \
         '%(description)s' % {
             "requester_name": logged_in_user.name,
@@ -2125,6 +2120,25 @@ def request_revision(request):
             "description": description
             if description else "(No Description)"
         }
+
+    # find the related revision Ticket and add the comment
+    review_type = Type.query.filter(Type.name == "Review").first()
+    tickets = Ticket.query\
+        .filter(Ticket.links.contains(task))\
+        .filter(Ticket.type == review_type).all()
+    logger.debug("tickets: %s" % tickets)
+    if tickets:
+        note = Note(
+            content=description_text
+        )
+        for ticket in tickets:
+            ticket.comments.append(note)
+        DBSession.add(note)
+        transaction.commit()
+
+    if send_email:
+        # and send emails to the resources
+        summary_text = 'Revision Request: "%s"' % task.name
 
         responsible = task.responsible
         # send email to responsible and resources of the task

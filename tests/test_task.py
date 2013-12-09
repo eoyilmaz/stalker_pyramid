@@ -29,7 +29,7 @@ from pyramid import testing
 from pyramid.httpexceptions import HTTPServerError
 
 from stalker import (db, Project, Status, StatusList, Repository, Task, User,
-                     Asset, Type, TimeLog)
+                     Asset, Type, TimeLog, Ticket, Note)
 from stalker.db.session import DBSession
 
 from stalker_pyramid.views import task, milliseconds_since_epoch
@@ -1307,6 +1307,8 @@ class TaskViewTestCase(unittest2.TestCase):
         # request revision for self.test_task4
         request = testing.DummyRequest()
         request.matchdict['id'] = self.test_task4.id
+        description = 'This is the test description'
+        request.params['description'] = description
         request.params['send_email'] = 0
         request.params['schedule_timing'] = 5
         request.params['schedule_unit'] = 'd'
@@ -1318,6 +1320,23 @@ class TaskViewTestCase(unittest2.TestCase):
         obj(request)
         m.result(self.test_task4.resources[0])
         m.replay()
+
+        # create a Ticket to check if the Ticket is going to be updated with
+        # the revision
+        review_type = Type(target_entity_type='Ticket', name='Review',
+                           code='Review')
+        db.DBSession.add(review_type)
+
+        ticket = Ticket(
+            project=self.test_task4.project,
+            type=review_type,
+            description='Test Ticket'
+        )
+        ticket.links.append(self.test_task4)
+        # also resolve the ticket
+        ticket.resolve(self.test_task4.resources[0], 'fixed')
+        db.DBSession.add(ticket)
+        db.DBSession.commit()
 
         # also patch route_url of request
         request.route_url = lambda x, id: 'localhost:6453/tasks/23/view'
@@ -1352,6 +1371,21 @@ class TaskViewTestCase(unittest2.TestCase):
         # check if the dependent tasks are intact
         self.assertItemsEqual(
             self.test_task4.dependent_of, [self.test_task5]
+        )
+
+        # and check if there is a new comment on the ticket with the supplied
+        # text
+        comment = ticket.comments[0]
+        # assert isinstance(comment, Note)
+        self.assertEqual(
+            comment.content,
+            'Test User 1 has requested a revision to the task '
+            'Test Task 4 on localhost:6453/tasks/23/view and expanded the '
+            'timing of the task by 5.0 days. The following description is '
+            'supplied for the revision request:\n\n'
+            '%(description)s' % {
+                'description': description
+            }
         )
 
     def test_request_extra_time_works_only_for_leaf_tasks(self):
