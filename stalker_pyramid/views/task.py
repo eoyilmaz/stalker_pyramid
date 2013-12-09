@@ -40,7 +40,7 @@ from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
                                    get_multi_integer, milliseconds_since_epoch,
                                    StdErrToHTMLConverter,
                                    multi_permission_checker,
-                                   dummy_email_address, local_to_utc, utc_to_local)
+                                   dummy_email_address, local_to_utc)
 from stalker_pyramid.views.type import query_type
 
 
@@ -2096,7 +2096,7 @@ def request_revision(request):
             int(schedule_timing * studio.yearly_working_days *
                 studio.weekly_working_hours)
 
-    now = utc_to_local(datetime.datetime.now())
+    now = local_to_utc(datetime.datetime.now())
     task.updated_by = logged_in_user
     task.date_updated = now
 
