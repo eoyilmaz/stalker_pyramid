@@ -2098,8 +2098,6 @@ def request_revision(request):
 
     task.updated_by = logged_in_user
 
-    DBSession.add_all([task, logged_in_user])
-
     description_text = \
         '%(requester_name)s has requested a revision to the task ' \
         '%(task_name)s on %(task_link)s and expanded the timing of the task ' \
@@ -2134,7 +2132,9 @@ def request_revision(request):
         for ticket in tickets:
             ticket.comments.append(note)
         DBSession.add(note)
-        transaction.commit()
+
+    transaction.commit()
+    DBSession.add_all([task, logged_in_user])
 
     if send_email:
         # and send emails to the resources
