@@ -40,7 +40,7 @@ from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
                                    get_multi_integer, milliseconds_since_epoch,
                                    StdErrToHTMLConverter,
                                    multi_permission_checker,
-                                   dummy_email_address, local_to_utc)
+                                   dummy_email_address, local_to_utc, utc_to_local)
 from stalker_pyramid.views.type import query_type
 
 
@@ -2096,7 +2096,9 @@ def request_revision(request):
             int(schedule_timing * studio.yearly_working_days *
                 studio.weekly_working_hours)
 
+    now = utc_to_local(datetime.datetime.now())
     task.updated_by = logged_in_user
+    task.date_updated = now
 
     description_text = \
         '%(requester_name)s has requested a revision to the task ' \
@@ -2127,10 +2129,15 @@ def request_revision(request):
     logger.debug("tickets: %s" % tickets)
     if tickets:
         note = Note(
-            content=description_text
+            content=description_text,
+            created_by=logged_in_user,
+            date_created=now,
+            date_updated=now
         )
         for ticket in tickets:
             ticket.comments.append(note)
+            ticket.date_updated = now
+            ticket.updated_by = logged_in_user
         DBSession.add(note)
 
     transaction.commit()
