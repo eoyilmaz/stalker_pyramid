@@ -34,7 +34,7 @@
 
     {% set tickets=entity.tickets %}
 
-    {% if has_permission('Create_Ticket') %}
+    {% if has_permission('Create_Ticket') and entity.entity_type == 'Project' %}
     <div class="btn-toolbar">
         <div class="btn-group">
             <button class="btn btn-small btn-danger"
