@@ -92,16 +92,16 @@ def assign_thumbnail(request):
     logger.debug('entity    : %s' % entity)
 
     logged_in_user = get_logged_in_user(request)
-
     if entity and link:
         entity.thumbnail = link
 
         # resize the thumbnail
         file_full_path = convert_file_link_to_full_path(link.full_path)
         img = Image.open(file_full_path)
-        img.thumbnail((300, 300))
-        img.thumbnail((150, 150), Image.ANTIALIAS)
-        img.save(file_full_path)
+        if img.format != 'GIF':
+            img.thumbnail((300, 300))
+            img.thumbnail((150, 150), Image.ANTIALIAS)
+            img.save(file_full_path)
 
         DBSession.add(entity)
         DBSession.add(link)
