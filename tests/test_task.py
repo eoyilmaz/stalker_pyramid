@@ -32,7 +32,7 @@ from stalker import (db, Project, Status, StatusList, Repository, Task, User,
                      Asset, Type, TimeLog, Ticket, Note)
 from stalker.db.session import DBSession
 
-from stalker_pyramid.views import task, milliseconds_since_epoch
+from stalker_pyramid.views import task, milliseconds_since_epoch, local_to_utc
 
 import logging
 from tests import DummyMultiDict
@@ -1029,6 +1029,88 @@ class TaskViewTestCase(unittest2.TestCase):
         # check if the task percent_complete is 100
         self.assertEqual(self.test_task4.percent_complete, 100)
 
+    def test_request_review_updates_previous_ticket(self):
+        """testing if the request_review() will find and update the previous
+        ticket
+        """
+        # create a time log before asking review
+        time_log = TimeLog(
+            resource=self.test_task4.resources[0],
+            task=self.test_task4,
+            start=datetime.datetime(2013, 6, 20, 10, 0),
+            end=datetime.datetime(2013, 6, 20, 19, 0)
+        )
+        utc_now = local_to_utc(datetime.datetime.now())
+        time_log.date_created = utc_now
+        self.test_task4.date_created = utc_now
+
+        DBSession.add(time_log)
+        self.test_task4.status = self.status_wip
+
+        # create a Ticket to check if the Ticket is going to be updated with
+        # the revision
+        review_type = Type(target_entity_type='Ticket', name='Review',
+                           code='Review')
+        db.DBSession.add(review_type)
+
+        ticket = Ticket(
+            project=self.test_task4.project,
+            type=review_type,
+            description='Test Ticket',
+            date_created=utc_now
+        )
+        ticket.links.append(self.test_task4)
+        # also resolve the ticket
+        ticket.resolve(self.test_task4.resources[0], 'fixed')
+        db.DBSession.add(ticket)
+        db.DBSession.commit()
+
+        # request review for self.test_task4
+        request = testing.DummyRequest()
+        request.matchdict['id'] = self.test_task4.id
+        request.params['send_email'] = 0
+
+        # patch get_logged_in_user
+        m = mocker.Mocker()
+        obj = m.replace("stalker_pyramid.views.auth.get_logged_in_user")
+        obj(request)
+        m.result(self.test_task4.resources[0])
+        m.replay()
+
+        # also patch route_url of request
+        request.route_url = lambda x, id: 'localhost:6453/tasks/23/view'
+
+        # also patch route_url of request
+        request.route_path = lambda x, id: '/tasks/23/view'
+
+        response = task.request_review(request)
+        self.assertEqual(response.status_int, 200)
+
+        # check if the status of the original task is set to Pending Revision
+        #self.test_task4 = Task.query.get(self.test_task4.id)
+        self.assertEqual(self.test_task4.status, self.status_prev)
+
+        # check if the task percent_complete is 100
+        self.assertEqual(self.test_task4.percent_complete, 100)
+
+        # check if the ticket is reopened
+        self.assertEqual(
+            ticket.status, Status.query.filter_by(name='Reopened').first()
+        )
+
+        # and check if there is a new comment on the ticket with the supplied
+        # text
+        comment = ticket.comments[0]
+        # assert isinstance(comment, Note)
+        self.assertEqual(
+            comment.content,
+            '%(description)s' % {
+                'description': u'<a href="/tasks/23/view">Test User 1</a> '
+                               u'has requested you to do a review for '
+                               u'<a href="/tasks/23/view">Test Task 4 (Task) '
+                               u'- (Test Task 1)</a>'
+            }
+        )
     def test_request_revision_returns_code_500_if_no_task_found(self):
         """testing if a response with code 500 is returned back when there is
         no such task
@@ -1301,6 +1383,10 @@ class TaskViewTestCase(unittest2.TestCase):
             start=datetime.datetime(2013, 6, 20, 10, 0),
             end=datetime.datetime(2013, 6, 20, 19, 0)
         )
+        utc_now = local_to_utc(datetime.datetime.now())
+        time_log.date_created = utc_now
+        self.test_task4.date_created = utc_now
+
         DBSession.add(time_log)
         self.test_task4.status = self.status_prev
 
@@ -1330,7 +1416,8 @@ class TaskViewTestCase(unittest2.TestCase):
         ticket = Ticket(
             project=self.test_task4.project,
             type=review_type,
-            description='Test Ticket'
+            description='Test Ticket',
+            date_created=utc_now
         )
         ticket.links.append(self.test_task4)
         # also resolve the ticket
@@ -1379,10 +1466,6 @@ class TaskViewTestCase(unittest2.TestCase):
         # assert isinstance(comment, Note)
         self.assertEqual(
             comment.content,
-            'Test User 1 has requested a revision to the task '
-            'Test Task 4 on localhost:6453/tasks/23/view and expanded the '
-            'timing of the task by 5.0 days. The following description is '
-            'supplied for the revision request:\n\n'
             '%(description)s' % {
                 'description': description
             }

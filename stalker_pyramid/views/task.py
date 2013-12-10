@@ -1883,21 +1883,42 @@ def request_review(request):
 
     # create a Ticket with the owner set to the responsible
     utc_now = local_to_utc(datetime.datetime.now())
-    review_ticket = Ticket(
-        project=project,
-        summary=summary_text,
-        description=ticket_description,
-        type=review_type,
-        created_by=logged_in_user,
-        date_created=utc_now,
-        date_updated=utc_now
-    )
-    review_ticket.reassign(logged_in_user, responsible)
 
-    # link the task to the review
-    review_ticket.links.append(task)
+    # find a related ticket or create a new one
+    # find the related revision Ticket and add the comment
+    tickets = Ticket.query\
+        .filter(Ticket.links.contains(task))\
+        .filter(Ticket.type == review_type).all()
+    logger.debug("tickets: %s" % tickets)
+    if tickets:
+        note = Note(
+            content=ticket_description,
+            created_by=logged_in_user,
+            date_created=utc_now,
+            date_updated=utc_now
+        )
+        for ticket in tickets:
+            ticket.comments.append(note)
+            ticket.date_updated = utc_now
+            ticket.updated_by = logged_in_user
+            # reopen if closed
+            ticket.reopen(logged_in_user)
+        DBSession.add(note)
+    else:
+        review_ticket = Ticket(
+            project=project,
+            summary=summary_text,
+            description=ticket_description,
+            type=review_type,
+            created_by=logged_in_user,
+            date_created=utc_now,
+            date_updated=utc_now
+        )
+        review_ticket.reassign(logged_in_user, responsible)
 
-    DBSession.add(review_ticket)
+        # link the task to the review
+        review_ticket.links.append(task)
+        DBSession.add(review_ticket)
 
     if send_email:
         # send email to responsible and resources of the task
@@ -2096,30 +2117,9 @@ def request_revision(request):
             int(schedule_timing * studio.yearly_working_days *
                 studio.weekly_working_hours)
 
-    now = local_to_utc(datetime.datetime.now())
+    utc_now = local_to_utc(datetime.datetime.now())
     task.updated_by = logged_in_user
-    task.date_updated = now
-
-    description_text = \
-        '%(requester_name)s has requested a revision to the task ' \
-        '%(task_name)s on %(task_link)s and expanded the timing of the task ' \
-        'by %(timing)s %(unit)s. The following description is supplied for ' \
-        'the revision request:\n\n' \
-        '%(description)s' % {
-            "requester_name": logged_in_user.name,
-            "task_name": task.name,
-            "task_link": request.route_url('view_task', id=task.id),
-            "timing": schedule_timing,
-            "unit": {
-                'h': 'hours',
-                'd': 'days',
-                'w': 'weeks',
-                'm': 'months',
-                'y': 'years'
-            }[schedule_unit],
-            "description": description
-            if description else "(No Description)"
-        }
+    task.date_updated = utc_now
 
     # find the related revision Ticket and add the comment
     review_type = Type.query.filter(Type.name == "Review").first()
@@ -2129,14 +2129,14 @@ def request_revision(request):
     logger.debug("tickets: %s" % tickets)
     if tickets:
         note = Note(
-            content=description_text,
+            content=description,
             created_by=logged_in_user,
-            date_created=now,
-            date_updated=now
+            date_created=utc_now,
+            date_updated=utc_now
         )
         for ticket in tickets:
             ticket.comments.append(note)
-            ticket.date_updated = now
+            ticket.date_updated = utc_now
             ticket.updated_by = logged_in_user
         DBSession.add(note)
 
@@ -2146,6 +2146,27 @@ def request_revision(request):
     if send_email:
         # and send emails to the resources
         summary_text = 'Revision Request: "%s"' % task.name
+
+        description_text = \
+            '%(requester_name)s has requested a revision to the task ' \
+            '%(task_name)s on %(task_link)s and expanded the timing of the ' \
+            'task by %(timing)s %(unit)s. The following description is ' \
+            'supplied for the revision request:\n\n' \
+            '%(description)s' % {
+                "requester_name": logged_in_user.name,
+                "task_name": task.name,
+                "task_link": request.route_url('view_task', id=task.id),
+                "timing": schedule_timing,
+                "unit": {
+                    'h': 'hours',
+                    'd': 'days',
+                    'w': 'weeks',
+                    'm': 'months',
+                    'y': 'years'
+                }[schedule_unit],
+                "description": description
+                if description else "(No Description)"
+            }
 
         responsible = task.responsible
         # send email to responsible and resources of the task
