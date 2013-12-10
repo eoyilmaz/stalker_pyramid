@@ -7,11 +7,16 @@ Stalker Pyramid Changes
 
 * **Update:** ``views.task.request_revision()`` will not create any new task
   anymore, it will only extend the task with the given revision timing.
-* **Update:** ``view.time_log.create_time_log()`` will allow to create time
+* **Update:** ``views.time_log.create_time_log()`` will allow to create time
   logs for tasks with "hrev" status, and as usual it will convert the status
   to "wip" for that particular task.
-* **Update:** ``view.tim_log.delete_time_log()`` now doesn't allow to delete
+* **Update:** ``views.time_log.delete_time_log()`` now doesn't allow to delete
   time logs of a completed task.
+* **Update:** ``views.task.request_revision()`` now adds the revision
+  description as a comment to the tickets which have the revised task in their
+  links list.
+* **Update:** ``views.task.request_review()`` now updates the related ticket if
+  this is not the first review requested for the task.
 
 0.1.5
 =====
