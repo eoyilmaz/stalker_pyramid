@@ -31,212 +31,211 @@
 {#PAGE-CONTENT#}
 {% block page_content %}
     <div class="row-fluid">
-        <div class="widget-box transparent invoice-box">
-            <div class="widget-header widget-header-small">
-                <h3 class="pull-left position-relative">
-                    {{ entity.name }}
-                    <i class="icon-double-angle-right"></i>
-                    <small class="green">{{ entity.type.name }}</small>
-                </h3>
+    <div class="widget-box transparent invoice-box">
+    <div class="widget-header widget-header-small">
+        <h3 class="pull-left position-relative">
+            {{ entity.name }}
+            <i class="icon-double-angle-right"></i>
+            <small class="green">{{ entity.type.name }}</small>
+        </h3>
 
-                <div class="widget-toolbar no-border invoice-info">
-                    <span class="invoice-info-label">{{ entity.status.name }}</span>
-                </div>
+        <div class="widget-toolbar no-border invoice-info">
+            <span class="invoice-info-label">{{ entity.status.name }}</span>
+        </div>
 
-                <div class="widget-toolbar hidden-480">
-                    <a href="#">
-                        <i class="icon-info"></i>
-                    </a>
-                </div>
-            </div>
+        <div class="widget-toolbar hidden-480">
+            <a href="#">
+                <i class="icon-info"></i>
+            </a>
+        </div>
+    </div>
 
-            <div class="widget-body">
-                <div class="widget-main padding-10">
+    <div class="widget-body">
+        <div class="widget-main padding-10">
+            <div class="row-fluid">
+                <div class="span8">
                     <div class="row-fluid">
-                        <div class="span8">
-                            <div class="row-fluid">
 
-                                <div class="span6">
-                                    {% if entity.thumbnail %}
-                                        <div class="span4">
+                        <div class="span6">
+                            {% if entity.thumbnail %}
+                                <div class="span4">
 
-                                            <a class="pull-left" href="#"
-                                               style="width: 180px; height: 180px">
-                                                <img style='width:auto; height: auto;'
-                                                     class="img-thumbnail"
-                                                     src="/{{ entity.thumbnail.full_path }}">
-                                            </a>
+                                    <a class="pull-left" href="#"
+                                       style="width: 180px; height: 180px">
+                                        <img style='width:auto; height: auto;'
+                                             class="img-thumbnail"
+                                             src="/{{ entity.thumbnail.full_path }}">
+                                    </a>
 
-                                        </div>
+                                </div>
+                            {% endif %}
+                            <div class="span8">
+                                {% if logged_in_user == entity.responsible and entity.status.code == 'PREV' %}
+
+                                    <button id='task_review_button'
+                                            class='btn btn-mini btn-success'
+                                            data-target="#dialog_template"
+                                            data-toggle="modal"
+                                            data-keyboard="false"
+                                            href='{{ request.route_url("review_task_dialog", id=entity.id) }}'
+                                            >
+                                        <i class="icon-comments"></i>
+                                        Review
+                                    </button>
+
+                                {% endif %}
+                                {% if (logged_in_user in entity.resources or logged_in_user == entity.responsible) and entity.status.code == 'WIP' and entity.is_leaf %}
+
+                                    <button id='task_page_request_review_button'
+                                            class='btn btn-mini btn-warning'
+                                            data-target="#dialog_template"
+                                            data-toggle="modal"
+                                            data-keyboard="false"
+                                            href='{{ request.route_url("request_review_dialog", id=entity.id) }}'
+                                            >
+                                        <i class="icon-comment-alt"></i>
+                                        Request Review
+                                    </button>
+
+                                {% endif %}
+                                {% if has_permission('Update_Task') %}
+
+                                    <div class="btn-toolbar">
+                                        <button id='task_update_button'
+                                                class='btn btn-mini btn-info'
+                                                data-target="#dialog_template"
+                                                data-toggle="modal"
+                                                data-keyboard="false"
+                                                href='{{ request.route_url("update_task_dialog", id=entity.id) }}'
+                                                >
+                                            <i class="icon-edit"></i> Update
+                                        </button>
+                                    </div>
+
+                                {% endif %}
+
+                                <ul class="unstyled spaced  pull-left">
+                                    <li>
+                                        <h5>
+                                            <strong>
+                                                <span class="date">{{ entity.start }}</span>
+                                                <i class="icon-long-arrow-right blue"></i>
+                                                <span class="date">{{ entity.end }}</span>
+                                            </strong>
+                                        </h5>
+                                    </li>
+                                    <li>
+
+                                        <b>Responsible: </b> <a
+                                            href="/users/{{ entity.responsible.id }}/view">{{ entity.responsible.name }}</a>
+                                    </li>
+
+                                    <li>
+
+                                        <b>Created By
+                                            : </b> {{ entity.created_by.name }}
+                                    </li>
+                                    <li>
+                                        <b>Updated By
+                                            : </b> {{ entity.updated_by.name }}
+                                    </li>
+
+                                    {% if entity.description %}
+
+                                        <li>
+                                            <b>Description
+                                                : </b> {{ entity.description }}
+                                        </li>
+
+
                                     {% endif %}
-                                    <div class="span8">
-                                        {% if logged_in_user == entity.responsible and entity.status.code == 'PREV' %}
-
-                                            <button id='task_review_button'
-                                                    class='btn btn-mini btn-success'
-                                                    data-target="#dialog_template"
-                                                    data-toggle="modal"
-                                                    data-keyboard="false"
-                                                    href='{{ request.route_url("review_task_dialog", id=entity.id) }}'
-                                                    >
-                                                <i class="icon-comments"></i>
-                                                Review
-                                            </button>
-
-                                        {% endif %}
-                                        {% if (logged_in_user in entity.resources or logged_in_user == entity.responsible) and entity.status.code == 'WIP' and entity.is_leaf %}
-
-                                            <button id='task_request_review_button'
-                                                    class='btn btn-mini btn-warning'
-                                                    data-target="#dialog_template"
-                                                    data-toggle="modal"
-                                                    data-keyboard="false"
-                                                    href='{{ request.route_url("request_review", id=entity.id) }}'
-                                                    >
-                                                <i class="icon-comment-alt"></i>
-                                                Request Review
-                                            </button>
-
-                                        {% endif %}
-                                        {% if has_permission('Update_Task') %}
-
-                                            <div class="btn-toolbar">
-                                                <button id='task_update_button'
-                                                        class='btn btn-mini btn-info'
-                                                        data-target="#dialog_template"
-                                                        data-toggle="modal"
-                                                        data-keyboard="false"
-                                                        href='{{ request.route_url("update_task_dialog", id=entity.id) }}'
-                                                        >
-                                                    <i class="icon-edit"></i> Update
-                                                </button>
-                                            </div>
-
-                                        {% endif %}
-
-                                        <ul class="unstyled spaced  pull-left">
-                                            <li>
-                                                <h5>
-                                                    <strong>
-                                                        <span class="date">{{ entity.start }}</span>
-                                                        <i class="icon-long-arrow-right blue"></i>
-                                                        <span class="date">{{ entity.end }}</span>
-                                                    </strong>
-                                                </h5>
-                                            </li>
-                                            <li>
-
-                                                <b>Responsible: </b> <a
-                                                    href="/users/{{ entity.responsible.id }}/view">{{ entity.responsible.name }}</a>
-                                            </li>
-
-                                            <li>
-
-                                                <b>Created By
-                                                    : </b> {{ entity.created_by.name }}
-                                            </li>
-                                            <li>
-                                                <b>Updated By
-                                                    : </b> {{ entity.updated_by.name }}
-                                            </li>
-
-                                            {% if entity.description %}
-
-                                                <li>
-                                                    <b>Description
-                                                        : </b> {{ entity.description }}
-                                                </li>
+                                </ul>
 
 
-                                            {% endif %}
-                                        </ul>
-
-
-
-                                    </div>
-                                    <div class="space-12"></div>
-
-
-                                </div>
-                                <div class="span6">
-                                    <div class="span6 pull-right alert alert-block alert-info">
-                                        <ul class="unstyled spaced">
-                                            <li>
-
-                                                <b>Schedule Hours
-                                                    : </b> {{ entity.schedule_seconds/3600 }}
-                                                h
-                                            </li>
-                                            <li>
-                                                <b>Total Logged Hours
-                                                    : </b> {{ entity.total_logged_seconds/3600 }}
-                                                h
-                                            </li>
-                                            <li>
-                                                <b>Hours to Complete
-                                                    : </b> {{ (entity.schedule_seconds - entity.total_logged_seconds)/3600 }}
-                                                h
-                                            </li>
-                                        </ul>
-                                        <div class="progress progress-success progress-striped"
-                                             data-percent="{{ "%2.1f" | format(entity.percent_complete) }}%">
-                                            <div class="bar"
-                                                 style="width: {{ entity.percent_complete }}%;"></div>
-                                        </div>
-                                        {#                                    <div class="pull-left" id="pie_chart"#}
-                                        {#                                         style="width: 180px; height: 180px;"></div>#}
-                                    </div>
-                                </div>
-
-
-                            </div>
-
-                            <div class="hr hr8 hr-double"></div>
-
-                            <div class="space-32"></div>
-
-                            <div class="row-fluid">
-                                <div id="calendar"></div>
-                            </div>
-
-                        </div>
-                        <div class="span4">
-
-                            <div class="row-fluid">
-                                <div id="resources_box"
-                                     class="widget-box hide">
-                                    <div class="widget-header header-color-red">
-                                        <h4 class="smaller">Resources</h4>
-                                    </div>
-                                    <div class="widget-body">
-                                        <div class="widget-main padding-12">
-                                            <div id="resource_tree"
-                                                 class="tree"></div>
-                                        </div>
-                                    </div>
-                                </div>
                             </div>
                             <div class="space-12"></div>
-                            <div class="row-fluid">
-                                <div id="depends_box"
-                                     class="widget-box hide">
-                                    <div class="widget-header header-color-orange">
-                                        <h4 class="smaller">Depends</h4>
-                                    </div>
-                                    <div class="widget-body">
-                                        <div class="widget-main padding-12">
-                                            <div id="depends_tree"
-                                                 class="tree"></div>
-                                        </div>
-                                    </div>
+
+
+                        </div>
+                        <div class="span6">
+                            <div class="span6 pull-right alert alert-block alert-info">
+                                <ul class="unstyled spaced">
+                                    <li>
+
+                                        <b>Schedule Hours
+                                            : </b> {{ entity.schedule_seconds/3600 }}
+                                        h
+                                    </li>
+                                    <li>
+                                        <b>Total Logged Hours
+                                            : </b> {{ entity.total_logged_seconds/3600 }}
+                                        h
+                                    </li>
+                                    <li>
+                                        <b>Hours to Complete
+                                            : </b> {{ (entity.schedule_seconds - entity.total_logged_seconds)/3600 }}
+                                        h
+                                    </li>
+                                </ul>
+                                <div class="progress progress-success progress-striped"
+                                     data-percent="{{ "%2.1f" | format(entity.percent_complete) }}%">
+                                    <div class="bar"
+                                         style="width: {{ entity.percent_complete }}%;"></div>
                                 </div>
+                                {#                                    <div class="pull-left" id="pie_chart"#}
+                                {#                                         style="width: 180px; height: 180px;"></div>#}
                             </div>
                         </div>
 
+
+                    </div>
+
+                    <div class="hr hr8 hr-double"></div>
+
+                    <div class="space-32"></div>
+
+                    <div class="row-fluid">
+                        <div id="calendar"></div>
+                    </div>
+
+                </div>
+                <div class="span4">
+
+                    <div class="row-fluid">
+                        <div id="resources_box"
+                             class="widget-box hide">
+                            <div class="widget-header header-color-red">
+                                <h4 class="smaller">Resources</h4>
+                            </div>
+                            <div class="widget-body">
+                                <div class="widget-main padding-12">
+                                    <div id="resource_tree"
+                                         class="tree"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="space-12"></div>
+                    <div class="row-fluid">
+                        <div id="depends_box"
+                             class="widget-box hide">
+                            <div class="widget-header header-color-orange">
+                                <h4 class="smaller">Depends</h4>
+                            </div>
+                            <div class="widget-body">
+                                <div class="widget-main padding-12">
+                                    <div id="depends_tree"
+                                         class="tree"></div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
+
             </div>
         </div>
+    </div>
+    </div>
     </div>
 
 {% endblock page_content %}
@@ -257,7 +256,7 @@
 
     <script type="text/javascript">
         // convert all dates to moment
-        $('.date').each(function(){
+        $('.date').each(function () {
             var date = moment.utc($(this).text());
             $(this).text(date.fromNow());
         });
@@ -301,34 +300,43 @@
 
 
     <script type="text/javascript">
-        $(function () {
-            $('#task_request_review_button').on('click', function (e) {
-                e.preventDefault();
-                e.stopPropagation();
 
-                var entity_id = {{ entity.id }};
 
-                bootbox.confirm(
-                    '<div class="alert alert-info bigger-110">This will send the responsible of this task a ' +
-                            '<strong>review request</strong> and you will ' +
-                            '<strong>not</strong> be able to ' +
-                            '<strong>create any TimeLogs</strong> for this task ' +
-                            'after this point<br><br><strong>Are you sure?</strong></div>',
-                    function (result) {
-                        if (result) {
-                            // get the ids and send it to the server
-                            var url;
-                            url = '/tasks/' + entity_id + '/request_review';
-                            $.post(url).done(function (response) {
-                                bootbox.alert(response);
-                            }).fail(function (jqXHR) {
-                                bootbox.alert(jqXHR.responseText);
-                            });
-                        }
-                    }
-                )
-            });
-        });
+        {#        $(function () {#}
+        {##}
+        {#            var submit_action = function (e) {#}
+        {#                e.preventDefault();#}
+        {#                e.stopPropagation();#}
+        {##}
+        {#                var entity_id = {{ entity.id }};#}
+        {##}
+        {#                bootbox.confirm(#}
+        {#                        '<div class="alert alert-info bigger-110">This will send the responsible of this task a ' +#}
+        {#                                '<strong>review request</strong> and you will ' +#}
+        {#                                '<strong>not</strong> be able to ' +#}
+        {#                                '<strong>create any TimeLogs</strong> for this task ' +#}
+        {#                                'after this point<br><br><strong>Are you sure?</strong></div>',#}
+        {#                        function (result) {#}
+        {#                            if (result) {#}
+        {#                                // get the ids and send it to the server#}
+        {#                                var url;#}
+        {#                                url = '/tasks/' + entity_id + '/request_review';#}
+        {#                                $.post(url).done(function (response) {#}
+        {#                                    console.log(response)#}
+        {#                                    bootbox.alert(response);#}
+        {#                                }).fail(function (jqXHR) {#}
+        {#                                            bootbox.alert(jqXHR.responseText);#}
+        {#                                        });#}
+        {#                            }#}
+        {#                        }#}
+        {#                )#}
+        {#            }#}
+
+        //$('#task_page_request_review_button').on('click', submit_action);
+        //$('#task_request_review_button').on('click', submit_action);
+
+
+
     </script>
 
     <script type="text/javascript">
@@ -370,7 +378,7 @@
 
                             var percent_complete_str = '<span class="label label-' + data[i].status_color + '">' + data[i].status + '</span>';
 
-                            console.log('hours_to_complete: ' + hours_to_complete)
+
 
                             resources[prop_id]['additionalParameters']['children'][(data[i].id).toString()] = {name: '<span  class="pull-left"><a href="/tasks/' + data[i].id + '/view">' + data[i].title + '  </a></span>' + hour_to_complete_str + percent_complete_str, type: 'item'}
 

@@ -1,0 +1,50 @@
+<div class="alert alert-info bigger-110">This will send the responsible of this
+    task a
+    <strong>review request</strong> and you will
+    <strong>not</strong> be able to
+    <strong>create any TimeLogs</strong> for this task
+    after this point<br><br><strong>Are you sure?</strong></div>
+<script>
+    function init_dialog() {
+        console.debug('starting to initialize time_log dialog!!!');
+
+        var dialog_template_label = $('#dialog_template_label');
+        dialog_template_label.find('span').remove();
+        dialog_template_label.append('<span class="red"><i class="icon-warning-sign"></i> Warning</span>');
+
+
+        {# ***************************************************************** #}
+        {# Submit Button #}
+        $('#dialog_template_submit_button').on('click', function (e) {
+            e.stopPropagation();
+            e.preventDefault();
+
+            // disable the submit_button
+            var submit_button = $(this);
+            submit_button.button('loading');
+
+            var url;
+            url = '/tasks/{{task_id }}/request_review';
+
+            $.post(url).done(function (response) {
+                window.location.assign('{{ came_from }}');
+            }).fail(function (jqXHR) {
+                        bootbox.alert('<h6 class="red"><i class="icon-warning-sign"></i> Failed</h6>' +jqXHR.responseText);
+                        submit_button.button('reset');
+                    });
+        });
+
+
+        console.debug('finished initializing the time_log dialog!')
+    }
+</script>
+
+<script type="text/javascript">
+    function destruct_dialog() {
+
+        $('#dialog_template_submit_button').unbind();
+
+        $('#dialog_template').data('modal', null);
+
+    }
+</script>

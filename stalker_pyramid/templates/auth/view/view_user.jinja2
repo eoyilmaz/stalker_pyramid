@@ -37,30 +37,67 @@
 
         <div class="span12">
             <!--PAGE CONTENT BEGINS-->
+            <div class="row-fluid">
+
+                <div id="infobox"
+                     address='/entities/{{ entity.id }}/tasks_stats/'
+                     class="infobox-container">
+                    {% set component_id='infobox' %}
+                    {% include 'components/infobox.jinja2' %}
+                </div>
+                <div class="space"></div>
+
+                {% set collapsed='collapsed' %}
+                {% set address=request.route_path('get_user_tasks', id=entity.id) %}
+                {% set add_button_address='' %}
+                {% set list_item_type='Task' %}
+                {% include 'components/data_table.jinja2' %}
+
+
+            </div>
+
+            <div class="hr hr8 hr-double"></div>
+
+            <div class="space"></div>
 
             <div class="row-fluid">
 
                 <div class="span9">
-                    <div id="infobox"
-                         address='/entities/{{ entity.id }}/tasks_stats/'
-                         class="infobox-container"></div>
 
-                    <div class="space"></div>
-
-                    {% set collapsed='collapsed'%}
-                    {% set address=request.route_path('get_user_tasks', id=entity.id) %}
-                    {% set add_button_address='' %}
-                    {% set list_item_type='Task' %}
-                    {% include 'components/data_table.jinja2' %}
-
-                     <div class="hr hr8 hr-double"></div>
-
-                    <div class="space"></div>
 
                     <div id="calendar"></div>
 
+
                 </div>
                 <div class="span3">
+
+
+                    <div class="space"></div>
+
+                    {#                    <div class="widget-box transparent">#}
+                    {#                        <div class="widget-header widget-header-flat widget-header-small">#}
+                    {#                            <h5>#}
+                    {#                                <i class="icon-signal"></i>#}
+                    {#                                Tasks#}
+                    {#                            </h5>#}
+                    {##}
+                    {##}
+                    {#                        </div>#}
+                    {##}
+                    {#                        <div class="widget-body">#}
+                    {#                            <div class="widget-main">#}
+                    {#                                <div id="infobox1"#}
+                    {#                                     address='/entities/{{ entity.id }}/tasks_stats/'#}
+                    {#                                     class="infobox-container">#}
+                    {#                                </div>#}
+                    {##}
+                    {#                            </div>#}
+                    {#                            <!--/widget-main-->#}
+                    {#                        </div>#}
+                    {#                        <!--/widget-body-->#}
+                    {#                    </div>#}
+
+                    <div class="space"></div>
 
 
                     <div class="widget-box">
@@ -70,7 +107,6 @@
                                 Resource Efficiency
 
                             </h5>
-
 
 
                             <div class="widget-toolbar no-border">
@@ -134,11 +170,12 @@
 
         <tr>
 
-             <th>Name</th>
+            <th>Name</th>
             <th>Responsible</th>
             <th>Type</th>
             <th>Completed</th>
             <th>Status</th>
+            <th></th>
 
         </tr>
     </script>
@@ -149,7 +186,7 @@
     <script id="tmpl_itemRow" type="text/x-dot-template">
         <tr>
             <td><a href='/tasks/{{=it.id}}/view'>{{=it.name}}</a>
-            <td><a href='/tasks/{{=it.responsible_id}}/view'>{{=it.responsible_name}}</a>
+            <td><a href='/users/{{=it.responsible_id}}/view'>{{=it.responsible_name}}</a>
             <td>{{=it.type}}</td>
             <td data-sType="num-html">
                 <div class="progress progress-success">
@@ -161,6 +198,24 @@
             </td>
             <td>
                 <span class="label label-{{=it.status_color}}">{{=it.status}}</span>
+            </td>
+            <td>
+                <div class="hidden-phone visible-desktop action-buttons">
+                    <a class="blue" href='/tasks/{{=it.id}}/view'>
+                        <i class="icon-zoom-in bigger-130"></i>
+                    </a>
+
+
+                    {{ if (it.status == 'Work In Progress') { }}<a
+                        class="green"
+                        data-target="#dialog_template"
+                        data-toggle="modal"
+                        data-keyboard=false
+                        href="/tasks/{{=it.id}}/request_review/dialog">
+                    <i class="icon-comment-alt bigger-130"></i>
+                </a>{{ } }}
+
+                </div>
             </td>
 
         </tr>
@@ -177,9 +232,10 @@
 
     {% include 'charts/bar_chart.jinja2' %}
     {% include 'calendar/calendar.jinja2' %}
-    {% include 'components/infobox.jinja2' %}
+
 
     <script type="text/javascript">
+
         $(document).ready(function () {
 
             $.getJSON('/users/{{ entity.id }}/events/?keys=time_log&keys=vacation&keys=task').then(function (data) {
@@ -191,7 +247,7 @@
 
                 var ticks = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-                var colors = ['#82af6f', '#fee188','#e2e2e2'];
+                var colors = ['#82af6f', '#fee188', '#e2e2e2'];
 
                 var labels = [
                     {label: 'Worked'},

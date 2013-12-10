@@ -1,7 +1,6 @@
-{% set mode='Create' %}
 {% set user=entity %}
 
-<div class="row-fluid">
+<div class="row-fluid padding-2">
 
     <div class="span12">
         {% set mode='Create' %}
@@ -23,10 +22,12 @@
 
         {# ***************************************************************** #}
         {# Submit Button #}
-
-        $('#dialog_template_submit_button').on('click', function (e) {
+        var submit_button = $('#dialog_template_submit_button');
+        submit_button.on('click', function (e) {
             e.stopPropagation();
             e.preventDefault();
+
+            submit_button.button('loading');
 
             var user_form = $('#user_form');
 
@@ -37,12 +38,13 @@
                                 user_form.serialize()
                         ).done(function () {
 
-                            $('#dialog_template').modal('hide');
-                        }).fail(function(jqXHR){
+                            window.location.assign('{{ came_from }}');
+                        }).fail(function (jqXHR) {
+                            bootbox.alert(jqXHR.responseText);
+                            submit_button.button('reset');
+                        });
 
-                        flash_message({'container':$('#dialog_message'), 'message':jqXHR.responseText, 'title': 'FAIL', 'type': 'fail'});
 
-                });
             }
         });
 

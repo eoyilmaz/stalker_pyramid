@@ -32,7 +32,7 @@
                     data-target="#dialog_template"
                     data-toggle="modal"
                     data-keyboard="false"
-                    href='/tasks/{{ task.id }}/request_review'
+                    href='/tasks/{{ task.id }}/request_review/dialog'
                     >
                 <i class="icon-comment-alt"></i>
             </button>
@@ -66,15 +66,17 @@
                 <i class="icon-comments"></i>
             </button>
         {% endif %}
-        {% if has_permission('Update_Task') %}
+        {% if has_permission('Delete_Task') %}
             <button class="btn btn-small btn-danger tooltip-success"
+                    id="delete_task_button"
                     data-rel="tooltip"
                     data-placement="bottom"
                     title="Delete Task">
                 <i class="icon-trash"></i>
             </button>
         {% else %}
-            <button disabled="true"
+            <button
+                    disabled="true"
                     class="btn btn-small btn-danger tooltip-success"
                     data-rel="tooltip"
                     data-placement="bottom"
@@ -120,6 +122,8 @@
 <script type="text/javascript">
 
 
+
+
     $(document).ready(function () {
 
         menu_of('Dashboard',
@@ -150,8 +154,52 @@
                 '{{ task.versions | count }}'
         )
 
+        $('#delete_task_button').on('click', function (e) {
+
+
+            e.preventDefault();
+            e.stopPropagation();
+            // get the selection list
+
+
+            // warn the user about what is going to happen
+            bootbox.confirm('All the selected tasks and their child tasks and ' +
+                    'all the TimeLogs entered and all the Versions ' +
+                    'created for those tasks are going to be deleted.<br><br>' +
+                    'Are you sure?', function (result) {
+                if (result) {
+                    var id;
+                    // TODO: users will probably select parent and child items
+                    // together and server will not be able to find the child tasks
+                    // after the parent has deleted, so consider that in server
+                    // side.
+
+                    id = '{{ entity.id }}';
+                    $.post(
+                                    '/tasks/' + id + '/delete'
+                            ).done(function (response_text) {
+                                //bootbox.alert(response_text);
+                                 window.location.assign('/projects/{{ entity.project.id }}/view');
+                                // reload the gantt chart
+
+                            }).fail(function (jqXHR) {
+                                bootbox.alert(jqXHR.responseText);
+                            });
+
+                }
+            });
+
+        });
+
+
+
+
+
 
     })
+
+
+
 </script>
 
 

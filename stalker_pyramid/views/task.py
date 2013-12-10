@@ -114,10 +114,10 @@ def update_task_statuses(task):
         '%(NEW)s%(RTS)s%(WIP)s%(PREV)s%(HREV)s%(CMPL)s' % status_codes
 
     status_lut = {
-        '000000': status_new,  # this will not happen
+        '000000': status_new, # this will not happen
         '000001': status_cmpl,
 
-        '000010': status_wip,  # with the new implementation this could happen
+        '000010': status_wip, # with the new implementation this could happen
         '000011': status_wip,
 
         '000100': status_wip,
@@ -499,7 +499,8 @@ def convert_to_dgrid_gantt_task_format(tasks):
             'parent': task.parent.id if task.parent else task.project.id,
             'priority': task.priority,
             'resources': [
-                {'id': resource.id, 'name': resource.name} for resource in task.resources] if not task.is_container else [],
+                {'id': resource.id, 'name': resource.name} for resource in
+                task.resources] if not task.is_container else [],
             'responsible': {
                 'id': task.responsible.id,
                 'name': task.responsible.name
@@ -516,6 +517,7 @@ def convert_to_dgrid_gantt_task_format(tasks):
             'type': task.entity_type,
         } for task in tasks
     ]
+
 
 @view_config(
     route_name='update_task'
@@ -605,7 +607,7 @@ def update_task(request):
                   (parent.name, map(lambda x: x.name, depends))
         transaction.abort()
         return Response(message, 500)
-    # if the current parent and the previous parents are different
+        # if the current parent and the previous parents are different
     # also update the previous parents status
     if parent != prev_parent:
         update_task_statuses(prev_parent)
@@ -766,9 +768,9 @@ def raw_data_to_array(raw_data):
     if len(raw_data) > 7:  # in which case it is not '{"(,)"}'
         json_data = json.loads(
             raw_data.replace('{', '[')
-                    .replace('}', ']')
-                    .replace('(', '[')
-                    .replace(')', ']')
+            .replace('}', ']')
+            .replace('(', '[')
+            .replace(')', ']')
         )  # it is an array of string
         for j in json_data:
             d = j[1:-1].split(',')
@@ -963,9 +965,11 @@ def get_tasks(request):
                 content_range = content_range % (0, 1, 1)
             else:
                 convert_data = Project.query.all()
-                return_data = convert_to_dgrid_gantt_project_format(convert_data)
+                return_data = convert_to_dgrid_gantt_project_format(
+                    convert_data)
                 # just return here to avoid any further error
-                content_range = content_range % (0, len(convert_data)-1, len(convert_data))
+                content_range = content_range % (
+                0, len(convert_data) - 1, len(convert_data))
             resp = Response(
                 json_body=return_data
             )
@@ -1378,7 +1382,7 @@ def get_user_tasks(request):
             'responsible_name': task.responsible.name,
             'responsible_id': task.responsible.id,
             'percent_complete': task.percent_complete,
-            'type':  task.type.name if task.type else '',
+            'type': task.type.name if task.type else '',
             'status': task.status.name,
             'status_color': task.status.html_class,
             'name': '%s (%s)' % (
@@ -1646,8 +1650,8 @@ def create_task(request):
     kwargs['parent'] = parent
 
     # get the status_list
-    status_list = StatusList.query\
-        .filter_by(target_entity_type=entity_type)\
+    status_list = StatusList.query \
+        .filter_by(target_entity_type=entity_type) \
         .first()
 
     logger.debug('status_list: %s' % status_list)
@@ -1782,6 +1786,21 @@ def auto_schedule_tasks(request):
 
 
 @view_config(
+    route_name='request_review_dialog',
+    renderer='templates/task/dialog/request_review_dialog.jinja2'
+)
+def request_review_dialog(request):
+    task_id = request.matchdict.get('id')
+    came_from = request.params.get('came_from', '/')
+
+
+    return {
+        'came_from': came_from,
+        'task_id': task_id
+    }
+
+
+@view_config(
     route_name='request_review',
 )
 def request_review(request):
@@ -1789,6 +1808,7 @@ def request_review(request):
     """
     # get logged in user as he review requester
     logged_in_user = get_logged_in_user(request)
+
 
     task_id = request.matchdict.get('id', -1)
     logger.debug('task_id : %s' % task_id)
@@ -1812,7 +1832,7 @@ def request_review(request):
 
     # check if the user is one of the resources of this task or the responsible
     if logged_in_user not in task.resources and \
-       logged_in_user != task.responsible:
+                    logged_in_user != task.responsible:
         transaction.abort()
         return Response('You are not one of the resources nor the '
                         'responsible of this task, so you can not request a '
@@ -1918,6 +1938,10 @@ def request_review(request):
             html=description_html)
         mailer.send(message)
 
+
+    request.session.flash(
+                'success:Your review request has been sent to %s' % responsible.name)
+
     return Response('Your review request has been sent to %s' %
                     responsible.name)
 
@@ -1944,7 +1968,7 @@ def request_extra_time(request):
         if task.is_container:
             transaction.abort()
             return Response('Can not request extra time for a container '
-                                'task', 500)
+                            'task', 500)
 
         # TODO: increase task extra time request counter
 
@@ -1952,22 +1976,22 @@ def request_extra_time(request):
             # get the project that the ticket belongs to
             summary_text = 'Extra Time Request: "%s"' % task.name
             description_text = \
-            """%(user_name)s has requested %(extra_time)s extra hours for 
-            %(task_name)s (%(task_link)s)" """ % {
-                "user_name": logged_in_user.name,
-                "extra_time": extra_time,
-                "task_name": task.name,
-                "task_link": request.route_url('view_task', id=task.id)
-            }
+                """%(user_name)s has requested %(extra_time)s extra hours for
+                %(task_name)s (%(task_link)s)" """ % {
+                    "user_name": logged_in_user.name,
+                    "extra_time": extra_time,
+                    "task_name": task.name,
+                    "task_link": request.route_url('view_task', id=task.id)
+                }
 
             description_html = \
-            """%(user_name)s has requested %(extra_time)s extra hours for 
-            %(task_name)s (%(task_link)s)" """ % {
-                "user_name": logged_in_user.name,
-                "extra_time": extra_time,
-                "task_name": task.name,
-                "task_link": request.route_url('view_task', id=task.id)
-            }
+                """%(user_name)s has requested %(extra_time)s extra hours for
+                %(task_name)s (%(task_link)s)" """ % {
+                    "user_name": logged_in_user.name,
+                    "extra_time": extra_time,
+                    "task_name": task.name,
+                    "task_link": request.route_url('view_task', id=task.id)
+                }
 
             responsible = task.responsible
 
@@ -2090,7 +2114,7 @@ def request_revision(request):
         task.schedule_timing += schedule_timing * studio.weekly_working_hours
     elif schedule_unit == 'm':
         task.schedule_timing += schedule_timing * 4 * \
-            studio.weekly_working_hours
+                                studio.weekly_working_hours
     elif schedule_unit == 'y':
         task.schedule_timing += \
             int(schedule_timing * studio.yearly_working_days *
@@ -2106,25 +2130,25 @@ def request_revision(request):
         summary_text = 'Revision Request: "%s"' % task.name
 
         description_text = \
-        '%(requester_name)s has requested a revision to the task' \
-        '%(task_name)s on %(task_link)s and expanded the timing of the task ' \
-        'by %(timing) %(unit). The following description is supplied for ' \
-        'the revision request:\n\n' \
-        '%(description)s' % {
-            "requester_name": logged_in_user.name,
-            "task_name": task.name,
-            "task_link": request.route_url('view_task', id=task.id),
-            "timing": schedule_timing,
-            "unit": {
-                'h': 'hours',
-                'd': 'days',
-                'w': 'weeks',
-                'm': 'months',
-                'y': 'years'
-            }[schedule_unit],
-            "description": description
-            if description else "(No Description)"
-        }
+            '%(requester_name)s has requested a revision to the task' \
+            '%(task_name)s on %(task_link)s and expanded the timing of the task ' \
+            'by %(timing) %(unit). The following description is supplied for ' \
+            'the revision request:\n\n' \
+            '%(description)s' % {
+                "requester_name": logged_in_user.name,
+                "task_name": task.name,
+                "task_link": request.route_url('view_task', id=task.id),
+                "timing": schedule_timing,
+                "unit": {
+                    'h': 'hours',
+                    'd': 'days',
+                    'w': 'weeks',
+                    'm': 'months',
+                    'y': 'years'
+                }[schedule_unit],
+                "description": description
+                if description else "(No Description)"
+            }
 
         responsible = task.responsible
         # send email to responsible and resources of the task
@@ -2356,7 +2380,7 @@ def get_task_depends(request):
     task_id = request.matchdict.get('id', -1)
     task = Task.query.filter_by(id=task_id).first()
 
-    depends =[]
+    depends = []
     for dep_task in task.depends:
         resources = []
 
