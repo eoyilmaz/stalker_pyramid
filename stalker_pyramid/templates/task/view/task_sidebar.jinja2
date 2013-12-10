@@ -23,7 +23,7 @@
             </button>
         {% endif %}
 
-        {% if logged_in_user in entity.resources  and entity.status.code == 'WIP' %}
+        {% if (logged_in_user in entity.resources or logged_in_user == entity.responsible) and entity.status.code == 'WIP' and entity.is_leaf %}
             <button id='task_request_review_button'
                     class="btn btn-small btn-warning tooltip-success"
                     data-rel="tooltip"

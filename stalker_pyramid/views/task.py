@@ -1358,6 +1358,7 @@ def get_user_tasks(request):
     """returns all the tasks in the database related to the given entity in
     flat json format
     """
+    logged_in_user = get_logged_in_user(request)
     # get all the tasks related in the given project
     user_id = request.matchdict.get('id', -1)
     user = User.query.filter_by(id=user_id).first()
@@ -1379,6 +1380,7 @@ def get_user_tasks(request):
             'responsible_id': task.responsible.id,
             'percent_complete': task.percent_complete,
             'type':  task.type.name if task.type else '',
+            'request_review': '1' if ((logged_in_user in task.resources or logged_in_user == task.responsible) and task.status.code == 'WIP' and task.is_leaf) else None,
             'status': task.status.name,
             'status_color': task.status.html_class,
             'name': '%s (%s)' % (
