@@ -34,7 +34,7 @@ from stalker.db import DBSession
 from stalker_pyramid.views import (log_param, get_logged_in_user,
                                    PermissionChecker, get_multi_integer,
                                    get_tags, milliseconds_since_epoch,
-                                   multi_permission_checker)
+                                   multi_permission_checker, StdErrToHTMLConverter)
 
 import logging
 
@@ -913,3 +913,52 @@ def get_resources(request):
     )
     resp.content_range = content_range
     return resp
+
+
+
+@view_config(
+    route_name='delete_user_dialog',
+    renderer='templates/modals/confirm_dialog.jinja2'
+)
+def delete_user_dialog(request):
+    """deletes the user with the given id
+    """
+    logger.debug('delete_user_dialog is starts')
+
+    user_id = request.matchdict.get('id')
+    action = '/users/%s/delete'% user_id
+
+    came_from = request.params.get('came_from', request.current_route_path())
+
+    logger.debug('action: %s' % action)
+
+    return {
+            'came_from': came_from,
+            'action': action
+        }
+
+
+@view_config(
+    route_name='delete_user',
+    permission='Delete_User'
+)
+def delete_user(request):
+    """deletes the user with the given id
+    """
+    user_id = request.matchdict.get('id')
+    user = User.query.get(user_id)
+
+    if not user:
+        transaction.abort()
+        return Response('Can not find a User with id: %s' % user_id, 500)
+
+    try:
+        DBSession.delete(user)
+        transaction.commit()
+    except Exception as e:
+        transaction.abort()
+        c = StdErrToHTMLConverter(e)
+        transaction.abort()
+        return Response(c.html(), 500)
+
+    return Response('Successfully deleted user: %s' % user_id)

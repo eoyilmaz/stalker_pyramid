@@ -86,6 +86,8 @@
                         data[i].thumbnail_full_path = '/' + data[i].thumbnail_full_path;
                     }
 
+                    data[i].came_from= '{{ request.current_route_path() }}'
+
                     // append it to the table
                     table_body.append(row_template(data[i]));
                 }

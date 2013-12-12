@@ -20,6 +20,7 @@
 import datetime
 
 from pyramid.httpexceptions import HTTPOk, HTTPServerError, HTTPFound
+from pyramid.security import has_permission
 from pyramid.view import view_config
 
 from stalker.db import DBSession
@@ -30,7 +31,7 @@ import transaction
 from webob import Response
 import stalker_pyramid
 from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
-                                   log_param, get_tags)
+                                   log_param, get_tags, StdErrToHTMLConverter)
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.WARNING)
@@ -268,8 +269,14 @@ def get_entity_departments(request):
     entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
 
-    return [
-        {
+    update_department_permission = PermissionChecker(request)('Update_Department')
+    delete_department_permission = PermissionChecker(request)('Delete_Department')
+
+
+    departments =[]
+
+    for department in entity.departments:
+        dep = {
             'name': department.name,
             'id': department.id,
             'lead_id': department.lead.id if department.lead else None,
@@ -278,11 +285,75 @@ def get_entity_departments(request):
             'created_by_id': department.created_by.id,
             'created_by_name': department.created_by.name,
             'users_count': len(department.users)
-
-
         }
-        for department in entity.departments
-    ]
+        if update_department_permission:
+                dep[ 'update_department_action']= '/departments/%s/update/dialog' % department.id
+        if delete_department_permission:
+                dep['delete_department_action']= '/departments/%s/delete/dialog' % department.id
+
+        departments.append(dep)
+
+    return departments
+
+
+@view_config(
+    route_name='delete_department_dialog',
+    renderer='templates/modals/confirm_dialog.jinja2'
+)
+def delete_department_dialog(request):
+    """deletes the department with the given id
+    """
+    logger.debug('delete_department_dialog is starts')
+
+    department_id = request.matchdict.get('id')
+    department = Department.query.get(department_id)
+
+    action = '/departments/%s/delete'% department_id
+
+    came_from = request.params.get('came_from', '/')
+
+    message = 'Are you sure you want to <strong>delete %s Department</strong>?'% department.name
+
+    logger.debug('action: %s' % action)
+
+    return {
+            'message': message,
+            'came_from': came_from,
+            'action': action
+        }
+
+
+
+@view_config(
+    route_name='delete_department',
+    permission='Delete_Department'
+)
+def delete_department(request):
+    """deletes the department with the given id
+    """
+    department_id = request.matchdict.get('id')
+    department = Department.query.get(department_id)
+    name = department.name
+
+    if not department:
+        transaction.abort()
+        return Response('Can not find a Department with id: %s' % department_id, 500)
+
+    try:
+        DBSession.delete(department)
+        transaction.commit()
+    except Exception as e:
+        transaction.abort()
+        c = StdErrToHTMLConverter(e)
+        transaction.abort()
+        return Response(c.html(), 500)
+
+    request.session.flash(
+                'success: <strong>%s Department</strong> is deleted successfully' % name
+            )
+
+    return Response('Successfully deleted department: %s' % department_id)
+
 
 
 

@@ -32,7 +32,7 @@
                     data-target="#dialog_template"
                     data-toggle="modal"
                     data-keyboard="false"
-                    href='/tasks/{{ task.id }}/request_review/dialog'
+                    href='/tasks/{{ task.id }}/request_review/dialog?came_from={{ request.current_route_path() }}'
                     >
                 <i class="icon-comment-alt"></i>
             </button>
@@ -143,6 +143,15 @@
         '{{ request.route_url('list_entity_tasks', id=task.id) }}',
                 'icon-tasks',
                 '{{ task.tasks | count }}'
+        )
+
+        menu_of('Tickets',
+                "
+        {%- if request.current_route_path() == request.route_path('list_task_tickets', id=task.id) -%}
+            'active',{%- else -%},{%- endif -%}",
+        '{{ request.route_url('list_task_tickets', id=task.id) }}',
+                'icon-ticket',
+                '{{ task.versions | count }}'
         )
 
         menu_of('Versions',

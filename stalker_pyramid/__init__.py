@@ -339,6 +339,9 @@ def main(global_config, **settings):
     config.add_route('view_user_versions',    'users/{id}/versions/view')
     config.add_route('view_user_tickets',     'users/{id}/tickets/view')
 
+    config.add_route('delete_user', 'users/{id}/delete')
+    config.add_route('delete_user_dialog', 'users/{id}/delete/dialog')
+
     config.add_route('check_login_availability', 'check_availability/login/{login}')
     config.add_route('check_email_availability', 'check_availability/email/{email}')
 
@@ -550,6 +553,9 @@ def main(global_config, **settings):
     config.add_route('list_department_users', 'departments/{id}/users/list')
     config.add_route('list_department_tasks', 'departments/{id}/tasks/list')
 
+    config.add_route('delete_department', 'departments/{id}/delete')
+    config.add_route('delete_department_dialog', 'departments/{id}/delete/dialog')
+
     config.add_route('get_department_tasks',  'departments/{id}/tasks/')
 
     config.add_route('append_departments',   'departments/{id}/append')  # TODO: this was not clear
@@ -572,6 +578,9 @@ def main(global_config, **settings):
     config.add_route('list_groups',         'groups/list')
     config.add_route('list_group_users',    'groups/{id}/users/list')
     config.add_route('list_group_permissions',    'groups/{id}/permissions/list')  # html
+
+    config.add_route('delete_group_dialog', 'groups/{id}/delete/dialog')
+    config.add_route('delete_group', 'groups/{id}/delete')
 
     config.add_route('get_group_permissions',    'groups/{id}/permissions/')  # html
 

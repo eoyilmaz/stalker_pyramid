@@ -34,7 +34,7 @@ from stalker import (defaults, User, Department, Group, Project, Entity,
                      Studio, Permission, EntityType, Task)
 from stalker.db import DBSession
 from stalker_pyramid.views import (log_param, get_logged_in_user,
-                                   PermissionChecker, get_multi_integer, get_tags, milliseconds_since_epoch)
+                                   PermissionChecker, get_multi_integer, get_tags, milliseconds_since_epoch, StdErrToHTMLConverter)
 
 import logging
 from stalker_pyramid.views.auth import logout, get_permissions_from_multi_dict
@@ -397,6 +397,8 @@ def get_group_permissions(request):
 def get_groups(request):
     """returns all the groups in database
     """
+    update_group_permission = PermissionChecker(request)('Update_Department')
+    delete_group_permission = PermissionChecker(request)('Delete_Department')
 
     return [
         {
@@ -405,7 +407,10 @@ def get_groups(request):
             'thumbnail_full_path': group.thumbnail.full_path if group.thumbnail else None,
             'created_by_id': group.created_by.id,
             'created_by_name': group.created_by.name,
-            'users_count': len(group.users)
+            'users_count': len(group.users),
+            'update_group_action': '/groups/%s/update/dialog' % group.id if update_group_permission else None,
+            'delete_group_action': '/groups/%s/delete/dialog' % group.id if delete_group_permission else None
+
         }
         for group in Group.query.order_by(Group.name.asc()).all()
     ]
@@ -422,6 +427,7 @@ def get_group(request):
     group_id = request.matchdict.get('id', -1)
     group = Group.query.filter_by(id=group_id).first()
 
+
     return [
         {
             'id': group.id,
@@ -429,7 +435,8 @@ def get_group(request):
             'thumbnail_full_path': group.thumbnail.full_path if group.thumbnail else None,
             'created_by_id': group.created_by.id,
             'created_by_name': group.created_by.name,
-            'users_count': len(group.users)
+            'users_count': len(group.users),
+
         }
     ]
 
@@ -450,6 +457,9 @@ def get_entity_groups(request):
     entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
 
+    update_group_permission = PermissionChecker(request)('Update_Department')
+    delete_group_permission = PermissionChecker(request)('Delete_Department')
+
     return [
         {
             'id': group.id,
@@ -457,10 +467,69 @@ def get_entity_groups(request):
             'thumbnail_full_path': group.thumbnail.full_path if group.thumbnail else None,
             'created_by_id': group.created_by.id,
             'created_by_name': group.created_by.name,
-            'users_count': len(group.users)
+            'users_count': len(group.users),
+            'update_group_action': '/groups/%s/update/dialog' % group.id if update_group_permission else None,
+            'delete_group_action': '/groups/%s/delete/dialog' % group.id if delete_group_permission else None
         }
         for group in sorted(entity.groups, key=lambda x: x.name.lower())
     ]
 
 
+@view_config(
+    route_name='delete_group_dialog',
+    renderer='templates/modals/confirm_dialog.jinja2'
+)
+def delete_group_dialog(request):
+    """deletes the group with the given id
+    """
+    logger.debug('delete_group_dialog is starts')
 
+    group_id = request.matchdict.get('id')
+    group = Group.query.get(group_id)
+    action = '/groups/%s/delete'% group_id
+
+    came_from = request.params.get('came_from', '/')
+
+    message = 'Are you sure you want to <strong>delete %s Group</strong>?'% group.name
+
+    logger.debug('action: %s' % action)
+
+    return {
+            'message': message,
+            'came_from': came_from,
+            'action': action
+        }
+
+
+
+
+
+@view_config(
+    route_name='delete_group',
+    permission='Delete_Group'
+)
+def delete_group(request):
+    """deletes the group with the given id
+    """
+    group_id = request.matchdict.get('id')
+    group = Group.query.get(group_id)
+    name=group.name
+
+    if not group:
+        transaction.abort()
+        return Response('Can not find a Group with id: %s' % group_id, 500)
+
+    try:
+        DBSession.delete(group)
+        transaction.commit()
+    except Exception as e:
+        transaction.abort()
+        c = StdErrToHTMLConverter(e)
+        transaction.abort()
+        return Response(c.html(), 500)
+
+    request.session.flash(
+                'success:<strong>%s Group</strong> is deleted successfully' % name
+            )
+
+    return Response('Successfully deleted group: %s' % group_id)

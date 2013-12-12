@@ -51,6 +51,8 @@
         <th>Group</th>
         <th>Created By</th>
         <th>Users</th>
+        <th></th>
+
     </tr>
     </script>
     {% endraw %}
@@ -67,6 +69,23 @@
             <td><a href='/users/{{=it.created_by_id}}/view'>{{=it.created_by_name}}</a>
             </td>
             <td>{{=it.users_count}}</td>
+             <td>
+                  {{ if (it.update_group_action) { }}
+                <a  class="blue"
+
+                    href="{{=it.update_group_action}}">
+                    <i class="icon-edit bigger-130"></i>
+                </a>{{ } }}
+
+                {{ if (it.delete_group_action) { }}
+                <a  class="red"
+                    data-target="#dialog_template"
+                    data-toggle="modal"
+                    data-keyboard=false
+                    href="{{=it.delete_group_action}}?came_from={{=it.came_from }}">
+                    <i class="icon-trash bigger-130"></i>
+                </a>{{ } }}
+            </td>
         </tr>
     </script>
     {% endraw %}

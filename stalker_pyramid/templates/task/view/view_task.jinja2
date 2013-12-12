@@ -91,7 +91,7 @@
                                             data-target="#dialog_template"
                                             data-toggle="modal"
                                             data-keyboard="false"
-                                            href='{{ request.route_url("request_review_dialog", id=entity.id) }}'
+                                            href='/tasks/{{ entity.id }}/request_review/dialog?came_from={{ request.current_route_path() }}'
                                             >
                                         <i class="icon-comment-alt"></i>
                                         Request Review
