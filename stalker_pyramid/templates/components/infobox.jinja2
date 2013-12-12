@@ -6,18 +6,23 @@
             <div class="infobox-content">{{=it.name }}</div>
         </div>
     </div>
+
 </script>
 {% endraw %}
 
 <script class="code" type="text/javascript">
     $(document).ready(function () {
 
-        var infobox = $('#infobox');
+
+        var infobox = $('#'+'{{ component_id }}');
         var infobox_template = doT.template($('#tmpl_infobox').html());
 
         $.getJSON(infobox.attr('address')).then(function (data) {
             for (var i = 0; i < data.length; i++) {
+
                 infobox.append(infobox_template(data[i]));
+
+
             }
         })
 
