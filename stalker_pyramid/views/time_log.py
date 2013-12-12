@@ -167,7 +167,7 @@ def create_time_log(request):
             status_hrev = \
                 Status.query.filter(Status.code == "HREV").first()
 
-            # check if the task status is not completed
+            # check if the task status is not new or completed
             if task.status not in [status_rts, status_wip, status_hrev]:
                 DBSession.rollback()
                 # it is not possible to create a time log for completed tasks

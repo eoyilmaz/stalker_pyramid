@@ -1861,7 +1861,10 @@ def request_review(request):
             "task_parent_names": task_parent_names
         }
 
-    summary_text = 'Review Request: "%s"' % task.name
+    summary_text = 'Review Request: "%(name)s" (%(parent_names)s)' % {
+        'name': task.name,
+        'parent_names': task_parent_names
+    }
     description_template = \
         '%(user)s has requested you to do a review for ' \
         '%(task)s'
