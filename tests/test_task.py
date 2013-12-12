@@ -1111,6 +1111,7 @@ class TaskViewTestCase(unittest2.TestCase):
                                u'- (Test Task 1)</a>'
             }
         )
+
     def test_request_revision_returns_code_500_if_no_task_found(self):
         """testing if a response with code 500 is returned back when there is
         no such task
@@ -1663,6 +1664,42 @@ class TaskViewTestCase(unittest2.TestCase):
             new_task.status
         )
 
+    def test_create_task_updates_the_status_correctly(self):
+        """testing if create_task() will create new tasks with correct status
+        """
+        request = testing.DummyRequest()
+        request.params = DummyMultiDict()
+        request.POST = request.params
+        request.params['project_id'] = self.test_project1.id
+        request.params['name'] = 'New Task 1'
+        request.params['entity_type'] = 'Task'
+        request.params['schedule_timing'] = 1.0
+        request.params['schedule_unit'] = 'h'
+        request.params['schedule_model'] = 'effort'
+        request.params['dependent_ids'] = []
+
+        # patch get_logged_in_user
+        admin = User.query.filter(User.login == 'admin').first()
+        m = mocker.Mocker()
+        obj = m.replace("stalker_pyramid.views.auth.get_logged_in_user")
+        obj(request)
+        m.result(admin)
+        m.replay()
+
+        # now create the task
+        response = task.create_task(request)
+        self.assertEqual(response.status_int, 200)
+
+        # find the newly created task
+        new_task = Task.query.filter(Task.name == 'New Task 1').first()
+        self.assertIsNotNone(new_task)
+
+        # now check the status
+        self.assertEqual(
+            self.status_rts,
+            new_task.status
+        )
+
     def test_review_task_changes_dependent_task_statuses_to_rts_if_completed(self):
         """testing if review_task() will change the dependent task statuses
         from new to rts if the current task is completed and there are no other
@@ -2058,4 +2095,3 @@ class TaskViewTestCase(unittest2.TestCase):
         parent status is updated correctly
         """
         self.fail('test is not implemented yet')
-
