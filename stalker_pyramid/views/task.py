@@ -220,8 +220,7 @@ def update_task_statuses_with_dependencies(task):
     if task.status == status_new:
         # check all of its dependencies
         # and decide if it is ready to start or not
-        if all([dep.status == status_cmpl or dep.status == status_hrev
-                for dep in task.depends]):
+        if all([dep.status == status_cmpl for dep in task.depends]):
             task.status = status_rts
 
 
@@ -1678,6 +1677,7 @@ def create_task(request):
     if depends:
         for dependent_task in depends:
             if dependent_task.status != status_cmpl:
+                # TODO: use update_task_statuses_with_dependencies()
                 status = status_new
 
     logger.debug('status: %s' % status)
