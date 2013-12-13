@@ -236,7 +236,11 @@
 
     <script type="text/javascript">
 
+
+
         $(document).ready(function () {
+
+
 
             $.getJSON('/users/{{ entity.id }}/events/?keys=time_log&keys=vacation&keys=task').then(function (data) {
                 var events = [];

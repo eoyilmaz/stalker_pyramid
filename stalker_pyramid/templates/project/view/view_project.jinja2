@@ -145,6 +145,8 @@
 
         // fill projects table with dynamic data
         $(document).ready(function () {
+
+
             var loadTableData = function (address, tableId, spinnerId) {
                 $.getJSON(address).then(function (data) {
                     var task_template = doT.template($('#tmpl_taskRow').html());
