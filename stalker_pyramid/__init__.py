@@ -320,6 +320,8 @@ def main(global_config, **settings):
     config.add_route('get_user_vacations',    'users/{id}/vacations/')  # json
     config.add_route('get_user_vacations_count', 'users/{id}/vacations/count/')  # json
     config.add_route('get_user_tickets',      'users/{id}/tickets/')  # json
+    config.add_route('get_user_open_tickets',  'users/{id}/open_tickets/')  # json
+
     config.add_route('get_user_events',       'users/{id}/events/')  # json
     # config.add_route('get_user_worked_hours', 'users/{id}/{frequency}/worked_hours/')  # json
     config.add_route('get_resources',         'resources/')

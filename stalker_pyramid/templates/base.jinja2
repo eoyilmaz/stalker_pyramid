@@ -221,6 +221,7 @@
 
     {% raw %}
     <script id="tmpl_sidebar_tree_sublink" type="text/x-dot-template">
+
         <li>
             <a href={{=it.link}}>
                 <i class="icon-double-angle-right"></i>
@@ -237,7 +238,7 @@
             <a href={{=it.link}}>
                 <i class={{=it.icon}}></i>
                 <span class="menu-text">{{=it.title}}</span>
-                <span id="{{= it.title }}_count" class="badge {{ if (it.count > 0) { }}badge-important{{ } else { }}badge-success{{ } }}">{{=it.count}}</span>
+                <span id="{{=it.title }}_count" class="badge {{ if (it.count > 0) { }}badge-important{{ } else { }}badge-success{{ } }}">{{=it.count}}</span>
             </a>
         </li>
     </script>

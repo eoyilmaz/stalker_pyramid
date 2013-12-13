@@ -296,14 +296,15 @@ function init_dialog() {
                 var delete_button = $(this);
                 delete_button.button('loading');
 
-                bootbox.confirm('This time log will be deleted <br><br>Are you sure?', function (result) {
+                bootbox.confirm('<h3 class="header red"><i class="icon-warning-sign"></i> Warning</h3>' +
+                        '<div id="message" class="alert alert-info bigger-110">Are you sure you want to  delete this time log?</div>', function (result) {
                     if (result) {
                         $.post('/time_logs/{{ time_log.id}}/delete'
                         ).done(function (response_text) {
-                            bootbox.alert(response_text);
+                            bootbox.alert('<div id="message" class="alert alert-success bigger-110">'+response_text+'</div>');
                             window.location.assign('{{ came_from }}');
                         }).fail(function (jqXHR) {
-                            bootbox.alert(jqXHR.responseText);
+                            bootbox.alert('<div id="message" class="alert alert-danger bigger-110">'+jqXHR.responseText+'</div>');
                             delete_button.button('reset');
                         });
                     } else {
@@ -439,7 +440,7 @@ function init_dialog() {
             ).done(function () {
                 window.location.assign('{{ came_from }}');
             }).fail(function (jqXHR) {
-                bootbox.alert(jqXHR.responseText);
+                bootbox.alert('<div id="message" class="alert alert-danger bigger-110">'+jqXHR.responseText+'</div>');
                 submit_button.button('reset');
             });
         }
