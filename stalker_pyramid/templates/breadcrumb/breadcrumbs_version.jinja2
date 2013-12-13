@@ -1,0 +1,23 @@
+<ul id="breadcrumb_version" class="breadcrumb">
+
+    <li>
+        <a href="{{ request.route_url('view_task', id=entity.task.id) }}">{{ entity.task.name }}</a>
+        <span class="divider">
+          <i class="icon-angle-right arrow-icon"></i>
+        </span>
+    </li>
+
+    <li>
+        <a href="{{ request.route_url('list_task_versions', id=entity.task.id) }}">Versions</a>
+        <span class="divider">
+            <i class="icon-angle-right arrow-icon"></i>
+        </span>
+    </li>
+
+    <li class="active">{{ entity.version_number }}
+
+    </li>
+</ul>
+<!--.breadcrumb-->
+
+

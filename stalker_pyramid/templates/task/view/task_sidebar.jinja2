@@ -1,6 +1,5 @@
 {# Render Task Side Bar #}
 
-{% set task=entity %}
 
 <div class="sidebar-shortcuts" id="sidebar-shortcuts">
     <div class="sidebar-shortcuts-large" id="sidebar-shortcuts-large">
@@ -8,7 +7,7 @@
             <button data-target="#dialog_template"
                     data-toggle="modal"
                     data-keyboard="false"
-                    href='{{ request.route_url("update_task_dialog", id=entity.id) }}'
+                    href='{{ request.route_url("update_task_dialog", id=task.id) }}'
                     class="btn btn-small btn-info tooltip-info"
                     data-rel="tooltip" data-placement="bottom"
                     title="Update Task">
@@ -23,7 +22,7 @@
             </button>
         {% endif %}
 
-        {% if (logged_in_user in entity.resources or logged_in_user == entity.responsible) and entity.status.code == 'WIP' and entity.is_leaf %}
+        {% if (logged_in_user in task.resources or logged_in_user == task.responsible) and task.status.code == 'WIP' and task.is_leaf %}
             <button id='task_request_review_button'
                     class="btn btn-small btn-warning tooltip-success"
                     data-rel="tooltip"
@@ -45,7 +44,7 @@
             </button>
         {% endif %}
 
-        {% if entity.responsible == logged_in_user and entity.status.code == 'PREV' %}
+        {% if task.responsible == logged_in_user and task.status.code == 'PREV' %}
             <button id='task_review_button'
                     class="btn btn-small btn-success tooltip-success"
                     data-rel="tooltip"
@@ -54,7 +53,7 @@
                     data-target="#dialog_template"
                     data-toggle="modal"
                     data-keyboard="false"
-                    href='{{ request.route_url("review_task_dialog", id=entity.id) }}'
+                    href='{{ request.route_url("review_task_dialog", id=task.id) }}'
                     >
                 <i class="icon-comments"></i>
             </button>
@@ -104,7 +103,7 @@
 
 <script type="text/javascript">
     $(function () {
-        $.getJSON('/entities/{{ entity.id }}/references/count/').then(function (data) {
+        $.getJSON('/entities/{{ task.id }}/references/count/').then(function (data) {
             $('#reference_count').text(data);
 
             menu_of('References',
@@ -183,12 +182,12 @@
                     // after the parent has deleted, so consider that in server
                     // side.
 
-                    id = '{{ entity.id }}';
+                    id = '{{ task.id }}';
                     $.post(
                                     '/tasks/' + id + '/delete'
                             ).done(function (response_text) {
                                 //bootbox.alert(response_text);
-                                 window.location.assign('/projects/{{ entity.project.id }}/view');
+                                 window.location.assign('/projects/{{ task.project.id }}/view');
                                 // reload the gantt chart
 
                             }).fail(function (jqXHR) {

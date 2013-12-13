@@ -48,6 +48,24 @@
                     <div id="calendar"></div>
 
                 </div>
+
+                <div class="span3">
+
+                    <div class="row-fluid">
+                        <div id="vacations_box"
+                             class="widget-box hide">
+                            <div class="widget-header header-color-orange">
+                                <h4 class="smaller"><i class="icon-sun"></i>Vacation Types</h4>
+                            </div>
+                            <div class="widget-body">
+                                <div class="widget-main padding-12">
+                                    <div id="vacation_tree"
+                                         class="tree"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
             <!--PAGE CONTENT ENDS-->
         </div>
@@ -64,6 +82,7 @@
     {% set event_type='Vacation' %}
 
     {% include 'calendar/calendar.jinja2' %}
+    {% include 'components/tree.jinja2' %}
 
     <script type="text/javascript">
         $(document).ready(function () {
@@ -72,6 +91,7 @@
 
 
                 var events = [];
+                var vacations_types = new Object();
 
                 for (var i = 0; i < data.length; i++) {
 
@@ -89,6 +109,43 @@
                         allDay: data[i].allDay
                     };
 
+                    var vtype = data[i].title;
+
+                    console.debug(vacations_types)
+
+
+                    end_date.setHours(0);
+                    start_date.setHours(0);
+
+                    var total_day = (end_date.getTime()-start_date.getTime())/1000/3600/24 + 1;
+
+                    if (!vacations_types [vtype]) {
+                        vacations_types [vtype] = {
+                            'name': data[i].title,
+                            'type': 'folder',
+                            'icon-class': 'blue',
+                            'total_day': 0
+                        }
+                    }
+
+                    vacations_types [vtype].total_day +=total_day
+
+                    vacations_types [vtype].name = data[i].title +' ( '+ vacations_types [vtype].total_day + ' days)'
+
+
+
+                    if (!vacations_types [vtype]['additionalParameters']) {
+                        vacations_types [vtype]['additionalParameters'] = new Object();
+                        vacations_types [vtype]['additionalParameters']['children'] = new Object();
+                    }
+
+
+
+
+
+                    vacations_types [vtype]['additionalParameters']['children'][(data[i].id).toString()] = {name: '<span  class="pull-left">'+ start_date.format('yyyy-mm-dd') +' - '+end_date.format('yyyy-mm-dd')+' ( '+total_day+' days )' +'</span>', type: 'item'}
+
+                    $('#vacations_box').show();
 
 
                     events.push(event);
@@ -96,6 +153,7 @@
                 }
 
                 drawCalendar('calendar', events);
+                drawTree('vacation_tree', vacations_types);
 
 
             });

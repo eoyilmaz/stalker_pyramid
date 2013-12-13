@@ -258,24 +258,24 @@ def get_entity_versions(request):
     } for version in entity.versions]
 
 
-@view_config(
-    route_name='view_version',
-    renderer='templates/version/page_view_version.jinja2'
-)
-def view_version(request):
-    """lists the versions of the given task
-    """
-
-    logger.debug('view_version is running')
-
-    version_id = request.matchdict.get('id', -1)
-    version = Version.query.filter_by(id=version_id).first()
-
-    logger.debug('version_id : %s' % version_id)
-    return {
-        'version': version,
-        'has_permission': PermissionChecker(request)
-    }
+# @view_config(
+#     route_name='view_version',
+#     renderer='templates/version/view/view_version.jinja2'
+# )
+# def view_version(request):
+#     """lists the versions of the given task
+#     """
+#
+#     logger.debug('view_version is running')
+#
+#     version_id = request.matchdict.get('id', -1)
+#     version = Version.query.filter_by(id=version_id).first()
+#
+#     logger.debug('version_id : %s' % version_id)
+#     return {
+#         'version': version,
+#         'has_permission': PermissionChecker(request)
+#     }
 
 
 @view_config(
