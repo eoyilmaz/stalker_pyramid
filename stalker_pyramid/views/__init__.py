@@ -27,7 +27,7 @@ from pyramid.view import view_config
 from pyramid.response import Response
 from pyramid.security import has_permission, authenticated_userid
 
-from stalker import log, User, Tag, Status
+from stalker import log, User, Tag
 from stalker.db import DBSession
 import transaction
 

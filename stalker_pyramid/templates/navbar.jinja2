@@ -221,7 +221,7 @@
             var row_template = doT.template($('#tmpl_notificationRow').html());
 
             $(function () {
-                var notifications_list = $('#notifications>ul');
+                var notifications_list = $('#notifications').find('ul');
                 notifications_list.append('<li class="nav-header"><i class="icon-warning-sign"></i>' + total_tickets + '  Tickets</li>');
 
                 var i = 0;
@@ -241,46 +241,5 @@
             $('#nav_bar_task_count').text(data);
         })
     });
-
-
-{#    $(document).ready(function () {#}
-{##}
-{#        $.getJSON('/users/{{ logged_in_user.id }}/tasks/').then(function (data) {#}
-{##}
-{#            var tasks = $('#tasks_of_logged_in_user');#}
-{#            var total_tasks = data.length;#}
-{##}
-{#            tasks.append('<a data-toggle="dropdown" class="dropdown-toggle" href="#"><i class="icon-tasks"></i><span class="badge badge-grey badge-yellow">' + total_tasks + '</span></a>');#}
-{##}
-{#            tasks.append('<ul class="pull-right dropdown-navbar dropdown-menu dropdown-caret dropdown-closer"></ul>');#}
-{##}
-{##}
-{#            var row_template = doT.template($('#tmpl_task_nav_bar_row').html());#}
-{##}
-{##}
-{#            $(function () {#}
-{##}
-{#                var tasks_list = $('#tasks_of_logged_in_user>ul');#}
-{##}
-{#                tasks_list.append('<li class="nav-header"><i class="icon-warning-sign"></i>' + total_tasks + '  Tasks to complete</li>');#}
-{##}
-{#                var i = 0;#}
-{#                for (i = 0; i < 5; i++) {#}
-{##}
-{#                    // fix dates#}
-{#                    // data[i].date_created = new Date(data[i].date_created).format('yyyy-mm-dd HH:MM');#}
-{##}
-{##}
-{#                    tasks_list.append(row_template(data[i]));#}
-{#                }#}
-{##}
-{#                tasks_list.append('<li><a href="{{ request.route_path('list_entity_tasks', id=logged_in_user.id) }}">See all tasks<i class="icon-arrow-right"></i></a></li>');#}
-{##}
-{##}
-{#            });#}
-{##}
-{#        });#}
-{#    });#}
-
 
 </script>

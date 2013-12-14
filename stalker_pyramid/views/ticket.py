@@ -298,27 +298,26 @@ def update_ticket(request):
         message_body_html = "<div>%(who)s has added a the following comment " \
                             "to %(ticket)s:<br><br>%(comment)s</div>"
 
-        message_body_text = message_body_text % \
-                            {
-                                'who': logged_in_user.name,
-                                'ticket': "Ticket #%s" % ticket.number,
-                                'comment': comment_as_text
-                            }
+        message_body_text = message_body_text % {
+            'who': logged_in_user.name,
+            'ticket': "Ticket #%s" % ticket.number,
+            'comment': comment_as_text
+        }
 
-        message_body_html = message_body_html % \
-                            {
-                                'who': '<a href="%(link)s">%(name)s</a>' % {
-                                    'link': request.route_url('view_user',
-                                                              id=logged_in_user.id),
-                                    'name': logged_in_user.name
-                                },
-                                'ticket': '<a href="%(link)s">%(name)s</a>' % {
-                                    'link': request.route_url('view_ticket',
-                                                              id=ticket.id),
-                                    'name': "Ticket #%s" % ticket.number
-                                },
-                                'comment': comment  # use the raw html comment
-                            }
+        message_body_html = message_body_html % {
+            'who': '<a href="%(link)s">%(name)s</a>' % {
+                'link': request.route_url('view_user', id=logged_in_user.id),
+                'name': logged_in_user.name
+            },
+            'ticket': '<a href="%(link)s">%(name)s</a>' % {
+                'link': request.route_url('view_ticket', id=ticket.id),
+                'name': "Ticket #%(number)s - %(summary)s" % {
+                    'number': ticket.number,
+                    'summary': ticket.summary
+                }
+            },
+            'comment': comment  # use the raw html comment
+        }
 
         # make recipients unique
         recipients = list(set(recipients))
@@ -346,8 +345,8 @@ def update_ticket(request):
             'from "%(from)s" to "%(to)s"'
 
         message_body_html = \
-            '''<div>%(user)s has changed the status of
-            %(ticket)s:<br><br>from "%(from)s" to "%(to)s"'''
+            '<div>%(user)s has changed the status of ' \
+            '%(ticket)s:<br><br>from %(from)s to %(to)s</div>'
 
         message_body_text = message_body_text % {
             'user': ticket_log.created_by.name,
@@ -357,21 +356,23 @@ def update_ticket(request):
         }
 
         message_body_html = message_body_html % {
-            'user': '<a href="%(link)s">%(name)s</a>' % {
-                'link': request.route_url('view_user',
-                                          id=ticket_log.created_by.id),
+            'user': '<strong>%(name)s</strong>' % {
                 'name': ticket_log.created_by.name
             },
-            'ticket': '<a href="%(link)s">%(name)s</a>' % {
-                'link': request.route_url('view_ticket', id=ticket.id),
-                'name': "Ticket #%s" % ticket.number
+            'ticket': "<strong>Ticket #%(number)s - %(summary)s</strong>" % {
+                'number': ticket.number,
+                'summary': ticket.summary
             },
-            'from': ticket_log.from_status.name,
-            'to': ticket_log.to_status.name
+            'from': '<strong>%s</strong>' % ticket_log.from_status.name,
+            'to': '<strong>%s</strong>' % ticket_log.to_status.name
         }
+
         message = Message(
-            subject="Stalker Pyramid: Status Update on Ticket #%s" %
-                    ticket.number,
+            subject="Stalker Pyramid: Status Update on "
+                    "Ticket #%(ticket_number)s - %(ticket_summary)s" % {
+                        'ticket_number': ticket.number,
+                        'ticket_summary': ticket.summary
+                    },
             sender=dummy_email_address,
             recipients=recipients,
             body=message_body_text,

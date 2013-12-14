@@ -323,6 +323,9 @@
                         <li>
                             <a id='request_review_button'
                                class="blue"
+                               data-target="#dialog_template"
+                               data-toggle="modal"
+                               data-keyboard="false"
                                href="#">
                                 <i class="'ui-icon icon-comment bigger-120">&nbsp</i>
                                 Request Review
@@ -730,44 +733,46 @@ require([
             $('#add_time_log_button').attr(
                 'href',
                 '/entities/' + selected_ids[0] + '/timelogs/create/dialog'
-            )
+            );
 
             $('#request_review_button').attr(
                 'href',
-                '/tasks/' + selected_ids[0] + '/request_review'
-            )
+                '/tasks/' + selected_ids[0] + '/request_review/dialog'
+            );
         }
     });
 
-    $('#request_review_button').on('click', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-
-        var selected_ids = gantt_chart.selected_ids();
-
-        bootbox.confirm(
-            '<div><p>This will send a ' +
-            '<strong>review request</strong> ' +
-            'to the responsible of this task and you will ' +
-            '<strong>not</strong> be able to ' +
-            '<strong>create any TimeLogs</strong> for this task ' +
-            'after this point<br><br><strong>Are you sure?</strong></div>',
-            function (result) {
-                if (result) {
-                    // get the ids and send it to the server
-                    var url = '';
-                    for (var i=0; i < selected_ids.length; i += 1){
-                        url = '/tasks/' + selected_ids[i] + '/request_review';
-                        $.post(url).done(function(response){
-                            bootbox.alert(response);
-                        }).fail(function(jqXHR){
-                            bootbox.alert(jqXHR.responseText);
-                        });
-                    }
-                }
-            }
-        )
-    });
+{#    $('#request_review_button').on('click', function(e) {#}
+{#        e.preventDefault();#}
+{#        e.stopPropagation();#}
+{##}
+{#        var selected_ids = gantt_chart.selected_ids();#}
+{##}
+{#        #}
+{##}
+{#        bootbox.confirm(#}
+{#            '<div id="message" class="alert alert-info bigger-110"><p>This will send a ' +#}
+{#            '<strong>review request</strong> ' +#}
+{#            'to the responsible of this task and you will ' +#}
+{#            '<strong>not</strong> be able to ' +#}
+{#            '<strong>create any TimeLogs</strong> for this task ' +#}
+{#            'after this point<br><br><strong>Are you sure?</strong></div>',#}
+{#            function (result) {#}
+{#                if (result) {#}
+{#                    // get the ids and send it to the server#}
+{#                    var url = '';#}
+{#                    for (var i=0; i < selected_ids.length; i += 1){#}
+{#                        url = '/tasks/' + selected_ids[i] + '/request_review';#}
+{#                        $.post(url).done(function(response){#}
+{#                            bootbox.alert(response);#}
+{#                        }).fail(function(jqXHR){#}
+{#                            bootbox.alert(jqXHR.responseText);#}
+{#                        });#}
+{#                    }#}
+{#                }#}
+{#            }#}
+{#        )#}
+{#    });#}
 
     var select_first_and_do_something = function (e, callback){
         e.preventDefault();
