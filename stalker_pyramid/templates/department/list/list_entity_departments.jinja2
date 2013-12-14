@@ -60,6 +60,7 @@
         <th>Lead</th>
         <th>Users</th>
         <th>Created By</th>
+        <th></th>
     </tr>
     </script>
     {% endraw %}
@@ -77,6 +78,24 @@
             </td>
             <td>{{=it.users_count}}</td>
             <td><a href='/users/{{=it.created_by_id}}/view'>{{=it.created_by_name}}</a>
+            </td>
+
+            <td>
+                 {{ if (it.update_department_action) { }}
+                <a  class="blue"
+
+                    href="{{=it.update_department_action}}">
+                    <i class="icon-edit bigger-130"></i>
+                </a>{{ } }}
+
+                {{ if (it.delete_department_action) { }}
+                <a  class="red"
+                    data-target="#dialog_template"
+                    data-toggle="modal"
+                    data-keyboard=false
+                    href="{{=it.delete_department_action}}?came_from={{=it.came_from }}">
+                    <i class="icon-trash bigger-130"></i>
+                </a>{{ } }}
             </td>
 
         </tr>

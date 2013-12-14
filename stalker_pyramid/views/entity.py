@@ -238,6 +238,10 @@ logger.setLevel(logging.DEBUG)
     renderer='templates/link/list_entity_references.jinja2'
 )
 @view_config(
+    route_name='view_version',
+    renderer='templates/version/view/view_version.jinja2'
+)
+@view_config(
     route_name='list_task_versions',
     renderer='templates/version/list/list_entity_versions.jinja2'
 )

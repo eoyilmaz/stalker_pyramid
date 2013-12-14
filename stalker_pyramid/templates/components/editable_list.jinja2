@@ -113,13 +113,13 @@
                     editable_list.append(row_template(data[i]));
 
 
-                    {% if has_permission('Update_'+list_item_type)%}
-
-                        var edit_template = doT.template($('#tmpl_item_edit').html());
-                        data[i].item_edit_link = '/departments/'+data[i].id+'/update/dialog?came_from={{ request.current_route_path() }}';
-                        $('#editable_list_item_actions_' + data[i].id).append(edit_template(data[i]));
-
-                    {% endif %}
+{#                    {% if has_permission('Update_'+list_item_type)%}#}
+{##}
+{#                        var edit_template = doT.template($('#tmpl_item_edit').html());#}
+{#                        data[i].item_edit_link = '/{{ list_item_type.lower() }}s/'+data[i].id+'/update/dialog?came_from={{ request.current_route_path() }}';#}
+{#                        $('#editable_list_item_actions_' + data[i].id).append(edit_template(data[i]));#}
+{##}
+{#                    {% endif %}#}
 
                     {% if has_permission('Delete_'+list_item_type)%}
 

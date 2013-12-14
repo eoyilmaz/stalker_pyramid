@@ -42,7 +42,6 @@
                 <div id="infobox"
                      address='/entities/{{ entity.id }}/tasks_stats/'
                      class="infobox-container">
-                    {% set component_id='infobox' %}
                     {% include 'components/infobox.jinja2' %}
                 </div>
                 <div class="space"></div>
@@ -211,7 +210,7 @@
                         data-target="#dialog_template"
                         data-toggle="modal"
                         data-keyboard=false
-                        href="/tasks/{{=it.id}}/request_review/dialog">
+                        href="/tasks/{{=it.id}}/request_review/dialog?came_from={{=it.came_from }}">
                     <i class="icon-comment-alt bigger-130"></i>
                 </a>{{ } }}
 
@@ -235,9 +234,7 @@
 
 
     <script type="text/javascript">
-
         $(document).ready(function () {
-
             $.getJSON('/users/{{ entity.id }}/events/?keys=time_log&keys=vacation&keys=task').then(function (data) {
                 var events = [];
 

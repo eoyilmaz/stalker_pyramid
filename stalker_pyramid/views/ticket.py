@@ -21,16 +21,15 @@
 import time
 import logging
 import datetime
+import transaction
 
 from pyramid.response import Response
 from pyramid.view import view_config
 from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
 
-from stalker import User, Ticket, Project, Note, Type, Task
-
 from stalker.db import DBSession
-import transaction
+from stalker import User, Ticket, Project, Note, Type, Task
 from stalker_pyramid.views import (get_logged_in_user, PermissionChecker,
                                    milliseconds_since_epoch,
                                    dummy_email_address, local_to_utc,
@@ -294,31 +293,32 @@ def update_ticket(request):
             recipients.append(t_comment.created_by.email)
 
         message_body_text = "%(who)s has added a the following comment to " \
-            "%(ticket)s:\n\n%(comment)s"
+                            "%(ticket)s:\n\n%(comment)s"
 
         message_body_html = "<div>%(who)s has added a the following comment " \
-            "to %(ticket)s:<br><br>%(comment)s</div>"
+                            "to %(ticket)s:<br><br>%(comment)s</div>"
 
         message_body_text = message_body_text % \
-            {
-                'who': logged_in_user.name,
-                'ticket': "Ticket #%s" % ticket.number,
-                'comment': comment_as_text
-            }
+                            {
+                                'who': logged_in_user.name,
+                                'ticket': "Ticket #%s" % ticket.number,
+                                'comment': comment_as_text
+                            }
 
         message_body_html = message_body_html % \
-            {
-                'who': '<a href="%(link)s">%(name)s</a>' % {
-                    'link': request.route_url('view_user',
-                                              id=logged_in_user.id),
-                    'name': logged_in_user.name
-                },
-                'ticket': '<a href="%(link)s">%(name)s</a>' % {
-                    'link': request.route_url('view_ticket', id=ticket.id),
-                    'name': "Ticket #%s" % ticket.number
-                },
-                'comment': comment  # use the raw html comment
-            }
+                            {
+                                'who': '<a href="%(link)s">%(name)s</a>' % {
+                                    'link': request.route_url('view_user',
+                                                              id=logged_in_user.id),
+                                    'name': logged_in_user.name
+                                },
+                                'ticket': '<a href="%(link)s">%(name)s</a>' % {
+                                    'link': request.route_url('view_ticket',
+                                                              id=ticket.id),
+                                    'name': "Ticket #%s" % ticket.number
+                                },
+                                'comment': comment  # use the raw html comment
+                            }
 
         # make recipients unique
         recipients = list(set(recipients))
@@ -335,6 +335,7 @@ def update_ticket(request):
     # mail about changes in ticket status
     if ticket_log:
         from stalker import TicketLog
+
         assert isinstance(ticket_log, TicketLog)
         mailer = get_mailer(request)
 
@@ -344,7 +345,7 @@ def update_ticket(request):
             '%(user)s has changed the status of %(ticket)s\n\n' \
             'from "%(from)s" to "%(to)s"'
 
-        message_body_html =\
+        message_body_html = \
             '''<div>%(user)s has changed the status of
             %(ticket)s:<br><br>from "%(from)s" to "%(to)s"'''
 
@@ -474,8 +475,8 @@ def get_tickets(request):
             'project_name': r[5],
             'owner_id': r[6],
             'owner_name': r[7],
-            'date_created' : milliseconds_since_epoch(r[8]),
-            'date_updated' : milliseconds_since_epoch(r[9]),
+            'date_created': milliseconds_since_epoch(r[8]),
+            'date_updated': milliseconds_since_epoch(r[9]),
             'created_by_id': r[10],
             'created_by_name': r[11],
             'updated_by_id': r[12],
@@ -486,5 +487,32 @@ def get_tickets(request):
         } for r in result.fetchall()
     ]
     end = time.time()
-    logger.debug('get_entity_tickets took : %s seconds for %s rows' % (end - start, len(data)))
+    logger.debug('get_entity_tickets took : %s seconds for %s rows' % (
+    end - start, len(data)))
     return data
+
+
+@view_config(
+    route_name='get_user_open_tickets',
+    renderer='json'
+)
+def get_user_open_tickets(request):
+    user_id = request.matchdict.get('id')
+    user = User.query.filter_by(id=user_id).first()
+
+    open_tickets = []
+
+    for ticket in user.open_tickets:
+        open_tickets.append(
+            {
+                'id': ticket.id,
+                'summary': ticket.summary,
+                'created_by_name': ticket.created_by.name,
+                'created_by_thumbnail': ticket.created_by.thumbnail.full_path
+                    if ticket.created_by.thumbnail else None,
+                'date_updated': ''
+
+            }
+        )
+
+    return open_tickets

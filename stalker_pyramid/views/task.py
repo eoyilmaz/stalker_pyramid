@@ -1785,16 +1785,24 @@ def auto_schedule_tasks(request):
 
 @view_config(
     route_name='request_review_dialog',
-    renderer='templates/task/dialog/request_review_dialog.jinja2'
+    renderer='templates/modals/confirm_dialog.jinja2'
 )
 def request_review_dialog(request):
     task_id = request.matchdict.get('id')
-    came_from = request.params.get('came_from', '/')
+    action = '/tasks/%s/request_review' % task_id
 
+    came_from = request.params.get('came_from', '/')
+    message = 'This will send a <strong>review request</strong> to the ' \
+              'responsible of this task and you will <strong>not</strong> ' \
+              'be able to <strong>create any TimeLogs</strong> for this ' \
+              'task after this point<br><br><strong>Are you sure?</strong>'
+
+    logger.debug('action: %s' % action)
 
     return {
+        'message': message,
         'came_from': came_from,
-        'task_id': task_id
+        'action': action
     }
 
 
@@ -1806,7 +1814,6 @@ def request_review(request):
     """
     # get logged in user as he review requester
     logged_in_user = get_logged_in_user(request)
-
 
     task_id = request.matchdict.get('id', -1)
     logger.debug('task_id : %s' % task_id)

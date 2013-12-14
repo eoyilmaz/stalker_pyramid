@@ -1,16 +1,15 @@
-<div class="alert alert-info bigger-110">This will send the responsible of this
-    task a
-    <strong>review request</strong> and you will
-    <strong>not</strong> be able to
-    <strong>create any TimeLogs</strong> for this task
-    after this point<br><br><strong>Are you sure?</strong></div>
+<div id="message" class="alert alert-info bigger-110">
+
+</div>
 <script>
     function init_dialog() {
-        console.debug('starting to initialize time_log dialog!!!');
+        console.debug('starting to initialize confirm dialog!!!');
 
         var dialog_template_label = $('#dialog_template_label');
         dialog_template_label.find('span').remove();
         dialog_template_label.append('<span class="red"><i class="icon-warning-sign"></i> Warning</span>');
+
+        $('#message').append('{{ message | safe}}');
 
 
         {# ***************************************************************** #}
@@ -24,7 +23,9 @@
             submit_button.button('loading');
 
             var url;
-            url = '/tasks/{{task_id }}/request_review';
+            url = '{{ action }}';
+
+            console.debug('url: '+url)
 
             $.post(url).done(function (response) {
                 window.location.assign('{{ came_from }}');
@@ -35,7 +36,7 @@
         });
 
 
-        console.debug('finished initializing the time_log dialog!')
+        console.debug('finished initializing the confirm dialog!')
     }
 </script>
 
