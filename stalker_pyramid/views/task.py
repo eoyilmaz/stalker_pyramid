@@ -2066,7 +2066,7 @@ def request_revision(request):
         return Response('There is no task with id: %s' % task_id, 500)
 
     send_email = request.params.get('send_email', 1)
-    description = request.params.get('description', -1)
+    description = request.params.get('description', '')
 
     schedule_timing = request.params.get('schedule_timing')
     schedule_unit = request.params.get('schedule_unit')

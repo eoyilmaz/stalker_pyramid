@@ -123,7 +123,7 @@
                                         <div class="name">
                                             <a href="{{ request.route_url('view_user', id=comment.created_by.id) }}">{{ comment.created_by.name }}</a>
                                         </div>
-                                        <div class="text">{{ comment.content | safe }}</div>
+                                        <div class="text">{{ comment.content| replace('\n', '<br>') | safe }}</div>
         
                                         <div class="tools">
                                             <a href="#" class="btn btn-minier btn-info">
