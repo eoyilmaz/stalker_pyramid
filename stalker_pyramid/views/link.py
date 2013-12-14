@@ -21,8 +21,10 @@
 import os
 import logging
 import uuid
+import base64
+from HTMLParser import HTMLParser
 
-import Image
+from PIL import Image
 
 from stalker import Entity, Link, defaults
 from stalker.db import DBSession
@@ -40,6 +42,109 @@ from stalker_pyramid.views import (get_logged_in_user, get_multi_integer,
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
+
+
+class ImageData(object):
+    """class for handling image data coming from html
+    """
+
+    def __init__(self, data):
+        self.raw_data = data
+        self.type = ''
+        self.extension = ''
+        self.base64_data = ''
+        self.parse()
+
+    def parse(self):
+        """parses the data
+        """
+        temp_data = self.raw_data.split(';')
+        self.type = temp_data[0].split(':')[1]
+        self.extension = '.%s' % self.type.split('/')[1]
+        self.base64_data = temp_data[1].split(',')[1]
+
+
+class ImgToLinkConverter(HTMLParser):
+    """An HTMLParser derivative that parses HTML data and replaces the ``src``
+    attributes in <img> tags with Link paths
+    """
+
+    def __init__(self):
+        HTMLParser.__init__(self)
+        self.raw_img_to_url = []
+        self.links = []
+        self.raw_data = ''
+
+    def feed(self, data):
+        """the overridden feed method which stores the original data
+        """
+        HTMLParser.feed(self, data)
+        self.raw_data = data
+
+    def handle_starttag(self, tag, attrs):
+        # print tag, attrs
+        attrs_dict = {}
+        if tag == 'img':
+            # convert attributes to a dict
+            for attr in attrs:
+                attrs_dict[attr[0]] = attr[1]
+            src = attrs_dict['src']
+
+            # check if it contains data
+            if not src.startswith('data'):
+                return
+
+            # get the file type and use it as extension
+            image_data = ImageData(src)
+            # generate a path for this file
+            file_full_path, link_full_path = \
+                generate_local_file_path(image_data.extension)
+            original_name = os.path.basename(link_full_path)
+
+            # create folders
+            os.makedirs(os.path.dirname(file_full_path))
+
+            with open(file_full_path, 'wb') as f:
+                f.write(
+                    base64.decodestring(image_data.base64_data)
+                )
+
+            # create Link instances
+            # create a Link instance and return it
+            new_link = Link(
+                full_path=link_full_path,
+                original_filename=original_name,
+            )
+            DBSession.add(new_link)
+            self.links.append(new_link)
+
+            # save data to be replaced in the raw content
+            self.raw_img_to_url.append(
+                (src, link_full_path)
+            )
+
+    def replace_urls(self):
+        """replaces the raw image data with the url in the given data
+        """
+        for img_to_url in self.raw_img_to_url:
+            self.raw_data = self.raw_data.replace(
+                img_to_url[0],
+                '/%s' % img_to_url[1]
+            )
+        return self.raw_data
+
+
+def replace_img_data_with_links(raw_data):
+    """replaces the image data coming in base64 form with Links
+
+    :param raw_data: The raw html data that may contain <img> elements
+    :returns str, list: string containing html data with the ``src`` parameters
+      of <img> tags are replaced with Link addresses and the generated links
+    """
+    parser = ImgToLinkConverter()
+    parser.feed(raw_data)
+    parser.replace_urls()
+    return parser.raw_data, parser.links
 
 
 @view_config(
@@ -421,17 +526,16 @@ def upload_files_to_server(request, file_params):
     The extension is used on purpose where OSes like windows can infer the file
     type from the extension.
 
-    SPL/{{uuid4[:2]}}/{{uuid4[2:4]}}//{{uuuid4}}.extension
+    SPL/{{uuid4[:2]}}/{{uuid4[2:4]}}//{{uuid4}}.extension
 
     :param request: The request object.
-    :param str file_param_name: The name of the parameter that holds the files.
+    :param str file_params: The name of the parameter that holds the files.
     :returns [(str, str)]: The original filename and the file path on the
     server.
     """
     links = []
     # get the file names
     for file_param in file_params:
-        # file_param = request.POST.get(file_param_name)
         filename = file_param.filename
         extension = os.path.splitext(filename)[1]
         input_file = file_param.file
@@ -453,7 +557,7 @@ def upload_files_to_server(request, file_params):
         output_file = open(temp_file_path, 'wb')  # TODO: guess ascii or binary mode
 
         input_file.seek(0)
-        while True: # TODO: use 'with'
+        while True:  # TODO: use 'with'
             data = input_file.read(2 << 16)
             if not data:
                 break

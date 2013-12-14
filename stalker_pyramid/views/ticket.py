@@ -35,6 +35,7 @@ from stalker_pyramid.views import (get_logged_in_user, PermissionChecker,
                                    milliseconds_since_epoch,
                                    dummy_email_address, local_to_utc,
                                    get_multi_integer)
+from stalker_pyramid.views.link import replace_img_data_with_links
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -269,6 +270,14 @@ def update_ticket(request):
 
     # mail the comment to anybody related to the ticket
     if comment:
+        # convert images to Links
+        comment, links = replace_img_data_with_links(comment)
+        if links:
+            # update created_by attributes of links
+            for link in links:
+                link.created_by = logged_in_user
+            DBSession.add_all(links)
+
         note = Note(
             content=comment,
             created_by=logged_in_user,

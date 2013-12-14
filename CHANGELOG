@@ -2,6 +2,13 @@
 Stalker Pyramid Changes
 =======================
 
+0.1.7
+=====
+
+* **New:** The images on ticket comments are now copied to Stalker Storage and
+  the links in the comments are replaced with proper Link instance paths. And
+  the upload limit is increased to 2 MBytes per file.
+
 0.1.6
 =====
 
