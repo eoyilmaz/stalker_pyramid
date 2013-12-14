@@ -225,7 +225,7 @@
                 notifications_list.append('<li class="nav-header"><i class="icon-warning-sign"></i>' + total_tickets + '  Tickets</li>');
 
                 var i = 0;
-                var limit = Math.min(5, data[i].length);
+                var limit = Math.min(5, data.length);
                 for (i = 0; i < limit; i++) {
                     notifications_list.append(row_template(data[i]));
                 }
