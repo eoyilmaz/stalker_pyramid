@@ -102,7 +102,11 @@ class ImgToLinkConverter(HTMLParser):
             original_name = os.path.basename(link_full_path)
 
             # create folders
-            os.makedirs(os.path.dirname(file_full_path))
+            try:
+                os.makedirs(os.path.dirname(file_full_path))
+            except OSError:
+                # path exists
+                pass
 
             with open(file_full_path, 'wb') as f:
                 f.write(
