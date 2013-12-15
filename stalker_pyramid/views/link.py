@@ -24,10 +24,7 @@ import uuid
 import base64
 from HTMLParser import HTMLParser
 
-try:
-    from PIL import Image
-except ImportError:
-    import Image
+from PIL import Image
 
 from stalker import Entity, Link, defaults
 from stalker.db import DBSession

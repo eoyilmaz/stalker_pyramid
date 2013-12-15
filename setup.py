@@ -18,7 +18,7 @@ requires = [
     'waitress',
     'jinja2',
     'pyramid_jinja2',
-    'pil',
+    'pillow',
     'stalker>=0.2.2', 'webtest', 'mocker'
 ]
 

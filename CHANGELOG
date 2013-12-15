@@ -2,6 +2,11 @@
 Stalker Pyramid Changes
 =======================
 
+0.1.7.1
+=======
+
+* **Update:** Switched to Pillow from PIL.
+
 0.1.7
 =====
 

@@ -145,7 +145,7 @@
             'active',{%- else -%},{%- endif -%}",
         '{{ request.route_url('list_task_tickets', id=task.id) }}',
                 'icon-ticket',
-                '{{ task.versions | count }}'
+                '{{ task.versions | count }}' {# fix this it should be task.open_tickets, but stalker doesn't support it yet #}
         )
 
         menu_of('Versions',
@@ -154,7 +154,7 @@
             'active',{%- else -%},{%- endif -%}",
         '{{ request.route_url('list_task_versions', id=task.id) }}',
                 'icon-sitemap',
-                '{{ task.versions | count }}'
+                '{{ task.tickets | count }}'
         )
 
         $('#delete_task_button').on('click', function (e) {
