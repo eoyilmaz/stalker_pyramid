@@ -277,7 +277,7 @@
 
                         {% if has_permission('Update_Task') %}
                         <li>
-                            <a id='update_task_button'
+                            <a id='update_task_menu_item'
                                data-target="#dialog_template"
                                data-toggle="modal"
                                data-keyboard=false
@@ -291,7 +291,7 @@
 
                         {% if has_permission('Create_Task') %}
                         <li>
-                            <a id="duplicate_task_hierarchy_button">
+                            <a id="duplicate_task_hierarchy_menu_item">
                                 <i class="'ui-icon icon-copy bigger-120">&nbsp</i>
                                 Duplicate Hierarchy
                             </a>
@@ -300,7 +300,7 @@
 
                         {% if has_permission('Delete_Task') %}
                         <li>
-                            <a id="delete_task_button"
+                            <a id="delete_task_menu_item"
                                class="red"
                                href=''>
                                 <i class="'ui-icon icon-trash bigger-120">&nbsp</i>
@@ -312,7 +312,7 @@
                         <li class="divider"></li>
 
                         <li>
-                            <a id='add_time_log_button'
+                            <a id='add_time_log_menu_item'
                                class="green"
                                href='#'>
                                 <i class="'ui-icon icon-time bigger-120">&nbsp</i>
@@ -321,7 +321,7 @@
                         </li>
 
                         <li>
-                            <a id='request_review_button'
+                            <a id='request_review_menu_item'
                                class="blue"
                                data-target="#dialog_template"
                                data-toggle="modal"
@@ -725,24 +725,24 @@ require([
             dependent_task_button.attr('href', dependent_href);
 
             // update update button
-            $('#update_task_button').attr(
+            $('#update_task_menu_item').attr(
                 'href',
                 '/tasks/' + selected_ids[0] + '/update/dialog'
             );
 
-            $('#add_time_log_button').attr(
+            $('#add_time_log_menu_item').attr(
                 'href',
                 '/entities/' + selected_ids[0] + '/timelogs/create/dialog'
             );
 
-            $('#request_review_button').attr(
+            $('#request_review_menu_item').attr(
                 'href',
                 '/tasks/' + selected_ids[0] + '/request_review/dialog'
             );
         }
     });
 
-{#    $('#request_review_button').on('click', function(e) {#}
+{#    $('#request_review_menu_item').on('click', function(e) {#}
 {#        e.preventDefault();#}
 {#        e.stopPropagation();#}
 {##}
@@ -805,7 +805,7 @@ require([
     $('#dependent_task_button').on('click', function(e){select_first_and_show_task_dialog(e, $(this));});
 
     // duplicate hierarchy button
-    $('#duplicate_task_hierarchy_button').on('click', function(e){
+    $('#duplicate_task_hierarchy_menu_item').on('click', function(e){
         e.preventDefault();
         e.stopPropagation();
         var self = $(this);
@@ -845,8 +845,7 @@ require([
         );
     });
 
-    $('#add_time_log_button').on('click', function(e){
-        console.debug('this is running 1!');
+    $('#add_time_log_menu_item').on('click', function(e){
         e.preventDefault();
         e.stopPropagation();
 
@@ -868,15 +867,17 @@ require([
         event_dialog.modal({
             'remote': $(this).attr('href') + '?came_from="' + window.location.pathname + '"'
         });
-        console.debug('this is running 2!');
     });
 
-    $('#delete_task_button').on('click', function(e){
+    console.debug('code is here 1');
+    $('#delete_task_menu_item').on('click', function(e){
+        console.debug('code is here 1a');
         e.preventDefault();
         e.stopPropagation();
 
         // get the selection list
         var selected_ids = gantt_chart.selected_ids();
+        console.debug('selected_ids: ', selected_ids);
         if (selected_ids.length == 0){
             bootbox.alert('Please select at least one item from the ' +
                 'GanttChart!');
@@ -909,6 +910,8 @@ require([
             }
         });
     });
+    console.debug('code is here 2');
+
 
     // get the gantt column
     var gantt_column = gantt_chart.columnSets[1][0][0];
