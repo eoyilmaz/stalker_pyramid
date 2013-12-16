@@ -796,9 +796,13 @@ def get_tasks(request):
     sql_query = """select
         "Tasks".bid_timing as bid_timing,
         "Tasks".bid_unit as bid_unit,
-        coalesce(
+                coalesce(
             -- for parent tasks
-            "Tasks"._total_logged_seconds::float / "Tasks"._schedule_seconds * 100,
+            (case "Tasks"._schedule_seconds
+                when 0 then 0
+                else "Tasks"._total_logged_seconds::float / "Tasks"._schedule_seconds * 100
+             end
+            ),
             -- for child tasks we need to count the total seconds of related TimeLogs
             (coalesce("Task_TimeLogs".duration, 0.0))::float /
                 ("Tasks".schedule_timing * (case "Tasks".schedule_unit
@@ -834,7 +838,7 @@ def get_tasks(request):
                 "Task_Resources".resource_id,
                 "Task_Resources".resource_name
             )
-        ) as reources,
+        ) as resources,
         "Tasks".schedule_model,
         coalesce("Tasks"._schedule_seconds,
             "Tasks".schedule_timing * (case "Tasks".schedule_unit
