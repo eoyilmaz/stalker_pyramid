@@ -277,7 +277,7 @@
 
                         {% if has_permission('Update_Task') %}
                         <li>
-                            <a id='update_task_button'
+                            <a id='update_task_menu_item'
                                data-target="#dialog_template"
                                data-toggle="modal"
                                data-keyboard=false
@@ -291,7 +291,7 @@
 
                         {% if has_permission('Create_Task') %}
                         <li>
-                            <a id="duplicate_task_hierarchy_button">
+                            <a id="duplicate_task_hierarchy_menu_item">
                                 <i class="'ui-icon icon-copy bigger-120">&nbsp</i>
                                 Duplicate Hierarchy
                             </a>
@@ -300,7 +300,7 @@
 
                         {% if has_permission('Delete_Task') %}
                         <li>
-                            <a id="delete_task_button"
+                            <a id="delete_task_menu_item"
                                class="red"
                                href=''>
                                 <i class="'ui-icon icon-trash bigger-120">&nbsp</i>
@@ -312,7 +312,7 @@
                         <li class="divider"></li>
 
                         <li>
-                            <a id='add_time_log_button'
+                            <a id='add_time_log_menu_item'
                                class="green"
                                href='#'>
                                 <i class="'ui-icon icon-time bigger-120">&nbsp</i>
@@ -321,8 +321,11 @@
                         </li>
 
                         <li>
-                            <a id='request_review_button'
+                            <a id='request_review_menu_item'
                                class="blue"
+                               data-target="#dialog_template"
+                               data-toggle="modal"
+                               data-keyboard="false"
                                href="#">
                                 <i class="'ui-icon icon-comment bigger-120">&nbsp</i>
                                 Request Review
@@ -722,51 +725,54 @@ require([
             dependent_task_button.attr('href', dependent_href);
 
             // update update button
-            $('#update_task_button').attr(
+            $('#update_task_menu_item').attr(
                 'href',
                 '/tasks/' + selected_ids[0] + '/update/dialog'
             );
 
-            $('#add_time_log_button').attr(
+            $('#add_time_log_menu_item').attr(
                 'href',
                 '/entities/' + selected_ids[0] + '/timelogs/create/dialog'
-            )
+            );
 
-            $('#request_review_button').attr(
+            $('#request_review_menu_item').attr(
                 'href',
-                '/tasks/' + selected_ids[0] + '/request_review'
-            )
+                '/tasks/' + selected_ids[0] + '/request_review/dialog'
+            );
         }
     });
 
-    $('#request_review_button').on('click', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-
-        var selected_ids = gantt_chart.selected_ids();
-
-        bootbox.confirm(
-            '<div><p>This will send the responsible of this task a ' +
-            '<strong>review request</strong> and you will ' +
-            '<strong>not</strong> be able to ' +
-            '<strong>create any TimeLogs</strong> for this task ' +
-            'after this point<br><br><strong>Are you sure?</strong></div>',
-            function (result) {
-                if (result) {
-                    // get the ids and send it to the server
-                    var url = '';
-                    for (var i=0; i < selected_ids.length; i += 1){
-                        url = '/tasks/' + selected_ids[i] + '/request_review';
-                        $.post(url).done(function(response){
-                            bootbox.alert(response);
-                        }).fail(function(jqXHR){
-                            bootbox.alert(jqXHR.responseText);
-                        });
-                    }
-                }
-            }
-        )
-    });
+{#    $('#request_review_menu_item').on('click', function(e) {#}
+{#        e.preventDefault();#}
+{#        e.stopPropagation();#}
+{##}
+{#        var selected_ids = gantt_chart.selected_ids();#}
+{##}
+{#        #}
+{##}
+{#        bootbox.confirm(#}
+{#            '<div id="message" class="alert alert-info bigger-110"><p>This will send a ' +#}
+{#            '<strong>review request</strong> ' +#}
+{#            'to the responsible of this task and you will ' +#}
+{#            '<strong>not</strong> be able to ' +#}
+{#            '<strong>create any TimeLogs</strong> for this task ' +#}
+{#            'after this point<br><br><strong>Are you sure?</strong></div>',#}
+{#            function (result) {#}
+{#                if (result) {#}
+{#                    // get the ids and send it to the server#}
+{#                    var url = '';#}
+{#                    for (var i=0; i < selected_ids.length; i += 1){#}
+{#                        url = '/tasks/' + selected_ids[i] + '/request_review';#}
+{#                        $.post(url).done(function(response){#}
+{#                            bootbox.alert(response);#}
+{#                        }).fail(function(jqXHR){#}
+{#                            bootbox.alert(jqXHR.responseText);#}
+{#                        });#}
+{#                    }#}
+{#                }#}
+{#            }#}
+{#        )#}
+{#    });#}
 
     var select_first_and_do_something = function (e, callback){
         e.preventDefault();
@@ -799,7 +805,7 @@ require([
     $('#dependent_task_button').on('click', function(e){select_first_and_show_task_dialog(e, $(this));});
 
     // duplicate hierarchy button
-    $('#duplicate_task_hierarchy_button').on('click', function(e){
+    $('#duplicate_task_hierarchy_menu_item').on('click', function(e){
         e.preventDefault();
         e.stopPropagation();
         var self = $(this);
@@ -839,8 +845,7 @@ require([
         );
     });
 
-    $('#add_time_log_button').on('click', function(e){
-        console.debug('this is running 1!');
+    $('#add_time_log_menu_item').on('click', function(e){
         e.preventDefault();
         e.stopPropagation();
 
@@ -862,15 +867,17 @@ require([
         event_dialog.modal({
             'remote': $(this).attr('href') + '?came_from="' + window.location.pathname + '"'
         });
-        console.debug('this is running 2!');
     });
 
-    $('#delete_task_button').on('click', function(e){
+    console.debug('code is here 1');
+    $('#delete_task_menu_item').on('click', function(e){
+        console.debug('code is here 1a');
         e.preventDefault();
         e.stopPropagation();
 
         // get the selection list
         var selected_ids = gantt_chart.selected_ids();
+        console.debug('selected_ids: ', selected_ids);
         if (selected_ids.length == 0){
             bootbox.alert('Please select at least one item from the ' +
                 'GanttChart!');
@@ -903,6 +910,8 @@ require([
             }
         });
     });
+    console.debug('code is here 2');
+
 
     // get the gantt column
     var gantt_column = gantt_chart.columnSets[1][0][0];

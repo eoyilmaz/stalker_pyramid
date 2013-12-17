@@ -20,7 +20,7 @@
 import time
 import datetime
 
-from pyramid.httpexceptions import (HTTPFound, HTTPOk, HTTPServerError)
+from pyramid.httpexceptions import (HTTPFound, HTTPServerError)
 from pyramid.response import Response
 from pyramid.security import forget, remember
 from pyramid.view import view_config, forbidden_view_config
@@ -28,13 +28,13 @@ from sqlalchemy import or_
 import transaction
 
 import stalker_pyramid
-from stalker import (defaults, User, Department, Group, Project, Entity,
-                     Studio, Permission, EntityType)
+from stalker import (defaults, User, Department, Group, Project, Studio,
+                     Permission, EntityType)
 from stalker.db import DBSession
 from stalker_pyramid.views import (log_param, get_logged_in_user,
                                    PermissionChecker, get_multi_integer,
                                    get_tags, milliseconds_since_epoch,
-                                   multi_permission_checker, StdErrToHTMLConverter)
+                                   StdErrToHTMLConverter)
 
 import logging
 

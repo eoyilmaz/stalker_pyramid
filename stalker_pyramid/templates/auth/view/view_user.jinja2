@@ -42,7 +42,6 @@
                 <div id="infobox"
                      address='/entities/{{ entity.id }}/tasks_stats/'
                      class="infobox-container">
-
                     {% include 'components/infobox.jinja2' %}
                 </div>
                 <div class="space"></div>
@@ -235,13 +234,7 @@
 
 
     <script type="text/javascript">
-
-
-
         $(document).ready(function () {
-
-
-
             $.getJSON('/users/{{ entity.id }}/events/?keys=time_log&keys=vacation&keys=task').then(function (data) {
                 var events = [];
 

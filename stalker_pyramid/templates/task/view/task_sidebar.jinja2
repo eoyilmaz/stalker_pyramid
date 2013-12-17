@@ -109,7 +109,7 @@
             menu_of('References',
                     "
             {%- if request.current_route_path() == request.route_path('list_task_references', id=task.id) -%}
-                'active',{%- else -%},{%- endif -%}",
+                'active', {%- else -%},{%- endif -%}",
             '{{ request.route_url('list_task_references', id=task.id) }}',
                     'icon-user',
                     data
@@ -119,12 +119,7 @@
 </script>
 
 <script type="text/javascript">
-
-
-
-
     $(document).ready(function () {
-
         menu_of('Dashboard',
                 "
         {%- if request.current_route_path() == request.route_path('view_task', id=task.id) -%}
@@ -150,7 +145,7 @@
             'active',{%- else -%},{%- endif -%}",
         '{{ request.route_url('list_task_tickets', id=task.id) }}',
                 'icon-ticket',
-                '{{ task.versions | count }}'
+                '{{ task.tickets | count }}' {# fix this it should be task.open_tickets, but stalker doesn't support it yet #}
         )
 
         menu_of('Versions',
@@ -163,12 +158,9 @@
         )
 
         $('#delete_task_button').on('click', function (e) {
-
-
             e.preventDefault();
             e.stopPropagation();
             // get the selection list
-
 
             // warn the user about what is going to happen
             bootbox.confirm('All the selected tasks and their child tasks and ' +
@@ -184,30 +176,22 @@
 
                     id = '{{ task.id }}';
                     $.post(
-                                    '/tasks/' + id + '/delete'
-                            ).done(function (response_text) {
-                                //bootbox.alert(response_text);
-                                 window.location.assign('/projects/{{ task.project.id }}/view');
-                                // reload the gantt chart
+                        '/tasks/' + id + '/delete'
+                    ).done(function (response_text) {
+                        //bootbox.alert(response_text);
+                         window.location.assign('/projects/{{ task.project.id }}/view');
+                        // reload the gantt chart
 
-                            }).fail(function (jqXHR) {
-                                bootbox.alert(jqXHR.responseText);
-                            });
+                    }).fail(function (jqXHR) {
+                        bootbox.alert(jqXHR.responseText);
+                    });
 
                 }
             });
 
         });
 
-
-
-
-
-
     })
-
-
-
 </script>
 
 

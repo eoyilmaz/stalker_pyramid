@@ -19,8 +19,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 import datetime
 
-from pyramid.httpexceptions import HTTPOk, HTTPServerError, HTTPFound
-from pyramid.security import has_permission
+from pyramid.httpexceptions import HTTPServerError, HTTPFound
 from pyramid.view import view_config
 
 from stalker.db import DBSession
@@ -269,11 +268,12 @@ def get_entity_departments(request):
     entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
 
-    update_department_permission = PermissionChecker(request)('Update_Department')
-    delete_department_permission = PermissionChecker(request)('Delete_Department')
+    update_department_permission = \
+        PermissionChecker(request)('Update_Department')
+    delete_department_permission = \
+        PermissionChecker(request)('Delete_Department')
 
-
-    departments =[]
+    departments = []
 
     for department in entity.departments:
         dep = {
@@ -281,15 +281,18 @@ def get_entity_departments(request):
             'id': department.id,
             'lead_id': department.lead.id if department.lead else None,
             'lead_name': department.lead.name if department.lead else None,
-            'thumbnail_full_path': department.thumbnail.full_path if department.thumbnail else None,
+            'thumbnail_full_path':
+            department.thumbnail.full_path if department.thumbnail else None,
             'created_by_id': department.created_by.id,
             'created_by_name': department.created_by.name,
             'users_count': len(department.users)
         }
         if update_department_permission:
-                dep[ 'update_department_action']= '/departments/%s/update/dialog' % department.id
+            dep['update_department_action'] = \
+                '/departments/%s/update/dialog' % department.id
         if delete_department_permission:
-                dep['delete_department_action']= '/departments/%s/delete/dialog' % department.id
+            dep['delete_department_action'] =\
+                '/departments/%s/delete/dialog' % department.id
 
         departments.append(dep)
 
@@ -317,11 +320,10 @@ def delete_department_dialog(request):
     logger.debug('action: %s' % action)
 
     return {
-            'message': message,
-            'came_from': came_from,
-            'action': action
-        }
-
+        'message': message,
+        'came_from': came_from,
+        'action': action
+    }
 
 
 @view_config(
@@ -337,7 +339,9 @@ def delete_department(request):
 
     if not department:
         transaction.abort()
-        return Response('Can not find a Department with id: %s' % department_id, 500)
+        return Response(
+            'Can not find a Department with id: %s' % department_id, 500
+        )
 
     try:
         DBSession.delete(department)
@@ -349,17 +353,8 @@ def delete_department(request):
         return Response(c.html(), 500)
 
     request.session.flash(
-                'success: <strong>%s Department</strong> is deleted successfully' % name
-            )
+        'success: <strong>%s Department</strong> is deleted '
+        'successfully' % name
+    )
 
     return Response('Successfully deleted department: %s' % department_id)
-
-
-
-
-
-
-
-
-
-

@@ -250,20 +250,24 @@ function init_dialog() {
                 var delete_button = $(this);
                 delete_button.button('loading');
 
-                bootbox.confirm('<h3 class="header red"><i class="icon-warning-sign"></i> Warning</h3>' +
-                        '<div id="message" class="alert alert-info bigger-110">Are you sure you want to  delete this vacation?</div>', function (result) {
+                var confirm_message = 
+                    '<h3 class="header red"><i class="icon-warning-sign">' +
+                    '</i> Warning</h3>' +
+                    '<div id="message" class="alert alert-info bigger-110">' +
+                    'Are you sure you want to  delete this vacation?' +
+                    '</div>';
+
+                bootbox.confirm(confirm_message, function (result) {
                     if (result) {
-
-
                         $.post(
-                                        '/vacations/{{ vacation.id}}/delete'
-                                ).done(function (response_text) {
-                                    bootbox.alert('<div id="message" class="alert alert-success bigger-110">'+response_text+'</div>');
-                                    window.location.assign('{{ came_from }}');
-                                }).fail(function (jqXHR) {
-                                    bootbox.alert('<div id="message" class="alert alert-danger bigger-110">'+jqXHR.responseText+'</div>');
-                                    delete_button.button('reset');
-                                });
+                            '/vacations/{{ vacation.id}}/delete'
+                        ).done(function (response_text) {
+                            bootbox.alert('<div id="message" class="alert alert-success bigger-110">'+response_text+'</div>');
+                            window.location.assign('{{ came_from }}');
+                        }).fail(function (jqXHR) {
+                            bootbox.alert('<div id="message" class="alert alert-danger bigger-110">'+jqXHR.responseText+'</div>');
+                            delete_button.button('reset');
+                        });
 
                     }
                     else {
@@ -282,8 +286,6 @@ function init_dialog() {
         {% endif %}
 
     {% endif %}
-
-
 
 
     {# ***************************************************************** #}
@@ -400,14 +402,14 @@ function init_dialog() {
             var end = start_end[1];
 
             $.post(
-                            vacation_form.attr('action'),
-                            vacation_form.serialize() + '&' + $.param({ 'start': start.toUTCString(), 'end': end.toUTCString() })
-                    ).done(function () {
-                        window.location.replace('{{ came_from }}');
-                    }).fail(function (jqXHR) {
-                        bootbox.alert('<div id="message" class="alert alert-danger bigger-110">'+jqXHR.responseText+'</div>');
-                        submit_button.button('reset');
-                    });
+                vacation_form.attr('action'),
+                vacation_form.serialize() + '&' + $.param({ 'start': start.toUTCString(), 'end': end.toUTCString() })
+            ).done(function () {
+                window.location.replace('{{ came_from }}');
+            }).fail(function (jqXHR) {
+                bootbox.alert('<div id="message" class="alert alert-danger bigger-110">'+jqXHR.responseText+'</div>');
+                submit_button.button('reset');
+            });
 
         }
     });

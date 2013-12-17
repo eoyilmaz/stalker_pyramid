@@ -439,11 +439,11 @@
     </script>
 
     <script type="text/javascript">
+        {% if entity %}
         $(document).ready(function () {
-
-{#            document.title = 'STALKER / {{ entity.name }}'#}
-
+            document.title = 'STALKER / {{ entity.name }}'
         });
+        {% endif %}
     </script>
 
     {# Ace Settings Box #}

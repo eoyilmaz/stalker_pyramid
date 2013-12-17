@@ -2,6 +2,23 @@
 Stalker Pyramid Changes
 =======================
 
+0.1.7.1
+=======
+
+* **Update:** Switched to Pillow from PIL.
+
+0.1.7
+=====
+
+* **New:** The images on ticket comments are now copied to Stalker Storage and
+  the links in the comments are replaced with proper Link instance paths. And
+  the upload limit is increased to 2 MBytes per file.
+* **Update:** Unified the "Review Request Dialog" over the whole site.
+* **Update:** Updated the templates for "Review Request", "Ticket Update" and
+  "Revision Request" mails.
+* **Fix:** Fixed Ticket comment display on multiple lines when the comment is
+  plain text.
+
 0.1.6
 =====
 

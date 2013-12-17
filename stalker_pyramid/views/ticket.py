@@ -21,20 +21,20 @@
 import time
 import logging
 import datetime
+import transaction
 
 from pyramid.response import Response
 from pyramid.view import view_config
 from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
 
-from stalker import User, Ticket, Project, Note, Type, Task
-
 from stalker.db import DBSession
-import transaction
+from stalker import User, Ticket, Project, Note, Type, Task
 from stalker_pyramid.views import (get_logged_in_user, PermissionChecker,
                                    milliseconds_since_epoch,
                                    dummy_email_address, local_to_utc,
                                    get_multi_integer)
+from stalker_pyramid.views.link import replace_img_data_with_links
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -48,7 +48,6 @@ def get_ticket_resolutions(request):
     """returns the ticket resolutions defined in the system
     """
     from stalker import defaults
-
     return defaults.ticket_resolutions
 
 
@@ -60,7 +59,6 @@ def get_ticket_workflow(request):
     """returns the ticket workflow defined in the config
     """
     from stalker import defaults
-
     return defaults.ticket_workflow
 
 
@@ -241,7 +239,7 @@ def update_ticket(request):
 
     if not action.startswith('leave_as'):
         if logged_in_user == ticket.owner or \
-                        logged_in_user == ticket.created_by:
+           logged_in_user == ticket.created_by:
             if action.startswith('resolve_as'):
                 resolution = action.split(':')[1]
                 ticket_log = ticket.resolve(logged_in_user, resolution)
@@ -271,6 +269,14 @@ def update_ticket(request):
 
     # mail the comment to anybody related to the ticket
     if comment:
+        # convert images to Links
+        comment, links = replace_img_data_with_links(comment)
+        if links:
+            # update created_by attributes of links
+            for link in links:
+                link.created_by = logged_in_user
+            DBSession.add_all(links)
+
         note = Note(
             content=comment,
             created_by=logged_in_user,
@@ -292,27 +298,26 @@ def update_ticket(request):
         message_body_html = "<div>%(who)s has added a the following comment " \
                             "to %(ticket)s:<br><br>%(comment)s</div>"
 
-        message_body_text = message_body_text % \
-                            {
-                                'who': logged_in_user.name,
-                                'ticket': "Ticket #%s" % ticket.number,
-                                'comment': comment_as_text
-                            }
+        message_body_text = message_body_text % {
+            'who': logged_in_user.name,
+            'ticket': "Ticket #%s" % ticket.number,
+            'comment': comment_as_text
+        }
 
-        message_body_html = message_body_html % \
-                            {
-                                'who': '<a href="%(link)s">%(name)s</a>' % {
-                                    'link': request.route_url('view_user',
-                                                              id=logged_in_user.id),
-                                    'name': logged_in_user.name
-                                },
-                                'ticket': '<a href="%(link)s">%(name)s</a>' % {
-                                    'link': request.route_url('view_ticket',
-                                                              id=ticket.id),
-                                    'name': "Ticket #%s" % ticket.number
-                                },
-                                'comment': comment  # use the raw html comment
-                            }
+        message_body_html = message_body_html % {
+            'who': '<a href="%(link)s">%(name)s</a>' % {
+                'link': request.route_url('view_user', id=logged_in_user.id),
+                'name': logged_in_user.name
+            },
+            'ticket': '<a href="%(link)s">%(name)s</a>' % {
+                'link': request.route_url('view_ticket', id=ticket.id),
+                'name': "Ticket #%(number)s - %(summary)s" % {
+                    'number': ticket.number,
+                    'summary': ticket.summary
+                }
+            },
+            'comment': comment  # use the raw html comment
+        }
 
         # make recipients unique
         recipients = list(set(recipients))
@@ -340,8 +345,8 @@ def update_ticket(request):
             'from "%(from)s" to "%(to)s"'
 
         message_body_html = \
-            '''<div>%(user)s has changed the status of
-            %(ticket)s:<br><br>from "%(from)s" to "%(to)s"'''
+            '<div>%(user)s has changed the status of ' \
+            '%(ticket)s:<br><br>from %(from)s to %(to)s</div>'
 
         message_body_text = message_body_text % {
             'user': ticket_log.created_by.name,
@@ -351,21 +356,23 @@ def update_ticket(request):
         }
 
         message_body_html = message_body_html % {
-            'user': '<a href="%(link)s">%(name)s</a>' % {
-                'link': request.route_url('view_user',
-                                          id=ticket_log.created_by.id),
+            'user': '<strong>%(name)s</strong>' % {
                 'name': ticket_log.created_by.name
             },
-            'ticket': '<a href="%(link)s">%(name)s</a>' % {
-                'link': request.route_url('view_ticket', id=ticket.id),
-                'name': "Ticket #%s" % ticket.number
+            'ticket': "<strong>Ticket #%(number)s - %(summary)s</strong>" % {
+                'number': ticket.number,
+                'summary': ticket.summary
             },
-            'from': ticket_log.from_status.name,
-            'to': ticket_log.to_status.name
+            'from': '<strong>%s</strong>' % ticket_log.from_status.name,
+            'to': '<strong>%s</strong>' % ticket_log.to_status.name
         }
+
         message = Message(
-            subject="Stalker Pyramid: Status Update on Ticket #%s" %
-                    ticket.number,
+            subject="Stalker Pyramid: Status Update on "
+                    "Ticket #%(ticket_number)s - %(ticket_summary)s" % {
+                        'ticket_number': ticket.number,
+                        'ticket_summary': ticket.summary
+                    },
             sender=dummy_email_address,
             recipients=recipients,
             body=message_body_text,
@@ -497,17 +504,16 @@ def get_user_open_tickets(request):
     open_tickets = []
 
     for ticket in user.open_tickets:
+        open_tickets.append(
+            {
+                'id': ticket.id,
+                'summary': ticket.summary,
+                'created_by_name': ticket.created_by.name,
+                'created_by_thumbnail': ticket.created_by.thumbnail.full_path
+                    if ticket.created_by.thumbnail else None,
+                'date_updated': ''
 
-        # if len(open_tickets)<5:
-            open_tickets.append(
-                {
-                    'id': ticket.id,
-                    'summary': ticket.summary,
-                    'created_by_name': ticket.created_by.name,
-                    'created_by_thumbnail': ticket.created_by.thumbnail.full_path if ticket.created_by.thumbnail else None,
-                    'date_updated': ''
-
-                }
-            )
+            }
+        )
 
     return open_tickets

@@ -24,7 +24,7 @@ Animation and VFX Studios. See docs for more information.
 import pyramid_beaker
 from zope.sqlalchemy import ZopeTransactionExtension
 
-__version__ = '0.1.6'
+__version__ = '0.1.7'
 
 
 # before anything about stalker create the defaults

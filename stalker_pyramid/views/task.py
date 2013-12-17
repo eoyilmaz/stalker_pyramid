@@ -796,9 +796,13 @@ def get_tasks(request):
     sql_query = """select
         "Tasks".bid_timing as bid_timing,
         "Tasks".bid_unit as bid_unit,
-        coalesce(
+                coalesce(
             -- for parent tasks
-            "Tasks"._total_logged_seconds::float / "Tasks"._schedule_seconds * 100,
+            (case "Tasks"._schedule_seconds
+                when 0 then 0
+                else "Tasks"._total_logged_seconds::float / "Tasks"._schedule_seconds * 100
+             end
+            ),
             -- for child tasks we need to count the total seconds of related TimeLogs
             (coalesce("Task_TimeLogs".duration, 0.0))::float /
                 ("Tasks".schedule_timing * (case "Tasks".schedule_unit
@@ -834,7 +838,7 @@ def get_tasks(request):
                 "Task_Resources".resource_id,
                 "Task_Resources".resource_name
             )
-        ) as reources,
+        ) as resources,
         "Tasks".schedule_model,
         coalesce("Tasks"._schedule_seconds,
             "Tasks".schedule_timing * (case "Tasks".schedule_unit
@@ -1788,23 +1792,22 @@ def auto_schedule_tasks(request):
     renderer='templates/modals/confirm_dialog.jinja2'
 )
 def request_review_dialog(request):
-
     task_id = request.matchdict.get('id')
-
     action = '/tasks/%s/request_review' % task_id
 
     came_from = request.params.get('came_from', '/')
-
-    message = 'This will send the responsible of this task a <strong>review request</strong> and you will <strong>not</strong> be able to <strong>create any TimeLogs</strong> for this task after this point<br><br><strong>Are you sure?</strong>'
+    message = 'This will send a <strong>review request</strong> to the ' \
+              'responsible of this task and you will <strong>not</strong> ' \
+              'be able to <strong>create any TimeLogs</strong> for this ' \
+              'task after this point<br><br><strong>Are you sure?</strong>'
 
     logger.debug('action: %s' % action)
 
     return {
-            'message': message,
-            'came_from': came_from,
-            'action': action
-        }
-
+        'message': message,
+        'came_from': came_from,
+        'action': action
+    }
 
 
 @view_config(
@@ -1815,7 +1818,6 @@ def request_review(request):
     """
     # get logged in user as he review requester
     logged_in_user = get_logged_in_user(request)
-
 
     task_id = request.matchdict.get('id', -1)
     logger.debug('task_id : %s' % task_id)
@@ -1856,14 +1858,16 @@ def request_review(request):
     # get the project that the ticket belongs to
     project = task.project
 
-    user_link = '<a href="%(url)s">%(name)s</a>' % {
-        'url': request.route_url('view_user', id=logged_in_user.id),
-        'name': logged_in_user.name
-    }
+    # user_link = '<a href="%(url)s">%(name)s</a>' % {
+    #     'url': request.route_url('view_user', id=logged_in_user.id),
+    #     'name': logged_in_user.name
+    # }
+
     user_link_internal = '<a href="%(url)s">%(name)s</a>' % {
         'url': request.route_path('view_user', id=logged_in_user.id),
         'name': logged_in_user.name
     }
+
     task_parent_names = "|".join(map(lambda x: x.name, task.parents))
 
     task_name_as_text = "%(name)s (%(entity_type)s) - (%(parents)s)" % {
@@ -1871,14 +1875,16 @@ def request_review(request):
         "entity_type": task.entity_type,
         "parents": task_parent_names
     }
-    task_link = \
-        '<a href="%(url)s">%(name)s ' \
-        '(%(task_entity_type)s) - (%(task_parent_names)s)</a>' % {
-            "url": request.route_url('view_task', id=task.id),
-            "name": task.name,
-            "task_entity_type": task.entity_type,
-            "task_parent_names": task_parent_names
-        }
+
+    # task_link = \
+    #     '<a href="%(url)s">%(name)s ' \
+    #     '(%(task_entity_type)s) - (%(task_parent_names)s)</a>' % {
+    #         "url": request.route_url('view_task', id=task.id),
+    #         "name": task.name,
+    #         "task_entity_type": task.entity_type,
+    #         "task_parent_names": task_parent_names
+    #     }
+
     task_link_internal = \
         '<a href="%(url)s">%(name)s ' \
         '(%(task_entity_type)s) - (%(task_parent_names)s)</a>' % {
@@ -1892,17 +1898,20 @@ def request_review(request):
         'name': task.name,
         'parent_names': task_parent_names
     }
+
     description_template = \
-        '%(user)s has requested you to do a review for ' \
-        '%(task)s'
+        '%(user)s has requested you to do a review for %(task)s'
+
     description_text = description_template % {
         "user": logged_in_user.name,
         "task": task_name_as_text
     }
+
     description_html = description_template % {
-        "user": user_link,
-        "task": task_link
+        "user": '<strong>%s</strong>' % logged_in_user.name,
+        "task": '<strong>%s</strong>' % task_name_as_text
     }
+
     ticket_description = description_template % {
         "user": user_link_internal,
         "task": task_link_internal
@@ -2068,7 +2077,7 @@ def request_revision(request):
         return Response('There is no task with id: %s' % task_id, 500)
 
     send_email = request.params.get('send_email', 1)
-    description = request.params.get('description', -1)
+    description = request.params.get('description', '')
 
     schedule_timing = request.params.get('schedule_timing')
     schedule_unit = request.params.get('schedule_unit')
@@ -2179,28 +2188,51 @@ def request_revision(request):
 
     if send_email:
         # and send emails to the resources
-        summary_text = 'Revision Request: "%s"' % task.name
 
-        description_text = \
-            '%(requester_name)s has requested a revision to the task ' \
-            '%(task_name)s on %(task_link)s and expanded the timing of the ' \
-            'task by %(timing)s %(unit)s. The following description is ' \
-            'supplied for the revision request:\n\n' \
-            '%(description)s' % {
-                "requester_name": logged_in_user.name,
-                "task_name": task.name,
-                "task_link": request.route_url('view_task', id=task.id),
-                "timing": schedule_timing,
-                "unit": {
-                    'h': 'hours',
-                    'd': 'days',
-                    'w': 'weeks',
-                    'm': 'months',
-                    'y': 'years'
-                }[schedule_unit],
-                "description": description
-                if description else "(No Description)"
+        task_full_name = "%(task_name)s (%(parent_names)s)" % {
+            'task_name': task.name,
+            'parent_names': ' | '.join(map(lambda x: x.name, task.parents))
+        }
+
+        summary_text = \
+            'Revision Request: "%(task_full_name)s"' % {
+                'task_full_name': task_full_name
             }
+
+        description_body = \
+            '%(requester_name)s has requested a revision to ' \
+            '%(task)s and expanded the timing of the task by %(timing)s ' \
+            '%(unit)s. The following description is supplied for the ' \
+            'revision request:%(spacing)s' \
+            '%(description)s'
+
+        unit_word = {
+            'h': 'hours',
+            'd': 'days',
+            'w': 'weeks',
+            'm': 'months',
+            'y': 'years'
+        }[schedule_unit]
+
+        description_text = description_body % {
+            "requester_name": logged_in_user.name,
+            "task": task_full_name,
+            "timing": schedule_timing,
+            "unit": unit_word,
+            "spacing": '\n\n',
+            "description": description
+            if description else "(No Description)"
+        }
+
+        description_html = description_body % {
+            "requester_name": '<strong>%s</strong>' % logged_in_user.name,
+            "task": '<strong>%s</strong>' % task_full_name,
+            "timing": '<strong>%s' % schedule_timing,
+            "unit": '%s</strong>' % unit_word,
+            "spacing": '<br><br>',
+            "description": description.replace('\n', '<br>')
+            if description else "(No Description)"
+        }
 
         responsible = task.responsible
         # send email to responsible and resources of the task
@@ -2216,7 +2248,8 @@ def request_revision(request):
             subject=summary_text,
             sender=dummy_email_address,
             recipients=recipients,
-            body=description_text
+            body=description_text,
+            html=description_html
         )
         mailer.send(message)
 

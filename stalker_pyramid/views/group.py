@@ -18,63 +18,24 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 import datetime
-# import colander
-# from deform import widget
-# import deform
-
-from pyramid.httpexceptions import HTTPFound, HTTPOk, HTTPServerError
-from pyramid.security import authenticated_userid, forget, remember, has_permission
-from pyramid.view import view_config, forbidden_view_config
-from sqlalchemy import or_
 import transaction
+from pyramid.httpexceptions import HTTPFound
+from pyramid.view import view_config
 from webob import Response
 
 import stalker_pyramid
-from stalker import (defaults, User, Department, Group, Project, Entity,
-                     Studio, Permission, EntityType, Task)
+from stalker import (defaults, Group, Project, Entity, Studio, Permission,
+                     EntityType)
 from stalker.db import DBSession
 from stalker_pyramid.views import (log_param, get_logged_in_user,
-                                   PermissionChecker, get_multi_integer, get_tags, milliseconds_since_epoch, StdErrToHTMLConverter)
+                                   PermissionChecker, milliseconds_since_epoch,
+                                   StdErrToHTMLConverter)
 
 import logging
-from stalker_pyramid.views.auth import logout, get_permissions_from_multi_dict
+from stalker_pyramid.views.auth import get_permissions_from_multi_dict
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
-
-
-
-# @view_config(
-#     route_name='group_dialog',
-#     renderer='templates/group/dialog/group_dialog.jinja2',
-# )
-# def group_dialog(request):
-#     """create group dialog
-#     """
-#
-#     logger.debug('***group_dialog method starts ***')
-#
-#     logged_in_user = get_logged_in_user(request)
-#
-#     if not logged_in_user:
-#         return logout(request)
-#
-#     entity_id = request.matchdict.get('id', -1)
-#     entity = Entity.query.filter_by(id=entity_id).first()
-#
-#
-#     studio = Studio.query.first()
-#     projects = Project.query.all()
-#
-#     return {
-#         'entity' : entity,
-#         'mode': 'CREATE',
-#         'logged_in_user': logged_in_user,
-#         'stalker_pyramid': stalker_pyramid,
-#         'has_permission': PermissionChecker(request),
-#         'studio': studio,
-#         'projects': projects
-#     }
 
 
 @view_config(
@@ -122,7 +83,8 @@ def create_group(request):
             logger.debug('added new group successfully')
 
             request.session.flash(
-                'success:Group <strong>%s</strong> is created successfully' % name
+                'success:Group <strong>%s</strong> is '
+                'created successfully' % name
             )
 
             logger.debug('***create group method ends ***')
@@ -290,8 +252,6 @@ def list_group_permissions(request):
     studio = Studio.query.first()
     projects = Project.query.all()
 
-
-
     return {
         'entity': group,
         'actions': defaults.actions,
@@ -305,14 +265,12 @@ def list_group_permissions(request):
 
     }
 
+
 @view_config(
     route_name='get_group_permissions',
     renderer='json'
 )
 def get_group_permissions(request):
-
-
-
     group_id = request.matchdict.get('id', -1)
     group = Group.query.filter_by(id=group_id).first()
 
@@ -337,58 +295,15 @@ def get_group_permissions(request):
     if group:
         for group_permission in group.permissions:
 
-            label_indexer = dict((p['label'], i) for i, p in enumerate(permissions_list))
+            label_indexer = dict((p['label'], i)
+                                 for i, p in enumerate(permissions_list))
             index = label_indexer.get(group_permission.class_name, -1)
 
             permissions_list[index][group_permission.action] = 'checked'
 
-
-
     return permissions_list
 
 
-
-
-
-# @view_config(
-#     route_name='view_group',
-#     renderer='templates/group/view/view_group.jinja2'
-# )
-# def view_group(request):
-#     """create group dialog
-#     """
-#     logger.debug('***view_group method starts ***')
-#
-#     logged_in_user = get_logged_in_user(request)
-#
-#     permissions = Permission.query.all()
-#     entity_types = EntityType.query.all()
-#
-#     group_id = request.matchdict.get('id', -1)
-#     group = Group.query.filter_by(id=group_id).first()
-#
-#     entity_id = request.matchdict.get('id', -1)
-#     entity = Entity.query.filter_by(id=entity_id).first()
-#
-#     studio = Studio.query.first()
-#     projects = Project.query.all()
-#
-#     return {
-#         'mode': 'UPDATE',
-#         'entity': entity,
-#         'actions': defaults.actions,
-#         'permissions': permissions,
-#         'entity_types': entity_types,
-#         'logged_in_user': logged_in_user,
-#         'stalker_pyramid': stalker_pyramid,
-#         'has_permission': PermissionChecker(request),
-#         'studio': studio,
-#         'projects': projects
-#
-#     }
-#
-#
-#
 @view_config(
     route_name='get_groups',
     renderer='json',
@@ -404,16 +319,22 @@ def get_groups(request):
         {
             'id': group.id,
             'name': group.name,
-            'thumbnail_full_path': group.thumbnail.full_path if group.thumbnail else None,
+            'thumbnail_full_path':
+                group.thumbnail.full_path if group.thumbnail else None,
             'created_by_id': group.created_by.id,
             'created_by_name': group.created_by.name,
             'users_count': len(group.users),
-            'update_group_action': '/groups/%s/update/dialog' % group.id if update_group_permission else None,
-            'delete_group_action': '/groups/%s/delete/dialog' % group.id if delete_group_permission else None
+            'update_group_action':
+                '/groups/%s/update/dialog' % group.id
+                if update_group_permission else None,
+            'delete_group_action':
+                '/groups/%s/delete/dialog' % group.id
+                if delete_group_permission else None
 
         }
         for group in Group.query.order_by(Group.name.asc()).all()
     ]
+
 
 @view_config(
     route_name='get_group',
@@ -423,16 +344,15 @@ def get_groups(request):
 def get_group(request):
     """returns all the groups in database
     """
-
     group_id = request.matchdict.get('id', -1)
     group = Group.query.filter_by(id=group_id).first()
-
 
     return [
         {
             'id': group.id,
             'name': group.name,
-            'thumbnail_full_path': group.thumbnail.full_path if group.thumbnail else None,
+            'thumbnail_full_path':
+                group.thumbnail.full_path if group.thumbnail else None,
             'created_by_id': group.created_by.id,
             'created_by_name': group.created_by.name,
             'users_count': len(group.users),
@@ -464,12 +384,17 @@ def get_entity_groups(request):
         {
             'id': group.id,
             'name': group.name,
-            'thumbnail_full_path': group.thumbnail.full_path if group.thumbnail else None,
+            'thumbnail_full_path':
+                group.thumbnail.full_path if group.thumbnail else None,
             'created_by_id': group.created_by.id,
             'created_by_name': group.created_by.name,
             'users_count': len(group.users),
-            'update_group_action': '/groups/%s/update/dialog' % group.id if update_group_permission else None,
-            'delete_group_action': '/groups/%s/delete/dialog' % group.id if delete_group_permission else None
+            'update_group_action':
+                '/groups/%s/update/dialog' % group.id
+                if update_group_permission else None,
+            'delete_group_action':
+                '/groups/%s/delete/dialog' % group.id
+                if delete_group_permission else None
         }
         for group in sorted(entity.groups, key=lambda x: x.name.lower())
     ]
@@ -490,18 +415,17 @@ def delete_group_dialog(request):
 
     came_from = request.params.get('came_from', '/')
 
-    message = 'Are you sure you want to <strong>delete %s Group</strong>?'% group.name
+    message =\
+        'Are you sure you want to <strong>delete %s ' \
+        'Group</strong>?' % group.name
 
     logger.debug('action: %s' % action)
 
     return {
-            'message': message,
-            'came_from': came_from,
-            'action': action
-        }
-
-
-
+        'message': message,
+        'came_from': came_from,
+        'action': action
+    }
 
 
 @view_config(
@@ -513,7 +437,7 @@ def delete_group(request):
     """
     group_id = request.matchdict.get('id')
     group = Group.query.get(group_id)
-    name=group.name
+    name = group.name
 
     if not group:
         transaction.abort()
@@ -529,7 +453,7 @@ def delete_group(request):
         return Response(c.html(), 500)
 
     request.session.flash(
-                'success:<strong>%s Group</strong> is deleted successfully' % name
-            )
+        'success:<strong>%s Group</strong> is deleted successfully' % name
+    )
 
     return Response('Successfully deleted group: %s' % group_id)
