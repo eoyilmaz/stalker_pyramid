@@ -193,7 +193,8 @@ def create_ticket(request):
             'A <strong>New Ticket</strong> for project <strong>%s</strong> ' \
             'has been created by <strong>%s</strong> and assigned to ' \
             '<strong>%s</strong> with the following description:<br><br>%s' % (
-                project.name, logged_in_user.name, owner.name, description
+                project.name, logged_in_user.name, owner.name,
+                description.replace('\n', '<br>')
             )
 
         message = Message(
