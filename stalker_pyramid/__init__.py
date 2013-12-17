@@ -129,6 +129,7 @@ def main(global_config, **settings):
     config.add_route('remove_entity_from_entity',      'entities/{id}/{entity_id}/remove')
 
     # get routes returns json
+    config.add_route('get_entity',                     'entities/{id}/')
     config.add_route('get_entity_users',               'entities/{id}/users/')
     config.add_route('get_entity_users_count',         'entities/{id}/users/count/')
     config.add_route('get_entity_users_not',           'entities/{id}/users/not')

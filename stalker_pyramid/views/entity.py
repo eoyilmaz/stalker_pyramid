@@ -249,6 +249,7 @@ logger.setLevel(logging.DEBUG)
     route_name='list_entity_resources',
     renderer='templates/resource/list/list_entity_resources.jinja2'
 )
+
 def get_entity_related_data(request):
     """view for generic data
     """
@@ -278,6 +279,26 @@ def get_entity_related_data(request):
         'studio': studio,
         'came_from': came_from
     }
+
+@view_config(
+    route_name='get_entity',
+    renderer='json'
+)
+def get_entity(request):
+    """returns all the departments in the database
+    """
+    entity_id = request.matchdict.get('id', -1)
+    entity = Entity.query.filter_by(id=entity_id).first()
+
+    return[
+        {
+            'id': entity_id,
+            'name': entity.name,
+            'thumbnail_full_path': entity.thumbnail.full_path if entity.thumbnail else None,
+        }
+    ]
+
+
 
 
 @view_config(
