@@ -707,17 +707,16 @@ def review_task(request):
             for resource in task.resources:
                 recipients.append(resource.email)
 
+            task_name = '%s (%s)' % (
+                task.name,
+                '|'.join(map(lambda x: x.name, task.parents))
+            )
             message = Message(
                 subject='Task Reviewed: Your task has been approved!',
                 sender=dummy_email_address,
                 recipients=recipients,
-                body='%s has been approved' % task.name,
-                html='%(task_link)s has been approved' % {
-                    'task_link': '<a href="%s">%s</a>' % (
-                        request.route_url('view_task', id=task.id),
-                        task.name
-                    )
-                }
+                body='%s has been approved' % task_name,
+                html='<strong>%s</strong> has been approved' % task_name
             )
             mailer.send(message)
 
