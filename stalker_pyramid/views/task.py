@@ -409,14 +409,26 @@ def duplicate_task_hierarchy(request):
     """
     task_id = request.matchdict.get('id')
     task = Task.query.filter_by(id=task_id).first()
+
+    name = request.params.get('name', task.name+' - Duplicate')
+
+
     if task:
         dup_task = walk_and_duplicate_task_hierarchy(task)
         update_dependencies_in_duplicated_hierarchy(task)
+
+        update_task_statuses_with_dependencies(task)
+
         cleanup_duplicate_residuals(task)
         # update the parent
         dup_task.parent = task.parent
         # just rename the dup_task
-        dup_task.name += ' - Duplicate'
+
+        dup_task.name = name
+        dup_task.code = name
+
+        update_task_statuses_with_dependencies(dup_task)
+
         DBSession.add(dup_task)
     else:
         transaction.abort()

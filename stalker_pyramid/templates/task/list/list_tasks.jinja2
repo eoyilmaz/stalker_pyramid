@@ -823,16 +823,14 @@ require([
 {#        }#}
 
         // warn the user about what is going to happen and ask if it is ok
-        bootbox.confirm(
-            '<div><p>This will duplicate the task hierarchy including all ' +
-            'the children tasks.For the following tasks:<br><br>' +
-            selected_ids + 
-            '<br><br>Is that ok?</div>', function(result){
+        bootbox.prompt(
+            '<div><h5>Give a new name to duplicated task:</h5></div>', function(result){
                 if (result) {
+
                     // get the id and send it to the server
                     var url = '';
                     for (var i=0; i < selected_ids.length; i++){
-                        url = '/tasks/' + selected_ids[i] + '/duplicate';
+                        url = '/tasks/' + selected_ids[i] + '/duplicate?name='+result;
                         console.debug(url);
                         $.post(url).done(function(){
                             gantt_column.reload();
