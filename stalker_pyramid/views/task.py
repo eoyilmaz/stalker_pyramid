@@ -454,6 +454,11 @@ def duplicate_task_hierarchy(request):
         for leaf in leafs:
             update_task_statuses(leaf)
 
+         # check for children
+        update_task_statuses(dup_task)
+        # check fo dependencies
+        update_task_statuses_with_dependencies(dup_task)
+
 
     else:
         transaction.abort()
