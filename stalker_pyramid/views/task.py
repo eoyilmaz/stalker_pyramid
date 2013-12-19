@@ -2497,3 +2497,42 @@ def get_task_depends(request):
         )
 
     return depends
+
+
+
+
+@view_config(
+    route_name='get_task_dependent_of',
+    renderer='json'
+)
+def get_task_dependent_of(request):
+    if not multi_permission_checker(
+            request, ['Read_User', 'Read_TimeLog']):
+        return HTTPForbidden(headers=request)
+
+    logger.debug('get_task_dependent_of is running')
+
+    task_id = request.matchdict.get('id', -1)
+    task = Task.query.filter_by(id=task_id).first()
+
+    dependent_of =[]
+    for dep_task in task.dependent_of:
+        resources = []
+
+        for resource in dep_task.resources:
+            resources.append({'name': resource.name, 'id': resource.id})
+
+        dependent_of.append(
+            {
+                'id': dep_task.id,
+                'name': dep_task.name,
+                'status': dep_task.status.name,
+                'status_color': dep_task.status.html_class,
+                'percent_complete': dep_task.percent_complete,
+                'total_logged_seconds': dep_task.total_logged_seconds,
+                'schedule_seconds': dep_task.schedule_seconds,
+                'resources': resources
+            }
+        )
+
+    return dependent_of
