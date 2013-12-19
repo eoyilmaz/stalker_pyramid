@@ -265,6 +265,14 @@ class TaskViewTestCase(unittest2.TestCase):
         DBSession.flush()
         transaction.commit()
 
+        # + Task_1
+        # |
+        # +-+ Task 2
+        #   |
+        #   +-> Task3
+        #
+        #
+
         # no children for self.test_task3
         self.all_tasks = [
             self.test_task1, self.test_task2, self.test_task3,
@@ -276,6 +284,13 @@ class TaskViewTestCase(unittest2.TestCase):
     def tearDown(self):
         DBSession.remove()
         testing.tearDown()
+
+    def test_find_leafs_in_hierarchy_is_working_properly(self):
+        """testing if the find_leafs_in_hierarchy() is working properly
+        """
+        expected = [self.test_task7]
+        result = task.find_leafs_in_hierarchy(self.test_task2)
+        self.assertItemsEqual(expected, result)
 
     def test_convert_to_dgrid_gantt_task_format_tasks_is_empty(self):
         """testing if convert_to_dgrid_gantt_task_format function will return
