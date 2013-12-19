@@ -444,6 +444,8 @@ def duplicate_task_hierarchy(request):
         dup_task.name = name
         dup_task.code = name
 
+        DBSession.add(dup_task)
+
         #update_task_statuses_with_dependencies(dup_task)
         leafs = find_leafs_in_hierarchy(dup_task)
         for leaf in leafs:
@@ -452,7 +454,7 @@ def duplicate_task_hierarchy(request):
         for leaf in leafs:
             update_task_statuses(leaf)
 
-        DBSession.add(dup_task)
+
     else:
         transaction.abort()
         return Response(
