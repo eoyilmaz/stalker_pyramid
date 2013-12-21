@@ -207,7 +207,6 @@ def update_task_statuses_with_dependencies(task):
 
     status_new = Status.query.filter(Status.code == 'NEW').first()
     status_rts = Status.query.filter(Status.code == 'RTS').first()
-    status_hrev = Status.query.filter(Status.code == 'HREV').first()
     status_cmpl = Status.query.filter(Status.code == 'CMPL').first()
 
     if not task.depends:
