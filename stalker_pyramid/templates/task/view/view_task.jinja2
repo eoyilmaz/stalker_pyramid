@@ -40,202 +40,223 @@
 {% block page_content %}
     <div class="row-fluid">
     <div class="widget-box transparent invoice-box">
-        <div class="widget-header widget-header-small">
-            <h3 class="pull-left position-relative">
-                {{ entity.name }}
-                <i class="icon-double-angle-right"></i>
-                <small class="green">{{ entity.type.name }}</small>
-            </h3>
+    <div class="widget-header widget-header-small">
+        <h3 class="pull-left position-relative">
+            {{ entity.name }}
+            <i class="icon-double-angle-right"></i>
+            <small class="green">{{ entity.type.name }}</small>
+        </h3>
 
-            <div class="widget-toolbar no-border invoice-info">
-                <span class="invoice-info-label">{{ entity.status.name }}</span>
-            </div>
-
-            <div class="widget-toolbar hidden-480">
-                <a href="#">
-                    <i class="icon-info"></i>
-                </a>
-            </div>
+        <div class="widget-toolbar no-border invoice-info">
+            <span class="invoice-info-label">{{ entity.status.name }}</span>
         </div>
 
-        <div class="widget-body">
-            <div class="widget-main padding-10">
-                <div class="row-fluid">
-                    <div class="span8">
-                        <div class="row-fluid">
+        <div class="widget-toolbar hidden-480">
+            <a href="#">
+                <i class="icon-info"></i>
+            </a>
+        </div>
+    </div>
 
-                            <div class="span6">
+    <div class="widget-body">
+        <div class="widget-main padding-10">
+            <div class="row-fluid">
+                <div class="span8">
+                    <div class="row-fluid">
 
-                                <div class="span4">
+                        <div class="span6">
 
-                                    {% include 'components/avatar.jinja2' %}
+                            <div class="span4">
 
-                                </div>
-
-                                <div class="span8">
-                                    {% if logged_in_user == entity.responsible and entity.status.code == 'PREV' %}
-
-                                        <button id='task_review_button'
-                                                class='btn btn-mini btn-success'
-                                                data-target="#dialog_template"
-                                                data-toggle="modal"
-                                                data-keyboard="false"
-                                                href='{{ request.route_url("review_task_dialog", id=entity.id) }}'
-                                                >
-                                            <i class="icon-comments"></i>
-                                            Review
-                                        </button>
-
-                                    {% endif %}
-                                    {% if (logged_in_user in entity.resources or logged_in_user == entity.responsible) and entity.status.code == 'WIP' and entity.is_leaf %}
-
-                                        <button id='task_page_request_review_button'
-                                                class='btn btn-mini btn-warning'
-                                                data-target="#dialog_template"
-                                                data-toggle="modal"
-                                                data-keyboard="false"
-                                                href='/tasks/{{ entity.id }}/request_review/dialog?came_from={{ request.current_route_path() }}'
-                                                >
-                                            <i class="icon-comment-alt"></i>
-                                            Request Review
-                                        </button>
-
-                                    {% endif %}
-                                    {% if has_permission('Update_Task') %}
-
-                                        <div class="btn-toolbar">
-                                            <button id='task_update_button'
-                                                    class='btn btn-mini btn-info'
-                                                    data-target="#dialog_template"
-                                                    data-toggle="modal"
-                                                    data-keyboard="false"
-                                                    href='{{ request.route_url("update_task_dialog", id=entity.id) }}'
-                                                    >
-                                                <i class="icon-edit"></i>
-                                                Update
-                                            </button>
-                                        </div>
-
-                                    {% endif %}
-
-                                    <ul class="unstyled spaced  pull-left">
-                                        <li>
-                                            <h5>
-                                                <strong>
-                                                    <span class="date">{{ entity.start }}</span>
-                                                    <i class="icon-long-arrow-right blue"></i>
-                                                    <span class="date">{{ entity.end }}</span>
-                                                </strong>
-                                            </h5>
-                                        </li>
-                                        <li>
-
-                                            <b>Responsible: </b> <a
-                                                href="/users/{{ entity.responsible.id }}/view">{{ entity.responsible.name }}</a>
-                                        </li>
-
-                                        <li>
-
-                                            <b>Created By
-                                                : </b> {{ entity.created_by.name }}
-                                        </li>
-                                        <li>
-                                            <b>Updated By
-                                                : </b> {{ entity.updated_by.name }}
-                                        </li>
-
-                                        {% if entity.description %}
-
-                                            <li>
-                                                <b>Description
-                                                    : </b> {{ entity.description }}
-                                            </li>
-
-
-                                        {% endif %}
-                                    </ul>
-
-
-                                </div>
-                                <div class="space-12"></div>
-
+                                {% include 'components/avatar.jinja2' %}
 
                             </div>
-                            <div class="span6">
-                                <div class="span6 pull-right alert alert-block alert-info">
-                                    <ul class="unstyled spaced">
-                                        <li>
 
-                                            <b>Schedule Hours
-                                                : </b> {{ entity.schedule_seconds/3600 }}
-                                            h
-                                        </li>
-                                        <li>
-                                            <b>Total Logged Hours
-                                                : </b> {{ entity.total_logged_seconds/3600 }}
-                                            h
-                                        </li>
-                                        <li>
-                                            <b>Hours to Complete
-                                                : </b> {{ (entity.schedule_seconds - entity.total_logged_seconds)/3600 }}
-                                            h
-                                        </li>
-                                    </ul>
-                                    <div class="progress progress-success progress-striped"
-                                         data-percent="{{ "%2.1f" | format(entity.percent_complete) }}%">
-                                        <div class="bar"
-                                             style="width: {{ entity.percent_complete }}%;"></div>
+                            <div class="span8">
+                                {% if logged_in_user == entity.responsible and entity.status.code == 'PREV' %}
+
+                                    <button id='task_review_button'
+                                            class='btn btn-mini btn-success'
+                                            data-target="#dialog_template"
+                                            data-toggle="modal"
+                                            data-keyboard="false"
+                                            href='{{ request.route_url("review_task_dialog", id=entity.id) }}'
+                                            >
+                                        <i class="icon-comments"></i>
+                                        Review
+                                    </button>
+
+                                {% endif %}
+                                {% if (logged_in_user in entity.resources or logged_in_user == entity.responsible) and entity.status.code == 'WIP' and entity.is_leaf %}
+
+                                    <button id='task_page_request_review_button'
+                                            class='btn btn-mini btn-warning'
+                                            data-target="#dialog_template"
+                                            data-toggle="modal"
+                                            data-keyboard="false"
+                                            href='/tasks/{{ entity.id }}/request_review/dialog?came_from={{ request.current_route_path() }}'
+                                            >
+                                        <i class="icon-comment-alt"></i>
+                                        Request Review
+                                    </button>
+
+                                {% endif %}
+                                {% if has_permission('Update_Task') %}
+
+                                    <div class="btn-toolbar">
+                                        <button id='task_update_button'
+                                                class='btn btn-mini btn-info'
+                                                data-target="#dialog_template"
+                                                data-toggle="modal"
+                                                data-keyboard="false"
+                                                href='{{ request.route_url("update_task_dialog", id=entity.id) }}'
+                                                >
+                                            <i class="icon-edit"></i>
+                                            Update
+                                        </button>
                                     </div>
-                                    {#                                    <div class="pull-left" id="pie_chart"#}
-                                    {#                                         style="width: 180px; height: 180px;"></div>#}
+
+                                {% endif %}
+
+                                <ul class="unstyled spaced  pull-left">
+                                    <li>
+                                        <h5>
+                                            <strong>
+                                                <span class="date">{{ entity.start }}</span>
+                                                <i class="icon-long-arrow-right blue"></i>
+                                                <span class="date">{{ entity.end }}</span>
+                                            </strong>
+                                        </h5>
+                                    </li>
+                                    <li>
+
+                                        <b>Responsible: </b> <a
+                                            href="/users/{{ entity.responsible.id }}/view">{{ entity.responsible.name }}</a>
+                                    </li>
+
+                                    <li>
+
+                                        <b>Created By
+                                            : </b> {{ entity.created_by.name }}
+                                    </li>
+                                    <li>
+                                        <b>Updated By
+                                            : </b> {{ entity.updated_by.name }}
+                                    </li>
+
+                                    {% if entity.description %}
+
+                                        <li>
+                                            <b>Description
+                                                : </b> {{ entity.description }}
+                                        </li>
+
+
+                                    {% endif %}
+                                </ul>
+
+
+                            </div>
+                            <div class="space-12"></div>
+
+
+                        </div>
+                        <div class="span6">
+                            <div class="span6 pull-right alert alert-block alert-info">
+                                <ul class="unstyled spaced">
+                                    <li>
+
+                                        <b>Schedule Hours
+                                            : </b> {{ entity.schedule_seconds/3600 }}
+                                        h
+                                    </li>
+                                    <li>
+                                        <b>Total Logged Hours
+                                            : </b> {{ entity.total_logged_seconds/3600 }}
+                                        h
+                                    </li>
+                                    <li>
+                                        <b>Hours to Complete
+                                            : </b> {{ (entity.schedule_seconds - entity.total_logged_seconds)/3600 }}
+                                        h
+                                    </li>
+                                </ul>
+                                <div class="progress progress-success progress-striped"
+                                     data-percent="{{ "%2.1f" | format(entity.percent_complete) }}%">
+                                    <div class="bar"
+                                         style="width: {{ entity.percent_complete }}%;"></div>
                                 </div>
+                                {#                                    <div class="pull-left" id="pie_chart"#}
+                                {#                                         style="width: 180px; height: 180px;"></div>#}
                             </div>
                         </div>
-
-                        <div class="hr hr8 hr-double"></div>
-
-                        <div class="space-32"></div>
-
-                        <div class="row-fluid">
-                            <div id="calendar"></div>
-                        </div>
-
                     </div>
-                    <div class="span4">
 
-                        <div class="row-fluid">
-                            <div id="resources_box"
-                                 class="widget-box hide">
-                                <div class="widget-header header-color-red">
-                                    <h4 class="smaller">Resources</h4>
-                                </div>
-                                <div class="widget-body">
-                                    <div class="widget-main padding-12">
-                                        <div id="resource_tree"
-                                             class="tree"></div>
-                                    </div>
-                                </div>
+                    <div class="hr hr8 hr-double"></div>
+
+                    <div class="space-32"></div>
+
+                    <div class="row-fluid">
+                        <div id="calendar"></div>
+                    </div>
+
+                </div>
+                <div class="span4">
+
+                    <div class="row-fluid">
+                        <div id="resources_box"
+                             class="widget-box hide">
+                            <div class="widget-header header-color-red">
+                                <h4 class="smaller">Resources</h4>
                             </div>
-                        </div>
-                        <div class="space-12"></div>
-                        <div class="row-fluid">
-                            <div id="depends_box"
-                                 class="widget-box hide">
-                                <div class="widget-header header-color-orange">
-                                    <h4 class="smaller">Depends</h4>
-                                </div>
-                                <div class="widget-body">
-                                    <div class="widget-main padding-12">
-                                        <div id="depends_tree"
-                                             class="tree"></div>
-                                    </div>
+                            <div class="widget-body">
+                                <div class="widget-main padding-12">
+                                    <div id="resource_tree"
+                                         class="tree"></div>
                                 </div>
                             </div>
                         </div>
                     </div>
+
+                    <div class="space-12"></div>
+
+                    <div class="row-fluid">
+                        <div id="depends_box"
+                             class="span6 widget-box">
+                            <div class="widget-header header-color-grey">
+                                <h4 class="smaller"><i
+                                        class="icon-long-arrow-left"></i>Depends
+                                </h4>
+                            </div>
+                            <div class="widget-body">
+                                <div class="widget-main padding-12">
+                                    <div id="depends_tree"
+                                         class="tree"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="dependent_of_box"
+                             class="span6 widget-box">
+                            <div class="widget-header header-color-grey">
+                                <h4 class="smaller">Dependent Of <i
+                                        class="icon-long-arrow-right"></i></h4>
+                            </div>
+                            <div class="widget-body">
+                                <div class="widget-main padding-12">
+                                    <div id="dependent_of_tree"
+                                         class="tree"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="space-12"></div>
+
                 </div>
             </div>
         </div>
+    </div>
     </div>
     </div>
 
@@ -321,7 +342,7 @@
                             var hour_to_complete_str = '';
 
                             if (hours_to_complete > 0) {
-                                hour_to_complete_str = '<span> ( ' + hours_to_complete + ' h needs to complete )</span>'
+                                hour_to_complete_str = '<span> ( ' + hours_to_complete + ' h )</span>'
                             }
 
                             var percent_complete_str = '<span class="label label-' + data[i].status_color + '">' + data[i].status + '</span>';
@@ -354,46 +375,56 @@
             });
         });
 
+
         $(document).ready(function () {
-            $.getJSON('/tasks/{{ entity.id }}/depends/').then(function (data) {
-
-                var depends = new Object();
-                for (var i = 0; i < data.length; i++) {
-
-                    var task_id = (data[i].id).toString();
-
-                    var hours_to_complete = (data[i].schedule_seconds - data[i].total_logged_seconds) / 3600;
-                    var hour_to_complete_str = '';
-
-                    if (hours_to_complete > 0) {
-                        hour_to_complete_str = '<span> ( ' + hours_to_complete + ' h needs to complete )</span>'
-                    }
-
-                    var percent_complete_str = '<span class="label label-' + data[i].status_color + '">' + data[i].status + '</span>';
 
 
-                    if (!depends[task_id]) {
-                        depends[task_id] = {
-                            'name': '<span><a href="/tasks/' + data[i].id + '/view">' + data[i].name + '  </a></span>' + hour_to_complete_str + percent_complete_str,
-                            'type': 'folder',
-                            'icon-class': 'blue'
+            var get_dependency = function (type) {
+
+                $.getJSON('/tasks/{{ entity.id }}/dependency/' + type + '/').then(function (data) {
+
+                    var depends = new Object();
+                    for (var i = 0; i < data.length; i++) {
+
+                        var task_id = (data[i].id).toString();
+
+                        var hours_to_complete = (data[i].schedule_seconds - data[i].total_logged_seconds) / 3600;
+                        var hour_to_complete_str = '';
+
+                        if (hours_to_complete > 0) {
+                            hour_to_complete_str = '<span> ( ' + hours_to_complete + ' h )</span>'
                         }
-                    }
 
-                    if (!depends[task_id]['additionalParameters']) {
-                        depends[task_id]['additionalParameters'] = new Object();
-                        depends[task_id]['additionalParameters']['children'] = new Object();
-                    }
+                        var percent_complete_str = '<span class="label label-' + data[i].status_color + '">' + data[i].status + '</span>';
 
-                    for (var k = 0; k < data[i].resources.length; k++) {
-                        depends[task_id]['additionalParameters']['children'][(data[i].resources[k].id).toString()] = {name: '<span  class="pull-left"><a href="/users/' + data[i].resources[k].id + '/view">' + data[i].resources[k].name + '  </a></span>', type: 'item'}
-                    }
 
-                    console.log(depends[task_id])
-                    $('#depends_box').show();
-                }
-                drawTree('depends_tree', depends);
-            });
+                        if (!depends[task_id]) {
+                            depends[task_id] = {
+                                'name': '<span><a href="/tasks/' + data[i].id + '/view">' + data[i].name + '  </a></span>' + hour_to_complete_str,
+                                'type': 'folder',
+                                'icon-class': data[i].status_color
+                            }
+                        }
+
+                        if (!depends[task_id]['additionalParameters']) {
+                            depends[task_id]['additionalParameters'] = new Object();
+                            depends[task_id]['additionalParameters']['children'] = new Object();
+                        }
+
+                        for (var k = 0; k < data[i].resources.length; k++) {
+                            depends[task_id]['additionalParameters']['children'][(data[i].resources[k].id).toString()] = {name: '<span  class="pull-left"><a href="/users/' + data[i].resources[k].id + '/view">' + data[i].resources[k].name + '  </a></span>', type: 'item'}
+                        }
+
+                    }
+                    drawTree(type + '_tree', depends);
+                    if(data.length == 0){
+                        $('#'+type + '_tree').append('<div class="alert alert-warning">No '+type+' for this task</div>');
+                    }
+                });
+            }
+
+            get_dependency('depends');
+            get_dependency('dependent_of');
         });
     </script>
 

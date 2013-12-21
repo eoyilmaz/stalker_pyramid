@@ -463,8 +463,8 @@ def main(global_config, **settings):
     config.add_route('get_task',          'tasks/{id}/')
     config.add_route('get_task_children', 'tasks/{id}/children/')
     config.add_route('get_task_events',   'tasks/{id}/events/')  #json
-    # config.add_route('get_task_depends_of', 'tasks/{id}/depends_of/')
-    config.add_route('get_task_depends',  'tasks/{id}/depends/')
+
+    config.add_route('get_task_dependency',  'tasks/{id}/dependency/{type}/') # json
     config.add_route('get_task_tickets',  'tasks/{id}/tickets')  # json
 
     config.add_route('request_review',     'tasks/{id}/request_review')

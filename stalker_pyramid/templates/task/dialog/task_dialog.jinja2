@@ -127,6 +127,27 @@
                                 is_updating=false></select>
                     </div>
                 </div>
+
+                <div class='control-group'>
+                    <label class="span3 control-label" for='shot_cut_in'>Cut In</label>
+                    <div class='span9'>
+                        <input id='shot_cut_in'
+                                class='input-block-level'
+                                name='shot_cut_in'
+                                is_updating=false
+                                {% if mode=='update' %}{% if entity.type %}value="{{ entity.cut_in }}"{% endif %}{% endif %}>
+                    </div>
+                </div>
+                <div class='control-group'>
+                    <label class="span3 control-label" for='shot_cut_out'>Cut Out</label>
+                    <div class='span9'>
+                        <input id='shot_cut_out'
+                                class='input-block-level'
+                                name='shot_cut_out'
+                                is_updating=false
+                                {% if mode=='update' %}{% if entity.type %}value="{{ entity.cut_out }}"{% endif %}{% endif %}>
+                    </div>
+                </div>
             </div>
 
             <div id='task_inputs'>
@@ -588,6 +609,39 @@
 
         // update it on initialize
         setTimeout(shot_sequence_updater, 100); // TODO: this is ugly
+
+
+        {# ***************************************************************** #}
+        {# Cut In Spinner #}
+        $('#shot_cut_in').ace_spinner({
+            value: 1,
+            min: 1,
+            max: 1000,
+            step: 1,
+            btn_up_class: 'btn-info',
+            btn_down_class: 'btn-info'
+        }).on('change', function(){
+            // check if it is in the range
+            var curr_value = $(this).val();
+            $(this).val(curr_value <= 1000 ? curr_value >= 1 ? curr_value : 1 : 1000 );
+        });
+        //console.log('entity.priority : ', priority);
+
+        {# ***************************************************************** #}
+        {# Cut out Spinner #}
+        $('#shot_cut_out').ace_spinner({
+            value: 1,
+            min: 1,
+            max: 1000,
+            step: 1,
+            btn_up_class: 'btn-info',
+            btn_down_class: 'btn-info'
+        }).on('change', function(){
+            // check if it is in the range
+            var curr_value = $(this).val();
+            $(this).val(curr_value <= 1000 ? curr_value >= 1 ? curr_value : 1 : 1000 );
+        });
+        //console.log('entity.priority : ', priority);
 
         {# ***************************************************************** #}
         {# Resources and Responsible#}

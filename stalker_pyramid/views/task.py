@@ -329,6 +329,25 @@ def walk_hierarchy(task):
                 break
 
 
+def find_leafs_in_hierarchy(task, leafs=None):
+    """Walks through task hierarchy and finds all of the leaf tasks
+
+    :param task: The starting task
+    :return:
+    """
+    if not leafs:
+        leafs = []
+
+    # start from the given task
+    logger.debug('walking on task : %s' % task)
+    for child in task.children:
+        if child.is_leaf:
+            leafs.append(child)
+        else:
+            leafs.extend(find_leafs_in_hierarchy(child, leafs))
+    return leafs
+
+
 def walk_and_duplicate_task_hierarchy(task):
     """Walks through task hierarchy and creates duplicates of all the tasks
     it finds
@@ -408,15 +427,38 @@ def duplicate_task_hierarchy(request):
     """
     task_id = request.matchdict.get('id')
     task = Task.query.filter_by(id=task_id).first()
+
+    name = request.params.get('name', task.name+' - Duplicate')
+
+
     if task:
         dup_task = walk_and_duplicate_task_hierarchy(task)
         update_dependencies_in_duplicated_hierarchy(task)
+
         cleanup_duplicate_residuals(task)
         # update the parent
         dup_task.parent = task.parent
         # just rename the dup_task
-        dup_task.name += ' - Duplicate'
+
+        dup_task.name = name
+        dup_task.code = name
+
         DBSession.add(dup_task)
+
+        #update_task_statuses_with_dependencies(dup_task)
+        leafs = find_leafs_in_hierarchy(dup_task)
+        for leaf in leafs:
+            update_task_statuses_with_dependencies(leaf)
+
+        for leaf in leafs:
+            update_task_statuses(leaf)
+
+         # check for children
+        update_task_statuses(dup_task)
+        # check fo dependencies
+        update_task_statuses_with_dependencies(dup_task)
+
+
     else:
         transaction.abort()
         return Response(
@@ -2449,28 +2491,38 @@ def get_task_events(request):
     return events
 
 
+
 @view_config(
-    route_name='get_task_depends',
+    route_name='get_task_dependency',
     renderer='json'
 )
-def get_task_depends(request):
+def get_task_dependency(request):
     if not multi_permission_checker(
-            request, ['Read_User', 'Read_TimeLog']):
+            request, ['Read_User', 'Read_Task']):
         return HTTPForbidden(headers=request)
 
-    logger.debug('get_task_depends is running')
+    logger.debug('get_task_dependent_of is running')
 
     task_id = request.matchdict.get('id', -1)
     task = Task.query.filter_by(id=task_id).first()
 
-    depends =[]
-    for dep_task in task.depends:
+    type = request.matchdict.get('type', -1)
+
+    list_of_dep_tasks_json = []
+    list_of_dep_tasks=[]
+
+    if type=='depends':
+        list_of_dep_tasks = task.depends
+    elif type=='dependent_of':
+        list_of_dep_tasks = task.dependent_of
+
+    for dep_task in list_of_dep_tasks:
         resources = []
 
         for resource in dep_task.resources:
             resources.append({'name': resource.name, 'id': resource.id})
 
-        depends.append(
+        list_of_dep_tasks_json.append(
             {
                 'id': dep_task.id,
                 'name': dep_task.name,
@@ -2483,4 +2535,4 @@ def get_task_depends(request):
             }
         )
 
-    return depends
+    return list_of_dep_tasks_json
