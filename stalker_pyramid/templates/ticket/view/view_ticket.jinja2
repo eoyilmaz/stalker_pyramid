@@ -88,7 +88,7 @@
                             </table>
                             <hr>
                             <h4>Description</h4>
-                            <p>{{ ticket.description | safe }}</p>
+                            <p>{{ ticket.description | replace('\n', '<br>') | safe }}</p>
                         </div>
                     </div>
                 </div>
