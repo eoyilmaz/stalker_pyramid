@@ -407,6 +407,30 @@
         body.removeClass('skin-1 skin-2 skin-3');
         body.addClass(skin_class);
         $('.ace-nav > li.grey').addClass('dark');
+
+        // if it is smaller resize the page content to the window height
+{#        var resize_page_content = function(){#}
+{#            var page_content = $('.page-content');#}
+{#            var page_content_height = page_content.height();#}
+{#            var window_height = $(window).height() - 85; {# 230 #}
+{#            var new_height = Math.max(window_height, page_content_height);#}
+{#            if (page_content_height < window_height) {#}
+{#              page_content.css({height: window_height});#}
+{#            }#}
+{#            console.log('----------------------------------');#}
+{#            console.log('window_height      : ', window_height);#}
+{#            console.log('page_content_height: ', page_content_height);#}
+{#            console.log('new_height         : ', new_height);#}
+{#        };#}
+
+        // resize .page-content to window size
+{#        $(window).on('resize', function(){#}
+{#            resize_page_content();#}
+{#        });#}
+{#        $(function(){#}
+{#            resize_page_content();#}
+{#        });#}
+
     </script>
     
     <script type="text/javascript">
