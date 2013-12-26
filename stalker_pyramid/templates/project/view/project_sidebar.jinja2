@@ -8,7 +8,6 @@
 <script type="text/javascript">
     $(function(){
         $.getJSON('/entities/{{ entity.id }}/references/count/').then(function(data){
-
              menu_of('References',
                     "{%- if request.current_route_path() == request.route_path('list_entity_references', id=project.id) -%}'active',{%- else -%},{%- endif -%}",
                     '{{ request.route_url('list_entity_references', id=project.id) }}',
@@ -22,46 +21,49 @@
         page_of('{{ project.name }}',
                 '{{ project.code }}',
                 "{%- if project.thumbnail -%}/{{ project.thumbnail.full_path }}{%- else -%}{{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif")}}{%- endif -%}",
-                '/projects/{{ project.id }}/update/dialog')
+                '/projects/{{ project.id }}/update/dialog');
 
         menu_of('Dashboard',
                 "{%- if request.current_route_path() == request.route_path('view_project', id=project.id) -%}'active',{%- else -%},{%- endif -%}",
                 '{{ request.route_url('view_project', id=project.id) }}',
                 'icon-dashboard',
-                '')
+                '');
 
         menu_of('Tasks',
                 "{%- if request.current_route_path() == request.route_path('list_entity_tasks', id=project.id) -%}'active',{%- else -%},{%- endif -%}",
                 '{{ request.route_url('list_entity_tasks', id=project.id) }}',
                 'icon-tasks',
-                '{{ project.tasks | count }}')
+                '{{ project.tasks | count }}');
 
         menu_of('Tickets',
                 "{%- if request.current_route_path() == request.route_path('list_entity_tickets', id=project.id) -%}'active',{%- else -%},{%- endif -%}",
                 '{{ request.route_url('list_entity_tickets', id=project.id) }}',
                 'icon-ticket',
-                '{{ project.open_tickets | count }}')
+                '{{ project.open_tickets | count }}');
+
         menu_of('Assets',
                 "{%- if request.current_route_path() == request.route_path('list_project_assets', id=project.id) -%}'active',{%- else -%},{%- endif -%}",
                 '{{ request.route_url('list_project_assets', id=project.id) }}',
                 'icon-puzzle-piece',
-                '')
+                '');
+
         menu_of('Sequences',
                 "{%- if request.current_route_path() == request.route_path('list_project_sequences', id=project.id) -%}'active',{%- else -%},{%- endif -%}",
                 '{{ request.route_url('list_project_sequences', id=project.id) }}',
                 'icon-film',
-                '')
+                '');
+
         menu_of('Shots',
                 "{%- if request.current_route_path() == request.route_path('list_project_shots', id=project.id) -%}'active',{%- else -%},{%- endif -%}",
                 '{{ request.route_url('list_project_shots', id=project.id) }}',
                 'icon-camera',
-                '')
-        menu_of('Users',
-                    "{%- if request.current_route_path() == request.route_path('list_project_users', id=project.id) -%}'active',{%- else -%},{%- endif -%}",
-                    '{{ request.route_url('list_project_users', id=project.id) }}',
-                    'icon-user',
-                    '')
+                '');
 
+        menu_of('Users',
+                "{%- if request.current_route_path() == request.route_path('list_project_users', id=project.id) -%}'active',{%- else -%},{%- endif -%}",
+                '{{ request.route_url('list_project_users', id=project.id) }}',
+                'icon-user',
+                '');
     })
 </script>
 

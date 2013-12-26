@@ -75,7 +75,7 @@
           href='{{ request.static_url("stalker_pyramid:static/stalker/css/ace-fonts.css") }}'/#}
     <!--ace styles-->
     <link rel="stylesheet"
-          href='{{ request.static_url("stalker_pyramid:static/ace/css/ace.min.css") }}'>
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/css/ace.css") }}'>
     <link rel="stylesheet"
           href='{{ request.static_url("stalker_pyramid:static/ace/css/ace-responsive.min.css") }}'>
     <link rel="stylesheet"
@@ -136,7 +136,7 @@
     {% endblock templates %}
 
 </head>
-<body class="navbar-fixed breadcrumbs-fixed">
+<body class="navbar-fixed breadcrumbs-fixed skin-1">
 
 
 {% for message in request.session.pop_flash() %}
@@ -187,7 +187,7 @@
                 </a>
 
                 <div class="media-body">
-                    <h5 class="media-heading">{{=it.name}}
+                    <h5 class="media-heading"><span style='color: #b1bac1;'>{{=it.name}}</span>
                         <small>{{=it.code}}</small>
                     </h5>
                     <a href={{=it.update_link}}
@@ -400,6 +400,15 @@
     <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/date.format.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/date.stalker.js") }}'></script>
 
+    <script type="text/javascript">
+        // choose default skin
+        var skin_class = 'skin-1';
+        var body = $(document.body);
+        body.removeClass('skin-1 skin-2 skin-3');
+        body.addClass(skin_class);
+        $('.ace-nav > li.grey').addClass('dark');
+    </script>
+    
     <script type="text/javascript">
         if ("ontouchend" in document) document.write("<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.mobile.custom.min.js") }}'>" + "<" + "/script>");
     </script>
