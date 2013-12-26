@@ -71,16 +71,6 @@ tr .odd > td .ticket_BLOCKER {
 .header-color-user + .widget-body {
   border-color: #d15b47;
 }
-
-.header-color-task {
-    background: #848484;
-    border-color: #989898
-}
-
-.header-color-task+.widget-body {
-    border-color: #aaa
-}
-
 .pln {
   background-color: #abbac3;
   color: white;
@@ -165,4 +155,7 @@ tr .odd > td .ticket_BLOCKER {
 }
 .label-green {
   background-color: #82af6f !important;
+}
+.fc-week {
+  background-color: #EEEEEE;
 }

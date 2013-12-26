@@ -272,14 +272,15 @@ def update_time_log(request):
             time_log.description = description
             time_log.resource = resource
         except OverBookedError as e:
-            logger.debug('e.message: %s' % e.message)
-            response = Response(e.message, 500)
+            logger.debug('e.message: %s' % str(e))
+            response = Response(str(e), 500)
             transaction.abort()
             return response
         else:
             DBSession.add(time_log)
             request.session.flash(
-                'success:Time log for <strong>%s</strong> is updated..' % (time_log.task.name)
+                'success:Time log for <strong>%s</strong> is updated..'
+                % time_log.task.name
             )
             logger.debug('successfully updated time log!')
 
