@@ -267,7 +267,7 @@ def get_logged_in_user(request):
     """
     user = User.query.filter_by(login=authenticated_userid(request)).first()
     if not user:
-        raise HTTPForbidden(headers=request)
+        raise HTTPForbidden(request)
     return user
 
 
