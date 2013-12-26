@@ -267,10 +267,10 @@ def update_time_log(request):
         # TimeLog should handle the extension of the effort
 
         try:
-            time_log.resource = resource
             time_log.start = start_date
             time_log.end = end_date
             time_log.description = description
+            time_log.resource = resource
         except OverBookedError as e:
             logger.debug('e.message: %s' % e.message)
             response = Response(e.message, 500)
