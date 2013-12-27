@@ -157,11 +157,11 @@ tr .odd > td .ticket_BLOCKER {
   background-color: #82af6f !important;
 }
 .fc-week {
-  background-color: #EEEEEE;
+  background-color: #e6eaef;
 }
 .fc-day-number {
   text-align: right;
-  background-color: #cccccc;
+  background-color: #c4c8cd;
   width: 100%;
   padding-left: 0px !important;
   padding-right: 2px !important;

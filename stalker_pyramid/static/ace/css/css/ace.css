@@ -40,7 +40,7 @@ body.breadcrumbs-fixed {
   padding: 0;
 }
 .page-content {
-  background: #dddddd;
+  background: #d3d7dc;
   margin: 0;
   padding: 8px 20px 24px;
 }
@@ -194,16 +194,18 @@ blockquote.pull-right {
 /* modals */
 .modal {
   border-radius: 0;
+  background-color: #d3d7dc;
 }
 .modal-footer {
-  border-top-color: #e4e9ee;
+  border-top-color: #a7acb1;
   -webkit-box-shadow: none;
   -moz-box-shadow: none;
   box-shadow: none;
-  background-color: #eff3f8;
+  background-color: #c4c8cd;
 }
 .modal-header .close {
   font-size: 32px;
+  background-color: #c4c8cd;
 }
 /* wells */
 .well {
@@ -10935,8 +10937,8 @@ img.editable-click:hover {
 .ui-jqdialog .ui-dialog-buttonpane,
 .ui-dialog .ui-jqdialog-buttonpane,
 .ui-jqdialog .ui-jqdialog-buttonpane {
-  background-color: #eff3f8;
-  border-top: 1px solid #e4e9ee;
+  background-color: #c4c8cd;
+  border-top: 1px solid #a7acb1;
 }
 .ui-dialog .ui-dialog-buttonpane button,
 .ui-jqdialog .ui-dialog-buttonpane button,
@@ -11221,7 +11223,7 @@ img.editable-click:hover {
   border-left: 1px solid #E1E1E1;
 }
 .ui-jqgrid .ui-jqgrid-hdiv {
-  background-color: #eff3f8;
+  background-color: #c4c8cd;
   border: 1px solid #D3D3D3;
   border-width: 1px 0 0 1px;
   line-height: 15px;
@@ -11230,7 +11232,7 @@ img.editable-click:hover {
   text-shadow: none;
 }
 .ui-jqgrid .ui-jqgrid-htable thead {
-  background-color: #eff3f8;
+  background-color: #c4c8cd;
 }
 .ui-jqgrid .ui-jqgrid-htable th span.ui-jqgrid-resize {
   height: 45px !important;
@@ -11276,7 +11278,7 @@ img.editable-click:hover {
   height: 45px;
   padding-top: 3px !important;
   padding-bottom: 5px !important;
-  background-color: #eff3f8 !important;
+  background-color: #c4c8cd !important;
   border-bottom: 1px solid #E1E1E1 !important;
   border-top: 0 !important;
 }
@@ -11304,7 +11306,7 @@ img.editable-click:hover {
 }
 .ui-jqgrid .ui-jqgrid-toppager {
   height: auto !important;
-  background-color: #eff3f8;
+  background-color: #c4c8cd;
   border-bottom: 1px solid #E1E1E1 !important;
 }
 .ui-jqgrid .jqgrow .editable {
@@ -11562,7 +11564,7 @@ th[aria-selected=true] .ui-jqgrid-sortable {
   padding: 8px;
 }
 .EditTable {
-  background-color: #eff3f8;
+  background-color: #c4c8cd;
   border-top: 1px solid #D6E1EA !important;
   padding: 8px;
 }
