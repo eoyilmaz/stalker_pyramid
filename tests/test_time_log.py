@@ -122,9 +122,11 @@ class TimeLogViewTestCase(unittest2.TestCase):
         self.assertEqual(self.task1.status, self.status_new)
         response = time_log.create_time_log(request)
         self.assertEqual(response.status_int, 500)
-        self.assertEqual(response.body,
-                         'It is only possible to create time log for a task '
-                         'with status is not set to "RTS", "WIP" or "HREV"')
+        self.assertEqual(
+            response.body,
+            'It is only possible to create time log for a task '
+            'with status "RTS", "WIP", "PREV" or "HREV"'
+        )
         self.assertEqual(self.task1.status, self.status_new)
 
     def test_creating_a_time_log_for_a_task_with_status_rts(self):
@@ -144,8 +146,8 @@ class TimeLogViewTestCase(unittest2.TestCase):
         self.assertEqual(self.task1.status, self.status_wip)
 
     def test_creating_a_time_log_for_a_task_with_status_pending_review(self):
-        """testing if an error response will be returned when trying to create
-        time log for a task with status "pending review"
+        """testing if an response with status code 200 will be returned when
+        a time log for a task with status "pending review" has been created
         """
         request = testing.DummyRequest()
         self.task1 = Task.query.filter(Task.name == self.task1.name).first()
@@ -157,7 +159,7 @@ class TimeLogViewTestCase(unittest2.TestCase):
         request.params['end'] = "Fri, 01 Nov 2013 17:00:00 GMT"
 
         response = time_log.create_time_log(request)
-        self.assertEqual(response.status_code, 500)
+        self.assertEqual(response.status_code, 200)
 
     def test_creating_a_time_log_for_a_task_with_status_completed(self):
         """testing if an error response will be returned when trying to create

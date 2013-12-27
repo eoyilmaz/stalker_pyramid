@@ -162,18 +162,20 @@ def create_time_log(request):
 
             status_rts = Status.query.filter(Status.code == "RTS").first()
             status_wip = Status.query.filter(Status.code == "WIP").first()
-            status_cmpl = \
-                Status.query.filter(Status.code == "CMPL").first()
+            status_prev = \
+                Status.query.filter(Status.code == "PREV").first()
             status_hrev = \
                 Status.query.filter(Status.code == "HREV").first()
+            status_cmpl = \
+                Status.query.filter(Status.code == "CMPL").first()
 
             # check if the task status is not new or completed
-            if task.status not in [status_rts, status_wip, status_hrev]:
+            if task.status not in [status_rts, status_wip, status_hrev, status_prev]:
                 DBSession.rollback()
                 # it is not possible to create a time log for completed tasks
-                response = Response('It is only possible to create time log '
-                                    'for a task with status is not set to '
-                                    '"RTS", "WIP" or "HREV"', 500)
+                response = Response(
+                    'It is only possible to create time log for a task with '
+                    'status "RTS", "WIP", "PREV" or "HREV"', 500)
                 transaction.abort()
                 return response
 
@@ -412,7 +414,7 @@ def delete_time_log(request):
 
     status_cmpl = Status.query.filter(Status.code == 'CMPL').first()
 
-    if time_log.task.status == status_cmpl:
+    if time_log.task.status in [status_cmpl]:
         transaction.abort()
         return Response(
             'Error: You can not delete a TimeLog of a Task with status CMPL',
