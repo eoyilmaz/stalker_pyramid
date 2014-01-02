@@ -129,23 +129,18 @@
                 </div>
 
                 <div class='control-group'>
-                    <label class="span3 control-label" for='shot_cut_in'>Cut In</label>
+                    <label class="span3 control-label" for='shot_cut_in'>Cut In & Out</label>
                     <div class='span9'>
                         <input id='shot_cut_in'
-                                class='input-block-level'
-                                name='shot_cut_in'
-                                is_updating=false
-                                {% if mode=='update' %}{% if entity.type %}value="{{ entity.cut_in }}"{% endif %}{% endif %}>
-                    </div>
-                </div>
-                <div class='control-group'>
-                    <label class="span3 control-label" for='shot_cut_out'>Cut Out</label>
-                    <div class='span9'>
+                               class='input-block-level'
+                               name='cut_in'
+                               is_updating=false
+                               {% if mode=='update' %}{% if entity.type %}value="{{ entity.cut_in }}"{% endif %}{% endif %}>
                         <input id='shot_cut_out'
-                                class='input-block-level'
-                                name='shot_cut_out'
-                                is_updating=false
-                                {% if mode=='update' %}{% if entity.type %}value="{{ entity.cut_out }}"{% endif %}{% endif %}>
+                               class='input-block-level'
+                               name='cut_out'
+                               is_updating=false
+                               {% if mode=='update' %}{% if entity.type %}value="{{ entity.cut_out }}"{% endif %}{% endif %}>
                     </div>
                 </div>
             </div>
@@ -334,6 +329,13 @@
         var selected_resources = [];
         var entity_type = 'Task';
         var responsible_id = {{ project.lead.id }};
+        var shot_cut_in = 1;
+        var shot_cut_out = 1;
+        {% if entity.entity_type == 'Shot' %}
+            shot_cut_in = {{ entity.cut_in }};
+            shot_cut_out = {{ entity.cut_out }};
+        {% endif %}
+    
 
         {% if depends_to %}
             depends_to = [
@@ -615,34 +617,30 @@
         {# ***************************************************************** #}
         {# Cut In Spinner #}
         $('#shot_cut_in').ace_spinner({
-            value: 1,
+            value: shot_cut_in,
             min: 1,
-            max: 1000,
             step: 1,
             btn_up_class: 'btn-info',
             btn_down_class: 'btn-info'
         }).on('change', function(){
             // check if it is in the range
             var curr_value = $(this).val();
-            $(this).val(curr_value <= 1000 ? curr_value >= 1 ? curr_value : 1 : 1000 );
+            $(this).val(curr_value <= 1 ? 1 : curr_value);
         });
-        //console.log('entity.priority : ', priority);
 
         {# ***************************************************************** #}
         {# Cut out Spinner #}
         $('#shot_cut_out').ace_spinner({
-            value: 1,
+            value: shot_cut_out,
             min: 1,
-            max: 1000,
             step: 1,
             btn_up_class: 'btn-info',
             btn_down_class: 'btn-info'
         }).on('change', function(){
             // check if it is in the range
             var curr_value = $(this).val();
-            $(this).val(curr_value <= 1000 ? curr_value >= 1 ? curr_value : 1 : 1000 );
+            $(this).val(curr_value <= 1 ? 1 : curr_value);
         });
-        //console.log('entity.priority : ', priority);
 
         {# ***************************************************************** #}
         {# Resources and Responsible#}

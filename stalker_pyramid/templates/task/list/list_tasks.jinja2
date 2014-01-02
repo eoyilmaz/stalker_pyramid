@@ -339,7 +339,7 @@
                      style="height: 30px;
                             margin-left: 5px;
                             margin-bottom: 0px;">
-                    <input id='start_end_date_range_picker'
+                    <input id='task_start_end_date_range_picker'
                            name='start_and_end_dates'
                            type="text"
                            data-date-format="yyyy-mm-dd"
@@ -867,9 +867,7 @@ require([
         });
     });
 
-    console.debug('code is here 1');
     $('#delete_task_menu_item').on('click', function(e){
-        console.debug('code is here 1a');
         e.preventDefault();
         e.stopPropagation();
 
@@ -908,15 +906,13 @@ require([
             }
         });
     });
-    console.debug('code is here 2');
-
 
     // get the gantt column
     var gantt_column = gantt_chart.columnSets[1][0][0];
 
     $("#gantt_update_zoom_level_button").on('click', function(e){
         // update date values
-        var start_and_end_dates_as_string = $('#start_end_date_range_picker').val();
+        var start_and_end_dates_as_string = $('#task_start_end_date_range_picker').val();
         var dates = start_and_end_dates_as_string.split(' - ');
         var start_date = moment(dates[0], 'MM-DD-YYYY').startOf('day');
         var end_date = moment(dates[1], 'MM-DD-YYYY').endOf('day');
@@ -1058,7 +1054,7 @@ require([
             // update interface elements
             var formatted_start_date = moment(zoomed_dates.start).format('MM/DD/YYYY');
             var formatted_end_date = moment(zoomed_dates.end).format('MM/DD/YYYY');
-            var start_end_date_range_picker = $('#start_end_date_range_picker');
+            var start_end_date_range_picker = $('#task_start_end_date_range_picker');
             start_end_date_range_picker.val(formatted_start_date + ' - ' + formatted_end_date);
             start_end_date_range_picker.data().daterangepicker.updateFromControl();
             $('#zoom_level').val(zoom_level);
@@ -1089,7 +1085,7 @@ require([
 
     $(function () {
         // initialize date picker
-        var start_end_date_range_picker = $('#start_end_date_range_picker').daterangepicker();
+        var start_end_date_range_picker = $('#task_start_end_date_range_picker').daterangepicker();
 
         // also update the icon
         start_end_date_range_picker.next().on('click', function () {

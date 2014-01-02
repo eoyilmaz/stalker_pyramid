@@ -598,6 +598,9 @@ def update_task(request):
     task_type = request.params.get('task_type', None)
     shot_sequence_id = request.params.get('shot_sequence_id', None)
 
+    cut_in = int(request.params.get('cut_in', 1))
+    cut_out = int(request.params.get('cut_out', 1))
+
     logger.debug('entity_type         : %s' % entity_type)
     logger.debug('parent_id           : %s' % parent_id)
     logger.debug('parent              : %s' % parent)
@@ -614,6 +617,8 @@ def update_task(request):
     logger.debug('update_bid          : %s' % update_bid)
     logger.debug('priority            : %s' % priority)
     logger.debug('code                : %s' % code)
+    logger.debug('cut_in              : %s' % cut_in)
+    logger.debug('cut_out             : %s' % cut_out)
 
     # before doing anything check permission
     if not p_checker('Update_' + entity_type):
@@ -688,6 +693,9 @@ def update_task(request):
 
     if entity_type == 'Shot':
         task.sequence = Sequence.query.filter_by(id=shot_sequence_id).first()
+        # TODO: there is a bug in Stalker we can not set shot.cut_in because of _cut_duratioin attribute is absent
+        # task.cut_in = cut_in
+        # task.cut_out = cut_out
 
     task._reschedule(task.schedule_timing, task.schedule_unit)
     if update_bid:
@@ -1644,6 +1652,9 @@ def create_task(request):
     task_type = request.params.get('task_type')
     shot_sequence_id = request.params.get('shot_sequence_id')
 
+    cut_in = request.params.get('cut_in')
+    cut_out = request.params.get('cut_out')
+
     logger.debug('entity_type         : %s' % entity_type)
     logger.debug('asset_type          : %s' % asset_type)
     logger.debug('task_type           : %s' % task_type)
@@ -1660,6 +1671,8 @@ def create_task(request):
     logger.debug('responsible         : %s' % responsible)
     logger.debug('priority            : %s' % priority)
     logger.debug('shot_sequence_id    : %s' % shot_sequence_id)
+    logger.debug('cut_in              : %s' % cut_in)
+    logger.debug('cut_out             : %s' % cut_out)
 
     kwargs = {}
 
@@ -1758,6 +1771,8 @@ def create_task(request):
     if entity_type == 'Shot':
         sequence = Sequence.query.filter_by(id=shot_sequence_id).first()
         kwargs['sequence'] = sequence
+        kwargs['cut_in'] = cut_in
+        kwargs['cut_out'] = cut_out
 
     try:
         if entity_type == 'Asset':

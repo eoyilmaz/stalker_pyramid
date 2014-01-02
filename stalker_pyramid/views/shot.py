@@ -105,6 +105,9 @@ def update_shot(request):
     name = request.params.get('name')
     code = request.params.get('code')
 
+    cut_in = int(request.params.get('cut_in', 1))
+    cut_out = int(request.params.get('cut_out', 1))
+
     status_id = request.params.get('status_id')
     status = Status.query.filter_by(id=status_id).first()
 
@@ -124,6 +127,8 @@ def update_shot(request):
         shot.status = status
         shot.updated_by = logged_in_user
         shot.date_updated = datetime.datetime.now()
+        shot.cut_in = cut_in
+        shot.cut_out = cut_out
 
         DBSession.add(shot)
 

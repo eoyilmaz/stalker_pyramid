@@ -246,7 +246,7 @@ function init_dialog() {
             {# Resource #}
             {% raw %}
             var user_option_template = doT.template(
-                    '<option value={{=it.id}}>{{=it.name}}</option>'
+                '<option value={{=it.id}}>{{=it.name}}</option>'
             );
             {% endraw %}
 
@@ -353,67 +353,60 @@ function init_dialog() {
 
     {# ***************************************************************** #}
     {# Start & End Date Picker #}
-    $(document).ready(function () {
-        // initialize date picker
-        var start_end_date_range_picker = $('#start_end_date_range_picker').daterangepicker();
+    // initialize date picker
+    var start_end_date_range_picker = $('#start_end_date_range_picker').daterangepicker();
 
-        // also update the icon
-        start_end_date_range_picker.next().on('click', function () {
-            $(this).prev().focus();
-        });
-
-        // fix z-index of the container
-        // start_end_date_range_picker.data().daterangepicker.container.css({'z-index': 1060});
-        start_end_date_range_picker.val(
-            start_date_value.format('mm/dd/yyyy') + ' - ' + end_date_value.format('mm/dd/yyyy')
-        );
-
-        start_end_date_range_picker.data().daterangepicker.updateFromControl();
-
-        // TODO: Change the listener action type
-        start_end_date_range_picker.on('shown', function (e) {
-            e.stopPropagation();
-        });
-        start_end_date_range_picker.on('hidden', function (e) {
-            e.stopPropagation();
-            update_hours_to_complete();
-        });
-
+    // also update the icon
+    start_end_date_range_picker.next().on('click', function () {
+        $(this).prev().focus();
     });
+
+    // fix z-index of the container
+    // start_end_date_range_picker.data().daterangepicker.container.css({'z-index': 1060});
+    start_end_date_range_picker.val(
+        start_date_value.format('mm/dd/yyyy') + ' - ' + end_date_value.format('mm/dd/yyyy')
+    );
+
+    start_end_date_range_picker.data().daterangepicker.updateFromControl();
+
+    // TODO: Change the listener action type
+    start_end_date_range_picker.on('shown', function (e) {
+        e.stopPropagation();
+    });
+    start_end_date_range_picker.on('hidden', function (e) {
+        e.stopPropagation();
+        update_hours_to_complete();
+    });
+
 
     {# ***************************************************************** #}
     {# Start Time #}
+    var start_time = $('#start_time');
+    start_time.val(start_time_value.format('HH:MM'));
+    start_time.timepicker({
+        minuteStep: 1,
+        showSeconds: false,
+        showMeridian: false
+    });
 
-    $(document).ready(function () {
-        var start_time = $('#start_time');
-        start_time.val(start_time_value.format('HH:MM'));
-        start_time.timepicker({
-            minuteStep: 1,
-            showSeconds: false,
-            showMeridian: false
-        });
-
-        // TODO: Change the listener action type
-        start_time.on('hide.timepicker', function () {
-            update_hours_to_complete()
-        });
+    // TODO: Change the listener action type
+    start_time.on('hide.timepicker', function () {
+        update_hours_to_complete()
     });
 
     {# ***************************************************************** #}
     {# End Time #}
-    $(document).ready(function () {
-        var end_time = $('#end_time');
-        end_time.val(end_time_value.format('HH:MM'));
-        end_time.timepicker({
-            minuteStep: 1,
-            showSeconds: false,
-            showMeridian: false
-        });
+    var end_time = $('#end_time');
+    end_time.val(end_time_value.format('HH:MM'));
+    end_time.timepicker({
+        minuteStep: 1,
+        showSeconds: false,
+        showMeridian: false
+    });
 
-        // TODO: Change the listener action type
-        end_time.on('hide.timepicker', function () {
-            update_hours_to_complete()
-        });
+    // TODO: Change the listener action type
+    end_time.on('hide.timepicker', function () {
+        update_hours_to_complete()
     });
 
     {# ***************************************************************** #}
