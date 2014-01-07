@@ -1,11 +1,6 @@
-{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery-ui-1.10.3.custom.min.js") }}'></script>#}
-{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.ui.touch-punch.min.js") }}'></script>#}
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/fullcalendar.min.js") }}'></script>
-{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootbox.min.js") }}'></script>#}
-
 
 <!--inline scripts related to this page-->
-
 <script type="text/javascript">
 
     function drawCalendar(cid, events) {
@@ -20,7 +15,7 @@
         -----------------------------------------------------------------*/
         var calendar = $('#' + cid).fullCalendar({
             {% if event_type %}
-                {% if has_permission('Create_'+event_type) %}
+                {% if has_permission('Create_' + event_type) %}
 
                     select: function (start, end, allDay) {
                         var event_dialog = $('#dialog_template');
@@ -62,6 +57,17 @@
                 }
             },
 
+            eventMouseover: function(event, jsEvent, view){
+                // add title attribute to each event
+                //console.log('eventMouseOver is running!');
+                setTimeout(function(){
+                    $(jsEvent.target).find('.fc-event-title').each(function(){
+                        var self = $(this);
+                        self.attr('title', self.text());
+                    });
+                }, 0);
+            },
+
             buttonText: {
                 prev: '<i class="icon-chevron-left"></i>',
                 next: '<i class="icon-chevron-right"></i>'
@@ -80,5 +86,7 @@
             selectHelper: true
 
         });
+
+
     }
 </script>
