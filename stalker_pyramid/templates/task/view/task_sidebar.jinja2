@@ -129,6 +129,19 @@
                 ''
         )
 
+        {% if entity.entity_type == 'Sequence' %}
+
+            menu_of('Shots',
+                    "
+            {%- if request.current_route_path() == request.route_path('list_sequence_shots', id=task.id) -%}
+                'active',{%- else -%},{%- endif -%}",
+            '{{ request.route_url('list_sequence_shots', id=task.id) }}',
+                    'icon-camera',
+                    ''
+            )
+        {% endif %}
+
+
 
         menu_of('Tasks',
                 "
@@ -145,7 +158,8 @@
             'active',{%- else -%},{%- endif -%}",
         '{{ request.route_url('list_task_tickets', id=task.id) }}',
                 'icon-ticket',
-                '{{ task.tickets | count }}' {# fix this it should be task.open_tickets, but stalker doesn't support it yet #}
+                '{{ task.tickets | count }}'
+        {# fix this it should be task.open_tickets, but stalker doesn't support it yet #}
         )
 
         menu_of('Versions',
@@ -176,15 +190,15 @@
 
                     id = '{{ task.id }}';
                     $.post(
-                        '/tasks/' + id + '/delete'
-                    ).done(function (response_text) {
-                        //bootbox.alert(response_text);
-                         window.location.assign('/projects/{{ task.project.id }}/view');
-                        // reload the gantt chart
+                                    '/tasks/' + id + '/delete'
+                            ).done(function (response_text) {
+                                //bootbox.alert(response_text);
+                                window.location.assign('/projects/{{ task.project.id }}/view');
+                                // reload the gantt chart
 
-                    }).fail(function (jqXHR) {
-                        bootbox.alert(jqXHR.responseText);
-                    });
+                            }).fail(function (jqXHR) {
+                                bootbox.alert(jqXHR.responseText);
+                            });
 
                 }
             });

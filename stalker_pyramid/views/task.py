@@ -617,6 +617,8 @@ def update_task(request):
     logger.debug('update_bid          : %s' % update_bid)
     logger.debug('priority            : %s' % priority)
     logger.debug('code                : %s' % code)
+
+    logger.debug('shot_sequence_id              : %s' % shot_sequence_id)
     logger.debug('cut_in              : %s' % cut_in)
     logger.debug('cut_out             : %s' % cut_out)
 
@@ -632,7 +634,7 @@ def update_task(request):
 
     # update the task
     if not task:
-        transaction.abourt()
+        transaction.abort()
         return Response("No task found with id : %s" % task_id, 500)
 
     task.name = name
@@ -692,7 +694,7 @@ def update_task(request):
     task.type = query_type(entity_type, type_name)
 
     if entity_type == 'Shot':
-        task.sequence = Sequence.query.filter_by(id=shot_sequence_id).first()
+        task.sequences = [Sequence.query.filter_by(id=shot_sequence_id).first()]
         # TODO: there is a bug in Stalker we can not set shot.cut_in because of _cut_duratioin attribute is absent
         # task.cut_in = cut_in
         # task.cut_out = cut_out
@@ -2401,6 +2403,32 @@ def unbind_task_from_tickets(task):
     tickets = Ticket.query.filter(Ticket.links.contains(task)).all()
     for ticket in tickets:
         ticket.links.remove(task)
+
+@view_config(
+    route_name='delete_task_dialog',
+    renderer='templates/modals/confirm_dialog.jinja2'
+)
+def delete_department_dialog(request):
+    """deletes the department with the given id
+    """
+    logger.debug('delete_department_dialog is starts')
+
+    task_id = request.matchdict.get('id')
+    task = Task.query.get(task_id)
+
+    action = '/tasks/%s/delete'% task_id
+
+    came_from = request.params.get('came_from', '/')
+
+    message = 'All the selected tasks and their child tasks and all the TimeLogs entered and all the Versions created for those tasks are going to be deleted.<br><br>Are you sure?'
+
+    logger.debug('action: %s' % action)
+
+    return {
+        'message': message,
+        'came_from': came_from,
+        'action': action
+    }
 
 
 @view_config(

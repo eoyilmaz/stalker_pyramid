@@ -160,6 +160,7 @@ def main(global_config, **settings):
     config.add_route('list_entity_users',              'entities/{id}/users/list')
     config.add_route('list_entity_departments',        'entities/{id}/departments/list')  # html
     config.add_route('list_entity_groups',             'entities/{id}/groups/list')  # html
+    config.add_route('list_entity_shots',              'entities/{id}/shots/list')  # html
     config.add_route('list_entity_tasks',              'entities/{id}/tasks/list')  # html
     config.add_route('list_entity_tickets',            'entities/{id}/tickets/list')  # html
     config.add_route('list_entity_projects',           'entities/{id}/projects/list')
@@ -187,6 +188,8 @@ def main(global_config, **settings):
     config.add_route('get_asset_references_count', 'assets/id}/references/count/')  # json
     config.add_route('get_shot_references',        'shots/{id}/references/')  # json
     config.add_route('get_shot_references_count',  'shots/{id}/references/count/')  # json
+    config.add_route('get_shots_children_task_type',  'shots/children/task_type/')  # json
+
 
     config.add_route('get_references',       'references/')
     config.add_route('get_reference',        'references/{id}')
@@ -430,6 +433,9 @@ def main(global_config, **settings):
 
     config.add_route('list_sequence_tickets',   'sequences/{id}/tickets/list')  # html
     config.add_route('list_sequence_tasks',     'sequences/{id}/tasks/list')  # html
+    config.add_route('list_sequence_shots',     'sequences/{id}/shots/list')  # html
+
+
     config.add_route('list_sequence_versions',  'sequences/{id}/versions/list')  # html
 
     # *************************************************************************
@@ -474,6 +480,7 @@ def main(global_config, **settings):
     config.add_route('request_extra_time', 'tasks/{id}/request_extra_time')
 
     config.add_route('delete_task',        'tasks/{id}/delete')
+    config.add_route('delete_task_dialog', 'tasks/{id}/delete/dialog')
 
     config.add_route('fix_task_statuses',      'tasks/{id}/fix/statuses/')
     config.add_route('fix_task_schedule_info', 'tasks/{id}/fix/schedule_info/')

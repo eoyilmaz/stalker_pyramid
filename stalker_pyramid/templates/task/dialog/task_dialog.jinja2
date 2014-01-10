@@ -331,10 +331,20 @@
         var responsible_id = {{ project.lead.id }};
         var shot_cut_in = 1;
         var shot_cut_out = 1;
+        var shot_sequences =[];
+
+
         {% if entity.entity_type == 'Shot' %}
             shot_cut_in = {{ entity.cut_in }};
             shot_cut_out = {{ entity.cut_out }};
+            {% if entity.sequences[0] %}
+                shot_sequences = '{{ entity.sequences[0].id }}'
+            {% endif %}
+
+            console.log('shot_sequences :', shot_sequences);
         {% endif %}
+
+        console.log('shot_sequences :', shot_sequences);
     
 
         {% if depends_to %}
@@ -374,8 +384,10 @@
             priority = {{ entity.priority }};
             responsible_id = {{ entity.responsible.id }};
             entity_type = '{{ entity.entity_type }}';
+
+
         {% endif %}
-        console.log('depends_to :', depends_to);
+
 
 
         var submit_button = $('#dialog_template_submit_button');
@@ -606,8 +618,16 @@
 
                 // set the field to normal mode
                 shot_sequence.attr('is_updating', false);
+
+
+                shot_sequence.val(shot_sequences);
+                shot_sequence.trigger('liszt:updated');
+
+
                 field_update_mode_checker();
             });
+
+
         };
 
         // update it on initialize

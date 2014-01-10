@@ -205,3 +205,4 @@ def get_project_sequences(request):
         }
         for sequence in entity.sequences
     ]
+

@@ -178,6 +178,14 @@ logger.setLevel(logging.DEBUG)
     renderer='templates/shot/list/list_entity_shots.jinja2'
 )
 @view_config(
+    route_name='list_sequence_shots',
+    renderer='templates/shot/list/list_entity_shots.jinja2'
+)
+@view_config(
+    route_name='list_entity_shots',
+    renderer='templates/shot/list/list_entity_shots.jinja2'
+)
+@view_config(
     route_name='view_sequence',
     renderer='templates/task/view/view_task.jinja2'
 )
@@ -249,7 +257,6 @@ logger.setLevel(logging.DEBUG)
     route_name='list_entity_resources',
     renderer='templates/resource/list/list_entity_resources.jinja2'
 )
-
 def get_entity_related_data(request):
     """view for generic data
     """
