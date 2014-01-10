@@ -68,6 +68,7 @@
                class="table table-striped table-bordered table-hover">
             <thead>
             <tr id="shots_table_column">
+                <th>Sequence</th>
                 <th>Thumbnail</th>
                 <th>Name</th>
             </tr>
@@ -95,13 +96,15 @@
     {% raw %}
     <script id="tmpl_shotRow" type="text/x-dot-template">
         <tr id="shot_row_{{=it.id}}">
+            <td ><a href='/tasks/{{=it.sequence_id}}/view'>{{=it.sequence_name}}</a>
+            </td>
             <td ><img style='width:auto; height: 100px;'
                      class="img-thumbnail"
                      src="{{=it.thumbnail_full_path }}">
             </td>
             <td id="shot_summary_cell_{{=it.id}}"><a href='{{=it.link}}'>{{=it.name}}</a><br/>
                 {{=it.description}}<br/>
-                <a href='/tasks/{{=it.sequence_id}}/view'>{{=it.sequence_name}}</a>
+
                 <span class="label label-{{=it.status_color}}">{{=it.status}}</span><br/><br/>
 
                 {{ if (it.update_shot_action) { }}
