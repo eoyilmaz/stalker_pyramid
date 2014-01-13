@@ -196,7 +196,7 @@
 
                     <div class="space-32"></div>
 
-                    <div class="row-fluid">
+                    <div class="row-fluid" >
                         <div id="calendar"></div>
                     </div>
 
@@ -347,7 +347,6 @@
 
                             var percent_complete_str = '<span class="label label-' + data[i].status_color + '">' + data[i].status + '</span>';
 
-
                             resources[prop_id]['additionalParameters']['children'][(data[i].id).toString()] = {name: '<span  class="pull-left"><a href="/tasks/' + data[i].id + '/view">' + data[i].title + '  </a></span>' + hour_to_complete_str + percent_complete_str, type: 'item'}
 
                             $('#resources_box').show();
@@ -416,7 +415,9 @@
                         }
 
                     }
+
                     drawTree(type + '_tree', depends);
+
                     if(data.length == 0){
                         $('#'+type + '_tree').append('<div class="alert alert-warning">No '+type+' for this task</div>');
                     }

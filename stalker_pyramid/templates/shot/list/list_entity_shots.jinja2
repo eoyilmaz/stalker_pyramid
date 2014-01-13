@@ -129,8 +129,8 @@
             </td>
             <td style="width:100px;">
                 <img style='width:auto; height: 100px;'
-                                          class="img-thumbnail"
-                                          src="{{=it.thumbnail_full_path }}">
+                     class="img-thumbnail"
+                     src="{{=it.thumbnail_full_path }}">
             </td>
             <td id="shot_summary_cell_{{=it.id}}">
                 <a href='{{=it.link}}'>{{=it.name}}</a>
@@ -161,19 +161,24 @@
 
     {% raw %}
     <script id="tmpl_taskCell" type="text/x-dot-template">
-        <td style="background-color:{{=it.status_color}}; width:120px;">
-            <div style="background-color:{{=it.status_color}}">
+        <td class="no-padding" style="width:120px;">
+            <div class="{{=it.status_color}}"
+                 style="width:120px; height:105px; padding:5px;">
+                <span>
+                    <a class="white" href="/tasks/{{=it.id }}/view">{{=it.name}}</a>
+                    {{ if (it.update_shot_action) { }}
+                    <a class="white pull-right"
+                       data-target="#dialog_template"
+                       data-toggle="modal"
+                       data-keyboard=false
+                       href="/tasks/{{=it.id }}/update/dialog">
+                        <i class="icon-edit bigger-130"></i>
+                    </a>{{ } }}<br/><br/><br/><br/>
+                </span>
+                <span>
+                    {{=it.status}}
+                </span>
 
-                <a class="white" href="/tasks/{{=it.id }}/view">{{=it.name}}</a>
-                 {{ if (it.update_shot_action) { }}
-                <a class="white pull-right"
-                   data-target="#dialog_template"
-                   data-toggle="modal"
-                   data-keyboard=false
-                   href="/tasks/{{=it.id }}/update/dialog">
-                    <i class="icon-edit bigger-130"></i>
-                </a>{{ } }}<br/>
-                {{=it.status}}<br/>
             </div>
         </td>
     </script>
@@ -238,10 +243,10 @@
                                     var task = data[i][types_data[j].name];
                                     if (task) {
 
-                                        shot_row.append(cell_template({'id': task[0], 'name': task[1], 'status': task[2], 'status_color': task[3], update_shot_action:data[i].update_shot_action}));
+                                        shot_row.append(cell_template({'id': task[0], 'name': task[1], 'status': task[2], 'status_color': task[2].toLowerCase(), update_shot_action: data[i].update_shot_action}));
 
                                     } else {
-                                        shot_row.append(cell_template({'id': '', 'name': '', 'status': '', 'status_color': 'black'}));
+                                        shot_row.append(cell_template({'id': '', 'name': '', 'status': '', 'status_color': 'black2'}));
                                     }
 
                                 }

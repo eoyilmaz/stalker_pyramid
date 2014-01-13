@@ -50,13 +50,6 @@ tr .odd > td .ticket_BLOCKER {
 .header-color-project + .widget-body {
   border-color: #82af6f;
 }
-.header-color-shot {
-  background: #848484;
-  border-color: #d3d7dc;
-}
-.header-color-shot + .widget-body {
-  border-color: #d3d7dc;
-}
 .header-color-group {
   background: #7e6eb0;
   border-color: #7e6eb0;
@@ -78,7 +71,13 @@ tr .odd > td .ticket_BLOCKER {
 .header-color-user + .widget-body {
   border-color: #d15b47;
 }
-
+.header-color-shot {
+  background: #848484;
+  border-color: #d3d7dc;
+}
+.header-color-shot + .widget-body {
+  border-color: #d3d7dc;
+}
 .header-color-task {
   background: #848484;
   border-color: #a9c1c1;
@@ -133,6 +132,13 @@ tr .odd > td .ticket_BLOCKER {
   color: white;
 }
 .cmpl a {
+  color: white;
+}
+.black2 {
+  background-color: #101010;
+  color: white;
+}
+.black2 a {
   color: white;
 }
 .dgrid-selected .pln {

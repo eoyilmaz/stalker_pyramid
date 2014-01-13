@@ -27,6 +27,10 @@
 @purple: #6f3cc4;
 @purple2: #7e6eb0;
 @grey: #abbac3;
+@black: #1f1f1f;
+
+
+
 
 @ticket_color: #AA2222;
 @even_ticket_border_color: #EE8888;
@@ -123,6 +127,24 @@ tr {
     }
 }
 
+.header-color-shot {
+  background: #848484;
+  border-color: #d3d7dc;
+
+  +.widget-body {
+    border-color: #d3d7dc;
+  }
+}
+
+.header-color-task {
+  background: #848484;
+  border-color: #a9c1c1;
+  +.widget-body {
+    border-color: #bdc1c6;
+  }
+}
+
+
 // *********************************
 // Statuses
 // *********************************
@@ -176,6 +198,14 @@ tr {
 
 .cmpl {
     background-color: @green;
+    color: white;
+    a {
+        color: white;
+    }
+}
+
+.black2 {
+    background-color: @black;
     color: white;
     a {
         color: white;
