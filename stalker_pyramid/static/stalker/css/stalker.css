@@ -50,6 +50,13 @@ tr .odd > td .ticket_BLOCKER {
 .header-color-project + .widget-body {
   border-color: #82af6f;
 }
+.header-color-shot {
+  background: #848484;
+  border-color: #d3d7dc;
+}
+.header-color-shot + .widget-body {
+  border-color: #d3d7dc;
+}
 .header-color-group {
   background: #7e6eb0;
   border-color: #7e6eb0;
