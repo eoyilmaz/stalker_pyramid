@@ -17,16 +17,18 @@
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
+import os
 
 import time
 import logging
 import datetime
+import re
 import transaction
 
 from pyramid.response import Response
 from pyramid.view import view_config
 from pyramid_mailer import get_mailer
-from pyramid_mailer.message import Message
+from pyramid_mailer.message import Message, Attachment
 
 from stalker.db import DBSession
 from stalker import User, Ticket, Project, Note, Type, Task
@@ -34,7 +36,8 @@ from stalker_pyramid.views import (get_logged_in_user, PermissionChecker,
                                    milliseconds_since_epoch,
                                    dummy_email_address, local_to_utc,
                                    get_multi_integer)
-from stalker_pyramid.views.link import replace_img_data_with_links
+from stalker_pyramid.views.link import (replace_img_data_with_links,
+                                        convert_file_link_to_full_path)
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -228,8 +231,6 @@ def update_ticket(request):
     comment_as_text = request.params.get('comment_as_text')
     action = request.params.get('action')
 
-    # TODO: filter all images in the comment and create appropriate links
-
     logger.debug('updating ticket')
     if not ticket:
         transaction.abort()
@@ -271,11 +272,30 @@ def update_ticket(request):
     # mail the comment to anybody related to the ticket
     if comment:
         # convert images to Links
+        attachments = []
         comment, links = replace_img_data_with_links(comment)
         if links:
             # update created_by attributes of links
             for link in links:
                 link.created_by = logged_in_user
+
+                # manage attachments
+                link_full_path = convert_file_link_to_full_path(link.full_path)
+                link_data = open(link_full_path, "rb").read()
+
+                link_extension = os.path.splitext(link.filename)[1].lower()
+                mime_type = ''
+                if link_extension in ['.jpeg', '.jpg']:
+                    mime_type = 'image/jpg'
+                elif link_extension in ['.png']:
+                    mime_type = 'image/png'
+
+                attachment = Attachment(
+                    link.filename,
+                    mime_type,
+                    link_data
+                )
+                attachments.append(attachment)
             DBSession.add_all(links)
 
         note = Note(
@@ -317,7 +337,11 @@ def update_ticket(request):
                     'summary': ticket.summary
                 }
             },
-            'comment': comment  # use the raw html comment
+            'comment': re.sub(
+                r'/SPL/[a-z0-9]+/[a-z0-9]+/',
+                'cid:',
+                comment
+            )
         }
 
         # make recipients unique
@@ -328,7 +352,8 @@ def update_ticket(request):
             sender=dummy_email_address,
             recipients=recipients,
             body=message_body_text,
-            html=message_body_html
+            html=message_body_html,
+            attachments=attachments
         )
         mailer.send(message)
 
