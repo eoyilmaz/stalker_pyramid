@@ -238,6 +238,24 @@ def get_shots(request):
     array_agg("Task_SimpleEntities".name) as task_name,
     array_agg("Task_Statuses".code) as status_code,
     array_agg("Task_Statuses_SimpleEntities".html_class) as status_html_class,
+    array_agg(coalesce(
+            -- for parent tasks
+            (case "Tasks"._schedule_seconds
+                when 0 then 0
+                else "Tasks"._total_logged_seconds::float / "Tasks"._schedule_seconds * 100
+             end
+            ),
+            -- for child tasks we need to count the total seconds of related TimeLogs
+            (coalesce("Task_TimeLogs".duration, 0.0))::float /
+                ("Tasks".schedule_timing * (case "Tasks".schedule_unit
+                    when 'h' then 3600
+                    when 'd' then 32400
+                    when 'w' then 147600
+                    when 'm' then 590400
+                    when 'y' then 7696277
+                    else 0
+                end)) * 100.0
+        )) as percent_complete,
     "Shot_Sequences".sequence_id as sequence_id,
     "Shot_Sequences_SimpleEntities".name as sequence_name
 from "Tasks"
@@ -270,6 +288,13 @@ join "Statuses" as "Task_Statuses" on "Tasks".status_id = "Task_Statuses".id
 join "SimpleEntities" as "Task_Statuses_SimpleEntities" on "Task_Statuses_SimpleEntities".id = "Tasks".status_id
 left join "Shot_Sequences" on "Shot_Sequences".shot_id = "Shots".id
 left join "SimpleEntities" as "Shot_Sequences_SimpleEntities" on "Shot_Sequences_SimpleEntities".id = "Shot_Sequences".sequence_id
+left outer join (
+            select
+                "TimeLogs".task_id,
+                extract(epoch from sum("TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC')) as duration
+            from "TimeLogs"
+            group by task_id
+        ) as "Task_TimeLogs" on "Task_TimeLogs".task_id = "Tasks".id
 %(where_condition)s
 group by
     "Shots".id,
@@ -323,8 +348,8 @@ order by "Shot_SimpleEntities".name
             'thumbnail_full_path': r[3] if r[3] else None,
             'status': r[4],
             'status_color': r[5],
-            'sequence_id': r[11],
-            'sequence_name': r[12],
+            'sequence_id': r[12],
+            'sequence_name': r[13],
             'update_shot_action':'/tasks/%s/update/dialog' % r[0] if update_shot_permission else None,
             'delete_shot_action':'/tasks/%s/delete/dialog' % r[0] if delete_shot_permission else None
         }
@@ -332,16 +357,16 @@ order by "Shot_SimpleEntities".name
         task_ids = r[7]
         task_names = r[8]
         task_statuses = r[9]
-        task_statuses_color = r[10]
+        task_percent_complete = r[11]
 
         logger.debug('task_types_names %s ' % task_types_names)
         r_data['nulls'] = [];
         for index in range(len(task_types_names)):
             logger.debug('task_types_names[index]; %s ' % task_types_names[index])
             if task_types_names[index]:
-                r_data[task_types_names[index]]=[task_ids[index],task_names[index],task_statuses[index],task_statuses_color[index]]
+                r_data[task_types_names[index]]=[task_ids[index],task_names[index],task_statuses[index],task_percent_complete[index]]
             else:
-                r_data['nulls'].append([task_ids[index],task_names[index],task_statuses[index],task_statuses_color[index]])
+                r_data['nulls'].append([task_ids[index],task_names[index],task_statuses[index],task_percent_complete[index]])
 
         return_data.append(r_data)
 
