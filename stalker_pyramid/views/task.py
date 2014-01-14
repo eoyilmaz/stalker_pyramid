@@ -114,10 +114,10 @@ def update_task_statuses(task):
         '%(NEW)s%(RTS)s%(WIP)s%(PREV)s%(HREV)s%(CMPL)s' % status_codes
 
     status_lut = {
-        '000000': status_new,  # this will not happen
+        '000000': status_new, # this will not happen
         '000001': status_cmpl,
 
-        '000010': status_wip,  # with the new implementation this could happen
+        '000010': status_wip, # with the new implementation this could happen
         '000011': status_wip,
 
         '000100': status_wip,
@@ -428,8 +428,7 @@ def duplicate_task_hierarchy(request):
     task_id = request.matchdict.get('id')
     task = Task.query.filter_by(id=task_id).first()
 
-    name = request.params.get('name', task.name+' - Duplicate')
-
+    name = request.params.get('name', task.name + ' - Duplicate')
 
     if task:
         dup_task = walk_and_duplicate_task_hierarchy(task)
@@ -453,7 +452,7 @@ def duplicate_task_hierarchy(request):
         for leaf in leafs:
             update_task_statuses(leaf)
 
-         # check for children
+            # check for children
         update_task_statuses(dup_task)
         # check fo dependencies
         update_task_statuses_with_dependencies(dup_task)
@@ -539,7 +538,8 @@ def convert_to_dgrid_gantt_task_format(tasks):
             'parent': task.parent.id if task.parent else task.project.id,
             'priority': task.priority,
             'resources': [
-                {'id': resource.id, 'name': resource.name} for resource in task.resources] if not task.is_container else [],
+                {'id': resource.id, 'name': resource.name} for resource in
+                task.resources] if not task.is_container else [],
             'responsible': {
                 'id': task.responsible.id,
                 'name': task.responsible.name
@@ -556,6 +556,7 @@ def convert_to_dgrid_gantt_task_format(tasks):
             'type': task.entity_type,
         } for task in tasks
     ]
+
 
 @view_config(
     route_name='update_task'
@@ -652,7 +653,7 @@ def update_task(request):
                   (parent.name, map(lambda x: x.name, depends))
         transaction.abort()
         return Response(message, 500)
-    # if the current parent and the previous parents are different
+        # if the current parent and the previous parents are different
     # also update the previous parents status
     if parent != prev_parent:
         update_task_statuses(prev_parent)
@@ -694,7 +695,8 @@ def update_task(request):
     task.type = query_type(entity_type, type_name)
 
     if entity_type == 'Shot':
-        task.sequences = [Sequence.query.filter_by(id=shot_sequence_id).first()]
+        task.sequences = [
+            Sequence.query.filter_by(id=shot_sequence_id).first()]
         # TODO: there is a bug in Stalker we can not set shot.cut_in because of _cut_duratioin attribute is absent
         # task.cut_in = cut_in
         # task.cut_out = cut_out
@@ -815,9 +817,9 @@ def raw_data_to_array(raw_data):
     if len(raw_data) > 7:  # in which case it is not '{"(,)"}'
         json_data = json.loads(
             raw_data.replace('{', '[')
-                    .replace('}', ']')
-                    .replace('(', '[')
-                    .replace(')', ']')
+            .replace('}', ']')
+            .replace('(', '[')
+            .replace(')', ']')
         )  # it is an array of string
         for j in json_data:
             d = j[1:-1].split(',')
@@ -1016,9 +1018,11 @@ def get_tasks(request):
                 content_range = content_range % (0, 1, 1)
             else:
                 convert_data = Project.query.all()
-                return_data = convert_to_dgrid_gantt_project_format(convert_data)
+                return_data = convert_to_dgrid_gantt_project_format(
+                    convert_data)
                 # just return here to avoid any further error
-                content_range = content_range % (0, len(convert_data)-1, len(convert_data))
+                content_range = content_range % (
+                    0, len(convert_data) - 1, len(convert_data))
             resp = Response(
                 json_body=return_data
             )
@@ -1432,8 +1436,9 @@ def get_user_tasks(request):
             'responsible_name': task.responsible.name,
             'responsible_id': task.responsible.id,
             'percent_complete': task.percent_complete,
-            'type':  task.type.name if task.type else '',
-            'request_review': '1' if ((logged_in_user in task.resources or logged_in_user == task.responsible) and task.status.code == 'WIP' and task.is_leaf) else None,
+            'type': task.type.name if task.type else '',
+            'request_review': '1' if ((
+                                          logged_in_user in task.resources or logged_in_user == task.responsible) and task.status.code == 'WIP' and task.is_leaf) else None,
             'status': task.status.name,
             'status_color': task.status.html_class,
             'name': '%s (%s)' % (
@@ -1706,8 +1711,8 @@ def create_task(request):
     kwargs['parent'] = parent
 
     # get the status_list
-    status_list = StatusList.query\
-        .filter_by(target_entity_type=entity_type)\
+    status_list = StatusList.query \
+        .filter_by(target_entity_type=entity_type) \
         .first()
 
     logger.debug('status_list: %s' % status_list)
@@ -1898,7 +1903,7 @@ def request_review(request):
 
     # check if the user is one of the resources of this task or the responsible
     if logged_in_user not in task.resources and \
-       logged_in_user != task.responsible:
+                    logged_in_user != task.responsible:
         transaction.abort()
         return Response('You are not one of the resources nor the '
                         'responsible of this task, so you can not request a '
@@ -1982,8 +1987,8 @@ def request_review(request):
 
     # find a related ticket or create a new one
     # find the related revision Ticket and add the comment
-    tickets = Ticket.query\
-        .filter(Ticket.links.contains(task))\
+    tickets = Ticket.query \
+        .filter(Ticket.links.contains(task)) \
         .filter(Ticket.type == review_type).all()
     logger.debug("tickets: %s" % tickets)
     if tickets:
@@ -2035,9 +2040,8 @@ def request_review(request):
             html=description_html)
         mailer.send(message)
 
-
     request.session.flash(
-                'success:Your review request has been sent to %s' % responsible.name)
+        'success:Your review request has been sent to %s' % responsible.name)
 
     return Response('Your review request has been sent to %s' %
                     responsible.name)
@@ -2065,7 +2069,7 @@ def request_extra_time(request):
         if task.is_container:
             transaction.abort()
             return Response('Can not request extra time for a container '
-                                'task', 500)
+                            'task', 500)
 
         # TODO: increase task extra time request counter
 
@@ -2073,22 +2077,22 @@ def request_extra_time(request):
             # get the project that the ticket belongs to
             summary_text = 'Extra Time Request: "%s"' % task.name
             description_text = \
-            """%(user_name)s has requested %(extra_time)s extra hours for 
-            %(task_name)s (%(task_link)s)" """ % {
-                "user_name": logged_in_user.name,
-                "extra_time": extra_time,
-                "task_name": task.name,
-                "task_link": request.route_url('view_task', id=task.id)
-            }
+                """%(user_name)s has requested %(extra_time)s extra hours for
+                %(task_name)s (%(task_link)s)" """ % {
+                    "user_name": logged_in_user.name,
+                    "extra_time": extra_time,
+                    "task_name": task.name,
+                    "task_link": request.route_url('view_task', id=task.id)
+                }
 
             description_html = \
-            """%(user_name)s has requested %(extra_time)s extra hours for 
-            %(task_name)s (%(task_link)s)" """ % {
-                "user_name": logged_in_user.name,
-                "extra_time": extra_time,
-                "task_name": task.name,
-                "task_link": request.route_url('view_task', id=task.id)
-            }
+                """%(user_name)s has requested %(extra_time)s extra hours for
+                %(task_name)s (%(task_link)s)" """ % {
+                    "user_name": logged_in_user.name,
+                    "extra_time": extra_time,
+                    "task_name": task.name,
+                    "task_link": request.route_url('view_task', id=task.id)
+                }
 
             responsible = task.responsible
 
@@ -2211,7 +2215,7 @@ def request_revision(request):
         task.schedule_timing += schedule_timing * studio.weekly_working_hours
     elif schedule_unit == 'm':
         task.schedule_timing += schedule_timing * 4 * \
-            studio.weekly_working_hours
+                                studio.weekly_working_hours
     elif schedule_unit == 'y':
         task.schedule_timing += \
             int(schedule_timing * studio.yearly_working_days *
@@ -2223,8 +2227,8 @@ def request_revision(request):
 
     # find the related revision Ticket and add the comment
     review_type = Type.query.filter(Type.name == "Review").first()
-    tickets = Ticket.query\
-        .filter(Ticket.links.contains(task))\
+    tickets = Ticket.query \
+        .filter(Ticket.links.contains(task)) \
         .filter(Ticket.type == review_type).all()
     logger.debug("tickets: %s" % tickets)
     if tickets:
@@ -2311,6 +2315,78 @@ def request_revision(request):
         mailer.send(message)
 
     return HTTPOk()
+
+
+@view_config(
+    route_name='get_entity_versions_used_by_tasks',
+    renderer='json'
+)
+def get_entity_versions_used_by_tasks(request):
+    """returns all the Shots of the given Project
+    """
+    logger.debug('get_versions is running')
+
+    entity_id = request.matchdict.get('id', -1)
+
+    logger.debug('entity_id : %s' % entity_id)
+
+    sql_query = """select
+    "Input_Version_Task_SimpleEntities".id,
+    "Input_Version_Task_SimpleEntities".name,
+    "Task_Resources_SimpleEntities".id as resource_id,
+    "Task_Resources_SimpleEntities".name as resource_name,
+    "Input_Version_Task_Statuses_SimpleEntities".html_class as status_color
+    
+from "Tasks"
+    join "Versions" on "Tasks".id = "Versions".task_id
+join "Version_Inputs" on "Versions".id = "Version_Inputs".link_id
+join "Versions" as "Input_Versions" on "Version_Inputs".version_id = "Input_Versions".id
+join "Tasks" as "Input_Version_Tasks" on "Input_Versions".task_id = "Input_Version_Tasks".id
+join "SimpleEntities" as "Input_Version_Task_SimpleEntities" on "Input_Version_Tasks".id = "Input_Version_Task_SimpleEntities".id
+join "SimpleEntities" as "Tasks_SimpleEntities" on "Tasks_SimpleEntities".id = "Tasks".id
+    join "SimpleEntities" as "Input_Version_Task_Statuses_SimpleEntities" on "Input_Version_Task_Statuses_SimpleEntities".id = "Input_Version_Tasks".status_id
+join "Task_Resources"  on "Task_Resources".task_id = "Input_Version_Tasks".id
+join "SimpleEntities" as "Task_Resources_SimpleEntities" on "Task_Resources_SimpleEntities".id = "Task_Resources".resource_id
+
+where "Tasks".id = %(task_id)s
+group by "Input_Version_Task_SimpleEntities".id, 
+"Tasks_SimpleEntities".name,
+"Task_Resources_SimpleEntities".id,
+"Task_Resources_SimpleEntities".name,
+"Input_Version_Task_Statuses_SimpleEntities".html_class
+    
+    """
+
+    # set the content range to prevent JSONRest Store to query the data twice
+    content_range = '%s-%s/%s'
+    task_id = entity_id
+
+    sql_query = sql_query % {'task_id': task_id}
+
+    logger.debug('sql_query : %s' % sql_query)
+
+    result = DBSession.connection().execute(sql_query)
+
+    return_data = [
+        {
+            'id': r[0],
+            'name': r[1],
+            'resource_id': r[2],
+            'resource_name': r[3],
+            'status_color':r[4]
+        }
+        for r in result.fetchall()
+
+    ]
+
+    task_count = len(return_data)
+    content_range = content_range % (0, task_count - 1, task_count)
+
+    resp = Response(
+        json_body=return_data
+    )
+    resp.content_range = content_range
+    return resp
 
 
 @view_config(
@@ -2404,6 +2480,7 @@ def unbind_task_from_tickets(task):
     for ticket in tickets:
         ticket.links.remove(task)
 
+
 @view_config(
     route_name='delete_task_dialog',
     renderer='templates/modals/confirm_dialog.jinja2'
@@ -2416,7 +2493,7 @@ def delete_department_dialog(request):
     task_id = request.matchdict.get('id')
     task = Task.query.get(task_id)
 
-    action = '/tasks/%s/delete'% task_id
+    action = '/tasks/%s/delete' % task_id
 
     came_from = request.params.get('came_from', '/')
 
@@ -2534,7 +2611,6 @@ def get_task_events(request):
     return events
 
 
-
 @view_config(
     route_name='get_task_dependency',
     renderer='json'
@@ -2552,11 +2628,11 @@ def get_task_dependency(request):
     type = request.matchdict.get('type', -1)
 
     list_of_dep_tasks_json = []
-    list_of_dep_tasks=[]
+    list_of_dep_tasks = []
 
-    if type=='depends':
+    if type == 'depends':
         list_of_dep_tasks = task.depends
-    elif type=='dependent_of':
+    elif type == 'dependent_of':
         list_of_dep_tasks = task.dependent_of
 
     for dep_task in list_of_dep_tasks:

@@ -251,8 +251,25 @@
                         </div>
 
                     </div>
-                    <div class="space-12"></div>
 
+
+                    <div class="space-12"></div>
+                    <div class="row-fluid">
+                        <div id="version_used_by_tasks"
+                             class="widget-box">
+                            <div class="widget-header header-color-grey">
+                                <h4 class="smaller"><i
+                                        class="icon-long-arrow-down"></i>Versions are used in
+                                </h4>
+                            </div>
+                            <div class="widget-body">
+                                <div class="widget-main padding-12">
+                                    <div id="version_used_by_tasks_tree"
+                                         class="tree"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -427,6 +444,46 @@
             get_dependency('depends');
             get_dependency('dependent_of');
         });
+
+        $(document).ready(function () {
+
+
+
+                $.getJSON('/entities/{{ entity.id }}/version/used_by/tasks/').then(function (data) {
+
+                    console.log(data.length)
+
+                    var tasks = new Object();
+                    for (var i = 0; i < data.length; i++) {
+
+                        var task_id = (data[i].id).toString();
+
+                        if (!tasks[task_id]) {
+                            tasks[task_id] = {
+                                'name': '<span><a href="/tasks/' + data[i].id + '/view">' + data[i].name + '  </a></span>',
+                                'type': 'folder',
+                                'icon-class': data[i].status_color
+                            }
+                        }
+
+                        if (!tasks[task_id]['additionalParameters']) {
+                            tasks[task_id]['additionalParameters'] = new Object();
+                            tasks[task_id]['additionalParameters']['children'] = new Object();
+                        }
+
+                        tasks[task_id]['additionalParameters']['children'][(data[i].resource_id).toString()] = {name: '<span  class="pull-left"><a href="/users/' + data[i].resource_id + '/view">' + data[i].resource_name + '  </a></span>', type: 'item'}
+
+
+                    }
+
+                    drawTree('version_used_by_tasks_tree', tasks);
+
+                    if(data.length == 0){
+                        $('#version_used_by_tasks_tree').append('<div class="alert alert-warning">No task used this task versions</div>');
+                    }
+                });
+            });
+
     </script>
 
 {% endblock extrascripts %}

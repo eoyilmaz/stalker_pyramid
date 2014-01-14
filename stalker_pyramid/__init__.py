@@ -156,6 +156,7 @@ def main(global_config, **settings):
     config.add_route('get_entity_entities_out_stack',  'entities/{id}/{entities}/out_stack/' )
     config.add_route('get_entity_events',              'entities/{id}/events/')  #json
     config.add_route('get_entity_versions',            'entities/{id}/versions/')  # json
+    config.add_route('get_entity_versions_used_by_tasks', 'entities/{id}/version/used_by/tasks/')
 
     config.add_route('list_entity_users',              'entities/{id}/users/list')
     config.add_route('list_entity_departments',        'entities/{id}/departments/list')  # html
@@ -181,6 +182,7 @@ def main(global_config, **settings):
     # Thumbnail References and Links
 
     config.add_route('get_task_versions',    'tasks/{id}/versions/')  # json
+
 
     config.add_route('get_task_references',        'tasks/{id}/references/')  # json
     config.add_route('get_task_references_count',  'tasks/{id}/references/count/')  # json
