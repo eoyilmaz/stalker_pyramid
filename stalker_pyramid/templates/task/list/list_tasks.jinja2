@@ -845,25 +845,6 @@ require([
 
                     console.log('data name'+ data[0].name)
                     // warn the user about what is going to happen and ask if it is ok
-{#                    bootbox.prompt('<div><h5>Give a new name to duplicated task:</h5></div>', function (result) {#}
-{#                                    if (result) {#}
-{##}
-{#                                        // get the id and send it to the server#}
-{#                                        var url = '';#}
-{#                                        for (var i = 0; i < selected_ids.length; i++) {#}
-{#                                            url = '/tasks/' + selected_ids[i] + '/duplicate?name=' + result;#}
-{#                                            console.debug(url);#}
-{#                                            $.post(url).done(function () {#}
-{#                                                gantt_column.reload();#}
-{#                                            }).fail(function (jqXHR) {#}
-{#                                                        bootbox.alert(jqXHR.responseText);#}
-{#                                                    });#}
-{#                                        }#}
-{#                                    }#}
-{#                                }#}
-{##}
-{##}
-{#                    );#}
 
 
                     bootbox.confirm("<form id='infos' action=''>\
