@@ -429,6 +429,7 @@ def duplicate_task_hierarchy(request):
     task = Task.query.filter_by(id=task_id).first()
 
     name = request.params.get('name', task.name + ' - Duplicate')
+    description = request.params.get('description', task.description)
 
     if task:
         dup_task = walk_and_duplicate_task_hierarchy(task)
@@ -441,6 +442,7 @@ def duplicate_task_hierarchy(request):
 
         dup_task.name = name
         dup_task.code = name
+        dup_task.description = description
 
         DBSession.add(dup_task)
 
@@ -717,14 +719,20 @@ def update_task(request):
 def review_task(request):
     """review task
     """
+
+     # get logged in user as he review requester
+    logged_in_user = get_logged_in_user(request)
+
+
     task_id = request.matchdict.get('id')
     task = Task.query.filter(Task.id == task_id).first()
-
-    send_email = request.params.get('send_email', 1)
 
     if not task:
         transaction.abort()
         return Response('There is no task with id: %s' % task_id, 500)
+
+    send_email = request.params.get('send_email', 1)
+    description = request.params.get('description', '')
 
     review = request.params.get('review')
 
@@ -753,6 +761,42 @@ def review_task(request):
         for dep in task.dependent_of:
             update_task_statuses_with_dependencies(dep)
 
+        utc_now = local_to_utc(datetime.datetime.now())
+        logger.debug("utc_now: %s" % utc_now)
+        logger.debug("task.date_created: %s" % task.date_created)
+
+        task.updated_by = logged_in_user
+        task.date_updated = utc_now
+
+
+
+        # find the related revision Ticket and add the comment
+        review_type = Type.query.filter(Type.name == "Review").first()
+        tickets = Ticket.query \
+            .filter(Ticket.links.contains(task)) \
+            .filter(Ticket.type == review_type).all()
+        logger.debug("tickets: %s" % tickets)
+
+
+        if tickets:
+            note = Note(
+                content=description,
+                created_by=logged_in_user,
+                date_created=utc_now,
+                date_updated=utc_now
+            )
+            for ticket in tickets:
+                ticket.comments.append(note)
+                ticket.date_updated = utc_now
+                ticket.updated_by = logged_in_user
+                ticket.resolve(logged_in_user,'fixed')
+            DBSession.add(note)
+
+        transaction.commit()
+        DBSession.add_all([task, logged_in_user])
+
+
+
         if send_email:
             # send email to resources of the task
             mailer = get_mailer(request)
@@ -760,16 +804,45 @@ def review_task(request):
             for resource in task.resources:
                 recipients.append(resource.email)
 
-            task_name = '%s (%s)' % (
+            task_full_name = '%s (%s)' % (
                 task.name,
                 '|'.join(map(lambda x: x.name, task.parents))
             )
+
+            summary_text = \
+                'Task Reviewed: "%(task_full_name)s" has been approved!' % {
+                    'task_full_name': task_full_name
+                }
+
+            description_body = \
+                '%(requester_name)s has approved ' \
+                '%(task)s with the following ' \
+                'comment:%(spacing)s' \
+                '%(description)s'
+
+
+
+            description_text = description_body % {
+                "requester_name": logged_in_user.name,
+                "task": task_full_name,
+                "spacing": '\n\n',
+                "description": description
+                if description else "(No Description)"
+            }
+
+            description_html = description_body % {
+                "requester_name": '<strong>%s</strong>' % logged_in_user.name,
+                "task": '<strong>%s</strong>' % task_full_name,
+                "spacing": '<br><br>',
+                "description": description.replace('\n', '<br>')
+                if description else "(No Description)"
+            }
             message = Message(
-                subject='Task Reviewed: Your task has been approved!',
+                subject=summary_text,
                 sender=dummy_email_address,
                 recipients=recipients,
-                body='%s has been approved' % task_name,
-                html='<strong>%s</strong> has been approved' % task_name
+                body=description_text,
+                html=description_html
             )
             mailer.send(message)
 
@@ -1755,6 +1828,8 @@ def create_task(request):
     kwargs['code'] = code
     kwargs['description'] = description
     kwargs['created_by'] = logged_in_user
+    kwargs['date_created'] = local_to_utc(datetime.datetime.now())
+
 
     kwargs['status_list'] = status_list
     kwargs['status'] = status
@@ -1984,6 +2059,8 @@ def request_review(request):
 
     # create a Ticket with the owner set to the responsible
     utc_now = local_to_utc(datetime.datetime.now())
+
+    logger.debug("utc_now: %s" % utc_now)
 
     # find a related ticket or create a new one
     # find the related revision Ticket and add the comment
@@ -2222,6 +2299,9 @@ def request_revision(request):
                 studio.weekly_working_hours)
 
     utc_now = local_to_utc(datetime.datetime.now())
+    logger.debug("utc_now: %s" % utc_now)
+
+
     task.updated_by = logged_in_user
     task.date_updated = utc_now
 
@@ -2231,6 +2311,8 @@ def request_revision(request):
         .filter(Ticket.links.contains(task)) \
         .filter(Ticket.type == review_type).all()
     logger.debug("tickets: %s" % tickets)
+
+
     if tickets:
         note = Note(
             content=description,
