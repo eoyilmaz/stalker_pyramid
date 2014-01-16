@@ -23,11 +23,13 @@
         <div class="widget-body">
             <div class="widget-main">
                 {% for result in results %}
+                    {# TODO: The next line is a dirty fix, so do it properly, (Bug: there are no views for Types so 'view_type' creates an error) #}
+                    {% if result.entity_type in ['Project', 'Task', 'Asset', 'Shot', 'Sequence', 'User', 'Studio', 'Ticket', 'Version', 'Department', 'Group'] %}
                     <div class="profile-activity clearfix">
                         <div>
                             <i class="icon-angle-right bigger-80"></i>
                             <a class=""
-                               href="{{ request.route_url('view_'+result.entity_type.lower(), id=result.id) }}">
+                               href="{{ request.route_url('view_%s' % result.entity_type.lower(), id=result.id) }}">
                                 {{ result.name }}{% if result.parents %}
                                 {% for parent in result.parents %}
                                    | {{ parent.name }}
@@ -36,6 +38,7 @@
                             </a>({{ result.entity_type }})
                         </div>
                     </div>
+                    {% endif %}
                 {% endfor %}
             </div>
         </div>
