@@ -2060,7 +2060,20 @@ def request_review(request):
     # create a Ticket with the owner set to the responsible
     utc_now = local_to_utc(datetime.datetime.now())
 
-    logger.debug("utc_now: %s" % utc_now)
+    revision_type = Type.query.filter_by(name='Revision').first()
+
+    revision_tickets = Ticket.query \
+        .filter(Ticket.links.contains(task)) \
+        .filter(Ticket.type == revision_type).all()
+
+
+    if revision_tickets:
+
+        for hr_ticket in revision_tickets:
+            hr_ticket.date_updated = utc_now
+            hr_ticket.updated_by = logged_in_user
+            # reopen if closed
+            hr_ticket.resolve(logged_in_user,'fixed')
 
     # find a related ticket or create a new one
     # find the related revision Ticket and add the comment
@@ -2299,57 +2312,66 @@ def request_revision(request):
                 studio.weekly_working_hours)
 
     utc_now = local_to_utc(datetime.datetime.now())
-    logger.debug("utc_now: %s" % utc_now)
-
 
     task.updated_by = logged_in_user
     task.date_updated = utc_now
+
+    resource = task.resources[0]
 
     # find the related revision Ticket and add the comment
     review_type = Type.query.filter(Type.name == "Review").first()
     tickets = Ticket.query \
         .filter(Ticket.links.contains(task)) \
         .filter(Ticket.type == review_type).all()
-    logger.debug("tickets: %s" % tickets)
 
 
     if tickets:
-        note = Note(
-            content=description,
-            created_by=logged_in_user,
-            date_created=utc_now,
-            date_updated=utc_now
-        )
         for ticket in tickets:
-            ticket.comments.append(note)
             ticket.date_updated = utc_now
             ticket.updated_by = logged_in_user
-        DBSession.add(note)
+            resource = ticket.created_by
+            ticket.resolve(logged_in_user,'fixed')
 
-    transaction.commit()
-    DBSession.add_all([task, logged_in_user])
 
-    if send_email:
-        # and send emails to the resources
+    # get the project that the ticket belongs to
+    project = task.project
 
-        task_full_name = "%(task_name)s (%(parent_names)s)" % {
-            'task_name': task.name,
-            'parent_names': ' | '.join(map(lambda x: x.name, task.parents))
+    user_link_internal = '<a href="%(url)s">%(name)s</a>' % {
+        'url': request.route_path('view_user', id=logged_in_user.id),
+        'name': logged_in_user.name
+    }
+
+    task_parent_names = "|".join(map(lambda x: x.name, task.parents))
+
+    task_name_as_text = "%(name)s (%(entity_type)s) - (%(parents)s)" % {
+        "name": task.name,
+        "entity_type": task.entity_type,
+        "parents": task_parent_names
+    }
+
+    task_link_internal = \
+        '<a href="%(url)s">%(name)s ' \
+        '(%(task_entity_type)s) - (%(task_parent_names)s)</a>' % {
+            "url": request.route_path('view_task', id=task.id),
+            "name": task.name,
+            "task_entity_type": task.entity_type,
+            "task_parent_names": task_parent_names
         }
 
-        summary_text = \
-            'Revision Request: "%(task_full_name)s"' % {
-                'task_full_name': task_full_name
-            }
 
-        description_body = \
+    summary_text = 'Revision Request: "%(name)s" (%(parent_names)s)' % {
+        'name': task.name,
+        'parent_names': task_parent_names
+    }
+
+    description_body = \
             '%(requester_name)s has requested a revision to ' \
             '%(task)s and expanded the timing of the task by %(timing)s ' \
             '%(unit)s. The following description is supplied for the ' \
             'revision request:%(spacing)s' \
             '%(description)s'
 
-        unit_word = {
+    unit_word = {
             'h': 'hours',
             'd': 'days',
             'w': 'weeks',
@@ -2357,9 +2379,9 @@ def request_revision(request):
             'y': 'years'
         }[schedule_unit]
 
-        description_text = description_body % {
+    description_text = description_body % {
             "requester_name": logged_in_user.name,
-            "task": task_full_name,
+            "task": task_name_as_text,
             "timing": schedule_timing,
             "unit": unit_word,
             "spacing": '\n\n',
@@ -2367,15 +2389,79 @@ def request_revision(request):
             if description else "(No Description)"
         }
 
-        description_html = description_body % {
+    description_html = description_body % {
             "requester_name": '<strong>%s</strong>' % logged_in_user.name,
-            "task": '<strong>%s</strong>' % task_full_name,
+            "task": '<strong>%s</strong>' % task_name_as_text,
             "timing": '<strong>%s' % schedule_timing,
             "unit": '%s</strong>' % unit_word,
             "spacing": '<br><br>',
             "description": description.replace('\n', '<br>')
             if description else "(No Description)"
         }
+
+    ticket_description = description_body % {
+            "requester_name": user_link_internal,
+            "task": task_link_internal,
+            "timing": schedule_timing,
+            "unit": unit_word,
+            "spacing": '\n\n',
+            "description": description
+            if description else "(No Description)"
+        }
+
+    revision_type = Type.query.filter_by(name='Revision').first()
+
+    if revision_type is None:
+            # create a new Type
+            revision_type = Type(
+                name='Revision',
+                code='Revision',
+                target_entity_type='Ticket'
+            )
+
+    revision_tickets = Ticket.query \
+        .filter(Ticket.links.contains(task)) \
+        .filter(Ticket.type == revision_type).all()
+
+
+    if revision_tickets:
+
+        note = Note(
+            content=ticket_description,
+            created_by=logged_in_user,
+            date_created=utc_now,
+            date_updated=utc_now
+        )
+
+        for hr_ticket in revision_tickets:
+            hr_ticket.comments.append(note)
+            hr_ticket.date_updated = utc_now
+            hr_ticket.updated_by = logged_in_user
+            # reopen if closed
+            hr_ticket.reopen(logged_in_user)
+        DBSession.add(note)
+    else:
+
+        revision_ticket = Ticket(
+                project=project,
+                summary=summary_text,
+                description=ticket_description,
+                type=revision_type,
+                created_by=logged_in_user,
+                date_created=utc_now,
+                date_updated=utc_now
+        )
+        revision_ticket.reassign(logged_in_user, resource)
+
+        # link the task to the review
+        revision_ticket.links.append(task)
+        DBSession.add(revision_ticket)
+
+    transaction.commit()
+    DBSession.add_all([task, logged_in_user])
+
+    if send_email:
+        # and send emails to the resources
 
         responsible = task.responsible
         # send email to responsible and resources of the task
