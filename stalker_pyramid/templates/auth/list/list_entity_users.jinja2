@@ -47,6 +47,7 @@
         {% set add_button_address=request.route_path('create_user_dialog') %}
     {% else %}
         {% set address=request.route_path('get_entity_users', id=entity.id) %}
+        {% set add_button_title='Add' %}
         {% set add_button_address=request.route_url('append_entities_to_entity_dialog', id=entity.id, entities='User', _query={'came_from': request.current_route_path()}) %}
     {% endif %}
 
@@ -68,6 +69,7 @@
             <th>Tasks Count</th>
             <th>Tickets Count</th>
             <th>Status</th>
+            <th></th>
         </tr>
     </script>
     {% endraw %}
@@ -89,6 +91,25 @@
             </td>
             <td>
                 <span class="label label-{{=it.status_color}}">{{=it.status}}</span>
+            </td>
+            <td>
+                 {{ if (it.update_user_action) { }}
+                    <a  class="blue"
+
+                        href="{{=it.update_user_action}}">
+                        <i class="icon-edit bigger-130"></i>
+                    </a>
+                {{ } }}
+
+                {{ if (it.delete_user_action) { }}
+                    <a  class="red"
+                        data-target="#dialog_template"
+                        data-toggle="modal"
+                        data-keyboard=false
+                        href="{{=it.delete_user_action}}?came_from={{=it.came_from }}">
+                        <i class="icon-trash bigger-130"></i>
+                    </a>
+                {{ } }}
             </td>
         </tr>
     </script>

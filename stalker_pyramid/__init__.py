@@ -126,6 +126,7 @@ def main(global_config, **settings):
 
     config.add_route('append_users_to_entity_dialog',  'entities/{id}/users/append/dialog')
     config.add_route('append_users_to_entity',         'entities/{id}/users/append')
+    config.add_route('remove_entity_from_entity_dialog','entities/{id}/{entity_id}/remove/dialog')
     config.add_route('remove_entity_from_entity',      'entities/{id}/{entity_id}/remove')
 
     # get routes returns json

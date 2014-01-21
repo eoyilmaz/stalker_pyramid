@@ -12,7 +12,11 @@
                    href="{{ add_button_address }}"
                    class="white">
                     <i class="icon-plus"></i>
-                    New
+                    {% if add_button_title %}
+                        {{ add_button_title }}
+                    {% else %}
+                        New
+                    {% endif %}
                 </a>
                 &nbsp&nbsp
 

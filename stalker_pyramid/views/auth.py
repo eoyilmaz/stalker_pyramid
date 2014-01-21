@@ -349,11 +349,20 @@ def get_users(request):
     entity_id = request.matchdict.get('id')
 
     entity_type = None
+
+
+    update_user_permission = PermissionChecker(request)('Update_User')
+    delete_user_permission = PermissionChecker(request)('Delete_User')
+
+    delete_user_action ='/users/%(id)s/delete/dialog'
+
+
     if entity_id:
         sql_query = \
             'select entity_type from "SimpleEntities" where id=%s' % entity_id
         data = DBSession.connection().execute(sql_query).fetchone()
         entity_type = data[0] if data else None
+        delete_user_action ='/entities/%(id)s/%(entity_id)s/remove/dialog'
 
     logger.debug('entity_id  : %s' % entity_id)
     logger.debug('entity_type: %s' % entity_type)
@@ -452,7 +461,9 @@ def get_users(request):
             ] if r[6] else [],
             'tasksCount': r[8] or 0,
             'ticketsCount': r[9] or 0,
-            'thumbnail_full_path': r[10]
+            'thumbnail_full_path': r[10],
+            'update_user_action':'/users/%s/update/dialog' % r[0] if update_user_permission else None,
+            'delete_user_action':delete_user_action % {'id':r[0],'entity_id':entity_id} if delete_user_permission else None
         } for r in result.fetchall()
     ]
 
@@ -915,7 +926,6 @@ def get_resources(request):
     return resp
 
 
-
 @view_config(
     route_name='delete_user_dialog',
     renderer='templates/modals/confirm_dialog.jinja2'
@@ -926,14 +936,19 @@ def delete_user_dialog(request):
     logger.debug('delete_user_dialog is starts')
 
     user_id = request.matchdict.get('id')
-    action = '/users/%s/delete'% user_id
+    user = User.query.get(user_id)
 
     came_from = request.params.get('came_from', request.current_route_path())
+    action = '/users/%s/delete?came_from=%s'% (user_id,came_from)
+
+
+    message = 'Are you sure you want to <strong>delete User %s </strong>?'% (user.name)
 
     logger.debug('action: %s' % action)
 
     return {
             'came_from': came_from,
+            'message': message,
             'action': action
         }
 
@@ -954,11 +969,18 @@ def delete_user(request):
 
     try:
         DBSession.delete(user)
+
         transaction.commit()
+        request.session.flash(
+            'success: %s is deleted' % user.name
+        )
     except Exception as e:
         transaction.abort()
         c = StdErrToHTMLConverter(e)
         transaction.abort()
+        request.session.flash(
+            c.html()
+        )
         return Response(c.html(), 500)
 
     return Response('Successfully deleted user: %s' % user_id)

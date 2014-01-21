@@ -24,6 +24,7 @@ from pyramid.view import view_config
 from sqlalchemy import or_
 from stalker import Entity, Studio, Project, Group, User, Department, Vacation, SimpleEntity
 from stalker.db import DBSession
+from webob import Response
 
 import stalker_pyramid
 from stalker_pyramid.views import PermissionChecker, get_logged_in_user, milliseconds_since_epoch, get_multi_integer, multi_permission_checker, get_multi_string
@@ -413,6 +414,36 @@ def append_entities_to_entity(request):
 
 
 @view_config(
+    route_name='remove_entity_from_entity_dialog',
+    renderer='templates/modals/confirm_dialog.jinja2'
+)
+def remove_entity_from_entity_dialog(request):
+    """deletes the user with the given id
+    """
+    logger.debug('delete_user_dialog is starts')
+
+    entity_id = request.matchdict.get('id', -1)
+    entity = Entity.query.filter_by(id=entity_id).first()
+
+    selected_entity_id = request.matchdict.get('entity_id', -1)
+    selected_entity = Entity.query.filter_by(id=selected_entity_id).first()
+
+    came_from = request.params.get('came_from', request.current_route_path())
+
+    action = '/entities/%s/%s/remove?came_from=%s'% (selected_entity_id,entity_id,came_from)
+
+
+    message = 'Are you sure you want to <strong>remove %s </strong>?'% (entity.name)
+
+    logger.debug('action: %s' % action)
+
+    return {
+            'came_from': came_from,
+            'message':message,
+            'action': action
+        }
+
+@view_config(
     route_name='remove_entity_from_entity',
 )
 def remove_entity_from_entity(request):
@@ -447,11 +478,12 @@ def remove_entity_from_entity(request):
         logger.debug('***remove_entity_from_entity method ends ***')
     else:
         logger.debug('not all parameters are in request.params')
+        request.session.flash(
+            'failed:not all parameters are in request.params'
+        )
         HTTPServerError()
 
-    return HTTPFound(
-        location=came_from
-    )
+    return Response('success:%s <strong>%s</strong> is removed from %s \'s %s  successfully' % (selected_entity.entity_type, selected_entity.name, entity.name, attr_name))
 
 
 

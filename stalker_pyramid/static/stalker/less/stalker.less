@@ -19,9 +19,12 @@
 
 @red: #d53f40;
 @red2: #d15b47;
-@orange: #ffb752;
+@red3:#E2755F;
+@orange: #FFC657;
 @light-green: #9abc32;
 @green: #82af6f;
+@green1: #2E8965;
+@blue2: #5090C1;
 @blue3: #6379aa;
 @light-blue: #6fb3e0;
 @purple: #6f3cc4;
@@ -92,20 +95,53 @@ tr {
 }
 
 .header-color-project {
-    background: @green;
-    border-color: @green;
+    background: @green1;
+    border-color: @green1;
 }
 
 .header-color-project+.widget-body {
+    border-color: @green1;
+}
+
+.header-color-asset {
+  background: #848484;
+  border-color: #d3d7dc;
+
+  +.widget-body {
+    border-color: #d3d7dc;
+  }
+}
+.header-color-sequence {
+  background: @green;
+  border-color: @green;
+
+  +.widget-body {
     border-color: @green;
+  }
+}
+.header-color-shot {
+  background: @blue2;
+  border-color: @blue2;
+
+  +.widget-body {
+    border-color: @blue2;
+  }
+}
+
+.header-color-task {
+  background: #848484;
+  border-color: #a9c1c1;
+  +.widget-body {
+    border-color: #bdc1c6;
+  }
 }
 
 .header-color-group {
-    background: @purple2;
-    border-color: @purple2;
+    background: @red3;
+    border-color: @red3;
 
     + .widget-body {
-        border-color: @purple2;
+        border-color: @red3;
     }
 }
 
@@ -119,30 +155,15 @@ tr {
 }
 
 .header-color-user {
-    background: @red2;
-    border-color: @red2;
+    background: @orange;
+    border-color: @orange;
 
     +.widget-body {
-        border-color: @red2;
+        border-color: @orange;
     }
 }
 
-.header-color-shot {
-  background: #848484;
-  border-color: #d3d7dc;
 
-  +.widget-body {
-    border-color: #d3d7dc;
-  }
-}
-
-.header-color-task {
-  background: #848484;
-  border-color: #a9c1c1;
-  +.widget-body {
-    border-color: #bdc1c6;
-  }
-}
 
 
 // *********************************
