@@ -461,7 +461,7 @@ def get_users(request):
             ] if r[6] else [],
             'tasksCount': r[8] or 0,
             'ticketsCount': r[9] or 0,
-            'thumbnail_full_path': r[10],
+            'thumbnail_full_path': r[10] if r[10] else None,
             'update_user_action':'/users/%s/update/dialog' % r[0] if update_user_permission else None,
             'delete_user_action':delete_user_action % {'id':r[0],'entity_id':entity_id} if delete_user_permission else None
         } for r in result.fetchall()

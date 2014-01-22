@@ -31,7 +31,7 @@
 
             <div class="span9">
                 <select id="department_lead"
-                        name='lead'
+                        name='lead_id'
                         type="lead"
                         class="form-control"
                         placeholder="Lead"
@@ -55,8 +55,7 @@
                                      word-wrap: break-word;
                                      resize: horizontal;
                                      height: 50px;"
-                        >{% if mode == 'Update' %}
-                    {{ department.name }}{% endif %}</textarea>
+                        >{% if mode == 'Update' %}{{ department.description }}{% endif %}</textarea>
             </div>
         </div>
     </div>
@@ -94,8 +93,26 @@
         );
         {% endraw %}
 
-        var user = $('#department_lead');
-        var deferred = chosen_field_creator(user, '/users/', user_option_template);
+        var lead_user = $('#department_lead');
+
+        $.getJSON('/users/').then(function (data) {
+
+
+            // append new ones
+            var data_count = data.length;
+            for (var i = 0; i < data_count; i++) {
+
+                lead_user.append(user_option_template(data[i]));
+            }
+
+
+            {% if mode == 'Update' %}
+                lead_user.val('{{ department.lead.id }}');
+                lead_user.trigger('liszt:updated');
+            {% endif %}
+
+
+        });
 
     });
 </script>

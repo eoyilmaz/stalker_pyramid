@@ -558,7 +558,7 @@ def main(global_config, **settings):
     config.add_route('update_department_dialog', 'departments/{id}/update/dialog')
 
     config.add_route('create_department',     'departments/create')
-    config.add_route('update_department',     'departments/update')
+    config.add_route('update_department',     'departments/{id}/update')
     config.add_route('view_department',       'departments/{id}/view')
     config.add_route('get_departments',       'departments/')
     config.add_route('get_department',       'departments/{id}/')

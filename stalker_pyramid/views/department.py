@@ -163,9 +163,7 @@ def update_department(request):
         log_param(request, 'name')
         HTTPServerError()
 
-    return HTTPFound(
-        location=came_from
-    )
+    return Response('Successfully updated department: %s' % department_id)
 
 @view_config(
     route_name='view_entity_department',
