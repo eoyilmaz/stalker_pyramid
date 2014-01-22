@@ -309,56 +309,13 @@ def walk_hierarchy(task):
     :param task: The top most task instance
     :return:
     """
-
-    def next_sibling(t):
-        """returns the next sibling task
-        
-        :param t: a :class:`.Task` instance
-        """
-        parent = t.parent
-        siblings = []
-        if parent:
-            siblings = parent.children
-        else:
-            siblings = t.project.root_tasks
-
-        index = siblings.index(t)
-        next_index = index + 1
-        try:
-            return siblings[next_index]
-        except IndexError:
-            return None
-
-    start_task = task
-    current_task = task
-    
-    while True:
-        # yield the current_task
-        #print "current_task.name : %s" % current_task.name
+    tasks_to_visit = []
+    tasks_to_visit.append(task)
+    while len(tasks_to_visit):
+        current_task = tasks_to_visit.pop()
+        for child_task in current_task.children:
+            tasks_to_visit.insert(0, child_task)
         yield current_task
-
-        if current_task.children:
-            current_task = current_task.children[0]
-            continue
-        else:
-            next_sibling_task = next_sibling(current_task)
-            if next_sibling_task:
-                current_task = next_sibling_task
-                continue
-            else:
-                parent = current_task.parent
-                while True:
-                    if parent:
-                        if parent is start_task:
-                            return
-                        parents_next_sibling = next_sibling(parent)
-                        if parents_next_sibling:
-                            current_task = parents_next_sibling
-                            break
-                        else:
-                            parent = parent.parent
-                    else:
-                        break
 
 
 def find_leafs_in_hierarchy(task, leafs=None):
