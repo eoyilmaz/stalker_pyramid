@@ -309,24 +309,56 @@ def walk_hierarchy(task):
     :param task: The top most task instance
     :return:
     """
-    start_task = task
-    i = 0
-    yield task
-    while True:
+
+    def next_sibling(t):
+        """returns the next sibling task
+        
+        :param t: a :class:`.Task` instance
+        """
+        parent = t.parent
+        siblings = []
+        if parent:
+            siblings = parent.children
+        else:
+            siblings = t.project.root_tasks
+
+        index = siblings.index(t)
+        next_index = index + 1
         try:
-            task = task.children[i]
-            yield task
-            i += 1
-        except IndexError: # no more child
-            if task != start_task:
-                # go to parent of the current task
-                parent = task.parent
-                # go to the next child
-                index = parent.children.index(task)
-                i = index + 1
-                task = parent
+            return siblings[next_index]
+        except IndexError:
+            return None
+
+    start_task = task
+    current_task = task
+    
+    while True:
+        # yield the current_task
+        #print "current_task.name : %s" % current_task.name
+        yield current_task
+
+        if current_task.children:
+            current_task = current_task.children[0]
+            continue
+        else:
+            next_sibling_task = next_sibling(current_task)
+            if next_sibling_task:
+                current_task = next_sibling_task
+                continue
             else:
-                break
+                parent = current_task.parent
+                while True:
+                    if parent:
+                        if parent is start_task:
+                            return
+                        parents_next_sibling = next_sibling(parent)
+                        if parents_next_sibling:
+                            current_task = parents_next_sibling
+                            break
+                        else:
+                            parent = parent.parent
+                    else:
+                        break
 
 
 def find_leafs_in_hierarchy(task, leafs=None):
