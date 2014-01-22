@@ -314,7 +314,7 @@ def walk_hierarchy(task):
     while len(tasks_to_visit):
         current_task = tasks_to_visit.pop()
         for child_task in current_task.children:
-            tasks_to_visit.insert(0, child_task)
+            tasks_to_visit.append(child_task)
         yield current_task
 
 
