@@ -209,7 +209,7 @@ require([
             resource_column.start = +start_date;
             resource_column.end   = +end_date;
             resource_column.scale = zoom_level; 
-{#            resource_column.reload();#}
+            resource_column.reload();
             resource_column.refresh();
         };
 
@@ -236,6 +236,7 @@ require([
     $("#resource_reload_button").on('click', function(e){
         e.preventDefault();
         e.stopPropagation();
+        resource_column.reload();
         resource_column.refresh();
     });
 
@@ -243,6 +244,7 @@ require([
     $("#resource_redraw_button").on('click', function(e){
         e.preventDefault();
         e.stopPropagation();
+        resource_column.reload();
         resource_column.refresh();
     });
 
