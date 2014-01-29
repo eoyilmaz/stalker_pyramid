@@ -23,6 +23,7 @@
         <th>Responsible</th>
         <th>Type</th>
         <th>Completed</th>
+        <th></th>
     </tr>
 </script>
 {% endraw %}
@@ -43,6 +44,22 @@
                 </div>
             </div>
         </td>
+        <td>
+                <div class="hidden-phone visible-desktop action-buttons">
+                    <a class="blue" href='/tasks/{{=it.id}}/view'>
+                        <i class="icon-zoom-in bigger-130"></i>
+                    </a>
+                    {{ if (it.request_review) { }}<a
+                        class="green"
+                        data-target="#dialog_template"
+                        data-toggle="modal"
+                        data-keyboard=false
+                        href="/tasks/{{=it.id}}/request_review/dialog?came_from={{=it.came_from }}">
+                    <i class="icon-comment-alt bigger-130"></i>
+                </a>{{ } }}
+
+                </div>
+            </td>
 
     </tr>
 </script>
