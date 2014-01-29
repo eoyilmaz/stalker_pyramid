@@ -309,24 +309,12 @@ def walk_hierarchy(task):
     :param task: The top most task instance
     :return:
     """
-    start_task = task
-    i = 0
-    yield task
-    while True:
-        try:
-            task = task.children[i]
-            yield task
-            i += 1
-        except IndexError: # no more child
-            if task != start_task:
-                # go to parent of the current task
-                parent = task.parent
-                # go to the next child
-                index = parent.children.index(task)
-                i = index + 1
-                task = parent
-            else:
-                break
+    tasks_to_visit = []
+    tasks_to_visit.append(task)
+    while len(tasks_to_visit):
+        current_task = tasks_to_visit.pop(0)
+        tasks_to_visit.extend(current_task.children)
+        yield current_task
 
 
 def find_leafs_in_hierarchy(task, leafs=None):
