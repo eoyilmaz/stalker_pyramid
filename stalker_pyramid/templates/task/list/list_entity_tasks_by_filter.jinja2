@@ -1,0 +1,122 @@
+{% set status=filter %}
+<div class="row-fluid">
+
+    <table id="items_table"
+           class="table table-striped table-bordered table-hover">
+
+        <thead>
+
+        </thead>
+
+        <tbody>
+
+        </tbody>
+
+    </table>
+</div>
+
+{% raw %}
+<script id="tmpl_itemThead" type="text/x-dot-template">
+    <tr>
+        <th>Resource</th>
+        <th>Name</th>
+        <th>Responsible</th>
+        <th>Type</th>
+        <th>Completed</th>
+    </tr>
+</script>
+{% endraw %}
+
+
+{% raw %}
+<script id="tmpl_itemRow" type="text/x-dot-template">
+    <tr>
+        <td><a href='/users/{{=it.resource_id}}/view'>{{=it.resource_name}}</a>
+        <td><a href='/tasks/{{=it.id}}/view'>{{=it.name}}</a>
+        <td><a href='/users/{{=it.responsible_id}}/view'>{{=it.responsible_name}}</a>
+        <td>{{=it.type}}</td>
+        <td data-sType="num-html">
+            <div class="progress progress-success">
+                <div style="width:{{=it.percent_complete}}%"
+                     class="bar">
+                    <span class="pull-left">{{= it.percent_complete.toFixed(0) }}%</span>
+                </div>
+            </div>
+        </td>
+
+    </tr>
+</script>
+{% endraw %}
+
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.dataTables.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.dataTables.bootstrap.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/dataTable_num-html_sort.js") }}'></script>
+
+<script>
+    function init_html_modal() {
+        console.debug('starting to initialize init_html_modal dialog!!!');
+
+        $('#html_template_label').find('span').remove();
+        $('#html_template_label').append('<span>{{ status.name }}</span>')
+
+         $('#html_template_header').attr('class','table-header header-color-'+'{{ status.html_class }}')
+
+
+
+        $(document).ready(function () {
+
+
+
+
+            // fill items table with dynamic data
+            $.getJSON('{{ request.route_path('get_entity_tasks_by_filter', id=entity.id, f_id=status.id) }}').then(function (data) {
+
+                var thead_template = doT.template($('#tmpl_itemThead').html());
+                var table_head = $('#items_table>thead');
+                table_head.append(thead_template({}));
+
+
+                var items = data;
+                var row_template = doT.template($('#tmpl_itemRow').html());
+
+                // wait until document is ready
+                $(function () {
+
+                    var i;
+                    var table_body = $('#items_table>tbody');
+                    for (i = 0; i < data.length; i++) {
+                        // fix dates
+                        // data[i].date_created = new Date(data[i].date_created).format('yyyy-mm-dd HH:MM');
+
+                        if (data[i].thumbnail_full_path == null) {
+                            data[i].thumbnail_full_path = '{{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}';
+                        }
+                        else {
+                            data[i].thumbnail_full_path = '/' + data[i].thumbnail_full_path;
+                        }
+
+                        data[i].came_from = '{{ request.current_route_path() }}'
+
+                        // append it to the table
+                        table_body.append(row_template(data[i]));
+                    }
+
+                    var oTable1 = $('#items_table').dataTable();
+
+                });
+            });
+        });
+
+        console.debug('finished initializing the init_html_modal dialog!')
+    }
+</script>
+
+<script type="text/javascript">
+    function destruct_html_modal() {
+
+        $('#items_table').unbind()
+
+        $('#html_template').data('modal', null);
+
+    }
+</script>

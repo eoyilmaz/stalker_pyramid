@@ -1,10 +1,17 @@
 {% raw %}
 <script id="tmpl_infobox" type="text/x-dot-template">
     <div class="infobox infobox-{{=it.color }}" style="width:190px">
-        <div class="infobox-icon"><i class="{{=it.icon }}"></i></div>
-        <div class="infobox-data"><span class="infobox-data-number">{{=it.count }}</span>
-            <div class="infobox-content">{{=it.name }}</div>
-        </div>
+
+            <div class="infobox-icon"><i class="{{=it.icon }}"></i></div>
+            <div class="infobox-data"><span class="infobox-data-number">{{=it.count }}</span>
+
+                <div class="infobox-content">
+                    <a data-target="#html_template"
+                       data-toggle="modal"
+                       data-keyboard=false
+                       href="/entities/{{=it.entity_id }}/tasks/filter/{{=it.id }}/list" class="{{=it.color }}">{{=it.name }}</a></div>
+            </div>
+
     </div>
 </script>
 {% endraw %}
@@ -16,6 +23,7 @@
 
         $.getJSON(infobox.attr('address')).then(function (data) {
             for (var i = 0; i < data.length; i++) {
+                data[i].entity_id = '{{ entity.id }}'
                 infobox.append(infobox_template(data[i]));
             }
         });

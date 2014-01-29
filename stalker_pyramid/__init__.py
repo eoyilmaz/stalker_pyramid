@@ -140,7 +140,7 @@ def main(global_config, **settings):
     config.add_route('get_entity_groups',              'entities/{id}/groups/')
     config.add_route('get_entity_tasks',               'entities/{id}/tasks/')
     config.add_route('get_entity_tasks_stats',         'entities/{id}/tasks_stats/')
-    # config.add_route('get_entity_tasks_by_status',     'entities/{id}/tasks/stats/{s_id}/')
+    config.add_route('get_entity_tasks_by_filter',     'entities/{id}/tasks/filter/{f_id}/')
 
     config.add_route('get_entity_tickets',             'entities/{id}/tickets/')
     config.add_route('get_entity_tickets_count',       'entities/{id}/tickets/count/')
@@ -164,6 +164,7 @@ def main(global_config, **settings):
     config.add_route('list_entity_groups',             'entities/{id}/groups/list')  # html
     config.add_route('list_entity_shots',              'entities/{id}/shots/list')  # html
     config.add_route('list_entity_tasks',              'entities/{id}/tasks/list')  # html
+    config.add_route('list_entity_tasks_by_filter',    'entities/{id}/tasks/filter/{f_id}/list')  # html
     config.add_route('list_entity_tickets',            'entities/{id}/tickets/list')  # html
     config.add_route('list_entity_projects',           'entities/{id}/projects/list')
     config.add_route('list_entity_references',         'entities/{id}/references/list')  # html
@@ -343,6 +344,7 @@ def main(global_config, **settings):
     config.add_route('list_user_projects',    'users/{id}/projects/list')  # html
     config.add_route('list_user_time_logs',   'users/{id}/time_logs/list')  # html
     config.add_route('list_user_tickets',   'users/{id}/tickets/list')  # html
+    config.add_route('list_user_tasks_responsible_from', 'users/{id}/tasks/list/responsible_from') # html
 
     config.add_route('view_user_tasks',       'users/{id}/tasks/view')  # html
     config.add_route('view_user_versions',    'users/{id}/versions/view')

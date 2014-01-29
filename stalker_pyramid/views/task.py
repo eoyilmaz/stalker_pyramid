@@ -777,10 +777,54 @@ def review_task(request):
             .filter(Ticket.type == review_type).all()
         logger.debug("tickets: %s" % tickets)
 
+        task_full_name = '%s (%s)' % (
+                task.name,
+                '|'.join(map(lambda x: x.name, task.parents))
+            )
+
+        summary_text = \
+                'Task Reviewed: "%(task_full_name)s" has been approved!' % {
+                    'task_full_name': task_full_name
+                }
+
+
+
+        description_body = \
+                '%(requester_name)s has approved ' \
+                '%(task)s with the following ' \
+                'comment:%(spacing)s' \
+                '%(description)s'
+
+        if description == "":
+                description_body = \
+                '%(requester_name)s has approved ' \
+                '%(task)s  ' \
+                '%(spacing)s' \
+                '%(description)s'
+
+
+
+        description_text = description_body % {
+                "requester_name": logged_in_user.name,
+                "task": task_full_name,
+                "spacing": '\n\n',
+                "description": description
+                if description else "(No Description)"
+            }
+
+        description_html = description_body % {
+                "requester_name": '<strong>%s</strong>' % logged_in_user.name,
+                "task": '<strong>%s</strong>' % task_full_name,
+                "spacing": '<br><br>',
+                "description": description.replace('\n', '<br>')
+                if description else "(No Description)"
+            }
+
 
         if tickets:
+
             note = Note(
-                content=description,
+                content=description_text,
                 created_by=logged_in_user,
                 date_created=utc_now,
                 date_updated=utc_now
@@ -804,39 +848,7 @@ def review_task(request):
             for resource in task.resources:
                 recipients.append(resource.email)
 
-            task_full_name = '%s (%s)' % (
-                task.name,
-                '|'.join(map(lambda x: x.name, task.parents))
-            )
 
-            summary_text = \
-                'Task Reviewed: "%(task_full_name)s" has been approved!' % {
-                    'task_full_name': task_full_name
-                }
-
-            description_body = \
-                '%(requester_name)s has approved ' \
-                '%(task)s with the following ' \
-                'comment:%(spacing)s' \
-                '%(description)s'
-
-
-
-            description_text = description_body % {
-                "requester_name": logged_in_user.name,
-                "task": task_full_name,
-                "spacing": '\n\n',
-                "description": description
-                if description else "(No Description)"
-            }
-
-            description_html = description_body % {
-                "requester_name": '<strong>%s</strong>' % logged_in_user.name,
-                "task": '<strong>%s</strong>' % task_full_name,
-                "spacing": '<br><br>',
-                "description": description.replace('\n', '<br>')
-                if description else "(No Description)"
-            }
             message = Message(
                 subject=summary_text,
                 sender=dummy_email_address,
@@ -1172,6 +1184,10 @@ def get_tasks(request):
     renderer='json'
 )
 @view_config(
+    route_name='get_user_tasks',
+    renderer='json'
+)
+@view_config(
     route_name='get_studio_tasks',
     renderer='json'
 )
@@ -1479,47 +1495,235 @@ def get_user_tasks_count(request):
 
     return len(tasks)
 
-
 @view_config(
-    route_name='get_user_tasks',
+    route_name='get_entity_tasks_stats',
     renderer='json'
 )
-def get_user_tasks(request):
+def get_entity_tasks_stats(request):
+    """runs when viewing an task
+    """
+    entity_id = request.matchdict.get('id', -1)
+    entity = Entity.query.filter_by(id=entity_id).first()
+
+    #logger.debug('user_id : %s' % entity_id)
+
+    status_list = StatusList.query.filter_by(
+        target_entity_type='Task'
+    ).first()
+
+    join_attr = None
+
+    if entity.entity_type == 'User':
+        join_attr = Task.resources
+    elif entity.entity_type == 'Project':
+        join_attr = Task.project
+
+    __class__ = entity.__class__
+
+    status_count_task = []
+
+    #TODO find the correct solution to filter leaf tasks. This does not work.
+    for status in status_list.statuses:
+        status_count_task.append({
+            'name': status.name,
+            'id': status.id,
+            'code': status.code,
+            'color': status.html_class,
+            'icon': 'icon-folder-close-alt',
+            'count': Task.query.join(entity.__class__, join_attr) \
+                .filter(__class__.id == entity_id) \
+                .filter(Task.status_id == status.id) \
+                .filter(Task.children == None) \
+                .count()
+        })
+
+    return status_count_task
+
+
+
+@view_config(
+    route_name='get_entity_tasks_by_filter',
+    renderer='json'
+)
+def get_entity_tasks_by_filter(request):
     """returns all the tasks in the database related to the given entity in
     flat json format
     """
-    logged_in_user = get_logged_in_user(request)
-    # get all the tasks related in the given project
-    user_id = request.matchdict.get('id', -1)
-    user = User.query.filter_by(id=user_id).first()
+     # get all the tasks related in the given project
+    entity_id = request.matchdict.get('id', -1)
+    entity = Entity.query.filter_by(id=entity_id).first()
 
-    statuses = []
-    status_codes = request.GET.getall('status')
-    if status_codes:
-        statuses = Status.query.filter(Status.code.in_(status_codes)).all()
+    logger.debug('entity_id: %s'% entity_id)
 
-    if statuses:
-        tasks = [task for task in user.tasks if task.status in statuses]
-    else:
-        tasks = user.tasks
+    filter_id = request.matchdict.get('f_id', -1)
+    filter = Entity.query.filter_by(id=filter_id).first()
 
-    return [
-        {
-            'id': task.id,
-            'responsible_name': task.responsible.name,
-            'responsible_id': task.responsible.id,
-            'percent_complete': task.percent_complete,
-            'type': task.type.name if task.type else '',
-            'request_review': '1' if ((
-                                          logged_in_user in task.resources or logged_in_user == task.responsible) and task.status.code == 'WIP' and task.is_leaf) else None,
-            'status': task.status.name,
-            'status_color': task.status.html_class,
-            'name': '%s (%s)' % (
-                task.name,
-                ' | '.join([parent.name for parent in task.parents])
+
+    sql_query ="""select
+    "Task_Resources".task_id as task_id,
+    "Task_SimpleEntities".name as task_name,
+    "Responsible_SimpleEntities".id as responsible_id,
+    "Responsible_SimpleEntities".name as responsible_name,
+    coalesce("Type_SimpleEntities".name,'') as type_name,
+         coalesce(
+            -- for parent tasks
+            (case "Tasks"._schedule_seconds
+                when 0 then 0
+                else "Tasks"._total_logged_seconds::float / "Tasks"._schedule_seconds * 100
+             end
+            ),
+            -- for child tasks we need to count the total seconds of related TimeLogs
+            (coalesce("Task_TimeLogs".duration, 0.0))::float /
+                ("Tasks".schedule_timing * (case "Tasks".schedule_unit
+                    when 'h' then 3600
+                    when 'd' then 32400
+                    when 'w' then 147600
+                    when 'm' then 590400
+                    when 'y' then 7696277
+                    else 0
+                end)) * 100.0
+        ) as percent_complete,
+        "Resource_SimpleEntities".id as resource_id,
+        "Resource_SimpleEntities".name as resource_name,
+        "Statuses_SimpleEntities".name as status_name,
+        "Statuses_SimpleEntities".html_class as status_color
+from "Tasks"
+join "Task_Resources" on "Task_Resources".task_id = "Tasks".id
+join "Statuses" on "Statuses".id = "Tasks".status_id
+join "SimpleEntities" as "Statuses_SimpleEntities" on "Statuses_SimpleEntities".id = "Statuses".id
+left outer join (
+            select
+                "TimeLogs".task_id,
+                extract(epoch from sum("TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC')) as duration
+            from "TimeLogs"
+            group by task_id
+        ) as "Task_TimeLogs" on "Task_TimeLogs".task_id = "Tasks".id
+join "SimpleEntities" as "Task_SimpleEntities" on "Task_SimpleEntities".id = "Task_Resources".task_id
+join "SimpleEntities" as "Resource_SimpleEntities" on "Resource_SimpleEntities".id = "Task_Resources".resource_id
+join ((
+    -- get tasks responsible from parents
+    -- so find all the tasks that doesn't have a responsible but one of their parents has
+    with recursive go_to_parent(id, parent_id) as (
+            select task.id, task.parent_id
+            from "Tasks" as task
+            where task.project_id = 23 and task.responsible_id is NULL
+        union all
+            select g.id, task.parent_id
+            from go_to_parent as g
+            join "Tasks" as task on g.parent_id = task.id
+            where task.parent_id is not NULL and task.responsible_id is NULL
+    )
+    select
+        g.id, "Tasks".responsible_id
+    from go_to_parent as g
+    join "Tasks" on "Tasks".id = g.parent_id
+    where "Tasks".responsible_id is not NULL
+    order by g.id
+)
+union
+(
+    -- select all the tasks that has a responsible
+    select
+        id, responsible_id
+    from "Tasks"
+    where responsible_id is not NULL and project_id = 23
+)
+union
+(
+    -- select all the residual tasks that are not in the previous union
+    select
+        "Tasks".id,
+        "Projects".lead_id
+    from "Tasks"
+    join "Projects" on "Tasks".project_id = "Projects".id
+    left outer join (
+        (
+            -- get tasks responsible from parents
+            -- so find all the tasks that doesn't have a responsible but one of their parents has
+            with recursive go_to_parent(id, parent_id) as (
+                    select task.id, task.parent_id
+                    from "Tasks" as task
+                    where task.project_id = 23 and task.responsible_id is NULL
+                union all
+                    select g.id, task.parent_id
+                    from go_to_parent as g
+                    join "Tasks" as task on g.parent_id = task.id
+                    where task.parent_id is not NULL and task.responsible_id is NULL
             )
-        } for task in tasks
+            select
+                g.id
+            from go_to_parent as g
+            join "Tasks" on "Tasks".id = g.parent_id
+            where "Tasks".responsible_id is not NULL
+            order by g.id
+        )
+        union
+        (
+            -- select all the tasks that has a responsible
+            select
+                id
+            from "Tasks"
+            where responsible_id is not NULL and project_id = 23
+        )
+    ) as prev_query on "Tasks".id = prev_query.id
+    where "Tasks".project_id = 23 and prev_query.id is NULL
+)) as "Tasks_Responsible" on "Tasks_Responsible".id = "Tasks".id
+left join "SimpleEntities" as "Responsible_SimpleEntities" on "Responsible_SimpleEntities".id = "Tasks_Responsible".responsible_id
+left join "SimpleEntities" as "Type_SimpleEntities" on "Task_SimpleEntities".type_id = "Type_SimpleEntities".id
+
+where %(where_condition_for_entity)s%(where_condition_for_filter)s"""
+
+    where_condition_for_entity = ''
+
+    if isinstance(entity, User):
+         where_condition_for_entity = '"Task_Resources".resource_id=%s' % entity_id
+    elif isinstance(entity, Project):
+        where_condition_for_entity = '"Tasks".project_id =%s' % entity_id
+
+    where_condition_for_filter = ''
+
+    if isinstance(filter, User):
+         where_condition_for_filter = '"Tasks_Responsible".responsible_id=%s' % filter_id
+    elif isinstance(filter, Status):
+        where_condition_for_filter = ' and "Statuses_SimpleEntities".id =%s' % filter_id
+
+
+    sql_query = sql_query % {'where_condition_for_entity': where_condition_for_entity, 'where_condition_for_filter':where_condition_for_filter}
+
+
+    # convert to dgrid format right here in place
+    result = DBSession.connection().execute(sql_query)
+
+    return_data = [
+        {
+            'id': r[0],
+            'name': r[1],
+            'responsible_id': r[2],
+            'responsible_name': r[3],
+            'type': r[4],
+            'percent_complete': r[5],
+            'resource_id':r[6],
+            'resource_name':r[7],
+            'status':r[8],
+            'status_color':r[9]
+
+        }
+        for r in result.fetchall()
     ]
+
+    task_count = len(return_data)
+    # content_range = content_range % (0, task_count - 1, task_count)
+
+    # logger.debug('return_data: %s' % return_data)
+    end = time.time()
+
+
+    resp = Response(
+        json_body=return_data
+    )
+    # resp.content_range = content_range
+    return resp
+
 
 
 def data_dialog(request, mode='create', entity_type='Task'):
@@ -2555,80 +2759,6 @@ group by "Input_Version_Task_SimpleEntities".id,
     )
     resp.content_range = content_range
     return resp
-
-
-@view_config(
-    route_name='get_entity_tasks_stats',
-    renderer='json'
-)
-def get_entity_tasks_stats(request):
-    """runs when viewing an task
-    """
-    entity_id = request.matchdict.get('id', -1)
-    entity = Entity.query.filter_by(id=entity_id).first()
-
-    #logger.debug('user_id : %s' % entity_id)
-
-    status_list = StatusList.query.filter_by(
-        target_entity_type='Task'
-    ).first()
-
-    join_attr = None
-
-    if entity.entity_type == 'User':
-        join_attr = Task.resources
-    elif entity.entity_type == 'Project':
-        join_attr = Task.project
-
-    __class__ = entity.__class__
-
-    status_count_task = []
-
-    #TODO find the correct solution to filter leaf tasks. This does not work.
-    for status in status_list.statuses:
-        status_count_task.append({
-            'name': status.name,
-            'id': status.id,
-            'color': status.html_class,
-            'icon': 'icon-folder-close-alt',
-            'count': Task.query.join(entity.__class__, join_attr) \
-                .filter(__class__.id == entity_id) \
-                .filter(Task.status_id == status.id) \
-                .filter(Task.children == None) \
-                .count()
-        })
-
-    return status_count_task
-
-#
-# @view_config(
-#     route_name='get_entity_tasks_by_status',
-#     renderer='json'
-# )
-# def get_entity_tasks_by_status(request):
-#     """runs when viewing an task
-#     """
-#     entity_id = request.matchdict.get('id', -1)
-#     entity = Entity.query.filter_by(id=entity_id).first()
-#
-#     __class__ = entity.__class__
-#
-#     join_attr = None
-#
-#     if entity.entity_type == 'User':
-#         join_attr = Task.resources
-#     elif entity.entity_type == 'Project':
-#         join_attr = Task.project
-#
-#     status_id = request.matchdict.get('s_id', -1)
-#
-#     tasks = Task.query.join(entity.__class__, join_attr) \
-#                 .filter(__class__.id == entity_id) \
-#                 .filter(Task.status_id ==status_id) \
-#                 .filter(Task.children == None)
-
-
-
 
 
 

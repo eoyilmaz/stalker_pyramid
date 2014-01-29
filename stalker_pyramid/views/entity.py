@@ -22,7 +22,7 @@ import datetime
 from pyramid.httpexceptions import HTTPServerError, HTTPFound, HTTPOk, HTTPForbidden
 from pyramid.view import view_config
 from sqlalchemy import or_
-from stalker import Entity, Studio, Project, Group, User, Department, Vacation, SimpleEntity
+from stalker import Entity, Studio, Project, Group, User, Department, Vacation, SimpleEntity, defaults, Status
 from stalker.db import DBSession
 from webob import Response
 
@@ -153,6 +153,10 @@ logger.setLevel(logging.DEBUG)
 @view_config(
     route_name='list_user_tasks',
     renderer='templates/task/list/list_entity_tasks.jinja2'
+)
+@view_config(
+    route_name='list_user_tasks_responsible_from',
+    renderer='templates/task/list/list_user_tasks_responsible_from.jinja2'
 )
 @view_config(
     route_name='list_task_tasks',
@@ -306,6 +310,37 @@ def get_entity(request):
         }
     ]
 
+@view_config(
+    route_name='list_entity_tasks_by_filter',
+    renderer='templates/task/list/list_entity_tasks_by_filter.jinja2',
+)
+def list_entity_tasks_by_filter(request):
+    """creates a list_entity_tasks_by_filter by using the given entity and filter
+    """
+    logger.debug('inside list_entity_tasks_by_filter')
+
+    # get logged in user
+    logged_in_user = get_logged_in_user(request)
+
+    entity_id = request.matchdict.get('id', -1)
+    entity = Entity.query.filter_by(id=entity_id).first()
+
+    filter_id = request.matchdict.get('f_id', -1)
+    filter = Entity.query.filter_by(id=filter_id).first()
+
+    studio = Studio.query.first()
+    if not studio:
+        studio = defaults
+
+    return {
+        'mode': 'create',
+        'has_permission': PermissionChecker(request),
+        'studio': studio,
+        'logged_in_user': logged_in_user,
+        'entity': entity,
+        'filter': filter,
+        'milliseconds_since_epoch': milliseconds_since_epoch,
+    }
 
 
 
@@ -530,8 +565,6 @@ def get_entity_events(request):
                 'className': 'label-success',
                 'allDay': False,
                 'status': time_log.task.status.name
-                # 'hours_to_complete': time_log.hours_to_complete,
-                # 'notes': time_log.notes
             })
 
     if 'vacation' in keys:
@@ -568,8 +601,6 @@ def get_entity_events(request):
                     'className': 'label',
                     'allDay': False,
                     'status': task.status.name
-                    # 'hours_to_complete': time_log.hours_to_complete,
-                    # 'notes': time_log.notes
                 })
 
     return events

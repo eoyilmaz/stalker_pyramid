@@ -27,6 +27,12 @@
                     'icon-tasks',
                     '{{ user.tasks | count }}')
 
+            menu_of('Responsible from',
+                    "{%- if request.current_route_path() == request.route_path('list_user_tasks_responsible_from', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
+                    '{{ request.route_url('list_user_tasks_responsible_from', id=user.id) }}',
+                    'icon-tasks',
+                    '')
+
             menu_of('Tickets',
                     "{%- if request.current_route_path() == request.route_path('list_entity_tickets', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
                     '{{ request.route_url('list_entity_tickets', id=user.id) }}',
@@ -38,6 +44,8 @@
                     '{{ request.route_url('list_entity_vacations', id=user.id) }}',
                     'icon-sun',
                     '{{ user.vacations | count }}')
+
+
 
         })
 
