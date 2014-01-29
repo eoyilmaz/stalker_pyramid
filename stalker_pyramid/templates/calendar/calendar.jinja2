@@ -36,8 +36,11 @@
 
 
             eventClick: function (calEvent, jsEvent, view) {
+
+
                 if (calEvent.entity_type == 'vacations') {
                     {% if has_permission('Update_Vacation') %}
+
                         if (calEvent.title == 'StudioWide') {
                             {% if has_permission('Update_Studio') %}
                                 update_event_action(calEvent.entity_type, calEvent.eId);
