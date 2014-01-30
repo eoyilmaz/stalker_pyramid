@@ -1,69 +1,19 @@
-{% set status=filter %}
-<div class="row-fluid" >
+<div class="row-fluid">
 
-    <table  id="items_table"
+    <table id="items_table"
            class="table table-striped table-bordered table-hover">
 
         <thead>
 
         </thead>
 
-        <tbody >
+        <tbody>
 
         </tbody>
 
     </table>
 </div>
 
-{% raw %}
-<script id="tmpl_itemThead" type="text/x-dot-template">
-    <tr>
-        <th>Resource</th>
-        <th>Name</th>
-        <th>Responsible</th>
-        <th>Type</th>
-        <th>Completed</th>
-        <th></th>
-    </tr>
-</script>
-{% endraw %}
-
-
-{% raw %}
-<script id="tmpl_itemRow" type="text/x-dot-template">
-    <tr>
-        <td><a href='/users/{{=it.resource_id}}/view'>{{=it.resource_name}}</a>
-        <td><a href='/tasks/{{=it.id}}/view'>{{=it.name}}</a>
-        <td><a href='/users/{{=it.responsible_id}}/view'>{{=it.responsible_name}}</a>
-        <td>{{=it.type}}</td>
-        <td data-sType="num-html">
-            <div class="progress progress-success">
-                <div style="width:{{=it.percent_complete}}%"
-                     class="bar">
-                    <span class="pull-left">{{= it.percent_complete.toFixed(0) }}%</span>
-                </div>
-            </div>
-        </td>
-        <td>
-                <div class="hidden-phone visible-desktop action-buttons">
-                    <a class="blue" href='/tasks/{{=it.id}}/view'>
-                        <i class="icon-zoom-in bigger-130"></i>
-                    </a>
-                    {{ if (it.request_review) { }}<a
-                        class="green"
-                        data-target="#dialog_template"
-                        data-toggle="modal"
-                        data-keyboard=false
-                        href="/tasks/{{=it.id}}/request_review/dialog?came_from={{=it.came_from }}">
-                    <i class="icon-comment-alt bigger-130"></i>
-                </a>{{ } }}
-
-                </div>
-            </td>
-
-    </tr>
-</script>
-{% endraw %}
 
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.dataTables.min.js") }}'></script>
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.dataTables.bootstrap.js") }}'></script>
@@ -73,20 +23,21 @@
     function init_html_modal() {
         console.debug('starting to initialize init_html_modal dialog!!!');
 
-        $('#html_template_label').find('span').remove();
-        $('#html_template_label').append('<span>{{ status.name }}</span>')
+        {% if filter.entity_type=='Status' %}
 
-         $('#html_template_header').attr('class','table-header header-color-'+'{{ status.html_class }}')
+            $('#html_template_label').find('span').remove();
+            $('#html_template_label').append('<span>{{ filter.name }}</span>')
+
+            $('#html_template_header').attr('class', 'table-header header-color-' + '{{ filter.html_class }}')
+
+
+        {% endif %}
 
 
 
         $(document).ready(function () {
-
-
-
-
             // fill items table with dynamic data
-            $.getJSON('{{ request.route_path('get_entity_tasks_by_filter', id=entity.id, f_id=status.id) }}').then(function (data) {
+            $.getJSON('{{ request.route_path('get_entity_tasks_by_filter', id=entity.id, f_id=filter.id) }}').then(function (data) {
 
                 var thead_template = doT.template($('#tmpl_itemThead').html());
                 var table_head = $('#items_table>thead');

@@ -344,7 +344,7 @@ def main(global_config, **settings):
     config.add_route('list_user_projects',    'users/{id}/projects/list')  # html
     config.add_route('list_user_time_logs',   'users/{id}/time_logs/list')  # html
     config.add_route('list_user_tickets',   'users/{id}/tickets/list')  # html
-    config.add_route('list_user_tasks_responsible_from', 'users/{id}/tasks/list/responsible_from') # html
+    config.add_route('list_user_tasks_responsible_of', 'users/{id}/tasks/list/responsible_of') # html
 
     config.add_route('view_user_tasks',       'users/{id}/tasks/view')  # html
     config.add_route('view_user_versions',    'users/{id}/versions/view')

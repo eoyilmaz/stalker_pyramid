@@ -1590,7 +1590,7 @@ def get_entity_tasks_by_filter(request):
 
     sql_query ="""select
     "Task_Resources".task_id as task_id,
-    "Task_SimpleEntities".name as task_name,
+    "ParentTasks".parent_names as task_name,
     "Responsible_SimpleEntities".id as responsible_id,
     "Responsible_SimpleEntities".name as responsible_name,
     coalesce("Type_SimpleEntities".name,'') as type_name,
@@ -1615,9 +1615,13 @@ def get_entity_tasks_by_filter(request):
         "Resource_SimpleEntities".id as resource_id,
         "Resource_SimpleEntities".name as resource_name,
         "Statuses_SimpleEntities".name as status_name,
-        "Statuses_SimpleEntities".html_class as status_color
+        "Statuses_SimpleEntities".html_class as status_color,
+        "Project_SimpleEntities".id as project_id,
+        "Project_SimpleEntities".name as project_name
+
 from "Tasks"
 join "Task_Resources" on "Task_Resources".task_id = "Tasks".id
+join "SimpleEntities" as "Project_SimpleEntities"on "Project_SimpleEntities".id = "Tasks".project_id
 join "Statuses" on "Statuses".id = "Tasks".status_id
 join "SimpleEntities" as "Statuses_SimpleEntities" on "Statuses_SimpleEntities".id = "Statuses".id
 left outer join (
@@ -1628,6 +1632,7 @@ left outer join (
             group by task_id
         ) as "Task_TimeLogs" on "Task_TimeLogs".task_id = "Tasks".id
 join "SimpleEntities" as "Task_SimpleEntities" on "Task_SimpleEntities".id = "Task_Resources".task_id
+
 join "SimpleEntities" as "Resource_SimpleEntities" on "Resource_SimpleEntities".id = "Task_Resources".resource_id
 join ((
     -- get tasks responsible from parents
@@ -1635,7 +1640,7 @@ join ((
     with recursive go_to_parent(id, parent_id) as (
             select task.id, task.parent_id
             from "Tasks" as task
-            where task.project_id = 23 and task.responsible_id is NULL
+            where task.responsible_id is NULL
         union all
             select g.id, task.parent_id
             from go_to_parent as g
@@ -1655,7 +1660,7 @@ union
     select
         id, responsible_id
     from "Tasks"
-    where responsible_id is not NULL and project_id = 23
+    where responsible_id is not NULL
 )
 union
 (
@@ -1672,7 +1677,7 @@ union
             with recursive go_to_parent(id, parent_id) as (
                     select task.id, task.parent_id
                     from "Tasks" as task
-                    where task.project_id = 23 and task.responsible_id is NULL
+                    where task.responsible_id is NULL
                 union all
                     select g.id, task.parent_id
                     from go_to_parent as g
@@ -1692,13 +1697,43 @@ union
             select
                 id
             from "Tasks"
-            where responsible_id is not NULL and project_id = 23
+            where responsible_id is not NULL
         )
     ) as prev_query on "Tasks".id = prev_query.id
-    where "Tasks".project_id = 23 and prev_query.id is NULL
+    where prev_query.id is NULL
 )) as "Tasks_Responsible" on "Tasks_Responsible".id = "Tasks".id
 left join "SimpleEntities" as "Responsible_SimpleEntities" on "Responsible_SimpleEntities".id = "Tasks_Responsible".responsible_id
 left join "SimpleEntities" as "Type_SimpleEntities" on "Task_SimpleEntities".type_id = "Type_SimpleEntities".id
+left join (select
+    parent_data.id,
+    "SimpleEntities".name || ' (' ||
+    array_to_string(array_agg(
+        case
+            when "SimpleEntities_parent".entity_type = 'Project'
+            then "Projects".code
+            else "SimpleEntities_parent".name
+        end),
+        ' | '
+    ) || ')'
+    as parent_names
+    from (
+        with recursive parent_ids(id, parent_id, n) as (
+                select task.id, coalesce(task.parent_id, task.project_id), 0
+                from "Tasks" task
+            union all
+                select task.id, parent.parent_id, parent.n + 1
+                from "Tasks" task, parent_ids parent
+                where task.parent_id = parent.id
+        )
+        select
+            parent_ids.id, parent_id as parent_id, parent_ids.n
+            from parent_ids
+            order by id, parent_ids.n desc
+    ) as parent_data
+    join "SimpleEntities" on "SimpleEntities".id = parent_data.id
+    join "SimpleEntities" as "SimpleEntities_parent" on "SimpleEntities_parent".id = parent_data.parent_id
+    left outer join "Projects" on parent_data.parent_id = "Projects".id
+    group by parent_data.id, "SimpleEntities".name) as "ParentTasks" on "Tasks".id = "ParentTasks".id
 
 where %(where_condition_for_entity)s%(where_condition_for_filter)s"""
 
@@ -1717,6 +1752,7 @@ where %(where_condition_for_entity)s%(where_condition_for_filter)s"""
     where_condition_for_filter = ''
 
     if isinstance(filter, User):
+         where_condition_for_entity = ''
          where_condition_for_filter = '"Tasks_Responsible".responsible_id=%s' % filter_id
     elif isinstance(filter, Status):
         where_condition_for_filter = ' and "Statuses_SimpleEntities".id =%s' % filter_id
@@ -1740,7 +1776,9 @@ where %(where_condition_for_entity)s%(where_condition_for_filter)s"""
             'resource_name':r[7],
             'status':r[8],
             'status_color':r[9],
-            'request_review':'1' if (request_review or r[2]==logged_in_user.id) and r[8]=='Work In Progress' else None
+            'project_id':r[10],
+            'project_name':r[11],
+            'request_review':'1' if (r[6]==logged_in_user.id or r[2]==logged_in_user.id) and r[8]=='Work In Progress' else None
 
         }
         for r in result.fetchall()

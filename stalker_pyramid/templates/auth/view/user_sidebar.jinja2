@@ -27,9 +27,9 @@
                     'icon-tasks',
                     '{{ user.tasks | count }}')
 
-            menu_of('Responsible from',
-                    "{%- if request.current_route_path() == request.route_path('list_user_tasks_responsible_from', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
-                    '{{ request.route_url('list_user_tasks_responsible_from', id=user.id) }}',
+            menu_of('Responsible of',
+                    "{%- if request.current_route_path() == request.route_path('list_user_tasks_responsible_of', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
+                    '{{ request.route_url('list_user_tasks_responsible_of', id=user.id) }}',
                     'icon-tasks',
                     '')
 

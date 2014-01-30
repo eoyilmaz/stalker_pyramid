@@ -31,8 +31,11 @@
     <div class="row-fluid">
         <div class="span10">
             <div id="infobox"
-                 address='/entities/{{ entity.id }}/tasks_stats/'
-                 class="infobox-container pull-left"></div>
+                     address='/entities/{{ entity.id }}/tasks_stats/'
+                     class="infobox-container pull-left">
+                    {% include 'components/infobox.jinja2' %}
+                </div>
+
         </div>
         <div class="span2">
             <h5 class="green"><i class="icon-bolt"></i> Progress</h5>
@@ -55,7 +58,7 @@
 
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.dataTables.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.dataTables.bootstrap.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/dataTable_num-html_sort.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/dataTable_num-html_sort.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.easy-pie-chart.min.js") }}'></script>
 
     {# ***************************************************************************************#}
@@ -198,9 +201,61 @@
     </script>
 
 
-    {% include 'charts/chart_extrascripts.jinja2' %}
+{% raw %}
+<script id="tmpl_itemThead" type="text/x-dot-template">
+    <tr>
+        <th>Name</th>
+        <th>Resource</th>
+        <th>Responsible</th>
+        <th>Type</th>
+        <th>Completed</th>
+        <th></th>
+    </tr>
+</script>
+{% endraw %}
 
-    {% include 'components/infobox.jinja2' %}
-    {#    {% include 'charts/zoom_chart.jinja2' %}#}
+
+{% raw %}
+<script id="tmpl_itemRow" type="text/x-dot-template">
+    <tr>
+
+        <td><a href='/tasks/{{=it.id}}/view'>{{=it.name}}</a></td>
+        <td><a href='/users/{{=it.resource_id}}/view'>{{=it.resource_name}}</a></td>
+        <td><a href='/users/{{=it.responsible_id}}/view'>{{=it.responsible_name}}</a></td>
+        <td>{{=it.type}}</td>
+        <td data-sType="num-html">
+            <div class="progress progress-success">
+                <div style="width:{{=it.percent_complete}}%"
+                     class="bar">
+                    <span class="pull-left">{{= it.percent_complete.toFixed(0) }}%</span>
+                </div>
+            </div>
+        </td>
+        <td>
+                <div class="hidden-phone visible-desktop action-buttons">
+                    <a class="blue" href='/tasks/{{=it.id}}/view'>
+                        <i class="icon-zoom-in bigger-130"></i>
+                    </a>
+
+                    {{ if (it.request_review) { }}
+                    <a
+                        class="green"
+                        data-target="#dialog_template"
+                        data-toggle="modal"
+                        data-keyboard=false
+                        data-rel="tooltip"
+                        data-placement="top"
+                        title="Request Review"
+                        href="/tasks/{{=it.id}}/request_review/dialog?came_from={{=it.came_from }}">
+                        <i class="icon-comment-alt bigger-130"></i>
+                    </a>
+                    {{ } }}
+
+                </div>
+        </td>
+
+    </tr>
+</script>
+{% endraw %}
 
 {% endblock extrascripts %}
