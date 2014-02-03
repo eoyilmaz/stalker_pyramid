@@ -611,6 +611,28 @@
         })
     </script>
 
+    {# Event Dialog Initialize #}
+    <script type="text/javascript">
+        $(function () {
+            var html_dialog = $('#html_template');
+            html_dialog.on('shown', function (e) {
+                try {
+                    init_html_modal();
+                } catch(e) {
+                    console.log(e)
+                }
+            });
+            html_dialog.on('hidden', function (e) {
+
+                try {
+                    destruct_html_modal();
+                } catch(e) {
+                    console.log(e)
+                }
+            });
+        })
+    </script>
+
 
 
 {% endblock scripts %}

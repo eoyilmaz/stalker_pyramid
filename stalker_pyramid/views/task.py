@@ -1167,6 +1167,47 @@ def get_tasks(request):
     resp.content_range = content_range
     return resp
 
+@view_config(
+    route_name='get_user_tasks',
+    renderer='json'
+)
+def get_user_tasks(request):
+    """returns all the tasks in the database related to the given entity in
+    flat json format
+    """
+    logged_in_user = get_logged_in_user(request)
+    # get all the tasks related in the given project
+    user_id = request.matchdict.get('id', -1)
+    user = User.query.filter_by(id=user_id).first()
+
+    statuses = []
+    status_codes = request.GET.getall('status')
+    if status_codes:
+        statuses = Status.query.filter(Status.code.in_(status_codes)).all()
+
+    if statuses:
+        tasks = [task for task in user.tasks if task.status in statuses]
+    else:
+        tasks = user.tasks
+
+    return [
+        {
+            'id': task.id,
+            'responsible_name': task.responsible.name,
+            'responsible_id': task.responsible.id,
+            'percent_complete': task.percent_complete,
+            'type': task.type.name if task.type else '',
+            'request_review': '1' if ((
+                                          logged_in_user in task.resources or logged_in_user == task.responsible) and task.status.code == 'WIP' and task.is_leaf) else None,
+            'status': task.status.name,
+            'status_color': task.status.html_class,
+            'name': '%s (%s)' % (
+                task.name,
+                ' | '.join([parent.name for parent in task.parents])
+            )
+        } for task in tasks
+    ]
+
 
 @view_config(
     route_name='get_entity_tasks',
