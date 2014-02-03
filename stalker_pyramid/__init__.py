@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Stalker Pyramid a Web Base Production Asset Management System
-# Copyright (C) 2009-2013 Erkan Ozgur Yilmaz
+# Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
 #
 # This file is part of Stalker Pyramid.
 #
@@ -22,12 +22,14 @@ Stalker Pyramid is a Production Asset Management System (ProdAM) designed for
 Animation and VFX Studios. See docs for more information.
 """
 import pyramid_beaker
+from sqlalchemy.orm import scoped_session, sessionmaker
 from zope.sqlalchemy import ZopeTransactionExtension
 
 __version__ = '0.1.7'
 
 
 # before anything about stalker create the defaults
+from stalker import db
 from stalker.config import defaults
 from stalker.models.auth import group_finder
 
@@ -612,5 +614,5 @@ def main(global_config, **settings):
     return config.make_wsgi_app()
 
 
-# TODO: auto register creted_by and updated_by values by using SQLAlchemy
+# TODO: auto register created_by and updated_by values by using SQLAlchemy
 #       events 'before_update' and 'before_create'

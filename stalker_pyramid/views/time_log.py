@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Stalker Pyramid a Web Base Production Asset Management System
-# Copyright (C) 2009-2013 Erkan Ozgur Yilmaz
+# Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
 #
 # This file is part of Stalker Pyramid.
 #
@@ -19,17 +19,17 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 
 
+import time
 import logging
+import transaction
 
 from pyramid.response import Response
 from pyramid.view import view_config
 
-from stalker import defaults, Task, User, Studio, TimeLog, Entity, Status
-
 from stalker.db import DBSession
+from stalker import defaults, Task, User, Studio, TimeLog, Entity, Status
 from stalker.exceptions import OverBookedError
-import time
-import transaction
+
 from stalker_pyramid.views import (get_logged_in_user,
                                    PermissionChecker, milliseconds_since_epoch,
                                    get_date, StdErrToHTMLConverter)
@@ -160,6 +160,7 @@ def create_time_log(request):
                 description=description
             )
 
+            # TODO: update according to the new Task Status Workflow (I mean delete this part, it is handled by Stalker)
             status_rts = Status.query.filter(Status.code == "RTS").first()
             status_wip = Status.query.filter(Status.code == "WIP").first()
             status_prev = \
@@ -441,5 +442,3 @@ def delete_time_log(request):
             update_task_statuses_with_dependencies(task)
 
     return Response('Successfully deleted time_log: %s' % time_log_id)
-
-

@@ -1,33 +1,37 @@
 # -*- coding: utf-8 -*-
 # Stalker a Production Asset Management System
-# Copyright (C) 2009-2013 Erkan Ozgur Yilmaz
-# 
+# Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
+#
 # This file is part of Stalker.
-# 
+#
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
 # License as published by the Free Software Foundation;
 # version 2.1 of the License.
-# 
+#
 # This library is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # Lesser General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 import logging
 import datetime
-from pyramid.httpexceptions import HTTPServerError, HTTPFound, HTTPOk, HTTPForbidden
+
+from pyramid.httpexceptions import HTTPServerError, HTTPOk, HTTPForbidden
 from pyramid.view import view_config
-from sqlalchemy import or_
-from stalker import Entity, Studio, Project, Group, User, Department, Vacation, SimpleEntity, defaults, Status
+from pyramid.response import Response
+
 from stalker.db import DBSession
-from webob import Response
+from stalker import (defaults, Entity, Studio, Project, User, Vacation,
+                     SimpleEntity)
 
 import stalker_pyramid
-from stalker_pyramid.views import PermissionChecker, get_logged_in_user, milliseconds_since_epoch, get_multi_integer, multi_permission_checker, get_multi_string
+from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
+                                   milliseconds_since_epoch, get_multi_integer,
+                                   multi_permission_checker, get_multi_string)
 
 
 logger = logging.getLogger(__name__)
@@ -416,29 +420,30 @@ def append_entities_to_entity(request):
     """
     logger.debug('append_class_to_entity is running')
 
-
-
     entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
 
     selected_list = get_multi_integer(request, 'selected_items[]')
 
-
     logger.debug('selected_list: %s' % selected_list)
-
 
     if entity and selected_list:
 
-        appended_entities = Entity.query.filter(Entity.id.in_(selected_list)).all()
+        appended_entities = Entity.query\
+            .filter(Entity.id.in_(selected_list)).all()
         if appended_entities:
             attr_name = appended_entities[0].plural_class_name.lower()
-            eval('entity.%(attr_name)s.extend(appended_entities)' % {'attr_name': attr_name})
+            eval(
+                'entity.%(attr_name)s.extend(appended_entities)' %
+                {'attr_name': attr_name}
+            )
             DBSession.add(entity)
 
             logger.debug('entity is updated successfully')
 
             request.session.flash(
-                'success:User <strong>%s</strong> is updated successfully' % entity.name
+                'success:User <strong>%s</strong> is updated successfully' %
+                entity.name
             )
             logger.debug('***append_entities_to_entity method ends ***')
     else:
@@ -495,9 +500,7 @@ def remove_entity_from_entity(request):
     selected_entity_id = request.matchdict.get('entity_id', -1)
     selected_entity = Entity.query.filter_by(id=selected_entity_id).first()
 
-
     logger.debug('selected_entity: %s' % selected_entity)
-
 
     if entity and selected_entity:
 
@@ -508,7 +511,11 @@ def remove_entity_from_entity(request):
         logger.debug('entity is updated successfully')
 
         request.session.flash(
-            'success:%s <strong>%s</strong> is removed from %s \'s %s  successfully' % (selected_entity.entity_type, selected_entity.name, entity.name, attr_name)
+            'success:%s <strong>%s</strong> is successfully removed from %s '
+            '\'s %s' % (
+                selected_entity.entity_type,
+                selected_entity.name, entity.name, attr_name
+            )
         )
         logger.debug('***remove_entity_from_entity method ends ***')
     else:
@@ -518,7 +525,11 @@ def remove_entity_from_entity(request):
         )
         HTTPServerError()
 
-    return Response('success:%s <strong>%s</strong> is removed from %s \'s %s  successfully' % (selected_entity.entity_type, selected_entity.name, entity.name, attr_name))
+    return Response(
+        'success:%s <strong>%s</strong> is successfully removed from %s \'s %s'
+        % (selected_entity.entity_type, selected_entity.name, entity.name,
+           attr_name)
+    )
 
 
 
@@ -611,17 +622,13 @@ def get_entity_events(request):
     renderer='json'
 )
 def get_search_result(request):
-
     logger.debug('get_search_result is running')
 
     qString = request.params.get('str', -1)
-
     logger.debug('qString: %s'% qString)
 
     entities = Entity.query.filter(Entity.name.ilike(qString)).all()
-
     search_result = []
-
 
     for entity in entities:
 

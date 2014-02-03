@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Stalker Pyramid a Web Base Production Asset Management System
-# Copyright (C) 2009-2013 Erkan Ozgur Yilmaz
+# Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
 #
 # This file is part of Stalker Pyramid.
 #
@@ -17,16 +17,15 @@
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
+import logging
 import datetime
 
 from pyramid.httpexceptions import HTTPServerError, HTTPOk
 from pyramid.view import view_config
 
-
 from stalker.db import DBSession
 from stalker import Project, StatusList, Status, Sequence, Entity
 
-import logging
 from stalker_pyramid.views import get_logged_in_user, milliseconds_since_epoch
 
 logger = logging.getLogger(__name__)
@@ -205,4 +204,3 @@ def get_project_sequences(request):
         }
         for sequence in entity.sequences
     ]
-

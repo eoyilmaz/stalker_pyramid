@@ -38,17 +38,12 @@
         <div class="span12">
             <!--PAGE CONTENT BEGINS-->
             <div class="row-fluid">
-
                 <div id="infobox"
                      address='/entities/{{ entity.id }}/tasks_stats/'
                      class="infobox-container">
                     {% include 'components/infobox.jinja2' %}
                 </div>
                 <div class="space"></div>
-
-
-
-
             </div>
 
             <div class="hr hr8 hr-double"></div>
@@ -56,10 +51,7 @@
             <div class="space"></div>
 
             <div class="row-fluid">
-
-
                 <div id="calendar"></div>
-
             </div>
 
         </div>
@@ -69,7 +61,6 @@
     <!--PAGE CONTENT ENDS-->
 
 {% endblock page_content %}
-
 
 {# <td>#}
 {#                <span class="label label-{{=it.status_color}}">{{=it.status}}</span>#}
@@ -101,7 +92,6 @@
 {% raw %}
 <script id="tmpl_itemThead" type="text/x-dot-template">
     <tr>
-
         <th>Name</th>
         <th>Responsible</th>
         <th>Type</th>
@@ -127,26 +117,26 @@
             </div>
         </td>
         <td>
-                <div class="hidden-phone visible-desktop action-buttons">
-                    <a class="blue" href='/tasks/{{=it.id}}/view'>
-                        <i class="icon-zoom-in bigger-130"></i>
-                    </a>
+            <div class="hidden-phone visible-desktop action-buttons">
+                <a class="blue" href='/tasks/{{=it.id}}/view'>
+                    <i class="icon-zoom-in bigger-130"></i>
+                </a>
 
-                    {{ if (it.request_review) { }}
-                    <a
-                        class="green"
-                        data-target="#dialog_template"
-                        data-toggle="modal"
-                        data-keyboard=false
-                        data-rel="tooltip"
-                        data-placement="top"
-                        title="Request Review"
-                        href="/tasks/{{=it.id}}/request_review/dialog?came_from={{=it.came_from }}">
-                        <i class="icon-comment-alt bigger-130"></i>
-                    </a>
-                    {{ } }}
+                {{ if (it.request_review) { }}
+                <a
+                    class="green"
+                    data-target="#dialog_template"
+                    data-toggle="modal"
+                    data-keyboard=false
+                    data-rel="tooltip"
+                    data-placement="top"
+                    title="Request Review"
+                    href="/tasks/{{=it.id}}/request_review/dialog?came_from={{=it.came_from }}">
+                    <i class="icon-comment-alt bigger-130"></i>
+                </a>
+                {{ } }}
 
-                </div>
+            </div>
         </td>
 
     </tr>
@@ -155,22 +145,22 @@
 
 
 
-    {% if entity.tasks | count > 0 %}
-        {% if has_permission('Update_User') or logged_in_user.id == entity.id %}
-            {% set event_type='TimeLog' %}
-        {% endif %}
+{% if entity.tasks | count > 0 %}
+    {% if has_permission('Update_User') or logged_in_user.id == entity.id %}
+        {% set event_type='TimeLog' %}
     {% endif %}
+{% endif %}
 
 
 
-    {#    {% include 'charts/bar_chart.jinja2' %}#}
-    {% include 'calendar/calendar.jinja2' %}
+{#    {% include 'charts/bar_chart.jinja2' %}#}
+{% include 'calendar/calendar.jinja2' %}
 
 
-    <script type="text/javascript">
-        $(document).ready(function () {
-            $.getJSON('/users/{{ entity.id }}/events/?keys=time_log&keys=vacation&keys=task').then(function (data) {
-                var events = [];
+<script type="text/javascript">
+    $(document).ready(function () {
+        $.getJSON('/users/{{ entity.id }}/events/?keys=time_log&keys=vacation&keys=task').then(function (data) {
+            var events = [];
 
 {#                var time_log_data = [0, 0, 0, 0, 0, 0, 0];#}
 {#                var vacation_data = [0, 0, 0, 0, 0, 0, 0];#}
@@ -194,20 +184,20 @@
 {#                var first_week_day = new Date(today);#}
 {#                first_week_day.setDate(today.getDate() - week_day);#}
 
-                for (var i = 0; i < data.length; i++) {
+            for (var i = 0; i < data.length; i++) {
 
-                    var start_date = new Date(parseInt(data[i].start));
-                    var end_date = new Date(parseInt(data[i].end));
+                var start_date = new Date(parseInt(data[i].start));
+                var end_date = new Date(parseInt(data[i].end));
 
-                    var event = {
-                        eId: data[i].id,
-                        entity_type: data[i].entity_type,
-                        title: data[i].title,
-                        start: start_date,
-                        end: end_date,
-                        className: data[i].className,
-                        allDay: data[i].allDay
-                    };
+                var event = {
+                    eId: data[i].id,
+                    entity_type: data[i].entity_type,
+                    title: data[i].title,
+                    start: start_date,
+                    end: end_date,
+                    className: data[i].className,
+                    allDay: data[i].allDay
+                };
 
 {#                    if (first_week_day.getTime() <= start_date.getTime() && start_date.getTime() < today.getTime()) {#}
 {#                        var day_index = parseInt((start_date.getTime() - first_week_day.getTime()) / 1000 / 3600 / 24);#}
@@ -221,14 +211,14 @@
 {##}
 {#                        unknown_data[day_index] = unknown_data[day_index] - occupied_hours > 0 ? unknown_data[day_index] - occupied_hours : 0;#}
 {#                    }#}
-                    events.push(event);
-                }
+                events.push(event);
+            }
 
-                {#                //drawBarChart('bar_chart', [time_log_data, vacation_data], ticks, colors, labels);#}
-                drawCalendar('calendar', events);
+            {#                //drawBarChart('bar_chart', [time_log_data, vacation_data], ticks, colors, labels);#}
+            drawCalendar('calendar', events);
 
-            });
         });
-    </script>
+    });
+</script>
 
 {% endblock extrascripts %}

@@ -1,22 +1,23 @@
 # -*- coding: utf-8 -*-
 # Stalker Pyramid a Web Base Production Asset Management System
-# Copyright (C) 2009-2013 Erkan Ozgur Yilmaz
-# 
+# Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
+#
 # This file is part of Stalker Pyramid.
-# 
+#
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
 # License as published by the Free Software Foundation;
 # version 2.1 of the License.
-# 
+#
 # This library is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # Lesser General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
+import logging
 import datetime
 
 from pyramid.httpexceptions import HTTPOk
@@ -25,9 +26,8 @@ from pyramid.view import view_config
 from stalker.db import DBSession
 from stalker import Status, StatusList, EntityType
 
-import logging
 from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
-                                   get_multi_integer, get_color_as_int)
+                                   get_multi_integer)
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.WARNING)

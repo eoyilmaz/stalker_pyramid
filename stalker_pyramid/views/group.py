@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Stalker Pyramid a Web Base Production Asset Management System
-# Copyright (C) 2009-2013 Erkan Ozgur Yilmaz
+# Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
 #
 # This file is part of Stalker Pyramid.
 #
@@ -23,10 +23,11 @@ from pyramid.httpexceptions import HTTPFound
 from pyramid.view import view_config
 from webob import Response
 
-import stalker_pyramid
+from stalker.db import DBSession
 from stalker import (defaults, Group, Project, Entity, Studio, Permission,
                      EntityType)
-from stalker.db import DBSession
+
+import stalker_pyramid
 from stalker_pyramid.views import (log_param, get_logged_in_user,
                                    PermissionChecker, milliseconds_since_epoch,
                                    StdErrToHTMLConverter)

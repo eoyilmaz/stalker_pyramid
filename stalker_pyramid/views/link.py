@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Stalker Pyramid a Web Base Production Asset Management System
-# Copyright (C) 2009-2013 Erkan Ozgur Yilmaz
+# Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
 #
 # This file is part of Stalker Pyramid.
 #
@@ -19,22 +19,20 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 
 import os
+import time
 import logging
 import uuid
 import base64
+import transaction
 from HTMLParser import HTMLParser
-
 from PIL import Image
 
-from stalker import Entity, Link, defaults
-from stalker.db import DBSession
 from pyramid.response import Response, FileResponse
-
 from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPOk
-import time
 
-import transaction
+from stalker.db import DBSession
+from stalker import Entity, Link, defaults
 
 from stalker_pyramid.views import (get_logged_in_user, get_multi_integer,
                                    get_tags, StdErrToHTMLConverter)

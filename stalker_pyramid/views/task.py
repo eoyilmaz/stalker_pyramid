@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Stalker Pyramid a Web Base Production Asset Management System
-# Copyright (C) 2009-2013 Erkan Ozgur Yilmaz
+# Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
 #
 # This file is part of Stalker Pyramid.
 #
@@ -28,13 +28,14 @@ from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPServerError, HTTPOk, HTTPForbidden
 from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
+
 from sqlalchemy.exc import IntegrityError
+
 from stalker.db import DBSession
-from stalker import (User, Task, Entity, Project, StatusList, Status,
-                     TaskJugglerScheduler, Studio, Asset, Shot, Sequence,
-                     Ticket, Type, Note)
-from stalker.models.task import CircularDependencyError
-from stalker import defaults
+from stalker import (defaults, User, Task, Entity, Project, StatusList,
+                     Status, TaskJugglerScheduler, Studio, Asset, Shot,
+                     Sequence, Ticket, Type, Note)
+from stalker.exceptions import CircularDependencyError
 
 from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
                                    get_multi_integer, milliseconds_since_epoch,
@@ -530,10 +531,10 @@ def convert_to_dgrid_gantt_task_format(tasks):
             'resources': [
                 {'id': resource.id, 'name': resource.name} for resource in
                 task.resources] if not task.is_container else [],
-            'responsible': {
-                'id': task.responsible.id,
-                'name': task.responsible.name
-            },
+            'responsible': [{
+                'id': responsible.id,
+                'name': responsible.name
+            } for responsible in task.responsible],
             'schedule_constraint': task.schedule_constraint,
             'schedule_model': task.schedule_model,
             'schedule_seconds': task.schedule_seconds,
@@ -1591,33 +1592,34 @@ def get_entity_tasks_by_filter(request):
     sql_query ="""select
     "Task_Resources".task_id as task_id,
     "ParentTasks".parent_names as task_name,
-    "Responsible_SimpleEntities".id as responsible_id,
-    "Responsible_SimpleEntities".name as responsible_name,
+    array_agg("Responsible_SimpleEntities".id) as responsible_id,
+    array_agg("Responsible_SimpleEntities".name) as responsible_name,
     coalesce("Type_SimpleEntities".name,'') as type_name,
-         coalesce(
-            -- for parent tasks
-            (case "Tasks"._schedule_seconds
-                when 0 then 0
-                else "Tasks"._total_logged_seconds::float / "Tasks"._schedule_seconds * 100
-             end
-            ),
-            -- for child tasks we need to count the total seconds of related TimeLogs
-            (coalesce("Task_TimeLogs".duration, 0.0))::float /
-                ("Tasks".schedule_timing * (case "Tasks".schedule_unit
-                    when 'h' then 3600
-                    when 'd' then 32400
-                    when 'w' then 147600
-                    when 'm' then 590400
-                    when 'y' then 7696277
-                    else 0
-                end)) * 100.0
-        ) as percent_complete,
-        "Resource_SimpleEntities".id as resource_id,
-        "Resource_SimpleEntities".name as resource_name,
-        "Statuses_SimpleEntities".name as status_name,
-        "Statuses_SimpleEntities".html_class as status_color,
-        "Project_SimpleEntities".id as project_id,
-        "Project_SimpleEntities".name as project_name
+    coalesce(
+        -- for parent tasks
+        (case "Tasks"._schedule_seconds
+            when 0 then 0
+            else "Tasks"._total_logged_seconds::float / "Tasks"._schedule_seconds * 100
+         end
+        ),
+        -- for child tasks we need to count the total seconds of related TimeLogs
+        (coalesce("Task_TimeLogs".duration, 0.0))::float /
+            ("Tasks".schedule_timing * (case "Tasks".schedule_unit
+                when 'h' then 3600
+                when 'd' then 32400
+                when 'w' then 147600
+                when 'm' then 590400
+                when 'y' then 7696277
+                else 0
+            end)
+            ) * 100.0
+    ) as percent_complete,
+    "Resource_SimpleEntities".id as resource_id,
+    "Resource_SimpleEntities".name as resource_name,
+    "Statuses_SimpleEntities".name as status_name,
+    "Statuses_SimpleEntities".html_class as status_color,
+    "Project_SimpleEntities".id as project_id,
+    "Project_SimpleEntities".name as project_name
 
 from "Tasks"
 join "Task_Resources" on "Task_Resources".task_id = "Tasks".id
@@ -1625,12 +1627,12 @@ join "SimpleEntities" as "Project_SimpleEntities"on "Project_SimpleEntities".id 
 join "Statuses" on "Statuses".id = "Tasks".status_id
 join "SimpleEntities" as "Statuses_SimpleEntities" on "Statuses_SimpleEntities".id = "Statuses".id
 left outer join (
-            select
-                "TimeLogs".task_id,
-                extract(epoch from sum("TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC')) as duration
-            from "TimeLogs"
-            group by task_id
-        ) as "Task_TimeLogs" on "Task_TimeLogs".task_id = "Tasks".id
+    select
+        "TimeLogs".task_id,
+        extract(epoch from sum("TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC')) as duration
+    from "TimeLogs"
+    group by task_id
+) as "Task_TimeLogs" on "Task_TimeLogs".task_id = "Tasks".id
 join "SimpleEntities" as "Task_SimpleEntities" on "Task_SimpleEntities".id = "Task_Resources".task_id
 
 join "SimpleEntities" as "Resource_SimpleEntities" on "Resource_SimpleEntities".id = "Task_Resources".resource_id
@@ -1640,27 +1642,33 @@ join ((
     with recursive go_to_parent(id, parent_id) as (
             select task.id, task.parent_id
             from "Tasks" as task
-            where task.responsible_id is NULL
+            join "Task_Responsible" on task.id = "Task_Responsible".task_id
+            where "Task_Responsible".responsible_id is NULL
         union all
             select g.id, task.parent_id
             from go_to_parent as g
             join "Tasks" as task on g.parent_id = task.id
-            where task.parent_id is not NULL and task.responsible_id is NULL
+            join "Task_Responsible" on task.id = "Task_Responsible".task_id
+            where task.parent_id is not NULL and "Task_Responsible".responsible_id is NULL
     )
     select
-        g.id, "Tasks".responsible_id
+        g.id,
+        "Task_Responsible".responsible_id
     from go_to_parent as g
-    join "Tasks" on "Tasks".id = g.parent_id
-    where "Tasks".responsible_id is not NULL
+    join "Tasks" as parent_task on g.parent_id = parent_task.id
+    join "Task_Responsible" on parent_task.id = "Task_Responsible".task_id
+    where "Task_Responsible".responsible_id is not NULL
     order by g.id
 )
 union
 (
     -- select all the tasks that has a responsible
     select
-        id, responsible_id
+        id,
+        responsible_id
     from "Tasks"
-    where responsible_id is not NULL
+    join "Task_Responsible" on "Tasks".id = "Task_Responsible".task_id
+    where "Task_Responsible".responsible_id is not NULL
 )
 union
 (
@@ -1677,18 +1685,21 @@ union
             with recursive go_to_parent(id, parent_id) as (
                     select task.id, task.parent_id
                     from "Tasks" as task
-                    where task.responsible_id is NULL
+                    join "Task_Responsible" on task.id = "Task_Responsible".task_id
+                    where "Task_Responsible".responsible_id is NULL
                 union all
                     select g.id, task.parent_id
                     from go_to_parent as g
                     join "Tasks" as task on g.parent_id = task.id
-                    where task.parent_id is not NULL and task.responsible_id is NULL
+                    join "Task_Responsible" on task.id = "Task_Responsible".task_id
+                    where task.parent_id is not NULL and "Task_Responsible".responsible_id is NULL
             )
             select
                 g.id
             from go_to_parent as g
             join "Tasks" on "Tasks".id = g.parent_id
-            where "Tasks".responsible_id is not NULL
+            join "Task_Responsible" on g.id = "Task_Responsible".task_id
+            where "Task_Responsible".responsible_id is not NULL
             order by g.id
         )
         union
@@ -1697,6 +1708,7 @@ union
             select
                 id
             from "Tasks"
+            join "Task_Responsible" on "Tasks".id = "Task_Responsible".task_id
             where responsible_id is not NULL
         )
     ) as prev_query on "Tasks".id = prev_query.id
@@ -1733,9 +1745,23 @@ left join (select
     join "SimpleEntities" on "SimpleEntities".id = parent_data.id
     join "SimpleEntities" as "SimpleEntities_parent" on "SimpleEntities_parent".id = parent_data.parent_id
     left outer join "Projects" on parent_data.parent_id = "Projects".id
-    group by parent_data.id, "SimpleEntities".name) as "ParentTasks" on "Tasks".id = "ParentTasks".id
+    group by parent_data.id, "SimpleEntities".name
+) as "ParentTasks" on "Tasks".id = "ParentTasks".id
 
-where %(where_condition_for_entity)s%(where_condition_for_filter)s"""
+where %(where_condition_for_entity)s%(where_condition_for_filter)s
+
+group by
+    "Task_Resources".task_id,
+    "ParentTasks".parent_names,
+    percent_complete,
+    "Resource_SimpleEntities".id,
+    "Resource_SimpleEntities".name,
+    "Statuses_SimpleEntities".name,
+    "Statuses_SimpleEntities".html_class,
+    "Project_SimpleEntities".id,
+    "Project_SimpleEntities".name,
+    type_name
+"""
 
     where_condition_for_entity = ''
 
@@ -1757,9 +1783,7 @@ where %(where_condition_for_entity)s%(where_condition_for_filter)s"""
     elif isinstance(filter, Status):
         where_condition_for_filter = ' and "Statuses_SimpleEntities".id =%s' % filter_id
 
-
     sql_query = sql_query % {'where_condition_for_entity': where_condition_for_entity, 'where_condition_for_filter':where_condition_for_filter}
-
 
     # convert to dgrid format right here in place
     result = DBSession.connection().execute(sql_query)
@@ -1790,13 +1814,11 @@ where %(where_condition_for_entity)s%(where_condition_for_filter)s"""
     # logger.debug('return_data: %s' % return_data)
     end = time.time()
 
-
     resp = Response(
         json_body=return_data
     )
     # resp.content_range = content_range
     return resp
-
 
 
 def data_dialog(request, mode='create', entity_type='Task'):
@@ -2720,13 +2742,13 @@ def request_revision(request):
     else:
 
         revision_ticket = Ticket(
-                project=project,
-                summary=summary_text,
-                description=ticket_description,
-                type=revision_type,
-                created_by=logged_in_user,
-                date_created=utc_now,
-                date_updated=utc_now
+            project=project,
+            summary=summary_text,
+            description=ticket_description,
+            type=revision_type,
+            created_by=logged_in_user,
+            date_created=utc_now,
+            date_updated=utc_now
         )
         revision_ticket.reassign(logged_in_user, resource)
 

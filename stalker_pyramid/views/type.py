@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Stalker a Production Asset Management System
-# Copyright (C) 2009-2013 Erkan Ozgur Yilmaz
+# Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
 #
 # This file is part of Stalker.
 #
@@ -20,8 +20,8 @@
 
 from pyramid.view import view_config
 
-from stalker import Type
 from stalker.db import DBSession
+from stalker import Type
 
 import logging
 logger = logging.getLogger(__name__)
