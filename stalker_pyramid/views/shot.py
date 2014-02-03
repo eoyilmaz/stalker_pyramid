@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Stalker a Production Shot Management System
-# Copyright (C) 2009-2013 Erkan Ozgur Yilmaz
+# Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
 #
 # This file is part of Stalker Pyramid.
 #
@@ -27,8 +27,7 @@ from stalker import Sequence, StatusList, Status, Shot, Project, Entity
 
 import logging
 from webob import Response
-from stalker_pyramid.views import get_logged_in_user, milliseconds_since_epoch, PermissionChecker
-from stalker_pyramid.views.task import raw_data_to_array
+from stalker_pyramid.views import get_logged_in_user, PermissionChecker
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -142,6 +141,7 @@ def update_shot(request):
 
     return HTTPOk()
 
+
 @view_config(
     route_name='get_shots_children_task_type',
     renderer='json'
@@ -176,9 +176,7 @@ def get_shots_children_task_type(request):
     type_count = len(return_data)
     content_range = content_range % (0, type_count - 1, type_count)
 
-
     logger.debug('content_range : %s' % content_range)
-
 
     resp = Response(
         json_body=return_data
@@ -222,7 +220,6 @@ def get_shots(request):
     """
     entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
-
 
     logger.debug('get_shots function starts : ')
 
@@ -312,35 +309,26 @@ order by "Shot_SimpleEntities".name
     content_range = '%s-%s/%s'
     where_condition = ''
 
-    if entity.entity_type=='Sequence':
-        where_condition ='where "Shot_Sequences".sequence_id = %s' % entity_id
+    if entity.entity_type == 'Sequence':
+        where_condition = 'where "Shot_Sequences".sequence_id = %s' % entity_id
 
-    elif entity.entity_type=='Project':
-        where_condition =''
-
+    elif entity.entity_type == 'Project':
+        where_condition = ''
 
     update_shot_permission = \
         PermissionChecker(request)('Update_Shot')
     delete_shot_permission = \
         PermissionChecker(request)('Delete_Shot')
 
-
-
-
     sql_query = sql_query % {'where_condition': where_condition}
     logger.debug('entity_id : %s' % entity_id)
-
 
     # convert to dgrid format right here in place
     result = DBSession.connection().execute(sql_query)
 
-    # use local functions to speed things up
-    local_raw_data_to_array = raw_data_to_array
     return_data = []
 
     for r in result.fetchall():
-
-
         r_data = {
             'id': r[0],
             'name': r[1],
@@ -350,8 +338,10 @@ order by "Shot_SimpleEntities".name
             'status_color': r[5],
             'sequence_id': r[12],
             'sequence_name': r[13],
-            'update_shot_action':'/tasks/%s/update/dialog' % r[0] if update_shot_permission else None,
-            'delete_shot_action':'/tasks/%s/delete/dialog' % r[0] if delete_shot_permission else None
+            'update_shot_action': '/tasks/%s/update/dialog' % r[0]
+                if update_shot_permission else None,
+            'delete_shot_action': '/tasks/%s/delete/dialog' % r[0]
+                if delete_shot_permission else None
         }
         task_types_names = r[6]
         task_ids = r[7]
@@ -360,27 +350,27 @@ order by "Shot_SimpleEntities".name
         task_percent_complete = r[11]
 
         logger.debug('task_types_names %s ' % task_types_names)
-        r_data['nulls'] = [];
+        r_data['nulls'] = []
         for index in range(len(task_types_names)):
-            logger.debug('task_types_names[index]; %s ' % task_types_names[index])
+            logger.debug('task_types_names[index]; %s ' %
+                         task_types_names[index])
             if task_types_names[index]:
-                r_data[task_types_names[index]]=[task_ids[index],task_names[index],task_statuses[index],task_percent_complete[index]]
+                r_data[task_types_names[index]] = \
+                    [task_ids[index], task_names[index], task_statuses[index],
+                     task_percent_complete[index]]
             else:
-                r_data['nulls'].append([task_ids[index],task_names[index],task_statuses[index],task_percent_complete[index]])
+                r_data['nulls'].append(
+                    [task_ids[index], task_names[index], task_statuses[index],
+                     task_percent_complete[index]]
+                )
 
         return_data.append(r_data)
 
-
-
     shot_count = len(return_data)
     content_range = content_range % (0, shot_count - 1, shot_count)
-
 
     resp = Response(
         json_body=return_data
     )
     resp.content_range = content_range
     return resp
-
-
-

@@ -1,5 +1,5 @@
 <!-- Stalker a Production Asset Management System
- Copyright (C) 2009-2013 Erkan Ozgur Yilmaz
+ Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
 
  This library is free software; you can redistribute it and/or
  modify it under the terms of the GNU Lesser General Public
@@ -582,6 +582,28 @@
                 e.preventDefault();
                 try {
                     destruct_dialog();
+                } catch(e) {
+                    console.log(e)
+                }
+            });
+        })
+    </script>
+
+    {# Event Dialog Initialize #}
+    <script type="text/javascript">
+        $(function () {
+            var html_dialog = $('#html_template');
+            html_dialog.on('shown', function (e) {
+                try {
+                    init_html_modal();
+                } catch(e) {
+                    console.log(e)
+                }
+            });
+            html_dialog.on('hidden', function (e) {
+
+                try {
+                    destruct_html_modal();
                 } catch(e) {
                     console.log(e)
                 }

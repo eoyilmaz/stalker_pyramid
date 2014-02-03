@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Stalker Pyramid a Web Base Production Asset Management System
-# Copyright (C) 2009-2013 Erkan Ozgur Yilmaz
+# Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
 #
 # This file is part of Stalker Pyramid.
 #
@@ -29,7 +29,7 @@ from pyramid import testing
 from pyramid.httpexceptions import HTTPServerError
 
 from stalker import (db, Project, Status, StatusList, Repository, Task, User,
-                     Asset, Type, TimeLog, Ticket, Note)
+                     Asset, Type, TimeLog, Ticket)
 from stalker.db.session import DBSession
 
 from stalker_pyramid.views import task, milliseconds_since_epoch, local_to_utc

@@ -1,19 +1,19 @@
 # -*- coding: utf-8 -*-
 # Stalker Pyramid a Web Base Production Asset Management System
-# Copyright (C) 2009-2013 Erkan Ozgur Yilmaz
-# 
+# Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
+#
 # This file is part of Stalker Pyramid.
-# 
+#
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
 # License as published by the Free Software Foundation;
 # version 2.1 of the License.
-# 
+#
 # This library is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # Lesser General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
@@ -80,7 +80,7 @@ def create_studio(request):
     wh_sat_end   = get_time(request, 'sat_end')
     wh_sun_start = get_time(request, 'sun_start')
     wh_sun_end   = get_time(request, 'sun_end')
-    
+
     if name and dwh:
         # create new studio
         studio = Studio(
@@ -88,13 +88,13 @@ def create_studio(request):
             daily_working_hours=int(dwh)
         )
         wh = WorkingHours()
-        
+
         def set_wh_for_day(day, start, end):
             if start != end:
                 wh[day] = [[start.seconds/60, end.seconds/60]]
             else:
                 wh[day] = []
-        
+
         set_wh_for_day('mon', wh_mon_start, wh_mon_end)
         set_wh_for_day('tue', wh_tue_start, wh_tue_end)
         set_wh_for_day('wed', wh_wed_start, wh_wed_end)
@@ -102,12 +102,12 @@ def create_studio(request):
         set_wh_for_day('fri', wh_fri_start, wh_fri_end)
         set_wh_for_day('sat', wh_sat_start, wh_sat_end)
         set_wh_for_day('sun', wh_sun_start, wh_sun_end)
-        
+
         studio.working_hours = wh
 
         DBSession.add(studio)
         # Commit will be handled by the zope transaction extension
-        
+
     return HTTPOk()
 
 

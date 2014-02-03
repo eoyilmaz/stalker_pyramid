@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Stalker Pyramid a Web Base Production Asset Management System
-# Copyright (C) 2009-2013 Erkan Ozgur Yilmaz
+# Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
 #
 # This file is part of Stalker Pyramid.
 #
@@ -28,13 +28,14 @@ from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPServerError, HTTPOk, HTTPForbidden
 from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message
+
 from sqlalchemy.exc import IntegrityError
+
 from stalker.db import DBSession
-from stalker import (User, Task, Entity, Project, StatusList, Status,
-                     TaskJugglerScheduler, Studio, Asset, Shot, Sequence,
-                     Ticket, Type, Note)
-from stalker.models.task import CircularDependencyError
-from stalker import defaults
+from stalker import (defaults, User, Task, Entity, Project, StatusList,
+                     Status, TaskJugglerScheduler, Studio, Asset, Shot,
+                     Sequence, Ticket, Type, Note)
+from stalker.exceptions import CircularDependencyError
 
 from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
                                    get_multi_integer, milliseconds_since_epoch,
@@ -530,10 +531,10 @@ def convert_to_dgrid_gantt_task_format(tasks):
             'resources': [
                 {'id': resource.id, 'name': resource.name} for resource in
                 task.resources] if not task.is_container else [],
-            'responsible': {
-                'id': task.responsible.id,
-                'name': task.responsible.name
-            },
+            'responsible': [{
+                'id': responsible.id,
+                'name': responsible.name
+            } for responsible in task.responsible],
             'schedule_constraint': task.schedule_constraint,
             'schedule_model': task.schedule_model,
             'schedule_seconds': task.schedule_seconds,
@@ -1165,6 +1166,47 @@ def get_tasks(request):
     )
     resp.content_range = content_range
     return resp
+
+@view_config(
+    route_name='get_user_tasks',
+    renderer='json'
+)
+def get_user_tasks(request):
+    """returns all the tasks in the database related to the given entity in
+    flat json format
+    """
+    logged_in_user = get_logged_in_user(request)
+    # get all the tasks related in the given project
+    user_id = request.matchdict.get('id', -1)
+    user = User.query.filter_by(id=user_id).first()
+
+    statuses = []
+    status_codes = request.GET.getall('status')
+    if status_codes:
+        statuses = Status.query.filter(Status.code.in_(status_codes)).all()
+
+    if statuses:
+        tasks = [task for task in user.tasks if task.status in statuses]
+    else:
+        tasks = user.tasks
+
+    return [
+        {
+            'id': task.id,
+            'responsible_name': task.responsible.name,
+            'responsible_id': task.responsible.id,
+            'percent_complete': task.percent_complete,
+            'type': task.type.name if task.type else '',
+            'request_review': '1' if ((
+                                          logged_in_user in task.resources or logged_in_user == task.responsible) and task.status.code == 'WIP' and task.is_leaf) else None,
+            'status': task.status.name,
+            'status_color': task.status.html_class,
+            'name': '%s (%s)' % (
+                task.name,
+                ' | '.join([parent.name for parent in task.parents])
+            )
+        } for task in tasks
+    ]
 
 
 @view_config(
@@ -2720,13 +2762,13 @@ def request_revision(request):
     else:
 
         revision_ticket = Ticket(
-                project=project,
-                summary=summary_text,
-                description=ticket_description,
-                type=revision_type,
-                created_by=logged_in_user,
-                date_created=utc_now,
-                date_updated=utc_now
+            project=project,
+            summary=summary_text,
+            description=ticket_description,
+            type=revision_type,
+            created_by=logged_in_user,
+            date_created=utc_now,
+            date_updated=utc_now
         )
         revision_ticket.reassign(logged_in_user, resource)
 

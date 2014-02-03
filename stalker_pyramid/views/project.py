@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Stalker Pyramid a Web Base Production Asset Management System
-# Copyright (C) 2009-2013 Erkan Ozgur Yilmaz
+# Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
 #
 # This file is part of Stalker Pyramid.
 #
@@ -20,17 +20,18 @@
 
 import time
 import datetime
+import logging
+
 from pyramid.httpexceptions import HTTPOk, HTTPServerError, HTTPFound
 from pyramid.view import view_config
 
 from stalker.db import DBSession
 from stalker import (User, ImageFormat, Repository, Structure, Status,
-                     StatusList, Project, Entity, Task, defaults, Studio)
+                     StatusList, Project, Entity, Studio)
+
 from stalker_pyramid.views import (get_date, get_date_range,
                                    get_logged_in_user,
                                    milliseconds_since_epoch)
-
-import logging
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -209,7 +210,8 @@ def get_entity_projects(request):
             'date_created': milliseconds_since_epoch(project.date_created),
             'created_by_id': project.created_by.id,
             'created_by_name': project.created_by.name,
-            'thumbnail_full_path': project.thumbnail.full_path if project.thumbnail else None,
+            'thumbnail_full_path': project.thumbnail.full_path
+            if project.thumbnail else None,
             'status': project.status.name,
             'users_count': len(project.users),
             'percent_complete': project.percent_complete

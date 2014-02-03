@@ -159,6 +159,10 @@ logger.setLevel(logging.DEBUG)
     renderer='templates/task/list/list_user_tasks_responsible_of.jinja2'
 )
 @view_config(
+    route_name='list_user_tasks_responsible_of',
+    renderer='templates/task/list/list_user_tasks_responsible_of.jinja2'
+)
+@view_config(
     route_name='list_task_tasks',
     renderer='templates/task/list/list_entity_tasks.jinja2'
 )
@@ -342,6 +346,37 @@ def list_entity_tasks_by_filter(request):
         'milliseconds_since_epoch': milliseconds_since_epoch,
     }
 
+@view_config(
+    route_name='list_entity_tasks_by_filter',
+    renderer='templates/task/list/list_entity_tasks_by_filter.jinja2',
+)
+def list_entity_tasks_by_filter(request):
+    """creates a list_entity_tasks_by_filter by using the given entity and filter
+    """
+    logger.debug('inside list_entity_tasks_by_filter')
+
+    # get logged in user
+    logged_in_user = get_logged_in_user(request)
+
+    entity_id = request.matchdict.get('id', -1)
+    entity = Entity.query.filter_by(id=entity_id).first()
+
+    filter_id = request.matchdict.get('f_id', -1)
+    filter = Entity.query.filter_by(id=filter_id).first()
+
+    studio = Studio.query.first()
+    if not studio:
+        studio = defaults
+
+    return {
+        'mode': 'create',
+        'has_permission': PermissionChecker(request),
+        'studio': studio,
+        'logged_in_user': logged_in_user,
+        'entity': entity,
+        'filter': filter,
+        'milliseconds_since_epoch': milliseconds_since_epoch,
+    }
 
 
 @view_config(
@@ -416,29 +451,30 @@ def append_entities_to_entity(request):
     """
     logger.debug('append_class_to_entity is running')
 
-
-
     entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
 
     selected_list = get_multi_integer(request, 'selected_items[]')
 
-
     logger.debug('selected_list: %s' % selected_list)
-
 
     if entity and selected_list:
 
-        appended_entities = Entity.query.filter(Entity.id.in_(selected_list)).all()
+        appended_entities = Entity.query\
+            .filter(Entity.id.in_(selected_list)).all()
         if appended_entities:
             attr_name = appended_entities[0].plural_class_name.lower()
-            eval('entity.%(attr_name)s.extend(appended_entities)' % {'attr_name': attr_name})
+            eval(
+                'entity.%(attr_name)s.extend(appended_entities)' %
+                {'attr_name': attr_name}
+            )
             DBSession.add(entity)
 
             logger.debug('entity is updated successfully')
 
             request.session.flash(
-                'success:User <strong>%s</strong> is updated successfully' % entity.name
+                'success:User <strong>%s</strong> is updated successfully' %
+                entity.name
             )
             logger.debug('***append_entities_to_entity method ends ***')
     else:
@@ -495,9 +531,7 @@ def remove_entity_from_entity(request):
     selected_entity_id = request.matchdict.get('entity_id', -1)
     selected_entity = Entity.query.filter_by(id=selected_entity_id).first()
 
-
     logger.debug('selected_entity: %s' % selected_entity)
-
 
     if entity and selected_entity:
 
@@ -508,7 +542,11 @@ def remove_entity_from_entity(request):
         logger.debug('entity is updated successfully')
 
         request.session.flash(
-            'success:%s <strong>%s</strong> is removed from %s \'s %s  successfully' % (selected_entity.entity_type, selected_entity.name, entity.name, attr_name)
+            'success:%s <strong>%s</strong> is successfully removed from %s '
+            '\'s %s' % (
+                selected_entity.entity_type,
+                selected_entity.name, entity.name, attr_name
+            )
         )
         logger.debug('***remove_entity_from_entity method ends ***')
     else:
@@ -518,7 +556,11 @@ def remove_entity_from_entity(request):
         )
         HTTPServerError()
 
-    return Response('success:%s <strong>%s</strong> is removed from %s \'s %s  successfully' % (selected_entity.entity_type, selected_entity.name, entity.name, attr_name))
+    return Response(
+        'success:%s <strong>%s</strong> is successfully removed from %s \'s %s'
+        % (selected_entity.entity_type, selected_entity.name, entity.name,
+           attr_name)
+    )
 
 
 
@@ -611,17 +653,13 @@ def get_entity_events(request):
     renderer='json'
 )
 def get_search_result(request):
-
     logger.debug('get_search_result is running')
 
     qString = request.params.get('str', -1)
-
     logger.debug('qString: %s'% qString)
 
     entities = Entity.query.filter(Entity.name.ilike(qString)).all()
-
     search_result = []
-
 
     for entity in entities:
 

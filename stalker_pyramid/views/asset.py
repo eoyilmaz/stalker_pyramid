@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Stalker Pyramid a Web Based Production Asset Management System
-# Copyright (C) 2009-2013 Erkan Ozgur Yilmaz
+# Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
 #
 # This file is part of Stalker Pyramid.
 #
@@ -22,14 +22,12 @@ import time
 import datetime
 
 from pyramid.httpexceptions import HTTPOk
-from pyramid.response import Response
 from pyramid.view import view_config
 from stalker import Type, Status, Asset
 from stalker.db import DBSession
 
 import logging
-from stalker_pyramid.views import (get_logged_in_user,
-                                   milliseconds_since_epoch)
+from stalker_pyramid.views import get_logged_in_user
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -177,6 +175,8 @@ def get_assets(request):
     ]
 
     end = time.time()
-    logger.debug('%s rows retrieved in : %s seconds' % (len(data), (end - start)))
+    logger.debug(
+        '%s rows retrieved in : %s seconds' % (len(data), (end - start))
+    )
 
     return data

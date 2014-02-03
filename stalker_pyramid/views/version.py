@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Stalker Pyramid a Web Base Production Asset Management System
-# Copyright (C) 2009-2013 Erkan Ozgur Yilmaz
+# Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
 #
 # This file is part of Stalker Pyramid.
 #
@@ -17,16 +17,17 @@
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
+import os
 import logging
 import shutil
-import os
 
 from pyramid.httpexceptions import HTTPOk
 from pyramid.view import view_config
+
 from sqlalchemy import distinct
 
-from stalker import Task, TimeLog, Version, Link, Entity, defaults
 from stalker.db import DBSession
+from stalker import Task, TimeLog, Version, Link, Entity, defaults
 
 from stalker_pyramid.views import (get_logged_in_user, get_user_os,
                                    PermissionChecker, get_multi_integer)
@@ -34,6 +35,7 @@ from stalker_pyramid.views.link import convert_file_link_to_full_path
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
+
 
 @view_config(
     route_name='dialog_create_task_version',
@@ -48,7 +50,7 @@ def create_version_dialog(request):
     logged_in_user = get_logged_in_user(request)
 
     task_id = request.matchdict.get('id', -1)
-    task = Task.query.filter(Task.task_id==task_id).first()
+    task = Task.query.filter(Task.task_id == task_id).first()
 
     takes = map(
         lambda x: x[0],
@@ -68,6 +70,7 @@ def create_version_dialog(request):
         'default_take_name': defaults.version_take_name,
         'take_names': [defaults.version_take_name]
     }
+
 
 @view_config(
     route_name='dialog_update_version',
@@ -98,22 +101,23 @@ def update_version_dialog(request):
 #     """runs when creating a version
 #     """
 #     logged_in_user = get_logged_in_user(request)
-# 
+#
 #     task_id = request.params.get('task_id')
 #     task = Task.query.filter(Task.id==task_id).first()
-# 
+#
 #     if task:
-# 
+#
 #         version = Version(
 #             task=task,
 #             created_by=logged_in_user,
 #         )
-# 
+#
 #         DBSession.add(version)
 #     else:
 #         HTTPServerError()
-# 
+#
 #     return HTTPOk()
+
 
 @view_config(
     route_name='assign_version',
@@ -155,7 +159,8 @@ def assign_version(request):
         version.extension = extension
 
         # specify that this version is created with Stalker Pyramid
-        version.created_with = 'StalkerPyramid' # TODO: that should also be a config value
+        version.created_with = 'StalkerPyramid'  # TODO: that should also be a
+                                                 #       config value
 
         # now move the link file to the version.absolute_full_path
         try:
@@ -167,7 +172,8 @@ def assign_version(request):
             pass
 
         logger.debug('full_path : %s' % full_path)
-        logger.debug('version.absolute_full_path : %s' % version.absolute_full_path)
+        logger.debug('version.absolute_full_path : %s' %
+                     version.absolute_full_path)
 
         shutil.copyfile(full_path, version.absolute_full_path)
         os.remove(full_path)
@@ -219,8 +225,6 @@ def get_entity_versions(request):
     entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
 
-    version_data = []
-
     user_os = get_user_os(request)
 
     logger.debug('entity_id : %s' % entity_id)
@@ -239,16 +243,14 @@ def get_entity_versions(request):
 
     return [{
         'id': version.id,
-        'task': {
-            'id': version.task.id,
-            'name': version.task.name
-        },
+        'task': {'id': version.task.id,
+                 'name': version.task.name},
         'take_name': version.take_name,
         'parent': {
             'id': version.parent.id,
             'version_number': version.parent.version_number,
             'take_name': version.parent.take_name
-        } if version.parent else None,
+            } if version.parent else None,
         'absolute_full_path': path_converter(version.absolute_full_path),
         'created_by': {
             'id': version.created_by.id,
@@ -315,4 +317,3 @@ def list_version_children(request):
         'version': version,
         'has_permission': PermissionChecker(request)
     }
-
