@@ -479,7 +479,7 @@ def main(global_config, **settings):
     config.add_route('get_task_tickets',  'tasks/{id}/tickets')  # json
 
     config.add_route('request_review',     'tasks/{id}/request_review')
-    config.add_route('request_review_dialog',     'tasks/{id}/request_review/dialog')
+    config.add_route('request_review_task_dialog',     'tasks/{id}/request_review/dialog')
 
     config.add_route('request_revision',   'tasks/{id}/request_revision')
     config.add_route('request_extra_time', 'tasks/{id}/request_extra_time')

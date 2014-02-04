@@ -40,7 +40,7 @@ from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
                                    get_multi_integer, milliseconds_since_epoch,
                                    StdErrToHTMLConverter,
                                    multi_permission_checker,
-                                   dummy_email_address, local_to_utc)
+                                   dummy_email_address, local_to_utc, get_user_os)
 from stalker_pyramid.views.type import query_type
 
 
@@ -700,6 +700,35 @@ def update_task(request):
         logger.debug('not updating bid')
     return Response('Task updated successfully')
 
+
+@view_config(
+    route_name='review_task_dialog',
+    renderer='templates/task/dialog/review_task_dialog.jinja2'
+)
+def review_task_dialog(request):
+    """called when reviewing tasks
+    """
+
+    logged_in_user = get_logged_in_user(request)
+    came_from = request.params.get('came_from', request.url)
+
+    entity_id = request.matchdict.get('id')
+    entity = Entity.query.filter_by(id=entity_id).first()
+
+    version = get_last_published_version_of_task(request)
+
+    project = entity.project
+
+
+    return {
+
+        'has_permission': PermissionChecker(request),
+        'logged_in_user': logged_in_user,
+        'entity': entity,
+        'project': project,
+        'came_from': came_from,
+        'version':version
+    }
 
 @view_config(
     route_name='review_task'
@@ -1588,13 +1617,13 @@ def get_entity_tasks_by_filter(request):
     filter = Entity.query.filter_by(id=filter_id).first()
 
 
-    sql_query ="""select
+    sql_query = """select
     "Task_Resources".task_id as task_id,
     "ParentTasks".parent_names as task_name,
     "Responsible_SimpleEntities".id as responsible_id,
     "Responsible_SimpleEntities".name as responsible_name,
     coalesce("Type_SimpleEntities".name,'') as type_name,
-         coalesce(
+         array_agg(coalesce(
             -- for parent tasks
             (case "Tasks"._schedule_seconds
                 when 0 then 0
@@ -1611,140 +1640,151 @@ def get_entity_tasks_by_filter(request):
                     when 'y' then 7696277
                     else 0
                 end)) * 100.0
-        ) as percent_complete,
-        "Resource_SimpleEntities".id as resource_id,
-        "Resource_SimpleEntities".name as resource_name,
+        )) as percent_complete,
+        array_agg("Resource_SimpleEntities".id) as resource_id,
+        array_agg("Resource_SimpleEntities".name) as resource_name,
         "Statuses_SimpleEntities".name as status_name,
+        "Statuses".code as status_code,
         "Statuses_SimpleEntities".html_class as status_color,
         "Project_SimpleEntities".id as project_id,
         "Project_SimpleEntities".name as project_name
 
-from "Tasks"
-join "Task_Resources" on "Task_Resources".task_id = "Tasks".id
-join "SimpleEntities" as "Project_SimpleEntities"on "Project_SimpleEntities".id = "Tasks".project_id
-join "Statuses" on "Statuses".id = "Tasks".status_id
-join "SimpleEntities" as "Statuses_SimpleEntities" on "Statuses_SimpleEntities".id = "Statuses".id
-left outer join (
-            select
-                "TimeLogs".task_id,
-                extract(epoch from sum("TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC')) as duration
-            from "TimeLogs"
-            group by task_id
-        ) as "Task_TimeLogs" on "Task_TimeLogs".task_id = "Tasks".id
-join "SimpleEntities" as "Task_SimpleEntities" on "Task_SimpleEntities".id = "Task_Resources".task_id
-
-join "SimpleEntities" as "Resource_SimpleEntities" on "Resource_SimpleEntities".id = "Task_Resources".resource_id
-join ((
-    -- get tasks responsible from parents
-    -- so find all the tasks that doesn't have a responsible but one of their parents has
-    with recursive go_to_parent(id, parent_id) as (
-            select task.id, task.parent_id
-            from "Tasks" as task
-            where task.responsible_id is NULL
-        union all
-            select g.id, task.parent_id
-            from go_to_parent as g
-            join "Tasks" as task on g.parent_id = task.id
-            where task.parent_id is not NULL and task.responsible_id is NULL
-    )
-    select
-        g.id, "Tasks".responsible_id
-    from go_to_parent as g
-    join "Tasks" on "Tasks".id = g.parent_id
-    where "Tasks".responsible_id is not NULL
-    order by g.id
-)
-union
-(
-    -- select all the tasks that has a responsible
-    select
-        id, responsible_id
     from "Tasks"
-    where responsible_id is not NULL
-)
-union
-(
-    -- select all the residual tasks that are not in the previous union
-    select
-        "Tasks".id,
-        "Projects".lead_id
-    from "Tasks"
-    join "Projects" on "Tasks".project_id = "Projects".id
+    join "Task_Resources" on "Task_Resources".task_id = "Tasks".id
+    join "SimpleEntities" as "Project_SimpleEntities"on "Project_SimpleEntities".id = "Tasks".project_id
+    join "Statuses" on "Statuses".id = "Tasks".status_id
+    join "SimpleEntities" as "Statuses_SimpleEntities" on "Statuses_SimpleEntities".id = "Statuses".id
     left outer join (
-        (
-            -- get tasks responsible from parents
-            -- so find all the tasks that doesn't have a responsible but one of their parents has
-            with recursive go_to_parent(id, parent_id) as (
-                    select task.id, task.parent_id
-                    from "Tasks" as task
-                    where task.responsible_id is NULL
-                union all
-                    select g.id, task.parent_id
-                    from go_to_parent as g
-                    join "Tasks" as task on g.parent_id = task.id
-                    where task.parent_id is not NULL and task.responsible_id is NULL
-            )
-            select
-                g.id
-            from go_to_parent as g
-            join "Tasks" on "Tasks".id = g.parent_id
-            where "Tasks".responsible_id is not NULL
-            order by g.id
-        )
-        union
-        (
-            -- select all the tasks that has a responsible
-            select
-                id
-            from "Tasks"
-            where responsible_id is not NULL
-        )
-    ) as prev_query on "Tasks".id = prev_query.id
-    where prev_query.id is NULL
-)) as "Tasks_Responsible" on "Tasks_Responsible".id = "Tasks".id
-left join "SimpleEntities" as "Responsible_SimpleEntities" on "Responsible_SimpleEntities".id = "Tasks_Responsible".responsible_id
-left join "SimpleEntities" as "Type_SimpleEntities" on "Task_SimpleEntities".type_id = "Type_SimpleEntities".id
-left join (select
-    parent_data.id,
-    "SimpleEntities".name || ' (' ||
-    array_to_string(array_agg(
-        case
-            when "SimpleEntities_parent".entity_type = 'Project'
-            then "Projects".code
-            else "SimpleEntities_parent".name
-        end),
-        ' | '
-    ) || ')'
-    as parent_names
-    from (
-        with recursive parent_ids(id, parent_id, n) as (
-                select task.id, coalesce(task.parent_id, task.project_id), 0
-                from "Tasks" task
+                select
+                    "TimeLogs".task_id,
+                    extract(epoch from sum("TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC')) as duration
+                from "TimeLogs"
+                group by task_id
+            ) as "Task_TimeLogs" on "Task_TimeLogs".task_id = "Tasks".id
+    join "SimpleEntities" as "Task_SimpleEntities" on "Task_SimpleEntities".id = "Task_Resources".task_id
+
+    join "SimpleEntities" as "Resource_SimpleEntities" on "Resource_SimpleEntities".id = "Task_Resources".resource_id
+    join ((
+        -- get tasks responsible from parents
+        -- so find all the tasks that doesn't have a responsible but one of their parents has
+        with recursive go_to_parent(id, parent_id) as (
+                select task.id, task.parent_id
+                from "Tasks" as task
+                where task.responsible_id is NULL
             union all
-                select task.id, parent.parent_id, parent.n + 1
-                from "Tasks" task, parent_ids parent
-                where task.parent_id = parent.id
+                select g.id, task.parent_id
+                from go_to_parent as g
+                join "Tasks" as task on g.parent_id = task.id
+                where task.parent_id is not NULL and task.responsible_id is NULL
         )
         select
-            parent_ids.id, parent_id as parent_id, parent_ids.n
-            from parent_ids
-            order by id, parent_ids.n desc
-    ) as parent_data
+            g.id, "Tasks".responsible_id
+        from go_to_parent as g
+        join "Tasks" on "Tasks".id = g.parent_id
+        where "Tasks".responsible_id is not NULL
+        order by g.id
+    )
+    union
+    (
+        -- select all the tasks that has a responsible
+        select
+            id, responsible_id
+        from "Tasks"
+        where responsible_id is not NULL
+    )
+    union
+    (
+        -- select all the residual tasks that are not in the previous union
+        select
+            "Tasks".id,
+            "Projects".lead_id
+        from "Tasks"
+        join "Projects" on "Tasks".project_id = "Projects".id
+        left outer join (
+            (
+                -- get tasks responsible from parents
+                -- so find all the tasks that doesn't have a responsible but one of their parents has
+                with recursive go_to_parent(id, parent_id) as (
+                        select task.id, task.parent_id
+                        from "Tasks" as task
+                        where task.responsible_id is NULL
+                    union all
+                        select g.id, task.parent_id
+                        from go_to_parent as g
+                        join "Tasks" as task on g.parent_id = task.id
+                        where task.parent_id is not NULL and task.responsible_id is NULL
+                )
+                select
+                    g.id
+                from go_to_parent as g
+                join "Tasks" on "Tasks".id = g.parent_id
+                where "Tasks".responsible_id is not NULL
+                order by g.id
+            )
+            union
+            (
+                -- select all the tasks that has a responsible
+                select
+                    id
+                from "Tasks"
+                where responsible_id is not NULL
+            )
+        ) as prev_query on "Tasks".id = prev_query.id
+        where prev_query.id is NULL
+    )) as "Tasks_Responsible" on "Tasks_Responsible".id = "Tasks".id
+    left join "SimpleEntities" as "Responsible_SimpleEntities" on "Responsible_SimpleEntities".id = "Tasks_Responsible".responsible_id
+    left join "SimpleEntities" as "Type_SimpleEntities" on "Task_SimpleEntities".type_id = "Type_SimpleEntities".id
+    left join (select
+        parent_data.id,
+        "SimpleEntities".name || ' (' ||
+        array_to_string(array_agg(
+            case
+                when "SimpleEntities_parent".entity_type = 'Project'
+                then "Projects".code
+                else "SimpleEntities_parent".name
+            end),
+            ' | '
+        ) || ')'
+        as parent_names
+        from (
+            with recursive parent_ids(id, parent_id, n) as (
+                    select task.id, coalesce(task.parent_id, task.project_id), 0
+                    from "Tasks" task
+                union all
+                    select task.id, parent.parent_id, parent.n + 1
+                    from "Tasks" task, parent_ids parent
+                    where task.parent_id = parent.id
+            )
+            select
+                parent_ids.id, parent_id as parent_id, parent_ids.n
+                from parent_ids
+                order by id, parent_ids.n desc
+        ) as parent_data
     join "SimpleEntities" on "SimpleEntities".id = parent_data.id
     join "SimpleEntities" as "SimpleEntities_parent" on "SimpleEntities_parent".id = parent_data.parent_id
     left outer join "Projects" on parent_data.parent_id = "Projects".id
     group by parent_data.id, "SimpleEntities".name) as "ParentTasks" on "Tasks".id = "ParentTasks".id
 
-where %(where_condition_for_entity)s%(where_condition_for_filter)s"""
+    where %(where_condition_for_entity)s%(where_condition_for_filter)s
+
+    group by "Task_Resources".task_id,
+        "ParentTasks".parent_names,
+        "Responsible_SimpleEntities".id ,
+        "Responsible_SimpleEntities".name,
+        "Type_SimpleEntities".name,
+        "Statuses_SimpleEntities".name,
+        "Statuses".code,
+        "Statuses_SimpleEntities".html_class,
+        "Project_SimpleEntities".id,
+        "Project_SimpleEntities".name"""
 
     where_condition_for_entity = ''
 
-    request_review= None
+
 
     if isinstance(entity, User):
          where_condition_for_entity = '"Task_Resources".resource_id=%s' % entity_id
-         if entity==logged_in_user:
-            request_review = '1'
+
 
     elif isinstance(entity, Project):
         where_condition_for_entity = '"Tasks".project_id =%s' % entity_id
@@ -1771,24 +1811,21 @@ where %(where_condition_for_entity)s%(where_condition_for_filter)s"""
             'responsible_id': r[2],
             'responsible_name': r[3],
             'type': r[4],
-            'percent_complete': r[5],
+            'percent_complete': r[5][0],
             'resource_id':r[6],
             'resource_name':r[7],
             'status':r[8],
-            'status_color':r[9],
-            'project_id':r[10],
-            'project_name':r[11],
-            'request_review':'1' if (r[6]==logged_in_user.id or r[2]==logged_in_user.id) and r[8]=='Work In Progress' else None
+            'status_code':r[9],
+            'status_color':r[10],
+            'project_id':r[11],
+            'project_name':r[12],
+            'request_review':'1' if (logged_in_user.id in r[6] or r[2]==logged_in_user.id) and r[9]=='WIP' else None,
+            'review':'1' if r[2]==logged_in_user.id and r[9]=='PREV' else None
 
         }
         for r in result.fetchall()
     ]
 
-    task_count = len(return_data)
-    # content_range = content_range % (0, task_count - 1, task_count)
-
-    # logger.debug('return_data: %s' % return_data)
-    end = time.time()
 
 
     resp = Response(
@@ -1868,16 +1905,6 @@ def update_task_dialog(request):
     """called when updating tasks
     """
     return data_dialog(request, mode='update', entity_type='Task')
-
-
-@view_config(
-    route_name='review_task_dialog',
-    renderer='templates/task/dialog/review_task_dialog.jinja2'
-)
-def review_task_dialog(request):
-    """called when reviewing tasks
-    """
-    return data_dialog(request, mode='review', entity_type='Task')
 
 
 @view_config(
@@ -2201,26 +2228,112 @@ def auto_schedule_tasks(request):
         return Response(c.html(replace_links=True), 500)
 
 
+
+def get_last_published_version_of_task(request):
+     """finds last published version of task
+     """
+
+     version = None
+
+     task_id = request.matchdict.get('id')
+     task = Task.query.filter_by(id=task_id).first()
+
+     sql_query = """select
+            "Versions".id as version_id,
+            "Versions".parent_id as parent_id,
+            "Version_Tasks".id as task_id,
+            "Version_SimpleEntities".date_updated,
+            "Version_SimpleEntities".created_by_id as created_by_id,
+            "Created_by_SimpleEntities".name as created_by_name,
+            "Version_Links".full_path as absolute_full_path,
+            "Version_SimpleEntities".description as description
+                from "Versions"
+                join "Tasks" as "Version_Tasks" on "Version_Tasks".id = "Versions".task_id
+                join "Links" as "Version_Links" on "Version_Links".id = "Versions".id
+                join "SimpleEntities" as "Version_SimpleEntities" on "Version_SimpleEntities".id = "Versions".id
+                join "SimpleEntities" as "Created_by_SimpleEntities" on "Created_by_SimpleEntities".id = "Version_SimpleEntities".created_by_id
+                where "Version_Tasks".id = %(task_id)s and "Versions".take_name = 'Main' and "Versions".is_published = 't'
+
+                order by date_updated desc
+                limit 1"""
+
+     sql_query = sql_query % {'task_id': task_id}
+
+     result = DBSession.connection().execute(sql_query).fetchone()
+
+     if result:
+
+            user_os = get_user_os(request)
+            repo = task.project.repository
+
+            path_converter = lambda x: x
+            if repo:
+                if user_os == 'windows':
+                    path_converter = repo.to_windows_path
+                elif user_os == 'linux':
+                    path_converter = repo.to_linux_path
+                elif user_os == 'osx':
+                    path_converter = repo.to_osx_path
+
+            file_name_split = result[6].split('/')
+
+            version = {
+                            'id': result[0],
+                            'parent_id': result[1],
+                            'task_id': result[2],
+                            'task_name':task.name,
+                            'date_updated': result[3],
+                            'created_by_id': result[4],
+                            'created_by_name': result[5],
+                            'path':path_converter(result[6]),
+                            'description':result[7] if result[7] else 'No description',
+                            'file_name':'.../%s'% file_name_split[len(file_name_split)-1]
+                     }
+
+     return version
+
+
 @view_config(
-    route_name='request_review_dialog',
-    renderer='templates/modals/confirm_dialog.jinja2'
+    route_name='request_review_task_dialog',
+    renderer='templates/task/dialog/request_review_task_dialog.jinja2'
 )
-def request_review_dialog(request):
+def request_review_task_dialog(request):
+
+
     task_id = request.matchdict.get('id')
+    task = Task.query.filter_by(id=task_id).first()
+
     action = '/tasks/%s/request_review' % task_id
 
-    came_from = request.params.get('came_from', '/')
-    message = 'This will send a <strong>review request</strong> to the ' \
-              'responsible of this task and you will <strong>not</strong> ' \
-              'be able to <strong>create any TimeLogs</strong> for this ' \
-              'task after this point<br><br><strong>Are you sure?</strong>'
 
-    logger.debug('action: %s' % action)
+    version = get_last_published_version_of_task(request)
+
+    if version is None:
+        if task.type:
+            if task.type.name in ['Look Development', 'Character Design', 'Model', 'Rig', 'Previs', 'Layout', 'Lighting', 'Environment Design', 'Matte Painting', 'Animation', 'Camera', 'Simulation', 'Postvis', 'Scene Assembly', 'Comp', 'FX', 'Concept', 'Groom']:
+                action = ''
+            else:
+                version = {
+                                'date_updated': '',
+                                'created_by_id': '',
+                                'created_by_name': '',
+                                'path':'',
+                                'description':'',
+                                'file_name':''
+                         }
+        else:
+            action = ''
+
+
+
+    came_from = request.params.get('came_from', '/')
+
 
     return {
-        'message': message,
         'came_from': came_from,
-        'action': action
+        'action': action,
+        'version': version,
+        'task_type':task.type.name if task.type else "No"
     }
 
 

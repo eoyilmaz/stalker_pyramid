@@ -116,7 +116,7 @@
 <script id="tmpl_itemRow" type="text/x-dot-template">
     <tr>
         <td><a href='/tasks/{{=it.id}}/view'>{{=it.name}}</a></td>
-        <td><a href='/users/{{=it.responsible_id}}/view'>{{=it.responsible_name}}</a></td>
+        <td>{{ for (var i=0; i< it.resource_id.length;i++) { }}<a href='/users/{{=it.resource_id[i]}}/view'>{{=it.resource_name[i]}}</a><br/>{{ } }}</td>
         <td>{{=it.type}}</td>
         <td data-sType="num-html">
             <div class="progress progress-success">
@@ -143,6 +143,19 @@
                         title="Request Review"
                         href="/tasks/{{=it.id}}/request_review/dialog?came_from={{=it.came_from }}">
                         <i class="icon-comment-alt bigger-130"></i>
+                    </a>
+                    {{ } }}
+                    {{ if (it.review) { }}
+                    <a
+                        class="purple"
+                        data-target="#dialog_template"
+                        data-toggle="modal"
+                        data-keyboard=false
+                        data-rel="tooltip"
+                        data-placement="top"
+                        title="Review"
+                        href="/tasks/{{=it.id}}/review/dialog?came_from={{=it.came_from }}">
+                        <i class="icon-comments bigger-130"></i>
                     </a>
                     {{ } }}
 

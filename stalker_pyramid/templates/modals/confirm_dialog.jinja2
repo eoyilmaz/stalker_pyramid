@@ -20,19 +20,36 @@
 
             // disable the submit_button
             var submit_button = $(this);
-            submit_button.button('loading');
+
 
             var url;
             url = '{{ action }}';
 
             console.debug('url: '+url)
 
-            $.post(url).done(function (response) {
-                window.location.assign('{{ came_from }}');
-            }).fail(function (jqXHR) {
-                        bootbox.alert('<h6 class="red"><i class="icon-warning-sign"></i> Failed</h6>' +jqXHR.responseText);
-                        submit_button.button('reset');
-                    });
+            if(url==''){
+                $('#dialog_template').modal('hide');
+            }
+            else{
+                submit_button.button('loading');
+
+                $.post(url).done(function (response) {
+                    $('#dialog_template').modal('hide');
+                    // reload page
+                    setTimeout(function () { // wait for hide event to finish
+                        window.location.reload();
+                    }, 0);
+                }).fail(function (jqXHR) {
+                            bootbox.alert('<h6 class="red"><i class="icon-warning-sign"></i> Failed</h6>' +jqXHR.responseText);
+                            submit_button.button('reset');
+                        });
+            }
+        });
+
+
+        $('.date').each(function () {
+            var date = moment.utc($(this).text());
+            $(this).text(date.fromNow());
         });
 
 
@@ -40,8 +57,11 @@
     }
 </script>
 
+
 <script type="text/javascript">
     function destruct_dialog() {
+
+
 
         $('#dialog_template_submit_button').unbind();
 
