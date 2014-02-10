@@ -13,7 +13,7 @@
             <div class="control-group">
                 <label class="span3 control-label" for="ticket_summary">Summary</label>
                 <div class="span9">
-                    <input type="text" name="summary">
+                    <input id="ticket_summary"  type="text" name="summary">
                 </div>
             </div>
 
@@ -192,12 +192,21 @@
                 ticket_links.append(rendered_template)
             }
 
+
+
+            ticket_links.val('{{ task_id }}');
+
+
+
             // trigger another update
             ticket_links.trigger('liszt:updated');
 
             // set the fields to normal mode
             ticket_links.attr('is_updating', false);
             field_update_mode_checker();
+
+
+
         });
 
 

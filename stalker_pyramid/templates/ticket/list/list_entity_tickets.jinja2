@@ -34,29 +34,30 @@
 
     {% set tickets=entity.tickets %}
 
-    {% if has_permission('Create_Ticket') and entity.entity_type == 'Project' %}
-    <div class="btn-toolbar">
-        <div class="btn-group">
-            <button class="btn btn-small btn-danger"
-                    data-target="#dialog_template"
-                    data-toggle="modal"
-                    data-keyboard=false
-                    href='{{ request.route_url("create_ticket_dialog", id=-1, _query={'project_id': entity.id})}}'>
-                <i class="'ui-icon icon-ticket bigger-120">&nbsp</i>
-                Create
-            </button>
-        </div>
-    </div>
+    {% if entity.entity_type=='Project' %}
+    {% set add_button_address=request.route_url("create_ticket_dialog", id=-1, _query={'project_id': entity.id }) %}
+    {% elif entity.entity_type=='Task' %}
+    {% set add_button_address=request.route_url("create_ticket_dialog", id=-1, _query={'project_id': entity.project_id, 'task_id':entity.id }) %}
     {% endif %}
 
-    <div class="table-header">
-        Tickets
-    </div>
-    <table id="tickets_table"
-           class="table table-striped table-bordered table-hover">
-        <thead>
-        <tr>
-            <th>Ticket</th>
+
+
+    {% set address=request.route_path('get_entity_tickets', id=entity.id) %}
+    {% set list_item_type='Ticket' %}
+    {% include 'components/data_table.jinja2' %}
+
+{% endblock page_content %}
+
+
+{% block extrascripts %}
+
+
+
+    {% raw %}
+    <script id="tmpl_itemThead" type="text/x-dot-template">
+
+    <tr>
+         <th>Ticket</th>
             <th>Project</th>
             <th class="hidden-480">Summary</th>
             <th>Type</th>
@@ -65,24 +66,12 @@
             <th>Owner</th>
             <th>Created By</th>
             <th class="hidden-phone">Created At</th>
-        </tr>
-        </thead>
-        <tbody>
-        
-        </tbody>
-    </table>
-
-{% endblock page_content %}
-
-
-{% block extrascripts %}
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.dataTables.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.dataTables.bootstrap.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/dataTable_num-html_sort.js") }}'></script>
-
+    </tr>
+    </script>
+    {% endraw %}
 
 {% raw %}
-<script id="tmpl_ticketRow" type="text/x-dot-template">
+<script id="tmpl_itemRow" type="text/x-dot-template">
     <tr>
         <td class='ticket_{{= it.priority }}'>
             <div class='ticket_{{= it.status }}'>
@@ -122,33 +111,33 @@
 
 
 <script>
-    // fill tickets table with dynamic data
-    $.getJSON('/entities/{{ entity.id }}/tickets/').then(function(data){
-
-        var tickets = data;
-        var ticket_template = doT.template($('#tmpl_ticketRow').html());
-
-        // wait until document is ready
-        $(function(){
-            var i;
-            var table_body = $('#tickets_table>tbody');
-            for (i=0; i<data.length; i++) {
-                // fix dates
-                data[i].date_created = new Date(data[i].date_created).format('yyyy-mm-dd HH:MM');
-                // append it to the table
-                table_body.append(ticket_template(data[i]));
-            }
-
-            var oTable1 = $('#tickets_table').dataTable({
-                "aoColumns": [
-                        {'sType': 'num-html'}, null, null, null, null, null,
-                        null, null, null
-                    ]
-            });
-            oTable1.fnSort([[0, 'asc']]);
-
-        });
-    });
+{#    // fill tickets table with dynamic data#}
+{#    $.getJSON('/entities/{{ entity.id }}/tickets/').then(function(data){#}
+{##}
+{#        var tickets = data;#}
+{#        var ticket_template = doT.template($('#tmpl_ticketRow').html());#}
+{##}
+{#        // wait until document is ready#}
+{#        $(function(){#}
+{#            var i;#}
+{#            var table_body = $('#tickets_table>tbody');#}
+{#            for (i=0; i<data.length; i++) {#}
+{#                // fix dates#}
+{#                data[i].date_created = new Date(data[i].date_created).format('yyyy-mm-dd HH:MM');#}
+{#                // append it to the table#}
+{#                table_body.append(ticket_template(data[i]));#}
+{#            }#}
+{##}
+{#            var oTable1 = $('#tickets_table').dataTable({#}
+{#                "aoColumns": [#}
+{#                        {'sType': 'num-html'}, null, null, null, null, null,#}
+{#                        null, null, null#}
+{#                    ]#}
+{#            });#}
+{#            oTable1.fnSort([[0, 'asc']]);#}
+{##}
+{#        });#}
+{#    });#}
     
 </script>
     

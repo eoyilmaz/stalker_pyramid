@@ -41,7 +41,7 @@ from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
                                    get_multi_integer, milliseconds_since_epoch,
                                    StdErrToHTMLConverter,
                                    multi_permission_checker,
-                                   dummy_email_address, local_to_utc)
+                                   dummy_email_address, local_to_utc, get_user_os)
 from stalker_pyramid.views.type import query_type
 
 
@@ -527,6 +527,7 @@ def convert_to_dgrid_gantt_task_format(tasks):
             'link': '/%ss/%s/view' % (task.entity_type.lower(), task.id),
             'name': task.name,
             'parent': task.parent.id if task.parent else task.project.id,
+            'project_id': task.project.id,
             'priority': task.priority,
             'resources': [
                 {'id': resource.id, 'name': resource.name} for resource in
@@ -702,158 +703,6 @@ def update_task(request):
     return Response('Task updated successfully')
 
 
-@view_config(
-    route_name='review_task'
-)
-def review_task(request):
-    """review task
-    """
-
-     # get logged in user as he review requester
-    logged_in_user = get_logged_in_user(request)
-
-
-    task_id = request.matchdict.get('id')
-    task = Task.query.filter(Task.id == task_id).first()
-
-    if not task:
-        transaction.abort()
-        return Response('There is no task with id: %s' % task_id, 500)
-
-    send_email = request.params.get('send_email', 1)
-    description = request.params.get('description', '')
-
-    review = request.params.get('review')
-
-    if not review:
-        transaction.abort()
-        return Response('No revision is specified', 500)
-
-    if review == 'Approve':
-        # change the task status to complete
-        status_cmpl = Status.query.filter(Status.code == 'CMPL').first()
-        if not status_cmpl:
-            transaction.abort()
-            return Response('There is no status with code CMPL, please inform '
-                            'your Stalker admin to create a task with code '
-                            'CMPL and assign it to Task', 500)
-        try:
-            task.status = status_cmpl
-        except ValueError as e:
-            transaction.abort()
-            return Response(e.message, 500)
-
-        # update parent statuses
-        update_task_statuses(task.parent)
-
-        # update dependent_of statuses
-        for dep in task.dependent_of:
-            update_task_statuses_with_dependencies(dep)
-
-        utc_now = local_to_utc(datetime.datetime.now())
-        logger.debug("utc_now: %s" % utc_now)
-        logger.debug("task.date_created: %s" % task.date_created)
-
-        task.updated_by = logged_in_user
-        task.date_updated = utc_now
-
-
-
-        # find the related revision Ticket and add the comment
-        review_type = Type.query.filter(Type.name == "Review").first()
-        tickets = Ticket.query \
-            .filter(Ticket.links.contains(task)) \
-            .filter(Ticket.type == review_type).all()
-        logger.debug("tickets: %s" % tickets)
-
-        task_full_name = '%s (%s)' % (
-                task.name,
-                '|'.join(map(lambda x: x.name, task.parents))
-            )
-
-        summary_text = \
-                'Task Reviewed: "%(task_full_name)s" has been approved!' % {
-                    'task_full_name': task_full_name
-                }
-
-
-
-        description_body = \
-                '%(requester_name)s has approved ' \
-                '%(task)s with the following ' \
-                'comment:%(spacing)s' \
-                '%(description)s'
-
-        if description == "":
-                description_body = \
-                '%(requester_name)s has approved ' \
-                '%(task)s  ' \
-                '%(spacing)s' \
-                '%(description)s'
-
-
-
-        description_text = description_body % {
-                "requester_name": logged_in_user.name,
-                "task": task_full_name,
-                "spacing": '\n\n',
-                "description": description
-                if description else "(No Description)"
-            }
-
-        description_html = description_body % {
-                "requester_name": '<strong>%s</strong>' % logged_in_user.name,
-                "task": '<strong>%s</strong>' % task_full_name,
-                "spacing": '<br><br>',
-                "description": description.replace('\n', '<br>')
-                if description else "(No Description)"
-            }
-
-
-        if tickets:
-
-            note = Note(
-                content=description_text,
-                created_by=logged_in_user,
-                date_created=utc_now,
-                date_updated=utc_now
-            )
-            for ticket in tickets:
-                ticket.comments.append(note)
-                ticket.date_updated = utc_now
-                ticket.updated_by = logged_in_user
-                ticket.resolve(logged_in_user,'fixed')
-            DBSession.add(note)
-
-        transaction.commit()
-        DBSession.add_all([task, logged_in_user])
-
-
-
-        if send_email:
-            # send email to resources of the task
-            mailer = get_mailer(request)
-            recipients = []
-            for resource in task.resources:
-                recipients.append(resource.email)
-
-
-            message = Message(
-                subject=summary_text,
-                sender=dummy_email_address,
-                recipients=recipients,
-                body=description_text,
-                html=description_html
-            )
-            mailer.send(message)
-
-    elif review == 'Request Revision':
-        # so request a revision
-        request_revision(request)
-        # no need to update the child and dependent_of statuses,
-        # they will not change
-
-    return Response('Successfully reviewed task')
 
 
 def depth_first_flatten(task, task_array=None):
@@ -1166,47 +1015,6 @@ def get_tasks(request):
     )
     resp.content_range = content_range
     return resp
-
-@view_config(
-    route_name='get_user_tasks',
-    renderer='json'
-)
-def get_user_tasks(request):
-    """returns all the tasks in the database related to the given entity in
-    flat json format
-    """
-    logged_in_user = get_logged_in_user(request)
-    # get all the tasks related in the given project
-    user_id = request.matchdict.get('id', -1)
-    user = User.query.filter_by(id=user_id).first()
-
-    statuses = []
-    status_codes = request.GET.getall('status')
-    if status_codes:
-        statuses = Status.query.filter(Status.code.in_(status_codes)).all()
-
-    if statuses:
-        tasks = [task for task in user.tasks if task.status in statuses]
-    else:
-        tasks = user.tasks
-
-    return [
-        {
-            'id': task.id,
-            'responsible_name': task.responsible.name,
-            'responsible_id': task.responsible.id,
-            'percent_complete': task.percent_complete,
-            'type': task.type.name if task.type else '',
-            'request_review': '1' if ((
-                                          logged_in_user in task.resources or logged_in_user == task.responsible) and task.status.code == 'WIP' and task.is_leaf) else None,
-            'status': task.status.name,
-            'status_color': task.status.html_class,
-            'name': '%s (%s)' % (
-                task.name,
-                ' | '.join([parent.name for parent in task.parents])
-            )
-        } for task in tasks
-    ]
 
 
 @view_config(
@@ -1630,7 +1438,7 @@ def get_entity_tasks_by_filter(request):
     filter = Entity.query.filter_by(id=filter_id).first()
 
 
-    sql_query ="""select
+    sql_query = """select
     "Task_Resources".task_id as task_id,
     "ParentTasks".parent_names as task_name,
     array_agg("Responsible_SimpleEntities".id) as responsible_id,
@@ -1658,23 +1466,24 @@ def get_entity_tasks_by_filter(request):
     "Resource_SimpleEntities".id as resource_id,
     "Resource_SimpleEntities".name as resource_name,
     "Statuses_SimpleEntities".name as status_name,
+    "Statuses".code,
     "Statuses_SimpleEntities".html_class as status_color,
     "Project_SimpleEntities".id as project_id,
     "Project_SimpleEntities".name as project_name
 
-from "Tasks"
-join "Task_Resources" on "Task_Resources".task_id = "Tasks".id
-join "SimpleEntities" as "Project_SimpleEntities"on "Project_SimpleEntities".id = "Tasks".project_id
-join "Statuses" on "Statuses".id = "Tasks".status_id
-join "SimpleEntities" as "Statuses_SimpleEntities" on "Statuses_SimpleEntities".id = "Statuses".id
-left outer join (
-    select
-        "TimeLogs".task_id,
-        extract(epoch from sum("TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC')) as duration
-    from "TimeLogs"
-    group by task_id
-) as "Task_TimeLogs" on "Task_TimeLogs".task_id = "Tasks".id
-join "SimpleEntities" as "Task_SimpleEntities" on "Task_SimpleEntities".id = "Task_Resources".task_id
+    from "Tasks"
+    join "Task_Resources" on "Task_Resources".task_id = "Tasks".id
+    join "SimpleEntities" as "Project_SimpleEntities"on "Project_SimpleEntities".id = "Tasks".project_id
+    join "Statuses" on "Statuses".id = "Tasks".status_id
+    join "SimpleEntities" as "Statuses_SimpleEntities" on "Statuses_SimpleEntities".id = "Statuses".id
+    left outer join (
+                select
+                    "TimeLogs".task_id,
+                    extract(epoch from sum("TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC')) as duration
+                from "TimeLogs"
+                group by task_id
+            ) as "Task_TimeLogs" on "Task_TimeLogs".task_id = "Tasks".id
+    join "SimpleEntities" as "Task_SimpleEntities" on "Task_SimpleEntities".id = "Task_Resources".task_id
 
 join "SimpleEntities" as "Resource_SimpleEntities" on "Resource_SimpleEntities".id = "Task_Resources".resource_id
 join ((
@@ -1700,118 +1509,118 @@ join ((
     join "Task_Responsible" on parent_task.id = "Task_Responsible".task_id
     where "Task_Responsible".responsible_id is not NULL
     order by g.id
-)
-union
-(
-    -- select all the tasks that has a responsible
-    select
-        id,
-        responsible_id
-    from "Tasks"
-    join "Task_Responsible" on "Tasks".id = "Task_Responsible".task_id
-    where "Task_Responsible".responsible_id is not NULL
-)
-union
-(
-    -- select all the residual tasks that are not in the previous union
-    select
-        "Tasks".id,
-        "Projects".lead_id
-    from "Tasks"
-    join "Projects" on "Tasks".project_id = "Projects".id
-    left outer join (
-        (
-            -- get tasks responsible from parents
-            -- so find all the tasks that doesn't have a responsible but one of their parents has
-            with recursive go_to_parent(id, parent_id) as (
-                    select task.id, task.parent_id
-                    from "Tasks" as task
-                    join "Task_Responsible" on task.id = "Task_Responsible".task_id
-                    where "Task_Responsible".responsible_id is NULL
+    )
+    union
+    (
+        -- select all the tasks that has a responsible
+        select
+            id,
+            responsible_id
+        from "Tasks"
+        join "Task_Responsible" on "Tasks".id = "Task_Responsible".task_id
+        where "Task_Responsible".responsible_id is not NULL
+    )
+    union
+    (
+        -- select all the residual tasks that are not in the previous union
+        select
+            "Tasks".id,
+            "Projects".lead_id
+        from "Tasks"
+        join "Projects" on "Tasks".project_id = "Projects".id
+        left outer join (
+            (
+                -- get tasks responsible from parents
+                -- so find all the tasks that doesn't have a responsible but one of their parents has
+                with recursive go_to_parent(id, parent_id) as (
+                        select task.id, task.parent_id
+                        from "Tasks" as task
+                        join "Task_Responsible" on task.id = "Task_Responsible".task_id
+                        where "Task_Responsible".responsible_id is NULL
+                    union all
+                        select g.id, task.parent_id
+                        from go_to_parent as g
+                        join "Tasks" as task on g.parent_id = task.id
+                        join "Task_Responsible" on task.id = "Task_Responsible".task_id
+                        where task.parent_id is not NULL and "Task_Responsible".responsible_id is NULL
+                )
+                select
+                    g.id
+                from go_to_parent as g
+                join "Tasks" on "Tasks".id = g.parent_id
+                join "Task_Responsible" on g.id = "Task_Responsible".task_id
+                where "Task_Responsible".responsible_id is not NULL
+                order by g.id
+            )
+            union
+            (
+                -- select all the tasks that has a responsible
+                select
+                    id
+                from "Tasks"
+                join "Task_Responsible" on "Tasks".id = "Task_Responsible".task_id
+                where responsible_id is not NULL
+            )
+        ) as prev_query on "Tasks".id = prev_query.id
+        where prev_query.id is NULL
+    )) as "Tasks_Responsible" on "Tasks_Responsible".id = "Tasks".id
+    left join "SimpleEntities" as "Responsible_SimpleEntities" on "Responsible_SimpleEntities".id = "Tasks_Responsible".responsible_id
+    left join "SimpleEntities" as "Type_SimpleEntities" on "Task_SimpleEntities".type_id = "Type_SimpleEntities".id
+    left join (select
+        parent_data.id,
+        "SimpleEntities".name || ' (' ||
+        array_to_string(array_agg(
+            case
+                when "SimpleEntities_parent".entity_type = 'Project'
+                then "Projects".code
+                else "SimpleEntities_parent".name
+            end),
+            ' | '
+        ) || ')'
+        as parent_names
+        from (
+            with recursive parent_ids(id, parent_id, n) as (
+                    select task.id, coalesce(task.parent_id, task.project_id), 0
+                    from "Tasks" task
                 union all
-                    select g.id, task.parent_id
-                    from go_to_parent as g
-                    join "Tasks" as task on g.parent_id = task.id
-                    join "Task_Responsible" on task.id = "Task_Responsible".task_id
-                    where task.parent_id is not NULL and "Task_Responsible".responsible_id is NULL
+                    select task.id, parent.parent_id, parent.n + 1
+                    from "Tasks" task, parent_ids parent
+                    where task.parent_id = parent.id
             )
             select
-                g.id
-            from go_to_parent as g
-            join "Tasks" on "Tasks".id = g.parent_id
-            join "Task_Responsible" on g.id = "Task_Responsible".task_id
-            where "Task_Responsible".responsible_id is not NULL
-            order by g.id
-        )
-        union
-        (
-            -- select all the tasks that has a responsible
-            select
-                id
-            from "Tasks"
-            join "Task_Responsible" on "Tasks".id = "Task_Responsible".task_id
-            where responsible_id is not NULL
-        )
-    ) as prev_query on "Tasks".id = prev_query.id
-    where prev_query.id is NULL
-)) as "Tasks_Responsible" on "Tasks_Responsible".id = "Tasks".id
-left join "SimpleEntities" as "Responsible_SimpleEntities" on "Responsible_SimpleEntities".id = "Tasks_Responsible".responsible_id
-left join "SimpleEntities" as "Type_SimpleEntities" on "Task_SimpleEntities".type_id = "Type_SimpleEntities".id
-left join (select
-    parent_data.id,
-    "SimpleEntities".name || ' (' ||
-    array_to_string(array_agg(
-        case
-            when "SimpleEntities_parent".entity_type = 'Project'
-            then "Projects".code
-            else "SimpleEntities_parent".name
-        end),
-        ' | '
-    ) || ')'
-    as parent_names
-    from (
-        with recursive parent_ids(id, parent_id, n) as (
-                select task.id, coalesce(task.parent_id, task.project_id), 0
-                from "Tasks" task
-            union all
-                select task.id, parent.parent_id, parent.n + 1
-                from "Tasks" task, parent_ids parent
-                where task.parent_id = parent.id
-        )
-        select
-            parent_ids.id, parent_id as parent_id, parent_ids.n
-            from parent_ids
-            order by id, parent_ids.n desc
-    ) as parent_data
-    join "SimpleEntities" on "SimpleEntities".id = parent_data.id
-    join "SimpleEntities" as "SimpleEntities_parent" on "SimpleEntities_parent".id = parent_data.parent_id
-    left outer join "Projects" on parent_data.parent_id = "Projects".id
-    group by parent_data.id, "SimpleEntities".name
-) as "ParentTasks" on "Tasks".id = "ParentTasks".id
+                parent_ids.id, parent_id as parent_id, parent_ids.n
+                from parent_ids
+                order by id, parent_ids.n desc
+        ) as parent_data
+        join "SimpleEntities" on "SimpleEntities".id = parent_data.id
+        join "SimpleEntities" as "SimpleEntities_parent" on "SimpleEntities_parent".id = parent_data.parent_id
+        left outer join "Projects" on parent_data.parent_id = "Projects".id
+        group by parent_data.id, "SimpleEntities".name
+    ) as "ParentTasks" on "Tasks".id = "ParentTasks".id
 
-where %(where_condition_for_entity)s%(where_condition_for_filter)s
+    where %(where_condition_for_entity)s%(where_condition_for_filter)s
 
-group by
-    "Task_Resources".task_id,
-    "ParentTasks".parent_names,
-    percent_complete,
-    "Resource_SimpleEntities".id,
-    "Resource_SimpleEntities".name,
-    "Statuses_SimpleEntities".name,
-    "Statuses_SimpleEntities".html_class,
-    "Project_SimpleEntities".id,
-    "Project_SimpleEntities".name,
-    type_name
-"""
+    group by
+        "Task_Resources".task_id,
+        "ParentTasks".parent_names,
+        percent_complete,
+        "Resource_SimpleEntities".id,
+        "Resource_SimpleEntities".name,
+        "Statuses_SimpleEntities".name,
+        "Statuses".code,
+        "Statuses_SimpleEntities".html_class,
+        "Project_SimpleEntities".id,
+        "Project_SimpleEntities".name,
+        type_name
+    """
 
     where_condition_for_entity = ''
 
-    request_review= None
+
 
     if isinstance(entity, User):
          where_condition_for_entity = '"Task_Resources".resource_id=%s' % entity_id
-         if entity==logged_in_user:
-            request_review = '1'
+
 
     elif isinstance(entity, Project):
         where_condition_for_entity = '"Tasks".project_id =%s' % entity_id
@@ -1840,11 +1649,12 @@ group by
             'resource_id':r[6],
             'resource_name':r[7],
             'status':r[8],
-            'status_color':r[9],
-            'project_id':r[10],
-            'project_name':r[11],
-            'request_review':'1' if (r[6]==logged_in_user.id or r[2]==logged_in_user.id) and r[8]=='Work In Progress' else None
-
+            'status_code':r[9],
+            'status_color':r[10],
+            'project_id':r[11],
+            'project_name':r[12],
+            'request_review':'1' if (logged_in_user.id in r[6] or r[2]==logged_in_user.id) and r[9]=='WIP' else None,
+            'review':'1' if r[2]==logged_in_user.id and r[9]=='PREV' else None
         }
         for r in result.fetchall()
     ]
@@ -1931,16 +1741,6 @@ def update_task_dialog(request):
     """called when updating tasks
     """
     return data_dialog(request, mode='update', entity_type='Task')
-
-
-@view_config(
-    route_name='review_task_dialog',
-    renderer='templates/task/dialog/review_task_dialog.jinja2'
-)
-def review_task_dialog(request):
-    """called when reviewing tasks
-    """
-    return data_dialog(request, mode='review', entity_type='Task')
 
 
 @view_config(
@@ -2264,291 +2064,260 @@ def auto_schedule_tasks(request):
         return Response(c.html(replace_links=True), 500)
 
 
+
+def get_last_version_of_task(request, is_published=''):
+     """finds last published version of task
+     """
+
+     version = None
+
+     task_id = request.matchdict.get('id')
+     task = Task.query.filter_by(id=task_id).first()
+
+     sql_query = """select
+            "Versions".id as version_id,
+            "Versions".parent_id as parent_id,
+            "Version_Tasks".id as task_id,
+            "Version_SimpleEntities".date_updated,
+            "Version_SimpleEntities".created_by_id as created_by_id,
+            "Created_by_SimpleEntities".name as created_by_name,
+            "Version_Links".full_path as absolute_full_path,
+            "Version_SimpleEntities".description as description
+                from "Versions"
+                join "Tasks" as "Version_Tasks" on "Version_Tasks".id = "Versions".task_id
+                join "Links" as "Version_Links" on "Version_Links".id = "Versions".id
+                join "SimpleEntities" as "Version_SimpleEntities" on "Version_SimpleEntities".id = "Versions".id
+                join "SimpleEntities" as "Created_by_SimpleEntities" on "Created_by_SimpleEntities".id = "Version_SimpleEntities".created_by_id
+                where "Version_Tasks".id = %(task_id)s and "Versions".take_name = 'Main' %(is_published_condition)s
+
+                order by date_updated desc
+                limit 1"""
+
+     is_published_condition = ''
+
+     if is_published !='':
+
+         is_published_condition = ' and "Versions".is_published = \'%s\'' % is_published
+
+
+     logger.debug('%s' % is_published_condition)
+
+     sql_query = sql_query % {'task_id': task_id, 'is_published_condition':is_published_condition}
+
+     result = DBSession.connection().execute(sql_query).fetchone()
+
+     if result:
+
+            user_os = get_user_os(request)
+            repo = task.project.repository
+
+            path_converter = lambda x: x
+            if repo:
+                if user_os == 'windows':
+                    path_converter = repo.to_windows_path
+                elif user_os == 'linux':
+                    path_converter = repo.to_linux_path
+                elif user_os == 'osx':
+                    path_converter = repo.to_osx_path
+
+            file_name_split = result[6].split('/')
+
+            version = {
+                            'id': result[0],
+                            'parent_id': result[1],
+                            'task_id': result[2],
+                            'task_name':task.name,
+                            'date_updated': result[3],
+                            'created_by_id': result[4],
+                            'created_by_name': result[5],
+                            'path':path_converter(result[6]),
+                            'description':result[7] if result[7] else 'No description',
+                            'file_name':'.../%s'% file_name_split[len(file_name_split)-1]
+                     }
+
+     return version
+
 @view_config(
-    route_name='request_review_dialog',
-    renderer='templates/modals/confirm_dialog.jinja2'
+    route_name='review_task_dialog',
+    renderer='templates/task/dialog/review_task_dialog.jinja2'
 )
-def request_review_dialog(request):
-    task_id = request.matchdict.get('id')
-    action = '/tasks/%s/request_review' % task_id
+def review_task_dialog(request):
+    """called when reviewing tasks
+    """
 
-    came_from = request.params.get('came_from', '/')
-    message = 'This will send a <strong>review request</strong> to the ' \
-              'responsible of this task and you will <strong>not</strong> ' \
-              'be able to <strong>create any TimeLogs</strong> for this ' \
-              'task after this point<br><br><strong>Are you sure?</strong>'
+    logged_in_user = get_logged_in_user(request)
+    came_from = request.params.get('came_from', request.url)
 
-    logger.debug('action: %s' % action)
+    entity_id = request.matchdict.get('id')
+    entity = Entity.query.filter_by(id=entity_id).first()
+
+    version = get_last_version_of_task(request, is_published='t')
+
+    project = entity.project
+
 
     return {
-        'message': message,
+
+        'has_permission': PermissionChecker(request),
+        'logged_in_user': logged_in_user,
+        'entity': entity,
+        'project': project,
         'came_from': came_from,
-        'action': action
+        'version':version
     }
 
-
 @view_config(
-    route_name='request_review',
+    route_name='review_task'
 )
-def request_review(request):
-    """creates a new ticket and sends an email to the responsible
+def review_task(request):
+    """review task
     """
-    # get logged in user as he review requester
+
+     # get logged in user as he review requester
     logged_in_user = get_logged_in_user(request)
 
-    task_id = request.matchdict.get('id', -1)
-    logger.debug('task_id : %s' % task_id)
+
+    task_id = request.matchdict.get('id')
     task = Task.query.filter(Task.id == task_id).first()
-    send_email = request.params.get('send_email', 1)  # for testing purposes
 
     if not task:
         transaction.abort()
         return Response('There is no task with id: %s' % task_id, 500)
 
-    if task.is_container:
-        transaction.abort()
-        return Response('Can not request review for a container task', 500)
-
-    # check if the task status is wip
-    status_wip = Status.query.filter(Status.code == 'WIP').first()
-    if task.status != status_wip:
-        transaction.abort()
-        return Response('You can not request a review for a task with status '
-                        'is set to "%s"' % task.status.name, 500)
-
-    # check if the user is one of the resources of this task or the responsible
-    if logged_in_user not in task.resources and \
-                    logged_in_user != task.responsible:
-        transaction.abort()
-        return Response('You are not one of the resources nor the '
-                        'responsible of this task, so you can not request a '
-                        'review for this task', 500)
-
-    # set task status to Pending Review
-    status_prev = Status.query.filter(Status.code == "PREV").first()
-    task.status = status_prev
-
-    # set task effort to the total_logged_seconds
-    task.schedule_timing = task.total_logged_seconds / 3600
-    task.schedule_unit = 'h'
-
-    # get the project that the ticket belongs to
-    project = task.project
-
-    # user_link = '<a href="%(url)s">%(name)s</a>' % {
-    #     'url': request.route_url('view_user', id=logged_in_user.id),
-    #     'name': logged_in_user.name
-    # }
-
-    user_link_internal = '<a href="%(url)s">%(name)s</a>' % {
-        'url': request.route_path('view_user', id=logged_in_user.id),
-        'name': logged_in_user.name
-    }
-
-    task_parent_names = "|".join(map(lambda x: x.name, task.parents))
-
-    task_name_as_text = "%(name)s (%(entity_type)s) - (%(parents)s)" % {
-        "name": task.name,
-        "entity_type": task.entity_type,
-        "parents": task_parent_names
-    }
-
-    # task_link = \
-    #     '<a href="%(url)s">%(name)s ' \
-    #     '(%(task_entity_type)s) - (%(task_parent_names)s)</a>' % {
-    #         "url": request.route_url('view_task', id=task.id),
-    #         "name": task.name,
-    #         "task_entity_type": task.entity_type,
-    #         "task_parent_names": task_parent_names
-    #     }
-
-    task_link_internal = \
-        '<a href="%(url)s">%(name)s ' \
-        '(%(task_entity_type)s) - (%(task_parent_names)s)</a>' % {
-            "url": request.route_path('view_task', id=task.id),
-            "name": task.name,
-            "task_entity_type": task.entity_type,
-            "task_parent_names": task_parent_names
-        }
-
-    summary_text = 'Review Request: "%(name)s" (%(parent_names)s)' % {
-        'name': task.name,
-        'parent_names': task_parent_names
-    }
-
-    description_template = \
-        '%(user)s has requested you to do a review for %(task)s'
-
-    description_text = description_template % {
-        "user": logged_in_user.name,
-        "task": task_name_as_text
-    }
-
-    description_html = description_template % {
-        "user": '<strong>%s</strong>' % logged_in_user.name,
-        "task": '<strong>%s</strong>' % task_name_as_text
-    }
-
-    ticket_description = description_template % {
-        "user": user_link_internal,
-        "task": task_link_internal
-    }
-
-    responsible = task.responsible
-    review_type = Type.query.filter_by(name='Review').first()
-
-    # create a Ticket with the owner set to the responsible
-    utc_now = local_to_utc(datetime.datetime.now())
-
-    revision_type = Type.query.filter_by(name='Revision').first()
-
-    revision_tickets = Ticket.query \
-        .filter(Ticket.links.contains(task)) \
-        .filter(Ticket.type == revision_type).all()
-
-
-    if revision_tickets:
-
-        for hr_ticket in revision_tickets:
-            hr_ticket.date_updated = utc_now
-            hr_ticket.updated_by = logged_in_user
-            # reopen if closed
-            hr_ticket.resolve(logged_in_user,'fixed')
-
-    # find a related ticket or create a new one
-    # find the related revision Ticket and add the comment
-    tickets = Ticket.query \
-        .filter(Ticket.links.contains(task)) \
-        .filter(Ticket.type == review_type).all()
-    logger.debug("tickets: %s" % tickets)
-    if tickets:
-        note = Note(
-            content=ticket_description,
-            created_by=logged_in_user,
-            date_created=utc_now,
-            date_updated=utc_now
-        )
-        for ticket in tickets:
-            ticket.comments.append(note)
-            ticket.date_updated = utc_now
-            ticket.updated_by = logged_in_user
-            # reopen if closed
-            ticket.reopen(logged_in_user)
-        DBSession.add(note)
-    else:
-        review_ticket = Ticket(
-            project=project,
-            summary=summary_text,
-            description=ticket_description,
-            type=review_type,
-            created_by=logged_in_user,
-            date_created=utc_now,
-            date_updated=utc_now
-        )
-        review_ticket.reassign(logged_in_user, responsible)
-
-        # link the task to the review
-        review_ticket.links.append(task)
-        DBSession.add(review_ticket)
-
-    if send_email:
-        # send email to responsible and resources of the task
-        mailer = get_mailer(request)
-
-        recipients = [logged_in_user.email]
-        if responsible.email not in recipients:
-            recipients.append(responsible.email)
-
-        for resource in task.resources:
-            recipients.append(resource.email)
-
-        message = Message(
-            subject=summary_text,
-            sender=dummy_email_address,
-            recipients=recipients,
-            body=description_text,
-            html=description_html)
-        mailer.send(message)
-
-    request.session.flash(
-        'success:Your review request has been sent to %s' % responsible.name)
-
-    return Response('Your review request has been sent to %s' %
-                    responsible.name)
-
-
-@view_config(
-    route_name='request_extra_time',
-)
-def request_extra_time(request):
-    """creates sends an email to the responsible about the user has requested
-    extra time
-    """
-    # get logged in user as he review requester
-    logged_in_user = get_logged_in_user(request)
-
-    task_id = request.matchdict.get('id', -1)
-    task = Task.query.filter(Task.id == task_id).first()
-
     send_email = request.params.get('send_email', 1)
+    description = request.params.get('description', '')
 
-    extra_time = request.params.get('extra_time', -1)
+    review = request.params.get('review')
 
-    if task and extra_time:
-        # no extra hours for a container task
-        if task.is_container:
+    if not review:
+        transaction.abort()
+        return Response('No revision is specified', 500)
+
+    if review == 'Approve':
+        # change the task status to complete
+        status_cmpl = Status.query.filter(Status.code == 'CMPL').first()
+        if not status_cmpl:
             transaction.abort()
-            return Response('Can not request extra time for a container '
-                            'task', 500)
+            return Response('There is no status with code CMPL, please inform '
+                            'your Stalker admin to create a task with code '
+                            'CMPL and assign it to Task', 500)
+        try:
+            task.status = status_cmpl
+        except ValueError as e:
+            transaction.abort()
+            return Response(e.message, 500)
 
-        # TODO: increase task extra time request counter
+        # update parent statuses
+        update_task_statuses(task.parent)
+
+        # update dependent_of statuses
+        for dep in task.dependent_of:
+            update_task_statuses_with_dependencies(dep)
+
+        utc_now = local_to_utc(datetime.datetime.now())
+        logger.debug("utc_now: %s" % utc_now)
+        logger.debug("task.date_created: %s" % task.date_created)
+
+        task.updated_by = logged_in_user
+        task.date_updated = utc_now
+
+        task_full_name = '%s (%s)' % (
+                task.name,
+                '|'.join(map(lambda x: x.name, task.parents))
+            )
+
+        summary_text = \
+                'Task Reviewed: "%(task_full_name)s" has been approved!' % {
+                    'task_full_name': task_full_name
+                }
+
+
+
+        description_body = \
+                '%(requester_name)s has approved ' \
+                '%(task)s with the following ' \
+                'comment:%(spacing)s' \
+                '%(description)s'
+
+        if description == "":
+                description_body = \
+                '%(requester_name)s has approved ' \
+                '%(task)s  ' \
+                '%(spacing)s' \
+                '%(description)s'
+
+
+
+        description_text = description_body % {
+                "requester_name": logged_in_user.name,
+                "task": task_full_name,
+                "spacing": '\n\n',
+                "description": description
+                if description else "(No Description)"
+            }
+
+        description_html = description_body % {
+                "requester_name": '<strong>%s</strong>' % logged_in_user.name,
+                "task": '<strong>%s</strong>' % task_full_name,
+                "spacing": '<br><br>',
+                "description": description.replace('\n', '<br>')
+                if description else "(No Description)"
+            }
+
+
+        # find the related revision Ticket and add the comment
+        review_type = Type.query.filter(Type.name == "Review").first()
+        tickets = Ticket.query \
+            .filter(Ticket.links.contains(task)) \
+            .filter(Ticket.type == review_type).all()
+        logger.debug("tickets: %s" % tickets)
+
+
+
+        if tickets:
+
+            note = Note(
+                content=description_text,
+                created_by=logged_in_user,
+                date_created=utc_now,
+                date_updated=utc_now
+            )
+            for ticket in tickets:
+                ticket.comments.append(note)
+                ticket.date_updated = utc_now
+                ticket.updated_by = logged_in_user
+                ticket.resolve(logged_in_user,'fixed')
+            DBSession.add(note)
+
+        transaction.commit()
+        DBSession.add_all([task, logged_in_user])
+
+
 
         if send_email:
-            # get the project that the ticket belongs to
-            summary_text = 'Extra Time Request: "%s"' % task.name
-            description_text = \
-                """%(user_name)s has requested %(extra_time)s extra hours for
-                %(task_name)s (%(task_link)s)" """ % {
-                    "user_name": logged_in_user.name,
-                    "extra_time": extra_time,
-                    "task_name": task.name,
-                    "task_link": request.route_url('view_task', id=task.id)
-                }
-
-            description_html = \
-                """%(user_name)s has requested %(extra_time)s extra hours for
-                %(task_name)s (%(task_link)s)" """ % {
-                    "user_name": logged_in_user.name,
-                    "extra_time": extra_time,
-                    "task_name": task.name,
-                    "task_link": request.route_url('view_task', id=task.id)
-                }
-
-            responsible = task.responsible
-
-            # send email to responsible and resources of the task
+            # send email to resources of the task
             mailer = get_mailer(request)
-
-            recipients = [logged_in_user.email]
-            if responsible.email not in recipients:
-                recipients.append(responsible.email)
+            recipients = []
             for resource in task.resources:
                 recipients.append(resource.email)
+
 
             message = Message(
                 subject=summary_text,
                 sender=dummy_email_address,
                 recipients=recipients,
                 body=description_text,
-                html=description_html,
+                html=description_html
             )
             mailer.send(message)
 
-        return Response('You have successfully requested extra time for '
-                        'your task')
-    transaction.abort()
-    return Response('There is no task with id : %s' % task_id, 500)
+    elif review == 'Request Revision':
+        # so request a revision
+        request_revision(request)
+        # no need to update the child and dependent_of statuses,
+        # they will not change
 
+    return Response('Successfully reviewed task')
 
 @view_config(
     route_name='request_revision'
@@ -2823,6 +2592,318 @@ def request_revision(request):
         mailer.send(message)
 
     return HTTPOk()
+
+
+
+@view_config(
+    route_name='request_review_task_dialog',
+    renderer='templates/task/dialog/request_review_task_dialog.jinja2'
+)
+def request_review_task_dialog(request):
+
+
+    task_id = request.matchdict.get('id')
+    task = Task.query.filter_by(id=task_id).first()
+
+    action = '/tasks/%s/request_review' % task_id
+
+
+    version = get_last_version_of_task(request, is_published='t')
+
+    if version is None:
+        if task.type:
+            if task.type.name in ['Look Development', 'Character Design', 'Model', 'Rig', 'Previs', 'Layout', 'Lighting', 'Environment Design', 'Matte Painting', 'Animation', 'Camera', 'Simulation', 'Postvis', 'Scene Assembly', 'Comp', 'FX', 'Concept', 'Groom']:
+                action = ''
+            else:
+                version = {
+                                'date_updated': '',
+                                'created_by_id': '',
+                                'created_by_name': '',
+                                'path':'',
+                                'description':'',
+                                'file_name':''
+                         }
+        else:
+            action = ''
+
+
+
+    came_from = request.params.get('came_from', '/')
+
+
+    return {
+        'came_from': came_from,
+        'action': action,
+        'version': version,
+        'task_type':task.type.name if task.type else "No"
+    }
+
+
+@view_config(
+    route_name='request_review',
+)
+def request_review(request):
+    """creates a new ticket and sends an email to the responsible
+    """
+    # get logged in user as he review requester
+    logged_in_user = get_logged_in_user(request)
+
+    task_id = request.matchdict.get('id', -1)
+    task = Task.query.filter(Task.id == task_id).first()
+
+    note = request.params.get('note', 'No note')
+    request_review_mode = request.params.get('request_review_mode', 'Progress')
+    send_email = request.params.get('send_email', 1)  # for testing purposes
+    utc_now = local_to_utc(datetime.datetime.now())
+
+    if not task:
+        transaction.abort()
+        return Response('There is no task with id: %s' % task_id, 500)
+
+    if task.is_container:
+        transaction.abort()
+        return Response('Can not request review for a container task', 500)
+
+    # check if the task status is wip
+    status_wip = Status.query.filter(Status.code == 'WIP').first()
+    if task.status != status_wip:
+        transaction.abort()
+        return Response('You can not request a review for a task with status '
+                        'is set to "%s"' % task.status.name, 500)
+
+    # check if the user is one of the resources of this task or the responsible
+    if logged_in_user not in task.resources and \
+                    logged_in_user != task.responsible:
+        transaction.abort()
+        return Response('You are not one of the resources nor the '
+                        'responsible of this task, so you can not request a '
+                        'review for this task', 500)
+
+    ticket_type_name=''
+
+    if request_review_mode == 'Final':
+
+        ticket_type_name ='Review'
+
+        # set task status to Pending Review
+        status_prev = Status.query.filter(Status.code == "PREV").first()
+        task.status = status_prev
+
+        # set task effort to the total_logged_seconds
+        task.schedule_timing = task.total_logged_seconds / 3600
+        task.schedule_unit = 'h'
+
+        revision_type = Type.query.filter_by(name='Revision').first()
+
+        revision_tickets = Ticket.query \
+            .filter(Ticket.links.contains(task)) \
+            .filter(Ticket.type == revision_type).all()
+
+
+        if revision_tickets:
+
+            for hr_ticket in revision_tickets:
+                hr_ticket.date_updated = utc_now
+                hr_ticket.updated_by = logged_in_user
+                # reopen if closed
+                hr_ticket.resolve(logged_in_user,'fixed')
+
+    elif request_review_mode == 'Progress':
+        ticket_type_name ='In Progress-Review'
+
+
+    # get the project that the ticket belongs to
+    project = task.project
+
+    user_link_internal = '<a href="%(url)s">%(name)s</a>' % {
+        'url': request.route_path('view_user', id=logged_in_user.id),
+        'name': logged_in_user.name
+    }
+
+    task_parent_names = "|".join(map(lambda x: x.name, task.parents))
+
+    task_name_as_text = "%(name)s (%(entity_type)s) - (%(parents)s)" % {
+        "name": task.name,
+        "entity_type": task.entity_type,
+        "parents": task_parent_names
+    }
+
+    task_link_internal = \
+        '<a href="%(url)s">%(name)s ' \
+        '(%(task_entity_type)s) - (%(task_parent_names)s)</a>' % {
+            "url": request.route_path('view_task', id=task.id),
+            "name": task.name,
+            "task_entity_type": task.entity_type,
+            "task_parent_names": task_parent_names
+        }
+
+    summary_text = '%(request_review_mode)s Review Request: "%(name)s" (%(parent_names)s)' % {
+        'request_review_mode':request_review_mode,
+        'name': task.name,
+        'parent_names': task_parent_names
+    }
+
+    description_template = \
+        '%(user)s has requested you to do a %(request_review_mode)s review for %(task)s'
+
+    description_text = description_template % {
+        "request_review_mode":request_review_mode,
+        "user": logged_in_user.name,
+        "task": task_name_as_text
+    }
+
+    description_html = description_template % {
+        "request_review_mode":request_review_mode,
+        "user": '<strong>%s</strong>' % logged_in_user.name,
+        "task": '<strong>%s</strong>' % task_name_as_text
+    }
+
+
+
+    responsible = task.responsible
+
+
+    ticket_type = Type.query.filter_by(name=ticket_type_name).first()
+    if ticket_type is None:
+            # create a new Type
+            ticket_type = Type(
+                name=ticket_type_name,
+                code=ticket_type_name,
+                target_entity_type='Ticket'
+            )
+
+    tickets = Ticket.query \
+        .filter(Ticket.links.contains(task)) \
+        .filter(Ticket.type == ticket_type).all()
+    if tickets:
+        note = Note(
+            content=note,
+            created_by=logged_in_user,
+            date_created=utc_now,
+            date_updated=utc_now
+        )
+        for ticket in tickets:
+            ticket.comments.append(note)
+            ticket.date_updated = utc_now
+            ticket.updated_by = logged_in_user
+            # reopen if closed
+            ticket.reopen(logged_in_user)
+        DBSession.add(note)
+    else:
+        request_review_ticket = Ticket(
+            project=project,
+            summary=summary_text,
+            description=note,
+            type=ticket_type,
+            created_by=logged_in_user,
+            date_created=utc_now,
+            date_updated=utc_now
+        )
+        request_review_ticket.reassign(logged_in_user, responsible)
+
+        # link the task to the review
+        request_review_ticket.links.append(task)
+        DBSession.add(request_review_ticket)
+
+    if send_email:
+        # send email to responsible and resources of the task
+        mailer = get_mailer(request)
+
+        recipients = [logged_in_user.email]
+        if responsible.email not in recipients:
+            recipients.append(responsible.email)
+
+        for resource in task.resources:
+            recipients.append(resource.email)
+
+        message = Message(
+            subject=summary_text,
+            sender=dummy_email_address,
+            recipients=recipients,
+            body=description_text,
+            html=description_html)
+        mailer.send(message)
+
+    request.session.flash(
+        'success:Your review request has been sent to %s' % responsible.name)
+
+    return Response('Your review request has been sent to %s' %
+                    responsible.name)
+
+
+@view_config(
+    route_name='request_extra_time',
+)
+def request_extra_time(request):
+    """creates sends an email to the responsible about the user has requested
+    extra time
+    """
+    # get logged in user as he review requester
+    logged_in_user = get_logged_in_user(request)
+
+    task_id = request.matchdict.get('id', -1)
+    task = Task.query.filter(Task.id == task_id).first()
+
+    send_email = request.params.get('send_email', 1)
+
+    extra_time = request.params.get('extra_time', -1)
+
+    if task and extra_time:
+        # no extra hours for a container task
+        if task.is_container:
+            transaction.abort()
+            return Response('Can not request extra time for a container '
+                            'task', 500)
+
+        # TODO: increase task extra time request counter
+
+        if send_email:
+            # get the project that the ticket belongs to
+            summary_text = 'Extra Time Request: "%s"' % task.name
+            description_text = \
+                """%(user_name)s has requested %(extra_time)s extra hours for
+                %(task_name)s (%(task_link)s)" """ % {
+                    "user_name": logged_in_user.name,
+                    "extra_time": extra_time,
+                    "task_name": task.name,
+                    "task_link": request.route_url('view_task', id=task.id)
+                }
+
+            description_html = \
+                """%(user_name)s has requested %(extra_time)s extra hours for
+                %(task_name)s (%(task_link)s)" """ % {
+                    "user_name": logged_in_user.name,
+                    "extra_time": extra_time,
+                    "task_name": task.name,
+                    "task_link": request.route_url('view_task', id=task.id)
+                }
+
+            responsible = task.responsible
+
+            # send email to responsible and resources of the task
+            mailer = get_mailer(request)
+
+            recipients = [logged_in_user.email]
+            if responsible.email not in recipients:
+                recipients.append(responsible.email)
+            for resource in task.resources:
+                recipients.append(resource.email)
+
+            message = Message(
+                subject=summary_text,
+                sender=dummy_email_address,
+                recipients=recipients,
+                body=description_text,
+                html=description_html,
+            )
+            mailer.send(message)
+
+        return Response('You have successfully requested extra time for '
+                        'your task')
+    transaction.abort()
+    return Response('There is no task with id : %s' % task_id, 500)
+
+
 
 
 @view_config(

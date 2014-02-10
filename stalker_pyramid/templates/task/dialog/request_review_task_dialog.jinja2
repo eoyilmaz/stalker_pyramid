@@ -1,0 +1,216 @@
+<div class='row-fluid'>
+    <div class='span12'>
+
+        <div id="version_message">
+        </div>
+
+
+        <form id="request_review_task_form"
+              class='form-horizontal hide'
+              role='form'
+              method='post'
+              action="">
+            {# Request Review Type #}
+            <div class="control-group">
+                <label class="span3 control-label"
+                       for="task_request_review_mode">Request Review
+                    For</label>
+
+                <div class="span9">
+                    <select id='task_request_review_mode'
+                            class='input-block-level'
+                            name='request_review_mode'
+                            >
+                        <option val="progress">Progress</option>
+                        <option val="final">Final</option>
+                    </select>
+                </div>
+            </div>
+            {# Notes #}
+
+            <div class='control-group'>
+                <label class='span3 control-label'
+                       for='note'>Note</label>
+
+                <div class='span9'>
+                    <textarea id="note"
+                              name='note'
+                              class="autosize-transition span12"
+                              style="overflow: hidden;
+                                         word-wrap: break-word;
+                                         resize: horizontal;
+                                         height: 150px;"
+                            ></textarea>
+                </div>
+            </div>
+
+        </form>
+        <div class="space"></div>
+
+        <div class="row-fluid" id="warning-message">
+
+
+        </div>
+
+    </div>
+</div>
+
+{% raw %}
+<script id="tmpl_messageVersion" type="text/x-dot-template">
+    {{ if (it.file_name != '') { }}
+    <div class="alert alert-info bigger-110">
+        <ul class="unstyled spaced">
+            <li><strong>Task:</strong>
+                <a href="/tasks/{{=it.task_id }}/view" target="_blank">{{=it.task_name
+                    }}</a>
+            </li>
+            <li><strong>Absolute Path :</strong>
+                <a href="javascript:copyToClipboard('{{=it.path }}')">{{=it.file_name
+                    }}</a>
+            </li>
+            <li><strong>Date :</strong> {{=it.date }} (<span class="date">{{=it.date }}</span>)
+            </li>
+            <li><strong>Created by :</strong>
+                <a href="/users/{{=it.created_by_id }}/view" target="_blank">{{=it.created_by_name
+                    }}</a>
+            </li>
+            <li><strong>Description :</strong> {{=it.description }}</li>
+        </ul>
+    </div>
+    {{ } }}
+</script>
+{% endraw %}
+
+
+{% raw %}
+
+<script id="alert-for-Progress" type="text/x-dot-template">
+
+    <div class="alert alert-warning bigger-110">
+        This will send a <strong>mid review request</strong> to the
+        responsible of this task. <br><br><strong>Are you sure?</strong>
+    </div>
+
+
+</script>
+{% endraw %}
+
+{% raw %}
+
+<script id="alert-for-Final" type="text/x-dot-template">
+
+    <div class="alert alert-error bigger-110">
+        This will send a <strong>review request</strong> to the
+        responsible of this task and you will <strong>not</strong>
+        be able to <strong>create any TimeLogs</strong> for this
+        task after this point<br><br><strong>Are you sure?</strong>
+    </div>
+
+</script>
+{% endraw %}
+
+
+<script>
+    function init_dialog() {
+        console.debug('starting to initialize confirm dialog!!!');
+
+        $('#dialog_template_label').text('Request Review Dialog');
+
+        var url = '{{ action }}'
+
+        {% if version != None %}
+
+
+
+            var message_template = doT.template($('#tmpl_messageVersion').html());
+
+            $('#version_message').append(message_template(
+                    {
+                        title: 'Last version of this task',
+                        path: '{{ version.path }}',
+                        task_id: '{{ version.task_id }}',
+                        task_name: '{{ version.task_name }}',
+                        date: '{{ version.date_updated }}',
+                        created_by_id: '{{ version.created_by_id }}',
+                        created_by_name: '{{ version.created_by_name }}',
+                        description: '{{ version.description }}',
+                        file_name: '{{ version.file_name }}'
+                    }
+
+            ));
+
+            $('#request_review_task_form').show()
+
+            $('#warning-message').find('div').remove();
+            $('#warning-message').append(doT.template($('#alert-for-Progress').html()));
+
+            $('#task_request_review_mode').on('change', function () {
+                $('#warning-message').find('div').remove();
+                $('#warning-message').append(doT.template($('#alert-for-' + $('#task_request_review_mode').val()).html()));
+            });
+
+
+        {% else %}
+
+            $('#version_message').append("<div class='alert alert-error bigger-110'><strong>{{ task_type }}</strong> type task needs to a published version to review. There is no published version of this task. This task's last version must be published!</div>");
+
+        {% endif %}
+
+
+
+
+
+
+        {# ***************************************************************** #}
+        {# Submit Button #}
+        $('#dialog_template_submit_button').on('click', function (e) {
+            e.stopPropagation();
+            e.preventDefault();
+
+            // disable the submit_button
+            var submit_button = $(this);
+
+            if (url) {
+                submit_button.button('loading');
+
+                var request_review_task_form = $('#request_review_task_form');
+                var request_review_task_form = request_review_task_form.serialize();
+
+                $.post(url, request_review_task_form).done(function (response) {
+                    $('#dialog_template').modal('hide');
+                    // reload page
+                    setTimeout(function () { // wait for hide event to finish
+                        window.location.reload();
+                    }, 0);
+                }).fail(function (jqXHR) {
+                            bootbox.alert('<h6 class="red"><i class="icon-warning-sign"></i> Failed</h6>' + jqXHR.responseText);
+                            submit_button.button('reset');
+                        });
+            }
+            else {
+                $('#dialog_template').modal('hide');
+            }
+        });
+
+
+        $('.date').each(function () {
+            var date = moment.utc($(this).text());
+            $(this).text(date.fromNow());
+        });
+
+
+        console.debug('finished initializing the confirm dialog!')
+    }
+</script>
+
+
+<script type="text/javascript">
+    function destruct_dialog() {
+
+
+        $('#dialog_template_submit_button').unbind();
+
+        $('#dialog_template').data('modal', null);
+
+    }
+</script>

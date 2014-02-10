@@ -1,78 +1,95 @@
+
 <div class='row-fluid'>
+
+
     <div class='span12'>
-
-        <form id="review_task_form"
-              class='form-horizontal'
-              role='form'
-              method='post'
-              action="{{ request.route_url('create_task') }}">
-
-            {# Review Type #}
-            <div class="control-group">
-                <label class="span3 control-label" for="task_review_mode">Review Type</label>
-                <div class="span9">
-                    <select id='task_review_mode'
-                            class='input-block-level'
-                            name='review'>
-                        <option val="Approve">Approve</option>
-                        <option val="Request Revision">Request Revision</option>
-                    </select>
-                </div>
+            <div id="version_message" class="alert alert-info bigger-110">
             </div>
 
-            {# Description #}
-            <div >
-                <div class='control-group' >
-                    <label class='span3 control-label' for='task_description'>Description</label>
-                    <div class='span9'>
-                        <textarea id="task_description"
-                                  name='description'
-                                  class="autosize-transition span12"
-                                  style="overflow: hidden;
+
+
+            <form id="review_task_form"
+                  class='form-horizontal'
+                  role='form'
+                  method='post'
+                  action="{{ request.route_url('create_task') }}">
+
+                {# Review Type #}
+                <div class="control-group">
+                    <label class="span3 control-label" for="task_review_mode">Review
+                        Type</label>
+
+                    <div class="span9">
+                        <select id='task_review_mode'
+                                class='input-block-level'
+                                name='review'>
+                            <option val="Approve">Approve</option>
+                            <option val="Request Revision">Request Revision
+                            </option>
+                        </select>
+                    </div>
+                </div>
+
+                {# Description #}
+                <div>
+                    <div class='control-group'>
+                        <label class='span3 control-label'
+                               for='task_description'>Description</label>
+
+                        <div class='span9'>
+                            <textarea id="task_description"
+                                      name='description'
+                                      class="autosize-transition span12"
+                                      style="overflow: hidden;
                                          word-wrap: break-word;
                                          resize: horizontal;
                                          height: 250px;"
-                                  >{% if mode=='update' %}{{ entity.description }}{% endif %}</textarea>
+                                    >{% if mode=='update' %}
+                                {{ entity.description }}{% endif %}</textarea>
+                        </div>
                     </div>
-                </div>
 
-                {# Schedule Timing #}
-                <div class='control-group hide' id="revision_controls">
-                    <label class='span3 control-label' for='task_schedule_timing'>Schedule Timing</label>
-                    <div class='span9'>
-                        <div class='span2'>
-                            <input id='task_schedule_timing'
-                                   class='input-block-level'
-                                   name='schedule_timing'
-                                   type='text'
-                                   value=1
-                                   min=1
-                                   required>
-                        </div>
-                        <div class='span3'>
-                            <select id='task_schedule_unit'
-                                   class='input-block-level'
-                                   name='schedule_unit'>
-                                <option value='h'>Hours</option>
-                                <option value='d'>Days</option>
-                                <option value='w'>Weeks</option>
-                                <option value='m'>Months</option>
-                                <option value='y'>Years</option>
-                            </select>
-                        </div>
-                        <div class='span3'>
-                            <select id='task_schedule_model'
-                                    class='input-block-level'
-                                    name='schedule_model'>
-                                <option value='effort'>Effort</option>
-                                <option value='duration'>Duration</option>
-                                <option value='length'>Length</option>
-                            </select>
+                    {# Schedule Timing #}
+                    <div class='control-group hide' id="revision_controls">
+                        <label class='span3 control-label'
+                               for='task_schedule_timing'>Schedule
+                            Timing</label>
+
+                        <div class='span9'>
+                            <div class='span2'>
+                                <input id='task_schedule_timing'
+                                       class='input-block-level'
+                                       name='schedule_timing'
+                                       type='text'
+                                       value=1
+                                       min=1
+                                       required>
+                            </div>
+                            <div class='span3'>
+                                <select id='task_schedule_unit'
+                                        class='input-block-level'
+                                        name='schedule_unit'>
+                                    <option value='h'>Hours</option>
+                                    <option value='d'>Days</option>
+                                    <option value='w'>Weeks</option>
+                                    <option value='m'>Months</option>
+                                    <option value='y'>Years</option>
+                                </select>
+                            </div>
+                            <div class='span3'>
+                                <select id='task_schedule_model'
+                                        class='input-block-level'
+                                        name='schedule_model'>
+                                    <option value='effort'>Effort</option>
+                                    <option value='duration'>Duration</option>
+                                    <option value='length'>Length</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </form>
+            </form>
+
 
     </div>
 </div>
@@ -80,13 +97,74 @@
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/moment.min.js") }}'></script>
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.autosize-min.js") }}'></script>
 
+
+{% raw %}
+<script id="tmpl_messageVersion" type="text/x-dot-template">
+    <div >
+            <h4 class="green">Last version of this task:</h4>
+
+            <dl class="dl-horizontal pull-left grey">
+                <dt>Task:</dt>
+                <dd>
+                     <a href="/tasks/{{=it.task_id }}/view" target="_blank">{{=it.task_name }}</a>
+                </dd>
+                <dt>Date :</dt>
+                <dd> {{=it.date}} (<span class="date">{{=it.date}}</span>)
+                </dd>
+                <dt>Created by :</dt>
+                <dd>
+                    <a href="/users/{{=it.created_by_id }}/view" target="_blank">{{=it.created_by_name}}</a>
+                </dd>
+                <dt>Description :</dt>
+                <dd> {{=it.description }}</dd>
+                <dt>Absolute Path :</dt>
+                <dd>
+                    <a href="javascript:copyToClipboard('{{=it.path }}')">{{=it.file_name}}</a>
+                </dd>
+            </dl>
+
+            Click absolute path to copy path to clipboard.
+    </div>
+</script>
+{% endraw %}
+
 <script>
-    function init_dialog(){
+    function init_dialog() {
         console.log('initialize review task dialog start');
 
         // update dialog header
-        $('#dialog_template_label').text('{{ mode.title() }} Task Dialog');
-    
+        var dialog_template_label = $('#dialog_template_label');
+        dialog_template_label.find('span').remove();
+        dialog_template_label.append('<span class="green">Review Task Dialog</span>');
+
+
+        {% if version != None %}
+
+            var message_template = doT.template($('#tmpl_messageVersion').html());
+
+            $('#version_message').append(message_template(
+                    {
+                        path: '{{ version.path }}',
+                        task_id:'{{ version.task_id }}',
+                        task_name:'{{ version.task_name }}',
+                        date: '{{ version.date_updated }}',
+                        created_by_id: '{{ version.created_by_id }}',
+                        created_by_name: '{{ version.created_by_name }}',
+                        description: '{{ version.description }}',
+                        file_name: '{{ version.file_name }}'
+                    }
+
+            ));
+
+
+        {% else %}
+
+            $('#version_message').append('<strong>{{ entity.name }}</strong> is <strong>{{entity.type.name }}</strong> type task. For <strong>{{entity.type.name }} </strong> type task no version is saved to server. Ask resource for details.');
+
+        {% endif %}
+
+
+
         // generate default values;
         var project = {
             id: {{ project.id }},
@@ -100,11 +178,11 @@
 
         var submit_button = $('#dialog_template_submit_button');
 
-        $('#task_review_mode').on('change', function() {
+        $('#task_review_mode').on('change', function () {
             // disable or enable revision_controls
             $('#revision_controls').toggle();
         });
-        
+
         {# ***************************************************************** #}
         {# Schedule Unit and Model #}
         $('#task_schedule_unit').val(schedule_unit);
@@ -123,16 +201,16 @@
             step: 1,
             btn_up_class: 'btn-info',
             btn_down_class: 'btn-info'
-        }).on('change', function(){
-            // check if it is in the range
-            var curr_value = $(this).val();
-            $(this).val(curr_value <= 1000 ? curr_value >= 1 ? curr_value : 1 : 1000 );
-        });
+        }).on('change', function () {
+                    // check if it is in the range
+                    var curr_value = $(this).val();
+                    $(this).val(curr_value <= 1000 ? curr_value >= 1 ? curr_value : 1 : 1000);
+                });
 
         {# ***************************************************************** #}
         {# Submit Button #}
 
-        submit_button.on('click', function(e){
+        submit_button.on('click', function (e) {
             e.stopPropagation();
             e.preventDefault();
 
@@ -144,27 +222,33 @@
             console.log('form_data :', form_data);
 
             // prevent multiple sends
-            if (task_form.attr('is_sending') == 'true'){
+            if (task_form.attr('is_sending') == 'true') {
                 return;
             } else {
                 task_form.attr('is_sending', true);
             }
             $.post(
-                submit_form_url,
-                form_data
-            ).done(function(){
-                $('#dialog_template').modal('hide');
-                // reload page
-                setTimeout(function () { // wait for hide event to finish
-                    window.location.reload();
-                }, 0);
-            }).fail(function(jqXHR){
-                task_form.attr('is_sending', false);
+                            submit_form_url,
+                            form_data
+                    ).done(function () {
+                        $('#dialog_template').modal('hide');
+                        // reload page
+                        setTimeout(function () { // wait for hide event to finish
+                            window.location.reload();
+                        }, 0);
+                    }).fail(function (jqXHR) {
+                        task_form.attr('is_sending', false);
 
-                // reset submit button
-                submit_button.button('reset');
-                bootbox.alert(jqXHR.responseText);
-            });
+                        // reset submit button
+                        submit_button.button('reset');
+                        bootbox.alert('<h6 class="red"><i class="icon-warning-sign"></i> Failed</h6>' + jqXHR.responseText);
+
+                    });
+        });
+
+                $('.date').each(function () {
+            var date = moment.utc($(this).text());
+            $(this).text(date.fromNow());
         });
 
         console.log('initialize review task dialog end')
@@ -172,7 +256,7 @@
 </script>
 
 <script type="text/javascript">
-    function destruct_dialog(){
+    function destruct_dialog() {
         console.log('destruct review task dialog start');
         // unbind events
         $('#task_review_mode').unbind();
