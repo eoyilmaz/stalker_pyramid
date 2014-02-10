@@ -107,10 +107,8 @@
             $('#reference_count').text(data);
 
             menu_of('References',
-                    "
-            {%- if request.current_route_path() == request.route_path('list_task_references', id=task.id) -%}
-                'active', {%- else -%},{%- endif -%}",
-            '{{ request.route_url('list_task_references', id=task.id) }}',
+                    "{%- if request.current_route_path() == request.route_path('list_task_references', id=task.id) -%} 'active', {%- else -%},{%- endif -%}",
+                    '{{ request.route_url('list_task_references', id=task.id) }}',
                     'icon-user',
                     data
             )
@@ -121,52 +119,39 @@
 <script type="text/javascript">
     $(document).ready(function () {
         menu_of('Dashboard',
-                "
-        {%- if request.current_route_path() == request.route_path('view_task', id=task.id) -%}
-            'active',{%- else -%},{%- endif -%}",
-        '{{ request.route_url('view_task', id=task.id) }}',
+                "{%- if request.current_route_path() == request.route_path('view_task', id=task.id) -%}'active',{%- else -%},{%- endif -%}",
+                '{{ request.route_url('view_task', id=task.id) }}',
                 'icon-dashboard',
-                ''
-        )
+                '')
 
         {% if entity.entity_type == 'Sequence' %}
 
             menu_of('Shots',
-                    "
-            {%- if request.current_route_path() == request.route_path('list_sequence_shots', id=task.id) -%}
-                'active',{%- else -%},{%- endif -%}",
-            '{{ request.route_url('list_sequence_shots', id=task.id) }}',
+                    "{%- if request.current_route_path() == request.route_path('list_sequence_shots', id=task.id) -%}'active',{%- else -%},{%- endif -%}",
+                    '{{ request.route_url('list_sequence_shots', id=task.id) }}',
                     'icon-camera',
-                    ''
-            )
+                    '')
         {% endif %}
 
 
 
         menu_of('Tasks',
-                "
-        {%- if request.current_route_path() == request.route_path('list_entity_tasks', id=task.id) -%}
-            'active',{%- else -%},{%- endif -%}",
-        '{{ request.route_url('list_entity_tasks', id=task.id) }}',
+                "{%- if request.current_route_path() == request.route_path('list_entity_tasks', id=task.id) -%}'active',{%- else -%},{%- endif -%}",
+                '{{ request.route_url('list_entity_tasks', id=task.id) }}',
                 'icon-tasks',
-                '{{ task.tasks | count }}'
-        )
+                '{{ task.tasks | count }}')
 
         menu_of('Tickets',
-                "
-        {%- if request.current_route_path() == request.route_path('list_task_tickets', id=task.id) -%}
-            'active',{%- else -%},{%- endif -%}",
-        '{{ request.route_url('list_task_tickets', id=task.id) }}',
+                "{%- if request.current_route_path() == request.route_path('list_task_tickets', id=task.id) -%}'active',{%- else -%},{%- endif -%}",
+                '{{ request.route_url('list_task_tickets', id=task.id) }}',
                 'icon-ticket',
-                '{{ task.tickets | count }}'
+                ''
         {# fix this it should be task.open_tickets, but stalker doesn't support it yet #}
         )
 
         menu_of('Versions',
-                "
-        {%- if request.current_route_path() == request.route_path('list_task_versions', id=task.id) -%}
-            'active',{%- else -%},{%- endif -%}",
-        '{{ request.route_url('list_task_versions', id=task.id) }}',
+                "{%- if request.current_route_path() == request.route_path('list_task_versions', id=task.id) -%}'active',{%- else -%},{%- endif -%}",
+                '{{ request.route_url('list_task_versions', id=task.id) }}',
                 'icon-sitemap',
                 '{{ task.versions | count }}'
         )

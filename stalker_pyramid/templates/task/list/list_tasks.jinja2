@@ -323,13 +323,24 @@
 
         <li>
             <a id='request_review_menu_item'
-               class="blue"
+               class="orange"
                data-target="#dialog_template"
                data-toggle="modal"
                data-keyboard="false"
                href="#">
                 <i class="'ui-icon icon-comment bigger-120">&nbsp</i>
                 Request Review
+            </a>
+        </li>
+        <li>
+            <a id='create_ticket_menu_item'
+               class="blue"
+               data-target="#dialog_template"
+               data-toggle="modal"
+               data-keyboard="false"
+               href="#">
+                <i class="'ui-icon icon-ticket bigger-120">&nbsp</i>
+                Create Ticket
             </a>
         </li>
 
@@ -738,6 +749,8 @@ require([
             var dependent_href = dependent_org_href + dep_ids_param;
             dependent_task_button.attr('href', dependent_href);
 
+
+
             // update update button
             $('#update_task_menu_item').attr(
                     'href',
@@ -753,6 +766,19 @@ require([
                     'href',
                     '/tasks/' + selected_ids[0] + '/request_review/dialog'
             );
+
+            $.getJSON('/tasks/' + selected_ids[0] + '/').then(function (data) {
+
+
+                $('#create_ticket_menu_item').attr(
+                    'href',
+                    '/tickets/-1/create/dialog?task_id='+ selected_ids[0] + '&project_id=23'
+                );
+
+            });
+
+
+
         }
     });
 
