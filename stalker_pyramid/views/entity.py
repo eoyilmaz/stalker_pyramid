@@ -163,10 +163,6 @@ logger.setLevel(logging.DEBUG)
     renderer='templates/task/list/list_user_tasks_responsible_of.jinja2'
 )
 @view_config(
-    route_name='list_user_tasks_responsible_of',
-    renderer='templates/task/list/list_user_tasks_responsible_of.jinja2'
-)
-@view_config(
     route_name='list_task_tasks',
     renderer='templates/task/list/list_entity_tasks.jinja2'
 )
