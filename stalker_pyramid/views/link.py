@@ -360,16 +360,15 @@ def get_entity_references(request):
     # also with their tags
     sql_query = """
     -- select all links assigned to a project tasks or assigned to a task and its children
-
     select
         "Links".id,
         "Links".full_path,
         "Links".original_filename,
         "Thumbnails".full_path as "thumbnail_full_path",
-        array_agg("SimpleEntities_Tags".name),
-        "Task_References".task_id as entity_id,
-        "SimpleEntities_Tasks".name as name,
-        "SimpleEntities_Tasks".entity_type as entity_type
+        array_agg("SimpleEntities_Tags".name) as tags,
+        array_agg("Task_References".task_id) as entity_id,
+        array_agg("SimpleEntities_Tasks".name) as task_name,
+        array_agg("SimpleEntities_Tasks".entity_type) as entity_type
     from "Task_References"
     join (
         with recursive parent_ids(id, parent_id, project_id) as (
@@ -380,7 +379,7 @@ def get_entity_references(request):
             where task.parent_id = parent.id
         )
         select
-            distinct parent_ids.id as id --, coalesce(parent_ids.parent_id, parent_ids.project_id) as parent_id
+            distinct parent_ids.id as id
             from parent_ids
 
             where parent_ids.id = %(id)s or parent_ids.parent_id = %(id)s or parent_ids.project_id = %(id)s -- show also children references
@@ -395,9 +394,8 @@ def get_entity_references(request):
     join "Tags" on "Entity_Tags".tag_id = "Tags".id
     join "SimpleEntities" as "SimpleEntities_Tags" on "Tags".id = "SimpleEntities_Tags".id
     join "SimpleEntities" as "SimpleEntities_Tasks" on "Task_References".task_id = "SimpleEntities_Tasks".id
-    group by "Links".id, "thumbnail_full_path", "Links".full_path,
-             "Links".original_filename, "Task_References".task_id,
-             "SimpleEntities_Tasks".name, "SimpleEntities_Tasks".entity_type
+    group by "Links".id, "Thumbnails".full_path, "Links".full_path,
+             "Links".original_filename
     order by "Links".id
     """ % {'id': entity_id}
 
@@ -418,9 +416,9 @@ def get_entity_references(request):
             'original_filename': r[2],
             'thumbnail_full_path': r[3],
             'tags': r[4],
-            'entity_id': r[5],
-            'entity_name': r[6],
-            'entity_type': r[7]
+            'entity_ids': r[5],
+            'entity_names': r[6],
+            'entity_types': r[7]
         } for r in result.fetchall()
     ]
     python_end = time_time()
