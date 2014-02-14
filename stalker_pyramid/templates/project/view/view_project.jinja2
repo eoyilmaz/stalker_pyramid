@@ -221,7 +221,7 @@
 
         <td><a href='/tasks/{{=it.id}}/view'>{{=it.name}}</a></td>
         <td>{{ for (var i=0; i< it.resource_id.length;i++) { }}<a href='/users/{{=it.resource_id[i]}}/view'>{{=it.resource_name[i]}}</a><br/>{{ } }}</td>
-        <td><a href='/users/{{=it.responsible_id}}/view'>{{=it.responsible_name}}</a></td>
+        <td>{{ for (var j=0; j< it.responsible_id.length;j++) { }}<a href='/users/{{=it.responsible_id[j]}}/view'>{{=it.responsible_name[j]}}</a><br/>{{ } }}</td>
         <td>{{=it.type}}</td>
         <td data-sType="num-html">
             <div class="progress progress-success">

@@ -121,7 +121,7 @@ def update_time_log_dialog(request):
 def create_time_log(request):
     """runs when creating a time_log
     """
-    logger.debug('inside create_time_log')
+    logger.debug('create_time_log method starts')
     task_id = request.params.get('task_id')
 
     logger.debug('task_id : %s' % task_id)
@@ -152,13 +152,16 @@ def create_time_log(request):
         # TimeLog should handle the extension of the effort
         logger.debug('got all the data')
         try:
-            time_log = TimeLog(
-                task=task,
-                resource=resource,
-                start=start_date,
-                end=end_date,
-                description=description
-            )
+            # time_log = TimeLog(
+            #     task=task,
+            #     resource=resource,
+            #     start=start_date,
+            #     end=end_date,
+            #     description=description
+            # )
+
+            assert isinstance(task, Task)
+            task.create_time_log(resource,start_date, end_date)
 
             # TODO: update according to the new Task Status Workflow (I mean delete this part, it is handled by Stalker)
             status_rts = Status.query.filter(Status.code == "RTS").first()
@@ -219,7 +222,7 @@ def create_time_log(request):
             transaction.abort()
             return response
         else:
-            DBSession.add(time_log)
+            # DBSession.add(time_log)
             # check parent task statuses
             update_task_statuses(task.parent)
 
@@ -234,8 +237,10 @@ def create_time_log(request):
         )
         transaction.abort()
         return response
+
     logger.debug('successfully created time log!')
     response = Response('successfully created time log!')
+
     return response
 
 

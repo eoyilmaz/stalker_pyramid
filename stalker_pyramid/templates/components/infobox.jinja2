@@ -1,20 +1,23 @@
 {% raw %}
 <script id="tmpl_infobox" type="text/x-dot-template">
-    <div class="infobox infobox-{{=it.color }}" style="width:190px">
+    <div class="infobox infobox-{{=it.status_color }}" style="width:110px">
 
-            <div class="infobox-icon"><i class="{{=it.icon }}"></i></div>
-            <div class="infobox-data"><span class="infobox-data-number">{{=it.count }}</span>
+            <div class="infobox-icon" style="min-width:40px"><i class="{{=it.status_icon }}"></i></div>
+            <div class="infobox-data" style="min-width:50px"><span class="infobox-data-number">{{=it.tasks_count }}</span>
 
                 <div class="infobox-content">
                     <a data-target="#html_template"
                        data-toggle="modal"
                        data-keyboard=false
-                       href="/entities/{{=it.entity_id }}/tasks/filter/{{=it.id }}/list" class="{{=it.color }}">{{=it.name }}</a></div>
+                       href="/entities/{{=it.entity_id }}/tasks/filter/{{=it.status_id }}/list"
+                       class="{{=it.status_color }}">{{=it.status_code }}</a></div>
             </div>
 
     </div>
+
 </script>
 {% endraw %}
+
 
 
 
@@ -24,9 +27,24 @@
         var infobox_template = doT.template($('#tmpl_infobox').html());
 
         $.getJSON(infobox.attr('address')).then(function (data) {
+
+            var sorting_path = ['NEW','RTS','WIP','PREV','HREV','CMPL','DREV','OH','STOP']
+            var sorted_data = []
+
             for (var i = 0; i < data.length; i++) {
+
                 data[i].entity_id = '{{ entity.id }}'
-                infobox.append(infobox_template(data[i]));
+                if(data[i].status_icon == ''){
+                   data[i].status_icon = get_icon(data[i].status_code)
+                }
+                sorted_data[sorting_path.indexOf(data[i].status_code.toString())] = data[i]
+            }
+
+            for (var k = 0; k < sorted_data.length; k++) {
+
+                if(sorted_data[k]){
+                 infobox.append(infobox_template(sorted_data[k]));
+                }
             }
         });
 

@@ -1109,10 +1109,32 @@ def get_user_tasks(request):
     """returns all the tasks in the database related to the given entity in
     flat json format
     """
+
+    logger.debug('get_user_tasks starts')
     logged_in_user = get_logged_in_user(request)
     # get all the tasks related in the given project
     user_id = request.matchdict.get('id', -1)
-    user = User.query.filter_by(id=user_id).first()
+
+
+    sql_query = """select 
+               "Task_SimpleEntities".id  as task_id,
+               "Task_SimpleEntities".name as task_name,
+               "Task_Statuses".code as status_code,
+               "Statuses_SimpleEntities".name as status_name,
+               "Statuses_SimpleEntities".html_class as status_color
+
+                from "Tasks"
+                join "SimpleEntities" as "Task_SimpleEntities" on "Task_SimpleEntities".id = "Tasks".id
+                join "Task_Resources" on "Task_Resources".task_id = "Tasks".id
+                join "Statuses" as "Task_Statuses" on "Task_Statuses".id = "Tasks".status_id
+                join "SimpleEntities" as "Statuses_SimpleEntities" on "Statuses_SimpleEntities".id = "Tasks".status_id
+
+                %(where_condition)s"""
+    
+
+    where_condition = 'where "Task_Resources".resource_id = %s' % user_id
+
+
 
     statuses = []
     status_codes = request.GET.getall('status')
@@ -1120,27 +1142,51 @@ def get_user_tasks(request):
         statuses = Status.query.filter(Status.code.in_(status_codes)).all()
 
     if statuses:
-        tasks = [task for task in user.tasks if task.status in statuses]
-    else:
-        tasks = user.tasks
+        for status in statuses:
+            where_condition = """%s or "Task_Statuses".code='%s'""" %(where_condition, status.code)
 
-    return [
+    sql_query = sql_query % {'where_condition': where_condition}
+
+    logger.debug('%s' % sql_query)
+
+    result = DBSession.connection().execute(sql_query)
+
+    return_data = [
         {
-            'id': task.id,
-            'responsible_name': task.responsible.name,
-            'responsible_id': task.responsible.id,
-            'percent_complete': task.percent_complete,
-            'type': task.type.name if task.type else '',
-            'request_review': '1' if ((
-                                          logged_in_user in task.resources or logged_in_user == task.responsible) and task.status.code == 'WIP' and task.is_leaf) else None,
-            'status': task.status.name,
-            'status_color': task.status.html_class,
-            'name': '%s (%s)' % (
-                task.name,
-                ' | '.join([parent.name for parent in task.parents])
-            )
-        } for task in tasks
+            'id': r[0],
+            'name': r[1],
+            'status_code': r[2],
+            'status': r[3],
+            'status_color': r[4]
+        }
+        for r in result.fetchall()
     ]
+
+
+    resp = Response(
+        json_body=return_data
+    )
+    # resp.content_range = content_range
+    return resp
+
+
+    # return [
+    #     {
+    #         'id': task.id,
+    #         'responsible_name': task.responsible.name,
+    #         'responsible_id': task.responsible.id,
+    #         'percent_complete': task.percent_complete,
+    #         'type': task.type.name if task.type else '',
+    #         'request_review': '1' if ((
+    #                                       logged_in_user in task.resources or logged_in_user == task.responsible) and task.status.code == 'WIP' and task.is_leaf) else None,
+    #         'status': task.status.name,
+    #         'status_color': task.status.html_class,
+    #         'name': '%s (%s)' % (
+    #             task.name,
+    #             ' | '.join([parent.name for parent in task.parents])
+    #         )
+    #     } for task in tasks
+    # ]
 
 
 @view_config(
@@ -1381,39 +1427,79 @@ def get_entity_tasks_stats(request):
     entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
 
-    #logger.debug('user_id : %s' % entity_id)
+    logger.debug('get_entity_tasks_stats is starts')
 
-    status_list = StatusList.query.filter_by(
-        target_entity_type='Task'
-    ).first()
+    sql_query = """
+            select
+                count("Tasks".id) as count,
+                "Statuses".id as status_id,
+                "Statuses".code as status_code,
+                "Statuses_SimpleEntities".name as status_name,
+                "Statuses_SimpleEntities".html_class as status_color
 
-    join_attr = None
+                from "Statuses"
+                join "Tasks" on "Statuses".id = "Tasks".status_id
+                join "SimpleEntities" as "Statuses_SimpleEntities" on "Statuses_SimpleEntities".id = "Statuses".id
 
-    if entity.entity_type == 'User':
-        join_attr = Task.resources
-    elif entity.entity_type == 'Project':
-        join_attr = Task.project
+            %(where_condition_for_entity)s
 
-    __class__ = entity.__class__
 
-    status_count_task = []
+            and not (
+                exists (
+               select 1
+               from (
+                  select "Tasks".parent_id from "Tasks"
+               ) AS all_tasks
+               where all_tasks.parent_id = "Tasks".id
+                )
+            )
 
-    #TODO find the correct solution to filter leaf tasks. This does not work.
-    for status in status_list.statuses:
-        status_count_task.append({
-            'name': status.name,
-            'id': status.id,
-            'code': status.code,
-            'color': status.html_class,
-            'icon': 'icon-folder-close-alt',
-            'count': Task.query.join(entity.__class__, join_attr) \
-                .filter(__class__.id == entity_id) \
-                .filter(Task.status_id == status.id) \
-                .filter(Task.children == None) \
-                .count()
-        })
+            group by
+               "Statuses".code,
+               "Statuses".id,
+               "Statuses_SimpleEntities".name,
+               "Statuses_SimpleEntities".html_class
 
-    return status_count_task
+      
+      
+      
+      """
+    
+    where_condition_for_entity = ''
+
+    if isinstance(entity, User):
+         where_condition_for_entity = 'join "Task_Resources" on "Task_Resources".task_id = "Tasks".id where "Task_Resources".resource_id =%s' % entity_id
+
+
+    elif isinstance(entity, Project):
+        where_condition_for_entity = 'where "Tasks".project_id =%s' % entity_id
+
+
+    sql_query = sql_query % {'where_condition_for_entity': where_condition_for_entity}
+
+    # convert to dgrid format right here in place
+    result = DBSession.connection().execute(sql_query)
+
+    return_data = [
+        {
+            'tasks_count': r[0],
+            'status_id': r[1],
+            'status_code': r[2],
+            'status_name': r[3],
+            'status_color': r[4],
+            'status_icon':''
+        }
+        for r in result.fetchall()
+    ]
+
+
+    resp = Response(
+        json_body=return_data
+    )
+    # resp.content_range = content_range
+    return resp
+
+
 
 
 
@@ -1463,8 +1549,8 @@ def get_entity_tasks_by_filter(request):
             end)
             ) * 100.0
     ) as percent_complete,
-    "Resource_SimpleEntities".id as resource_id,
-    "Resource_SimpleEntities".name as resource_name,
+    array_agg("Resource_SimpleEntities".id) as resource_id,
+    array_agg("Resource_SimpleEntities".name) as resource_name,
     "Statuses_SimpleEntities".name as status_name,
     "Statuses".code,
     "Statuses_SimpleEntities".html_class as status_color,
@@ -1604,8 +1690,6 @@ join ((
         "Task_Resources".task_id,
         "ParentTasks".parent_names,
         percent_complete,
-        "Resource_SimpleEntities".id,
-        "Resource_SimpleEntities".name,
         "Statuses_SimpleEntities".name,
         "Statuses".code,
         "Statuses_SimpleEntities".html_class,

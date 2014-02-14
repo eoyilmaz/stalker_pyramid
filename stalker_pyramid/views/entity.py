@@ -139,6 +139,10 @@ logger.setLevel(logging.DEBUG)
     renderer='templates/project/view/view_project.jinja2'
 )
 @view_config(
+    route_name='update_studio_dialog',
+    renderer='templates/studio/dialog/update_studio_dialog.jinja2',
+)
+@view_config(
     route_name='view_studio',
     renderer='templates/studio/view/view_studio.jinja2'
 )
@@ -157,10 +161,6 @@ logger.setLevel(logging.DEBUG)
 @view_config(
     route_name='list_user_tasks',
     renderer='templates/task/list/list_entity_tasks.jinja2'
-)
-@view_config(
-    route_name='list_user_tasks_responsible_of',
-    renderer='templates/task/list/list_user_tasks_responsible_of.jinja2'
 )
 @view_config(
     route_name='list_user_tasks_responsible_of',

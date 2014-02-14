@@ -30,32 +30,32 @@ from stalker_pyramid.views import (get_time, PermissionChecker)
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.WARNING)
 
-
-@view_config(
-    route_name='dialog_create_studio',
-    renderer='templates/studio/dialog_create_studio.jinja2'
-)
-def create_studio_dialog(request):
-    """creates the content of the create_studio_dialog
-    """
-    return {
-        'mode': 'CREATE',
-        'has_permission': PermissionChecker(request)
-    }
-
-
-@view_config(
-    route_name='dialog_update_studio',
-    renderer='templates/studio/dialog_create_studio.jinja2'
-)
-def update_studio_dialog(request):
-    """updates the given studio
-    """
-    return {
-        'mode': 'UPDATE',
-        'has_permission': PermissionChecker(request),
-        'studio': Studio.query.first()
-    }
+#
+# @view_config(
+#     route_name='dialog_create_studio',
+#     renderer='templates/studio/dialog_create_studio.jinja2'
+# )
+# def create_studio_dialog(request):
+#     """creates the content of the create_studio_dialog
+#     """
+#     return {
+#         'mode': 'CREATE',
+#         'has_permission': PermissionChecker(request)
+#     }
+#
+#
+# @view_config(
+#     route_name='dialog_update_studio',
+#     renderer='templates/studio/dialog_create_studio.jinja2'
+# )
+# def update_studio_dialog(request):
+#     """updates the given studio
+#     """
+#     return {
+#         'mode': 'UPDATE',
+#         'has_permission': PermissionChecker(request),
+#         'studio': Studio.query.first()
+#     }
 
 
 @view_config(
@@ -138,6 +138,8 @@ def update_studio(request):
     wh_sat_end   = get_time(request, 'sat_end')
     wh_sun_start = get_time(request, 'sun_start')
     wh_sun_end   = get_time(request, 'sun_end')
+
+
 
     if studio and name and dwh:
         # update new studio

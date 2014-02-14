@@ -208,8 +208,8 @@ def main(global_config, **settings):
 
     # *************************************************************************
     # Studio
-    config.add_route('dialog_create_studio',  'studios/create/dialog')
-    config.add_route('dialog_update_studio',  'studios/update/dialog')
+    config.add_route('create_studio_dialog',  'studios/create/dialog')
+    config.add_route('update_studio_dialog',  'studios/{id}/update/dialog')
 
     config.add_route('create_studio',         'studios/create')
     config.add_route('update_studio',         'studios/{id}/update')
