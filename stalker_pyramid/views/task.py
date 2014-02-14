@@ -41,7 +41,7 @@ from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
                                    get_multi_integer, milliseconds_since_epoch,
                                    StdErrToHTMLConverter,
                                    multi_permission_checker,
-                                   dummy_email_address, local_to_utc, get_user_os)
+                                   dummy_email_address, local_to_utc)
 from stalker_pyramid.views.type import query_type
 
 
@@ -1345,37 +1345,56 @@ def get_project_tasks(request):
 
     start = time.time()
 
-    sql_query = """select
-    parent_data.id,
-    "SimpleEntities".name || ' (' ||
-    array_to_string(array_agg(
-        case
-            when "SimpleEntities_parent".entity_type = 'Project'
-            then "Projects".code
-            else "SimpleEntities_parent".name
-        end),
-        ' | '
-    ) || ')'
-    as parent_names
-    from (
-        with recursive parent_ids(id, parent_id, n) as (
-                select task.id, coalesce(task.parent_id, task.project_id), 0
-                from "Tasks" task
-                where task.project_id = %(p_id)s
-            union all
-                select task.id, parent.parent_id, parent.n + 1
-                from "Tasks" task, parent_ids parent
-                where task.parent_id = parent.id and task.project_id = %(p_id)s
-        )
-        select
-            parent_ids.id, parent_id as parent_id, parent_ids.n
-            from parent_ids
-            order by id, parent_ids.n desc
-    ) as parent_data
-    join "SimpleEntities" on "SimpleEntities".id = parent_data.id
-    join "SimpleEntities" as "SimpleEntities_parent" on "SimpleEntities_parent".id = parent_data.parent_id
-    left outer join "Projects" on parent_data.parent_id = "Projects".id
-    group by parent_data.id, "SimpleEntities".name
+    sql_query = """
+    (
+        SELECT
+            task_parents.id,
+            "Task_SimpleEntities".name || ' (' || "Projects".code || ' | ' || task_parents.parent_names || ')' as parent_names 
+        FROM (
+            SELECT
+                task_parents.id,
+                array_agg(task_parents.parent_id) as parent_ids,
+                array_agg(task_parents.n) as n,
+                array_to_string(
+                    array_agg(task_parents.parent_name),
+                    ' | '
+                ) as parent_names
+            FROM (
+                WITH RECURSIVE parent_ids(id, parent_id, n) as (
+                        SELECT task.id, task.parent_id, 0
+                        FROM "Tasks" AS task
+                        WHERE task.parent_id IS NOT NULL
+                    UNION ALL
+                        SELECT task.id, parent.parent_id, parent.n + 1
+                        FROM "Tasks" task, parent_ids parent
+                        WHERE task.parent_id = parent.id
+                )
+                SELECT
+                    parent_ids.id as id,
+                    parent_ids.n as n,
+                    parent_ids.parent_id AS parent_id,
+                    "ParentTask_SimpleEntities".name as parent_name
+                FROM parent_ids
+                JOIN "SimpleEntities" as "ParentTask_SimpleEntities" ON parent_ids.parent_id = "ParentTask_SimpleEntities".id
+                ORDER BY id, parent_ids.n DESC
+            ) as task_parents
+            GROUP BY task_parents.id
+        ) as task_parents
+        JOIN "Tasks" ON task_parents.id = "Tasks".id
+        JOIN "Projects" ON "Tasks".project_id = "Projects".id
+        JOIN "SimpleEntities" as "Task_SimpleEntities" ON "Tasks".id = "Task_SimpleEntities".id
+        WHERE "Tasks".project_id = %(p_id)s
+    )
+    UNION
+    (
+        SELECT
+            "Tasks".id,
+            "Task_SimpleEntities".name || ' (' || "Projects".code || ')' as parent_names
+        FROM "Tasks"
+        JOIN "Projects" ON "Tasks".project_id = "Projects".id
+        JOIN "SimpleEntities" as "Task_SimpleEntities" on "Tasks".id = "Task_SimpleEntities".id
+        WHERE "Tasks".parent_id IS NULL AND "Tasks".project_id = %(p_id)s
+    )
     """ % {'p_id': project_id}
 
     result = DBSession.connection().execute(sql_query)
@@ -1524,7 +1543,7 @@ def get_entity_tasks_by_filter(request):
     filter = Entity.query.filter_by(id=filter_id).first()
 
 
-    sql_query = """select
+    sql_query ="""select
     "Task_Resources".task_id as task_id,
     "ParentTasks".parent_names as task_name,
     array_agg("Responsible_SimpleEntities".id) as responsible_id,
