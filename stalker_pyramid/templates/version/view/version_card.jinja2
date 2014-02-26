@@ -1,0 +1,33 @@
+<div class="row-fluid">
+    <div class="span12">
+        <div class="alert alert-info bigger-110">
+            <ul class="unstyled spaced">
+                <li><strong>Task:</strong>
+                    <a href="/tasks/{{ task.id }}/view"
+                       target="_blank">{{ task.name }}</a>
+                </li>
+                <li><strong>Absolute Path :</strong>
+                    <a href="javascript:copyToClipboard('{{ version.path }}')">{{ version.file_name }}</a>
+                </li>
+                <li><strong>Date :</strong> {{ version.date_updated }} (<span
+                        class="date">{{ version.date_updated }}</span>)
+                </li>
+                <li><strong>Created by :</strong>
+                    <a href="/users/{{ version.created_by_id }}/view"
+                       target="_blank">{{ version.created_by_name }}</a>
+                </li>
+                <li><strong>Description :</strong> {{ version.description }}
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script>
+    $('.date').each(function () {
+
+        var date = moment.utc($(this).text());
+        $(this).text(date.fromNow());
+    });
+
+</script>

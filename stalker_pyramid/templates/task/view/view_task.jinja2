@@ -49,12 +49,9 @@
 
         <div class="widget-toolbar no-border invoice-info">
             <span class="invoice-info-label">{{ entity.status.name }}</span>
-        </div>
 
-        <div class="widget-toolbar hidden-480">
-            <div class="row-fluid ">
 
-            </div>
+
         </div>
     </div>
 
@@ -62,154 +59,232 @@
     <div class="widget-main padding-10">
     <div class="row-fluid">
     <div class="span8">
-        <div class="row-fluid">
-
-            <div class="span6">
-
-                <div class="span4">
-
-                    {% include 'components/avatar.jinja2' %}
-
-                </div>
-
-                <div class="span8">
 
 
-                    <ul class="unstyled spaced  pull-left">
-                        <li>
-                            <h5>
-                                <strong>
-                                    <span class="date">{{ entity.start }}</span>
-                                    <i class="icon-long-arrow-right blue"></i>
-                                    <span class="date">{{ entity.end }}</span>
-                                </strong>
-                            </h5>
-                        </li>
-                        <li>
+    <div class="row-fluid">
 
-                            <b>Responsible: </b> <a
-                                href="/users/{{ entity.responsible.id }}/view">{{ entity.responsible.name }}</a>
-                        </li>
+        <div class="span6">
 
-                        <li>
+            <div class="span4">
 
-                            <b>Created By
-                                : </b> {{ entity.created_by.name }}
-                        </li>
-                        <li>
-                            <b>Updated By
-                                : </b> {{ entity.updated_by.name }}
-                        </li>
+                {% include 'components/avatar.jinja2' %}
 
-                        {% if entity.description %}
+            </div>
 
-                            <li>
-                                <b>Description
-                                    : </b> {{ entity.description }}
-                            </li>
+            <div class="span8">
+
+              <div class="profile-users clearfix">
+                {% for responsible in entity.responsible %}
+                    <div class="itemdiv memberdiv"
+                         style="width: 50px; height: 30px; min-height: 20px; background-color: rgba(0,0,0,0)">
+                        <div class="inline position-relative" >
+                            <div class="user">
+                                <a href='/users/{{ responsible.id }}/view'>
+                                    <img style="width: 40px; " src="{%- if responsible.thumbnail -%}
+                    /{{ responsible.thumbnail.full_path }}
+                {%- else -%}
+                    {{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_0.png") }}
+                {%- endif -%}"/>
+                                </a>
+
+                            </div>
 
 
-                        {% endif %}
+                            <div class="popover">
+                                <div class="arrow"></div>
 
-                        <li>
-                            <div class="btn-toolbar">
-                        {% if has_permission('Update_Task') %}
+                                <div class="popover-content">
+                                    <div class="bolder"> {{ responsible.name }}
+                                    </div>
 
-                            <button id='task_update_button'
-                                    class='btn btn-mini btn-info'
-                                    data-target="#dialog_template"
-                                    data-toggle="modal"
-                                    data-keyboard="false"
-                                    href='{{ request.route_url("update_task_dialog", id=entity.id) }}'
-                                    >
-                                <i class="icon-edit"></i>
-                                Update
-                            </button>
+                                    <div class="time">
+                                        <i class="icon-user middle bigger-110 orange"></i>
+                                        <span class="green"> {{ responsible.departments[0].name }} </span>
+                                    </div>
 
-                        {% endif %}
+                                    <div class="hr dotted hr-8"></div>
 
-                        {% if logged_in_user == entity.responsible and entity.status.code == 'PREV' %}
+                                    <div class="tools action-buttons">
+                                        {% if (logged_in_user in entity.resources or logged_in_user == entity.responsible) and entity.status.code == 'WIP' and entity.is_leaf %}
 
-                            <button id='task_review_button'
-                                    class='btn btn-mini btn-success'
-                                    data-target="#dialog_template"
-                                    data-toggle="modal"
-                                    data-keyboard="false"
-                                    href='{{ request.route_url("review_task_dialog", id=entity.id) }}'
-                                    >
-                                <i class="icon-comments"></i>
-                                Review
-                            </button>
+                                        <a data-rel="tooltip"
+                                            data-placement="bottom"
+                                            title="Request Review"
+                                            data-target="#dialog_template"
+                                            data-toggle="modal"
+                                            data-keyboard="false"
+                                            href='/tasks/{{ entity.id }}/request_review/dialog?came_from={{ request.current_route_path() }}&selected_responsible_id={{ responsible.id }}'>
+                                            <i class="icon-comment-alt orange bigger-150"></i>
+                                        </a>
+                                        {% endif %}
 
-                        {% endif %}
-                        {% if (logged_in_user in entity.resources or logged_in_user == entity.responsible) and entity.status.code == 'WIP' and entity.is_leaf %}
 
-                            <button id='task_page_request_review_button'
-                                    class='btn btn-mini btn-warning'
-                                    data-target="#dialog_template"
-                                    data-toggle="modal"
-                                    data-keyboard="false"
-                                    href='/tasks/{{ entity.id }}/request_review/dialog?came_from={{ request.current_route_path() }}'
-                                    >
-                                <i class="icon-comment-alt"></i>
-                                Request Review
-                            </button>
+                                        <a data-rel="tooltip"
+                                            data-placement="bottom"
+                                            title="Create Ticket"
+                                            data-target="#dialog_template"
+                                            data-toggle="modal"
+                                            data-keyboard="false"
+                                            href='{{ request.route_url("create_ticket_dialog", id=-1, _query={'project_id': entity.project.id, 'task_id':entity.id, 'owner_id':responsible.id}) }}'>
+                                            <i class="icon-ticket light-blue bigger-150"></i>
+                                        </a>
 
-                        {% endif %}
 
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
+
+                {% endfor %}
+            </div>
+            <div class="hr hr8"></div>
+                <ul class="unstyled spaced  pull-left">
+                    <li>
+                        <h5>
+                            <strong>
+                                <span class="date">{{ entity.start }}</span>
+                                <i class="icon-long-arrow-right blue"></i>
+                                <span class="date">{{ entity.end }}</span>
+                            </strong>
+                        </h5>
+                    </li>
+                    <li>
+
+                        <b>Created By
+                            : </b> {{ entity.created_by.name }}
+                    </li>
+                    <li>
+                        <b>Updated By
+                            : </b> {{ entity.updated_by.name }}
+                    </li>
+
+                    {% if entity.description %}
+
+                        <li>
+                            <b>Description
+                                : </b> {{ entity.description }}
                         </li>
-                    </ul>
+
+
+                    {% endif %}
+
+                    <li>
+                        <div class="btn-toolbar">
+                            {% if has_permission('Update_Task') %}
+
+                                <button id='task_update_button'
+                                        class='btn btn-mini btn-info'
+                                        data-target="#dialog_template"
+                                        data-toggle="modal"
+                                        data-keyboard="false"
+                                        href='{{ request.route_url("update_task_dialog", id=entity.id) }}'
+                                        >
+                                    <i class="icon-edit"></i>
+                                    Update
+                                </button>
+
+                            {% endif %}
+
+                            {% if logged_in_user in entity.responsible and entity.status.code == 'PREV' %}
+
+                                <button id='task_review_button'
+                                        class='btn btn-mini btn-success'
+                                        data-target="#dialog_template"
+                                        data-toggle="modal"
+                                        data-keyboard="false"
+                                        href='{{ request.route_url("review_task_dialog", id=entity.id) }}'
+                                        >
+                                    <i class="icon-comments"></i>
+                                    Review
+                                </button>
+
+                            {% endif %}
+                            {% if (logged_in_user in entity.resources or logged_in_user in entity.responsible) and entity.status.code == 'WIP' and entity.is_leaf %}
+
+                              <div class="btn-group">
+                                 <button data-toggle="dropdown" class="btn btn-small btn-warning dropdown-toggle">
+                                    Request Review
+                                    <span class="caret"></span>
+                                 </button>
+
+                                 <ul class="dropdown-menu dropdown-warning">
+                                    <li>
+                                       <a data-target="#dialog_template"
+                                        data-toggle="modal"
+                                        data-keyboard="false"
+                                        href='/tasks/{{ entity.id }}/request_review/dialog?came_from={{ request.current_route_path() }}&request_review_mode=Progress'>Progress</a>
+                                    </li>
+                                    <li>
+                                       <a data-target="#dialog_template"
+                                        data-toggle="modal"
+                                        data-keyboard="false"
+                                        href='/tasks/{{ entity.id }}/request_review/dialog?came_from={{ request.current_route_path() }}&request_review_mode=Final'>Final</a>
+                                    </li>
 
 
 
+                                 </ul>
+                              </div><!--/btn-group-->
 
-                </div>
-                <div class="space-12"></div>
+                            {% endif %}
+
+                        </div>
+                    </li>
+                </ul>
 
 
             </div>
-            <div class="span6">
-                <div class="span6 pull-right alert alert-block alert-info">
-                    <ul class="unstyled spaced">
-                        <li>
+            <div class="space-12"></div>
 
-                            <b>Schedule Hours
-                                : </b> {{ entity.schedule_seconds/3600 }}
-                            h
-                        </li>
-                        <li>
-                            <b>Total Logged Hours
-                                : </b> {{ entity.total_logged_seconds/3600 }}
-                            h
-                        </li>
-                        <li>
-                            <b>Hours to Complete
-                                : </b> {{ (entity.schedule_seconds - entity.total_logged_seconds)/3600 }}
-                            h
-                        </li>
-                    </ul>
-                    <div class="progress progress-success progress-striped"
-                         data-percent="{{ "%2.1f" | format(entity.percent_complete) }}%">
-                        <div class="bar"
-                             style="width: {{ entity.percent_complete }}%;"></div>
-                    </div>
-                    {#                                    <div class="pull-left" id="pie_chart"#}
-                    {#                                         style="width: 180px; height: 180px;"></div>#}
+
+        </div>
+        <div class="span6">
+            <div class="span6 pull-right alert alert-block alert-info">
+                <ul class="unstyled spaced">
+                    <li>
+
+                        <b>Schedule Hours
+                            : </b> {{ entity.schedule_seconds/3600 }}
+                        h
+                    </li>
+                    <li>
+                        <b>Total Logged Hours
+                            : </b> {{ entity.total_logged_seconds/3600 }}
+                        h
+                    </li>
+                    <li>
+                        <b>Hours to Complete
+                            : </b> {{ (entity.schedule_seconds - entity.total_logged_seconds)/3600 }}
+                        h
+                    </li>
+                </ul>
+                <div class="progress progress-success progress-striped"
+                     data-percent="{{ "%2.1f" | format(entity.percent_complete) }}%">
+                    <div class="bar"
+                         style="width: {{ entity.percent_complete }}%;"></div>
                 </div>
+                {#                                    <div class="pull-left" id="pie_chart"#}
+                {#                                         style="width: 180px; height: 180px;"></div>#}
             </div>
         </div>
+    </div>
 
-        <div class="hr hr8 hr-double"></div>
 
-        <div class="space-32"></div>
 
-        <div class="row-fluid">
-            <div id="calendar"></div>
-        </div>
+    <div class="hr hr8 hr-double"></div>
+
+    <div class="space-32"></div>
+
+    <div class="row-fluid">
+        <div id="calendar"></div>
+    </div>
 
     </div>
     <div class="span4">
+
+
+        <div class="space-12"></div>
 
         <div class="row-fluid">
             <div id="resources_box"
@@ -335,6 +410,26 @@
     </script>
 
     <script type="text/javascript">
+        $(document).ready(function () {
+
+            //show the user info on right or left depending on its position
+            $('.memberdiv').on('mouseenter',function () {
+                var $this = $(this);
+                var $parent = $this.closest('.row-fluid');
+
+                var off1 = $parent.offset();
+                var w1 = $parent.width();
+
+                var off2 = $this.offset();
+                var w2 = $this.width();
+
+                var place = 'left';
+                if (parseInt(off2.left) < parseInt(off1.left) + parseInt(w1 / 2)) place = 'right';
+
+                $this.find('.popover').removeClass('right left').addClass(place);
+            })
+
+        });
         $(document).ready(function () {
 
             $.getJSON('/tasks/{{ entity.id }}/events/').then(function (data) {

@@ -79,6 +79,7 @@ def create_ticket_dialog(request):
     project = Project.query.filter(Project.id == project_id).first()
 
     task_id = request.params.get('task_id', -1)
+    owner_id= request.params.get('owner_id', -1)
 
     if not project:
         return Response('No project found with id: %s' % project_id, 500)
@@ -88,6 +89,7 @@ def create_ticket_dialog(request):
         'has_permission': PermissionChecker(request),
         'logged_in_user': logged_in_user,
         'task_id': task_id,
+        'owner_id':owner_id,
         'project': project,
         'ticket_types':
             Type.query.filter_by(target_entity_type='Ticket').all(),

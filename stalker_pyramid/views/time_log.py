@@ -27,7 +27,7 @@ from pyramid.response import Response
 from pyramid.view import view_config
 
 from stalker.db import DBSession
-from stalker import defaults, Task, User, Studio, TimeLog, Entity, Status
+from stalker import defaults, Task, User, Studio, TimeLog, Entity, Status, TaskDependency
 from stalker.exceptions import OverBookedError
 
 from stalker_pyramid.views import (get_logged_in_user,
@@ -166,25 +166,31 @@ def create_time_log(request):
             # TODO: update according to the new Task Status Workflow (I mean delete this part, it is handled by Stalker)
             status_rts = Status.query.filter(Status.code == "RTS").first()
             status_wip = Status.query.filter(Status.code == "WIP").first()
-            status_prev = \
-                Status.query.filter(Status.code == "PREV").first()
-            status_hrev = \
-                Status.query.filter(Status.code == "HREV").first()
-            status_cmpl = \
-                Status.query.filter(Status.code == "CMPL").first()
+            status_drev = Status.query.filter(Status.code == "DREV").first()
+            status_hrev = Status.query.filter(Status.code == "HREV").first()
+
+            status_cmpl = Status.query.filter(Status.code == "CMPL").first()
 
             # check if the task status is not new or completed
-            if task.status not in [status_rts, status_wip, status_hrev, status_prev]:
+            if task.status not in [status_rts, status_wip, status_hrev, status_drev]:
                 DBSession.rollback()
                 # it is not possible to create a time log for completed tasks
                 response = Response(
                     'It is only possible to create time log for a task with '
-                    'status "RTS", "WIP", "PREV" or "HREV"', 500)
+                    'status "RTS", "WIP", "DREV" or "HREV"', 500)
                 transaction.abort()
                 return response
 
             # check the dependent tasks has finished
-            for dep_task in task.depends:
+
+            logger.debug('taskDependency search ')
+
+            for taskDependency in task.task_depends_to:
+                assert isinstance(taskDependency, TaskDependency)
+                dep_task = taskDependency.depends_to
+
+                logger.debug('%s' % dep_task.status.code)
+                 # for dep_task in task.depends:
                 if dep_task.status not in [status_cmpl]:
                     response = Response(
                         'Because one of the dependencies (Task: %s (%s)) has '

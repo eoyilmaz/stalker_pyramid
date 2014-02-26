@@ -1,18 +1,16 @@
-
 <div class='row-fluid'>
-
-
     <div class='span12'>
-            <div id="version_message" class="alert alert-info bigger-110">
-            </div>
 
+            <div id="version_message">
+                {% include 'version/view/version_card.jinja2' %}
+            </div>
 
 
             <form id="review_task_form"
                   class='form-horizontal'
                   role='form'
                   method='post'
-                  action="{{ request.route_url('create_task') }}">
+                  action="">
 
                 {# Review Type #}
                 <div class="control-group">
@@ -45,7 +43,7 @@
                                          resize: horizontal;
                                          height: 250px;"
                                     >{% if mode=='update' %}
-                                {{ entity.description }}{% endif %}</textarea>
+                                {{ task.description }}{% endif %}</textarea>
                         </div>
                     </div>
 
@@ -89,8 +87,6 @@
                     </div>
                 </div>
             </form>
-
-
     </div>
 </div>
 
@@ -159,7 +155,7 @@
 
         {% else %}
 
-            $('#version_message').append('<strong>{{ entity.name }}</strong> is <strong>{{entity.type.name }}</strong> type task. For <strong>{{entity.type.name }} </strong> type task no version is saved to server. Ask resource for details.');
+            $('#version_message').append('<strong>{{ task.name }}</strong> is <strong>{{task.type.name }}</strong> type task. For <strong>{{task.type.name }} </strong> type task no version is saved to server. Ask resource for details.');
 
         {% endif %}
 
@@ -170,11 +166,11 @@
             id: {{ project.id }},
             name: "{{ project.name }}"
         };
-        var submit_form_url = '{{ request.route_url("review_task", id=entity.id) }}';
+        var submit_form_url = '{{ request.route_url("review_task", id=task.id) }}';
 
-        var schedule_timing = {{ entity.schedule_timing }};
-        var schedule_unit = '{{ entity.schedule_unit }}';
-        var schedule_model = '{{ entity.schedule_model }}';
+        var schedule_timing = {{ task.schedule_timing }};
+        var schedule_unit = '{{ task.schedule_unit }}';
+        var schedule_model = '{{ task.schedule_model }}';
 
         var submit_button = $('#dialog_template_submit_button');
 
@@ -192,7 +188,7 @@
         {# ***************************************************************** #}
         {# Priority Spinner #}
         var priority = 500;
-        priority = {{ entity.priority }};
+        priority = {{ task.priority }};
 
         $('#task_priority').ace_spinner({
             value: priority,
