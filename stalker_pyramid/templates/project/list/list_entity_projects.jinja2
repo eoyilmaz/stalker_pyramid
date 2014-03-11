@@ -92,4 +92,14 @@
     </script>
     {% endraw %}
 
+    <script>
+
+        var tableParameters = {}
+        var sortingParameters = [[0, 'asc'], [1, 'desc']]
+        var tableDataAddress = '{{ request.route_path('get_entity_projects', id=entity.id) }}'
+
+     console.log('tableDataAddress' + tableDataAddress)
+
+    </script>
+
 {% endblock extrascripts %}

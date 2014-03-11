@@ -93,27 +93,42 @@
                 <span class="label label-{{=it.status_color}}">{{=it.status}}</span>
             </td>
             <td>
-                 {{ if (it.update_user_action) { }}
-                    <a  class="blue"
+                {{ if (it.update_user_action) { }}
+                <a class="blue"
 
-                        href="{{=it.update_user_action}}">
-                        <i class="icon-edit bigger-130"></i>
-                    </a>
+                   href="{{=it.update_user_action}}">
+                    <i class="icon-edit bigger-130"></i>
+                </a>
                 {{ } }}
 
                 {{ if (it.delete_user_action) { }}
-                    <a  class="red"
-                        data-target="#dialog_template"
-                        data-toggle="modal"
-                        data-keyboard=false
-                        href="{{=it.delete_user_action}}?came_from={{=it.came_from }}">
-                        <i class="icon-trash bigger-130"></i>
-                    </a>
+                <a class="red"
+                   data-target="#dialog_template"
+                   data-toggle="modal"
+                   data-keyboard=false
+                   href="{{=it.delete_user_action}}?came_from={{=it.came_from }}">
+                    <i class="icon-trash bigger-130"></i>
+                </a>
                 {{ } }}
             </td>
         </tr>
     </script>
     {% endraw %}
+
+    <script>
+
+        var tableParameters = {"aoColumns": [null, null, null, {'sType': 'num-html'},{'sType': 'num-html'},null, null]}
+        var sortingParameters = [[0, 'asc']]
+        var tableDataAddress = '{{ request.route_path('get_entity_users', id=entity.id) }}'
+
+        {% if entity.entity_type == 'Studio' %}
+            tableDataAddress = '{{ request.route_path('get_users') }}'
+        {% else %}
+            tableDataAddress = '{{ request.route_path('get_entity_users', id=entity.id) }}'
+
+        {% endif %}
+
+    </script>
 
 {% endblock extrascripts %}
 

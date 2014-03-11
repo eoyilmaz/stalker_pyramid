@@ -21,8 +21,8 @@
                         <select id='task_review_mode'
                                 class='input-block-level'
                                 name='review'>
-                            <option val="Approve">Approve</option>
-                            <option val="Request Revision">Request Revision
+                            <option value="approve">Approve</option>
+                            <option value="request_revision">Request Revision
                             </option>
                         </select>
                     </div>
@@ -134,26 +134,7 @@
         dialog_template_label.append('<span class="green">Review Task Dialog</span>');
 
 
-        {% if version != None %}
-
-            var message_template = doT.template($('#tmpl_messageVersion').html());
-
-            $('#version_message').append(message_template(
-                    {
-                        path: '{{ version.path }}',
-                        task_id:'{{ version.task_id }}',
-                        task_name:'{{ version.task_name }}',
-                        date: '{{ version.date_updated }}',
-                        created_by_id: '{{ version.created_by_id }}',
-                        created_by_name: '{{ version.created_by_name }}',
-                        description: '{{ version.description }}',
-                        file_name: '{{ version.file_name }}'
-                    }
-
-            ));
-
-
-        {% else %}
+        {% if version == None %}
 
             $('#version_message').append('<strong>{{ task.name }}</strong> is <strong>{{task.type.name }}</strong> type task. For <strong>{{task.type.name }} </strong> type task no version is saved to server. Ask resource for details.');
 
@@ -166,7 +147,7 @@
             id: {{ project.id }},
             name: "{{ project.name }}"
         };
-        var submit_form_url = '{{ request.route_url("review_task", id=task.id) }}';
+        var submit_form_url = '{{ request.route_url("approve_task", id=task.id) }}';
 
         var schedule_timing = {{ task.schedule_timing }};
         var schedule_unit = '{{ task.schedule_unit }}';
@@ -174,9 +155,26 @@
 
         var submit_button = $('#dialog_template_submit_button');
 
+        {% if review_mode %}
+
+            $('#task_review_mode').val('{{ review_mode }}')
+
+            {% if review_mode == 'request_revision' %}
+
+                $('#revision_controls').show();
+
+            {% endif %}
+
+            submit_form_url = '/tasks/{{ task.id }}/'+ $('#task_review_mode').val()
+
+        {% endif %}
+
         $('#task_review_mode').on('change', function () {
             // disable or enable revision_controls
             $('#revision_controls').toggle();
+
+            submit_form_url = '/tasks/{{ task.id }}/'+$(this).val()
+
         });
 
         {# ***************************************************************** #}

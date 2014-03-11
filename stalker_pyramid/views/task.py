@@ -34,8 +34,8 @@ from sqlalchemy.exc import IntegrityError
 from stalker.db import DBSession
 from stalker import (defaults, User, Task, Entity, Project, StatusList,
                      Status, TaskJugglerScheduler, Studio, Asset, Shot,
-                     Sequence, Ticket, Type, Note)
-from stalker.exceptions import CircularDependencyError
+                     Sequence, Ticket, Type, Note, Review)
+from stalker.exceptions import CircularDependencyError, StatusError
 
 from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
                                    get_multi_integer, milliseconds_since_epoch,
@@ -1256,8 +1256,6 @@ def get_user_tasks(request):
 
     where_condition = 'where "Task_Resources".resource_id = %s' % user_id
 
-
-
     statuses = []
     status_codes = request.GET.getall('status')
     if status_codes:
@@ -1681,7 +1679,8 @@ def get_entity_tasks_by_filter(request):
     "Statuses".code,
     "Statuses_SimpleEntities".html_class as status_color,
     "Project_SimpleEntities".id as project_id,
-    "Project_SimpleEntities".name as project_name
+    "Project_SimpleEntities".name as project_name,
+    array_agg("Reviewers".reviewer_id) as reviewer_id
 
     from "Tasks"
     join "Task_Resources" on "Task_Resources".task_id = "Tasks".id
@@ -1782,6 +1781,17 @@ join ((
         %(tasks_hierarchical_name_table)s
     ) as "ParentTasks" on "Tasks".id = "ParentTasks".id
 
+    left outer join (
+        select
+            "Reviews_Tasks".id as task_id,
+            "Reviews".reviewer_id as reviewer_id
+
+            from "Reviews"
+            join "Tasks" as "Reviews_Tasks" on "Reviews_Tasks".id = "Reviews".task_id
+            join "Statuses" as "Reviews_Statuses" on "Reviews_Statuses".id = "Reviews".status_id
+
+            where "Reviews_Statuses".code = 'NEW') as "Reviewers" on "Reviewers".task_id = "Tasks".id
+
     where %(where_condition_for_entity)s%(where_condition_for_filter)s
 
     group by
@@ -1836,7 +1846,7 @@ join ((
             'project_id':r[11],
             'project_name':r[12],
             'request_review':'1' if (logged_in_user.id in r[6] or r[2]==logged_in_user.id) and r[9]=='WIP' else None,
-            'review':'1' if r[2]==logged_in_user.id and r[9]=='PREV' else None
+            'review':'1' if logged_in_user.id in  r[13] and r[9]=='PREV' else None
         }
         for r in result.fetchall()
     ]
@@ -2250,6 +2260,9 @@ def auto_schedule_tasks(request):
 
 
 
+
+
+
 def get_last_version_of_task(request, is_published=''):
      """finds last published version of task
      """
@@ -2308,6 +2321,7 @@ def get_last_version_of_task(request, is_published=''):
             repo = task.project.repository
 
             path_converter = lambda x: x
+
             if repo:
                 if user_os == 'windows':
                     path_converter = repo.to_windows_path
@@ -2355,25 +2369,38 @@ def review_task_dialog(request):
     """called when reviewing tasks
     """
 
-    logged_in_user = get_logged_in_user(request)
-    came_from = request.params.get('came_from', request.url)
-
     entity_id = request.matchdict.get('id')
     entity = Entity.query.filter_by(id=entity_id).first()
 
-    version = get_last_version_of_task(request, is_published='t')
+    logged_in_user = get_logged_in_user(request)
+
+    status_new = Status.query.filter_by(code='NEW').first()
+    review = Review.query.filter(Review.reviewer_id == logged_in_user.id).filter(Review.task_id==entity.id).filter(Review.status==status_new).first()
+
+
+
+    came_from = request.params.get('came_from', request.url)
+
+    review_mode = request.params.get('review_mode', 'approve')
+
+    logger.debug('review_mode %s' % review_mode)
+
+
+
+    version = get_last_version_of_task(request, is_published='')
 
     project = entity.project
 
 
     return {
-
+        'review':review,
         'has_permission': PermissionChecker(request),
         'logged_in_user': logged_in_user,
         'task': entity,
         'project': project,
         'came_from': came_from,
-        'version':version
+        'version':version,
+        'review_mode':review_mode
     }
 
 @view_config(
@@ -2384,7 +2411,6 @@ def review_task(request):
     """
 
      # get logged in user as he review requester
-    logged_in_user = get_logged_in_user(request)
 
     task_id = request.matchdict.get('id')
     task = Task.query.filter(Task.id == task_id).first()
@@ -2393,41 +2419,79 @@ def review_task(request):
         transaction.abort()
         return Response('There is no task with id: %s' % task_id, 500)
 
-    review = request.params.get('review')
+    review_mode = request.params.get('review')
 
-    if not review:
+    if not review_mode:
         transaction.abort()
         return Response('No revision is specified', 500)
 
-    if review == 'Approve':
+    if review_mode == 'Approve':
 
-        return approve_task(request, logged_in_user, task)
+        return approve_task(request)
 
-    elif review == 'Request Revision':
-        # so request a revision
-        request_revision(request, logged_in_user, task)
-        # no need to update the child and dependent_of statuses,
-        # they will not change
+    elif review_mode == 'Request Revision':
 
-
+        return request_revision(request)
 
 @view_config(
-
-    route_name = 'approve_task'
+    route_name='approve_task'
 )
-def approve_task(request, user, task):
+def approve_task(request):
+
+    task_id = request.matchdict.get('id', -1)
+    task = Task.query.filter(Task.id == task_id).first()
+
+    if not task:
+        transaction.abort()
+        return Response('There is no task with id: %s' % task_id, 500)
 
     utc_now = local_to_utc(datetime.datetime.now())
+
+    logged_in_user = get_logged_in_user(request)
 
     send_email = request.params.get('send_email', 1)  # for testing purposes
     note = request.params.get('description', 1)
 
-    if send_email:
+    status_new = Status.query.filter_by(code='NEW').first()
 
+    review = Review.query.filter(Review.reviewer_id == logged_in_user.id).filter(Review.task_id==task.id).filter(Review.status==status_new).first()
+
+    logger.debug('review %s' % review)
+    if review:
+
+        note_type = Type.query.filter_by(name='Approved').first()
+        if note_type is None:
+             # create a new Type
+            note_type = Type(
+                name='Approved',
+                code='Approved',
+                target_entity_type='Note',
+                html_class='green'
+            )
+
+        note = Note(
+                content=note,
+                created_by=logged_in_user,
+                date_created=utc_now,
+                date_updated=utc_now,
+                type = note_type
+            )
+
+        task.notes.append(note)
+        review.note = note
+
+        review.approve()
+    else:
+        return Response('No review',500)
+
+    if send_email:
          # send email to resources of the task
-        recipients = [user.email]
+        recipients = []
         for resource in task.resources:
-                recipients.append(resource.email)
+            recipients.append(resource.email)
+
+        for responsible in task.responsible:
+            recipients.append(responsible.email)
 
         mailer = get_mailer(request)
 
@@ -2442,63 +2506,19 @@ def approve_task(request, user, task):
         message = Message(
                 subject='Task Reviewed: "%(task_hierarchical_name)s" has been approved by %(user)s!' % {
                     'task_hierarchical_name': task_hierarchical_name,
-                    'user': user
+                    'user': logged_in_user
                 },
                 sender=dummy_email_address,
                 recipients=recipients,
-                body=get_description_text(description_temp,user.name, task_hierarchical_name, note),
-                html=get_description_html(description_temp,user.name, task_hierarchical_name, note)
+                body=get_description_text(description_temp,logged_in_user.name, task_hierarchical_name, note),
+                html=get_description_html(description_temp,logged_in_user.name, task_hierarchical_name, note)
         )
 
         mailer.send(message)
 
 
-        # # find the related revision Ticket and add the comment
-        # review_type = Type.query.filter(Type.name == "Review").first()
-        # tickets = Ticket.query \
-        #     .filter(Ticket.links.contains(task)) \
-        #     .filter(Ticket.type == review_type).all()
-        # logger.debug("tickets: %s" % tickets)
-        #
-        #
-        #
-        # if tickets:
-        #
-        #     note = Note(
-        #         content=description_text,
-        #         created_by=logged_in_user,
-        #         date_created=utc_now,
-        #         date_updated=utc_now
-        #     )
-        #     for ticket in tickets:
-        #         ticket.comments.append(note)
-        #         ticket.date_updated = utc_now
-        #         ticket.updated_by = logged_in_user
-        #         ticket.resolve(logged_in_user,'fixed')
-        #     DBSession.add(note)
-        #
-        # transaction.commit()
-        # DBSession.add_all([task, logged_in_user])
-        #
-        #
-        #
-        # if send_email:
-        #     # send email to resources of the task
-        #     mailer = get_mailer(request)
-        #     recipients = []
-        #     for resource in task.resources:
-        #         recipients.append(resource.email)
-        #
-        #
-        #     message = Message(
-        #         subject=summary_text,
-        #         sender=dummy_email_address,
-        #         recipients=recipients,
-        #         body=description_text,
-        #         html=description_html
-        #     )
-        #     mailer.send(message)
 
+    request.session.flash( 'success:Approved task')
 
     return Response('Successfully approved task')
 
@@ -2506,22 +2526,19 @@ def approve_task(request, user, task):
 @view_config(
     route_name='request_revision'
 )
-def request_revision(request, user, task):
+def request_revision(request):
     """updates task timing and status and sends an email to the task resources
     """
-    # get logged in user as he review requester
+
     logged_in_user = get_logged_in_user(request)
 
     task_id = request.matchdict.get('id', -1)
     task = Task.query.filter(Task.id == task_id).first()
 
-    # check if we have a task
     if not task:
         transaction.abort()
         return Response('There is no task with id: %s' % task_id, 500)
 
-    send_email = request.params.get('send_email', 1)
-    description = request.params.get('description', '')
 
     schedule_timing = request.params.get('schedule_timing')
     schedule_unit = request.params.get('schedule_unit')
@@ -2560,109 +2577,10 @@ def request_revision(request, user, task):
     logger.debug('schedule_unit  : %s' % schedule_unit)
     logger.debug('schedule_model : %s' % schedule_model)
 
-    # get statuses
-    status_prev = Status.query.filter(Status.code == 'PREV').first()
-
-    # check if the task has some time logs
-    if task.status != status_prev:
-        transaction.abort()
-        return Response('You can not request a revision for a task with '
-                        'status is set to "%s"' % task.status.name, 500)
-
-    # set task status to Has Revision (HREV)
-    status_hrev = Status.query.filter(Status.code == 'HREV').first()
-    if not status_hrev:
-        transaction.abort()
-        return Response('There is no status with name "Has Revision" and code '
-                        '"HREV" please inform your Stalker admin to create '
-                        'this status and include it to Task status list.', 500)
-
-    task.status = status_hrev
-    # first set its effort to its time logs
-    task.schedule_timing = task.total_logged_seconds / 3600
-    task.schedule_unit = 'h'
-
-    # and expand it with the given revision timing
-    # convert the given revision unit to hours
-    studio = Studio.query.first()
-    if not studio:
-        studio = defaults
-
-    #assert isinstance(studio, Studio)
-    if schedule_unit == 'h':
-        # do nothing just add the timing
-        task.schedule_timing += schedule_timing
-    elif schedule_unit == 'd':
-        task.schedule_timing += schedule_timing * studio.daily_working_hours
-    elif schedule_unit == 'w':
-        task.schedule_timing += schedule_timing * studio.weekly_working_hours
-    elif schedule_unit == 'm':
-        task.schedule_timing += schedule_timing * 4 * \
-                                studio.weekly_working_hours
-    elif schedule_unit == 'y':
-        task.schedule_timing += \
-            int(schedule_timing * studio.yearly_working_days *
-                studio.weekly_working_hours)
+    send_email = request.params.get('send_email', 1)  # for testing purposes
+    note = request.params.get('description', 1)
 
     utc_now = local_to_utc(datetime.datetime.now())
-
-    task.updated_by = logged_in_user
-    task.date_updated = utc_now
-
-    resource = task.resources[0]
-
-    # find the related revision Ticket and add the comment
-    review_type = Type.query.filter(Type.name == "Review").first()
-    tickets = Ticket.query \
-        .filter(Ticket.links.contains(task)) \
-        .filter(Ticket.type == review_type).all()
-
-
-    if tickets:
-        for ticket in tickets:
-            ticket.date_updated = utc_now
-            ticket.updated_by = logged_in_user
-            resource = ticket.created_by
-            ticket.resolve(logged_in_user,'fixed')
-
-
-    # get the project that the ticket belongs to
-    project = task.project
-
-    user_link_internal = '<a href="%(url)s">%(name)s</a>' % {
-        'url': request.route_path('view_user', id=logged_in_user.id),
-        'name': logged_in_user.name
-    }
-
-    task_parent_names = "|".join(map(lambda x: x.name, task.parents))
-
-    task_name_as_text = "%(name)s (%(entity_type)s) - (%(parents)s)" % {
-        "name": task.name,
-        "entity_type": task.entity_type,
-        "parents": task_parent_names
-    }
-
-    task_link_internal = \
-        '<a href="%(url)s">%(name)s ' \
-        '(%(task_entity_type)s) - (%(task_parent_names)s)</a>' % {
-            "url": request.route_path('view_task', id=task.id),
-            "name": task.name,
-            "task_entity_type": task.entity_type,
-            "task_parent_names": task_parent_names
-        }
-
-
-    summary_text = 'Revision Request: "%(name)s" (%(parent_names)s)' % {
-        'name': task.name,
-        'parent_names': task_parent_names
-    }
-
-    description_body = \
-            '%(requester_name)s has requested a revision to ' \
-            '%(task)s and expanded the timing of the task by %(timing)s ' \
-            '%(unit)s. The following description is supplied for the ' \
-            'revision request:%(spacing)s' \
-            '%(description)s'
 
     unit_word = {
             'h': 'hours',
@@ -2672,110 +2590,82 @@ def request_revision(request, user, task):
             'y': 'years'
         }[schedule_unit]
 
-    description_text = description_body % {
-            "requester_name": logged_in_user.name,
-            "task": task_name_as_text,
-            "timing": schedule_timing,
-            "unit": unit_word,
-            "spacing": '\n\n',
-            "description": description
-            if description else "(No Description)"
-        }
+    status_new = Status.query.filter_by(code='NEW').first()
+    review = Review.query.filter(Review.reviewer_id == logged_in_user.id).filter(Review.task_id==task.id).filter(Review.status==status_new).first()
 
-    description_html = description_body % {
-            "requester_name": '<strong>%s</strong>' % logged_in_user.name,
-            "task": '<strong>%s</strong>' % task_name_as_text,
-            "timing": '<strong>%s' % schedule_timing,
-            "unit": '%s</strong>' % unit_word,
-            "spacing": '<br><br>',
-            "description": description.replace('\n', '<br>')
-            if description else "(No Description)"
-        }
+    try:
+        review.request_revision(schedule_timing,schedule_unit, note)
 
-    ticket_description = description_body % {
-            "requester_name": user_link_internal,
-            "task": task_link_internal,
-            "timing": schedule_timing,
-            "unit": unit_word,
-            "spacing": '\n\n',
-            "description": description
-            if description else "(No Description)"
-        }
-
-    revision_type = Type.query.filter_by(name='Revision').first()
-
-    if revision_type is None:
-            # create a new Type
-            revision_type = Type(
-                name='Revision',
-                code='Revision',
-                target_entity_type='Ticket'
+        note_type = Type.query.filter_by(name='Request Revision').first()
+        if note_type is None:
+             # create a new Type
+            note_type = Type(
+                name='Request Revision',
+                code='Request_Revision_Task',
+                target_entity_type='Note',
+                html_class='purple'
             )
 
-    revision_tickets = Ticket.query \
-        .filter(Ticket.links.contains(task)) \
-        .filter(Ticket.type == revision_type).all()
-
-
-    if revision_tickets:
-
         note = Note(
-            content=ticket_description,
-            created_by=logged_in_user,
-            date_created=utc_now,
-            date_updated=utc_now
-        )
+                content='Expanded the timing of the task by <b>%(schedule_timing)s %(schedule_unit)s</b>. <br/> %(note)s'%{'schedule_timing':schedule_timing,'schedule_unit':schedule_unit,'note':note},
+                created_by=logged_in_user,
+                date_created=utc_now,
+                date_updated=utc_now,
+                type = note_type
+            )
+        review.note = note
+        task.notes.append(note)
+    except StatusError as e:
+        return Response('StatusError: %s' % e, 500)
 
-        for hr_ticket in revision_tickets:
-            hr_ticket.comments.append(note)
-            hr_ticket.date_updated = utc_now
-            hr_ticket.updated_by = logged_in_user
-            # reopen if closed
-            hr_ticket.reopen(logged_in_user)
-        DBSession.add(note)
-    else:
 
-        revision_ticket = Ticket(
-            project=project,
-            summary=summary_text,
-            description=ticket_description,
-            type=revision_type,
-            created_by=logged_in_user,
-            date_created=utc_now,
-            date_updated=utc_now
-        )
-        revision_ticket.reassign(logged_in_user, resource)
 
-        # link the task to the review
-        revision_ticket.links.append(task)
-        DBSession.add(revision_ticket)
 
-    transaction.commit()
-    DBSession.add_all([task, logged_in_user])
+    task.updated_by = logged_in_user
+    task.date_updated = utc_now
+
+
 
     if send_email:
         # and send emails to the resources
 
-        responsible = task.responsible
+
         # send email to responsible and resources of the task
         mailer = get_mailer(request)
 
-        recipients = [logged_in_user.email]
-        if responsible.email not in recipients:
+        recipients = []
+        for responsible in task.responsible:
             recipients.append(responsible.email)
         for resource in task.resources:
             recipients.append(resource.email)
 
+
+        task_hierarchical_name = get_task_hierarchical_name(task.id)
+
+        description_temp = \
+                '%(user)s has requested a revision to ' \
+            '%(task_hierarchical_name)s and expanded the timing of the task by  ' \
+            '. The following description is supplied for the ' \
+            'revision request:%(spacing)s' \
+            '%(note)s'
+
         message = Message(
-            subject=summary_text,
-            sender=dummy_email_address,
-            recipients=recipients,
-            body=description_text,
-            html=description_html
+                subject='Task Reviewed: "%(task_hierarchical_name)s" has been approved by %(user)s!' % {
+                    'task_hierarchical_name': task_hierarchical_name,
+                    'user': logged_in_user
+                },
+                sender=dummy_email_address,
+                recipients=recipients,
+                body=get_description_text(description_temp,logged_in_user.name, task_hierarchical_name, note),
+                html=get_description_html(description_temp,logged_in_user.name, task_hierarchical_name, note)
         )
+
         mailer.send(message)
 
-    return HTTPOk()
+
+
+    request.session.flash('success:Requested revision for the task')
+    return Response('Successfully requested revision for the task')
 
 
 
@@ -2787,8 +2677,11 @@ def request_review_task_dialog(request):
 
     logger.debug('request_review_task_dialog starts')
 
+
     task_id = request.matchdict.get('id')
     task = Task.query.filter_by(id=task_id).first()
+
+
 
     action = '/tasks/%s/request_review' % task_id
 
@@ -2797,10 +2690,12 @@ def request_review_task_dialog(request):
     selected_responsible_id = request.params.get('selected_responsible_id', '-1')
     selected_responsible = User.query.filter_by(id=selected_responsible_id).first()
 
+
+
     if request_review_mode == 'Progress':
         version = get_last_version_of_task(request, is_published='')
     else:
-        version = get_last_version_of_task(request, is_published='t')
+        version = get_last_version_of_task(request, is_published='')
 
     if version['id'] == '-':
 
@@ -2906,7 +2801,7 @@ def request_progress_review(request):
                     target_entity_type='Ticket'
                 )
 
-    recipients = [logged_in_user.email]
+    recipients = []
 
     # Create tickets for selected responsible
 
@@ -2920,11 +2815,10 @@ def request_progress_review(request):
 
         recipients.append(responsible.email)
 
-
         request_review_ticket = Ticket(
                     project=task.project,
                     summary='In Progress Review Request: %s' % task_hierarchical_name,
-                    description='%(sender)s has requested you to do a review for %(task)s' %{'sender': user_link_internal, 'task':task_link_internal},
+                    description='%(sender)s has requested you to do <b>a progress review</b> for %(task)s' %{'sender': user_link_internal, 'task':task_link_internal},
                     type=ticket_type,
                     created_by=logged_in_user,
                     date_created=utc_now,
@@ -2953,6 +2847,8 @@ def request_progress_review(request):
     send_email = request.params.get('send_email', 1)  # for testing purposes
 
     if send_email:
+
+        recipients.append(logged_in_user.email)
 
         description_temp = '%(user)s has requested you to do a progress review for %(task_hierarchical_name)s with the following note:%(spacing)s%(note)s '
 
@@ -2990,12 +2886,33 @@ def request_final_review(request):
 
     utc_now = local_to_utc(datetime.datetime.now())
 
+    note_type = Type.query.filter_by(name='Request Review').first()
+    if note_type is None:
+             # create a new Type
+        note_type = Type(
+                name='Request Review',
+                code='Request_Review',
+                target_entity_type='Note',
+                html_class='orange'
+            )
+
+    note = Note(
+                content=note,
+                created_by=logged_in_user,
+                date_created=utc_now,
+                date_updated=utc_now,
+                type = note_type
+            )
+
+    task.notes.append(note)
+
     reviews = task.request_review()
 
     for review in reviews:
         review.created_by = logged_in_user
         review.date_created=utc_now
         review.date_updated=utc_now
+        review.note=note
 
     # # set task status to Pending Review
     # status_prev = Status.query.filter(Status.code == "PREV").first()
@@ -3210,7 +3127,7 @@ def unbind_task_from_tickets(task):
     route_name='delete_task_dialog',
     renderer='templates/modals/confirm_dialog.jinja2'
 )
-def delete_department_dialog(request):
+def delete_task_dialog(request):
     """deletes the department with the given id
     """
     logger.debug('delete_department_dialog is starts')

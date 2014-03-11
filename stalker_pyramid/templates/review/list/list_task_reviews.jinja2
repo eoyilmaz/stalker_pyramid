@@ -1,0 +1,260 @@
+{# Stalker Pyramid a Web Base Production Asset Management System
+ Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
+
+ This file is part of Stalker Pyramid.
+
+ This library is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation;
+ version 2.1 of the License.
+
+ This library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Lesser General Public License for more details.
+
+ You should have received a copy of the GNU Lesser General Public
+ License along with this library; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+#}
+{% extends "base.jinja2" %}
+
+{# PRE-HEADER#}
+{% block pre_header %}
+
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/fullcalendar.css") }}'/>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/bootstrap-timepicker.css") }}'/>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/datepicker.css") }}'/>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/daterangepicker.css") }}'/>
+
+
+
+{% endblock pre_header %}
+
+{#SIDEBAR#}
+{% block sidebar %}
+
+    {% include 'sidebar.jinja2' %}
+
+{% endblock sidebar %}
+
+
+{# BREADCRUMBS #}
+{% block breadcrumbs %}
+
+    {% set page_title='Versions' %}
+
+   {% include 'breadcrumb/breadcrumbs.jinja2' %}
+
+{% endblock breadcrumbs %}
+
+{#PAGE-CONTENT#}
+{% block page_content %}
+
+    {% set page_title='Reviews' %}
+    {% include 'page_header.jinja2' %}
+
+     <div id="loading_spinner" class="well well-sm">
+
+        <div class="inline middle blue bigger-110"><i
+                class="icon-spinner icon-spin orange bigger-125"></i> Loading
+            content...
+        </div>
+    </div>
+    <div id="content" class="widget-box hide">
+        <div class="widget-header widget-header-small header-color-review">
+            <h5 id="items_header" class="smaller"><i
+                    class='icon-comments-alt'></i></h5>
+
+        </div>
+        <div class="widget-body">
+            <div class="widget-main no-padding">
+
+                <table id="reviews_table"
+                       class="table table-striped table-bordered table-hover">
+
+                    <thead>
+                    <tr id="reviews_table_column">
+                        <th>#</th>
+                        <th>Task</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+        </div>
+    </div>
+
+
+
+{% endblock page_content %}
+
+{#                {{ if (it.delete_review_action) { }}#}
+{#                <a class="red pull-right"#}
+{#                   data-target="#dialog_template"#}
+{#                   data-toggle="modal"#}
+{#                   data-keyboard=false#}
+{#                   href="{{=it.delete_review_action}}?came_from={{=it.came_from }}">#}
+{#                    <i class="icon-trash bigger-130"></i>#}
+{#                </a>{{ } }}<br/>#}
+
+{# EXTRA-SCRIPTS #}
+{% block extrascripts %}
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.dataTables.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.dataTables.bootstrap.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/dataTable_num-html_sort.js") }}'></script>
+
+    {% raw %}
+    <script id="tmpl_reviewColumn" type="text/x-dot-template">
+        <th>
+        <a href="/users/{{=it.reviewer_id }}/view">{{=it.reviewer_name}}</a></th>
+    </script>
+    {% endraw %}
+
+    {% raw %}
+    <script id="tmpl_reviewRow" type="text/x-dot-template">
+        <tr id="review_row_{{=it.review_number}}">
+
+            <td style="width:20px;">#{{=it.review_number}}
+            </td>
+            <td style="width:20px;"><a href="/tasks/{{=it.task_id }}/view">{{=it.task_name}}</a>
+            </td>
+        </tr>
+    </script>
+    {% endraw %}
+
+    {% raw %}
+    <script id="tmpl_reviewSummaryCell" type="text/x-dot-template">
+        <a class="red"
+           data-target="#dialog_template"
+           data-toggle="modal"
+           data-keyboard=false
+           href="{{=it.link}}">{{=it.name}}, </a>
+
+    </script>
+    {% endraw %}
+
+    {% raw %}
+    <script id="tmpl_reviewCell" type="text/x-dot-template">
+        <td class="no-padding" style="width:120px;">
+            <div class="{{=it.review_status_color}}"
+                 style="width:120px; height:105px; padding:5px;">
+                <span>
+                    <a href="/users/{{=it.reviewer_id }}/view">{{=it.reviewer_name}}</a>
+                    <span class="label label-{{=it.review_status_color }}">{{=it.review_status_name }}</span>
+
+                </span>
+
+
+
+            </div>
+        </td>
+    </script>
+    {% endraw %}
+
+
+
+    <script>
+        $(document).ready(function () {
+
+           // fill reviews table with dynamic data
+            $.getJSON('/tasks/{{ entity.id }}/reviewers/').then(function (reviewers_data) {
+
+                var reviewers = reviewers_data;
+
+                var column_template = doT.template($('#tmpl_reviewColumn').html());
+
+                var reviewers_data = new Object()
+
+                $(function () {
+                    var k;
+                    var table_column = $('#reviews_table_column');
+                    for (k = 0; k < reviewers.length; k++) {
+
+                        // append it to the table
+                        table_column.append(column_template(reviewers[k]));
+
+                        reviewers_data[reviewers[k]]
+                    }
+
+
+                    $.getJSON('/tasks/{{ entity.id }}/reviews/').then(function (data) {
+
+                        var reviews = data;
+                        var review_row_template = doT.template($('#tmpl_reviewRow').html());
+
+                        var reviews_by_numbers = [];
+
+
+                        // wait until document is ready
+                        $(function () {
+
+                            var table_body = $('#reviews_table>tbody');
+                            for (var i =0; i < reviews.length; i++) {
+
+                                var review = reviews[i];
+
+                                var review_number = parseInt(review.review_number)-1;
+
+                                if (!reviews_by_numbers[review_number]){
+
+                                    reviews_by_numbers[review_number] = new Object()
+                                    table_body.append(review_row_template(reviews[i]));
+                                }
+                                reviews_by_numbers[review_number][reviews[i].reviewer_id] = new Object()
+
+                                reviews_by_numbers[review_number][reviews[i].reviewer_id] = reviews[i]
+                            }
+
+                            for (var j = reviews_by_numbers.length-1; j >=0; j--) {
+
+                                var review_row = $('#review_row_' + (j+1));
+                                var cell_template = doT.template($('#tmpl_reviewCell').html());
+
+                                for (var m = 0; m < reviewers.length; m++) {
+                                    var review = reviews_by_numbers[j][reviewers[m].reviewer_id]
+                                    if(review){
+                                        review_row.append(cell_template(review));
+                                    }
+                                    else{
+
+                                        review_row.append(cell_template({
+                                                                            'review_id': '',
+                                                                            'reviewer_id': '',
+                                                                            'reviewer_name': '',
+                                                                            'review_status_color': '',
+                                                                            'review_status_name': ''
+                                                                        }));
+                                    }
+                                }
+                            }
+
+
+
+                            var oTable1 = $('#reviews_table').dataTable();
+                            oTable1.fnSort([[0, 'desc']]);
+
+                            $('#loading_spinner').hide();
+                            $('#content').show();
+
+                        });
+                    });
+
+
+                });
+            })
+
+        });
+    </script>
+
+
+{% endblock extrascripts %}
+

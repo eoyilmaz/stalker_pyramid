@@ -1,0 +1,109 @@
+<div id="resources_box"
+     class="widget-box  transparent">
+    <div class="widget-header widget-header-small header-color-red">
+        <h4 class="smaller grey"><i
+                class="icon-comments-alt blue"></i>Review</h4>
+
+        <div class="widget-toolbar">
+            <span id="review_number" class="badge badge-important"></span>
+        </div>
+    </div>
+    <div class="widget-body">
+        <div class="widget-main padding-12">
+
+            <div class="profile-users clearfix pull-lef" id="review_box">
+
+
+            </div>
+            <div class="widget-toolbox clearfix">
+                <div class="pull-left">
+                    <i class="icon-hand-right grey"></i>
+                    <a href="#">View all reviews &hellip;</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% include 'auth/view/reviewer_card.jinja2' %}
+
+<script type="text/javascript">
+
+    $(document).ready(function () {
+
+
+        var review_box = $('#review_box');
+        var reviewer_template = doT.template($('#tmpl_reviewer_card').html());
+
+        $.getJSON('/tasks/{{ entity.id }}/last_reviews/').then(function (data) {
+
+
+            for (var i = 0; i < data.length; i++) {
+
+                if (data[i].review_status_code == 'NEW') {
+                    data[i].review_status_name = 'Pending'
+                    if (data[i].reviewer_id == '{{ logged_in_user.id }}') {
+                        $(function () {
+                            flash_message({
+                                container: 'body',
+                                title: 'Warning',
+                                message: 'You are the responsible of this task and it ' +
+                                        'is awaiting your ' +
+                                        '<a data-target="#dialog_template" data-toggle="modal" data-keyboard=false' +
+                                        ' href="{{ request.route_url('review_task_dialog', id=entity.id) }}">review</a>',
+                                type: 'error'
+                            });
+                        });
+
+                        data[i].review_status_link = '/tasks/{{ entity.id }}/review/dialog?came_from={{ request.current_route_path() }}';
+
+                    }
+                }
+
+                if (data[i].reviewer_thumbnail_full_path == null) {
+                    data[i].reviewer_thumbnail_full_path = '{{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}';
+                }
+                else {
+                    data[i].reviewer_thumbnail_full_path = '/' + data[i].reviewer_thumbnail_full_path;
+                }
+
+                data[i].came_from = '{{ request.current_route_path() }}'
+                data[i].request_review = false;
+
+                {% if (logged_in_user in entity.resources) and entity.status.code == 'WIP' and entity.is_leaf %}
+
+                    data[i].request_review = true;
+
+                {% endif %}
+
+                review_box.append(reviewer_template(data[i]));
+
+
+
+            }
+
+            $('#review_number').append('# '+data[0].review_number)
+
+
+
+            //show the user info on right or left depending on its position
+            $('.memberdiv').on('mouseenter', function () {
+
+                var $this = $(this);
+                var $parent = $this.closest('.row-fluid');
+
+                var off1 = $parent.offset();
+                var w1 = $parent.width();
+
+                var off2 = $this.offset();
+                var w2 = $this.width();
+
+                var place = 'left';
+                if (parseInt(off2.left) < parseInt(off1.left) + parseInt(w1 / 2)) place = 'right';
+
+                $this.find('.popover').removeClass('right left').addClass(place);
+            })
+        });
+    });
+
+</script>

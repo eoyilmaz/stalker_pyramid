@@ -27,11 +27,12 @@ from pyramid.response import Response
 from stalker.db import DBSession
 from stalker import (defaults, Entity, Studio, Project, User, Vacation,
                      SimpleEntity)
+import transaction
 
 import stalker_pyramid
 from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
                                    milliseconds_since_epoch, get_multi_integer,
-                                   multi_permission_checker, get_multi_string)
+                                   multi_permission_checker, get_multi_string, StdErrToHTMLConverter)
 
 
 logger = logging.getLogger(__name__)
@@ -266,9 +267,27 @@ logger.setLevel(logging.DEBUG)
     route_name='list_task_versions',
     renderer='templates/version/list/list_entity_versions.jinja2'
 )
+
+@view_config(
+    route_name='list_user_reviews',
+    renderer='templates/review/list/list_user_reviews.jinja2'
+)
+@view_config(
+    route_name='list_task_reviews',
+    renderer='templates/review/list/list_task_reviews.jinja2'
+)
+@view_config(
+    route_name='list_project_reviews',
+    renderer='templates/review/list/list_project_reviews.jinja2'
+)
+
 @view_config(
     route_name='list_entity_resources',
     renderer='templates/resource/list/list_entity_resources.jinja2'
+)
+@view_config(
+    route_name='list_entity_notes',
+    renderer='templates/note/list/list_entity_notes.jinja2'
 )
 def get_entity_related_data(request):
     """view for generic data
@@ -743,3 +762,59 @@ def list_search_result(request):
         'studio': studio,
         'results':results
     }
+
+@view_config(
+    route_name='delete_entity_dialog',
+    renderer='templates/modals/confirm_dialog.jinja2'
+)
+def delete_entity_dialog(request):
+    """deletes the entity with the given id
+    """
+    logger.debug('delete_entity_dialog is starts')
+
+    entity_id = request.matchdict.get('id')
+    entity = Entity.query.get(entity_id)
+
+    action = '/entity/%s/delete' % entity_id
+
+    came_from = request.params.get('came_from', '/')
+
+    message = 'Are you sure to delete?'
+
+    logger.debug('action: %s' % action)
+
+    return {
+        'message': message,
+        'came_from': came_from,
+        'action': action
+    }
+
+
+@view_config(
+    route_name='delete_entity',
+     permission='Delete_Task'
+)
+def delete_entity(request):
+    """deletes the task with the given id
+    """
+
+    logger.debug('delete_entity is starts')
+
+    entity_id = request.matchdict.get('id')
+    entity = Entity.query.filter_by(id=entity_id).first()
+
+    if not entity:
+        transaction.abort()
+        return Response('Can not find an Entity with id: %s' % entity_id, 500)
+
+    try:
+
+        DBSession.delete(entity)
+        transaction.commit()
+    except Exception as e:
+        transaction.abort()
+        c = StdErrToHTMLConverter(e)
+        transaction.abort()
+        return Response(c.html(), 500)
+
+    return Response('Successfully deleted %s: %s' % (entity.entity_type,entity.name))

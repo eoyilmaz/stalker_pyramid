@@ -1,0 +1,227 @@
+{% raw %}
+<script id="tmpl_reviewer_card" type="text/x-dot-template">
+    <div class="itemdiv memberdiv"
+         style="background-color: rgba(0,0,0,0)">
+        <div class="inline position-relative ">
+            <div class="user">
+                <a href='/users/{{=it.reviewer_id}}/view'
+                   class="no-padding">
+                    <img style="height: 55px; width: auto"
+                         src="{{=it.reviewer_thumbnail_full_path}}"/>
+                </a>
+                <div class="popover">
+                <div class="arrow"></div>
+                <div class="popover-content">
+
+                    <div class="bolder">{{=it.reviewer_name}}
+                    </div>
+
+                    <div class="time">
+                        <i class="icon-user middle bigger-110 orange"></i>
+                        <span class="green">{{=it.reviewer_department}}</span>
+                    </div>
+
+                    <div class="hr dotted hr-8"></div>
+
+                    <div class="tools action-buttons">
+                        {{ if (it.request_review) { }}
+                        <a data-rel="tooltip"
+                           data-placement="bottom"
+                           title="Request Review"
+                           data-target="#dialog_template"
+                           data-toggle="modal"
+                           data-keyboard="false"
+                           href='/tasks/{{=it.task_id}}/request_review/dialog?came_from={{=it.came_from}}&selected_responsible_id={{=it.reviewer_id}}'>
+                            <i class="icon-comment-alt orange bigger-150"></i>
+                        </a>
+                        {{ } }}
+
+                        <a data-rel="tooltip"
+                           data-placement="bottom"
+                           title="Create Ticket"
+                           data-target="#dialog_template"
+                           data-toggle="modal"
+                           data-keyboard="false"
+                           href='tickets/-1/create/dialog?owner_id={{=it.reviewer_id}}'>
+                            <i class="icon-ticket light-blue bigger-150"></i>
+                        </a>
+
+                    </div>
+                </div>
+            </div>
+            </div>
+            <div class="body">
+
+                <div>
+                    <span class="label label-{{=it.review_status_color }}">{{=it.review_status_name }}</span>
+
+                    {{ if (it.review_status_link) { }}
+                    <div class="inline position-relative">
+                        <button class="btn btn-minier bigger btn-yellow dropdown-toggle"
+                                data-toggle="dropdown">
+                            <i class="icon-angle-down icon-only bigger-120"></i>
+                        </button>
+
+                        <ul class="dropdown-menu dropdown-icon-only dropdown-yellow pull-right dropdown-caret dropdown-close">
+                            <li>
+                                <a href="{{=it.review_status_link}}&review_mode=approve"
+                                   class="tooltip-success"
+                                   data-rel="tooltip"
+                                   title="Approve"
+                                   data-target="#dialog_template"
+                                   data-toggle="modal"
+                                   data-keyboard=false
+                                   data-placement="top">
+                                   <span class="green">
+                                       <i class="icon-ok bigger-110"></i>
+                                   </span>
+                                </a>
+                            </li>
+
+                            <li>
+                                <a href="{{=it.review_status_link}}&review_mode=request_revision"
+                                   class="tooltip-success"
+                                   data-rel="tooltip"
+                                   title="Request Revision"
+                                   data-target="#dialog_template"
+                                   data-toggle="modal"
+                                   data-keyboard=false
+                                   data-placement="top">
+                                    <span class="orange">
+                                        <i class="icon-remove bigger-110"></i>
+                                    </span>
+                                </a>
+                            </li>
+
+
+                        </ul>
+                    </div>
+                    {{ } }}
+
+
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+</script>
+{% endraw %}
+
+{#{% raw %}#}
+{#<script id="tmpl_reviewer_card" type="text/x-dot-template">#}
+{#    <div class="itemdiv memberdiv">#}
+{#        <div class="user">#}
+{#            <img src="{{=it.reviewer_thumbnail_full_path}}"/>#}
+{##}
+{#                <div class="popover">#}
+{#                <div class="arrow"></div>#}
+{#                <div class="popover-content">#}
+{##}
+{#                    <div class="bolder">{{=it.reviewer_name}}#}
+{#                    </div>#}
+{##}
+{#                    <div class="time">#}
+{#                        <i class="icon-user middle bigger-110 orange"></i>#}
+{#                        <span class="green">{{=it.reviewer_department}}</span>#}
+{#                    </div>#}
+{##}
+{#                    <div class="hr dotted hr-8"></div>#}
+{##}
+{#                    <div class="tools action-buttons">#}
+{#                        {{ if (it.request_review) { }}#}
+{#                        <a data-rel="tooltip"#}
+{#                           data-placement="bottom"#}
+{#                           title="Request Review"#}
+{#                           data-target="#dialog_template"#}
+{#                           data-toggle="modal"#}
+{#                           data-keyboard="false"#}
+{#                           href='/tasks/{{=it.task_id}}/request_review/dialog?came_from={{=it.came_from}}&selected_responsible_id={{=it.reviewer_id}}'>#}
+{#                            <i class="icon-comment-alt orange bigger-150"></i>#}
+{#                        </a>#}
+{#                        {{ } }}#}
+{##}
+{#                        <a data-rel="tooltip"#}
+{#                           data-placement="bottom"#}
+{#                           title="Create Ticket"#}
+{#                           data-target="#dialog_template"#}
+{#                           data-toggle="modal"#}
+{#                           data-keyboard="false"#}
+{#                           href='tickets/-1/create/dialog?owner_id={{=it.reviewer_id}}'>#}
+{#                            <i class="icon-ticket light-blue bigger-150"></i>#}
+{#                        </a>#}
+{##}
+{#                    </div>#}
+{#                </div>#}
+{#            </div>#}
+{##}
+{#        </div>#}
+{#        <div class="body">#}
+{##}
+{#            <div class="name">#}
+{#                <a href="#">{{=it.reviewer_name  }}</a>#}
+{#            </div>#}
+{##}
+{#            <div class="time">#}
+{#                <i class="icon-time"></i>#}
+{#                <span class="green">20 min</span>#}
+{#            </div>#}
+{##}
+{#            <div>#}
+{#                {{ if (it.review_status_name) { }}#}
+{#                    <span class="label label-{{=it.review_status_color }}">{{=it.review_status_name }}</span>#}
+{#                {{ } }}#}
+{#                {{ if (it.review_status_link) { }}#}
+{#                <div class="inline position-relative">#}
+{#                    <button class="btn btn-minier bigger btn-yellow dropdown-toggle"#}
+{#                            data-toggle="dropdown">#}
+{#                        <i class="icon-angle-down icon-only bigger-120"></i>#}
+{#                    </button>#}
+{##}
+{#                    <ul class="dropdown-menu dropdown-icon-only dropdown-yellow pull-right dropdown-caret dropdown-close">#}
+{#                        <li>#}
+{#                            <a href="{{=it.review_status_link}}"#}
+{#                               class="tooltip-success"#}
+{#                               data-rel="tooltip"#}
+{#                               title="Approve"#}
+{#                               data-target="#dialog_template"#}
+{#                               data-toggle="modal"#}
+{#                               data-keyboard=false#}
+{#                               data-placement="top">#}
+{#                                   <span class="green">#}
+{#                                       <i class="icon-ok bigger-110"></i>#}
+{#                                   </span>#}
+{#                            </a>#}
+{#                        </li>#}
+{##}
+{#                        <li>#}
+{#                            <a href="{{=it.review_status_link}}"#}
+{#                               class="tooltip-success"#}
+{#                               data-rel="tooltip"#}
+{#                               title="Request Revision"#}
+{#                               data-target="#dialog_template"#}
+{#                               data-toggle="modal"#}
+{#                               data-keyboard=false#}
+{#                               data-placement="top">#}
+{#                                    <span class="orange">#}
+{#                                        <i class="icon-remove bigger-110"></i>#}
+{#                                    </span>#}
+{#                            </a>#}
+{#                        </li>#}
+{##}
+{##}
+{#                    </ul>#}
+{#                </div>#}
+{#                {{ } }}#}
+{##}
+{##}
+{#            </div>#}
+{##}
+{#        </div>#}
+{##}
+{#    </div>#}
+{#    </div>#}
+{##}
+{#</script>#}
+{#{% endraw %}#}

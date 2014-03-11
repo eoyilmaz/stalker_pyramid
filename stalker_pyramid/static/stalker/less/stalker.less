@@ -173,6 +173,25 @@ tr {
     }
 }
 
+.header-color-review {
+    background: @light-blue;
+    border-color: @light-blue;
+
+    +.widget-body {
+        border-color: @light-blue;
+    }
+}
+
+.header-color-version {
+    background: @light-green;
+    border-color: @light-green;
+
+    +.widget-body {
+        border-color: @light-green;
+    }
+}
+
+
 
 
 
@@ -298,6 +317,18 @@ tr {
     background-color: @green !important;
 }
 
+.label-APP {
+    background-color: #8ac16c;
+}
+
+.label-RREV {
+    background-color: #e07f69;
+}
+
+.label-NEW {
+    background-color: @light-blue;
+}
+
 .fc-week {
     background-color: #e6eaef;
 }
@@ -308,4 +339,83 @@ tr {
     width: 100%;
     padding-left: 0px !important;
     padding-right: 2px !important;
+}
+
+
+.review-status {
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    background-color: #FFF;
+    border: 3px solid #AAA;
+    -webkit-border-radius: 100%;
+    -moz-border-radius: 100%;
+    border-radius: 100%;
+    vertical-align: middle;
+    margin-right: 1px
+}
+
+.review-status.status-APP {
+    border-color: #8ac16c
+}
+
+.review-status.status-RREV {
+    border-color: #e07f69
+}
+
+.review-status.status-NEW {
+    border-color: @light-blue
+}
+
+
+.entityview-item {
+  position: relative;
+  margin-bottom: 8px;
+}
+.entityview-item .widget-box {
+  background-color: #e8ecef;
+  color: #595C66;
+}
+.entityview-item .transparent.widget-box {
+  border-left: 3px solid #c6cdd1;
+}
+.entityview-item .transparent .widget-header {
+  background-color: #dbdfe4;
+  border-bottom: none;
+}
+.entityview-item .transparent .widget-header > :first-child {
+  margin-left: 8px;
+}
+.entityview-item:nth-child(even) .widget-box {
+  background-color: #F3F3F3;
+  color: #616161;
+}
+.entityview-item:nth-child(even) .widget-box.transparent {
+  border-left-color: #DBDBDB !important;
+}
+.entityview-item:nth-child(even) .widget-box.transparent .widget-header {
+  background-color: #EEE !important;
+}
+.entityview-item .widget-box {
+  margin: 0;
+  position: relative;
+  max-width: none;
+  border-bottom: none;
+  margin-left: 0px;
+}
+.entityview-item .widget-main {
+  margin: 0;
+  position: relative;
+  max-width: none;
+  border-bottom: none;
+}
+.entityview-item .widget-body {
+  background-color: transparent;
+}
+.entityview-item .widget-toolbox {
+  padding: 4px 8px 0 !important;
+  background-color: transparent !important;
+  border: 0 solid #CCC !important;
+  border-top: none !important;
+  margin: 0 0px !important;
 }

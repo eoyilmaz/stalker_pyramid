@@ -108,6 +108,16 @@
 </script>
 {% endraw %}
 
+    <script>
+
+        var tableParameters = {"aoColumns": [{'sType': 'num-html'}, null, null, null, null, null, null, null, null]}
+        var sortingParameters = [[0, 'desc']]
+        var tableDataAddress = '{{ request.route_path('get_entity_tickets', id=entity.id) }}'
+
+     console.log('tableDataAddress' + tableDataAddress)
+
+    </script>
+
 
 
 <script>
