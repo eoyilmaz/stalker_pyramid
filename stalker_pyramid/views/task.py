@@ -288,7 +288,7 @@ def duplicate_task(task):
         notes=task.notes,
         tags=task.tags,
         responsible=task.responsible,
-        references=task.references,
+        #references=task.references,
         start=task.start,
         end=task.end,
         thumbnail=task.thumbnail,
@@ -446,8 +446,6 @@ def duplicate_task_hierarchy(request):
         update_task_statuses(dup_task)
         # check fo dependencies
         update_task_statuses_with_dependencies(dup_task)
-
-
     else:
         transaction.abort()
         return Response(
