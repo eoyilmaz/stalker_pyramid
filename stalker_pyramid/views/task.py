@@ -289,7 +289,7 @@ def duplicate_task(task):
         notes=task.notes,
         tags=task.tags,
         responsible=task.responsible,
-        references=task.references,
+        #references=task.references,
         start=task.start,
         end=task.end,
         thumbnail=task.thumbnail,
@@ -447,8 +447,6 @@ def duplicate_task_hierarchy(request):
         update_task_statuses(dup_task)
         # check fo dependencies
         update_task_statuses_with_dependencies(dup_task)
-
-
     else:
         transaction.abort()
         return Response(
@@ -1011,7 +1009,7 @@ def get_tasks(request):
         join (
             select
                 parent_data.id as id,
-                "SimpleEntities".name || ' (' ||
+                "SimpleEntities".name || ' (' || "SimpleEntities".id || ') (' ||
                 array_to_string(array_agg(
                     case
                         when "SimpleEntities_parent".entity_type = 'Project'
@@ -1038,7 +1036,7 @@ def get_tasks(request):
                 join "SimpleEntities" on "SimpleEntities".id = parent_data.id
                 join "SimpleEntities" as "SimpleEntities_parent" on "SimpleEntities_parent".id = parent_data.parent_id
                 left outer join "Projects" on parent_data.parent_id = "Projects".id
-                group by parent_data.id, "SimpleEntities".name
+                group by parent_data.id, "SimpleEntities".name, "SimpleEntities".id
         ) as "Task_Hierarchy" on "Tasks".id = "Task_Hierarchy".id
         -- resources
         left outer join (
@@ -1495,7 +1493,7 @@ def get_project_tasks(request):
     (
         SELECT
             task_parents.id,
-            "Task_SimpleEntities".name || ' (' || "Projects".code || ' | ' || task_parents.parent_names || ')' as parent_names 
+            "Task_SimpleEntities".name || ' (' || "Task_SimpleEntities".id || ') (' || "Projects".code || ' | ' || task_parents.parent_names || ')' as parent_names 
         FROM (
             SELECT
                 task_parents.id,
@@ -1535,7 +1533,7 @@ def get_project_tasks(request):
     (
         SELECT
             "Tasks".id,
-            "Task_SimpleEntities".name || ' (' || "Projects".code || ')' as parent_names
+            "Task_SimpleEntities".name || ' (' || "Task_SimpleEntities".id || ') (' || "Projects".code || ')' as parent_names
         FROM "Tasks"
         JOIN "Projects" ON "Tasks".project_id = "Projects".id
         JOIN "SimpleEntities" as "Task_SimpleEntities" on "Tasks".id = "Task_SimpleEntities".id
@@ -1780,7 +1778,7 @@ left join (
     (
         SELECT
             task_parents.id,
-            "Task_SimpleEntities".name || ' (' || "Projects".code || ' | ' || task_parents.parent_names || ')' as parent_names 
+            "Task_SimpleEntities".name || ' (' || "Task_SimpleEntities".id || ') (' || "Projects".code || ' | ' || task_parents.parent_names || ')' as parent_names 
         FROM (
             SELECT
                 task_parents.id,
@@ -1819,7 +1817,7 @@ left join (
     (
         SELECT
             "Tasks".id,
-            "Task_SimpleEntities".name || ' (' || "Projects".code || ')' as parent_names
+            "Task_SimpleEntities".name || ' (' || "Task_SimpleEntities".id || ') (' || "Projects".code || ')' as parent_names
         FROM "Tasks"
         JOIN "Projects" ON "Tasks".project_id = "Projects".id
         JOIN "SimpleEntities" as "Task_SimpleEntities" on "Tasks".id = "Task_SimpleEntities".id
