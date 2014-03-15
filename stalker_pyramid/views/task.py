@@ -1300,7 +1300,7 @@ def get_project_tasks(request):
     (
         SELECT
             task_parents.id,
-            "Task_SimpleEntities".name || ' (' || "Projects".code || ' | ' || task_parents.parent_names || ')' as parent_names 
+            "Task_SimpleEntities".name || ' (' || "Task_SimpleEntities".id || ') (' || "Projects".code || ' | ' || task_parents.parent_names || ')' as parent_names 
         FROM (
             SELECT
                 task_parents.id,
