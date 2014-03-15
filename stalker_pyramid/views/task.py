@@ -884,7 +884,7 @@ def get_tasks(request):
                 join "SimpleEntities" on "SimpleEntities".id = parent_data.id
                 join "SimpleEntities" as "SimpleEntities_parent" on "SimpleEntities_parent".id = parent_data.parent_id
                 left outer join "Projects" on parent_data.parent_id = "Projects".id
-                group by parent_data.id, "SimpleEntities".name
+                group by parent_data.id, "SimpleEntities".name, "SimpleEntities".id
         ) as "Task_Hierarchy" on "Tasks".id = "Task_Hierarchy".id
         -- resources
         left outer join (
