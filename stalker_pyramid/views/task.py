@@ -857,7 +857,7 @@ def get_tasks(request):
         join (
             select
                 parent_data.id as id,
-                "SimpleEntities".name || '(' || "SimpleEntities".id || ') (' ||
+                "SimpleEntities".name || ' (' || "SimpleEntities".id || ') (' ||
                 array_to_string(array_agg(
                     case
                         when "SimpleEntities_parent".entity_type = 'Project'
@@ -1340,7 +1340,7 @@ def get_project_tasks(request):
     (
         SELECT
             "Tasks".id,
-            "Task_SimpleEntities".name || '(' || "Task_SimpleEntities".id || ') (' || "Projects".code || ')' as parent_names
+            "Task_SimpleEntities".name || ' (' || "Task_SimpleEntities".id || ') (' || "Projects".code || ')' as parent_names
         FROM "Tasks"
         JOIN "Projects" ON "Tasks".project_id = "Projects".id
         JOIN "SimpleEntities" as "Task_SimpleEntities" on "Tasks".id = "Task_SimpleEntities".id
@@ -1575,7 +1575,7 @@ def get_entity_tasks_by_filter(request):
     (
         SELECT
             task_parents.id,
-            "Task_SimpleEntities".name || '(' || "Task_SimpleEntities".id || ') (' || "Projects".code || ' | ' || task_parents.parent_names || ')' as parent_names 
+            "Task_SimpleEntities".name || ' (' || "Task_SimpleEntities".id || ') (' || "Projects".code || ' | ' || task_parents.parent_names || ')' as parent_names 
         FROM (
             SELECT
                 task_parents.id,
@@ -1614,7 +1614,7 @@ def get_entity_tasks_by_filter(request):
     (
         SELECT
             "Tasks".id,
-            "Task_SimpleEntities".name || '(' || "Task_SimpleEntities".id || ') (' || "Projects".code || ')' as parent_names
+            "Task_SimpleEntities".name || ' (' || "Task_SimpleEntities".id || ') (' || "Projects".code || ')' as parent_names
         FROM "Tasks"
         JOIN "Projects" ON "Tasks".project_id = "Projects".id
         JOIN "SimpleEntities" as "Task_SimpleEntities" on "Tasks".id = "Task_SimpleEntities".id
