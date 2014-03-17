@@ -208,8 +208,8 @@ def assign_thumbnail(request):
         file_full_path = convert_file_link_to_full_path(link.full_path)
         img = Image.open(file_full_path)
         if img.format != 'GIF':
-            img.thumbnail((300, 300))
-            img.thumbnail((150, 150), Image.ANTIALIAS)
+            img.thumbnail((1024, 1024))
+            img.thumbnail((512, 512), Image.ANTIALIAS)
             img.save(file_full_path)
 
         DBSession.add(entity)
@@ -317,8 +317,8 @@ def generate_thumbnail(link):
 
     # generate thumbnails for those references
     img = Image.open(file_full_path)
-    img.thumbnail((300, 300))  # TODO: connect this to a config variable
-    img.thumbnail((150, 150), Image.ANTIALIAS)
+    img.thumbnail((1024, 1024))  # TODO: connect this to a config variable
+    img.thumbnail((512, 512), Image.ANTIALIAS)
 
     thumbnail_full_path, thumbnail_link_full_path = \
         generate_local_file_path(extension)
