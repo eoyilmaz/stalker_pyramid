@@ -353,7 +353,6 @@ def fix_task_schedule_info(request):
 
     if task:
         assert isinstance(task, Task)
-
         task.update_schedule_info()
 
     return HTTPOk()
@@ -408,7 +407,7 @@ def duplicate_task(task):
         notes=task.notes,
         tags=task.tags,
         responsible=task.responsible,
-        references=task.references,
+        #references=task.references,
         start=task.start,
         end=task.end,
         thumbnail=task.thumbnail,
@@ -1074,7 +1073,7 @@ def get_tasks(request):
         join (
             select
                 parent_data.id as id,
-                "SimpleEntities".name || ' (' ||
+                "SimpleEntities".name || ' (' || "SimpleEntities".id || ') (' ||
                 array_to_string(array_agg(
                     case
                         when "SimpleEntities_parent".entity_type = 'Project'
@@ -1101,7 +1100,7 @@ def get_tasks(request):
                 join "SimpleEntities" on "SimpleEntities".id = parent_data.id
                 join "SimpleEntities" as "SimpleEntities_parent" on "SimpleEntities_parent".id = parent_data.parent_id
                 left outer join "Projects" on parent_data.parent_id = "Projects".id
-                group by parent_data.id, "SimpleEntities".name
+                group by parent_data.id, "SimpleEntities".name, "SimpleEntities".id
         ) as "Task_Hierarchy" on "Tasks".id = "Task_Hierarchy".id
         -- resources
         left outer join (
@@ -1166,22 +1165,19 @@ def get_tasks(request):
             )
             resp.content_range = content_range
             end = time.time()
-            logger.debug('task is project %s rows retrieved in %s seconds' % (len(return_data),
+            logger.debug('%s rows retrieved in %s seconds' % (len(return_data),
                                                               (end - start)))
             return resp
 
         elif isinstance(task, Task):
             where_condition = '"Tasks".id = %s' % task_id
-            logger.debug('task is task')
 
     elif parent_id:
         parent = Entity.query.filter(Entity.id == parent_id).first()
         if isinstance(parent, Project):
             where_condition = '"Parent_Tasks".id is NULL and "Tasks".project_id = %s' % parent_id
-            logger.debug('parent_id is Project')
         elif isinstance(parent, Task):
             where_condition = '"Parent_Tasks".id = %s' % parent_id
-            logger.debug('parent_id is Task')
 
     sql_query = sql_query % {'where_condition': where_condition}
 
@@ -1224,7 +1220,7 @@ def get_tasks(request):
 
     # logger.debug('return_data: %s' % return_data)
     end = time.time()
-    logger.debug('get_tasks %s rows retrieved in %s seconds' % (len(return_data),
+    logger.debug('%s rows retrieved in %s seconds' % (len(return_data),
                                                       (end - start)))
 
     resp = Response(
@@ -1546,7 +1542,7 @@ def get_project_tasks(request):
     (
         SELECT
             task_parents.id,
-            "Task_SimpleEntities".name || ' (' || "Projects".code || ' | ' || task_parents.parent_names || ')' as parent_names 
+            "Task_SimpleEntities".name || ' (' || "Task_SimpleEntities".id || ') (' || "Projects".code || ' | ' || task_parents.parent_names || ')' as parent_names 
         FROM (
             SELECT
                 task_parents.id,
@@ -1586,7 +1582,7 @@ def get_project_tasks(request):
     (
         SELECT
             "Tasks".id,
-            "Task_SimpleEntities".name || ' (' || "Projects".code || ')' as parent_names
+            "Task_SimpleEntities".name || ' (' || "Task_SimpleEntities".id || ') (' || "Projects".code || ')' as parent_names
         FROM "Tasks"
         JOIN "Projects" ON "Tasks".project_id = "Projects".id
         JOIN "SimpleEntities" as "Task_SimpleEntities" on "Tasks".id = "Task_SimpleEntities".id
