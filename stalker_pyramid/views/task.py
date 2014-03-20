@@ -21,13 +21,14 @@ import logging
 import time
 import datetime
 import json
+import os
 
 import transaction
 from pyramid.response import Response
 from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPServerError, HTTPOk, HTTPForbidden
 from pyramid_mailer import get_mailer
-from pyramid_mailer.message import Message
+from pyramid_mailer.message import Message, Attachment
 
 from sqlalchemy.exc import IntegrityError
 
@@ -42,6 +43,8 @@ from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
                                    StdErrToHTMLConverter,
                                    multi_permission_checker,
                                    dummy_email_address, local_to_utc, get_user_os)
+from stalker_pyramid.views.link import replace_img_data_with_links, \
+    convert_file_link_to_full_path
 from stalker_pyramid.views.type import query_type
 
 
@@ -665,6 +668,95 @@ def convert_to_dgrid_gantt_task_format(tasks):
         } for task in tasks
     ]
 
+@view_config(
+    route_name='inline_update_task'
+)
+def inline_update_task(request):
+    """Inline updates the given task with the data coming from the request
+    """
+
+    logger.debug('INLINE UPDATE TASK IS RUNNING')
+
+    logged_in_user = get_logged_in_user(request)
+
+    # *************************************************************************
+    # collect data
+    attr_name = request.params.get('attr_name', None)
+    attr_value = request.params.get('attr_value', None)
+
+    logger.debug('attr_name %s', attr_name)
+    logger.debug('attr_value %s',attr_value)
+
+    # get task
+    task_id = request.matchdict.get('id', -1)
+    task = Task.query.filter(Task.id == task_id).first()
+
+    # update the task
+    if not task:
+        transaction.abort()
+        return Response("No task found with id : %s" % task_id, 500)
+
+    if attr_name and attr_value:
+
+        logger.debug('attr_name %s',attr_name)
+
+        if attr_name == 'type':
+
+            type_query = Type.query.filter_by(target_entity_type=task.entity_type)
+            type_ = type_query.filter_by(id=attr_value).first()
+
+            if not type_:
+                transaction.abort()
+                return Response("No type found with id : %s" % attr_value, 500)
+
+            task.type = type_
+
+        elif attr_name == 'description':
+
+            # convert images to Links
+            attachments = []
+            description, links = replace_img_data_with_links(attr_value)
+
+            task.description = description
+
+            if links:
+                # update created_by attributes of links
+                for link in links:
+                    link.created_by = logged_in_user
+
+                    # manage attachments
+                    link_full_path = convert_file_link_to_full_path(link.full_path)
+                    link_data = open(link_full_path, "rb").read()
+
+                    link_extension = os.path.splitext(link.filename)[1].lower()
+                    mime_type = ''
+                    if link_extension in ['.jpeg', '.jpg']:
+                        mime_type = 'image/jpg'
+                    elif link_extension in ['.png']:
+                        mime_type = 'image/png'
+
+                    attachment = Attachment(
+                        link.filename,
+                        mime_type,
+                        link_data
+                    )
+                    attachments.append(attachment)
+                DBSession.add_all(links)
+
+
+
+        else:
+            setattr(task, attr_name, attr_value)
+
+        task.updated_by = logged_in_user
+
+    else:
+        logger.debug('not updating')
+        return Response("MISSING PARAMETERS", 500)
+
+
+    return Response('Task updated successfully %s %s'%(attr_name,attr_value))
+
 
 @view_config(
     route_name='update_task'
@@ -793,7 +885,7 @@ def update_task(request):
     if responsible:
         if task.parent:
             if task.parent.responsible == responsible:
-                task.responsible = None
+                task.responsible = []
             else:
                 task.responsible = responsible
         else:
@@ -895,9 +987,9 @@ def get_tasks(request):
         "Tasks".bid_unit as bid_unit,
                 coalesce(
             -- for parent tasks
-            (case "Tasks"._schedule_seconds
+            (case "Tasks".schedule_seconds
                 when 0 then 0
-                else "Tasks"._total_logged_seconds::float / "Tasks"._schedule_seconds * 100
+                else "Tasks".total_logged_seconds::float / "Tasks".schedule_seconds * 100
              end
             ),
             -- for child tasks we need to count the total seconds of related TimeLogs
@@ -937,7 +1029,7 @@ def get_tasks(request):
             )
         ) as resources,
         "Tasks".schedule_model,
-        coalesce("Tasks"._schedule_seconds,
+        coalesce("Tasks".schedule_seconds,
             "Tasks".schedule_timing * (case "Tasks".schedule_unit
                 when 'h' then 3600
                 when 'd' then 32400
@@ -953,7 +1045,7 @@ def get_tasks(request):
         lower("Task_Status".code) as status,
         coalesce(
             -- for parent tasks
-            "Tasks"._total_logged_seconds,
+            "Tasks".total_logged_seconds,
             -- for child tasks we need to count the total seconds of related TimeLogs
             coalesce("Task_TimeLogs".duration, 0.0)
         ) as total_logged_seconds,
@@ -1027,8 +1119,8 @@ def get_tasks(request):
     group by
         "Tasks".bid_timing,
         "Tasks".bid_unit,
-        "Tasks"._total_logged_seconds,
-        "Tasks"._schedule_seconds,
+        "Tasks".total_logged_seconds,
+        "Tasks".schedule_seconds,
         "Tasks".id,
         "Task_TimeLogs".duration,
         "Tasks".schedule_timing,
@@ -1656,9 +1748,9 @@ def get_entity_tasks_by_filter(request):
     coalesce("Type_SimpleEntities".name,'') as type_name,
     coalesce(
         -- for parent tasks
-        (case "Tasks"._schedule_seconds
+        (case "Tasks".schedule_seconds
             when 0 then 0
-            else "Tasks"._total_logged_seconds::float / "Tasks"._schedule_seconds * 100
+            else "Tasks".total_logged_seconds::float / "Tasks".schedule_seconds * 100
          end
         ),
         -- for child tasks we need to count the total seconds of related TimeLogs
@@ -1873,12 +1965,17 @@ def data_dialog(request, mode='create', entity_type='Task'):
     entity_id = request.matchdict.get('id')
     entity = Entity.query.filter_by(id=entity_id).first()
 
+    logger.debug('mode    : %s' % mode)
     if mode == 'create':
         project_id = request.params.get('project_id')
         project = Project.query.filter_by(id=project_id).first()
 
+        logger.debug('project_id    : %s' % project_id)
+
         parent_id = request.params.get('parent_id')
         parent = Task.query.filter_by(id=parent_id).first()
+
+        logger.debug('parent_id    : %s' % parent_id)
 
         if not project and parent:
             project = parent.project
@@ -1896,6 +1993,7 @@ def data_dialog(request, mode='create', entity_type='Task'):
 
     logger.debug('entity_id  : %s' % entity_id)
     logger.debug('entity     : %s' % entity)
+
     logger.debug('project    : %s' % project)
     logger.debug('parent     : %s' % parent)
     logger.debug('depends_to : %s' % depends_to)
@@ -2052,10 +2150,13 @@ def create_task(request):
 
     # get responsible
 
-    responsible_ids = get_multi_integer(request, 'responsible_ids')
-    responsible = None
-    if responsible_ids:
-        responsible = User.query.filter(User.id == responsible_ids).all()
+    responsible = []
+    responsible_ids = []
+    if 'responsible_ids' in request.params:
+        responsible_ids = get_multi_integer(request, 'responsible_ids')
+        responsible = User.query.filter(User.id.in_(responsible_ids)).all()
+
+
 
     priority = request.params.get('priority', 500)
 
@@ -2173,8 +2274,9 @@ def create_task(request):
     kwargs['schedule_timing'] = schedule_timing
     kwargs['schedule_unit'] = schedule_unit
 
+    kwargs['responsible'] = responsible
     kwargs['resources'] = resources
-    kwargs['depends_to'] = depends
+    kwargs['depends'] = depends
 
     kwargs['priority'] = priority
 
@@ -2207,11 +2309,11 @@ def create_task(request):
             logger.debug('new_task.name %s' % new_entity.name)
         DBSession.add(new_entity)
 
-        if responsible:
-            # check if the responsible is different than
-            # the parents responsible
-            if new_entity.responsible != responsible:
-                new_entity.responsible = responsible
+        # if responsible:
+        #     # check if the responsible is different than
+        #     # the parents responsible
+        #     if new_entity.responsible != responsible:
+        #         new_entity.responsible = responsible
 
     except (AttributeError, TypeError, CircularDependencyError) as e:
         logger.debug('The Error Message: %s' % e.message)
@@ -2361,6 +2463,8 @@ def get_last_version_of_task(request, is_published=''):
 
      return version
 
+
+
 @view_config(
     route_name='review_task_dialog',
     renderer='templates/task/dialog/review_task_dialog.jinja2'
@@ -2377,20 +2481,13 @@ def review_task_dialog(request):
     status_new = Status.query.filter_by(code='NEW').first()
     review = Review.query.filter(Review.reviewer_id == logged_in_user.id).filter(Review.task_id==entity.id).filter(Review.status==status_new).first()
 
-
-
     came_from = request.params.get('came_from', request.url)
-
     review_mode = request.params.get('review_mode', 'approve')
-
     logger.debug('review_mode %s' % review_mode)
-
-
 
     version = get_last_version_of_task(request, is_published='')
 
     project = entity.project
-
 
     return {
         'review':review,
@@ -2409,7 +2506,6 @@ def review_task_dialog(request):
 def review_task(request):
     """review task
     """
-
      # get logged in user as he review requester
 
     task_id = request.matchdict.get('id')
@@ -2459,16 +2555,8 @@ def approve_task(request):
     logger.debug('review %s' % review)
     if review:
 
-        note_type = Type.query.filter_by(name='Approved').first()
-        if note_type is None:
-             # create a new Type
-            note_type = Type(
-                name='Approved',
-                code='Approved',
-                target_entity_type='Note',
-                html_class='green'
-            )
-
+        note_type = query_type('Note','Approved')
+        note_type.html_class = 'green'
         note = Note(
                 content=note,
                 created_by=logged_in_user,
@@ -2476,6 +2564,7 @@ def approve_task(request):
                 date_updated=utc_now,
                 type = note_type
             )
+        DBSession.add(note)
 
         task.notes.append(note)
         review.note = note
@@ -2593,36 +2682,48 @@ def request_revision(request):
     status_new = Status.query.filter_by(code='NEW').first()
     review = Review.query.filter(Review.reviewer_id == logged_in_user.id).filter(Review.task_id==task.id).filter(Review.status==status_new).first()
 
-    try:
-        review.request_revision(schedule_timing,schedule_unit, note)
+    note_type = query_type('Note','Request Revision')
+    note_type.html_class = 'purple'
 
-        note_type = Type.query.filter_by(name='Request Revision').first()
-        if note_type is None:
-             # create a new Type
-            note_type = Type(
-                name='Request Revision',
-                code='Request_Revision_Task',
-                target_entity_type='Note',
-                html_class='purple'
-            )
+    note = Note(
+            content='Expanded the timing of the task by <b>%(schedule_timing)s %(schedule_unit)s</b>. <br/> %(note)s'%{'schedule_timing':schedule_timing,'schedule_unit':schedule_unit,'note':note},
+            created_by=logged_in_user,
+            date_created=utc_now,
+            date_updated=utc_now,
+            type = note_type
+    )
+    DBSession.add(note)
 
-        note = Note(
-                content='Expanded the timing of the task by <b>%(schedule_timing)s %(schedule_unit)s</b>. <br/> %(note)s'%{'schedule_timing':schedule_timing,'schedule_unit':schedule_unit,'note':note},
-                created_by=logged_in_user,
-                date_created=utc_now,
-                date_updated=utc_now,
-                type = note_type
-            )
-        review.note = note
-        task.notes.append(note)
-    except StatusError as e:
-        return Response('StatusError: %s' % e, 500)
+    if review:
+        try:
+            review.request_revision(schedule_timing,schedule_unit, note)
+            review.note = note
 
+            task.notes.append(note)
+        except StatusError as e:
+            return Response('StatusError: %s' % e, 500)
+    else:
 
+        logger.debug('task requested revision')
+
+        try:
+            assert isinstance(task, Task)
+            logger.debug('code is here 1')
+            temp_var = DBSession.commit
+            DBSession.commit = transaction.commit
+            task.request_revision(logged_in_user, note, schedule_timing, schedule_unit)
+            DBSession.commit = temp_var
+            logger.debug('code is here 2')
+
+            task.notes.append(note)
+        except StatusError as e:
+            return Response('StatusError: %s' % e, 500)
 
 
     task.updated_by = logged_in_user
     task.date_updated = utc_now
+
+
 
 
 
@@ -2650,7 +2751,7 @@ def request_revision(request):
             '%(note)s'
 
         message = Message(
-                subject='Task Reviewed: "%(task_hierarchical_name)s" has been approved by %(user)s!' % {
+                subject='Task Reviewed: "%(task_hierarchical_name)s" has been requested revision by %(user)s!' % {
                     'task_hierarchical_name': task_hierarchical_name,
                     'user': logged_in_user
                 },
@@ -2661,6 +2762,9 @@ def request_revision(request):
         )
 
         mailer.send(message)
+
+
+
 
 
 
@@ -2792,14 +2896,7 @@ def request_progress_review(request):
 
     # Create ticket_type if it does not exist
     ticket_type_name = 'In Progress-Review'
-    ticket_type = Type.query.filter_by(name=ticket_type_name).first()
-    if ticket_type is None:
-                # create a new Type
-                ticket_type = Type(
-                    name=ticket_type_name,
-                    code=ticket_type_name,
-                    target_entity_type='Ticket'
-                )
+    ticket_type = query_type('Ticket',ticket_type_name)
 
     recipients = []
 
@@ -2886,15 +2983,8 @@ def request_final_review(request):
 
     utc_now = local_to_utc(datetime.datetime.now())
 
-    note_type = Type.query.filter_by(name='Request Review').first()
-    if note_type is None:
-             # create a new Type
-        note_type = Type(
-                name='Request Review',
-                code='Request_Review',
-                target_entity_type='Note',
-                html_class='orange'
-            )
+    note_type = query_type('Note','Request Review')
+    note_type.html_class = 'orange'
 
     note = Note(
                 content=note,
@@ -3226,8 +3316,8 @@ def get_child_task_events(task):
                 'status': time_log.task.status.name,
                 'status_color': time_log.task.status.html_class
             })
-            logger.debug('resource_id %s' % time_log.resource.id)
-            logger.debug('resource_name %s' % time_log.resource.name)
+            # logger.debug('resource_id %s' % time_log.resource.id)
+            # logger.debug('resource_name %s' % time_log.resource.name)
 
     return task_events
 

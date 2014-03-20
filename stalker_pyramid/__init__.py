@@ -202,9 +202,10 @@ def main(global_config, **settings):
     config.add_route('get_task_references_count',  'tasks/{id}/references/count/')  # json
     config.add_route('get_asset_references',       'assets/id}/references/')  # json
     config.add_route('get_asset_references_count', 'assets/id}/references/count/')  # json
+
     config.add_route('get_shot_references',        'shots/{id}/references/')  # json
     config.add_route('get_shot_references_count',  'shots/{id}/references/count/')  # json
-    config.add_route('get_shots_children_task_type',  'shots/children/task_type/')  # json
+
 
 
     config.add_route('get_references',       'references/')
@@ -421,6 +422,11 @@ def main(global_config, **settings):
     config.add_route('get_asset_tickets',   'assets/{id}/tickets/')
     config.add_route('list_asset_tickets',  'assets/{id}/tickets/list')
 
+
+    config.add_route('get_assets_types', 'assets/types/')  # json
+    config.add_route('get_assets_type_task_types', 'assets/types/{t_id}/task_types/')  # json
+
+
     # *************************************************************************
     # Shots
     config.add_route('create_shot_dialog', 'shots/{id}/create/dialog')
@@ -435,6 +441,8 @@ def main(global_config, **settings):
     config.add_route('list_shot_tasks',    'shots/{id}/tasks/list')  # html
     config.add_route('list_shot_tickets',  'shots/{id}/tickets/list')  # html
     config.add_route('list_shot_versions', 'shots/{id}/versions/list')  # html
+
+    config.add_route('get_shots_children_task_type',  'shots/children/task_type/')  # json
 
     # *************************************************************************
     # Sequence
@@ -471,6 +479,7 @@ def main(global_config, **settings):
     # Actions
     config.add_route('create_task',              'tasks/create')
     config.add_route('update_task',              'tasks/{id}/update')
+    config.add_route('inline_update_task',       'tasks/{id}/update/inline')
     config.add_route('review_task',              'tasks/{id}/review')
 
     config.add_route('duplicate_task_hierarchy', 'tasks/{id}/duplicate')

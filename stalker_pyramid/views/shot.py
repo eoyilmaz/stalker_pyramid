@@ -237,9 +237,9 @@ def get_shots(request):
     array_agg("Task_Statuses_SimpleEntities".html_class) as status_html_class,
     array_agg(coalesce(
             -- for parent tasks
-            (case "Tasks"._schedule_seconds
+            (case "Tasks".schedule_seconds
                 when 0 then 0
-                else "Tasks"._total_logged_seconds::float / "Tasks"._schedule_seconds * 100
+                else "Tasks".total_logged_seconds::float / "Tasks".schedule_seconds * 100
              end
             ),
             -- for child tasks we need to count the total seconds of related TimeLogs

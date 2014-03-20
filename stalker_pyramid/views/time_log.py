@@ -152,16 +152,7 @@ def create_time_log(request):
         # TimeLog should handle the extension of the effort
         logger.debug('got all the data')
         try:
-            # time_log = TimeLog(
-            #     task=task,
-            #     resource=resource,
-            #     start=start_date,
-            #     end=end_date,
-            #     description=description
-            # )
 
-            assert isinstance(task, Task)
-            task.create_time_log(resource,start_date, end_date)
 
             # TODO: update according to the new Task Status Workflow (I mean delete this part, it is handled by Stalker)
             status_rts = Status.query.filter(Status.code == "RTS").first()
@@ -186,11 +177,23 @@ def create_time_log(request):
             logger.debug('taskDependency search ')
 
             for taskDependency in task.task_depends_to:
-                assert isinstance(taskDependency, TaskDependency)
+
                 dep_task = taskDependency.depends_to
+                assert isinstance(dep_task, Task)
 
                 logger.debug('%s' % dep_task.status.code)
                  # for dep_task in task.depends:
+                logger.debug('dep_task.end %s %s' % (dep_task.end,start_date))
+                if dep_task.end > start_date:
+                    response = Response(
+                        'Because one of the dependencies (Task: %s (%s)) has '
+                        'not finished at the time you selected, \n'
+                        '\n\nPlease, select time-range after %s!' %
+                        (dep_task.name, dep_task.id,dep_task.end), 500
+                    )
+                    transaction.abort()
+                    return response
+
                 if dep_task.status not in [status_cmpl]:
                     response = Response(
                         'Because one of the dependencies (Task: %s (%s)) has '
@@ -217,11 +220,15 @@ def create_time_log(request):
                     transaction.abort()
                     return response
 
+
+            assert isinstance(task, Task)
+            task.create_time_log(resource,start_date, end_date)
+
             # set the status to wip for this task
-            logger.debug('Updating Task (%s) status to WIP!' % task_id)
-            wip = Status.query.filter(Status.code == "WIP").first()
-            task.status = wip
-            DBSession.add(task)
+            # logger.debug('Updating Task (%s) status to WIP!' % task_id)
+            # wip = Status.query.filter(Status.code == "WIP").first()
+            # task.status = wip
+            # DBSession.add(task)
         except (OverBookedError, TypeError) as e:
             converter = StdErrToHTMLConverter(e)
             response = Response(converter.html(), 500)

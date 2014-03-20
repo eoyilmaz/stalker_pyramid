@@ -127,6 +127,13 @@ tr .odd > td .ticket_BLOCKER {
 .pln a {
   color: white;
 }
+.wfd {
+  background-color: #abbac3;
+  color: white;
+}
+.wfd a {
+  color: white;
+}
 .new {
   background-color: #abbac3;
   color: white;
@@ -197,19 +204,24 @@ tr .odd > td .ticket_BLOCKER {
 .dgrid-selected .cmpl {
   background-color: #a4d191;
 }
-.label-red {
+.label-red,
+.badge-red {
   background-color: #d53f40 !important;
 }
-.label-orange {
+.label-orange,
+.badge-orange {
   background-color: #ffc657 !important;
 }
-.label-blue {
+.label-blue,
+.badge-blue {
   background-color: #6fb3e0 !important;
 }
-.label-purple {
+.label-purple,
+.badge-purple {
   background-color: #6f3cc4 !important;
 }
-.label-green {
+.label-green,
+.badge-green {
   background-color: #82af6f !important;
 }
 .label-APP {

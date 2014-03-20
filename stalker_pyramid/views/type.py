@@ -39,7 +39,8 @@ def get_types(request):
     target_entity_type = request.params.get('target_entity_type')
     if target_entity_type:
         return [
-            type_.name
+            {'name': type_.name,
+            'id': type_.id}
             for type_ in Type.query.filter(
                 Type._target_entity_type == target_entity_type
             ).all()

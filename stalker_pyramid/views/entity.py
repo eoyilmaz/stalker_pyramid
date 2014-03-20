@@ -179,10 +179,7 @@ logger.setLevel(logging.DEBUG)
     route_name='view_asset',
     renderer='templates/task/view/view_task.jinja2'
 )
-@view_config(
-    route_name='list_project_assets',
-    renderer='templates/asset/list/list_entity_assets.jinja2'
-)
+
 @view_config(
     route_name='view_shot',
     renderer='templates/task/view/view_task.jinja2'

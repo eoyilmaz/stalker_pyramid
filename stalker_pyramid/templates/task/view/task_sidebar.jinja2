@@ -44,22 +44,22 @@
             </button>
         {% endif %}
 
-        {% if task.responsible == logged_in_user and task.status.code == 'PREV' %}
-{#            <button id='task_review_button'#}
-{#                    class="btn btn-small btn-success tooltip-success"#}
-{#                    data-rel="tooltip"#}
-{#                    data-placement="bottom"#}
-{#                    title="Review Task"#}
-{#                    data-target="#dialog_template"#}
-{#                    data-toggle="modal"#}
-{#                    data-keyboard="false"#}
-{#                    href='{{ request.route_url("review_task_dialog", id=task.id) }}'#}
-{#                    >#}
-{#                <i class="icon-comments"></i>#}
-{#            </button>#}
+        {% if  logged_in_user in task.responsible and task.status.code == 'CMPL' %}
+            <button id='task_review_button'
+                    class="btn btn-small btn-purple tooltip-success"
+                    data-rel="tooltip"
+                    data-placement="bottom"
+                    title="Review Task"
+                    data-target="#dialog_template"
+                    data-toggle="modal"
+                    data-keyboard="false"
+                    href='/tasks/{{ task.id }}/review/dialog?came_from={{ request.current_route_path() }}&review_mode=request_revision'
+                    >
+                <i class="icon-comments"></i>
+            </button>
         {% else %}
             <button disabled="true"
-                    class="btn btn-small btn-success tooltip-success"
+                    class="btn btn-small btn-purple tooltip-success"
                     data-rel="tooltip" data-placement="bottom"
                     title="Review Task">
                 <i class="icon-comments"></i>
@@ -86,11 +86,11 @@
     </div>
 
     <div class="sidebar-shortcuts-mini" id="sidebar-shortcuts-mini">
-        <span class="btn btn-success"></span>
-
         <span class="btn btn-info"></span>
 
         <span class="btn btn-warning"></span>
+
+        <span class="btn btn-purple"></span>
 
         <span class="btn btn-danger"></span>
     </div>

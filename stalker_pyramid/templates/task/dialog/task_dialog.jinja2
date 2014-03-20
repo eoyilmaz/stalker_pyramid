@@ -331,7 +331,7 @@
         var submit_form_url = '{{ request.route_url("create_task") }}';
         var selected_resources = [];
         var entity_type = 'Task';
-        var selected_responsibles = [{{ project.lead.id }}];
+        var selected_responsibles = ['{{ project.lead.id }}'];
         var shot_cut_in = 1;
         var shot_cut_out = 1;
         var shot_sequences =[];
@@ -867,11 +867,14 @@
 
         });
 
+         {% if entity%}
+
         {% if entity.status.code != 'WFD' and entity.status.code != 'RTS'%}
 
              $('#task_depends_to').attr('disabled','disabled')
 
         {% endif %}
+    {% endif %}
         console.log('initialize task dialog end')
     }
 </script>

@@ -167,23 +167,23 @@ def get_task_last_reviews(request):
 
     logger.debug("task.status.code : %s" % task.status.code)
     if task.status.code == 'PREV':
-        where_condition2 =""" and "Reviews_Tasks"._review_number +1 = "Reviews"._review_number"""
+        where_condition2 =""" and "Reviews_Tasks".review_number +1 = "Reviews".review_number"""
         where_conditions = '%s %s' % (where_condition1, where_condition2)
 
         reviews = get_reviews(request,where_conditions)
 
     else:
-        # where_condition2 =""" and "Reviews_Tasks"._review_number = "Reviews"._review_number"""
+        # where_condition2 =""" and "Reviews_Tasks".review_number = "Reviews".review_number"""
 
         reviews = [
         {
-            'review_number': task._review_number,
+            'review_number': task.review_number,
             'review_id': 0,
             'review_status_code': 'WTNG',
             'review_status_name': 'Waiting',
             'review_status_color': 'orange',
             'task_id': task.id,
-            'task_review_number': task._review_number,
+            'task_review_number': task.review_number,
             'reviewer_id': responsible.id,
             'reviewer_name': responsible.name,
             'reviewer_thumbnail_full_path':responsible.thumbnail.full_path if responsible.thumbnail else None ,
@@ -294,14 +294,14 @@ def get_reviews(request, where_conditions):
 
     sql_query = """
      select
-            "Reviews"._review_number as review_number,
+            "Reviews".review_number as review_number,
             "Reviews".id as review_id,
             "Reviews_Statuses".code as review_status_code,
             "Statuses_Simple_Entities".name as review_status_name,
             "Statuses_Simple_Entities".html_class as review_status_color,
             "Reviews".task_id as task_id,
             "ParentTasks".parent_names as task_name,
-            "Reviews_Tasks"._review_number as task_review_number,
+            "Reviews_Tasks".review_number as task_review_number,
             "Reviews".reviewer_id as reviewer_id,
             "Reviewers_SimpleEntities".name as reviewer_name,
             "Reviewers_SimpleEntities_Links".full_path as reviewer_thumbnail_path,
@@ -323,7 +323,7 @@ def get_reviews(request, where_conditions):
 
         group by
 
-            "Reviews"._review_number,
+            "Reviews".review_number,
             "Reviews".id,
             "Reviews_Statuses".code,
             "Reviews_Simple_Entities".date_created,
@@ -331,7 +331,7 @@ def get_reviews(request, where_conditions):
             "Statuses_Simple_Entities".html_class,
             "Reviews".task_id,
             "ParentTasks".parent_names,
-            "Reviews_Tasks"._review_number,
+            "Reviews_Tasks".review_number,
             "Reviews".reviewer_id,
             "Reviewers_SimpleEntities".name,
             "Reviewers_SimpleEntities_Links".full_path

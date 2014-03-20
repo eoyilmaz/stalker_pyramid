@@ -133,14 +133,11 @@
         dialog_template_label.find('span').remove();
         dialog_template_label.append('<span class="green">Review Task Dialog</span>');
 
-
         {% if version == None %}
 
             $('#version_message').append('<strong>{{ task.name }}</strong> is <strong>{{task.type.name }}</strong> type task. For <strong>{{task.type.name }} </strong> type task no version is saved to server. Ask resource for details.');
 
         {% endif %}
-
-
 
         // generate default values;
         var project = {
@@ -160,6 +157,12 @@
             $('#task_review_mode').val('{{ review_mode }}')
 
             {% if review_mode == 'request_revision' %}
+
+                {% if review == None %}
+
+                    $('#task_review_mode').attr('disabled','disabled');
+
+                {% endif %}
 
                 $('#revision_controls').show();
 
