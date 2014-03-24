@@ -200,7 +200,10 @@ def get_assets_types(request):
     resp.content_range = content_range
     return resp
 
-
+@view_config(
+    route_name='get_assets_children_task_type',
+    renderer='json'
+)
 @view_config(
     route_name='get_assets_type_task_types',
     renderer='json'
@@ -209,7 +212,7 @@ def get_assets_type_task_types(request):
     """returns the Task Types defined under the Asset container
     """
 
-    type_id = request.matchdict.get('t_id', -1)
+    type_id = request.matchdict.get('t_id', None)
 
     logger.debug('type_id %s'% type_id)
 
@@ -223,10 +226,20 @@ def get_assets_type_task_types(request):
     join "Assets" on "Tasks".parent_id = "Assets".id
     join "SimpleEntities" as "Assets_SimpleEntities" on "Assets_SimpleEntities".id = "Assets".id
 
-    where "Assets_SimpleEntities".type_id = %(type_id)s
+    %(where_condition)s
 
     group by "SimpleEntities".id, "SimpleEntities".name
-    order by "SimpleEntities".name"""%{'type_id': type_id}
+    order by "SimpleEntities".name"""
+
+
+    where_condition = ''
+
+    if type_id:
+        where_condition = 'where "Assets_SimpleEntities".type_id = %(type_id)s'%{'type_id': type_id}
+
+    sql_query = sql_query %{'where_condition':where_condition}
+
+
 
     result = DBSession.connection().execute(sql_query)
 
@@ -271,10 +284,9 @@ def get_assets(request):
     project_id = request.matchdict.get('id', -1)
     asset_type_id = request.params.get('asset_type_id', None)
 
+    asset_id = request.params.get('entity_id', None)
 
 
-
-    start = time.time()
     sql_query = """
         select
             "Assets".id as asset_id,
@@ -362,6 +374,9 @@ def get_assets(request):
 
     if asset_type_id:
         where_conditions = """and "Assets_Types_SimpleEntities".id = %(asset_type_id)s""" %({'asset_type_id':asset_type_id})
+    if asset_id:
+        where_conditions = """and "Assets".id = %(asset_id)s""" %({'asset_id':asset_id})
+
 
     sql_query = sql_query % {'where_conditions':where_conditions, 'project_id':project_id}
 

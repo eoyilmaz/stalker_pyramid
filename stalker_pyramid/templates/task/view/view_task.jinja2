@@ -9,16 +9,14 @@
           href='{{ request.static_url("stalker_pyramid:static/ace/css/bootstrap-timepicker.css") }}'/>
     <link rel="stylesheet"
           href='{{ request.static_url("stalker_pyramid:static/ace/css/datepicker.css") }}'/>
-    <link rel="stylesheet"
-          href='{{ request.static_url("stalker_pyramid:static/ace/css/daterangepicker.css") }}'/>
-    <link rel="stylesheet"
-          href='{{ request.static_url("stalker_pyramid:static/ace/css/jquery.gritter.css") }}'/>
+{#    <link rel="stylesheet"#}
+{#          href='{{ request.static_url("stalker_pyramid:static/ace/css/jquery.gritter.css") }}'/>#}
     <link rel="stylesheet"
           href='{{ request.static_url("stalker_pyramid:static/ace/css/jquery-ui-1.10.3.custom.min.css") }}'/>
-
     <link rel="stylesheet"
           href='{{ request.static_url("stalker_pyramid:static/ace/css/bootstrap-editable.css") }}'/>
-
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/select2.css") }}'/>
     {% include 'charts/chart_preheader.jinja2' %}
 
 {% endblock pre_header %}
@@ -27,27 +25,29 @@
 {% block sidebar %}
 
     {% include 'sidebar.jinja2' %}
+
 {% endblock sidebar %}
 
 {# BREADCRUMBS #}
 {% block breadcrumbs %}
+
     {% set page_title='Dashboard' %}
     {% include 'breadcrumb/breadcrumbs.jinja2' %}
+
 {% endblock breadcrumbs %}
 
 {#PAGE-CONTENT#}
 {% block page_content %}
+
     <div class="row-fluid">
     <div class="widget-box transparent invoice-box">
 
     <div class="widget-header widget-header-large ">
-        <h3 class="position-relative ">
-            <i class="icon-tasks"></i>
-            {{ entity.name }}
-            <i class="icon-double-angle-right"></i>
-            <small class="grey"> # {{ entity.review_number }}</small>
+        <h4 id= 'task_header' class="position-relative ">
 
-        </h3>
+
+
+        </h4>
 
         <div class="widget-toolbar no-border invoice-info">
             <span class="invoice-info-label">Status:</span>
@@ -63,7 +63,7 @@
         </div>
         <div class="widget-toolbar hidden-480">
             <a href="#">
-                <i class="icon-print"></i>
+                <i class="icon-info"></i>
             </a>
         </div>
     </div>
@@ -76,239 +76,190 @@
 
     <div class="span8">
 
-    <div class="row-fluid">
+        <div class="row-fluid">
 
-        <div class="span2">
+            <div class="span2">
 
-            {% include 'components/avatar.jinja2' %}
+                {% include 'components/avatar.jinja2' %}
 
-        </div>
+            </div>
 
-        <div class="span7">
+            <div class="span7">
 
-            <ul class="unstyled spaced  pull-left">
-                <li>
-                    <h5>
-                        <strong>
-                            <span class="date">{{ entity.start }}</span>
-                            <i class="icon-long-arrow-right blue"></i>
-                            <span class="date">{{ entity.end }}</span>
-                        </strong>
-                    </h5>
-                </li>
+                <div class="profile-user-info profile-user-info-striped">
+                    <div class="profile-info-row">
+                        <div class="profile-info-name"> Name</div>
 
-                <li>
+                        <div class="profile-info-value">
+                        <span class="editable"
+                              id="editable_entity_name">{{ entity.name }}</span>
+                        </div>
+                    </div>
+                    <div class="profile-info-row">
+                        <div class="profile-info-name">Type</div>
 
-                    <b>Type
-                        : </b> <span class="editable"
-                                     id="editable_entity_type">{{ entity.type.name }}</span>
-                </li>
-                <li>
-
-                    <b>Created By
-                        : </b> {{ entity.created_by.name }}
-                </li>
-                <li>
-                    <b>Updated By
-                        : </b> {{ entity.updated_by.name }}
-                </li>
+                        <div class="profile-info-value">
+                        <span class="editable"
+                              id="editable_entity_type">{{ entity.type.name }}</span>
+                        </div>
+                    </div>
 
 
-                {#                <li>#}
-                {#                    <div class="btn-toolbar">#}
-                {#                        {% if has_permission('Update_Task') %}#}
-                {##}
-                {#                            <button id='task_update_button'#}
-                {#                                    class='btn btn-mini btn-info'#}
-                {#                                    data-target="#dialog_template"#}
-                {#                                    data-toggle="modal"#}
-                {#                                    data-keyboard="false"#}
-                {#                                    href='{{ request.route_url("update_task_dialog", id=entity.id) }}'#}
-                {#                                    >#}
-                {#                                <i class="icon-edit"></i>#}
-                {#                                Update#}
-                {#                            </button>#}
-                {##}
-                {#                        {% endif %}#}
-                {#                        #}
-                {#                                                        {% if logged_in_user in entity.responsible and entity.status.code == 'PREV' %}#}
-                {#                        #}
-                {#                                                            <button id='task_review_button'#}
-                {#                                                                    class='btn btn-mini btn-success'#}
-                {#                                                                    data-target="#dialog_template"#}
-                {#                                                                    data-toggle="modal"#}
-                {#                                                                    data-keyboard="false"#}
-                {#                                                                    href='{{ request.route_url("review_task_dialog", id=entity.id) }}'#}
-                {#                                                                    >#}
-                {#                                                                <i class="icon-comments"></i>#}
-                {#                                                                Review#}
-                {#                                                            </button>#}
-                {#                        #}
-                {#                                                        {% endif %}#}
-                {#                        {% if (logged_in_user in entity.resources or logged_in_user in entity.responsible) and entity.status.code == 'WIP' and entity.is_leaf %}#}
-                {##}
-                {#                            <div class="btn-group">#}
-                {#                                <button data-toggle="dropdown"#}
-                {#                                        class="btn btn-small btn-warning dropdown-toggle">#}
-                {#                                    Request Review#}
-                {#                                    <span class="caret"></span>#}
-                {#                                </button>#}
-                {##}
-                {#                                <ul class="dropdown-menu dropdown-warning">#}
-                {#                                    <li>#}
-                {#                                        <a data-target="#dialog_template"#}
-                {#                                           data-toggle="modal"#}
-                {#                                           data-keyboard="false"#}
-                {#                                           href='/tasks/{{ entity.id }}/request_review/dialog?came_from={{ request.current_route_path() }}&request_review_mode=Progress'>Progress</a>#}
-                {#                                    </li>#}
-                {#                                    <li>#}
-                {#                                        <a data-target="#dialog_template"#}
-                {#                                           data-toggle="modal"#}
-                {#                                           data-keyboard="false"#}
-                {#                                           href='/tasks/{{ entity.id }}/request_review/dialog?came_from={{ request.current_route_path() }}&request_review_mode=Final'>Final</a>#}
-                {#                                    </li>#}
-                {##}
-                {##}
-                {#                                </ul>#}
-                {#                            </div><!--/btn-group-->#}
-                {##}
-                {#                        {% endif %}#}
-                {##}
-                {#                    </div>#}
-                {#                </li>#}
-            </ul>
+                    <div class="profile-info-row">
+                        <div class="profile-info-name"> Updated By</div>
 
-        </div>
+                        <div class="profile-info-value">
+                            <span>{{ entity.updated_by.name }}</span>
+                        </div>
+                    </div>
 
-        <div class="span3">
+                    <div class="profile-info-row">
+                        <div class="profile-info-name"> Created By</div>
 
-            <div class="pull-right alert alert-block alert-info">
-                <ul class="unstyled spaced">
-                    <li>
+                        <div class="profile-info-value">
+                            <span>{{ entity.created_by.name }}</span>
+                        </div>
+                    </div>
+                    <div class="profile-info-row">
+                        <div class="profile-info-name"> Timing</div>
 
-                        <b>Schedule Hours
-                            : </b> {{ entity.schedule_seconds/3600 }}
-                        h
-                    </li>
-                    <li>
-                        <b>Total Logged Hours
-                            : </b> {{ entity.total_logged_seconds/3600 }}
-                        h
-                    </li>
-                    <li>
-                        <b>Hours to Complete
-                            : </b> {{ (entity.schedule_seconds - entity.total_logged_seconds)/3600 }}
-                        h
-                    </li>
-                </ul>
-                {#                                    <div class="pull-left" id="pie_chart"#}
-                {#                                         style="width: 180px; height: 180px;"></div>#}
+                        <div class="profile-info-value">
+
+                            <strong>
+                                <span class="date">{{ entity.start }}</span>
+                                <i class="icon-long-arrow-right blue"></i>
+                                <span class="date">{{ entity.end }}</span>
+                            </strong>
+
+                        </div>
+                    </div>
+
+
+                </div>
+
+            </div>
+
+            <div class="span3">
+
+                {% if entity.is_leaf %}
+
+                    {% include 'task/view/task_timing.jinja2' %}
+
+                {% endif %}
+
             </div>
 
         </div>
 
-    </div>
+        <div class="space-18"></div>
+        <div class="row-fluid">
 
-    <div class="space-18"></div>
-    <div class="row-fluid">
+            <div class="tabbable"
+                 style="background-color: rgba(255,255,255,.7)">
+                <ul class="nav nav-tabs">
+                    <li class="active">
 
-        <div class="tabbable" style="background-color: rgba(255,255,255,.7)">
-            <ul class="nav nav-tabs">
-                <li class="active">
-                    <a data-toggle="tab" href="#description-tab">
-                        <i class="blue icon-file bigger-120"></i>
-                        Description
-                    </a>
-                </li>
-                <li class="">
-                    <a data-toggle="tab" href="#overview-tab">
-                        <i class="green icon-list-alt bigger-120"></i>
-                        Overview
-                    </a>
-                </li>
+                        <a data-toggle="tab" href="#calendar-tab">
+                            <i class="orange icon-calendar bigger-120"></i>
+                            Calendar
+                        </a>
+                    </li>
+                    <li class="">
+                        <a data-toggle="tab" href="#description-tab">
+                            <i class="blue icon-file bigger-120"></i>
+                            Description
+                        </a>
+                    </li>
+                    <li class="">
+                        <a data-toggle="tab" href="#overview-tab">
+                            <i class="green icon-list-alt bigger-120"></i>
+                            Overview
+                        </a>
+                    </li>
+                </ul>
 
-                <li class="">
-                    <a data-toggle="tab" href="#calendar-tab">
-                        <i class="orange icon-calendar bigger-120"></i>
-                        Calendar
-                    </a>
-                </li>
+                <div class="tab-content no-border no-padding">
+                    <div class="space-24"></div>
+                    <div id="description-tab"
+                         class="tab-pane">
 
+                        <div class="offset1 span11">
 
-            </ul>
-
-            <div class="tab-content no-border no-padding">
-                <div class="space-24"></div>
-                <div id="description-tab"
-                     class="tab-pane in active">
-
-                    <div class="span12">
-
-                        <div class='editableform-loading center hide'
-                             id="description_loading"><i
-                                class='light-blue icon-2x icon-spinner icon-spin'></i>
-                        </div>
-                        <div class="space-8"></div>
+                            <div class='editableform-loading center hide'
+                                 id="description_loading"><i
+                                    class='light-blue icon-2x icon-spinner icon-spin'></i>
+                            </div>
+                            <div class="space-8"></div>
 
                         <span class="editable"
                               id="editable_entity_description">{{ entity.description | safe }}</span>
 
-                        <div class="space-24"></div>
+                            <div class="space-24"></div>
+                        </div>
+
                     </div>
+                    <div id="overview-tab"
+                         class="tab-pane">
 
-                </div>
-                <div id="overview-tab"
-                     class="tab-pane">
+                        <form id="add_note_form">
 
-
-                    <form id="add_note_form">
-
-                        <div class="form-actions input-append">
-                            <div class="itemdiv span1">
-                                <div class="user">
-                                    <img alt=""
-                                         src="{%- if logged_in_user.thumbnail -%}/{{ logged_in_user.thumbnail.full_path }}{%- else -%}{{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_0.png") }}{%- endif -%}"/>
+                            <div class="form-actions input-append">
+                                <div class="itemdiv span1">
+                                    <div class="user">
+                                        <img alt=""
+                                             src="{%- if logged_in_user.thumbnail -%}/{{ logged_in_user.thumbnail.full_path }}{%- else -%}{{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_0.png") }}{%- endif -%}"/>
+                                    </div>
+                                </div>
+                                <div class="span11">
+                                    <input placeholder="Type your message here ..."
+                                           type="text" class="width-90"
+                                           name="message"/>
+                                    <button id="add_note_button"
+                                            class="btn btn-small btn-info no-radius">
+                                        <i class="icon-share-alt"></i>
+                                        <span class="hidden-phone">Send</span>
+                                    </button>
                                 </div>
                             </div>
-                            <div class="span11">
-                                <input placeholder="Type your message here ..."
-                                       type="text" class="width-90"
-                                       name="message"/>
-                                <button id="add_note_button"
-                                        class="btn btn-small btn-info no-radius">
-                                    <i class="icon-share-alt"></i>
-                                    <span class="hidden-phone">Send</span>
-                                </button>
-                            </div>
-                        </div>
-                    </form>
+                        </form>
 
-                    {% include 'note/list/list_notes.jinja2' %}
+                        {% include 'note/list/list_notes.jinja2' %}
 
+                    </div>
+                    <!--#overview-tab-->
+
+                    <div id="calendar-tab" class="tab-pane in active">
+
+                        <div id="calendar"></div>
+
+                    </div>
+
+                    <!--/#calendar-tab-->
                 </div>
-                <!--#overview-tab-->
-
-                <div id="calendar-tab" class="tab-pane">
-
-                    <div id="calendar"></div>
-
-                </div>
-
-                <!--/#calendar-tab-->
             </div>
-        </div>
 
-    </div>
+        </div>
 
     </div>
 
     <div class="span4">
         <div class="entityview-item clearfix">
-            <div class="row-fluid">
 
-                {% include 'review/view/review_card.jinja2' %}
+            {% if entity.is_leaf %}
+                <div class="row-fluid">
 
-            </div>
+                    {% include 'review/view/review_card.jinja2' %}
+
+                </div>
+            {% endif %}
+
+            {% if entity.entity_type == 'Asset' or entity.entity_type == 'Shot' %}
+                <div class="row-fluid">
+
+                    {% include 'entity/entity_children_progress.jinja2' %}
+
+                </div>
+            {% endif %}
 
             <div class="space-4"></div>
 
@@ -330,24 +281,25 @@
 
             <div class="space-4"></div>
 
-
-            <div class="row-fluid">
-                <div id="version_used_by_tasks"
-                     class="widget-box  transparent">
-                    <div class="widget-header  widget-header-small">
-                        <h4 class="smaller"><i
-                                class="icon-long-arrow-down"></i>Versions are
-                            used in
-                        </h4>
-                    </div>
-                    <div class="widget-body">
-                        <div class="widget-main">
-                            <div id="version_used_by_tasks_tree"
-                                 class="tree"></div>
+            {% if entity.is_leaf %}
+                <div class="row-fluid">
+                    <div id="version_used_by_tasks"
+                         class="widget-box  transparent">
+                        <div class="widget-header  widget-header-small">
+                            <h4 class="smaller"><i
+                                    class="icon-long-arrow-down"></i>Versions are
+                                used in
+                            </h4>
+                        </div>
+                        <div class="widget-body">
+                            <div class="widget-main">
+                                <div id="version_used_by_tasks_tree"
+                                     class="tree"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            {% endif %}
 
             <div class="space-4"></div>
 
@@ -422,8 +374,7 @@
         {% endif %}
     {% endif %}
 
-    {% include 'charts/chart_extrascripts.jinja2' %}
-    {% include 'charts/pie_chart.jinja2' %}
+
     {% include 'components/tree.jinja2' %}
     {% include 'calendar/calendar.jinja2' %}
 
@@ -437,6 +388,7 @@
 
 
     <script type="text/javascript">
+
 
     function showErrorAlert(reason, detail) {
         var msg = '';
@@ -454,80 +406,126 @@
 
     $(document).ready(function () {
 
+        var icon_name = get_icon('{{ entity.entity_type.lower()}}');
+        $('#task_header').append('<i class="' + icon_name + ' bigger-125"></i>{{ entity.name }}');
 
-        $.getJSON('/types/?target_entity_type={{ entity.entity_type }}').then(function (available_types) {
 
-            console.log('available_types: '+ available_types)
+        {% if has_permission('Update_Task') %}
 
-            var entity_types = []
-            for(var i=0; i<available_types.length;i++){
-                entity_types.push({id:available_types[i].id, text: available_types[i].name})
+            var inline_update_url = '/tasks/{{ entity.id }}/update/inline';
 
-            }
-
-            $('#editable_entity_type').editable({
-                type: 'select2',
-                value: '{{ entity.type.id }}',
-                source: entity_types,
+            //editables
+            $('#editable_entity_name').editable({
+                type: 'text',
+                name: 'username',
                 success: function (response, newValue) {
 
                     console.log('newValue ' + newValue)
 
-                    $.post(
-                         "/tasks/{{ entity.id }}/update/inline?attr_name=type&attr_value=" + newValue
+                    var params = $.param({
+                        attr_name: 'name',
+                        attr_value: newValue
+                    });
 
-                        ).done(function () {
-                            console.log('done')
+                    $.post(inline_update_url, params
 
-                        }).fail(function (jqXHR) {
-                            bootbox.alert('<div id="message" class="alert alert-danger bigger-110">' + jqXHR.responseText + '</div>');
+                            ).done(function () {
+                                console.log('done')
 
-                        });
+                            }).fail(function (jqXHR) {
+                                bootbox.alert('<div id="message" class="alert alert-danger bigger-110">' + jqXHR.responseText + '</div>');
+
+                            });
 
 
                 }
             });
-        });
+
+
+            $.getJSON('/types/?target_entity_type={{ entity.entity_type }}').then(function (available_types) {
+
+                var entity_types = []
+
+                for (var i = 0; i < available_types.length; i++) {
+
+                    entity_types.push({id: available_types[i].id, text: available_types[i].name})
+
+                }
+
+                if (entity_types.length > 0) {
+
+
+                    $('#editable_entity_type').editable({
+                        type: 'select2',
+                        value: '{% if entity.type %}{{ entity.type.id }}{% endif %}',
+                        source: entity_types,
+                        success: function (response, newValue) {
+
+                            var params = $.param({
+                                attr_name: 'type',
+                                attr_value: newValue
+                            });
+
+                            $.post(inline_update_url, params
+
+                                    ).done(function () {
+                                        console.log('done')
+
+                                    }).fail(function (jqXHR) {
+                                        bootbox.alert('<div id="message" class="alert alert-danger bigger-110">' + jqXHR.responseText + '</div>');
+
+                                    });
+
+
+                        }
+                    });
+                }
+                else {
+
+                    $('#editable_entity_type').editable({
+                        type: 'text',
+                        value: '{{ entity.entity_type }}',
+                        disabled: true
+                    });
+                }
+            });
 
 
 
+            $('#editable_entity_description').editable({
+                mode: 'inline',
+                type: 'wysiwyg',
+                name: 'editable_entity_description',
+
+                wysiwyg: {
+                    maxFileSize: 2000000,
+                    fileUploadError: showErrorAlert
+
+                },
+                success: function (response, newValue) {
+
+                    $('#description_loading').show()
 
 
-        $('#editable_entity_description').editable({
-            mode: 'inline',
-            type: 'wysiwyg',
-            name: 'editable_entity_description',
+                    var params = $.param({
+                        attr_name: 'description',
+                        attr_value: newValue
+                    });
 
-            wysiwyg: {
-                maxFileSize : 2000000,
-                fileUploadError: showErrorAlert
+                    $.post(inline_update_url, params).done(function () {
+                        $('#editable_entity_description').val('{{entity.description |safe  }}')
+                        console.log('done')
+                        $('#description_loading').hide()
+                    }).fail(function (jqXHR) {
+                        bootbox.alert('<div id="message" class="alert alert-danger bigger-110">' + jqXHR.responseText + '</div>');
+                        $('#description_loading').hide()
 
-            },
-            success: function (response, newValue) {
+                    });
 
-                $('#description_loading').show()
+                }
+            });
 
-                var url = '/tasks/{{ entity.id }}/update/inline';
-                var params = $.param({
-                    attr_name: 'description',
-                    attr_value: newValue
-                });
-
-                $.post(url, params).done(function () {
-                            $('#editable_entity_description').val('{{entity.description |safe  }}')
-                            console.log('done')
-                            $('#description_loading').hide()
-                        }).fail(function (jqXHR) {
-                            bootbox.alert('<div id="message" class="alert alert-danger bigger-110">' + jqXHR.responseText + '</div>');
-                            $('#description_loading').hide()
-
-                        });
-
-            }
-        });
-
-
-
+        {% endif %}
 
 
 
@@ -718,3 +716,65 @@
     </script>
 
 {% endblock extrascripts %}
+
+
+{#                    <div class="btn-toolbar">#}
+{#                        {% if has_permission('Update_Task') %}#}
+{##}
+{#                            <button id='task_update_button'#}
+{#                                    class='btn btn-mini btn-info'#}
+{#                                    data-target="#dialog_template"#}
+{#                                    data-toggle="modal"#}
+{#                                    data-keyboard="false"#}
+{#                                    href='{{ request.route_url("update_task_dialog", id=entity.id) }}'#}
+{#                                    >#}
+{#                                <i class="icon-edit"></i>#}
+{#                                Update#}
+{#                            </button>#}
+{##}
+{#                        {% endif %}#}
+{#                        #}
+{#                                                        {% if logged_in_user in entity.responsible and entity.status.code == 'PREV' %}#}
+{#                        #}
+{#                                                            <button id='task_review_button'#}
+{#                                                                    class='btn btn-mini btn-success'#}
+{#                                                                    data-target="#dialog_template"#}
+{#                                                                    data-toggle="modal"#}
+{#                                                                    data-keyboard="false"#}
+{#                                                                    href='{{ request.route_url("review_task_dialog", id=entity.id) }}'#}
+{#                                                                    >#}
+{#                                                                <i class="icon-comments"></i>#}
+{#                                                                Review#}
+{#                                                            </button>#}
+{#                        #}
+{#                                                        {% endif %}#}
+{#                        {% if (logged_in_user in entity.resources or logged_in_user in entity.responsible) and entity.status.code == 'WIP' and entity.is_leaf %}#}
+{##}
+{#                            <div class="btn-group">#}
+{#                                <button data-toggle="dropdown"#}
+{#                                        class="btn btn-small btn-warning dropdown-toggle">#}
+{#                                    Request Review#}
+{#                                    <span class="caret"></span>#}
+{#                                </button>#}
+{##}
+{#                                <ul class="dropdown-menu dropdown-warning">#}
+{#                                    <li>#}
+{#                                        <a data-target="#dialog_template"#}
+{#                                           data-toggle="modal"#}
+{#                                           data-keyboard="false"#}
+{#                                           href='/tasks/{{ entity.id }}/request_review/dialog?came_from={{ request.current_route_path() }}&request_review_mode=Progress'>Progress</a>#}
+{#                                    </li>#}
+{#                                    <li>#}
+{#                                        <a data-target="#dialog_template"#}
+{#                                           data-toggle="modal"#}
+{#                                           data-keyboard="false"#}
+{#                                           href='/tasks/{{ entity.id }}/request_review/dialog?came_from={{ request.current_route_path() }}&request_review_mode=Final'>Final</a>#}
+{#                                    </li>#}
+{##}
+{##}
+{#                                </ul>#}
+{#                            </div><!--/btn-group-->#}
+{##}
+{#                        {% endif %}#}
+{##}
+{#                    </div>#}

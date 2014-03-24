@@ -1,0 +1,81 @@
+<div id='bid_alert' class="pull-right alert alert-block">
+        <ul class="unstyled spaced">
+            <li>
+
+                <b>BID
+                    : </b>
+                <span id="bid"></span>
+            </li>
+            <li>
+
+                <b>Schedule Hours
+                    : </b> {{ entity.schedule_seconds/3600 }}
+                h
+            </li>
+            <li>
+                <b>Total Logged Hours
+                    : </b> {{ entity.total_logged_seconds/3600 }}
+                h
+            </li>
+            <li>
+                <b>Hours to Complete
+                    : </b> {{ (entity.schedule_seconds - entity.total_logged_seconds)/3600 }}
+                h
+            </li>
+        </ul>
+</div>
+
+
+<script class="code" type="text/javascript">
+    $(document).ready(function () {
+
+
+
+        var unit_by_hour = function(unit){
+
+             switch (unit) {
+                case 'h':
+                    return 1;
+                    break;
+                case 'd':
+                    return 9;
+                    break;
+                 case 'w':
+                    return 9*6;
+                    break;
+                 case 'm':
+                    return 1;
+                    break;
+                 case 'y':
+                    return 1;
+                    break;
+            }
+        }
+
+        var calculate_bid_hour = function(bid,unit){
+
+
+           console.log(bid)
+           var uhour = unit_by_hour(unit)
+
+           return  bid*uhour;
+
+        }
+
+        var bid_hour = calculate_bid_hour({{ entity.bid_timing }}, '{{ entity.bid_unit }}')
+        $('#bid').text(bid_hour+' h')
+
+
+        console.log(bid_hour)
+
+        if(bid_hour< {{ entity.total_logged_seconds/3600 }})
+        {
+            $('#bid_alert').addClass('alert-danger')
+
+        }
+        else{
+             $('#bid_alert').addClass('alert-info')
+
+        }
+    });
+</script>

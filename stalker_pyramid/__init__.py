@@ -425,6 +425,7 @@ def main(global_config, **settings):
 
     config.add_route('get_assets_types', 'assets/types/')  # json
     config.add_route('get_assets_type_task_types', 'assets/types/{t_id}/task_types/')  # json
+    config.add_route('get_assets_children_task_type',  'assets/children/task_type/')  # json
 
 
     # *************************************************************************

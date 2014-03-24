@@ -170,6 +170,8 @@
 
                 var reviewers = reviewers_data;
 
+                console.log('reviewers.length: '+reviewers.length)
+
                 var column_template = doT.template($('#tmpl_reviewColumn').html());
 
                 var reviewers_data = new Object()
@@ -188,10 +190,14 @@
 
                     $.getJSON('/tasks/{{ entity.id }}/reviews/').then(function (data) {
 
+
+
                         var reviews = data;
                         var review_row_template = doT.template($('#tmpl_reviewRow').html());
 
                         var reviews_by_numbers = [];
+
+                        console.log('reviews.length: '+reviews.length)
 
 
                         // wait until document is ready

@@ -221,6 +221,8 @@ def get_shots(request):
     entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
 
+    shot_id = request.params.get('entity_id', None)
+
     logger.debug('get_shots function starts : ')
 
     sql_query = """select
@@ -315,6 +317,11 @@ order by "Shot_SimpleEntities".name
     elif entity.entity_type == 'Project':
         where_condition = ''
 
+
+    if shot_id:
+        where_condition = 'where "Shots".id = %(shot_id)s'%({'shot_id':shot_id})
+
+
     update_shot_permission = \
         PermissionChecker(request)('Update_Shot')
     delete_shot_permission = \
@@ -347,17 +354,24 @@ order by "Shot_SimpleEntities".name
         task_ids = r[7]
         task_names = r[8]
         task_statuses = r[9]
+        task_statuses_color = r[10]
         task_percent_complete = r[11]
 
         logger.debug('task_types_names %s ' % task_types_names)
         r_data['nulls'] = []
+
+        for index1 in range(len(task_types_names)):
+
+            if task_types_names[index1]:
+
+                r_data[task_types_names[index1]]= []
+
         for index in range(len(task_types_names)):
             logger.debug('task_types_names[index]; %s ' %
                          task_types_names[index])
             if task_types_names[index]:
-                r_data[task_types_names[index]] = \
-                    [task_ids[index], task_names[index], task_statuses[index],
-                     task_percent_complete[index]]
+                r_data[task_types_names[index]].append([task_ids[index], task_names[index], task_statuses[index],
+                     task_percent_complete[index]])
             else:
                 r_data['nulls'].append(
                     [task_ids[index], task_names[index], task_statuses[index],

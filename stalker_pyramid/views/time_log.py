@@ -176,6 +176,8 @@ def create_time_log(request):
 
             logger.debug('taskDependency search ')
 
+
+
             for taskDependency in task.task_depends_to:
 
                 dep_task = taskDependency.depends_to
@@ -184,38 +186,52 @@ def create_time_log(request):
                 logger.debug('%s' % dep_task.status.code)
                  # for dep_task in task.depends:
                 logger.debug('dep_task.end %s %s' % (dep_task.end,start_date))
-                if dep_task.end > start_date:
-                    response = Response(
-                        'Because one of the dependencies (Task: %s (%s)) has '
-                        'not finished at the time you selected, \n'
-                        '\n\nPlease, select time-range after %s!' %
-                        (dep_task.name, dep_task.id,dep_task.end), 500
-                    )
-                    transaction.abort()
-                    return response
 
-                if dep_task.status not in [status_cmpl]:
-                    response = Response(
-                        'Because one of the dependencies (Task: %s (%s)) has '
-                        'not finished, \n'
-                        'You can not create time logs for this task yet!'
-                        '\n\nPlease, inform %s to finish this task!' %
-                        (dep_task.name, dep_task.id,
-                         [r.name for r in dep_task.resources]), 500
-                    )
-                    transaction.abort()
-                    return response
+                if task.status.code != 'DREV':
+                    if dep_task.end > start_date:
+                        response = Response(
+                            'Because one of the dependencies (Task: %s (%s)) has '
+                            'not finished at the time you selected, \n'
+                            '\n\nPlease, select time-range after %s!' %
+                            (dep_task.name, dep_task.id,dep_task.end), 500
+                        )
+                        transaction.abort()
+                        return response
+
+                    if dep_task.status not in [status_cmpl]:
+                        response = Response(
+                            'Because one of the dependencies (Task: %s (%s)) has '
+                            'not finished, \n'
+                            'You can not create time logs for this task yet!'
+                            '\n\nPlease, inform %s to finish this task!' %
+                            (dep_task.name, dep_task.id,
+                             [r.name for r in dep_task.resources]), 500
+                        )
+                        transaction.abort()
+                        return response
+                else:
+                    if dep_task.start > start_date:
+                        response = Response(
+                            'Because one of the dependencies (Task: %s (%s)) has '
+                            'not started at the time you selected, \n'
+                            '\n\nPlease, select time-range after %s!' %
+                            (dep_task.name, dep_task.id,dep_task.start), 500
+                        )
+                        transaction.abort()
+                        return response
+
+
 
             # check the depending tasks
             for dep_task in task.dependent_of:
-                if len(dep_task.time_logs) > 0:
+                if len(dep_task.time_logs) > 0 and dep_task.status.code != 'DREV':
                     response = Response(
                         'Because one of the depending (Task: %s (%s)) has '
                         'already started, \n'
                         'You can not create time logs for this task any more!'
                         '\n\nPlease, inform %s about this situation!' %
                         (dep_task.name, dep_task.id,
-                         task.responsible.name), 500
+                         task.responsible[0].name), 500
                     )
                     transaction.abort()
                     return response

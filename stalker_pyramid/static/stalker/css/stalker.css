@@ -183,6 +183,99 @@ tr .odd > td .ticket_BLOCKER {
 .black2 a {
   color: white;
 }
+.pln {
+  background-color: #abbac3;
+  color: white;
+}
+.pln a {
+  color: white;
+}
+.wfd {
+  background-color: #abbac3;
+  color: white;
+}
+.wfd a {
+  color: white;
+}
+.new {
+  background-color: #abbac3;
+  color: white;
+}
+.new a {
+  color: white;
+}
+.rts {
+  background-color: #d15b47;
+  color: white;
+}
+.rts a {
+  color: white;
+}
+.wip {
+  background-color: #ffc657;
+  color: white;
+}
+.wip a {
+  color: white;
+}
+.prev {
+  background-color: #6fb3e0;
+  color: white;
+}
+.prev a {
+  color: white;
+}
+.hrev {
+  background-color: #7e6eb0;
+  color: white;
+}
+.hrev a {
+  color: white;
+}
+.cmpl {
+  background-color: #82af6f;
+  color: white;
+}
+.cmpl a {
+  color: white;
+}
+.black2 {
+  background-color: #1f1f1f;
+  color: white;
+}
+.black2 a {
+  color: white;
+}
+.progress-wfd .bar,
+.progress .bar-wfd {
+  background-image: none;
+  background-color: #abbac3;
+}
+.progress-rts .bar,
+.progress .bar-rts {
+  background-image: none;
+  background-color: #d15b47;
+}
+.progress-wip .bar,
+.progress .bar-wip {
+  background-image: none;
+  background-color: #ffc657;
+}
+.progress-prev.bar,
+.progress .bar-prev {
+  background-image: none;
+  background-color: #6fb3e0;
+}
+.progress-hrev .bar,
+.progress .bar-hrev {
+  background-image: none;
+  background-color: #6f3cc4;
+}
+.progress-cmpl .bar,
+.progress .bar-cmpl {
+  background-image: none;
+  background-color: #82af6f;
+}
 .dgrid-selected .pln {
   background-color: #cddce5;
 }
@@ -219,6 +312,10 @@ tr .odd > td .ticket_BLOCKER {
 .label-purple,
 .badge-purple {
   background-color: #6f3cc4 !important;
+}
+.label-purple2,
+.badge-purple2 {
+  background-color: #7e6eb0 !important;
 }
 .label-green,
 .badge-green {

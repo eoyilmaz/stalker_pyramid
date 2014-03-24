@@ -254,8 +254,14 @@
 
                                 for (var j = 0; j < types_data.length; j++) {
 
-                                    var task = data[i][types_data[j].name];
-                                    if (task) {
+                                    var tasks = data[i][types_data[j].name];
+
+
+                                    if (tasks) {
+
+                                        var task = tasks[0];
+
+                                        console.log('task '+task[0])
 
                                         shot_row.append(cell_template({'id': task[0], 'name': task[1], 'status': task[2], 'status_color': task[2].toLowerCase(), 'percent_complete':(task[2]=='WIP'?task[3]:''),'update_shot_action': data[i].update_shot_action}));
 

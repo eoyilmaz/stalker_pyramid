@@ -2549,25 +2549,41 @@ def approve_task(request):
     review = Review.query.filter(Review.reviewer_id == logged_in_user.id).filter(Review.task_id==task.id).filter(Review.status==status_new).first()
 
     logger.debug('review %s' % review)
-    if review:
 
-        note_type = query_type('Note','Approved')
-        note_type.html_class = 'green'
-        note = Note(
+    note_type = query_type('Note','Approved')
+    note_type.html_class = 'green'
+    note = Note(
                 content=note,
                 created_by=logged_in_user,
                 date_created=utc_now,
                 date_updated=utc_now,
                 type = note_type
             )
-        DBSession.add(note)
+    DBSession.add(note)
 
-        task.notes.append(note)
-        review.note = note
+    if review:
 
-        review.approve()
+        try:
+            review.approve()
+            review.note = note
+
+            task.notes.append(note)
+        except StatusError as e:
+            return Response('StatusError: %s' % e, 500)
     else:
-        return Response('No review',500)
+
+        logger.debug('task requested revision')
+
+        try:
+            temp_var = DBSession.commit
+            DBSession.commit = transaction.commit
+            task.approve()
+            DBSession.commit = temp_var
+
+            task.notes.append(note)
+        except StatusError as e:
+            return Response('StatusError: %s' % e, 500)
+
 
     if send_email:
          # send email to resources of the task
@@ -2595,8 +2611,8 @@ def approve_task(request):
                 },
                 sender=dummy_email_address,
                 recipients=recipients,
-                body=get_description_text(description_temp,logged_in_user.name, task_hierarchical_name, note),
-                html=get_description_html(description_temp,logged_in_user.name, task_hierarchical_name, note)
+                body=get_description_text(description_temp,logged_in_user.name, task_hierarchical_name, note.content),
+                html=get_description_html(description_temp,logged_in_user.name, task_hierarchical_name, note.content)
         )
 
         mailer.send(message)
@@ -2703,13 +2719,12 @@ def request_revision(request):
         logger.debug('task requested revision')
 
         try:
-            assert isinstance(task, Task)
-            logger.debug('code is here 1')
+
             temp_var = DBSession.commit
             DBSession.commit = transaction.commit
-            task.request_revision(logged_in_user, note, schedule_timing, schedule_unit)
+            task.request_revision(logged_in_user, note.content, schedule_timing, schedule_unit)
             DBSession.commit = temp_var
-            logger.debug('code is here 2')
+
 
             task.notes.append(note)
         except StatusError as e:
@@ -2741,7 +2756,7 @@ def request_revision(request):
 
         description_temp = \
                 '%(user)s has requested a revision to ' \
-            '%(task_hierarchical_name)s and expanded the timing of the task by  ' \
+            '%(task_hierarchical_name)s' \
             '. The following description is supplied for the ' \
             'revision request:%(spacing)s' \
             '%(note)s'
@@ -2753,8 +2768,8 @@ def request_revision(request):
                 },
                 sender=dummy_email_address,
                 recipients=recipients,
-                body=get_description_text(description_temp,logged_in_user.name, task_hierarchical_name, note),
-                html=get_description_html(description_temp,logged_in_user.name, task_hierarchical_name, note)
+                body=get_description_text(description_temp,logged_in_user.name, task_hierarchical_name, note.content),
+                html=get_description_html(description_temp,logged_in_user.name, task_hierarchical_name, note.content)
         )
 
         mailer.send(message)
@@ -2974,7 +2989,7 @@ def request_final_review(request):
     task_id = request.matchdict.get('id', -1)
     task = Task.query.filter(Task.id == task_id).first()
 
-    note = request.params.get('note', 'No note')
+    note_str = request.params.get('note', 'No note')
     send_email = request.params.get('send_email', 1)  # for testing purposes
 
     utc_now = local_to_utc(datetime.datetime.now())
@@ -2983,7 +2998,7 @@ def request_final_review(request):
     note_type.html_class = 'orange'
 
     note = Note(
-                content=note,
+                content=note_str,
                 created_by=logged_in_user,
                 date_created=utc_now,
                 date_updated=utc_now,
@@ -3030,8 +3045,8 @@ def request_final_review(request):
             subject='Review Request: "%(task_hierarchical_name)s)'%{'task_hierarchical_name':task_hierarchical_name},
             sender=dummy_email_address,
             recipients=recipients,
-            body=get_description_text(description_temp,logged_in_user.name, task_hierarchical_name, note),
-            html=get_description_html(description_temp,logged_in_user.name, task_hierarchical_name, note))
+            body=get_description_text(description_temp,logged_in_user.name, task_hierarchical_name, note.content),
+            html=get_description_html(description_temp,logged_in_user.name, task_hierarchical_name, note.content))
 
         mailer.send(message)
 
