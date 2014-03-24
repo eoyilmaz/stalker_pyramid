@@ -169,6 +169,13 @@ tr .odd > td .ticket_BLOCKER {
 .hrev a {
   color: white;
 }
+.drev {
+  background-color: #7e6eb0;
+  color: white;
+}
+.drev a {
+  color: white;
+}
 .cmpl {
   background-color: #82af6f;
   color: white;

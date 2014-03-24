@@ -650,10 +650,10 @@ require([
 
     // ceter on today
     setTimeout(
-            function () {
-                gantt_column.centerOnToday();
-            },
-            0
+        function () {
+            gantt_column.centerOnToday();
+        },
+        0
     );
 
     // column togglers
@@ -749,8 +749,6 @@ require([
             var dependent_href = dependent_org_href + dep_ids_param;
             dependent_task_button.attr('href', dependent_href);
 
-
-
             // update update button
             $('#update_task_menu_item').attr(
                     'href',
@@ -768,13 +766,10 @@ require([
             );
 
             $.getJSON('/tasks/' + selected_ids[0] + '/').then(function (data) {
-
-
                 $('#create_ticket_menu_item').attr(
                     'href',
                     '/tickets/-1/create/dialog?task_id='+ selected_ids[0] + '&project_id={{ project_id }}'
                 );
-
             });
 
 
@@ -868,48 +863,41 @@ require([
 
         $.getJSON('/entities/' + selected_ids[0] + '/').then(function (data) {
 
+            console.log('data name'+ data[0].name)
+            // warn the user about what is going to happen and ask if it is ok
 
-                    console.log('data name'+ data[0].name)
-                    // warn the user about what is going to happen and ask if it is ok
-
-
-                    bootbox.confirm("<form id='infos' action=''>\
-                                        <div class='control-group'>\
-                                            <label class='span3 control-label' for='dup_task_name'>Duplicated Task Name</label>\
-                                            <div class='span4'>\
-                                                <input type='text' id='dup_task_name' class='input-block-level' name='dup_task_name' value='"+data[0].name+"' required>\
-                                            </div>\
-                                        </div>\
-                                        <div class='control-group'>\
-                                            <label class='span3 control-label' for='dup_task_description'>Duplicated Task Description</label>\
-                                            <div class='span4'>\
-                                            <textarea id='dup_task_description' name='dup_task_description' class='autosize-transition span4' style='overflow: hidden; word-wrap: break-word;resize: horizontal;height: 50px;'></textarea>\
-                                            </div>\
-                                        </div>\
-    </form>", function (result) {
-                                    if (result) {
-
-                                        console.log($('#dup_task_description').val());
-                                        // get the id and send it to the server
-                                        var url = '';
-                                        for (var i = 0; i < selected_ids.length; i++) {
-                                            url = '/tasks/' + selected_ids[i] + '/duplicate?name=' +  $('#dup_task_name').val()+'&description='+  $('#dup_task_description').val();
-                                            console.debug(url);
-                                            $.post(url).done(function () {
-                                                gantt_column.reload();
-                                            }).fail(function (jqXHR) {
-                                                        bootbox.alert(jqXHR.responseText);
-                                                    });
-                                        }
-                                    }
-                                }
-
-
-                    );
-                }
-        )
-
-
+            bootbox.confirm(
+                "<form id='infos' action=''>\
+                    <div class='control-group'>\
+                        <label class='span3 control-label' for='dup_task_name'>Duplicated Task Name</label>\
+                        <div class='span4'>\
+                            <input type='text' id='dup_task_name' class='input-block-level' name='dup_task_name' value='"+data[0].name+"' required>\
+                        </div>\
+                    </div>\
+                    <div class='control-group'>\
+                        <label class='span3 control-label' for='dup_task_description'>Duplicated Task Description</label>\
+                        <div class='span4'>\
+                        <textarea id='dup_task_description' name='dup_task_description' class='autosize-transition span4' style='overflow: hidden; word-wrap: break-word;resize: horizontal;height: 50px;'></textarea>\
+                        </div>\
+                    </div>\
+                </form>",
+                function (result) {
+                    if (result) {
+                        console.log($('#dup_task_description').val());
+                        // get the id and send it to the server
+                        var url = '';
+                        for (var i = 0; i < selected_ids.length; i++) {
+                            url = '/tasks/' + selected_ids[i] + '/duplicate?name=' +  $('#dup_task_name').val()+'&description='+  $('#dup_task_description').val();
+                            console.debug(url);
+                            $.post(url).done(function () {
+                                gantt_column.reload();
+                            }).fail(function (jqXHR){
+                                bootbox.alert(jqXHR.responseText);
+                            });
+                        }
+                    }
+                });
+            })
     });
 
     $('#add_time_log_menu_item').on('click', function (e) {

@@ -51,9 +51,11 @@ from stalker_pyramid.views.type import query_type
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
+
 def query_of_tasks_hierarchical_name_table():
-    """gives query string of finding parents names by hierarchically"""
-    return """
+    """gives query string of finding parents names by hierarchically
+    """
+    query = """
     (
         SELECT
             task_parents.id,
@@ -103,49 +105,57 @@ def query_of_tasks_hierarchical_name_table():
         WHERE "Tasks".parent_id IS NULL
     )"""
 
+    return query
+
+
 def get_task_hierarchical_name(task_id):
     """ give task names in hierarchy"""
 
     sql_query = """
-           Select
-                "ParentTasks".parent_names as task_name
-           from (
-                %(tasks_hierarchical_name_table)s
-              ) as "ParentTasks"
-            where "ParentTasks".id =%(task_id)s
-            """
-    sql_query = sql_query % {'tasks_hierarchical_name_table':query_of_tasks_hierarchical_name_table() ,'task_id': task_id}
+        Select
+            "ParentTasks".parent_names as task_name
+        from (
+            %(tasks_hierarchical_name_table)s
+        ) as "ParentTasks"
+        where "ParentTasks".id =%(task_id)s
+    """
+    sql_query = sql_query % {
+        'tasks_hierarchical_name_table':
+        query_of_tasks_hierarchical_name_table(),
+        'task_id': task_id
+    }
 
     result = DBSession.connection().execute(sql_query).fetchone()
-
     task_hierarchical_name = result[0]
-
     return task_hierarchical_name
 
 
-def get_task_link_internal(request, task,task_hierarchical_name):
-
-    task_link_internal = '<a href="%(url)s">%(name)s ' \
-                    '(%(task_entity_type)s)</a>' % {
-                        "url": request.route_path('view_task', id=task.id),
-                        "name": task_hierarchical_name,
-                        "task_entity_type": task.entity_type
-                    }
-
+def get_task_link_internal(request, task, task_hierarchical_name):
+    """ TODO: add some doc string here
+    """
+    task_link_internal = \
+        '<a href="%(url)s">%(name)s (%(task_entity_type)s)</a>' % {
+            "url": request.route_path('view_task', id=task.id),
+            "name": task_hierarchical_name,
+            "task_entity_type": task.entity_type
+        }
     return task_link_internal
 
 
 def get_user_link_internal(request, user):
-
-    user_link_internal = '<a href="%(url)s">%(name)s</a>' % {
-                'url': request.route_path('view_user', id=user.id),
-                'name': user.name
-            }
-
+    """ TODO: add some doc string here
+    """
+    user_link_internal = \
+        '<a href="%(url)s">%(name)s</a>' % {
+            'url': request.route_path('view_user', id=user.id),
+            'name': user.name
+        }
     return user_link_internal
 
-def get_description_text(description_temp, user_name, task_hierarchical_name, note):
 
+def get_description_text(description_temp, user_name, task_hierarchical_name, note):
+    """ TODO: add some doc string here
+    """
     description_text = description_temp % {
         "user": user_name,
         "task_hierarchical_name": task_hierarchical_name,
@@ -157,7 +167,8 @@ def get_description_text(description_temp, user_name, task_hierarchical_name, no
 
 
 def get_description_html(description_temp, user_name, task_hierarchical_name, note):
-
+    """ TODO: add some doc string here
+    """
     description_html = description_temp % {
         "user": '<strong>%s</strong>' % user_name,
         "task_hierarchical_name": '<strong>%s</strong>' % task_hierarchical_name,
@@ -166,6 +177,7 @@ def get_description_html(description_temp, user_name, task_hierarchical_name, no
     }
 
     return description_html
+
 
 @view_config(
     route_name='fix_task_statuses'
@@ -565,8 +577,6 @@ def duplicate_task_hierarchy(request):
         update_task_statuses(dup_task)
         # check fo dependencies
         update_task_statuses_with_dependencies(dup_task)
-
-
     else:
         transaction.abort()
         return Response(
@@ -667,6 +677,7 @@ def convert_to_dgrid_gantt_task_format(tasks):
         } for task in tasks
     ]
 
+
 @view_config(
     route_name='inline_update_task'
 )
@@ -741,9 +752,6 @@ def inline_update_task(request):
                     )
                     attachments.append(attachment)
                 DBSession.add_all(links)
-
-
-
         else:
             setattr(task, attr_name, attr_value)
 
@@ -752,7 +760,6 @@ def inline_update_task(request):
     else:
         logger.debug('not updating')
         return Response("MISSING PARAMETERS", 500)
-
 
     return Response('Task updated successfully %s %s'%(attr_name,attr_value))
 
@@ -1113,7 +1120,7 @@ def get_tasks(request):
         ) as "Task_Resources" on "Tasks".id = "Task_Resources".task_id
         -- status
         join "Statuses" as "Task_Status" on "Tasks".status_id = "Task_Status".id
-        left outer join "Task_Responsible" on "Task_Responsible".task_id = "Tasks".id
+        -- left outer join "Task_Responsible" on "Task_Responsible".task_id = "Tasks".id
     where %(where_condition)s
     group by
         "Tasks".bid_timing,
@@ -1132,7 +1139,7 @@ def get_tasks(request):
         "SimpleEntities".name,
         "Tasks".id,
         "Tasks".priority,
-        "Task_Responsible".responsible_id,
+        -- "Task_Responsible".responsible_id,
         "Tasks".schedule_model,
         "Tasks".computed_start,
         "Tasks".start,
@@ -1234,7 +1241,6 @@ def get_tasks(request):
     route_name='get_entity_tasks',
     renderer='json'
 )
-
 @view_config(
     route_name='get_studio_tasks',
     renderer='json'
@@ -1268,6 +1274,7 @@ def get_entity_tasks(request):
                     entity_tasks_and_parents.extend(task.parents)
                 entity_tasks_and_parents.extend(entity_tasks)
 
+                parents_children = []
                 if isinstance(parent, Task):
                     parents_children = parent.children
                 elif isinstance(parent, Project):
@@ -1961,6 +1968,10 @@ def data_dialog(request, mode='create', entity_type='Task'):
     entity_id = request.matchdict.get('id')
     entity = Entity.query.filter_by(id=entity_id).first()
 
+    project = None
+    parent = None
+    depends_to = None
+
     logger.debug('mode    : %s' % mode)
     if mode == 'create':
         project_id = request.params.get('project_id')
@@ -2133,7 +2144,7 @@ def create_task(request):
     description = request.params.get('description', '')
     # is_milestone = request.params.get('is_milestone', None)
 
-    schedule_model = request.params.get('schedule_model') # there should be one
+    schedule_model = request.params.get('schedule_model')  # there should be one
     schedule_timing = float(request.params.get('schedule_timing'))
     schedule_unit = request.params.get('schedule_unit')
 
@@ -2151,8 +2162,6 @@ def create_task(request):
     if 'responsible_ids' in request.params:
         responsible_ids = get_multi_integer(request, 'responsible_ids')
         responsible = User.query.filter(User.id.in_(responsible_ids)).all()
-
-
 
     priority = request.params.get('priority', 500)
 
@@ -2261,7 +2270,6 @@ def create_task(request):
     kwargs['description'] = description
     kwargs['created_by'] = logged_in_user
     kwargs['date_created'] = local_to_utc(datetime.datetime.now())
-
 
     kwargs['status_list'] = status_list
     kwargs['status'] = status
