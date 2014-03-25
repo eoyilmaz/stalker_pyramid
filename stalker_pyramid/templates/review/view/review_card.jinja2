@@ -1,15 +1,32 @@
 <div id="resources_box"
      class="widget-box transparent">
     <div class="widget-header widget-header-small header-color-grey">
-        <h4 class="smaller grey"><span id="review_number"
-                                       class="badge badge-{{ entity.status.html_class }} badge radius-20"></span>
-            Review </h4>
+        <h4 class="smaller grey">
+            Responsible  </h4>
 
         <div class="widget-toolbar">
+        <div id="responsible_header_toolbar"></div>
+
+
+
+        </div>
+    </div>
+    <div class="widget-body"
+         style="background-color: rgba(255,255,255,.4)">
+        <div class="widget-main">
+
+
+            <div class="profile-users clearfix" id="review_box">
+            </div>
+
+        </div>
+
+        <div class="widget-toolbox clearfix">
+            <div id="responsible_body_toolbar"></div>
 
             {% if has_permission('Create_Review') and  entity.status.code == 'PREV' %}
 
-                <div class="inline position-relative">
+                <div class="inline position-relative pull-right">
 
                     <button class="btn btn-minier bigger btn-info dropdown-toggle"
                             data-toggle="dropdown">
@@ -50,29 +67,12 @@
                         </li>
 
                     </ul>
+                <div class="space-4"></div>
                 </div>
 
             {% endif %}
-        </div>
-    </div>
-    <div class="widget-body"
-         style="background-color: rgba(255,255,255,.4)">
-        <div class="widget-main">
-
-            <div class="profile-users clearfix" id="review_box">
 
 
-            </div>
-
-        </div>
-
-        <div class="widget-toolbox clearfix">
-
-            <div class="pull-left">
-                <i class="icon-hand-right grey"></i>
-                <a href="/tasks/{{ entity.id }}/reviews/list">View all
-                    reviews &hellip;</a>
-            </div>
         </div>
     </div>
 </div>
@@ -82,6 +82,8 @@
 <script type="text/javascript">
 
     $(document).ready(function () {
+
+
 
 
         var review_box = $('#review_box');
@@ -133,7 +135,12 @@
 
             }
 
-            $('#review_number').append('# ' + data[0].review_number)
+            $('#responsible_header_toolbar').append( $('#responsible_header_toolbar').append('Review Set <span class="badge badge-{{ entity.status.html_class }} badge radius-20">'+data[0].review_number+'</span>'))
+
+        if(data[0].review_number>0){
+            $('#responsible_body_toolbar').append( $('#responsible_body_toolbar').append('<div class="pull-left"><i class="icon-hand-right grey"></i><a href="/tasks/{{ entity.id }}/reviews/list">View all reviews &hellip;</a></div>'))
+
+        }
 
 
             //show the user info on right or left depending on its position

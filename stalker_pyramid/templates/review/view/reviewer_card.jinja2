@@ -53,8 +53,9 @@
             <div class="body">
 
                 <div>
-                    <span class="label label-{{=it.review_status_color }}">{{=it.review_status_name }}</span>
-
+                    {{ if (it.review_status_name != 'Waiting'){ }}
+                        <span class="label label-{{=it.review_status_color }}">{{=it.review_status_name }}</span>
+                    {{ } }}
                     {{ if (it.review_status_link) { }}
                     <div class="inline position-relative">
                         <button class="btn btn-minier bigger btn-yellow dropdown-toggle"
