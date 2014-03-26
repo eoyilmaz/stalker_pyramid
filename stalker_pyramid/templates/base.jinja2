@@ -132,7 +132,7 @@
           href='{{ request.static_url("stalker_pyramid:static/stalker/css/stalker.css") }}'/>
 
     {# TODO: some scripts need to be here - will fix later #}
-    <script src='{{ request.static_url("stalker_pyramid:static/jquery/jquery-2.0.3.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/jquery/jquery-2.1.0.min.js") }}'></script>
     <!--ace settings handler-->
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.colorbox-min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/ace-extra.min.js") }}'></script>
@@ -465,7 +465,7 @@
                     return 'icon-circle';
                     break;
                 case 'DREV':
-                    return 'icon-step-forward';
+                    return 'icon-step-backward';
                     break;
                 case 'OH':
                     return 'icon-pause';
@@ -473,8 +473,11 @@
                 case 'STOP':
                     return 'icon-stop';
                     break;
-                case 'project':
-                    return 'icon-folder-close-alt';
+                case 'asset':
+                    return 'icon-puzzle-piece';
+                    break;
+                case 'dashboard':
+                    return 'icon-dashboard';
                     break;
                 case 'department':
                     return 'icon-group';
@@ -482,14 +485,20 @@
                 case 'group':
                     return 'icon-key';
                     break;
-                case 'user':
-                    return 'icon-user';
+                case 'project':
+                    return 'icon-folder-close-alt';
                     break;
-                case 'task':
-                    return 'icon-tasks';
+                case 'permission':
+                    return 'icon-key';
                     break;
-                case 'asset':
-                    return 'icon-puzzle-piece';
+                case 'reference':
+                    return 'icon-book';
+                    break;
+                case 'resource':
+                    return 'icon-calendar';
+                    break;
+                case 'review':
+                    return 'icon-comments-alt';
                     break;
                 case 'sequence':
                     return 'icon-film';
@@ -497,14 +506,20 @@
                 case 'shot':
                     return 'icon-camera';
                     break;
+                case 'task':
+                    return 'icon-tasks';
+                    break;
                 case 'ticket':
                     return 'icon-ticket';
                     break;
-                case 'review':
-                    return 'icon-comments-alt';
+                case 'vacation':
+                    return 'icon-sun';
                     break;
                 case 'version':
                     return 'icon-sitemap';
+                    break;
+                case 'user':
+                    return 'icon-user';
                     break;
                 default:
                     return 'icon-key';
@@ -617,18 +632,24 @@
                 e.stopPropagation();
                 e.preventDefault();
                 try {
-                    init_dialog();
+                    setTimeout(function(){
+                        // init_dialog() will be loaded with the dialog itself
+                        init_dialog();
+                    });
                 } catch (e) {
-                    console.log(e)
+                    console.log(e);
                 }
             });
             event_dialog.on('hidden', function (e) {
                 e.stopPropagation();
                 e.preventDefault();
                 try {
-                    destruct_dialog();
+                    setTimeout(function(){
+                        // destruct_dialog() will be loaded with the dialog itself
+                        destruct_dialog();
+                    });
                 } catch (e) {
-                    console.log(e)
+                    console.log(e);
                 }
             });
         })
@@ -658,6 +679,16 @@
                 }
             });
         })
+    </script>
+
+    {# Inline Edits #}
+    <script>
+        $(function () {
+            $.fn.editable.defaults.mode = 'inline';
+            $.fn.editableform.loading = "<div class='editableform-loading'><i class='light-blue icon-2x icon-spinner icon-spin'></i></div>";
+            $.fn.editableform.buttons = '<button type="submit" class="btn btn-info editable-submit"><i class="icon-ok icon-white"></i></button>'+
+                                        '<button type="button" class="btn editable-cancel"><i class="icon-remove"></i></button>';
+        });
     </script>
 
 

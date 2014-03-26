@@ -127,18 +127,18 @@ tr .odd > td .ticket_BLOCKER {
 .pln a {
   color: white;
 }
-.wfd {
-  background-color: #abbac3;
-  color: white;
-}
-.wfd a {
-  color: white;
-}
 .new {
   background-color: #abbac3;
   color: white;
 }
 .new a {
+  color: white;
+}
+.wfd {
+  background-color: #abbac3;
+  color: white;
+}
+.wfd a {
   color: white;
 }
 .rts {
@@ -176,67 +176,18 @@ tr .odd > td .ticket_BLOCKER {
 .drev a {
   color: white;
 }
-.cmpl {
-  background-color: #82af6f;
-  color: white;
-}
-.cmpl a {
-  color: white;
-}
-.black2 {
-  background-color: #1f1f1f;
-  color: white;
-}
-.black2 a {
-  color: white;
-}
-.pln {
-  background-color: #abbac3;
-  color: white;
-}
-.pln a {
-  color: white;
-}
-.wfd {
-  background-color: #abbac3;
-  color: white;
-}
-.wfd a {
-  color: white;
-}
-.new {
-  background-color: #abbac3;
-  color: white;
-}
-.new a {
-  color: white;
-}
-.rts {
-  background-color: #d15b47;
-  color: white;
-}
-.rts a {
-  color: white;
-}
-.wip {
-  background-color: #ffc657;
-  color: white;
-}
-.wip a {
-  color: white;
-}
-.prev {
-  background-color: #6fb3e0;
-  color: white;
-}
-.prev a {
-  color: white;
-}
-.hrev {
+.stop {
   background-color: #7e6eb0;
   color: white;
 }
-.hrev a {
+.stop a {
+  color: white;
+}
+.oh {
+  background-color: #7e6eb0;
+  color: white;
+}
+.oh a {
   color: white;
 }
 .cmpl {
@@ -268,6 +219,16 @@ tr .odd > td .ticket_BLOCKER {
   background-image: none;
   background-color: #ffc657;
 }
+.progress-stop .bar,
+.progress .bar-stop {
+  background-image: none;
+  background-color: #d15b47;
+}
+.progress-oh .bar,
+.progress .bar-oh {
+  background-image: none;
+  background-color: #d15b47;
+}
 .progress-prev.bar,
 .progress .bar-prev {
   background-image: none;
@@ -275,6 +236,11 @@ tr .odd > td .ticket_BLOCKER {
 }
 .progress-hrev .bar,
 .progress .bar-hrev {
+  background-image: none;
+  background-color: #6f3cc4;
+}
+.progress-drev .bar,
+.progress .bar-drev {
   background-image: none;
   background-color: #6f3cc4;
 }
@@ -289,16 +255,28 @@ tr .odd > td .ticket_BLOCKER {
 .dgrid-selected .new {
   background-color: #cddce5;
 }
+.dgrid-selected .wfd {
+  background-color: #cddce5;
+}
 .dgrid-selected .rts {
   background-color: #f37d69;
 }
 .dgrid-selected .wip {
   background-color: #ffe879;
 }
+.dgrid-selected .stop {
+  background-color: #f37d69;
+}
+.dgrid-selected .oh {
+  background-color: #f37d69;
+}
 .dgrid-selected .prev {
   background-color: #91d5ff;
 }
 .dgrid-selected .hrev {
+  background-color: #915ee6;
+}
+.dgrid-selected .drev {
   background-color: #915ee6;
 }
 .dgrid-selected .cmpl {

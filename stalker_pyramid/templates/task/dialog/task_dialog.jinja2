@@ -160,10 +160,8 @@
                     </div>
                 </div>
 
-
-
                 {# Depends_to #}
-                <div  class='control-group'>
+                <div class='control-group'>
                     <label class='span3 control-label' for='task_depends_to'>Depends To</label>
                     <div class='span9'>
                         <select id='task_depends_to'
@@ -391,11 +389,7 @@
                 {% endfor %}
             ];
             entity_type = '{{ entity.entity_type }}';
-
-
         {% endif %}
-
-
 
         var submit_button = $('#dialog_template_submit_button');
 
@@ -436,7 +430,10 @@
             // Asset - Code and Asset Type
             // Shot - Code and Sequence
             // Sequence - Code
-            var entity_type_value = task_entity_type.val().trim();
+            var entity_type_value = task_entity_type.val();
+            if (entity_type_value !== undefined){
+                entity_type_value = entity_type_value.trim();
+            }
             if (entity_type_value === 'Task') {
                 shot_inputs.hide();
                 code_inputs.hide();
@@ -539,9 +536,6 @@
             task_depends_to.attr('is_updating', false);
 
             field_update_mode_checker();
-
-
-            console.log('tasks_depends_to')
         });
 
         {# ***************************************************************** #}
@@ -568,9 +562,15 @@
         task_type.attr('is_updating', true);
         field_update_mode_checker();
         $.getJSON('/types/?target_entity_type=Task').then(function(available_types){
+            // map available types to an array
+            var available_types_as_list = [];
+            for (var i=0; i < available_types.length; i++){
+                available_types_as_list.push(available_types[i].name);
+            }
+
             task_type.autocomplete({
                 delay: 0,
-                source: available_types,
+                source: available_types_as_list,
                 minLength: 0
             });
             if (type !== ''){
@@ -726,8 +726,6 @@
                 task_responsible.val(selected_responsibles);
             }
 
-
-
             // update the chosen fields
             task_resources.trigger('liszt:updated');
             task_responsible.trigger('liszt:updated');
@@ -790,9 +788,6 @@
                     form_data
                 ).done(function(){
                     $('#dialog_template').modal('hide');
-                             setTimeout(function () { // wait for hide event to finish
-                        window.location.reload();
-                    }, 0);
                 }).fail(function(jqXHR){
                     task_form.attr('is_sending', false);
                     bootbox.alert(jqXHR.responseText);
@@ -867,14 +862,11 @@
 
         });
 
-         {% if entity%}
-
-        {% if entity.status.code != 'WFD' and entity.status.code != 'RTS'%}
-
-             $('#task_depends_to').attr('disabled','disabled')
-
+        {% if entity%}
+            {% if entity.status.code != 'WFD' and entity.status.code != 'RTS'%}
+                 $('#task_depends_to').attr('disabled','disabled')
+            {% endif %}
         {% endif %}
-    {% endif %}
         console.log('initialize task dialog end')
     }
 </script>

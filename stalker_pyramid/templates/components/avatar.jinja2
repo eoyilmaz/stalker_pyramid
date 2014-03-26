@@ -4,13 +4,13 @@
     <img id="entity_avatar"
          class="editable"
          alt="Avatar"
-         style="height: 100%; width: 100%;
-                      position: relative; left: 100%; margin-left: -200%"
+         style="height: 100%; width: 100%; display: inline;
+                position: relative; left: 100%; margin-left: -200%"
          src="{%- if entity.thumbnail -%}
-                            /{{ entity.thumbnail.full_path }}
-                        {%- else -%}
-                            {{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}
-                        {%- endif -%}"/>
+                /{{ entity.thumbnail.full_path }}
+            {%- else -%}
+                {{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}
+            {%- endif -%}"/>
 </div>
 
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.gritter.min.js") }}'></script>
@@ -23,13 +23,12 @@
 {% if has_permission('Update_'+entity.entity_type) %}
     $(document).ready(function () {
 
-        //$.fn.editable.defaults.mode = 'inline';
+        $.fn.editable.defaults.mode = 'inline';
 
         try {//ie8 throws some harmless exception, so let's catch it
 
             //it seems that editable plugin calls appendChild, and as Image doesn't have it, it causes errors on IE at unpredicted points
             //so let's have a fake appendChild for it!
-
 
             var last_gritter
             $('#entity_avatar').editable({

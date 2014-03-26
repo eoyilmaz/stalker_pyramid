@@ -12,7 +12,6 @@
               method='post'
               action="">
 
-
             {% if selected_responsible == None and request_review_mode=='Progress' %}
                 {# Responsible #}
                 <div class='control-group'>
@@ -126,43 +125,35 @@
 
             task_responsible.val(responsible_ids)
             task_responsible.trigger('liszt:updated');
-
-
-
         {% endif %}
 
-
-        var url = '{{ action }}'
-
+        var url = '{{ action }}';
         {% if action != '' %}
-
-            var warning_template_id = '#alert-for-{{request_review_mode}}'
-
+            var warning_template_id = '#alert-for-{{request_review_mode}}';
 
             {% raw %}
             var warning_message_template = doT.template($(warning_template_id).html());
             {% endraw %}
 
-            var responsible_name = 'responsible of this task.'
-
+            var responsible_name = 'responsible of this task.';
             {% if selected_responsible %}
-
                 responsible_name = '{{ selected_responsible.name }}';
-
             {% endif %}
 
             $('#request-review-warning-message').find('div').remove();
             $('#request-review-warning-message').append(warning_message_template({'responsible_name': responsible_name}));
 
-
         {% else %}
-
-            $('#request_review_task_form').hide()
-
-            $('#version_message').append("<div class='alert alert-error bigger-110'><strong>{{ task_type }}</strong> type task needs to a published version to review. There is no published version of this task. This task's last version must be published!</div>");
-
+            $('#request_review_task_form').hide();
+            $('#version_message').append(
+                "<div class='alert alert-error bigger-110'><p>" +
+                "A <strong>{{ task_type }}</strong> task needs to have at " +
+                "least one published version in order to be reviewed and " +
+                "there is no published version for this task!</p><br/>" +
+                "<p><strong>Please publish at least one version of this " +
+                "task.</strong></p></div>"
+            );
         {% endif %}
-
 
         {# ***************************************************************** #}
         {# Submit Button #}
@@ -173,18 +164,15 @@
             // disable the submit_button
             var submit_button = $(this);
 
-            if (url) {
+            if (url){
                 submit_button.button('loading');
 
                 var request_review_task_form = $('#request_review_task_form');
                 var request_review_task_form_data = request_review_task_form.serialize() + '&request_review_mode={{ request_review_mode }}';
 
                 {% if selected_responsible %}
-
                     request_review_task_form_data += "&selected_responsible_ids='{{ selected_responsible.id }}'";
-
                 {% endif %}
-
 
                 $.post(url, request_review_task_form_data).done(function (response) {
                     $('#dialog_template').modal('hide');
@@ -193,15 +181,14 @@
                         window.location.reload();
                     }, 0);
                 }).fail(function (jqXHR) {
-                            bootbox.alert('<h6 class="red"><i class="icon-warning-sign"></i> Failed</h6>' + jqXHR.responseText);
-                            submit_button.button('reset');
-                        });
+                    bootbox.alert('<h6 class="red"><i class="icon-warning-sign"></i> Failed</h6>' + jqXHR.responseText);
+                    submit_button.button('reset');
+                });
             }
             else {
                 $('#dialog_template').modal('hide');
             }
         });
-
 
         console.debug('finished initializing the confirm dialog!')
     }
@@ -210,11 +197,7 @@
 
 <script type="text/javascript">
     function destruct_dialog() {
-
-
         $('#dialog_template_submit_button').unbind();
-
         $('#dialog_template').data('modal', null);
-
     }
 </script>

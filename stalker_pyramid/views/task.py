@@ -163,7 +163,6 @@ def get_description_text(description_temp, user_name, task_hierarchical_name, no
         "note": note,
         "spacing": '\n\n'
     }
-
     return description_text
 
 
@@ -177,154 +176,153 @@ def get_description_html(description_temp, user_name, task_hierarchical_name, no
         "note": '<br/><br/> %s ' % note,
         "spacing": '<br><br>'
     }
-
     return description_html
 
 
-@view_config(
-    route_name='fix_task_statuses'
-)
-def fix_task_statuses(request):
-    """the view correspondence of the update_task_statuses function
-    """
-    task_id = request.matchdict.get('id')
-    task = Task.query.filter(Task.id == task_id).first()
-    # check for children
-    update_task_statuses(task)
-    # check fo dependencies
-    update_task_statuses_with_dependencies(task)
-    return HTTPOk()
+# @view_config(
+#     route_name='fix_task_statuses'
+# )
+# def fix_task_statuses(request):
+#     """the view correspondence of the update_task_statuses function
+#     """
+#     task_id = request.matchdict.get('id')
+#     task = Task.query.filter(Task.id == task_id).first()
+#     # check for children
+#     #update_task_statuses(task)
+#     # check fo dependencies
+#     #update_task_statuses_with_dependencies(task)
+#     return HTTPOk()
 
 
-def update_task_statuses(task):
-    """updates the task status according to its children statuses
-    """
-    if not task:
-        # None is given
-        return
-
-    if not task.is_container:
-        # do nothing
-        return
-
-    # first look to children statuses and if all of them are CMPL or HREV
-    # then set this tasks status to CMPL
-    # and update parents status
-
-    status_new = Status.query.filter(Status.code == 'NEW').first()
-    status_rts = Status.query.filter(Status.code == 'RTS').first()
-    status_wip = Status.query.filter(Status.code == 'WIP').first()
-    status_cmpl = Status.query.filter(Status.code == 'CMPL').first()
-
-    # use pure sql
-    sql_query = """select
-        "Statuses".code,
-        count(1)
-    from "Tasks"
-    join "Statuses" on "Tasks".status_id = "Statuses".id
-    where "Tasks".parent_id = %s
-    group by "Statuses".code
-    """ % task.id
-
-    result = DBSession.connection().execute(sql_query)
-
-    status_codes = {
-        'NEW': 0,
-        'RTS': 0,
-        'WIP': 0,
-        'PREV': 0,
-        'HREV': 0,
-        'CMPL': 0
-    }
-
-    # update statuses
-    for r in result.fetchall():
-        if r[1]:
-            status_codes[r[0]] = 1
-
-    # convert it to a binary number (represented as string)
-    binary_status = \
-        '%(NEW)s%(RTS)s%(WIP)s%(PREV)s%(HREV)s%(CMPL)s' % status_codes
-
-    status_lut = {
-        '000000': status_new,  # this will not happen
-        '000001': status_cmpl,
-
-        '000010': status_wip,  # with the new implementation this could happen
-        '000011': status_wip,
-
-        '000100': status_wip,
-        '000101': status_wip,
-        '000110': status_wip,
-        '000111': status_wip,
-
-        '001000': status_wip,
-        '001001': status_wip,
-        '001010': status_wip,
-        '001011': status_wip,
-        '001100': status_wip,
-        '001101': status_wip,
-        '001110': status_wip,
-        '001111': status_wip,
-
-        # RTS extension
-        '010000': status_rts,
-        '010001': status_wip,
-        '010010': status_wip,
-        '010011': status_wip,
-        '010100': status_wip,
-        '010101': status_wip,
-        '010110': status_wip,
-        '010111': status_wip,
-        '011000': status_wip,
-        '011001': status_wip,
-        '011010': status_wip,
-        '011011': status_wip,
-        '011100': status_wip,
-        '011101': status_wip,
-        '011110': status_wip,
-        '011111': status_wip,
-
-        '100000': status_new,
-        '100001': status_wip,
-        '100010': status_wip,
-        '100011': status_wip,
-        '100100': status_wip,
-        '100101': status_wip,
-        '100110': status_wip,
-        '100111': status_wip,
-        '101000': status_wip,
-        '101001': status_wip,
-        '101010': status_wip,
-        '101011': status_wip,
-        '101100': status_wip,
-        '101101': status_wip,
-        '101110': status_wip,
-        '101111': status_wip,
-        '110000': status_rts,
-        '110001': status_wip,
-        '110010': status_wip,
-        '110011': status_wip,
-        '110100': status_wip,
-        '110101': status_wip,
-        '110110': status_wip,
-        '110111': status_wip,
-        '111000': status_wip,
-        '111001': status_wip,
-        '111010': status_wip,
-        '111011': status_wip,
-        '111100': status_wip,
-        '111101': status_wip,
-        '111110': status_wip,
-        '111111': status_wip
-    }
-
-    task.status = status_lut[binary_status]
-    # go to parents
-    update_task_statuses(task.parent)
-    # commit the changes
-    #DBSession.commit()
-    # leave the commits to transaction.manager
+# def update_task_statuses(task):
+#     """updates the task status according to its children statuses
+#     """
+#     if not task:
+#         # None is given
+#         return
+# 
+#     if not task.is_container:
+#         # do nothing
+#         return
+# 
+#     # first look to children statuses and if all of them are CMPL or HREV
+#     # then set this tasks status to CMPL
+#     # and update parents status
+# 
+#     status_new = Status.query.filter(Status.code == 'NEW').first()
+#     status_rts = Status.query.filter(Status.code == 'RTS').first()
+#     status_wip = Status.query.filter(Status.code == 'WIP').first()
+#     status_cmpl = Status.query.filter(Status.code == 'CMPL').first()
+# 
+#     # use pure sql
+#     sql_query = """select
+#         "Statuses".code,
+#         count(1)
+#     from "Tasks"
+#     join "Statuses" on "Tasks".status_id = "Statuses".id
+#     where "Tasks".parent_id = %s
+#     group by "Statuses".code
+#     """ % task.id
+# 
+#     result = DBSession.connection().execute(sql_query)
+# 
+#     status_codes = {
+#         'NEW': 0,
+#         'RTS': 0,
+#         'WIP': 0,
+#         'PREV': 0,
+#         'HREV': 0,
+#         'CMPL': 0
+#     }
+# 
+#     # update statuses
+#     for r in result.fetchall():
+#         if r[1]:
+#             status_codes[r[0]] = 1
+# 
+#     # convert it to a binary number (represented as string)
+#     binary_status = \
+#         '%(NEW)s%(RTS)s%(WIP)s%(PREV)s%(HREV)s%(CMPL)s' % status_codes
+# 
+#     status_lut = {
+#         '000000': status_new,  # this will not happen
+#         '000001': status_cmpl,
+# 
+#         '000010': status_wip,  # with the new implementation this could happen
+#         '000011': status_wip,
+# 
+#         '000100': status_wip,
+#         '000101': status_wip,
+#         '000110': status_wip,
+#         '000111': status_wip,
+# 
+#         '001000': status_wip,
+#         '001001': status_wip,
+#         '001010': status_wip,
+#         '001011': status_wip,
+#         '001100': status_wip,
+#         '001101': status_wip,
+#         '001110': status_wip,
+#         '001111': status_wip,
+# 
+#         # RTS extension
+#         '010000': status_rts,
+#         '010001': status_wip,
+#         '010010': status_wip,
+#         '010011': status_wip,
+#         '010100': status_wip,
+#         '010101': status_wip,
+#         '010110': status_wip,
+#         '010111': status_wip,
+#         '011000': status_wip,
+#         '011001': status_wip,
+#         '011010': status_wip,
+#         '011011': status_wip,
+#         '011100': status_wip,
+#         '011101': status_wip,
+#         '011110': status_wip,
+#         '011111': status_wip,
+# 
+#         '100000': status_new,
+#         '100001': status_wip,
+#         '100010': status_wip,
+#         '100011': status_wip,
+#         '100100': status_wip,
+#         '100101': status_wip,
+#         '100110': status_wip,
+#         '100111': status_wip,
+#         '101000': status_wip,
+#         '101001': status_wip,
+#         '101010': status_wip,
+#         '101011': status_wip,
+#         '101100': status_wip,
+#         '101101': status_wip,
+#         '101110': status_wip,
+#         '101111': status_wip,
+#         '110000': status_rts,
+#         '110001': status_wip,
+#         '110010': status_wip,
+#         '110011': status_wip,
+#         '110100': status_wip,
+#         '110101': status_wip,
+#         '110110': status_wip,
+#         '110111': status_wip,
+#         '111000': status_wip,
+#         '111001': status_wip,
+#         '111010': status_wip,
+#         '111011': status_wip,
+#         '111100': status_wip,
+#         '111101': status_wip,
+#         '111110': status_wip,
+#         '111111': status_wip
+#     }
+# 
+#     task.status = status_lut[binary_status]
+#     # go to parents
+#     #update_task_statuses(task.parent)
+#     # commit the changes
+#     #DBSession.commit()
+#     # leave the commits to transaction.manager
 
 
 def update_task_statuses_with_dependencies(task):
@@ -568,16 +566,16 @@ def duplicate_task_hierarchy(request):
 
         #update_task_statuses_with_dependencies(dup_task)
         leafs = find_leafs_in_hierarchy(dup_task)
-        for leaf in leafs:
-            update_task_statuses_with_dependencies(leaf)
+        #for leaf in leafs:
+        #    update_task_statuses_with_dependencies(leaf)
 
-        for leaf in leafs:
-            update_task_statuses(leaf)
+        #for leaf in leafs:
+        #    update_task_statuses(leaf)
 
             # check for children
-        update_task_statuses(dup_task)
+        #update_task_statuses(dup_task)
         # check fo dependencies
-        update_task_statuses_with_dependencies(dup_task)
+        #update_task_statuses_with_dependencies(dup_task)
     else:
         transaction.abort()
         return Response(
@@ -797,7 +795,6 @@ def update_task(request):
     responsible_ids = get_multi_integer(request, 'responsible_ids')
     responsible = User.query.filter(User.id.in_(responsible_ids)).all()
 
-
     priority = request.params.get('priority', 500)
 
     entity_type = request.params.get('entity_type', None)
@@ -826,15 +823,17 @@ def update_task(request):
     logger.debug('priority            : %s' % priority)
     logger.debug('code                : %s' % code)
 
-    logger.debug('shot_sequence_id              : %s' % shot_sequence_id)
+    logger.debug('shot_sequence_id    : %s' % shot_sequence_id)
     logger.debug('cut_in              : %s' % cut_in)
     logger.debug('cut_out             : %s' % cut_out)
 
     # before doing anything check permission
     if not p_checker('Update_' + entity_type):
         transaction.abort()
-        return Response('You do not have enough permission to update a %s' %
-                        entity_type, 500)
+        return Response(
+            'You do not have enough permission to update a %s' %
+            entity_type, 500
+        )
 
     # get task
     task_id = request.matchdict.get('id', -1)
@@ -851,34 +850,18 @@ def update_task(request):
     prev_parent = task.parent
 
     if task.status.code == 'WFD' or task.status.code == 'RTS':
-
         try:
             task.parent = parent
             task.depends = depends
         except CircularDependencyError:
             transaction.abort()
-            message = '</div>Parent item can not also be a dependent for the ' \
-                      'updated item:<br><br>Parent: %s<br>Depends To: %s</div>' % \
-                      (parent.name, map(lambda x: x.name, depends))
+            message = \
+                '</div>Parent item can not also be a dependent for the ' \
+                'updated item:<br><br>Parent: %s<br>Depends To: %s</div>' % (
+                    parent.name, map(lambda x: x.name, depends)
+                )
             transaction.abort()
             return Response(message, 500)
-            # if the current parent and the previous parents are different
-        # also update the previous parents status
-        if parent != prev_parent:
-            update_task_statuses(prev_parent)
-
-        # also update parent status
-        update_task_statuses(parent)
-
-        # update status of this task according to its dependencies
-        update_task_statuses_with_dependencies(task)
-
-
-
-
-    # also update all task depends to this one
-    for dep in task.dependent_of:
-        update_task_statuses_with_dependencies(dep)
 
     task.schedule_model = schedule_model
     task.schedule_unit = schedule_unit
@@ -2620,7 +2603,10 @@ def approve_task(request):
             )
         )
 
-        mailer.send(message)
+        try:
+            mailer.send(message)
+        except ValueError:  # no internet connection
+            pass
 
     request.session.flash('success:Approved task')
 
@@ -2633,7 +2619,6 @@ def approve_task(request):
 def request_revision(request):
     """updates task timing and status and sends an email to the task resources
     """
-
     logged_in_user = get_logged_in_user(request)
 
     task_id = request.matchdict.get('id', -1)
@@ -2694,7 +2679,11 @@ def request_revision(request):
     }[schedule_unit]
 
     status_new = Status.query.filter_by(code='NEW').first()
-    review = Review.query.filter(Review.reviewer_id == logged_in_user.id).filter(Review.task_id==task.id).filter(Review.status==status_new).first()
+    review = Review.query\
+        .filter(Review.reviewer_id == logged_in_user.id)\
+        .filter(Review.task_id == task.id)\
+        .filter(Review.status == status_new)\
+        .first()
 
     note_type = query_type('Note','Request Revision')
     note_type.html_class = 'purple'
@@ -2714,8 +2703,9 @@ def request_revision(request):
 
     if review:
         try:
-            review.request_revision(schedule_timing,schedule_unit, note)
+            review.request_revision(schedule_timing, schedule_unit, note)
             review.note = note
+            review.date_updated = utc_now
 
             task.notes.append(note)
         except StatusError as e:
@@ -2810,14 +2800,15 @@ def request_review_task_dialog(request):
 
     if version['id'] == '-':
         if task.type:
-            forced_types = [
+            # TODO: Add this to the config file
+            forced_publish_types = [
                 'Look Development', 'Character Design', 'Model', 'Rig',
                 'Previs', 'Layout', 'Lighting', 'Environment Design',
                 'Matte Painting', 'Animation', 'Camera', 'Simulation',
                 'Postvis', 'Scene Assembly', 'Comp', 'FX', 'Concept',
                 'Groom'
             ]
-            if task.type.name in forced_types:
+            if task.type.name in forced_publish_types:
                 action = ''
         else:
             action = ''
@@ -2854,17 +2845,6 @@ def request_review(request):
     if not task:
         transaction.abort()
         return Response('There is no task with id: %s' % task_id, 500)
-
-    if task.is_container:
-        transaction.abort()
-        return Response('Can not request review for a container task', 500)
-
-    # check if the task status is wip
-    status_wip = Status.query.filter(Status.code == 'WIP').first()
-    if task.status != status_wip:
-        transaction.abort()
-        return Response('You can not request a review for a task with status '
-                        'is set to "%s"' % task.status.name, 500)
 
     # check if the user is one of the resources of this task or the responsible
     if logged_in_user not in task.resources and \
@@ -3013,7 +2993,7 @@ def request_final_review(request):
 
     utc_now = local_to_utc(datetime.datetime.now())
 
-    note_type = query_type('Note','Request Review')
+    note_type = query_type('Note', 'Request Review')
     note_type.html_class = 'orange'
 
     note = Note(
@@ -3031,16 +3011,6 @@ def request_final_review(request):
         review.date_created = utc_now
         review.date_updated = utc_now
         review.note = note
-
-    # # set task status to Pending Review
-    # status_prev = Status.query.filter(Status.code == "PREV").first()
-    # task.status = status_prev
-    #
-    # # set task effort to the total_logged_seconds
-    # task.schedule_timing = task.total_logged_seconds / 3600
-    # task.schedule_unit = 'h'
-    #
-    #
 
     if send_email:
         recipients = [logged_in_user.email]
@@ -3078,7 +3048,10 @@ def request_final_review(request):
             )
         )
 
-        mailer.send(message)
+        try:
+            mailer.send(message)
+        except ValueError:
+            pass
 
     logger.debug(
         'success:Your final review request has been sent to responsible'

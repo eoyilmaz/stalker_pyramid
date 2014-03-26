@@ -198,6 +198,7 @@ tr {
 // *********************************
 // Statuses
 // *********************************
+
 .pln { // planning
     background-color: @grey;
     color: white;
@@ -206,7 +207,7 @@ tr {
     }
 }
 
-.wfd { // planning
+.new {
     background-color: @grey;
     color: white;
     a {
@@ -214,7 +215,7 @@ tr {
     }
 }
 
-.new {
+.wfd {
     background-color: @grey;
     color: white;
     a {
@@ -262,71 +263,15 @@ tr {
     }
 }
 
-.cmpl {
-    background-color: @green;
+.stop {
+    background-color: @purple2;
     color: white;
     a {
         color: white;
     }
 }
 
-.black2 {
-    background-color: @black;
-    color: white;
-    a {
-        color: white;
-    }
-}
-
-.pln { // planning
-    background-color: @grey;
-    color: white;
-    a {
-        color: white;
-    }
-}
-
-.wfd { // planning
-    background-color: @grey;
-    color: white;
-    a {
-        color: white;
-    }
-}
-
-.new {
-    background-color: @grey;
-    color: white;
-    a {
-        color: white;
-    }
-}
-
-.rts {
-    background-color: @red2;
-    color: white;
-    a {
-        color: white;
-    }
-}
-
-.wip {
-    background-color: @orange;
-    color: white;
-    a {
-        color: white;
-    }
-}
-
-.prev {
-    background-color: @light-blue;
-    color: white;
-    a {
-        color: white;
-    }
-}
-
-.hrev {
+.oh {
     background-color: @purple2;
     color: white;
     a {
@@ -365,12 +310,27 @@ tr {
     background-color: @orange
 }
 
+.progress-stop .bar, .progress .bar-stop {
+    background-image: none;
+    background-color: @red2
+}
+
+.progress-oh .bar, .progress .bar-oh {
+    background-image: none;
+    background-color: @red2
+}
+
 .progress-prev.bar, .progress .bar-prev {
     background-image: none;
     background-color: @light-blue
 }
 
 .progress-hrev .bar, .progress .bar-hrev {
+    background-image: none;
+    background-color: @purple
+}
+
+.progress-drev .bar, .progress .bar-drev {
     background-image: none;
     background-color: @purple
 }
@@ -392,6 +352,10 @@ tr {
         background-color: @grey + @dgrid-focus-color;
     }
 
+    .wfd {
+        background-color: @grey + @dgrid-focus-color;
+    }
+
     .rts {
         background-color: @red2 + @dgrid-focus-color;
     }
@@ -400,11 +364,23 @@ tr {
         background-color: @orange + @dgrid-focus-color;
     }
 
+    .stop {
+        background-color: @red2 + @dgrid-focus-color;
+    }
+
+    .oh {
+        background-color: @red2 + @dgrid-focus-color;
+    }
+
     .prev {
         background-color: @light-blue + @dgrid-focus-color;
     }
 
     .hrev {
+        background-color: @purple + @dgrid-focus-color;
+    }
+
+    .drev {
         background-color: @purple + @dgrid-focus-color;
     }
 

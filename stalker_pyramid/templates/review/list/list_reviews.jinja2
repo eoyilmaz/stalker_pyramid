@@ -31,25 +31,18 @@
     <link rel="stylesheet"
           href='{{ request.static_url("stalker_pyramid:static/ace/css/daterangepicker.css") }}'/>
 
-
-
 {% endblock pre_header %}
 
 {#SIDEBAR#}
 {% block sidebar %}
-
     {% include 'sidebar.jinja2' %}
-
 {% endblock sidebar %}
 
 
 {# BREADCRUMBS #}
 {% block breadcrumbs %}
-
     {% set page_title='Versions' %}
-
     {% include 'breadcrumb/breadcrumbs.jinja2' %}
-
 {% endblock breadcrumbs %}
 
 {#PAGE-CONTENT#}
@@ -61,19 +54,17 @@
     {% set list_item_type='Review' %}
     {% include 'components/data_table.jinja2' %}
 
-
-
 {% endblock page_content %}
 
 {# EXTRA-SCRIPTS #}
 {% block extrascripts %}
     {% raw %}
     <script id="tmpl_itemThead" type="text/x-dot-template">
-
         <tr>
             <th>Date</th>
             <th>Review #</th>
             <th>Task</th>
+            <th>Reviewer</th>
             <th>Status</th>
         </tr>
     </script>
@@ -86,6 +77,8 @@
             </td>
             <td>#{{=it.review_number }}</td>
             <td><a href='/tasks/{{=it.task_id }}/view'>{{=it.task_name}}</a>
+            </td>
+            <td><a href='/users/{{=it.reviewer_id }}/view'>{{=it.reviewer_name}}</a>
             </td>
             <td>{{ if (it.review_status_name == 'New') { }}
                 <span class="label label-{{=it.review_status_color }}">Pending</span>
@@ -128,12 +121,9 @@
                                     </span>
                             </a>
                         </li>
-
-
                     </ul>
                 </div>
                 {{ } }}
-
 
                 {{ } else{ }}
 
@@ -144,18 +134,13 @@
         </tr>
     </script>
     {% endraw %}
-     <script>
 
+    <script>
         var tableParameters = {}
         var sortingParameters = [[0, 'desc']]
-        var tableDataAddress = '{{ request.route_path('get_user_reviews', id=entity.id) }}'
+        var tableDataAddress = '{{ request.route_path('get_%s_reviews' % entity.entity_type.lower(), id=entity.id) }}'
 
-     console.log('tableDataAddress' + tableDataAddress)
-
+        console.log('tableDataAddress' + tableDataAddress)
     </script>
 
-
-
-
 {% endblock extrascripts %}
-

@@ -751,18 +751,18 @@ require([
 
             // update update button
             $('#update_task_menu_item').attr(
-                    'href',
-                    '/tasks/' + selected_ids[0] + '/update/dialog'
+                'href',
+                '/tasks/' + selected_ids[0] + '/update/dialog'
             );
 
             $('#add_time_log_menu_item').attr(
-                    'href',
-                    '/entities/' + selected_ids[0] + '/timelogs/create/dialog'
+                'href',
+                '/entities/' + selected_ids[0] + '/timelogs/create/dialog'
             );
 
             $('#request_review_menu_item').attr(
-                    'href',
-                    '/tasks/' + selected_ids[0] + '/request_review/dialog'
+                'href',
+                '/tasks/' + selected_ids[0] + '/request_review/dialog'
             );
 
             $.getJSON('/tasks/' + selected_ids[0] + '/').then(function (data) {
@@ -863,7 +863,7 @@ require([
 
         $.getJSON('/entities/' + selected_ids[0] + '/').then(function (data) {
 
-            console.log('data name'+ data[0].name)
+            console.log('data name'+ data[0].name);
             // warn the user about what is going to happen and ask if it is ok
 
             bootbox.confirm(
@@ -883,12 +883,10 @@ require([
                 </form>",
                 function (result) {
                     if (result) {
-                        console.log($('#dup_task_description').val());
                         // get the id and send it to the server
                         var url = '';
                         for (var i = 0; i < selected_ids.length; i++) {
                             url = '/tasks/' + selected_ids[i] + '/duplicate?name=' +  $('#dup_task_name').val()+'&description='+  $('#dup_task_description').val();
-                            console.debug(url);
                             $.post(url).done(function () {
                                 gantt_column.reload();
                             }).fail(function (jqXHR){
@@ -938,10 +936,12 @@ require([
         }
 
         // warn the user about what is going to happen
-        bootbox.confirm('All the selected tasks and their child tasks and ' +
-                'all the TimeLogs entered and all the Versions ' +
-                'created for those tasks are going to be deleted.<br><br>' +
-                'Are you sure?', function (result) {
+        var message_text = 'All the selected tasks and their child tasks and ' +
+            'all the TimeLogs entered and all the Versions ' +
+            'created for those tasks are going to be deleted.<br><br>' +
+            'Are you sure?';
+        
+        bootbox.confirm(message_text, function (result) {
             if (result) {
                 var id;
                 // TODO: users will probably select parent and child items
@@ -951,14 +951,14 @@ require([
                 for (var i = 0; i < selected_ids.length; i++) {
                     id = selected_ids[i];
                     $.post(
-                                    '/tasks/' + id + '/delete'
-                            ).done(function (response_text) {
-                                bootbox.alert(response_text);
-                                // reload the gantt chart
-                                gantt_column.reload();
-                            }).fail(function (jqXHR) {
-                                bootbox.alert(jqXHR.responseText);
-                            });
+                        '/tasks/' + id + '/delete'
+                    ).done(function (response_text) {
+                        bootbox.alert(response_text);
+                        // reload the gantt chart
+                        gantt_column.reload();
+                    }).fail(function (jqXHR) {
+                        bootbox.alert(jqXHR.responseText);
+                    });
                 }
             }
         });
@@ -967,7 +967,7 @@ require([
     // get the gantt column
     var gantt_column = gantt_chart.columnSets[1][0][0];
 
-    $("#gantt_update_zoom_level_button").on('click', function (e) {
+    $("#gantt_update_zoom_level_button").on('click', function(e) {
         // update date values
         var start_and_end_dates_as_string = $('#task_start_end_date_range_picker').val();
         var dates = start_and_end_dates_as_string.split(' - ');
@@ -990,20 +990,22 @@ require([
 
         if (element_count > 1000) {
             // confirm the user that it is going to take too much time
+
+            var message_text = '<div><p><strong>' + element_count +
+                ' elements</strong> per row are going to be rendered' +
+                '<br><br>Which will take long,' +
+                '<br><br>Is that ok?';
+
             bootbox.confirm(
-                    '<div><p><strong>' + element_count +
-                            ' elements</strong> per row are going to be rendered' +
-                            '<br><br>Which will take long,' +
-                            '<br><br>Is that ok?',
-                    function (result) {
-                        if (result) {
-                            do_update();
-                        }
-                    });
+                message_text,
+                function (result) {
+                    if (result) {
+                        do_update();
+                    }
+                });
         } else {
             do_update();
         }
-
     });
 
     // Reload Button
@@ -1040,19 +1042,19 @@ require([
             });
 
             $.post(
-                            '{{ request.route_url("auto_schedule_tasks") }}'
-                    ).done(function (data) {
-                        var message = '<div>' + data + '</div>';
-                        bootbox.alert(message);
-                        $('.bootbox').prepend('<div class="modal-header alert-success"><strong>Success</strong></div>');
-                    }).fail(function (jqXHR) {
-                        var message = '<div>' + jqXHR.responseText + '</div>';
-                        bootbox.alert(message);
-                        $('.bootbox').prepend('<div class="modal-header alert-danger"><strong>Fail</strong></div>');
-                    }).always(function () {
-                        dialog.dialog("close");
-                        gantt_column.refresh();
-                    })
+                '{{ request.route_url("auto_schedule_tasks") }}'
+            ).done(function (data) {
+                var message = '<div>' + data + '</div>';
+                bootbox.alert(message);
+                $('.bootbox').prepend('<div class="modal-header alert-success"><strong>Success</strong></div>');
+            }).fail(function (jqXHR) {
+                var message = '<div>' + jqXHR.responseText + '</div>';
+                bootbox.alert(message);
+                $('.bootbox').prepend('<div class="modal-header alert-danger"><strong>Fail</strong></div>');
+            }).always(function () {
+                dialog.dialog("close");
+                gantt_column.refresh();
+            });
 
         });
     {% endif %}
@@ -1062,8 +1064,7 @@ require([
     });
 
     // create the zoom window
-    $('#gantt_zoom_selection').on('click', function (e) {
-
+    $('#gantt_zoom_selection').on('click', function(e) {
         // change button state
         $('#gantt_zoom_selection').find('button').button('loading');
 
@@ -1077,60 +1078,60 @@ require([
             this.start_pos = e.offsetX;
             this.start_resizing = true;
         }).mousemove(function (e) {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    if (this.start_resizing) {
-                        var x1 = this.start_pos;
-                        var x2 = e.offsetX;
-                        var left = Math.min(x1, x2);
-                        var width = Math.abs(x1 - x2);
-                        zoomBox.css({
-                            left: left,
-                            width: width
-                        });
-                    }
-                }).mouseup(function (e) {
-                    this.start_resizing = false;
-                    // get the left and width of the zoomBox
-                    var start_x = $('.dgrid-column-set-cell.dgrid-column-set-1').offset().left;
-                    var scroll_left = $('.dgrid-column-set-cell.dgrid-column-set-1>div').scrollLeft();
-                    var left = zoomBox.offset().left - start_x + scroll_left;
-                    var width = zoomBox.width();
-
-                    // unbind events
-                    $('.dragDetector').unbind();
-
-                    // delete the elements
-                    zoomBox.remove();
-                    dragDetector.remove();
-
-                    var zoomed_dates = gantt_column.convert_pixel_to_millies(left, left + width);
-                    // get the zoom level
-                    var zoom_level = gantt_column.guess_zoom_level(zoomed_dates.start, zoomed_dates.end);
-
-                    // update interface elements
-                    var formatted_start_date = moment(zoomed_dates.start).format('MM/DD/YYYY');
-                    var formatted_end_date = moment(zoomed_dates.end).format('MM/DD/YYYY');
-                    var start_end_date_range_picker = $('#task_start_end_date_range_picker');
-                    start_end_date_range_picker.val(formatted_start_date + ' - ' + formatted_end_date);
-                    start_end_date_range_picker.data().daterangepicker.updateFromControl();
-                    $('#zoom_level').val(zoom_level);
-
-                    // zoom the gantt chart
-                    gantt_column.start = +zoomed_dates.start;
-                    gantt_column.end = +zoomed_dates.end;
-                    gantt_column.scale = zoom_level;
-                    gantt_column.reload();
-                    gantt_column.refresh();
-
-                    // scroll to the middle of the dates
-                    gantt_column.scrollToDate((zoomed_dates.end + zoomed_dates.start) * 0.5);
-
-                    // restore button
-                    setTimeout(function () {
-                        $('#gantt_zoom_selection').find('button').button('reset');
-                    });
+            e.stopPropagation();
+            e.preventDefault();
+            if (this.start_resizing) {
+                var x1 = this.start_pos;
+                var x2 = e.offsetX;
+                var left = Math.min(x1, x2);
+                var width = Math.abs(x1 - x2);
+                zoomBox.css({
+                    left: left,
+                    width: width
                 });
+            }
+        }).mouseup(function(e) {
+            this.start_resizing = false;
+            // get the left and width of the zoomBox
+            var start_x = $('.dgrid-column-set-cell.dgrid-column-set-1').offset().left;
+            var scroll_left = $('.dgrid-column-set-cell.dgrid-column-set-1>div').scrollLeft();
+            var left = zoomBox.offset().left - start_x + scroll_left;
+            var width = zoomBox.width();
+
+            // unbind events
+            $('.dragDetector').unbind();
+
+            // delete the elements
+            zoomBox.remove();
+            dragDetector.remove();
+
+            var zoomed_dates = gantt_column.convert_pixel_to_millies(left, left + width);
+            // get the zoom level
+            var zoom_level = gantt_column.guess_zoom_level(zoomed_dates.start, zoomed_dates.end);
+
+            // update interface elements
+            var formatted_start_date = moment(zoomed_dates.start).format('MM/DD/YYYY');
+            var formatted_end_date = moment(zoomed_dates.end).format('MM/DD/YYYY');
+            var start_end_date_range_picker = $('#task_start_end_date_range_picker');
+            start_end_date_range_picker.val(formatted_start_date + ' - ' + formatted_end_date);
+            start_end_date_range_picker.data().daterangepicker.updateFromControl();
+            $('#zoom_level').val(zoom_level);
+
+            // zoom the gantt chart
+            gantt_column.start = +zoomed_dates.start;
+            gantt_column.end = +zoomed_dates.end;
+            gantt_column.scale = zoom_level;
+            gantt_column.reload();
+            gantt_column.refresh();
+
+            // scroll to the middle of the dates
+            gantt_column.scrollToDate((zoomed_dates.end + zoomed_dates.start) * 0.5);
+
+            // restore button
+            setTimeout(function () {
+                $('#gantt_zoom_selection').find('button').button('reset');
+            });
+        });
     });
 
 });

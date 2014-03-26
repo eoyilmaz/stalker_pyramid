@@ -18,30 +18,16 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 import logging
-import time
-import datetime
-import json
 
 import transaction
 from pyramid.response import Response
 from pyramid.view import view_config
-from pyramid.httpexceptions import HTTPServerError, HTTPOk, HTTPForbidden
-from pyramid_mailer import get_mailer
-from pyramid_mailer.message import Message
-
-from sqlalchemy.exc import IntegrityError
 
 from stalker.db import DBSession
-from stalker import (defaults, User, Task, Review, Project)
-from stalker.exceptions import CircularDependencyError, StatusError
+from stalker import (User, Task, Project)
 
-from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
-                                   get_multi_integer, milliseconds_since_epoch,
-                                   StdErrToHTMLConverter,
-                                   multi_permission_checker,
-                                   dummy_email_address, local_to_utc, get_user_os)
+from stalker_pyramid.views import get_logged_in_user
 from stalker_pyramid.views.task import query_of_tasks_hierarchical_name_table
-from stalker_pyramid.views.type import query_type
 
 
 logger = logging.getLogger(__name__)
@@ -64,19 +50,19 @@ def get_task_reviewers(request):
         transaction.abort()
         return Response('There is no task with id: %s' % task_id, 500)
 
-    sql_query = """select
-                  "Reviewers".name as reviewers_name,
-                  "Reviewers".id as reviewers_id
+    sql_query = """
+        select
+            "Reviewers".name as reviewers_name,
+            "Reviewers".id as reviewers_id
 
-                from "Reviews"
-                join "Tasks" as "Reviews_Tasks" on "Reviews_Tasks".id = "Reviews".task_id
-                join "SimpleEntities" as "Reviewers" on "Reviewers".id = "Reviews".reviewer_id
+        from "Reviews"
+            join "Tasks" as "Reviews_Tasks" on "Reviews_Tasks".id = "Reviews".task_id
+            join "SimpleEntities" as "Reviewers" on "Reviewers".id = "Reviews".reviewer_id
 
-                %(where_conditions)s
+        %(where_conditions)s
 
-                group by "Reviewers".id,
-                 "Reviewers".name
-                     """
+        group by "Reviewers".id, "Reviewers".name
+    """
 
     where_conditions = """where "Reviews_Tasks".id = %(task_id)s""" %{'task_id': task.id}
 
@@ -95,8 +81,6 @@ def get_task_reviewers(request):
     ]
 
     return return_data
-
-
 
 
 @view_config(
@@ -136,14 +120,12 @@ def get_task_reviews_count(request):
         transaction.abort()
         return Response('There is no task with id: %s' % task_id, 500)
 
+    where_conditions = """where "Reviews_Tasks".id = %(task_id)s
+    and "Reviews_Statuses".code ='NEW' """ % {'task_id': task_id}
 
-    where_conditions = """where "Reviews_Tasks".id = %(task_id)s and "Reviews_Statuses".code ='NEW' """% {'task_id':task_id}
-
-    reviews = get_reviews(request,where_conditions)
+    reviews = get_reviews(request, where_conditions)
 
     return len(reviews)
-
-
 
 
 @view_config(
@@ -176,22 +158,23 @@ def get_task_last_reviews(request):
         # where_condition2 =""" and "Reviews_Tasks".review_number = "Reviews".review_number"""
 
         reviews = [
-        {
-            'review_number': task.review_number,
-            'review_id': 0,
-            'review_status_code': 'WTNG',
-            'review_status_name': 'Waiting',
-            'review_status_color': 'orange',
-            'task_id': task.id,
-            'task_review_number': task.review_number,
-            'reviewer_id': responsible.id,
-            'reviewer_name': responsible.name,
-            'reviewer_thumbnail_full_path':responsible.thumbnail.full_path if responsible.thumbnail else None ,
-            'reviewer_department':responsible.departments[0].name
-        }
-        for responsible in task.responsible
-    ]
-
+            {
+                'review_number': task.review_number,
+                'review_id': 0,
+                'review_status_code': 'WTNG',
+                'review_status_name': 'Waiting',
+                'review_status_color': 'orange',
+                'task_id': task.id,
+                'task_review_number': task.review_number,
+                'reviewer_id': responsible.id,
+                'reviewer_name': responsible.name,
+                'reviewer_thumbnail_full_path':
+                responsible.thumbnail.full_path
+                if responsible.thumbnail else None,
+                'reviewer_department': responsible.departments[0].name
+            }
+            for responsible in task.responsible
+        ]
 
     return reviews
 
@@ -212,9 +195,9 @@ def get_user_reviews(request):
         transaction.abort()
         return Response('There is no user with id: %s' % reviewer_id, 500)
 
-    where_conditions =  """where "Reviews".reviewer_id = %(reviewer_id)s"""% {'reviewer_id':reviewer_id}
+    where_conditions = """where "Reviews".reviewer_id = %(reviewer_id)s"""% {'reviewer_id':reviewer_id}
 
-    return get_reviews(request,where_conditions)
+    return get_reviews(request, where_conditions)
 
 
 @view_config(
@@ -233,9 +216,10 @@ def get_user_reviews_count(request):
         transaction.abort()
         return Response('There is no user with id: %s' % reviewer_id, 500)
 
-    where_conditions =  """where "Reviews".reviewer_id = %(reviewer_id)s and "Reviews_Statuses".code ='NEW' """% {'reviewer_id':reviewer_id}
+    where_conditions = """where "Reviews".reviewer_id = %(reviewer_id)s
+    and "Reviews_Statuses".code ='NEW' """ % {'reviewer_id': reviewer_id}
 
-    reviews = get_reviews(request,where_conditions)
+    reviews = get_reviews(request, where_conditions)
 
     return len(reviews)
 
@@ -256,9 +240,10 @@ def get_project_reviews(request):
         transaction.abort()
         return Response('There is no user with id: %s' % project_id, 500)
 
-    where_conditions =  """where "Reviews_Tasks".project_id = %(project_id)s"""% {'project_id':project_id}
+    where_conditions = 'where "Reviews_Tasks".project_id = %(project_id)s' %\
+                       {'project_id': project_id}
 
-    return get_reviews(request,where_conditions)
+    return get_reviews(request, where_conditions)
 
 
 @view_config(
@@ -277,38 +262,38 @@ def get_project_reviews_count(request):
         transaction.abort()
         return Response('There is no user with id: %s' % project_id, 500)
 
-
-    where_conditions =  """where "Reviews_Tasks".project_id = %(project_id)s and "Reviews_Statuses".code ='NEW' """% {'project_id':project_id}
+    where_conditions =  """where "Reviews_Tasks".project_id = %(project_id)s
+    and "Reviews_Statuses".code ='NEW' """ % {'project_id':project_id}
 
     reviews = get_reviews(request,where_conditions)
 
     return len(reviews)
 
 
-
 def get_reviews(request, where_conditions):
-
+    """TODO: add docstring
+    """
     logger.debug('get_reviews is running')
 
     logged_in_user = get_logged_in_user(request)
 
     sql_query = """
-     select
-            "Reviews".review_number as review_number,
-            "Reviews".id as review_id,
-            "Reviews_Statuses".code as review_status_code,
-            "Statuses_Simple_Entities".name as review_status_name,
-            "Statuses_Simple_Entities".html_class as review_status_color,
-            "Reviews".task_id as task_id,
-            "ParentTasks".parent_names as task_name,
-            "Reviews_Tasks".review_number as task_review_number,
-            "Reviews".reviewer_id as reviewer_id,
-            "Reviewers_SimpleEntities".name as reviewer_name,
-            "Reviewers_SimpleEntities_Links".full_path as reviewer_thumbnail_path,
-            array_agg("Reviewer_Departments_SimpleEntities".name) as reviewer_departments,
-            "Reviews_Simple_Entities".date_created as date_created
+    select
+        "Reviews".review_number as review_number,
+        "Reviews".id as review_id,
+        "Reviews_Statuses".code as review_status_code,
+        "Statuses_Simple_Entities".name as review_status_name,
+        "Statuses_Simple_Entities".html_class as review_status_color,
+        "Reviews".task_id as task_id,
+        "ParentTasks".parent_names as task_name,
+        "Reviews_Tasks".review_number as task_review_number,
+        "Reviews".reviewer_id as reviewer_id,
+        "Reviewers_SimpleEntities".name as reviewer_name,
+        "Reviewers_SimpleEntities_Links".full_path as reviewer_thumbnail_path,
+        array_agg("Reviewer_Departments_SimpleEntities".name) as reviewer_departments,
+        extract(epoch from"Reviews_Simple_Entities".date_created::timestamp AT TIME ZONE 'UTC') * 1000 as date_created
 
-        from "Reviews"
+    from "Reviews"
         join "SimpleEntities" as "Reviews_Simple_Entities" on "Reviews_Simple_Entities".id = "Reviews".id
         join "Tasks" as "Reviews_Tasks" on "Reviews_Tasks".id = "Reviews".task_id
         join "Statuses" as "Reviews_Statuses" on "Reviews_Statuses".id = "Reviews".status_id
@@ -319,27 +304,26 @@ def get_reviews(request, where_conditions):
         left join (%(tasks_hierarchical_name_table)s) as "ParentTasks" on "Reviews_Tasks".id = "ParentTasks".id
 
         left outer join "Links" as "Reviewers_SimpleEntities_Links" on "Reviewers_SimpleEntities_Links".id = "Reviewers_SimpleEntities".thumbnail_id
-        %(where_conditions)s
 
-        group by
+    %(where_conditions)s
 
-            "Reviews".review_number,
-            "Reviews".id,
-            "Reviews_Statuses".code,
-            "Reviews_Simple_Entities".date_created,
-            "Statuses_Simple_Entities".name,
-            "Statuses_Simple_Entities".html_class,
-            "Reviews".task_id,
-            "ParentTasks".parent_names,
-            "Reviews_Tasks".review_number,
-            "Reviews".reviewer_id,
-            "Reviewers_SimpleEntities".name,
-            "Reviewers_SimpleEntities_Links".full_path
+    group by
 
-        order by "Reviews_Simple_Entities".date_created desc
+        "Reviews".review_number,
+        "Reviews".id,
+        "Reviews_Statuses".code,
+        "Reviews_Simple_Entities".date_created,
+        "Statuses_Simple_Entities".name,
+        "Statuses_Simple_Entities".html_class,
+        "Reviews".task_id,
+        "ParentTasks".parent_names,
+        "Reviews_Tasks".review_number,
+        "Reviews".reviewer_id,
+        "Reviewers_SimpleEntities".name,
+        "Reviewers_SimpleEntities_Links".full_path
 
-
-      """
+    order by "Reviews_Simple_Entities".date_created desc
+    """
 
     logger.debug('where_conditions: %s ' % where_conditions)
 
@@ -361,7 +345,7 @@ def get_reviews(request, where_conditions):
             'reviewer_name': r[9],
             'reviewer_thumbnail_full_path':r[10],
             'reviewer_department':r[11],
-            'date_created':milliseconds_since_epoch(r[12]),
+            'date_created':r[12],
             'is_reviewer':'1' if logged_in_user.id == r[8] else None
         }
         for r in result.fetchall()

@@ -10,7 +10,9 @@
                        data-toggle="modal"
                        data-keyboard=false
                        href="/entities/{{=it.entity_id }}/tasks/filter/{{=it.status_id }}/list"
-                       class="{{=it.status_color }}">{{=it.status_code }}</a></div>
+                       class="{{=it.status_color }}">{{=it.status_code }}</a>
+                </div>
+
             </div>
 
     </div>
@@ -28,22 +30,26 @@
 
         $.getJSON(infobox.attr('address')).then(function (data) {
 
-            var sorting_path = ['NEW','RTS','WIP','PREV','HREV','CMPL','DREV','OH','STOP']
-            var sorted_data = []
+            var sorting_path = ['WFD','RTS','WIP', 'OH','STOP', 'PREV','HREV', 'DREV', 'CMPL'];
+            var sorted_data = [];
 
+            var index = -1;
             for (var i = 0; i < data.length; i++) {
 
-                data[i].entity_id = '{{ entity.id }}'
+                data[i].entity_id = '{{ entity.id }}';
                 if(data[i].status_icon == ''){
-                   data[i].status_icon = get_icon(data[i].status_code)
+                   data[i].status_icon = get_icon(data[i].status_code);
                 }
-                sorted_data[sorting_path.indexOf(data[i].status_code.toString())] = data[i]
+
+                index = sorting_path.indexOf(data[i].status_code.toString());
+                if (index !== -1){
+                    sorted_data[index] = data[i];
+                }
             }
 
             for (var k = 0; k < sorted_data.length; k++) {
-
                 if(sorted_data[k]){
-                 infobox.append(infobox_template(sorted_data[k]));
+                    infobox.append(infobox_template(sorted_data[k]));
                 }
             }
         });

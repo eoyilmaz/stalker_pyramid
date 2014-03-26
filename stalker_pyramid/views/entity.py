@@ -267,15 +267,15 @@ logger.setLevel(logging.DEBUG)
 
 @view_config(
     route_name='list_user_reviews',
-    renderer='templates/review/list/list_user_reviews.jinja2'
+    renderer='templates/review/list/list_reviews.jinja2'
 )
 @view_config(
     route_name='list_task_reviews',
-    renderer='templates/review/list/list_task_reviews.jinja2'
+    renderer='templates/review/list/list_reviews.jinja2'
 )
 @view_config(
     route_name='list_project_reviews',
-    renderer='templates/review/list/list_project_reviews.jinja2'
+    renderer='templates/review/list/list_reviews.jinja2'
 )
 
 @view_config(

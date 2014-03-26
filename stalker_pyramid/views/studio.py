@@ -121,7 +121,6 @@ def update_studio(request):
     studio_id = request.params.get('studio_id')
     studio = Studio.query.filter_by(id=studio_id).first()
 
-
     name = request.params.get('name', None)
     dwh = request.params.get('dwh', None)
     wh_mon_start = get_time(request, 'mon_start')
@@ -138,8 +137,6 @@ def update_studio(request):
     wh_sat_end   = get_time(request, 'sat_end')
     wh_sun_start = get_time(request, 'sun_start')
     wh_sun_end   = get_time(request, 'sun_end')
-
-
 
     if studio and name and dwh:
         # update new studio
