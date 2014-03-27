@@ -104,7 +104,8 @@ def query_of_tasks_hierarchical_name_table():
         JOIN "Projects" ON "Tasks".project_id = "Projects".id
         JOIN "SimpleEntities" as "Task_SimpleEntities" on "Tasks".id = "Task_SimpleEntities".id
         WHERE "Tasks".parent_id IS NULL
-    )"""
+    )
+    """
 
     return query
 
@@ -1605,12 +1606,12 @@ def get_entity_tasks_by_filter(request):
     join "Statuses" on "Statuses".id = "Tasks".status_id
     join "SimpleEntities" as "Statuses_SimpleEntities" on "Statuses_SimpleEntities".id = "Statuses".id
     left outer join (
-                select
-                    "TimeLogs".task_id,
-                    extract(epoch from sum("TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC')) as duration
-                from "TimeLogs"
-                group by task_id
-            ) as "Task_TimeLogs" on "Task_TimeLogs".task_id = "Tasks".id
+        select
+            "TimeLogs".task_id,
+            extract(epoch from sum("TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC')) as duration
+            from "TimeLogs"
+            group by task_id
+        ) as "Task_TimeLogs" on "Task_TimeLogs".task_id = "Tasks".id
     join "SimpleEntities" as "Tasks_SimpleEntities" on "Tasks_SimpleEntities".id = "Task_Resources".task_id
 
 join "SimpleEntities" as "Resource_SimpleEntities" on "Resource_SimpleEntities".id = "Task_Resources".resource_id
@@ -1620,7 +1621,7 @@ join ((
     with recursive go_to_parent(id, parent_id) as (
             select task.id, task.parent_id
             from "Tasks" as task
-            join "Task_Responsible" on task.id = "Task_Responsible".task_id
+            left outer join "Task_Responsible" on task.id = "Task_Responsible".task_id
             where "Task_Responsible".responsible_id is NULL
         union all
             select g.id, task.parent_id
@@ -1663,7 +1664,7 @@ join ((
                 with recursive go_to_parent(id, parent_id) as (
                         select task.id, task.parent_id
                         from "Tasks" as task
-                        join "Task_Responsible" on task.id = "Task_Responsible".task_id
+                        left outer join "Task_Responsible" on task.id = "Task_Responsible".task_id
                         where "Task_Responsible".responsible_id is NULL
                     union all
                         select g.id, task.parent_id
@@ -1675,8 +1676,8 @@ join ((
                 select
                     g.id
                 from go_to_parent as g
-                join "Tasks" on "Tasks".id = g.parent_id
-                join "Task_Responsible" on g.id = "Task_Responsible".task_id
+                join "Tasks" as parent_task on g.parent_id = parent_task.id
+                join "Task_Responsible" on parent_task.id = "Task_Responsible".task_id
                 where "Task_Responsible".responsible_id is not NULL
                 order by g.id
             )
@@ -1690,7 +1691,7 @@ join ((
                 where responsible_id is not NULL
             )
         ) as prev_query on "Tasks".id = prev_query.id
-        where prev_query.id is not NULL
+        where prev_query.id is NULL
     )) as "Tasks_Responsible" on "Tasks_Responsible".id = "Tasks".id
     left join "SimpleEntities" as "Responsible_SimpleEntities" on "Responsible_SimpleEntities".id = "Tasks_Responsible".responsible_id
     left join "SimpleEntities" as "Type_SimpleEntities" on "Tasks_SimpleEntities".type_id = "Type_SimpleEntities".id
@@ -1709,7 +1710,7 @@ join ((
 
             where "Reviews_Statuses".code = 'NEW') as "Reviewers" on "Reviewers".task_id = "Tasks".id
 
-    where %(where_condition_for_entity)s%(where_condition_for_filter)s
+    where %(where_condition_for_entity)s %(where_condition_for_filter)s
 
     group by
         "Task_Resources".task_id,
@@ -1726,7 +1727,7 @@ join ((
 
     if isinstance(entity, User):
          where_condition_for_entity = \
-             '"Task_Resources".resource_id=%s' % entity_id
+             '"Task_Resources".resource_id = %s' % entity_id
     elif isinstance(entity, Project):
         where_condition_for_entity = '"Tasks".project_id =%s' % entity_id
 
@@ -1735,10 +1736,10 @@ join ((
     if isinstance(filter, User):
          where_condition_for_entity = ''
          where_condition_for_filter = \
-             '"Tasks_Responsible".responsible_id=%s' % filter_id
+             '"Tasks_Responsible".responsible_id = %s' % filter_id
     elif isinstance(filter, Status):
         where_condition_for_filter = \
-            ' and "Statuses_SimpleEntities".id =%s' % filter_id
+            'and "Statuses_SimpleEntities".id = %s' % filter_id
 
     sql_query = sql_query % {
         'tasks_hierarchical_name_table': query_of_tasks_hierarchical_name_table(),
