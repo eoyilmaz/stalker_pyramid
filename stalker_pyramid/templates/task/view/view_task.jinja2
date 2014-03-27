@@ -449,7 +449,6 @@
 
                 },
                 success: function (response, newValue) {
-
                     $('#description_loading').show();
 
                     var params = $.param({
@@ -458,9 +457,14 @@
                     });
 
                     $.post(inline_update_url, params).done(function () {
-                        $('#editable_entity_description').val('{{entity.description |safe  }}')
-                        console.log('done')
-                        $('#description_loading').hide()
+
+                        $.getJSON('{{request.route_url('get_task', id=entity.id) }}').then(
+                            function (data) {
+                                $('#editable_entity_description').val(data.description);
+                                $('#description_loading').hide();
+                            }
+                        );
+
                     }).fail(function (jqXHR) {
                         bootbox.alert('<div id="message" class="alert alert-danger bigger-110">' + jqXHR.responseText + '</div>');
                         $('#description_loading').hide()
