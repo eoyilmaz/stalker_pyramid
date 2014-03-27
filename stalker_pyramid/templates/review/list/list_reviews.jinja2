@@ -62,7 +62,7 @@
     <script id="tmpl_itemThead" type="text/x-dot-template">
         <tr>
             <th>Date</th>
-            <th>Review #</th>
+            <th>Review Set #</th>
             <th>Task</th>
             <th>Reviewer</th>
             <th>Status</th>
@@ -73,9 +73,8 @@
     {% raw %}
     <script id="tmpl_itemRow" type="text/x-dot-template">
         <tr>
-            <td>{{=it.date_created}}
-            </td>
-            <td>#{{=it.review_number }}</td>
+            <td>{{=it.date_created}}</td>
+            <td>{{=it.review_number }}</td>
             <td><a href='/tasks/{{=it.task_id }}/view'>{{=it.task_name}}</a>
             </td>
             <td><a href='/users/{{=it.reviewer_id }}/view'>{{=it.reviewer_name}}</a>
@@ -136,11 +135,11 @@
     {% endraw %}
 
     <script>
-        var tableParameters = {}
-        var sortingParameters = [[0, 'desc']]
-        var tableDataAddress = '{{ request.route_path('get_%s_reviews' % entity.entity_type.lower(), id=entity.id) }}'
+        var tableParameters = {};
+        var sortingParameters = [[0, 'desc']];
+        var tableDataAddress = '{{ request.route_path('get_%s_reviews' % entity.entity_type.lower(), id=entity.id) }}';
 
-        console.log('tableDataAddress' + tableDataAddress)
+{#        console.log('tableDataAddress' + tableDataAddress);#}
     </script>
 
 {% endblock extrascripts %}

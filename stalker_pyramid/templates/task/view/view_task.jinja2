@@ -13,8 +13,8 @@
     {#          href='{{ request.static_url("stalker_pyramid:static/ace/css/jquery.gritter.css") }}'/>#}
     <link rel="stylesheet"
           href='{{ request.static_url("stalker_pyramid:static/ace/css/jquery-ui-1.10.3.custom.min.css") }}'/>
-    <link rel="stylesheet"
-          href='{{ request.static_url("stalker_pyramid:static/ace/css/bootstrap-editable.css") }}'/>
+{#    <link rel="stylesheet"#}
+{#          href='{{ request.static_url("stalker_pyramid:static/ace/css/bootstrap-editable.css") }}'/>#}
     <link rel="stylesheet"
           href='{{ request.static_url("stalker_pyramid:static/ace/css/select2.css") }}'/>
     {% include 'charts/chart_preheader.jinja2' %}
@@ -330,8 +330,8 @@
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/select2.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-datepicker.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/fuelux/fuelux.spinner.min.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/x-editable/bootstrap-editable.min.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/x-editable/ace-editable.min.js") }}'></script>
+{#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/x-editable/bootstrap-editable.min.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/x-editable/ace-editable.min.js") }}'></script>#}
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.maskedinput.min.js") }}'></script>
 
     {% if entity.children | count == 0 %}
@@ -382,7 +382,7 @@
                 type: 'text',
                 name: 'username',
                 success: function (response, newValue) {
-                    console.log('newValue ' + newValue)
+                    console.log('newValue ' + newValue);
 
                     var params = $.param({
                         attr_name: 'name',
@@ -392,7 +392,7 @@
                     $.post(
                         inline_update_url, params
                     ).done(function () {
-                        console.log('done')
+{#                        console.log('done');#}
                     }).fail(function (jqXHR) {
                         bootbox.alert('<div id="message" class="alert alert-danger bigger-110">' + jqXHR.responseText + '</div>');
                     });
@@ -565,7 +565,7 @@
 
             $.getJSON('/tasks/{{ entity.id }}/dependency/' + type + '/').then(function (data) {
 
-                var depends = new Object();
+                var depends = {};
                 for (var i = 0; i < data.length; i++) {
 
                     var task_id = (data[i].id).toString();
@@ -574,7 +574,7 @@
                     var hour_to_complete_str = '';
 
                     if (hours_to_complete > 0) {
-                        hour_to_complete_str = '<span> ( ' + hours_to_complete + ' h )</span>'
+                        hour_to_complete_str = '<span> ( ' + hours_to_complete + ' h )</span>';
                     }
 
                     var percent_complete_str = '<span class="label label-' + data[i].status_color + '">' + data[i].status + '</span>';
