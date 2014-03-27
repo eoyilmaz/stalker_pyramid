@@ -1,0 +1,136 @@
+{# Stalker Pyramid a Web Base Production Asset Management System
+ Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
+
+ This file is part of Stalker Pyramid.
+
+ This library is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation;
+ version 2.1 of the License.
+
+ This library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Lesser General Public License for more details.
+
+ You should have received a copy of the GNU Lesser General Public
+ License along with this library; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+#}
+{% extends "base.jinja2" %}
+
+{# PRE-HEADER#}
+{% block pre_header %}
+
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/fullcalendar.css") }}'/>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/bootstrap-timepicker.css") }}'/>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/datepicker.css") }}'/>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/daterangepicker.css") }}'/>
+
+
+
+{% endblock pre_header %}
+
+{#SIDEBAR#}
+{% block sidebar %}
+
+    {% include 'sidebar.jinja2' %}
+
+{% endblock sidebar %}
+
+
+{# BREADCRUMBS #}
+{% block breadcrumbs %}
+
+    {% set page_title='Versions' %}
+    
+   {% include 'breadcrumb/breadcrumbs.jinja2' %}
+
+{% endblock breadcrumbs %}
+
+{#PAGE-CONTENT#}
+{% block page_content %}
+
+    {% set page_title='Versions' %}
+    {% include 'page_header.jinja2' %}
+    <!--/.page-header-->
+
+    {% set list_item_type='Version' %}
+    {% include 'components/data_table.jinja2' %}
+    <!--PAGE CONTENT ENDS-->
+
+{% endblock page_content %}
+
+<!--page specific plugin scripts-->
+{#EXTRA-SCRIPTS#}
+{% block extrascripts %}
+
+    {# ***************************************************************************************#}
+    {# Table Template#}
+
+    {% raw %}
+    <script id="tmpl_itemThead" type="text/x-dot-template">
+
+            <tr>
+                <th>Take</th>
+                <th>#</th>
+                <th>Is Published</th>
+                <th>Created By</th>
+                <th>Path</th>
+                <th>Parent Version</th>
+            </tr>
+    </script>
+    {% endraw %}
+
+
+
+     {# ***************************************************************************************#}
+    {# Task Row Template#}
+
+    {% raw %}
+    <script id="tmpl_itemRow" type="text/x-dot-template">
+
+        <tr {{=it.is_published? 'class="green"' : '' }}>
+            <td>{{= it.take_name }}</td>
+            <td>
+                <a href="/versions/{{= it.id }}/view">
+                    {{= it.version_number }}
+                </a>
+            </td>
+            <td>{{= it.is_published }}</td>
+            <td>
+                <a href="/users/{{= it.created_by.id }}/view">
+                    {{= it.created_by.name}}
+                </a>
+            </td>
+            <td>
+                <a href='javascript:copyToClipboard("{{= it.absolute_full_path }}")'>
+                    {{= it.absolute_full_path }}
+                </a>
+            </td>
+            <td>{{? it.parent }}
+                    <a href='/versions/{{= it.parent.id }}/view'>
+                        {{= it.parent.take_name }} | {{= it.parent.version_number }}
+                    </a>
+                {{?}}
+            </td>
+        </tr>
+    </script>
+    {% endraw %}
+
+
+    <script>
+
+        var tableParameters = {"aoColumns": [null, {'sType': 'num-html'}, null, null, null, null]}
+        var sortingParameters = [[0, 'asc'], [1, 'desc']]
+        var tableDataAddress = '{{ request.route_path('get_entity_versions', id=entity.id) }}'
+
+    </script>
+
+
+{% endblock extrascripts %}
+

@@ -1,0 +1,129 @@
+====================
+StalkerGantt Changes
+====================
+
+0.1.0.a5
+--------
+
+* **Update:** Task collapse state will be preserved in different gantt chart
+  views with different set of tasks from the same database.
+
+0.1.0.a4
+--------
+
+* **Update:** The JSON data format is changed to the following format::
+  
+  tasks = {
+      'keys' : [key1, key2, ...., keyN]
+      'data' : [
+          [task1.key1, task1.key2, ....., task1.keyN],
+          [task2.key1, task2.key2, ....., task2.keyN],
+          ...
+          [taskN.key1, taskN.key2, ....., taskN.keyN],
+      ]
+  }
+
+  This is much more compact then the original format, because the key names are
+  not repeated over and over again, causing a compression ratio of roughly 3.5
+  over the original format.
+* **New:** For Tasks which are not shown because their start and end dates are
+  not in range, a left or right red arrow will be drawn to show where the task
+  is (on left or on right).
+* **Update:** Week zoom now shows the day number instead of the first letter of
+  the day.
+* **Update:** Updated the CSS.
+* **New:** All the different types of elements in GridEditor (Project, Task,
+  Asset, Shot, Sequence) are now drawn with different background colors.
+* **New:** Thickened the ganttLines to become the background element for
+  TaskBars also they are now in the same class with the Grid elements and thus
+  have the same bg color.
+* **New:** Parent tasks and Projects are now collapsible.
+* **Update:** The gantt chart is now able to display much more info then
+  before. There are two new modes for each of the Grid and Gantt parts of the
+  Gantt Chart. Grid can be set to display *Task*\ s or *Resources* and the
+  Gantt can set to display *Task*\ s or *TimeLog*\ s.
+* **Update:** Horizontal scrolling is disabled in gantt part of Gantt Chart.
+  All the drawn tasks and links are now set in position with percent values, so
+  they will stick and scale correctly when the split container resize.
+* **Update:** Any task out of range is culled in gantt chart.
+* **Update:** Added new buttons to change the range in -1/+1 month, -1/+1 week,
+  -1/+1 day.
+* **Update:** Replaced the **Date.format()** (originally replaced by
+  jQueryGantt **date.js**) with **date.format.js** library.
+* **Update:** Changed the background of the Grid and Gantt editors.
+* **Update:** If the displayed tasks is clipped to the current start end range
+  a double red border is displayed in the clipped start or end.
+* **Update:** Context menu can now be opened in task names in grid editor.
+* **Update:** Optimized the creation of task rows.
+* **Update:** Replaced the ``input`` elements with ``div`` in the task row.
+* **New:** Holding the mouse on Task bar elements will now show a popup window
+  for more info.
+* **Update:** Gantt Chart zoom levels are now fully controlled by the start and
+  end date DateTextBoxes.
+* **New:** Added a new button which will center the gantt chart on today.
+* **Update:** Replaced the ``duration`` column with ``timing`` which correctly
+  shows the schedule timing info of the related task.
+* **Fix:** The ``depends`` column shows the dependent task names correctly.
+* **Update:** jQueryGantt displays the owner Project of the Tasks as a
+  container task.
+* **Update:** Added content link (this will be updated to support proper links,
+  hardcoded links to be removed).
+* **Update:** Disabled drag and resize of TaskBar elements.
+* **Update:** Moved the resource link code to the JST template code instead of
+  the Task class.
+* **Update:** The timing resolution of jQueryGantt is now 1 hour.
+* **Fix:** GanttMaster.task_ids were not properly cleaned in
+  GanttMaster.reset(), resulting wrong links to be created.
+
+0.1.0.a3
+--------
+* TaskBar now shows the logged in time and shows them by painting the bar
+  itself to green.
+* Removed the TaskBid div, the extra time spent to a task is now shown with the
+  TaskExtraTime div.
+* Removed all the editing functions in the TaskGrid area.
+
+0.1.0.a2
+--------
+* Fixed a lot of issues related with the new data structure, it seems
+  everything is working properly right now.
+* Parent Tasks displayed differently than the leaf tasks (on paar with the
+  other gantt charts).
+* Fix; t is now possible to correctly move a TaskBar without getting in to an
+  infinite loop which was freezing the browser.
+* The timing resolution of jQueryGantt is now 1 hour.
+* Fix; GanttMaster.task_ids were not properly cleaned in GanttMaster.reset(),
+  resulting wrong links to be created.
+* Added a new zoom level where it is possible to see the every 1 hour of 1 day.
+* Colorized the Sunday column in suitable zoom levels. In upcoming releases it
+  will use the stalker.models.studio.Studio.working_hours attribute to
+  determine if the day/hour is an off day/hour.
+
+0.1.0.a1
+--------
+* Changed the data structure quite a bit.
+* No `level` nor `rowId`, it is all related to the `Task.id`, `Task.parent_id`
+  now, which far much better, because what you are viewing generally is a group
+  of tasks which are not related to each other directly (tasks of a user from
+  different branches), so putting a `level` will place them under the wrong
+  task most of the time.
+* There are new attributes like `bid`, `effort`, `length`, `children`,
+  `depends_string`, `depends_ids`, `depends`, `parent_id`, `parent`,
+  `is_scheduled`, `is_milestone`, `resources`, `resource_ids` in Task class.
+* New attributes in GanttMaster for quick look up of tasks. Instead of
+  looping through the GanttMaster.tasks list again and again to find one task
+  with desired id, there is new attributes like GanttMaster.task_ids and
+  GanttMaster.resource_ids for quick look up of the indexes. So finding a task
+  becomes straight forward::
+    
+    index = GanttMaster.task_ids.index_of(desired_task_id)
+    task = GanttMaster.tasks[index]
+    # no need to tour around
+
+* Removed all the editors windows, will use the custom coded Dojo UI to
+  manipulate the Tasks.
+
+0.0.1.a1
+--------
+* Added a new attribute ``parent`` to Task class. It will be used to properly
+  implement the parent child relation of Tasks.

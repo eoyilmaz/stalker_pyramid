@@ -1,0 +1,161 @@
+<div class='row-fluid'>
+    <div class='span12'>
+
+        <form id="ticket_form"
+              class='form-horizontal'
+              role='form'
+              method='post'
+              action="{{ request.route_url('create_ticket') }}">
+
+            {# Review Type #}
+            <div class="control-group">
+                <label class="span3 control-label" for="task_review_mode">Review Type</label>
+                <div class="span9">
+                    <select id='task_review_mode'
+                            class='input-block-level'
+                            name='review'>
+                        <option val="Approve">Approve</option>
+                        <option val="Request Revision">Request Revision</option>
+                    </select>
+                </div>
+            </div>
+
+            {# Summary #}
+            <div class="control-group">
+                <label class="span3 control-label" for="ticket_summary">Summary</label>
+                <div class="span9">
+                    <input id="ticket_summary" type="text" name="summary">
+                </div>
+            </div>
+
+            {# Type #}
+            <div class="control-group">
+                <label class="span3 control-label" for="ticket_type">Type</label>
+                <div class="span9">
+                    <select id="ticket_type" name="type">
+                        {% for type in ticket_types %}
+                            <option value="{{ type }}">{{ type }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            {# Priority #}
+            <div class="control-group">
+                <label class="span3 control-label" for="ticket_type">Type</label>
+                <div class="span9">
+                    <select id="ticket_priority" name="priority">
+                        {% for priority in ticket_priorities %}
+                            <option value="{{ priority }}">{{ priority }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            {# Owner #}
+            <div class="control-group">
+                <label class="span3 control-label" for="ticket_owner">Owner</label>
+                <div class="span9">
+                    <select id="ticket_owner" name="owner"></select>
+                </div>
+            </div>
+
+            {# Description #}
+            <div class='control-group'>
+                <label class='span3 control-label' for='ticket_description'>Description</label>
+                <div class='span9'>
+                    <textarea id="ticket_description"
+                              name='description'
+                              class="autosize-transition span12"
+                              style="overflow: hidden;
+                                     word-wrap: break-word;
+                                     resize: horizontal;
+                                     height: 50px;"
+                              >{% if mode=='update' %}{{ entity.description }}{% endif %}</textarea>
+                </div>
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/moment.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.autosize-min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.inputlimiter.1.3.1.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/additional-methods.min.js") }}'></script>
+
+<script>
+    function init_dialog(){
+        console.log('initialize ticket dialog start');
+
+        // update dialog header
+        $('#dialog_template_label').text('Create Ticket Dialog');
+
+        // generate default values;
+        var project = {
+            id: {{ project.id }},
+            name: "{{ project.name }}"
+        };
+        var submit_form_url = '{{ request.route_url("create_ticket") }}';
+
+        var submit_button = $('#dialog_template_submit_button');
+
+
+
+
+        {# ***************************************************************** #}
+        {# Submit Button #}
+
+        submit_button.on('click', function(e){
+            e.stopPropagation();
+            e.preventDefault();
+
+            // disable submit button
+            submit_button.button('loading');
+
+            var form = $('#ticket_form');
+            var form_data = form.serialize();
+            console.log('form_data :', form_data);
+
+            // prevent multiple sends
+            if (form.attr('is_sending') == 'true'){
+                return;
+            } else {
+                form.attr('is_sending', true);
+            }
+            $.post(
+                submit_form_url,
+                form_data
+            ).done(function(){
+                $('#dialog_template').modal('hide');
+                // reload page
+                setTimeout(function () { // wait for hide event to finish
+                    window.location.reload();
+                }, 0);
+            }).fail(function(jqXHR){
+                form.attr('is_sending', false);
+
+                // reset submit button
+                submit_button.button('reset');
+                bootbox.alert(jqXHR.responseText);
+            });
+        });
+
+        console.log('initialize ticket dialog end')
+    }
+</script>
+
+<script type="text/javascript">
+    function destruct_dialog(){
+        console.log('destruct ticket dialog start');
+        // unbind events
+        $('#task_review_mode').unbind();
+        $('#task_priority').unbind();
+        $('#dialog_template_submit_button').unbind();
+
+        // remove dialog
+        $('#dialog_template').data('modal', null);
+        console.log('destruct ticket dialog end');
+    }
+</script>

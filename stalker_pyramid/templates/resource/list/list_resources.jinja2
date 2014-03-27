@@ -1,0 +1,398 @@
+
+{% raw %}
+<script id="tmpl_resourceBar" type="text/x-dot-template">
+    <div class="resourceBox" dataId="{{=it.id}}">
+        <div class="layout">
+            <div class="resourceResourceLabel">{{=it.link()}}</div>
+        </div>
+    </div>
+</script>
+{% endraw %}
+
+<script type='text/javascript'>
+    // ************************************************************************
+    // load templates with doT.js
+    var templates = {};
+    templates.resourceBar = doT.template(document.getElementById('tmpl_resourceBar').text);
+</script>
+
+<div class="row-fluid">
+    <div class="span12">
+        <!--PAGE CONTENT BEGINS-->
+
+        <div class="left">
+
+            <div class="btn-toolbar">
+
+                <div class="input-prepend"
+                     style="height: 30px;
+                            margin-bottom: 0px;">
+                    <input id='start_end_date_range_picker'
+                           name='start_and_end_dates'
+                           type="text"
+                           data-date-format="yyyy-mm-dd"
+                           placeholder="Start & End Dates">
+                        <span class="add-on">
+                            <i class="icon-calendar"></i>
+                        </span>
+                </div>
+
+                <div class="input-prepend"
+                     style="height: 30px;
+                            margin-bottom: 0px;
+                            margin-left: 7px;
+                            margin-right: 7px;
+                            ">
+                    <select id='zoom_level'
+                           name='start_and_end_dates'>
+                        <option value="h">Hours</option>
+                        <option value="d">Days</option>
+                        <option value="w" selected>Weeks</option>
+                        <option value="m">Months</option>
+                        <option value="y">Years</option>
+                    </select>
+                </div>
+
+                <div id="resource_update_zoom_level_button" class="btn-group">
+                    <button class="btn btn-small btn-warning">
+                        <span class="icon-refresh bigger-120"></span>
+                        Update
+                    </button>
+                </div>
+
+                <div id="resource_reload_button" class="btn-group">
+                    <button class="btn btn-small btn-success">
+                        <span class="icon-retweet bigger-120"></span>
+                        Reload
+                    </button>
+                </div>
+
+                <div id="resource_redraw_button" class="btn-group">
+                    <button class="btn btn-small btn-info">
+                        <span class="icon-undo bigger-120"></span>
+                        Redraw
+                    </button>
+                </div>
+
+                <div id="resource_go_to_today_button" class="btn-group">
+                    <button class="btn btn-small btn-default">
+                        <i class="icon-arrow-right bigger-120"></i>
+                        Go To Today
+                    </button>
+                    <div id="resource_scroll_to_button" class="hidden" start="0"></div>
+                </div>
+
+                <div id="resource_zoom_selection" class="btn-group">
+                    <button class="btn btn-small btn-danger"
+                            data-loading-text='<i class="icon-search bigger-120"></i>Zooming...'>
+                        <i class="icon-search bigger-120"></i>
+                        Zoom To Selection
+                    </button>
+                </div>
+
+            </div>
+
+            <div class="row-fluid">
+                <div id="{{ entity.entity_type }}_{{ entity.id }}_resource_grid"
+                     class='resource_chart'
+                     style='height: 700px'></div>
+            </div>
+        </div>
+        <!--PAGE CONTENT ENDS-->
+    </div>
+    <!--/.span-->
+</div>
+
+
+<script type='text/javascript'
+        data-dojo-config="async: true, parseOnLoad: true"
+        src='{{ request.static_url("stalker_pyramid:static/dojo/dojo.js") }}'>
+</script>
+
+<script type='text/javascript'
+        src='{{ request.static_url("stalker_pyramid:static/stalker/js/Studio.js") }}'>
+</script>
+
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/daterangepicker.min.js") }}'></script>
+
+
+
+<script type="text/javascript">
+
+require([
+    'dojo/store/Cache',
+    'dojo/store/Memory',
+    'dojo/store/JsonRest',
+
+    "dgrid/List",
+    "dgrid/Grid",
+    'dojox/data/JsonRestStore',
+
+    'stalker/js/ResourceGrid',
+
+    'dojo/domReady!'
+], function (Cache, Memory, JsonRest, List, Grid, JsonRestStore, ResourceGrid){
+
+    // The Memory
+    var target = '{{ request.route_url('get_resource', id=entity.id) }}';
+    {% if entity.entity_type == "User" %}
+    var target = '{{ request.route_url('get_resource', id=entity.id) }}';
+    {% elif entity.entity_type == "Department" %}
+        var target = '{{ request.route_url('get_resource', id=entity.id) }}';
+    {% endif %}
+
+    var resources_memory_store = new Memory();
+
+    var resources_jsonRest_store = new JsonRest({
+        target: target,
+        getChildren: function (parent, options) {
+            return this.query({parent_id: parent.id}, options);
+        },
+        mayHaveChildren: function (parent) {
+            return parent.hasChildren;
+        }
+    });
+    var tasks_cache_store = new Cache(resources_jsonRest_store, resources_memory_store);
+
+    var resource_chart_dom_id = '{{ entity.entity_type }}_{{ entity.id }}_resource_grid';
+    var resource_chart_dgrid_id = '{{ entity.entity_type }}_{{ entity.id }}_resource_grid';
+
+    // allow the resource_grid to resize with the window
+    $(window).on('resize', function(){
+        var resource_grid_height = $(window).height() - 230;
+        $('#' + resource_chart_dom_id).css({height: resource_grid_height});
+    });
+    $(window).trigger('resize');
+
+    var resource_grid = new ResourceGrid({
+        id: resource_chart_dgrid_id,
+        width: '100%',
+        autoHeight: true,
+        store: tasks_cache_store,
+        query: {
+            // initialize with the entity itself
+            id: {{ entity.id }}
+        },
+        loadingMessage: "<div style='float: left' class='dijitIconLoading'>&nbsp</div><div>Loading</div>",
+        noDataMessage: "",
+        pageSkip: 0,
+        cellNavigation: false
+    }, resource_chart_dom_id);
+    resource_grid.startup();
+
+    // ceter on today
+    setTimeout(
+        function () {
+            resource_column.centerOnToday();
+        },
+        0
+    );
+
+    // get the resource column
+    var resource_column = resource_grid.columnSets[1][0][0];
+
+    // Update Button
+    $("#resource_update_zoom_level_button").on('click', function(e){
+        // update date values
+        var start_and_end_dates_as_string = $('#start_end_date_range_picker').val();
+        var dates = start_and_end_dates_as_string.split(' - ');
+        var start_date = moment(dates[0], 'MM-DD-YYYY').startOf('day');
+        var end_date = moment(dates[1], 'MM-DD-YYYY').endOf('day');
+
+        // get zoom level
+        var zoom_level = $('#zoom_level').val();
+
+        // get the total amount of element going to be rendered
+        var element_count = resource_column.guess_element_count(+start_date, +end_date, zoom_level);
+
+        var do_update = function(){
+            resource_column.start = +start_date;
+            resource_column.end   = +end_date;
+            resource_column.scale = zoom_level; 
+            resource_column.reload();
+            resource_column.refresh();
+        };
+
+        if (element_count > 100){
+            // confirm the user that it is going to take too much time
+            bootbox.confirm(
+                '<div><p><strong>' + element_count +
+                ' elements</strong> per row are going to be rendered'+
+                '<br><br>Which will take long,' +
+                '<br><br>Is that ok?',
+            function(result){
+                if (result){
+                    do_update();
+                }
+            });
+        } else {
+            do_update();
+        }
+
+    });
+
+
+    // Reload Button
+    $("#resource_reload_button").on('click', function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        resource_column.reload();
+        resource_column.refresh();
+    });
+
+    // Refresh Button
+    $("#resource_redraw_button").on('click', function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        resource_column.reload();
+        resource_column.refresh();
+    });
+
+    // scroll to button
+    $("#resource_scroll_to_button").on('click', function(e){
+        e.preventDefault();
+        e.stopPropagation();
+        var start = $(this).attr('start');
+        resourse_column.scrollToDate(start);
+    });
+
+    // Schedule
+    {% if has_permission('Update_Task') %}
+        $('#resourse_schedule_tasks_button').on('click', function(){
+            var dialog = $( "#schedule-dialog-message" ).dialog({
+                modal: true,
+                title: "Scheduling Tasks...",
+                title_html: true,
+                height: 70,
+                width: 350
+            });
+
+            $.post(
+                '{{ request.route_url("auto_schedule_tasks") }}'
+            ).done(function(data){
+                var message = '<div>' + data + '</div>';
+                bootbox.alert(message);
+                $('.bootbox').prepend('<div class="modal-header alert-success"><strong>Success</strong></div>');
+            }).fail(function(jqXHR){
+                var message = '<div>' + jqXHR.responseText + '</div>';
+                bootbox.alert(message);
+                $('.bootbox').prepend('<div class="modal-header alert-danger"><strong>Fail</strong></div>');
+            }).always(function(){
+                dialog.dialog("close");
+                resource_column.refresh();
+            })
+            
+        });
+    {% endif %}
+
+    $('#resource_go_to_today_button').on('click', function(){
+       resource_column.centerOnToday(); 
+    });
+
+    // create the zoom window
+    $('#resource_zoom_selection').on('click', function(e){
+        
+        // change button state
+        $('#resource_zoom_selection').find('button').button('loading');
+
+        var dragDetector = $($.parseHTML('<div class="dragDetector"></div>'));
+        var zoomBox = $($.parseHTML('<div class="zoomBox"></div>'));
+        $('#' + resource_chart_dom_id).append(zoomBox).append(dragDetector);
+
+        $('.dragDetector').mousedown(function(e){
+            e.stopPropagation();
+            e.preventDefault();
+            this.start_pos = e.offsetX;
+            this.start_resizing = true;
+        }).mousemove(function(e){
+            e.stopPropagation();
+            e.preventDefault();
+            if (this.start_resizing) {
+                var x1 = this.start_pos;
+                var x2 = e.offsetX;
+                var left = Math.min(x1, x2);
+                var width = Math.abs(x1 - x2);
+                zoomBox.css({
+                    left: left,
+                    width: width
+                });
+            }
+        }).mouseup(function(e){
+            this.start_resizing = false;
+            // get the left and width of the zoomBox
+            var start_x = $('.dgrid-column-set-cell.dgrid-column-set-1').offset().left;
+            var scroll_left = $('.dgrid-column-set-cell.dgrid-column-set-1>div').scrollLeft();
+            var left = zoomBox.offset().left - start_x + scroll_left;
+            var width = zoomBox.width();
+
+            // unbind events
+            $('.dragDetector').unbind();
+
+            // delete the elements
+            zoomBox.remove();
+            dragDetector.remove();
+
+            var zoomed_dates = resource_column.convert_pixel_to_millies(left, left + width);
+            // get the zoom level
+            var zoom_level = resource_column.guess_zoom_level(zoomed_dates.start, zoomed_dates.end);
+            
+            // update interface elements
+            var formatted_start_date = moment(zoomed_dates.start).format('MM/DD/YYYY');
+            var formatted_end_date = moment(zoomed_dates.end).format('MM/DD/YYYY');
+            var start_end_date_range_picker = $('#start_end_date_range_picker');
+            start_end_date_range_picker.val(formatted_start_date + ' - ' + formatted_end_date);
+            start_end_date_range_picker.data().daterangepicker.updateFromControl();
+            $('#zoom_level').val(zoom_level);
+
+            // zoom the gantt chart
+            resource_column.start = +zoomed_dates.start;
+            resource_column.end   = +zoomed_dates.end;
+            resource_column.scale = zoom_level; 
+            resource_column.reload();
+            resource_column.refresh();
+
+            // scroll to the middle of the dates
+            resource_column.scrollToDate( (zoomed_dates.end + zoomed_dates.start) * 0.5 );
+
+            // restore button
+            $('#resource_zoom_selection').find('button').button('reset');
+        });
+    });
+
+});
+</script>
+
+
+<script>
+    {# ***************************************************************** #}
+    {# Start & End Date Picker #}
+
+    $(function () {
+        // initialize date picker
+        var start_end_date_range_picker = $('#start_end_date_range_picker').daterangepicker();
+
+        // also update the icon
+        start_end_date_range_picker.next().on('click', function () {
+            $(this).prev().focus();
+        });
+
+        // fix z-index of the container
+        // start_end_date_range_picker.data().daterangepicker.container.css({'z-index': 1060});
+
+        var start_date = moment().subtract(6, 'month').startOf('day');
+        var end_date = moment().add(6, 'month').endOf('day');
+        start_end_date_range_picker.val(
+            start_date.format('MM/DD/YYYY') + ' - ' + end_date.format('MM/DD/YYYY')
+        );
+
+        start_end_date_range_picker.data().daterangepicker.updateFromControl();
+
+        // TODO: Change the listener action type
+        start_end_date_range_picker.on('shown', function (e) {
+            e.stopPropagation();
+        });
+        start_end_date_range_picker.on('hidden', function (e) {
+            e.stopPropagation();
+        });
+    });
+</script>

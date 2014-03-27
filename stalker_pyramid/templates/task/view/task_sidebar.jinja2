@@ -1,0 +1,209 @@
+{# Render Task Side Bar #}
+
+
+<div class="sidebar-shortcuts" id="sidebar-shortcuts">
+    <div class="sidebar-shortcuts-large" id="sidebar-shortcuts-large">
+        {% if has_permission('Update_Task') %}
+            <button data-target="#dialog_template"
+                    data-toggle="modal"
+                    data-keyboard="false"
+                    href='{{ request.route_url("update_task_dialog", id=task.id) }}'
+                    class="btn btn-small btn-info tooltip-info"
+                    data-rel="tooltip" data-placement="bottom"
+                    title="Update Task">
+                <i class="icon-pencil"></i>
+            </button>
+        {% else %}
+            <button disabled="true"
+                    class="btn btn-small btn-info tooltip-info"
+                    data-rel="tooltip" data-placement="bottom"
+                    title="Update Task">
+                <i class="icon-pencil"></i>
+            </button>
+        {% endif %}
+
+        {% if (logged_in_user in task.resources or logged_in_user == task.responsible) and task.status.code == 'WIP' and task.is_leaf %}
+            <button id='task_request_review_button'
+                    class="btn btn-small btn-warning tooltip-success"
+                    data-rel="tooltip"
+                    data-placement="bottom"
+                    title="Request Review"
+                    data-target="#dialog_template"
+                    data-toggle="modal"
+                    data-keyboard="false"
+                    href='/tasks/{{ task.id }}/request_review/dialog?came_from={{ request.current_route_path() }}&request_review_mode=Final'
+                    >
+                <i class="icon-comment-alt"></i>
+            </button>
+        {% else %}
+            <button disabled="true"
+                    class="btn btn-small btn-warning tooltip-success"
+                    data-rel="tooltip" data-placement="bottom"
+                    title="Request Review">
+                <i class="icon-comment-alt"></i>
+            </button>
+        {% endif %}
+
+        {% if  logged_in_user in task.responsible and task.status.code == 'CMPL' %}
+            <button id='task_review_button'
+                    class="btn btn-small btn-purple tooltip-success"
+                    data-rel="tooltip"
+                    data-placement="bottom"
+                    title="Review Task"
+                    data-target="#dialog_template"
+                    data-toggle="modal"
+                    data-keyboard="false"
+                    href='/tasks/{{ task.id }}/review/dialog?came_from={{ request.current_route_path() }}&review_mode=request_revision'
+                    >
+                <i class="icon-comments"></i>
+            </button>
+        {% else %}
+            <button disabled="true"
+                    class="btn btn-small btn-purple tooltip-success"
+                    data-rel="tooltip" data-placement="bottom"
+                    title="Review Task">
+                <i class="icon-comments"></i>
+            </button>
+        {% endif %}
+        {% if has_permission('Delete_Task') %}
+            <button class="btn btn-small btn-danger tooltip-success"
+                    id="delete_task_button"
+                    data-rel="tooltip"
+                    data-placement="bottom"
+                    title="Delete Task">
+                <i class="icon-trash"></i>
+            </button>
+        {% else %}
+            <button
+                    disabled="true"
+                    class="btn btn-small btn-danger tooltip-success"
+                    data-rel="tooltip"
+                    data-placement="bottom"
+                    title="Delete Task">
+                <i class="icon-trash"></i>
+            </button>
+        {% endif %}
+    </div>
+
+    <div class="sidebar-shortcuts-mini" id="sidebar-shortcuts-mini">
+        <span class="btn btn-info"></span>
+
+        <span class="btn btn-warning"></span>
+
+        <span class="btn btn-purple"></span>
+
+        <span class="btn btn-danger"></span>
+    </div>
+</div><!--#sidebar-shortcuts-->
+
+<ul id="sidebar_list" class='nav nav-list'>
+
+
+</ul>
+
+<script type="text/javascript">
+    $(function () {
+        $.getJSON('/entities/{{ task.id }}/references/count/').then(function (data) {
+            $('#reference_count').text(data);
+
+            menu_of(
+                'References',
+                "{%- if request.current_route_path() == request.route_path('list_task_references', id=task.id) -%} 'active', {%- else -%},{%- endif -%}",
+                '{{ request.route_url('list_task_references', id=task.id) }}',
+                get_icon('reference'),
+                data
+            )
+        });
+    });
+</script>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        menu_of(
+            'Dashboard',
+            "{%- if request.current_route_path() == request.route_path('view_task', id=task.id) -%}'active',{%- else -%},{%- endif -%}",
+            '{{ request.route_url('view_task', id=task.id) }}',
+            get_icon('dashboard'),
+            ''
+        )
+
+        {% if entity.entity_type == 'Sequence' %}
+            menu_of(
+                'Shots',
+                "{%- if request.current_route_path() == request.route_path('list_sequence_shots', id=task.id) -%}'active',{%- else -%},{%- endif -%}",
+                '{{ request.route_url('list_sequence_shots', id=task.id) }}',
+                get_icon('shot'),
+                ''
+            )
+        {% endif %}
+
+        menu_of(
+            'Tasks',
+            "{%- if request.current_route_path() == request.route_path('list_entity_tasks', id=task.id) -%}'active',{%- else -%},{%- endif -%}",
+            '{{ request.route_url('list_entity_tasks', id=task.id) }}',
+            get_icon('task'),
+            '{{ task.tasks | count }}'
+        );
+
+        menu_of(
+            'Tickets',
+            "{%- if request.current_route_path() == request.route_path('list_task_tickets', id=task.id) -%}'active',{%- else -%},{%- endif -%}",
+            '{{ request.route_url('list_task_tickets', id=task.id) }}',
+            get_icon('ticket'),
+            ''
+            {# TODO: fix this, it should be task.open_tickets, but stalker doesn't support it yet #}
+        );
+
+        menu_of(
+            'Versions',
+            "{%- if request.current_route_path() == request.route_path('list_task_versions', id=task.id) -%}'active',{%- else -%},{%- endif -%}",
+            '{{ request.route_url('list_task_versions', id=task.id) }}',
+            get_icon('version'),
+            '{{ task.versions | count }}'
+        );
+
+
+        $.getJSON('/tasks/{{ task.id }}/reviews/count/').then(function (data) {
+            menu_of(
+                'Reviews',
+                "{%- if request.current_route_path() == request.route_path('list_task_reviews', id=task.id) -%}'active',{%- else -%},{%- endif -%}",
+                '{{ request.route_url('list_task_reviews', id=task.id) }}',
+                get_icon('review'),
+                data
+            )
+        });
+
+        $('#delete_task_button').on('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            // get the selection list
+
+            // warn the user about what is going to happen
+            bootbox.confirm('All the selected tasks and their child tasks and ' +
+                    'all the TimeLogs entered and all the Versions ' +
+                    'created for those tasks are going to be deleted.<br><br>' +
+                    'Are you sure?', function (result) {
+                if (result) {
+                    var id;
+                    // TODO: users will probably select parent and child items
+                    // together and server will not be able to find the child tasks
+                    // after the parent has deleted, so consider that in server
+                    // side.
+
+                    id = '{{ task.id }}';
+                    $.post(
+                        '/tasks/' + id + '/delete'
+                    ).done(function (response_text) {
+                        //bootbox.alert(response_text);
+                        window.location.assign('/projects/{{ task.project.id }}/view');
+                        // reload the gantt chart
+                    }).fail(function (jqXHR) {
+                        bootbox.alert(jqXHR.responseText);
+                    });
+                }
+            });
+        });
+    })
+</script>
+
+

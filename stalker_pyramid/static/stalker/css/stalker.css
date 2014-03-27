@@ -1,0 +1,399 @@
+/* Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
+ 
+ This file is part of Stalker Pyramid.
+ 
+ This library is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation;
+ version 2.1 of the License.
+ 
+ This library is distributed in the hope that it will be useful,
+            but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Lesser General Public License for more details.
+ 
+ You should have received a copy of the GNU Lesser General Public
+ License along with this library; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+*/
+.form-horizontal .control-group {
+  margin-bottom: 5px;
+}
+.ticket_Fixed,
+.ticket_Closed {
+  text-decoration: line-through;
+}
+tr .even > td .ticket_CRITICAL {
+  background: none repeat scroll 0 0 #ffddcc;
+  border-color: #ee8888;
+  color: #aa2222;
+}
+tr .even > td .ticket_BLOCKER {
+  background: none repeat scroll 0 0 #ffddcc;
+  border-color: #ee8888;
+  color: #aa2222;
+}
+tr .odd > td .ticket_CRITICAL {
+  background: none repeat scroll 0 0 #ffeedd;
+  border-color: #ee9999;
+  color: #aa2222;
+}
+tr .odd > td .ticket_BLOCKER {
+  background: none repeat scroll 0 0 #ffeedd;
+  border-color: #ee9999;
+  color: #aa2222;
+}
+.header-color-project {
+  background: #2e8965;
+  border-color: #2e8965;
+}
+.header-color-project + .widget-body {
+  border-color: #2e8965;
+}
+.header-color-asset {
+  background: #848484;
+  border-color: #d3d7dc;
+}
+.header-color-asset + .widget-body {
+  border-color: #d3d7dc;
+}
+.header-color-sequence {
+  background: #82af6f;
+  border-color: #82af6f;
+}
+.header-color-sequence + .widget-body {
+  border-color: #82af6f;
+}
+.header-color-shot {
+  background: #5090c1;
+  border-color: #5090c1;
+}
+.header-color-shot + .widget-body {
+  border-color: #5090c1;
+}
+.header-color-task {
+  background: #848484;
+  border-color: #a9c1c1;
+}
+.header-color-task + .widget-body {
+  border-color: #bdc1c6;
+}
+.header-color-group {
+  background: #e2755f;
+  border-color: #e2755f;
+}
+.header-color-group + .widget-body {
+  border-color: #e2755f;
+}
+.header-color-department {
+  background: #6379aa;
+  border-color: #6379aa;
+}
+.header-color-department + .widget-body {
+  border-color: #6379aa;
+}
+.header-color-user {
+  background: #ffc657;
+  border-color: #ffc657;
+}
+.header-color-user + .widget-body {
+  border-color: #ffc657;
+}
+.header-color-ticket {
+  background: #0c87dd;
+  border-color: #0c87dd;
+}
+.header-color-ticket + .widget-body {
+  border-color: #0c87dd;
+}
+.header-color-review {
+  background: #6fb3e0;
+  border-color: #6fb3e0;
+}
+.header-color-review + .widget-body {
+  border-color: #6fb3e0;
+}
+.header-color-version {
+  background: #9abc32;
+  border-color: #9abc32;
+}
+.header-color-version + .widget-body {
+  border-color: #9abc32;
+}
+.pln {
+  background-color: #abbac3;
+  color: white;
+}
+.pln a {
+  color: white;
+}
+.new {
+  background-color: #abbac3;
+  color: white;
+}
+.new a {
+  color: white;
+}
+.wfd {
+  background-color: #abbac3;
+  color: white;
+}
+.wfd a {
+  color: white;
+}
+.rts {
+  background-color: #d15b47;
+  color: white;
+}
+.rts a {
+  color: white;
+}
+.wip {
+  background-color: #ffc657;
+  color: white;
+}
+.wip a {
+  color: white;
+}
+.prev {
+  background-color: #6fb3e0;
+  color: white;
+}
+.prev a {
+  color: white;
+}
+.hrev {
+  background-color: #7e6eb0;
+  color: white;
+}
+.hrev a {
+  color: white;
+}
+.drev {
+  background-color: #7e6eb0;
+  color: white;
+}
+.drev a {
+  color: white;
+}
+.stop {
+  background-color: #7e6eb0;
+  color: white;
+}
+.stop a {
+  color: white;
+}
+.oh {
+  background-color: #7e6eb0;
+  color: white;
+}
+.oh a {
+  color: white;
+}
+.cmpl {
+  background-color: #82af6f;
+  color: white;
+}
+.cmpl a {
+  color: white;
+}
+.black2 {
+  background-color: #1f1f1f;
+  color: white;
+}
+.black2 a {
+  color: white;
+}
+.progress-wfd .bar,
+.progress .bar-wfd {
+  background-image: none;
+  background-color: #abbac3;
+}
+.progress-rts .bar,
+.progress .bar-rts {
+  background-image: none;
+  background-color: #d15b47;
+}
+.progress-wip .bar,
+.progress .bar-wip {
+  background-image: none;
+  background-color: #ffc657;
+}
+.progress-stop .bar,
+.progress .bar-stop {
+  background-image: none;
+  background-color: #d15b47;
+}
+.progress-oh .bar,
+.progress .bar-oh {
+  background-image: none;
+  background-color: #d15b47;
+}
+.progress-prev.bar,
+.progress .bar-prev {
+  background-image: none;
+  background-color: #6fb3e0;
+}
+.progress-hrev .bar,
+.progress .bar-hrev {
+  background-image: none;
+  background-color: #6f3cc4;
+}
+.progress-drev .bar,
+.progress .bar-drev {
+  background-image: none;
+  background-color: #6f3cc4;
+}
+.progress-cmpl .bar,
+.progress .bar-cmpl {
+  background-image: none;
+  background-color: #82af6f;
+}
+.dgrid-selected .pln {
+  background-color: #cddce5;
+}
+.dgrid-selected .new {
+  background-color: #cddce5;
+}
+.dgrid-selected .wfd {
+  background-color: #cddce5;
+}
+.dgrid-selected .rts {
+  background-color: #f37d69;
+}
+.dgrid-selected .wip {
+  background-color: #ffe879;
+}
+.dgrid-selected .stop {
+  background-color: #f37d69;
+}
+.dgrid-selected .oh {
+  background-color: #f37d69;
+}
+.dgrid-selected .prev {
+  background-color: #91d5ff;
+}
+.dgrid-selected .hrev {
+  background-color: #915ee6;
+}
+.dgrid-selected .drev {
+  background-color: #915ee6;
+}
+.dgrid-selected .cmpl {
+  background-color: #a4d191;
+}
+.label-red,
+.badge-red {
+  background-color: #d53f40 !important;
+}
+.label-orange,
+.badge-orange {
+  background-color: #ffc657 !important;
+}
+.label-blue,
+.badge-blue {
+  background-color: #6fb3e0 !important;
+}
+.label-purple,
+.badge-purple {
+  background-color: #6f3cc4 !important;
+}
+.label-purple2,
+.badge-purple2 {
+  background-color: #7e6eb0 !important;
+}
+.label-green,
+.badge-green {
+  background-color: #82af6f !important;
+}
+.label-APP {
+  background-color: #8ac16c;
+}
+.label-RREV {
+  background-color: #e07f69;
+}
+.label-NEW {
+  background-color: #6fb3e0;
+}
+.fc-week {
+  background-color: #e6eaef;
+}
+.fc-day-number {
+  text-align: right;
+  background-color: #c4c8cd;
+  width: 100%;
+  padding-left: 0px !important;
+  padding-right: 2px !important;
+}
+.review-status {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  background-color: #FFF;
+  border: 3px solid #AAA;
+  -webkit-border-radius: 100%;
+  -moz-border-radius: 100%;
+  border-radius: 100%;
+  vertical-align: middle;
+  margin-right: 1px;
+}
+.review-status.status-APP {
+  border-color: #8ac16c;
+}
+.review-status.status-RREV {
+  border-color: #e07f69;
+}
+.review-status.status-NEW {
+  border-color: #6fb3e0;
+}
+.entityview-item {
+  position: relative;
+  margin-bottom: 8px;
+}
+.entityview-item .widget-box {
+  background-color: #e8ecef;
+  color: #595C66;
+}
+.entityview-item .transparent.widget-box {
+  border-left: 3px solid #c6cdd1;
+}
+.entityview-item .transparent .widget-header {
+  background-color: #dbdfe4;
+  border-bottom: none;
+}
+.entityview-item .transparent .widget-header > :first-child {
+  margin-left: 8px;
+}
+.entityview-item:nth-child(even) .widget-box {
+  background-color: #F3F3F3;
+  color: #616161;
+}
+.entityview-item:nth-child(even) .widget-box.transparent {
+  border-left-color: #DBDBDB !important;
+}
+.entityview-item:nth-child(even) .widget-box.transparent .widget-header {
+  background-color: #EEE !important;
+}
+.entityview-item .widget-box {
+  margin: 0;
+  position: relative;
+  max-width: none;
+  border-bottom: none;
+  margin-left: 0px;
+}
+.entityview-item .widget-main {
+  margin: 0;
+  position: relative;
+  max-width: none;
+  border-bottom: none;
+}
+.entityview-item .widget-body {
+  background-color: transparent;
+}
+.entityview-item .widget-toolbox {
+  padding: 4px 8px 0 !important;
+  background-color: transparent !important;
+  border: 0 solid #CCC !important;
+  border-top: none !important;
+  margin: 0 0px !important;
+}

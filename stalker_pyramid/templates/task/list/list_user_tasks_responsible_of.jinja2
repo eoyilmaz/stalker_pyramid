@@ -1,0 +1,136 @@
+{% extends "base.jinja2" %}
+
+{% block pre_header %}
+    {% include 'task/list/list_tasks_preheader.jinja2' %}
+{% endblock pre_header %}
+
+{% block breadcrumbs %}
+    {% set page_title='Tasks' %}
+    {% include 'breadcrumb/breadcrumbs.jinja2' %}
+{% endblock breadcrumbs %}
+
+{% block sidebar %}
+    {% include 'sidebar.jinja2' %}
+{% endblock sidebar %}
+
+{% block page_content %}
+    {% set page_title='You are responsible of these tasks ' %}
+    {% include 'page_header.jinja2' %}
+
+    <div class="widget-box {{ collapsed }}">
+        <div class="widget-header widget-header-small header-color-grey }}">
+            <h5 id="items_header" class="smaller"></h5>
+
+            <div class="widget-toolbar">
+
+                <a href="#" data-action="collapse">
+                    <i class="icon-chevron-down"></i>
+                </a>
+
+            </div>
+
+        </div>
+        <div class="widget-body">
+            <div class="widget-main no-padding">
+
+                {% set filter=entity %}
+                {% include 'task/list/list_entity_tasks_by_filter.jinja2' %}
+
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+{% endblock page_content %}
+
+{# EXTRA-SCRIPTS #}
+{% block extrascripts %}
+
+    {% raw %}
+    <script id="tmpl_itemThead" type="text/x-dot-template">
+        <tr>
+            <th>Project</th>
+            <th>Name</th>
+            <th>Resource</th>
+            <th>Type</th>
+            <th>Completed</th>
+            <th>Status</th>
+            <th></th>
+        </tr>
+    </script>
+    {% endraw %}
+
+
+    {% raw %}
+    <script id="tmpl_itemRow" type="text/x-dot-template">
+        <tr>
+            <td><a href='/projects/{{=it.project_id}}/view'>{{=it.project_name}}</a>
+            </td>
+            <td><a href='/tasks/{{=it.id}}/view'>{{=it.name}}</a></td>
+            <td>{{ for (var i=0; i< it.resource_id.length;i++) { }}<a
+                    href='/users/{{=it.resource_id[i]}}/view'>{{=it.resource_name[i]}}</a><br/>{{
+                } }}
+            </td>
+            <td>{{=it.type}}</td>
+            <td data-sType="num-html">
+                <div class="progress progress-success">
+                    <div style="width:{{=it.percent_complete}}%"
+                         class="bar">
+                        <span class="pull-left">{{= it.percent_complete.toFixed(0) }}%</span>
+                    </div>
+                </div>
+            </td>
+            <td>
+                <span class="label label-{{=it.status_color}}">{{=it.status}}</span>
+            </td>
+            <td>
+                <div class="hidden-phone visible-desktop action-buttons">
+                    <a class="blue" href='/tasks/{{=it.id}}/view'>
+                        <i class="icon-zoom-in bigger-130"></i>
+                    </a>
+
+                    {{ if (it.request_review) { }}
+                    <a
+                            class="green"
+                            data-target="#dialog_template"
+                            data-toggle="modal"
+                            data-keyboard=false
+                            data-rel="tooltip"
+                            data-placement="top"
+                            title="Request Review"
+                            href="/tasks/{{=it.id}}/request_review/dialog?came_from={{=it.came_from }}">
+                        <i class="icon-comment-alt bigger-130"></i>
+                    </a>
+                    {{ } }}
+                    {{ if (it.review) { }}
+                    <a
+                            class="purple"
+                            data-target="#dialog_template"
+                            data-toggle="modal"
+                            data-keyboard=false
+                            data-rel="tooltip"
+                            data-placement="top"
+                            title="Review"
+                            href="/tasks/{{=it.id}}/review/dialog?came_from={{=it.came_from }}">
+                        <i class="icon-comments bigger-130"></i>
+                    </a>
+                    {{ } }}
+
+                </div>
+            </td>
+
+        </tr>
+    </script>
+    {% endraw %}
+
+    <script>
+        $(document).ready(function () {
+            init_html_modal()
+        })
+
+    </script>
+
+{% endblock extrascripts %}

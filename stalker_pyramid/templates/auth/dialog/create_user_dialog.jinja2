@@ -1,0 +1,69 @@
+{% set user=entity %}
+
+<div class="row-fluid padding-2">
+
+    <div class="span12">
+        {% set mode='Create' %}
+        {% include 'auth/dialog/user_basic_information_form.jinja2' %}
+    </div>
+
+</div>
+
+<script type="text/javascript">
+
+    function init_dialog() {
+        console.debug('starting to initialize user dialog!!!');
+
+        $('#dialog_template_label').find('span').remove();
+        $('#dialog_template_label').append('<span>New User</span>')
+
+        //$('#dialog_template').attr('style', "width:700px; height:800px");
+
+
+        {# ***************************************************************** #}
+        {# Submit Button #}
+        var submit_button = $('#dialog_template_submit_button');
+        submit_button.on('click', function (e) {
+            e.stopPropagation();
+            e.preventDefault();
+
+            submit_button.button('loading');
+
+            var user_form = $('#user_form');
+
+            if (user_form.validate()) {
+
+                $.post(
+                                user_form.attr('action'),
+                                user_form.serialize()
+                        ).done(function () {
+
+                            window.location.assign('{{ came_from }}');
+                        }).fail(function (jqXHR) {
+                            bootbox.alert(jqXHR.responseText);
+                            submit_button.button('reset');
+                        });
+
+
+            }
+        });
+
+        console.debug('finished initializing the user dialog!')
+    }
+</script>
+
+<script type="text/javascript">
+
+    function destruct_dialog() {
+        $('#user_form').unbind();
+        $('#user_name').unbind();
+        $('#user_login').unbind();
+        $('#user_email').unbind();
+        $('#user_password').unbind();
+        $('#user_password2').unbind();
+        $('#dialog_template_submit_button').unbind();
+
+        $('#dialog_template').data('modal', null);
+
+    }
+</script>

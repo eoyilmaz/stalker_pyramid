@@ -1,0 +1,70 @@
+{% set department=entity %}
+
+<div class="row-fluid">
+
+    {% set mode='Create' %}
+    {% include 'department/dialog/department_basic_information_form.jinja2' %}
+
+
+</div>
+
+
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootstrap-tag.min.js") }}'></script>
+
+
+<script type="text/javascript">
+
+    function init_dialog() {
+
+        console.debug('starting to initialize department dialog!!!');
+
+        $('#dialog_template_label').find('span').remove();
+        $('#dialog_template_label').append('<span>New Department</span>')
+
+        $('#dialog_template_body').attr('style', "height: 350px");
+
+
+        {# ***************************************************************** #}
+        {# Submit Button #}
+
+        var submit_button = $('#dialog_template_submit_button');
+        submit_button.on('click', function (e) {
+            e.stopPropagation();
+            e.preventDefault();
+
+            submit_button.button('loading');
+            var department_form = $('#department_form');
+
+            $.post(
+                                "{{ request.route_url('create_department') }}",
+                                department_form.serialize()
+                        ).done(function () {
+                            window.location.assign('{{ came_from }}');
+                        }).fail(function (jqXHR) {
+                            bootbox.alert(jqXHR.responseText);
+                            submit_button.button('reset');
+                        });
+        });
+
+
+        console.debug('finished initializing the department dialog!')
+    }
+</script>
+
+<script type="text/javascript">
+
+    function destruct_dialog() {
+
+        $('#department_name').unbind();
+        $('#department_lead').unbind();
+        $('#form-field-tags').unbind();
+        $('#department_description').unbind();
+        $('#dialog_template_submit_button').unbind();
+
+        $('#dialog_template').data('modal', null);
+
+    }
+</script>
+
+
+

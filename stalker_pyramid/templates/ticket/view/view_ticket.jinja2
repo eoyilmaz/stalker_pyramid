@@ -1,0 +1,475 @@
+{# Stalker Pyramid a Web Base Production Asset Management System
+ Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
+
+ This file is part of Stalker Pyramid.
+
+ This library is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation;
+ version 2.1 of the License.
+
+ This library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Lesser General Public License for more details.
+
+ You should have received a copy of the GNU Lesser General Public
+ License along with this library; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+#}
+{% set ticket=entity %}
+
+{% extends "base.jinja2" %}
+
+
+{% block breadcrumbs %}
+    {% set listed_type=ticket.plural_class_name %}
+    {% set page_title='Ticket #%i' % ticket.number %}
+    {% include 'breadcrumb/breadcrumbs.jinja2' %}
+{% endblock breadcrumbs %}
+
+{% block sidebar %}
+    {% include 'sidebar.jinja2' %}
+{% endblock sidebar %}
+
+{% block page_content %}
+
+<div class="row-fluid">
+
+    <div class="row-fluid">
+        <div class="span8 offset2">
+            <div class='widget'>
+                <div class="widget-header widget-header-small header-color-orange">
+                    <h6>
+                        Ticket #{{ ticket.number }}
+                    </h6>
+                </div>
+                <div class="widget-body">
+                    <div class="widget-body-inner" style="display: block;">
+                        <div class="widget-main">
+                            <h2>{{ ticket.summary }}</h2>
+                            <table class='table'>
+                                <tr>
+                                    <th>Project</th>
+                                    <td><a href='/projects/{{ ticket.project.id }}/view'>{{ ticket.project.name }}</a></td>
+                                    <th>Related Tickets</th>
+                                    <td>{% for r_ticket in ticket.related_tickets%}{{ r_ticket.number }},{% endfor %}</td>
+                                </tr>
+                                <tr>
+                                    <th>Type</th>
+                                    <td>{{ ticket.type.name }}</td>
+                                    <th>Priority</th>
+                                    <td>{{ ticket.priority }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Status</th>
+                                    <td>{{ ticket.status.name }}</td>
+                                    <th>Reported By</th>
+                                    <td><a href='/users/{{ ticket.created_by.id }}/view'>{{ ticket.created_by.name }}</a></td>
+                                </tr>
+                                <tr>
+                                    <th>Owner</th>
+                                    <td><a href='/users/{{ ticket.owner.id }}/view'>{{ ticket.owner.name }}</a></td>
+                                    <th>Date Created</th>
+                                    <td id='date_created' class="date">{{ ticket.date_created }}</td>
+                                </tr>
+                                <tr>
+                                    <th class="span2">Resolution</th>
+                                    <td class="span4">{{ ticket.resolution }}</td>
+                                    <th class="span2">Links</th>
+                                    <td class="span4">
+                                        {%- for link in ticket.links -%}
+                                            {%- if loop.index0 > 0 %}<br>{% endif -%}
+                                            <a href='/{{ link.plural_class_name.lower() }}/{{ link.id }}/view'>
+                                            {{- link.name }} ({{ link.entity_type }}) {% if link.entity_type in ['Task', 'Asset', 'Shot', 'Sequence'] %}({{ link.status.name }}){% endif %}</a>
+                                        {%- endfor -%}
+                                    </td>
+                                </tr>
+                            </table>
+                            <hr>
+                            <h4>Description</h4>
+                            <p>{{ ticket.description | replace('\n', '<br>') | safe }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <hr>
+
+    <div class="row-fluid">
+        <div class="span5 offset2">
+            <div class='widget'>
+                <div class="widget-header widget-header-small header-color-blue">
+                    <h6 class="lighter smaller"><i class="icon-comment"></i>Comments</h6>
+                </div>
+                <div class="widget-body">
+                    <div class="widget-body-inner" style="display: block;">
+                        <div class="widget-main no-padding">
+                            {# Messages / Notes #}
+                            {% for comment in ticket.comments|sort(attribute='date_created') %}
+                                <div class="itemdiv dialogdiv">
+                                    <div class="user">
+                                        <img alt="{{ comment.created_by.name }}'s Avatar" src="/{{ comment.created_by.thumbnail.full_path }}" />
+                                    </div>
+        
+                                    <div class="body">
+                                        <div class="time">
+                                            <i class="icon-time"></i>
+                                            <span class="date green">{{ comment.date_created }}</span>
+                                        </div>
+        
+                                        <div class="name">
+                                            <a href="{{ request.route_url('view_user', id=comment.created_by.id) }}">{{ comment.created_by.name }}</a>
+                                        </div>
+                                        <div class="text">{{ comment.content| replace('\n', '<br>') | safe }}</div>
+        
+                                        <div class="tools">
+                                            <a href="#" class="btn btn-minier btn-info">
+                                                <i class="icon-only icon-share-alt"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="span3">
+            <div class='widget'>
+                <div class="widget-header widget-header-small header-color-red">
+                    <h6>History</h6>
+                </div>
+                <div class="widget-body">
+                    <div class="widget-body-inner" style="display: block;">
+                        <div class="widget-main">
+                            {# Logs #}
+                            {% for log in ticket.logs|sort(attribute='date_created') %}
+                                <div class='widget-box transparent'>
+                                    <div class='widget-header widget-header-small'>
+                                        <h6 class="lighter smaller">Changed
+                                            <span class="date">{{ log.date_created }}</span>
+                                            by
+                                            <a href="{{ request.route_url('view_user', id=log.created_by.id) }}">{{ log.created_by.name }}</a>
+                                        </h6>
+                                    </div>
+                                    <div class='widget-body'>
+                                        <span>{{ log.action }}</span><br>
+                                        <span>{{ log.from_status.name }} -> {{ log.to_status.name }}</span>
+                                    </div>
+                                </div>
+                                {% if loop.index0 > 0%}
+                                    <hr>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <hr>
+
+    <div class="row-fluid">
+        <div class="span8 offset2">
+            <form id="ticket_form"
+                  class='form-horizontal'>
+
+                {# Editor #}
+                <div class="control-group">
+                    <div id="alerts"></div>
+                    <div class="wysiwyg-editor" id="comment_editor"></div>
+                </div>
+
+                <div class="control-group">
+                    <label class="control-label">Action</label>
+                    <div class="controls">
+                        <label>
+                            <input id="ticket_leave_as" type="radio" name="action_radio" class="ace" value="leave_as:{{ ticket.status.name.lower() }}" checked>
+                            <span class="lbl">Leave As {{ ticket.status.name }}</span>
+                        </label>
+                        <label>
+                            <input id="ticket_set_resolution" type="radio" name="action_radio" class="ace">
+                            <span class="lbl">Resolve As
+                                <select id="ticket_resolutions"></select>
+                            </span>
+                        </label>
+                        <label>
+                            <input id="ticket_set_owner" type="radio" name="action_radio" class="ace">
+                            <span class="lbl">Assign To
+                                <select id="project_users"></select>
+                            </span>
+                        </label>
+                        <label>
+                            <input id="ticket_del_resolution" type="radio" name="action_radio" class="ace" value="delete_resolution">
+                            <span class="lbl">Delete Resolution</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <div class="pull-right">
+                        <button id="submit-button" class="btn" >Submit Changes</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>
+
+{% endblock page_content %}
+
+{% block extrascripts %}
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery-ui-1.10.3.custom.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.ui.touch-punch.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/markdown/markdown.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/markdown/bootstrap-markdown.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.hotkeys.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/bootstrap-wysiwyg.js") }}'></script>
+
+<script type="text/javascript">
+
+    function showErrorAlert(reason, detail) {
+        var msg = '';
+        if (reason === 'unsupported-file-type') {
+            msg = "Unsupported format " + detail;
+        } else if (reason === 'big-file-size') {
+            msg = "File is too big " + detail + ' bytes';
+        } else {
+            console.log("error uploading file", reason, detail);
+        }
+        $('<div class="alert"> <button type="button" class="close" data-dismiss="alert">&times;</button>' +
+                '<strong>File upload error</strong> ' + msg + ' </div>').prependTo('#alerts');
+    }
+
+    $(function(){
+        
+        $('#comment_editor').ace_wysiwyg({
+            toolbar: [
+                'font',
+                null,
+                'fontSize',
+                null,
+                {name: 'bold', className: 'btn-info'},
+                {name: 'italic', className: 'btn-info'},
+                {name: 'strikethrough', className: 'btn-info'},
+                {name: 'underline', className: 'btn-info'},
+                null,
+                {name: 'insertunorderedlist', className: 'btn-success'},
+                {name: 'insertorderedlist', className: 'btn-success'},
+                {name: 'outdent', className: 'btn-purple'},
+                {name: 'indent', className: 'btn-purple'},
+                null,
+                {name: 'justifyleft', className: 'btn-primary'},
+                {name: 'justifycenter', className: 'btn-primary'},
+                {name: 'justifyright', className: 'btn-primary'},
+                {name: 'justifyfull', className: 'btn-inverse'},
+                null,
+                {name: 'createLink', className: 'btn-pink'},
+                {name: 'unlink', className: 'btn-pink'},
+                null,
+                {name: 'insertImage', className: 'btn-success'},
+                null,
+                'foreColor',
+                null,
+                {name: 'undo', className: 'btn-grey'},
+                {name: 'redo', className: 'btn-grey'}
+            ],
+            'wysiwyg': {
+                maxFileSize : 2000000,
+                fileUploadError: showErrorAlert
+            }
+        }).prev().addClass('wysiwyg-style1')
+
+        //Add Image Resize Functionality to Chrome and Safari
+        //webkit browsers don't have image resize functionality when content is editable
+        //so let's add something using jQuery UI resizable
+        //another option would be opening a dialog for user to enter dimensions.
+        if (typeof jQuery.ui !== 'undefined' && /applewebkit/.test(navigator.userAgent.toLowerCase())) {
+
+            var lastResizableImg = null;
+
+            function destroyResizable() {
+                if (lastResizableImg == null) return;
+                lastResizableImg.resizable("destroy");
+                lastResizableImg.removeData('resizable');
+                lastResizableImg = null;
+            };
+
+            var enableImageResize = function () {
+                $('.wysiwyg-editor').on('mousedown', function (e) {
+                    var target = $(e.target);
+                    if (e.target instanceof HTMLImageElement) {
+                        if (!target.data('resizable')) {
+                            target.resizable({
+                                aspectRatio: e.target.width / e.target.height
+                            });
+                            target.data('resizable', true);
+
+                            if (lastResizableImg != null) {//disable previous resizable image
+                                lastResizableImg.resizable("destroy");
+                                lastResizableImg.removeData('resizable');
+                            }
+                            lastResizableImg = target;
+                        }
+                    }
+                }).on('click', function (e) {
+                    if (lastResizableImg != null && !(e.target instanceof HTMLImageElement)) {
+                        destroyResizable();
+                    }
+                }).on('keydown', function () {
+                    destroyResizable();
+                });
+            };
+
+            enableImageResize();
+
+
+{#            //or we can load the jQuery UI dynamically only if needed#}
+{#            if (typeof jQuery.ui !== 'undefined') enableImageResize();#}
+{#            else {//load jQuery UI if not loaded#}
+{#                $.getScript($path_assets + "/js/jquery-ui-1.10.3.custom.min.js", function (data,#}
+{#                                                                                           textStatus,#}
+{#                                                                                           jqxhr) {#}
+{#                    if ('ontouchend' in document) {//also load touch-punch for touch devices#}
+{#                        $.getScript($path_assets + "/js/jquery.ui.touch-punch.min.js", function (data,#}
+{#                                                                                                 textStatus,#}
+{#                                                                                                 jqxhr) {#}
+{#                            enableImageResize();#}
+{#                        });#}
+{#                    } else    enableImageResize();#}
+{#                });#}
+{#            }#}
+        }
+
+        // remove speech input
+        $('.wysiwyg-speech-input').remove();
+
+        // convert all dates to moment
+        $('.date').each(function(){
+            var date = moment.utc($(this).text());
+            $(this).text(date.fromNow());
+        });
+
+    });
+</script>
+
+<script type="text/javascript">
+$(function(){
+    {# radio buttons #}
+
+    {# fill ticket resolutions #}
+    var ticket_resolutions = $("#ticket_resolutions");
+    $.getJSON('/tickets/resolutions/', function(data) {
+        // remove all previous options
+        ticket_resolutions.find('option').remove();
+        
+        {% raw %}
+        var option_template = doT.template(
+            "<option value={{= it }}>{{= it }}</option>"
+        );
+        {% endraw %}
+
+        for (var i = 0; i < data.length; i += 1) {
+            ticket_resolutions.append($($.parseHTML(option_template(data[i]))));
+        }
+        $('#ticket_set_resolution').val('resolve_as:' + data[0]);
+    });
+
+    // also changing this should set the value of radio group
+    ticket_resolutions.on('change', function() {
+        $('#ticket_set_resolution').val('resolve_as:' + $(this).val());
+    });
+
+    {# fill users #}
+    var project_users = $('#project_users');
+
+    // also set value of the radio button
+    project_users.on('change', function() {
+        $('#ticket_set_owner').val(
+            'set_owner:' + $(this).val()
+        )
+    });
+
+    {% raw %}
+    var project_users_template = doT.template('<option value="{{= it.id }}">{{= it.name }}</option>');
+    {% endraw %}
+    chosen_field_creator(
+        project_users,
+        "{{ request.route_url('get_project_users', id=ticket.project.id) }}",
+        project_users_template, -1, {}
+    ).then(function(){
+        // trigger a change event to refresh the radio button value
+        project_users.trigger('change');
+    });
+
+    {# show or hide controls #}
+    $('#ticket_set_resolution').parent().hide();
+    $('#ticket_set_owner').parent().hide();
+    $('#ticket_del_resolution').parent().hide();
+
+    $.getJSON('/tickets/workflow/', function(data) {
+        var ticket_action;
+        var action;
+        var current_ticket_status = "{{ ticket.status.code.lower() }}";
+
+        for (var i in data) {
+            ticket_action = data[i];
+            if (ticket_action[current_ticket_status] != undefined){
+                action = ticket_action[current_ticket_status].action
+                if (action === 'set_resolution') {
+                    // show resolve as field
+                    $('#ticket_set_resolution').parent().show();
+                } else if (action === 'set_owner') {
+                    // show assign field
+                    $('#ticket_set_owner').parent().show();
+                } else if (action === 'del_resolution') {
+                    // show delete resolution field
+                    $('#ticket_del_resolution').parent().show();
+                }
+            }
+        }
+    });
+
+    // prevent default
+    $("#ticket_form").on("submit", function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    });
+
+    var submit_button = $("#submit-button");
+    submit_button.on("click", function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        // change button state
+        submit_button.button('loading');
+        // submit changes
+        var comment = $('.wysiwyg-editor').cleanHtml();
+        var comment_as_text = $('.wysiwyg-editor').text();
+        var action = $('input[name="action_radio"]:checked').val();
+        var url = '/tickets/{{ ticket.id }}/update';
+        var params = $.param({
+            comment: comment,
+            comment_as_text: comment_as_text,
+            action: action
+        });
+        $.post(url, params).done(function(data) {
+            // reload page
+            window.location.reload();
+        }).fail(function(jqXHR) {
+            submit_button.button('reset');
+            bootbox.alert(jqXHR.responseText);
+        });
+    });
+
+});
+</script>
+
+
+{% endblock extrascripts %}

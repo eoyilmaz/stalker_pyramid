@@ -1,0 +1,28 @@
+<div class="span2 widget-container-span">
+    <div class='widget-box'>
+
+        <div class='widget-header header-color-purple'>
+            <h4>{{ sequence.name }}</h4>
+        </div>
+
+        <div class='widget-body'>
+            <div class="ace-thumbnails">
+                <img data-src="holder.js/300x200" alt="300x200"
+                     style='width:100px; height:auto; overflow: hidden;'
+                     class="thumbnail" src="{%- if sequence.thumbnail -%}
+                            /{{ sequence.thumbnail.full_path }}
+                        {%- else -%}
+                            {{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_0.png") }}
+                        {%- endif -%}">
+
+                <div class='widget-toolbox padding-2 clearfix'>
+                    <a href="#" class="btn btn-mini btn-default pull-right">Update</a>
+                    <a href="{{ request.route_url('view_project_sequence', pid=entity.id,id=sequence.id) }}"
+                       class="btn btn-mini btn-primary pull-right">View</a>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+</div>

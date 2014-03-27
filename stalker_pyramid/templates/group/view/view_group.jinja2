@@ -1,0 +1,47 @@
+{% extends "base.jinja2" %}
+
+{# BREADCRUMBS #}
+{% block breadcrumbs %}
+    {% set page_title='Permissions' %}
+    {% include 'breadcrumb/breadcrumbs.jinja2' %}
+{% endblock breadcrumbs %}
+
+{# SIDEBAR #}
+{% block sidebar %}
+    {% include 'sidebar.jinja2' %}
+{% endblock sidebar %}
+
+{# PAGE-CONTENT #}
+{% block page_content %}
+
+    {% set page_title='Permissions' %}
+    {% set page_desc=entity.description %}
+    {% include 'page_header.jinja2' %}
+
+
+    <div class="row-fluid">
+    <div class="span8">
+        {% set mode='Update' %}
+        {% set address=request.route_url('get_group_permissions', id=entity.id) %}
+        {% include 'group/list/list_group_permissions.jinja2' %}
+    </div>
+</div>
+
+
+
+{% endblock page_content %}
+
+{% block extrascripts %}
+
+    <script type="text/javascript">
+
+
+        var permissions_loaded = function () {
+
+            $('.ace-checkbox-2').attr('disabled', true);
+
+        }
+
+
+    </script>
+{% endblock extrascripts %}

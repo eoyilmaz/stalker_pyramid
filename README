@@ -1,32 +1,34 @@
+=====
 About
 =====
 
-Stalker is a Production Asset Management (ProdAM) System designed specifically
-for Animation and VFX Studios and licensed under BSD License.
+Stalker is an Open Source Production Asset Management (ProdAM) System designed 
+specifically for Animation and VFX Studios but can be used for any kind of
+projects. Stalker is licensed under LGPL v2.1. And Stalker Pyramid is the
+Pyramid Web App package based on Stalker. Basically it supplies the web
+interfaces to the system. It is also licensed under LGPL v2.1.
 
 Features:
- * Platform independent
- * Flexible design
- * Designed for animation and vfx studios
- * Default installation handles nearly all the asset management needs of an
-   animation and vfx studio
- * Customisable with configuration scripts
- * Customisable object model (Stalker Object Model - SOM)
- * Integrated messaging system
- * Integrated production planing and tracking tools
- * PySide user interfaces
- * Can be used with any kind of databases supported by SQLAlchemy
+ * Designed for animation and VFX Studios.
+ * It is a Pyramid Web Application.
+ * Platform independent.
+ * Default installation handles nearly all the asset and project management 
+   needs of an animation and vfx studio.
+ * Customizable with configuration scripts.
+ * Customizable object model (Stalker Object Model - SOM).
+ * Uses TaskJuggler as the project planing and tracking backend.
+ * Can be used with any kind of databases supported by SQLAlchemy.
  * Can be connected to all the major 3d animation packages like Maya, Houdini,
-   Nuke, XSI, Vue, Blender etc. and any application that has a Python API
- * Can work as a stand-alone application
+   Nuke, XSI, Vue, Blender etc. and any application that has a Python API.
+ * Can work as a stand-alone application.
 
-Stalker is build over these other OpenSource projects:
+Stalker Pyramid is build over these other OpenSource projects:
  * Python
- * SQLAlchemy
- * Jinja2
- * Beaker
- * PySide
+ * Stalker
  * Pyramid
+ * SQLAlchemy and Alembic
+ * Jinja2
+ * TaskJuggler
 
 Source
 ======
@@ -35,6 +37,6 @@ The latest development version is available in `Google Project page of
 Stalker`_ or can be directly cloned with the following command if you already
 have mercurial installed::
 
-  hg clone https://stalker.googlecode.com/hg/ stalker
+  hg clone https://stalker-pyramid.googlecode.com/hg/ stalker_pyramid
 
-.. _Google Project page of Stalker: http://code.google.com/p/stalker/
+.. _Google Project page of Stalker: http://code.google.com/p/stalker-pyramid/

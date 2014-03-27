@@ -1,0 +1,23 @@
+<ul id="breadcrumb_ticket" class="breadcrumb">
+
+    <li>
+        <a href="{{ request.route_url('view_project', id=entity.project.id) }}">{{ entity.project.name }}</a>
+        <span class="divider">
+          <i class="icon-angle-right arrow-icon"></i>
+        </span>
+    </li>
+
+    <li>
+        <a href="{{ request.route_url('list_project_tickets', id=entity.project.id) }}">Tickets</a>
+        <span class="divider">
+            <i class="icon-angle-right arrow-icon"></i>
+        </span>
+    </li>
+
+    <li class="active">{{ entity.name }}
+
+    </li>
+</ul>
+<!--.breadcrumb-->
+
+

@@ -1,0 +1,89 @@
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/fullcalendar.min.js") }}'></script>
+
+<!--inline scripts related to this page-->
+<script type="text/javascript">
+
+    function drawCalendar(cid, events) {
+
+        var update_event_action = function (eType, eId) {
+            $('#dialog_template').modal({
+                'remote': "/" + eType + "/" + eId + "/update/dialog?came_from={{ request.current_route_path() }}"
+            });
+        };
+
+        /* initialize the calendar
+        -----------------------------------------------------------------*/
+        var calendar = $('#' + cid).fullCalendar({
+            {% if event_type %}
+                {% if has_permission('Create_' + event_type) %}
+
+                    select: function (start, end, allDay) {
+                        var event_dialog = $('#dialog_template');
+
+                        event_dialog.attr('start', start);
+                        event_dialog.attr('end', end);
+                        event_dialog.attr('allDay', allDay);
+
+                        event_dialog.modal({
+                            'remote': "/entities/{{ entity.id }}/{{ event_type.lower() }}s/create/dialog?came_from={{ request.current_route_path() }}"
+                        });
+
+                        calendar.fullCalendar('unselect');
+                    },
+                {% endif %}
+            {% endif %}
+
+            eventClick: function (calEvent, jsEvent, view) {
+                if (calEvent.entity_type == 'vacations') {
+                    {% if has_permission('Update_Vacation') %}
+
+                        if (calEvent.title == 'StudioWide') {
+                            {% if has_permission('Update_Studio') %}
+                                update_event_action(calEvent.entity_type, calEvent.eId);
+                            {% endif %}
+                        } else {
+                            update_event_action(calEvent.entity_type, calEvent.eId);
+                        }
+                    {% endif %}
+                } else if (calEvent.entity_type == 'timelogs') {
+                    {% if has_permission('Update_TimeLog') %}
+                        update_event_action(calEvent.entity_type, calEvent.eId);
+                    {% endif %}
+                } else if (calEvent.entity_type == 'tasks') {
+                    {% if has_permission('Read_Task') %}
+                        window.location.assign("/tasks/" + calEvent.eId + "/view");
+                    {% endif %}
+                }
+            },
+
+            eventMouseover: function(event, jsEvent, view){
+                // add title attribute to each event
+                //console.log('eventMouseOver is running!');
+                setTimeout(function(){
+                    $(jsEvent.target).find('.fc-event-title').each(function(){
+                        var self = $(this);
+                        self.attr('title', self.text());
+                    });
+                }, 0);
+            },
+
+            buttonText: {
+                prev: '<i class="icon-chevron-left"></i>',
+                next: '<i class="icon-chevron-right"></i>'
+            },
+
+            header: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'month,agendaWeek,agendaDay'
+            },
+            events: events,
+            editable: true,
+            droppable: false, // this allows things to be dropped onto the calendar !!!
+
+            selectable: true,
+            selectHelper: true
+        });
+
+    }
+</script>

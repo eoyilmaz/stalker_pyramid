@@ -1,0 +1,15 @@
+<ul class="breadcrumb">
+
+    {% if entity %}
+        <li>
+            <a href="{{ request.route_url('view_' + entity.entity_type.lower(), id=entity.id) }}">{{ entity.name }}</a>
+            <span class="divider">
+              <i class="icon-angle-right arrow-icon"></i>
+            </span>
+        </li>
+    {% endif %}
+
+    <li class="active">{{ page_title }}</li>
+</ul>
+<!--.breadcrumb-->
+

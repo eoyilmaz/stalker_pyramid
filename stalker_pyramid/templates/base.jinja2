@@ -1,0 +1,705 @@
+<!-- Stalker a Production Asset Management System
+ Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
+
+ This library is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation;
+ version 2.1 of the License.
+
+ This library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Lesser General Public License for more details.
+
+ You should have received a copy of the GNU Lesser General Public
+ License along with this library; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+-->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Stalker Pyramid</title>
+
+    {#    <meta name="description" content="with draggable and editable events"/>#}
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+
+
+    {# special case for doT it needs to be the very first script to let Gantt Chart view #}
+    <script src='{{ request.static_url("stalker_pyramid:static/doT/doT.min.js") }}'></script>
+
+    {# PRE-HEADER #}
+    {% block pre_header %}
+    {% endblock pre_header %}
+
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/chosen.css") }}'/>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/datepicker.css") }}'/>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/bootstrap-timepicker.css") }}'/>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/daterangepicker.css") }}'/>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/colorpicker.css") }}'/>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/jquery-ui-1.10.3.custom.min.css") }}'/>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/bootstrap-editable.css") }}'/>
+
+
+
+    <!--basic styles-->
+
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/bootstrap.min.css") }}'>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/bootstrap-responsive.min.css") }}'>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/font-awesome.min.css") }}'>
+
+
+
+
+    <!--[if IE 7]>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/font-awesome-ie7.min.css") }}'/>
+    <![endif]-->
+
+    <!--page specific plugin styles-->
+
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/jquery-ui-1.10.3.full.min.css") }}'>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/jquery.gritter.css") }}'>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/colorbox.css") }}'>
+
+    <!--fonts-->
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/stalker/css/stalker_bootstrap.css") }}'>
+    {#    <link rel="stylesheet"#} {#
+          href='{{ request.static_url("stalker_pyramid:static/stalker/css/ace-fonts.css") }}'/#}
+    <!--ace styles-->
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/css/ace.css") }}'>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/ace-responsive.min.css") }}'>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/uncompressed/ace-skins.css") }}'>
+
+    <!--[if lte IE 8]>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/ace-ie.min.css") }}'/>
+    <![endif]-->
+
+    <style>
+        .spinner-preview {
+            width: 100px;
+            height: 100px;
+            text-align: center;
+            margin-top: 100px;
+        }
+
+        .dropdown-preview {
+            margin: 0 5px;
+            display: inline-block;
+        }
+
+        .dropdown-preview  > .dropdown-menu {
+            display: block;
+            position: static;
+            margin-bottom: 5px;
+        }
+
+        .modal-body {
+            max-height: 650px;
+        }
+
+        {# fix for autocomplete and jquery-ui#}
+        .ui-front {
+            z-index: 1100;
+        }
+
+    </style>
+
+
+    {# POST-HEADER #}
+    {% block post_header %}
+    {% endblock post_header %}
+
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/stalker/css/stalker.css") }}'/>
+
+    {# TODO: some scripts need to be here - will fix later #}
+    <script src='{{ request.static_url("stalker_pyramid:static/jquery/jquery-2.1.0.min.js") }}'></script>
+    <!--ace settings handler-->
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.colorbox-min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/ace-extra.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/moment/moment.min.js") }}'></script>
+
+    {# TEMPLATES #}
+    {% block templates %}
+    {% endblock templates %}
+
+</head>
+<body class="navbar-fixed breadcrumbs-fixed skin-1">
+{% for message in request.session.pop_flash() %}
+    {% set message_type=message.split(':')[0] %}
+    {% set message_content=message.split(':')[1] %}
+    <div class="flash-message alert alert-{{ message_type }} text-center hide">
+        <button type="button" class="close" data-dismiss="alert">
+            <i class="icon-remove"></i>
+        </button>
+        <p>
+            <strong>
+                {{ message_type.title() }}!
+            </strong>
+            {{ message_content|safe }}
+        </p>
+    </div>
+{% endfor %}
+
+{% raw %}
+<script id="tmpl_flash_message" type="text/x-dot-template">
+    <div class="flash-message alert alert-{{= it.type }} text-center hide">
+        <button type="button" class="close" data-dismiss="alert">
+            <i class="icon-remove"></i>
+        </button>
+        <p>
+            <strong>
+                {{= it.title }}!
+            </strong>
+            {{= it.message }}
+        </p>
+    </div>
+</script>
+{% endraw %}
+
+
+{% raw %}
+<script id="tmpl_sidebar_media" type="text/x-dot-template">
+    <li>
+        <div class="media">
+            <a class="pull-left"
+               href="#"
+               style="text-align: center; overflow: hidden; width: 100px">
+                <img id="sidebar_avatar"
+                     style="height: 100px; width: auto; max-width: none;
+                      position: relative; left: 100%; margin-left: -200%"
+                     class="img-thumbnail"
+                     src={{=it.thumbnail_full_path}}>
+            </a>
+
+            <div class="media-body">
+                <h5 class="media-heading"><span style='color: #b1bac1;'>{{=it.name}}</span>
+                    <small>{{=it.code}}</small>
+                </h5>
+                <a href={{=it.update_link}}
+                   class="menu-text">
+                    <i class="icon-edit"></i>
+                    Update
+                </a>
+            </div>
+        </div>
+    </li>
+</script>
+{% endraw %}
+
+{% raw %}
+<script id="tmpl_sidebar_tree_link" type="text/x-dot-template">
+    <li>
+        <a href="#" class="dropdown-toggle">
+            <i class={{=it.icon}}></i>
+            <span class="menu-text">{{=it.title}} </span>
+
+            <b class="arrow icon-angle-down"></b>
+        </a>
+
+        <ul id='{{=it.title}}_sublink' class="submenu">
+
+        </ul>
+    </li>
+
+</script>
+{% endraw %}
+
+{% raw %}
+<script id="tmpl_sidebar_tree_sublink" type="text/x-dot-template">
+
+    <li>
+        <a href={{=it.link}}>
+            <i class="icon-double-angle-right"></i>
+            {{=it.name }}
+        </a>
+    </li>
+
+</script>
+{% endraw %}
+
+{% raw %}
+<script id="tmpl_sidebar_link" type="text/x-dot-template">
+    <li class={{=it.state}}>
+        <a href={{=it.link}}>
+            <i class={{=it.icon}}></i>
+            <span class="menu-text">{{=it.title}}</span>
+            <span id="{{=it.title }}_count"
+                  class="badge {{ if (it.count > 0) { }}badge-important{{ } else { }}badge-success{{ } }}">{{=it.count}}</span>
+        </a>
+    </li>
+</script>
+{% endraw %}
+
+<script>
+    var page_of = function (name, code, thumbnail_full_path, update_link) {
+        var sidebar_list = $('#sidebar_list');
+        var media_template = doT.template($('#tmpl_sidebar_media').html());
+
+
+        sidebar_list.append(media_template({
+            'name': name,
+            'thumbnail_full_path': thumbnail_full_path,
+            'code': code,
+            'update_link': update_link
+        }));
+    }
+</script>
+<script>
+    var menu_of = function (title, state, address, icon, count) {
+        var sidebar_list = $('#sidebar_list');
+        var link_template = doT.template($('#tmpl_sidebar_link').html());
+
+
+        sidebar_list.append(link_template({
+            'title': title,
+            'state': state,
+            'link': address,
+            'icon': icon,
+            'count': count
+        }));
+    }
+</script>
+<script>
+    var submenu_of = function (id, treeItemType) {
+
+        $.getJSON('/entities/' + id + '/' + treeItemType.toLowerCase() + 's/').then(function (data) {
+
+            $(document).ready(function () {
+
+                var sidebar_list = $('#sidebar_list');
+                var tree_link_template = doT.template($('#tmpl_sidebar_tree_link').html());
+                var data_counts = data.length;
+
+                if (data_counts > 0) {
+
+                    sidebar_list.append(tree_link_template({
+                        'title': treeItemType + 's',
+                        'icon': get_icon(treeItemType.toLowerCase())
+                    }));
+
+                }
+
+                var item_sublink = $('#' + treeItemType + 's_sublink');
+                var tree_sublink_template = doT.template($('#tmpl_sidebar_tree_sublink').html());
+
+
+                for (var i = 0; i < data_counts; i++) {
+
+                    data[i].link = '/' + treeItemType.toLowerCase() + 's/' + data[i].id + '/view'
+
+                    item_sublink.append(tree_sublink_template(data[i]))
+
+                }
+            });
+        });
+    }
+</script>
+
+
+{# CONTENT #}
+{% block content %}
+
+    {# NAV-BAR #}
+    {% block navbar %}
+        {% include 'navbar.jinja2' %}
+    {% endblock navbar %}
+
+    <div class="main-container container-fluid">
+
+        {# MAIN-CONTAINER #}
+        {% block main_container %}
+
+            {# SIDEBAR #}
+            {% block sidebar %}
+            {% endblock sidebar %}
+
+            {# MAIN-CONTENT #}
+            {% block main_content %}
+                <div class="main-content">
+
+                    {# BREADCRUMBS #}
+                    {% block breadcrumbs %}
+                    {% endblock breadcrumbs %}
+
+
+                    <div class='page-content'>
+
+                        {# PAGE-CONTENT #}
+                        {% block page_content %}
+                        {% endblock page_content %}
+
+                        {#                        <div class="ace-settings-container"#}
+                        {#                         id="ace-settings-container">#}
+                        {#                        <div class="btn btn-app btn-mini btn-warning ace-settings-btn open"#}
+                        {#                             id="ace-settings-btn">#}
+                        {#                            <i class="icon-cog bigger-150"></i>#}
+                        {#                        </div>#}
+                        {##}
+                        {#                        <div class="ace-settings-box open"#}
+                        {#                             id="ace-settings-box">#}
+                        {#                            <div>#}
+                        {#                                <div class="pull-left">#}
+                        {#                                    <select id="skin-colorpicker"#}
+                        {#                                            class="hide"#}
+                        {#                                            style="display: none;">#}
+                        {#                                        <option data-skin="default"#}
+                        {#                                                value="#438EB9">#438EB9#}
+                        {#                                        </option>#}
+                        {#                                        <option data-skin="skin-1"#}
+                        {#                                                value="#222A2D">#222A2D#}
+                        {#                                        </option>#}
+                        {#                                        <option data-skin="skin-2"#}
+                        {#                                                value="#C6487E">#C6487E#}
+                        {#                                        </option>#}
+                        {#                                        <option data-skin="skin-3"#}
+                        {#                                                value="#D0D0D0">#D0D0D0#}
+                        {#                                        </option>#}
+                        {#                                    </select>#}
+                        {#                                </div>#}
+                        {#                                <span>&nbsp; Choose Skin</span>#}
+                        {#                            </div>#}
+                        {#                        </div>#}
+                        {#                    </div>#}
+
+                    </div>
+
+                </div>
+            {% endblock main_content %}
+
+        {% endblock main_container %}
+    </div>
+{% endblock content %}
+
+{# MODALS #}
+{% block modals %}
+    {% include 'modals/html_template.jinja2' %}
+    {% include 'modals/dialog_template.jinja2' %}
+
+
+{% endblock modals %}
+
+{# SCRIPTS #}
+{% block scripts %}
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery-ui-1.10.3.full.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.ui.touch-punch.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootstrap.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/ace-elements.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/uncompressed/ace.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootbox.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/x-editable/bootstrap-editable.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/x-editable/ace-editable.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/date.format.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/date.stalker.js") }}'></script>
+
+    <script type="text/javascript">
+        // choose default skin
+        var skin_class = 'skin-1';
+        var body = $(document.body);
+        body.removeClass('skin-1 skin-2 skin-3');
+        body.addClass(skin_class);
+        $('.ace-nav > li.grey').addClass('dark');
+
+        // if it is smaller resize the page content to the window height
+        var resize_page_content = function () {
+            var page_content = $('.page-content');
+            var page_content_height = page_content.height();
+            var window_height = $(window).height() - 118;
+            {# 230 #}
+            var new_height = Math.max(window_height, page_content_height);
+            if (page_content_height < window_height) {
+                page_content.css({'min-height': window_height});
+            }
+        };
+
+        // resize .page-content to window size
+        {#        $(window).on('resize', function(){#}
+        {#            resize_page_content();#}
+        {#        });#}
+        $(function () {
+            resize_page_content();
+        });
+
+    </script>
+
+    <script type="text/javascript">
+        if ("ontouchend" in document) document.write("<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.mobile.custom.min.js") }}'>" + "<" + "/script>");
+    </script>
+
+    <script type="text/javascript">
+        var get_icon = function (entity_type) {
+            switch (entity_type) {
+                case 'PREV':
+                    return 'icon-pencil';
+                    break;
+                case 'HREV':
+                    return 'icon-mail-reply-all';
+                    break;
+                case 'RTS':
+                    return 'icon-circle-blank';
+                    break;
+                case 'CMPL':
+                    return 'icon-check';
+                    break;
+                case 'WIP':
+                    return 'icon-play';
+                    break;
+                case 'WFD':
+                    return 'icon-circle';
+                    break;
+                case 'DREV':
+                    return 'icon-step-backward';
+                    break;
+                case 'OH':
+                    return 'icon-pause';
+                    break;
+                case 'STOP':
+                    return 'icon-stop';
+                    break;
+                case 'asset':
+                    return 'icon-puzzle-piece';
+                    break;
+                case 'dashboard':
+                    return 'icon-dashboard';
+                    break;
+                case 'department':
+                    return 'icon-group';
+                    break;
+                case 'group':
+                    return 'icon-key';
+                    break;
+                case 'project':
+                    return 'icon-folder-close-alt';
+                    break;
+                case 'permission':
+                    return 'icon-key';
+                    break;
+                case 'reference':
+                    return 'icon-book';
+                    break;
+                case 'resource':
+                    return 'icon-calendar';
+                    break;
+                case 'review':
+                    return 'icon-comments-alt';
+                    break;
+                case 'sequence':
+                    return 'icon-film';
+                    break;
+                case 'shot':
+                    return 'icon-camera';
+                    break;
+                case 'task':
+                    return 'icon-tasks';
+                    break;
+                case 'ticket':
+                    return 'icon-ticket';
+                    break;
+                case 'vacation':
+                    return 'icon-sun';
+                    break;
+                case 'version':
+                    return 'icon-sitemap';
+                    break;
+                case 'user':
+                    return 'icon-user';
+                    break;
+                default:
+                    return 'icon-key';
+                    break;
+            }
+        };
+    </script>
+
+    <script type="text/javascript">
+        {% if entity %}
+            $(document).ready(function () {
+                document.title = 'STALKER / {{ entity.name }}'
+            });
+        {% endif %}
+    </script>
+
+    {# Ace Settings Box #}
+    <script type="text/javascript">
+        $(document).ready(function () {
+            // hide ace-settings bar
+            $('#ace-settings-box').toggleClass('open');
+        });
+    </script>
+
+    {# copyToClipboard #}
+    <script type="text/javascript">
+        var copyToClipboard = function (text) {
+            window.prompt("Copy to clipboard: Ctrl+C, Enter", text);
+        };
+    </script>
+
+    {# Pop Flash Messages #}
+    <script type='text/javascript'>
+        $(function () {
+            $('.flash-message').slideToggle().removeClass('hide');
+        });
+
+        var flash_message = function (settings) {
+            console.debug('settings: ', settings);
+            settings.container = settings.container || 'body';
+            settings.title = settings.title || '';
+            settings.message = settings.message || '';
+            settings.type = settings.type || 'success';
+            console.debug('settings: ', settings);
+
+            var template = doT.template($('#tmpl_flash_message').text());
+            $(settings.container).prepend($.parseHTML(template(settings)));
+
+            var visible_flash_messages = $('.flash-message.hide');
+            visible_flash_messages.slideToggle().removeClass('hide');
+        }
+    </script>
+
+    {# Add came_from attribute to all a's #}
+    <script type='text/javascript'>
+        $(function () {
+            $('a.dialog').each(function (i) {
+                var href = this.getAttribute('href');
+                if (href != '#') {
+                    this.setAttribute('href', href + '?came_from={{ request.path }}')
+                }
+            });
+        });
+    </script>
+
+    {# Gantt Chart Scroll #}
+    <script type="text/javascript">
+        var scrollToTaskItem = function (start) {
+            $("#gantt_scroll_to_button").attr('start', start).trigger('click');
+        };
+    </script>
+
+    {# Chosen Field Creator #}
+    <script>
+        var chosen_field_creator = function (field, url, data_template,
+                                             selected_id, chosen_options) {
+            // Creates a chosen field
+
+            // fill field with new json data
+            // set the field to updating mode
+            field.attr('is_updating', true);
+            return $.getJSON(url).then(function (data) {
+                // remove current data
+                field.empty();
+
+                // append new options to the select
+                var data_count = data.length;
+                for (var i = 0; i < data_count; i++) {
+
+                    data[i].selected = '';
+
+                    if (data[i].id == selected_id) {
+                        data[i].selected = 'selected';
+                    }
+
+                    field.append(data_template(data[i]));
+                }
+                // set the field to normal mode
+                field.attr('is_updating', false);
+            });
+        };
+    </script>
+
+    {# Event Dialog Initialize #}
+    <script type="text/javascript">
+        $(function () {
+            var event_dialog = $('#dialog_template');
+            event_dialog.on('shown', function (e) {
+                $('#dialog_template_delete_button').hide()
+                e.stopPropagation();
+                e.preventDefault();
+                try {
+                    setTimeout(function(){
+                        // init_dialog() will be loaded with the dialog itself
+                        init_dialog();
+                    });
+                } catch (e) {
+                    console.log(e);
+                }
+            });
+            event_dialog.on('hidden', function (e) {
+                e.stopPropagation();
+                e.preventDefault();
+                try {
+                    setTimeout(function(){
+                        // destruct_dialog() will be loaded with the dialog itself
+                        destruct_dialog();
+                    });
+                } catch (e) {
+                    console.log(e);
+                }
+            });
+        })
+    </script>
+
+    {# HTML Dialog Initialize #}
+    <script type="text/javascript">
+        $(function () {
+            var html_dialog = $('#html_template');
+            html_dialog.on('shown', function (e) {
+                 e.stopPropagation();
+                e.preventDefault();
+                try {
+                    init_html_modal();
+                } catch (e) {
+                    console.log(e)
+                }
+            });
+            html_dialog.on('hidden', function (e) {
+                 e.stopPropagation();
+                e.preventDefault();
+
+                try {
+                    destruct_html_modal();
+                } catch (e) {
+                    console.log(e)
+                }
+            });
+        })
+    </script>
+
+    {# Inline Edits #}
+    <script>
+        $(function () {
+            $.fn.editable.defaults.mode = 'inline';
+            $.fn.editableform.loading = "<div class='editableform-loading'><i class='light-blue icon-2x icon-spinner icon-spin'></i></div>";
+            $.fn.editableform.buttons = '<button type="submit" class="btn btn-info editable-submit"><i class="icon-ok icon-white"></i></button>'+
+                                        '<button type="button" class="btn editable-cancel"><i class="icon-remove"></i></button>';
+        });
+    </script>
+
+{% endblock scripts %}
+
+{# EXTRA-SCRIPTS #}
+{% block extrascripts %}
+{% endblock extrascripts %}
+
+</body>
+</html>

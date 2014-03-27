@@ -1,0 +1,105 @@
+{# Stalker Pyramid a Web Base Production Asset Management System
+ Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
+
+ This file is part of Stalker Pyramid.
+
+ This library is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation;
+ version 2.1 of the License.
+
+ This library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Lesser General Public License for more details.
+
+ You should have received a copy of the GNU Lesser General Public
+ License along with this library; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+#}
+{% extends "base.jinja2" %}
+
+{# SIDEBAR #}
+{% block sidebar %}
+
+    {% include 'sidebar.jinja2' %}
+
+{% endblock sidebar %}
+
+{# BREADCRUMBS #}
+{% block breadcrumbs %}
+    {% set page_title='Projects' %}
+    {% include 'breadcrumb/breadcrumbs.jinja2' %}
+{% endblock breadcrumbs %}
+
+{# PAGE-CONTENT #}
+{% block page_content %}
+    {% set page_title='Projects' %}
+    {% include 'page_header.jinja2' %}
+
+
+    {% set add_button_address=request.route_path('project_dialog', id=-1, mode='create') %}
+    {% set address=request.route_path('get_entity_projects', id=entity.id) %}
+    {% set list_item_type='Project' %}
+    {% include 'components/data_table.jinja2' %}
+
+{% endblock page_content %}
+
+{# EXTRA-SCRIPTS #}
+{% block extrascripts %}
+
+    {% raw %}
+    <script id="tmpl_itemThead" type="text/x-dot-template">
+
+    <tr>
+        <th>Thumbnail</th>
+        <th>Project</th>
+        <th>Lead</th>
+        <th>Created By</th>
+        <th>Users</th>
+        <th>Completed</th>
+    </tr>
+    </script>
+    {% endraw %}
+
+    {% raw %}
+    <script id="tmpl_itemRow" type="text/x-dot-template">
+        <tr>
+            <td><img style='width:auto; height: 50px;'
+                     class="img-thumbnail"
+                     src="{{=it.thumbnail_full_path }}">
+            </td>
+            <td><a href='/projects/{{=it.id }}/view'>{{=it.name}}</a>
+            </td>
+            <td><a href='/users/{{=it.lead_id}}/view'>{{=it.lead_name}}</a>
+            </td>
+            <td><a href='/users/{{=it.created_by_id}}/view'>{{=it.created_by_name}}</a>
+            </td>
+            <td>{{=it.users_count}}</td>
+            <td>
+                <div>
+                    <span>{{=it.status}}</span>
+                </div>
+                <div class="progress progress-success">
+                    <div style="width:{{=it.completed}}%"
+                         class="bar">
+                        <span class="center">{{=it.percent_complete}}%</span>
+                    </div>
+                </div>
+
+            </td>
+        </tr>
+    </script>
+    {% endraw %}
+
+    <script>
+
+        var tableParameters = {}
+        var sortingParameters = [[0, 'asc'], [1, 'desc']]
+        var tableDataAddress = '{{ request.route_path('get_entity_projects', id=entity.id) }}'
+
+     console.log('tableDataAddress' + tableDataAddress)
+
+    </script>
+
+{% endblock extrascripts %}

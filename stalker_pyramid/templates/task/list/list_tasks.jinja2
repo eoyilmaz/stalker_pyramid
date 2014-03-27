@@ -1,0 +1,1172 @@
+{% raw %}
+<script id="tmpl_projectEditRow" type="text/x-dot-template">
+    <div class="projectEditRow"
+         dataId="{{=it.id}}"
+         name="{{=it.name}}"
+         start={{=it.start}}
+         end={{=it.end}}
+         type="{{=it.type}}"
+         hasChildren={{=it.hasChildren}}>
+        <i class="{{? it.type == 'Task' }}
+          icon-tasks
+          {{?? it.type == 'Asset' }}
+          icon-puzzle-piece
+          {{?? it.type == 'Shot' }}
+          icon-camera
+          {{?? it.type == 'Sequence' }}
+          icon-film
+          {{?? it.type == 'Project' }}
+          icon-folder-close-alt
+          {{?}}">&nbsp</i>
+        <a href="{{=it.link}}">{{=it.name}}</a>
+    </div>
+</script>
+
+<script id="tmpl_projectBar" type="text/x-dot-template">
+    <div class="projectBox" projectId="{{=it.id}}">
+        <div class="layout">
+            <div class="projectLabel">
+                <i class="{{? it.type == 'Task' }}
+                    icon-tasks
+                    {{?? it.type == 'Asset' }}
+                    icon-puzzle-piece
+                    {{?? it.type == 'Shot' }}
+                    icon-camera
+                    {{?? it.type == 'Sequence' }}
+                    icon-film
+                    {{?? it.type == 'Project' }}
+                    icon-folder-close-alt
+                    {{?}}">&nbsp</i>
+                {{=it.link()}}
+            </div>
+        </div>
+    </div>
+</script>
+
+
+<script id="tmpl_taskBar" type="text/x-dot-template">
+    <div class="taskBox" dataId="{{=it.id}}">
+        <div class="layout {{=it.hasExternalDep?'extDep':''}}">
+            <div class="taskProgress"
+                 style="width:{{=it.progress > 100 ? 100 : it.progress }}%;"></div>
+            <div class="taskExtraTiming"
+                 style="width:{{=(it.schedule_timing - it.bid_timing)/it.schedule_timing*100}}%;"></div>
+            <div class="taskScheduleModel">
+                {{=it.schedule_model.toUpperCase()[0]}}:
+                {{=it.schedule_timing}}{{=it.schedule_unit}}
+            </div>
+            <div class="taskLabel">
+                <i class="{{? it.type == 'Task' }}
+              icon-tasks
+              {{?? it.type == 'Asset' }}
+              icon-puzzle-piece
+              {{?? it.type == 'Shot' }}
+              icon-camera
+              {{?? it.type == 'Sequence' }}
+              icon-film
+              {{?? it.type == 'Project' }}
+              icon-folder-close-alt
+              {{?}}">&nbsp</i>
+                {{=it.link()}}
+            </div>
+            <div class="milestone end {{=it.endIsMilestone ? 'active' : ''}}"></div>
+            <div class="taskResourceLabel">{{=it.getResourcesLinks()}}
+            </div>
+            {{=it.clippedStart?'
+            <div class="leftArrowHead">&nbsp</div>
+            ':''}}
+            {{=it.clippedEnd?'
+            <div class="rightArrowHead">&nbsp</div>
+            ':''}}
+        </div>
+    </div>
+</script>
+
+<script id="tmpl_taskEditRow" type="text/x-dot-template">
+    <i class="{{? it.type == 'Task' }}
+          icon-tasks
+          {{?? it.type == 'Asset' }}
+          icon-puzzle-piece
+          {{?? it.type == 'Shot' }}
+          icon-camera
+          {{?? it.type == 'Sequence' }}
+          icon-film
+          {{?? it.type == 'Project' }}
+          icon-folder-close-alt
+          {{?}}">&nbsp</i>
+    <a href="/tasks/{{=it.id}}/view"
+       name="{{=it.id}}"
+       type="{{=it.type}}">{{=it.name}}</a>
+</script>
+
+
+<script id="tmpl_parentTaskEditRow" type="text/x-dot-template">
+    <div class="{{=it.contextMenuClass}}"
+         dataId="{{=it.id}}"
+         name="{{=it.name}}"
+         start={{=it.start}}
+         end={{=it.end}}
+         type="{{=it.type}}"
+         hasChildren={{=it.hasChildren}}>
+        <i class="{{? it.type == 'Task' }}
+            icon-tasks
+            {{?? it.type == 'Asset' }}
+            icon-puzzle-piece
+            {{?? it.type == 'Shot' }}
+            icon-camera
+            {{?? it.type == 'Sequence' }}
+            icon-film
+            {{?? it.type == 'Project' }}
+            icon-folder-close-alt
+            {{?}}">&nbsp</i>
+        <a href="{{=it.link}}">{{=it.name}}</a>
+    </div>
+</script>
+
+
+<script id="tmpl_parentTaskBar" type="text/x-dot-template">
+    <div class="parentTaskBox" dataId="{{=it.id}}">
+        <div class="layout {{=it.hasExternalDep?'extDep':''}}">
+            <div class="leftPin"></div>
+            <div class="rightPin"></div>
+            <div class="taskLabel">
+                <i class="{{? it.type == 'Task' }}
+                    icon-tasks
+                    {{?? it.type == 'Asset' }}
+                    icon-puzzle-piece
+                    {{?? it.type == 'Shot' }}
+                    icon-camera
+                    {{?? it.type == 'Sequence' }}
+                    icon-film
+                    {{?? it.type == 'Project' }}
+                    icon-folder-close-alt
+                    {{?}}">&nbsp</i>
+                {{=it.link()}}
+            </div>
+        </div>
+    </div>
+</script>
+
+<script id="tmpl_taskLink" type="text/x-dot-template">
+    <a href="/tasks/{{=it.id}}/view">{{=it.name}}</a>
+</script>
+
+<script id='tmpl_resourceLink' type='text/x-dot-template'>
+    <a href="/users/{{=it.id}}/view">{{=it.name}}</a>
+</script>
+
+<script id="tmpl_projectLink" type="text/x-dot-template">
+    <a href="/projects/{{=it.id}}/view">{{=it.name}}</a>
+</script>
+
+{% endraw %}
+
+<script type='text/javascript'>
+    // ************************************************************************
+    // load templates with doT.js
+    var templates = {};
+
+    templates.projectBar = doT.template(document.getElementById('tmpl_projectBar').text);
+    templates.parentTaskBar = doT.template(document.getElementById('tmpl_parentTaskBar').text);
+    templates.taskBar = doT.template(document.getElementById('tmpl_taskBar').text);
+
+    templates.projectEditRow = doT.template(document.getElementById('tmpl_projectEditRow').text);
+    templates.parentTaskEditRow = doT.template(document.getElementById('tmpl_parentTaskEditRow').text);
+    templates.taskEditRow = doT.template(document.getElementById('tmpl_taskEditRow').text);
+
+    templates.projectLink = doT.template(document.getElementById('tmpl_projectLink').text);
+    templates.taskLink = doT.template(document.getElementById('tmpl_taskLink').text);
+    templates.resourceLink = doT.template(document.getElementById('tmpl_resourceLink').text);
+
+</script>
+
+{# Some default variables before doing anything #}
+{% if entity.entity_type == 'Project' %}
+    {% set project = entity %}
+{% elif entity.entity_type in ['Task', 'Asset', 'Shot', 'Sequence'] %}
+    {% set project = entity.project %}
+{% endif %}
+
+
+<div class="row-fluid">
+<div class="span12">
+<!--PAGE CONTENT BEGINS-->
+
+<div class="left">
+
+<div class="btn-toolbar">
+
+<div class="btn-group">
+    <button data-toggle="dropdown"
+            class="btn btn-small btn-danger dropdown-toggle">
+        <i class="icon-gears bigger-120"></i>Action<span class="caret"></span>
+    </button>
+
+    <ul class="dropdown-menu" role='menu'>
+        {% if project and has_permission('Create_Task') %}
+            <li class="dropdown-submenu">
+
+                <a href="#" tabindex="-1">
+                    <i class="'ui-icon icon-plus bigger-120">&nbsp</i>
+                    Create
+                </a>
+
+                <ul class="dropdown-menu dropdown-danger">
+
+                    <li>
+                        <a data-target="#dialog_template"
+                           data-toggle="modal"
+                           data-keyboard=false
+                           href='{{ request.route_url("create_task_dialog", id=-1, _query={'project_id': project.id}) }}'>
+                            <i class="'ui-icon icon-tasks bigger-120">&nbsp</i>
+                            Task
+                        </a>
+                    </li>
+
+                    <li>
+                        <a id='child_task_button'
+                           original-href='{{ request.route_url("create_task_dialog", id=-1) }}'
+                           href='#'>
+                            <i class="'ui-icon icon-tasks bigger-120">&nbsp</i>
+                            Child Task
+                        </a>
+                    </li>
+
+                    <li>
+                        <a id='dependent_task_button'
+                           original-href='{{ request.route_url("create_task_dialog", id=-1) }}'
+                           href='#'>
+                            <i class="'ui-icon icon-tasks bigger-120">&nbsp</i>
+                            Dependent Task
+                        </a>
+                    </li>
+
+                    <li class="divider"></li>
+
+                    <li>
+                        <a data-target="#dialog_template"
+                           data-toggle="modal"
+                           data-keyboard=false
+                           href='{{ request.route_url("create_asset_dialog", id=-1, _query={'project_id': project.id}) }}'>
+                            <i class="'ui-icon icon-puzzle-piece bigger-120">&nbsp</i>
+                            Asset
+                        </a>
+                    </li>
+
+                    <li>
+                        <a data-target="#dialog_template"
+                           data-toggle="modal"
+                           data-keyboard=false
+                           href='{{ request.route_url("create_shot_dialog", id=-1, _query={'project_id': project.id}) }}'>
+                            <i class="'ui-icon icon-camera bigger-120">&nbsp</i>
+                            Shot
+                        </a>
+                    </li>
+
+                    <li>
+                        <a data-target="#dialog_template"
+                           data-toggle="modal"
+                           data-keyboard=false
+                           href='{{ request.route_url("create_sequence_dialog", id=-1, _query={'project_id': project.id}) }}'>
+                            <i class="'ui-icon icon-film bigger-120">&nbsp</i>
+                            Sequence
+                        </a>
+                    </li>
+                </ul>
+            </li>
+        {% endif %}
+
+        {% if has_permission('Update_Task') %}
+            <li>
+                <a id='update_task_menu_item'
+                   data-target="#dialog_template"
+                   data-toggle="modal"
+                   data-keyboard=false
+                   href="#"
+                   tabindex="-1">
+                    <i class="'ui-icon icon-pencil bigger-120">&nbsp</i>
+                    Update
+                </a>
+            </li>
+        {% endif %}
+
+        {% if has_permission('Create_Task') %}
+            <li>
+                <a id="duplicate_task_hierarchy_menu_item">
+                    <i class="'ui-icon icon-copy bigger-120">&nbsp</i>
+                    Duplicate Hierarchy
+                </a>
+            </li>
+        {% endif %}
+
+        {% if has_permission('Delete_Task') %}
+            <li>
+                <a id="delete_task_menu_item"
+                   class="red"
+                   href=''>
+                    <i class="'ui-icon icon-trash bigger-120">&nbsp</i>
+                    Delete
+                </a>
+            </li>
+        {% endif %}
+
+        <li class="divider"></li>
+
+        <li>
+            <a id='add_time_log_menu_item'
+               class="green"
+               href='#'>
+                <i class="'ui-icon icon-time bigger-120">&nbsp</i>
+                Add Time Log
+            </a>
+        </li>
+
+        <li>
+            <a id='request_review_menu_item'
+               class="orange"
+               data-target="#dialog_template"
+               data-toggle="modal"
+               data-keyboard="false"
+               href="#">
+                <i class="'ui-icon icon-comment bigger-120">&nbsp</i>
+                Request Review
+            </a>
+        </li>
+        <li>
+            <a id='create_ticket_menu_item'
+               class="blue"
+               data-target="#dialog_template"
+               data-toggle="modal"
+               data-keyboard="false"
+               href="#">
+                <i class="'ui-icon icon-ticket bigger-120">&nbsp</i>
+                Create Ticket
+            </a>
+        </li>
+
+    </ul>
+</div>
+
+<div class="input-prepend"
+     style="height: 30px;
+                            margin-left: 5px;
+                            margin-bottom: 0px;">
+    <input id='task_start_end_date_range_picker'
+           name='start_and_end_dates'
+           type="text"
+           data-date-format="yyyy-mm-dd"
+           placeholder="Start & End Dates">
+                        <span class="add-on">
+                            <i class="icon-calendar"></i>
+                        </span>
+</div>
+
+<div class="input-prepend"
+     style="height: 30px;
+                            margin-bottom: 0px;
+                            margin-left: 6px;
+                            margin-right: 5px;
+                            ">
+    <select id='zoom_level'
+            name='start_and_end_dates'>
+        <option value="h">Hours</option>
+        <option value="d">Days</option>
+        <option value="w" selected>Weeks</option>
+        <option value="m">Months</option>
+        <option value="y">Years</option>
+    </select>
+</div>
+
+<div id="gantt_update_zoom_level_button" class="btn-group">
+    <button class="btn btn-small btn-warning">
+        <span class="icon-refresh bigger-120"></span>
+        Update
+    </button>
+</div>
+
+
+<div id="gantt_reload_button" class="btn-group">
+    <button class="btn btn-small btn-success">
+        <span class="icon-retweet bigger-120"></span>
+        Reload
+    </button>
+</div>
+
+<div id="gantt_refresh_button" class="btn-group">
+    <button class="btn btn-small btn-info">
+        <span class="icon-undo bigger-120"></span>
+        Redraw
+    </button>
+</div>
+
+{% if has_permission('Update_Task') %}
+    <div id="gantt_schedule_tasks_button" class="btn-group">
+        <button class="btn btn-small btn-purple">
+            <span class="icon-wrench bigger-120"></span>
+            Schedule
+        </button>
+        <div id="schedule-dialog-message" class="hide">
+            <div class="progress progress-warning progress-small progress-striped active">
+                <div class="bar" style="width: 100%;"></div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+<div id="gantt_go_to_today_button" class="btn-group">
+    <button class="btn btn-small btn-default">
+        <i class="icon-arrow-right bigger-120"></i>
+        Go To Today
+    </button>
+    <div id="gantt_scroll_to_button" class="hidden" start="0"></div>
+</div>
+
+<div id="gantt_zoom_selection" class="btn-group">
+    <button class="btn btn-small btn-danger"
+            data-loading-text='<i class="icon-search bigger-120"></i>Zooming...'>
+        <i class="icon-search bigger-120"></i>
+        Drag To Zoom
+    </button>
+</div>
+
+<div class="btn-group">
+    <a href="#"
+       data-toggle="dropdown"
+       class="btn btn-small btn-info dropdown-toggle">Toggle Columns<span
+            class="caret"></span>
+    </a>
+    <ul class="dropdown-menu">
+        <li>
+            <input class="ace" type="checkbox" name="columns[]"
+                   id="action_column_toggler" checked=true/>
+            <label class="lbl" for="action_column_toggler">Action</label>
+        </li>
+
+        <li>
+            <input class="ace" type="checkbox" name="columns[]"
+                   id="id_column_toggler" checked=true/>
+            <label class="lbl" for="id_column_toggler">Id</label>
+        </li>
+
+        <li>
+            <input class="ace" type="checkbox" name="columns[]"
+                   id="name_column_toggler" checked=true/>
+            <label class="lbl" for="name_column_toggler">Name</label>
+        </li>
+
+        <li>
+            <input class="ace" type="checkbox" name="columns[]"
+                   id="complete_column_toggler" checked=true/>
+            <label class="lbl" for="complete_column_toggler">% Complete</label>
+        </li>
+
+        <li>
+            <input class="ace" type="checkbox" name="columns[]"
+                   id="resource_column_toggler" checked=true/>
+            <label class="lbl" for="resource_column_toggler">Resource</label>
+        </li>
+
+        <li>
+            <input class="ace" type="checkbox" name="columns[]"
+                   id="timing_column_toggler" checked=true/>
+            <label class="lbl" for="timing_column_toggler">Timing</label>
+        </li>
+
+        <li>
+            <input class="ace" type="checkbox" name="columns[]"
+                   id="start_column_toggler" checked=true/>
+            <label class="lbl" for="start_column_toggler">Start</label>
+        </li>
+
+        <li>
+            <input class="ace" type="checkbox" name="columns[]"
+                   id="end_column_toggler" checked=true/>
+            <label class="lbl" for="end_column_toggler">End</label>
+        </li>
+
+        <li>
+            <input class="ace" type="checkbox" name="columns[]"
+                   id="status_column_toggler" checked=true/>
+            <label class="lbl" for="status_column_toggler">Status</label>
+        </li>
+
+        <li>
+            <input class="ace" type="checkbox" name="columns[]"
+                   id="dependencies_column_toggler" checked=true/>
+            <label class="lbl"
+                   for="dependencies_column_toggler">Dependencies</label>
+        </li>
+
+        <li>
+            <input class="ace" type="checkbox" name="columns[]"
+                   id="chart_column_toggler" checked=true/>
+            <label class="lbl" for="chart_column_toggler">Chart</label>
+        </li>
+    </ul>
+</div>
+
+{#                <div id="task_info_widget" class="widget-box">#}
+{#                    <div class="widget-header">#}
+{#                        <h5>Task Info</h5>#}
+{#                        <div class="widget-toolbar">#}
+{#                            <a href="#" data-action="reload">#}
+{#                                <i class="icon-refresh"></i>#}
+{#                            </a>#}
+{##}
+{#                            <a href="#" data-action="collapse">#}
+{#                                <i class="icon-chevron-up"></i>#}
+{#                            </a>#}
+{##}
+{#                            <a href="#" data-action="close">#}
+{#                                <i class="icon-remove"></i>#}
+{#                            </a>#}
+{#                        </div>#}
+{##}
+{#                        <div class="widget-body">#}
+{#                            <div class="widget-main">#}
+{#                                <table class="table table-striped table-bordered table-hover">#}
+{#                                    <tbody>#}
+{#                                        <tr>#}
+{#                                            <td class="">Alex</td>#}
+{#                                            <td><a href="#">alex@email.com</a></td>#}
+{#                                            <td class="hidden-480"><span class="label label-warning">Pending</span></td>#}
+{#                                        </tr>#}
+{#                                    </tbody>#}
+{#                                </table>#}
+{#                            </div>#}
+{#                        </div>#}
+{##}
+{#                    </div>#}
+{#                </div>#}
+</div>
+
+
+<div class="row-fluid">
+    <div id="{{ entity.entity_type }}_{{ entity.id }}_gantt"
+         class='gantt'
+         style='height: 700px'></div>
+</div>
+</div>
+<!--PAGE CONTENT ENDS-->
+</div>
+<!--/.span-->
+</div>
+
+<script type='text/javascript'
+        data-dojo-config="async: true, parseOnLoad: true"
+        src='{{ request.static_url("stalker_pyramid:static/dojo/dojo.js") }}'>
+</script>
+
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/daterangepicker.min.js") }}'></script>
+
+<script type="text/javascript">
+
+require([
+    'dijit/registry',
+
+    'dijit/form/Button',
+    'dijit/form/FilteringSelect',
+    'dijit/Menu',
+    'dijit/MenuItem',
+    'dijit/MenuSeparator',
+    'dijit/form/DateTextBox',
+    'dijit/Tooltip',
+
+    'dojo/cookie',
+    'dojo/json',
+    'dojo/query',
+    'dojo/store/Cache',
+    'dojo/store/Memory',
+    'dojo/store/JsonRest',
+    'dojo/request/xhr',
+    'dojo/_base/lang',
+    'dojo/Deferred',
+    'dojo/when',
+    'dojo/date',
+
+    "dgrid/List",
+    "dgrid/Grid",
+    'dojox/data/JsonRestStore',
+
+    'stalker/js/dialogs',
+    'stalker/js/dialogCaller',
+    'stalker/js/dialogCreator',
+    'stalker/js/GanttGrid',
+
+    'dojo/domReady!'
+], function (registry, Button, FilteringSelect, Menu, MenuItem, MenuSeparator,
+             DateTextBox, Tooltip, cookie, json, query, Cache, Memory,
+             JsonRest, xhr, lang, Deferred, when, date, List, Grid,
+             JsonRestStore, dialogs, dialogCaller, dialogCreator, GanttGrid) {
+
+    // The Memory
+    var target = '/tasks/';
+    var tasks_memory_store = new Memory();
+
+    {% if entity.entity_type == 'User' %}
+        target = '{{ request.route_url('get_entity_tasks', id=entity.id) }}';
+        {#    {% elif entity.entity_type == 'Studio' %}#}
+        {#        target = '{{ request.route_url('get_studio_tasks', id=entity.id) }}';#}
+    {% endif %}
+    {#    console.debug('target : ', target);#}
+
+    var tasks_jsonRest_store = new JsonRest({
+        target: target,
+        getChildren: function (parent, options) {
+            return this.query({parent_id: parent.id}, options);
+        },
+        mayHaveChildren: function (parent) {
+            return parent.hasChildren;
+        }
+    });
+    var tasks_cache_store = new Cache(tasks_jsonRest_store, tasks_memory_store);
+
+    var gantt_chart_dom_id = '{{ entity.entity_type }}_{{ entity.id }}_gantt';
+    var gantt_chart_dgrid_id = '{{ entity.entity_type }}_{{ entity.id }}_gantt_dgrid';
+
+    // allow the gantt to resize with the window
+    $(window).on('resize', function () {
+        var gantt_height = $(window).height() - 170;
+        {# 230 #}
+        $('#' + gantt_chart_dom_id).css({height: gantt_height});
+    });
+    $(window).trigger('resize');
+
+    var gantt_chart = new GanttGrid({
+        id: gantt_chart_dgrid_id,
+        width: '100%',
+        autoHeight: true,
+        store: tasks_cache_store,
+        query: {
+            // initialize with the entity itself
+            task_id: {{ entity.id }}
+        },
+        loadingMessage: "<div style='float: left' class='dijitIconLoading'>&nbsp</div><div>Loading</div>",
+        noDataMessage: "",
+        pageSkip: 0,
+        cellNavigation: false
+    }, gantt_chart_dom_id);
+    gantt_chart.startup();
+
+    // ceter on today
+    setTimeout(
+        function () {
+            gantt_column.centerOnToday();
+        },
+        0
+    );
+
+    // column togglers
+    // TODO: implement it to the GanttGrid
+    $('#action_column_toggler').on('click', function (e) {
+        gantt_chart.toggle_column('action');
+        setTimeout(function () {
+            gantt_column.refresh();
+        }, 0);
+    });
+    $('#id_column_toggler').on('click', function (e) {
+        gantt_chart.toggle_column('id');
+        setTimeout(function () {
+            gantt_column.refresh();
+        }, 0);
+    });
+    $('#name_column_toggler').on('click', function (e) {
+        gantt_chart.toggle_column('name');
+        setTimeout(function () {
+            gantt_column.refresh();
+        }, 0);
+    });
+    $('#complete_column_toggler').on('click', function (e) {
+        gantt_chart.toggle_column('complete');
+        setTimeout(function () {
+            gantt_column.refresh();
+        }, 0);
+    });
+    $('#resource_column_toggler').on('click', function (e) {
+        gantt_chart.toggle_column('resource');
+        setTimeout(function () {
+            gantt_column.refresh();
+        }, 0);
+    });
+    $('#timing_column_toggler').on('click', function (e) {
+        gantt_chart.toggle_column('timing');
+        setTimeout(function () {
+            gantt_column.refresh();
+        }, 0);
+    });
+    $('#start_column_toggler').on('click', function (e) {
+        gantt_chart.toggle_column('start');
+        setTimeout(function () {
+            gantt_column.refresh();
+        }, 0);
+    });
+    $('#end_column_toggler').on('click', function (e) {
+        gantt_chart.toggle_column('end');
+        setTimeout(function () {
+            gantt_column.refresh();
+        }, 0);
+    });
+    $('#status_column_toggler').on('click', function (e) {
+        gantt_chart.toggle_column('status');
+        setTimeout(function () {
+            gantt_column.refresh();
+        }, 0);
+    });
+    $('#dependencies_column_toggler').on('click', function (e) {
+        gantt_chart.toggle_column('dependencies');
+        setTimeout(function () {
+            gantt_column.refresh();
+        }, 0);
+    });
+    $('#chart_column_toggler').on('click', function (e) {
+        gantt_chart.toggle_column('set-1');
+        $(".dgrid-column-set-scroller.dgrid-scrollbar-height.dgrid-column-set-scroller-1").toggle();
+        $(".dgrid-column-set-scroller-1").toggle();
+        setTimeout(function () {
+            gantt_column.refresh();
+        }, 0);
+    });
+
+    // register cell selection function
+    gantt_chart.on('dgrid-select', function (e) {
+        var selected_ids = gantt_chart.selected_ids();
+        if (selected_ids.length > 0) {
+            // update create child task
+            var child_task_button = $('#child_task_button');
+            var parent_org_href = child_task_button.attr('original-href');
+            // update parent id
+            var parent_href = parent_org_href + '?parent_id=' + selected_ids[0];
+            child_task_button.attr('href', parent_href);
+
+            // update create dependent task buttons
+            var dependent_task_button = $('#dependent_task_button');
+            var dependent_org_href = dependent_task_button.attr('original-href');
+            var dep_ids_param = '?';
+            for (var i = 0; i < selected_ids.length; i++) {
+                dep_ids_param += (i > 0) ? '&' : '';
+                dep_ids_param += 'dependent_id=' + selected_ids[i];
+            }
+            var dependent_href = dependent_org_href + dep_ids_param;
+            dependent_task_button.attr('href', dependent_href);
+
+            // update update button
+            $('#update_task_menu_item').attr(
+                'href',
+                '/tasks/' + selected_ids[0] + '/update/dialog'
+            );
+
+            $('#add_time_log_menu_item').attr(
+                'href',
+                '/entities/' + selected_ids[0] + '/timelogs/create/dialog'
+            );
+
+            $('#request_review_menu_item').attr(
+                'href',
+                '/tasks/' + selected_ids[0] + '/request_review/dialog'
+            );
+
+            $.getJSON('/tasks/' + selected_ids[0] + '/').then(function (data) {
+                $('#create_ticket_menu_item').attr(
+                    'href',
+                    '/tickets/-1/create/dialog?task_id='+ selected_ids[0] + '&project_id={{ project_id }}'
+                );
+            });
+
+
+
+        }
+    });
+
+    {#    $('#request_review_menu_item').on('click', function(e) {#}
+    {#        e.preventDefault();#}
+    {#        e.stopPropagation();#}
+    {##}
+    {#        var selected_ids = gantt_chart.selected_ids();#}
+    {##}
+    {#        #}
+    {##}
+    {#        bootbox.confirm(#}
+    {#            '<div id="message" class="alert alert-info bigger-110"><p>This will send a ' +#}
+    {#            '<strong>review request</strong> ' +#}
+    {#            'to the responsible of this task and you will ' +#}
+    {#            '<strong>not</strong> be able to ' +#}
+    {#            '<strong>create any TimeLogs</strong> for this task ' +#}
+    {#            'after this point<br><br><strong>Are you sure?</strong></div>',#}
+    {#            function (result) {#}
+    {#                if (result) {#}
+    {#                    // get the ids and send it to the server#}
+    {#                    var url = '';#}
+    {#                    for (var i=0; i < selected_ids.length; i += 1){#}
+    {#                        url = '/tasks/' + selected_ids[i] + '/request_review';#}
+    {#                        $.post(url).done(function(response){#}
+    {#                            bootbox.alert(response);#}
+    {#                        }).fail(function(jqXHR){#}
+    {#                            bootbox.alert(jqXHR.responseText);#}
+    {#                        });#}
+    {#                    }#}
+    {#                }#}
+    {#            }#}
+    {#        )#}
+    {#    });#}
+
+    var select_first_and_do_something = function (e, callback) {
+        e.preventDefault();
+        e.stopPropagation();
+        // check if something is selected first
+        var selected_ids = gantt_chart.selected_ids();
+        if (selected_ids.length == 0) {
+            bootbox.alert('Please select a task first!');
+        } else {
+            if (typeof(callback) === 'function') {
+                return callback();
+            } else {
+                return callback;
+            }
+        }
+    };
+
+    var select_first_and_show_task_dialog = function (e, self) {
+        select_first_and_do_something(e, function () {
+            $("#dialog_template").modal({
+                target: '#dialog_template',
+                keyboard: false,
+                remote: self.attr('href')
+            });
+        });
+    };
+
+    // create buttons
+    $('#child_task_button').on('click', function (e) {
+        select_first_and_show_task_dialog(e, $(this));
+    });
+    $('#dependent_task_button').on('click', function (e) {
+        select_first_and_show_task_dialog(e, $(this));
+    });
+
+    // duplicate hierarchy button
+    $('#duplicate_task_hierarchy_menu_item').on('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var self = $(this);
+
+        var selected_ids = gantt_chart.selected_ids();
+        {# TODO: update it to display task names in the message #}
+        {#        var task_id;#}
+        {#        var tasks = [];#}
+        {#        for (var i=0; i < selected_ids.length(); i++){#}
+        {#            // get task info#}
+        {#            task_id = selected_ids[i];#}
+        {#            $.get('/tasks/' + task_id + '/').done(function(data){#}
+        {#                tasks.push(data);#}
+        {#            });#}
+        {#        }#}
+
+        $.getJSON('/entities/' + selected_ids[0] + '/').then(function (data) {
+
+            console.log('data name'+ data[0].name);
+            // warn the user about what is going to happen and ask if it is ok
+
+            bootbox.confirm(
+                "<form id='infos' action=''>\
+                    <div class='control-group'>\
+                        <label class='span3 control-label' for='dup_task_name'>Duplicated Task Name</label>\
+                        <div class='span4'>\
+                            <input type='text' id='dup_task_name' class='input-block-level' name='dup_task_name' value='"+data[0].name+"' required>\
+                        </div>\
+                    </div>\
+                    <div class='control-group'>\
+                        <label class='span3 control-label' for='dup_task_description'>Duplicated Task Description</label>\
+                        <div class='span4'>\
+                        <textarea id='dup_task_description' name='dup_task_description' class='autosize-transition span4' style='overflow: hidden; word-wrap: break-word;resize: horizontal;height: 50px;'></textarea>\
+                        </div>\
+                    </div>\
+                </form>",
+                function (result) {
+                    if (result) {
+                        // get the id and send it to the server
+                        var url = '';
+                        for (var i = 0; i < selected_ids.length; i++) {
+                            url = '/tasks/' + selected_ids[i] + '/duplicate?name=' +  $('#dup_task_name').val()+'&description='+  $('#dup_task_description').val();
+                            $.post(url).done(function () {
+                                gantt_column.reload();
+                            }).fail(function (jqXHR){
+                                bootbox.alert(jqXHR.responseText);
+                            });
+                        }
+                    }
+                });
+            })
+    });
+
+    $('#add_time_log_menu_item').on('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        var start = new Date();
+        start.clearTime();
+        start.setHours(10); // TODO: this is hard coded and not good
+
+        var end = new Date();
+        end.clearTime();
+        end.setHours(19); // TODO: this is hard coded and not good
+
+        var allDay = false;
+        var event_dialog = $('#dialog_template');
+
+        event_dialog.attr('start', start);
+        event_dialog.attr('end', end);
+        event_dialog.attr('allDay', allDay);
+
+        event_dialog.modal({
+            'remote': $(this).attr('href') + '?came_from="' + window.location.pathname + '"'
+        });
+    });
+
+    $('#delete_task_menu_item').on('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        // get the selection list
+        var selected_ids = gantt_chart.selected_ids();
+        console.debug('selected_ids: ', selected_ids);
+        if (selected_ids.length == 0) {
+            bootbox.alert('Please select at least one item from the ' +
+                    'GanttChart!');
+            return;
+        }
+
+        // warn the user about what is going to happen
+        var message_text = 'All the selected tasks and their child tasks and ' +
+            'all the TimeLogs entered and all the Versions ' +
+            'created for those tasks are going to be deleted.<br><br>' +
+            'Are you sure?';
+        
+        bootbox.confirm(message_text, function (result) {
+            if (result) {
+                var id;
+                // TODO: users will probably select parent and child items
+                // together and server will not be able to find the child tasks
+                // after the parent has deleted, so consider that in server
+                // side.
+                for (var i = 0; i < selected_ids.length; i++) {
+                    id = selected_ids[i];
+                    $.post(
+                        '/tasks/' + id + '/delete'
+                    ).done(function (response_text) {
+                        bootbox.alert(response_text);
+                        // reload the gantt chart
+                        gantt_column.reload();
+                    }).fail(function (jqXHR) {
+                        bootbox.alert(jqXHR.responseText);
+                    });
+                }
+            }
+        });
+    });
+
+    // get the gantt column
+    var gantt_column = gantt_chart.columnSets[1][0][0];
+
+    $("#gantt_update_zoom_level_button").on('click', function(e) {
+        // update date values
+        var start_and_end_dates_as_string = $('#task_start_end_date_range_picker').val();
+        var dates = start_and_end_dates_as_string.split(' - ');
+        var start_date = moment(dates[0], 'MM-DD-YYYY').startOf('day');
+        var end_date = moment(dates[1], 'MM-DD-YYYY').endOf('day');
+
+        // get zoom level
+        var zoom_level = $('#zoom_level').val();
+
+        // get the total amount of element going to be rendered
+        var element_count = gantt_column.guess_element_count(+start_date, +end_date, zoom_level);
+
+        var do_update = function () {
+            gantt_column.start = +start_date;
+            gantt_column.end = +end_date;
+            gantt_column.scale = zoom_level;
+            gantt_column.reload();
+            gantt_column.refresh();
+        };
+
+        if (element_count > 1000) {
+            // confirm the user that it is going to take too much time
+
+            var message_text = '<div><p><strong>' + element_count +
+                ' elements</strong> per row are going to be rendered' +
+                '<br><br>Which will take long,' +
+                '<br><br>Is that ok?';
+
+            bootbox.confirm(
+                message_text,
+                function (result) {
+                    if (result) {
+                        do_update();
+                    }
+                });
+        } else {
+            do_update();
+        }
+    });
+
+    // Reload Button
+    $("#gantt_reload_button").on('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        gantt_column.reload();
+    });
+
+    // Refresh Button
+    $("#gantt_refresh_button").on('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        gantt_column.refresh();
+    });
+
+    // scroll to button
+    $("#gantt_scroll_to_button").on('click', function (e) {
+        var start = $(this).attr('start');
+        gantt_column.scrollToDate(start);
+        e.preventDefault();
+        e.stopPropagation();
+    });
+
+    // Schedule
+    {% if has_permission('Update_Task') %}
+        $('#gantt_schedule_tasks_button').on('click', function () {
+            var dialog = $("#schedule-dialog-message").dialog({
+                modal: true,
+                title: "Scheduling Tasks...",
+                title_html: true,
+                height: 70,
+                width: 350
+            });
+
+            $.post(
+                '{{ request.route_url("auto_schedule_tasks") }}'
+            ).done(function (data) {
+                var message = '<div>' + data + '</div>';
+                bootbox.alert(message);
+                $('.bootbox').prepend('<div class="modal-header alert-success"><strong>Success</strong></div>');
+            }).fail(function (jqXHR) {
+                var message = '<div>' + jqXHR.responseText + '</div>';
+                bootbox.alert(message);
+                $('.bootbox').prepend('<div class="modal-header alert-danger"><strong>Fail</strong></div>');
+            }).always(function () {
+                dialog.dialog("close");
+                gantt_column.refresh();
+            });
+
+        });
+    {% endif %}
+
+    $('#gantt_go_to_today_button').on('click', function () {
+        gantt_column.centerOnToday();
+    });
+
+    // create the zoom window
+    $('#gantt_zoom_selection').on('click', function(e) {
+        // change button state
+        $('#gantt_zoom_selection').find('button').button('loading');
+
+        var dragDetector = $($.parseHTML('<div class="dragDetector"></div>'));
+        var zoomBox = $($.parseHTML('<div class="zoomBox"></div>'));
+        $('#' + gantt_chart_dom_id).append(zoomBox).append(dragDetector);
+
+        $('.dragDetector').mousedown(function (e) {
+            e.stopPropagation();
+            e.preventDefault();
+            this.start_pos = e.offsetX;
+            this.start_resizing = true;
+        }).mousemove(function (e) {
+            e.stopPropagation();
+            e.preventDefault();
+            if (this.start_resizing) {
+                var x1 = this.start_pos;
+                var x2 = e.offsetX;
+                var left = Math.min(x1, x2);
+                var width = Math.abs(x1 - x2);
+                zoomBox.css({
+                    left: left,
+                    width: width
+                });
+            }
+        }).mouseup(function(e) {
+            this.start_resizing = false;
+            // get the left and width of the zoomBox
+            var start_x = $('.dgrid-column-set-cell.dgrid-column-set-1').offset().left;
+            var scroll_left = $('.dgrid-column-set-cell.dgrid-column-set-1>div').scrollLeft();
+            var left = zoomBox.offset().left - start_x + scroll_left;
+            var width = zoomBox.width();
+
+            // unbind events
+            $('.dragDetector').unbind();
+
+            // delete the elements
+            zoomBox.remove();
+            dragDetector.remove();
+
+            var zoomed_dates = gantt_column.convert_pixel_to_millies(left, left + width);
+            // get the zoom level
+            var zoom_level = gantt_column.guess_zoom_level(zoomed_dates.start, zoomed_dates.end);
+
+            // update interface elements
+            var formatted_start_date = moment(zoomed_dates.start).format('MM/DD/YYYY');
+            var formatted_end_date = moment(zoomed_dates.end).format('MM/DD/YYYY');
+            var start_end_date_range_picker = $('#task_start_end_date_range_picker');
+            start_end_date_range_picker.val(formatted_start_date + ' - ' + formatted_end_date);
+            start_end_date_range_picker.data().daterangepicker.updateFromControl();
+            $('#zoom_level').val(zoom_level);
+
+            // zoom the gantt chart
+            gantt_column.start = +zoomed_dates.start;
+            gantt_column.end = +zoomed_dates.end;
+            gantt_column.scale = zoom_level;
+            gantt_column.reload();
+            gantt_column.refresh();
+
+            // scroll to the middle of the dates
+            gantt_column.scrollToDate((zoomed_dates.end + zoomed_dates.start) * 0.5);
+
+            // restore button
+            setTimeout(function () {
+                $('#gantt_zoom_selection').find('button').button('reset');
+            });
+        });
+    });
+
+});
+</script>
+
+<script>
+    {# ***************************************************************** #}
+    {# Start & End Date Picker #}
+
+    $(function () {
+        // initialize date picker
+        var start_end_date_range_picker = $('#task_start_end_date_range_picker').daterangepicker();
+
+        // also update the icon
+        start_end_date_range_picker.next().on('click', function () {
+            $(this).prev().focus();
+        });
+
+        // fix z-index of the container
+        // start_end_date_range_picker.data().daterangepicker.container.css({'z-index': 1060});
+
+        var start_date = moment().subtract(6, 'month').startOf('day');
+        var end_date = moment().add(6, 'month').endOf('day');
+        start_end_date_range_picker.val(
+                start_date.format('MM/DD/YYYY') + ' - ' + end_date.format('MM/DD/YYYY')
+        );
+
+        start_end_date_range_picker.data().daterangepicker.updateFromControl();
+
+        // TODO: Change the listener action type
+        start_end_date_range_picker.on('shown', function (e) {
+            e.stopPropagation();
+        });
+        start_end_date_range_picker.on('hidden', function (e) {
+            e.stopPropagation();
+        });
+    });
+</script>

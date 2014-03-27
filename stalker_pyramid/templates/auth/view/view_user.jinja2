@@ -1,0 +1,244 @@
+{% extends "base.jinja2" %}
+
+{# PRE-HEADER#}
+{% block pre_header %}
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/fullcalendar.css") }}'/>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/bootstrap-timepicker.css") }}'/>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/datepicker.css") }}'/>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/daterangepicker.css") }}'/>
+
+    {% include 'charts/chart_preheader.jinja2' %}
+{% endblock pre_header %}
+
+{#SIDEBAR#}
+{% block sidebar %}
+    {% include 'sidebar.jinja2' %}
+{% endblock sidebar %}
+
+{#BREADCRUMBS#}
+{% block breadcrumbs %}
+    {% set page_title='Dashboard' %}
+    {% include 'breadcrumb/breadcrumbs.jinja2' %}
+{% endblock breadcrumbs %}
+
+{#PAGE-CONTENT#}
+{% block page_content %}
+
+    {% set page_title='Dashboard' %}
+
+    {% include 'page_header.jinja2' %}
+    <!--/.page-header-->
+
+    <div class="row-fluid">
+
+        <div class="span12">
+            <!--PAGE CONTENT BEGINS-->
+            <div class="row-fluid">
+                <div id="infobox"
+                     address='/entities/{{ entity.id }}/tasks_stats/'
+                     class="infobox-container">
+                    {% include 'components/infobox.jinja2' %}
+                </div>
+                <div class="space"></div>
+            </div>
+
+            <div class="hr hr8 hr-double"></div>
+
+
+            <div class="space"></div>
+
+            <div class="row-fluid">
+                <div id="calendar"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!--PAGE CONTENT ENDS-->
+
+{% endblock page_content %}
+
+{# <td>#}
+{#                <span class="label label-{{=it.status_color}}">{{=it.status}}</span>#}
+{#            </td>#}
+{#            <td>#}
+{#                <div class="hidden-phone visible-desktop action-buttons">#}
+{#                    <a class="blue" href='/tasks/{{=it.id}}/view'>#}
+{#                        <i class="icon-zoom-in bigger-130"></i>#}
+{#                    </a>#}
+{##}
+{##}
+{#                    {{ if (it.request_review) { }}<a#}
+{#                        class="green"#}
+{#                        data-target="#dialog_template"#}
+{#                        data-toggle="modal"#}
+{#                        data-keyboard=false#}
+{#                        href="/tasks/{{=it.id}}/request_review/dialog?came_from={{=it.came_from }}">#}
+{#                    <i class="icon-comment-alt bigger-130"></i>#}
+{#                </a>{{ } }}#}
+{##}
+{#                </div>#}
+{#            </td>#}
+
+<!--page specific plugin scripts-->
+{#EXTRA-SCRIPTS#}
+{% block extrascripts %}
+
+
+{% raw %}
+<script id="tmpl_itemThead" type="text/x-dot-template">
+    <tr>
+        <th>Name</th>
+        <th>Responsible</th>
+        <th>Type</th>
+        <th>Completed</th>
+        <th></th>
+    </tr>
+</script>
+{% endraw %}
+
+
+{% raw %}
+<script id="tmpl_itemRow" type="text/x-dot-template">
+    <tr>
+        <td><a href='/tasks/{{=it.id}}/view'>{{=it.name}}</a></td>
+        <td><a href='/users/{{=it.responsible_id}}/view'>{{=it.responsible_name}}</a></td>
+        <td>{{=it.type}}</td>
+        <td data-sType="num-html">
+            <div class="progress progress-success">
+                <div style="width:{{=it.percent_complete}}%"
+                     class="bar">
+                    <span class="pull-left">{{= it.percent_complete.toFixed(0) }}%</span>
+                </div>
+            </div>
+        </td>
+        <td>
+                <div class="hidden-phone visible-desktop action-buttons">
+                    <a class="blue" href='/tasks/{{=it.id}}/view'>
+                        <i class="icon-zoom-in bigger-130"></i>
+                    </a>
+
+                    {{ if (it.request_review) { }}
+
+
+
+                    <a
+                        class="green"
+                        data-target="#dialog_template"
+                        data-toggle="modal"
+                        data-keyboard=false
+                        data-rel="tooltip"
+                        data-placement="top"
+                        title="Request Review"
+                        href="/tasks/{{=it.id}}/request_review/dialog?came_from={{=it.came_from }}&request_review_mode=Final">
+                        <i class="icon-comment-alt bigger-130"></i>
+                    </a>
+
+
+                    {{ } }}
+
+                    {{ if (it.review) { }}
+                    <a
+                        class="purple"
+                        data-target="#dialog_template"
+                        data-toggle="modal"
+                        data-keyboard=false
+                        data-rel="tooltip"
+                        data-placement="top"
+                        title="Review"
+                        href="/tasks/{{=it.id}}/review/dialog?came_from={{=it.came_from }}">
+                        <i class="icon-comments bigger-130"></i>
+                    </a>
+                    {{ } }}
+
+                </div>
+        </td>
+
+    </tr>
+</script>
+{% endraw %}
+
+
+
+    {% if entity.tasks | count > 0 %}
+        {% if has_permission('Update_User') or logged_in_user.id == entity.id %}
+            {% set event_type='TimeLog' %}
+        {% endif %}
+    {% endif %}
+
+
+
+    {#    {% include 'charts/bar_chart.jinja2' %}#}
+    {% include 'calendar/calendar.jinja2' %}
+
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $.getJSON('/users/{{ entity.id }}/events/?keys=time_log&keys=vacation&keys=task').then(function (data) {
+                var events = [];
+
+{#                var time_log_data = [0, 0, 0, 0, 0, 0, 0];#}
+{#                var vacation_data = [0, 0, 0, 0, 0, 0, 0];#}
+{#                var unknown_data = [9, 9, 9, 9, 9, 9, 9];#}
+{##}
+{#                var ticks = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];#}
+{##}
+{#                var colors = ['#82af6f', '#fee188', '#e2e2e2'];#}
+{##}
+{#                var labels = [#}
+{#                    {label: 'Worked'},#}
+{#                    {label: 'Vacation'},#}
+{#                    {label: 'Bos'}#}
+{#                ];#}
+{##}
+{#                var today = new Date();#}
+{#                today.setHours(0, 0, 0);#}
+{##}
+{#                var week_day = today.getDay();#}
+{##}
+{#                var first_week_day = new Date(today);#}
+{#                first_week_day.setDate(today.getDate() - week_day);#}
+
+                for (var i = 0; i < data.length; i++) {
+
+                    var start_date = new Date(parseInt(data[i].start));
+                    var end_date = new Date(parseInt(data[i].end));
+
+                    var event = {
+                        eId: data[i].id,
+                        entity_type: data[i].entity_type,
+                        title: data[i].title,
+                        start: start_date,
+                        end: end_date,
+                        className: data[i].className,
+                        allDay: data[i].allDay
+                    };
+
+{#                    if (first_week_day.getTime() <= start_date.getTime() && start_date.getTime() < today.getTime()) {#}
+{#                        var day_index = parseInt((start_date.getTime() - first_week_day.getTime()) / 1000 / 3600 / 24);#}
+{#                        var occupied_hours = parseInt((end_date.getTime() - start_date.getTime()) / 1000 / 3600);#}
+{##}
+{#                        if (data[i].entity_type == 'timelogs') {#}
+{#                            time_log_data[day_index] += occupied_hours;#}
+{#                        } else if (data[i].entity_type == 'vacations') {#}
+{#                            vacation_data[day_index] += occupied_hours;#}
+{#                        }#}
+{##}
+{#                        unknown_data[day_index] = unknown_data[day_index] - occupied_hours > 0 ? unknown_data[day_index] - occupied_hours : 0;#}
+{#                    }#}
+                    events.push(event);
+                }
+
+                {#                //drawBarChart('bar_chart', [time_log_data, vacation_data], ticks, colors, labels);#}
+                drawCalendar('calendar', events);
+
+            });
+        });
+    </script>
+
+{% endblock extrascripts %}

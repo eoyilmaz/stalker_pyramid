@@ -1,0 +1,24 @@
+<ul id="breadcrumb_task" class="breadcrumb">
+
+    <li>
+        <a href="{{ request.route_url('view_project', id=entity.project.id) }}">{{ entity.project.name }}</a>
+        <span class="divider">
+          <i class="icon-angle-right arrow-icon"></i>
+        </span>
+    </li>
+
+    {% for parent in entity.parents %}
+        <li>
+            <a href="{{ request.route_url('view_task', id=parent.id) }}">{{ parent.name }}</a>
+            <span class="divider">
+                <i class="icon-angle-right arrow-icon"></i>
+            </span>
+        </li>
+    {% endfor %}
+    <li class="active">{{ entity.name }}
+
+    </li>
+</ul>
+<!--.breadcrumb-->
+
+

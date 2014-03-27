@@ -1,0 +1,200 @@
+{# Stalker Pyramid a Web Base Production Asset Management System
+ Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
+
+ This file is part of Stalker Pyramid.
+
+ This library is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation;
+ version 2.1 of the License.
+
+ This library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Lesser General Public License for more details.
+
+ You should have received a copy of the GNU Lesser General Public
+ License along with this library; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+#}
+
+<div class="row-fluid">
+    {# dialog body here #}
+    <div class="span12">
+
+        {# Tags #}
+        <div id="tags_control_group" class="control-group">
+            <div class="controls">
+                <input id="reference_tags_input"
+                       type="text"
+                       class="span12"
+                       name="tags"
+                       placeholder="Enter tags ..."/>
+            </div>
+        </div>
+
+        {# Dropzone #}
+        <div id="dropzone">
+            <form action="/upload_files" class="dropzone" enctype="multipart/form-data">
+                <div class="fallback">
+                    <input name="file" type="file" multiple="" />
+                </div>
+            </form>
+        </div>
+
+    </div>
+</div>
+
+<!--inline scripts related to this page-->
+
+
+<script>
+    var counter = 0;
+    function init_dialog(){
+        if (counter>0){
+            return;
+        }
+        counter +=1;
+
+        // init dialog
+        console.debug('init dialog from upload_reference.jinja2 running!');
+
+        // update dialog header
+        $('.modal-header>h3').text('Upload References');
+
+        var submit_button = $('#dialog_template_submit_button');
+
+        var field_update_mode_checker = function(){
+            // checks if the important fields are still updating
+            // check if any of the fields are still in updating mode
+            if ($('#reference_tags').attr('is_updating') === 'true' ||
+                $('#dropzone').attr('is_updating') === 'true' // this is not setup yet!
+                ) {
+                // disable the Submit button
+                setTimeout(function(){submit_button.button('loading')}, 0);
+            } else {
+                // enable the Submit button
+                setTimeout(function(){submit_button.button('reset')}, 0);
+            }
+        };
+
+        // tags
+        // set the fields to updating mode
+        var tag_input = $('#reference_tags_input');
+        tag_input.attr('is_updating', true);
+        field_update_mode_checker();
+        var fill_tags = function(){
+            $.getJSON('/tags/?as_list=1').then(function(data){
+{#                console.debug('tags: ', data);#}
+                tag_input.tag({
+                    placeholder: tag_input.attr('placeholder'),
+                    source: data
+                });
+
+                // set the fields to normal mode
+                tag_input.attr('is_updating', false);
+                field_update_mode_checker();
+
+                // fix input width
+                $('#tags_control_group>>.tags').addClass('span12');
+            });
+        };
+        fill_tags();
+
+        //This is for holding info about the uploaded link ids
+        var entity_id = {{ entity.id }};
+        var link_ids = [];
+        var removed_link_ids = [];
+        var files = [];
+
+        var uploading_file_counter = 0;
+
+        $(".dropzone").dropzone({
+            init: function(){
+                this.on("addedfile", function(file){
+                    // set the submit button to loading state
+                    uploading_file_counter += 1;
+                    $("#dialog_template_submit_button").button('loading');
+                }).on("success", function(file, response){
+                    console.debug('response :', response);
+                    console.debug('files    :', file);
+                    // store the Link.id in file object
+                    file.link_id = response.link_ids[0];
+                    // also store the Link.id in link_ids for ease of use
+                    link_ids.push(response.link_ids[0]);
+                    // store the file in files
+                    files.push(file);
+                }).on("complete", function(file){
+                    // restore the button state
+                    uploading_file_counter -= 1;
+                    if (uploading_file_counter == 0){
+                        $('#dialog_template_submit_button').button('reset');
+                    }
+                }).on("removedfile", function(file){
+                    console.debug('file has removed:', file);
+                    // remove the file 
+                    var index = files.indexOf(file);
+                    files.splice(1, index);
+                    var id = link_ids.splice(1, index);
+                    removed_link_ids.push(id);
+                }).on("canceled", function(){
+                    uploading_file_counter -= 1;
+                    if (uploading_file_counter == 0){
+                        $("#dialog_template_submit_button").button('reset');
+                    }
+                });
+            },
+            paramName: "file", // The name that will be used to transfer the file
+            maxFilesize: 10, // MB
+
+            addRemoveLinks: true,
+            dictDefaultMessage: '<span class="bigger-150 bolder"><i class="icon-caret-right red"></i> Drop files</span> to upload \
+<span class="smaller-80 grey">(or click)</span> <br /> \
+<i class="upload-icon icon-cloud-upload blue icon-3x"></i>',
+            dictResponseError: 'Error while uploading file!',
+
+            //change the previewTemplate to use Bootstrap progress bars
+            previewTemplate: "<div class=\"dz-preview dz-file-preview\">\n  <div class=\"dz-details\">\n    <div class=\"dz-filename\"><span data-dz-name></span></div>\n    <div class=\"dz-size\" data-dz-size></div>\n    <img data-dz-thumbnail />\n  </div>\n  <div class=\"progress progress-small progress-success progress-striped active\"><span class=\"bar\" data-dz-uploadprogress></span></div>\n  <div class=\"dz-success-mark\"><span></span></div>\n  <div class=\"dz-error-mark\"><span></span></div>\n  <div class=\"dz-error-message\"><span data-dz-errormessage></span></div>\n</div>"
+        });
+
+        // register submit event
+        $('#dialog_template_submit_button').on('click', function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            console.debug('entity_id        : ', entity_id);
+            console.debug('link_ids         : ', link_ids);
+            console.debug('removed_link_ids : ', removed_link_ids);
+            var tags_list = $('#reference_tags_input').val().split(', ');
+            console.debug('tags             : ', tags_list);
+            $.post('{{ request.route_url('assign_reference') }}', {
+                entity_id: entity_id,
+                link_ids: link_ids,
+                removed_link_ids: removed_link_ids,
+                tags: tags_list
+            }).done(function(jqXHR){
+                // alert the user about the added files
+                // reload references
+                // get the data in jqXHR
+                console.debug('jqXHR : ', jqXHR);
+                $('#new_references_storage').text(JSON.stringify(jqXHR));
+
+                $('#dialog_template').modal('hide');
+            }).fail(function(){
+                // alert the user about what is failed
+            });
+        });
+    };
+
+    function destruct_dialog(){
+        // reduce counter
+        counter -= 1;
+
+        // unbind events
+        $(".dropzone").unbind();
+        $("#dialog_template_submit_button").unbind();
+
+        // destroy dialog
+        console.debug('destroy dialog from upload_reference.jinja2 running!');
+        $('#dialog_template').data('modal', null);
+    };
+</script>

@@ -1,0 +1,889 @@
+<div class='row-fluid'>
+    <div class='span12'>
+
+        <form id='task_form'
+              class='form-horizontal'
+              role='form'
+              method='post'
+              action="{{ request.route_url('create_task') }}">
+
+            {# Entity Type #}
+            <div class='control-group'>
+                <label class='span3 control-label' for='task_entity_type'>Entity Type</label>
+                <div class='span9'>
+                    {% if mode == 'create' %}
+                    <select id='task_entity_type'
+                            class='input-block-level'
+                            name='entity_type'
+                            required>
+                        <option value="Task">Task</option>
+                        <option value="Asset">Asset</option>
+                        <option value="Shot">Shot</option>
+                        <option value="Sequence">Sequence</option>
+                    </select>
+                    {% else %}
+                        <input type='text' id="task_entity_type" value="{{ entity.entity_type }}" disabled="true">
+                    {% endif %}
+                </div>
+            </div>
+
+            {# Project #}
+            <div class='control-group'>
+                <label class='span3 control-label' for='task_project'>Project</label>
+                <div class='span9'>
+                    <input type="text" id='task_project'
+                           class='input-block-level'
+                           name='project_id'
+                           required>
+                </div>
+            </div>
+
+            {# Parent #}
+            <div class='control-group'>
+                <label class='span3 control-label' for='task_parent'>Parent</label>
+                <div class='span9'>
+                    <select id='task_parent'
+                            name='parent_id'
+                            class='input-block-level'
+                            name='task_parent_id'
+                            is_updating=false
+                            data-placeholder='Parent'></select>
+                </div>
+                <div class='hidden'
+                     id="parent_storage"
+                     parent_id={% if parent %}{{ parent.id }}{% else %}-1{% endif %}>
+                    {# this is a storage for parent_id, which is set externally by the #}
+                    {# template engine #}
+                 </div>
+            </div>
+
+            {# Name #}
+            <div class="control-group">
+                <label class="span3 control-label" for="task_name">Name</label>
+                <div class="span9">
+                    <input id="task_name"
+                           class='input-block-level'
+                           name='name'
+                           type="text"
+                           class="form-control"
+                           {% if mode=='update' %}value="{{ entity.name }}"{% endif %}
+                           required>
+                </div>
+            </div>
+
+            {# Code #}
+            <div id='code_inputs' class="control-group">
+                <label class="span3 control-label" for="task_code">Code</label>
+                <div class="span9">
+                    <input id="task_code"
+                           class='input-block-level'
+                           name='code'
+                           type="text"
+                           class="form-control"
+                           {% if mode=='update' %}value="{{ entity.code }}"{% endif %}
+                            >
+                </div>
+            </div>
+
+            {# Description #}
+            <div class='control-group'>
+                <label class='span3 control-label' for='task_description'>Description</label>
+                <div class='span9'>
+                    <textarea id="task_description"
+                              name='description'
+                              class="autosize-transition span12"
+                              style="overflow: hidden;
+                                     word-wrap: break-word;
+                                     resize: horizontal;
+                                     height: 50px;"
+                              >{% if mode=='update' %}{{ entity.description }}{% endif %}</textarea>
+                </div>
+            </div>
+
+            {# Asset Type #}
+            <div id='asset_inputs'>
+                <div class='control-group'>
+                    <label class='span3 control-label' for='asset_type'>Asset Type</label>
+                    <div class='span9'>
+                        <input id='asset_type'
+                               class='input-block-level'
+                               name='asset_type'
+                               type='text'
+                               is_updating=false
+                               {% if mode=='update' %}{% if entity.type %}value="{{ entity.type.name }}"{% endif %}{% endif %}
+                                >
+                    </div>
+                </div>
+            </div>
+
+            {# Shot Sequence #}
+            <div id='shot_inputs'>
+                <div class='control-group'>
+                    <label class="span3 control-label" for='shot_sequence'>Sequence</label>
+                    <div class='span9'>
+                        <select id='shot_sequence'
+                                class='input-block-level'
+                                name='shot_sequence_id'
+                                is_updating=false></select>
+                    </div>
+                </div>
+
+                <div class='control-group'>
+                    <label class="span3 control-label" for='shot_cut_in'>Cut In & Out</label>
+                    <div class='span9'>
+                        <input id='shot_cut_in'
+                               class='input-block-level'
+                               name='cut_in'
+                               is_updating=false
+                               {% if mode=='update' %}{% if entity.type %}value="{{ entity.cut_in }}"{% endif %}{% endif %}>
+                        <input id='shot_cut_out'
+                               class='input-block-level'
+                               name='cut_out'
+                               is_updating=false
+                               {% if mode=='update' %}{% if entity.type %}value="{{ entity.cut_out }}"{% endif %}{% endif %}>
+                    </div>
+                </div>
+            </div>
+
+            <div id='task_inputs'>
+                {# Task Type #}
+                <div class='control-group'>
+                    <label class='span3 control-label' for='task_type'>Task Type</label>
+                    <div class='span9'>
+                        <input id='task_type'
+                               class='input-block-level'
+                               name='task_type'
+                               type='text'
+                               is_updating=false
+                               {% if mode=='update' %}{% if entity.type %}value="{{ entity.type.name }}"{% endif %}{% endif %}
+                               >
+                    </div>
+                </div>
+
+                {# Depends_to #}
+                <div class='control-group'>
+                    <label class='span3 control-label' for='task_depends_to'>Depends To</label>
+                    <div class='span9'>
+                        <select id='task_depends_to'
+                                multiple=''
+                                class='input-block-level tag-input-style'
+                                name='dependent_ids'
+                                data-placeholder='Depends To'
+                                is_updating=false></select>
+                    </div>
+                    <div class='hidden'
+                         id="dependent_tasks_storage"
+                         dependent_ids="[{% for dep in depends_to %}{% if loop.index0 %},{% endif %}{{ dep.id }}{% endfor %}]">
+                        {# this is a storage for dependent_ids, which is set externally by the #}
+                        {# template engine #}
+                     </div>
+                </div>
+
+                {# Resources #}
+                <div class='control-group'>
+                    <label class='span3 control-label' for='task_resources'>Resources</label>
+                    <div class='span9'>
+                        <select id='task_resources'
+                                multiple=''
+                                class='input-block-level tag-input-style'
+                                name='resource_ids'
+                                data-placeholder='Resources'
+                                is_updating=false></select>
+                    </div>
+                    <div class='hidden'
+                         id="resources_storage"
+                         resource_ids="[{% if entity %}{% for resource in entity.resources %}{% if loop.index0 %},{% endif %}{{ resource.id }}{% endfor %}{% endif %}]">
+                        {# this is a storage for resource_ids, which is set externally by the #}
+                        {# template engine #}
+                     </div>
+                </div>
+    
+                {# Responsible #}
+                <div class='control-group'>
+                    <label class='span3 control-label' for='task_responsible'>Responsible</label>
+                    <div class='span9'>
+                        <select id='task_responsible'
+                                multiple=''
+                                class='input-block-level tag-input-style'
+                                name='responsible_ids'
+                                data-placeholder='Responsible'
+                                is_updating=false></select>
+                    </div>
+                    <div class='hidden'
+                         id="responsibles_storage"
+                         responsible_id="[{% if entity %}{% for responsible in entity.responsible %}{% if loop.index0 %},{% endif %}{{ responsible.id }}{% endfor %}{% endif %}]">
+                        {# this is a storage for resource_ids, which is set externally by the #}
+                        {# template engine #}
+                     </div>
+                </div>
+
+                {# Constraints #}
+    
+                {# Schedule Timing #}
+                <div class='control-group'>
+                    <label class='span3 control-label' for='task_schedule_timing'>Schedule Timing</label>
+                    <div class='span9'>
+                        <div class='span2'>
+                            <input id='task_schedule_timing'
+                                   class='input-block-level'
+                                   name='schedule_timing'
+                                   type='text'
+                                   value={% if mode=='update' %}{{ entity.schedule_timing }}{% else %}1{% endif %}
+                                   min=1
+                                   required>
+                        </div>
+                        <div class='span3'>
+                            <select id='task_schedule_unit'
+                                   class='input-block-level'
+                                   name='schedule_unit'>
+                                <option value='h'>Hours</option>
+                                <option value='d'>Days</option>
+                                <option value='w'>Weeks</option>
+                                <option value='m'>Months</option>
+                                <option value='y'>Years</option>
+                            </select>
+                        </div>
+                        <div class='span3'>
+                            <select id='task_schedule_model'
+                                    class='input-block-level'
+                                    name='schedule_model'>
+                                <option value='effort'>Effort</option>
+                                <option value='duration'>Duration</option>
+                                <option value='length'>Length</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                {# Update Bid #}
+                {% if mode == 'update' %}
+                <div class='control-group'>
+                    <label class="span3 control-label" for="task_update_bid">Update Bid</label>
+                    <div class="span9">
+                        <input id="task_update_bid"
+                               type="checkbox"
+                               name="update_bid"
+                               checked="checked"/>
+                    </div>
+                </div>
+                {% endif %}
+
+            </div>
+
+            {# Priority #}
+            <div class='control-group'>
+                <label class='span3 control-label' for='task_priority'>Priority</label>
+                <div class='span9'>
+                    <input id='task_priority'
+                           name='priority'
+                           type='text'
+                           placeholder='Priority'
+                           value={% if mode == 'update' %}{{ entity.priority }}{% else %}500{% endif %}
+                           min=1
+                           max=1000
+                           required>
+                </div>
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/chosen.jquery.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-datepicker.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/moment.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/daterangepicker.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootstrap-colorpicker.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.autosize-min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.inputlimiter.1.3.1.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.maskedinput.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootstrap-tag.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.validate.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/additional-methods.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/fuelux/fuelux.spinner.min.js") }}'></script>
+
+
+<script>
+    function init_dialog(){
+        console.log('initialize task dialog start');
+
+        // update dialog header
+        $('#dialog_template_label').text('{{ mode.title() }} Task Dialog');
+
+        // generate default values;
+        var project = {
+            id: {{ project.id }},
+            name: "{{ project.name }}"
+        };
+        var code = '';
+        var priority = 500;
+        var name = '';
+        var description = '';
+        var type = '';
+        var depends_to = [];
+        var parent_id = null;
+        var schedule_timing = 1;
+        var schedule_unit = 'h';
+        var schedule_model = 'effort';
+        var submit_form_url = '{{ request.route_url("create_task") }}';
+        var selected_resources = [];
+        var entity_type = 'Task';
+        var selected_responsibles = ['{{ project.lead.id }}'];
+        var shot_cut_in = 1;
+        var shot_cut_out = 1;
+        var shot_sequences =[];
+
+
+        {% if entity.entity_type == 'Shot' %}
+            shot_cut_in = {{ entity.cut_in }};
+            shot_cut_out = {{ entity.cut_out }};
+            {% if entity.sequences[0] %}
+                shot_sequences = '{{ entity.sequences[0].id }}'
+            {% endif %}
+
+            console.log('shot_sequences :', shot_sequences);
+        {% endif %}
+
+        console.log('shot_sequences :', shot_sequences);
+    
+
+        {% if depends_to %}
+            depends_to = [
+                {% for dep in depends_to %}
+                    {% if loop.index0 %},{% endif %}{{ dep.id }}
+                {% endfor %}
+            ];
+        {% endif %}
+        {% if parent %}
+            parent_id = {{ parent.id }};
+        {% endif %}
+
+        {% if mode=='update' %}
+            name = '{{ entity.name }}';
+            {% if entity.entity_type != 'Task' %}
+                code = "{{ entity.code }}";
+            {% endif %}
+            description = '{{ entity.description }}';
+            {% if entity.type %}
+                type = '{{ entity.type.name }}';
+            {% endif %}
+            depends_to = [
+                {% for dep in entity.depends %}
+                    {% if loop.index0 %},{% endif %}{{ dep.id }}
+                {% endfor %}
+            ];
+            schedule_timing = {{ entity.schedule_timing }};
+            schedule_unit = '{{ entity.schedule_unit }}';
+            schedule_model = '{{ entity.schedule_model }}';
+            submit_form_url = '{{ request.route_url('update_task', id=entity.id) }}';
+            selected_resources = [
+                {% for resource in entity.resources %}
+                    {{ resource.id }},
+                {% endfor %}
+            ];
+            priority = {{ entity.priority }};
+            selected_responsibles = [
+                {% for responsible in entity.responsible %}
+                    {{ responsible.id }},
+                {% endfor %}
+            ];
+            entity_type = '{{ entity.entity_type }}';
+        {% endif %}
+
+        var submit_button = $('#dialog_template_submit_button');
+
+        var field_update_mode_checker = function(){
+            // checks if the important fields are still updating
+            // check if any of the fields are still in updating mode
+            if ($('#task_project').attr('is_updating') === 'true' ||
+                $('#task_parent').attr('is_updating') === 'true' ||
+                $('#task_type').attr('is_updating') === 'true' ||
+                $('#asset_type').attr('is_updating') === 'true' ||
+                $('#shot_sequence').attr('is_updating') === 'true' ||
+                $('#task_depends_to').attr('is_updating') === 'true' ||
+                $('#task_resources').attr('is_updating') === 'true' ||
+                $('#task_responsible').attr('is_updating') === 'true') {
+                // disable the Submit button
+                setTimeout(function(){submit_button.button('loading')}, 0);
+            } else {
+                // enable the Submit button
+                setTimeout(function(){submit_button.button('reset')}, 0);
+            }
+        };
+
+        {# ***************************************************************** #}
+        {# Entity Type #}
+        {# Update fields according to the selected Entity Type #}
+        // convert to chosen
+        var task_entity_type = $('#task_entity_type');
+
+        {# set the entity type #}
+        task_entity_type.val("{{ entity_type }}");
+
+        var task_inputs = $('#task_inputs');
+        var shot_inputs = $('#shot_inputs');
+        var code_inputs = $('#code_inputs');
+        var asset_inputs = $('#asset_inputs');
+
+        var update_entity_type_fields = function(){
+            // Asset - Code and Asset Type
+            // Shot - Code and Sequence
+            // Sequence - Code
+            var entity_type_value = task_entity_type.val();
+            if (entity_type_value !== undefined){
+                entity_type_value = entity_type_value.trim();
+            }
+            if (entity_type_value === 'Task') {
+                shot_inputs.hide();
+                code_inputs.hide();
+                asset_inputs.hide();
+                task_inputs.show();
+            } else if (entity_type_value === 'Asset'){
+                shot_inputs.hide();
+                code_inputs.show();
+                asset_inputs.show();
+                task_inputs.hide();
+            } else if (entity_type_value === 'Shot'){
+                shot_inputs.show();
+                code_inputs.show();
+                asset_inputs.hide();
+                task_inputs.hide();
+            } else if (entity_type_value === 'Sequence'){
+                shot_inputs.hide();
+                code_inputs.show();
+                asset_inputs.hide();
+                task_inputs.hide();
+            }
+        };
+
+        task_entity_type.on('change', update_entity_type_fields);
+        // and update on initialize
+        update_entity_type_fields();
+
+        {# ***************************************************************** #}
+        {# Projects #}
+        var task_project = $('#task_project');
+        task_project.val(project.name);
+        task_project.attr('disabled', 'disabled');
+
+        {# ***************************************************************** #}
+        {# Parent and Depends To#}
+        // create a chosen first
+        var task_parent = $('#task_parent').chosen({
+            search_contains: true,
+            enable_split_word_search: true,
+            allow_single_deselect: true
+        });
+
+        var task_depends_to = $('#task_depends_to').chosen({
+            search_contains: true,
+            enable_split_word_search: true
+        });
+
+        // ********************************************************************
+        // get tasks of that project as json from server
+        // set the submit button to loading state while data is get from the server
+        // set the fields to updating mode
+        task_parent.attr('is_updating', true);
+        task_depends_to.attr('is_updating', true);
+
+        field_update_mode_checker();
+        $.getJSON('{{ request.route_url("get_project_tasks", id=project.id) }}').then(function(data){
+            console.log('data.length:', data.length);
+            {# remove self from the list #}
+            {% if entity %}
+                var index = -1;
+                for(var i = 0; i < data.length; i++){
+                    if (data[i].id === {{ entity.id }}){
+                        index = i;
+                        console.log
+                        break;
+                    }
+                }
+                if (index !== -1){
+                    data.splice(index, 1);
+                }
+                console.log('data.length:', data.length);
+            {% endif %}
+
+            // now append the data to the task_parent
+            {% raw %}
+            var task_parent_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
+            {% endraw %}
+
+            var parent_task_count = data.length;
+            var rendered_template = null;
+            // add and empty option to both
+            task_parent.append('<option val="">&nbsp;</option>');
+            for (var i=0; i < parent_task_count; i++){
+                rendered_template = task_parent_template(data[i]);
+                task_parent.append(rendered_template);
+                task_depends_to.append(rendered_template)
+            }
+
+            // select the given parent
+            task_parent.val(parent_id);
+            task_depends_to.val(depends_to);
+
+            // trigger another update
+            task_parent.trigger('liszt:updated');
+            // trigger another update
+            task_depends_to.trigger('liszt:updated');
+
+            // set the fields to normal mode
+            task_parent.attr('is_updating', false);
+            task_depends_to.attr('is_updating', false);
+
+            field_update_mode_checker();
+        });
+
+        {# ***************************************************************** #}
+        {# Code #}
+        var task_name = $('#task_name');
+        // set default values
+        task_name.val(name);
+
+        {# ***************************************************************** #}
+        {# Code #}
+        var task_code = $('#task_code');
+        // set default values
+        task_code.val(code);
+
+        // update code on name change if it is empty
+        task_name.on('keyup', function(){
+            task_code.val(task_name.val());
+        });
+
+        {# ***************************************************************** #}
+        {# Task Type #}
+        var task_type = $('#task_type');
+        // set the field to updating mode
+        task_type.attr('is_updating', true);
+        field_update_mode_checker();
+        $.getJSON('/types/?target_entity_type=Task').then(function(available_types){
+            // map available types to an array
+            var available_types_as_list = [];
+            for (var i=0; i < available_types.length; i++){
+                available_types_as_list.push(available_types[i].name);
+            }
+
+            task_type.autocomplete({
+                delay: 0,
+                source: available_types_as_list,
+                minLength: 0
+            });
+            if (type !== ''){
+                task_type.val(type);
+            }
+            // set the field to normal mode
+            task_type.attr('is_updating', false);
+            field_update_mode_checker();
+        });
+
+        {# ***************************************************************** #}
+        {# Asset Type #}
+        var asset_type = $('#asset_type');
+        // set the field to updating mode
+        asset_type.attr('is_updating', true);
+        field_update_mode_checker();
+        $.getJSON('/types/?target_entity_type=Asset').then(function(available_types){
+            asset_type.autocomplete({
+                delay: 0,
+                source: available_types,
+                minLength: 0
+            });
+            // set the field to normal mode
+            asset_type.attr('is_updating', false);
+            field_update_mode_checker();
+        });
+
+        {# ***************************************************************** #}
+        {# Sequence #}
+        var shot_sequence = $('#shot_sequence');
+        // convert it to a chosen
+        shot_sequence.chosen({
+            inherit_select_classes: true
+        });
+
+        {% raw %}
+        var sequence_template = doT.template('<option value="{{=it.id}}">{{=it.name}}</option>');
+        {% endraw %}
+
+        // and update it on project change
+        var shot_sequence_updater = function(){
+            // set the field to updating mode
+            shot_sequence.attr('is_updating', true);
+            field_update_mode_checker();
+            $.getJSON('/projects/' + project.id + '/sequences/').then(function(data){
+                // remove current options
+                shot_sequence.find('option').remove();
+
+                // add new ones
+                var data_count = data.length;
+                for (var i=0 ; i < data_count; i++){
+                    shot_sequence.append(sequence_template(data[i]));
+                }
+
+                // trigger an update
+                shot_sequence.trigger('liszt:updated');
+
+                // set the field to normal mode
+                shot_sequence.attr('is_updating', false);
+
+
+                shot_sequence.val(shot_sequences);
+                shot_sequence.trigger('liszt:updated');
+
+
+                field_update_mode_checker();
+            });
+
+
+        };
+
+        // update it on initialize
+        setTimeout(shot_sequence_updater, 100); // TODO: this is ugly
+
+
+        {# ***************************************************************** #}
+        {# Cut In Spinner #}
+        $('#shot_cut_in').ace_spinner({
+            value: shot_cut_in,
+            min: 1,
+            step: 1,
+            btn_up_class: 'btn-info',
+            btn_down_class: 'btn-info'
+        }).on('change', function(){
+            // check if it is in the range
+            var curr_value = $(this).val();
+            $(this).val(curr_value <= 1 ? 1 : curr_value);
+        });
+
+        {# ***************************************************************** #}
+        {# Cut out Spinner #}
+        $('#shot_cut_out').ace_spinner({
+            value: shot_cut_out,
+            min: 1,
+            step: 1,
+            btn_up_class: 'btn-info',
+            btn_down_class: 'btn-info'
+        }).on('change', function(){
+            // check if it is in the range
+            var curr_value = $(this).val();
+            $(this).val(curr_value <= 1 ? 1 : curr_value);
+        });
+
+        {# ***************************************************************** #}
+        {# Resources and Responsible#}
+        var task_resources = $('#task_resources');
+        var task_responsible = $('#task_responsible');
+
+        task_resources.chosen({
+            search_contains: true,
+            enable_split_word_search: true
+        });
+
+        task_responsible.chosen({
+            search_contains: true,
+            enable_split_word_search: true
+{#            allow_single_deselect: true#}
+        });
+
+        {% raw %}
+        var resource_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
+        {% endraw %}
+
+        //
+        // Update the resource field
+        //
+        console.log('selected_resources : ', selected_resources);
+
+        // set the field to updating mode
+        task_resources.attr('is_updating', true);
+        task_responsible.attr('is_updating', true);
+        field_update_mode_checker();
+
+        $.getJSON('/projects/' + project.id + '/users/?simple=1').then(function(data){
+            // remove current elements
+            task_resources.find('option').remove();
+            task_responsible.find('option').remove();
+
+            // append new ones
+            var data_count = data.length;
+            // append a single empty option to the responsible field
+            task_responsible.append('<option value=""></option>');
+            for (var i=0; i < data_count; i++){
+                task_resources.append(resource_template(data[i]));
+                task_responsible.append(resource_template(data[i]));
+            }
+
+            if (selected_resources.length > 0){
+                task_resources.val(selected_resources);
+            }
+
+            if (selected_responsibles.length > 0){
+                task_responsible.val(selected_responsibles);
+            }
+
+            // update the chosen fields
+            task_resources.trigger('liszt:updated');
+            task_responsible.trigger('liszt:updated');
+
+            // set the field to normal mode
+            task_resources.attr('is_updating', false);
+            task_responsible.attr('is_updating', false);
+            field_update_mode_checker();
+        });
+
+        {# ***************************************************************** #}
+        {# Schedule Unit and Model #}
+        $('#task_schedule_unit').val(schedule_unit);
+        $('#task_schedule_model').val(schedule_model);
+        
+        
+        {# ***************************************************************** #}
+        {# Priority Spinner #}
+        $('#task_priority').ace_spinner({
+            value: priority,
+            min: 1,
+            max: 1000,
+            step: 1,
+            btn_up_class: 'btn-info',
+            btn_down_class: 'btn-info'
+        }).on('change', function(){
+            // check if it is in the range
+            var curr_value = $(this).val();
+            $(this).val(curr_value <= 1000 ? curr_value >= 1 ? curr_value : 1 : 1000 );
+        });
+        console.log('entity.priority : ', priority);
+
+        {# ***************************************************************** #}
+        {# Submit Button #}
+
+        submit_button.on('click', function(e){
+            e.stopPropagation();
+            e.preventDefault();
+
+            // disable submit button
+            setTimeout(function(){submit_button.button('loading')}, 0);
+
+            // enable fields
+            var entity_type_value = $('#task_entity_type').val();
+
+            var task_form = $('#task_form');
+            var form_data = task_form.serialize();
+            form_data += '&project_id={{ project.id }}&entity_type='+entity_type_value;
+            console.log('form_data :', form_data);
+
+            if ( task_form.validate() ){
+                // prevent multiple sends
+                if (task_form.attr('is_sending') == 'true'){
+                    return;
+                } else {
+                    task_form.attr('is_sending', true);
+                }
+                $.post(
+                    submit_form_url,
+                    form_data
+                ).done(function(){
+                    $('#dialog_template').modal('hide');
+                }).fail(function(jqXHR){
+                    task_form.attr('is_sending', false);
+                    bootbox.alert(jqXHR.responseText);
+                    // disable fields again
+                    $('#task_entity_type').attr('disabled', true);
+                    // enable submit button again
+                    setTimeout(function(){submit_button.button('reset')}, 0);
+                });
+            }
+        });
+
+        $('#task_form').validate({
+            errorElement: 'span',
+            errorClass: 'help-inline',
+            focusInvalid: true,
+            rules: {
+                name: {
+                    required: true
+                },
+                code: {
+                    required: true
+                },
+                depends_to: {
+                    required: false
+                },
+                comment: {
+                    required: true
+                },
+                state: {
+                    required: true
+                },
+                platform: {
+                    required: true
+                },
+                subscription: {
+                    required: true
+                },
+                gender: 'required',
+                agree: 'required'
+            },
+
+            messages: {
+            },
+
+            invalidHandler: function (event, validator) { //display error alert on form submit
+                $('.alert-error', $('.login-form')).show();
+            },
+
+            highlight: function (e) {
+                $(e).closest('.control-group').removeClass('info').addClass('error');
+            },
+
+            success: function (e) {
+                $(e).closest('.control-group').removeClass('error').addClass('info');
+                $(e).remove();
+            },
+
+            errorPlacement: function (error, element) {
+                if (element.is(':checkbox') || element.is(':radio')) {
+                    var controls = element.closest('.controls');
+                    if (controls.find(':checkbox,:radio').length > 1) controls.append(error);
+                    else error.insertAfter(element.nextAll('.lbl:eq(0)').eq(0));
+                }
+                else if (element.is('.select2')) {
+                    error.insertAfter(element.siblings('[class*="select2-container"]:eq(0)'));
+                }
+                else if (element.is('.chosen-select')) {
+                    error.insertAfter(element.siblings('[class*="chosen-container"]:eq(0)'));
+                }
+                else error.insertAfter(element);
+            }
+
+        });
+
+        {% if entity%}
+            {% if entity.status.code != 'WFD' and entity.status.code != 'RTS'%}
+                 $('#task_depends_to').attr('disabled','disabled')
+            {% endif %}
+        {% endif %}
+        console.log('initialize task dialog end')
+    }
+</script>
+
+<script type="text/javascript">
+    function destruct_dialog(){
+        console.log('destruct task dialog start');
+        // unbind events
+        $('#task_entity_type').unbind();
+        $('#task_project').unbind();
+        $('#task_parent').unbind();
+        $('#task_name').unbind();
+        $('#task_priority').unbind();
+        $('#dialog_template_submit_button').unbind();
+
+        // remove dialog
+        $('#dialog_template').data('modal', null);
+        console.log('destruct task dialog end');
+    }
+</script>

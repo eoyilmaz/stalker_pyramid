@@ -1,0 +1,155 @@
+{# Stalker Pyramid a Web Base Production Asset Management System
+ Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
+
+ This file is part of Stalker Pyramid.
+
+ This library is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation;
+ version 2.1 of the License.
+
+ This library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Lesser General Public License for more details.
+
+ You should have received a copy of the GNU Lesser General Public
+ License along with this library; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+#}
+{% extends "base.jinja2" %}
+
+{% block sidebar %}
+    {% include 'sidebar.jinja2' %}
+{% endblock sidebar %}
+
+{% block breadcrumbs %}
+    {% set page_title='Tickets' %}
+    {% include 'breadcrumb/breadcrumbs.jinja2' %}
+{% endblock breadcrumbs %}
+
+{% block page_content %}
+    {% set page_title='Tickets' %}
+    {% include 'page_header.jinja2' %}
+
+    {% set tickets=entity.tickets %}
+
+    {% if entity.entity_type=='Project' %}
+    {% set add_button_address=request.route_url("create_ticket_dialog", id=-1, _query={'project_id': entity.id }) %}
+    {% elif entity.entity_type=='Task' %}
+    {% set add_button_address=request.route_url("create_ticket_dialog", id=-1, _query={'project_id': entity.project_id, 'task_id':entity.id }) %}
+    {% endif %}
+
+
+
+    {% set address=request.route_path('get_entity_tickets', id=entity.id) %}
+    {% set list_item_type='Ticket' %}
+    {% include 'components/data_table.jinja2' %}
+
+{% endblock page_content %}
+
+
+{% block extrascripts %}
+
+
+
+    {% raw %}
+    <script id="tmpl_itemThead" type="text/x-dot-template">
+
+    <tr>
+         <th>Ticket</th>
+            <th>Project</th>
+            <th class="hidden-480">Summary</th>
+            <th>Type</th>
+            <th>Priority</th>
+            <th>Status</th>
+            <th>Owner</th>
+            <th>Created By</th>
+            <th class="hidden-phone">Created At</th>
+    </tr>
+    </script>
+    {% endraw %}
+
+{% raw %}
+<script id="tmpl_itemRow" type="text/x-dot-template">
+    <tr>
+        <td class='ticket_{{= it.priority }}'>
+            <div class='ticket_{{= it.status }}'>
+                <a href='/tickets/{{=it.id }}/view'>{{=it.number}}</a>
+            </div>
+        </td>
+        <td class='ticket_{{= it.priority }}'>
+            <div class='ticket_{{= it.status }}'>
+                <a href='/projects/{{=it.project_id }}/view'>{{=it.project_name}}</a></td>
+            </div>
+        <td class="ticket_{{= it.priority }} hidden-480">
+            <div class='ticket_{{= it.status }}'>
+                <a href='/tickets/{{=it.id }}/view'>{{=it.summary}}</a></td>
+            </div>
+        <td>
+            <div class='ticket_{{= it.status }}'>{{=it.type}}</div>
+        </td>
+        <td><div class='ticket_{{= it.status }}'>{{=it.priority}}</div></td>
+        <td><div class='ticket_{{= it.status }}'>{{=it.status}}</div></td>
+        <td>
+            <div class='ticket_{{= it.status }}'>
+                <a href='/users/{{=it.owner_id}}/view'>{{=it.owner_name}}</a>
+            </div>
+        </td>
+        <td>
+            <div class='ticket_{{= it.status }}'>
+                <a href='/users/{{=it.created_by_id}}/view'>{{=it.created_by_name}}</a>
+            </div>
+        </td>
+        <td class="hidden-phone">
+            <div class='ticket_{{= it.status }}'>{{=it.date_created}}</div>
+        </td>
+    </tr>
+</script>
+{% endraw %}
+
+    <script>
+
+        var tableParameters = {"aoColumns": [{'sType': 'num-html'}, null, null, null, null, null, null, null, null]}
+        var sortingParameters = [[0, 'desc']]
+        var tableDataAddress = '{{ request.route_path('get_entity_tickets', id=entity.id) }}'
+
+     console.log('tableDataAddress' + tableDataAddress)
+
+    </script>
+
+
+
+<script>
+{#    // fill tickets table with dynamic data#}
+{#    $.getJSON('/entities/{{ entity.id }}/tickets/').then(function(data){#}
+{##}
+{#        var tickets = data;#}
+{#        var ticket_template = doT.template($('#tmpl_ticketRow').html());#}
+{##}
+{#        // wait until document is ready#}
+{#        $(function(){#}
+{#            var i;#}
+{#            var table_body = $('#tickets_table>tbody');#}
+{#            for (i=0; i<data.length; i++) {#}
+{#                // fix dates#}
+{#                data[i].date_created = new Date(data[i].date_created).format('yyyy-mm-dd HH:MM');#}
+{#                // append it to the table#}
+{#                table_body.append(ticket_template(data[i]));#}
+{#            }#}
+{##}
+{#            var oTable1 = $('#tickets_table').dataTable({#}
+{#                "aoColumns": [#}
+{#                        {'sType': 'num-html'}, null, null, null, null, null,#}
+{#                        null, null, null#}
+{#                    ]#}
+{#            });#}
+{#            oTable1.fnSort([[0, 'asc']]);#}
+{##}
+{#        });#}
+{#    });#}
+    
+</script>
+    
+    
+{% endblock extrascripts %}

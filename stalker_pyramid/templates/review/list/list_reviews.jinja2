@@ -1,0 +1,145 @@
+{# Stalker Pyramid a Web Base Production Asset Management System
+ Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
+
+ This file is part of Stalker Pyramid.
+
+ This library is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation;
+ version 2.1 of the License.
+
+ This library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Lesser General Public License for more details.
+
+ You should have received a copy of the GNU Lesser General Public
+ License along with this library; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+#}
+{% extends "base.jinja2" %}
+
+{# PRE-HEADER#}
+{% block pre_header %}
+
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/fullcalendar.css") }}'/>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/bootstrap-timepicker.css") }}'/>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/datepicker.css") }}'/>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/daterangepicker.css") }}'/>
+
+{% endblock pre_header %}
+
+{#SIDEBAR#}
+{% block sidebar %}
+    {% include 'sidebar.jinja2' %}
+{% endblock sidebar %}
+
+
+{# BREADCRUMBS #}
+{% block breadcrumbs %}
+    {% set page_title='Versions' %}
+    {% include 'breadcrumb/breadcrumbs.jinja2' %}
+{% endblock breadcrumbs %}
+
+{#PAGE-CONTENT#}
+{% block page_content %}
+
+    {% set page_title='Reviews' %}
+    {% include 'page_header.jinja2' %}
+
+    {% set list_item_type='Review' %}
+    {% include 'components/data_table.jinja2' %}
+
+{% endblock page_content %}
+
+{# EXTRA-SCRIPTS #}
+{% block extrascripts %}
+    {% raw %}
+    <script id="tmpl_itemThead" type="text/x-dot-template">
+        <tr>
+            <th>Date</th>
+            <th>Review Set #</th>
+            <th>Task</th>
+            <th>Reviewer</th>
+            <th>Status</th>
+        </tr>
+    </script>
+    {% endraw %}
+
+    {% raw %}
+    <script id="tmpl_itemRow" type="text/x-dot-template">
+        <tr>
+            <td>{{=it.date_created}}</td>
+            <td>{{=it.review_number }}</td>
+            <td><a href='/tasks/{{=it.task_id }}/view'>{{=it.task_name}}</a>
+            </td>
+            <td><a href='/users/{{=it.reviewer_id }}/view'>{{=it.reviewer_name}}</a>
+            </td>
+            <td>{{ if (it.review_status_name == 'New') { }}
+                <span class="label label-{{=it.review_status_color }}">Pending</span>
+
+                {{ if(it.is_reviewer=='1'){ }}
+
+                <div class="inline position-relative">
+                    <button class="btn btn-minier bigger btn-info dropdown-toggle"
+                            data-toggle="dropdown">
+                        <i class="icon-angle-down icon-only bigger-120"></i>
+                    </button>
+
+                    <ul class="dropdown-menu dropdown-icon-only dropdown-yellow pull-right dropdown-caret dropdown-close">
+                        <li>
+                            <a href="/tasks/{{=it.task_id}}/review/dialog?review_mode=approve"
+                               class="tooltip-success"
+                               data-rel="tooltip"
+                               title="Approve"
+                               data-target="#dialog_template"
+                               data-toggle="modal"
+                               data-keyboard=false
+                               data-placement="top">
+                                   <span class="green">
+                                       <i class="icon-ok bigger-110"></i>
+                                   </span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="/tasks/{{=it.task_id}}/review/dialog?review_mode=request_revision"
+                               class="tooltip-success"
+                               data-rel="tooltip"
+                               title="Request Revision"
+                               data-target="#dialog_template"
+                               data-toggle="modal"
+                               data-keyboard=false
+                               data-placement="top">
+                                    <span class="orange">
+                                        <i class="icon-remove bigger-110"></i>
+                                    </span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                {{ } }}
+
+                {{ } else{ }}
+
+                <span class="label label-{{=it.review_status_color }}">{{=it.review_status_name }}</span>
+                {{ } }}
+
+            </td>
+        </tr>
+    </script>
+    {% endraw %}
+
+    <script>
+        var tableParameters = {};
+        var sortingParameters = [[0, 'desc']];
+        var tableDataAddress = '{{ request.route_path('get_%s_reviews' % entity.entity_type.lower(), id=entity.id) }}';
+
+{#        console.log('tableDataAddress' + tableDataAddress);#}
+    </script>
+
+{% endblock extrascripts %}

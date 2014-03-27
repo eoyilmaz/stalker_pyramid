@@ -1,0 +1,218 @@
+<form id='user_form'
+      class='form-horizontal'
+      role='form'
+      method="post"
+        {% if mode == 'Create' %}
+      action="{{ request.route_url(mode.lower()+'_user') }}"
+        {% elif mode == 'Update' %}
+      action="{{ request.route_url(mode.lower()+'_user', id=user.id) }}"
+        {% endif %}
+        >
+    <div class="row-fluid">
+        {% if mode == 'Update' %}
+
+            <div class="span3">
+
+                {% include 'components/avatar.jinja2' %}
+
+            </div>
+            <div class="span9">
+
+        {% else %}
+            <div class="span12">
+        {% endif %}
+
+        {# Name #}
+        <div class="control-group">
+            <label class="span2 control-label"
+                   for="user_name">Name</label>
+
+            <div class="span6">
+                <input id="user_name"
+                       name='name'
+                       type="text"
+                       class="form-control"
+                       placeholder="Name"
+                        {% if mode == 'Update' %}
+                       value='{{ user.name }}'
+                        {% endif %}
+                       required>
+            </div>
+        </div>
+        {# Login #}
+        <div class="control-group">
+            <label for="user_login"
+                   class="span2 control-label">Login</label>
+
+            <div class="span6">
+                <input id="user_login"
+                       name='login'
+                       type="text"
+                       class="form-control"
+                       placeholder="Login"
+                        {% if mode == 'Update' %}
+                       value='{{ user.login }}'
+                        {% endif %}
+                       required>
+            </div>
+        </div>
+        </div>
+
+        </div>
+        <h4 class="header blue bolder smaller">Contact</h4>
+
+        <div class="row-fluid">
+            {# Email #}
+            <div class="control-group">
+                <label for="user_email"
+                       class="span2 control-label">Email</label>
+
+                <div class="span6">
+                      <span class="input-icon input-icon-left">
+                          <input id="user_email"
+                                 name='email'
+                                 type="email"
+                                 class="form-control"
+                                 placeholder="Email"
+                                  {% if mode == 'Update' %}
+                                 value='{{ user.email }}'
+                                  {% endif %}
+                                 required>
+                          <i class="icon-envelope icon-flip-horizontal"></i>
+                       </span>
+                </div>
+            </div>
+        </div>
+
+        <h4 class="header blue bolder smaller">Password</h4>
+
+        <div class="row-fluid">
+            {# Password #}
+            <div class="control-group">
+                <label for="user_password"
+                       class="span2 control-label">Password</label>
+
+                <div class="span6">
+                    <input id="user_password"
+                           name='password'
+                           type="password"
+                           class="form-control"
+                           placeholder="Password"
+                            {% if mode == 'Update' %}
+                           value='DONTCHANGE'
+                            {% endif %}
+                           required>
+                </div>
+            </div>
+
+            {# Confirm Password #}
+            <div class="control-group">
+                <label for="user_password2"
+                       class="span2 control-label">Confirm Password</label>
+
+                <div class="span6">
+                    <input id="user_password2"
+                           name='password2'
+                           type="password"
+                           class="form-control"
+                           placeholder="Confirm Password"
+                            {% if mode == 'Update' %}
+                           value='DONTCHANGE'
+                            {% endif %}
+                           required>
+                </div>
+            </div>
+
+        </div>
+
+</form>
+
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.validate.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.gritter.min.js") }}'></script>
+
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.ui.touch-punch.min.js") }}'></script>
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/x-editable/bootstrap-editable.min.js") }}'></script>#}
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/x-editable/ace-editable.min.js") }}'></script>#}
+
+
+<script type="text/javascript">
+
+
+    {# Form #}
+    $(document).ready(function () {
+
+        $('#user_form').validate({
+            errorElement: 'span',
+            errorClass: 'help-inline',
+            focusInvalid: true,
+            rules: {
+                email: {
+                    required: true,
+                    email: true
+                },
+                password: {
+                    required: true,
+                    minlength: 5
+                },
+                password2: {
+                    required: true,
+                    minlength: 5,
+                    equalTo: "#user_password"
+                },
+                name: {
+                    required: true
+                },
+                login: {
+                    required: true
+                }
+            },
+
+            messages: {
+                email: {
+                    required: "Please provide a valid email.",
+                    email: "Please provide a valid email."
+                },
+                password: {
+                    required: "Please specify a password.",
+                    minlength: "Please specify a secure password."
+                }
+            },
+
+            invalidHandler: function (event, validator) { //display error alert on form submit
+                $('.alert-error', $('.login-form')).show();
+            },
+
+            highlight: function (e) {
+                $(e).closest('.control-group').removeClass('info').addClass('error');
+            },
+
+            success: function (e) {
+                $(e).closest('.control-group').removeClass('error').addClass('info');
+                $(e).remove();
+            },
+
+            errorPlacement: function (error, element) {
+                if (element.is(':checkbox') || element.is(':radio')) {
+                    var controls = element.closest('.controls');
+                    if (controls.find(':checkbox,:radio').length > 1) controls.append(error);
+                    else error.insertAfter(element.nextAll('.lbl:eq(0)').eq(0));
+                }
+                else if (element.is('.select2')) {
+                    error.insertAfter(element.siblings('[class*="select2-container"]:eq(0)'));
+                }
+                else if (element.is('.chosen-select')) {
+                    error.insertAfter(element.siblings('[class*="chosen-container"]:eq(0)'));
+                }
+                else error.insertAfter(element);
+            },
+
+            submitHandler: function (form) {
+                form.submit();
+            },
+
+            invalidHandler: function (form) {
+            }
+        });
+    });
+
+</script>

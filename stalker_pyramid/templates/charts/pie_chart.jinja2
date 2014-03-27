@@ -1,0 +1,86 @@
+<script class="code" type="text/javascript">
+
+
+        function drawPieChart(placeholder, data, colors, location) {
+
+             $.jqplot(placeholder, [data], {
+                fontSize: 50,
+                textColor: '#ff0000',
+                grid: {
+                    drawBorder: false,
+                    drawGridlines: false,
+                    background: '#ffffff',
+                    shadow: false,
+                    hoverable: true,
+                    clickable: true
+                },
+                seriesColors: colors,
+                axesDefaults: {
+
+                },
+                series: {
+                    pie: {
+                        show: true,
+                        tilt: 0.8,
+                        highlight: {
+                            opacity: 0.25
+                        },
+                        stroke: {
+                            color: '#fff',
+                            width: 2
+                        },
+                        startAngle: 2
+
+                    },
+                    label:'Copmleted'
+                },
+                seriesDefaults: {
+                    renderer: $.jqplot.PieRenderer,
+                    trendline: { show: true },
+                    rendererOptions: {
+                        showDataLabels: true,
+                        sliceMargin: 4,
+                        // rotate the starting position of the pie around to 12 o'clock.
+                        startAngle: 90
+                    }
+                },
+                legend: {
+                    show: false,
+                    placement: 'outside',
+                    rendererOptions: {
+                        numberRows: 5
+                    },
+                    location: location
+                }
+
+            });
+
+        }
+
+{#        var pie_chart = $('#pie_chart');#}
+{##}
+{#        $.getJSON(pie_chart.attr('address')).then(function (data) {#}
+{##}
+{#            var content = [];#}
+{#            var colors = [];#}
+{##}
+{#            for (var i = 0; i < data.length; i++) {#}
+{##}
+{##}
+{#                content.push([data[i].name + " (" + data[i].count + ")", data[i].count]);#}
+{#                colors.push('#' + data[i].color.toString(16));#}
+{##}
+{#            }#}
+{##}
+{#            drawPieChart('pie_chart', content, colors)#}
+{##}
+{##}
+{#        })#}
+
+
+</script>
+
+
+<!-- Additional plugins go here -->
+<script class="include" type="text/javascript"
+        src='{{ request.static_url("stalker_pyramid:static/jqPlot/plugins/jqplot.pieRenderer.min.js") }}'></script>

@@ -1,0 +1,27 @@
+<ul class="breadcrumb">
+    <li>
+        <i class="icon-home home-icon"></i>
+        <a href="{{ request.route_url('view_user', id=logged_in_user.id) }}">Home</a>
+
+                            <span class="divider">
+                              <i class="icon-angle-right arrow-icon"></i>
+                            </span>
+    </li>
+    <li>
+        <a href="{{ request.route_url('view_'+entity.entity_type.lower(), id=entity.id) }}">{{ entity.name }}</a>
+
+                            <span class="divider">
+                              <i class="icon-angle-right arrow-icon"></i>
+                            </span>
+    </li>
+    <li class="active">
+        {#            <a href="{{ request.route_url('list_'+entity.entity_type.lower()+'_'+listed_type.lower(), id=entity.id) }}">{{ listed_type }}</a>#}
+
+                            <span class="divider">
+                              <i class="icon-angle-right arrow-icon"></i>
+                            </span>
+    </li>
+
+    <li class="active">{{ page_title }}</li>
+</ul>
+<!--.breadcrumb-->

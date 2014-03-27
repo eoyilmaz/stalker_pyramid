@@ -1,0 +1,523 @@
+/* Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
+ 
+ This file is part of Stalker Pyramid.
+ 
+ This library is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation;
+ version 2.1 of the License.
+ 
+ This library is distributed in the hope that it will be useful,
+            but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Lesser General Public License for more details.
+ 
+ You should have received a copy of the GNU Lesser General Public
+ License along with this library; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+*/
+
+@red: #d53f40;
+@red2: #d15b47;
+@red3:#E2755F;
+@orange: #FFC657;
+@light-green: #9abc32;
+@green: #82af6f;
+@green1: #2E8965;
+@blue: #0c87dd;
+@blue2: #5090C1;
+@blue3: #6379aa;
+@light-blue: #6fb3e0;
+@purple: #6f3cc4;
+@purple2: #7e6eb0;
+@grey: #abbac3;
+@black: #1f1f1f;
+
+
+
+
+@ticket_color: #AA2222;
+@even_ticket_border_color: #EE8888;
+@even_ticket_background: none repeat scroll 0 0 #FFDDCC;
+@odd_ticket_border_color: #EE9999;
+@odd_ticket_background: none repeat scroll 0 0 #FFEEDD;
+
+.form-horizontal .control-group {
+    margin-bottom: 5px;
+}
+
+.ticket_Fixed, .ticket_Closed {
+    text-decoration: line-through;
+}
+
+tr {
+    .even {
+        >td{
+            .ticket_TRIVIAL {
+            }
+            .ticket_MINOR {
+            }
+            .ticket_CRITICAL {
+                background: @even_ticket_background;
+                border-color: @even_ticket_border_color;
+                color: @ticket_color;
+            }
+            .ticket_BLOCKER {
+                background: @even_ticket_background;
+                border-color: @even_ticket_border_color;
+                color: @ticket_color;
+            }
+            .ticket_MAJOR {
+            }
+        }
+    }
+    
+    .odd{
+        >td{
+            .ticket_TRIVIAL {
+            }
+            .ticket_MINOR {
+            }
+            .ticket_CRITICAL {
+                background: @odd_ticket_background;
+                border-color: @odd_ticket_border_color;
+                color: @ticket_color;
+            }
+            .ticket_BLOCKER {
+                background: @odd_ticket_background;
+                border-color: @odd_ticket_border_color;
+                color: @ticket_color;
+            }
+            .ticket_MAJOR {
+            }
+        }
+    }
+    
+}
+
+.header-color-project {
+    background: @green1;
+    border-color: @green1;
+}
+
+.header-color-project+.widget-body {
+    border-color: @green1;
+}
+
+.header-color-asset {
+  background: #848484;
+  border-color: #d3d7dc;
+
+  +.widget-body {
+    border-color: #d3d7dc;
+  }
+}
+.header-color-sequence {
+  background: @green;
+  border-color: @green;
+
+  +.widget-body {
+    border-color: @green;
+  }
+}
+.header-color-shot {
+  background: @blue2;
+  border-color: @blue2;
+
+  +.widget-body {
+    border-color: @blue2;
+  }
+}
+
+.header-color-task {
+  background: #848484;
+  border-color: #a9c1c1;
+  +.widget-body {
+    border-color: #bdc1c6;
+  }
+}
+
+.header-color-group {
+    background: @red3;
+    border-color: @red3;
+
+    + .widget-body {
+        border-color: @red3;
+    }
+}
+
+.header-color-department {
+    background: @blue3;
+    border-color: @blue3;
+
+    + .widget-body {
+        border-color: @blue3;
+    }
+}
+
+.header-color-user {
+    background: @orange;
+    border-color: @orange;
+
+    +.widget-body {
+        border-color: @orange;
+    }
+}
+
+.header-color-ticket {
+    background: @blue;
+    border-color: @blue;
+
+    +.widget-body {
+        border-color: @blue;
+    }
+}
+
+.header-color-review {
+    background: @light-blue;
+    border-color: @light-blue;
+
+    +.widget-body {
+        border-color: @light-blue;
+    }
+}
+
+.header-color-version {
+    background: @light-green;
+    border-color: @light-green;
+
+    +.widget-body {
+        border-color: @light-green;
+    }
+}
+
+
+
+
+
+// *********************************
+// Statuses
+// *********************************
+
+.pln { // planning
+    background-color: @grey;
+    color: white;
+    a {
+        color: white;
+    }
+}
+
+.new {
+    background-color: @grey;
+    color: white;
+    a {
+        color: white;
+    }
+}
+
+.wfd {
+    background-color: @grey;
+    color: white;
+    a {
+        color: white;
+    }
+}
+
+.rts {
+    background-color: @red2;
+    color: white;
+    a {
+        color: white;
+    }
+}
+
+.wip {
+    background-color: @orange;
+    color: white;
+    a {
+        color: white;
+    }
+}
+
+.prev {
+    background-color: @light-blue;
+    color: white;
+    a {
+        color: white;
+    }
+}
+
+.hrev {
+    background-color: @purple2;
+    color: white;
+    a {
+        color: white;
+    }
+}
+
+.drev {
+    background-color: @purple2;
+    color: white;
+    a {
+        color: white;
+    }
+}
+
+.stop {
+    background-color: @purple2;
+    color: white;
+    a {
+        color: white;
+    }
+}
+
+.oh {
+    background-color: @purple2;
+    color: white;
+    a {
+        color: white;
+    }
+}
+
+.cmpl {
+    background-color: @green;
+    color: white;
+    a {
+        color: white;
+    }
+}
+
+.black2 {
+    background-color: @black;
+    color: white;
+    a {
+        color: white;
+    }
+}
+
+.progress-wfd .bar, .progress .bar-wfd {
+    background-image: none;
+    background-color: @grey
+}
+
+.progress-rts .bar, .progress .bar-rts {
+    background-image: none;
+    background-color: @red2
+}
+
+.progress-wip .bar, .progress .bar-wip {
+    background-image: none;
+    background-color: @orange
+}
+
+.progress-stop .bar, .progress .bar-stop {
+    background-image: none;
+    background-color: @red2
+}
+
+.progress-oh .bar, .progress .bar-oh {
+    background-image: none;
+    background-color: @red2
+}
+
+.progress-prev.bar, .progress .bar-prev {
+    background-image: none;
+    background-color: @light-blue
+}
+
+.progress-hrev .bar, .progress .bar-hrev {
+    background-image: none;
+    background-color: @purple
+}
+
+.progress-drev .bar, .progress .bar-drev {
+    background-image: none;
+    background-color: @purple
+}
+
+.progress-cmpl .bar, .progress .bar-cmpl {
+    background-image: none;
+    background-color: @green
+}
+
+
+
+@dgrid-focus-color: #222;
+.dgrid-selected {
+    .pln {
+        background-color: @grey + @dgrid-focus-color;
+    }
+
+    .new {
+        background-color: @grey + @dgrid-focus-color;
+    }
+
+    .wfd {
+        background-color: @grey + @dgrid-focus-color;
+    }
+
+    .rts {
+        background-color: @red2 + @dgrid-focus-color;
+    }
+
+    .wip {
+        background-color: @orange + @dgrid-focus-color;
+    }
+
+    .stop {
+        background-color: @red2 + @dgrid-focus-color;
+    }
+
+    .oh {
+        background-color: @red2 + @dgrid-focus-color;
+    }
+
+    .prev {
+        background-color: @light-blue + @dgrid-focus-color;
+    }
+
+    .hrev {
+        background-color: @purple + @dgrid-focus-color;
+    }
+
+    .drev {
+        background-color: @purple + @dgrid-focus-color;
+    }
+
+    .cmpl {
+        background-color: @green + @dgrid-focus-color;
+    }
+}
+
+.icon-task {
+
+}
+
+.label-red,.badge-red {
+    background-color: @red !important;
+}
+
+.label-orange, .badge-orange {
+    background-color: @orange !important;    
+}
+
+.label-blue, .badge-blue {
+    background-color: @light-blue !important;
+}
+
+.label-purple, .badge-purple {
+    background-color: @purple !important;
+}
+
+.label-purple2, .badge-purple2 {
+    background-color: @purple2 !important;
+}
+
+.label-green, .badge-green {
+    background-color: @green !important;
+}
+
+.label-APP {
+    background-color: #8ac16c;
+}
+
+.label-RREV {
+    background-color: #e07f69;
+}
+
+.label-NEW {
+    background-color: @light-blue;
+}
+
+
+
+.fc-week {
+    background-color: #e6eaef;
+}
+
+.fc-day-number {
+    text-align: right;
+    background-color: #c4c8cd;
+    width: 100%;
+    padding-left: 0px !important;
+    padding-right: 2px !important;
+}
+
+
+.review-status {
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    background-color: #FFF;
+    border: 3px solid #AAA;
+    -webkit-border-radius: 100%;
+    -moz-border-radius: 100%;
+    border-radius: 100%;
+    vertical-align: middle;
+    margin-right: 1px
+}
+
+.review-status.status-APP {
+    border-color: #8ac16c
+}
+
+.review-status.status-RREV {
+    border-color: #e07f69
+}
+
+.review-status.status-NEW {
+    border-color: @light-blue
+}
+
+
+.entityview-item {
+  position: relative;
+  margin-bottom: 8px;
+}
+.entityview-item .widget-box {
+  background-color: #e8ecef;
+  color: #595C66;
+}
+.entityview-item .transparent.widget-box {
+  border-left: 3px solid #c6cdd1;
+}
+.entityview-item .transparent .widget-header {
+  background-color: #dbdfe4;
+  border-bottom: none;
+}
+.entityview-item .transparent .widget-header > :first-child {
+  margin-left: 8px;
+}
+.entityview-item:nth-child(even) .widget-box {
+  background-color: #F3F3F3;
+  color: #616161;
+}
+.entityview-item:nth-child(even) .widget-box.transparent {
+  border-left-color: #DBDBDB !important;
+}
+.entityview-item:nth-child(even) .widget-box.transparent .widget-header {
+  background-color: #EEE !important;
+}
+.entityview-item .widget-box {
+  margin: 0;
+  position: relative;
+  max-width: none;
+  border-bottom: none;
+  margin-left: 0px;
+}
+.entityview-item .widget-main {
+  margin: 0;
+  position: relative;
+  max-width: none;
+  border-bottom: none;
+}
+.entityview-item .widget-body {
+  background-color: transparent;
+}
+.entityview-item .widget-toolbox {
+  padding: 4px 8px 0 !important;
+  background-color: transparent !important;
+  border: 0 solid #CCC !important;
+  border-top: none !important;
+  margin: 0 0px !important;
+}

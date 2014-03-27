@@ -1,0 +1,66 @@
+{# Render Group Side Bar #}
+
+{% set department=entity %}
+
+
+<ul id="sidebar_list" class='nav nav-list'>
+
+
+</ul>
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        page_of(
+            '{{ department.name }}',
+            '',
+            "{%- if department.thumbnail -%}/{{ department.thumbnail.full_path }}{%- else -%}{{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}{%- endif -%}",
+            '/departments/{{ department.id }}/update/dialog'
+        );
+
+        menu_of(
+            'Dashboard',
+            "{%- if request.current_route_path() == request.route_path('view_department', id=department.id) -%}'active',{%- else -%},{%- endif -%}",
+            '{{ request.route_url('view_department', id=department.id) }}',
+            get_icon('dashboard'),
+            ''
+        );
+
+        menu_of(
+            'Resources',
+            "{%- if request.current_route_path() == request.route_path('list_entity_resources', id=department.id) -%}'active',{%- else -%},{%- endif -%}",
+            '{{ request.route_url('list_entity_resources', id=department.id) }}',
+            get_icon('resource'),
+            ''
+        );
+
+        menu_of(
+            'Tasks',
+            "{%- if request.current_route_path() == request.route_path('list_entity_tasks', id=department.id) -%}'active',{%- else -%},{%- endif -%}",
+            '{{ request.route_url('list_entity_tasks', id=department.id) }}',
+            get_icon('task'),
+            '{{ department.tasks | count }}'
+        );
+
+{#        menu_of('Projects',#}
+{#                "{%- if request.current_route_path() == request.route_path('list_department_projects', id=department.id) -%}'active',{%- else -%},{%- endif -%}",#}
+{#                '{{ request.route_url('list_department_projects', id=department.id) }}',#}
+{#                get_icon('project'),#}
+{#                '{{ department.projects | count }}')#}
+
+        menu_of(
+            'Users',
+            "{%- if request.current_route_path() == request.route_path('list_entity_users', id=department.id) -%}'active',{%- else -%},{%- endif -%}",
+            '{{ request.route_url('list_entity_users', id=department.id) }}',
+            get_icon('user'),
+            '{{ department.users | count }}'
+        );
+
+{#        menu_of('Vacations',#}
+{#                    "{%- if request.current_route_path() == request.route_path('list_entity_vacations', id=department.id) -%}'active',{%- else -%},{%- endif -%}",#}
+{#                    '{{ request.route_url('list_entity_vacations', id=department.id) }}',#}
+{#                    get_icon('vacation'),#}
+{#                    '{{ department.vacations | count }}')#}
+
+
+    })
+</script>

@@ -1,0 +1,203 @@
+<div class='row-fluid'>
+    <div class='span12'>
+
+        <div id="version_message">
+            {% include 'version/view/version_card.jinja2' %}
+        </div>
+
+
+        <form id="request_review_task_form"
+              class='form-horizontal'
+              role='form'
+              method='post'
+              action="">
+
+            {% if selected_responsible == None and request_review_mode=='Progress' %}
+                {# Responsible #}
+                <div class='control-group'>
+                    <label class='span3 control-label'
+                           for='task_responsible'>To:</label>
+
+                    <div class='span9'>
+                        <select id="task_responsible"
+                                multiple=''
+                                name='selected_responsible_ids'
+                                class="input-block-level tag-input-style span12"
+                                data-placeholder='Responsible'></select>
+                    </div>
+                </div>
+
+            {% endif %}
+
+            {# Notes #}
+
+            <div class='control-group'>
+                <label class='span3 control-label'
+                       for='note'>Note:</label>
+
+                <div class='span9'>
+                    <textarea id="note"
+                              name='note'
+                              class="autosize-transition span12"
+                              style="overflow: hidden;
+                                         word-wrap: break-word;
+                                         resize: horizontal;
+                                         height: 150px;"
+                            ></textarea>
+                </div>
+            </div>
+
+        </form>
+        <div class="space"></div>
+
+        <div class="row-fluid" id="request-review-warning-message">
+
+
+        </div>
+
+    </div>
+</div>
+
+
+{% raw %}
+
+<script id="alert-for-Progress" type="text/x-dot-template">
+
+    <div class="alert alert-warning bigger-110">
+        This will send a <strong>mid review request</strong> to the
+        <strong>{{=it.responsible_name }}</strong>. <br><br><strong>Are you
+        sure?</strong>
+    </div>
+
+
+</script>
+{% endraw %}
+
+{% raw %}
+
+<script id="alert-for-Final" type="text/x-dot-template">
+
+    <div class="alert alert-error bigger-110">
+        This will send a <strong>review request</strong> to the
+        responsible of this task and you will <strong>not</strong>
+        be able to <strong>create any TimeLogs</strong> for this
+        task after this point<br><br><strong>Are you sure?</strong>
+    </div>
+
+</script>
+{% endraw %}
+
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootstrap-tag.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/chosen.jquery.min.js") }}'></script>
+
+<script>
+
+    function init_dialog() {
+        console.debug('starting to initialize confirm dialog!!!');
+
+        $('#dialog_template_label').text('Request Review Dialog');
+
+        {% if selected_responsible == None  %}
+
+            var task_responsible = $('#task_responsible');
+
+            task_responsible.chosen({
+                search_contains: true,
+                enable_split_word_search: true
+            });
+
+            {% raw %}
+                var responsible_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
+            {% endraw %}
+
+            task_responsible.find('option').remove();
+
+            // append a single empty option to the responsible field
+            task_responsible.append('<option value=""></option>');
+
+            var responsible_ids = []
+            {% for responsible in task.responsible %}
+
+                task_responsible.append(responsible_template({'id': '{{ responsible.id }}', 'name': '{{responsible.name}}' }));
+                responsible_ids.push('{{ responsible.id }}')
+
+            {% endfor %}
+
+            task_responsible.val(responsible_ids)
+            task_responsible.trigger('liszt:updated');
+        {% endif %}
+
+        var url = '{{ action }}';
+        {% if action != '' %}
+            var warning_template_id = '#alert-for-{{request_review_mode}}';
+
+            {% raw %}
+            var warning_message_template = doT.template($(warning_template_id).html());
+            {% endraw %}
+
+            var responsible_name = 'responsible of this task.';
+            {% if selected_responsible %}
+                responsible_name = '{{ selected_responsible.name }}';
+            {% endif %}
+
+            $('#request-review-warning-message').find('div').remove();
+            $('#request-review-warning-message').append(warning_message_template({'responsible_name': responsible_name}));
+
+        {% else %}
+            $('#request_review_task_form').hide();
+            $('#version_message').append(
+                "<div class='alert alert-error bigger-110'><p>" +
+                "A <strong>{{ task_type }}</strong> task needs to have at " +
+                "least one published version in order to be reviewed and " +
+                "there is no published version for this task!</p><br/>" +
+                "<p><strong>Please publish at least one version of this " +
+                "task.</strong></p></div>"
+            );
+        {% endif %}
+
+        {# ***************************************************************** #}
+        {# Submit Button #}
+        $('#dialog_template_submit_button').on('click', function (e) {
+            e.stopPropagation();
+            e.preventDefault();
+
+            // disable the submit_button
+            var submit_button = $(this);
+
+            if (url){
+                submit_button.button('loading');
+
+                var request_review_task_form = $('#request_review_task_form');
+                var request_review_task_form_data = request_review_task_form.serialize() + '&request_review_mode={{ request_review_mode }}';
+
+                {% if selected_responsible %}
+                    request_review_task_form_data += "&selected_responsible_ids='{{ selected_responsible.id }}'";
+                {% endif %}
+
+                $.post(url, request_review_task_form_data).done(function (response) {
+                    $('#dialog_template').modal('hide');
+                    // reload page
+                    setTimeout(function () { // wait for hide event to finish
+                        window.location.reload();
+                    }, 0);
+                }).fail(function (jqXHR) {
+                    bootbox.alert('<h6 class="red"><i class="icon-warning-sign"></i> Failed</h6>' + jqXHR.responseText);
+                    submit_button.button('reset');
+                });
+            }
+            else {
+                $('#dialog_template').modal('hide');
+            }
+        });
+
+        console.debug('finished initializing the confirm dialog!')
+    }
+</script>
+
+
+<script type="text/javascript">
+    function destruct_dialog() {
+        $('#dialog_template_submit_button').unbind();
+        $('#dialog_template').data('modal', null);
+    }
+</script>
