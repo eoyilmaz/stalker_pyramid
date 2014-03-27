@@ -2658,7 +2658,7 @@ button.btn:active {
 .btn-app.btn-primary,
 .btn-app.btn-primary.no-hover:hover,
 .btn-app.btn-primary.disabled:hover {
-  background: #2a8bcc !important;
+  background: #2a8bcb !important;
   background-color: #2d8ece !important;
   background-image: -moz-linear-gradient(top, #3b98d6, #197ec1) !important;
   background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#3b98d6), to(#197ec1)) !important;
@@ -2706,7 +2706,7 @@ button.btn:active {
 .btn-app.btn-success,
 .btn-app.btn-success.no-hover:hover,
 .btn-app.btn-success.disabled:hover {
-  background: #86b558 !important;
+  background: #85b558 !important;
   background-color: #87b75a !important;
   background-image: -moz-linear-gradient(top, #8ebf60, #7daa50) !important;
   background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#8ebf60), to(#7daa50)) !important;
@@ -7949,7 +7949,7 @@ td .lbl:only-child {
   left: 19px;
   width: 1px;
   max-width: 1px;
-  background-color: #e8ecef;
+  background-color: #E1E6ED;
   border: 1px solid #D7DBDD;
   border-width: 0 1px;
 }

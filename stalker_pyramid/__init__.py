@@ -22,14 +22,13 @@ Stalker Pyramid is a Production Asset Management System (ProdAM) designed for
 Animation and VFX Studios. See docs for more information.
 """
 import pyramid_beaker
-from sqlalchemy.orm import scoped_session, sessionmaker
+
 from zope.sqlalchemy import ZopeTransactionExtension
 
 __version__ = '0.1.7'
 
 
 # before anything about stalker create the defaults
-from stalker import db
 from stalker.config import defaults
 from stalker.models.auth import group_finder
 
