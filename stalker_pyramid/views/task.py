@@ -830,6 +830,7 @@ def get_tasks(request):
             -- for child tasks we need to count the total seconds of related TimeLogs
             (coalesce("Task_TimeLogs".duration, 0.0))::float /
                 ("Tasks".schedule_timing * (case "Tasks".schedule_unit
+                    when 'min' then 60
                     when 'h' then 3600
                     when 'd' then 32400
                     when 'w' then 147600
@@ -866,6 +867,7 @@ def get_tasks(request):
         "Tasks".schedule_model,
         coalesce("Tasks".schedule_seconds,
             "Tasks".schedule_timing * (case "Tasks".schedule_unit
+                when 'min' then 60
                 when 'h' then 3600
                 when 'd' then 32400
                 when 'w' then 147600
@@ -1562,7 +1564,7 @@ def get_entity_tasks_by_filter(request):
     filter_id = request.matchdict.get('f_id', -1)
     filter = Entity.query.filter_by(id=filter_id).first()
 
-    sql_query ="""select
+    sql_query = """select
     "Task_Resources".task_id as task_id,
     "ParentTasks".parent_names as task_name,
     array_agg("Responsible_SimpleEntities".id) as responsible_id,
@@ -1578,6 +1580,7 @@ def get_entity_tasks_by_filter(request):
         -- for child tasks we need to count the total seconds of related TimeLogs
         (coalesce("Task_TimeLogs".duration, 0.0))::float /
             ("Tasks".schedule_timing * (case "Tasks".schedule_unit
+                when 'min' then 60
                 when 'h' then 3600
                 when 'd' then 32400
                 when 'w' then 147600
@@ -1687,7 +1690,7 @@ join ((
                 where responsible_id is not NULL
             )
         ) as prev_query on "Tasks".id = prev_query.id
-        where prev_query.id is NULL
+        where prev_query.id is not NULL
     )) as "Tasks_Responsible" on "Tasks_Responsible".id = "Tasks".id
     left join "SimpleEntities" as "Responsible_SimpleEntities" on "Responsible_SimpleEntities".id = "Tasks_Responsible".responsible_id
     left join "SimpleEntities" as "Type_SimpleEntities" on "Tasks_SimpleEntities".type_id = "Type_SimpleEntities".id
@@ -1740,7 +1743,7 @@ join ((
     sql_query = sql_query % {
         'tasks_hierarchical_name_table': query_of_tasks_hierarchical_name_table(),
         'where_condition_for_entity': where_condition_for_entity,
-        'where_condition_for_filter':where_condition_for_filter
+        'where_condition_for_filter': where_condition_for_filter
     }
 
     # convert to dgrid format right here in place
@@ -2351,7 +2354,6 @@ def review_task(request):
 def approve_task(request):
     """ TODO: add doc string
     """
-
     task_id = request.matchdict.get('id', -1)
     task = Task.query.filter(Task.id == task_id).first()
 
@@ -2368,11 +2370,15 @@ def approve_task(request):
 
     status_new = Status.query.filter_by(code='NEW').first()
 
-    review = Review.query.filter(Review.reviewer_id == logged_in_user.id).filter(Review.task_id==task.id).filter(Review.status==status_new).first()
+    review = Review.query\
+        .filter(Review.reviewer_id == logged_in_user.id)\
+        .filter(Review.task_id == task.id)\
+        .filter(Review.status == status_new)\
+        .first()
 
     logger.debug('review %s' % review)
 
-    note_type = query_type('Note','Approved')
+    note_type = query_type('Note', 'Approved')
     note_type.html_class = 'green'
     note = Note(
         content=note,
@@ -2394,11 +2400,7 @@ def approve_task(request):
     else:
         logger.debug('task requested revision')
         try:
-            temp_var = DBSession.commit
-            DBSession.commit = transaction.commit
             task.approve()
-            DBSession.commit = temp_var
-
             task.notes.append(note)
         except StatusError as e:
             return Response('StatusError: %s' % e, 500)
@@ -2525,7 +2527,7 @@ def request_revision(request):
         .filter(Review.status == status_new)\
         .first()
 
-    note_type = query_type('Note','Request Revision')
+    note_type = query_type('Note', 'Request Revision')
     note_type.html_class = 'purple'
 
     note = Note(
@@ -2555,10 +2557,8 @@ def request_revision(request):
         logger.debug('task requested revision')
 
         try:
-            temp_var = DBSession.commit
-            DBSession.commit = transaction.commit
-            task.request_revision(logged_in_user, note.content, schedule_timing, schedule_unit)
-            DBSession.commit = temp_var
+            task.request_revision(logged_in_user, note.content,
+                                  schedule_timing, schedule_unit)
             task.notes.append(note)
         except StatusError as e:
             return Response('StatusError: %s' % e, 500)
