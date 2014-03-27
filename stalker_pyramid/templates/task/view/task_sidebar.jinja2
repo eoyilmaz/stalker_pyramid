@@ -22,7 +22,7 @@
             </button>
         {% endif %}
 
-        {% if (logged_in_user in task.resources or logged_in_user == task.responsible) and task.status.code == 'WIP' and task.is_leaf %}
+        {% if (logged_in_user in task.resources or logged_in_user in task.responsible) and task.status.code == 'WIP' and task.is_leaf %}
             <button id='task_request_review_button'
                     class="btn btn-small btn-warning tooltip-success"
                     data-rel="tooltip"
@@ -44,7 +44,7 @@
             </button>
         {% endif %}
 
-        {% if  logged_in_user in task.responsible and task.status.code == 'CMPL' %}
+        {% if  (logged_in_user in task.responsible and task.status.code == 'CMPL') or has_permission('Create_Review')%}
             <button id='task_review_button'
                     class="btn btn-small btn-purple tooltip-success"
                     data-rel="tooltip"
