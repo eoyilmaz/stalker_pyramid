@@ -79,7 +79,6 @@
 
                     <thead>
                     <tr id="reviews_table_column">
-                        <th>Date/th>
                         <th>Review Set #</th>
                         <th>Task</th>
                     </tr>
@@ -123,7 +122,6 @@
     {% raw %}
     <script id="tmpl_reviewRow" type="text/x-dot-template">
         <tr id="review_row_{{=it.review_number}}">
-            <td>{{=it.date_created}}</td>
             <td style="width:20px;">{{=it.review_number}}</td>
             <td style="width:20px;"><a href="/tasks/{{=it.task_id }}/view">{{=it.task_name}}</a></td>
         </tr>
