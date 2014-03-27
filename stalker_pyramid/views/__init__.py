@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Stalker Pyramid a Web Base Production Asset Management System
-# Copyright (C) 2009-2013 Erkan Ozgur Yilmaz
+# Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
 #
 # This file is part of Stalker Pyramid.
 #
@@ -97,7 +97,6 @@ class StdErrToHTMLConverter():
         """replaces tjp ids in error messages with proper links
         """
         import re
-        from stalker import Entity
         pattern = r"Project[\w0-9\._]+[0-9]"
 
         all_tjp_ids = re.findall(pattern, message)

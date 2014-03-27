@@ -2,6 +2,12 @@
 Stalker Pyramid Changes
 =======================
 
+0.1.8
+=====
+
+* **New:** Updated the UI to follow changes in Stalker v0.2.5 including
+  features like "Task Status Workflow", "Multiple Reviewers".
+
 0.1.7.1
 =======
 

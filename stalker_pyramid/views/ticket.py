@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Stalker Pyramid a Web Base Production Asset Management System
-# Copyright (C) 2009-2013 Erkan Ozgur Yilmaz
+# Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
 #
 # This file is part of Stalker Pyramid.
 #
@@ -17,8 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
-import os
 
+import os
 import time
 import logging
 import datetime
@@ -32,6 +32,7 @@ from pyramid_mailer.message import Message, Attachment
 
 from stalker.db import DBSession
 from stalker import User, Ticket, Project, Note, Type, Task
+
 from stalker_pyramid.views import (get_logged_in_user, PermissionChecker,
                                    milliseconds_since_epoch,
                                    dummy_email_address, local_to_utc,
@@ -78,6 +79,7 @@ def create_ticket_dialog(request):
     project = Project.query.filter(Project.id == project_id).first()
 
     task_id = request.params.get('task_id', -1)
+    owner_id= request.params.get('owner_id', -1)
 
     if not project:
         return Response('No project found with id: %s' % project_id, 500)
@@ -87,6 +89,7 @@ def create_ticket_dialog(request):
         'has_permission': PermissionChecker(request),
         'logged_in_user': logged_in_user,
         'task_id': task_id,
+        'owner_id':owner_id,
         'project': project,
         'ticket_types':
             Type.query.filter_by(target_entity_type='Ticket').all(),

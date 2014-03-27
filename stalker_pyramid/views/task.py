@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Stalker Pyramid a Web Base Production Asset Management System
-# Copyright (C) 2009-2013 Erkan Ozgur Yilmaz
+# Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
 #
 # This file is part of Stalker Pyramid.
 #
@@ -21,26 +21,31 @@ import logging
 import time
 import datetime
 import json
+import os
 
 import transaction
 from pyramid.response import Response
 from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPServerError, HTTPOk, HTTPForbidden
 from pyramid_mailer import get_mailer
-from pyramid_mailer.message import Message
+from pyramid_mailer.message import Message, Attachment
+
 from sqlalchemy.exc import IntegrityError
+
 from stalker.db import DBSession
-from stalker import (User, Task, Entity, Project, StatusList, Status,
-                     TaskJugglerScheduler, Studio, Asset, Shot, Sequence,
-                     Ticket, Type, Note)
-from stalker.models.task import CircularDependencyError
-from stalker import defaults
+from stalker import (defaults, User, Task, Entity, Project, StatusList,
+                     Status, TaskJugglerScheduler, Studio, Asset, Shot,
+                     Sequence, Ticket, Type, Note, Review)
+from stalker.exceptions import CircularDependencyError, StatusError
 
 from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
                                    get_multi_integer, milliseconds_since_epoch,
                                    StdErrToHTMLConverter,
                                    multi_permission_checker,
-                                   dummy_email_address, local_to_utc, get_user_os)
+                                   dummy_email_address, local_to_utc,
+                                   get_user_os)
+from stalker_pyramid.views.link import (replace_img_data_with_links,
+                                        convert_file_link_to_full_path)
 from stalker_pyramid.views.type import query_type
 
 
@@ -48,150 +53,130 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 
-@view_config(
-    route_name='fix_task_statuses'
-)
-def fix_task_statuses(request):
-    """the view correspondence of the update_task_statuses function
+def query_of_tasks_hierarchical_name_table():
+    """gives query string of finding parents names by hierarchically
     """
-    task_id = request.matchdict.get('id')
-    task = Task.query.filter(Task.id == task_id).first()
-    # check for children
-    update_task_statuses(task)
-    # check fo dependencies
-    update_task_statuses_with_dependencies(task)
-    return HTTPOk()
+    query = """
+    (
+        SELECT
+            task_parents.id,
+            "Task_SimpleEntities".name || ' (' || "Projects".code || ' | ' || task_parents.parent_names || ')' as parent_names
+        FROM (
+            SELECT
+                task_parents.id,
+                array_agg(task_parents.parent_id) as parent_ids,
+                array_agg(task_parents.n) as n,
+                array_to_string(
+                    array_agg(task_parents.parent_name),
+                    ' | '
+                ) as parent_names
+            FROM (
+                WITH RECURSIVE parent_ids(id, parent_id, n) as (
+                        SELECT task.id, task.parent_id, 0
+                        FROM "Tasks" AS task
+                        WHERE task.parent_id IS NOT NULL
+                    UNION ALL
+                        SELECT task.id, parent.parent_id, parent.n + 1
+                        FROM "Tasks" task, parent_ids parent
+                        WHERE task.parent_id = parent.id
+                )
+                SELECT
+                    parent_ids.id as id,
+                    parent_ids.n as n,
+                    parent_ids.parent_id AS parent_id,
+                    "ParentTask_SimpleEntities".name as parent_name
+                FROM parent_ids
+                JOIN "SimpleEntities" as "ParentTask_SimpleEntities" ON parent_ids.parent_id = "ParentTask_SimpleEntities".id
+                ORDER BY id, parent_ids.n DESC
+            ) as task_parents
+            GROUP BY task_parents.id
+        ) as task_parents
+        JOIN "Tasks" ON task_parents.id = "Tasks".id
+        JOIN "Projects" ON "Tasks".project_id = "Projects".id
+        JOIN "SimpleEntities" as "Task_SimpleEntities" ON "Tasks".id = "Task_SimpleEntities".id
+    )
+    UNION
+    (
+        SELECT
+            "Tasks".id,
+            "Task_SimpleEntities".name || ' (' || "Projects".code || ')' as parent_names
+        FROM "Tasks"
+        JOIN "Projects" ON "Tasks".project_id = "Projects".id
+        JOIN "SimpleEntities" as "Task_SimpleEntities" on "Tasks".id = "Task_SimpleEntities".id
+        WHERE "Tasks".parent_id IS NULL
+    )"""
+
+    return query
 
 
-def update_task_statuses(task):
-    """updates the task status according to its children statuses
+def get_task_hierarchical_name(task_id):
+    """ give task names in hierarchy"""
+
+    sql_query = """
+        Select
+            "ParentTasks".parent_names as task_name
+        from (
+            %(tasks_hierarchical_name_table)s
+        ) as "ParentTasks"
+        where "ParentTasks".id =%(task_id)s
     """
-    if not task:
-        # None is given
-        return
-
-    if not task.is_container:
-        # do nothing
-        return
-
-    # first look to children statuses and if all of them are CMPL or HREV
-    # then set this tasks status to CMPL
-    # and update parents status
-
-    status_new = Status.query.filter(Status.code == 'NEW').first()
-    status_rts = Status.query.filter(Status.code == 'RTS').first()
-    status_wip = Status.query.filter(Status.code == 'WIP').first()
-    status_cmpl = Status.query.filter(Status.code == 'CMPL').first()
-
-    # use pure sql
-    sql_query = """select
-        "Statuses".code,
-        count(1)
-    from "Tasks"
-    join "Statuses" on "Tasks".status_id = "Statuses".id
-    where "Tasks".parent_id = %s
-    group by "Statuses".code
-    """ % task.id
-
-    result = DBSession.connection().execute(sql_query)
-
-    status_codes = {
-        'NEW': 0,
-        'RTS': 0,
-        'WIP': 0,
-        'PREV': 0,
-        'HREV': 0,
-        'CMPL': 0
+    sql_query = sql_query % {
+        'tasks_hierarchical_name_table':
+        query_of_tasks_hierarchical_name_table(),
+        'task_id': task_id
     }
 
-    # update statuses
-    for r in result.fetchall():
-        if r[1]:
-            status_codes[r[0]] = 1
+    result = DBSession.connection().execute(sql_query).fetchone()
+    task_hierarchical_name = result[0]
+    return task_hierarchical_name
 
-    # convert it to a binary number (represented as string)
-    binary_status = \
-        '%(NEW)s%(RTS)s%(WIP)s%(PREV)s%(HREV)s%(CMPL)s' % status_codes
 
-    status_lut = {
-        '000000': status_new, # this will not happen
-        '000001': status_cmpl,
+def get_task_link_internal(request, task, task_hierarchical_name):
+    """ TODO: add some doc string here
+    """
+    task_link_internal = \
+        '<a href="%(url)s">%(name)s (%(task_entity_type)s)</a>' % {
+            "url": request.route_path('view_task', id=task.id),
+            "name": task_hierarchical_name,
+            "task_entity_type": task.entity_type
+        }
+    return task_link_internal
 
-        '000010': status_wip, # with the new implementation this could happen
-        '000011': status_wip,
 
-        '000100': status_wip,
-        '000101': status_wip,
-        '000110': status_wip,
-        '000111': status_wip,
+def get_user_link_internal(request, user):
+    """ TODO: add some doc string here
+    """
+    user_link_internal = \
+        '<a href="%(url)s">%(name)s</a>' % {
+            'url': request.route_path('view_user', id=user.id),
+            'name': user.name
+        }
+    return user_link_internal
 
-        '001000': status_wip,
-        '001001': status_wip,
-        '001010': status_wip,
-        '001011': status_wip,
-        '001100': status_wip,
-        '001101': status_wip,
-        '001110': status_wip,
-        '001111': status_wip,
 
-        # RTS extension
-        '010000': status_rts,
-        '010001': status_wip,
-        '010010': status_wip,
-        '010011': status_wip,
-        '010100': status_wip,
-        '010101': status_wip,
-        '010110': status_wip,
-        '010111': status_wip,
-        '011000': status_wip,
-        '011001': status_wip,
-        '011010': status_wip,
-        '011011': status_wip,
-        '011100': status_wip,
-        '011101': status_wip,
-        '011110': status_wip,
-        '011111': status_wip,
-
-        '100000': status_new,
-        '100001': status_wip,
-        '100010': status_wip,
-        '100011': status_wip,
-        '100100': status_wip,
-        '100101': status_wip,
-        '100110': status_wip,
-        '100111': status_wip,
-        '101000': status_wip,
-        '101001': status_wip,
-        '101010': status_wip,
-        '101011': status_wip,
-        '101100': status_wip,
-        '101101': status_wip,
-        '101110': status_wip,
-        '101111': status_wip,
-        '110000': status_rts,
-        '110001': status_wip,
-        '110010': status_wip,
-        '110011': status_wip,
-        '110100': status_wip,
-        '110101': status_wip,
-        '110110': status_wip,
-        '110111': status_wip,
-        '111000': status_wip,
-        '111001': status_wip,
-        '111010': status_wip,
-        '111011': status_wip,
-        '111100': status_wip,
-        '111101': status_wip,
-        '111110': status_wip,
-        '111111': status_wip
+def get_description_text(description_temp, user_name, task_hierarchical_name, note):
+    """ TODO: add some doc string here
+    """
+    description_text = description_temp % {
+        "user": user_name,
+        "task_hierarchical_name": task_hierarchical_name,
+        "note": note,
+        "spacing": '\n\n'
     }
+    return description_text
 
-    task.status = status_lut[binary_status]
-    # go to parents
-    update_task_statuses(task.parent)
-    # commit the changes
-    #DBSession.commit()
-    # leave the commits to transaction.manager
+
+def get_description_html(description_temp, user_name, task_hierarchical_name, note):
+    """ TODO: add some doc string here
+    """
+    description_html = description_temp % {
+        "user": '<strong>%s</strong>' % user_name,
+        "task_hierarchical_name":
+            '<strong>%s</strong>' % task_hierarchical_name,
+        "note": '<br/><br/> %s ' % note,
+        "spacing": '<br><br>'
+    }
+    return description_html
 
 
 def update_task_statuses_with_dependencies(task):
@@ -309,8 +294,7 @@ def walk_hierarchy(task):
     :param task: The top most task instance
     :return:
     """
-    tasks_to_visit = []
-    tasks_to_visit.append(task)
+    tasks_to_visit = [task]
     while len(tasks_to_visit):
         current_task = tasks_to_visit.pop(0)
         tasks_to_visit.extend(current_task.children)
@@ -435,17 +419,7 @@ def duplicate_task_hierarchy(request):
         DBSession.add(dup_task)
 
         #update_task_statuses_with_dependencies(dup_task)
-        leafs = find_leafs_in_hierarchy(dup_task)
-        for leaf in leafs:
-            update_task_statuses_with_dependencies(leaf)
-
-        for leaf in leafs:
-            update_task_statuses(leaf)
-
-            # check for children
-        update_task_statuses(dup_task)
-        # check fo dependencies
-        update_task_statuses_with_dependencies(dup_task)
+        #leafs = find_leafs_in_hierarchy(dup_task)
     else:
         transaction.abort()
         return Response(
@@ -529,10 +503,10 @@ def convert_to_dgrid_gantt_task_format(tasks):
             'resources': [
                 {'id': resource.id, 'name': resource.name} for resource in
                 task.resources] if not task.is_container else [],
-            'responsible': {
-                'id': task.responsible.id,
-                'name': task.responsible.name
-            },
+            'responsible': [{
+                'id': responsible.id,
+                'name': responsible.name
+            } for responsible in task.responsible],
             'schedule_constraint': task.schedule_constraint,
             'schedule_model': task.schedule_model,
             'schedule_seconds': task.schedule_seconds,
@@ -545,6 +519,92 @@ def convert_to_dgrid_gantt_task_format(tasks):
             'type': task.entity_type,
         } for task in tasks
     ]
+
+
+@view_config(
+    route_name='inline_update_task'
+)
+def inline_update_task(request):
+    """Inline updates the given task with the data coming from the request
+    """
+
+    logger.debug('INLINE UPDATE TASK IS RUNNING')
+
+    logged_in_user = get_logged_in_user(request)
+
+    # *************************************************************************
+    # collect data
+    attr_name = request.params.get('attr_name', None)
+    attr_value = request.params.get('attr_value', None)
+
+    logger.debug('attr_name %s', attr_name)
+    logger.debug('attr_value %s',attr_value)
+
+    # get task
+    task_id = request.matchdict.get('id', -1)
+    task = Task.query.filter(Task.id == task_id).first()
+
+    # update the task
+    if not task:
+        transaction.abort()
+        return Response("No task found with id : %s" % task_id, 500)
+
+    if attr_name and attr_value:
+
+        logger.debug('attr_name %s',attr_name)
+
+        if attr_name == 'type':
+
+            type_query = Type.query.filter_by(target_entity_type=task.entity_type)
+            type_ = type_query.filter_by(id=attr_value).first()
+
+            if not type_:
+                transaction.abort()
+                return Response("No type found with id : %s" % attr_value, 500)
+
+            task.type = type_
+
+        elif attr_name == 'description':
+
+            # convert images to Links
+            attachments = []
+            description, links = replace_img_data_with_links(attr_value)
+
+            task.description = description
+
+            if links:
+                # update created_by attributes of links
+                for link in links:
+                    link.created_by = logged_in_user
+
+                    # manage attachments
+                    link_full_path = convert_file_link_to_full_path(link.full_path)
+                    link_data = open(link_full_path, "rb").read()
+
+                    link_extension = os.path.splitext(link.filename)[1].lower()
+                    mime_type = ''
+                    if link_extension in ['.jpeg', '.jpg']:
+                        mime_type = 'image/jpg'
+                    elif link_extension in ['.png']:
+                        mime_type = 'image/png'
+
+                    attachment = Attachment(
+                        link.filename,
+                        mime_type,
+                        link_data
+                    )
+                    attachments.append(attachment)
+                DBSession.add_all(links)
+        else:
+            setattr(task, attr_name, attr_value)
+
+        task.updated_by = logged_in_user
+
+    else:
+        logger.debug('not updating')
+        return Response("MISSING PARAMETERS", 500)
+
+    return Response('Task updated successfully %s %s'%(attr_name,attr_value))
 
 
 @view_config(
@@ -576,9 +636,8 @@ def update_task(request):
     resource_ids = get_multi_integer(request, 'resource_ids')
     resources = User.query.filter(User.id.in_(resource_ids)).all()
 
-    # get responsible
-    responsible_id = request.params.get('responsible_id', -1)
-    responsible = User.query.filter(User.id == responsible_id).first()
+    responsible_ids = get_multi_integer(request, 'responsible_ids')
+    responsible = User.query.filter(User.id.in_(responsible_ids)).all()
 
     priority = request.params.get('priority', 500)
 
@@ -608,15 +667,17 @@ def update_task(request):
     logger.debug('priority            : %s' % priority)
     logger.debug('code                : %s' % code)
 
-    logger.debug('shot_sequence_id              : %s' % shot_sequence_id)
+    logger.debug('shot_sequence_id    : %s' % shot_sequence_id)
     logger.debug('cut_in              : %s' % cut_in)
     logger.debug('cut_out             : %s' % cut_out)
 
     # before doing anything check permission
     if not p_checker('Update_' + entity_type):
         transaction.abort()
-        return Response('You do not have enough permission to update a %s' %
-                        entity_type, 500)
+        return Response(
+            'You do not have enough permission to update a %s' %
+            entity_type, 500
+        )
 
     # get task
     task_id = request.matchdict.get('id', -1)
@@ -632,29 +693,19 @@ def update_task(request):
 
     prev_parent = task.parent
 
-    try:
-        task.parent = parent
-        task.depends = depends
-    except CircularDependencyError:
-        transaction.abort()
-        message = '</div>Parent item can not also be a dependent for the ' \
-                  'updated item:<br><br>Parent: %s<br>Depends To: %s</div>' % \
-                  (parent.name, map(lambda x: x.name, depends))
-        transaction.abort()
-        return Response(message, 500)
-        # if the current parent and the previous parents are different
-    # also update the previous parents status
-    if parent != prev_parent:
-        update_task_statuses(prev_parent)
-
-    # also update parent status
-    update_task_statuses(parent)
-
-    # update status of this task according to its dependencies
-    update_task_statuses_with_dependencies(task)
-    # also update all task depends to this one
-    for dep in task.dependent_of:
-        update_task_statuses_with_dependencies(dep)
+    if task.status.code == 'WFD' or task.status.code == 'RTS':
+        try:
+            task.parent = parent
+            task.depends = depends
+        except CircularDependencyError:
+            transaction.abort()
+            message = \
+                '</div>Parent item can not also be a dependent for the ' \
+                'updated item:<br><br>Parent: %s<br>Depends To: %s</div>' % (
+                    parent.name, map(lambda x: x.name, depends)
+                )
+            transaction.abort()
+            return Response(message, 500)
 
     task.schedule_model = schedule_model
     task.schedule_unit = schedule_unit
@@ -668,7 +719,7 @@ def update_task(request):
     if responsible:
         if task.parent:
             if task.parent.responsible == responsible:
-                task.responsible = None
+                task.responsible = []
             else:
                 task.responsible = responsible
         else:
@@ -684,11 +735,12 @@ def update_task(request):
     task.type = query_type(entity_type, type_name)
 
     if entity_type == 'Shot':
-        task.sequences = [
-            Sequence.query.filter_by(id=shot_sequence_id).first()]
-        # TODO: there is a bug in Stalker we can not set shot.cut_in because of _cut_duratioin attribute is absent
-        # task.cut_in = cut_in
-        # task.cut_out = cut_out
+        shot = task
+        shot.sequences = [
+            Sequence.query.filter_by(id=shot_sequence_id).first()
+        ]
+        shot.cut_in = cut_in
+        shot.cut_out = cut_out
 
     task._reschedule(task.schedule_timing, task.schedule_unit)
     if update_bid:
@@ -759,7 +811,7 @@ def raw_data_to_array(raw_data):
 def get_tasks(request):
     """RESTful version of getting all tasks
     """
-    logger.debug('using raw sql query')
+    logger.debug('get_tasks is running')
     start = time.time()
 
     parent_id = request.params.get('parent_id')
@@ -770,9 +822,9 @@ def get_tasks(request):
         "Tasks".bid_unit as bid_unit,
                 coalesce(
             -- for parent tasks
-            (case "Tasks"._schedule_seconds
+            (case "Tasks".schedule_seconds
                 when 0 then 0
-                else "Tasks"._total_logged_seconds::float / "Tasks"._schedule_seconds * 100
+                else "Tasks".total_logged_seconds::float / "Tasks".schedule_seconds * 100
              end
             ),
             -- for child tasks we need to count the total seconds of related TimeLogs
@@ -812,7 +864,7 @@ def get_tasks(request):
             )
         ) as resources,
         "Tasks".schedule_model,
-        coalesce("Tasks"._schedule_seconds,
+        coalesce("Tasks".schedule_seconds,
             "Tasks".schedule_timing * (case "Tasks".schedule_unit
                 when 'h' then 3600
                 when 'd' then 32400
@@ -828,7 +880,7 @@ def get_tasks(request):
         lower("Task_Status".code) as status,
         coalesce(
             -- for parent tasks
-            "Tasks"._total_logged_seconds,
+            "Tasks".total_logged_seconds,
             -- for child tasks we need to count the total seconds of related TimeLogs
             coalesce("Task_TimeLogs".duration, 0.0)
         ) as total_logged_seconds,
@@ -850,7 +902,7 @@ def get_tasks(request):
                 "SimpleEntities".name as name,
                 "Task_Dependencies".task_id
             from "Task_Dependencies"
-                join "SimpleEntities" on "Task_Dependencies".depends_to_task_id = "SimpleEntities".id
+                join "SimpleEntities" on "Task_Dependencies".depends_to_id = "SimpleEntities".id
         ) as "Task_Dependencies" on "Tasks".id = "Task_Dependencies".task_id
         join "SimpleEntities" on "Tasks".id = "SimpleEntities".id
         -- hierarcy name
@@ -897,12 +949,13 @@ def get_tasks(request):
         ) as "Task_Resources" on "Tasks".id = "Task_Resources".task_id
         -- status
         join "Statuses" as "Task_Status" on "Tasks".status_id = "Task_Status".id
+        -- left outer join "Task_Responsible" on "Task_Responsible".task_id = "Tasks".id
     where %(where_condition)s
     group by
         "Tasks".bid_timing,
         "Tasks".bid_unit,
-        "Tasks"._total_logged_seconds,
-        "Tasks"._schedule_seconds,
+        "Tasks".total_logged_seconds,
+        "Tasks".schedule_seconds,
         "Tasks".id,
         "Task_TimeLogs".duration,
         "Tasks".schedule_timing,
@@ -915,7 +968,7 @@ def get_tasks(request):
         "SimpleEntities".name,
         "Tasks".id,
         "Tasks".priority,
-        "Tasks".responsible_id,
+        -- "Task_Responsible".responsible_id,
         "Tasks".schedule_model,
         "Tasks".computed_start,
         "Tasks".start,
@@ -964,7 +1017,6 @@ def get_tasks(request):
 
     sql_query = sql_query % {'where_condition': where_condition}
 
-    logger.debug('sql_query : %s' % sql_query)
 
     # convert to dgrid format right here in place
     result = DBSession.connection().execute(sql_query)
@@ -1018,7 +1070,6 @@ def get_tasks(request):
     route_name='get_entity_tasks',
     renderer='json'
 )
-
 @view_config(
     route_name='get_studio_tasks',
     renderer='json'
@@ -1052,6 +1103,7 @@ def get_entity_tasks(request):
                     entity_tasks_and_parents.extend(task.parents)
                 entity_tasks_and_parents.extend(entity_tasks)
 
+                parents_children = []
                 if isinstance(parent, Task):
                     parents_children = parent.children
                 elif isinstance(parent, Project):
@@ -1106,10 +1158,24 @@ def get_user_tasks(request):
     """returns all the tasks in the database related to the given entity in
     flat json format
     """
+    logger.debug('get_user_tasks starts')
     logged_in_user = get_logged_in_user(request)
     # get all the tasks related in the given project
     user_id = request.matchdict.get('id', -1)
-    user = User.query.filter_by(id=user_id).first()
+
+    sql_query = """select
+        "Tasks".id  as task_id,
+        "ParentTasks".parent_names as name
+    from "Tasks"
+        join "Task_Resources" on "Task_Resources".task_id = "Tasks".id
+        join "Statuses" as "Task_Statuses" on "Task_Statuses".id = "Tasks".status_id
+        left join (
+            %(tasks_hierarchical_name_table)s
+        ) as "ParentTasks" on "Tasks".id = "ParentTasks".id
+        %(where_condition)s
+    """
+
+    where_condition = 'where "Task_Resources".resource_id = %s' % user_id
 
     statuses = []
     status_codes = request.GET.getall('status')
@@ -1117,27 +1183,38 @@ def get_user_tasks(request):
         statuses = Status.query.filter(Status.code.in_(status_codes)).all()
 
     if statuses:
-        tasks = [task for task in user.tasks if task.status in statuses]
-    else:
-        tasks = user.tasks
+        temp_buffer = [where_condition]
+        temp_buffer.append(""" and (""")
+        for i, status in enumerate(statuses):
+            if i > 0:
+                temp_buffer.append(' or')
+            temp_buffer.append(""" "Task_Statuses".code='%s'""" % status.code)
+        temp_buffer.append(' )')
+        where_condition = ''.join(temp_buffer)
 
-    return [
+    logger.debug('where_condition: %s' % where_condition)
+
+    sql_query = sql_query % {
+        'tasks_hierarchical_name_table':
+            query_of_tasks_hierarchical_name_table(),
+        'where_condition': where_condition
+    }
+
+    result = DBSession.connection().execute(sql_query)
+
+    return_data = [
         {
-            'id': task.id,
-            'responsible_name': task.responsible.name,
-            'responsible_id': task.responsible.id,
-            'percent_complete': task.percent_complete,
-            'type': task.type.name if task.type else '',
-            'request_review': '1' if ((
-                                          logged_in_user in task.resources or logged_in_user == task.responsible) and task.status.code == 'WIP' and task.is_leaf) else None,
-            'status': task.status.name,
-            'status_color': task.status.html_class,
-            'name': '%s (%s)' % (
-                task.name,
-                ' | '.join([parent.name for parent in task.parents])
-            )
-        } for task in tasks
+            'id': r[0],
+            'name': r[1]
+        }
+        for r in result.fetchall()
     ]
+
+    resp = Response(
+        json_body=return_data
+    )
+    # resp.content_range = content_range
+    return resp
 
 
 @view_config(
@@ -1300,7 +1377,7 @@ def get_project_tasks(request):
     (
         SELECT
             task_parents.id,
-            "Task_SimpleEntities".name || ' (' || "Task_SimpleEntities".id || ') (' || "Projects".code || ' | ' || task_parents.parent_names || ')' as parent_names 
+            "Task_SimpleEntities".name || ' (' || "Task_SimpleEntities".id || ') (' || "Projects".code || ' | ' || task_parents.parent_names || ')' as parent_names
         FROM (
             SELECT
                 task_parents.id,
@@ -1387,6 +1464,7 @@ def get_user_tasks_count(request):
 
     return len(tasks)
 
+
 @view_config(
     route_name='get_entity_tasks_stats',
     renderer='json'
@@ -1397,40 +1475,71 @@ def get_entity_tasks_stats(request):
     entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
 
-    #logger.debug('user_id : %s' % entity_id)
+    logger.debug('get_entity_tasks_stats is starts')
 
-    status_list = StatusList.query.filter_by(
-        target_entity_type='Task'
-    ).first()
+    sql_query = """
+        select
+            count("Tasks".id) as count,
+            "Statuses".id as status_id,
+            "Statuses".code as status_code,
+            "Statuses_SimpleEntities".name as status_name,
+            "Statuses_SimpleEntities".html_class as status_color
 
-    join_attr = None
+        from "Statuses"
+            join "Tasks" on "Statuses".id = "Tasks".status_id
+            join "SimpleEntities" as "Statuses_SimpleEntities" on "Statuses_SimpleEntities".id = "Statuses".id
 
-    if entity.entity_type == 'User':
-        join_attr = Task.resources
-    elif entity.entity_type == 'Project':
-        join_attr = Task.project
+        %(where_condition_for_entity)s
 
-    __class__ = entity.__class__
+        and not (
+            exists (
+                select 1
+                from (
+                    select "Tasks".parent_id from "Tasks"
+                ) AS all_tasks
+                where all_tasks.parent_id = "Tasks".id
+            )
+        )
 
-    status_count_task = []
+        group by
+           "Statuses".code,
+           "Statuses".id,
+           "Statuses_SimpleEntities".name,
+           "Statuses_SimpleEntities".html_class
+    """
+    where_condition_for_entity = ''
 
-    #TODO find the correct solution to filter leaf tasks. This does not work.
-    for status in status_list.statuses:
-        status_count_task.append({
-            'name': status.name,
-            'id': status.id,
-            'code': status.code,
-            'color': status.html_class,
-            'icon': 'icon-folder-close-alt',
-            'count': Task.query.join(entity.__class__, join_attr) \
-                .filter(__class__.id == entity_id) \
-                .filter(Task.status_id == status.id) \
-                .filter(Task.children == None) \
-                .count()
-        })
+    if isinstance(entity, User):
+        where_condition_for_entity = \
+            'join "Task_Resources" on "Task_Resources".task_id = "Tasks".id ' \
+            'where "Task_Resources".resource_id =%s' % entity_id
+    elif isinstance(entity, Project):
+        where_condition_for_entity = 'where "Tasks".project_id =%s' % entity_id
 
-    return status_count_task
+    sql_query = sql_query % {
+        'where_condition_for_entity': where_condition_for_entity
+    }
 
+    # convert to dgrid format right here in place
+    result = DBSession.connection().execute(sql_query)
+
+    return_data = [
+        {
+            'tasks_count': r[0],
+            'status_id': r[1],
+            'status_code': r[2],
+            'status_name': r[3],
+            'status_color': r[4],
+            'status_icon':''
+        }
+        for r in result.fetchall()
+    ]
+
+    resp = Response(
+        json_body=return_data
+    )
+    # resp.content_range = content_range
+    return resp
 
 
 @view_config(
@@ -1453,38 +1562,39 @@ def get_entity_tasks_by_filter(request):
     filter_id = request.matchdict.get('f_id', -1)
     filter = Entity.query.filter_by(id=filter_id).first()
 
-
-    sql_query = """select
+    sql_query ="""select
     "Task_Resources".task_id as task_id,
     "ParentTasks".parent_names as task_name,
-    "Responsible_SimpleEntities".id as responsible_id,
-    "Responsible_SimpleEntities".name as responsible_name,
+    array_agg("Responsible_SimpleEntities".id) as responsible_id,
+    array_agg("Responsible_SimpleEntities".name) as responsible_name,
     coalesce("Type_SimpleEntities".name,'') as type_name,
-         array_agg(coalesce(
-            -- for parent tasks
-            (case "Tasks"._schedule_seconds
-                when 0 then 0
-                else "Tasks"._total_logged_seconds::float / "Tasks"._schedule_seconds * 100
-             end
-            ),
-            -- for child tasks we need to count the total seconds of related TimeLogs
-            (coalesce("Task_TimeLogs".duration, 0.0))::float /
-                ("Tasks".schedule_timing * (case "Tasks".schedule_unit
-                    when 'h' then 3600
-                    when 'd' then 32400
-                    when 'w' then 147600
-                    when 'm' then 590400
-                    when 'y' then 7696277
-                    else 0
-                end)) * 100.0
-        )) as percent_complete,
-        array_agg("Resource_SimpleEntities".id) as resource_id,
-        array_agg("Resource_SimpleEntities".name) as resource_name,
-        "Statuses_SimpleEntities".name as status_name,
-        "Statuses".code as status_code,
-        "Statuses_SimpleEntities".html_class as status_color,
-        "Project_SimpleEntities".id as project_id,
-        "Project_SimpleEntities".name as project_name
+    coalesce(
+        -- for parent tasks
+        (case "Tasks".schedule_seconds
+            when 0 then 0
+            else "Tasks".total_logged_seconds::float / "Tasks".schedule_seconds * 100
+         end
+        ),
+        -- for child tasks we need to count the total seconds of related TimeLogs
+        (coalesce("Task_TimeLogs".duration, 0.0))::float /
+            ("Tasks".schedule_timing * (case "Tasks".schedule_unit
+                when 'h' then 3600
+                when 'd' then 32400
+                when 'w' then 147600
+                when 'm' then 590400
+                when 'y' then 7696277
+                else 0
+            end)
+            ) * 100.0
+    ) as percent_complete,
+    array_agg("Resource_SimpleEntities".id) as resource_id,
+    array_agg("Resource_SimpleEntities".name) as resource_name,
+    "Statuses_SimpleEntities".name as status_name,
+    "Statuses".code,
+    "Statuses_SimpleEntities".html_class as status_color,
+    "Project_SimpleEntities".id as project_id,
+    "Project_SimpleEntities".name as project_name,
+    array_agg("Reviewers".reviewer_id) as reviewer_id
 
     from "Tasks"
     join "Task_Resources" on "Task_Resources".task_id = "Tasks".id
@@ -1498,36 +1608,42 @@ def get_entity_tasks_by_filter(request):
                 from "TimeLogs"
                 group by task_id
             ) as "Task_TimeLogs" on "Task_TimeLogs".task_id = "Tasks".id
-    join "SimpleEntities" as "Task_SimpleEntities" on "Task_SimpleEntities".id = "Task_Resources".task_id
+    join "SimpleEntities" as "Tasks_SimpleEntities" on "Tasks_SimpleEntities".id = "Task_Resources".task_id
 
-    join "SimpleEntities" as "Resource_SimpleEntities" on "Resource_SimpleEntities".id = "Task_Resources".resource_id
-    join ((
-        -- get tasks responsible from parents
-        -- so find all the tasks that doesn't have a responsible but one of their parents has
-        with recursive go_to_parent(id, parent_id) as (
-                select task.id, task.parent_id
-                from "Tasks" as task
-                where task.responsible_id is NULL
-            union all
-                select g.id, task.parent_id
-                from go_to_parent as g
-                join "Tasks" as task on g.parent_id = task.id
-                where task.parent_id is not NULL and task.responsible_id is NULL
-        )
-        select
-            g.id, "Tasks".responsible_id
-        from go_to_parent as g
-        join "Tasks" on "Tasks".id = g.parent_id
-        where "Tasks".responsible_id is not NULL
-        order by g.id
+join "SimpleEntities" as "Resource_SimpleEntities" on "Resource_SimpleEntities".id = "Task_Resources".resource_id
+join ((
+    -- get tasks responsible from parents
+    -- so find all the tasks that doesn't have a responsible but one of their parents has
+    with recursive go_to_parent(id, parent_id) as (
+            select task.id, task.parent_id
+            from "Tasks" as task
+            join "Task_Responsible" on task.id = "Task_Responsible".task_id
+            where "Task_Responsible".responsible_id is NULL
+        union all
+            select g.id, task.parent_id
+            from go_to_parent as g
+            join "Tasks" as task on g.parent_id = task.id
+            join "Task_Responsible" on task.id = "Task_Responsible".task_id
+            where task.parent_id is not NULL and "Task_Responsible".responsible_id is NULL
+    )
+    select
+        g.id,
+        "Task_Responsible".responsible_id
+    from go_to_parent as g
+    join "Tasks" as parent_task on g.parent_id = parent_task.id
+    join "Task_Responsible" on parent_task.id = "Task_Responsible".task_id
+    where "Task_Responsible".responsible_id is not NULL
+    order by g.id
     )
     union
     (
         -- select all the tasks that has a responsible
         select
-            id, responsible_id
+            id,
+            responsible_id
         from "Tasks"
-        where responsible_id is not NULL
+        join "Task_Responsible" on "Tasks".id = "Task_Responsible".task_id
+        where "Task_Responsible".responsible_id is not NULL
     )
     union
     (
@@ -1544,18 +1660,21 @@ def get_entity_tasks_by_filter(request):
                 with recursive go_to_parent(id, parent_id) as (
                         select task.id, task.parent_id
                         from "Tasks" as task
-                        where task.responsible_id is NULL
+                        join "Task_Responsible" on task.id = "Task_Responsible".task_id
+                        where "Task_Responsible".responsible_id is NULL
                     union all
                         select g.id, task.parent_id
                         from go_to_parent as g
                         join "Tasks" as task on g.parent_id = task.id
-                        where task.parent_id is not NULL and task.responsible_id is NULL
+                        join "Task_Responsible" on task.id = "Task_Responsible".task_id
+                        where task.parent_id is not NULL and "Task_Responsible".responsible_id is NULL
                 )
                 select
                     g.id
                 from go_to_parent as g
                 join "Tasks" on "Tasks".id = g.parent_id
-                where "Tasks".responsible_id is not NULL
+                join "Task_Responsible" on g.id = "Task_Responsible".task_id
+                where "Task_Responsible".responsible_id is not NULL
                 order by g.id
             )
             union
@@ -1564,85 +1683,47 @@ def get_entity_tasks_by_filter(request):
                 select
                     id
                 from "Tasks"
+                join "Task_Responsible" on "Tasks".id = "Task_Responsible".task_id
                 where responsible_id is not NULL
             )
         ) as prev_query on "Tasks".id = prev_query.id
         where prev_query.id is NULL
     )) as "Tasks_Responsible" on "Tasks_Responsible".id = "Tasks".id
     left join "SimpleEntities" as "Responsible_SimpleEntities" on "Responsible_SimpleEntities".id = "Tasks_Responsible".responsible_id
-    left join "SimpleEntities" as "Type_SimpleEntities" on "Task_SimpleEntities".type_id = "Type_SimpleEntities".id
+    left join "SimpleEntities" as "Type_SimpleEntities" on "Tasks_SimpleEntities".type_id = "Type_SimpleEntities".id
     left join (
-    (
-        SELECT
-            task_parents.id,
-            "Task_SimpleEntities".name || ' (' || "Task_SimpleEntities".id || ') (' || "Projects".code || ' | ' || task_parents.parent_names || ')' as parent_names 
-        FROM (
-            SELECT
-                task_parents.id,
-                array_agg(task_parents.parent_id) as parent_ids,
-                array_agg(task_parents.n) as n,
-                array_to_string(
-                    array_agg(task_parents.parent_name),
-                    ' | '
-                ) as parent_names
-            FROM (
-                WITH RECURSIVE parent_ids(id, parent_id, n) as (
-                        SELECT task.id, task.parent_id, 0
-                        FROM "Tasks" AS task
-                        WHERE task.parent_id IS NOT NULL
-                    UNION ALL
-                        SELECT task.id, parent.parent_id, parent.n + 1
-                        FROM "Tasks" task, parent_ids parent
-                        WHERE task.parent_id = parent.id
-                )
-                SELECT
-                    parent_ids.id as id,
-                    parent_ids.n as n,
-                    parent_ids.parent_id AS parent_id,
-                    "ParentTask_SimpleEntities".name as parent_name
-                FROM parent_ids
-                JOIN "SimpleEntities" as "ParentTask_SimpleEntities" ON parent_ids.parent_id = "ParentTask_SimpleEntities".id
-                ORDER BY id, parent_ids.n DESC
-            ) as task_parents
-            GROUP BY task_parents.id
-        ) as task_parents
-        JOIN "Tasks" ON task_parents.id = "Tasks".id
-        JOIN "Projects" ON "Tasks".project_id = "Projects".id
-        JOIN "SimpleEntities" as "Task_SimpleEntities" ON "Tasks".id = "Task_SimpleEntities".id
-    )
-    UNION
-    (
-        SELECT
-            "Tasks".id,
-            "Task_SimpleEntities".name || ' (' || "Task_SimpleEntities".id || ') (' || "Projects".code || ')' as parent_names
-        FROM "Tasks"
-        JOIN "Projects" ON "Tasks".project_id = "Projects".id
-        JOIN "SimpleEntities" as "Task_SimpleEntities" on "Tasks".id = "Task_SimpleEntities".id
-        WHERE "Tasks".parent_id IS NULL
-    )
+        %(tasks_hierarchical_name_table)s
     ) as "ParentTasks" on "Tasks".id = "ParentTasks".id
+
+    left outer join (
+        select
+            "Reviews_Tasks".id as task_id,
+            "Reviews".reviewer_id as reviewer_id
+
+            from "Reviews"
+            join "Tasks" as "Reviews_Tasks" on "Reviews_Tasks".id = "Reviews".task_id
+            join "Statuses" as "Reviews_Statuses" on "Reviews_Statuses".id = "Reviews".status_id
+
+            where "Reviews_Statuses".code = 'NEW') as "Reviewers" on "Reviewers".task_id = "Tasks".id
 
     where %(where_condition_for_entity)s%(where_condition_for_filter)s
 
-    group by "Task_Resources".task_id,
+    group by
+        "Task_Resources".task_id,
         "ParentTasks".parent_names,
-        "Responsible_SimpleEntities".id ,
-        "Responsible_SimpleEntities".name,
-        "Type_SimpleEntities".name,
+        percent_complete,
         "Statuses_SimpleEntities".name,
         "Statuses".code,
         "Statuses_SimpleEntities".html_class,
         "Project_SimpleEntities".id,
-        "Project_SimpleEntities".name"""
-
+        "Project_SimpleEntities".name,
+        type_name
+    """
     where_condition_for_entity = ''
 
-
-
     if isinstance(entity, User):
-         where_condition_for_entity = '"Task_Resources".resource_id=%s' % entity_id
-
-
+         where_condition_for_entity = \
+             '"Task_Resources".resource_id=%s' % entity_id
     elif isinstance(entity, Project):
         where_condition_for_entity = '"Tasks".project_id =%s' % entity_id
 
@@ -1650,13 +1731,17 @@ def get_entity_tasks_by_filter(request):
 
     if isinstance(filter, User):
          where_condition_for_entity = ''
-         where_condition_for_filter = '"Tasks_Responsible".responsible_id=%s' % filter_id
+         where_condition_for_filter = \
+             '"Tasks_Responsible".responsible_id=%s' % filter_id
     elif isinstance(filter, Status):
-        where_condition_for_filter = ' and "Statuses_SimpleEntities".id =%s' % filter_id
+        where_condition_for_filter = \
+            ' and "Statuses_SimpleEntities".id =%s' % filter_id
 
-
-    sql_query = sql_query % {'where_condition_for_entity': where_condition_for_entity, 'where_condition_for_filter':where_condition_for_filter}
-
+    sql_query = sql_query % {
+        'tasks_hierarchical_name_table': query_of_tasks_hierarchical_name_table(),
+        'where_condition_for_entity': where_condition_for_entity,
+        'where_condition_for_filter':where_condition_for_filter
+    }
 
     # convert to dgrid format right here in place
     result = DBSession.connection().execute(sql_query)
@@ -1668,29 +1753,31 @@ def get_entity_tasks_by_filter(request):
             'responsible_id': r[2],
             'responsible_name': r[3],
             'type': r[4],
-            'percent_complete': r[5][0],
-            'resource_id':r[6],
-            'resource_name':r[7],
-            'status':r[8],
-            'status_code':r[9],
-            'status_color':r[10],
-            'project_id':r[11],
-            'project_name':r[12],
-            'request_review':'1' if (logged_in_user.id in r[6] or r[2]==logged_in_user.id) and r[9]=='WIP' else None,
-            'review':'1' if r[2]==logged_in_user.id and r[9]=='PREV' else None
-
+            'percent_complete': r[5],
+            'resource_id': r[6],
+            'resource_name': r[7],
+            'status': r[8],
+            'status_code': r[9],
+            'status_color': r[10],
+            'project_id': r[11],
+            'project_name': r[12],
+            'request_review': '1' if (logged_in_user.id in r[6] or r[2] == logged_in_user.id) and r[9] == 'WIP' else None,
+            'review': '1' if logged_in_user.id in  r[13] and r[9]=='PREV' else None
         }
         for r in result.fetchall()
     ]
 
+    task_count = len(return_data)
+    # content_range = content_range % (0, task_count - 1, task_count)
 
+    # logger.debug('return_data: %s' % return_data)
+    end = time.time()
 
     resp = Response(
         json_body=return_data
     )
     # resp.content_range = content_range
     return resp
-
 
 
 def data_dialog(request, mode='create', entity_type='Task'):
@@ -1702,12 +1789,21 @@ def data_dialog(request, mode='create', entity_type='Task'):
     entity_id = request.matchdict.get('id')
     entity = Entity.query.filter_by(id=entity_id).first()
 
+    project = None
+    parent = None
+    depends_to = None
+
+    logger.debug('mode    : %s' % mode)
     if mode == 'create':
         project_id = request.params.get('project_id')
         project = Project.query.filter_by(id=project_id).first()
 
+        logger.debug('project_id    : %s' % project_id)
+
         parent_id = request.params.get('parent_id')
         parent = Task.query.filter_by(id=parent_id).first()
+
+        logger.debug('parent_id    : %s' % parent_id)
 
         if not project and parent:
             project = parent.project
@@ -1868,7 +1964,7 @@ def create_task(request):
     description = request.params.get('description', '')
     # is_milestone = request.params.get('is_milestone', None)
 
-    schedule_model = request.params.get('schedule_model') # there should be one
+    schedule_model = request.params.get('schedule_model')  # there should be one
     schedule_timing = float(request.params.get('schedule_timing'))
     schedule_unit = request.params.get('schedule_unit')
 
@@ -1880,10 +1976,12 @@ def create_task(request):
         resources = User.query.filter(User.id.in_(resource_ids)).all()
 
     # get responsible
-    responsible_id = request.params.get('responsible_id', None)
-    responsible = None
-    if responsible_id:
-        responsible = User.query.filter(User.id == responsible_id).first()
+
+    responsible = []
+    responsible_ids = []
+    if 'responsible_ids' in request.params:
+        responsible_ids = get_multi_integer(request, 'responsible_ids')
+        responsible = User.query.filter(User.id.in_(responsible_ids)).all()
 
     priority = request.params.get('priority', 500)
 
@@ -1970,15 +2068,16 @@ def create_task(request):
 
     # check the statuses of the dependencies to decide the newly created task
     # status
-    status_new = Status.query.filter_by(code='NEW').first()
+    status_wfd = Status.query.filter_by(code='WFD').first()
     status_rts = Status.query.filter_by(code='RTS').first()
     status_cmpl = Status.query.filter_by(code='CMPL').first()
     status = status_rts
-    if depends:
-        for dependent_task in depends:
-            if dependent_task.status != status_cmpl:
-                # TODO: use update_task_statuses_with_dependencies()
-                status = status_new
+
+    #if depends:
+    #    for dependent_task in depends:
+    #        if dependent_task.status != status_cmpl:
+    #            # TODO: use update_task_statuses_with_dependencies()
+    #            status = status_wfd
 
     logger.debug('status: %s' % status)
 
@@ -1991,14 +2090,14 @@ def create_task(request):
     kwargs['created_by'] = logged_in_user
     kwargs['date_created'] = local_to_utc(datetime.datetime.now())
 
-
     kwargs['status_list'] = status_list
-    kwargs['status'] = status
+    #kwargs['status'] = status
 
     kwargs['schedule_model'] = schedule_model
     kwargs['schedule_timing'] = schedule_timing
     kwargs['schedule_unit'] = schedule_unit
 
+    kwargs['responsible'] = responsible
     kwargs['resources'] = resources
     kwargs['depends'] = depends
 
@@ -2033,11 +2132,11 @@ def create_task(request):
             logger.debug('new_task.name %s' % new_entity.name)
         DBSession.add(new_entity)
 
-        if responsible:
-            # check if the responsible is different than
-            # the parents responsible
-            if new_entity.responsible != responsible:
-                new_entity.responsible = responsible
+        # if responsible:
+        #     # check if the responsible is different than
+        #     # the parents responsible
+        #     if new_entity.responsible != responsible:
+        #         new_entity.responsible = responsible
 
     except (AttributeError, TypeError, CircularDependencyError) as e:
         logger.debug('The Error Message: %s' % e.message)
@@ -2085,78 +2184,105 @@ def auto_schedule_tasks(request):
         return Response(c.html(replace_links=True), 500)
 
 
-
 def get_last_version_of_task(request, is_published=''):
-     """finds last published version of task
-     """
+    """finds last published version of task
+    """
+    version = None
 
-     version = None
+    task_id = request.matchdict.get('id')
+    task = Task.query.filter_by(id=task_id).first()
 
-     task_id = request.matchdict.get('id')
-     task = Task.query.filter_by(id=task_id).first()
+    sql_query = """
+       select
+           "Versions".id as version_id,
+           "Versions".parent_id as parent_id,
+           "Version_Tasks".id as task_id,
+           "Version_SimpleEntities".date_updated,
+           "Version_SimpleEntities".created_by_id as created_by_id,
+           "Created_by_SimpleEntities".name as created_by_name,
+           "Version_Links".full_path as absolute_full_path,
+           "Version_SimpleEntities".description as description
 
-     sql_query = """select
-            "Versions".id as version_id,
-            "Versions".parent_id as parent_id,
-            "Version_Tasks".id as task_id,
-            "Version_SimpleEntities".date_updated,
-            "Version_SimpleEntities".created_by_id as created_by_id,
-            "Created_by_SimpleEntities".name as created_by_name,
-            "Version_Links".full_path as absolute_full_path,
-            "Version_SimpleEntities".description as description
-                from "Versions"
-                join "Tasks" as "Version_Tasks" on "Version_Tasks".id = "Versions".task_id
-                join "Links" as "Version_Links" on "Version_Links".id = "Versions".id
-                join "SimpleEntities" as "Version_SimpleEntities" on "Version_SimpleEntities".id = "Versions".id
-                join "SimpleEntities" as "Created_by_SimpleEntities" on "Created_by_SimpleEntities".id = "Version_SimpleEntities".created_by_id
-                where "Version_Tasks".id = %(task_id)s and "Versions".take_name = 'Main' %(is_published_condition)s
+       from "Versions"
+           join "Tasks" as "Version_Tasks" on "Version_Tasks".id = "Versions".task_id
+           join "Links" as "Version_Links" on "Version_Links".id = "Versions".id
+           join "SimpleEntities" as "Version_SimpleEntities" on "Version_SimpleEntities".id = "Versions".id
+           join "SimpleEntities" as "Created_by_SimpleEntities" on "Created_by_SimpleEntities".id = "Version_SimpleEntities".created_by_id
 
-                order by date_updated desc
-                limit 1"""
+       where "Version_Tasks".id = %(task_id)s and "Versions".take_name = 'Main' %(is_published_condition)s
 
-     is_published_condition = ''
+       group by
+           "Versions".id,
+           "Versions".parent_id,
+           "Version_Tasks".id,
+           "Version_SimpleEntities".date_updated,
+           "Version_SimpleEntities".created_by_id,
+           "Created_by_SimpleEntities".name,
+           "Version_Links".full_path,
+           "Version_SimpleEntities".description
 
-     if is_published !='':
+       order by date_updated desc
+       limit 1
+       """
 
-         is_published_condition = ' and "Versions".is_published = \'%s\'' % is_published
+    is_published_condition = ''
 
+    if is_published != '':
+        is_published_condition = \
+            """ and "Versions".is_published = '%s'""" % is_published
 
-     logger.debug('%s' % is_published_condition)
+    logger.debug('%s' % is_published_condition)
 
-     sql_query = sql_query % {'task_id': task_id, 'is_published_condition':is_published_condition}
+    sql_query = sql_query % {
+        'task_id': task_id,
+        'is_published_condition': is_published_condition
+    }
 
-     result = DBSession.connection().execute(sql_query).fetchone()
+    result = DBSession.connection().execute(sql_query).fetchone()
+    if result:
+        user_os = get_user_os(request)
+        repo = task.project.repository
 
-     if result:
+        path_converter = lambda x: x
 
-            user_os = get_user_os(request)
-            repo = task.project.repository
+        if repo:
+            if user_os == 'windows':
+                path_converter = repo.to_windows_path
+            elif user_os == 'linux':
+                path_converter = repo.to_linux_path
+            elif user_os == 'osx':
+                path_converter = repo.to_osx_path
 
-            path_converter = lambda x: x
-            if repo:
-                if user_os == 'windows':
-                    path_converter = repo.to_windows_path
-                elif user_os == 'linux':
-                    path_converter = repo.to_linux_path
-                elif user_os == 'osx':
-                    path_converter = repo.to_osx_path
+        file_name_split = result[6].split('/')
 
-            file_name_split = result[6].split('/')
+        version = {
+            'id': result[0],
+            'parent_id': result[1],
+            'task_id': result[2],
+            'task_name': task.name,
+            'date_updated': result[3],
+            'created_by_id': result[4],
+            'created_by_name': result[5],
+            'path': path_converter(result[6]),
+            'description': result[7] if result[7] else 'No description',
+            'file_name': '.../%s' % file_name_split[len(file_name_split) - 1]
+        }
+    else:
+        version = {
+            'id': '-',
+            'parent_id': '-',
+            'task_id': '-',
+            'task_name': '-',
+            'date_updated': '-',
+            'created_by_id': '-',
+            'created_by_name': '-',
+            'path': '-',
+            'description': '-',
+            'file_name': '-'
+        }
 
-            version = {
-                            'id': result[0],
-                            'parent_id': result[1],
-                            'task_id': result[2],
-                            'task_name':task.name,
-                            'date_updated': result[3],
-                            'created_by_id': result[4],
-                            'created_by_name': result[5],
-                            'path':path_converter(result[6]),
-                            'description':result[7] if result[7] else 'No description',
-                            'file_name':'.../%s'% file_name_split[len(file_name_split)-1]
-                     }
+    return version
 
-     return version
 
 @view_config(
     route_name='review_task_dialog',
@@ -2165,27 +2291,33 @@ def get_last_version_of_task(request, is_published=''):
 def review_task_dialog(request):
     """called when reviewing tasks
     """
-
-    logged_in_user = get_logged_in_user(request)
-    came_from = request.params.get('came_from', request.url)
-
     entity_id = request.matchdict.get('id')
     entity = Entity.query.filter_by(id=entity_id).first()
 
-    version = get_last_version_of_task(request, is_published='t')
+    logged_in_user = get_logged_in_user(request)
+
+    status_new = Status.query.filter_by(code='NEW').first()
+    review = Review.query.filter(Review.reviewer_id == logged_in_user.id).filter(Review.task_id==entity.id).filter(Review.status==status_new).first()
+
+    came_from = request.params.get('came_from', request.url)
+    review_mode = request.params.get('review_mode', 'approve')
+    logger.debug('review_mode %s' % review_mode)
+
+    version = get_last_version_of_task(request, is_published='')
 
     project = entity.project
 
-
     return {
-
+        'review':review,
         'has_permission': PermissionChecker(request),
         'logged_in_user': logged_in_user,
-        'entity': entity,
+        'task': entity,
         'project': project,
         'came_from': came_from,
-        'version':version
+        'version':version,
+        'review_mode':review_mode
     }
+
 
 @view_config(
     route_name='review_task'
@@ -2193,11 +2325,7 @@ def review_task_dialog(request):
 def review_task(request):
     """review task
     """
-
-     # get logged in user as he review requester
-    logged_in_user = get_logged_in_user(request)
-
-
+    # get logged in user as he review requester
     task_id = request.matchdict.get('id')
     task = Task.query.filter(Task.id == task_id).first()
 
@@ -2205,140 +2333,125 @@ def review_task(request):
         transaction.abort()
         return Response('There is no task with id: %s' % task_id, 500)
 
-    send_email = request.params.get('send_email', 1)
-    description = request.params.get('description', '')
+    review_mode = request.params.get('review')
 
-    review = request.params.get('review')
-
-    if not review:
+    if not review_mode:
         transaction.abort()
         return Response('No revision is specified', 500)
 
-    if review == 'Approve':
-        # change the task status to complete
-        status_cmpl = Status.query.filter(Status.code == 'CMPL').first()
-        if not status_cmpl:
-            transaction.abort()
-            return Response('There is no status with code CMPL, please inform '
-                            'your Stalker admin to create a task with code '
-                            'CMPL and assign it to Task', 500)
+    if review_mode == 'Approve':
+        return approve_task(request)
+    elif review_mode == 'Request Revision':
+        return request_revision(request)
+
+
+@view_config(
+    route_name='approve_task'
+)
+def approve_task(request):
+    """ TODO: add doc string
+    """
+
+    task_id = request.matchdict.get('id', -1)
+    task = Task.query.filter(Task.id == task_id).first()
+
+    if not task:
+        transaction.abort()
+        return Response('There is no task with id: %s' % task_id, 500)
+
+    utc_now = local_to_utc(datetime.datetime.now())
+
+    logged_in_user = get_logged_in_user(request)
+
+    send_email = request.params.get('send_email', 1)  # for testing purposes
+    note = request.params.get('description', 1)
+
+    status_new = Status.query.filter_by(code='NEW').first()
+
+    review = Review.query.filter(Review.reviewer_id == logged_in_user.id).filter(Review.task_id==task.id).filter(Review.status==status_new).first()
+
+    logger.debug('review %s' % review)
+
+    note_type = query_type('Note','Approved')
+    note_type.html_class = 'green'
+    note = Note(
+        content=note,
+        created_by=logged_in_user,
+        date_created=utc_now,
+        date_updated=utc_now,
+        type=note_type
+    )
+    DBSession.add(note)
+
+    if review:
         try:
-            task.status = status_cmpl
-        except ValueError as e:
-            transaction.abort()
-            return Response(e.message, 500)
+            review.approve()
+            review.note = note
 
-        # update parent statuses
-        update_task_statuses(task.parent)
+            task.notes.append(note)
+        except StatusError as e:
+            return Response('StatusError: %s' % e, 500)
+    else:
+        logger.debug('task requested revision')
+        try:
+            temp_var = DBSession.commit
+            DBSession.commit = transaction.commit
+            task.approve()
+            DBSession.commit = temp_var
 
-        # update dependent_of statuses
-        for dep in task.dependent_of:
-            update_task_statuses_with_dependencies(dep)
+            task.notes.append(note)
+        except StatusError as e:
+            return Response('StatusError: %s' % e, 500)
 
-        utc_now = local_to_utc(datetime.datetime.now())
-        logger.debug("utc_now: %s" % utc_now)
-        logger.debug("task.date_created: %s" % task.date_created)
+    if send_email:
+         # send email to resources of the task
+        recipients = []
+        for resource in task.resources:
+            recipients.append(resource.email)
 
-        task.updated_by = logged_in_user
-        task.date_updated = utc_now
+        for responsible in task.responsible:
+            recipients.append(responsible.email)
 
-        task_full_name = '%s (%s)' % (
-                task.name,
-                '|'.join(map(lambda x: x.name, task.parents))
+        mailer = get_mailer(request)
+
+        task_hierarchical_name = get_task_hierarchical_name(task.id)
+
+        description_temp = \
+            '%(user)s has approved ' \
+            '%(task_hierarchical_name)s with the following ' \
+            'comment:%(spacing)s' \
+            '%(note)s'
+
+        message = Message(
+            subject='Task Reviewed: "%(task_hierarchical_name)s" has been approved by %(user)s!' % {
+                'task_hierarchical_name': task_hierarchical_name,
+                'user': logged_in_user
+            },
+            sender=dummy_email_address,
+            recipients=recipients,
+            body=get_description_text(
+                description_temp,
+                logged_in_user.name,
+                task_hierarchical_name,
+                note.content
+            ),
+            html=get_description_html(
+                description_temp,
+                logged_in_user.name,
+                task_hierarchical_name,
+                note.content
             )
+        )
 
-        summary_text = \
-                'Task Reviewed: "%(task_full_name)s" has been approved!' % {
-                    'task_full_name': task_full_name
-                }
-
-
-
-        description_body = \
-                '%(requester_name)s has approved ' \
-                '%(task)s with the following ' \
-                'comment:%(spacing)s' \
-                '%(description)s'
-
-        if description == "":
-                description_body = \
-                '%(requester_name)s has approved ' \
-                '%(task)s  ' \
-                '%(spacing)s' \
-                '%(description)s'
-
-
-
-        description_text = description_body % {
-                "requester_name": logged_in_user.name,
-                "task": task_full_name,
-                "spacing": '\n\n',
-                "description": description
-                if description else "(No Description)"
-            }
-
-        description_html = description_body % {
-                "requester_name": '<strong>%s</strong>' % logged_in_user.name,
-                "task": '<strong>%s</strong>' % task_full_name,
-                "spacing": '<br><br>',
-                "description": description.replace('\n', '<br>')
-                if description else "(No Description)"
-            }
-
-
-        # find the related revision Ticket and add the comment
-        review_type = Type.query.filter(Type.name == "Review").first()
-        tickets = Ticket.query \
-            .filter(Ticket.links.contains(task)) \
-            .filter(Ticket.type == review_type).all()
-        logger.debug("tickets: %s" % tickets)
-
-
-
-        if tickets:
-
-            note = Note(
-                content=description_text,
-                created_by=logged_in_user,
-                date_created=utc_now,
-                date_updated=utc_now
-            )
-            for ticket in tickets:
-                ticket.comments.append(note)
-                ticket.date_updated = utc_now
-                ticket.updated_by = logged_in_user
-                ticket.resolve(logged_in_user,'fixed')
-            DBSession.add(note)
-
-        transaction.commit()
-        DBSession.add_all([task, logged_in_user])
-
-
-
-        if send_email:
-            # send email to resources of the task
-            mailer = get_mailer(request)
-            recipients = []
-            for resource in task.resources:
-                recipients.append(resource.email)
-
-
-            message = Message(
-                subject=summary_text,
-                sender=dummy_email_address,
-                recipients=recipients,
-                body=description_text,
-                html=description_html
-            )
+        try:
             mailer.send(message)
+        except ValueError:  # no internet connection
+            pass
 
-    elif review == 'Request Revision':
-        # so request a revision
-        request_revision(request)
-        # no need to update the child and dependent_of statuses,
-        # they will not change
+    request.session.flash('success:Approved task')
 
-    return Response('Successfully reviewed task')
+    return Response('Successfully approved task')
+
 
 @view_config(
     route_name='request_revision'
@@ -2346,19 +2459,14 @@ def review_task(request):
 def request_revision(request):
     """updates task timing and status and sends an email to the task resources
     """
-    # get logged in user as he review requester
     logged_in_user = get_logged_in_user(request)
 
     task_id = request.matchdict.get('id', -1)
     task = Task.query.filter(Task.id == task_id).first()
 
-    # check if we have a task
     if not task:
         transaction.abort()
         return Response('There is no task with id: %s' % task_id, 500)
-
-    send_email = request.params.get('send_email', 1)
-    description = request.params.get('description', '')
 
     schedule_timing = request.params.get('schedule_timing')
     schedule_unit = request.params.get('schedule_unit')
@@ -2397,223 +2505,113 @@ def request_revision(request):
     logger.debug('schedule_unit  : %s' % schedule_unit)
     logger.debug('schedule_model : %s' % schedule_model)
 
-    # get statuses
-    status_prev = Status.query.filter(Status.code == 'PREV').first()
-
-    # check if the task has some time logs
-    if task.status != status_prev:
-        transaction.abort()
-        return Response('You can not request a revision for a task with '
-                        'status is set to "%s"' % task.status.name, 500)
-
-    # set task status to Has Revision (HREV)
-    status_hrev = Status.query.filter(Status.code == 'HREV').first()
-    if not status_hrev:
-        transaction.abort()
-        return Response('There is no status with name "Has Revision" and code '
-                        '"HREV" please inform your Stalker admin to create '
-                        'this status and include it to Task status list.', 500)
-
-    task.status = status_hrev
-    # first set its effort to its time logs
-    task.schedule_timing = task.total_logged_seconds / 3600
-    task.schedule_unit = 'h'
-
-    # and expand it with the given revision timing
-    # convert the given revision unit to hours
-    studio = Studio.query.first()
-    if not studio:
-        studio = defaults
-
-    #assert isinstance(studio, Studio)
-    if schedule_unit == 'h':
-        # do nothing just add the timing
-        task.schedule_timing += schedule_timing
-    elif schedule_unit == 'd':
-        task.schedule_timing += schedule_timing * studio.daily_working_hours
-    elif schedule_unit == 'w':
-        task.schedule_timing += schedule_timing * studio.weekly_working_hours
-    elif schedule_unit == 'm':
-        task.schedule_timing += schedule_timing * 4 * \
-                                studio.weekly_working_hours
-    elif schedule_unit == 'y':
-        task.schedule_timing += \
-            int(schedule_timing * studio.yearly_working_days *
-                studio.weekly_working_hours)
+    send_email = request.params.get('send_email', 1)  # for testing purposes
+    note = request.params.get('description', 1)
 
     utc_now = local_to_utc(datetime.datetime.now())
+
+    unit_word = {
+        'h': 'hours',
+        'd': 'days',
+        'w': 'weeks',
+        'm': 'months',
+        'y': 'years'
+    }[schedule_unit]
+
+    status_new = Status.query.filter_by(code='NEW').first()
+    review = Review.query\
+        .filter(Review.reviewer_id == logged_in_user.id)\
+        .filter(Review.task_id == task.id)\
+        .filter(Review.status == status_new)\
+        .first()
+
+    note_type = query_type('Note','Request Revision')
+    note_type.html_class = 'purple'
+
+    note = Note(
+        content='Expanded the timing of the task by <b>'
+                '%(schedule_timing)s %(schedule_unit)s</b>. <br/> %(note)s' % {
+                    'schedule_timing': schedule_timing,
+                    'schedule_unit': schedule_unit,
+                    'note': note},
+        created_by=logged_in_user,
+        date_created=utc_now,
+        date_updated=utc_now,
+        type=note_type
+    )
+    DBSession.add(note)
+
+    if review:
+        try:
+            review.request_revision(schedule_timing, schedule_unit, note)
+            review.note = note
+            review.date_updated = utc_now
+
+            task.notes.append(note)
+        except StatusError as e:
+            return Response('StatusError: %s' % e, 500)
+    else:
+
+        logger.debug('task requested revision')
+
+        try:
+            temp_var = DBSession.commit
+            DBSession.commit = transaction.commit
+            task.request_revision(logged_in_user, note.content, schedule_timing, schedule_unit)
+            DBSession.commit = temp_var
+            task.notes.append(note)
+        except StatusError as e:
+            return Response('StatusError: %s' % e, 500)
 
     task.updated_by = logged_in_user
     task.date_updated = utc_now
 
-    resource = task.resources[0]
-
-    # find the related revision Ticket and add the comment
-    review_type = Type.query.filter(Type.name == "Review").first()
-    tickets = Ticket.query \
-        .filter(Ticket.links.contains(task)) \
-        .filter(Ticket.type == review_type).all()
-
-
-    if tickets:
-        for ticket in tickets:
-            ticket.date_updated = utc_now
-            ticket.updated_by = logged_in_user
-            resource = ticket.created_by
-            ticket.resolve(logged_in_user,'fixed')
-
-
-    # get the project that the ticket belongs to
-    project = task.project
-
-    user_link_internal = '<a href="%(url)s">%(name)s</a>' % {
-        'url': request.route_path('view_user', id=logged_in_user.id),
-        'name': logged_in_user.name
-    }
-
-    task_parent_names = "|".join(map(lambda x: x.name, task.parents))
-
-    task_name_as_text = "%(name)s (%(entity_type)s) - (%(parents)s)" % {
-        "name": task.name,
-        "entity_type": task.entity_type,
-        "parents": task_parent_names
-    }
-
-    task_link_internal = \
-        '<a href="%(url)s">%(name)s ' \
-        '(%(task_entity_type)s) - (%(task_parent_names)s)</a>' % {
-            "url": request.route_path('view_task', id=task.id),
-            "name": task.name,
-            "task_entity_type": task.entity_type,
-            "task_parent_names": task_parent_names
-        }
-
-
-    summary_text = 'Revision Request: "%(name)s" (%(parent_names)s)' % {
-        'name': task.name,
-        'parent_names': task_parent_names
-    }
-
-    description_body = \
-            '%(requester_name)s has requested a revision to ' \
-            '%(task)s and expanded the timing of the task by %(timing)s ' \
-            '%(unit)s. The following description is supplied for the ' \
-            'revision request:%(spacing)s' \
-            '%(description)s'
-
-    unit_word = {
-            'h': 'hours',
-            'd': 'days',
-            'w': 'weeks',
-            'm': 'months',
-            'y': 'years'
-        }[schedule_unit]
-
-    description_text = description_body % {
-            "requester_name": logged_in_user.name,
-            "task": task_name_as_text,
-            "timing": schedule_timing,
-            "unit": unit_word,
-            "spacing": '\n\n',
-            "description": description
-            if description else "(No Description)"
-        }
-
-    description_html = description_body % {
-            "requester_name": '<strong>%s</strong>' % logged_in_user.name,
-            "task": '<strong>%s</strong>' % task_name_as_text,
-            "timing": '<strong>%s' % schedule_timing,
-            "unit": '%s</strong>' % unit_word,
-            "spacing": '<br><br>',
-            "description": description.replace('\n', '<br>')
-            if description else "(No Description)"
-        }
-
-    ticket_description = description_body % {
-            "requester_name": user_link_internal,
-            "task": task_link_internal,
-            "timing": schedule_timing,
-            "unit": unit_word,
-            "spacing": '\n\n',
-            "description": description
-            if description else "(No Description)"
-        }
-
-    revision_type = Type.query.filter_by(name='Revision').first()
-
-    if revision_type is None:
-            # create a new Type
-            revision_type = Type(
-                name='Revision',
-                code='Revision',
-                target_entity_type='Ticket'
-            )
-
-    revision_tickets = Ticket.query \
-        .filter(Ticket.links.contains(task)) \
-        .filter(Ticket.type == revision_type).all()
-
-
-    if revision_tickets:
-
-        note = Note(
-            content=ticket_description,
-            created_by=logged_in_user,
-            date_created=utc_now,
-            date_updated=utc_now
-        )
-
-        for hr_ticket in revision_tickets:
-            hr_ticket.comments.append(note)
-            hr_ticket.date_updated = utc_now
-            hr_ticket.updated_by = logged_in_user
-            # reopen if closed
-            hr_ticket.reopen(logged_in_user)
-        DBSession.add(note)
-    else:
-
-        revision_ticket = Ticket(
-                project=project,
-                summary=summary_text,
-                description=ticket_description,
-                type=revision_type,
-                created_by=logged_in_user,
-                date_created=utc_now,
-                date_updated=utc_now
-        )
-        revision_ticket.reassign(logged_in_user, resource)
-
-        # link the task to the review
-        revision_ticket.links.append(task)
-        DBSession.add(revision_ticket)
-
-    transaction.commit()
-    DBSession.add_all([task, logged_in_user])
-
     if send_email:
         # and send emails to the resources
 
-        responsible = task.responsible
         # send email to responsible and resources of the task
         mailer = get_mailer(request)
 
-        recipients = [logged_in_user.email]
-        if responsible.email not in recipients:
+        recipients = []
+        for responsible in task.responsible:
             recipients.append(responsible.email)
         for resource in task.resources:
             recipients.append(resource.email)
 
+        task_hierarchical_name = get_task_hierarchical_name(task.id)
+
+        description_temp = \
+            '%(user)s has requested a revision to ' \
+            '%(task_hierarchical_name)s' \
+            '. The following description is supplied for the ' \
+            'revision request:%(spacing)s' \
+            '%(note)s'
+
         message = Message(
-            subject=summary_text,
+            subject='Task Reviewed: "%(task_hierarchical_name)s" has been requested revision by %(user)s!' % {
+                'task_hierarchical_name': task_hierarchical_name,
+                'user': logged_in_user
+            },
             sender=dummy_email_address,
             recipients=recipients,
-            body=description_text,
-            html=description_html
+            body=get_description_text(
+                description_temp,
+                logged_in_user.name,
+                task_hierarchical_name,
+                note.content
+            ),
+            html=get_description_html(
+                description_temp,
+                logged_in_user.name,
+                task_hierarchical_name,
+                note.content
+            )
         )
+
         mailer.send(message)
 
-    return HTTPOk()
-
+    request.session.flash('success:Requested revision for the task')
+    return Response('Successfully requested revision for the task')
 
 
 @view_config(
@@ -2621,41 +2619,49 @@ def request_revision(request):
     renderer='templates/task/dialog/request_review_task_dialog.jinja2'
 )
 def request_review_task_dialog(request):
-
+    """ TODO: add doc string
+    """
+    logger.debug('request_review_task_dialog starts')
 
     task_id = request.matchdict.get('id')
     task = Task.query.filter_by(id=task_id).first()
 
     action = '/tasks/%s/request_review' % task_id
 
+    request_review_mode = request.params.get('request_review_mode', 'Progress')
 
-    version = get_last_version_of_task(request, is_published='t')
+    selected_responsible_id = request.params.get('selected_responsible_id', '-1')
+    selected_responsible = User.query.filter_by(id=selected_responsible_id).first()
 
-    if version is None:
+    if request_review_mode == 'Progress':
+        version = get_last_version_of_task(request, is_published='')
+    else:
+        version = get_last_version_of_task(request, is_published='')
+
+    if version['id'] == '-':
         if task.type:
-            if task.type.name in ['Look Development', 'Character Design', 'Model', 'Rig', 'Previs', 'Layout', 'Lighting', 'Environment Design', 'Matte Painting', 'Animation', 'Camera', 'Simulation', 'Postvis', 'Scene Assembly', 'Comp', 'FX', 'Concept', 'Groom']:
+            # TODO: Add this to the config file
+            forced_publish_types = [
+                'Look Development', 'Character Design', 'Model', 'Rig',
+                'Previs', 'Layout', 'Lighting', 'Environment Design',
+                'Matte Painting', 'Animation', 'Camera', 'Simulation',
+                'Postvis', 'Scene Assembly', 'Comp', 'FX', 'Concept',
+                'Groom'
+            ]
+            if task.type.name in forced_publish_types:
                 action = ''
-            else:
-                version = {
-                                'date_updated': '',
-                                'created_by_id': '',
-                                'created_by_name': '',
-                                'path':'',
-                                'description':'',
-                                'file_name':''
-                         }
         else:
             action = ''
 
-
-
     came_from = request.params.get('came_from', '/')
 
-
     return {
+        'request_review_mode': request_review_mode,
         'came_from': came_from,
         'action': action,
         'version': version,
+        'task':task,
+        'selected_responsible':selected_responsible,
         'task_type':task.type.name if task.type else "No"
     }
 
@@ -2666,190 +2672,235 @@ def request_review_task_dialog(request):
 def request_review(request):
     """creates a new ticket and sends an email to the responsible
     """
+
+    logger.debug('request_review method starts')
     # get logged in user as he review requester
     logged_in_user = get_logged_in_user(request)
 
     task_id = request.matchdict.get('id', -1)
     task = Task.query.filter(Task.id == task_id).first()
 
-    note = request.params.get('note', 'No note')
     request_review_mode = request.params.get('request_review_mode', 'Progress')
-    send_email = request.params.get('send_email', 1)  # for testing purposes
-    utc_now = local_to_utc(datetime.datetime.now())
 
     if not task:
         transaction.abort()
         return Response('There is no task with id: %s' % task_id, 500)
 
-    if task.is_container:
-        transaction.abort()
-        return Response('Can not request review for a container task', 500)
-
-    # check if the task status is wip
-    status_wip = Status.query.filter(Status.code == 'WIP').first()
-    if task.status != status_wip:
-        transaction.abort()
-        return Response('You can not request a review for a task with status '
-                        'is set to "%s"' % task.status.name, 500)
-
     # check if the user is one of the resources of this task or the responsible
     if logged_in_user not in task.resources and \
-                    logged_in_user != task.responsible:
+       logged_in_user not in task.responsible:
         transaction.abort()
         return Response('You are not one of the resources nor the '
                         'responsible of this task, so you can not request a '
                         'review for this task', 500)
 
-    ticket_type_name=''
-
     if request_review_mode == 'Final':
-
-        ticket_type_name ='Review'
-
-        # set task status to Pending Review
-        status_prev = Status.query.filter(Status.code == "PREV").first()
-        task.status = status_prev
-
-        # set task effort to the total_logged_seconds
-        task.schedule_timing = task.total_logged_seconds / 3600
-        task.schedule_unit = 'h'
-
-        revision_type = Type.query.filter_by(name='Revision').first()
-
-        revision_tickets = Ticket.query \
-            .filter(Ticket.links.contains(task)) \
-            .filter(Ticket.type == revision_type).all()
-
-
-        if revision_tickets:
-
-            for hr_ticket in revision_tickets:
-                hr_ticket.date_updated = utc_now
-                hr_ticket.updated_by = logged_in_user
-                # reopen if closed
-                hr_ticket.resolve(logged_in_user,'fixed')
-
+        return request_final_review(request)
     elif request_review_mode == 'Progress':
-        ticket_type_name ='In Progress-Review'
+        return request_progress_review(request)
 
 
-    # get the project that the ticket belongs to
-    project = task.project
+def request_progress_review(request):
+    """runs when resource request final review"""
 
-    user_link_internal = '<a href="%(url)s">%(name)s</a>' % {
-        'url': request.route_path('view_user', id=logged_in_user.id),
-        'name': logged_in_user.name
-    }
+    logger.debug('request_progress_review starts')
 
-    task_parent_names = "|".join(map(lambda x: x.name, task.parents))
+    selected_responsible_ids = \
+        get_multi_integer(request, 'selected_responsible_ids')
+    selected_responsible_list = \
+        User.query.filter(User.id.in_(selected_responsible_ids)).all()
 
-    task_name_as_text = "%(name)s (%(entity_type)s) - (%(parents)s)" % {
-        "name": task.name,
-        "entity_type": task.entity_type,
-        "parents": task_parent_names
-    }
+    if not selected_responsible_list:
+        transaction.abort()
+        return Response('You did not select any responsible', 500)
 
-    task_link_internal = \
-        '<a href="%(url)s">%(name)s ' \
-        '(%(task_entity_type)s) - (%(task_parent_names)s)</a>' % {
-            "url": request.route_path('view_task', id=task.id),
-            "name": task.name,
-            "task_entity_type": task.entity_type,
-            "task_parent_names": task_parent_names
-        }
+    logged_in_user = get_logged_in_user(request)
 
-    summary_text = '%(request_review_mode)s Review Request: "%(name)s" (%(parent_names)s)' % {
-        'request_review_mode':request_review_mode,
-        'name': task.name,
-        'parent_names': task_parent_names
-    }
+    task_id = request.matchdict.get('id', -1)
+    task = Task.query.filter(Task.id == task_id).first()
 
-    description_template = \
-        '%(user)s has requested you to do a %(request_review_mode)s review for %(task)s'
+    note = request.params.get('note', 'No note')
 
-    description_text = description_template % {
-        "request_review_mode":request_review_mode,
-        "user": logged_in_user.name,
-        "task": task_name_as_text
-    }
+    utc_now = local_to_utc(datetime.datetime.now())
 
-    description_html = description_template % {
-        "request_review_mode":request_review_mode,
-        "user": '<strong>%s</strong>' % logged_in_user.name,
-        "task": '<strong>%s</strong>' % task_name_as_text
-    }
+    # Create ticket_type if it does not exist
+    ticket_type_name = 'In Progress-Review'
+    ticket_type = query_type('Ticket',ticket_type_name)
 
+    recipients = []
 
+    # Create tickets for selected responsible
+    user_link_internal = get_user_link_internal(request, logged_in_user)
+    task_hierarchical_name = get_task_hierarchical_name(task.id)
+    task_link_internal = get_task_link_internal(request, task, task_hierarchical_name)
 
-    responsible = task.responsible
+    for responsible in selected_responsible_list:
+        recipients.append(responsible.email)
 
-
-    ticket_type = Type.query.filter_by(name=ticket_type_name).first()
-    if ticket_type is None:
-            # create a new Type
-            ticket_type = Type(
-                name=ticket_type_name,
-                code=ticket_type_name,
-                target_entity_type='Ticket'
-            )
-
-    tickets = Ticket.query \
-        .filter(Ticket.links.contains(task)) \
-        .filter(Ticket.type == ticket_type).all()
-    if tickets:
-        note = Note(
-            content=note,
-            created_by=logged_in_user,
-            date_created=utc_now,
-            date_updated=utc_now
-        )
-        for ticket in tickets:
-            ticket.comments.append(note)
-            ticket.date_updated = utc_now
-            ticket.updated_by = logged_in_user
-            # reopen if closed
-            ticket.reopen(logged_in_user)
-        DBSession.add(note)
-    else:
         request_review_ticket = Ticket(
-            project=project,
-            summary=summary_text,
-            description=note,
+            project=task.project,
+            summary='In Progress Review Request: %s' % task_hierarchical_name,
+            description=
+                '%(sender)s has requested you to do <b>a progress review</b> '
+                'for %(task)s' % {
+                    'sender': user_link_internal,
+                    'task': task_link_internal
+                },
             type=ticket_type,
             created_by=logged_in_user,
             date_created=utc_now,
             date_updated=utc_now
         )
+
         request_review_ticket.reassign(logged_in_user, responsible)
 
         # link the task to the review
         request_review_ticket.links.append(task)
         DBSession.add(request_review_ticket)
 
+        ticket_comment = Note(
+            content=note,
+            created_by=logged_in_user,
+            date_created=utc_now,
+            date_updated=utc_now
+        )
+
+        DBSession.add(ticket_comment)
+
+        request_review_ticket.comments.append(ticket_comment)
+
+    # Send mail to
+    send_email = request.params.get('send_email', 1)  # for testing purposes
+
     if send_email:
-        # send email to responsible and resources of the task
+        recipients.append(logged_in_user.email)
+        description_temp = \
+            '%(user)s has requested you to do a progress review for ' \
+            '%(task_hierarchical_name)s with the following note:' \
+            '%(spacing)s%(note)s '
+
         mailer = get_mailer(request)
 
+        message = Message(
+            subject='Review Request: "%(task_hierarchical_name)s)' % {
+                'task_hierarchical_name': task_hierarchical_name
+            },
+            sender=dummy_email_address,
+            recipients=recipients,
+            body=get_description_text(
+                description_temp,
+                logged_in_user.name,
+                task_hierarchical_name,
+                note
+            ),
+            html=get_description_html(
+                description_temp,
+                logged_in_user.name,
+                task_hierarchical_name,
+                note
+            )
+        )
+
+        mailer.send(message)
+
+    logger.debug(
+        'success:Your progress review request has been sent to responsible'
+    )
+
+    request.session.flash(
+        'success:Your progress review request has been sent to responsible'
+    )
+
+    return Response(
+        'Your progress review request has been sent to responsible'
+    )
+
+
+def request_final_review(request):
+    """runs when resource request final review
+    """
+
+    logger.debug('request_final_review starts')
+
+    logged_in_user = get_logged_in_user(request)
+
+    task_id = request.matchdict.get('id', -1)
+    task = Task.query.filter(Task.id == task_id).first()
+
+    note_str = request.params.get('note', 'No note')
+    send_email = request.params.get('send_email', 1)  # for testing purposes
+
+    utc_now = local_to_utc(datetime.datetime.now())
+
+    note_type = query_type('Note', 'Request Review')
+    note_type.html_class = 'orange'
+
+    note = Note(
+        content=note_str,
+        created_by=logged_in_user,
+        date_created=utc_now,
+        date_updated=utc_now,
+        type=note_type
+    )
+
+    task.notes.append(note)
+    reviews = task.request_review()
+    for review in reviews:
+        review.created_by = logged_in_user
+        review.date_created = utc_now
+        review.date_updated = utc_now
+        review.note = note
+
+    if send_email:
         recipients = [logged_in_user.email]
-        if responsible.email not in recipients:
+
+        for responsible in task.responsible:
             recipients.append(responsible.email)
 
         for resource in task.resources:
             recipients.append(resource.email)
 
+        task_hierarchical_name = get_task_hierarchical_name(task.id)
+        description_temp = \
+            '%(user)s has requested you to do a final review for ' \
+            '%(task_hierarchical_name)s with this note:%(note)s '
+
+        mailer = get_mailer(request)
+
         message = Message(
-            subject=summary_text,
+            subject='Review Request: "%(task_hierarchical_name)s)' % {
+                'task_hierarchical_name': task_hierarchical_name
+            },
             sender=dummy_email_address,
             recipients=recipients,
-            body=description_text,
-            html=description_html)
-        mailer.send(message)
+            body=get_description_text(
+                description_temp,
+                logged_in_user.name,
+                task_hierarchical_name,
+                note.content
+            ),
+            html=get_description_html(
+                description_temp,
+                logged_in_user.name,
+                task_hierarchical_name,
+                note.content
+            )
+        )
+
+        try:
+            mailer.send(message)
+        except ValueError:
+            pass
+
+    logger.debug(
+        'success:Your final review request has been sent to responsible'
+    )
 
     request.session.flash(
-        'success:Your review request has been sent to %s' % responsible.name)
+        'success:Your final review request has been sent to responsible'
+    )
 
-    return Response('Your review request has been sent to %s' %
-                    responsible.name)
+    return Response('Your final review request has been sent to responsible')
 
 
 @view_config(
@@ -2877,7 +2928,6 @@ def request_extra_time(request):
                             'task', 500)
 
         # TODO: increase task extra time request counter
-
         if send_email:
             # get the project that the ticket belongs to
             summary_text = 'Extra Time Request: "%s"' % task.name
@@ -2925,8 +2975,6 @@ def request_extra_time(request):
     return Response('There is no task with id : %s' % task_id, 500)
 
 
-
-
 @view_config(
     route_name='get_entity_versions_used_by_tasks',
     renderer='json'
@@ -2946,25 +2994,24 @@ def get_entity_versions_used_by_tasks(request):
     "Task_Resources_SimpleEntities".id as resource_id,
     "Task_Resources_SimpleEntities".name as resource_name,
     "Input_Version_Task_Statuses_SimpleEntities".html_class as status_color
-    
+
 from "Tasks"
     join "Versions" on "Tasks".id = "Versions".task_id
-join "Version_Inputs" on "Versions".id = "Version_Inputs".link_id
-join "Versions" as "Input_Versions" on "Version_Inputs".version_id = "Input_Versions".id
-join "Tasks" as "Input_Version_Tasks" on "Input_Versions".task_id = "Input_Version_Tasks".id
-join "SimpleEntities" as "Input_Version_Task_SimpleEntities" on "Input_Version_Tasks".id = "Input_Version_Task_SimpleEntities".id
-join "SimpleEntities" as "Tasks_SimpleEntities" on "Tasks_SimpleEntities".id = "Tasks".id
+    join "Version_Inputs" on "Versions".id = "Version_Inputs".link_id
+    join "Versions" as "Input_Versions" on "Version_Inputs".version_id = "Input_Versions".id
+    join "Tasks" as "Input_Version_Tasks" on "Input_Versions".task_id = "Input_Version_Tasks".id
+    join "SimpleEntities" as "Input_Version_Task_SimpleEntities" on "Input_Version_Tasks".id = "Input_Version_Task_SimpleEntities".id
+    join "SimpleEntities" as "Tasks_SimpleEntities" on "Tasks_SimpleEntities".id = "Tasks".id
     join "SimpleEntities" as "Input_Version_Task_Statuses_SimpleEntities" on "Input_Version_Task_Statuses_SimpleEntities".id = "Input_Version_Tasks".status_id
-join "Task_Resources"  on "Task_Resources".task_id = "Input_Version_Tasks".id
-join "SimpleEntities" as "Task_Resources_SimpleEntities" on "Task_Resources_SimpleEntities".id = "Task_Resources".resource_id
+    join "Task_Resources"  on "Task_Resources".task_id = "Input_Version_Tasks".id
+    join "SimpleEntities" as "Task_Resources_SimpleEntities" on "Task_Resources_SimpleEntities".id = "Task_Resources".resource_id
 
 where "Tasks".id = %(task_id)s
-group by "Input_Version_Task_SimpleEntities".id, 
+group by "Input_Version_Task_SimpleEntities".id,
 "Tasks_SimpleEntities".name,
 "Task_Resources_SimpleEntities".id,
 "Task_Resources_SimpleEntities".name,
 "Input_Version_Task_Statuses_SimpleEntities".html_class
-    
     """
 
     # set the content range to prevent JSONRest Store to query the data twice
@@ -2972,8 +3019,6 @@ group by "Input_Version_Task_SimpleEntities".id,
     task_id = entity_id
 
     sql_query = sql_query % {'task_id': task_id}
-
-    logger.debug('sql_query : %s' % sql_query)
 
     result = DBSession.connection().execute(sql_query)
 
@@ -2986,7 +3031,6 @@ group by "Input_Version_Task_SimpleEntities".id,
             'status_color':r[4]
         }
         for r in result.fetchall()
-
     ]
 
     task_count = len(return_data)
@@ -2997,8 +3041,6 @@ group by "Input_Version_Task_SimpleEntities".id,
     )
     resp.content_range = content_range
     return resp
-
-
 
 
 def unbind_task_hierarchy_from_tickets(task):
@@ -3021,7 +3063,7 @@ def unbind_task_from_tickets(task):
     route_name='delete_task_dialog',
     renderer='templates/modals/confirm_dialog.jinja2'
 )
-def delete_department_dialog(request):
+def delete_task_dialog(request):
     """deletes the department with the given id
     """
     logger.debug('delete_department_dialog is starts')
@@ -3120,8 +3162,8 @@ def get_child_task_events(task):
                 'status': time_log.task.status.name,
                 'status_color': time_log.task.status.html_class
             })
-            logger.debug('resource_id %s' % time_log.resource.id)
-            logger.debug('resource_name %s' % time_log.resource.name)
+            # logger.debug('resource_id %s' % time_log.resource.id)
+            # logger.debug('resource_name %s' % time_log.resource.name)
 
     return task_events
 

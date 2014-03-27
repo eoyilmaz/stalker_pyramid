@@ -9,24 +9,20 @@
           href='{{ request.static_url("stalker_pyramid:static/ace/css/bootstrap-timepicker.css") }}'/>
     <link rel="stylesheet"
           href='{{ request.static_url("stalker_pyramid:static/ace/css/datepicker.css") }}'/>
-    <link rel="stylesheet"
-          href='{{ request.static_url("stalker_pyramid:static/ace/css/daterangepicker.css") }}'/>
-    <link rel="stylesheet"
-          href='{{ request.static_url("stalker_pyramid:static/ace/css/jquery.gritter.css") }}'/>
+    {#    <link rel="stylesheet"#}
+    {#          href='{{ request.static_url("stalker_pyramid:static/ace/css/jquery.gritter.css") }}'/>#}
     <link rel="stylesheet"
           href='{{ request.static_url("stalker_pyramid:static/ace/css/jquery-ui-1.10.3.custom.min.css") }}'/>
+{#    <link rel="stylesheet"#}
+{#          href='{{ request.static_url("stalker_pyramid:static/ace/css/bootstrap-editable.css") }}'/>#}
     <link rel="stylesheet"
           href='{{ request.static_url("stalker_pyramid:static/ace/css/select2.css") }}'/>
-    <link rel="stylesheet"
-          href='{{ request.static_url("stalker_pyramid:static/ace/css/bootstrap-editable.css") }}'/>
-
     {% include 'charts/chart_preheader.jinja2' %}
 
 {% endblock pre_header %}
 
 {#SIDEBAR#}
 {% block sidebar %}
-
     {% include 'sidebar.jinja2' %}
 {% endblock sidebar %}
 
@@ -38,260 +34,305 @@
 
 {#PAGE-CONTENT#}
 {% block page_content %}
-    <div class="row-fluid">
+
+<div class="row-fluid">
     <div class="widget-box transparent invoice-box">
-    <div class="widget-header widget-header-small">
-        <h3 class="pull-left position-relative">
-            {{ entity.name }}
-            <i class="icon-double-angle-right"></i>
-            <small class="green">{{ entity.type.name }}</small>
-        </h3>
 
-        <div class="widget-toolbar no-border invoice-info">
-            <span class="invoice-info-label">{{ entity.status.name }}</span>
-        </div>
-
-        <div class="widget-toolbar hidden-480">
-            <div class="row-fluid ">
-
+        <div class="widget-header widget-header-large ">
+            <h4 id='task_header' class="position-relative "></h4>
+    
+            <div class="widget-toolbar no-border invoice-info">
+                <span class="invoice-info-label">Status:</span>
+                <span class="label label-{{ entity.status.html_class }}">{{ entity.status.name }}</span>
+                <br>
+    
+                <div class="progress progress-mini progress-success progress-striped {% if entity.status.code == 'WIP' %}active{% endif %}"
+                     style="width: 120px;"
+                     data-percent="{{ "%2.1f" | format(entity.percent_complete) }}%">
+                    <div class="bar"
+                         style="width: {{ entity.percent_complete }}%;"></div>
+                </div>
+            </div>
+            <div class="widget-toolbar hidden-480">
+                <a href="#">
+                    <i class="icon-info"></i>
+                </a>
             </div>
         </div>
-    </div>
 
-    <div class="widget-body">
-    <div class="widget-main padding-10">
-    <div class="row-fluid">
-    <div class="span8">
-        <div class="row-fluid">
+        <div class="widget-body">
+            <div class="widget-main">
+                <div class="row-fluid">
+    
+                    <div class="span8">
+                        <div class="row-fluid">
+                            <div class="row-fluid">
+    
+                                <div class="span2">
+                                    {% include 'components/avatar.jinja2' %}
+                                </div>
+    
+                                <div class="span7">
+                                    <div class="profile-user-info profile-user-info-striped">
+                                        <div class="profile-info-row">
+                                            <div class="profile-info-name"> Name</div>
+    
+                                            <div class="profile-info-value">
+                                                <span class="editable"
+                                                  id="editable_entity_name">{{ entity.name }}</span>
+                                            </div>
+                                        </div>
+                                        <div class="profile-info-row">
+                                            <div class="profile-info-name">Type</div>
+    
+                                            <div class="profile-info-value">
+                                                <span class="editable"
+                                                  id="editable_entity_type">{{ entity.type.name }}</span>
+                                            </div>
+                                        </div>
+    
+                                        <div class="profile-info-row">
+                                            <div class="profile-info-name"> Updated By</div>
+                                            <div class="profile-info-value">
+                                                <span>{{ entity.updated_by.name }}</span>
+                                            </div>
+                                        </div>
+                
+                                        <div class="profile-info-row">
+                                            <div class="profile-info-name"> Created By</div>
+                                            <div class="profile-info-value">
+                                                <span>{{ entity.created_by.name }}</span>
+                                            </div>
+                                        </div>
+                                        <div class="profile-info-row">
+                                            <div class="profile-info-name"> Timing</div>
+                                            <div class="profile-info-value">
+                                                <strong>
+                                                    <span class="date">{{ entity.start }}</span>
+                                                    <i class="icon-long-arrow-right blue"></i>
+                                                    <span class="date">{{ entity.end }}</span>
+                                                </strong>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+    
+                                <div class="span3">
+                                    {% if entity.is_leaf %}
+                                        {% include 'task/view/task_timing.jinja2' %}
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="space-8"></div>
+                            <div class="row-fluid">
+                                <div class="widget-box collapsed">
+                                        <div class="widget-header widget-header-small header-color-grey">
+                                            <h5 class="smaller">
+                                                <i class="icon-file"></i>Description
+                                            </h5>
+                                            <div class="widget-toolbar"> <a href="#" data-action="collapse"> <i class="icon-chevron-up"></i> </a> </div>
+                                        </div>
+                                        <div class="widget-body">
+                                            <div class="widget-main">
+                                                 <div class='editableform-loading center hide'
+                                                      id="description_loading">
+                                                     <i class='light-blue icon-2x icon-spinner icon-spin'></i>
+                                                </div>
+                                                <div class="space-8"></div>
+                                                <span class="editable" id="editable_entity_description">{{ entity.description | safe }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                            </div>
+                        </div>
 
-            <div class="span6">
+                        <div class="space-18"></div>
 
-                <div class="span4">
+                        <div class="row-fluid">
+                            <div class="tabbable"
+                                 style="background-color: rgba(255,255,255,.7)">
+                                <ul class="nav nav-tabs">
 
-                    {% include 'components/avatar.jinja2' %}
+                                    <li class="active">
+                                        <a data-toggle="tab" href="#messages-tab">
+                                            <i class="green icon-list-alt bigger-120"></i>
+                                            Messages
+                                        </a>
+                                    </li>
+                                    <li class="">
+                                        <a data-toggle="tab" href="#calendar-tab">
+                                            <i class="orange icon-calendar bigger-120"></i>
+                                            Calendar
+                                        </a>
+                                    </li>
+                                    {#                    <li class="">#}
+                                    {#                        <a data-toggle="tab" href="#description-tab">#}
+                                    {#                            <i class="blue icon-file bigger-120"></i>#}
+                                    {#                            Description#}
+                                    {#                        </a>#}
+                                    {#                    </li>#}
+                                </ul>
 
-                </div>
+                                <div class="tab-content no-border no-padding">
+                                    <div class="space-24"></div>
+                                    <div id="messages-tab"
+                                         class="tab-pane in active">
 
-                <div class="span8">
+                                        <form id="add_note_form">
 
+                                            <div class="form-actions input-append">
+                                                <div class="itemdiv span1">
+                                                    <div class="user">
+                                                        <img alt=""
+                                                             src="{%- if logged_in_user.thumbnail -%}/{{ logged_in_user.thumbnail.full_path }}{%- else -%}{{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_0.png") }}{%- endif -%}"/>
+                                                    </div>
+                                                </div>
+                                                <div class="span11">
+                                                    <input placeholder="Type your message here ..."
+                                                           type="text" class="width-90"
+                                                           name="message"/>
+                                                    <button id="add_note_button"
+                                                            class="btn btn-small btn-info no-radius">
+                                                        <i class="icon-share-alt"></i>
+                                                        <span class="hidden-phone">Send</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </form>
 
-                    <ul class="unstyled spaced  pull-left">
-                        <li>
-                            <h5>
-                                <strong>
-                                    <span class="date">{{ entity.start }}</span>
-                                    <i class="icon-long-arrow-right blue"></i>
-                                    <span class="date">{{ entity.end }}</span>
-                                </strong>
-                            </h5>
-                        </li>
-                        <li>
+                                        {% include 'note/list/list_notes.jinja2' %}
 
-                            <b>Responsible: </b> <a
-                                href="/users/{{ entity.responsible.id }}/view">{{ entity.responsible.name }}</a>
-                        </li>
+                                    </div>
+                                    <!--#messages-tab-->
+                                    {#                    <div id="description-tab"#}
+                                    {#                         class="tab-pane">#}
+                                    {##}
+                                    {#                        #}
+                                    {##}
+                                    {#                    </div>#}
 
-                        <li>
+                                    <!--#messages-tab-->
 
-                            <b>Created By
-                                : </b> {{ entity.created_by.name }}
-                        </li>
-                        <li>
-                            <b>Updated By
-                                : </b> {{ entity.updated_by.name }}
-                        </li>
-
-                        {% if entity.description %}
-
-                            <li>
-                                <b>Description
-                                    : </b> {{ entity.description }}
-                            </li>
-
-
-                        {% endif %}
-
-                        <li>
-                            <div class="btn-toolbar">
-                        {% if has_permission('Update_Task') %}
-
-                            <button id='task_update_button'
-                                    class='btn btn-mini btn-info'
-                                    data-target="#dialog_template"
-                                    data-toggle="modal"
-                                    data-keyboard="false"
-                                    href='{{ request.route_url("update_task_dialog", id=entity.id) }}'
-                                    >
-                                <i class="icon-edit"></i>
-                                Update
-                            </button>
-
-                        {% endif %}
-
-                        {% if logged_in_user == entity.responsible and entity.status.code == 'PREV' %}
-
-                            <button id='task_review_button'
-                                    class='btn btn-mini btn-success'
-                                    data-target="#dialog_template"
-                                    data-toggle="modal"
-                                    data-keyboard="false"
-                                    href='{{ request.route_url("review_task_dialog", id=entity.id) }}'
-                                    >
-                                <i class="icon-comments"></i>
-                                Review
-                            </button>
-
-                        {% endif %}
-                        {% if (logged_in_user in entity.resources or logged_in_user == entity.responsible) and entity.status.code == 'WIP' and entity.is_leaf %}
-
-                            <button id='task_page_request_review_button'
-                                    class='btn btn-mini btn-warning'
-                                    data-target="#dialog_template"
-                                    data-toggle="modal"
-                                    data-keyboard="false"
-                                    href='/tasks/{{ entity.id }}/request_review/dialog?came_from={{ request.current_route_path() }}'
-                                    >
-                                <i class="icon-comment-alt"></i>
-                                Request Review
-                            </button>
-
-                        {% endif %}
-
+                                    <!--/#calendar-tab-->
+                                    <div id="calendar-tab" class="tab-pane">
+                                        <div id="calendar"></div>
+                                    </div>
+                                    <!--/#calendar-tab-->
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                        </li>
-                    </ul>
 
+                    <div class="span4">
+                        <div class="entityview-item clearfix">
 
+                            {% if entity.is_leaf %}
+                                <div class="row-fluid">
+                                    {% include 'review/view/review_card.jinja2' %}
+                                </div>
+                            {% endif %}
 
+                            {% if entity.entity_type == 'Asset' or entity.entity_type == 'Shot' %}
+                                <div class="row-fluid">
+                                    {% include 'entity/entity_children_progress.jinja2' %}
+                                </div>
+                            {% endif %}
 
-                </div>
-                <div class="space-12"></div>
+                            <div class="space-4"></div>
 
+                            <div class="row-fluid">
+                                <div id="resources_box"
+                                     class="widget-box  transparent">
+                                    <div class="widget-header widget-header-small">
+                                        <h4 class="smaller grey">
+                                            <i class="icon-user orange"></i>Resources</h4>
+                                    </div>
+                                    <div class="widget-body">
+                                        <div class="widget-main">
+                                            <div id="resource_tree"
+                                                 class="tree"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
-            </div>
-            <div class="span6">
-                <div class="span6 pull-right alert alert-block alert-info">
-                    <ul class="unstyled spaced">
-                        <li>
+                            <div class="space-4"></div>
 
-                            <b>Schedule Hours
-                                : </b> {{ entity.schedule_seconds/3600 }}
-                            h
-                        </li>
-                        <li>
-                            <b>Total Logged Hours
-                                : </b> {{ entity.total_logged_seconds/3600 }}
-                            h
-                        </li>
-                        <li>
-                            <b>Hours to Complete
-                                : </b> {{ (entity.schedule_seconds - entity.total_logged_seconds)/3600 }}
-                            h
-                        </li>
-                    </ul>
-                    <div class="progress progress-success progress-striped"
-                         data-percent="{{ "%2.1f" | format(entity.percent_complete) }}%">
-                        <div class="bar"
-                             style="width: {{ entity.percent_complete }}%;"></div>
-                    </div>
-                    {#                                    <div class="pull-left" id="pie_chart"#}
-                    {#                                         style="width: 180px; height: 180px;"></div>#}
-                </div>
-            </div>
-        </div>
+                            {% if entity.is_leaf %}
+                                <div class="row-fluid">
+                                    <div id="version_used_by_tasks"
+                                         class="widget-box transparent">
+                                        <div class="widget-header  widget-header-small">
+                                            <h4 class="smaller">
+                                                <i class="icon-long-arrow-down"></i>Versions are used in
+                                            </h4>
+                                        </div>
+                                        <div class="widget-body">
+                                            <div class="widget-main">
+                                                <div id="version_used_by_tasks_tree" class="tree"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
 
-        <div class="hr hr8 hr-double"></div>
+                            <div class="space-4"></div>
 
-        <div class="space-32"></div>
+                            <div class="row-fluid">
+                                <div id="depends_box"
+                                     style="width: 50%"
+                                     class="span6 widget-box transparent">
+                                    <div class="widget-header widget-header-small header-color-grey">
+                                        <h4 class="smaller">
+                                            <i class="icon-long-arrow-left"></i>Depends To
+                                        </h4>
+                                    </div>
+                                    <div class="widget-body">
+                                        <div class="widget-main">
+                                            <div id="depends_tree" class="tree"></div>
+                                        </div>
+                                    </div>
+                                </div>
 
-        <div class="row-fluid">
-            <div id="calendar"></div>
-        </div>
-
-    </div>
-    <div class="span4">
-
-        <div class="row-fluid">
-            <div id="resources_box"
-                 class="widget-box hide">
-                <div class="widget-header header-color-red">
-                    <h4 class="smaller">Resources</h4>
-                </div>
-                <div class="widget-body">
-                    <div class="widget-main padding-12">
-                        <div id="resource_tree"
-                             class="tree"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="space-12"></div>
-
-        <div class="row-fluid">
-            <div id="depends_box"
-                 class="span6 widget-box">
-                <div class="widget-header header-color-grey">
-                    <h4 class="smaller"><i
-                            class="icon-long-arrow-left"></i>Depends
-                    </h4>
-                </div>
-                <div class="widget-body">
-                    <div class="widget-main padding-12">
-                        <div id="depends_tree"
-                             class="tree"></div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="dependent_of_box"
-                 class="span6 widget-box">
-                <div class="widget-header header-color-grey">
-                    <h4 class="smaller">Dependent Of <i
-                            class="icon-long-arrow-right"></i></h4>
-                </div>
-                <div class="widget-body">
-                    <div class="widget-main padding-12">
-                        <div id="dependent_of_tree"
-                             class="tree"></div>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-
-
-        <div class="space-12"></div>
-        <div class="row-fluid">
-            <div id="version_used_by_tasks"
-                 class="widget-box">
-                <div class="widget-header header-color-grey">
-                    <h4 class="smaller"><i
-                            class="icon-long-arrow-down"></i>Versions are used
-                        in
-                    </h4>
-                </div>
-                <div class="widget-body">
-                    <div class="widget-main padding-12">
-                        <div id="version_used_by_tasks_tree"
-                             class="tree"></div>
+                                <div id="dependent_of_box"
+                                     style="width: 50%"
+                                     class="span6 widget-box transparent">
+                                    <div class="widget-header widget-header-small header-color-grey">
+                                        <h4 class="smaller">Dependent Of
+                                            <i class="icon-long-arrow-right"></i>
+                                        </h4>
+                                    </div>
+                                    <div class="widget-body">
+                                        <div class="widget-main">
+                                            <div id="dependent_of_tree" class="tree"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    </div>
-    </div>
-    </div>
-    </div>
-    </div>
-
+</div>
 {% endblock page_content %}
 
 {#EXTRA-SCRIPTS#}
 {% block extrascripts %}
-
-
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery-ui-1.10.3.custom.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.ui.touch-punch.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.gritter.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootbox.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.slimscroll.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.hotkeys.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootstrap-wysiwyg.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/select2.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-datepicker.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/fuelux/fuelux.spinner.min.js") }}'></script>
+{#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/x-editable/bootstrap-editable.min.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/x-editable/ace-editable.min.js") }}'></script>#}
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.maskedinput.min.js") }}'></script>
 
     {% if entity.children | count == 0 %}
         {% if has_permission('Update_User') and has_permission('Update_Task') %}
@@ -299,8 +340,6 @@
         {% endif %}
     {% endif %}
 
-    {% include 'charts/chart_extrascripts.jinja2' %}
-    {% include 'charts/pie_chart.jinja2' %}
     {% include 'components/tree.jinja2' %}
     {% include 'calendar/calendar.jinja2' %}
 
@@ -312,106 +351,176 @@
         });
     </script>
 
+
     <script type="text/javascript">
-        {# task reviews :
-        
-        if the current user is the responsible of this task show a 
-        flash message about he/she is the responsible and the task awaits
-        him/her review
-        #}
-        {% if entity.responsible == logged_in_user and entity.status.code == 'PREV' %}
-            $(function () {
-                flash_message({
-                    container: 'body',
-                    title: 'Warning',
-                    message: 'You are the responsible of this task and it ' +
-                            'is awaiting your ' +
-                            '<a data-target="#dialog_template" data-toggle="modal" data-keyboard=false' +
-                            ' href="{{ request.route_url('review_task_dialog', id=entity.id) }}">review</a>',
-                    type: 'error'
-                });
+
+    function showErrorAlert(reason, detail) {
+        var msg = '';
+        if (reason === 'unsupported-file-type') {
+            msg = "Unsupported format " + detail;
+        } else if (reason === 'big-file-size') {
+            msg = "File is too big " + detail + ' bytes';
+        } else {
+            console.log("error uploading file", reason, detail);
+        }
+        $('<div class="alert"> <button type="button" class="close" data-dismiss="alert">&times;</button>' +
+                '<strong>File upload error</strong> ' + msg + ' </div>').prependTo('#alerts');
+    }
+
+
+    $(document).ready(function () {
+
+        var icon_name = get_icon('{{ entity.entity_type.lower()}}');
+        $('#task_header').append('<i class="' + icon_name + ' bigger-125"></i>{{ entity.name }}');
+
+
+        {% if has_permission('Update_Task') %}
+            var inline_update_url = '/tasks/{{ entity.id }}/update/inline';
+
+            //editables
+            $('#editable_entity_name').editable({
+                type: 'text',
+                name: 'username',
+                success: function (response, newValue) {
+                    console.log('newValue ' + newValue);
+
+                    var params = $.param({
+                        attr_name: 'name',
+                        attr_value: newValue
+                    });
+
+                    $.post(
+                        inline_update_url, params
+                    ).done(function () {
+{#                        console.log('done');#}
+                    }).fail(function (jqXHR) {
+                        bootbox.alert('<div id="message" class="alert alert-danger bigger-110">' + jqXHR.responseText + '</div>');
+                    });
+                }
             });
-        {% endif %}
-    </script>
 
-    <script type="text/javascript">
-        $(document).ready(function () {
+            $.getJSON('/types/?target_entity_type={{ entity.entity_type }}').then(function (available_types) {
+                var entity_types = [];
 
-            $.getJSON('/tasks/{{ entity.id }}/events/').then(function (data) {
-                var events = [];
-                var resources = new Object();
-
-                for (var i = 0; i < data.length; i++) {
-                    var start_date = new Date(parseInt(data[i].start));
-                    var end_date = new Date(parseInt(data[i].end));
-                    var title = data[i].title;
-
-                    if (data[i].entity_type == 'tasks') {
-                        for (var k = 0; k < data[i].resources.length; k++) {
-                            var prop_id = (data[i].resources[k].id).toString();
-                            title += ' - ' + data[i].resources[k].name;
-
-                            if (!resources [prop_id]) {
-                                resources [prop_id] = {
-                                    'name': '<span><a href="/users/' + data[i].resources[k].id + '/view">' + data[i].resources[k].name + '  </a></span>',
-                                    'type': 'folder',
-                                    'icon-class': 'blue'
-                                }
-                            }
-
-                            if (!resources[prop_id]['additionalParameters']) {
-                                resources[prop_id]['additionalParameters'] = new Object();
-                                resources[prop_id]['additionalParameters']['children'] = new Object();
-                            }
-
-                            var hours_to_complete = (data[i].schedule_seconds - data[i].total_logged_seconds) / 3600;
-                            var hour_to_complete_str = '';
-
-                            if (hours_to_complete > 0) {
-                                hour_to_complete_str = '<span> ( ' + hours_to_complete + ' h )</span>'
-                            }
-
-                            var percent_complete_str = '<span class="label label-' + data[i].status_color + '">' + data[i].status + '</span>';
-
-                            resources[prop_id]['additionalParameters']['children'][(data[i].id).toString()] = {name: '<span  class="pull-left"><a href="/tasks/' + data[i].id + '/view">' + data[i].title + '  </a></span>' + hour_to_complete_str + percent_complete_str, type: 'item'}
-
-                            $('#resources_box').show();
-                        }
-                    }
-
-                    if (data[i].resource_name) {
-                        title = data[i].title + ' - ' + data[i].resource_name;
-                    }
-
-                    var event = {
-                        eId: data[i].id,
-                        entity_type: data[i].entity_type,
-                        title: title,
-                        start: start_date,
-                        end: end_date,
-                        className: data[i].className,
-                        allDay: data[i].allDay
-                    };
-                    events.push(event);
+                for (var i = 0; i < available_types.length; i++) {
+                    entity_types.push({id: available_types[i].id, text: available_types[i].name})
                 }
 
-                drawCalendar('calendar', events);
-                drawTree('resource_tree', resources);
+                if (entity_types.length > 0) {
+                    $('#editable_entity_type').editable({
+                        type: 'select2',
+                        value: '{% if entity.type %}{{ entity.type.id }}{% endif %}',
+                        source: entity_types,
+                        success: function (response, newValue) {
+
+                            var params = $.param({
+                                attr_name: 'type',
+                                attr_value: newValue
+                            });
+
+                            $.post(
+                                inline_update_url, params
+                            ).done(function () {
+                                console.log('done');
+                            }).fail(function (jqXHR) {
+                                bootbox.alert('<div id="message" class="alert alert-danger bigger-110">' + jqXHR.responseText + '</div>');
+
+                            });
+                        }
+                    });
+                }
+                else {
+                    $('#editable_entity_type').editable({
+                        type: 'text',
+                        value: '{{ entity.entity_type }}',
+                        disabled: true
+                    });
+                }
             });
-        });
+
+            $('#editable_entity_description').editable({
+                mode: 'inline',
+                type: 'wysiwyg',
+                name: 'editable_entity_description',
+
+                wysiwyg: {
+                    maxFileSize: 2000000,
+                    fileUploadError: showErrorAlert
+
+                },
+                success: function (response, newValue) {
+
+                    $('#description_loading').show();
+
+                    var params = $.param({
+                        attr_name: 'description',
+                        attr_value: newValue
+                    });
+
+                    $.post(inline_update_url, params).done(function () {
+                        $('#editable_entity_description').val('{{entity.description |safe  }}')
+                        console.log('done')
+                        $('#description_loading').hide()
+                    }).fail(function (jqXHR) {
+                        bootbox.alert('<div id="message" class="alert alert-danger bigger-110">' + jqXHR.responseText + '</div>');
+                        $('#description_loading').hide()
+
+                    });
+                }
+            });
+        {% endif %}
 
 
-        $(document).ready(function () {
+        $('#add_note_button').on('click', function (e) {
+            e.stopPropagation();
+            e.preventDefault();
 
+            // disable the submit_button
+            var submit_button = $(this);
+            submit_button.button('loading');
 
-            var get_dependency = function (type) {
+            var add_note_form = $('#add_note_form');
 
-                $.getJSON('/tasks/{{ entity.id }}/dependency/' + type + '/').then(function (data) {
+            $.post(
+                "/entities/{{ entity.id }}/note/create",
+                add_note_form.serialize()
+            ).done(function () {
+                window.location.assign('{{ came_from }}');
+            }).fail(function (jqXHR) {
+                bootbox.alert('<div id="message" class="alert alert-danger bigger-110">' + jqXHR.responseText + '</div>');
+                submit_button.button('reset');
+            });
+        })
 
-                    var depends = new Object();
-                    for (var i = 0; i < data.length; i++) {
+    });
 
-                        var task_id = (data[i].id).toString();
+    $(document).ready(function () {
+        $.getJSON('/tasks/{{ entity.id }}/events/').then(function (data) {
+            var events = [];
+            var resources = {};
+
+            for (var i = 0; i < data.length; i++) {
+                var start_date = new Date(parseInt(data[i].start));
+                var end_date = new Date(parseInt(data[i].end));
+                var title = data[i].title;
+
+                if (data[i].entity_type == 'tasks') {
+                    for (var k = 0; k < data[i].resources.length; k++) {
+                        var prop_id = (data[i].resources[k].id).toString();
+                        title += ' - ' + data[i].resources[k].name;
+
+                        if (!resources [prop_id]) {
+                            resources [prop_id] = {
+                                'name': '<span><a href="/users/' + data[i].resources[k].id + '/view">' + data[i].resources[k].name + '  </a></span>',
+                                'type': 'folder',
+                                'icon-class': 'blue'
+                            }
+                        }
+
+                        if (!resources[prop_id]['additionalParameters']) {
+                            resources[prop_id]['additionalParameters'] = new Object();
+                            resources[prop_id]['additionalParameters']['children'] = new Object();
+                        }
 
                         var hours_to_complete = (data[i].schedule_seconds - data[i].total_logged_seconds) / 3600;
                         var hour_to_complete_str = '';
@@ -422,75 +531,118 @@
 
                         var percent_complete_str = '<span class="label label-' + data[i].status_color + '">' + data[i].status + '</span>';
 
+                        resources[prop_id]['additionalParameters']['children'][(data[i].id).toString()] = {name: '<span  class="pull-left"><a href="/tasks/' + data[i].id + '/view">' + data[i].title + '  </a></span>' + hour_to_complete_str + percent_complete_str, type: 'item'}
 
-                        if (!depends[task_id]) {
-                            depends[task_id] = {
-                                'name': '<span><a href="/tasks/' + data[i].id + '/view">' + data[i].name + '  </a></span>' + hour_to_complete_str,
-                                'type': 'folder',
-                                'icon-class': data[i].status_color
-                            }
-                        }
-
-                        if (!depends[task_id]['additionalParameters']) {
-                            depends[task_id]['additionalParameters'] = new Object();
-                            depends[task_id]['additionalParameters']['children'] = new Object();
-                        }
-
-                        for (var k = 0; k < data[i].resources.length; k++) {
-                            depends[task_id]['additionalParameters']['children'][(data[i].resources[k].id).toString()] = {name: '<span  class="pull-left"><a href="/users/' + data[i].resources[k].id + '/view">' + data[i].resources[k].name + '  </a></span>', type: 'item'}
-                        }
-
+                        $('#resources_box').show();
                     }
+                }
 
-                    drawTree(type + '_tree', depends);
+                if (data[i].resource_name) {
+                    title = data[i].title + ' - ' + data[i].resource_name;
+                }
 
-                    if (data.length == 0) {
-                        $('#' + type + '_tree').append('<div class="alert alert-warning">No ' + type + ' for this task</div>');
-                    }
-                });
+                var event = {
+                    eId: data[i].id,
+                    entity_type: data[i].entity_type,
+                    title: title,
+                    start: start_date,
+                    end: end_date,
+                    className: data[i].className,
+                    allDay: data[i].allDay
+                };
+                events.push(event);
             }
 
-            get_dependency('depends');
-            get_dependency('dependent_of');
+            drawCalendar('calendar', events);
+            drawTree('resource_tree', resources);
         });
+    });
 
-        $(document).ready(function () {
 
+    $(document).ready(function () {
 
-            $.getJSON('/entities/{{ entity.id }}/version/used_by/tasks/').then(function (data) {
+        var get_dependency = function (type) {
 
-                console.log(data.length)
+            $.getJSON('/tasks/{{ entity.id }}/dependency/' + type + '/').then(function (data) {
 
-                var tasks = new Object();
+                var depends = {};
                 for (var i = 0; i < data.length; i++) {
 
                     var task_id = (data[i].id).toString();
 
-                    if (!tasks[task_id]) {
-                        tasks[task_id] = {
-                            'name': '<span><a href="/tasks/' + data[i].id + '/view">' + data[i].name + '  </a></span>',
+                    var hours_to_complete = (data[i].schedule_seconds - data[i].total_logged_seconds) / 3600;
+                    var hour_to_complete_str = '';
+
+                    if (hours_to_complete > 0) {
+                        hour_to_complete_str = '<span> ( ' + hours_to_complete + ' h )</span>';
+                    }
+
+                    var percent_complete_str = '<span class="label label-' + data[i].status_color + '">' + data[i].status + '</span>';
+
+                    if (!depends[task_id]) {
+                        depends[task_id] = {
+                            'name': '<span><a href="/tasks/' + data[i].id + '/view">' + data[i].name + '  </a></span>' + hour_to_complete_str,
                             'type': 'folder',
                             'icon-class': data[i].status_color
                         }
                     }
 
-                    if (!tasks[task_id]['additionalParameters']) {
-                        tasks[task_id]['additionalParameters'] = new Object();
-                        tasks[task_id]['additionalParameters']['children'] = new Object();
+                    if (!depends[task_id]['additionalParameters']) {
+                        depends[task_id]['additionalParameters'] = new Object();
+                        depends[task_id]['additionalParameters']['children'] = new Object();
                     }
 
-                    tasks[task_id]['additionalParameters']['children'][(data[i].resource_id).toString()] = {name: '<span  class="pull-left"><a href="/users/' + data[i].resource_id + '/view">' + data[i].resource_name + '  </a></span>', type: 'item'}
-
+                    for (var k = 0; k < data[i].resources.length; k++) {
+                        depends[task_id]['additionalParameters']['children'][(data[i].resources[k].id).toString()] = {name: '<span  class="pull-left"><a href="/users/' + data[i].resources[k].id + '/view">' + data[i].resources[k].name + '  </a></span>', type: 'item'}
+                    }
 
                 }
 
-                drawTree('version_used_by_tasks_tree', tasks);
+                drawTree(type + '_tree', depends);
 
                 if (data.length == 0) {
-                    $('#version_used_by_tasks_tree').append('<div class="alert alert-warning">No task used this task versions</div>');
+                    $('#' + type + '_tree').append('<div class="alert alert-warning">No tasks</div>');
                 }
             });
+        };
+
+        get_dependency('depends');
+        get_dependency('dependent_of');
+    });
+
+    $(document).ready(function () {
+        $.getJSON('/entities/{{ entity.id }}/version/used_by/tasks/').then(function (data) {
+
+            console.log(data.length)
+
+            var tasks = new Object();
+            for (var i = 0; i < data.length; i++) {
+
+                var task_id = (data[i].id).toString();
+
+                if (!tasks[task_id]) {
+                    tasks[task_id] = {
+                        'name': '<span><a href="/tasks/' + data[i].id + '/view">' + data[i].name + '  </a></span>',
+                        'type': 'folder',
+                        'icon-class': data[i].status_color
+                    }
+                }
+
+                if (!tasks[task_id]['additionalParameters']) {
+                    tasks[task_id]['additionalParameters'] = new Object();
+                    tasks[task_id]['additionalParameters']['children'] = new Object();
+                }
+
+                tasks[task_id]['additionalParameters']['children'][(data[i].resource_id).toString()] = {name: '<span  class="pull-left"><a href="/users/' + data[i].resource_id + '/view">' + data[i].resource_name + '  </a></span>', type: 'item'}
+            }
+
+            drawTree('version_used_by_tasks_tree', tasks);
+
+            if (data.length == 0) {
+                $('#version_used_by_tasks_tree').append('<div class="alert alert-warning">No tasks</div>');
+            }
         });
+    });
 
     </script>
 

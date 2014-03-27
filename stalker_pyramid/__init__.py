@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Stalker Pyramid a Web Base Production Asset Management System
-# Copyright (C) 2009-2013 Erkan Ozgur Yilmaz
+# Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
 #
 # This file is part of Stalker Pyramid.
 #
@@ -22,12 +22,14 @@ Stalker Pyramid is a Production Asset Management System (ProdAM) designed for
 Animation and VFX Studios. See docs for more information.
 """
 import pyramid_beaker
+from sqlalchemy.orm import scoped_session, sessionmaker
 from zope.sqlalchemy import ZopeTransactionExtension
 
 __version__ = '0.1.7'
 
 
 # before anything about stalker create the defaults
+from stalker import db
 from stalker.config import defaults
 from stalker.models.auth import group_finder
 
@@ -129,6 +131,13 @@ def main(global_config, **settings):
     config.add_route('remove_entity_from_entity_dialog','entities/{id}/{entity_id}/remove/dialog')
     config.add_route('remove_entity_from_entity',      'entities/{id}/{entity_id}/remove')
 
+    config.add_route('delete_entity_dialog', 'entities/{id}/delete/dialog')
+    config.add_route('delete_entity', 'entities/{id}/delete')
+
+    config.add_route('create_entity_note', 'entities/{id}/note/create')
+    config.add_route('delete_note_dialog', 'notes/{id}/delete/dialog')
+    config.add_route('delete_note', 'notes/{id}/delete')
+
     # get routes returns json
     config.add_route('get_entity',                     'entities/{id}/')
     config.add_route('get_entity_users',               'entities/{id}/users/')
@@ -158,6 +167,7 @@ def main(global_config, **settings):
     config.add_route('get_entity_events',              'entities/{id}/events/')  #json
     config.add_route('get_entity_versions',            'entities/{id}/versions/')  # json
     config.add_route('get_entity_versions_used_by_tasks', 'entities/{id}/version/used_by/tasks/')
+    config.add_route('get_entity_notes',            'entities/{id}/notes/') #json
 
     config.add_route('list_entity_users',              'entities/{id}/users/list')
     config.add_route('list_entity_departments',        'entities/{id}/departments/list')  # html
@@ -171,6 +181,8 @@ def main(global_config, **settings):
     config.add_route('list_entity_vacations',          'entities/{id}/vacations/list')  # html
     config.add_route('list_entity_versions',           'entities/{id}/versions/list')  # html
     config.add_route('list_entity_resources',          'entities/{id}/resources/list')  # html
+    config.add_route('list_entity_notes',            'entities/{id}/notes/list') #html
+
 
     config.add_route('append_entities_to_entity_dialog',  'entities/{id}/{entities}/append/dialog')
     config.add_route('append_entities_to_entity',         'entities/{id}/append')
@@ -190,9 +202,10 @@ def main(global_config, **settings):
     config.add_route('get_task_references_count',  'tasks/{id}/references/count/')  # json
     config.add_route('get_asset_references',       'assets/id}/references/')  # json
     config.add_route('get_asset_references_count', 'assets/id}/references/count/')  # json
+
     config.add_route('get_shot_references',        'shots/{id}/references/')  # json
     config.add_route('get_shot_references_count',  'shots/{id}/references/count/')  # json
-    config.add_route('get_shots_children_task_type',  'shots/children/task_type/')  # json
+
 
 
     config.add_route('get_references',       'references/')
@@ -206,8 +219,8 @@ def main(global_config, **settings):
 
     # *************************************************************************
     # Studio
-    config.add_route('dialog_create_studio',  'studios/create/dialog')
-    config.add_route('dialog_update_studio',  'studios/update/dialog')
+    config.add_route('create_studio_dialog',  'studios/create/dialog')
+    config.add_route('update_studio_dialog',  'studios/{id}/update/dialog')
 
     config.add_route('create_studio',         'studios/create')
     config.add_route('update_studio',         'studios/{id}/update')
@@ -246,6 +259,7 @@ def main(global_config, **settings):
     config.add_route('list_project_sequences',     'projects/{id}/sequences/list')
     config.add_route('list_project_tickets',       'projects/{id}/tickets/list')
     config.add_route('list_project_references',    'projects/{id}/references/list')
+    config.add_route('list_project_reviews',       'projects/{id}/reviews/list')  # html
 
     config.add_route('get_projects',               'projects/')
     config.add_route('get_project_users',          'projects/{id}/users/')
@@ -260,6 +274,8 @@ def main(global_config, **settings):
     config.add_route('get_project_references_count', 'projects/{id}/references/count/')  # json
     config.add_route('get_project_tickets',        'projects/{id}/tickets/')  # json
     config.add_route('get_project_tickets_count',  'projects/{id}/tickets/count/')  # json
+    config.add_route('get_project_reviews',      'projects/{id}/reviews/') #json
+    config.add_route('get_project_reviews_count',      'projects/{id}/reviews/count/') #json
 
     config.add_route('get_project_tasks_today',    'projects/{id}/tasks/{action}/today/')  # json
     config.add_route('get_project_tasks_in_date',  'projects/{id}/tasks/{action}/{date}/')  # json
@@ -328,8 +344,9 @@ def main(global_config, **settings):
     config.add_route('get_user_vacations',    'users/{id}/vacations/')  # json
     config.add_route('get_user_vacations_count', 'users/{id}/vacations/count/')  # json
     config.add_route('get_user_tickets',      'users/{id}/tickets/')  # json
-    config.add_route('get_user_open_tickets',  'users/{id}/open_tickets/')  # json
-
+    config.add_route('get_user_open_tickets', 'users/{id}/open_tickets/')  # json
+    config.add_route('get_user_reviews',      'users/{id}/reviews/') #json
+    config.add_route('get_user_reviews_count',      'users/{id}/reviews/count/') #json
     config.add_route('get_user_events',       'users/{id}/events/')  # json
     # config.add_route('get_user_worked_hours', 'users/{id}/{frequency}/worked_hours/')  # json
     config.add_route('get_resources',         'resources/')
@@ -343,8 +360,9 @@ def main(global_config, **settings):
     config.add_route('list_user_groups',      'users/{id}/groups/list')  # html
     config.add_route('list_user_projects',    'users/{id}/projects/list')  # html
     config.add_route('list_user_time_logs',   'users/{id}/time_logs/list')  # html
-    config.add_route('list_user_tickets',   'users/{id}/tickets/list')  # html
+    config.add_route('list_user_tickets',     'users/{id}/tickets/list')  # html
     config.add_route('list_user_tasks_responsible_of', 'users/{id}/tasks/list/responsible_of') # html
+    config.add_route('list_user_reviews',          'users/{id}/reviews/list')  # html
 
     config.add_route('view_user_tasks',       'users/{id}/tasks/view')  # html
     config.add_route('view_user_versions',    'users/{id}/versions/view')
@@ -404,6 +422,12 @@ def main(global_config, **settings):
     config.add_route('get_asset_tickets',   'assets/{id}/tickets/')
     config.add_route('list_asset_tickets',  'assets/{id}/tickets/list')
 
+
+    config.add_route('get_assets_types', 'assets/types/')  # json
+    config.add_route('get_assets_type_task_types', 'assets/types/{t_id}/task_types/')  # json
+    config.add_route('get_assets_children_task_type',  'assets/children/task_type/')  # json
+
+
     # *************************************************************************
     # Shots
     config.add_route('create_shot_dialog', 'shots/{id}/create/dialog')
@@ -418,6 +442,8 @@ def main(global_config, **settings):
     config.add_route('list_shot_tasks',    'shots/{id}/tasks/list')  # html
     config.add_route('list_shot_tickets',  'shots/{id}/tickets/list')  # html
     config.add_route('list_shot_versions', 'shots/{id}/versions/list')  # html
+
+    config.add_route('get_shots_children_task_type',  'shots/children/task_type/')  # json
 
     # *************************************************************************
     # Sequence
@@ -454,6 +480,7 @@ def main(global_config, **settings):
     # Actions
     config.add_route('create_task',              'tasks/create')
     config.add_route('update_task',              'tasks/{id}/update')
+    config.add_route('inline_update_task',       'tasks/{id}/update/inline')
     config.add_route('review_task',              'tasks/{id}/review')
 
     config.add_route('duplicate_task_hierarchy', 'tasks/{id}/duplicate')
@@ -464,6 +491,7 @@ def main(global_config, **settings):
     config.add_route('list_task_versions',       'tasks/{id}/versions/list')  # html
     config.add_route('list_task_tickets',        'tasks/{id}/tickets/list')  # html
     config.add_route('list_task_references',     'tasks/{id}/references/list')  # html
+    config.add_route('list_task_reviews',        'tasks/{id}/reviews/list')  # html
 
     config.add_route('get_gantt_tasks',          'tasks/{id}/gantt')
     config.add_route('get_gantt_task_children',  'tasks/{id}/children/gantt')
@@ -478,10 +506,15 @@ def main(global_config, **settings):
     config.add_route('get_task_dependency',  'tasks/{id}/dependency/{type}/') # json
     config.add_route('get_task_tickets',  'tasks/{id}/tickets')  # json
 
+    config.add_route('get_task_reviews',  'tasks/{id}/reviews/')  # json
+    config.add_route('get_task_reviews_count',  'tasks/{id}/reviews/count/')  # json
+    config.add_route('get_task_reviewers',  'tasks/{id}/reviewers/')  # json
+    config.add_route('get_task_last_reviews',  'tasks/{id}/last_reviews/') #json
+
     config.add_route('request_review',     'tasks/{id}/request_review')
     config.add_route('request_review_task_dialog',     'tasks/{id}/request_review/dialog')
 
-
+    config.add_route('approve_task',   'tasks/{id}/approve')
     config.add_route('request_revision',   'tasks/{id}/request_revision')
     config.add_route('request_extra_time', 'tasks/{id}/request_extra_time')
 
@@ -613,5 +646,5 @@ def main(global_config, **settings):
     return config.make_wsgi_app()
 
 
-# TODO: auto register creted_by and updated_by values by using SQLAlchemy
+# TODO: auto register created_by and updated_by values by using SQLAlchemy
 #       events 'before_update' and 'before_create'

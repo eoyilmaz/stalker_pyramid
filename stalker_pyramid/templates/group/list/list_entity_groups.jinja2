@@ -29,9 +29,9 @@
     {% include 'page_header.jinja2' %}
 
     {% if entity %}
-         {% set address=request.route_path('get_entity_groups', id=entity.id) %}
+        {% set address=request.route_path('get_entity_groups', id=entity.id) %}
     {% else %}
-         {% set address=request.route_path('get_groups') %}
+        {% set address=request.route_path('get_groups') %}
     {% endif %}
     {% set add_button_address='/groups/create/dialog?came_from='+ request.current_route_path() %}
     {% set list_item_type='Group' %}
@@ -46,13 +46,13 @@
     {% raw %}
     <script id="tmpl_itemThead" type="text/x-dot-template">
 
-    <tr>
-        <th>Thumbnail</th>
-        <th>Group</th>
-        <th>Created By</th>
-        <th>Users</th>
-        <th></th>
-    </tr>
+        <tr>
+            <th>Thumbnail</th>
+            <th>Group</th>
+            <th>Created By</th>
+            <th>Users</th>
+            <th></th>
+        </tr>
     </script>
     {% endraw %}
 
@@ -68,25 +68,45 @@
             <td><a href='/users/{{=it.created_by_id}}/view'>{{=it.created_by_name}}</a>
             </td>
             <td>{{=it.users_count}}</td>
-             <td>
-                  {{ if (it.update_group_action) { }}
-                <a  class="blue"
+            <td>
+                {{ if (it.update_group_action) { }}
+                <a class="blue"
 
-                    href="{{=it.update_group_action}}">
+                   href="{{=it.update_group_action}}">
                     <i class="icon-edit bigger-130"></i>
                 </a>{{ } }}
 
                 {{ if (it.delete_group_action) { }}
-                <a  class="red"
-                    data-target="#dialog_template"
-                    data-toggle="modal"
-                    data-keyboard=false
-                    href="{{=it.delete_group_action}}?came_from={{=it.came_from }}">
+                <a class="red"
+                   data-target="#dialog_template"
+                   data-toggle="modal"
+                   data-keyboard=false
+                   href="{{=it.delete_group_action}}?came_from={{=it.came_from }}">
                     <i class="icon-trash bigger-130"></i>
                 </a>{{ } }}
             </td>
         </tr>
     </script>
     {% endraw %}
+
+    <script>
+
+        var tableParameters = {}
+        var sortingParameters = [
+            [0, 'asc']
+        ]
+        var tableDataAddress;
+
+
+        {% if entity %}
+            tableDataAddress = '{{request.route_path('get_entity_groups', id=entity.id) }}'
+
+        {% else %}
+            tableDataAddress = '{{ request.route_path('get_groups') }}'
+        {% endif %}
+
+        console.log('tableDataAddress' + tableDataAddress)
+
+    </script>
 
 {% endblock extrascripts %}

@@ -1,5 +1,5 @@
 {# Stalker Pyramid a Web Base Production Asset Management System
- Copyright (C) 2009-2013 Erkan Ozgur Yilmaz
+ Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
 
  This file is part of Stalker Pyramid.
 
@@ -91,5 +91,15 @@
         </tr>
     </script>
     {% endraw %}
+
+    <script>
+
+        var tableParameters = {}
+        var sortingParameters = [[0, 'asc'], [1, 'desc']]
+        var tableDataAddress = '{{ request.route_path('get_entity_projects', id=entity.id) }}'
+
+     console.log('tableDataAddress' + tableDataAddress)
+
+    </script>
 
 {% endblock extrascripts %}

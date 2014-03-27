@@ -153,6 +153,8 @@
                 ticket_owner.append(owner_template(data[i]));
             }
 
+            ticket_owner.val('{{ owner_id }}');
+
             // update the chosen fields
             ticket_owner.trigger('liszt:updated');
 

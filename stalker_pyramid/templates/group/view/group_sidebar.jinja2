@@ -1,37 +1,31 @@
 {# Render Group Side Bar #}
-
 {% set group=entity %}
-
-
-
-<ul id="sidebar_list" class='nav nav-list'>
-
-
-</ul>
+<ul id="sidebar_list" class='nav nav-list'></ul>
 
 <script type="text/javascript">
-
-
     $(document).ready(function () {
+        page_of(
+            '{{ group.name }}',
+            '',
+            "{%- if group.thumbnail -%}/{{ group.thumbnail.full_path }}{%- else -%}{{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}{%- endif -%}",
+            '/groups/{{ group.id }}/update/dialog'
+        );
 
-        page_of('{{ group.name }}',
-                '',
-                "{%- if group.thumbnail -%}/{{ group.thumbnail.full_path }}{%- else -%}{{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}{%- endif -%}",
-                '/groups/{{ group.id }}/update/dialog')
+        menu_of(
+            'Permissions',
+            "{%- if request.current_route_path() == request.route_path('view_group', id=group.id) -%}'active',{%- else -%},{%- endif -%}",
+            '{{ request.route_url('view_group', id=group.id) }}',
+            get_icon('permission'),
+            ''
+        );
 
-        menu_of('Permissions',
-                "{%- if request.current_route_path() == request.route_path('view_group', id=group.id) -%}'active',{%- else -%},{%- endif -%}",
-                '{{ request.route_url('view_group', id=group.id) }}',
-                'icon-key',
-                '')
-
-        menu_of('Users',
-                "{%- if request.current_route_path() == request.route_path('list_entity_users', id=group.id) -%}'active',{%- else -%},{%- endif -%}",
-                '{{ request.route_url('list_entity_users', id=group.id) }}',
-                'icon-user',
-                '{{ group.users | count }}')
-
-
+        menu_of(
+            'Users',
+            "{%- if request.current_route_path() == request.route_path('list_entity_users', id=group.id) -%}'active',{%- else -%},{%- endif -%}",
+            '{{ request.route_url('list_entity_users', id=group.id) }}',
+            get_icon('user'),
+            '{{ group.users | count }}'
+        );
 
     })
 </script>

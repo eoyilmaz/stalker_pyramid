@@ -30,69 +30,16 @@ def create_statuses_and_status_lists():
         project_status_list = StatusList(name='Project Statuses',
                                          target_entity_type='Project')
 
-    # Task
-    task_status_list = StatusList.query\
-        .filter_by(target_entity_type='Task').first()
-    if not task_status_list:
-        task_status_list = StatusList(name='Task Statuses',
-                                      target_entity_type='Task')
-
-    # Asset
-    asset_status_list = StatusList.query\
-        .filter_by(target_entity_type='Asset').first()
-    if not asset_status_list:
-        asset_status_list = StatusList(name='Asset Statuses',
-                                       target_entity_type='Asset')
-
-    # Shot
-    shot_status_list = StatusList.query\
-        .filter_by(target_entity_type='Shot').first()
-    if not shot_status_list:
-        shot_status_list = StatusList(name='Shot Statuses',
-                                      target_entity_type='Shot')
-
-    # Sequence
-    sequence_status_list = StatusList.query\
-        .filter_by(target_entity_type='Sequence').first()
-    if not sequence_status_list:
-        sequence_status_list = StatusList(name='Sequence Statuses',
-                                          target_entity_type='Sequence')
-
-    # the statuses
-    new = Status.query.filter(Status.code == 'NEW').first()  # from ticket
-                                                             # statuses
-
-    rts = Status.query.filter_by(code='RTS').first()
-    if not rts:
-        rts = Status(name='Ready To Start', code='RTS')
-
+    new = Status.query.filter_by(code='NEW').first()
     wip = Status.query.filter_by(code='WIP').first()
-    if not wip:
-        wip = Status(name='Work In Progress', code='WIP')
-
-    hrev = Status.query.filter_by(code='HREV').first()
-    if not hrev:
-        hrev = Status(name='Has Revision', code='HREV')
-
-    prev = Status.query.filter_by(code='PREV').first()
-    if not prev:
-        prev = Status(name='Pending Revision', code='PREV')
-
-    completed = Status.query.filter_by(code='CMPL').first()
-    if not completed:
-        completed = Status(name='Completed', code='CMPL')
+    cmpl = Status.query.filter_by(code='CMPL').first()
 
     # now use them in status lists
-    project_status_list = [new, wip, completed]
-    task_status_list.statuses = [new, rts, wip, prev, hrev, completed]
-    asset_status_list.statuses = [new, rts, wip, prev, hrev, completed]
-    shot_status_list.statuses = [new, rts, wip, prev, hrev, completed]
-    sequence_status_list.statuses = [new, rts, wip, prev, hrev, completed]
+    project_status_list.statuses = [new, wip, cmpl]
 
+    # Warning! Not using scoped_session here, it is the plain old session
     db.DBSession.add_all([
-        project_status_list, task_status_list, asset_status_list,
-        shot_status_list, sequence_status_list, new, rts, wip, hrev, prev,
-        completed
+        project_status_list,
     ])
     db.DBSession.commit()
 
@@ -110,6 +57,7 @@ def create_ticket_types():
             code='Review'
         )
 
+    # Warning! Not using scoped_session here, it is the plain old session
     db.DBSession.add(review)
     db.DBSession.commit()
 

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Stalker Pyramid a Web Base Production Asset Management System
-# Copyright (C) 2009-2013 Erkan Ozgur Yilmaz
+# Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
 #
 # This file is part of Stalker Pyramid.
 #
@@ -19,22 +19,20 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 
 
+import time
 import logging
+import transaction
 
 from pyramid.response import Response
 from pyramid.view import view_config
 
-from stalker import defaults, Task, User, Studio, TimeLog, Entity, Status
-
 from stalker.db import DBSession
-from stalker.exceptions import OverBookedError
-import time
-import transaction
+from stalker import defaults, Task, User, Studio, TimeLog, Entity, Status
+from stalker.exceptions import OverBookedError, DependencyViolationError
+
 from stalker_pyramid.views import (get_logged_in_user,
                                    PermissionChecker, milliseconds_since_epoch,
                                    get_date, StdErrToHTMLConverter)
-from stalker_pyramid.views.task import (update_task_statuses,
-                                        update_task_statuses_with_dependencies)
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -121,7 +119,7 @@ def update_time_log_dialog(request):
 def create_time_log(request):
     """runs when creating a time_log
     """
-    logger.debug('inside create_time_log')
+    logger.debug('create_time_log method starts')
     task_id = request.params.get('task_id')
 
     logger.debug('task_id : %s' % task_id)
@@ -152,78 +150,17 @@ def create_time_log(request):
         # TimeLog should handle the extension of the effort
         logger.debug('got all the data')
         try:
-            time_log = TimeLog(
-                task=task,
-                resource=resource,
-                start=start_date,
-                end=end_date,
-                description=description
-            )
-
-            status_rts = Status.query.filter(Status.code == "RTS").first()
-            status_wip = Status.query.filter(Status.code == "WIP").first()
-            status_prev = \
-                Status.query.filter(Status.code == "PREV").first()
-            status_hrev = \
-                Status.query.filter(Status.code == "HREV").first()
-            status_cmpl = \
-                Status.query.filter(Status.code == "CMPL").first()
-
-            # check if the task status is not new or completed
-            if task.status not in [status_rts, status_wip, status_hrev, status_prev]:
-                DBSession.rollback()
-                # it is not possible to create a time log for completed tasks
-                response = Response(
-                    'It is only possible to create time log for a task with '
-                    'status "RTS", "WIP", "PREV" or "HREV"', 500)
-                transaction.abort()
-                return response
-
-            # check the dependent tasks has finished
-            for dep_task in task.depends:
-                if dep_task.status not in [status_cmpl]:
-                    response = Response(
-                        'Because one of the dependencies (Task: %s (%s)) has '
-                        'not finished, \n'
-                        'You can not create time logs for this task yet!'
-                        '\n\nPlease, inform %s to finish this task!' %
-                        (dep_task.name, dep_task.id,
-                         [r.name for r in dep_task.resources]), 500
-                    )
-                    transaction.abort()
-                    return response
-
-            # check the depending tasks
-            for dep_task in task.dependent_of:
-                if len(dep_task.time_logs) > 0:
-                    response = Response(
-                        'Because one of the depending (Task: %s (%s)) has '
-                        'already started, \n'
-                        'You can not create time logs for this task any more!'
-                        '\n\nPlease, inform %s about this situation!' %
-                        (dep_task.name, dep_task.id,
-                         task.responsible.name), 500
-                    )
-                    transaction.abort()
-                    return response
-
-            # set the status to wip for this task
-            logger.debug('Updating Task (%s) status to WIP!' % task_id)
-            wip = Status.query.filter(Status.code == "WIP").first()
-            task.status = wip
-            DBSession.add(task)
-        except (OverBookedError, TypeError) as e:
+            assert isinstance(task, Task)
+            task.create_time_log(resource, start_date, end_date)
+        except (OverBookedError, TypeError, DependencyViolationError) as e:
             converter = StdErrToHTMLConverter(e)
             response = Response(converter.html(), 500)
             transaction.abort()
             return response
         else:
-            DBSession.add(time_log)
-            # check parent task statuses
-            update_task_statuses(task.parent)
-
             request.session.flash(
-                'success:Time log for <strong>%s</strong> is saved for resource <strong>%s</strong>.' % (task.name,resource.name)
+                'success: Time log for <strong>%s</strong> is saved for '
+                'resource <strong>%s</strong>.' % (task.name,resource.name)
             )
         logger.debug('no problem here!')
     else:
@@ -233,8 +170,10 @@ def create_time_log(request):
         )
         transaction.abort()
         return response
+
     logger.debug('successfully created time log!')
     response = Response('successfully created time log!')
+
     return response
 
 
@@ -438,8 +377,5 @@ def delete_time_log(request):
         if not task.time_logs:
             status_new = Status.query.filter(Status.code == 'NEW').first()
             task.status = status_new
-            update_task_statuses_with_dependencies(task)
 
     return Response('Successfully deleted time_log: %s' % time_log_id)
-
-

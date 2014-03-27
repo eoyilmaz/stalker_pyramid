@@ -29,9 +29,17 @@
     </div>
     <div class="widget-body">
         <div class="widget-main no-padding">
+            <div id="loading_spinner" class="well well-sm">
+
+                <div class="inline middle blue bigger-110"><i
+                        class="icon-spinner icon-spin orange bigger-125"></i>
+                    Loading
+                    content...
+                </div>
+            </div>
 
             <table id="items_table"
-                   class="table table-striped table-bordered table-hover">
+                   class="table table-striped table-bordered table-hover hide">
 
                 <thead>
 
@@ -57,48 +65,72 @@
     $(document).ready(function () {
 
         var icon_name = get_icon('{{ list_item_type.lower() }}');
-        $('#items_header').append('<i class=' + icon_name + '></i>');
+        $('#items_header').append('<i class="' + icon_name + ' bigger-125"></i>');
 
         {% if collapsed %}
             $('#items_header').append('<small class="white">List of {{ list_item_type }}s</small>')
         {% endif %}
 
-        // fill items table with dynamic data
-        $.getJSON('{{ address }}').then(function (data) {
-
-            var thead_template = doT.template($('#tmpl_itemThead').html());
-            var table_head = $('#items_table>thead');
-            table_head.append(thead_template({}));
 
 
-            var items = data;
-            var row_template = doT.template($('#tmpl_itemRow').html());
+        var loadTableData = function (address, tableId,tableParams,sortingParams) {
 
-            // wait until document is ready
-            $(function () {
+            console.log('loadTableData' + address)
+            // fill items table with dynamic data
+            $.getJSON(address).then(function (data) {
 
-                var i;
-                var table_body = $('#items_table>tbody');
-                for (i = 0; i < data.length; i++) {
-                    // fix dates
-                    // data[i].date_created = new Date(data[i].date_created).format('yyyy-mm-dd HH:MM');
+                var thead_template = doT.template($('#tmpl_itemThead').html());
+                var table_head = $('#' + tableId + '>thead');
+                table_head.append(thead_template({}));
 
-                    if (data[i].thumbnail_full_path == null) {
-                        data[i].thumbnail_full_path = '{{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}';
+                var items = data;
+                var row_template = doT.template($('#tmpl_itemRow').html());
+
+                console.log('data loded' + address)
+
+
+                // wait until document is ready
+                $(function () {
+
+                    var i;
+                    var table_body = $('#' + tableId + '>tbody');
+                    for (i = 0; i < data.length; i++) {
+
+
+                        if (data[i].date_created) {
+                            data[i].date_created = new Date(data[i].date_created).format('yyyy-mm-dd HH:MM');
+                        }
+
+                         console.log('data loded' + data[i].thumbnail_full_path)
+
+                        if (data[i].thumbnail_full_path == null) {
+                            data[i].thumbnail_full_path = '{{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}';
+                        }
+                        else {
+                            data[i].thumbnail_full_path = '/' + data[i].thumbnail_full_path;
+                        }
+
+                        console.log('data loded' + data[i].thumbnail_full_path)
+
+                        data[i].came_from = '{{ request.current_route_path() }}'
+
+                        // append it to the table
+                        table_body.append(row_template(data[i]));
                     }
-                    else {
-                        data[i].thumbnail_full_path = '/' + data[i].thumbnail_full_path;
-                    }
 
-                    data[i].came_from = '{{ request.current_route_path() }}'
+                    var oTable1 = $('#' + tableId).dataTable(tableParams);
+                    oTable1.fnSort(sortingParams);
 
-                    // append it to the table
-                    table_body.append(row_template(data[i]));
-                }
-
-                var oTable1 = $('#items_table').dataTable();
-
+                    $('#' + tableId).show();
+                    $('#loading_spinner').hide();
+                });
             });
-        });
+        }
+
+        loadTableData(
+                tableDataAddress,
+                "items_table",
+                tableParameters,
+                sortingParameters);
     });
 </script>

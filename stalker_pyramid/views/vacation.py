@@ -1,38 +1,39 @@
 # -*- coding: utf-8 -*-
 # Stalker Pyramid a Web Base Production Asset Management System
-# Copyright (C) 2009-2013 Erkan Ozgur Yilmaz
-# 
+# Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
+#
 # This file is part of Stalker Pyramid.
-# 
+#
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
 # License as published by the Free Software Foundation;
 # version 2.1 of the License.
-# 
+#
 # This library is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # Lesser General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 import logging
+import transaction
 
+from pyramid.response import Response
 from pyramid.httpexceptions import HTTPOk, HTTPServerError
 from pyramid.view import view_config
-from stalker import User, Studio, Vacation, Type, Entity
-
-from stalker import defaults
 
 from stalker.db import DBSession
-import transaction
-from webob import Response
+from stalker import defaults, User, Studio, Vacation, Type, Entity
+
 from stalker_pyramid.views import (get_logged_in_user, PermissionChecker,
-                                   milliseconds_since_epoch, get_date, StdErrToHTMLConverter)
+                                   milliseconds_since_epoch, get_date,
+                                   StdErrToHTMLConverter)
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
+
 
 @view_config(
     route_name='entity_vacation_dialog',
@@ -51,8 +52,8 @@ def create_vacation_dialog(request):
     """
     logger.debug('***create_vacation_dialog method starts ***')
 
-    came_from = request.params.get('came_from','/')
-    logger.debug('came_from %s '% came_from)
+    came_from = request.params.get('came_from', '/')
+    logger.debug('came_from %s ' % came_from)
 
     # get logged in user
     logged_in_user = get_logged_in_user(request)
@@ -60,11 +61,13 @@ def create_vacation_dialog(request):
     entity_id = int(request.matchdict.get('id', -1))
     entity = Entity.query.filter(Entity.entity_id == entity_id).first()
 
-    logger.debug('entity %s '% entity)
+    logger.debug('entity %s ' % entity)
 
-    vacation_types = Type.query.filter(
-        Type.target_entity_type == 'Vacation').filter(Type.name !='StudioWide').all()
-
+    vacation_types = \
+        Type.query\
+            .filter(Type.target_entity_type == 'Vacation')\
+            .filter(Type.name != 'StudioWide')\
+            .all()
 
     studio = Studio.query.first()
 
@@ -73,8 +76,10 @@ def create_vacation_dialog(request):
 
     if entity.entity_type == 'Studio':
         # user = studio
-        vacation_types = Type.query.filter(
-        Type.target_entity_type == 'Vacation').filter(Type.name =='StudioWide').all()
+        vacation_types =\
+            Type.query\
+                .filter(Type.target_entity_type == 'Vacation')\
+                .filter(Type.name == 'StudioWide').all()
 
     return {
         'mode': 'create',
@@ -82,7 +87,7 @@ def create_vacation_dialog(request):
         'studio': studio,
         'logged_in_user': logged_in_user,
         'entity': entity,
-        'came_from':came_from,
+        'came_from': came_from,
         'types': vacation_types,
         'milliseconds_since_epoch': milliseconds_since_epoch
     }
@@ -97,8 +102,8 @@ def update_vacation_dialog(request):
     """
     logger.debug('***update_vacation_dialog method starts ***')
 
-    came_from = request.params.get('came_from','/')
-    logger.debug('came_from %s: '% came_from)
+    came_from = request.params.get('came_from', '/')
+    logger.debug('came_from %s: ' % came_from)
 
     # get logged in user
     logged_in_user = get_logged_in_user(request)
@@ -117,8 +122,11 @@ def update_vacation_dialog(request):
     user = vacation.user
     if not vacation.user:
         user = studio
-        vacation_types = Type.query.filter(
-        Type.target_entity_type == 'Vacation').filter(Type.name =='StudioWide').all()
+        vacation_types = \
+            Type.query\
+                .filter(Type.target_entity_type == 'Vacation')\
+                .filter(Type.name == 'StudioWide')\
+                .all()
 
     return {
         'mode': 'update',
@@ -127,7 +135,7 @@ def update_vacation_dialog(request):
         'logged_in_user': logged_in_user,
         'entity': user,
         'vacation': vacation,
-        'came_from':came_from,
+        'came_from': came_from,
         'types': vacation_types,
         'milliseconds_since_epoch': milliseconds_since_epoch
     }
@@ -170,7 +178,9 @@ def create_vacation(request):
 
         if type_ is None:
             # create a new Type
-            # TODO: should we check for permission here or will it be already done in the UI (ex. filteringSelect instead of comboBox)
+            # TODO: should we check for permission here
+            #       or will it be already done in the UI
+            #       (ex. filteringSelect instead of comboBox)
             type_ = Type(
                 name=type_name,
                 code=type_name,
@@ -189,7 +199,9 @@ def create_vacation(request):
             DBSession.add(vacation)
 
             # request.session.flash(
-            #     'success:<strong>%s</strong> vacation is created for <strong>%s</strong>.' % (type_.name, Studio.query.first().name)
+            #     'success:<strong>%s</strong> vacation is created for '
+            #     '<strong>%s</strong>.' %
+            #     (type_.name, Studio.query.first().name)
             # )
 
         else:
@@ -204,7 +216,8 @@ def create_vacation(request):
             DBSession.add(vacation)
 
             request.session.flash(
-                'success:<strong>%s</strong> vacation is created for <strong>%s</strong>.' % (type_.name, user.name)
+                'success:<strong>%s</strong> vacation is created for '
+                '<strong>%s</strong>.' % (type_.name, user.name)
             )
         logger.debug('end of creating vacation')
 
@@ -228,7 +241,6 @@ def update_vacation(request):
     vacation_id = request.matchdict.get('id', -1)
     vacation = Vacation.query.filter_by(id=vacation_id).first()
 
-
     type_name = request.params.get('type_name')
     start_date = get_date(request, 'start')
     end_date = get_date(request, 'end')
@@ -248,7 +260,9 @@ def update_vacation(request):
 
         if type_ is None:
             # create a new Type
-            # TODO: should we check for permission here or will it be already done in the UI (ex. filteringSelect instead of comboBox)
+            # TODO: should we check for permission here
+            #       or will it be already done in the UI
+            #       (ex. filteringSelect instead of comboBox)
             type_ = Type(
                 name=type_name,
                 code=type_name,
@@ -263,7 +277,9 @@ def update_vacation(request):
         DBSession.add(vacation)
 
         request.session.flash(
-           'success: <strong>%s</strong> vacation is updated for %s.' % (type_.name,(vacation.user.name if vacation.user else Studio.query.first().name ))
+            'success: <strong>%s</strong> vacation is updated for %s.' %
+            (type_.name,
+             vacation.user.name if vacation.user else Studio.query.first().name)
         )
 
         logger.debug('vacation_id    : %s is updated! ' % vacation_id)
@@ -315,22 +331,22 @@ def get_vacations(request):
     """returns all the Shots of the given Project
     """
     entity_id = request.matchdict.get('id', -1)
-    entity = Entity.query.filter(Entity.id==entity_id).first()
+    entity = Entity.query.filter(Entity.id == entity_id).first()
 
-    vacations = Vacation.query.filter(Vacation.user==None).all()
+    vacations = Vacation.query.filter(Vacation.user == None).all()
     if isinstance(entity, User):
         vacations.extend(entity.vacations)
 
     return [{
             'id': vacation.id,
-            'entity_type':vacation.plural_class_name.lower(),
+            'entity_type': vacation.plural_class_name.lower(),
             'title': vacation.type.name,
             'start': milliseconds_since_epoch(vacation.start),
             'end': milliseconds_since_epoch(vacation.end),
             'className': 'label-yellow',
             'allDay': True,
             'status': ''
-        } for vacation in vacations]
+            } for vacation in vacations]
 
 
 @view_config(
@@ -347,7 +363,9 @@ def delete_vacation(request):
 
     if not vacation:
         transaction.abort()
-        return Response('Can not find a Vacation with id: %s' % vacation_id, 500)
+        return Response(
+            'Can not find a Vacation with id: %s' % vacation_id, 500
+        )
 
     try:
         DBSession.delete(vacation)

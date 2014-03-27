@@ -33,11 +33,7 @@
                 {% endif %}
             {% endif %}
 
-
-
             eventClick: function (calEvent, jsEvent, view) {
-
-
                 if (calEvent.entity_type == 'vacations') {
                     {% if has_permission('Update_Vacation') %}
 
@@ -87,9 +83,7 @@
 
             selectable: true,
             selectHelper: true
-
         });
-
 
     }
 </script>

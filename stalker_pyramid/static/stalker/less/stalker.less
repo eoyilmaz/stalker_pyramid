@@ -1,4 +1,4 @@
-/* Copyright (C) 2009-2013 Erkan Ozgur Yilmaz
+/* Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
  
  This file is part of Stalker Pyramid.
  
@@ -173,12 +173,32 @@ tr {
     }
 }
 
+.header-color-review {
+    background: @light-blue;
+    border-color: @light-blue;
+
+    +.widget-body {
+        border-color: @light-blue;
+    }
+}
+
+.header-color-version {
+    background: @light-green;
+    border-color: @light-green;
+
+    +.widget-body {
+        border-color: @light-green;
+    }
+}
+
+
 
 
 
 // *********************************
 // Statuses
 // *********************************
+
 .pln { // planning
     background-color: @grey;
     color: white;
@@ -188,6 +208,14 @@ tr {
 }
 
 .new {
+    background-color: @grey;
+    color: white;
+    a {
+        color: white;
+    }
+}
+
+.wfd {
     background-color: @grey;
     color: white;
     a {
@@ -227,6 +255,30 @@ tr {
     }
 }
 
+.drev {
+    background-color: @purple2;
+    color: white;
+    a {
+        color: white;
+    }
+}
+
+.stop {
+    background-color: @purple2;
+    color: white;
+    a {
+        color: white;
+    }
+}
+
+.oh {
+    background-color: @purple2;
+    color: white;
+    a {
+        color: white;
+    }
+}
+
 .cmpl {
     background-color: @green;
     color: white;
@@ -243,6 +295,53 @@ tr {
     }
 }
 
+.progress-wfd .bar, .progress .bar-wfd {
+    background-image: none;
+    background-color: @grey
+}
+
+.progress-rts .bar, .progress .bar-rts {
+    background-image: none;
+    background-color: @red2
+}
+
+.progress-wip .bar, .progress .bar-wip {
+    background-image: none;
+    background-color: @orange
+}
+
+.progress-stop .bar, .progress .bar-stop {
+    background-image: none;
+    background-color: @red2
+}
+
+.progress-oh .bar, .progress .bar-oh {
+    background-image: none;
+    background-color: @red2
+}
+
+.progress-prev.bar, .progress .bar-prev {
+    background-image: none;
+    background-color: @light-blue
+}
+
+.progress-hrev .bar, .progress .bar-hrev {
+    background-image: none;
+    background-color: @purple
+}
+
+.progress-drev .bar, .progress .bar-drev {
+    background-image: none;
+    background-color: @purple
+}
+
+.progress-cmpl .bar, .progress .bar-cmpl {
+    background-image: none;
+    background-color: @green
+}
+
+
+
 @dgrid-focus-color: #222;
 .dgrid-selected {
     .pln {
@@ -250,6 +349,10 @@ tr {
     }
 
     .new {
+        background-color: @grey + @dgrid-focus-color;
+    }
+
+    .wfd {
         background-color: @grey + @dgrid-focus-color;
     }
 
@@ -261,11 +364,23 @@ tr {
         background-color: @orange + @dgrid-focus-color;
     }
 
+    .stop {
+        background-color: @red2 + @dgrid-focus-color;
+    }
+
+    .oh {
+        background-color: @red2 + @dgrid-focus-color;
+    }
+
     .prev {
         background-color: @light-blue + @dgrid-focus-color;
     }
 
     .hrev {
+        background-color: @purple + @dgrid-focus-color;
+    }
+
+    .drev {
         background-color: @purple + @dgrid-focus-color;
     }
 
@@ -278,25 +393,43 @@ tr {
 
 }
 
-.label-red {
+.label-red,.badge-red {
     background-color: @red !important;
 }
 
-.label-orange {
+.label-orange, .badge-orange {
     background-color: @orange !important;    
 }
 
-.label-blue {
+.label-blue, .badge-blue {
     background-color: @light-blue !important;
 }
 
-.label-purple {
+.label-purple, .badge-purple {
     background-color: @purple !important;
 }
 
-.label-green {
+.label-purple2, .badge-purple2 {
+    background-color: @purple2 !important;
+}
+
+.label-green, .badge-green {
     background-color: @green !important;
 }
+
+.label-APP {
+    background-color: #8ac16c;
+}
+
+.label-RREV {
+    background-color: #e07f69;
+}
+
+.label-NEW {
+    background-color: @light-blue;
+}
+
+
 
 .fc-week {
     background-color: #e6eaef;
@@ -308,4 +441,83 @@ tr {
     width: 100%;
     padding-left: 0px !important;
     padding-right: 2px !important;
+}
+
+
+.review-status {
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    background-color: #FFF;
+    border: 3px solid #AAA;
+    -webkit-border-radius: 100%;
+    -moz-border-radius: 100%;
+    border-radius: 100%;
+    vertical-align: middle;
+    margin-right: 1px
+}
+
+.review-status.status-APP {
+    border-color: #8ac16c
+}
+
+.review-status.status-RREV {
+    border-color: #e07f69
+}
+
+.review-status.status-NEW {
+    border-color: @light-blue
+}
+
+
+.entityview-item {
+  position: relative;
+  margin-bottom: 8px;
+}
+.entityview-item .widget-box {
+  background-color: #e8ecef;
+  color: #595C66;
+}
+.entityview-item .transparent.widget-box {
+  border-left: 3px solid #c6cdd1;
+}
+.entityview-item .transparent .widget-header {
+  background-color: #dbdfe4;
+  border-bottom: none;
+}
+.entityview-item .transparent .widget-header > :first-child {
+  margin-left: 8px;
+}
+.entityview-item:nth-child(even) .widget-box {
+  background-color: #F3F3F3;
+  color: #616161;
+}
+.entityview-item:nth-child(even) .widget-box.transparent {
+  border-left-color: #DBDBDB !important;
+}
+.entityview-item:nth-child(even) .widget-box.transparent .widget-header {
+  background-color: #EEE !important;
+}
+.entityview-item .widget-box {
+  margin: 0;
+  position: relative;
+  max-width: none;
+  border-bottom: none;
+  margin-left: 0px;
+}
+.entityview-item .widget-main {
+  margin: 0;
+  position: relative;
+  max-width: none;
+  border-bottom: none;
+}
+.entityview-item .widget-body {
+  background-color: transparent;
+}
+.entityview-item .widget-toolbox {
+  padding: 4px 8px 0 !important;
+  background-color: transparent !important;
+  border: 0 solid #CCC !important;
+  border-top: none !important;
+  margin: 0 0px !important;
 }

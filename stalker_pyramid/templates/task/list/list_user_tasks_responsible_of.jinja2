@@ -17,8 +17,31 @@
     {% set page_title='You are responsible of these tasks ' %}
     {% include 'page_header.jinja2' %}
 
-    {% set filter=entity %}
-    {% include 'task/list/list_entity_tasks_by_filter.jinja2' %}
+    <div class="widget-box {{ collapsed }}">
+        <div class="widget-header widget-header-small header-color-grey }}">
+            <h5 id="items_header" class="smaller"></h5>
+
+            <div class="widget-toolbar">
+
+                <a href="#" data-action="collapse">
+                    <i class="icon-chevron-down"></i>
+                </a>
+
+            </div>
+
+        </div>
+        <div class="widget-body">
+            <div class="widget-main no-padding">
+
+                {% set filter=entity %}
+                {% include 'task/list/list_entity_tasks_by_filter.jinja2' %}
+
+            </div>
+        </div>
+    </div>
+
+
+
 
 
 {% endblock page_content %}
@@ -44,9 +67,13 @@
     {% raw %}
     <script id="tmpl_itemRow" type="text/x-dot-template">
         <tr>
-            <td><a href='/projects/{{=it.project_id}}/view'>{{=it.project_name}}</a></td>
+            <td><a href='/projects/{{=it.project_id}}/view'>{{=it.project_name}}</a>
+            </td>
             <td><a href='/tasks/{{=it.id}}/view'>{{=it.name}}</a></td>
-            <td>{{ for (var i=0; i< it.resource_id.length;i++) { }}<a href='/users/{{=it.resource_id[i]}}/view'>{{=it.resource_name[i]}}</a><br/>{{ } }}</td>
+            <td>{{ for (var i=0; i< it.resource_id.length;i++) { }}<a
+                    href='/users/{{=it.resource_id[i]}}/view'>{{=it.resource_name[i]}}</a><br/>{{
+                } }}
+            </td>
             <td>{{=it.type}}</td>
             <td data-sType="num-html">
                 <div class="progress progress-success">
@@ -67,33 +94,33 @@
 
                     {{ if (it.request_review) { }}
                     <a
-                        class="green"
-                        data-target="#dialog_template"
-                        data-toggle="modal"
-                        data-keyboard=false
-                        data-rel="tooltip"
-                        data-placement="top"
-                        title="Request Review"
-                        href="/tasks/{{=it.id}}/request_review/dialog?came_from={{=it.came_from }}">
+                            class="green"
+                            data-target="#dialog_template"
+                            data-toggle="modal"
+                            data-keyboard=false
+                            data-rel="tooltip"
+                            data-placement="top"
+                            title="Request Review"
+                            href="/tasks/{{=it.id}}/request_review/dialog?came_from={{=it.came_from }}">
                         <i class="icon-comment-alt bigger-130"></i>
                     </a>
                     {{ } }}
                     {{ if (it.review) { }}
                     <a
-                        class="purple"
-                        data-target="#dialog_template"
-                        data-toggle="modal"
-                        data-keyboard=false
-                        data-rel="tooltip"
-                        data-placement="top"
-                        title="Review"
-                        href="/tasks/{{=it.id}}/review/dialog?came_from={{=it.came_from }}">
+                            class="purple"
+                            data-target="#dialog_template"
+                            data-toggle="modal"
+                            data-keyboard=false
+                            data-rel="tooltip"
+                            data-placement="top"
+                            title="Review"
+                            href="/tasks/{{=it.id}}/review/dialog?came_from={{=it.came_from }}">
                         <i class="icon-comments bigger-130"></i>
                     </a>
                     {{ } }}
 
                 </div>
-        </td>
+            </td>
 
         </tr>
     </script>

@@ -9,59 +9,77 @@
 </ul>
 
 <script type="text/javascript">
-
-
     $(document).ready(function () {
+        page_of(
+            '{{ studio.name }}',
+            '',
+            "{%- if studio.thumbnail -%}/{{ studio.thumbnail.full_path }}{%- else -%}{{ request.static_url(" stalker_pyramid:static/stalker/images/Placeholder_0.png")}}{%- endif -%}",
+            '/studios/{{ studio.id }}/update/dialog'
+        );
 
-        page_of('{{ studio.name }}',
-                '',
-                "{%- if studio.thumbnail -%}/{{ studio.thumbnail.full_path }}{%- else -%}{{ request.static_url(" stalker_pyramid:static/stalker/images/Placeholder_0.png")}}{%- endif -%}",
-                '/studios/{{ studio.id }}/update/dialog')
+        menu_of(
+            'Dashboard',
+            "{%- if request.current_route_path() == request.route_path('view_studio', id=studio.id) -%}'active',{%- else -%},{%- endif -%}",
+            '{{ request.route_url('view_studio', id=studio.id) }}',
+            get_icon('dashboard'),
+            ''
+        );
 
-        menu_of('Dashboard',
-                "{%- if request.current_route_path() == request.route_path('view_studio', id=studio.id) -%}'active',{%- else -%},{%- endif -%}",
-                '{{ request.route_url('view_studio', id=studio.id) }}',
-                'icon-dashboard',
-                '')
+        menu_of(
+            'Resources',
+            "{%- if request.current_route_path() == request.route_path('list_entity_resources', id=studio.id) -%}'active',{%- else -%},{%- endif -%}",
+            '{{ request.route_url('list_entity_resources', id=studio.id) }}',
+            get_icon('resource'),
+            ''
+        );
 
-        menu_of('Resources',
-                    "{%- if request.current_route_path() == request.route_path('list_entity_resources', id=studio.id) -%}'active',{%- else -%},{%- endif -%}",
-                    '{{ request.route_url('list_entity_resources', id=studio.id) }}',
-                    'icon-calendar',
-                    '')
+        menu_of(
+            'Tasks',
+            "{%- if request.current_route_path() == request.route_path('list_entity_tasks', id=studio.id) -%}'active',{%- else -%},{%- endif -%}",
+            '{{ request.route_url('list_entity_tasks', id=studio.id) }}',
+            get_icon('task'),
+            '{{ studio.tasks | count }}'
+        );
 
-        menu_of('Tasks',
-                "{%- if request.current_route_path() == request.route_path('list_entity_tasks', id=studio.id) -%}'active',{%- else -%},{%- endif -%}",
-                '{{ request.route_url('list_entity_tasks', id=studio.id) }}',
-                'icon-tasks',
-                '{{ studio.tasks | count }}')
+        menu_of(
+            'Projects',
+            "{%- if request.current_route_path() == request.route_path('list_studio_projects', id=studio.id) -%}'active',{%- else -%},{%- endif -%}",
+            '{{ request.route_url('list_studio_projects', id=studio.id) }}',
+            get_icon('project'),
+            '{{ studio.projects | count }}'
+        );
 
-        menu_of('Projects',
-                "{%- if request.current_route_path() == request.route_path('list_studio_projects', id=studio.id) -%}'active',{%- else -%},{%- endif -%}",
-                '{{ request.route_url('list_studio_projects', id=studio.id) }}',
-                'icon-folder-close-alt',
-                '{{ studio.projects | count }}')
-        menu_of('Users',
-                "{%- if request.current_route_path() == request.route_path('list_studio_users', id=studio.id) -%}'active',{%- else -%},{%- endif -%}",
-                '{{ request.route_url('list_studio_users', id=studio.id) }}',
-                'icon-user',
-                '{{ studio.users | count }}')
-        menu_of('Departments',
-                "{%- if request.current_route_path() == request.route_path('list_studio_departments', id=studio.id) -%}'active',{%- else -%},{%- endif -%}",
-                '{{ request.route_url('list_studio_departments', id=studio.id) }}',
-                'icon-group',
-                '')
-        menu_of('Groups',
-                "{%- if request.current_route_path() == request.route_path('list_groups') -%}'active',{%- else -%},{%- endif -%}",
-                '{{ request.route_url('list_groups') }}',
-                'icon-camera',
-                '')
-        menu_of('Vacations',
-                    "{%- if request.current_route_path() == request.route_path('list_studio_vacations', id=studio.id) -%}'active',{%- else -%},{%- endif -%}",
-                    '{{ request.route_url('list_studio_vacations', id=studio.id) }}',
-                    'icon-sun',
-                    '{{ studio.vacations | count }}')
+        menu_of(
+            'Users',
+            "{%- if request.current_route_path() == request.route_path('list_studio_users', id=studio.id) -%}'active',{%- else -%},{%- endif -%}",
+            '{{ request.route_url('list_studio_users', id=studio.id) }}',
+            get_icon('user'),
+            '{{ studio.users | count }}'
+        );
 
+        menu_of(
+            'Departments',
+            "{%- if request.current_route_path() == request.route_path('list_studio_departments', id=studio.id) -%}'active',{%- else -%},{%- endif -%}",
+            '{{ request.route_url('list_studio_departments', id=studio.id) }}',
+            get_icon('department'),
+            ''
+        );
+
+        menu_of(
+            'Groups',
+            "{%- if request.current_route_path() == request.route_path('list_groups') -%}'active',{%- else -%},{%- endif -%}",
+            '{{ request.route_url('list_groups') }}',
+            get_icon('group'),
+            ''
+        );
+
+        menu_of(
+            'Vacations',
+            "{%- if request.current_route_path() == request.route_path('list_studio_vacations', id=studio.id) -%}'active',{%- else -%},{%- endif -%}",
+            '{{ request.route_url('list_studio_vacations', id=studio.id) }}',
+            get_icon('vacation'),
+            '{{ studio.vacations | count }}'
+        );
 
     })
 </script>

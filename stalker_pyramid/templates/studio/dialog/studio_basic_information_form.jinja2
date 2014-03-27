@@ -1,0 +1,326 @@
+<form id='studio_form'
+      class='form-horizontal pull-left'
+      role='form'
+      method="post"
+        >
+
+
+        {# Name #}
+        <div class="control-group">
+            <label class="span3 control-label"
+                   for="studio_name">Name</label>
+
+            <div class="span9">
+                <input id="studio_name"
+                       name='name'
+                       type="text"
+                       class="form-control"
+                       placeholder="Name"
+                        {% if mode == 'Update' %}
+                       value='{{ studio.name }}'
+                        {% endif %}
+
+                       required>
+            </div>
+        </div>
+
+        {# Daily Working Hours #}
+        <div class="control-group">
+            <label class="span3 control-label"
+                   for="studio_daily_working_hours">Daily Working Hours</label>
+
+            <div class="span9">
+                <input id="studio_daily_working_hours"
+                       name='dwh'
+                       type="text"
+                       class="form-control"
+                       placeholder="Name"
+                        {% if mode == 'Update' %}
+                       value='{{ studio.daily_working_hours }}'
+                        {% endif %}
+
+                       required>
+            </div>
+        </div>
+
+
+        {# Working Hours #}
+
+
+                <table class="table table-striped table-bordered table-hover">
+
+                    <thead>
+                    <tr>
+                        <th>Monday</th>
+                        <th>Tuesday</th>
+                        <th>Wednesday</th>
+                        <th>Thursday</th>
+                        <th>Friday</th>
+                        <th>Saturday</th>
+                        <th>Sunday</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <div class="span1 input-append bootstrap-timepicker">
+                                    <input id="mon_start"
+                                           name="mon_start"
+                                           type="text"
+                                           class="input-small">
+                                 <span class="add-on">
+                            <i class="icon-time"></i>
+                            </span>
+                                </div>
+
+                            </td>
+                            <td>
+                                <div class="span1 input-append bootstrap-timepicker">
+                                    <input id="tue_start"
+                                           name="tue_start"
+                                           type="text"
+                                           class="input-small"> <span
+                                        class="add-on">
+                            <i class="icon-time"></i>
+                            </span></div>
+
+                            </td>
+                            <td>
+                                <div class="span1 input-append bootstrap-timepicker">
+                                    <input id="wed_start"
+                                           name="wed_start"
+                                           type="text"
+                                           class="input-small"> <span
+                                        class="add-on">
+                            <i class="icon-time"></i>
+                            </span></div>
+
+                            </td>
+                            <td>
+                                <div class="span1 input-append bootstrap-timepicker">
+                                    <input id="thu_start"
+                                           name="thu_start"
+                                           type="text"
+                                           class="input-small"> <span
+                                        class="add-on">
+                            <i class="icon-time"></i>
+                            </span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="span1 input-append bootstrap-timepicker">
+                                    <input id="fri_start"
+                                           name="fri_start"
+                                           type="text"
+                                           class="input-small"> <span
+                                        class="add-on">
+                            <i class="icon-time"></i>
+                            </span></div>
+
+                            </td>
+                            <td>
+                                <div class="span1 input-append bootstrap-timepicker">
+                                    <input id="sat_start"
+                                           name="sat_start"
+                                           type="text"
+                                           class="input-small"> <span
+                                        class="add-on">
+                            <i class="icon-time"></i>
+                            </span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="span1 input-append bootstrap-timepicker">
+                                    <input id="sun_start"
+                                           name="sun_start"
+                                           type="text"
+                                           class="input-small"> <span
+                                        class="add-on">
+                            <i class="icon-time"></i>
+                            </span>
+                                </div>
+                            </td>
+
+                        </tr>
+                        <tr>
+
+                            <td>
+                                <div class="span1 input-append bootstrap-timepicker">
+                                    <input id="mon_end"
+                                           name="mon_end"
+                                           type="text"
+                                           class="input-small">
+                                 <span class="add-on">
+                            <i class="icon-time"></i>
+                            </span>
+                                </div>
+
+                            </td>
+                            <td>
+                                <div class="span1 input-append bootstrap-timepicker">
+                                    <input id="tue_end"
+                                           name="tue_end"
+                                           type="text"
+                                           class="input-small"> <span
+                                        class="add-on">
+                            <i class="icon-time"></i>
+                            </span></div>
+
+                            </td>
+                            <td>
+                                <div class="span1 input-append bootstrap-timepicker">
+                                    <input id="wed_end"
+                                           name="wed_end"
+                                           type="text"
+                                           class="input-small"> <span
+                                        class="add-on">
+                            <i class="icon-time"></i>
+                            </span></div>
+
+                            </td>
+                            <td>
+                                <div class="span1 input-append bootstrap-timepicker">
+                                    <input id="thu_end"
+                                           name="thu_end"
+                                           type="text"
+                                           class="input-small"> <span
+                                        class="add-on">
+                            <i class="icon-time"></i>
+                            </span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="span1 input-append bootstrap-timepicker">
+                                    <input id="fri_end"
+                                           name="fri_end"
+                                           type="text"
+                                           class="input-small"> <span
+                                        class="add-on">
+                            <i class="icon-time"></i>
+                            </span></div>
+
+                            </td>
+                            <td>
+                                <div class="span1 input-append bootstrap-timepicker">
+                                    <input id="sat_end"
+                                           name="sat_end"
+                                           type="text"
+                                           class="input-small"> <span
+                                        class="add-on">
+                            <i class="icon-time"></i>
+                            </span>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="span1 input-append bootstrap-timepicker">
+                                    <input id="sun_end"
+                                           name="sun_end"
+                                           type="text"
+                                           class="input-small"> <span
+                                        class="add-on">
+                            <i class="icon-time"></i>
+                            </span>
+                                </div>
+                            </td>
+
+                        </tr>
+                    </tbody>
+                </table>
+
+
+</form>
+
+
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/chosen.jquery.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-datepicker.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/moment.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/daterangepicker.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-timepicker.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.autosize-min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.inputlimiter.1.3.1.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.validate.min.js") }}'></script>
+<script type="text/javascript">
+
+
+    {# Chosen Field Updater #}
+    var chosen_field_creator = function (field, url, data_template) {
+        // fill image format with new json data
+        return $.getJSON(url).then(function (data) {
+            // remove current data
+            field.empty();
+
+            // append new options to the select
+            for (var i = 0; i < data.length; i++) {
+                field.append(data_template(data[i]));
+            }
+
+            // convert it to chosen
+            field.chosen();
+        });
+    };
+
+    var init_time_picker =  function(name,time_value){
+
+        var time_picker = $('#'+name);
+        time_picker.val(time_value.format('HH:MM'));
+        time_picker.timepicker({
+            minuteStep: 1,
+            showSeconds: false,
+            showMeridian: false
+        });
+
+    }
+
+
+    {# ***************************************************************** #}
+    {# User #}
+    $(document).ready(function () {
+
+        var start_time_value = new Date();
+        start_time_value.setHours(10);
+        start_time_value.setMinutes(0);
+
+        var end_time_value = new Date();
+        end_time_value.setHours(19);
+        end_time_value.setMinutes(0);
+
+        init_time_picker('mon_start',start_time_value)
+        init_time_picker('tue_start',start_time_value)
+        init_time_picker('wed_start',start_time_value)
+        init_time_picker('thu_start',start_time_value)
+        init_time_picker('fri_start',start_time_value)
+        init_time_picker('sat_start',start_time_value)
+        init_time_picker('sun_start',start_time_value)
+        init_time_picker('mon_end',end_time_value)
+        init_time_picker('tue_end',end_time_value)
+        init_time_picker('wed_end',end_time_value)
+        init_time_picker('thu_end',end_time_value)
+        init_time_picker('fri_end',end_time_value)
+        init_time_picker('sat_end',end_time_value)
+        init_time_picker('sun_end',end_time_value)
+
+
+
+        {% raw %}
+        var user_option_template = doT.template(
+                '<option value={{=it.id}}>{{=it.name}}</option>'
+        );
+        {% endraw %}
+
+        var lead_user = $('#studio_lead');
+
+        $.getJSON('/users/').then(function (data) {
+
+
+            // append new ones
+            var data_count = data.length;
+            for (var i = 0; i < data_count; i++) {
+
+                lead_user.append(user_option_template(data[i]));
+            }
+
+
+        });
+
+    });
+</script>

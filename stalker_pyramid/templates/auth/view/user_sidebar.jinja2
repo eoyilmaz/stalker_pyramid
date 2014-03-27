@@ -6,48 +6,69 @@
 
 </ul>
 
+
+
 <script>
 
-        $(document).ready(function () {
+    $(document).ready(function () {
+        page_of('{{ user.name }}',
+                '{{ user.login }}',
+                "{%- if user.thumbnail -%}/{{ user.thumbnail.full_path }}{%- else -%}{{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_0.png")}}{%- endif -%}",
+                '/users/{{ user.id }}/update/dialog')
 
-            page_of('{{ user.name }}',
-                    '{{ user.login }}',
-                    "{%- if user.thumbnail -%}/{{ user.thumbnail.full_path }}{%- else -%}{{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_0.png")}}{%- endif -%}",
-                    '/users/{{ user.id }}/update/dialog')
+        menu_of(
+            'Dashboard',
+            "{%- if request.current_route_path() == request.route_path('view_user', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
+            '{{ request.route_url('view_user', id=user.id) }}',
+            get_icon('dashboard'),
+            ''
+        );
 
-            menu_of('Dashboard',
-                    "{%- if request.current_route_path() == request.route_path('view_user', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
-                    '{{ request.route_url('view_user', id=user.id) }}',
-                    'icon-dashboard',
-                    '')
+        menu_of(
+            'Responsible of',
+            "{%- if request.current_route_path() == request.route_path('list_user_tasks_responsible_of', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
+            '{{ request.route_url('list_user_tasks_responsible_of', id=user.id) }}',
+            get_icon('task'),
+            ''
+        );
 
-            menu_of('Tasks',
-                    "{%- if request.current_route_path() == request.route_path('list_entity_tasks', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
-                    '{{ request.route_url('list_entity_tasks', id=user.id) }}',
-                    'icon-tasks',
-                    '{{ user.tasks | count }}')
+        menu_of(
+            'Tickets',
+            "{%- if request.current_route_path() == request.route_path('list_entity_tickets', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
+            '{{ request.route_url('list_entity_tickets', id=user.id) }}',
+            get_icon('ticket'),
+            '{{ user.open_tickets | count }}'
+        );
 
-            menu_of('Responsible of',
-                    "{%- if request.current_route_path() == request.route_path('list_user_tasks_responsible_of', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
-                    '{{ request.route_url('list_user_tasks_responsible_of', id=user.id) }}',
-                    'icon-tasks',
-                    '')
+        $.getJSON('/users/{{ user.id }}/reviews/count/').then(function (data) {
+            menu_of(
+                'Reviews',
+                "{%- if request.current_route_path() == request.route_path('list_user_reviews', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
+                '{{ request.route_url('list_user_reviews', id=user.id) }}',
+                get_icon('review'),
+                data
+            );
+        });
 
-            menu_of('Tickets',
-                    "{%- if request.current_route_path() == request.route_path('list_entity_tickets', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
-                    '{{ request.route_url('list_entity_tickets', id=user.id) }}',
-                    'icon-ticket',
-                    '{{ user.open_tickets | count }}')
+        $.getJSON('/users/{{ entity.id }}/tasks/count/').then(function (data) {
+            menu_of(
+                'Tasks',
+                "{%- if request.current_route_path() == request.route_path('list_entity_tasks', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
+                '{{ request.route_url('list_entity_tasks', id=user.id) }}',
+                get_icon('task'),
+                data
+            );
+        });
 
+        $.getJSON('/users/{{ entity.id }}/vacations/count/').then(function (data) {
+            $('#Vacations_count').text(data);
             menu_of('Vacations',
-                    "{%- if request.current_route_path() == request.route_path('list_entity_vacations', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
-                    '{{ request.route_url('list_entity_vacations', id=user.id) }}',
-                    'icon-sun',
-                    '{{ user.vacations | count }}')
-
-
-
-        })
+                "{%- if request.current_route_path() == request.route_path('list_entity_vacations', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
+                '{{ request.route_url('list_entity_vacations', id=user.id) }}',
+                get_icon('vacation'),
+                data
+            );
+        });
 
         submenu_of('{{ user.id }}','Project')
 
@@ -55,25 +76,8 @@
 
         submenu_of('{{ user.id }}','Group')
 
-
-
-</script>
-
-
-
-<script type="text/javascript">
-    $.getJSON('/users/{{ entity.id }}/tasks/count/').then(function (data) {
-        $(function(){
-            $('#Tasks_count').text(data);
-        })
     });
 </script>
 
-<script type="text/javascript">
-    $.getJSON('/users/{{ entity.id }}/vacations/count/').then(function (data) {
-        $(function(){
-            $('#Vacations_count').text(data);
-        })
-    });
-</script>
+
 

@@ -1,5 +1,5 @@
 <!-- Stalker a Production Asset Management System
- Copyright (C) 2009-2013 Erkan Ozgur Yilmaz
+ Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
 
  This library is free software; you can redistribute it and/or
  modify it under the terms of the GNU Lesser General Public
@@ -44,6 +44,12 @@
           href='{{ request.static_url("stalker_pyramid:static/ace/css/daterangepicker.css") }}'/>
     <link rel="stylesheet"
           href='{{ request.static_url("stalker_pyramid:static/ace/css/colorpicker.css") }}'/>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/jquery-ui-1.10.3.custom.min.css") }}'/>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/bootstrap-editable.css") }}'/>
+
+
 
     <!--basic styles-->
 
@@ -53,6 +59,9 @@
           href='{{ request.static_url("stalker_pyramid:static/ace/css/bootstrap-responsive.min.css") }}'>
     <link rel="stylesheet"
           href='{{ request.static_url("stalker_pyramid:static/ace/css/font-awesome.min.css") }}'>
+
+
+
 
     <!--[if IE 7]>
     <link rel="stylesheet"
@@ -125,7 +134,7 @@
           href='{{ request.static_url("stalker_pyramid:static/stalker/css/stalker.css") }}'/>
 
     {# TODO: some scripts need to be here - will fix later #}
-    <script src='{{ request.static_url("stalker_pyramid:static/jquery/jquery-2.0.3.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/jquery/jquery-2.1.0.min.js") }}'></script>
     <!--ace settings handler-->
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.colorbox-min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/ace-extra.min.js") }}'></script>
@@ -170,142 +179,143 @@
 {% endraw %}
 
 
-    {% raw %}
-    <script id="tmpl_sidebar_media" type="text/x-dot-template">
-        <li>
-            <div class="media">
-                <a class="pull-left"
-                   href="#"
-                   style="text-align: center; overflow: hidden; width: 100px">
-                    <img id="sidebar_avatar"
-                         style="height: 100px; width: auto; max-width: none;
+{% raw %}
+<script id="tmpl_sidebar_media" type="text/x-dot-template">
+    <li>
+        <div class="media">
+            <a class="pull-left"
+               href="#"
+               style="text-align: center; overflow: hidden; width: 100px">
+                <img id="sidebar_avatar"
+                     style="height: 100px; width: auto; max-width: none;
                       position: relative; left: 100%; margin-left: -200%"
-                         class="img-thumbnail"
-                         src={{=it.thumbnail_full_path}}>
+                     class="img-thumbnail"
+                     src={{=it.thumbnail_full_path}}>
+            </a>
+
+            <div class="media-body">
+                <h5 class="media-heading"><span style='color: #b1bac1;'>{{=it.name}}</span>
+                    <small>{{=it.code}}</small>
+                </h5>
+                <a href={{=it.update_link}}
+                   class="menu-text">
+                    <i class="icon-edit"></i>
+                    Update
                 </a>
-
-                <div class="media-body">
-                    <h5 class="media-heading"><span style='color: #b1bac1;'>{{=it.name}}</span>
-                        <small>{{=it.code}}</small>
-                    </h5>
-                    <a href={{=it.update_link}}
-                       class="menu-text">
-                        <i class="icon-edit"></i>
-                        Update
-                    </a>
-                </div>
             </div>
-        </li>
-    </script>
-    {% endraw %}
+        </div>
+    </li>
+</script>
+{% endraw %}
 
-    {% raw %}
-    <script id="tmpl_sidebar_tree_link" type="text/x-dot-template">
-        <li>
-            <a href="#" class="dropdown-toggle">
-                <i class={{=it.icon}}></i>
-                <span class="menu-text">{{=it.title}} </span>
+{% raw %}
+<script id="tmpl_sidebar_tree_link" type="text/x-dot-template">
+    <li>
+        <a href="#" class="dropdown-toggle">
+            <i class={{=it.icon}}></i>
+            <span class="menu-text">{{=it.title}} </span>
 
-                <b class="arrow icon-angle-down"></b>
-            </a>
+            <b class="arrow icon-angle-down"></b>
+        </a>
 
-            <ul id='{{=it.title}}_sublink' class="submenu">
+        <ul id='{{=it.title}}_sublink' class="submenu">
 
-            </ul>
-        </li>
+        </ul>
+    </li>
 
-    </script>
-    {% endraw %}
+</script>
+{% endraw %}
 
-    {% raw %}
-    <script id="tmpl_sidebar_tree_sublink" type="text/x-dot-template">
+{% raw %}
+<script id="tmpl_sidebar_tree_sublink" type="text/x-dot-template">
 
-        <li>
-            <a href={{=it.link}}>
-                <i class="icon-double-angle-right"></i>
-                {{=it.name }}
-            </a>
-        </li>
+    <li>
+        <a href={{=it.link}}>
+            <i class="icon-double-angle-right"></i>
+            {{=it.name }}
+        </a>
+    </li>
 
-    </script>
-    {% endraw %}
+</script>
+{% endraw %}
 
-    {% raw %}
-    <script id="tmpl_sidebar_link" type="text/x-dot-template">
-        <li class={{=it.state}}>
-            <a href={{=it.link}}>
-                <i class={{=it.icon}}></i>
-                <span class="menu-text">{{=it.title}}</span>
-                <span id="{{=it.title }}_count" class="badge {{ if (it.count > 0) { }}badge-important{{ } else { }}badge-success{{ } }}">{{=it.count}}</span>
-            </a>
-        </li>
-    </script>
-    {% endraw %}
+{% raw %}
+<script id="tmpl_sidebar_link" type="text/x-dot-template">
+    <li class={{=it.state}}>
+        <a href={{=it.link}}>
+            <i class={{=it.icon}}></i>
+            <span class="menu-text">{{=it.title}}</span>
+            <span id="{{=it.title }}_count"
+                  class="badge {{ if (it.count > 0) { }}badge-important{{ } else { }}badge-success{{ } }}">{{=it.count}}</span>
+        </a>
+    </li>
+</script>
+{% endraw %}
 
-    <script>
-        var page_of = function (name, code, thumbnail_full_path, update_link) {
-            var sidebar_list = $('#sidebar_list');
-            var media_template = doT.template($('#tmpl_sidebar_media').html());
-
-
-            sidebar_list.append(media_template({
-                'name': name,
-                'thumbnail_full_path': thumbnail_full_path,
-                'code': code,
-                'update_link': update_link
-            }));
-        }
-    </script>
-    <script>
-        var menu_of = function (title, state, address, icon, count) {
-            var sidebar_list = $('#sidebar_list');
-            var link_template = doT.template($('#tmpl_sidebar_link').html());
+<script>
+    var page_of = function (name, code, thumbnail_full_path, update_link) {
+        var sidebar_list = $('#sidebar_list');
+        var media_template = doT.template($('#tmpl_sidebar_media').html());
 
 
-            sidebar_list.append(link_template({
-                'title': title,
-                'state': state,
-                'link': address,
-                'icon': icon,
-                'count': count
-            }));
-        }
-    </script>
-    <script>
-        var submenu_of = function (id, treeItemType) {
-
-            $.getJSON('/entities/' + id + '/' + treeItemType.toLowerCase() + 's/').then(function (data) {
-
-                $(document).ready(function () {
-
-                    var sidebar_list = $('#sidebar_list');
-                    var tree_link_template = doT.template($('#tmpl_sidebar_tree_link').html());
-                    var data_counts = data.length;
-
-                    if (data_counts > 0) {
-
-                        sidebar_list.append(tree_link_template({
-                            'title': treeItemType + 's',
-                            'icon': get_icon(treeItemType.toLowerCase())
-                        }));
-
-                    }
-
-                    var item_sublink = $('#' + treeItemType + 's_sublink');
-                    var tree_sublink_template = doT.template($('#tmpl_sidebar_tree_sublink').html());
+        sidebar_list.append(media_template({
+            'name': name,
+            'thumbnail_full_path': thumbnail_full_path,
+            'code': code,
+            'update_link': update_link
+        }));
+    }
+</script>
+<script>
+    var menu_of = function (title, state, address, icon, count) {
+        var sidebar_list = $('#sidebar_list');
+        var link_template = doT.template($('#tmpl_sidebar_link').html());
 
 
-                    for (var i = 0; i < data_counts; i++) {
+        sidebar_list.append(link_template({
+            'title': title,
+            'state': state,
+            'link': address,
+            'icon': icon,
+            'count': count
+        }));
+    }
+</script>
+<script>
+    var submenu_of = function (id, treeItemType) {
 
-                        data[i].link = '/' + treeItemType.toLowerCase() + 's/' + data[i].id + '/view'
+        $.getJSON('/entities/' + id + '/' + treeItemType.toLowerCase() + 's/').then(function (data) {
 
-                        item_sublink.append(tree_sublink_template(data[i]))
+            $(document).ready(function () {
 
-                    }
-                });
+                var sidebar_list = $('#sidebar_list');
+                var tree_link_template = doT.template($('#tmpl_sidebar_tree_link').html());
+                var data_counts = data.length;
+
+                if (data_counts > 0) {
+
+                    sidebar_list.append(tree_link_template({
+                        'title': treeItemType + 's',
+                        'icon': get_icon(treeItemType.toLowerCase())
+                    }));
+
+                }
+
+                var item_sublink = $('#' + treeItemType + 's_sublink');
+                var tree_sublink_template = doT.template($('#tmpl_sidebar_tree_sublink').html());
+
+
+                for (var i = 0; i < data_counts; i++) {
+
+                    data[i].link = '/' + treeItemType.toLowerCase() + 's/' + data[i].id + '/view'
+
+                    item_sublink.append(tree_sublink_template(data[i]))
+
+                }
             });
-        }
-    </script>
+        });
+    }
+</script>
 
 
 {# CONTENT #}
@@ -398,6 +408,8 @@
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/ace-elements.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/uncompressed/ace.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootbox.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/x-editable/bootstrap-editable.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/x-editable/ace-editable.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/date.format.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/date.stalker.js") }}'></script>
 
@@ -410,26 +422,27 @@
         $('.ace-nav > li.grey').addClass('dark');
 
         // if it is smaller resize the page content to the window height
-        var resize_page_content = function(){
+        var resize_page_content = function () {
             var page_content = $('.page-content');
             var page_content_height = page_content.height();
-            var window_height = $(window).height() - 118; {# 230 #}
+            var window_height = $(window).height() - 118;
+            {# 230 #}
             var new_height = Math.max(window_height, page_content_height);
             if (page_content_height < window_height) {
-              page_content.css({'min-height': window_height});
+                page_content.css({'min-height': window_height});
             }
         };
 
         // resize .page-content to window size
-{#        $(window).on('resize', function(){#}
-{#            resize_page_content();#}
-{#        });#}
-        $(function(){
+        {#        $(window).on('resize', function(){#}
+        {#            resize_page_content();#}
+        {#        });#}
+        $(function () {
             resize_page_content();
         });
 
     </script>
-    
+
     <script type="text/javascript">
         if ("ontouchend" in document) document.write("<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.mobile.custom.min.js") }}'>" + "<" + "/script>");
     </script>
@@ -437,8 +450,38 @@
     <script type="text/javascript">
         var get_icon = function (entity_type) {
             switch (entity_type) {
-                case 'project':
-                    return 'icon-folder-close-alt';
+                case 'PREV':
+                    return 'icon-pencil';
+                    break;
+                case 'HREV':
+                    return 'icon-mail-reply-all';
+                    break;
+                case 'RTS':
+                    return 'icon-circle-blank';
+                    break;
+                case 'CMPL':
+                    return 'icon-check';
+                    break;
+                case 'WIP':
+                    return 'icon-play';
+                    break;
+                case 'WFD':
+                    return 'icon-circle';
+                    break;
+                case 'DREV':
+                    return 'icon-step-backward';
+                    break;
+                case 'OH':
+                    return 'icon-pause';
+                    break;
+                case 'STOP':
+                    return 'icon-stop';
+                    break;
+                case 'asset':
+                    return 'icon-puzzle-piece';
+                    break;
+                case 'dashboard':
+                    return 'icon-dashboard';
                     break;
                 case 'department':
                     return 'icon-group';
@@ -446,14 +489,20 @@
                 case 'group':
                     return 'icon-key';
                     break;
-                case 'user':
-                    return 'icon-user';
+                case 'project':
+                    return 'icon-folder-close-alt';
                     break;
-                case 'task':
-                    return 'icon-tasks';
+                case 'permission':
+                    return 'icon-key';
                     break;
-                case 'asset':
-                    return 'icon-puzzle-piece';
+                case 'reference':
+                    return 'icon-book';
+                    break;
+                case 'resource':
+                    return 'icon-calendar';
+                    break;
+                case 'review':
+                    return 'icon-comments-alt';
                     break;
                 case 'sequence':
                     return 'icon-film';
@@ -461,8 +510,20 @@
                 case 'shot':
                     return 'icon-camera';
                     break;
+                case 'task':
+                    return 'icon-tasks';
+                    break;
                 case 'ticket':
                     return 'icon-ticket';
+                    break;
+                case 'vacation':
+                    return 'icon-sun';
+                    break;
+                case 'version':
+                    return 'icon-sitemap';
+                    break;
+                case 'user':
+                    return 'icon-user';
                     break;
                 default:
                     return 'icon-key';
@@ -473,9 +534,9 @@
 
     <script type="text/javascript">
         {% if entity %}
-        $(document).ready(function () {
-            document.title = 'STALKER / {{ entity.name }}'
-        });
+            $(document).ready(function () {
+                document.title = 'STALKER / {{ entity.name }}'
+            });
         {% endif %}
     </script>
 
@@ -575,46 +636,64 @@
                 e.stopPropagation();
                 e.preventDefault();
                 try {
-                    init_dialog();
-                } catch(e) {
-                    console.log(e)
+                    setTimeout(function(){
+                        // init_dialog() will be loaded with the dialog itself
+                        init_dialog();
+                    });
+                } catch (e) {
+                    console.log(e);
                 }
             });
             event_dialog.on('hidden', function (e) {
                 e.stopPropagation();
                 e.preventDefault();
                 try {
-                    destruct_dialog();
-                } catch(e) {
-                    console.log(e)
+                    setTimeout(function(){
+                        // destruct_dialog() will be loaded with the dialog itself
+                        destruct_dialog();
+                    });
+                } catch (e) {
+                    console.log(e);
                 }
             });
         })
     </script>
 
-    {# Event Dialog Initialize #}
+    {# HTML Dialog Initialize #}
     <script type="text/javascript">
         $(function () {
             var html_dialog = $('#html_template');
             html_dialog.on('shown', function (e) {
+                 e.stopPropagation();
+                e.preventDefault();
                 try {
                     init_html_modal();
-                } catch(e) {
+                } catch (e) {
                     console.log(e)
                 }
             });
             html_dialog.on('hidden', function (e) {
+                 e.stopPropagation();
+                e.preventDefault();
 
                 try {
                     destruct_html_modal();
-                } catch(e) {
+                } catch (e) {
                     console.log(e)
                 }
             });
         })
     </script>
 
-
+    {# Inline Edits #}
+    <script>
+        $(function () {
+            $.fn.editable.defaults.mode = 'inline';
+            $.fn.editableform.loading = "<div class='editableform-loading'><i class='light-blue icon-2x icon-spinner icon-spin'></i></div>";
+            $.fn.editableform.buttons = '<button type="submit" class="btn btn-info editable-submit"><i class="icon-ok icon-white"></i></button>'+
+                                        '<button type="button" class="btn editable-cancel"><i class="icon-remove"></i></button>';
+        });
+    </script>
 
 {% endblock scripts %}
 

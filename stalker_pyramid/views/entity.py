@@ -1,33 +1,38 @@
 # -*- coding: utf-8 -*-
 # Stalker a Production Asset Management System
-# Copyright (C) 2009-2013 Erkan Ozgur Yilmaz
-# 
+# Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
+#
 # This file is part of Stalker.
-# 
+#
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
 # License as published by the Free Software Foundation;
 # version 2.1 of the License.
-# 
+#
 # This library is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # Lesser General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 import logging
 import datetime
-from pyramid.httpexceptions import HTTPServerError, HTTPFound, HTTPOk, HTTPForbidden
+
+from pyramid.httpexceptions import HTTPServerError, HTTPOk, HTTPForbidden
 from pyramid.view import view_config
-from sqlalchemy import or_
-from stalker import Entity, Studio, Project, Group, User, Department, Vacation, SimpleEntity, defaults, Status
+from pyramid.response import Response
+
 from stalker.db import DBSession
-from webob import Response
+from stalker import (defaults, Entity, Studio, Project, User, Vacation,
+                     SimpleEntity)
+import transaction
 
 import stalker_pyramid
-from stalker_pyramid.views import PermissionChecker, get_logged_in_user, milliseconds_since_epoch, get_multi_integer, multi_permission_checker, get_multi_string
+from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
+                                   milliseconds_since_epoch, get_multi_integer,
+                                   multi_permission_checker, get_multi_string, StdErrToHTMLConverter)
 
 
 logger = logging.getLogger(__name__)
@@ -135,6 +140,10 @@ logger.setLevel(logging.DEBUG)
     renderer='templates/project/view/view_project.jinja2'
 )
 @view_config(
+    route_name='update_studio_dialog',
+    renderer='templates/studio/dialog/update_studio_dialog.jinja2',
+)
+@view_config(
     route_name='view_studio',
     renderer='templates/studio/view/view_studio.jinja2'
 )
@@ -170,10 +179,7 @@ logger.setLevel(logging.DEBUG)
     route_name='view_asset',
     renderer='templates/task/view/view_task.jinja2'
 )
-@view_config(
-    route_name='list_project_assets',
-    renderer='templates/asset/list/list_entity_assets.jinja2'
-)
+
 @view_config(
     route_name='view_shot',
     renderer='templates/task/view/view_task.jinja2'
@@ -258,9 +264,27 @@ logger.setLevel(logging.DEBUG)
     route_name='list_task_versions',
     renderer='templates/version/list/list_entity_versions.jinja2'
 )
+
+@view_config(
+    route_name='list_user_reviews',
+    renderer='templates/review/list/list_reviews.jinja2'
+)
+@view_config(
+    route_name='list_task_reviews',
+    renderer='templates/review/list/list_task_reviews.jinja2'
+)
+@view_config(
+    route_name='list_project_reviews',
+    renderer='templates/review/list/list_reviews.jinja2'
+)
+
 @view_config(
     route_name='list_entity_resources',
     renderer='templates/resource/list/list_entity_resources.jinja2'
+)
+@view_config(
+    route_name='list_entity_notes',
+    renderer='templates/note/list/list_entity_notes.jinja2'
 )
 def get_entity_related_data(request):
     """view for generic data
@@ -342,6 +366,37 @@ def list_entity_tasks_by_filter(request):
         'milliseconds_since_epoch': milliseconds_since_epoch,
     }
 
+@view_config(
+    route_name='list_entity_tasks_by_filter',
+    renderer='templates/task/list/list_entity_tasks_by_filter.jinja2',
+)
+def list_entity_tasks_by_filter(request):
+    """creates a list_entity_tasks_by_filter by using the given entity and filter
+    """
+    logger.debug('inside list_entity_tasks_by_filter')
+
+    # get logged in user
+    logged_in_user = get_logged_in_user(request)
+
+    entity_id = request.matchdict.get('id', -1)
+    entity = Entity.query.filter_by(id=entity_id).first()
+
+    filter_id = request.matchdict.get('f_id', -1)
+    filter = Entity.query.filter_by(id=filter_id).first()
+
+    studio = Studio.query.first()
+    if not studio:
+        studio = defaults
+
+    return {
+        'mode': 'create',
+        'has_permission': PermissionChecker(request),
+        'studio': studio,
+        'logged_in_user': logged_in_user,
+        'entity': entity,
+        'filter': filter,
+        'milliseconds_since_epoch': milliseconds_since_epoch,
+    }
 
 
 @view_config(
@@ -416,29 +471,30 @@ def append_entities_to_entity(request):
     """
     logger.debug('append_class_to_entity is running')
 
-
-
     entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
 
     selected_list = get_multi_integer(request, 'selected_items[]')
 
-
     logger.debug('selected_list: %s' % selected_list)
-
 
     if entity and selected_list:
 
-        appended_entities = Entity.query.filter(Entity.id.in_(selected_list)).all()
+        appended_entities = Entity.query\
+            .filter(Entity.id.in_(selected_list)).all()
         if appended_entities:
             attr_name = appended_entities[0].plural_class_name.lower()
-            eval('entity.%(attr_name)s.extend(appended_entities)' % {'attr_name': attr_name})
+            eval(
+                'entity.%(attr_name)s.extend(appended_entities)' %
+                {'attr_name': attr_name}
+            )
             DBSession.add(entity)
 
             logger.debug('entity is updated successfully')
 
             request.session.flash(
-                'success:User <strong>%s</strong> is updated successfully' % entity.name
+                'success:User <strong>%s</strong> is updated successfully' %
+                entity.name
             )
             logger.debug('***append_entities_to_entity method ends ***')
     else:
@@ -495,9 +551,7 @@ def remove_entity_from_entity(request):
     selected_entity_id = request.matchdict.get('entity_id', -1)
     selected_entity = Entity.query.filter_by(id=selected_entity_id).first()
 
-
     logger.debug('selected_entity: %s' % selected_entity)
-
 
     if entity and selected_entity:
 
@@ -508,7 +562,11 @@ def remove_entity_from_entity(request):
         logger.debug('entity is updated successfully')
 
         request.session.flash(
-            'success:%s <strong>%s</strong> is removed from %s \'s %s  successfully' % (selected_entity.entity_type, selected_entity.name, entity.name, attr_name)
+            'success:%s <strong>%s</strong> is successfully removed from %s '
+            '\'s %s' % (
+                selected_entity.entity_type,
+                selected_entity.name, entity.name, attr_name
+            )
         )
         logger.debug('***remove_entity_from_entity method ends ***')
     else:
@@ -518,7 +576,11 @@ def remove_entity_from_entity(request):
         )
         HTTPServerError()
 
-    return Response('success:%s <strong>%s</strong> is removed from %s \'s %s  successfully' % (selected_entity.entity_type, selected_entity.name, entity.name, attr_name))
+    return Response(
+        'success:%s <strong>%s</strong> is successfully removed from %s \'s %s'
+        % (selected_entity.entity_type, selected_entity.name, entity.name,
+           attr_name)
+    )
 
 
 
@@ -611,17 +673,13 @@ def get_entity_events(request):
     renderer='json'
 )
 def get_search_result(request):
-
     logger.debug('get_search_result is running')
 
     qString = request.params.get('str', -1)
-
     logger.debug('qString: %s'% qString)
 
     entities = Entity.query.filter(Entity.name.ilike(qString)).all()
-
     search_result = []
-
 
     for entity in entities:
 
@@ -701,3 +759,59 @@ def list_search_result(request):
         'studio': studio,
         'results':results
     }
+
+@view_config(
+    route_name='delete_entity_dialog',
+    renderer='templates/modals/confirm_dialog.jinja2'
+)
+def delete_entity_dialog(request):
+    """deletes the entity with the given id
+    """
+    logger.debug('delete_entity_dialog is starts')
+
+    entity_id = request.matchdict.get('id')
+    entity = Entity.query.get(entity_id)
+
+    action = '/entity/%s/delete' % entity_id
+
+    came_from = request.params.get('came_from', '/')
+
+    message = 'Are you sure to delete?'
+
+    logger.debug('action: %s' % action)
+
+    return {
+        'message': message,
+        'came_from': came_from,
+        'action': action
+    }
+
+
+@view_config(
+    route_name='delete_entity',
+     permission='Delete_Task'
+)
+def delete_entity(request):
+    """deletes the task with the given id
+    """
+
+    logger.debug('delete_entity is starts')
+
+    entity_id = request.matchdict.get('id')
+    entity = Entity.query.filter_by(id=entity_id).first()
+
+    if not entity:
+        transaction.abort()
+        return Response('Can not find an Entity with id: %s' % entity_id, 500)
+
+    try:
+
+        DBSession.delete(entity)
+        transaction.commit()
+    except Exception as e:
+        transaction.abort()
+        c = StdErrToHTMLConverter(e)
+        transaction.abort()
+        return Response(c.html(), 500)
+
+    return Response('Successfully deleted %s: %s' % (entity.entity_type,entity.name))

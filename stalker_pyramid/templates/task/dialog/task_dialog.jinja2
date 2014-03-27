@@ -203,14 +203,15 @@
                     <label class='span3 control-label' for='task_responsible'>Responsible</label>
                     <div class='span9'>
                         <select id='task_responsible'
-                                class='input-block-level'
-                                name='responsible_id'
+                                multiple=''
+                                class='input-block-level tag-input-style'
+                                name='responsible_ids'
                                 data-placeholder='Responsible'
                                 is_updating=false></select>
                     </div>
                     <div class='hidden'
-                         id="responsible_storage"
-                         responsible_id="{% if entity %}{{ entity.responsible.id }}{% else %}-1{% endif %}">
+                         id="responsibles_storage"
+                         responsible_id="[{% if entity %}{% for responsible in entity.responsible %}{% if loop.index0 %},{% endif %}{{ responsible.id }}{% endfor %}{% endif %}]">
                         {# this is a storage for resource_ids, which is set externally by the #}
                         {# template engine #}
                      </div>
@@ -328,7 +329,7 @@
         var submit_form_url = '{{ request.route_url("create_task") }}';
         var selected_resources = [];
         var entity_type = 'Task';
-        var responsible_id = {{ project.lead.id }};
+        var selected_responsibles = ['{{ project.lead.id }}'];
         var shot_cut_in = 1;
         var shot_cut_out = 1;
         var shot_sequences =[];
@@ -382,13 +383,13 @@
                 {% endfor %}
             ];
             priority = {{ entity.priority }};
-            responsible_id = {{ entity.responsible.id }};
+            selected_responsibles = [
+                {% for responsible in entity.responsible %}
+                    {{ responsible.id }},
+                {% endfor %}
+            ];
             entity_type = '{{ entity.entity_type }}';
-
-
         {% endif %}
-
-
 
         var submit_button = $('#dialog_template_submit_button');
 
@@ -429,7 +430,10 @@
             // Asset - Code and Asset Type
             // Shot - Code and Sequence
             // Sequence - Code
-            var entity_type_value = task_entity_type.val().trim();
+            var entity_type_value = task_entity_type.val();
+            if (entity_type_value !== undefined){
+                entity_type_value = entity_type_value.trim();
+            }
             if (entity_type_value === 'Task') {
                 shot_inputs.hide();
                 code_inputs.hide();
@@ -483,6 +487,7 @@
         // set the fields to updating mode
         task_parent.attr('is_updating', true);
         task_depends_to.attr('is_updating', true);
+
         field_update_mode_checker();
         $.getJSON('{{ request.route_url("get_project_tasks", id=project.id) }}').then(function(data){
             console.log('data.length:', data.length);
@@ -529,6 +534,7 @@
             // set the fields to normal mode
             task_parent.attr('is_updating', false);
             task_depends_to.attr('is_updating', false);
+
             field_update_mode_checker();
         });
 
@@ -556,9 +562,15 @@
         task_type.attr('is_updating', true);
         field_update_mode_checker();
         $.getJSON('/types/?target_entity_type=Task').then(function(available_types){
+            // map available types to an array
+            var available_types_as_list = [];
+            for (var i=0; i < available_types.length; i++){
+                available_types_as_list.push(available_types[i].name);
+            }
+
             task_type.autocomplete({
                 delay: 0,
-                source: available_types,
+                source: available_types_as_list,
                 minLength: 0
             });
             if (type !== ''){
@@ -674,8 +686,8 @@
 
         task_responsible.chosen({
             search_contains: true,
-            enable_split_word_search: true,
-            allow_single_deselect: true
+            enable_split_word_search: true
+{#            allow_single_deselect: true#}
         });
 
         {% raw %}
@@ -710,7 +722,9 @@
                 task_resources.val(selected_resources);
             }
 
-            task_responsible.val(responsible_id);
+            if (selected_responsibles.length > 0){
+                task_responsible.val(selected_responsibles);
+            }
 
             // update the chosen fields
             task_resources.trigger('liszt:updated');
@@ -848,6 +862,11 @@
 
         });
 
+        {% if entity%}
+            {% if entity.status.code != 'WFD' and entity.status.code != 'RTS'%}
+                 $('#task_depends_to').attr('disabled','disabled')
+            {% endif %}
+        {% endif %}
         console.log('initialize task dialog end')
     }
 </script>

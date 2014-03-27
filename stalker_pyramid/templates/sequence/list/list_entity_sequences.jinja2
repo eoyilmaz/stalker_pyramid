@@ -1,5 +1,5 @@
 {# Stalker Pyramid a Web Base Production Asset Management System
- Copyright (C) 2009-2013 Erkan Ozgur Yilmaz
+ Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
 
  This file is part of Stalker Pyramid.
 
@@ -39,7 +39,7 @@
     {% include 'page_header.jinja2' %}
 
     {% set add_button_address= request.route_url("create_sequence_dialog", id=-1, _query={'project_id': entity.id, 'came_from':request.current_route_path() })  %}
-    {% set address=request.route_path('get_project_sequences', id=entity.id) %}
+
     {% set list_item_type='Sequence' %}
     {% include 'components/data_table.jinja2' %}
 
@@ -90,6 +90,16 @@
         </tr>
     </script>
     {% endraw %}
+
+    <script>
+
+        var tableParameters = {}
+        var sortingParameters = [[0, 'asc']]
+        var tableDataAddress = '{{ request.route_path('get_project_sequences', id=entity.id) }}'
+
+     console.log('tableDataAddress' + tableDataAddress)
+
+    </script>
 
 
 
