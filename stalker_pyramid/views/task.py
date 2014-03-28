@@ -271,7 +271,7 @@ def duplicate_task(task):
         schedule_unit=task.schedule_unit,
         status=new,
         status_list=task.status_list,
-        notes=task.notes,
+        #notes=task.notes,
         tags=task.tags,
         responsible=task.responsible,
         #references=task.references,
@@ -2117,7 +2117,7 @@ def create_task(request):
     if entity_type == 'Shot':
         sequence = Sequence.query.filter_by(id=shot_sequence_id).first()
         kwargs['sequence'] = sequence
-        kwargs['cut_in'] = int(cut_in or 1) 
+        kwargs['cut_in'] = int(cut_in or 1)
         kwargs['cut_out'] = int(cut_out or 1)
 
     try:
@@ -2367,7 +2367,7 @@ def approve_task(request):
     logged_in_user = get_logged_in_user(request)
 
     send_email = request.params.get('send_email', 1)  # for testing purposes
-    note = request.params.get('description', 1)
+    description = request.params.get('description', 1)
 
     status_new = Status.query.filter_by(code='NEW').first()
 
@@ -2382,7 +2382,7 @@ def approve_task(request):
     note_type = query_type('Note', 'Approved')
     note_type.html_class = 'green'
     note = Note(
-        content=note,
+        content=description,
         created_by=logged_in_user,
         date_created=utc_now,
         date_updated=utc_now,
@@ -2393,8 +2393,7 @@ def approve_task(request):
     if review:
         try:
             review.approve()
-            review.note = note
-
+            review.description = description
             task.notes.append(note)
         except StatusError as e:
             return Response('StatusError: %s' % e, 500)
@@ -2509,7 +2508,7 @@ def request_revision(request):
     logger.debug('schedule_model : %s' % schedule_model)
 
     send_email = request.params.get('send_email', 1)  # for testing purposes
-    note = request.params.get('description', 1)
+    description = request.params.get('description', 1)
 
     utc_now = local_to_utc(datetime.datetime.now())
 
@@ -2533,10 +2532,11 @@ def request_revision(request):
 
     note = Note(
         content='Expanded the timing of the task by <b>'
-                '%(schedule_timing)s %(schedule_unit)s</b>. <br/> %(note)s' % {
+                '%(schedule_timing)s %(schedule_unit)s</b>.<br/>'
+                '%(description)s' %{
                     'schedule_timing': schedule_timing,
                     'schedule_unit': schedule_unit,
-                    'note': note},
+                    'description': description},
         created_by=logged_in_user,
         date_created=utc_now,
         date_updated=utc_now,
@@ -2546,8 +2546,12 @@ def request_revision(request):
 
     if review:
         try:
-            review.request_revision(schedule_timing, schedule_unit, note)
-            review.note = note
+            review.request_revision(
+                schedule_timing,
+                schedule_unit,
+                description
+            )
+            #review.note = note
             review.date_updated = utc_now
 
             task.notes.append(note)
@@ -2558,8 +2562,12 @@ def request_revision(request):
         logger.debug('task requested revision')
 
         try:
-            task.request_revision(logged_in_user, note.content,
-                                  schedule_timing, schedule_unit)
+            task.request_revision(
+                logged_in_user,
+                note.content,
+                schedule_timing,
+                schedule_unit
+            )
             task.notes.append(note)
         except StatusError as e:
             return Response('StatusError: %s' % e, 500)
