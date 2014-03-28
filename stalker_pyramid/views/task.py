@@ -2117,8 +2117,8 @@ def create_task(request):
     if entity_type == 'Shot':
         sequence = Sequence.query.filter_by(id=shot_sequence_id).first()
         kwargs['sequence'] = sequence
-        kwargs['cut_in'] = cut_in
-        kwargs['cut_out'] = cut_out
+        kwargs['cut_in'] = int(cut_in or 1) 
+        kwargs['cut_out'] = int(cut_out or 1)
 
     try:
         if entity_type == 'Asset':
