@@ -310,6 +310,7 @@ def get_assets(request):
                     -- for child tasks we need to count the total seconds of related TimeLogs
                     (coalesce("Task_TimeLogs".duration, 0.0))::float /
                         ("Tasks".schedule_timing * (case "Tasks".schedule_unit
+                            when 'min' then 60
                             when 'h' then 3600
                             when 'd' then 32400
                             when 'w' then 147600

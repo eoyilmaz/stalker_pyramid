@@ -104,7 +104,8 @@ def query_of_tasks_hierarchical_name_table():
         JOIN "Projects" ON "Tasks".project_id = "Projects".id
         JOIN "SimpleEntities" as "Task_SimpleEntities" on "Tasks".id = "Task_SimpleEntities".id
         WHERE "Tasks".parent_id IS NULL
-    )"""
+    )
+    """
 
     return query
 
@@ -270,7 +271,7 @@ def duplicate_task(task):
         schedule_unit=task.schedule_unit,
         status=new,
         status_list=task.status_list,
-        notes=task.notes,
+        #notes=task.notes,
         tags=task.tags,
         responsible=task.responsible,
         #references=task.references,
@@ -830,6 +831,7 @@ def get_tasks(request):
             -- for child tasks we need to count the total seconds of related TimeLogs
             (coalesce("Task_TimeLogs".duration, 0.0))::float /
                 ("Tasks".schedule_timing * (case "Tasks".schedule_unit
+                    when 'min' then 60
                     when 'h' then 3600
                     when 'd' then 32400
                     when 'w' then 147600
@@ -866,6 +868,7 @@ def get_tasks(request):
         "Tasks".schedule_model,
         coalesce("Tasks".schedule_seconds,
             "Tasks".schedule_timing * (case "Tasks".schedule_unit
+                when 'min' then 60
                 when 'h' then 3600
                 when 'd' then 32400
                 when 'w' then 147600
@@ -1562,7 +1565,7 @@ def get_entity_tasks_by_filter(request):
     filter_id = request.matchdict.get('f_id', -1)
     filter = Entity.query.filter_by(id=filter_id).first()
 
-    sql_query ="""select
+    sql_query = """select
     "Task_Resources".task_id as task_id,
     "ParentTasks".parent_names as task_name,
     array_agg("Responsible_SimpleEntities".id) as responsible_id,
@@ -1578,6 +1581,7 @@ def get_entity_tasks_by_filter(request):
         -- for child tasks we need to count the total seconds of related TimeLogs
         (coalesce("Task_TimeLogs".duration, 0.0))::float /
             ("Tasks".schedule_timing * (case "Tasks".schedule_unit
+                when 'min' then 60
                 when 'h' then 3600
                 when 'd' then 32400
                 when 'w' then 147600
@@ -1602,12 +1606,12 @@ def get_entity_tasks_by_filter(request):
     join "Statuses" on "Statuses".id = "Tasks".status_id
     join "SimpleEntities" as "Statuses_SimpleEntities" on "Statuses_SimpleEntities".id = "Statuses".id
     left outer join (
-                select
-                    "TimeLogs".task_id,
-                    extract(epoch from sum("TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC')) as duration
-                from "TimeLogs"
-                group by task_id
-            ) as "Task_TimeLogs" on "Task_TimeLogs".task_id = "Tasks".id
+        select
+            "TimeLogs".task_id,
+            extract(epoch from sum("TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC')) as duration
+            from "TimeLogs"
+            group by task_id
+        ) as "Task_TimeLogs" on "Task_TimeLogs".task_id = "Tasks".id
     join "SimpleEntities" as "Tasks_SimpleEntities" on "Tasks_SimpleEntities".id = "Task_Resources".task_id
 
 join "SimpleEntities" as "Resource_SimpleEntities" on "Resource_SimpleEntities".id = "Task_Resources".resource_id
@@ -1617,7 +1621,7 @@ join ((
     with recursive go_to_parent(id, parent_id) as (
             select task.id, task.parent_id
             from "Tasks" as task
-            join "Task_Responsible" on task.id = "Task_Responsible".task_id
+            left outer join "Task_Responsible" on task.id = "Task_Responsible".task_id
             where "Task_Responsible".responsible_id is NULL
         union all
             select g.id, task.parent_id
@@ -1660,7 +1664,7 @@ join ((
                 with recursive go_to_parent(id, parent_id) as (
                         select task.id, task.parent_id
                         from "Tasks" as task
-                        join "Task_Responsible" on task.id = "Task_Responsible".task_id
+                        left outer join "Task_Responsible" on task.id = "Task_Responsible".task_id
                         where "Task_Responsible".responsible_id is NULL
                     union all
                         select g.id, task.parent_id
@@ -1672,8 +1676,8 @@ join ((
                 select
                     g.id
                 from go_to_parent as g
-                join "Tasks" on "Tasks".id = g.parent_id
-                join "Task_Responsible" on g.id = "Task_Responsible".task_id
+                join "Tasks" as parent_task on g.parent_id = parent_task.id
+                join "Task_Responsible" on parent_task.id = "Task_Responsible".task_id
                 where "Task_Responsible".responsible_id is not NULL
                 order by g.id
             )
@@ -1706,7 +1710,7 @@ join ((
 
             where "Reviews_Statuses".code = 'NEW') as "Reviewers" on "Reviewers".task_id = "Tasks".id
 
-    where %(where_condition_for_entity)s%(where_condition_for_filter)s
+    where %(where_condition_for_entity)s %(where_condition_for_filter)s
 
     group by
         "Task_Resources".task_id,
@@ -1723,7 +1727,7 @@ join ((
 
     if isinstance(entity, User):
          where_condition_for_entity = \
-             '"Task_Resources".resource_id=%s' % entity_id
+             '"Task_Resources".resource_id = %s' % entity_id
     elif isinstance(entity, Project):
         where_condition_for_entity = '"Tasks".project_id =%s' % entity_id
 
@@ -1732,15 +1736,15 @@ join ((
     if isinstance(filter, User):
          where_condition_for_entity = ''
          where_condition_for_filter = \
-             '"Tasks_Responsible".responsible_id=%s' % filter_id
+             '"Tasks_Responsible".responsible_id = %s' % filter_id
     elif isinstance(filter, Status):
         where_condition_for_filter = \
-            ' and "Statuses_SimpleEntities".id =%s' % filter_id
+            'and "Statuses_SimpleEntities".id = %s' % filter_id
 
     sql_query = sql_query % {
         'tasks_hierarchical_name_table': query_of_tasks_hierarchical_name_table(),
         'where_condition_for_entity': where_condition_for_entity,
-        'where_condition_for_filter':where_condition_for_filter
+        'where_condition_for_filter': where_condition_for_filter
     }
 
     # convert to dgrid format right here in place
@@ -2113,8 +2117,8 @@ def create_task(request):
     if entity_type == 'Shot':
         sequence = Sequence.query.filter_by(id=shot_sequence_id).first()
         kwargs['sequence'] = sequence
-        kwargs['cut_in'] = cut_in
-        kwargs['cut_out'] = cut_out
+        kwargs['cut_in'] = int(cut_in or 1)
+        kwargs['cut_out'] = int(cut_out or 1)
 
     try:
         if entity_type == 'Asset':
@@ -2351,7 +2355,6 @@ def review_task(request):
 def approve_task(request):
     """ TODO: add doc string
     """
-
     task_id = request.matchdict.get('id', -1)
     task = Task.query.filter(Task.id == task_id).first()
 
@@ -2364,18 +2367,22 @@ def approve_task(request):
     logged_in_user = get_logged_in_user(request)
 
     send_email = request.params.get('send_email', 1)  # for testing purposes
-    note = request.params.get('description', 1)
+    description = request.params.get('description', 1)
 
     status_new = Status.query.filter_by(code='NEW').first()
 
-    review = Review.query.filter(Review.reviewer_id == logged_in_user.id).filter(Review.task_id==task.id).filter(Review.status==status_new).first()
+    review = Review.query\
+        .filter(Review.reviewer_id == logged_in_user.id)\
+        .filter(Review.task_id == task.id)\
+        .filter(Review.status == status_new)\
+        .first()
 
     logger.debug('review %s' % review)
 
-    note_type = query_type('Note','Approved')
+    note_type = query_type('Note', 'Approved')
     note_type.html_class = 'green'
     note = Note(
-        content=note,
+        content=description,
         created_by=logged_in_user,
         date_created=utc_now,
         date_updated=utc_now,
@@ -2386,19 +2393,14 @@ def approve_task(request):
     if review:
         try:
             review.approve()
-            review.note = note
-
+            review.description = description
             task.notes.append(note)
         except StatusError as e:
             return Response('StatusError: %s' % e, 500)
     else:
         logger.debug('task requested revision')
         try:
-            temp_var = DBSession.commit
-            DBSession.commit = transaction.commit
             task.approve()
-            DBSession.commit = temp_var
-
             task.notes.append(note)
         except StatusError as e:
             return Response('StatusError: %s' % e, 500)
@@ -2506,7 +2508,7 @@ def request_revision(request):
     logger.debug('schedule_model : %s' % schedule_model)
 
     send_email = request.params.get('send_email', 1)  # for testing purposes
-    note = request.params.get('description', 1)
+    description = request.params.get('description', 1)
 
     utc_now = local_to_utc(datetime.datetime.now())
 
@@ -2525,15 +2527,16 @@ def request_revision(request):
         .filter(Review.status == status_new)\
         .first()
 
-    note_type = query_type('Note','Request Revision')
+    note_type = query_type('Note', 'Request Revision')
     note_type.html_class = 'purple'
 
     note = Note(
         content='Expanded the timing of the task by <b>'
-                '%(schedule_timing)s %(schedule_unit)s</b>. <br/> %(note)s' % {
+                '%(schedule_timing)s %(schedule_unit)s</b>.<br/>'
+                '%(description)s' %{
                     'schedule_timing': schedule_timing,
                     'schedule_unit': schedule_unit,
-                    'note': note},
+                    'description': description},
         created_by=logged_in_user,
         date_created=utc_now,
         date_updated=utc_now,
@@ -2543,8 +2546,12 @@ def request_revision(request):
 
     if review:
         try:
-            review.request_revision(schedule_timing, schedule_unit, note)
-            review.note = note
+            review.request_revision(
+                schedule_timing,
+                schedule_unit,
+                description
+            )
+            #review.note = note
             review.date_updated = utc_now
 
             task.notes.append(note)
@@ -2555,10 +2562,12 @@ def request_revision(request):
         logger.debug('task requested revision')
 
         try:
-            temp_var = DBSession.commit
-            DBSession.commit = transaction.commit
-            task.request_revision(logged_in_user, note.content, schedule_timing, schedule_unit)
-            DBSession.commit = temp_var
+            task.request_revision(
+                logged_in_user,
+                note.content,
+                schedule_timing,
+                schedule_unit
+            )
             task.notes.append(note)
         except StatusError as e:
             return Response('StatusError: %s' % e, 500)

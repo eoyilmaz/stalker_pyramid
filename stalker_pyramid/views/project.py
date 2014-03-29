@@ -284,6 +284,7 @@ def get_project_tasks_today(request):
            "SimpleEntities_Status".html_class,
            (coalesce("Task_TimeLogs".duration, 0.0))::float /
            ("Tasks".schedule_timing * (case "Tasks".schedule_unit
+                when 'min' then 60
                 when 'h' then %(working_seconds_per_hour)s
                 when 'd' then %(working_seconds_per_day)s
                 when 'w' then %(working_seconds_per_week)s
