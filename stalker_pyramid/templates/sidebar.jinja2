@@ -2,8 +2,8 @@
 
     <script type="text/javascript">
         try {
-            ace.settings.check('sidebar', 'fixed')
-            ace.settings.check('sidebar', 'collapsed')
+            ace.settings.check('sidebar', 'fixed');
+            ace.settings.check('sidebar', 'collapsed');
         } catch (e) {
         }
     </script>
@@ -18,7 +18,7 @@
         {% if entity.entity_type =='Project' %}
             {% set project=entity %}
         {% endif %}
-        {% include entity.entity_type.lower()+'/view/'+entity.entity_type.lower()+'_sidebar.jinja2' %}
+        {% include '%(entity_type)s/view/%(entity_type)s_sidebar.jinja2' % ({'entity_type': entity.entity_type.lower() }) %}
     {% endif %}
 
     <div class="sidebar-collapse" id="sidebar-collapse">
