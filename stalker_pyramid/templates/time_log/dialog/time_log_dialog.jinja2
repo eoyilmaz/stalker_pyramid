@@ -211,7 +211,7 @@ function init_dialog() {
 
             time_log_task.find('option').remove();
 
-            $.getJSON('/users/{{ entity.id }}/tasks/?status=RTS&status=WIP&status=HREV').then(function (data) {
+            $.getJSON('/users/{{ entity.id }}/tasks/?status=RTS&status=WIP&status=HREV&status=DREV').then(function (data) {
                 // append an empty one first
                 time_log_task.append('<option value="-1">&nbsp;</option>');
                 for (var i = 0; i < data.length; i++) {
