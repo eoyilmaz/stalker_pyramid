@@ -251,7 +251,7 @@ def duplicate_task(task):
         }
 
     # all duplicated tasks are new tasks
-    new = Status.query.filter(Status.code == 'NEW').first()
+    new = Status.query.filter(Status.code == 'WFD').first()
 
     dup_task = class_(
         name=task.name,
