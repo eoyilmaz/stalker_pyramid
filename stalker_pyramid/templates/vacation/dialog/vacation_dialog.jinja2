@@ -151,15 +151,16 @@ function init_dialog() {
 
 
     $.getJSON('/types/?target_entity_type=Vacation').then(function (available_types) {
+        var available_types_as_list = [];
+        for (var i=0; i < available_types.length; i++){
+            available_types_as_list.push(available_types[i].name);
+        }
+        
         vacation_type.autocomplete({
             delay: 0,
-            source: available_types,
+            source: available_types_as_list,
             minLength: 0
         });
-        {#            if (type !== ''){#}
-        {#                vacation_type.val(type);#}
-        {#            }#}
-
     });
 
     {% if entity.entity_type == 'Studio' %}

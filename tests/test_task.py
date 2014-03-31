@@ -674,8 +674,8 @@ class TaskViewTestCase(unittest2.TestCase):
         self.assertEqual(dup_task2.thumbnail, self.test_task2.thumbnail)
         if self.test_task2.time_logs:
             self.assertNotEqual(dup_task2.time_logs, self.test_task2.time_logs)
-        self.assertEqual(dup_task2.timing_resolution,
-                         self.test_task2.timing_resolution)
+        # self.assertEqual(dup_task2.timing_resolution,
+        #                  self.test_task2.timing_resolution)
         self.assertEqual(dup_task2.type, self.test_task2.type)
         self.assertEqual(dup_task2.updated_by,
                          self.test_task2.updated_by)
