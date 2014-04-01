@@ -403,7 +403,10 @@
                 var entity_types = [];
 
                 for (var i = 0; i < available_types.length; i++) {
-                    entity_types.push({id: available_types[i].id, text: available_types[i].name})
+                    entity_types.push({
+                        id: available_types[i].id,
+                        text: available_types[i].name
+                    })
                 }
 
                 if (entity_types.length > 0) {

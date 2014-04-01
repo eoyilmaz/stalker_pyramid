@@ -210,6 +210,23 @@ def update_task_statuses_with_dependencies(task):
 
 
 @view_config(
+    route_name='fix_task_statuses'
+)
+def fix_task_schedule_info(request):
+    """fixes task statuses
+    """
+    task_id = request.matchdict.get('id')
+    task = Task.query.filter(Task.id == task_id).first()
+
+    if task:
+        assert isinstance(task, Task)
+        task.update_status_with_dependent_statuses()
+        task.update_status_with_children_statuses()
+
+    return HTTPOk()
+
+
+@view_config(
     route_name='fix_task_schedule_info'
 )
 def fix_task_schedule_info(request):
