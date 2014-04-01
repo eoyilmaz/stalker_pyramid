@@ -2409,13 +2409,13 @@ def approve_task(request):
             task.notes.append(note)
         except StatusError as e:
             return Response('StatusError: %s' % e, 500)
-    else:
-        logger.debug('task requested revision')
-        try:
-            task.approve()
-            task.notes.append(note)
-        except StatusError as e:
-            return Response('StatusError: %s' % e, 500)
+    # else:
+    #     logger.debug('task requested revision')
+    #     try:
+    #         task.approve()
+    #         task.notes.append(note)
+    #     except StatusError as e:
+    #         return Response('StatusError: %s' % e, 500)
 
     if send_email:
          # send email to resources of the task

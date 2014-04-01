@@ -14,63 +14,59 @@
     <div class="widget-body"
          style="background-color: rgba(255,255,255,.4)">
         <div class="widget-main">
-
-
             <div class="profile-users clearfix" id="review_box">
             </div>
-
         </div>
 
         <div class="widget-toolbox clearfix">
             <div id="responsible_body_toolbar"></div>
-
-            {% if has_permission('Create_Review') and  entity.status.code == 'PREV' %}
-
-                <div class="inline position-relative pull-right">
-
-                    <button class="btn btn-minier bigger btn-info dropdown-toggle"
-                            data-toggle="dropdown">
-                        <i class="icon-angle-down icon-only bigger-120"></i>
-                        Force
-                    </button>
-
-                    <ul class="dropdown-menu dropdown-icon-only dropdown-yellow pull-right dropdown-caret dropdown-close">
-
-                        <li>
-                            <a href="/tasks/{{ entity.id }}/review/dialog?came_from={{ request.current_route_path() }}&review_mode=approve"
-                               class="tooltip-success"
-                               data-rel="tooltip"
-                               title="Approve"
-                               data-target="#dialog_template"
-                               data-toggle="modal"
-                               data-keyboard=false
-                               data-placement="top">
-                                       <span class="green">
-                                           <i class="icon-ok bigger-110"></i>
-                                       </span>
-                            </a>
-                        </li>
-
-                        <li>
-                            <a href="/tasks/{{ entity.id }}/review/dialog?came_from={{ request.current_route_path() }}&review_mode=request_revision"
-                               class="tooltip-success"
-                               data-rel="tooltip"
-                               title="Request Revision"
-                               data-target="#dialog_template"
-                               data-toggle="modal"
-                               data-keyboard=false
-                               data-placement="top">
-                                        <span class="orange">
-                                            <i class="icon-remove bigger-110"></i>
-                                        </span>
-                            </a>
-                        </li>
-
-                    </ul>
-                <div class="space-4"></div>
-                </div>
-
-            {% endif %}
+{#            {% if has_permission('Create_Review') and  entity.status.code == 'PREV' %}#}
+{##}
+{#                <div class="inline position-relative pull-right">#}
+{##}
+{#                    <button class="btn btn-minier bigger btn-info dropdown-toggle"#}
+{#                            data-toggle="dropdown">#}
+{#                        <i class="icon-angle-down icon-only bigger-120"></i>#}
+{#                        Force#}
+{#                    </button>#}
+{##}
+{#                    <ul class="dropdown-menu dropdown-icon-only dropdown-yellow pull-right dropdown-caret dropdown-close">#}
+{##}
+{#                        <li>#}
+{#                            <a href="/tasks/{{ entity.id }}/review/dialog?came_from={{ request.current_route_path() }}&review_mode=approve"#}
+{#                               class="tooltip-success"#}
+{#                               data-rel="tooltip"#}
+{#                               title="Approve"#}
+{#                               data-target="#dialog_template"#}
+{#                               data-toggle="modal"#}
+{#                               data-keyboard=false#}
+{#                               data-placement="top">#}
+{#                                       <span class="green">#}
+{#                                           <i class="icon-ok bigger-110"></i>#}
+{#                                       </span>#}
+{#                            </a>#}
+{#                        </li>#}
+{##}
+{#                        <li>#}
+{#                            <a href="/tasks/{{ entity.id }}/review/dialog?came_from={{ request.current_route_path() }}&review_mode=request_revision"#}
+{#                               class="tooltip-success"#}
+{#                               data-rel="tooltip"#}
+{#                               title="Request Revision"#}
+{#                               data-target="#dialog_template"#}
+{#                               data-toggle="modal"#}
+{#                               data-keyboard=false#}
+{#                               data-placement="top">#}
+{#                                        <span class="orange">#}
+{#                                            <i class="icon-remove bigger-110"></i>#}
+{#                                        </span>#}
+{#                            </a>#}
+{#                        </li>#}
+{##}
+{#                    </ul>#}
+{#                <div class="space-4"></div>#}
+{#                </div>#}
+{##}
+{#            {% endif %}#}
 
 
         </div>
@@ -81,43 +77,34 @@
 
 <script type="text/javascript">
 
-    $(document).ready(function () {
-
-
-
-
-        var review_box = $('#review_box');
-        var reviewer_template = doT.template($('#tmpl_reviewer_card').html());
-
-        $.getJSON('/tasks/{{ entity.id }}/last_reviews/').then(function (data) {
-
+    $.getJSON('/tasks/{{ entity.id }}/last_reviews/').then(function (data) {
+        $(document).ready(function () {
+            var review_box = $('#review_box');
+            var reviewer_template = doT.template($('#tmpl_reviewer_card').html());
 
             for (var i = 0; i < data.length; i++) {
-
                 if (data[i].review_status_code == 'NEW') {
-                    data[i].review_status_name = 'Pending'
+                    data[i].review_status_name = 'Pending';
                     if (data[i].reviewer_id == '{{ logged_in_user.id }}') {
                         $(function () {
                             flash_message({
                                 container: 'body',
                                 title: 'Warning',
                                 message: 'You are the responsible of this task and it ' +
-                                        'is awaiting your ' +
-                                        '<a data-target="#dialog_template" data-toggle="modal" data-keyboard=false' +
-                                        ' href="{{ request.route_url('review_task_dialog', id=entity.id) }}">review</a>',
+                                         'is awaiting your ' +
+                                         '<a data-target="#dialog_template" data-toggle="modal" data-keyboard=false' +
+                                         ' href="{{ request.route_url('review_task_dialog', id=entity.id) }}">review</a>',
                                 type: 'error'
                             });
                         });
 
                         data[i].review_status_link = '/tasks/{{ entity.id }}/review/dialog?came_from={{ request.current_route_path() }}';
-
                     }
                 }
 
                 if (data[i].reviewer_thumbnail_full_path == null) {
                     data[i].reviewer_thumbnail_full_path = '{{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}';
-                }
-                else {
+                } else {
                     data[i].reviewer_thumbnail_full_path = '/' + data[i].reviewer_thumbnail_full_path;
                 }
 
@@ -125,41 +112,43 @@
                 data[i].request_review = false;
 
                 {% if (logged_in_user in entity.resources) and entity.status.code == 'WIP' and entity.is_leaf %}
-
                     data[i].request_review = true;
-
                 {% endif %}
 
                 review_box.append(reviewer_template(data[i]));
-
-
             }
 
-            $('#responsible_header_toolbar').append( $('#responsible_header_toolbar').append('Review Set <span class="badge badge-{{ entity.status.html_class }} badge radius-20">'+data[0].review_number+'</span>'))
+            $('#responsible_header_toolbar').append(
+                $('#responsible_header_toolbar').append(
+                    'Review Set <span class="badge badge-{{ entity.status.html_class }} badge radius-20">' + data[0].review_number + '</span>'
+                )
+            );
 
-        if(data[0].review_number>0){
-            $('#responsible_body_toolbar').append( $('#responsible_body_toolbar').append('<div class="pull-left"><i class="icon-hand-right grey"></i><a href="/tasks/{{ entity.id }}/reviews/list">View all reviews &hellip;</a></div>'))
-
-        }
-
+            if(data[0].review_number>0){
+                $('#responsible_body_toolbar').append(
+                    $('#responsible_body_toolbar').append(
+                        '<div class="pull-left"><i class="icon-hand-right grey"></i><a href="/tasks/{{ entity.id }}/reviews/list">View all reviews &hellip;</a></div>'
+                    )
+                );
+    
+            }
 
             //show the user info on right or left depending on its position
             $('.memberdiv').on('mouseenter', function () {
+                var self = $(this);
+                var parent = self.closest('.row-fluid');
 
-                var $this = $(this);
-                var $parent = $this.closest('.row-fluid');
+                var off1 = parent.offset();
+                var w1 = parent.width();
 
-                var off1 = $parent.offset();
-                var w1 = $parent.width();
-
-                var off2 = $this.offset();
-                var w2 = $this.width();
+                var off2 = self.offset();
+                var w2 = self.width();
 
                 var place = 'left';
                 if (parseInt(off2.left) < parseInt(off1.left) + parseInt(w1 / 2)) place = 'right';
 
-                $this.find('.popover').removeClass('right left').addClass(place);
-            })
+                self.find('.popover').removeClass('right left').addClass(place);
+            });
         });
     });
 
