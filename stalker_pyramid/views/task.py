@@ -212,7 +212,7 @@ def update_task_statuses_with_dependencies(task):
 @view_config(
     route_name='fix_task_statuses'
 )
-def fix_task_schedule_info(request):
+def fix_task_statuses(request):
     """fixes task statuses
     """
     task_id = request.matchdict.get('id')
@@ -765,8 +765,6 @@ def update_task(request):
     else:
         logger.debug('not updating bid')
     return Response('Task updated successfully')
-
-
 
 
 def depth_first_flatten(task, task_array=None):
