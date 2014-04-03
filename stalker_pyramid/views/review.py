@@ -26,7 +26,7 @@ from pyramid.view import view_config
 from stalker.db import DBSession
 from stalker import (User, Task, Project)
 
-from stalker_pyramid.views import get_logged_in_user
+from stalker_pyramid.views import get_logged_in_user, StdErrToHTMLConverter
 from stalker_pyramid.views.task import query_of_tasks_hierarchical_name_table
 
 
@@ -357,3 +357,7 @@ def get_reviews(request, where_conditions):
 
 
     return return_data
+
+
+
+

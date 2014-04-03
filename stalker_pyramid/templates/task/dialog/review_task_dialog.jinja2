@@ -158,12 +158,6 @@
 
             {% if review_mode == 'request_revision' %}
 
-                {% if review == None %}
-
-                    $('#task_review_mode').attr('disabled','disabled');
-
-                {% endif %}
-
                 $('#revision_controls').show();
 
             {% endif %}
@@ -172,13 +166,22 @@
 
         {% endif %}
 
-        $('#task_review_mode').on('change', function () {
-            // disable or enable revision_controls
-            $('#revision_controls').toggle();
 
-            submit_form_url = '/tasks/{{ task.id }}/'+$(this).val()
+        {% if forced %}
 
-        });
+            $('#task_review_mode').attr('disabled','disabled');
+
+        {% else %}
+
+            $('#task_review_mode').on('change', function () {
+                // disable or enable revision_controls
+                $('#revision_controls').toggle();
+
+                submit_form_url = '/tasks/{{ task.id }}/'+$(this).val()
+
+            });
+
+         {% endif %}
 
         {# ***************************************************************** #}
         {# Schedule Unit and Model #}
@@ -215,6 +218,17 @@
 
             var task_form = $('#review_task_form');
             var form_data = task_form.serialize();
+
+            {% if forced  %}
+
+               form_data += '&' +
+                $.param({
+                    'forced': 'forced'
+                })
+
+            {% endif %}
+
+
             console.log('form_data :', form_data);
 
             // prevent multiple sends

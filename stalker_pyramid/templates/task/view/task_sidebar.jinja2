@@ -53,7 +53,7 @@
                     data-target="#dialog_template"
                     data-toggle="modal"
                     data-keyboard="false"
-                    href='/tasks/{{ task.id }}/review/dialog?came_from={{ request.current_route_path() }}&review_mode=request_revision'
+                    href='/tasks/{{ task.id }}/review/dialog?came_from={{ request.current_route_path() }}&review_mode=request_revision&forced=1'
                     >
                 <i class="icon-comments"></i>
             </button>

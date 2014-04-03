@@ -475,12 +475,14 @@ def main(global_config, **settings):
     config.add_route('create_task_dialog',       'tasks/{id}/create/dialog')
     config.add_route('update_task_dialog',       'tasks/{id}/update/dialog')
     config.add_route('review_task_dialog',       'tasks/{id}/review/dialog')
+    config.add_route('cleanup_task_new_reviews_dialog',       'tasks/{id}/cleanup_new_reviews/dialog')
 
     # Actions
     config.add_route('create_task',              'tasks/create')
     config.add_route('update_task',              'tasks/{id}/update')
     config.add_route('inline_update_task',       'tasks/{id}/update/inline')
     config.add_route('review_task',              'tasks/{id}/review')
+    config.add_route('cleanup_task_new_reviews', 'tasks/{id}/cleanup_new_reviews')
 
     config.add_route('duplicate_task_hierarchy', 'tasks/{id}/duplicate')
 
