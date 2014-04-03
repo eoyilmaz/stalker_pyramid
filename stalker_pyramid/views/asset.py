@@ -150,7 +150,6 @@ def list_project_assets(request):
     }
 
 
-
 @view_config(
     route_name='get_assets_types',
     renderer='json'
@@ -158,8 +157,6 @@ def list_project_assets(request):
 def get_assets_types(request):
     """returns the Asset Types
     """
-
-
     sql_query ="""select
      "Assets_Types_SimpleEntities".id,
      "Assets_Types_SimpleEntities".name

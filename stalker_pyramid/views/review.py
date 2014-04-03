@@ -262,7 +262,7 @@ def get_project_reviews_count(request):
 
     if not project:
         transaction.abort()
-        return Response('There is no user with id: %s' % project_id, 500)
+        return Response('There is no project with id: %s' % project_id, 500)
 
     where_conditions =  """where "Review_Tasks".project_id = %(project_id)s
     and "Reviews_Statuses".code ='NEW' """ % {'project_id':project_id}

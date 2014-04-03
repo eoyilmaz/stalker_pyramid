@@ -2,14 +2,9 @@
 
 {% set user=entity %}
 
-<ul id="sidebar_list" class='nav nav-list'>
-
-</ul>
-
-
+<ul id="sidebar_list" class='nav nav-list'></ul>
 
 <script>
-
     $(document).ready(function () {
         page_of('{{ user.name }}',
                 '{{ user.login }}',

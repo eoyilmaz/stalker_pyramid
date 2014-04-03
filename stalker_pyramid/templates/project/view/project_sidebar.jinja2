@@ -7,9 +7,7 @@
 
 <script type="text/javascript">
 
-
     $(document).ready(function () {
-
         page_of(
             '{{ project.name }}',
             '{{ project.code }}',
@@ -33,7 +31,7 @@
             '{{ project.open_tickets | count }}'
         );
 
-        $.getJSON('/projects/{{ entity.id }}/tasks/count/').then(function (data) {
+        $.getJSON('/projects/{{ project.id }}/tasks/count/').then(function (data) {
             menu_of(
                 'Tasks',
                 "{%- if request.current_route_path() == request.route_path('list_entity_tasks', id=project.id) -%}'active',{%- else -%},{%- endif -%}",
@@ -42,7 +40,8 @@
                 data
             );
         });
-        $.getJSON('/projects/{{ entity.id }}/assets/count/').then(function (data) {
+
+        $.getJSON('/projects/{{ project.id }}/assets/count/').then(function (data) {
             menu_of(
                 'Assets',
                 "{%- if request.current_route_path() == request.route_path('list_project_assets', id=project.id) -%}'active',{%- else -%},{%- endif -%}",
@@ -51,7 +50,8 @@
                 data
             );
         });
-        $.getJSON('/projects/{{ entity.id }}/sequences/count/').then(function (data) {
+
+        $.getJSON('/projects/{{ project.id }}/sequences/count/').then(function (data) {
             menu_of(
                 'Sequences',
                 "{%- if request.current_route_path() == request.route_path('list_project_sequences', id=project.id) -%}'active',{%- else -%},{%- endif -%}",
@@ -60,14 +60,16 @@
                 data
             );
         });
-        $.getJSON('/projects/{{ entity.id }}/shots/count/').then(function (data) {
+
+        $.getJSON('/projects/{{ project.id }}/shots/count/').then(function (data) {
             menu_of('Shots',
                 "{%- if request.current_route_path() == request.route_path('list_project_shots', id=project.id) -%}'active',{%- else -%},{%- endif -%}",
                 '{{ request.route_url('list_project_shots', id=project.id) }}',
                 get_icon('shot'),
                 data);
         });
-        $.getJSON('/entities/{{ entity.id }}/users/count/').then(function (data) {
+
+        $.getJSON('/entities/{{ project.id }}/users/count/').then(function (data) {
             menu_of(
                 'Users',
                 "{%- if request.current_route_path() == request.route_path('list_project_users', id=project.id) -%}'active',{%- else -%},{%- endif -%}",
@@ -77,7 +79,7 @@
             );
         });
 
-        $.getJSON('/entities/{{ entity.id }}/references/count/').then(function(data){
+        $.getJSON('/entities/{{ project.id }}/references/count/').then(function(data){
              menu_of(
                 'References',
                 "{%- if request.current_route_path() == request.route_path('list_entity_references', id=project.id) -%}'active',{%- else -%},{%- endif -%}",
@@ -87,7 +89,7 @@
              )
         });
 
-        $.getJSON('/projects/{{ entity.id }}/reviews/count/').then(function(data){
+        $.getJSON('/projects/{{ project.id }}/reviews/count/').then(function(data){
             menu_of(
                 'Reviews',
                 "{%- if request.current_route_path() == request.route_path('list_project_reviews', id=project.id) -%}'active',{%- else -%},{%- endif -%}",
@@ -100,7 +102,7 @@
 </script>
 
 <script type="text/javascript">
-    $.getJSON('/projects/{{ entity.id }}/tasks/count/').then(function (data) {
+    $.getJSON('/projects/{{ project.id }}/tasks/count/').then(function (data) {
         $(function(){
             $('#Tasks_count').text(data);
         })
@@ -108,7 +110,7 @@
 </script>
 
 <script type="text/javascript">
-    $.getJSON('/projects/{{ entity.id }}/assets/count/').then(function (data) {
+    $.getJSON('/projects/{{ project.id }}/assets/count/').then(function (data) {
         $(function(){
             $('#Assets_count').text(data);
         })
@@ -116,7 +118,7 @@
 </script>
 
 <script type="text/javascript">
-    $.getJSON('/projects/{{ entity.id }}/sequences/count/').then(function (data) {
+    $.getJSON('/projects/{{ project.id }}/sequences/count/').then(function (data) {
         $(function () {
             $('#Sequences_count').text(data);
         });
@@ -124,17 +126,15 @@
 </script>
 
 <script type="text/javascript">
-    $.getJSON('/projects/{{ entity.id }}/shots/count/').then(function (data) {
+    $.getJSON('/projects/{{ project.id }}/shots/count/').then(function (data) {
         $(function () {
             $('#Shots_count').text(data);
         });
     });
 </script>
 
-
-
 <script type="text/javascript">
-    $.getJSON('/entities/{{ entity.id }}/users/count/').then(function (data) {
+    $.getJSON('/entities/{{ project.id }}/users/count/').then(function (data) {
         $(function (){
             $('#Users_count').text(data);
         });
