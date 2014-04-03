@@ -417,7 +417,7 @@ $(function(){
     $.getJSON('/tickets/workflow/', function(data) {
         var ticket_action;
         var action;
-        var current_ticket_status = "{{ ticket.status.code.title() }}";
+        var current_ticket_status = "{{ ticket.status.name.title() }}";
 
         for (var i in data) {
             ticket_action = data[i];
