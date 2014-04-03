@@ -47,7 +47,6 @@ from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
                                    get_user_os)
 from stalker_pyramid.views.link import (replace_img_data_with_links,
                                         convert_file_link_to_full_path)
-
 from stalker_pyramid.views.type import query_type
 
 
@@ -209,6 +208,23 @@ def update_task_statuses_with_dependencies(task):
         # and decide if it is ready to start or not
         if all([dep.status == status_cmpl for dep in task.depends]):
             task.status = status_rts
+
+
+@view_config(
+    route_name='fix_task_statuses'
+)
+def fix_task_statuses(request):
+    """fixes task statuses
+    """
+    task_id = request.matchdict.get('id')
+    task = Task.query.filter(Task.id == task_id).first()
+
+    if task:
+        assert isinstance(task, Task)
+        task.update_status_with_dependent_statuses()
+        task.update_status_with_children_statuses()
+
+    return HTTPOk()
 
 
 @view_config(
@@ -2625,6 +2641,7 @@ def approve_task(request):
             pass
 
     request.session.flash('success:Approved task')
+
     return Response('Successfully approved task')
 
 

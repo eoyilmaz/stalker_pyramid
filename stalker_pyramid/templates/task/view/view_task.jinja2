@@ -75,7 +75,7 @@
                                 <div class="span7">
                                     <div class="profile-user-info profile-user-info-striped">
                                         <div class="profile-info-row">
-                                            <div class="profile-info-name"> Name</div>
+                                            <div class="profile-info-name">Name</div>
     
                                             <div class="profile-info-value">
                                                 <span class="editable"
@@ -92,20 +92,20 @@
                                         </div>
     
                                         <div class="profile-info-row">
-                                            <div class="profile-info-name"> Updated By</div>
+                                            <div class="profile-info-name">Updated By</div>
                                             <div class="profile-info-value">
                                                 <span>{{ entity.updated_by.name }}</span>
                                             </div>
                                         </div>
                 
                                         <div class="profile-info-row">
-                                            <div class="profile-info-name"> Created By</div>
+                                            <div class="profile-info-name">Created By</div>
                                             <div class="profile-info-value">
                                                 <span>{{ entity.created_by.name }}</span>
                                             </div>
                                         </div>
                                         <div class="profile-info-row">
-                                            <div class="profile-info-name"> Timing</div>
+                                            <div class="profile-info-name">Timing</div>
                                             <div class="profile-info-value">
                                                 <strong>
                                                     <span class="date">{{ entity.start }}</span>
@@ -330,8 +330,6 @@
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/select2.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-datepicker.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/fuelux/fuelux.spinner.min.js") }}'></script>
-{#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/x-editable/bootstrap-editable.min.js") }}'></script>#}
-{#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/x-editable/ace-editable.min.js") }}'></script>#}
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.maskedinput.min.js") }}'></script>
 
     {% if entity.children | count == 0 %}
@@ -343,14 +341,13 @@
     {% include 'components/tree.jinja2' %}
     {% include 'calendar/calendar.jinja2' %}
 
-    <script type="text/javascript">
-        // convert all dates to moment
-        $('.date').each(function () {
-            var date = moment.utc($(this).text());
-            $(this).text(date.fromNow());
-        });
-    </script>
-
+{#    <script type="text/javascript">#}
+{#        // convert all dates to moment#}
+{#        $('.date').each(function () {#}
+{#            var date = moment.utc($(this).text());#}
+{#            $(this).text(date.fromNow());#}
+{#        });#}
+{#    </script>#}
 
     <script type="text/javascript">
 
@@ -403,7 +400,10 @@
                 var entity_types = [];
 
                 for (var i = 0; i < available_types.length; i++) {
-                    entity_types.push({id: available_types[i].id, text: available_types[i].name})
+                    entity_types.push({
+                        id: available_types[i].id,
+                        text: available_types[i].name
+                    })
                 }
 
                 if (entity_types.length > 0) {

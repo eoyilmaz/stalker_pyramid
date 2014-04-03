@@ -588,9 +588,15 @@
         asset_type.attr('is_updating', true);
         field_update_mode_checker();
         $.getJSON('/types/?target_entity_type=Asset').then(function(available_types){
+            // map available types to an array
+            var available_types_as_list = [];
+            for (var i=0; i < available_types.length; i++){
+                available_types_as_list.push(available_types[i].name);
+            }
+
             asset_type.autocomplete({
                 delay: 0,
-                source: available_types,
+                source: available_types_as_list,
                 minLength: 0
             });
             // set the field to normal mode
