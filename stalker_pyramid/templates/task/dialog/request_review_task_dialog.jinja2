@@ -171,7 +171,7 @@
                 var request_review_task_form_data = request_review_task_form.serialize() + '&request_review_mode={{ request_review_mode }}';
 
                 {% if selected_responsible %}
-                    request_review_task_form_data += "&selected_responsible_ids='{{ selected_responsible.id }}'";
+                    request_review_task_form_data += "&selected_responsible_ids={{ selected_responsible.id }}";
                 {% endif %}
 
                 $.post(url, request_review_task_form_data).done(function (response) {

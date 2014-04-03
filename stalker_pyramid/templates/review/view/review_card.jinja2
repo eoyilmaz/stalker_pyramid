@@ -26,7 +26,7 @@
 
             {% if has_permission('Create_Review') and  entity.status.code == 'PREV' %}
 
-                <div class="inline position-relative pull-right">
+                <div id="force_review_button" class="position-relative pull-right">
 
                     <button class="btn btn-minier bigger btn-info dropdown-toggle"
                             data-toggle="dropdown">
@@ -37,7 +37,7 @@
                     <ul class="dropdown-menu dropdown-icon-only dropdown-yellow pull-right dropdown-caret dropdown-close">
 
                         <li>
-                            <a href="/tasks/{{ entity.id }}/review/dialog?came_from={{ request.current_route_path() }}&review_mode=approve"
+                            <a href="/tasks/{{ entity.id }}/review/dialog?came_from={{ request.current_route_path() }}&review_mode=approve&forced=1"
                                class="tooltip-success"
                                data-rel="tooltip"
                                title="Approve"
@@ -52,7 +52,7 @@
                         </li>
 
                         <li>
-                            <a href="/tasks/{{ entity.id }}/review/dialog?came_from={{ request.current_route_path() }}&review_mode=request_revision"
+                            <a href="/tasks/{{ entity.id }}/review/dialog?came_from={{ request.current_route_path() }}&review_mode=request_revision&forced=1"
                                class="tooltip-success"
                                data-rel="tooltip"
                                title="Request Revision"
@@ -69,6 +69,21 @@
                     </ul>
                 <div class="space-4"></div>
                 </div>
+                <div id="cleanup_button" class="position-relative pull-right hide" >
+
+                    <button class="btn btn-minier bigger btn-danger"
+                            href='/tasks/{{ entity.id }}/cleanup_new_reviews/dialog?came_from={{ request.current_route_path() }}'
+                            data-rel="tooltip"
+                            data-placement="bottom"
+                            title="Cleans all unanswered reviews"
+                            data-target="#dialog_template"
+                            data-toggle="modal"
+                            data-keyboard="false">
+                        <i class="icon-trash icon-only bigger-120"></i>
+                        Cleanup Pending Reviews
+                    </button>
+                </div>
+
 
             {% endif %}
 
@@ -94,6 +109,8 @@
 
             for (var i = 0; i < data.length; i++) {
 
+                console.log( data[i].review_id +' : '+ data[i].reviewer_name )
+
                 if (data[i].review_status_code == 'NEW') {
                     data[i].review_status_name = 'Pending'
                     if (data[i].reviewer_id == '{{ logged_in_user.id }}') {
@@ -112,6 +129,24 @@
                         data[i].review_status_link = '/tasks/{{ entity.id }}/review/dialog?came_from={{ request.current_route_path() }}';
 
                     }
+                }
+                else{
+
+                    console.log($('#force_review_button'))
+
+                    if($('#force_review_button')){
+
+                        $('#force_review_button').hide()
+
+                    }
+                    if($('#cleanup_button')){
+
+                        $('#cleanup_button').show()
+
+                    }
+
+
+
                 }
 
                 if (data[i].reviewer_thumbnail_full_path == null) {

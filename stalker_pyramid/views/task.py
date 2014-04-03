@@ -23,6 +23,7 @@ import datetime
 import json
 import os
 
+
 import transaction
 from pyramid.response import Response
 from pyramid.view import view_config
@@ -46,6 +47,7 @@ from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
                                    get_user_os)
 from stalker_pyramid.views.link import (replace_img_data_with_links,
                                         convert_file_link_to_full_path)
+
 from stalker_pyramid.views.type import query_type
 
 
@@ -2284,6 +2286,122 @@ def get_last_version_of_task(request, is_published=''):
 
     return version
 
+@view_config(
+    route_name='cleanup_task_new_reviews_dialog',
+    renderer='templates/modals/confirm_dialog.jinja2'
+)
+def cleanup_task_new_reviews_dialog(request):
+
+    """works when task has at least one answered review
+    """
+    logger.debug('cleanup_task_new_reviews_dialog is starts')
+
+    task_id = request.matchdict.get('id')
+    task = Task.query.get(task_id)
+
+    action = '/tasks/%s/cleanup_new_reviews' % task_id
+
+    came_from = request.params.get('came_from', '/')
+
+    message = 'All unanswered reviews will be deleted and review set will be finalized.<br><br>Are you sure?'
+
+    logger.debug('action: %s' % action)
+
+    return {
+        'message': message,
+        'came_from': came_from,
+        'action': action
+    }
+
+def get_answered_reviews(task, review_set_number):
+    """deletes reviews object which status is NEW
+    """
+    logger.debug('get_answered_reviews starts')
+    reviews = task.review_set(review_set_number)
+
+    answered_reviews = []
+
+    for review in reviews:
+
+        status_new = Status.query.filter_by(code='NEW').first()
+        if review.status is not status_new:
+
+            answered_reviews.append(review)
+
+
+
+    logger.debug('get_answered_reviews ends')
+
+    return answered_reviews
+
+@view_config(
+    route_name='cleanup_task_new_reviews'
+)
+def cleanup_task_new_reviews(request):
+
+    """works when task has at least one answered review
+    """
+    logger.debug('cleanup_task_new_reviews is starts')
+
+    logged_in_user = get_logged_in_user(request)
+
+    utc_now = local_to_utc(datetime.datetime.now())
+
+    task_id = request.matchdict.get('id')
+    task = Task.query.filter(Task.id == task_id).first()
+
+    if not task:
+        transaction.abort()
+        return Response('There is no task with id: %s' % task_id, 500)
+
+    status_prev = Status.query.filter(Status.code == 'PREV').first()
+
+    if task.status is not status_prev:
+        transaction.abort()
+        return Response('Task status is not pending review', 500)
+
+
+    answered_reviews = get_answered_reviews(task, task.review_number + 1)
+
+    if len(answered_reviews) == 0:
+        transaction.abort()
+        return Response('There is no answered review. You have to make a review. Ask admin if you dont see farce review button', 500)
+
+
+    cleanup_unanswered_reviews(task, task.review_number + 1)
+
+    answered_reviews = get_answered_reviews(task, task.review_number + 1)
+
+    a_review = answered_reviews[0]
+
+    try:
+        a_review.finalize_review_set()
+    except Exception as e:
+        transaction.abort()
+        c = StdErrToHTMLConverter(e)
+        transaction.abort()
+        return Response(c.html(), 500)
+
+    note_type = query_type('Note', 'Cleanup Reviews')
+    note_type.html_class = 'red'
+    note = Note(
+        content='%s has cleaned all unanswered reviews' % logged_in_user.name,
+        created_by=logged_in_user,
+        date_created=utc_now,
+        date_updated=utc_now,
+        type=note_type
+    )
+    DBSession.add(note)
+
+    task.notes.append(note)
+    task.updated_by = logged_in_user
+    task.date_updated = utc_now
+
+    request.session.flash('success:Unanswered reviews are cleaned!')
+    return Response('Successfully Unanswered reviews are cleaned!')
+
+
+
 
 @view_config(
     route_name='review_task_dialog',
@@ -2302,6 +2420,7 @@ def review_task_dialog(request):
 
     came_from = request.params.get('came_from', request.url)
     review_mode = request.params.get('review_mode', 'approve')
+    forced = request.params.get('forced', None)
     logger.debug('review_mode %s' % review_mode)
 
     version = get_last_version_of_task(request, is_published='')
@@ -2316,7 +2435,8 @@ def review_task_dialog(request):
         'project': project,
         'came_from': came_from,
         'version':version,
-        'review_mode':review_mode
+        'review_mode':review_mode,
+        'forced':forced
     }
 
 
@@ -2346,12 +2466,55 @@ def review_task(request):
         return request_revision(request)
 
 
+
+
+
+
+def cleanup_unanswered_reviews(task, review_set_number):
+    """deletes reviews object which status is NEW
+    """
+    logger.debug('cleanup_unanswered_reviews starts')
+    reviews = task.review_set(review_set_number)
+
+    for review in reviews:
+
+        status_new = Status.query.filter_by(code='NEW').first()
+        if review.status == status_new:
+
+            try:
+                review.task = None
+                DBSession.delete(review)
+            except Exception as e:
+                transaction.abort()
+                c = StdErrToHTMLConverter(e)
+                transaction.abort()
+                return Response(c.html(), 500)
+
+    logger.debug('cleanup_unanswered_reviews ends')
+
+
+def forced_review(reviewer, task):
+    """deletes all new reviews and creates a review with approved status
+    """
+
+    logger.debug('forced_review starts')
+
+    cleanup_unanswered_reviews(task, task.review_number + 1)
+
+    review = Review(reviewer=reviewer, task=task)
+
+    return review
+
+
+
 @view_config(
     route_name='approve_task'
 )
 def approve_task(request):
     """ TODO: add doc string
     """
+    logged_in_user = get_logged_in_user(request)
+
     task_id = request.matchdict.get('id', -1)
     task = Task.query.filter(Task.id == task_id).first()
 
@@ -2359,22 +2522,13 @@ def approve_task(request):
         transaction.abort()
         return Response('There is no task with id: %s' % task_id, 500)
 
-    utc_now = local_to_utc(datetime.datetime.now())
-
-    logged_in_user = get_logged_in_user(request)
-
     send_email = request.params.get('send_email', 1)  # for testing purposes
     description = request.params.get('description', 1)
+    forced = request.params.get('forced', None)
 
-    status_new = Status.query.filter_by(code='NEW').first()
+    logger.debug('forced: %s' % forced)
 
-    review = Review.query\
-        .filter(Review.reviewer_id == logged_in_user.id)\
-        .filter(Review.task_id == task.id)\
-        .filter(Review.status == status_new)\
-        .first()
-
-    logger.debug('review %s' % review)
+    utc_now = local_to_utc(datetime.datetime.now())
 
     note_type = query_type('Note', 'Approved')
     note_type.html_class = 'green'
@@ -2387,31 +2541,54 @@ def approve_task(request):
     )
     DBSession.add(note)
 
-    if review:
-        try:
-            review.approve()
-            review.description = description
-            task.notes.append(note)
-        except StatusError as e:
-            return Response('StatusError: %s' % e, 500)
+    if forced:
+        has_permission = PermissionChecker(request)
+        if has_permission('Create_Review'):
+           review = forced_review(logged_in_user, task);
+           review.date_created = utc_now
+        else:
+            return Response('You dont have permission', 500)
     else:
-        logger.debug('task requested revision')
-        try:
-            task.approve()
-            task.notes.append(note)
-        except StatusError as e:
-            return Response('StatusError: %s' % e, 500)
+
+        status_new = Status.query.filter_by(code='NEW').first()
+
+        review = Review.query\
+            .filter(Review.reviewer_id == logged_in_user.id)\
+            .filter(Review.task_id == task.id)\
+            .filter(Review.status == status_new)\
+            .first()
+
+
+    logger.debug('review %s' % review)
+
+    if not review:
+        transaction.abort()
+        return Response('There is no review', 500)
+
+    try:
+        review.approve()
+        review.description = description
+        review.date_updated = utc_now
+
+        task.notes.append(note)
+    except StatusError as e:
+        return Response('StatusError: %s' % e, 500)
+
+    task.updated_by = logged_in_user
+    task.date_updated = utc_now
+
 
     if send_email:
          # send email to resources of the task
+
+        mailer = get_mailer(request)
+
         recipients = []
         for resource in task.resources:
             recipients.append(resource.email)
 
         for responsible in task.responsible:
             recipients.append(responsible.email)
-
-        mailer = get_mailer(request)
 
         task_hierarchical_name = get_task_hierarchical_name(task.id)
 
@@ -2448,7 +2625,6 @@ def approve_task(request):
             pass
 
     request.session.flash('success:Approved task')
-
     return Response('Successfully approved task')
 
 
@@ -2506,6 +2682,7 @@ def request_revision(request):
 
     send_email = request.params.get('send_email', 1)  # for testing purposes
     description = request.params.get('description', 1)
+    forced = request.params.get('forced', None)
 
     utc_now = local_to_utc(datetime.datetime.now())
 
@@ -2516,13 +2693,6 @@ def request_revision(request):
         'm': 'months',
         'y': 'years'
     }[schedule_unit]
-
-    status_new = Status.query.filter_by(code='NEW').first()
-    review = Review.query\
-        .filter(Review.reviewer_id == logged_in_user.id)\
-        .filter(Review.task_id == task.id)\
-        .filter(Review.status == status_new)\
-        .first()
 
     note_type = query_type('Note', 'Request Revision')
     note_type.html_class = 'purple'
@@ -2541,34 +2711,47 @@ def request_revision(request):
     )
     DBSession.add(note)
 
-    if review:
-        try:
-            review.request_revision(
-                schedule_timing,
-                schedule_unit,
-                description
-            )
-            #review.note = note
-            review.date_updated = utc_now
-
-            task.notes.append(note)
-        except StatusError as e:
-            return Response('StatusError: %s' % e, 500)
+    if forced:
+        has_permission = PermissionChecker(request)
+        if has_permission('Create_Review'):
+           # review = forced_review(logged_in_user, task);
+           # review.date_created = utc_now
+            assert isinstance(task,Task)
+            task.request_revision(logged_in_user,description,schedule_timing,schedule_unit)
+        else:
+            return Response('You dont have permission', 500)
     else:
 
-        logger.debug('task requested revision')
+        status_new = Status.query.filter_by(code='NEW').first()
+
+        review = Review.query\
+            .filter(Review.reviewer_id == logged_in_user.id)\
+            .filter(Review.task_id == task.id)\
+            .filter(Review.status == status_new)\
+            .first()
+
+        logger.debug('review %s' % review)
+
+        if not review:
+            transaction.abort()
+            return Response('There is no review', 500)
+
 
         try:
-            task.request_revision(
-                logged_in_user,
-                note.content,
-                schedule_timing,
-                schedule_unit
-            )
-            task.notes.append(note)
-        except StatusError as e:
-            return Response('StatusError: %s' % e, 500)
+            review.request_revision(
+                    schedule_timing,
+                    schedule_unit,
+                    description
+                )
+            review.date_updated = utc_now
 
+
+
+        except StatusError as e:
+                return Response('StatusError: %s' % e, 500)
+
+
+    task.notes.append(note)
     task.updated_by = logged_in_user
     task.date_updated = utc_now
 
@@ -2581,6 +2764,7 @@ def request_revision(request):
         recipients = []
         for responsible in task.responsible:
             recipients.append(responsible.email)
+
         for resource in task.resources:
             recipients.append(resource.email)
 
@@ -2614,7 +2798,10 @@ def request_revision(request):
             )
         )
 
-        mailer.send(message)
+        try:
+            mailer.send(message)
+        except ValueError:  # no internet connection
+            pass
 
     request.session.flash('success:Requested revision for the task')
     return Response('Successfully requested revision for the task')
