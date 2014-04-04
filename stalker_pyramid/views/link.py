@@ -552,7 +552,10 @@ def upload_files_to_server(request, file_params):
         temp_file_path = file_full_path + '~'
 
         # create folders
-        os.makedirs(file_path)
+        try:
+            os.makedirs(file_path)
+        except OSError:  # Path exist
+            pass
 
         output_file = open(temp_file_path, 'wb')  # TODO: guess ascii or binary mode
 
