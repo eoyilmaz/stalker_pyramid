@@ -41,23 +41,24 @@
         $.getJSON('/submit_search', {str: search_str, id:'{{entity.id}}'}).then(function (data) {
             window.location.assign(data.url);
         });
-
     }
+
     $(document).ready(function () {
         var search_input = $("#nav-search-input");
         search_input.typeahead({source: [], updater: function (b) {
             search_input.focus();
-            return b
+            return b;
         }});
 
         search_input.on('keyup', function () {
             var search_str = search_input.val();
 
             if (search_str.length > 3) {
-                $.getJSON('/search', {str: '%'+search_str+'%'}).then(function (data) {
+                $.getJSON('/search', {str: search_str}).then(function (data) {
 
                     var input_source = [];
-                    for (var i = 0; i < data.length; i++) {
+                    var result_count = data.length;
+                    for (var i = 0; i < Math.min(result_count, 10); i++) {
                         input_source.push(data[i].name);
                     }
 

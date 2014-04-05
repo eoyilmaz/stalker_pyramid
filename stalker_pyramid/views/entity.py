@@ -17,6 +17,7 @@
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
+import re
 import logging
 import datetime
 
@@ -673,23 +674,36 @@ def get_entity_events(request):
     renderer='json'
 )
 def get_search_result(request):
+    """returns search result
+    """
     logger.debug('get_search_result is running')
 
-    qString = request.params.get('str', -1)
-    logger.debug('qString: %s'% qString)
+    q_string = request.params.get('str', -1)
+    logger.debug('q_string: %s' % q_string)
 
-    entities = Entity.query.filter(Entity.name.ilike(qString)).all()
-    search_result = []
+    sql_query_buffer = [
+        'select id, name, entity_type from "SimpleEntities"',
+        'where'
+    ]
 
-    for entity in entities:
+    for i, part in enumerate(re.findall(r'[\w\d]+', q_string)):
+        if i > 0:
+            sql_query_buffer.append('and')
+        sql_query_buffer.append(
+            """"SimpleEntities".name ilike '%{s}%' """.format(s=part)
+        )
+    sql_query = '\n'.join(sql_query_buffer)
 
-        search_result.append({
-             'id': entity.id,
-            'name':entity.name,
-            'entity_type':entity.plural_class_name.lower()
-        })
-
-    return search_result
+    from sqlalchemy import text  # to be able to use "%" sign use this function
+    result = DBSession.connection().execute(text(sql_query))
+    return [
+        {
+            'id': r[0],
+            'name': r[1],
+            'entity_type': r[2]
+        }
+        for r in result.fetchall()
+    ]
 
 
 @view_config(
@@ -697,30 +711,52 @@ def get_search_result(request):
     renderer='json'
 )
 def submit_search(request):
-    """called when adding a User
+    """submits a search link suitable to be used with list_search_results()
+    function.
     """
     logger.debug('***submit_search user method starts ***')
 
     # get params
-    qString = request.params.get('str', None)
+    q_string = request.params.get('str', None)
     entity_id = request.params.get('id', None)
 
-    logger.debug('qString : %s' % qString)
+    logger.debug('qString : %s' % q_string)
 
-    result_location ='/'
+    result_location = '/'
 
-    # create and add a new user
-    if qString:
-        entities = SimpleEntity.query.filter(
-            Entity.name.ilike('%' + qString + '%')
-        ).all()
-        result_location = '/'
+    if q_string:
+        sql_query_buffer = [
+            'select count(1)',
+            'from "Entities"',
+            'join "SimpleEntities" on "Entities".id = "SimpleEntities".id',
+            'where'
+        ]
 
-        if len(entities) > 1:
+        for i, part in enumerate(re.findall(r'[\w\d]+', q_string)):
+            if i > 0:
+                sql_query_buffer.append('and')
+            sql_query_buffer.append(
+                """"SimpleEntities".name ilike '%{s}%' """.format(s=part)
+            )
+        sql_query = '\n'.join(sql_query_buffer)
+
+        from sqlalchemy import text
+        result = DBSession.connection().execute(text(sql_query))
+
+        entity_count = result.fetchone()[0]
+        logger.debug('entity_count : %s' % entity_count)
+
+        if entity_count > 1:
             result_location = \
-                '/list/search_results?str=%s&eid=%s' % (qString, entity_id)
-        elif len(entities) == 1:
-            entity = entities[0]
+                '/list/search_results?str=%s&eid=%s' % (q_string, entity_id)
+        elif entity_count == 1:
+            sql_query_buffer[0] = 'select "SimpleEntities".id'
+            sql_query = '\n'.join(sql_query_buffer)
+
+            logger.debug('sql_query: %s' % sql_query)
+            result = DBSession.connection().execute(text(sql_query))
+
+            entity = Entity.query.get(result.fetchone()[0])
             result_location = \
                 '/%s/%s/view' % (entity.plural_class_name.lower(), entity.id)
 
@@ -736,8 +772,11 @@ def submit_search(request):
     renderer='list_search_result.jinja2'
 )
 def list_search_result(request):
+    """lists the search result, it should use raw SQL instead of Python
+    """
     qString = request.params.get('str', None)
     entity_id = request.params.get('eid', None)
+
     entity = Entity.query.filter_by(id=entity_id).first()
 
     results = Entity.query.filter(
@@ -757,7 +796,7 @@ def list_search_result(request):
         'stalker_pyramid': stalker_pyramid,
         'projects': projects,
         'studio': studio,
-        'results':results
+        'results': results
     }
 
 @view_config(

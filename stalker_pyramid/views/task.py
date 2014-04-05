@@ -1035,7 +1035,6 @@ def get_tasks(request):
 
     sql_query = sql_query % {'where_condition': where_condition}
 
-
     # convert to dgrid format right here in place
     result = DBSession.connection().execute(sql_query)
 
