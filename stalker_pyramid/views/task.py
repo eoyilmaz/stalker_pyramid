@@ -774,8 +774,11 @@ def update_task(request):
 
     if updated_parent:
         # update parent statuses
-        prev_parent.update_status_with_children_statuses()
-        task.parent.update_status_with_children_statuses()
+        if prev_parent:
+            prev_parent.update_status_with_children_statuses()
+
+        if task.parent:
+            task.parent.update_status_with_children_statuses()
 
     return Response('Task updated successfully')
 
