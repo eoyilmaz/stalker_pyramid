@@ -751,12 +751,12 @@ def update_task(request):
     task.type = query_type(entity_type, type_name)
 
     if entity_type == 'Shot':
-        shot = task
-        shot.sequences = [
+        logger.debug('entity_type is Shot')
+        task.sequences = [
             Sequence.query.filter_by(id=shot_sequence_id).first()
         ]
-        shot.cut_in = cut_in
-        shot.cut_out = cut_out
+        task.cut_in = cut_in
+        task.cut_out = cut_out
 
     task._reschedule(task.schedule_timing, task.schedule_unit)
     if update_bid:
@@ -766,8 +766,6 @@ def update_task(request):
     else:
         logger.debug('not updating bid')
     return Response('Task updated successfully')
-
-
 
 
 def depth_first_flatten(task, task_array=None):
@@ -1367,12 +1365,23 @@ def get_project_tasks_count(request):
     flat json format
     """
     project_id = request.matchdict.get('id', -1)
+    is_leaf = request.params.get('leaf', 0)
 
-    sql_query = """select
-        count(1)
-    from "Tasks"
-    where "Tasks".project_id = %s
-    """ % project_id
+    if is_leaf:
+        sql_query = """select
+            count(1)
+        from "Tasks"
+        where not exists (
+            select 1 from "Tasks" as "All_Tasks"
+            where "All_Tasks".parent_id = "Tasks".id
+            ) and "Tasks".project_id = %s
+        """ % project_id
+    else:
+        sql_query = """select
+            count(1)
+        from "Tasks"
+        where "Tasks".project_id = %s
+        """ % project_id
 
     return DBSession.connection().execute(sql_query).fetchone()[0]
 

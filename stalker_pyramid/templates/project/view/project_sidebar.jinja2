@@ -31,7 +31,7 @@
             '{{ project.open_tickets | count }}'
         );
 
-        $.getJSON('/projects/{{ project.id }}/tasks/count/').then(function (data) {
+        $.getJSON('/projects/{{ project.id }}/tasks/count/?leaf=1').then(function (data) {
             menu_of(
                 'Tasks',
                 "{%- if request.current_route_path() == request.route_path('list_entity_tasks', id=project.id) -%}'active',{%- else -%},{%- endif -%}",

@@ -339,7 +339,7 @@
             shot_cut_in = {{ entity.cut_in }};
             shot_cut_out = {{ entity.cut_out }};
             {% if entity.sequences[0] %}
-                shot_sequences = '{{ entity.sequences[0].id }}'
+                shot_sequences = '{{ entity.sequences[0].id }}';
             {% endif %}
 
             console.log('shot_sequences :', shot_sequences);
