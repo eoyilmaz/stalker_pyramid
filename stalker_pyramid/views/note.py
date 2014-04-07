@@ -130,9 +130,9 @@ def get_entity_notes(request):
         left outer join "SimpleEntities" as "Notes_Types_SimpleEntities" on "Notes_Types_SimpleEntities".id = "Notes_SimpleEntities".type_id
         join "SimpleEntities" as "User_SimpleEntities" on "Notes_SimpleEntities".created_by_id = "User_SimpleEntities".id
         join "Links" as "Users_Thumbnail_Links" on "Users_Thumbnail_Links".id = "User_SimpleEntities".thumbnail_id
-        where "Notes".entity_id = %(entity_id)s
+        join "Entity_Notes" on "Notes".id = "Entity_Notes".note_id
+        where "Entity_Notes".entity_id = %(entity_id)s
         order by "Notes_SimpleEntities".date_created desc"""
-
 
     sql_query = sql_query % {'entity_id': entity_id}
 
