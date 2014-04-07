@@ -708,7 +708,7 @@ def update_task(request):
     task.description = description
 
     prev_parent = task.parent
-
+    updated_parent = False
     try:
         task.parent = parent
     except CircularDependencyError as e:
@@ -771,6 +771,12 @@ def update_task(request):
         task.bid_unit = task.schedule_unit
     else:
         logger.debug('not updating bid')
+
+    if updated_parent:
+        # update parent statuses
+        prev_parent.update_status_with_children_statuses()
+        task.parent.update_status_with_children_statuses()
+
     return Response('Task updated successfully')
 
 
