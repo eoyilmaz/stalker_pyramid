@@ -709,19 +709,25 @@ def update_task(request):
 
     prev_parent = task.parent
 
-    if task.status.code == 'WFD' or task.status.code == 'RTS':
-        try:
-            task.parent = parent
-            task.depends = depends
-        except CircularDependencyError:
-            transaction.abort()
-            message = \
-                '</div>Parent item can not also be a dependent for the ' \
-                'updated item:<br><br>Parent: %s<br>Depends To: %s</div>' % (
-                    parent.name, map(lambda x: x.name, depends)
-                )
-            transaction.abort()
-            return Response(message, 500)
+    try:
+        task.parent = parent
+    except CircularDependencyError as e:
+        transaction.abort()
+        message = StdErrToHTMLConverter(e)
+        transaction.abort()
+        return Response(message.html(), 500)
+
+    try:
+        task.depends = depends
+    except CircularDependencyError:
+        transaction.abort()
+        message = \
+            '</div>Parent item can not also be a dependent for the ' \
+            'updated item:<br><br>Parent: %s<br>Depends To: %s</div>' % (
+                parent.name, map(lambda x: x.name, depends)
+            )
+        transaction.abort()
+        return Response(message, 500)
 
     task.schedule_model = schedule_model
     task.schedule_unit = schedule_unit
