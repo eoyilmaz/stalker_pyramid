@@ -253,8 +253,8 @@ def get_entity_versions(request):
             } if version.parent else None,
         'absolute_full_path': path_converter(version.absolute_full_path),
         'created_by': {
-            'id': version.created_by.id,
-            'name': version.created_by.name
+            'id': version.created_by.id if version.created_by else None,
+            'name': version.created_by.name if version.created_by else None
         },
         'is_published': version.is_published,
         'version_number': version.version_number,
