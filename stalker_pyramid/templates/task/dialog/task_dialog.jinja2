@@ -366,7 +366,7 @@
             {% endif %}
             $.getJSON('{{request.route_url('get_task', id=entity.id) }}').then(
                 function (data) {
-                    $('#task_description').val(data.description);
+                    $('#task_description').val(data[0].description);
                 }
             );
             {% if entity.type %}
