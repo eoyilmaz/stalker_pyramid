@@ -3337,7 +3337,10 @@ def delete_task(request):
         unbind_task_hierarchy_from_tickets(task)
 
         DBSession.delete(task)
-        transaction.commit()
+        #transaction.commit()
+        logger.debug(
+            'Successfully deleted task: %s (%s)' % (task.name, task_id)
+        )
     except Exception as e:
         transaction.abort()
         c = StdErrToHTMLConverter(e)
