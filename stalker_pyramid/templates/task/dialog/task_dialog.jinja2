@@ -96,7 +96,7 @@
                                      word-wrap: break-word;
                                      resize: horizontal;
                                      height: 50px;"
-                              >{% if mode=='update' %}{{ entity.description }}{% endif %}</textarea>
+                              ></textarea>
                 </div>
             </div>
 
@@ -364,7 +364,11 @@
             {% if entity.entity_type != 'Task' %}
                 code = "{{ entity.code }}";
             {% endif %}
-            description = '{{ entity.description }}';
+            $.getJSON('{{request.route_url('get_task', id=entity.id) }}').then(
+                function (data) {
+                    $('#task_description').val(data.description);
+                }
+            );
             {% if entity.type %}
                 type = '{{ entity.type.name }}';
             {% endif %}
