@@ -18,29 +18,18 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 import logging
-import time
 import datetime
-import json
 
 import transaction
 from pyramid.response import Response
 from pyramid.view import view_config
-from pyramid.httpexceptions import HTTPServerError, HTTPOk, HTTPForbidden
-from pyramid_mailer import get_mailer
-from pyramid_mailer.message import Message
-
-from sqlalchemy.exc import IntegrityError
 
 from stalker.db import DBSession
-from stalker import (defaults, User, Task, Review, Entity, Note, Type)
-from stalker.exceptions import CircularDependencyError, StatusError
+from stalker import (Entity, Note, Type)
 
-from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
-                                   get_multi_integer, milliseconds_since_epoch,
-                                   StdErrToHTMLConverter,
-                                   multi_permission_checker,
-                                   dummy_email_address, local_to_utc, get_user_os)
-from stalker_pyramid.views.type import query_type
+from stalker_pyramid.views import (get_logged_in_user,
+                                   milliseconds_since_epoch,
+                                   StdErrToHTMLConverter, local_to_utc)
 
 
 logger = logging.getLogger(__name__)
@@ -48,9 +37,11 @@ logger.setLevel(logging.DEBUG)
 
 
 @view_config(
-     route_name='create_entity_note'
+    route_name='create_entity_note'
 )
 def create_entity_note(request):
+    """TODO: what does this thing do???
+    """
 
     logger.debug('create_entity_note is running')
 
@@ -67,29 +58,27 @@ def create_entity_note(request):
         transaction.abort()
         return Response('There is no entity with id: %s' % entity_id, 500)
 
-
     logger.debug('content %s' % content)
 
     if content != '':
 
         note_type = Type.query.filter_by(name='Simple Text').first()
         if note_type is None:
-                 # create a new Type
-                note_type = Type(
-                    name='Simple Text',
-                    code='Simple_Text',
-                    target_entity_type='Note',
-                    html_class='grey'
-
-                )
+             # create a new Type
+            note_type = Type(
+                name='Simple Text',
+                code='Simple_Text',
+                target_entity_type='Note',
+                html_class='grey'
+            )
 
         note = Note(
-                    content=content,
-                    created_by=logged_in_user,
-                    date_created=utc_now,
-                    date_updated=utc_now,
-                    type = note_type
-                )
+            content=content,
+            created_by=logged_in_user,
+            date_created=utc_now,
+            date_updated=utc_now,
+            type=note_type
+        )
 
         DBSession.add(note)
 
@@ -152,9 +141,6 @@ def get_entity_notes(request):
         }
         for r in result.fetchall()
     ]
-
-
-
     return return_data
 
 
@@ -168,12 +154,9 @@ def delete_note_dialog(request):
     logger.debug('delete_note_dialog is starts')
 
     note_id = request.matchdict.get('id')
-    note = Note.query.get(note_id)
 
     action = '/notes/%s/delete' % note_id
-
     came_from = request.params.get('came_from', '/')
-
     message = 'Are you sure to delete this note?'
 
     logger.debug('action: %s' % action)
@@ -187,12 +170,11 @@ def delete_note_dialog(request):
 
 @view_config(
     route_name='delete_note',
-     permission='Delete_Note'
+    permission='Delete_Note'
 )
 def delete_note(request):
     """deletes the task with the given id
     """
-
     logger.debug('delete_note is starts')
 
     note_id = request.matchdict.get('id')
@@ -203,7 +185,6 @@ def delete_note(request):
         return Response('Can not find an Note with id: %s' % note_id, 500)
 
     try:
-
         DBSession.delete(note)
         transaction.commit()
     except Exception as e:
@@ -213,6 +194,3 @@ def delete_note(request):
         return Response(c.html(), 500)
 
     return Response('Successfully deleted note')
-
-
-
