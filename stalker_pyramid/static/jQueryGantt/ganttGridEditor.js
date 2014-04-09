@@ -119,27 +119,32 @@ GridEditor.prototype.refreshTaskRow = function (task) {
         return;
     }
 
-    row.find(".taskRowIndex").html(task.getRow() + 1);
-    row.find(".indentCell").css("padding-left", task.getParents().length * 15);
-    row.find(".name").html(task.name);
-    row.find(".id").html(task.id);
+    setTimeout(function(){
+        row.find(".taskRowIndex").html(task.getRow() + 1);
+        row.find(".indentCell").css("padding-left", task.getParents().length * 15);
+        row.find(".name").html(task.name);
+        row.find(".id").html(task.id);
 
-    row.find(".timing").html(task.schedule_model.toUpperCase()[0] + ":" + task.schedule_timing + task.schedule_unit);
-    row.find(".start").html(new Date(task.start).format("yyyy-mm-dd HH:00")).updateOldValue(); // called on dates only because for other field is called on focus event
-    row.find(".end").html(new Date(task.end).format("yyyy-mm-dd HH:00")).updateOldValue();
+        row.find(".timing").html(task.schedule_model.toUpperCase()[0] + ":" + task.schedule_timing + task.schedule_unit);
+        row.find(".start").html(new Date(task.start).format("yyyy-mm-dd HH:00")).updateOldValue(); // called on dates only because for other field is called on focus event
+        row.find(".end").html(new Date(task.end).format("yyyy-mm-dd HH:00")).updateOldValue();
+    });
 };
 
 
 GridEditor.prototype.refreshResourceRow = function (resource) {
     var row = resource.rowElement;
-    row.find(".resourceRowIndex").html(resource.getRow() + 1);
-    row.find(".id").html(resource.id);
-    row.find(".name").html(resource.name);
+    setTimeout(function(){
+        row.find(".resourceRowIndex").html(resource.getRow() + 1);
+        row.find(".id").html(resource.id);
+        row.find(".name").html(resource.name);
+    });
 };
 
 
 GridEditor.prototype.refresh = function () {
     var i;
+    var self = this;
     if (this.master.grid_mode === 'Task') {
         var tasks, task_count;
         tasks = this.master.tasks;
