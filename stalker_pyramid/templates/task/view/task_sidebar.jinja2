@@ -135,6 +135,14 @@
                 get_icon('shot'),
                 ''
             )
+
+            menu_of(
+                'Previses',
+                "{%- if request.current_route_path() == request.route_path('list_sequence_tasks', id=task.id, _query={'task_type': Previs }) -%}'active',{%- else -%},{%- endif -%}",
+                "/sequences/{{ task.id }}/tasks/list?task_type=Previs",
+                get_icon('previs'),
+                ''
+            )
         {% endif %}
 
         menu_of(

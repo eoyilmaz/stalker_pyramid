@@ -120,30 +120,40 @@ def create_time_log(request):
     """runs when creating a time_log
     """
     logger.debug('create_time_log method starts')
+
+    #**************************************************************************
+    # task
     task_id = request.params.get('task_id')
-
-    logger.debug('task_id : %s' % task_id)
-
     task = Task.query.filter(Task.id == task_id).first()
+
+    logger.debug('task_id     : %s' % task_id)
+    logger.debug('task        : %s' % task)
 
     if not task:
         return Response('No task with id %s found' % task_id, 500)
 
     #**************************************************************************
-    # collect data
+    # resource
     resource_id = request.params.get('resource_id', None)
     resource = User.query.filter(User.id == resource_id).first()
 
+    logger.debug('resource_id : %s' % resource_id)
+    logger.debug('resource : %s' % resource)
+
+    if not resource:
+        return Response('No user with id %s found' % resource_id, 500)
+
+    #**************************************************************************
+    # collect data
     start_date = get_date(request, 'start')
     end_date = get_date(request, 'end')
-
+    auto_split_working_hours = request.params.get('auto_split_wh', None)
     description = request.params.get('description', '')
 
-    logger.debug('task_id     : %s' % task_id)
-    logger.debug('task        : %s' % task)
-    logger.debug('resource_id : %s' % resource_id)
     logger.debug('start_date  : %s' % start_date)
     logger.debug('end_date    : %s' % end_date)
+    logger.debug('auto_split_working_hours  : %s' % auto_split_working_hours)
+    logger.debug('description    : %s' % description)
 
     if task and resource and start_date and end_date:
         # we are ready to create the time log

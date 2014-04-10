@@ -1636,7 +1636,18 @@ def get_entity_tasks_by_filter(request):
     "Statuses_SimpleEntities".html_class as status_color,
     "Project_SimpleEntities".id as project_id,
     "Project_SimpleEntities".name as project_name,
-    array_agg("Reviewers".reviewer_id) as reviewer_id
+    array_agg("Reviewers".reviewer_id) as reviewer_id,
+    ((("Tasks".bid_timing * (case "Tasks".bid_unit
+                when 'min' then 60
+                when 'h' then 3600
+                when 'd' then 32400
+                when 'w' then 147600
+                when 'm' then 590400
+                when 'y' then 7696277
+                else 0
+            end))-coalesce("Task_TimeLogs".duration, 0.0))/3600
+
+    ) as hour_to_complete
 
     from "Tasks"
     join "Task_Resources" on "Task_Resources".task_id = "Tasks".id
@@ -1759,6 +1770,7 @@ join ((
         "Statuses_SimpleEntities".html_class,
         "Project_SimpleEntities".id,
         "Project_SimpleEntities".name,
+        hour_to_complete,
         type_name
     """
     where_condition_for_entity = ''
@@ -1804,7 +1816,8 @@ join ((
             'project_id': r[11],
             'project_name': r[12],
             'request_review': '1' if (logged_in_user.id in r[6] or r[2] == logged_in_user.id) and r[9] == 'WIP' else None,
-            'review': '1' if logged_in_user.id in  r[13] and r[9]=='PREV' else None
+            'review': '1' if logged_in_user.id in  r[13] and r[9]=='PREV' else None,
+            'hour_to_complete':r[14]
         }
         for r in result.fetchall()
     ]
@@ -3469,3 +3482,66 @@ def get_task_dependency(request):
         )
 
     return list_of_dep_tasks_json
+
+
+@view_config(
+    route_name='get_task_children_task_type',
+    renderer='json'
+)
+def get_task_children_task_type(request):
+    """returns the Task Types defined under the Shot container
+    """
+    task_type_name = request.matchdict.get('task_type', -1)
+
+    task_type = Type.query.filter_by(name=task_type_name).first()
+
+    if not task_type:
+        transaction.abort()
+        return Response('Can not find a Type with name: %s' % task_type_name, 500)
+
+
+    sql_query = """select
+        "SimpleEntities".id as type_id,
+        "SimpleEntities".name as type_name
+    from "SimpleEntities"
+    join "SimpleEntities" as "Task_SimpleEntities" on "SimpleEntities".id = "Task_SimpleEntities".type_id
+    join "Tasks" on "Task_SimpleEntities".id = "Tasks".id
+    join (
+        select "Tasks".id as task_id
+
+        from "Tasks"
+        join "SimpleEntities" as "Tasks_SimpleEntities" on "Tasks_SimpleEntities".id = "Tasks".id
+        join "Types" as "Tasks_Types" on "Tasks_Types".id = "Tasks_SimpleEntities".type_id
+
+        where "Tasks_Types".id = %(task_type_id)s
+
+    ) as "Selected_Type_Tasks" on "Selected_Type_Tasks".task_id = "Tasks".parent_id
+    group by "SimpleEntities".id, "SimpleEntities".name
+    order by "SimpleEntities".name"""
+
+    sql_query = sql_query % {'task_type_id': task_type.id}
+
+    result = DBSession.connection().execute(sql_query)
+
+    return_data = [
+        {
+            'id': r[0],
+            'name': r[1]
+
+        }
+        for r in result.fetchall()
+    ]
+
+    content_range = '%s-%s/%s'
+
+    type_count = len(return_data)
+    content_range = content_range % (0, type_count - 1, type_count)
+
+    logger.debug('content_range : %s' % content_range)
+
+    resp = Response(
+        json_body=return_data
+    )
+    resp.content_range = content_range
+    return resp
+

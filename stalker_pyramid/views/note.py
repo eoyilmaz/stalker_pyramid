@@ -60,7 +60,7 @@ def create_entity_note(request):
 
     logger.debug('content %s' % content)
 
-    if content != '':
+    if content:
 
         note_type = Type.query.filter_by(name='Simple Text').first()
         if note_type is None:
@@ -81,8 +81,15 @@ def create_entity_note(request):
         )
 
         DBSession.add(note)
-
         entity.notes.append(note)
+
+        logger.debug('note is created by %s' % logged_in_user.name)
+        request.session.flash('note is created by %s' % logged_in_user.name)
+
+    else:
+
+        transaction.abort()
+        return Response( 'No content', 500)
 
     return Response('Task note is created')
 
@@ -118,7 +125,7 @@ def get_entity_notes(request):
         join "SimpleEntities" as "Notes_SimpleEntities" on "Notes_SimpleEntities".id = "Notes".id
         left outer join "SimpleEntities" as "Notes_Types_SimpleEntities" on "Notes_Types_SimpleEntities".id = "Notes_SimpleEntities".type_id
         join "SimpleEntities" as "User_SimpleEntities" on "Notes_SimpleEntities".created_by_id = "User_SimpleEntities".id
-        join "Links" as "Users_Thumbnail_Links" on "Users_Thumbnail_Links".id = "User_SimpleEntities".thumbnail_id
+        left outer join "Links" as "Users_Thumbnail_Links" on "Users_Thumbnail_Links".id = "User_SimpleEntities".thumbnail_id
         join "Entity_Notes" on "Notes".id = "Entity_Notes".note_id
         where "Entity_Notes".entity_id = %(entity_id)s
         order by "Notes_SimpleEntities".date_created desc"""
