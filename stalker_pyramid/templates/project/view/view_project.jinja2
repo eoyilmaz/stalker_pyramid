@@ -133,6 +133,7 @@
                     </div>
                 </div>
             </td>
+
             <td>
                 <span class="label label-{{=it.status_color}}">{{=it.status}}</span>
             </td>
@@ -208,6 +209,7 @@
         <th>Responsible</th>
         <th>Type</th>
         <th>Completed</th>
+        <th>Hour to Complete</th>
         <th></th>
     </tr>
 </script>
@@ -230,6 +232,7 @@
                 </div>
             </div>
         </td>
+        <td {{ if (it.hour_to_complete<0) { }}style="background-color: #ff0000; opacity:0.8;"{{ } }}>{{=it.hour_to_complete}} h</td>
         <td>
                 <div class="hidden-phone visible-desktop action-buttons">
                     <a class="blue" href='/tasks/{{=it.id}}/view'>

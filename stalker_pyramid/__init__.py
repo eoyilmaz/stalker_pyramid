@@ -444,6 +444,8 @@ def main(global_config, **settings):
 
     config.add_route('get_shots_children_task_type',  'shots/children/task_type/')  # json
 
+
+
     # *************************************************************************
     # Sequence
     config.add_route('create_sequence_dialog', 'sequences/{id}/create/dialog')
@@ -503,6 +505,7 @@ def main(global_config, **settings):
     config.add_route('get_task',          'tasks/{id}/')
     config.add_route('get_task_children', 'tasks/{id}/children/')
     config.add_route('get_task_events',   'tasks/{id}/events/')  #json
+    config.add_route('get_task_children_task_type',  'tasks/{type}/children/task_type/')  # json
 
     config.add_route('get_task_dependency',  'tasks/{id}/dependency/{type}/') # json
     config.add_route('get_task_tickets',  'tasks/{id}/tickets')  # json

@@ -97,6 +97,7 @@
         <th>Responsible</th>
         <th>Type</th>
         <th>Completed</th>
+        <th>Hours To Complete</th>
         <th></th>
     </tr>
 </script>
@@ -117,6 +118,7 @@
                 </div>
             </div>
         </td>
+        <td {{ if (it.hour_to_complete<0) { }}style="background-color: #ff0000; opacity:0.8;"{{ } }}>{{=it.hour_to_complete}} h</td>
         <td>
                 <div class="hidden-phone visible-desktop action-buttons">
                     <a class="blue" href='/tasks/{{=it.id}}/view'>
@@ -179,7 +181,7 @@
 
     <script type="text/javascript">
         $(document).ready(function () {
-            $.getJSON('/users/{{ entity.id }}/events/?keys=time_log&keys=vacation&keys=task').then(function (data) {
+            $.getJSON('/users/{{ entity.id }}/events/?keys=time_log&keys=vacation').then(function (data) {
                 var events = [];
 
 {#                var time_log_data = [0, 0, 0, 0, 0, 0, 0];#}
