@@ -2918,7 +2918,6 @@ def request_review_task_dialog(request):
 def request_review(request):
     """creates a new ticket and sends an email to the responsible
     """
-
     logger.debug('request_review method starts')
     # get logged in user as he review requester
     logged_in_user = get_logged_in_user(request)
@@ -3020,6 +3019,8 @@ def request_progress_review(request):
 
     if send_email:
         recipients.append(logged_in_user.email)
+        recipients.extend(task.responsible)
+
         description_temp = \
             '%(user)s has requested you to do a progress review for ' \
             '%(task_hierarchical_name)s with the following note:' \
@@ -3098,18 +3099,17 @@ def request_final_review(request):
         review.note = note
 
     if send_email:
-        recipients = [logged_in_user.email]
+        #*******************************************************************
+        # info message for responsible
+        recipients = []
 
         for responsible in task.responsible:
             recipients.append(responsible.email)
 
-        for resource in task.resources:
-            recipients.append(resource.email)
-
         task_hierarchical_name = get_task_hierarchical_name(task.id)
         description_temp = \
             '%(user)s has requested you to do a final review for ' \
-            '%(task_hierarchical_name)s with this note:%(note)s '
+            '%(task_hierarchical_name)s with the following note:%(note)s'
 
         mailer = get_mailer(request)
 
@@ -3131,6 +3131,51 @@ def request_final_review(request):
                 task_hierarchical_name,
                 note.content
             )
+        )
+
+        try:
+            mailer.send(message)
+        except ValueError:
+            pass
+
+        #*******************************************************************
+        # info message for resources and logged in user
+        recipients = [logged_in_user.email]
+        for resource in task.resources:
+            recipients.append(resource.email)
+
+        description_temp = \
+            'Your final review request from %(responsible)s for ' \
+            '%(task_hierarchical_name)s with the following note has been ' \
+            'sent:%(note)s'
+
+        mailer = get_mailer(request)
+
+        responsible_names = ', '.join(map(lambda x: x.name, task.responsible))
+        responsible_names_html = ', '.join(
+            map(lambda x: '<strong>%s</strong>' % x.name, task.responsible)
+        )
+        message = Message(
+            subject='Review Request: "%(task_hierarchical_name)s)' % {
+                'task_hierarchical_name': task_hierarchical_name
+            },
+            sender=dummy_email_address,
+            recipients=recipients,
+            body=description_temp % {
+                "user": logged_in_user.name,
+                'responsible': responsible_names,
+                "task_hierarchical_name": task_hierarchical_name,
+                "note": note.content,
+                "spacing": '\n\n'
+            },
+            html={
+                "user": '<strong>%s</strong>' % logged_in_user.name,
+                'responsible': responsible_names_html,
+                "task_hierarchical_name":
+                    '<strong>%s</strong>' % task_hierarchical_name,
+                "note": '<br/><br/> %s ' % note.content,
+                "spacing": '<br><br>'
+            }
         )
 
         try:
