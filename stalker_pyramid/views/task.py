@@ -3168,7 +3168,7 @@ def request_final_review(request):
                 "note": note.content,
                 "spacing": '\n\n'
             },
-            html={
+            html=description_temp % {
                 "user": '<strong>%s</strong>' % logged_in_user.name,
                 'responsible': responsible_names_html,
                 "task_hierarchical_name":
