@@ -50,6 +50,21 @@
                 </div>
             </div>
 
+            {# Auto-Split #}
+            <div id="auto_split_wh_cg" class="control-group hide">
+                <label class="span2 control-label" for="auto_split_wh">
+
+                </label>
+                <div class="span10">
+							<input id="auto_split_wh"
+                                   name="auto_split_wh"
+                                   type="checkbox"
+                                   class="ace ace-checkbox-2" checked>
+							<span class="lbl blue" for="auto_split_wh"> In Working Hours of Studio</span>
+						</div>
+            </div>
+
+
             {# Start Time#}
             <div class="control-group">
                 <label class='span2 control-label'for='start_time'>From</label>
@@ -91,6 +106,7 @@
                 </div>
             </div>
 
+
         </div>
 
     </form>
@@ -116,6 +132,7 @@
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.validate.min.js") }}'></script>
 {#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.easy-pie-chart.min.js") }}'></script>#}
 
+
 <script>
 function init_dialog() {
     console.debug('starting to initialize time_log dialog!!!');
@@ -130,6 +147,8 @@ function init_dialog() {
 
     var start_date_value = new Date(event_dialog.attr('start'));
     var end_date_value = new Date(event_dialog.attr('end'));
+
+
 
     var start_time_value = start_date_value;
     var end_time_value = end_date_value;
@@ -286,6 +305,8 @@ function init_dialog() {
 
         update_hours_to_complete();
 
+
+
         {% if has_permission('Delete_TimeLog') %}
             $('#dialog_template_delete_button').show();
             $('#dialog_template_delete_button').on('click', function (e) {
@@ -326,6 +347,7 @@ function init_dialog() {
     {# Get Start End  #}
 
     var get_start_end = function () {
+
         var date_range = $('#start_end_date_range_picker').daterangepicker().val().split(' - ');
         var start_date_string = date_range[0].split('/');
         var end_date_string = date_range[1].split('/');
@@ -348,6 +370,18 @@ function init_dialog() {
             parseInt(end_time_string[1]),
             0, 0
         );
+
+
+
+
+        if(start.getDate() == end.getDate() && start.getMonth()==end.getMonth()) {
+
+            $('#auto_split_wh_cg').hide()
+
+        }else{
+
+            $('#auto_split_wh_cg').show();
+        }
         return [start, end];
     };
 
@@ -384,7 +418,7 @@ function init_dialog() {
     var start_time = $('#start_time');
     start_time.val(start_time_value.format('HH:MM'));
     start_time.timepicker({
-        minuteStep: 1,
+        minuteStep: 10,
         showSeconds: false,
         showMeridian: false
     });
@@ -399,7 +433,7 @@ function init_dialog() {
     var end_time = $('#end_time');
     end_time.val(end_time_value.format('HH:MM'));
     end_time.timepicker({
-        minuteStep: 1,
+        minuteStep: 10,
         showSeconds: false,
         showMeridian: false
     });
@@ -408,6 +442,8 @@ function init_dialog() {
     end_time.on('hide.timepicker', function () {
         update_hours_to_complete()
     });
+
+
 
     {# ***************************************************************** #}
     {# Submit Button #}
@@ -426,6 +462,13 @@ function init_dialog() {
             var start_end = get_start_end();
             var start = start_end[0];
             var end = start_end[1];
+
+            if(start.getDate() == end.getDate() && start.getMonth()==end.getMonth()) {
+
+                $('#auto_split_wh').prop('checked','')
+
+            }
+
 
             $.post(
                 time_log_form.attr('action'),

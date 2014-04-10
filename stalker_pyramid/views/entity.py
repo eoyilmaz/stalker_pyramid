@@ -194,6 +194,10 @@ logger.setLevel(logging.DEBUG)
     renderer='templates/shot/list/list_entity_shots.jinja2'
 )
 @view_config(
+    route_name='list_sequence_tasks',
+    renderer='templates/task/list/list_entity_tasks.jinja2'
+)
+@view_config(
     route_name='list_entity_shots',
     renderer='templates/shot/list/list_entity_shots.jinja2'
 )
