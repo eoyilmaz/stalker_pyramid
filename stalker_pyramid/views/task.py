@@ -224,7 +224,10 @@ def fix_task_statuses(request):
         task.update_status_with_dependent_statuses()
         task.update_status_with_children_statuses()
 
-    return HTTPOk()
+
+    request.session.flash('success: Task status is fixed!')
+
+    return Response('Task status is fixed!')
 
 
 @view_config(
