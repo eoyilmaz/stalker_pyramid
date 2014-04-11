@@ -168,5 +168,29 @@ def update_studio(request):
     return HTTPOk()
 
 
+@view_config(
+    route_name='get_last_schedule_info',
+    renderer='json'
+)
+def get_last_schedule_info(request):
+    """returns the last schedule info
+    """
+    # there should be only one studio
+    sql_query = """
+    select
+        extract(epoch from last_scheduled_at::timestamp AT TIME ZONE 'UTC') * 1000 as last_scheduled_at,
+        extract(epoch from last_scheduled_at::timestamp AT TIME ZONE 'UTC' - scheduling_started_at::timestamp AT TIME ZONE 'UTC') as duration,
+        "SimpleEntities".name as last_scheduled_by
+    from "Studios"
+    left outer join "SimpleEntities" on "Studios".last_scheduled_by_id = "SimpleEntities".id
+    """
 
+    from stalker import db
+    result = db.DBSession.connection().execute(sql_query)
+    r = result.fetchone()
 
+    return {
+        'last_scheduled_at': r[0],
+        'last_scheduling_took': r[1],
+        'last_scheduled_by': r[2]
+    }

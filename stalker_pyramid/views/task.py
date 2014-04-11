@@ -2221,6 +2221,8 @@ def create_task(request):
 def auto_schedule_tasks(request):
     """schedules all the tasks of active projects
     """
+    logged_in_user = get_logged_in_user(request)
+
     # get the studio
     studio = Studio.query.first()
 
@@ -2233,7 +2235,13 @@ def auto_schedule_tasks(request):
     studio.scheduler = tj_scheduler
 
     try:
-        stderr = studio.schedule()
+        stderr = studio.schedule(scheduled_by=logged_in_user)
+
+        # update schedule timings to UTC
+        studio.last_scheduled_at = local_to_utc(studio.last_scheduled_at)
+        studio.scheduling_started_at = \
+            local_to_utc(studio.scheduling_started_at)
+
         c = StdErrToHTMLConverter(stderr)
         return Response(c.html(replace_links=True))
     except RuntimeError as e:

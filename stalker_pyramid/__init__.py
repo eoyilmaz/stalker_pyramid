@@ -237,6 +237,8 @@ def main(global_config, **settings):
     config.add_route('list_studio_departments',     'studios/{id}/departments/list')  # html
     config.add_route('list_studio_groups',          'groups/list')  # html
 
+    config.add_route('get_last_schedule_info',      'last_schedule_info')  # json
+
     # *************************************************************************
     # Project
     config.add_route('project_dialog',             'projects/{id}/{mode}/dialog')
