@@ -417,7 +417,7 @@ define([
                         renderCell: function (object, value, node, options) {
                             // map time unit names
                             var time_unit_names = {
-                                'min': 'Minutes',
+                                'min': 'Minute',
                                 'h': 'Hour',
                                 'd': 'Day',
                                 'w': 'Week',
