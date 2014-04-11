@@ -253,7 +253,11 @@ def assign_reference(request):
 
         # assign all the tags to the links
         for link in links:
-            link.tags.extend(tags)
+            # add the ones not in the tags already
+            for tag in tags:
+                if tag not in link.tags:
+                    link.tags.append(tag)
+            #link.tags.extend(tags)
             # generate thumbnail
             thumbnail = generate_thumbnail(link)
             link.thumbnail = thumbnail
@@ -270,7 +274,7 @@ def assign_reference(request):
             'id': link.id,
             'full_path': link.full_path,
             'original_filename': link.original_filename,
-            'thumbnail': link.thumbnail.full_path
+            'thumbnail_full_path': link.thumbnail.full_path
             if link.thumbnail else link.full_path,
             'tags': [tag.name for tag in link.tags]
         } for link in links
@@ -356,6 +360,7 @@ def get_entity_references(request):
     # using Raw SQL queries here to fasten things up quite a bit and also do
     # some fancy queries like getting all the references of tasks of a project
     # also with their tags
+
     sql_query = """
     -- select all links assigned to a project tasks or assigned to a task and its children
     select
