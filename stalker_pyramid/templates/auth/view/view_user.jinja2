@@ -181,7 +181,7 @@
 
     <script type="text/javascript">
         $(document).ready(function () {
-            $.getJSON('/users/{{ entity.id }}/events/?keys=time_log&keys=vacation').then(function (data) {
+            $.getJSON('/users/{{ entity.id }}/events/?keys=time_log&keys=vacation&keys=task').then(function (data) {
                 var events = [];
 
 {#                var time_log_data = [0, 0, 0, 0, 0, 0, 0];#}
