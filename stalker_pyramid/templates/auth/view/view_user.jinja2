@@ -165,46 +165,19 @@
 </script>
 {% endraw %}
 
-
-
     {% if entity.tasks | count > 0 %}
         {% if has_permission('Update_User') or logged_in_user.id == entity.id %}
             {% set event_type='TimeLog' %}
         {% endif %}
     {% endif %}
 
-
-
     {#    {% include 'charts/bar_chart.jinja2' %}#}
     {% include 'calendar/calendar.jinja2' %}
-
 
     <script type="text/javascript">
         $(document).ready(function () {
             $.getJSON('/users/{{ entity.id }}/events/?keys=time_log&keys=vacation&keys=task').then(function (data) {
                 var events = [];
-
-{#                var time_log_data = [0, 0, 0, 0, 0, 0, 0];#}
-{#                var vacation_data = [0, 0, 0, 0, 0, 0, 0];#}
-{#                var unknown_data = [9, 9, 9, 9, 9, 9, 9];#}
-{##}
-{#                var ticks = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];#}
-{##}
-{#                var colors = ['#82af6f', '#fee188', '#e2e2e2'];#}
-{##}
-{#                var labels = [#}
-{#                    {label: 'Worked'},#}
-{#                    {label: 'Vacation'},#}
-{#                    {label: 'Bos'}#}
-{#                ];#}
-{##}
-{#                var today = new Date();#}
-{#                today.setHours(0, 0, 0);#}
-{##}
-{#                var week_day = today.getDay();#}
-{##}
-{#                var first_week_day = new Date(today);#}
-{#                first_week_day.setDate(today.getDate() - week_day);#}
 
                 for (var i = 0; i < data.length; i++) {
 
@@ -220,26 +193,23 @@
                         className: data[i].className,
                         allDay: data[i].allDay
                     };
-
-{#                    if (first_week_day.getTime() <= start_date.getTime() && start_date.getTime() < today.getTime()) {#}
-{#                        var day_index = parseInt((start_date.getTime() - first_week_day.getTime()) / 1000 / 3600 / 24);#}
-{#                        var occupied_hours = parseInt((end_date.getTime() - start_date.getTime()) / 1000 / 3600);#}
-{##}
-{#                        if (data[i].entity_type == 'timelogs') {#}
-{#                            time_log_data[day_index] += occupied_hours;#}
-{#                        } else if (data[i].entity_type == 'vacations') {#}
-{#                            vacation_data[day_index] += occupied_hours;#}
-{#                        }#}
-{##}
-{#                        unknown_data[day_index] = unknown_data[day_index] - occupied_hours > 0 ? unknown_data[day_index] - occupied_hours : 0;#}
-{#                    }#}
                     events.push(event);
                 }
 
-                {#                //drawBarChart('bar_chart', [time_log_data, vacation_data], ticks, colors, labels);#}
                 drawCalendar('calendar', events);
 
             });
+
+{#      TODO: Please use this version later on, which loads events dynamically #}
+{#            var events = {#}
+{#                url: '/users/{{ entity.id }}/events/',#}
+{#                type: 'POST',#}
+{#                data: {#}
+{#                    keys: ['time_log', 'vacation', 'task']#}
+{#                }#}
+{#            };#}
+{#            drawCalendar('calendar', events);#}
+            
         });
     </script>
 

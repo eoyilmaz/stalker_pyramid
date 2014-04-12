@@ -19,21 +19,20 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 import re
 import logging
-import datetime
 
 from pyramid.httpexceptions import HTTPServerError, HTTPOk, HTTPForbidden
 from pyramid.view import view_config
 from pyramid.response import Response
 
 from stalker.db import DBSession
-from stalker import (defaults, Entity, Studio, Project, User, Vacation,
-                     SimpleEntity)
+from stalker import (db, defaults, Entity, Studio, Project)
 import transaction
 
 import stalker_pyramid
 from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
                                    milliseconds_since_epoch, get_multi_integer,
-                                   multi_permission_checker, get_multi_string, StdErrToHTMLConverter)
+                                   multi_permission_checker, get_multi_string,
+                                   StdErrToHTMLConverter)
 
 
 logger = logging.getLogger(__name__)
@@ -600,12 +599,12 @@ def get_entity_events(request):
 
     logger.debug('get_user_events is running')
 
-    keys = get_multi_string(request,'keys')
+    keys = get_multi_string(request, 'keys')
 
-    logger.debug('keys: %s'% keys)
+    logger.debug('keys: %s' % keys)
 
     entity_id = request.matchdict.get('id', -1)
-    entity = Entity.query.filter_by(id=entity_id).first()
+    # entity = Entity.query.filter_by(id=entity_id).first()
 
     logger.debug('entity_id : %s' % entity_id)
 
@@ -613,58 +612,203 @@ def get_entity_events(request):
 
     # if entity.time_logs:
     if 'time_log' in keys:
-        for time_log in entity.time_logs:
-            # logger.debug('time_log.task.id : %s' % time_log.task.id)
-            # assert isinstance(time_log, TimeLog)
-            events.append({
-                'id': time_log.id,
-                'entity_type': time_log.plural_class_name.lower(),
-                'title': '%s (%s)' % (
-                    time_log.task.name,
-                    ' | '.join(
-                        [parent.name for parent in time_log.task.parents])),
-                'start': milliseconds_since_epoch(time_log.start),
-                'end': milliseconds_since_epoch(time_log.end),
-                'className': 'label-success',
-                'allDay': False,
-                'status': time_log.task.status.name
-            })
+        # for time_log in entity.time_logs:
+        #     # logger.debug('time_log.task.id : %s' % time_log.task.id)
+        #     # assert isinstance(time_log, TimeLog)
+        #     events.append({
+        #         'id': time_log.id,
+        #         'entity_type': time_log.plural_class_name.lower(),
+        #         'title': '%s (%s)' % (
+        #             time_log.task.name,
+        #             ' | '.join(
+        #                 [parent.name for parent in time_log.task.parents])),
+        #         'start': milliseconds_since_epoch(time_log.start),
+        #         'end': milliseconds_since_epoch(time_log.end),
+        #         'className': 'label-success',
+        #         'allDay': False,
+        #         'status': time_log.task.status.name
+        #     })
+        sql_query = """
+        select
+            "TimeLogs".id,
+            'timelogs' as entity_type, -- entity_type
+            "Task_SimpleEntities".name || ' (' || parent_names.path_names || ')' as title,
+            (extract(epoch from "TimeLogs".start::timestamp AT TIME ZONE 'UTC') * 1000)::bigint as start,
+            (extract(epoch from "TimeLogs".end::timestamp AT TIME ZONE 'UTC') * 1000)::bigint as end,
+            'label-success' as "className",
+            "Status_SimpleEntities".name as status
+        from "TimeLogs"
+        join "Tasks" on "TimeLogs".task_id = "Tasks".id
+        join "SimpleEntities" as "Task_SimpleEntities" on "Tasks".id = "Task_SimpleEntities".id
+        join "SimpleEntities" as "Status_SimpleEntities" on "Tasks".status_id = "Status_SimpleEntities".id
+
+        join (
+            with recursive recursive_task(id, parent_id, path, path_names) as (
+                select
+                    task.id,
+                    task.project_id,
+                    array[task.project_id] as path,
+                    ("Projects".code || '') as path_names
+                from "Tasks" as task
+                join "Projects" on task.project_id = "Projects".id
+                where task.parent_id is NULL
+            union all
+                select
+                    task.id,
+                    task.parent_id,
+                    (parent.path || task.parent_id) as path,
+                    (parent.path_names || '|' || "Parent_SimpleEntities".name) as path_names
+                from "Tasks" as task
+                join recursive_task as parent on task.parent_id = parent.id
+                join "SimpleEntities" as "Parent_SimpleEntities" on parent.id = "Parent_SimpleEntities".id
+                --where parent.id = t_path.parent_id
+            ) select
+                recursive_task.id,
+                recursive_task.path,
+                recursive_task.path_names
+            from recursive_task
+            order by path
+        ) as parent_names on "TimeLogs".task_id = parent_names.id
+
+        where "TimeLogs".resource_id = %(id)s
+        """ % {'id': entity_id}
+
+        result = db.DBSession.connection().execute(sql_query)
+        events.extend(
+            [{
+                'id': r[0],
+                'entity_type': r[1],
+                'title': r[2],
+                'start': r[3],
+                'end': r[4],
+                'className': r[5],
+                'status': r[6]
+            } for r in result.fetchall()]
+        )
 
     if 'vacation' in keys:
-        vacations = Vacation.query.filter(Vacation.user == None).all()
-        if isinstance(entity, User):
-            vacations.extend(entity.vacations)
+        # vacations = Vacation.query.filter(Vacation.user == None).all()
+        # if isinstance(entity, User):
+        #     vacations.extend(entity.vacations)
+        # 
+        # for vacation in vacations:
+        # 
+        #     events.append({
+        #         'id': vacation.id,
+        #         'entity_type': vacation.plural_class_name.lower(),
+        #         'title': vacation.type.name,
+        #         'start': milliseconds_since_epoch(vacation.start),
+        #         'end': milliseconds_since_epoch(vacation.end),
+        #         'className': 'label-yellow',
+        #         'allDay': True,
+        #         'status': ''
+        #     })
+        sql_query = """
+        select
+            "Vacations".id,
+            'vacations' as entity_type,
+            "Type_SimpleEntities".name as title,
+            (extract(epoch from "Vacations".start::timestamp at time zone 'UTC') * 1000)::bigint as start,
+            (extract(epoch from "Vacations".end::timestamp at time zone 'UTC') * 1000)::bigint as end,
+            'label-yellow' as "className",
+            true as "allDay",
+            NULL as status
+        from "Vacations"
+        join "SimpleEntities" on "Vacations".id = "SimpleEntities".id
+        join "Types" on "SimpleEntities".type_id = "Types".id
+        join "SimpleEntities" as "Type_SimpleEntities" on "Types".id = "Type_SimpleEntities".id
+        where "Vacations".user_id is NULL or "Vacations".user_id = %(id)s
+        """ % {'id': entity_id}
 
-        for vacation in vacations:
-
-            events.append({
-                'id': vacation.id,
-                'entity_type': vacation.plural_class_name.lower(),
-                'title': vacation.type.name,
-                'start': milliseconds_since_epoch(vacation.start),
-                'end': milliseconds_since_epoch(vacation.end),
-                'className': 'label-yellow',
-                'allDay': True,
-                'status': ''
-            })
+        result = db.DBSession.connection().execute(sql_query)
+        events.extend(
+            [{
+                'id': r[0],
+                'entity_type': r[1],
+                'title': r[2],
+                'start': r[3],
+                'end': r[4],
+                'className': r[5],
+                'status': r[6]
+            } for r in result.fetchall()]
+        )
 
     if 'task' in keys:
-        today = datetime.datetime.today()
-        for task in entity.tasks:
+        # today = datetime.datetime.today()
+        # for task in entity.tasks:
+        # 
+        #     if today < task.computed_end:
+        #         events.append({
+        #             'id': task.id,
+        #             'entity_type': 'tasks',
+        #             'title': '%s (%s)' % (
+        #                 task.name,
+        #                 ' | '.join([parent.name for parent in task.parents])),
+        #             'start': milliseconds_since_epoch(task.start),
+        #             'end': milliseconds_since_epoch(task.end),
+        #             'className': 'label',
+        #             'allDay': False,
+        #             'status': task.status.name
+        #         })
+        sql_query = """
+        select
+            "Tasks".id,
+            'tasks' as entity_type,
+            "Task_SimpleEntities".name || ' (' || parent_names.path_names || ')' as title,
+            (extract(epoch from "Tasks".computed_start::timestamp at time zone 'UTC') * 1000)::bigint as start,
+            (extract(epoch from "Tasks".computed_end::timestamp at time zone 'UTC') * 1000)::bigint as end,
+            'label' as "className",
+            false as "allDay",
+            "Status_SimpleEntities".name as status
+        from "Tasks"
+        join "SimpleEntities" as "Task_SimpleEntities" on "Tasks".id = "Task_SimpleEntities".id
+        join "SimpleEntities" as "Status_SimpleEntities" on "Tasks".status_id = "Status_SimpleEntities".id
 
-            if today < task.end:
-                events.append({
-                    'id': task.id,
-                    'entity_type': 'tasks',
-                    'title': '%s (%s)' % (
-                        task.name,
-                        ' | '.join([parent.name for parent in task.parents])),
-                    'start': milliseconds_since_epoch(task.start),
-                    'end': milliseconds_since_epoch(task.end),
-                    'className': 'label',
-                    'allDay': False,
-                    'status': task.status.name
-                })
+        join (
+            with recursive recursive_task(id, parent_id, path, path_names) as (
+                select
+                    task.id,
+                    task.project_id,
+                    array[task.project_id] as path,
+                    ("Projects".code || '') as path_names
+                from "Tasks" as task
+                join "Projects" on task.project_id = "Projects".id
+                where task.parent_id is NULL
+            union all
+                select
+                    task.id,
+                    task.parent_id,
+                    (parent.path || task.parent_id) as path,
+                    (parent.path_names || '|' || "Parent_SimpleEntities".name) as path_names
+                from "Tasks" as task
+                join recursive_task as parent on task.parent_id = parent.id
+                join "SimpleEntities" as "Parent_SimpleEntities" on parent.id = "Parent_SimpleEntities".id
+                --where parent.id = t_path.parent_id
+            ) select
+                recursive_task.id,
+                recursive_task.path,
+                recursive_task.path_names
+            from recursive_task
+            order by path
+        ) as parent_names on "Tasks".id = parent_names.id
+
+        join "Task_Resources" on "Tasks".id = "Task_Resources".task_id
+
+        where "Task_Resources".resource_id = %(id)s and "Tasks".computed_end < current_date::date at time zone 'UTC'
+        """ % {'id': entity_id}
+
+        result = db.DBSession.connection().execute(sql_query)
+        events.extend(
+            [{
+                'id': r[0],
+                'entity_type': r[1],
+                'title': r[2],
+                'start': r[3],
+                'end': r[4],
+                'className': r[5],
+                'status': r[6]
+            } for r in result.fetchall()]
+        )
 
     return events
 

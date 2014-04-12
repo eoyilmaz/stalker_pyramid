@@ -247,7 +247,7 @@ def update_time_log(request):
     renderer='json'
 )
 def get_time_logs(request):
-    """returns all the Shots of the given Project
+    """returns all the time logs of the given entity
     """
     logger.debug('get_time_logs is running')
     entity_id = request.matchdict.get('id', -1)
