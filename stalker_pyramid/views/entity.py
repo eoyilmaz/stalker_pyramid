@@ -593,41 +593,23 @@ def remove_entity_from_entity(request):
     renderer='json'
 )
 def get_entity_events(request):
+    """Returns entity "events" like TimeLogs, Vacations and Tasks which are
+    events to be drawn in Calendars
+    """
+    logger.debug('get_entity_events is running')
+
     if not multi_permission_checker(
             request, ['Read_User', 'Read_TimeLog', 'Read_Vacation']):
         return HTTPForbidden(headers=request)
 
-    logger.debug('get_user_events is running')
-
     keys = get_multi_string(request, 'keys')
+    entity_id = request.matchdict.get('id', -1)
 
     logger.debug('keys: %s' % keys)
-
-    entity_id = request.matchdict.get('id', -1)
-    # entity = Entity.query.filter_by(id=entity_id).first()
-
     logger.debug('entity_id : %s' % entity_id)
 
-    events = []
-
-    # if entity.time_logs:
+    sql_query = ""
     if 'time_log' in keys:
-        # for time_log in entity.time_logs:
-        #     # logger.debug('time_log.task.id : %s' % time_log.task.id)
-        #     # assert isinstance(time_log, TimeLog)
-        #     events.append({
-        #         'id': time_log.id,
-        #         'entity_type': time_log.plural_class_name.lower(),
-        #         'title': '%s (%s)' % (
-        #             time_log.task.name,
-        #             ' | '.join(
-        #                 [parent.name for parent in time_log.task.parents])),
-        #         'start': milliseconds_since_epoch(time_log.start),
-        #         'end': milliseconds_since_epoch(time_log.end),
-        #         'className': 'label-success',
-        #         'allDay': False,
-        #         'status': time_log.task.status.name
-        #     })
         sql_query = """
         select
             "TimeLogs".id,
@@ -636,6 +618,7 @@ def get_entity_events(request):
             (extract(epoch from "TimeLogs".start::timestamp AT TIME ZONE 'UTC') * 1000)::bigint as start,
             (extract(epoch from "TimeLogs".end::timestamp AT TIME ZONE 'UTC') * 1000)::bigint as end,
             'label-success' as "className",
+            false as "allDay",
             "Status_SimpleEntities".name as status
         from "TimeLogs"
         join "Tasks" on "TimeLogs".task_id = "Tasks".id
@@ -673,37 +656,8 @@ def get_entity_events(request):
         where "TimeLogs".resource_id = %(id)s
         """ % {'id': entity_id}
 
-        result = db.DBSession.connection().execute(sql_query)
-        events.extend(
-            [{
-                'id': r[0],
-                'entity_type': r[1],
-                'title': r[2],
-                'start': r[3],
-                'end': r[4],
-                'className': r[5],
-                'status': r[6]
-            } for r in result.fetchall()]
-        )
-
     if 'vacation' in keys:
-        # vacations = Vacation.query.filter(Vacation.user == None).all()
-        # if isinstance(entity, User):
-        #     vacations.extend(entity.vacations)
-        # 
-        # for vacation in vacations:
-        # 
-        #     events.append({
-        #         'id': vacation.id,
-        #         'entity_type': vacation.plural_class_name.lower(),
-        #         'title': vacation.type.name,
-        #         'start': milliseconds_since_epoch(vacation.start),
-        #         'end': milliseconds_since_epoch(vacation.end),
-        #         'className': 'label-yellow',
-        #         'allDay': True,
-        #         'status': ''
-        #     })
-        sql_query = """
+        vacation_sql_query = """
         select
             "Vacations".id,
             'vacations' as entity_type,
@@ -720,37 +674,13 @@ def get_entity_events(request):
         where "Vacations".user_id is NULL or "Vacations".user_id = %(id)s
         """ % {'id': entity_id}
 
-        result = db.DBSession.connection().execute(sql_query)
-        events.extend(
-            [{
-                'id': r[0],
-                'entity_type': r[1],
-                'title': r[2],
-                'start': r[3],
-                'end': r[4],
-                'className': r[5],
-                'status': r[6]
-            } for r in result.fetchall()]
-        )
+        if sql_query != '':
+            sql_query = '(%s) union (%s)' % (sql_query, vacation_sql_query)
+        else:
+            sql_query = vacation_sql_query
 
     if 'task' in keys:
-        # today = datetime.datetime.today()
-        # for task in entity.tasks:
-        # 
-        #     if today < task.computed_end:
-        #         events.append({
-        #             'id': task.id,
-        #             'entity_type': 'tasks',
-        #             'title': '%s (%s)' % (
-        #                 task.name,
-        #                 ' | '.join([parent.name for parent in task.parents])),
-        #             'start': milliseconds_since_epoch(task.start),
-        #             'end': milliseconds_since_epoch(task.end),
-        #             'className': 'label',
-        #             'allDay': False,
-        #             'status': task.status.name
-        #         })
-        sql_query = """
+        task_sql_query = """
         select
             "Tasks".id,
             'tasks' as entity_type,
@@ -797,20 +727,22 @@ def get_entity_events(request):
         where "Task_Resources".resource_id = %(id)s and "Tasks".computed_end < current_date::date at time zone 'UTC'
         """ % {'id': entity_id}
 
-        result = db.DBSession.connection().execute(sql_query)
-        events.extend(
-            [{
-                'id': r[0],
-                'entity_type': r[1],
-                'title': r[2],
-                'start': r[3],
-                'end': r[4],
-                'className': r[5],
-                'status': r[6]
-            } for r in result.fetchall()]
-        )
+        if sql_query != '':
+            sql_query = '(%s) union (%s)' % (sql_query, task_sql_query)
+        else:
+            sql_query = task_sql_query
 
-    return events
+    result = db.DBSession.connection().execute(sql_query)
+    return [{
+        'id': r[0],
+        'entity_type': r[1],
+        'title': r[2],
+        'start': r[3],
+        'end': r[4],
+        'className': r[5],
+        'allDay': r[6],
+        'status': r[7]
+    } for r in result.fetchall()]
 
 
 @view_config(
