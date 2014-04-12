@@ -1054,62 +1054,77 @@ require([
     // Schedule
     {% if has_permission('Update_Task') %}
         $('#gantt_schedule_tasks_button').on('click', function () {
-            var dialog = $("#schedule-dialog-message").dialog({
-                modal: true,
-                title: "Scheduling Tasks",
-                title_html: true,
-                width: 340,
-                height: 155
-            });
-
-            var timer_function;
-            var timer = 0;
-            var last_scheduled_at;
-            var last_scheduling_took = 100;
-            var schedule_progress = $('#schedule-progress');
-            var schedule_progress_bar = schedule_progress.find('.bar');
-
-            $.getJSON('{{ request.route_url("get_last_schedule_info") }}').then(function(data){
-                // update schedule fields with data
-                last_scheduled_at = moment(data['last_scheduled_at']);
-                last_scheduling_took = Number(data['last_scheduling_took']);
-
-                $('#last_scheduled_by').append(data['last_scheduled_by']);
-                $('#last_scheduled_at').append(last_scheduled_at.format('YYYY-MM-DD HH:mm'));
-                $('#last_scheduling_took').append(last_scheduling_took.toFixed(0), ' seconds');
-
-                // start timer
-                function myTimer() {
-                    timer += 1;
-                    $('#current_scheduling_time').html(timer);
-                    // extend the progress bar
-                    var percent = Math.min(
-                        100,
-                        timer / last_scheduling_took * 100
-                    ).toFixed(1);
-                    schedule_progress.attr('data-percent', percent + '%');
-                    schedule_progress_bar.css({'width': percent + '%'});
-                };
-
-                // run it every 1 seconds
-                timer_function = setInterval(function(){myTimer()}, 1000);
-            });
-
-            $.post(
-                '{{ request.route_url("auto_schedule_tasks") }}'
-            ).done(function (data) {
-                var message = '<div>' + data + '</div>';
-                bootbox.alert(message);
-                $('.bootbox').prepend('<div class="modal-header alert-success"><strong>Success</strong></div>');
-            }).fail(function (jqXHR) {
-                var message = '<div>' + jqXHR.responseText + '</div>';
-                bootbox.alert(message);
-                $('.bootbox').prepend('<div class="modal-header alert-danger"><strong>Fail</strong></div>');
-            }).always(function () {
-                // reset timer
-                window.clearInterval(timer_function);
-                dialog.dialog("close");
-                gantt_column.refresh();
+            // get the schedule info first
+            $.getJSON('{{ request.route_url("schedule_info") }}').then(function(data){
+                // check if the system is suitable to be scheduled
+                if (data.is_scheduling){
+                    // the system is scheduling right now, don't do anything
+                    var message = '<div>The Studio is being scheduled right now by ' +
+                            data.is_scheduling_by +
+                            ' (started at' +
+                            moment(data.scheduling_started_at).format('YYYY-MM-DD HH:mm') +
+                            '), please wait until the current scheduling is done!</div>';
+                    bootbox.alert(message);
+                    $('.bootbox').prepend('<div class="modal-header alert-danger"><strong>Fail</strong></div>');
+                } else {
+                    // suitable to be scheduled
+                    var dialog = $("#schedule-dialog-message").dialog({
+                        modal: true,
+                        title: "Scheduling Tasks",
+                        title_html: true,
+                        width: 340,
+                        height: 155
+                    });
+        
+                    var timer_function;
+                    var timer = 0;
+                    var last_scheduled_at = moment(data.last_scheduled_at);
+                    var last_scheduling_took = Number(data.last_scheduling_took) || 100;
+                    var schedule_progress = $('#schedule-progress');
+                    var schedule_progress_bar = schedule_progress.find('.bar');
+        
+                    // set the system on scheduling
+                    $.post('{{ request.route_url("studio_scheduling_mode", _query={"mode": 1}) }}').then(function(){
+                        // update schedule fields with data
+                        $('#last_scheduled_by').append(data.last_scheduled_by);
+                        $('#last_scheduled_at').append(last_scheduled_at.format('YYYY-MM-DD HH:mm'));
+                        $('#last_scheduling_took').append(last_scheduling_took.toFixed(0), ' seconds');
+        
+                        // start timer
+                        function myTimer() {
+                            timer += 1;
+                            $('#current_scheduling_time').html(timer);
+                            // extend the progress bar
+                            var percent = Math.min(
+                                100,
+                                timer / last_scheduling_took * 100
+                            ).toFixed(1);
+                            schedule_progress.attr('data-percent', percent + '%');
+                            schedule_progress_bar.css({'width': percent + '%'});
+                        }
+        
+                        // run it every 1 seconds
+                        timer_function = setInterval(function(){myTimer()}, 1000);
+                        
+                        // now do the scheduling
+                        $.post(
+                            '{{ request.route_url("auto_schedule_tasks") }}'
+                        ).done(function (data) {
+                            var message = '<div>' + data + '</div>';
+                            bootbox.alert(message);
+                            $('.bootbox').prepend('<div class="modal-header alert-success"><strong>Success</strong></div>');
+                        }).fail(function (jqXHR) {
+                            var message = '<div>' + jqXHR.responseText + '</div>';
+                            bootbox.alert(message);
+                            $('.bootbox').prepend('<div class="modal-header alert-danger"><strong>Fail</strong></div>');
+                        }).always(function () {
+                            // reset timer
+                            window.clearInterval(timer_function);
+                            dialog.dialog("close");
+                            gantt_column.refresh();
+                        });
+                    });
+                }
             });
 
         });

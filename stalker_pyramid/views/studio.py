@@ -21,14 +21,16 @@
 import logging
 
 from pyramid.httpexceptions import HTTPOk
+from pyramid.response import Response
 from pyramid.view import view_config
 
 from stalker.db import DBSession
 from stalker import Studio, WorkingHours
-from stalker_pyramid.views import (get_time, PermissionChecker)
+import transaction
+from stalker_pyramid.views import (get_time, get_logged_in_user)
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.WARNING)
+logger.setLevel(logging.DEBUG)
 
 #
 # @view_config(
@@ -169,20 +171,25 @@ def update_studio(request):
 
 
 @view_config(
-    route_name='get_last_schedule_info',
+    route_name='schedule_info',
     renderer='json'
 )
-def get_last_schedule_info(request):
+def schedule_info(request):
     """returns the last schedule info
     """
     # there should be only one studio
     sql_query = """
     select
-        extract(epoch from last_scheduled_at::timestamp AT TIME ZONE 'UTC') * 1000 as last_scheduled_at,
-        extract(epoch from last_scheduled_at::timestamp AT TIME ZONE 'UTC' - scheduling_started_at::timestamp AT TIME ZONE 'UTC') as duration,
-        "SimpleEntities".name as last_scheduled_by
+        is_scheduling,
+        "CurrentScheduler_SimpleEntities".id as is_scheduling_by_id,
+        "CurrentScheduler_SimpleEntities".name as is_scheduling_by,
+        (extract(epoch from scheduling_started_at::timestamp AT TIME ZONE 'UTC') * 1000)::bigint as scheduling_started_at,
+        (extract(epoch from last_scheduled_at::timestamp AT TIME ZONE 'UTC') * 1000)::bigint as last_scheduled_at,
+        extract(epoch from last_scheduled_at::timestamp AT TIME ZONE 'UTC' - scheduling_started_at::timestamp AT TIME ZONE 'UTC') as last_scheduling_duration,
+        "LastScheduler_SimpleEntities".name as last_scheduled_by
     from "Studios"
-    left outer join "SimpleEntities" on "Studios".last_scheduled_by_id = "SimpleEntities".id
+    left outer join "SimpleEntities" as "LastScheduler_SimpleEntities" on "Studios".last_scheduled_by_id = "LastScheduler_SimpleEntities".id
+    left outer join "SimpleEntities" as "CurrentScheduler_SimpleEntities" on "Studios".is_scheduling_by_id = "CurrentScheduler_SimpleEntities".id
     """
 
     from stalker import db
@@ -190,7 +197,42 @@ def get_last_schedule_info(request):
     r = result.fetchone()
 
     return {
-        'last_scheduled_at': r[0],
-        'last_scheduling_took': r[1],
-        'last_scheduled_by': r[2]
+        'is_scheduling': r[0],
+        'is_scheduling_by_id': r[1],
+        'is_scheduling_by': r[2],
+        'scheduling_started_at': r[3],
+        'last_scheduled_at': r[4],
+        'last_scheduling_took': r[5],
+        'last_scheduled_by': r[6],
     }
+
+
+@view_config(
+    route_name='studio_scheduling_mode'
+)
+def studio_scheduling_mode(request):
+    """Sets the system to "in schedule" mode or "normal" mode. When the system
+    is "in schedule" mode (Studio.is_scheduling == True) it is not allowed to
+    schedule the system again until the previous one is finishes.
+    """
+    logged_in_user = get_logged_in_user(request)
+
+    # get the studio
+    studio = Studio.query.first()
+
+    mode = request.params.get('mode')
+    logger.debug('schedule mode: %s' % mode)
+
+    if not studio:
+        transaction.abort()
+        return Response("There is no Studio instance\n"
+                        "Please create a studio first", 500)
+
+    if mode:  # set the mode
+        mode = bool(int(mode))
+        studio.is_scheduling = mode
+        studio.is_scheduling_by = logged_in_user
+
+        return Response(
+            "Successfully, set the scheduling mode to: %s" % mode
+        )

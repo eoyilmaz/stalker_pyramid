@@ -30,21 +30,16 @@
             submit_button.button('loading');
 
             var user_form = $('#user_form');
-
             if (user_form.validate()) {
-
                 $.post(
-                                user_form.attr('action'),
-                                user_form.serialize()
-                        ).done(function () {
-
-                            window.location.assign('{{ came_from }}');
-                        }).fail(function (jqXHR) {
-                            bootbox.alert(jqXHR.responseText);
-                            submit_button.button('reset');
-                        });
-
-
+                    user_form.attr('action'),
+                    user_form.serialize()
+                ).done(function () {
+                    window.location.assign('{{ came_from }}');
+                }).fail(function (jqXHR) {
+                    bootbox.alert(jqXHR.responseText);
+                    submit_button.button('reset');
+                });
             }
         });
 
