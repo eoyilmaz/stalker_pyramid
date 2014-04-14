@@ -724,7 +724,7 @@ def get_entity_events(request):
 
         join "Task_Resources" on "Tasks".id = "Task_Resources".task_id
 
-        where "Task_Resources".resource_id = %(id)s and "Tasks".computed_end < current_date::date at time zone 'UTC'
+        where "Task_Resources".resource_id = %(id)s and "Tasks".end < current_date::date at time zone 'UTC'
         """ % {'id': entity_id}
 
         if sql_query != '':
