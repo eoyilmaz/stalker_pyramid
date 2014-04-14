@@ -19,6 +19,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 
 import logging
+import datetime
 
 from pyramid.httpexceptions import HTTPOk
 from pyramid.response import Response
@@ -27,7 +28,7 @@ from pyramid.view import view_config
 from stalker.db import DBSession
 from stalker import Studio, WorkingHours
 import transaction
-from stalker_pyramid.views import (get_time, get_logged_in_user)
+from stalker_pyramid.views import (get_time, get_logged_in_user, local_to_utc)
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -232,6 +233,7 @@ def studio_scheduling_mode(request):
         mode = bool(int(mode))
         studio.is_scheduling = mode
         studio.is_scheduling_by = logged_in_user
+        studio.scheduling_started_at = local_to_utc(datetime.datetime.now())
 
         return Response(
             "Successfully, set the scheduling mode to: %s" % mode
