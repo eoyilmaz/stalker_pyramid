@@ -464,11 +464,8 @@ function init_dialog() {
             var end = start_end[1];
 
             if(start.getDate() == end.getDate() && start.getMonth()==end.getMonth()) {
-
                 $('#auto_split_wh').prop('checked','')
-
             }
-
 
             $.post(
                 time_log_form.attr('action'),
