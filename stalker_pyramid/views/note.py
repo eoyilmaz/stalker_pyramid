@@ -110,7 +110,6 @@ def get_entity_notes(request):
         transaction.abort()
         return Response('There is no entity with id: %s' % entity_id, 500)
 
-
     sql_query = """select  "User_SimpleEntities".id as user_id,
                 "User_SimpleEntities".name,
                 "Users_Thumbnail_Links".full_path,

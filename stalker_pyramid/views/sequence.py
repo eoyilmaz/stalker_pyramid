@@ -185,6 +185,7 @@ def get_project_sequences_count(request):
 def get_project_sequences(request):
     """returns the related sequences of the given project as a json data
     """
+    # TODO: use pure SQL query
     entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
 

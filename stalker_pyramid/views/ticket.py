@@ -464,8 +464,8 @@ def get_tickets(request):
         "SimpleEntities_Project".name as project_name,
         "Tickets".owner_id as owner_id,
         "SimpleEntities_Owner".name as owner_name,
-        "SimpleEntities_Ticket".date_created,
-        "SimpleEntities_Ticket".date_updated,
+        extract(epoch from "SimpleEntities_Ticket".date_created::timestamp AT TIME ZONE 'UTC') * 1000 as date_created,
+        extract(epoch from "SimpleEntities_Ticket".date_updated::timestamp AT TIME ZONE 'UTC') * 1000 as date_updated,
         "SimpleEntities_Ticket".created_by_id,
         "SimpleEntities_CreatedBy".name as created_by_name,
         "SimpleEntities_Ticket".updated_by_id,
@@ -508,8 +508,8 @@ def get_tickets(request):
             'project_name': r[5],
             'owner_id': r[6],
             'owner_name': r[7],
-            'date_created': milliseconds_since_epoch(r[8]),
-            'date_updated': milliseconds_since_epoch(r[9]),
+            'date_created': r[8],
+            'date_updated': r[9],
             'created_by_id': r[10],
             'created_by_name': r[11],
             'updated_by_id': r[12],
@@ -520,8 +520,10 @@ def get_tickets(request):
         } for r in result.fetchall()
     ]
     end = time.time()
-    logger.debug('get_entity_tickets took : %s seconds for %s rows' % (
-    end - start, len(data)))
+    logger.debug(
+        'get_entity_tickets took : %s seconds for %s rows' %
+        (end - start, len(data))
+    )
     return data
 
 

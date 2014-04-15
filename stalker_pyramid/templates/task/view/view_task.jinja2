@@ -92,18 +92,21 @@
                                         </div>
     
                                         <div class="profile-info-row">
-                                            <div class="profile-info-name">Updated By</div>
-                                            <div class="profile-info-value">
-                                                <span>{{ entity.updated_by.name }}</span>
-                                            </div>
-                                        </div>
-                
-                                        <div class="profile-info-row">
                                             <div class="profile-info-name">Created By</div>
                                             <div class="profile-info-value">
                                                 <span>{{ entity.created_by.name }}</span>
+                                                <span id="task_date_created"></span>
                                             </div>
                                         </div>
+
+                                        <div class="profile-info-row">
+                                            <div class="profile-info-name">Updated By</div>
+                                            <div class="profile-info-value">
+                                                <span>{{ entity.updated_by.name }}</span>
+                                                <span id="task_date_updated"></span>
+                                            </div>
+                                        </div>
+                
                                         <div class="profile-info-row">
                                             <div class="profile-info-name">Timing</div>
                                             <div class="profile-info-value">
@@ -650,4 +653,15 @@
 
     </script>
 
+    <script>
+        $.getJSON('/tasks/{{ entity.id }}/', function(data){
+            console.log('data:', data);
+            $(function(){
+                // update created and update time of the task
+                $('#task_date_created').html(moment(data[0].date_created).format('YYYY-MM-DD HH:mm'));
+                $('#task_date_updated').html(moment(data[0].date_updated).format('YYYY-MM-DD HH:mm'));
+            })
+        })
+    </script>
+    
 {% endblock extrascripts %}

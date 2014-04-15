@@ -80,11 +80,12 @@ def query_of_tasks_hierarchical_name_table():
     ) select
         recursive_task.id,
         recursive_task.path,
-        recursive_task.path_names
+        recursive_task.path_names,
+        "SimpleEntities".id || ' (' || recursive_task.id || ')'|| '(' || recursive_task.path || ')' as full_name
     from recursive_task
+    join "SimpleEntities" on recursive_task.id = "SimpleEntities".id
     order by path
     """
-
     return query
 
 
@@ -480,6 +481,7 @@ def convert_to_dgrid_gantt_task_format(tasks):
     :param tasks: List of Stalker Tasks.
     :return: json compatible dictionary
     """
+    # This should use pure SQL
     if not isinstance(tasks, list):
         response = HTTPServerError()
         response.text = u'This is a not a list of tasks'
@@ -524,6 +526,8 @@ def convert_to_dgrid_gantt_task_format(tasks):
             'status': task.status.code.lower(),
             'total_logged_seconds': task.total_logged_seconds,
             'type': task.entity_type,
+            'date_created': milliseconds_since_epoch(task.date_created),
+            'date_updated': milliseconds_since_epoch(task.date_updated)
         } for task in tasks
     ]
 
@@ -906,7 +910,9 @@ def get_tasks(request):
             -- for child tasks we need to count the total seconds of related TimeLogs
             coalesce("Task_TimeLogs".duration, 0.0)
         ) as total_logged_seconds,
-        "SimpleEntities".entity_type
+        "SimpleEntities".entity_type,
+        extract(epoch from "SimpleEntities".date_created::timestamp at time zone 'UTC') * 1000 as date_created,
+        extract(epoch from "SimpleEntities".date_updated::timestamp at time zone 'UTC') * 1000 as date_updated
     from "Tasks"
         left outer join "Tasks" as "Parent_Tasks" on "Tasks".parent_id = "Parent_Tasks".id
         -- TimeLogs for Leaf Tasks
@@ -1068,6 +1074,8 @@ def get_tasks(request):
             'status': r[19],
             'total_logged_seconds': r[20],
             'type': r[21],
+            'date_created': r[22],
+            'date_updated': r[23],
         }
         for r in result.fetchall()
     ]
@@ -2068,7 +2076,6 @@ def create_task(request):
     logger.debug('cut_out             : %s' % cut_out)
 
     kwargs = {}
-
     if not project_id or not name:
         logger.debug('there are missing parameters')
 
@@ -2145,7 +2152,6 @@ def create_task(request):
     kwargs['date_created'] = local_to_utc(datetime.datetime.now())
 
     kwargs['status_list'] = status_list
-    #kwargs['status'] = status
 
     kwargs['schedule_model'] = schedule_model
     kwargs['schedule_timing'] = schedule_timing
@@ -2166,7 +2172,7 @@ def create_task(request):
 
     if entity_type == 'Shot':
         sequence = Sequence.query.filter_by(id=shot_sequence_id).first()
-        kwargs['sequence'] = sequence
+        kwargs['sequences'] = [sequence]
         kwargs['cut_in'] = int(cut_in or 1)
         kwargs['cut_out'] = int(cut_out or 1)
 
@@ -2617,7 +2623,6 @@ def approve_task(request):
             .filter(Review.status == status_new)\
             .first()
 
-
     logger.debug('review %s' % review)
 
     if not review:
@@ -2635,7 +2640,6 @@ def approve_task(request):
 
     task.updated_by = logged_in_user
     task.date_updated = utc_now
-
 
     if send_email:
          # send email to resources of the task

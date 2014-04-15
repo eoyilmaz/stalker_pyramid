@@ -283,7 +283,6 @@ def get_assets(request):
 
     asset_id = request.params.get('entity_id', None)
 
-
     sql_query = """
         select
             "Assets".id as asset_id,
@@ -365,7 +364,6 @@ def get_assets(request):
             "Distinct_Asset_Statuses".asset_status_html_class,
             "Assets_Types_SimpleEntities".name
         order by "Asset_SimpleEntities".name
-
     """
 
     where_conditions = ''
@@ -374,7 +372,6 @@ def get_assets(request):
         where_conditions = """and "Assets_Types_SimpleEntities".id = %(asset_type_id)s""" %({'asset_type_id':asset_type_id})
     if asset_id:
         where_conditions = """and "Assets".id = %(asset_id)s""" %({'asset_id':asset_id})
-
 
     sql_query = sql_query % {'where_conditions':where_conditions, 'project_id':project_id}
 
@@ -410,20 +407,17 @@ def get_assets(request):
         r_data['nulls'] = []
 
         for index1 in range(len(task_types_names)):
-
             if task_types_names[index1]:
-
                 r_data[task_types_names[index1]]= []
 
-
-
         for index in range(len(task_types_names)):
-
             if task_types_names[index]:
-
-                r_data[task_types_names[index]].append([task_ids[index], task_names[index], task_statuses[index],task_percent_complete[index]])
-
-
+                r_data[task_types_names[index]].append(
+                    [task_ids[index],
+                     task_names[index],
+                     task_statuses[index],
+                     task_percent_complete[index]]
+                )
             else:
                 r_data['nulls'].append(
                     [task_ids[index], task_names[index], task_statuses[index],
