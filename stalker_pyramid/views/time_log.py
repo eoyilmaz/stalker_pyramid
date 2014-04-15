@@ -21,6 +21,7 @@
 
 import time
 import logging
+import datetime
 import transaction
 
 from pyramid.response import Response
@@ -32,7 +33,8 @@ from stalker.exceptions import OverBookedError, DependencyViolationError
 
 from stalker_pyramid.views import (get_logged_in_user,
                                    PermissionChecker, milliseconds_since_epoch,
-                                   get_date, StdErrToHTMLConverter)
+                                   get_date, StdErrToHTMLConverter,
+                                   local_to_utc)
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -123,6 +125,10 @@ def create_time_log(request):
 
     #**************************************************************************
     # task
+
+    logged_in_user = get_logged_in_user(request)
+    utc_now = local_to_utc(datetime.datetime.now())
+
     task_id = request.params.get('task_id')
     task = Task.query.filter(Task.id == task_id).first()
 
@@ -161,7 +167,9 @@ def create_time_log(request):
         logger.debug('got all the data')
         try:
             assert isinstance(task, Task)
-            task.create_time_log(resource, start_date, end_date)
+            time_log = task.create_time_log(resource, start_date, end_date)
+            time_log.created_by = logged_in_user
+            time_log.date_created = utc_now
         except (OverBookedError, TypeError, DependencyViolationError) as e:
             converter = StdErrToHTMLConverter(e)
             response = Response(converter.html(), 500)
@@ -194,6 +202,10 @@ def update_time_log(request):
     """runs when updating a time_log
     """
     logger.debug('inside update_time_log')
+
+    logged_in_user = get_logged_in_user(request)
+    utc_now = local_to_utc(datetime.datetime.now())
+
     # time_log_id = int(request.params.get('time_log_id'))
     time_log_id = request.matchdict.get('id', -1)
     time_log = TimeLog.query.filter_by(id=time_log_id).first()
@@ -222,6 +234,8 @@ def update_time_log(request):
             time_log.end = end_date
             time_log.description = description
             time_log.resource = resource
+            time_log.updated_by = logged_in_user
+            time_log.date_updated = utc_now
         except OverBookedError as e:
             logger.debug('e.message: %s' % str(e))
             response = Response(str(e), 500)
