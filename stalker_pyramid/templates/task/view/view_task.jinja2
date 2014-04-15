@@ -525,8 +525,8 @@
                         }
 
                         if (!resources[prop_id]['additionalParameters']) {
-                            resources[prop_id]['additionalParameters'] = new Object();
-                            resources[prop_id]['additionalParameters']['children'] = new Object();
+                            resources[prop_id]['additionalParameters'] = {};
+                            resources[prop_id]['additionalParameters']['children'] = {};
                         }
 
                         var hours_to_complete = (data[i].schedule_seconds - data[i].total_logged_seconds) / 3600;
@@ -595,8 +595,8 @@
                     }
 
                     if (!depends[task_id]['additionalParameters']) {
-                        depends[task_id]['additionalParameters'] = new Object();
-                        depends[task_id]['additionalParameters']['children'] = new Object();
+                        depends[task_id]['additionalParameters'] = {};
+                        depends[task_id]['additionalParameters']['children'] = {};
                     }
 
                     for (var k = 0; k < data[i].resources.length; k++) {
@@ -619,10 +619,7 @@
 
     $(document).ready(function () {
         $.getJSON('/entities/{{ entity.id }}/version/used_by/tasks/').then(function (data) {
-
-            console.log(data.length)
-
-            var tasks = new Object();
+            var tasks = {};
             for (var i = 0; i < data.length; i++) {
 
                 var task_id = (data[i].id).toString();
@@ -636,8 +633,8 @@
                 }
 
                 if (!tasks[task_id]['additionalParameters']) {
-                    tasks[task_id]['additionalParameters'] = new Object();
-                    tasks[task_id]['additionalParameters']['children'] = new Object();
+                    tasks[task_id]['additionalParameters'] = {};
+                    tasks[task_id]['additionalParameters']['children'] = {};
                 }
 
                 tasks[task_id]['additionalParameters']['children'][(data[i].resource_id).toString()] = {name: '<span  class="pull-left"><a href="/users/' + data[i].resource_id + '/view">' + data[i].resource_name + '  </a></span>', type: 'item'}

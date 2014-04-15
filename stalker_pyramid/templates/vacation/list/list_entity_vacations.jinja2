@@ -89,7 +89,7 @@
 
             $.getJSON('/entities/{{ entity.id }}/events/?keys=vacation').then(function (data) {
                 var events = [];
-                var vacations_types = new Object();
+                var vacations_types = {};
 
                 for (var i = 0; i < data.length; i++) {
                     var start_date = new Date(parseInt(data[i].start));
@@ -123,15 +123,15 @@
                         }
                     }
 
-                    vacations_types [vtype].total_day +=total_day
-                    vacations_types [vtype].name = data[i].title +' ( '+ vacations_types [vtype].total_day + ' days)'
+                    vacations_types [vtype].total_day += total_day;
+                    vacations_types [vtype].name = data[i].title +' ( '+ vacations_types [vtype].total_day + ' days)';
 
                     if (!vacations_types [vtype]['additionalParameters']) {
-                        vacations_types [vtype]['additionalParameters'] = new Object();
-                        vacations_types [vtype]['additionalParameters']['children'] = new Object();
+                        vacations_types [vtype]['additionalParameters'] = {};
+                        vacations_types [vtype]['additionalParameters']['children'] = {};
                     }
 
-                    vacations_types [vtype]['additionalParameters']['children'][(data[i].id).toString()] = {name: '<span  class="pull-left">'+ start_date.format('yyyy-mm-dd') +' - '+end_date.format('yyyy-mm-dd')+' ( '+total_day+' days )' +'</span>', type: 'item'}
+                    vacations_types [vtype]['additionalParameters']['children'][(data[i].id).toString()] = {name: '<span  class="pull-left">'+ start_date.format('yyyy-mm-dd') +' - '+end_date.format('yyyy-mm-dd')+' ( '+total_day+' days )' +'</span>', type: 'item'};
 
                     $('#vacations_box').show();
                     events.push(event);
