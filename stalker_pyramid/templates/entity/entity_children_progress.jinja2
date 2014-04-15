@@ -52,27 +52,17 @@
     $(document).ready(function () {
 
         $.getJSON('/{{ entity.entity_type.lower() }}s/children/task_type/').then(function (types_data) {
-
             var types = types_data;
 
-
             $.getJSON('/entities/{{ entity.project.id }}/{{ entity.entity_type.lower() }}s/?entity_id={{ entity.id }}').then(function (data) {
-
                 var entity_children = $('#entity_children')
-
                 var child_template = doT.template($('#tmpl_child').html());
-
                 var entity_data = data[0];
-
 
                 for (var i = 0; i < types_data.length; i++) {
                     var tasks = entity_data[types_data[i].name];
 
-                    console.log('tasks: ' + tasks)
-
                     if (tasks) {
-
-
                         for (var k = 0; k < tasks.length; k++) {
                             var task = tasks[k]
                             if (task) {
@@ -81,7 +71,6 @@
                         }
                     }
                 }
-
 
             });
         });

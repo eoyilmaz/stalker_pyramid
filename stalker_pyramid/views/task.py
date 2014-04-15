@@ -430,18 +430,25 @@ def convert_to_dgrid_gantt_project_format(projects):
     :param projects: List of Stalker Project.
     :return: json compatible dictionary
     """
-
-    from sqlalchemy import func
+    start = time.time()
+    logger.debug('convert_to_dgrid_gantt_project_format is running')
 
     def hasChildren(project):
-        return bool(
-            DBSession.query(func.count(Task.id))
-            .join(Task.project, Project.tasks)
-            .filter(Project.id == project.id)
-            .first()[0]
-        )
+        logger.debug('hasChildren is running')
+        start_inner = time.time()
 
-    return [
+        sql_query = """select count(1)
+        from "Tasks"
+        where "Tasks".parent_id is NULL and "Tasks".project_id = %s
+        """ % project.id
+        r = DBSession.connection().execute(sql_query).fetchone()[0]
+        end_inner = time.time()
+
+        logger.debug('hasChildren took: %s seconds' %
+                     (end_inner - start_inner))
+        return bool(r)
+
+    return_data = [
         {
             'bid_timing': project.duration.days,
             'bid_unit': 'd',
@@ -461,6 +468,10 @@ def convert_to_dgrid_gantt_project_format(projects):
             'status': project.status.code.lower()
         } for project in projects
     ]
+    end = time.time()
+    logger.debug('convert_to_dgrid_gantt_project_format took: %s seconds' %
+                 (end - start))
+    return return_data
 
 
 def convert_to_dgrid_gantt_task_format(tasks):
@@ -829,7 +840,7 @@ def get_tasks(request):
     sql_query = """select
         "Tasks".bid_timing as bid_timing,
         "Tasks".bid_unit as bid_unit,
-                coalesce(
+        coalesce(
             -- for parent tasks
             (case "Tasks".schedule_seconds
                 when 0 then 0

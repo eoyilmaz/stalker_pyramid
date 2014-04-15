@@ -190,15 +190,10 @@
                     {{ } }}
 
                 </span>
-
-
-
             </div>
         </td>
     </script>
     {% endraw %}
-
-
 
     <script>
         $(document).ready(function () {
@@ -219,7 +214,6 @@
                         // append it to the table
                         table_column.append(column_template(types[k]));
                     }
-
 
                     $.getJSON('/entities/{{ entity.id }}/shots/').then(function (data) {
 
@@ -249,26 +243,17 @@
                                 table_body.append(shot_template(data[i]));
 
                                 var cell_template = doT.template($('#tmpl_taskCell').html());
-
                                 var shot_row = $('#shot_row_' + data[i].id);
 
                                 for (var j = 0; j < types_data.length; j++) {
-
                                     var tasks = data[i][types_data[j].name];
-
-
                                     if (tasks) {
-
                                         var task = tasks[0];
-
-                                        console.log('task '+task[0])
-
+{#                                        console.log('task '+task[0]);#}
                                         shot_row.append(cell_template({'id': task[0], 'name': task[1], 'status': task[2], 'status_color': task[2].toLowerCase(), 'percent_complete':(task[2]=='WIP'?task[3]:''),'update_shot_action': data[i].update_shot_action}));
-
                                     } else {
                                         shot_row.append(cell_template({'id': '', 'name': '', 'status': '', 'status_color': 'black2','percent_complete':''}));
                                     }
-
                                 }
 
                                 var shot_summary_cell = $('#shot_summary_cell_' + data[i].id);
@@ -278,7 +263,6 @@
                                     var null_type_task = data[i]['nulls'][n];
                                     shot_summary_cell.append(shot_summary_cell_template({'link': '/tasks/' + null_type_task[0] + '/update/dialog', 'name': null_type_task[1], 'status': null_type_task[2], 'status_color': null_type_task[3]}));
                                 }
-
                             }
 
                             var oTable1 = $('#shots_table').dataTable();

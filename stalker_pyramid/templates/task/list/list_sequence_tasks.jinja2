@@ -146,19 +146,13 @@
                     {{ } }}
 
                 </span>
-
-
-
             </div>
         </td>
     </script>
     {% endraw %}
 
-
-
     <script>
         $(document).ready(function () {
-
             var icon_name = get_icon('task');
             $('#items_header').append('<i class=' + icon_name + '></i>');
             // fill tasks table with dynamic data
@@ -171,26 +165,20 @@
                     var k;
                     var table_column = $('#tasks_table_column');
                     for (k = 0; k < types_data.length; k++) {
-
                         // append it to the table
                         table_column.append(column_template(types[k]));
                     }
 
-
                     $.getJSON('/entities/{{ entity.id }}/tasks/').then(function (data) {
-
                         var tasks = data;
                         var task_template = doT.template($('#tmpl_taskRow').html());
-
 
                         // wait until document is ready
                         $(function () {
                             var i;
                             var table_body = $('#tasks_table>tbody');
                             for (i = 0; i < data.length; i++) {
-
                                 data[i].link = '/tasks/' + data[i].id + '/view';
-
                                 if (data[i].thumbnail_full_path == null) {
                                     data[i].thumbnail_full_path = '{{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}';
                                 }
@@ -200,31 +188,20 @@
 
                                 data[i].came_from = '{{ request.current_route_path() }}'
 
-
                                 // append it to the table
                                 table_body.append(task_template(data[i]));
 
                                 var cell_template = doT.template($('#tmpl_taskCell').html());
-
                                 var task_row = $('#task_row_' + data[i].id);
-
                                 for (var j = 0; j < types_data.length; j++) {
-
                                     var tasks = data[i][types_data[j].name];
-
-
                                     if (tasks) {
-
                                         var task = tasks[0];
-
                                         console.log('task '+task[0])
-
                                         task_row.append(cell_template({'id': task[0], 'name': task[1], 'status': task[2], 'status_color': task[2].toLowerCase(), 'percent_complete':(task[2]=='WIP'?task[3]:''),'update_task_action': data[i].update_task_action}));
-
                                     } else {
                                         task_row.append(cell_template({'id': '', 'name': '', 'status': '', 'status_color': 'black2','percent_complete':''}));
                                     }
-
                                 }
 
                                 var task_summary_cell = $('#task_summary_cell_' + data[i].id);
@@ -234,25 +211,16 @@
                                     var null_type_task = data[i]['nulls'][n];
                                     task_summary_cell.append(task_summary_cell_template({'link': '/tasks/' + null_type_task[0] + '/update/dialog', 'name': null_type_task[1], 'status': null_type_task[2], 'status_color': null_type_task[3]}));
                                 }
-
                             }
 
                             var oTable1 = $('#tasks_table').dataTable();
 
                             $('#loading_spinner').hide();
                             $('#content').show();
-
                         });
                     });
-
-
                 });
             })
-
         });
     </script>
-
-
 {% endblock extrascripts %}
-
-

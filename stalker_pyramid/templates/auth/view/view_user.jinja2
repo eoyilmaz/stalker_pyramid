@@ -156,29 +156,28 @@
     {% include 'calendar/calendar.jinja2' %}
 
     <script type="text/javascript">
-        $(document).ready(function () {
-            $.getJSON('/users/{{ entity.id }}/events/?keys=time_log&keys=vacation&keys=task').then(function (data) {
-                var events = [];
+        $.getJSON('/users/{{ entity.id }}/events/?keys=time_log&keys=vacation&keys=task').then(function (data) {
+            var events = [];
 
-                for (var i = 0; i < data.length; i++) {
+            for (var i = 0; i < data.length; i++) {
 
-                    var start_date = new Date(parseInt(data[i].start));
-                    var end_date = new Date(parseInt(data[i].end));
+                var start_date = new Date(parseInt(data[i].start));
+                var end_date = new Date(parseInt(data[i].end));
 
-                    var event = {
-                        eId: data[i].id,
-                        entity_type: data[i].entity_type,
-                        title: data[i].title,
-                        start: start_date,
-                        end: end_date,
-                        className: data[i].className,
-                        allDay: data[i].allDay
-                    };
-                    events.push(event);
-                }
+                var event = {
+                    eId: data[i].id,
+                    entity_type: data[i].entity_type,
+                    title: data[i].title,
+                    start: start_date,
+                    end: end_date,
+                    className: data[i].className,
+                    allDay: data[i].allDay
+                };
+                events.push(event);
+            }
 
+            $(document).ready(function () {
                 drawCalendar('calendar', events);
-
             });
 
 {#      TODO: Please use this version later on, which loads events dynamically #}

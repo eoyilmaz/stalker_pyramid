@@ -189,376 +189,341 @@
 
 
 <div class="row-fluid">
-<div class="span12">
-<!--PAGE CONTENT BEGINS-->
-
-<div class="left">
-
-<div class="btn-toolbar">
-
-<div class="btn-group">
-    <button data-toggle="dropdown"
-            class="btn btn-small btn-danger dropdown-toggle">
-        <i class="icon-gears bigger-120"></i>Action<span class="caret"></span>
-    </button>
-
-    <ul class="dropdown-menu" role='menu'>
-        {% if project and has_permission('Create_Task') %}
-            <li class="dropdown-submenu">
-
-                <a href="#" tabindex="-1">
-                    <i class="'ui-icon icon-plus bigger-120">&nbsp</i>
-                    Create
-                </a>
-
-                <ul class="dropdown-menu dropdown-danger">
-
-                    <li>
-                        <a data-target="#dialog_template"
-                           data-toggle="modal"
-                           data-keyboard=false
-                           href='{{ request.route_url("create_task_dialog", id=-1, _query={'project_id': project.id}) }}'>
-                            <i class="'ui-icon icon-tasks bigger-120">&nbsp</i>
-                            Task
-                        </a>
-                    </li>
-
-                    <li>
-                        <a id='child_task_button'
-                           original-href='{{ request.route_url("create_task_dialog", id=-1) }}'
-                           href='#'>
-                            <i class="'ui-icon icon-tasks bigger-120">&nbsp</i>
-                            Child Task
-                        </a>
-                    </li>
-
-                    <li>
-                        <a id='dependent_task_button'
-                           original-href='{{ request.route_url("create_task_dialog", id=-1) }}'
-                           href='#'>
-                            <i class="'ui-icon icon-tasks bigger-120">&nbsp</i>
-                            Dependent Task
-                        </a>
-                    </li>
-
-                    <li class="divider"></li>
-
-                    <li>
-                        <a data-target="#dialog_template"
-                           data-toggle="modal"
-                           data-keyboard=false
-                           href='{{ request.route_url("create_asset_dialog", id=-1, _query={'project_id': project.id}) }}'>
-                            <i class="'ui-icon icon-puzzle-piece bigger-120">&nbsp</i>
-                            Asset
-                        </a>
-                    </li>
-
-                    <li>
-                        <a data-target="#dialog_template"
-                           data-toggle="modal"
-                           data-keyboard=false
-                           href='{{ request.route_url("create_shot_dialog", id=-1, _query={'project_id': project.id}) }}'>
-                            <i class="'ui-icon icon-camera bigger-120">&nbsp</i>
-                            Shot
-                        </a>
-                    </li>
-
-                    <li>
-                        <a data-target="#dialog_template"
-                           data-toggle="modal"
-                           data-keyboard=false
-                           href='{{ request.route_url("create_sequence_dialog", id=-1, _query={'project_id': project.id}) }}'>
-                            <i class="'ui-icon icon-film bigger-120">&nbsp</i>
-                            Sequence
-                        </a>
-                    </li>
-                </ul>
-            </li>
-        {% endif %}
-
-        {% if has_permission('Update_Task') %}
+    <div class="span12">
+    <!--PAGE CONTENT BEGINS-->
+    
+    <div class="left">
+    
+    <div class="btn-toolbar">
+    
+    <div class="btn-group">
+        <button data-toggle="dropdown"
+                class="btn btn-small btn-danger dropdown-toggle">
+            <i class="icon-gears bigger-120"></i>Action<span class="caret"></span>
+        </button>
+    
+        <ul class="dropdown-menu" role='menu'>
+            {% if project and has_permission('Create_Task') %}
+                <li class="dropdown-submenu">
+    
+                    <a href="#" tabindex="-1">
+                        <i class="'ui-icon icon-plus bigger-120">&nbsp</i>
+                        Create
+                    </a>
+    
+                    <ul class="dropdown-menu dropdown-danger">
+    
+                        <li>
+                            <a data-target="#dialog_template"
+                               data-toggle="modal"
+                               data-keyboard=false
+                               href='{{ request.route_url("create_task_dialog", id=-1, _query={'project_id': project.id}) }}'>
+                                <i class="'ui-icon icon-tasks bigger-120">&nbsp</i>
+                                Task
+                            </a>
+                        </li>
+    
+                        <li>
+                            <a id='child_task_button'
+                               original-href='{{ request.route_url("create_task_dialog", id=-1) }}'
+                               href='#'>
+                                <i class="'ui-icon icon-tasks bigger-120">&nbsp</i>
+                                Child Task
+                            </a>
+                        </li>
+    
+                        <li>
+                            <a id='dependent_task_button'
+                               original-href='{{ request.route_url("create_task_dialog", id=-1) }}'
+                               href='#'>
+                                <i class="'ui-icon icon-tasks bigger-120">&nbsp</i>
+                                Dependent Task
+                            </a>
+                        </li>
+    
+                        <li class="divider"></li>
+    
+                        <li>
+                            <a data-target="#dialog_template"
+                               data-toggle="modal"
+                               data-keyboard=false
+                               href='{{ request.route_url("create_asset_dialog", id=-1, _query={'project_id': project.id}) }}'>
+                                <i class="'ui-icon icon-puzzle-piece bigger-120">&nbsp</i>
+                                Asset
+                            </a>
+                        </li>
+    
+                        <li>
+                            <a data-target="#dialog_template"
+                               data-toggle="modal"
+                               data-keyboard=false
+                               href='{{ request.route_url("create_shot_dialog", id=-1, _query={'project_id': project.id}) }}'>
+                                <i class="'ui-icon icon-camera bigger-120">&nbsp</i>
+                                Shot
+                            </a>
+                        </li>
+    
+                        <li>
+                            <a data-target="#dialog_template"
+                               data-toggle="modal"
+                               data-keyboard=false
+                               href='{{ request.route_url("create_sequence_dialog", id=-1, _query={'project_id': project.id}) }}'>
+                                <i class="'ui-icon icon-film bigger-120">&nbsp</i>
+                                Sequence
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+            {% endif %}
+    
+            {% if has_permission('Update_Task') %}
+                <li>
+                    <a id='update_task_menu_item'
+                       data-target="#dialog_template"
+                       data-toggle="modal"
+                       data-keyboard=false
+                       href="#"
+                       tabindex="-1">
+                        <i class="'ui-icon icon-pencil bigger-120">&nbsp</i>
+                        Update
+                    </a>
+                </li>
+            {% endif %}
+    
+            {% if has_permission('Create_Task') %}
+                <li>
+                    <a id="duplicate_task_hierarchy_menu_item">
+                        <i class="'ui-icon icon-copy bigger-120">&nbsp</i>
+                        Duplicate Hierarchy
+                    </a>
+                </li>
+            {% endif %}
+    
+            {% if has_permission('Delete_Task') %}
+                <li>
+                    <a id="delete_task_menu_item"
+                       class="red"
+                       href=''>
+                        <i class="'ui-icon icon-trash bigger-120">&nbsp</i>
+                        Delete
+                    </a>
+                </li>
+            {% endif %}
+    
+            <li class="divider"></li>
+    
             <li>
-                <a id='update_task_menu_item'
+                <a id='add_time_log_menu_item'
+                   class="green"
+                   href='#'>
+                    <i class="'ui-icon icon-time bigger-120">&nbsp</i>
+                    Add Time Log
+                </a>
+            </li>
+    
+            <li>
+                <a id='request_review_menu_item'
+                   class="orange"
                    data-target="#dialog_template"
                    data-toggle="modal"
-                   data-keyboard=false
-                   href="#"
-                   tabindex="-1">
-                    <i class="'ui-icon icon-pencil bigger-120">&nbsp</i>
-                    Update
+                   data-keyboard="false"
+                   href="#">
+                    <i class="'ui-icon icon-comment bigger-120">&nbsp</i>
+                    Request Review
                 </a>
             </li>
-        {% endif %}
-
-        {% if has_permission('Create_Task') %}
             <li>
-                <a id="duplicate_task_hierarchy_menu_item">
-                    <i class="'ui-icon icon-copy bigger-120">&nbsp</i>
-                    Duplicate Hierarchy
+                <a id='create_ticket_menu_item'
+                   class="blue"
+                   data-target="#dialog_template"
+                   data-toggle="modal"
+                   data-keyboard="false"
+                   href="#">
+                    <i class="'ui-icon icon-ticket bigger-120">&nbsp</i>
+                    Create Ticket
                 </a>
             </li>
-        {% endif %}
-
-        {% if has_permission('Delete_Task') %}
-            <li>
-                <a id="delete_task_menu_item"
-                   class="red"
-                   href=''>
-                    <i class="'ui-icon icon-trash bigger-120">&nbsp</i>
-                    Delete
-                </a>
-            </li>
-        {% endif %}
-
-        <li class="divider"></li>
-
-        <li>
-            <a id='add_time_log_menu_item'
-               class="green"
-               href='#'>
-                <i class="'ui-icon icon-time bigger-120">&nbsp</i>
-                Add Time Log
-            </a>
-        </li>
-
-        <li>
-            <a id='request_review_menu_item'
-               class="orange"
-               data-target="#dialog_template"
-               data-toggle="modal"
-               data-keyboard="false"
-               href="#">
-                <i class="'ui-icon icon-comment bigger-120">&nbsp</i>
-                Request Review
-            </a>
-        </li>
-        <li>
-            <a id='create_ticket_menu_item'
-               class="blue"
-               data-target="#dialog_template"
-               data-toggle="modal"
-               data-keyboard="false"
-               href="#">
-                <i class="'ui-icon icon-ticket bigger-120">&nbsp</i>
-                Create Ticket
-            </a>
-        </li>
-
-    </ul>
-</div>
-
-<div class="input-prepend"
-     style="height: 30px;
-                            margin-left: 5px;
-                            margin-bottom: 0px;">
-    <input id='task_start_end_date_range_picker'
-           name='start_and_end_dates'
-           type="text"
-           data-date-format="yyyy-mm-dd"
-           placeholder="Start & End Dates">
-                        <span class="add-on">
-                            <i class="icon-calendar"></i>
-                        </span>
-</div>
-
-<div class="input-prepend"
-     style="height: 30px;
-                            margin-bottom: 0px;
-                            margin-left: 6px;
-                            margin-right: 5px;
-                            ">
-    <select id='zoom_level'
-            name='start_and_end_dates'>
-        <option value="h">Hours</option>
-        <option value="d">Days</option>
-        <option value="w" selected>Weeks</option>
-        <option value="m">Months</option>
-        <option value="y">Years</option>
-    </select>
-</div>
-
-<div id="gantt_update_zoom_level_button" class="btn-group">
-    <button class="btn btn-small btn-warning">
-        <span class="icon-refresh bigger-120"></span>
-        Update
-    </button>
-</div>
-
-
-<div id="gantt_reload_button" class="btn-group">
-    <button class="btn btn-small btn-success">
-        <span class="icon-retweet bigger-120"></span>
-        Reload
-    </button>
-</div>
-
-<div id="gantt_refresh_button" class="btn-group">
-    <button class="btn btn-small btn-info">
-        <span class="icon-undo bigger-120"></span>
-        Redraw
-    </button>
-</div>
-
-{% if has_permission('Update_Task') %}
-    <div id="gantt_schedule_tasks_button" class="btn-group">
-        <button class="btn btn-small btn-purple">
-            <span class="icon-wrench bigger-120"></span>
-            Schedule
+    
+        </ul>
+    </div>
+    
+    <div class="input-prepend"
+         style="height: 30px;
+                                margin-left: 5px;
+                                margin-bottom: 0px;">
+        <input id='task_start_end_date_range_picker'
+               name='start_and_end_dates'
+               type="text"
+               data-date-format="yyyy-mm-dd"
+               placeholder="Start & End Dates">
+                            <span class="add-on">
+                                <i class="icon-calendar"></i>
+                            </span>
+    </div>
+    
+    <div class="input-prepend"
+         style="height: 30px;
+                margin-bottom: 0px;
+                margin-left: 6px;
+                margin-right: 5px;">
+        <select id='zoom_level'
+                name='start_and_end_dates'>
+            <option value="h">Hours</option>
+            <option value="d">Days</option>
+            <option value="w" selected>Weeks</option>
+            <option value="m">Months</option>
+            <option value="y">Years</option>
+        </select>
+    </div>
+    
+    <div id="gantt_update_zoom_level_button" class="btn-group">
+        <button class="btn btn-small btn-warning">
+            <span class="icon-refresh bigger-120"></span>
+            Update
         </button>
-        <div id="schedule-dialog-message" class="hide">
-            <div id="schedule-progress" class="progress progress-success progress-striped" data-percent="0%">
-                <div class="bar" style="width: 0%;"></div>
-            </div>
-
-            <div id="schedule-dialog-info">
-                <table>
-                    <tr>
-                        <td style="text-align: right; font-weight: bold; padding-right: 10px;">Last Scheduled By:</td>
-                        <td id="last_scheduled_by"></td>
-                    </tr>
-                    <tr>
-                        <td style="text-align: right; font-weight: bold; padding-right: 10px;">Last Scheduled At:</td>
-                        <td id="last_scheduled_at"></td>
-                    </tr>
-                    <tr>
-                        <td style="text-align: right; font-weight: bold; padding-right: 10px;">Last Scheduling Took:</td>
-                        <td id="last_scheduling_took"></td>
-                    </tr>
-                    <tr>
-                        <td style="text-align: right; font-weight: bold; padding-right: 10px;">Current Scheduling Time:</td>
-                        <td id="current_scheduling_time"></td>
-                    </tr>
-                </table>
+    </div>
+    
+    
+    <div id="gantt_reload_button" class="btn-group">
+        <button class="btn btn-small btn-success">
+            <span class="icon-retweet bigger-120"></span>
+            Reload
+        </button>
+    </div>
+    
+    <div id="gantt_refresh_button" class="btn-group">
+        <button class="btn btn-small btn-info">
+            <span class="icon-undo bigger-120"></span>
+            Redraw
+        </button>
+    </div>
+    
+    {% if has_permission('Update_Task') %}
+        <div id="gantt_schedule_tasks_button" class="btn-group">
+            <button class="btn btn-small btn-purple">
+                <span class="icon-wrench bigger-120"></span>
+                Schedule
+            </button>
+            <div id="schedule-dialog-message" class="hide">
+                <div id="schedule-progress" class="progress progress-success progress-striped" data-percent="0%">
+                    <div class="bar" style="width: 0%;"></div>
+                </div>
+    
+                <div id="schedule-dialog-info">
+                    <table>
+                        <tr>
+                            <td style="text-align: right; font-weight: bold; padding-right: 10px;">Last Scheduled By:</td>
+                            <td id="last_scheduled_by"></td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: right; font-weight: bold; padding-right: 10px;">Last Scheduled At:</td>
+                            <td id="last_scheduled_at"></td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: right; font-weight: bold; padding-right: 10px;">Last Scheduling Took:</td>
+                            <td id="last_scheduling_took"></td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: right; font-weight: bold; padding-right: 10px;">Current Scheduling Time:</td>
+                            <td id="current_scheduling_time"></td>
+                        </tr>
+                    </table>
+                </div>
             </div>
         </div>
+    {% endif %}
+    
+    <div id="gantt_go_to_today_button" class="btn-group">
+        <button class="btn btn-small btn-default">
+            <i class="icon-arrow-right bigger-120"></i>
+            Go To Today
+        </button>
+        <div id="gantt_scroll_to_button" class="hidden" start="0"></div>
     </div>
-{% endif %}
-
-<div id="gantt_go_to_today_button" class="btn-group">
-    <button class="btn btn-small btn-default">
-        <i class="icon-arrow-right bigger-120"></i>
-        Go To Today
-    </button>
-    <div id="gantt_scroll_to_button" class="hidden" start="0"></div>
-</div>
-
-<div id="gantt_zoom_selection" class="btn-group">
-    <button class="btn btn-small btn-danger"
-            data-loading-text='<i class="icon-search bigger-120"></i>Zooming...'>
-        <i class="icon-search bigger-120"></i>
-        Drag To Zoom
-    </button>
-</div>
-
-<div class="btn-group">
-    <a href="#"
-       data-toggle="dropdown"
-       class="btn btn-small btn-info dropdown-toggle">Toggle Columns<span
-            class="caret"></span>
-    </a>
-    <ul class="dropdown-menu">
-        <li>
-            <input class="ace" type="checkbox" name="columns[]"
-                   id="action_column_toggler" checked=true/>
-            <label class="lbl" for="action_column_toggler">Action</label>
-        </li>
-
-        <li>
-            <input class="ace" type="checkbox" name="columns[]"
-                   id="id_column_toggler" checked=true/>
-            <label class="lbl" for="id_column_toggler">Id</label>
-        </li>
-
-        <li>
-            <input class="ace" type="checkbox" name="columns[]"
-                   id="name_column_toggler" checked=true/>
-            <label class="lbl" for="name_column_toggler">Name</label>
-        </li>
-
-        <li>
-            <input class="ace" type="checkbox" name="columns[]"
-                   id="complete_column_toggler" checked=true/>
-            <label class="lbl" for="complete_column_toggler">% Complete</label>
-        </li>
-
-        <li>
-            <input class="ace" type="checkbox" name="columns[]"
-                   id="resource_column_toggler" checked=true/>
-            <label class="lbl" for="resource_column_toggler">Resource</label>
-        </li>
-
-        <li>
-            <input class="ace" type="checkbox" name="columns[]"
-                   id="timing_column_toggler" checked=true/>
-            <label class="lbl" for="timing_column_toggler">Timing</label>
-        </li>
-
-        <li>
-            <input class="ace" type="checkbox" name="columns[]"
-                   id="start_column_toggler" checked=true/>
-            <label class="lbl" for="start_column_toggler">Start</label>
-        </li>
-
-        <li>
-            <input class="ace" type="checkbox" name="columns[]"
-                   id="end_column_toggler" checked=true/>
-            <label class="lbl" for="end_column_toggler">End</label>
-        </li>
-
-        <li>
-            <input class="ace" type="checkbox" name="columns[]"
-                   id="status_column_toggler" checked=true/>
-            <label class="lbl" for="status_column_toggler">Status</label>
-        </li>
-
-        <li>
-            <input class="ace" type="checkbox" name="columns[]"
-                   id="dependencies_column_toggler" checked=true/>
-            <label class="lbl"
-                   for="dependencies_column_toggler">Dependencies</label>
-        </li>
-
-        <li>
-            <input class="ace" type="checkbox" name="columns[]"
-                   id="chart_column_toggler" checked=true/>
-            <label class="lbl" for="chart_column_toggler">Chart</label>
-        </li>
-    </ul>
-</div>
-
-{#                <div id="task_info_widget" class="widget-box">#}
-{#                    <div class="widget-header">#}
-{#                        <h5>Task Info</h5>#}
-{#                        <div class="widget-toolbar">#}
-{#                            <a href="#" data-action="reload">#}
-{#                                <i class="icon-refresh"></i>#}
-{#                            </a>#}
-{##}
-{#                            <a href="#" data-action="collapse">#}
-{#                                <i class="icon-chevron-up"></i>#}
-{#                            </a>#}
-{##}
-{#                            <a href="#" data-action="close">#}
-{#                                <i class="icon-remove"></i>#}
-{#                            </a>#}
-{#                        </div>#}
-{##}
-{#                        <div class="widget-body">#}
-{#                            <div class="widget-main">#}
-{#                                <table class="table table-striped table-bordered table-hover">#}
-{#                                    <tbody>#}
-{#                                        <tr>#}
-{#                                            <td class="">Alex</td>#}
-{#                                            <td><a href="#">alex@email.com</a></td>#}
-{#                                            <td class="hidden-480"><span class="label label-warning">Pending</span></td>#}
-{#                                        </tr>#}
-{#                                    </tbody>#}
-{#                                </table>#}
-{#                            </div>#}
-{#                        </div>#}
-{##}
-{#                    </div>#}
-{#                </div>#}
+    
+    <div id="gantt_zoom_selection" class="btn-group">
+        <button class="btn btn-small btn-danger"
+                data-loading-text='<i class="icon-search bigger-120"></i>Zooming...'>
+            <i class="icon-search bigger-120"></i>
+            Drag To Zoom
+        </button>
+    </div>
+    
+    <div class="btn-group">
+        <a href="#"
+           data-toggle="dropdown"
+           class="btn btn-small btn-info dropdown-toggle">Toggle Columns<span
+                class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+            <li>
+                <input class="ace" type="checkbox" name="columns[]"
+                       id="action_column_toggler" checked=true/>
+                <label class="lbl" for="action_column_toggler">Action</label>
+            </li>
+    
+            <li>
+                <input class="ace" type="checkbox" name="columns[]"
+                       id="id_column_toggler" checked=true/>
+                <label class="lbl" for="id_column_toggler">Id</label>
+            </li>
+    
+            <li>
+                <input class="ace" type="checkbox" name="columns[]"
+                       id="name_column_toggler" checked=true/>
+                <label class="lbl" for="name_column_toggler">Name</label>
+            </li>
+    
+            <li>
+                <input class="ace" type="checkbox" name="columns[]"
+                       id="complete_column_toggler" checked=true/>
+                <label class="lbl" for="complete_column_toggler">% Complete</label>
+            </li>
+    
+            <li>
+                <input class="ace" type="checkbox" name="columns[]"
+                       id="resource_column_toggler" checked=true/>
+                <label class="lbl" for="resource_column_toggler">Resource</label>
+            </li>
+    
+            <li>
+                <input class="ace" type="checkbox" name="columns[]"
+                       id="timing_column_toggler" checked=true/>
+                <label class="lbl" for="timing_column_toggler">Timing</label>
+            </li>
+    
+            <li>
+                <input class="ace" type="checkbox" name="columns[]"
+                       id="start_column_toggler" checked=true/>
+                <label class="lbl" for="start_column_toggler">Start</label>
+            </li>
+    
+            <li>
+                <input class="ace" type="checkbox" name="columns[]"
+                       id="end_column_toggler" checked=true/>
+                <label class="lbl" for="end_column_toggler">End</label>
+            </li>
+    
+            <li>
+                <input class="ace" type="checkbox" name="columns[]"
+                       id="status_column_toggler" checked=true/>
+                <label class="lbl" for="status_column_toggler">Status</label>
+            </li>
+    
+            <li>
+                <input class="ace" type="checkbox" name="columns[]"
+                       id="dependencies_column_toggler" checked=true/>
+                <label class="lbl"
+                       for="dependencies_column_toggler">Dependencies</label>
+            </li>
+    
+            <li>
+                <input class="ace" type="checkbox" name="columns[]"
+                       id="chart_column_toggler" checked=true/>
+                <label class="lbl" for="chart_column_toggler">Chart</label>
+            </li>
+        </ul>
+    </div>
 </div>
 
 
@@ -626,10 +591,7 @@ require([
 
     {% if entity.entity_type == 'User' %}
         target = '{{ request.route_url('get_entity_tasks', id=entity.id) }}';
-        {#    {% elif entity.entity_type == 'Studio' %}#}
-        {#        target = '{{ request.route_url('get_studio_tasks', id=entity.id) }}';#}
     {% endif %}
-    {#    console.debug('target : ', target);#}
 
     var tasks_jsonRest_store = new JsonRest({
         target: target,
