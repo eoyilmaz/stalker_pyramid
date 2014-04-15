@@ -52,6 +52,7 @@
     {% raw %}
     <script id="tmpl_itemThead" type="text/x-dot-template">
         <tr>
+            <th>Start</th>
             <th>Project</th>
             <th>Name</th>
             <th>Resource</th>
@@ -67,6 +68,7 @@
     {% raw %}
     <script id="tmpl_itemRow" type="text/x-dot-template">
         <tr>
+            <td>{{=it.start_date}}</td>
             <td><a href='/projects/{{=it.project_id}}/view'>{{=it.project_name}}</a>
             </td>
             <td><a href='/tasks/{{=it.id}}/view'>{{=it.name}}</a></td>

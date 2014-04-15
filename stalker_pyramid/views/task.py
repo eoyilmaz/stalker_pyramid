@@ -58,54 +58,31 @@ def query_of_tasks_hierarchical_name_table():
     """gives query string of finding parents names by hierarchically
     """
     query = """
-    (
-        SELECT
-            task_parents.id,
-            "Task_SimpleEntities".name || ' (' || "Projects".code || ' | ' || task_parents.parent_names || ')' as parent_names
-        FROM (
-            SELECT
-                task_parents.id,
-                array_agg(task_parents.parent_id) as parent_ids,
-                array_agg(task_parents.n) as n,
-                array_to_string(
-                    array_agg(task_parents.parent_name),
-                    ' | '
-                ) as parent_names
-            FROM (
-                WITH RECURSIVE parent_ids(id, parent_id, n) as (
-                        SELECT task.id, task.parent_id, 0
-                        FROM "Tasks" AS task
-                        WHERE task.parent_id IS NOT NULL
-                    UNION ALL
-                        SELECT task.id, parent.parent_id, parent.n + 1
-                        FROM "Tasks" task, parent_ids parent
-                        WHERE task.parent_id = parent.id
-                )
-                SELECT
-                    parent_ids.id as id,
-                    parent_ids.n as n,
-                    parent_ids.parent_id AS parent_id,
-                    "ParentTask_SimpleEntities".name as parent_name
-                FROM parent_ids
-                JOIN "SimpleEntities" as "ParentTask_SimpleEntities" ON parent_ids.parent_id = "ParentTask_SimpleEntities".id
-                ORDER BY id, parent_ids.n DESC
-            ) as task_parents
-            GROUP BY task_parents.id
-        ) as task_parents
-        JOIN "Tasks" ON task_parents.id = "Tasks".id
-        JOIN "Projects" ON "Tasks".project_id = "Projects".id
-        JOIN "SimpleEntities" as "Task_SimpleEntities" ON "Tasks".id = "Task_SimpleEntities".id
-    )
-    UNION
-    (
-        SELECT
-            "Tasks".id,
-            "Task_SimpleEntities".name || ' (' || "Projects".code || ')' as parent_names
-        FROM "Tasks"
-        JOIN "Projects" ON "Tasks".project_id = "Projects".id
-        JOIN "SimpleEntities" as "Task_SimpleEntities" on "Tasks".id = "Task_SimpleEntities".id
-        WHERE "Tasks".parent_id IS NULL
-    )
+    with recursive recursive_task(id, parent_id, path, path_names) as (
+        select
+            task.id,
+            task.project_id,
+            array[task.project_id] as path,
+            ("Projects".code || '') as path_names
+        from "Tasks" as task
+        join "Projects" on task.project_id = "Projects".id
+        where task.parent_id is NULL
+    union all
+        select
+            task.id,
+            task.parent_id,
+            (parent.path || task.parent_id) as path,
+            (parent.path_names || '|' || "Parent_SimpleEntities".name) as path_names
+        from "Tasks" as task
+        join recursive_task as parent on task.parent_id = parent.id
+        join "SimpleEntities" as "Parent_SimpleEntities" on parent.id = "Parent_SimpleEntities".id
+        --where parent.id = t_path.parent_id
+    ) select
+        recursive_task.id,
+        recursive_task.path,
+        recursive_task.path_names
+    from recursive_task
+    order by path
     """
 
     return query
@@ -116,7 +93,7 @@ def get_task_hierarchical_name(task_id):
 
     sql_query = """
         Select
-            "ParentTasks".parent_names as task_name
+            "ParentTasks".path_names as task_name
         from (
             %(tasks_hierarchical_name_table)s
         ) as "ParentTasks"
@@ -1198,7 +1175,7 @@ def get_user_tasks(request):
 
     sql_query = """select
         "Tasks".id  as task_id,
-        "ParentTasks".parent_names as name
+        "ParentTasks".path_names as name
     from "Tasks"
         join "Task_Resources" on "Task_Resources".task_id = "Tasks".id
         join "Statuses" as "Task_Statuses" on "Task_Statuses".id = "Tasks".status_id
@@ -1608,7 +1585,7 @@ def get_entity_tasks_by_filter(request):
 
     sql_query = """select
     "Task_Resources".task_id as task_id,
-    "ParentTasks".parent_names as task_name,
+    "Tasks_SimpleEntities".name as task_name,
     array_agg("Responsible_SimpleEntities".id) as responsible_id,
     array_agg("Responsible_SimpleEntities".name) as responsible_name,
     coalesce("Type_SimpleEntities".name,'') as type_name,
@@ -1650,7 +1627,10 @@ def get_entity_tasks_by_filter(request):
                 else 0
             end))-coalesce("Task_TimeLogs".duration, 0.0))/3600
 
-    ) as hour_to_complete
+    ) as hour_to_complete,
+    coalesce("Tasks".computed_start,"Tasks".start) as start_date,
+    "ParentTasks".path_names as path_names,
+    "Tasks".priority as priority
 
     from "Tasks"
     join "Task_Resources" on "Task_Resources".task_id = "Tasks".id
@@ -1766,15 +1746,18 @@ join ((
 
     group by
         "Task_Resources".task_id,
-        "ParentTasks".parent_names,
+        "Tasks_SimpleEntities".name,
+        "ParentTasks".path_names,
         percent_complete,
         "Statuses_SimpleEntities".name,
         "Statuses".code,
         "Statuses_SimpleEntities".html_class,
         "Project_SimpleEntities".id,
         "Project_SimpleEntities".name,
+        start_date,
         hour_to_complete,
-        type_name
+        type_name,
+        priority
     """
     where_condition_for_entity = ''
 
@@ -1806,7 +1789,7 @@ join ((
     return_data = [
         {
             'id': r[0],
-            'name': r[1],
+            'name': '%(task_name)s (%(path_names)s)' %{'task_name':r[1], 'path_names':r[16] } ,
             'responsible_id': r[2],
             'responsible_name': r[3],
             'type': r[4],
@@ -1820,7 +1803,9 @@ join ((
             'project_name': r[12],
             'request_review': '1' if (logged_in_user.id in r[6] or r[2] == logged_in_user.id) and r[9] == 'WIP' else None,
             'review': '1' if logged_in_user.id in  r[13] and r[9]=='PREV' else None,
-            'hour_to_complete':r[14]
+            'hour_to_complete':r[14],
+            'start_date':milliseconds_since_epoch(r[15]),
+            'priority':r[17]
         }
         for r in result.fetchall()
     ]

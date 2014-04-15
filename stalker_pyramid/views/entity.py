@@ -334,37 +334,37 @@ def get_entity(request):
         }
     ]
 
-@view_config(
-    route_name='list_entity_tasks_by_filter',
-    renderer='templates/task/list/list_entity_tasks_by_filter.jinja2',
-)
-def list_entity_tasks_by_filter(request):
-    """creates a list_entity_tasks_by_filter by using the given entity and filter
-    """
-    logger.debug('inside list_entity_tasks_by_filter')
-
-    # get logged in user
-    logged_in_user = get_logged_in_user(request)
-
-    entity_id = request.matchdict.get('id', -1)
-    entity = Entity.query.filter_by(id=entity_id).first()
-
-    filter_id = request.matchdict.get('f_id', -1)
-    filter = Entity.query.filter_by(id=filter_id).first()
-
-    studio = Studio.query.first()
-    if not studio:
-        studio = defaults
-
-    return {
-        'mode': 'create',
-        'has_permission': PermissionChecker(request),
-        'studio': studio,
-        'logged_in_user': logged_in_user,
-        'entity': entity,
-        'filter': filter,
-        'milliseconds_since_epoch': milliseconds_since_epoch,
-    }
+# @view_config(
+#     route_name='list_entity_tasks_by_filter',
+#     renderer='templates/task/list/list_entity_tasks_by_filter.jinja2',
+# )
+# def list_entity_tasks_by_filter(request):
+#     """creates a list_entity_tasks_by_filter by using the given entity and filter
+#     """
+#     logger.debug('inside list_entity_tasks_by_filter')
+#
+#     # get logged in user
+#     logged_in_user = get_logged_in_user(request)
+#
+#     entity_id = request.matchdict.get('id', -1)
+#     entity = Entity.query.filter_by(id=entity_id).first()
+#
+#     filter_id = request.matchdict.get('f_id', -1)
+#     filter = Entity.query.filter_by(id=filter_id).first()
+#
+#     studio = Studio.query.first()
+#     if not studio:
+#         studio = defaults
+#
+#     return {
+#         'mode': 'create',
+#         'has_permission': PermissionChecker(request),
+#         'studio': studio,
+#         'logged_in_user': logged_in_user,
+#         'entity': entity,
+#         'filter': filter,
+#         'milliseconds_since_epoch': milliseconds_since_epoch,
+#     }
 
 @view_config(
     route_name='list_entity_tasks_by_filter',
