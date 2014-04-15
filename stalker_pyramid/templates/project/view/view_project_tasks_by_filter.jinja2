@@ -52,8 +52,8 @@
     <div class="space"></div>
     <div class="row-fluid" id="table_row">
     <div class="widget-box">
-        <div class="widget-header widget-header-small header-color-grey }}">
-            <h5 id="items_header" class="smaller"></h5>
+        <div class="widget-header widget-header-small header-color-{{ filter.html_class }}">
+            <h5 id="items_header" class="smaller">{{ filter.name }}</h5>
 
             <div class="widget-toolbar">
 
@@ -67,7 +67,7 @@
         <div class="widget-body">
             <div class="widget-main no-padding">
 
-{#                {% include 'task/list/list_entity_tasks_by_filter.jinja2' %}#}
+                {% include 'task/list/list_entity_tasks_by_filter.jinja2' %}
 
             </div>
         </div>
@@ -291,10 +291,10 @@
 </script>
 {% endraw %}
 
-{#    <script>#}
-{#        $(document).ready(function () {#}
-{#            init_html_modal()#}
-{#        })#}
-{#    </script>#}
+    <script>
+        $(document).ready(function () {
+            init_html_modal()
+        })
+    </script>
 
 {% endblock extrascripts %}

@@ -262,6 +262,7 @@ def main(global_config, **settings):
     config.add_route('list_project_tickets',       'projects/{id}/tickets/list')
     config.add_route('list_project_references',    'projects/{id}/references/list')
     config.add_route('list_project_reviews',       'projects/{id}/reviews/list')  # html
+    config.add_route('view_project_tasks_by_filter',    'projects/{id}/tasks/filter/{f_id}/list')  # html
 
     config.add_route('get_projects',               'projects/')
     config.add_route('get_project_users',          'projects/{id}/users/')

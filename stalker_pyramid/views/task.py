@@ -80,8 +80,10 @@ def query_of_tasks_hierarchical_name_table():
     ) select
         recursive_task.id,
         recursive_task.path,
-        recursive_task.path_names
+        recursive_task.path_names,
+        "SimpleEntities".name || ' (' || recursive_task.id || ') (' || recursive_task.path_names || ')' as full_path
     from recursive_task
+    join "SimpleEntities" on recursive_task.id = "SimpleEntities".id
     order by path
     """
 
@@ -93,7 +95,7 @@ def get_task_hierarchical_name(task_id):
 
     sql_query = """
         Select
-            "ParentTasks".path_names as task_name
+            "ParentTasks".full_path as task_name
         from (
             %(tasks_hierarchical_name_table)s
         ) as "ParentTasks"
@@ -1186,10 +1188,11 @@ def get_user_tasks(request):
 
     sql_query = """select
         "Tasks".id  as task_id,
-        "ParentTasks".path_names as name
+        "ParentTasks".full_path as task_name
     from "Tasks"
         join "Task_Resources" on "Task_Resources".task_id = "Tasks".id
         join "Statuses" as "Task_Statuses" on "Task_Statuses".id = "Tasks".status_id
+        join "SimpleEntities" as "Task_SimpleEntities" on "Task_SimpleEntities".id = "Tasks".id
         left join (
             %(tasks_hierarchical_name_table)s
         ) as "ParentTasks" on "Tasks".id = "ParentTasks".id
@@ -1226,7 +1229,7 @@ def get_user_tasks(request):
     return_data = [
         {
             'id': r[0],
-            'name': r[1]
+            'name': r[1] ,
         }
         for r in result.fetchall()
     ]
@@ -1596,7 +1599,7 @@ def get_entity_tasks_by_filter(request):
 
     sql_query = """select
     "Task_Resources".task_id as task_id,
-    "Tasks_SimpleEntities".name as task_name,
+    "ParentTasks".full_path as task_name,
     array_agg("Responsible_SimpleEntities".id) as responsible_id,
     array_agg("Responsible_SimpleEntities".name) as responsible_name,
     coalesce("Type_SimpleEntities".name,'') as type_name,
@@ -1640,7 +1643,6 @@ def get_entity_tasks_by_filter(request):
 
     ) as hour_to_complete,
     coalesce("Tasks".computed_start,"Tasks".start) as start_date,
-    "ParentTasks".path_names as path_names,
     "Tasks".priority as priority
 
     from "Tasks"
@@ -1757,8 +1759,7 @@ join ((
 
     group by
         "Task_Resources".task_id,
-        "Tasks_SimpleEntities".name,
-        "ParentTasks".path_names,
+        "ParentTasks".full_path,
         percent_complete,
         "Statuses_SimpleEntities".name,
         "Statuses".code,
@@ -1800,7 +1801,7 @@ join ((
     return_data = [
         {
             'id': r[0],
-            'name': '%(task_name)s (%(path_names)s)' %{'task_name':r[1], 'path_names':r[16] } ,
+            'name': r[1],
             'responsible_id': r[2],
             'responsible_name': r[3],
             'type': r[4],
@@ -1816,7 +1817,7 @@ join ((
             'review': '1' if logged_in_user.id in  r[13] and r[9]=='PREV' else None,
             'hour_to_complete':r[14],
             'start_date':milliseconds_since_epoch(r[15]),
-            'priority':r[17]
+            'priority':r[16]
         }
         for r in result.fetchall()
     ]
