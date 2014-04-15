@@ -1002,7 +1002,9 @@ def get_tasks(request):
         "Tasks".start,
         "Task_Status".code,
         "Parent_Tasks".id,
-        "Tasks".project_id
+        "Tasks".project_id,
+        "SimpleEntities".date_created,
+        "SimpleEntities".date_updated
     order by "SimpleEntities".name
     """
 
