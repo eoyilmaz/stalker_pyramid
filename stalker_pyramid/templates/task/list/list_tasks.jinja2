@@ -849,6 +849,13 @@ require([
             console.log('data name'+ data[0].name);
             // warn the user about what is going to happen and ask if it is ok
 
+
+
+
+{#            $('#dialog_template').modal({#}
+{#                'remote': '/tasks/' + selected_ids[0] + '/duplicate/dialog?came_from={{ request.current_route_path() }}'#}
+{#            });#}
+
             bootbox.confirm(
                 "<form id='infos' action=''>\
                     <div class='control-group'>\
@@ -878,7 +885,7 @@ require([
                         }
                     }
                 });
-            })
+        })
     });
 
     $('#add_time_log_menu_item').on('click', function (e) {

@@ -491,6 +491,7 @@ def main(global_config, **settings):
     config.add_route('cleanup_task_new_reviews', 'tasks/{id}/cleanup_new_reviews')
 
     config.add_route('duplicate_task_hierarchy', 'tasks/{id}/duplicate')
+    config.add_route('duplicate_task_hierarchy_dialog', 'tasks/{id}/duplicate/dialog')
 
     config.add_route('view_task',                'tasks/{id}/view')
 

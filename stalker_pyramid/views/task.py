@@ -382,6 +382,42 @@ def cleanup_duplicate_residuals(task):
 
 
 @view_config(
+    route_name='duplicate_task_hierarchy_dialog',
+    renderer='templates/task/dialog/duplicate_task_hierarchy_dialog.jinja2'
+)
+def duplicate_task_hierarchy_dialog(request):
+    """Dialog for duplicating task
+    """
+
+    logged_in_user = get_logged_in_user(request)
+    came_from = request.params.get('came_from', request.url)
+
+    entity_id = request.matchdict.get('id')
+    entity = Entity.query.filter_by(id=entity_id).first()
+
+    entity_type = entity.entity_type
+    project = entity.project
+    parent = entity.parent
+
+    logger.debug('entity_id  : %s' % entity_id)
+    logger.debug('entity     : %s' % entity)
+    logger.debug('project    : %s' % project)
+    logger.debug('parent     : %s' % parent)
+
+    return {
+        'has_permission': PermissionChecker(request),
+        'logged_in_user': logged_in_user,
+        'entity': entity,
+        'entity_type': entity_type,
+        'project': project,
+        'parent': parent,
+        'came_from': came_from,
+    }
+
+
+
+
+@view_config(
     route_name='duplicate_task_hierarchy'
 )
 def duplicate_task_hierarchy(request):
@@ -398,6 +434,12 @@ def duplicate_task_hierarchy(request):
     task = Task.query.filter_by(id=task_id).first()
 
     name = request.params.get('name', task.name + ' - Duplicate')
+    parent_id = request.params.get('parent_id', '-1')
+    parent = Task.query.filter_by(id=parent_id).first()
+
+    if not parent:
+        parent = task.parent
+
     description = request.params.get('description', task.description)
 
     if task:
@@ -406,7 +448,7 @@ def duplicate_task_hierarchy(request):
 
         cleanup_duplicate_residuals(task)
         # update the parent
-        dup_task.parent = task.parent
+        dup_task.parent = parent
         # just rename the dup_task
 
         dup_task.name = name
@@ -1584,6 +1626,7 @@ def get_entity_tasks_stats(request):
     return resp
 
 
+
 @view_config(
     route_name='get_entity_tasks_by_filter',
     renderer='json'
@@ -1666,22 +1709,22 @@ def get_entity_tasks_by_filter(request):
         ) as "Task_TimeLogs" on "Task_TimeLogs".task_id = "Tasks".id
     join "SimpleEntities" as "Tasks_SimpleEntities" on "Tasks_SimpleEntities".id = "Task_Resources".task_id
 
-join "SimpleEntities" as "Resource_SimpleEntities" on "Resource_SimpleEntities".id = "Task_Resources".resource_id
-join ((
-    -- get tasks responsible from parents
-    -- so find all the tasks that doesn't have a responsible but one of their parents has
-    with recursive go_to_parent(id, parent_id) as (
-            select task.id, task.parent_id
-            from "Tasks" as task
-            left outer join "Task_Responsible" on task.id = "Task_Responsible".task_id
-            where "Task_Responsible".responsible_id is NULL
-        union all
-            select g.id, task.parent_id
-            from go_to_parent as g
-            join "Tasks" as task on g.parent_id = task.id
-            join "Task_Responsible" on task.id = "Task_Responsible".task_id
-            where task.parent_id is not NULL and "Task_Responsible".responsible_id is NULL
-    )
+    join "SimpleEntities" as "Resource_SimpleEntities" on "Resource_SimpleEntities".id = "Task_Resources".resource_id
+    join ((
+        -- get tasks responsible from parents
+        -- so find all the tasks that doesn't have a responsible but one of their parents has
+        with recursive go_to_parent(id, parent_id) as (
+                select task.id, task.parent_id
+                from "Tasks" as task
+                left outer join "Task_Responsible" on task.id = "Task_Responsible".task_id
+                where "Task_Responsible".responsible_id is NULL
+            union all
+                select g.id, task.parent_id
+                from go_to_parent as g
+                join "Tasks" as task on g.parent_id = task.id
+                join "Task_Responsible" on task.id = "Task_Responsible".task_id
+                where task.parent_id is not NULL and "Task_Responsible".responsible_id is NULL
+        )
     select
         g.id,
         "Task_Responsible".responsible_id
@@ -1942,15 +1985,6 @@ def update_asset_dialog(request):
     return data_dialog(request, mode='update', entity_type='Asset')
 
 
-@view_config(
-    route_name='review_asset_dialog',
-    renderer='templates/task/dialog/review_task_dialog.jinja2'
-)
-def review_asset_dialog(request):
-    """called when reviewing assets
-    """
-    return data_dialog(request, mode='review', entity_type='Asset')
-
 
 @view_config(
     route_name='create_shot_dialog',
@@ -1973,16 +2007,6 @@ def update_shot_dialog(request):
 
 
 @view_config(
-    route_name='review_shot_dialog',
-    renderer='templates/task/dialog/review_task_dialog.jinja2'
-)
-def review_shot_dialog(request):
-    """called when reviewing shots
-    """
-    return data_dialog(request, mode='review', entity_type='Shot')
-
-
-@view_config(
     route_name='create_sequence_dialog',
     renderer='templates/task/dialog/task_dialog.jinja2'
 )
@@ -2001,15 +2025,6 @@ def update_sequence_dialog(request):
     """
     return data_dialog(request, mode='update', entity_type='Sequence')
 
-
-@view_config(
-    route_name='review_sequence_dialog',
-    renderer='templates/task/dialog/review_task_dialog.jinja2'
-)
-def review_sequence_dialog(request):
-    """called when reviewing sequences
-    """
-    return data_dialog(request, mode='review', entity_type='Sequence')
 
 
 @view_config(route_name='create_task')
@@ -2467,7 +2482,18 @@ def cleanup_task_new_reviews(request):
 
 
 
-
+@view_config(
+    route_name='review_sequence_dialog',
+    renderer='templates/task/dialog/review_task_dialog.jinja2'
+)
+@view_config(
+    route_name='review_asset_dialog',
+    renderer='templates/task/dialog/review_task_dialog.jinja2'
+)
+@view_config(
+    route_name='review_shot_dialog',
+    renderer='templates/task/dialog/review_task_dialog.jinja2'
+)
 @view_config(
     route_name='review_task_dialog',
     renderer='templates/task/dialog/review_task_dialog.jinja2'

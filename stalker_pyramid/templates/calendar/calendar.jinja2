@@ -18,15 +18,21 @@
                 {% if has_permission('Create_' + event_type) %}
 
                     select: function (start, end, allDay) {
-                        var event_dialog = $('#dialog_template');
 
-                        event_dialog.attr('start', start);
-                        event_dialog.attr('end', end);
-                        event_dialog.attr('allDay', allDay);
+                        var now = new Date();
+                        if(now> end){
 
-                        event_dialog.modal({
-                            'remote': "/entities/{{ entity.id }}/{{ event_type.lower() }}s/create/dialog?came_from={{ request.current_route_path() }}"
-                        });
+                            var event_dialog = $('#dialog_template');
+
+                            event_dialog.attr('start', start);
+                            event_dialog.attr('end', end);
+                            event_dialog.attr('allDay', allDay);
+
+                            event_dialog.modal({
+                                'remote': "/entities/{{ entity.id }}/{{ event_type.lower() }}s/create/dialog?came_from={{ request.current_route_path() }}"
+                            });
+
+                        }
 
                         calendar.fullCalendar('unselect');
                     },
