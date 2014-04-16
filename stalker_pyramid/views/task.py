@@ -430,17 +430,20 @@ def duplicate_task_hierarchy(request):
 
     :return: A list of stalker.models.task.Task
     """
+
+    logger.debug('duplicate_task_hierarchy is running')
+
     task_id = request.matchdict.get('id')
     task = Task.query.filter_by(id=task_id).first()
 
-    name = request.params.get('name', task.name + ' - Duplicate')
+    name = request.params.get('dup_task_name', task.name + ' - Duplicate')
+
     parent_id = request.params.get('parent_id', '-1')
     parent = Task.query.filter_by(id=parent_id).first()
-
     if not parent:
         parent = task.parent
 
-    description = request.params.get('description', task.description)
+    description = request.params.get('dup_task_description', '')
 
     if task:
         dup_task = walk_and_duplicate_task_hierarchy(task)

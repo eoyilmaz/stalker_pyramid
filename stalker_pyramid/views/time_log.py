@@ -190,7 +190,7 @@ def create_time_log(request):
         return response
 
     logger.debug('successfully created time log!')
-    response = Response('successfully created time log!')
+    response = Response(task.name)
 
     return response
 

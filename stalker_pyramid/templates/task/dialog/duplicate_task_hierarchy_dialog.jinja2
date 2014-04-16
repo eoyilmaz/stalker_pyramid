@@ -3,7 +3,8 @@
     <form id='dup_task_form'
           class='form-horizontal'
           role='form'
-          method='post'>
+          method='post'
+          action='/tasks/{{ entity.id }}/duplicate'  >
 
         <div class='row-fluid'>
 
@@ -26,7 +27,7 @@
                                id='dup_task_name'
                                class='input-block-level'
                                name='dup_task_name'
-                               value={{ entity.name }} required>
+                               value='{{ entity.name }}' required>
                 </div>
             </div>
 
@@ -35,8 +36,8 @@
                 <div class='span9'>
                         <textarea id='dup_task_description'
                                   name='dup_task_description'
-                                  class='autosize-transition span4'
-                                  style='overflow: hidden; word-wrap: break-word;resize: horizontal;height: 50px;'>
+                                  class='autosize-transition span12'
+                                  style='overflow: hidden; word-wrap: break-word;resize: horizontal;height: 150px;'>
 
                                   </textarea>
                 </div>
@@ -64,11 +65,49 @@ function init_dialog() {
     dialog_template_label.find('span').remove();
     dialog_template_label.append('<span>Duplicate Task</span>');
 
+    $('#dialog_template_body').attr('style', "height: 350px");
+
+    var submit_button = $('#dialog_template_submit_button')
 
 
+    {# ***************************************************************** #}
+    {# Task #}
+    var dup_task_parent = $('#dup_task_parent');
+
+    {% raw %}
+        var task_option_template = doT.template(
+           '<option value={{=it.id}}>{{=it.name}}</option>'
+        );
+    {% endraw %}
+
+    dup_task_parent.find('option').remove();
+
+    submit_button.button('loading')
+
+    $.getJSON('/projects/{{ entity.project.id }}/tasks/').then(function (data) {
+
+       dup_task_parent.append('<option value="-1">&nbsp;</option>');
+
+       for (var i = 0; i < data.length; i++) {
+
+           dup_task_parent.append(task_option_template(data[i]));
+
+       }
+
+        dup_task_parent.chosen({
+            search_contains: true,
+            enable_split_word_search: true,
+            allow_single_deselect: true
+        });
 
 
+        dup_task_parent.val('{{ entity.parent.id }}');
 
+        dup_task_parent.trigger('liszt:updated');
+
+        submit_button.button('reset')
+
+    });
 
     {# ***************************************************************** #}
     {# Submit Button #}
