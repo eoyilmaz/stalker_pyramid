@@ -354,60 +354,105 @@ def get_entity_references(request):
     entity = Entity.query.filter(Entity.id == entity_id).first()
     logger.debug('asking references for entity: %s' % entity)
 
-    offset = request.params.get('offset')
-    limit = request.params.get('limit')
+    offset = request.params.get('iDisplayStart')
+    limit = request.params.get('iDisplayLength')
+
+    search_string = request.params.get('sSearch')
+    logger.debug('search_string: %s' % search_string)
+
+    search_query = ''
+    if search_string != "":
+        search_query = """
+    and ('%(search_str)s' = any (entity_tags.tags)
+    or tasks.entity_type = '%(search_str)s'
+    or tasks.full_path ilike '%(search_wide)s'
+    )
+    """ % {
+            'search_str': search_string,
+            'search_wide': '%{s}%'.format(s=search_string)
+        }
+
+    logger.debug('request.params: %s' % request.params)
+
+    for k in request.params.keys():
+        logger.debug((k, request.params.get(k)))
+
+    # we need to do that import here
+    from stalker_pyramid.views.task import \
+        query_of_tasks_hierarchical_name_table
+
+    order_column = int(request.params.get('iSortingCols', 0))
+    order_by = [
+        '"Links".id',
+        '"Links".full_path',
+        '"Links".original_filename',
+        '"thumbnail_full_path"',
+        'entity_tags.tags',
+        'entity_id',
+        'full_path',
+        'entity_type'
+    ][order_column]
 
     # using Raw SQL queries here to fasten things up quite a bit and also do
     # some fancy queries like getting all the references of tasks of a project
     # also with their tags
-
     sql_query = """
     -- select all links assigned to a project tasks or assigned to a task and its children
+select
+    "Links".id,
+    "Links".full_path,
+    "Links".original_filename,
+    "Thumbnails".full_path as "thumbnail_full_path",
+    entity_tags.tags,
+    array_agg(tasks.id) as entity_id,
+    array_agg(tasks.full_path) as full_path,
+    array_agg(tasks.entity_type) as entity_type
+from (
+    %(tasks_hierarchical_name_table)s
+) as tasks
+join "Task_References" on tasks.id = "Task_References".task_id
+join "Links" on "Task_References".link_id = "Links".id
+join "SimpleEntities" as "Link_SimpleEntities" on "Links".id = "Link_SimpleEntities".id
+join "Links" as "Thumbnails" on "Link_SimpleEntities".thumbnail_id = "Thumbnails".id
+left outer join (
     select
         "Links".id,
-        "Links".full_path,
-        "Links".original_filename,
-        "Thumbnails".full_path as "thumbnail_full_path",
-        array_agg("SimpleEntities_Tags".name) as tags,
-        array_agg("Task_References".task_id) as entity_id,
-        array_agg("SimpleEntities_Tasks".name) as task_name,
-        array_agg("SimpleEntities_Tasks".entity_type) as entity_type
-    from "Task_References"
-    join (
-        with recursive parent_ids(id, parent_id, project_id) as (
-            select task.id, task.parent_id, task.project_id from "Tasks" task
-        union all
-            select task.id, parent.parent_id, task.project_id
-            from "Tasks" task, parent_ids parent
-            where task.parent_id = parent.id
-        )
-        select
-            distinct parent_ids.id as id
-            from parent_ids
-
-            where parent_ids.id = %(id)s or parent_ids.parent_id = %(id)s or parent_ids.project_id = %(id)s -- show also children references
-
-            group by parent_ids.id, parent_id, project_id
-            order by parent_ids.id
-    ) as child_tasks on child_tasks.id = "Task_References".task_id
-    join "Links" on "Task_References".link_id = "Links".id
-    join "SimpleEntities" on "Links".id = "SimpleEntities".id
-    join "Links" as "Thumbnails" on "SimpleEntities".thumbnail_id = "Thumbnails".id
+        array_agg("Tag_SimpleEntities".name) as tags
+    from "Links"
     join "Entity_Tags" on "Links".id = "Entity_Tags".entity_id
-    join "Tags" on "Entity_Tags".tag_id = "Tags".id
-    join "SimpleEntities" as "SimpleEntities_Tags" on "Tags".id = "SimpleEntities_Tags".id
-    join "SimpleEntities" as "SimpleEntities_Tasks" on "Task_References".task_id = "SimpleEntities_Tasks".id
-    group by "Links".id, "Thumbnails".full_path, "Links".full_path,
-             "Links".original_filename
-    order by "Links".id
-    """ % {'id': entity_id}
+    join "SimpleEntities" as "Tag_SimpleEntities" on "Entity_Tags".tag_id = "Tag_SimpleEntities".id
+    group by "Links".id
+) as entity_tags on "Links".id = entity_tags.id
 
-    if offset and limit:
-        sql_query += "offset %s limit %s" % (offset, limit)
+where %(id)s = any (tasks.path) %(search_string)s
+
+group by "Links".id,
+    "Links".full_path,
+    "Links".original_filename,
+    "Thumbnails".id,
+    entity_tags.tags
+
+order by %(order_by)s
+offset %(offset)s
+limit %(limit)s
+    """ % {
+        'id': entity_id,
+        'tasks_hierarchical_name_table':
+        query_of_tasks_hierarchical_name_table(),
+        'search_string': search_query,
+        'order_by': order_by,
+        'offset': offset,
+        'limit': limit
+    }
+
+    # if offset and limit:
+    #     sql_query += "offset %s limit %s" % (offset, limit)
 
     time_time = time.time
     db_start = time_time()
-    result = DBSession.connection().execute(sql_query)
+    from sqlalchemy import text  # to be able to use "%" sign use this function
+    result = DBSession.connection().execute(text(sql_query))
+
     db_end = time_time()
     db_time = db_end - db_start
 
@@ -428,8 +473,16 @@ def get_entity_references(request):
     python_time = python_end - python_start
 
     logger.debug('get_entity_references took: %s seconds for %s rows' %
-                 (python_end - db_start , len(return_val)))
-    return return_val
+                 (python_end - db_start, len(return_val)))
+
+    total_record_count = 100 #len(return_val)  # get_entity_references_count(request)
+
+    return {
+        'sEcho': 12,
+        'iTotalRecords': total_record_count,
+        'iTotalDisplayRecords': limit if limit else total_record_count,
+        'aaData': return_val
+    }
 
 
 @view_config(route_name='get_project_references_count', renderer='json')
@@ -446,41 +499,29 @@ def get_entity_references_count(request):
     entity = Entity.query.filter(Entity.id == entity_id).first()
     logger.debug('asking references for entity: %s' % entity)
 
+    # we need to do that import here
+    from stalker_pyramid.views.task import \
+        query_of_tasks_hierarchical_name_table
+
     # using Raw SQL queries here to fasten things up quite a bit and also do
     # some fancy queries like getting all the references of tasks of a project
     # also with their tags
     sql_query = """
-    select count(*) from (
-        select
-            "Links".id
-        from "Task_References"
-        join (
-            with recursive parent_ids(id, parent_id, project_id) as (
-                select task.id, task.parent_id, task.project_id from "Tasks" task
-            union all
-                select task.id, parent.parent_id, task.project_id
-                from "Tasks" task, parent_ids parent
-                where task.parent_id = parent.id
-            )
-            select
-                distinct parent_ids.id as id --, coalesce(parent_ids.parent_id, parent_ids.project_id) as parent_id
-                from parent_ids
-
-                where parent_ids.id = %(id)s or parent_ids.parent_id = %(id)s or parent_ids.project_id = %(id)s -- show also children references
-
-                group by parent_ids.id, parent_id, project_id
-                order by parent_ids.id
-        ) as child_tasks on child_tasks.id = "Task_References".task_id
-        join "Links" on "Task_References".link_id = "Links".id
-        join "SimpleEntities" on "Links".id = "SimpleEntities".id
-        join "Links" as "Thumbnails" on "SimpleEntities".thumbnail_id = "Thumbnails".id
-        join "Entity_Tags" on "Links".id = "Entity_Tags".entity_id
-        join "Tags" on "Entity_Tags".tag_id = "Tags".id
-        join "SimpleEntities" as "SimpleEntities_Tags" on "Tags".id = "SimpleEntities_Tags".id
-        join "SimpleEntities" as "SimpleEntities_Tasks" on "Task_References".task_id = "SimpleEntities_Tasks".id
-        group by "Links".id
+    select count(1) from (
+    select
+        "Task_References".link_id
+    from (
+        %(tasks_hierarchical_name_table)s
+    ) as tasks
+    join "Task_References" on tasks.id = "Task_References".task_id
+    where %(id)s = any (tasks.path)
+    group by "Task_References".link_id
     ) as data
-    """ % {'id': entity_id}
+    """ % {
+        'id': entity_id,
+        'tasks_hierarchical_name_table':
+        query_of_tasks_hierarchical_name_table()
+    }
 
     result = DBSession.connection().execute(sql_query)
     return result.fetchone()[0]

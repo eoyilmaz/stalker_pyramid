@@ -73,9 +73,9 @@
 
 
 
-        var loadTableData = function (address, tableId,tableParams,sortingParams) {
+        var loadTableData = function (address, tableId, tableParams, sortingParams) {
 
-            console.log('loadTableData' + address)
+            console.log('loadTableData' + address);
             // fill items table with dynamic data
             $.getJSON(address).then(function (data) {
 
@@ -86,22 +86,19 @@
                 var items = data;
                 var row_template = doT.template($('#tmpl_itemRow').html());
 
-                console.log('data loded' + address)
+                console.log('data loded' + address);
 
 
                 // wait until document is ready
                 $(function () {
-
                     var i;
                     var table_body = $('#' + tableId + '>tbody');
                     for (i = 0; i < data.length; i++) {
 
-
                         if (data[i].date_created) {
                             data[i].date_created = new Date(data[i].date_created).format('yyyy-mm-dd HH:MM');
                         }
-
-                         console.log('data loded' + data[i].thumbnail_full_path)
+                        console.log('data loaded' + data[i].thumbnail_full_path);
 
                         if (data[i].thumbnail_full_path == null) {
                             data[i].thumbnail_full_path = '{{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}';
@@ -109,10 +106,9 @@
                         else {
                             data[i].thumbnail_full_path = '/' + data[i].thumbnail_full_path;
                         }
+                        console.log('data loaded' + data[i].thumbnail_full_path);
 
-                        console.log('data loded' + data[i].thumbnail_full_path)
-
-                        data[i].came_from = '{{ request.current_route_path() }}'
+                        data[i].came_from = '{{ request.current_route_path() }}';
 
                         // append it to the table
                         table_body.append(row_template(data[i]));
@@ -125,12 +121,13 @@
                     $('#loading_spinner').hide();
                 });
             });
-        }
+        };
 
         loadTableData(
-                tableDataAddress,
-                "items_table",
-                tableParameters,
-                sortingParameters);
+            tableDataAddress,
+            "items_table",
+            tableParameters,
+            sortingParameters
+        );
     });
 </script>

@@ -120,30 +120,19 @@
 
                         data[i].review_status_link = '/tasks/{{ entity.id }}/review/dialog?came_from={{ request.current_route_path() }}';
                     }
-                }
-                else{
-
-                    console.log($('#force_review_button'))
-
+                } else {
                     if($('#force_review_button')){
-
                         $('#force_review_button').hide()
-
                     }
+
                     if($('#cleanup_button')){
-
                         $('#cleanup_button').show()
-
                     }
-
-
-
                 }
 
                 if (data[i].reviewer_thumbnail_full_path == null) {
                     data[i].reviewer_thumbnail_full_path = '{{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}';
-                }
-                else {
+                } else {
                     data[i].reviewer_thumbnail_full_path = '/' + data[i].reviewer_thumbnail_full_path;
                 }
 
