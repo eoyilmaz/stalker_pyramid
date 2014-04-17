@@ -849,36 +849,43 @@ require([
             console.log('data name'+ data[0].name);
             // warn the user about what is going to happen and ask if it is ok
 
-            bootbox.confirm(
-                "<form id='infos' action=''>\
-                    <div class='control-group'>\
-                        <label class='span3 control-label' for='dup_task_name'>Duplicated Task Name</label>\
-                        <div class='span4'>\
-                            <input type='text' id='dup_task_name' class='input-block-level' name='dup_task_name' value='"+data[0].name+"' required>\
-                        </div>\
-                    </div>\
-                    <div class='control-group'>\
-                        <label class='span3 control-label' for='dup_task_description'>Duplicated Task Description</label>\
-                        <div class='span4'>\
-                        <textarea id='dup_task_description' name='dup_task_description' class='autosize-transition span4' style='overflow: hidden; word-wrap: break-word;resize: horizontal;height: 50px;'></textarea>\
-                        </div>\
-                    </div>\
-                </form>",
-                function (result) {
-                    if (result) {
-                        // get the id and send it to the server
-                        var url = '';
-                        for (var i = 0; i < selected_ids.length; i++) {
-                            url = '/tasks/' + selected_ids[i] + '/duplicate?name=' +  $('#dup_task_name').val()+'&description='+  $('#dup_task_description').val();
-                            $.post(url).done(function () {
-                                gantt_column.reload();
-                            }).fail(function (jqXHR){
-                                bootbox.alert(jqXHR.responseText);
-                            });
-                        }
-                    }
-                });
-            })
+
+
+
+            $('#dialog_template').modal({
+                'remote': '/tasks/' + selected_ids[0] + '/duplicate/dialog?came_from={{ request.current_route_path() }}'
+            });
+
+{#            bootbox.confirm(#}
+{#                "<form id='infos' action=''>\#}
+{#                    <div class='control-group'>\#}
+{#                        <label class='span3 control-label' for='dup_task_name'>Duplicated Task Name</label>\#}
+{#                        <div class='span4'>\#}
+{#                            <input type='text' id='dup_task_name' class='input-block-level' name='dup_task_name' value='"+data[0].name+"' required>\#}
+{#                        </div>\#}
+{#                    </div>\#}
+{#                    <div class='control-group'>\#}
+{#                        <label class='span3 control-label' for='dup_task_description'>Duplicated Task Description</label>\#}
+{#                        <div class='span4'>\#}
+{#                        <textarea id='dup_task_description' name='dup_task_description' class='autosize-transition span4' style='overflow: hidden; word-wrap: break-word;resize: horizontal;height: 50px;'></textarea>\#}
+{#                        </div>\#}
+{#                    </div>\#}
+{#                </form>",#}
+{#                function (result) {#}
+{#                    if (result) {#}
+{#                        // get the id and send it to the server#}
+{#                        var url = '';#}
+{#                        for (var i = 0; i < selected_ids.length; i++) {#}
+{#                            url = '/tasks/' + selected_ids[i] + '/duplicate?name=' +  $('#dup_task_name').val()+'&description='+  $('#dup_task_description').val();#}
+{#                            $.post(url).done(function () {#}
+{#                                gantt_column.reload();#}
+{#                            }).fail(function (jqXHR){#}
+{#                                bootbox.alert(jqXHR.responseText);#}
+{#                            });#}
+{#                        }#}
+{#                    }#}
+{#                });#}
+        })
     });
 
     $('#add_time_log_menu_item').on('click', function (e) {

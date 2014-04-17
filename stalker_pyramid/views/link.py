@@ -362,16 +362,23 @@ def get_entity_references(request):
 
     search_query = ''
     if search_string != "":
-        search_query = """
-    and ('%(search_str)s' = any (entity_tags.tags)
-    or tasks.entity_type = '%(search_str)s'
-    or tasks.full_path ilike '%(search_wide)s'
-    or "Links".original_filename ilike '%(search_wide)s'
-    )
-    """ % {
-            'search_str': search_string,
-            'search_wide': '%{s}%'.format(s=search_string)
-        }
+        search_string_buffer = ['and (']
+        for i, s in enumerate(search_string.split(' ')):
+            if i != 0:
+                search_string_buffer.append('or')
+            tmp_search_query = """
+            '%(search_str)s' = any (entity_tags.tags)
+            or tasks.entity_type = '%(search_str)s'
+            or tasks.full_path ilike '%(search_wide)s'
+            or "Links".original_filename ilike '%(search_wide)s'
+            """ % {
+                'search_str': s,
+                'search_wide': '%{s}%'.format(s=s)
+            }
+            search_string_buffer.append(tmp_search_query)
+        search_string_buffer.append(')')
+        search_query = '\n'.join(search_string_buffer)
+    logger.debug('search_query: %s' % search_query)
 
     # we need to do that import here
     from stalker_pyramid.views.task import \
@@ -471,16 +478,23 @@ def get_entity_references_count(request):
 
     search_query = ''
     if search_string != "":
-        search_query = """
-    and ('%(search_str)s' = any (entity_tags.tags)
-    or tasks.entity_type = '%(search_str)s'
-    or tasks.full_path ilike '%(search_wide)s'
-    or "Links".original_filename ilike '%(search_wide)s'
-    )
-    """ % {
-            'search_str': search_string,
-            'search_wide': '%{s}%'.format(s=search_string)
-        }
+        search_string_buffer = ['and (']
+        for i, s in enumerate(search_string.split(' ')):
+            if i != 0:
+                search_string_buffer.append('or')
+            tmp_search_query = """
+            '%(search_str)s' = any (entity_tags.tags)
+            or tasks.entity_type = '%(search_str)s'
+            or tasks.full_path ilike '%(search_wide)s'
+            or "Links".original_filename ilike '%(search_wide)s'
+            """ % {
+                'search_str': s,
+                'search_wide': '%{s}%'.format(s=s)
+            }
+            search_string_buffer.append(tmp_search_query)
+        search_string_buffer.append(')')
+        search_query = '\n'.join(search_string_buffer)
+    logger.debug('search_query: %s' % search_query)
 
     # we need to do that import here
     from stalker_pyramid.views.task import \

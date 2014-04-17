@@ -25,7 +25,7 @@ from pyramid.view import view_config
 from pyramid.response import Response
 
 from stalker.db import DBSession
-from stalker import (db, defaults, Entity, Studio, Project)
+from stalker import (db, defaults, Entity, Studio, Project, User, Group, Department)
 import transaction
 
 import stalker_pyramid
@@ -409,7 +409,7 @@ def list_entity_tasks_by_filter(request):
 )
 def append_entities_to_entity_dialog(request):
 
-    logger.debug('append_class_to_entity_dialog is running')
+    logger.debug('append_entities_to_entity_dialog is running')
 
     came_from = request.params.get('came_from', '/')
 
@@ -448,14 +448,14 @@ def get_entity_entities_out_stack(request):
     logger.debug('entities_name %s'% entities_name)
     logger.debug('attr_name %s'% attr_name)
 
-    queryString = '%(class_name)s.query.filter(~%(class_name)s.%(attr_name)s.contains(entity))'
-    q = eval(queryString % {'class_name': entities_name, 'attr_name': attr_name})
+    query_string = '%(class_name)s.query.filter(~%(class_name)s.%(attr_name)s.contains(entity)).order_by(%(class_name)s.name.asc())'
+    q = eval(query_string % {'class_name': entities_name, 'attr_name': attr_name})
     list_of_container_objects = q.all()
 
     out_stack = []
 
     for entity_s in list_of_container_objects:
-        logger.debug('entity_s %s' % entity_s.name)
+        # logger.debug('entity_s %s' % entity_s.name)
         out_stack.append({
              'id': entity_s.id,
             'name':entity_s.name,

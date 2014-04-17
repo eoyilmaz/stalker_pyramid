@@ -330,6 +330,8 @@ function init_dialog() {
                         ).done(function (response_text) {
                             bootbox.alert('<div id="message" class="alert alert-success bigger-110">'+response_text+'</div>');
                             window.location.assign('{{ came_from }}');
+
+
                         }).fail(function (jqXHR) {
                             bootbox.alert('<div id="message" class="alert alert-danger bigger-110">'+jqXHR.responseText+'</div>');
                             delete_button.button('reset');
@@ -474,8 +476,25 @@ function init_dialog() {
                     'start': start.toUTCString(),
                     'end': end.toUTCString()
                 })
-            ).done(function () {
-                window.location.assign('{{ came_from }}');
+            ).done(function (response_text) {
+{#                window.location.assign('{{ came_from }}');#}
+
+
+                        submit_button.button('reset');
+                        $('#dialog_template').modal('hide');
+
+                         var calendar = $('#calendar')
+
+                            calendar.fullCalendar('renderEvent',
+                                {
+                                    title: response_text,
+                                    start: start,
+                                    end: end,
+                                    allDay: false,
+                                    className: 'label-success'
+                                },
+                                true // make the event "stick"
+                            );
             }).fail(function (jqXHR) {
                 bootbox.alert('<div id="message" class="alert alert-danger bigger-110">'+jqXHR.responseText+'</div>');
                 submit_button.button('reset');
