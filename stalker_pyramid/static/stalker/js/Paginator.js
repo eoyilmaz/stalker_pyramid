@@ -130,12 +130,13 @@ try {
         number_of_items = settings.number_of_items;
         items_per_page = settings.items_per_page;
         current_page_number = settings.current_page_number;
+        number_of_pages = 0;
 
         max_number_of_page_shortcuts = settings.max_number_of_page_shortcuts;
 
         callback = settings.callback;
 
-        $.fn.paginator.initialize(options);
+        $.fn.paginator.initialize();
         return this;
     };
 
@@ -151,7 +152,6 @@ try {
         $.fn.paginator.get_pages_shown();
         $.fn.paginator.render_page_icons();
         $.fn.paginator.register_page_icon_events();
-
     };
 
     /**
