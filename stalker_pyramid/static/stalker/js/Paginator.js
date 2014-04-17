@@ -47,7 +47,7 @@ try {
         this.next_page = options.next_page;
         this.disabled = options.disabled;
         this.active = options.active;
-        this.callback = function () {};
+        this.callback = options.callback;
     };
 
     /**
@@ -71,7 +71,7 @@ try {
     var PageManager = function (options) {
         this.pages = [];
         this.shown_pages = [];
-        this.current_page = null;
+        this.current_page_number = null;
         this.max_number_of_page_shortcuts = 5;
     };
 
@@ -89,7 +89,7 @@ try {
     var number_of_pages = 0;
     var number_of_items = 0;
     var items_per_page = 10;
-    var current_page = 0;
+    var current_page_number = 0;
     var max_number_of_page_shortcuts = 5;
     var callback = function () {};
     var pages = [];
@@ -122,14 +122,18 @@ try {
         var settings = $.extend({
             number_of_items: number_of_items,
             items_per_page: items_per_page,
-            current_page: current_page,
-            max_number_of_page_shortcuts: max_number_of_page_shortcuts
+            current_page_number: current_page_number,
+            max_number_of_page_shortcuts: max_number_of_page_shortcuts,
+            callback: function (current_page_number) {}
         }, options);
 
         number_of_items = settings.number_of_items;
         items_per_page = settings.items_per_page;
-        current_page = settings.current_page;
+        current_page_number = settings.current_page_number;
+
         max_number_of_page_shortcuts = settings.max_number_of_page_shortcuts;
+
+        callback = settings.callback;
 
         $.fn.paginator.initialize(options);
         return this;
@@ -146,6 +150,8 @@ try {
         $.fn.paginator.get_pages();
         $.fn.paginator.get_pages_shown();
         $.fn.paginator.render_page_icons();
+        $.fn.paginator.register_page_icon_events();
+
     };
 
     /**
@@ -156,25 +162,22 @@ try {
      */
     $.fn.paginator.get_pages = function () {
         number_of_pages = Math.ceil(number_of_items / items_per_page);
-        current_page = Math.max(1, Math.min(number_of_pages, current_page));
+        current_page_number = Math.max(1, Math.min(number_of_pages, current_page_number));
         // get the pages
         var pages = [], i;
         for (i = 0; i < number_of_pages; i += 1) {
             pages.push(i + 1);
         }
-        console.log("pages :", pages);
         return pages;
     };
 
     /**
-     * returns an array of pages
-     * 
-     * @param options
-     * @returns {Array}
+     * fills the page_shown attribute of this object
      */
     $.fn.paginator.get_pages_shown = function () {
-        var page_min = Math.floor(current_page - max_number_of_page_shortcuts / 2);
+        var page_min = Math.floor(current_page_number - max_number_of_page_shortcuts / 2);
         var page_max = page_min + Math.min(number_of_pages, max_number_of_page_shortcuts) - 1;
+
         if (page_max >= number_of_pages) {
             page_max = number_of_pages - 1;
             page_min = Math.max(0, page_max - max_number_of_page_shortcuts);
@@ -193,24 +196,80 @@ try {
         }
     };
 
+    /**
+     * sets the current page
+     * 
+     * @param page_number
+     */
+    $.fn.paginator.set_current_page = function (page_number) {
+        if (page_number === '+1') {
+            page_number = Math.min(current_page_number + 1, number_of_pages);
+        } else if (page_number === -1) {
+            page_number = Math.max(current_page_number - 1, 1);
+        }
+        current_page_number = page_number;
+        $.fn.paginator.initialize();
+
+        // call the callback function
+        callback(current_page_number);
+    };
+
+    /**
+     * Goes to next page
+     */
+    $.fn.paginator.next = function () {
+
+    };
+
+    /**
+     * Goes to previous page
+     */
+    $.fn.paginator.prev = function () {
+
+    };
+
     $.fn.paginator.render_left_icon = function () {
-        return '<li class="disabled"><a href="#"><i class="icon-double-angle-left"></i></a></li>';
+        return '<li class="disabled">' +
+            '<a class="paginator_page_icon" href="#" data-page-number="-1">' +
+            '   <i class="icon-double-angle-left">' +
+            '   </i>' +
+            '</a></li>';
     };
 
     $.fn.paginator.render_right_icon = function () {
-        return '<li><a href="#"><i class="icon-double-angle-right"></i></a></li>';
+        return '<li>' +
+            '   <a class="paginator_page_icon" href="#" data-page-number="+1">' +
+            '       <i class="icon-double-angle-right">' +
+            '       </i>' +
+            '   </a>' +
+            '</li>';
     };
 
     $.fn.paginator.render_page_icon = function (page_number) {
         var template = '<li>';
-        if (page_number === current_page) {
+        if (page_number === current_page_number) {
             template = '<li class="active">';
         }
-        template += '<a href="#">' + page_number + '</a></li>';
+        template += '<a class="paginator_page_icon" href="#" data-page-number="' + page_number + '">' + page_number + '</a></li>';
         return template;
     };
 
+    /**
+     * Registers the page icon events
+     * 
+     * One click event to update what is shown
+     */
+    $.fn.paginator.register_page_icon_events = function () {
+        $('.paginator_page_icon').on('click', function (e) {
+            e.stopPropagation();
+            e.preventDefault();
+            var self = $(this);
+            $.fn.paginator.set_current_page(self.data('page-number'));
+        });
+    };
+
     $.fn.paginator.render_page_icons = function () {
+        // remove any previous page icons first
         container.find('ul').remove();
         var ul_item = $($.parseHTML('<ul></ul>'));
 
@@ -234,6 +293,6 @@ try {
 
 
 
-//try {
-//    module.exports.Paginator = Paginator;
-//} catch (e) {}
+try {
+    module.exports.Paginator = Paginator;
+} catch (e) {}

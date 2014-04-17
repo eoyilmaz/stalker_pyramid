@@ -354,10 +354,10 @@ def get_entity_references(request):
     entity = Entity.query.filter(Entity.id == entity_id).first()
     logger.debug('asking references for entity: %s' % entity)
 
-    offset = request.params.get('iDisplayStart')
-    limit = request.params.get('iDisplayLength')
+    offset = request.params.get('offset', 0)
+    limit = request.params.get('limit', 1e10)
 
-    search_string = request.params.get('sSearch')
+    search_string = request.params.get('search', '')
     logger.debug('search_string: %s' % search_string)
 
     search_query = ''
@@ -475,14 +475,15 @@ limit %(limit)s
     logger.debug('get_entity_references took: %s seconds for %s rows' %
                  (python_end - db_start, len(return_val)))
 
-    total_record_count = 100 #len(return_val)  # get_entity_references_count(request)
+    # total_record_count = 100 #len(return_val)  # get_entity_references_count(request)
 
-    return {
-        'sEcho': 12,
-        'iTotalRecords': total_record_count,
-        'iTotalDisplayRecords': limit if limit else total_record_count,
-        'aaData': return_val
-    }
+    # return {
+    #     'sEcho': 12,
+    #     'iTotalRecords': total_record_count,
+    #     'iTotalDisplayRecords': limit if limit else total_record_count,
+    #     'aaData': return_val
+    # }
+    return return_val
 
 
 @view_config(route_name='get_project_references_count', renderer='json')

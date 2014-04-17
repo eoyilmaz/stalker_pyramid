@@ -63,30 +63,14 @@
     </div>
     <div class="space-8"></div>
     <div class="row-fluid">
-        <div class="row-fluid">
-            <div id="new_references_storage" class="hidden"></div>
-            <ul class="ace-thumbnails"></ul>
-        </div>
-
         <div class="row-fluid pull-right">
             <div class="pagination"></div>
         </div>
 
-    <table id="references_table">
-        <thead>
-            <tr>
-{#                <th>id</th>#}
-                <th>full_path</th>
-                <th>original_filename</th>
-                <th>thumbnail_full_path</th>
-                <th>tags</th>
-{#                <th>entity_ids</th>#}
-{#                <th>entity_names</th>#}
-{#                <th>entity_types</th>#}
-            </tr>
-        </thead>
-    </table>
-
+        <div class="row-fluid">
+            <div id="new_references_storage" class="hidden"></div>
+            <ul class="ace-thumbnails"></ul>
+        </div>
     </div>
 {% endblock page_content %}
 
@@ -102,123 +86,56 @@
             src='{{ request.static_url("stalker_pyramid:static/stalker/js/Paginator.js") }}'></script>
 
     {% raw %}
-    <script id="tmpl_reference_header" type="text/x-dot-template">
-        <tr>
-            <th>Thumbnail</th>
-            <th>Filename</th>
-            <!--<th>Tags</th>-->
-            <!--<th>Entities</th>-->
-        </tr>
-    </script>
-    {% endraw %}
-
-    {% raw %}
     <script id="tmpl_reference_item" type="text/x-dot-template">
-        <a href="/{{=it.full_path}}"
-           download_href="/FD{{=it.full_path}}"
-           title="{{=it.original_filename}} | {{=it.entity_names}}"
-           data-rel="colorbox"
-           class="cboxElement">
-            <div style="text-align: center; overflow: hidden; width: 150px">
-                <img alt="150x150"
-                     style="height: 150px; width: auto; max-width: none;
-                     position: relative; left: 100%; margin-left: -200%;"
-                     src="/{{=it.thumbnail_full_path ? it.thumbnail_full_path : 'static/stalker/images/Placeholder_0.png' }}">
+        <li id="Reference_{{=it.id}}">
+            <a href="/{{=it.full_path}}"
+               download_href="/FD{{=it.full_path}}"
+               title="{{=it.original_filename}} | {{=it.entity_names}}"
+               data-rel="colorbox"
+               class="cboxElement">
+                <div style="text-align: center; overflow: hidden; width: 150px">
+                    <img alt="150x150"
+                         style="height: 150px; width: auto; max-width: none;
+                            position: relative; left: 100%; margin-left: -200%;"
+                         src="/{{=it.thumbnail_full_path ? it.thumbnail_full_path : 'static/stalker/images/Placeholder_0.png' }}">
+
+                    <div class="tags">
+                        {{~ it.tags :t}}
+                        <span class="label label-info">{{=t}}</span>
+                        {{~}}
+                    </div>
+                </div>
+            </a>
+
+            <div class="tools">
+                <a href="/FD{{=it.full_path}}" title="Download"><i class="icon-cloud-download"></i></a>
+                <a href="javascript:copyToClipboard('http://' + window.location.host +'/FD{{=it.full_path}}')" title="Copy Download Link"><i class="icon-link"></i></a>
+             
+                <div class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown"
+                       style="display: inline-block;
+                              color: #FFF;
+                              font-size: 18px;
+                              font-weight: normal;
+                              padding: 4px;">
+                        <i class="icon-external-link"></i>
+                    </a>
+                    <ul class="dropdown-menu" role='menu' aria-labelledby="dLabel" style="text-align: left">
+                    {{~ it.entity_ids :t:i }}
+                        <li>
+                            <a href="/entities/{{=t}}/references/list" title="Go To Related Entity">{{=it.entity_names[i]}}</a>
+                        </li>
+                    {{~}}
+                    </ul>
+                </div>
+
+                <a class='reference-deleter' ref_id="{{=it.id}}" href="#" title="Delete"><i class="icon-remove red"></i></a>
             </div>
-        </a>
+        </li>
     </script>
     {% endraw %}
-    
-    
-{#    {% raw %}#}
-{#    <script id="tmpl_reference_item" type="text/x-dot-template">#}
-{#        <li id="Reference_{{=it.id}}">#}
-{#            <a href="/{{=it.full_path}}"#}
-{#               download_href="/FD{{=it.full_path}}"#}
-{#               title="{{=it.original_filename}} | {{=it.entity_names}}"#}
-{#               data-rel="colorbox"#}
-{#               class="cboxElement">#}
-{#                <div style="text-align: center; overflow: hidden; width: 150px">#}
-{#                    <img alt="150x150"#}
-{#                         style="height: 150px; width: auto; max-width: none;#}
-{#                            position: relative; left: 100%; margin-left: -200%;"#}
-{#                         src="/{{=it.thumbnail_full_path ? it.thumbnail_full_path : 'static/stalker/images/Placeholder_0.png' }}">#}
-{##}
-{#                    <div class="tags">#}
-{#                        {{~ it.tags :t}}#}
-{#                        <span class="label label-info">{{=t}}</span>#}
-{#                        {{~}}#}
-{#                    </div>#}
-{#                </div>#}
-{#            </a>#}
-{##}
-{#            <div class="tools">#}
-{#                <a href="/FD{{=it.full_path}}" title="Download"><i class="icon-cloud-download"></i></a>#}
-{#                <a href="javascript:copyToClipboard('http://' + window.location.host +'/FD{{=it.full_path}}')" title="Copy Download Link"><i class="icon-link"></i></a>#}
-{#             #}
-{#                <div class="dropdown">#}
-{#                    <a class="dropdown-toggle" data-toggle="dropdown"#}
-{#                       style="display: inline-block;#}
-{#                              color: #FFF;#}
-{#                              font-size: 18px;#}
-{#                              font-weight: normal;#}
-{#                              padding: 4px;">#}
-{#                        <i class="icon-external-link"></i>#}
-{#                    </a>#}
-{#                    <ul class="dropdown-menu" role='menu' aria-labelledby="dLabel" style="text-align: left">#}
-{#                    {{~ it.entity_ids :t:i }}#}
-{#                        <li>#}
-{#                            <a href="/entities/{{=t}}/references/list" title="Go To Related Entity">{{=it.entity_names[i]}}</a>#}
-{#                        </li>#}
-{#                    {{~}}#}
-{#                    </ul>#}
-{#                </div>#}
-{##}
-{#                <a class='reference-deleter' ref_id="{{=it.id}}" href="#" title="Delete"><i class="icon-remove red"></i></a>#}
-{#            </div>#}
-{#        </li>#}
-{#    </script>#}
-{#    {% endraw %}#}
 
-{#{% raw %}#}
-{#<script id="tmpl_itemRow" type="text/x-dot-template">#}
-{#    <tr>#}
-{#        <td>#}
-{#            <div>#}
-{#            <a href="/{{=it.full_path}}"#}
-{#               download_href="/FD{{=it.full_path}}"#}
-{#               title="{{=it.original_filename}} | {{=it.entity_names}}"#}
-{#               data-rel="colorbox"#}
-{#               class="cboxElement">#}
-{#            </div>#}
-{#        </td>#}
-{##}
-{#        <td class="ticket_{{= it.priority }} hidden-480">#}
-{#            <div class='ticket_{{= it.status }}'>#}
-{#                <a href='/tickets/{{=it.id }}/view'>{{=it.summary}}</a>#}
-{#            </div>#}
-{#        </td>#}
-{##}
-{#        <td>#}
-{#            {{~ it.tags :t}}#}
-{#            <span class="label label-info">{{=t}}</span>#}
-{#            {{~}}#}
-{#        </td>#}
-{##}
-{#        <td>Actions</td>#}
-{#    </tr>#}
-{#</script>#}
-{#{% endraw %}#}
-
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.dataTables.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.dataTables.bootstrap.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/dataTable_num-html_sort.js") }}'></script>
-
-    <script>
-{#        var tableParameters = {"aoColumns": [{'sType': 'num-html'}, null, null, null, null, null, null, null, null]};#}
-{#        var sortingParameters = [[0, 'desc']];#}
-{#        var tableDataAddress = '/entities/{{ entity.id }}/references/';#}
-{##}
+    <script type="text/javascript">
         var colorbox_params = {
             reposition: true,
             scalePhotos: true,
@@ -233,7 +150,7 @@
                 var url = $(this).attr('href');
                 var original_title = $(this).attr('title');
                 var download_url = $(this).attr('download_href');
-
+                
                 var download_link = '<span><a href="' + download_url + '">' + original_title + '</a>';
                 var open_in_new_tab_link = '<a href="' + url + '" target="_blank">(Open In New Tab)</a></span>';
                 return download_link + '&nbsp' + open_in_new_tab_link;
@@ -252,126 +169,107 @@
         /**
          * Appends a new item to the thumbnail list
          */
-{#        var append_thumbnail = function (data, template, animate) {#}
-{#            //#}
-{#            // adds only one item to the list#}
-{#            //#}
-{#            // compile the reference item template#}
-{#            var ref_item = $($.parseHTML(template(data)));#}
-{#            if (animate) {#}
-{#                ref_item.css({display: 'none'});#}
-{#            }#}
-{#            $('.ace-thumbnails').append(ref_item);#}
-{#            if (animate) {#}
-{#                ref_item.toggle('slow');#}
-{#            }#}
-{#        };#}
+        var append_thumbnail = function (data, template, animate) {
+            //
+            // adds only one item to the list
+            //
+            // compile the reference item template
+            var ref_item = $($.parseHTML(template(data)));
+            if (animate) {
+                ref_item.css({display: 'none'});
+            }
+            $('.ace-thumbnails').append(ref_item);
+            if (animate) {
+                ref_item.toggle('slow');
+            }
+        };
 
         /**
          * Draws reference items
          */
-{#        var draw_reference_items = function (options) {#}
-{#            var referenceItemTemplate = doT.template(document.getElementById('tmpl_reference_item').text);#}
-{#            #}
-{#            var current_page = options.current_page || 1;#}
-{#            var items_per_page = options.items_per_page || 100000;#}
-{##}
-{#            var offset = (current_page - 1) * items_per_page;#}
-{#            var limit = items_per_page;#}
-{##}
-{#            // now generate the template items#}
-{#            $.getJSON('/entities/{{ entity.id }}/references/',#}
-{#                      $.param({#}
-{#                          'offset': offset,#}
-{#                          'limit': limit#}
-{#                      })).then(function (data) {#}
-{#                var ref_count = data.length;#}
-{#                for (var i = 0; i < ref_count; i++) {#}
-{#                    append_thumbnail(data[i], referenceItemTemplate);#}
-{#                }#}
-{##}
+        var draw_reference_items = function (options) {
+            var referenceItemTemplate = doT.template(document.getElementById('tmpl_reference_item').text);
+            
+            var current_page = options.current_page || 1;
+            var items_per_page = options.items_per_page || 100;
 
-{#                $('.reference-deleter').on('click', function (e) {#}
-{#                    e.preventDefault();#}
-{#                    e.stopPropagation();#}
-{#                    var self = $(this);#}
-{#                    bootbox.confirm('Delete ?', function (response) {#}
-{#                        if (response) {#}
-{#                            var ref_id = self.attr('ref_id');#}
-{#                            console.debug('will delete ' + ref_id);#}
-{#                            // remove the reference in the server#}
-{#                            var url = '/references/' + ref_id + '/delete';#}
-{#                            $.post(url).done(function (response_text) {#}
-{#                                // use he response text and give info#}
-{#                                // and also delete the HTML element#}
-{#                                $('#Reference_' + ref_id).toggle('slow', function () {#}
-{#                                    $(this).remove();#}
-{#                                })#}
-{#                            }).fail(function (jqXHR) {#}
-{#                                // use the jqXHR.response_text and inform user about what went wrong#}
-{#                            });#}
-{#                        }#}
-{#                    });#}
-{#                });#}
-{#            });#}
-{#        };#}
+            var offset = (current_page - 1) * items_per_page;
+            var limit = items_per_page;
+
+            // now generate the template items
+            $.getJSON('/entities/{{ entity.id }}/references/',
+                      $.param({
+                          'offset': offset,
+                          'limit': limit
+                      })).then(function (data) {
+                var ref_count = data.length;
+                for (var i = 0; i < ref_count; i++) {
+                    append_thumbnail(data[i], referenceItemTemplate);
+                }
+
+                $('.ace-thumbnails [data-rel="colorbox"]').colorbox(colorbox_params);
+                $("#cboxLoadingGraphic").append("<i class='icon-spinner orange'></i>");
+
+                $('.reference-deleter').on('click', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    var self = $(this);
+                    bootbox.confirm('Delete ?', function (response) {
+                        if (response) {
+                            var ref_id = self.attr('ref_id');
+                            console.debug('will delete ' + ref_id);
+                            // remove the reference in the server
+                            var url = '/references/' + ref_id + '/delete';
+                            $.post(url).done(function (response_text) {
+                                // use he response text and give info
+                                // and also delete the HTML element
+                                $('#Reference_' + ref_id).toggle('slow', function () {
+                                    $(this).remove();
+                                })
+                            }).fail(function (jqXHR) {
+                                // use the jqXHR.response_text and inform user about what went wrong
+                            });
+                        }
+                    });
+                });
+            });
+        };
 
         $(function () {
             // create pagination
-{#            var items_per_page = 10000;#}
-{#            var current_page = parseInt($('.pagination>ul').find('li.active').text()) || 1;#}
-{#            var total_number_of_results;#}
+            var items_per_page = 10000;
+            var current_page = parseInt($('.pagination>ul').find('li.active').text()) || 1;
+            var total_number_of_results;
 
             // get total number of references
-{#            $.getJSON('/entities/{{ entity.id }}/references/count/', function(data){#}
-{#                total_number_of_results = data;#}
-{#                console.log('total_number_of_results:', total_number_of_results);#}
-{#                // remove all pages first#}
-{#                $('#pagination').paginator();#}
-{#            });#}
+            $.getJSON('/entities/{{ entity.id }}/references/count/', function(data){
+                total_number_of_results = data;
+                console.log('total_number_of_results:', total_number_of_results);
+                // remove all pages first
+                $('.pagination').paginator({
+                    'number_of_items': total_number_of_results,
+                    'items_per_page': 10,
+                    'current_page': 1,
+                    'callback': function(current_page_number){
+                        
+                    }
+                });
+            });
 
-{#            // for initial one#}
-{#            draw_reference_items({});#}
-{##}
-{#            // and add the new thumbnails when uploaded through Dropzone#}
-{#            $('#dialog_template').on('hidden', function () {#}
-{#                // get the data from the storage#}
-{#                var data = $.parseJSON($('#new_references_storage').text());#}
-{#                // empty the storage#}
-{#                $('#new_references_storage').text('');#}
-{#                var referenceItemTemplate = doT.template(document.getElementById('tmpl_reference_item').text);#}
-{#                for (var i = 0; i < data.length; i++) {#}
-{#                    append_thumbnail(data[i], referenceItemTemplate, true);#}
-{#                }#}
-{#            });#}
+            // for initial one
+            draw_reference_items({});
 
-            var referenceItemTemplate = doT.template(
-                document.getElementById('tmpl_reference_item').text
-            );
-            
-            $('#references_table').dataTable( {
-                'bProcessing': true,
-                'bServerSide': true,
-                'sAjaxSource': '/entities/{{ entity.id }}/references/',
-                'aoColumns': [
-                    {
-                        'mData': "thumbnail_full_path",
-                        'mRender': function(data, type, full){
-                            return referenceItemTemplate(full);
-                        }
-                    },
-                    {"mData": "original_filename"},
-{#                    {"mData": "tags"},#}
-{#                    {"mData": "entity_names"}#}
-                ],
-                'fnInitComplete': function(oSettings, json){
-                    console.debug('oSettings: ', oSettings);
-                    console.debug('json     : ', json);
-                    $('.ace-thumbnails [data-rel="colorbox"]').colorbox(colorbox_params);
-                    $("#cboxLoadingGraphic").append("<i class='icon-spinner orange'></i>");
+            // and add the new thumbnails when uploaded through Dropzone
+            $('#dialog_template').on('hidden', function () {
+                // get the data from the storage
+                var data = $.parseJSON($('#new_references_storage').text());
+                // empty the storage
+                $('#new_references_storage').text('');
+                var referenceItemTemplate = doT.template(document.getElementById('tmpl_reference_item').text);
+                for (var i = 0; i < data.length; i++) {
+                    append_thumbnail(data[i], referenceItemTemplate, true);
                 }
             });
-            
         });
     </script>
 
