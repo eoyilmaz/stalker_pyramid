@@ -470,9 +470,6 @@ def get_entity_references_count(request):
     entity = Entity.query.filter(Entity.id == entity_id).first()
     logger.debug('asking references for entity: %s' % entity)
 
-    offset = request.params.get('offset', 0)
-    limit = request.params.get('limit', 1e10)
-
     search_string = request.params.get('search', '')
     logger.debug('search_string: %s' % search_string)
 

@@ -154,6 +154,7 @@
 
     <script type="text/javascript">
         var colorbox_params = {
+            rel: 'References',
             loop: false,
             reposition: true,
             scalePhotos: true,
@@ -164,6 +165,8 @@
             current: '{current} of {total}',
             maxWidth: '100%',
             maxHeight: '100%',
+{#            width: '100%',#}
+{#            height: '100%',#}
             title: function () {
                 var url = $(this).attr('href');
                 var original_title = $(this).attr('title');
@@ -181,7 +184,7 @@
                 document.body.style.overflow = 'auto';
             },
             onComplete: function () {
-                $.colorbox.resize();
+{#                $.colorbox.resize();#}
             }
         };
 
@@ -229,13 +232,11 @@
             var items_per_page = options.items_per_page;
 
             var offset = (current_page - 1) * items_per_page;
-            var limit = items_per_page;
-
             // now generate the template items
             $.getJSON(options.url,
                       $.param({
                           'offset': offset,
-                          'limit': limit,
+                          'limit': items_per_page,
                           'search': options.search
                       })).then(function (data) {
                 var ref_count = data.length;
@@ -277,10 +278,11 @@
         /**
          * Creates the paginator
          * 
-         * @param options: Options for this function
+         * @param options
+         *   Options for this function
          */
         var create_paginator = function (options) {
-            
+
             options = $.extend({
                 total_number_of_items: 0,
                 items_per_page: 40,
@@ -302,14 +304,11 @@
                     });
                 }
             });
-
-        }
-
+        };
 
         $(function () {
             // create pagination
             var items_per_page = 40;
-{#            var current_page = parseInt($('.pagination>ul').find('li.active').text()) || 1;#}
             var total_number_of_items;
             var count_url = '/entities/{{ entity.id }}/references/count/';
 
@@ -331,9 +330,10 @@
             // and add the new thumbnails when uploaded through Dropzone
             $('#dialog_template').on('hidden', function () {
                 // get the data from the storage
-                var data = $.parseJSON($('#new_references_storage').text());
+                var new_references_storage = $('#new_references_storage');
+                var data = $.parseJSON(new_references_storage.text());
                 // empty the storage
-                $('#new_references_storage').text('');
+                new_references_storage.text('');
                 var referenceItemTemplate = doT.template(document.getElementById('tmpl_reference_item').text);
                 for (var i = 0; i < data.length; i++) {
                     append_thumbnail(data[i], referenceItemTemplate, true);
@@ -366,5 +366,4 @@
 
         });
     </script>
-
 {% endblock extrascripts %}
