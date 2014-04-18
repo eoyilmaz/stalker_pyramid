@@ -422,6 +422,8 @@ group by "Links".id,
     "Thumbnails".id,
     entity_tags.tags
 
+order by "Links".id
+
 offset %(offset)s
 limit %(limit)s
     """ % {
