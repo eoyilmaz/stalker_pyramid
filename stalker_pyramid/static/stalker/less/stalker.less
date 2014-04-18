@@ -19,7 +19,7 @@
 
 @red: #d53f40;
 @red2: #d15b47;
-@red3:#E2755F;
+@red3: #E2755F;
 @orange: #FFC657;
 @light-green: #9abc32;
 @green: #82af6f;
@@ -32,9 +32,6 @@
 @purple2: #7e6eb0;
 @grey: #abbac3;
 @black: #1f1f1f;
-
-
-
 
 @ticket_color: #AA2222;
 @even_ticket_border_color: #EE8888;
@@ -52,7 +49,7 @@
 
 tr {
     .even {
-        >td{
+        > td {
             .ticket_TRIVIAL {
             }
             .ticket_MINOR {
@@ -71,9 +68,9 @@ tr {
             }
         }
     }
-    
-    .odd{
-        >td{
+
+    .odd {
+        > td {
             .ticket_TRIVIAL {
             }
             .ticket_MINOR {
@@ -92,7 +89,7 @@ tr {
             }
         }
     }
-    
+
 }
 
 .header-color-project {
@@ -100,41 +97,43 @@ tr {
     border-color: @green1;
 }
 
-.header-color-project+.widget-body {
+.header-color-project + .widget-body {
     border-color: @green1;
 }
 
 .header-color-asset {
-  background: #848484;
-  border-color: #d3d7dc;
-
-  +.widget-body {
+    background: #848484;
     border-color: #d3d7dc;
-  }
+
+    + .widget-body {
+        border-color: #d3d7dc;
+    }
 }
+
 .header-color-sequence {
-  background: @green;
-  border-color: @green;
-
-  +.widget-body {
+    background: @green;
     border-color: @green;
-  }
-}
-.header-color-shot {
-  background: @blue2;
-  border-color: @blue2;
 
-  +.widget-body {
+    + .widget-body {
+        border-color: @green;
+    }
+}
+
+.header-color-shot {
+    background: @blue2;
     border-color: @blue2;
-  }
+
+    + .widget-body {
+        border-color: @blue2;
+    }
 }
 
 .header-color-task {
-  background: #848484;
-  border-color: #a9c1c1;
-  +.widget-body {
-    border-color: #bdc1c6;
-  }
+    background: #848484;
+    border-color: #a9c1c1;
+    + .widget-body {
+        border-color: #bdc1c6;
+    }
 }
 
 .header-color-group {
@@ -159,7 +158,7 @@ tr {
     background: @orange;
     border-color: @orange;
 
-    +.widget-body {
+    + .widget-body {
         border-color: @orange;
     }
 }
@@ -168,7 +167,7 @@ tr {
     background: @blue;
     border-color: @blue;
 
-    +.widget-body {
+    + .widget-body {
         border-color: @blue;
     }
 }
@@ -177,7 +176,7 @@ tr {
     background: @light-blue;
     border-color: @light-blue;
 
-    +.widget-body {
+    + .widget-body {
         border-color: @light-blue;
     }
 }
@@ -186,20 +185,17 @@ tr {
     background: @light-green;
     border-color: @light-green;
 
-    +.widget-body {
+    + .widget-body {
         border-color: @light-green;
     }
 }
-
-
-
-
 
 // *********************************
 // Statuses
 // *********************************
 
-.pln { // planning
+.pln {
+    // planning
     background-color: @grey;
     color: white;
     a {
@@ -340,8 +336,6 @@ tr {
     background-color: @green
 }
 
-
-
 @dgrid-focus-color: #222;
 .dgrid-selected {
     .pln {
@@ -393,12 +387,12 @@ tr {
 
 }
 
-.label-red,.badge-red {
+.label-red, .badge-red {
     background-color: @red !important;
 }
 
 .label-orange, .badge-orange {
-    background-color: @orange !important;    
+    background-color: @orange !important;
 }
 
 .label-blue, .badge-blue {
@@ -429,8 +423,6 @@ tr {
     background-color: @light-blue;
 }
 
-
-
 .fc-week {
     background-color: #e6eaef;
 }
@@ -442,7 +434,6 @@ tr {
     padding-left: 0px !important;
     padding-right: 2px !important;
 }
-
 
 .review-status {
     display: inline-block;
@@ -469,55 +460,98 @@ tr {
     border-color: @light-blue
 }
 
-
 .entityview-item {
-  position: relative;
-  margin-bottom: 8px;
+    position: relative;
+    margin-bottom: 8px;
 }
+
 .entityview-item .widget-box {
-  background-color: #e8ecef;
-  color: #595C66;
+    background-color: #e8ecef;
+    color: #595C66;
 }
+
 .entityview-item .transparent.widget-box {
-  border-left: 3px solid #c6cdd1;
+    border-left: 3px solid #c6cdd1;
 }
+
 .entityview-item .transparent .widget-header {
-  background-color: #dbdfe4;
-  border-bottom: none;
+    background-color: #dbdfe4;
+    border-bottom: none;
 }
+
 .entityview-item .transparent .widget-header > :first-child {
-  margin-left: 8px;
+    margin-left: 8px;
 }
+
 .entityview-item:nth-child(even) .widget-box {
-  background-color: #F3F3F3;
-  color: #616161;
+    background-color: #F3F3F3;
+    color: #616161;
 }
+
 .entityview-item:nth-child(even) .widget-box.transparent {
-  border-left-color: #DBDBDB !important;
+    border-left-color: #DBDBDB !important;
 }
+
 .entityview-item:nth-child(even) .widget-box.transparent .widget-header {
-  background-color: #EEE !important;
+    background-color: #EEE !important;
 }
+
 .entityview-item .widget-box {
-  margin: 0;
-  position: relative;
-  max-width: none;
-  border-bottom: none;
-  margin-left: 0px;
+    margin: 0;
+    position: relative;
+    max-width: none;
+    border-bottom: none;
+    margin-left: 0px;
 }
+
 .entityview-item .widget-main {
-  margin: 0;
-  position: relative;
-  max-width: none;
-  border-bottom: none;
+    margin: 0;
+    position: relative;
+    max-width: none;
+    border-bottom: none;
 }
+
 .entityview-item .widget-body {
-  background-color: transparent;
+    background-color: transparent;
 }
+
 .entityview-item .widget-toolbox {
-  padding: 4px 8px 0 !important;
-  background-color: transparent !important;
-  border: 0 solid #CCC !important;
-  border-top: none !important;
-  margin: 0 0px !important;
+    padding: 4px 8px 0 !important;
+    background-color: transparent !important;
+    border: 0 solid #CCC !important;
+    border-top: none !important;
+    margin: 0 0px !important;
+}
+
+//animation
+.animation(@params) {
+  -moz-animation:@params;
+  -webkit-animation:@params;
+  -o-animation:@params;
+  -ms-animation:@params;
+  animation:@params;
+}
+
+#cboxLoadingGraphic {
+    background: #FFF none !important;
+    text-align: center;
+
+    > [class*="icon-"] {
+        display: inline-block;
+        background-color: #FFF;
+        border-radius: 8px;
+
+        width: 25px;
+        height: 25px;
+        position: relative;
+        top: 48%;
+
+        text-align: center;
+        vertical-align: middle;
+
+        .animation(~"spin 1.5s infinite linear");
+
+        font-size: 24px;
+        color: #FE7E3E;
+    }
 }

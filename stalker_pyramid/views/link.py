@@ -19,7 +19,6 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 
 import os
-import time
 import logging
 import uuid
 import base64
@@ -415,7 +414,7 @@ left outer join (
     group by "Links".id
 ) as entity_tags on "Links".id = entity_tags.id
 
-where %(id)s = any (tasks.path) %(search_string)s
+where (%(id)s = any (tasks.path) or tasks.id = %(id)s) %(search_string)s
 
 group by "Links".id,
     "Links".full_path,
@@ -529,7 +528,7 @@ select count(1) from (
         group by "Links".id
     ) as entity_tags on "Links".id = entity_tags.id
 
-    where %(id)s = any (tasks.path) %(search_string)s
+    where (%(id)s = any (tasks.path) or tasks.id = %(id)s) %(search_string)s
 
     group by "Links".id,
         "Links".full_path,
