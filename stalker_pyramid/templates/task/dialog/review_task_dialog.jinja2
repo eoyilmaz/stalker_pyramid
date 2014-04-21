@@ -15,8 +15,10 @@
 {#                        <li><strong>Note :</strong><i class="icon-heart"></i> {{ review.description | safe}}#}
 {#                        </li>#}
 {#                    </ul>#}
+                    {% if review_description!='' %}
 
-                    {{ review_description | safe }}
+                        {{ review_description | safe }}
+                    {% endif %}
                 </div>
             </div>
 

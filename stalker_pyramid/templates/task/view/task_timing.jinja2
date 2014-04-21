@@ -9,18 +9,16 @@
             <li>
 
                 <b>Schedule Hours
-                    : </b> {{ entity.schedule_seconds/3600 }}
-                h
+                    : </b> <span id="schedule_timing"></span>
+
             </li>
             <li>
                 <b>Total Logged Hours
-                    : </b> {{ entity.total_logged_seconds/3600 }}
-                h
+                    : </b> <span id="total_logged"></span>
             </li>
             <li>
                 <b>Hours to Complete
-                    : </b> {{ (entity.schedule_seconds - entity.total_logged_seconds)/3600 }}
-                h
+                    : </b> <span id="hours_to_complete"></span>
             </li>
         </ul>
 
@@ -50,17 +48,20 @@
 
 
 
-        var unit_by_hour = function(unit){
+        var unit_by_seconds = function(unit){
 
              switch (unit) {
+                 case 'min':
+                    return 60;
+                    break;
                 case 'h':
-                    return 1;
+                    return 60*60;
                     break;
                 case 'd':
-                    return 9;
+                    return 9*60*60;
                     break;
                  case 'w':
-                    return 9*6;
+                    return 9*6*60*60;
                     break;
                  case 'm':
                     return 1;
@@ -71,23 +72,33 @@
             }
         }
 
-        var calculate_bid_hour = function(bid,unit){
+        var calculate_seconds = function(timing,unit){
 
+           var u_seconds = unit_by_seconds(unit)
 
-           console.log(bid)
-           var uhour = unit_by_hour(unit)
-
-           return  bid*uhour;
+           return  timing*u_seconds;
 
         }
 
-        var bid_hour = calculate_bid_hour({{ entity.bid_timing }}, '{{ entity.bid_unit }}')
-        $('#bid').text(bid_hour+' h')
+        var schedule_unit_seconds = unit_by_seconds('{{ entity.schedule_unit }}')
+
+        var bid_seconds = calculate_seconds({{ entity.bid_timing }}, '{{ entity.bid_unit }}')
+        var schedule_timing_seconds ={{ entity.schedule_seconds}};
+        var total_logged_seconds ={{ entity.total_logged_seconds}};
 
 
-        console.log(bid_hour)
+        var bid = bid_seconds/schedule_unit_seconds
+        var schedule_timing = schedule_timing_seconds/schedule_unit_seconds;
+        var total_logged = total_logged_seconds/schedule_unit_seconds;
+        var hours_to_complete = schedule_timing -total_logged
 
-        if(bid_hour< {{ entity.total_logged_seconds/3600 }})
+        $('#bid').text(bid+' {{ entity.schedule_unit }}')
+        $('#schedule_timing').text(schedule_timing+' {{ entity.schedule_unit }}')
+        $('#total_logged').text(total_logged+' {{ entity.schedule_unit }}')
+        $('#hours_to_complete').text(hours_to_complete+' {{ entity.schedule_unit }}')
+
+
+        if(bid< total_logged)
         {
             $('#bid_alert').addClass('alert-danger')
 
