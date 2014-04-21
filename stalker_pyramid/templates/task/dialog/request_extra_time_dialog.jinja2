@@ -1,47 +1,14 @@
 <div class='row-fluid'>
     <div class='span12'>
-
-            <div id="version_message">
-                {% include 'version/view/version_card.jinja2' %}
+            <div id="message" class="alert alert-danger bigger-110">
+                How many hours do you need?
             </div>
 
-            <div id="resource_message">
-                <div id="message" class="alert alert-warning bigger-110">
-{#                    <ul class="unstyled spaced">#}
-{#                        <li><strong>Review Requested by:</strong>#}
-{#                            <a href="/users/{{ review.created_by.id }}/view"#}
-{#                               target="_blank">{{ review.created_by.name }}</a>#}
-{#                        </li>#}
-{#                        <li><strong>Note :</strong><i class="icon-heart"></i> {{ review.description | safe}}#}
-{#                        </li>#}
-{#                    </ul>#}
-
-                    {{ review_description | safe }}
-                </div>
-            </div>
-
-
-            <form id="review_task_form"
+            <form id="request_extra_time_form"
                   class='form-horizontal'
                   role='form'
                   method='post'
                   action="">
-
-                {# Review Type #}
-                <div class="control-group">
-                    <label class="span3 control-label" for="task_review_mode">Review
-                        Type</label>
-
-                    <div class="span9">
-                        <select id='task_review_mode'
-                                class='input-block-level'
-                                name='review'>
-                            <option value="approve">Approve</option>
-                            <option value="request_revision">Request Revision
-                            </option>
-                        </select>
-                    </div>
-                </div>
 
                 {# Description #}
                 <div>
@@ -63,7 +30,7 @@
                     </div>
 
                     {# Schedule Timing #}
-                    <div class='control-group hide' id="revision_controls">
+                    <div class='control-group' id="revision_controls">
                         <label class='span3 control-label'
                                for='task_schedule_timing'>Schedule
                             Timing</label>
@@ -109,117 +76,29 @@
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.autosize-min.js") }}'></script>
 
 
-{% raw %}
-<script id="tmpl_messageVersion" type="text/x-dot-template">
-    <div >
-            <h4 class="green">Last version of this task:</h4>
-
-            <dl class="dl-horizontal pull-left grey">
-                <dt>Task:</dt>
-                <dd>
-                     <a href="/tasks/{{=it.task_id }}/view" target="_blank">{{=it.task_name }}</a>
-                </dd>
-                <dt>Date :</dt>
-                <dd> {{=it.date}} (<span class="date">{{=it.date}}</span>)
-                </dd>
-                <dt>Created by :</dt>
-                <dd>
-                    <a href="/users/{{=it.created_by_id }}/view" target="_blank">{{=it.created_by_name}}</a>
-                </dd>
-                <dt>Description :</dt>
-                <dd> {{=it.description }}</dd>
-                <dt>Absolute Path :</dt>
-                <dd>
-                    <a href="javascript:copyToClipboard('{{=it.path }}')">{{=it.file_name}}</a>
-                </dd>
-            </dl>
-
-            Click absolute path to copy path to clipboard.
-    </div>
-</script>
-{% endraw %}
-
 <script>
     function init_dialog() {
-        console.log('initialize review task dialog start');
+        console.log('initialize request extra time dialog start');
 
         // update dialog header
         var dialog_template_label = $('#dialog_template_label');
         dialog_template_label.find('span').remove();
-        dialog_template_label.append('<span class="green">Review Task Dialog</span>');
+        dialog_template_label.append('<span class="green">Request Extra Time Dialog</span>');
 
-        {% if version == None %}
 
-            $('#version_message').append('<strong>{{ task.name }}</strong> is <strong>{{task.type.name }}</strong> type task. For <strong>{{task.type.name }} </strong> type task no version is saved to server. Ask resource for details.');
+        var submit_form_url = '{{ action }}';
 
-        {% endif %}
-
-        // generate default values;
-        var project = {
-            id: {{ project.id }},
-            name: "{{ project.name }}"
-        };
-        var submit_form_url = '{{ request.route_url("approve_task", id=task.id) }}';
-
-        var schedule_timing = {{ task.schedule_timing }};
+        var schedule_timing = '{{ task.schedule_timing }}';
         var schedule_unit = '{{ task.schedule_unit }}';
         var schedule_model = '{{ task.schedule_model }}';
 
         var submit_button = $('#dialog_template_submit_button');
 
-        {% if review_mode %}
-
-            $('#task_review_mode').val('{{ review_mode }}')
-
-            {% if review_mode == 'request_revision' %}
-
-                $('#revision_controls').show();
-
-            {% endif %}
-
-            submit_form_url = '/tasks/{{ task.id }}/'+ $('#task_review_mode').val()
-
-        {% endif %}
-
-
-        {% if forced %}
-
-            $('#task_review_mode').attr('disabled','disabled');
-
-        {% else %}
-
-            $('#task_review_mode').on('change', function () {
-                // disable or enable revision_controls
-                $('#revision_controls').toggle();
-
-                submit_form_url = '/tasks/{{ task.id }}/'+$(this).val()
-
-            });
-
-         {% endif %}
 
         {# ***************************************************************** #}
         {# Schedule Unit and Model #}
         $('#task_schedule_unit').val(schedule_unit);
         $('#task_schedule_model').val(schedule_model);
-
-        {# ***************************************************************** #}
-        {# Priority Spinner #}
-        var priority = 500;
-        priority = {{ task.priority }};
-
-        $('#task_priority').ace_spinner({
-            value: priority,
-            min: 1,
-            max: 1000,
-            step: 1,
-            btn_up_class: 'btn-info',
-            btn_down_class: 'btn-info'
-        }).on('change', function () {
-                    // check if it is in the range
-                    var curr_value = $(this).val();
-                    $(this).val(curr_value <= 1000 ? curr_value >= 1 ? curr_value : 1 : 1000);
-                });
 
         {# ***************************************************************** #}
         {# Submit Button #}
@@ -231,20 +110,8 @@
             // disable submit button
             submit_button.button('loading');
 
-            var task_form = $('#review_task_form');
+            var task_form = $('#request_extra_time_form');
             var form_data = task_form.serialize();
-
-            {% if forced  %}
-
-               form_data += '&' +
-                $.param({
-                    'forced': 'forced'
-                })
-
-            {% endif %}
-
-
-            console.log('form_data :', form_data);
 
             // prevent multiple sends
             if (task_form.attr('is_sending') == 'true') {
@@ -271,25 +138,21 @@
                     });
         });
 
-                $('.date').each(function () {
-            var date = moment.utc($(this).text());
-            $(this).text(date.fromNow());
-        });
 
-        console.log('initialize review task dialog end')
+
+        console.log('initialize request extra time dialog end')
     }
 </script>
 
 <script type="text/javascript">
     function destruct_dialog() {
-        console.log('destruct review task dialog start');
+        console.log('destruct request extra time dialog start');
         // unbind events
-        $('#task_review_mode').unbind();
-        $('#task_priority').unbind();
+        $('#revision_controls').unbind();
         $('#dialog_template_submit_button').unbind();
 
         // remove dialog
         $('#dialog_template').data('modal', null);
-        console.log('destruct review task dialog end');
+        console.log('destruct request extra time dialog end');
     }
 </script>

@@ -18,7 +18,7 @@
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.ui.touch-punch.min.js") }}'></script>
 <script type="text/javascript">
 
-{% if has_permission('Update_'+entity.entity_type) %}
+
     $(document).ready(function () {
 
         $.fn.editable.defaults.mode = 'inline';
@@ -214,6 +214,6 @@ return true;
         }
     });
 
-{% endif %}
+
 
 </script>

@@ -8,8 +8,10 @@
     $(document).ready(function () {
         page_of('{{ user.name }}',
                 '{{ user.login }}',
-                "{%- if user.thumbnail -%}/{{ user.thumbnail.full_path }}{%- else -%}{{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_0.png")}}{%- endif -%}",
-                '/users/{{ user.id }}/update/dialog')
+                '{%- if user.thumbnail -%}/{{ user.thumbnail.full_path }}{%- else -%}{{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_0.png")}}{%- endif -%}',
+                '{%- if has_permission('Update_User') or  user.id==logged_in_user.id -%}/users/{{ user.id }}/update/dialog{%- endif -%}'
+
+        )
 
         menu_of(
             'Dashboard',

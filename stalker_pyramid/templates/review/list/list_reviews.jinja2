@@ -128,6 +128,11 @@
 
                 <span class="label label-{{=it.review_status_color }}">{{=it.review_status_name }}</span>
                 {{ } }}
+                {{ if (it.review_description) { }}
+                <br/>
+                    {{=it.review_description }}
+                {{ } }}
+
 
             </td>
         </tr>

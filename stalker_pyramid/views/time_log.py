@@ -35,6 +35,7 @@ from stalker_pyramid.views import (get_logged_in_user,
                                    PermissionChecker, milliseconds_since_epoch,
                                    get_date, StdErrToHTMLConverter,
                                    local_to_utc)
+from stalker_pyramid.views.task import get_task_hierarchical_name
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -190,7 +191,7 @@ def create_time_log(request):
         return response
 
     logger.debug('successfully created time log!')
-    response = Response(task.name)
+    response = Response(get_task_hierarchical_name(task.id))
 
     return response
 

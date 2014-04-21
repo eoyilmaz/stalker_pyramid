@@ -75,7 +75,8 @@
         <th>Responsible</th>
         <th>Type</th>
         <th>Completed</th>
-        <th>Hours To Complete</th>
+        <th>Hours Based on Bid</th>
+        <th>Hours to Complete</th>
         <th>Priority</th>
         <th></th>
     </tr>
@@ -98,6 +99,7 @@
                 </div>
             </div>
         </td>
+        <td {{ if (it.hour_based_on_bid<0) { }}style="background-color: #ff0000; opacity:0.8;"{{ } }}>{{=it.hour_based_on_bid}} h</td>
         <td {{ if (it.hour_to_complete<0) { }}style="background-color: #ff0000; opacity:0.8;"{{ } }}>{{=it.hour_to_complete}} h</td>
         <td>{{=it.priority}}</td>
         <td>
@@ -106,38 +108,48 @@
                         <i class="icon-zoom-in bigger-130"></i>
                     </a>
 
+                    {{ if (it.percent_complete == 100&&it.status_code=='WIP')  { }}
+                        <a
+                            class="red"
+                            data-target="#dialog_template"
+                            data-toggle="modal"
+                            data-keyboard=false
+                            data-rel="tooltip"
+                            data-placement="top"
+                            title="Request Extra Time"
+                            href="/tasks/{{=it.id}}/request_extra_time/dialog?came_from={{=it.came_from }}">
+                            <i class="icon-time bigger-130"></i>
+                        </a>
+                    {{ } }}
+
                     {{ if (it.request_review) { }}
-
-
-
-                    <a
-                        class="green"
-                        data-target="#dialog_template"
-                        data-toggle="modal"
-                        data-keyboard=false
-                        data-rel="tooltip"
-                        data-placement="top"
-                        title="Request Review"
-                        href="/tasks/{{=it.id}}/request_review/dialog?came_from={{=it.came_from }}&request_review_mode=Final">
-                        <i class="icon-comment-alt bigger-130"></i>
-                    </a>
-
-
+                        <a
+                            class="green"
+                            data-target="#dialog_template"
+                            data-toggle="modal"
+                            data-keyboard=false
+                            data-rel="tooltip"
+                            data-placement="top"
+                            title="Request Review"
+                            href="/tasks/{{=it.id}}/request_review/dialog?came_from={{=it.came_from }}&request_review_mode=Final">
+                            <i class="icon-comment-alt bigger-130"></i>
+                        </a>
                     {{ } }}
 
                     {{ if (it.review) { }}
-                    <a
-                        class="purple"
-                        data-target="#dialog_template"
-                        data-toggle="modal"
-                        data-keyboard=false
-                        data-rel="tooltip"
-                        data-placement="top"
-                        title="Review"
-                        href="/tasks/{{=it.id}}/review/dialog?came_from={{=it.came_from }}">
-                        <i class="icon-comments bigger-130"></i>
-                    </a>
+                        <a
+                            class="purple"
+                            data-target="#dialog_template"
+                            data-toggle="modal"
+                            data-keyboard=false
+                            data-rel="tooltip"
+                            data-placement="top"
+                            title="Review"
+                            href="/tasks/{{=it.id}}/review/dialog?came_from={{=it.came_from }}">
+                            <i class="icon-comments bigger-130"></i>
+                        </a>
                     {{ } }}
+
 
                 </div>
         </td>

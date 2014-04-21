@@ -40,6 +40,8 @@
             {% endif %}
 
             eventClick: function (calEvent, jsEvent, view) {
+
+                console.log('eventClicked')
                 if (calEvent.entity_type == 'vacations') {
                     {% if has_permission('Update_Vacation') %}
 
@@ -56,6 +58,8 @@
                         update_event_action(calEvent.entity_type, calEvent.eId);
                     {% endif %}
                 } else if (calEvent.entity_type == 'tasks') {
+
+
                     {% if has_permission('Read_Task') %}
                         window.location.assign("/tasks/" + calEvent.eId + "/view");
                     {% endif %}

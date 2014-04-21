@@ -69,7 +69,22 @@
                             <div class="row-fluid">
     
                                 <div class="span2">
-                                    {% include 'components/avatar.jinja2' %}
+                                    {% if has_permission('Update_'+entity.entity_type)  %}
+                                            {% include 'components/avatar.jinja2' %}
+                                     {% else %}
+                                        <div class="profile-picture"
+                                             style="text-align: center; overflow: hidden; width: 150px">
+                                            <img id="entity_avatar"
+                                                 alt="Avatar"
+                                                 style="height: 100%; width: 100%; display: inline;
+                                                        position: relative; left: 100%; margin-left: -200%"
+                                                 src="{%- if entity.thumbnail -%}
+                                                        /{{ entity.thumbnail.full_path }}
+                                                    {%- else -%}
+                                                        {{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}
+                                                    {%- endif -%}"/>
+                                        </div>
+                                    {% endif %}
                                 </div>
     
                                 <div class="span7">

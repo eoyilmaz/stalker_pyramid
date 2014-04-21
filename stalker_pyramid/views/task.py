@@ -1684,7 +1684,7 @@ def get_entity_tasks_by_filter(request):
     "Project_SimpleEntities".id as project_id,
     "Project_SimpleEntities".name as project_name,
     array_agg("Reviewers".reviewer_id) as reviewer_id,
-    ((("Tasks".bid_timing * (case "Tasks".bid_unit
+    ((("Tasks".schedule_timing * (case "Tasks".schedule_unit
                 when 'min' then 60
                 when 'h' then 3600
                 when 'd' then 32400
@@ -1696,7 +1696,19 @@ def get_entity_tasks_by_filter(request):
 
     ) as hour_to_complete,
     coalesce("Tasks".computed_start,"Tasks".start) as start_date,
-    "Tasks".priority as priority
+    "Tasks".priority as priority,
+    ((("Tasks".bid_timing * (case "Tasks".bid_unit
+                when 'min' then 60
+                when 'h' then 3600
+                when 'd' then 32400
+                when 'w' then 147600
+                when 'm' then 590400
+                when 'y' then 7696277
+                else 0
+            end))-coalesce("Task_TimeLogs".duration, 0.0))/3600
+
+    ) as hour_based_on_bid
+
 
     from "Tasks"
     join "Task_Resources" on "Task_Resources".task_id = "Tasks".id
@@ -1820,6 +1832,7 @@ def get_entity_tasks_by_filter(request):
         "Project_SimpleEntities".id,
         "Project_SimpleEntities".name,
         start_date,
+        hour_based_on_bid,
         hour_to_complete,
         type_name,
         priority
@@ -1869,6 +1882,7 @@ def get_entity_tasks_by_filter(request):
             'request_review': '1' if (logged_in_user.id in r[6] or r[2] == logged_in_user.id) and r[9] == 'WIP' else None,
             'review': '1' if logged_in_user.id in  r[13] and r[9]=='PREV' else None,
             'hour_to_complete':r[14],
+            'hour_based_on_bid':r[17],
             'start_date':milliseconds_since_epoch(r[15]),
             'priority':r[16]
         }
@@ -2509,20 +2523,28 @@ def review_task_dialog(request):
 
     logged_in_user = get_logged_in_user(request)
 
-    status_new = Status.query.filter_by(code='NEW').first()
-    review = Review.query.filter(Review.reviewer_id == logged_in_user.id).filter(Review.task_id==entity.id).filter(Review.status==status_new).first()
-
     came_from = request.params.get('came_from', request.url)
     review_mode = request.params.get('review_mode', 'approve')
     forced = request.params.get('forced', None)
-    logger.debug('review_mode %s' % review_mode)
 
     version = get_last_version_of_task(request, is_published='')
+
+    status_new = Status.query.filter_by(code='NEW').first()
+    review = Review.query.filter(Review.reviewer_id == logged_in_user.id).filter(Review.task_id==entity.id).filter(Review.status==status_new).first()
+
+    if forced:
+        review = Review.query.filter(Review.task_id==entity.id).filter(Review.status==status_new).first()
+
+    review_description = 'No Comment'
+
+    if review:
+        review_description = review.description
+
 
     project = entity.project
 
     return {
-        'review':review,
+        'review_description':review_description,
         'has_permission': PermissionChecker(request),
         'logged_in_user': logged_in_user,
         'task': entity,
@@ -2660,7 +2682,7 @@ def approve_task(request):
 
     try:
         review.approve()
-        review.description = description
+        review.description.append("<br/><b>%(reviewer_name)s :<b> %(note)s"%{'reviewer_name':logged_in_user.name,'note':note.content})
         review.date_updated = utc_now
 
         task.notes.append(note)
@@ -2810,7 +2832,7 @@ def request_revision(request):
            # review = forced_review(logged_in_user, task);
            # review.date_created = utc_now
             assert isinstance(task,Task)
-            task.request_revision(logged_in_user,description,schedule_timing,schedule_unit)
+            task.request_revision(logged_in_user,note.content,schedule_timing,schedule_unit)
         else:
             return Response('You dont have permission', 500)
     else:
@@ -2834,7 +2856,9 @@ def request_revision(request):
             review.request_revision(
                     schedule_timing,
                     schedule_unit,
-                    description
+                    '%(resource_note)s <br/> <b>%(reviewer_name)s</b>: %(reviewer_note)s' % {'resource_note': review.description,
+                                                                                             'reviewer_name': logged_in_user.name,
+                                                                                             'reviewer_note': note.content }
                 )
             review.date_updated = utc_now
 
@@ -3136,7 +3160,7 @@ def request_final_review(request):
         review.created_by = logged_in_user
         review.date_created = utc_now
         review.date_updated = utc_now
-        review.note = note
+        review.description = "<br/><b>%(resource_name)s :<b> %(note)s"%{'reviewer_name':logged_in_user.name,'note':note.content}
 
     if send_email:
         #*******************************************************************
@@ -3232,6 +3256,27 @@ def request_final_review(request):
     )
 
     return Response('Your final review request has been sent to responsible')
+@view_config(
+    route_name='request_extra_time_dialog',
+    renderer='templates/task/dialog/request_extra_time_dialog.jinja2'
+)
+def request_extra_time_dialog(request):
+    """ TODO: add doc string
+    """
+    logger.debug('request_extra_time_dialog starts')
+
+    task_id = request.matchdict.get('id')
+    task = Task.query.filter_by(id=task_id).first()
+
+    action = '/tasks/%s/request_extra_time' % task_id
+
+    came_from = request.params.get('came_from', '/')
+
+    return {
+        'came_from': came_from,
+        'action': action,
+        'task':task
+    }
 
 
 @view_config(
@@ -3247,63 +3292,139 @@ def request_extra_time(request):
     task_id = request.matchdict.get('id', -1)
     task = Task.query.filter(Task.id == task_id).first()
 
-    send_email = request.params.get('send_email', 1)
 
-    extra_time = request.params.get('extra_time', -1)
+    if not task:
+        transaction.abort()
+        return Response('There is noooooo task with id: %s' % task_id, 500)
 
-    if task and extra_time:
-        # no extra hours for a container task
-        if task.is_container:
+    if task.is_container:
             transaction.abort()
             return Response('Can not request extra time for a container '
                             'task', 500)
 
-        # TODO: increase task extra time request counter
-        if send_email:
-            # get the project that the ticket belongs to
-            summary_text = 'Extra Time Request: "%s"' % task.name
-            description_text = \
-                """%(user_name)s has requested %(extra_time)s extra hours for
-                %(task_name)s (%(task_link)s)" """ % {
-                    "user_name": logged_in_user.name,
-                    "extra_time": extra_time,
-                    "task_name": task.name,
-                    "task_link": request.route_url('view_task', id=task.id)
-                }
+    schedule_timing = request.params.get('schedule_timing')
+    schedule_unit = request.params.get('schedule_unit')
+    schedule_model = request.params.get('schedule_model')
 
-            description_html = \
-                """%(user_name)s has requested %(extra_time)s extra hours for
-                %(task_name)s (%(task_link)s)" """ % {
-                    "user_name": logged_in_user.name,
-                    "extra_time": extra_time,
-                    "task_name": task.name,
-                    "task_link": request.route_url('view_task', id=task.id)
-                }
 
-            responsible = task.responsible
+    if not schedule_timing:
+        transaction.abort()
+        return Response('There are missing parameters: schedule_timing', 500)
+    else:
+        try:
+            schedule_timing = float(schedule_timing)
+        except ValueError:
+            transaction.abort()
+            return Response('Please supply a float or integer value for '
+                            'schedule_timing parameter', 500)
 
-            # send email to responsible and resources of the task
-            mailer = get_mailer(request)
+    if not schedule_unit:
+        transaction.abort()
+        return Response('There are missing parameters: schedule_unit', 500)
+    else:
+        if schedule_unit not in ['h', 'd', 'w', 'm', 'y']:
+            transaction.abort()
+            return Response("schedule_unit parameter should be one of ['h', "
+                            "'d', 'w', 'm', 'y']", 500)
 
-            recipients = [logged_in_user.email]
-            if responsible.email not in recipients:
-                recipients.append(responsible.email)
-            for resource in task.resources:
-                recipients.append(resource.email)
+    if not schedule_model:
+        transaction.abort()
+        return Response('There are missing parameters: schedule_model', 500)
+    else:
+        if schedule_model not in ['effort', 'duration', 'length']:
+            transaction.abort()
+            return Response("schedule_model parameter should be on of "
+                            "['effort', 'duration', 'length']", 500)
 
-            message = Message(
-                subject=summary_text,
-                sender=dummy_email_address,
-                recipients=recipients,
-                body=description_text,
-                html=description_html,
+    logger.debug('schedule_timing: %s' % schedule_timing)
+    logger.debug('schedule_unit  : %s' % schedule_unit)
+    logger.debug('schedule_model : %s' % schedule_model)
+
+    send_email = request.params.get('send_email', 1)  # for testing purposes
+    description = request.params.get('description', 'No comments')
+
+    utc_now = local_to_utc(datetime.datetime.now())
+
+    note_type = query_type('Note', 'Request Extra Time')
+    note_type.html_class = 'red2'
+
+    note = Note(
+        content='<i class="icon-heart"></i> Requesting extra time <b>'
+                '%(schedule_timing)s %(schedule_unit)s</b>.<br/>'
+                '%(description)s' %{
+                    'schedule_timing': schedule_timing,
+                    'schedule_unit': schedule_unit,
+                    'description': description},
+        created_by=logged_in_user,
+        date_created=utc_now,
+        date_updated=utc_now,
+        type=note_type
+    )
+    DBSession.add(note)
+
+    task.notes.append(note)
+
+    reviews = task.request_review()
+    for review in reviews:
+        review.created_by = logged_in_user
+        review.date_created = utc_now
+        review.date_updated = utc_now
+        review.description = "<b>%(resource_name)s</b>: %(note)s " % {'resource_name':logged_in_user.name,'note':note.content}
+
+    if send_email:
+        #*******************************************************************
+        # info message for responsible
+        recipients = []
+
+        for responsible in task.responsible:
+            recipients.append(responsible.email)
+
+        task_hierarchical_name = get_task_hierarchical_name(task.id)
+
+        description_temp = \
+            '%(user)s has requested extra time for ' \
+            '%(task_hierarchical_name)s with the following note:%(note)s'
+
+        mailer = get_mailer(request)
+
+        message = Message(
+            subject='Extra Time Request: "%(task_hierarchical_name)s)' % {
+                'task_hierarchical_name': task_hierarchical_name
+            },
+            sender=dummy_email_address,
+            recipients=recipients,
+            body=get_description_text(
+                description_temp,
+                logged_in_user.name,
+                task_hierarchical_name,
+                note.content
+            ),
+            html=get_description_html(
+                description_temp,
+                logged_in_user.name,
+                task_hierarchical_name,
+                note.content
             )
-            mailer.send(message)
+        )
 
-        return Response('You have successfully requested extra time for '
-                        'your task')
-    transaction.abort()
-    return Response('There is no task with id : %s' % task_id, 500)
+        try:
+            mailer.send(message)
+        except ValueError:
+            pass
+
+
+
+    logger.debug(
+        'success:Your extra time request has been sent to responsible'
+    )
+
+    request.session.flash(
+        'success:Your extra time request has been sent to responsible'
+    )
+
+    return Response('Your extra time request has been sent to responsible')
+
+
 
 
 @view_config(

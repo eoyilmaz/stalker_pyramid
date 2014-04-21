@@ -14,7 +14,7 @@
             '{{ studio.name }}',
             '',
             "{%- if studio.thumbnail -%}/{{ studio.thumbnail.full_path }}{%- else -%}{{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_0.png")}}{%- endif -%}",
-            '/studios/{{ studio.id }}/update/dialog'
+            '{%- if has_permission('Update_Studio') -%}/studios/{{ studio.id }}/update/dialog{%- endif -%}'
         );
 
         menu_of(

@@ -78,143 +78,6 @@
 
 {% block extrascripts %}
 
-{#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.dataTables.min.js") }}'></script>#}
-{#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.dataTables.bootstrap.js") }}'></script>#}
-{#    <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/dataTable_num-html_sort.js") }}'></script>#}
-{#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.easy-pie-chart.min.js") }}'></script>#}
-{##}
-    {# ***************************************************************************************#}
-    {# Table Template#}
-{##}
-{#    {% raw %}#}
-{#    <script id="tmpl_table" type="text/x-dot-template">#}
-{#        <div class="row-fluid">#}
-{#            <div class="widget-container-span">#}
-{#                <div class="widget-box">#}
-{#                    <div class="widget-header widget-header-small header-color-{{=it.table_title_color }}">#}
-{#                        <h4 class="smaller">#}
-{#                            <i class="icon-list"></i>#}
-{#                            {{=it.table_title }}#}
-{#                        </h4>#}
-{##}
-{#                        <div class="widget-toolbar">#}
-{#                            <a href="#" data-action="collapse">#}
-{#                                <i class="icon-chevron-down"></i>#}
-{#                            </a>#}
-{#                        </div>#}
-{#                    </div>#}
-{#                    <div class="widget-body">#}
-{#                        <div class="widget-main no-padding">#}
-{#                            <div id="{{=it.table_spinner_id }}"#}
-{#                                 class="well well-sm">#}
-{##}
-{#                                <div class="inline middle blue bigger-110"><i#}
-{#                                        class="icon-spinner icon-spin orange bigger-125"></i>#}
-{#                                    Loading#}
-{#                                    content...#}
-{#                                </div>#}
-{#                            </div>#}
-{##}
-{#                            <table id="{{=it.table_id }}"#}
-{#                                   class="table table-striped table-bordered table-hover hide">#}
-{#                                <thead>#}
-{#                                <tr>#}
-{#                                    <th>Name</th>#}
-{#                                    <th>Resources</th>#}
-{#                                    <th>Completed</th>#}
-{#                                    <th>Status</th>#}
-{#                                </tr>#}
-{#                                </thead>#}
-{#                                <tbody>#}
-{##}
-{#                                </tbody>#}
-{#                            </table>#}
-{#                        </div>#}
-{#                    </div>#}
-{#                </div>#}
-{#            </div>#}
-{#        </div>#}
-{#    </script>#}
-{#    {% endraw %}#}
-{##}
-    {# ***************************************************************************************#}
-    {# Task Row Template#}
-{##}
-{#    {% raw %}#}
-{#    <script id="tmpl_taskRow" type="text/x-dot-template">#}
-{#        <tr>#}
-{#            <td><a href='/tasks/{{=it.task_id }}/view'>{{=it.task_name}}</a>#}
-{#            </td>#}
-{#            <td>{{=it.resources}}#}
-{#            </td>#}
-{#            <td>#}
-{#                <div class="progress progress-success">#}
-{#                    <div style="width:{{=it.percent_complete}}%"#}
-{#                         class="bar">#}
-{#                        <span class="pull-left">{{=it.percent_complete}}%</span>#}
-{#                    </div>#}
-{#                </div>#}
-{#            </td>#}
-{##}
-{#            <td>#}
-{#                <span class="label label-{{=it.status_color}}">{{=it.status}}</span>#}
-{#            </td>#}
-{##}
-{#        </tr>#}
-{#    </script>#}
-{#    {% endraw %}#}
-
-    {# ***************************************************************************************#}
-    {# Table Creation#}
-
-    <script>
-        // fill projects table with dynamic data
-{#        $(document).ready(function () {#}
-{#            var loadTableData = function (address, tableId, spinnerId) {#}
-{#                $.getJSON(address).then(function (data) {#}
-{#                    var task_template = doT.template($('#tmpl_taskRow').html());#}
-{#                    // wait until document is ready#}
-{#                    $(function () {#}
-{#                        var i;#}
-{#                        var table_body = $('#' + tableId + '>tbody');#}
-{#                        for (i = 0; i < data.length; i++) {#}
-{##}
-{#                            // append it to the table#}
-{#                            data[i].percent_complete = data[i].percent_complete.toFixed(1);#}
-{#                            //data[i].status_color = '#' + data[i].status_color.toString(16);#}
-{##}
-{#                            table_body.append(task_template(data[i]));#}
-{#                        }#}
-{##}
-{#                        var oTable1 = $('#' + tableId).dataTable({#}
-{#                            "aoColumns": [#}
-{#                                null, null, {'sType': 'num-html'}, null#}
-{#                            ]#}
-{#                        });#}
-{#                        // sort desc to completed column#}
-{#                        oTable1.fnSort([[2, 'desc']]);#}
-{#                    });#}
-{#                    $('#' + tableId).show();#}
-{#                    $('#' + spinnerId).hide();#}
-{#                });#}
-{#            };#}
-{##}
-{#            var table_template = doT.template($('#tmpl_table').html());#}
-{#            var table_row = $('#table_row');#}
-{#            table_row.append(#}
-{#                table_template({#}
-{#                    'table_title_color': 'red',#}
-{#                    'table_title': 'Task In Progress Today',#}
-{#                    'table_id': 'tasks_in_progress',#}
-{#                    'table_spinner_id': 'loading_spinner_for_progress'#}
-{#            }))#}
-{##}
-{#            loadTableData('/projects/{{ entity.id }}/tasks/progress/today/', 'tasks_in_progress', 'loading_spinner_for_progress');#}
-{#            loadTableData('/projects/{{ entity.id }}/tasks/end/today/', 'tasks_supposed_to_end', 'loading_spinner_for_end');#}
-{#        });#}
-
-    </script>
-
 
 {% raw %}
 <script id="tmpl_itemThead" type="text/x-dot-template">
@@ -225,7 +88,8 @@
         <th>Responsible</th>
         <th>Type</th>
         <th>Completed</th>
-        <th>Hour to Complete</th>
+        <th>Hours Based on Bid</th>
+        <th>Hours to Complete</th>
         <th>Priority</th>
         <th></th>
     </tr>
@@ -249,6 +113,7 @@
                 </div>
             </div>
         </td>
+        <td {{ if (it.hour_based_on_bid<0) { }}style="background-color: #ff0000; opacity:0.8;"{{ } }}>{{=it.hour_based_on_bid}} h</td>
         <td {{ if (it.hour_to_complete<0) { }}style="background-color: #ff0000; opacity:0.8;"{{ } }}>{{=it.hour_to_complete}} h</td>
         <td>{{=it.priority}}</td>
         <td>

@@ -225,7 +225,8 @@
         <th>Responsible</th>
         <th>Type</th>
         <th>Completed</th>
-        <th>Hour to Complete</th>
+        <th>Hours Based on Bid</th>
+        <th>Hours to Complete</th>
         <th>Priority</th>
         <th></th>
     </tr>
@@ -249,6 +250,7 @@
                 </div>
             </div>
         </td>
+        <td {{ if (it.hour_based_on_bid<0) { }}style="background-color: #ff0000; opacity:0.8;"{{ } }}>{{=it.hour_based_on_bid}} h</td>
         <td {{ if (it.hour_to_complete<0) { }}style="background-color: #ff0000; opacity:0.8;"{{ } }}>{{=it.hour_to_complete}} h</td>
         <td>{{=it.priority}}</td>
         <td>

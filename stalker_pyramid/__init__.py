@@ -526,6 +526,7 @@ def main(global_config, **settings):
     config.add_route('approve_task',   'tasks/{id}/approve')
     config.add_route('request_revision',   'tasks/{id}/request_revision')
     config.add_route('request_extra_time', 'tasks/{id}/request_extra_time')
+    config.add_route('request_extra_time_dialog', 'tasks/{id}/request_extra_time/dialog')
 
     config.add_route('delete_task',        'tasks/{id}/delete')
     config.add_route('delete_task_dialog', 'tasks/{id}/delete/dialog')
