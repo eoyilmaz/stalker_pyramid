@@ -2683,7 +2683,11 @@ def approve_task(request):
 
     try:
         review.approve()
-        review.description.append("<br/><b>%(reviewer_name)s :<b> %(note)s"%{'reviewer_name':logged_in_user.name,'note':note.content})
+
+        review.description = '%(resource_note)s <br/> <b>%(reviewer_name)s</b>: %(reviewer_note)s' % {'resource_note': review.description,
+                                                                                             'reviewer_name': logged_in_user.name,
+                                                                                             'reviewer_note': note.content }
+
         review.date_updated = utc_now
 
         task.notes.append(note)
@@ -3161,7 +3165,7 @@ def request_final_review(request):
         review.created_by = logged_in_user
         review.date_created = utc_now
         review.date_updated = utc_now
-        review.description = "<br/><b>%(resource_name)s :<b> %(note)s"%{'reviewer_name':logged_in_user.name,'note':note.content}
+        review.description = "<br/><b>%(resource_name)s :<b> %(note)s"%{'resource_name':logged_in_user.name,'note':note.content}
 
     if send_email:
         #*******************************************************************

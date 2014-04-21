@@ -183,9 +183,9 @@ function init_dialog() {
 
             var bid_timing = parseFloat(data[0].bid_timing) *9
             var schedule_seconds = parseFloat(data[0].schedule_seconds)
-            var schedule_hours = parseInt(schedule_seconds / 3600)
+            var schedule_hours = (schedule_seconds / 3600)
             var total_logged_seconds = parseFloat(data[0].total_logged_seconds)
-            var total_logged_hours = parseInt(total_logged_seconds / 3600)
+            var total_logged_hours = total_logged_seconds / 3600
             var total_extended_hours = (schedule_hours - bid_timing)>0?(schedule_hours - bid_timing):0;
 
             var remaining_seconds = schedule_seconds - total_logged_seconds;
@@ -215,7 +215,7 @@ function init_dialog() {
 
             information.find('span').remove();
 
-            var total_logged_hours_msg = total_logged_hours==schedule_hours?'spent all scheduled hours':'you can enter max <strong>'+parseInt(schedule_hours-total_logged_hours)+'</strong> hours'
+            var total_logged_hours_msg = total_logged_hours>=schedule_hours?'spent all scheduled hours':'you can enter max <strong>'+(schedule_hours-total_logged_hours)+'</strong> hours'
 
             if(total_extended_hours==0){
 
