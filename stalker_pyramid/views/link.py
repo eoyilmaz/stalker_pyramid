@@ -194,28 +194,50 @@ def upload_files(request):
 def assign_thumbnail(request):
     """assigns the thumbnail to the given entity
     """
-    link_ids = get_multi_integer(request, 'link_ids[]')
+    full_path = request.params.get('full_path')
     entity_id = request.params.get('entity_id', -1)
 
-    link = Link.query.filter(Link.id.in_(link_ids)).first()
     entity = Entity.query.filter_by(id=entity_id).first()
 
-    logger.debug('link_ids  : %s' % link_ids)
-    logger.debug('link      : %s' % link)
-    logger.debug('entity_id : %s' % entity_id)
-    logger.debug('entity    : %s' % entity)
+    logger.debug('full_path : %s' % full_path)
+    logger.debug('entity_id  : %s' % entity_id)
+    logger.debug('entity     : %s' % entity)
 
     logged_in_user = get_logged_in_user(request)
-    if entity and link:
-        entity.thumbnail = link
+    if entity and full_path:
+        mm = MediaManager()
+        thumbnail_path = mm.generate_thumbnail(full_path)
+        thumbnail_extension = os.path.splitext(thumbnail_path)[-1]
 
-        # resize the thumbnail
-        file_full_path = MediaManager.convert_file_link_to_full_path(link.full_path)
-        img = Image.open(file_full_path)
-        if img.format != 'GIF':
-            img.thumbnail((1024, 1024))
-            img.thumbnail((512, 512), Image.ANTIALIAS)
-            img.save(file_full_path)
+        # move the thumbnail to SPL
+        thumbnail_spl_path = mm.generate_local_file_path(
+            extension=thumbnail_extension
+        )
+        thumbnail_spl_relative_path = thumbnail_spl_path.replace(
+            defaults.server_side_storage_path, 'SPL'
+        )
+        try:
+            os.makedirs(os.path.dirname(thumbnail_spl_path))
+        except OSError:  # dir exists
+            pass
+
+        # move the file there
+        shutil.move(thumbnail_path, thumbnail_spl_path)
+
+        logger.debug('thumbnail_path              : %s' % thumbnail_path)
+        logger.debug('thumbnail_extension         : %s' % thumbnail_extension)
+        logger.debug('thumbnail_spl_path          : %s' % thumbnail_spl_path)
+        logger.debug('thumbnail_spl_relative_path : %s' %
+                     thumbnail_spl_relative_path)
+
+        # now create a link for the thumbnail
+        utc_now = local_to_utc(datetime.datetime.now())
+        link = Link(
+            full_path=thumbnail_spl_relative_path,
+            created_by=logged_in_user,
+            date_created=utc_now
+        )
+        entity.thumbnail = link
 
         DBSession.add(entity)
         DBSession.add(link)
@@ -230,7 +252,6 @@ def assign_thumbnail(request):
 def assign_reference(request):
     """assigns the given files as references for the given entity
     """
-    # files = get_multi_integer(request, 'files[]')
     full_paths = request.POST.getall('full_paths[]')
     original_filenames = request.POST.getall('original_filenames[]')
 

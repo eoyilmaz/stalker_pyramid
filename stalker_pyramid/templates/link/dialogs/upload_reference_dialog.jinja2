@@ -156,9 +156,9 @@
 
             var tags_list = $('#reference_tags_input').val().split(', ');
 
-            console.debug('accepted_files   : ', dzone.getAcceptedFiles());
-            console.debug('entity_id        : ', entity_id);
-            console.debug('tags             : ', tags_list);
+{#            console.debug('accepted_files   : ', dzone.getAcceptedFiles());#}
+{#            console.debug('entity_id        : ', entity_id);#}
+{#            console.debug('tags             : ', tags_list);#}
 
             // prepare data
             var file_info = [];
@@ -176,9 +176,9 @@
                 })
             }
             
-            console.debug('file_info          :', file_info);
-            console.debug('full_paths         :', full_paths);
-            console.debug('original_filenames :', original_filenames);
+{#            console.debug('file_info          :', file_info);#}
+{#            console.debug('full_paths         :', full_paths);#}
+{#            console.debug('original_filenames :', original_filenames);#}
 
             $.post('{{ request.route_url('assign_reference') }}', {
                 entity_id: entity_id,
@@ -190,7 +190,7 @@
                 // alert the user about the added files
                 // reload references
                 // get the data in jqXHR
-                console.debug('jqXHR : ', jqXHR);
+{#                console.debug('jqXHR : ', jqXHR);#}
                 $('#new_references_storage').text(JSON.stringify(jqXHR));
                 $('#dialog_template').modal('hide');
             }).fail(function(error){
