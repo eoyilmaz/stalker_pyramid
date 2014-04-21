@@ -165,8 +165,9 @@
             current: '{current} of {total}',
             maxWidth: '100%',
             maxHeight: '100%',
-{#            width: '100%',#}
-{#            height: '100%',#}
+            width: '75%',
+            height: '75%',
+            transition: 'none',
             title: function () {
                 var url = $(this).attr('href');
                 var original_title = $(this).attr('title');
@@ -191,12 +192,37 @@
         /**
          * Appends a new item to the thumbnail list
          */
-        var append_thumbnail = function (data, template, animate) {
+        var append_thumbnail = function (options) {
             //
             // adds only one item to the list
             //
             // compile the reference item template
+
+            options = $.extend({
+                data: null,
+                template: null,
+                colorbox_params: {},
+                animate: false
+            }, options);
+
+            var data = options.data;
+            var template = options.template;
+            var colorbox_params = options.colorbox_params;
+            var animate = options.animate;
+
+            // check if there is any video
+            var full_path;
+            full_path = data.full_path;
+            colorbox_params.iframe = false;
+            if (full_path.search('.webm') != -1){
+                console.debug('data: ', data);
+                // it should have video replace the address with video player
+                data.full_path = 'video_player?video_full_path=/' + data.full_path;
+                colorbox_params.iframe = false;
+            }
+
             var ref_item = $($.parseHTML(template(data)));
+
             if (animate) {
                 ref_item.css({display: 'none'});
             }
@@ -204,6 +230,8 @@
             if (animate) {
                 ref_item.toggle('slow');
             }
+
+            ref_item.find('[data-rel="colorbox"]').colorbox(colorbox_params);
         };
 
         /**
@@ -243,10 +271,16 @@
                 // remove any thumbnails first
                 remove_thumbnails();
                 for (var i = 0; i < ref_count; i++) {
-                    append_thumbnail(data[i], referenceItemTemplate);
+                    append_thumbnail({
+                        data: data[i],
+                        template: referenceItemTemplate,
+                        colorbox_params: colorbox_params
+                    });
                 }
 
-                $('.ace-thumbnails [data-rel="colorbox"]').colorbox(colorbox_params);
+{#                $('.ace-thumbnails [data-rel="colorbox"]').colorbox(#}
+{#                        colorbox_params#}
+{#                );#}
 
                 $("#cboxLoadingGraphic").append("<i class='icon-spinner orange'></i>");
 
@@ -336,7 +370,12 @@
                 new_references_storage.text('');
                 var referenceItemTemplate = doT.template(document.getElementById('tmpl_reference_item').text);
                 for (var i = 0; i < data.length; i++) {
-                    append_thumbnail(data[i], referenceItemTemplate, true);
+                    append_thumbnail({
+                        data: data[i],
+                        template: referenceItemTemplate,
+                        colorbox_params: colorbox_params,
+                        animate: true
+                    });
                 }
             });
 

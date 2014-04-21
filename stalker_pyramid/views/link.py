@@ -20,6 +20,7 @@
 import shutil
 import subprocess
 import tempfile
+import datetime
 
 import os
 import logging
@@ -37,7 +38,8 @@ from stalker.db import DBSession
 from stalker import Entity, Link, defaults, Repository, Version
 
 from stalker_pyramid.views import (get_logged_in_user, get_multi_integer,
-                                   get_tags, StdErrToHTMLConverter)
+                                   get_tags, StdErrToHTMLConverter,
+                                   local_to_utc, get_multi_string)
 
 
 logger = logging.getLogger(__name__)
@@ -158,26 +160,20 @@ def replace_img_data_with_links(raw_data):
     renderer='json'
 )
 def upload_files(request):
-    """uploads a list of files to the server, creates Link instances in server
-    and returns the created link ids with a response to let the front end
-    request a linkage between the entity and the uploaded files
+    """Uploads a list of files to the server.
+
+    It will store the files in a temp folder and return the placement of the
+    files in the server to let the front end request a linkage between the
+    entity and the uploaded files, like using them as a reference for some
+    entities or as a thumbnail for others etc.
     """
     # decide if it is single or multiple files
     file_params = request.POST.getall('file')
     logger.debug('file_params: %s ' % file_params)
 
-    new_links = []
+    mm = MediaManager()
     try:
-        new_links_info = MediaManager.upload_files(file_params)
-
-        for new_link_info in new_links_info:
-            new_link_info.update({'created_by': get_logged_in_user(request)})
-            new_link = Link(**new_link_info)
-            new_links.append(new_link)
-
-        # to get link.ids now, we need to do a commit
-        DBSession.add_all(new_links)
-        transaction.commit()
+        new_files_info = mm.upload_with_request_params(file_params)
     except IOError as e:
         c = StdErrToHTMLConverter(e)
         response = Response(c.html())
@@ -185,14 +181,10 @@ def upload_files(request):
         transaction.abort()
         return response
     else:
-        # add them to thd DBSession again
-        # store the link object
-        DBSession.add_all(new_links)
-
-        logger.debug('created links for uploaded files: %s' % new_links)
+        logger.debug('created links for uploaded files: %s' % new_files_info)
 
         return {
-            'link_ids': [link.id for link in new_links]
+            'files': new_files_info
         }
 
 
@@ -236,51 +228,45 @@ def assign_thumbnail(request):
     renderer='json'
 )
 def assign_reference(request):
-    """assigns the link to the given entity as a new reference
+    """assigns the given files as references for the given entity
     """
-    link_ids = get_multi_integer(request, 'link_ids[]')
-    removed_link_ids = get_multi_integer(request, 'removed_link_ids[]')
-    entity_id = request.params.get('entity_id', -1)
+    # files = get_multi_integer(request, 'files[]')
+    full_paths = request.POST.getall('full_paths[]')
+    original_filenames = request.POST.getall('original_filenames[]')
 
+    entity_id = request.params.get('entity_id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
-    links = Link.query.filter(Link.id.in_(link_ids)).all()
-    removed_links = Link.query.filter(Link.id.in_(removed_link_ids)).all()
 
     # Tags
     tags = get_tags(request)
 
     logged_in_user = get_logged_in_user(request)
 
-    logger.debug('link_ids      : %s' % link_ids)
-    logger.debug('links         : %s' % links)
-    logger.debug('entity_id     : %s' % entity_id)
-    logger.debug('entity        : %s' % entity)
-    logger.debug('tags          : %s' % tags)
-    logger.debug('removed_links : %s' % removed_links)
+    logger.debug('full_paths         : %s' % full_paths)
+    logger.debug('original_filenames : %s' % original_filenames)
+    logger.debug('entity_id          : %s' % entity_id)
+    logger.debug('entity             : %s' % entity)
+    logger.debug('tags               : %s' % tags)
 
-    # remove all the removed links
-    for removed_link in removed_links:
-        # no need to search for any linked tasks here
-        DBSession.delete(removed_link)
+    links = []
+    if entity and full_paths:
+        mm = MediaManager()
+        for full_path, original_filename in zip(full_paths, original_filenames):
+            l = mm.upload_reference(entity, open(full_path), original_filename)
+            l.created_by = logged_in_user
+            l.date_created = local_to_utc(datetime.datetime.now())
+            l.date_updated = l.date_created
 
-    if entity and links:
-        entity.references.extend(links)
-
-        # assign all the tags to the links
-        for link in links:
-            # add the ones not in the tags already
             for tag in tags:
-                if tag not in link.tags:
-                    link.tags.append(tag)
-            #link.tags.extend(tags)
-            # generate thumbnail
-            thumbnail = MediaManager.generate_thumbnail(link)
-            link.thumbnail = thumbnail
-            thumbnail.created_by = logged_in_user
-            DBSession.add(thumbnail)
+                if tag not in l.tags:
+                    l.tags.extend(tags)
 
-        DBSession.add(entity)
-        DBSession.add_all(links)
+            DBSession.add(l)
+            links.append(l)
+
+    # to generate ids for links
+    transaction.commit()
+    DBSession.add_all(links)
 
     # return new links as json data
     # in response text
@@ -347,9 +333,9 @@ def get_entity_references(request):
     -- select all links assigned to a project tasks or assigned to a task and its children
 select
     "Links".id,
-    "Links".full_path,
-    "Links".original_filename,
-    "Thumbnails".full_path as "thumbnail_full_path",
+    'repositories/' || "Repositories".id || '/' || "Links_ForWeb".full_path as full_path,
+    "Links_ForWeb".original_filename,
+    'repositories/' || "Repositories".id || '/' || "Thumbnails".full_path as "thumbnail_full_path",
     entity_tags.tags,
     array_agg(tasks.id) as entity_id,
     array_agg(tasks.full_path) as full_path,
@@ -358,9 +344,14 @@ from (
     %(tasks_hierarchical_name_table)s
 ) as tasks
 join "Task_References" on tasks.id = "Task_References".task_id
+join "Tasks" on tasks.id = "Tasks".id
+join "Projects" on "Tasks".project_id = "Projects".id
+join "Repositories" on "Projects".repository_id = "Repositories".id
 join "Links" on "Task_References".link_id = "Links".id
 join "SimpleEntities" as "Link_SimpleEntities" on "Links".id = "Link_SimpleEntities".id
-join "Links" as "Thumbnails" on "Link_SimpleEntities".thumbnail_id = "Thumbnails".id
+join "Links" as "Links_ForWeb" on "Link_SimpleEntities".thumbnail_id = "Links_ForWeb".id
+join "SimpleEntities" as "Links_ForWeb_SimpleEntities" on "Links_ForWeb".id = "Links_ForWeb_SimpleEntities".id
+join "Links" as "Thumbnails" on "Links_ForWeb_SimpleEntities".thumbnail_id = "Thumbnails".id
 left outer join (
     select
         "Links".id,
@@ -374,8 +365,9 @@ left outer join (
 where (%(id)s = any (tasks.path) or tasks.id = %(id)s) %(search_string)s
 
 group by "Links".id,
-    "Links".full_path,
-    "Links".original_filename,
+    "Links_ForWeb".full_path,
+    "Links_ForWeb".original_filename,
+    "Repositories".id,
     "Thumbnails".id,
     entity_tags.tags
 
@@ -412,6 +404,17 @@ limit %(limit)s
     ]
 
     return return_val
+
+@view_config(
+    route_name='video_player',
+    renderer='templates/link/video_player.jinja2'
+)
+def video_player(request):
+    """generates an iframe for video player
+    """
+    return {
+        'video_full_path': request.params.get('video_full_path')
+    }
 
 
 @view_config(route_name='get_project_references_count', renderer='json')
@@ -599,6 +602,30 @@ def force_download_files(request):
     return response
 
 
+@view_config(
+    route_name='serve_repository_files'
+)
+def serve_repository_files(request):
+    """serves files in the stalker repositories
+    """
+    # TODO: check file access
+    repo_id = request.matchdict['id']
+    partial_file_path = request.matchdict['partial_file_path']
+
+    repo = Repository.query.filter_by(id=repo_id).first()
+    # assert isinstance(repo, Repository)
+
+    file_full_path = os.path.join(
+        repo.path,
+        partial_file_path
+    )
+
+    logger.debug('serve_repository_files is running')
+    logger.debug('file_full_path : %s' % file_full_path)
+
+    return FileResponse(file_full_path)
+
+
 class MediaManager(object):
     """Manages media files.
 
@@ -624,20 +651,31 @@ class MediaManager(object):
         self.version_output_path = 'Outputs/Stalker_Pyramid/'
 
         # accepted image formats
-        self.image_formats = ['.jpg', '.jpeg', '.gif', '.png', '.tga', '.tif',
-                              '.tiff', '.exr', '.bmp']
+        self.image_formats = [
+            '.gif', '.ico', '.iff',
+            '.jpg', '.jpeg', '.png', '.tga', '.tif',
+            '.tiff', '.bmp', '.exr',
+        ]
 
         # accepted video formats
-        self.video_formats = ['.mov', '.avi', '.flv', '.mp4', '.mpg', '.mpeg',
-                              '.webm']
+        self.video_formats = [
+            '.3gp', '.a64', '.asf', '.avi', '.dnxhd', '.f4v', '.filmstrip',
+            '.flv', '.h261', '.h263', '.h264', '.ipod', '.m4v', '.matroska',
+            '.mjpeg', '.mov', '.mp4', '.mpeg', '.mpg', '.mpeg1video',
+            '.mpeg2video', '.mv', '.mxf', '.ogg', '.rm', '.swf', '.vc1',
+            '.vcd', '.vob', '.webm'
+        ]
 
         # thumbnail format
-        self.thumbnail_format = '.png'
+        self.thumbnail_format = '.jpg'
         self.thumbnail_width = 512
         self.thumbnail_height = 512
+        self.thumbnail_options = {  # default options for thumbnails
+            'quality': 80
+        }
 
         # images and videos for web
-        self.web_image_format = '.png'
+        self.web_image_format = '.jpg'
         self.web_image_width = 1920
         self.web_image_height = 1080
 
@@ -663,7 +701,7 @@ class MediaManager(object):
         img.thumbnail((2 * self.thumbnail_width, 2 * self.thumbnail_height))
         img.thumbnail((self.thumbnail_width, self.thumbnail_height),
                       Image.ANTIALIAS)
-        img.save(thumbnail_path)
+        img.save(thumbnail_path, **self.thumbnail_options)
         return thumbnail_path
 
     def generate_image_for_web(self, file_full_path):
@@ -742,10 +780,11 @@ class MediaManager(object):
         self.ffmpeg(**{
             'i': [start_thumb_path, mid_thumb_path, end_thumb_path],
             'filter_complex':
-                '[0:0] scale=-1:%(th)s/3, pad=%(tw)s:%(th)s [l]; '
-                '[1:0] scale=-1:%(th)s/3, fade=out:300:30:alpha=1 [m]; '
-                '[2:0] scale=-1:%(th)s/3, fade=out:300:30:alpha=1 [r]; '
-                '[l][m] overlay=0:%(th)s/3 [x]; [x][r] overlay=0:2*%(th)s/3' %
+                "[0:0] scale=3*%(tw)s/4:-1, pad=%(tw)s:%(th)s [s]; "
+                "[1:0] scale=3*%(tw)s/4:-1, fade=out:300:30:alpha=1 [m]; "
+                "[2:0] scale=3*%(tw)s/4:-1, fade=out:300:30:alpha=1 [e]; "
+                "[s][e] overlay=%(tw)s/4:%(th)s-h [x]; "
+                "[x][m] overlay=%(tw)s/8:%(th)s/2-h/2" %
                 {
                     'tw': self.thumbnail_width,
                     'th': self.thumbnail_height
@@ -754,9 +793,9 @@ class MediaManager(object):
         })
 
         # remove the intermediate data
-        os.remove(start_thumb_path)
-        os.remove(mid_thumb_path)
-        os.remove(end_thumb_path)
+        # os.remove(start_thumb_path)
+        # os.remove(mid_thumb_path)
+        # os.remove(end_thumb_path)
         return thumbnail_path
 
     def generate_video_for_web(self, file_full_path):
@@ -844,6 +883,7 @@ class MediaManager(object):
           (ex: SPL/b0/e6/b0e64b16c6bd4857a91be47fb2517b53.jpg)
         :returns: str
         """
+        logger.debug('link_path: %s' % link_path)
         if not isinstance(link_path, (str, unicode)):
             raise TypeError(
                 '"link_path" argument in '
@@ -854,14 +894,14 @@ class MediaManager(object):
                 }
             )
 
-        if not link_path.startswith('SPL'):
-            raise ValueError(
-                '"link_path" argument in '
-                '%(class)s.convert_file_link_to_full_path() method should be '
-                'a str starting with "SPL/"' % {
-                    'class': cls.__name__
-                }
-            )
+        # if not link_path.startswith('SPL'):
+        #     raise ValueError(
+        #         '"link_path" argument in '
+        #         '%(class)s.convert_file_link_to_full_path() method should be '
+        #         'a str starting with "SPL/"' % {
+        #             'class': cls.__name__
+        #         }
+        #     )
 
         spl_prefix = 'SPL/'
         if spl_prefix in link_path:
@@ -1075,6 +1115,7 @@ class MediaManager(object):
         conversion_options = {
             'i': input_path,
             'vcodec': 'libx264',
+            'profile:v': 'main',
             'b:v': '4096k',
             'o': output_path
         }
@@ -1110,6 +1151,79 @@ class MediaManager(object):
 
         return output_path
 
+    def convert_to_prores(self, input_path, output_path, options=None):
+        """Converts the given input to Apple Prores 422 format.
+
+        :param input_path: A string of path, can have wild card characters
+        :param output_path: The output path
+        :param options: Extra options to pass to the ffmpeg command
+        :return:
+        """
+        if options is None:
+            options = {}
+
+        # change the extension to webm
+        output_path = '%s%s' % (os.path.splitext(output_path)[0], '.mov')
+
+        conversion_options = {
+            'i': input_path,
+            'probesize': 5000000,
+            'f': 'image2',
+            'profile:v': 3,
+            'qscale:v': 13,  # use between 9 - 13
+            'vcodec': 'prores_ks',
+            'vendor': 'ap10',
+            'pix_fmt': 'yuv422p10le',
+            'o': output_path
+        }
+        conversion_options.update(options)
+
+        self.ffmpeg(**conversion_options)
+
+        return output_path
+
+    def convert_to_mjpeg(self, input_path, output_path, options=None):
+        """Converts the given input to Apple Motion Jpeg format.
+
+        :param input_path: A string of path, can have wild card characters
+        :param output_path: The output path
+        :param options: Extra options to pass to the ffmpeg command
+        :return:
+        """
+        if options is None:
+            options = {}
+
+        # change the extension to webm
+        output_path = '%s%s' % (os.path.splitext(output_path)[0], '.mov')
+
+        # ffmpeg -y
+        # -probesize 5000000
+        # -f image2
+        # -r 48
+        # -force_fps
+        # -i ${DPX_HERO}
+        # -c:v mjpeg
+        # -qscale:v 1
+        # -vendor ap10
+        # -pix_fmt yuvj422p
+        # -s 2048x1152
+        # -r 48 output.mov
+        conversion_options = {
+            'i': input_path,
+            'probesize': 5000000,
+            'f': 'image2',
+            'qscale:v': 1,
+            'vcodec': 'mjpeg',
+            'vendor': 'ap10',
+            'pix_fmt': 'yuv422p',
+            'o': output_path
+        }
+        conversion_options.update(options)
+
+        self.ffmpeg(**conversion_options)
+
+        return output_path
+
     @classmethod
     def convert_to_animated_gif(cls, input_path, output_path, options=None):
         """converts the given input to animated gif
@@ -1135,8 +1249,7 @@ class MediaManager(object):
 
         return output_path
 
-    @classmethod
-    def upload_with_request_params(cls, file_params):
+    def upload_with_request_params(self, file_params):
         """upload objects with request params
 
         :param file_params: An object with two attributes, first a
@@ -1147,12 +1260,11 @@ class MediaManager(object):
         for file_param in file_params:
             filename = file_param.filename
             file_object = file_param.file
-            extension = os.path.splitext(filename)[1]
 
             # upload to a temp path
-            uploaded_file_full_path = cls.upload_file(
+            uploaded_file_full_path = self.upload_file(
                 file_object,
-                tempfile.mktemp(suffix=extension),
+                tempfile.mkdtemp(),
                 filename
             )
 

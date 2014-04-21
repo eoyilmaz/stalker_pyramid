@@ -31,7 +31,7 @@ from stalker import Task, TimeLog, Version, Link, Entity, defaults
 
 from stalker_pyramid.views import (get_logged_in_user, get_user_os,
                                    PermissionChecker, get_multi_integer)
-from stalker_pyramid.views.link import convert_file_link_to_full_path
+from stalker_pyramid.views.link import MediaManager
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -142,7 +142,7 @@ def assign_version(request):
 
     if task and link:
         # delete the link and create a version instead
-        full_path = convert_file_link_to_full_path(link.full_path)
+        full_path = MediaManager.convert_file_link_to_full_path(link.full_path)
         take_name = request.params.get('take_name', defaults.version_take_name)
         publish = bool(request.params.get('publish'))
 

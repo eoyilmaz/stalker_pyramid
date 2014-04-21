@@ -25,7 +25,7 @@ import pyramid_beaker
 
 from zope.sqlalchemy import ZopeTransactionExtension
 
-__version__ = '0.1.7'
+__version__ = '0.1.9'
 
 
 # before anything about stalker create the defaults
@@ -304,6 +304,12 @@ def main(global_config, **settings):
 
     config.add_route('list_repositories', 'repositories/list')  # html
     config.add_route('get_repositories', 'repositories/')  # json
+
+    # serve files in repository
+    config.add_route('serve_repository_files',
+                     'repositories/{id}/{partial_file_path:[a-zA-Z0-9/\._]*}')
+
+    config.add_route('video_player', 'video_player')  #html
 
     # *************************************************************************
     # Structure

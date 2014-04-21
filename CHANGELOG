@@ -2,6 +2,41 @@
 Stalker Pyramid Changes
 =======================
 
+0.1.9
+=====
+
+* **New:** References are now stored in the *Project Repository* instead of
+  *Stalker Pyramid Local Storage*, allowing much bigger files to be uploaded
+  (like videos). They are following the FilenameTemplate rules so the files are
+  correctly placed under the Task folder (see Stalker documentation).
+* **New:** Video files are now supported as both references and version
+  outputs and a thumbnail is correctly created from the first, middle and last
+  frames of the video. Also a version for web view (in WebM format) is saved
+  under "{{Task}}/References/StalkerPyramid/ForWeb/" folder.
+* **New:** Entity references are now searchable with their tags, original file
+  names or entity full name.
+* **New:** List Entity References page is now paginated.
+* **New:** Fully implemented ``Paginator.js`` a jQuery pagination plugin.
+* **Fix:** Users are not allowed to create TimeLogs for future dates.
+* **Update:** Updated the SQL query for getting hierarchical Task names to a
+  much better one, which allows *Depth First* or *Breadth First* sorting.
+* **Fix:** Fixed performance issue in GanttChart drawing by using a pure SQL
+  query in ``views.tasks.convert_to_dgrid_gantt_project_format()``.
+* **Update:** Task Scheduling process UI is now much more informative. Allowing
+  the user to be informed about when the process is going to end by showing a
+  progress bar.
+* **New:** Centralized the Task Scheduling, so that only one user at a time is
+  allowed to schedule the tasks, preventing any clashes and unnecessary system
+  load.
+* **Update:** The calendar is now drawn way faster than before thaks to pure
+  SQL queries.
+* **Update:** Extended search functionality.
+* **Update:** ``minute`` time unit is added to GanttChart.
+* **Update:** Updated the mail content so two different emails are sent to the
+  responsible and resources upon review request.
+* **Update:** ``Shot.cut_in`` and ``Shot.cut_out`` attributes are now correctly
+  updated (there was a bug in Stalker).
+
 0.1.8
 =====
 

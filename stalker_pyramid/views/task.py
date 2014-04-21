@@ -46,7 +46,7 @@ from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
                                    dummy_email_address, local_to_utc,
                                    get_user_os)
 from stalker_pyramid.views.link import (replace_img_data_with_links,
-                                        convert_file_link_to_full_path)
+                                        MediaManager)
 from stalker_pyramid.views.type import query_type
 
 
@@ -635,7 +635,7 @@ def inline_update_task(request):
                     link.created_by = logged_in_user
 
                     # manage attachments
-                    link_full_path = convert_file_link_to_full_path(link.full_path)
+                    link_full_path = MediaManager.convert_file_link_to_full_path(link.full_path)
                     link_data = open(link_full_path, "rb").read()
 
                     link_extension = os.path.splitext(link.filename)[1].lower()
