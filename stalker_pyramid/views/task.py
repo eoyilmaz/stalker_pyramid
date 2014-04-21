@@ -81,7 +81,8 @@ def query_of_tasks_hierarchical_name_table():
         recursive_task.id,
         recursive_task.path,
         recursive_task.path_names,
-        "SimpleEntities".name || ' (' || recursive_task.id || ') (' || recursive_task.path_names || ')' as full_path
+        "SimpleEntities".name || ' (' || recursive_task.id || ') (' || recursive_task.path_names || ')' as full_path,
+        "SimpleEntities".entity_type
     from recursive_task
     join "SimpleEntities" on recursive_task.id = "SimpleEntities".id
     order by path

@@ -63,15 +63,31 @@
     </div>
     <div class="space-8"></div>
     <div class="row-fluid">
+        <div class="row-fluid ">
+            
+            <div class="span6">
+                <div class="pagination" style="margin: 0"></div>
+            </div>
+
+            <div class="span6">
+                <div class="search pull-right" id="reference-search">
+                    <form class="form-search">
+                        <input id="reference_search_field" type="text" class="input-medium search-query"/>
+                        <button class="btn btn-purple btn-small"
+                                id="reference_do_search_button">
+                            Search
+                            <i class="icon-search icon-on-right bigger-110"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+
         <div class="row-fluid">
             <div id="new_references_storage" class="hidden"></div>
             <ul class="ace-thumbnails"></ul>
         </div>
-
-        <div class="row-fluid pull-right">
-            <div class="pagination"></div>
-        </div>
-
     </div>
 {% endblock page_content %}
 
@@ -138,15 +154,19 @@
 
     <script type="text/javascript">
         var colorbox_params = {
+            rel: 'References',
+            loop: false,
             reposition: true,
             scalePhotos: true,
-            scrolling: false,
+            scrolling: true,
             previous: '<i class="icon-arrow-left"></i>',
             next: '<i class="icon-arrow-right"></i>',
             close: '&times;',
             current: '{current} of {total}',
             maxWidth: '100%',
             maxHeight: '100%',
+{#            width: '100%',#}
+{#            height: '100%',#}
             title: function () {
                 var url = $(this).attr('href');
                 var original_title = $(this).attr('title');
@@ -158,12 +178,13 @@
             },
             onOpen: function () {
                 document.body.style.overflow = 'hidden';
+                // get the element and check if it is the last element
             },
             onClosed: function () {
                 document.body.style.overflow = 'auto';
             },
             onComplete: function () {
-                $.colorbox.resize();
+{#                $.colorbox.resize();#}
             }
         };
 
@@ -186,29 +207,47 @@
         };
 
         /**
+         * Removes the thumbnails from list
+         */
+        var remove_thumbnails = function(){
+            var cb_element = $('.ace-thumbnails');
+            cb_element.children().remove('*');
+            cb_element.colorbox.remove();
+        };
+
+        /**
          * Draws reference items
          */
         var draw_reference_items = function (options) {
             var referenceItemTemplate = doT.template(document.getElementById('tmpl_reference_item').text);
-            
-            var current_page = options.current_page || 1;
-            var items_per_page = options.items_per_page || 100000;
+
+            options = $.extend({
+                current_page: 1,
+                items_per_page: 40,
+                url: '/entities/{{ entity.id }}/references/',
+                search: ''
+            }, options);
+
+            var current_page = options.current_page;
+            var items_per_page = options.items_per_page;
 
             var offset = (current_page - 1) * items_per_page;
-            var limit = items_per_page;
-
             // now generate the template items
-            $.getJSON('/entities/{{ entity.id }}/references/',
+            $.getJSON(options.url,
                       $.param({
                           'offset': offset,
-                          'limit': limit
+                          'limit': items_per_page,
+                          'search': options.search
                       })).then(function (data) {
                 var ref_count = data.length;
+                // remove any thumbnails first
+                remove_thumbnails();
                 for (var i = 0; i < ref_count; i++) {
                     append_thumbnail(data[i], referenceItemTemplate);
                 }
 
                 $('.ace-thumbnails [data-rel="colorbox"]').colorbox(colorbox_params);
+
                 $("#cboxLoadingGraphic").append("<i class='icon-spinner orange'></i>");
 
                 $('.reference-deleter').on('click', function (e) {
@@ -236,35 +275,95 @@
             });
         };
 
+        /**
+         * Creates the paginator
+         * 
+         * @param options
+         *   Options for this function
+         */
+        var create_paginator = function (options) {
+
+            options = $.extend({
+                total_number_of_items: 0,
+                items_per_page: 40,
+                current_page: 1
+            }, options);
+
+            $('.pagination').paginator({
+                'number_of_items': options.total_number_of_items,
+                'items_per_page': options.items_per_page,
+                'current_page': options.current_page,
+                'callback': function(current_page_number){
+                    // get search string
+                    var search_string = $('#reference_search_field').val();
+    
+                    draw_reference_items({
+                        current_page: current_page_number,
+                        items_per_page: options.items_per_page,
+                        search: search_string
+                    });
+                }
+            });
+        };
+
         $(function () {
             // create pagination
-            var items_per_page = 10000;
-            var current_page = parseInt($('.pagination>ul').find('li.active').text()) || 1;
-            var total_number_of_results;
+            var items_per_page = 40;
+            var total_number_of_items;
+            var count_url = '/entities/{{ entity.id }}/references/count/';
 
             // get total number of references
-            $.getJSON('/entities/{{ entity.id }}/references/count/', function(data){
-                total_number_of_results = data;
-                console.log('total_number_of_results:', total_number_of_results);
-                // remove all pages first
-                $('#pagination').paginator();
+            $.getJSON(count_url, function(data){
+                total_number_of_items = data;
+                create_paginator({
+                    total_number_of_items: total_number_of_items,
+                    items_per_page: items_per_page
+                });
             });
 
             // for initial one
-            draw_reference_items({});
+            draw_reference_items({
+                current_page: 1,
+                items_per_page: items_per_page
+            });
 
             // and add the new thumbnails when uploaded through Dropzone
             $('#dialog_template').on('hidden', function () {
                 // get the data from the storage
-                var data = $.parseJSON($('#new_references_storage').text());
+                var new_references_storage = $('#new_references_storage');
+                var data = $.parseJSON(new_references_storage.text());
                 // empty the storage
-                $('#new_references_storage').text('');
+                new_references_storage.text('');
                 var referenceItemTemplate = doT.template(document.getElementById('tmpl_reference_item').text);
                 for (var i = 0; i < data.length; i++) {
                     append_thumbnail(data[i], referenceItemTemplate, true);
                 }
             });
+
+            $('#reference_do_search_button').on('click', function(e){
+                e.preventDefault();
+                e.stopPropagation();
+
+                // get search string
+                var search_string = $('#reference_search_field').val();
+                $.getJSON(count_url,
+                    $.param({
+                      'search': search_string
+                    })).then(function (data) {
+
+                    create_paginator({
+                        total_number_of_items: data,
+                        items_per_page: items_per_page
+                    });
+
+                    draw_reference_items({
+                        current_page: 1,
+                        items_per_page: items_per_page,
+                        search: search_string
+                    });
+                });
+            });
+
         });
     </script>
-
 {% endblock extrascripts %}

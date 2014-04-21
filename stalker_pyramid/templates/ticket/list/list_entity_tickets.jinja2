@@ -40,8 +40,6 @@
     {% set add_button_address=request.route_url("create_ticket_dialog", id=-1, _query={'project_id': entity.project_id, 'task_id':entity.id }) %}
     {% endif %}
 
-
-
     {% set address=request.route_path('get_entity_tickets', id=entity.id) %}
     {% set list_item_type='Ticket' %}
     {% include 'components/data_table.jinja2' %}
@@ -50,9 +48,6 @@
 
 
 {% block extrascripts %}
-
-
-
     {% raw %}
     <script id="tmpl_itemThead" type="text/x-dot-template">
 
@@ -80,12 +75,14 @@
         </td>
         <td class='ticket_{{= it.priority }}'>
             <div class='ticket_{{= it.status }}'>
-                <a href='/projects/{{=it.project_id }}/view'>{{=it.project_name}}</a></td>
+                <a href='/projects/{{=it.project_id }}/view'>{{=it.project_name}}</a>
             </div>
+        </td>
         <td class="ticket_{{= it.priority }} hidden-480">
             <div class='ticket_{{= it.status }}'>
-                <a href='/tickets/{{=it.id }}/view'>{{=it.summary}}</a></td>
+                <a href='/tickets/{{=it.id }}/view'>{{=it.summary}}</a>
             </div>
+        </td>
         <td>
             <div class='ticket_{{= it.status }}'>{{=it.type}}</div>
         </td>
@@ -109,16 +106,10 @@
 {% endraw %}
 
     <script>
-
-        var tableParameters = {"aoColumns": [{'sType': 'num-html'}, null, null, null, null, null, null, null, null]}
-        var sortingParameters = [[0, 'desc']]
-        var tableDataAddress = '{{ request.route_path('get_entity_tickets', id=entity.id) }}'
-
-     console.log('tableDataAddress' + tableDataAddress)
-
+        var tableParameters = {"aoColumns": [{'sType': 'num-html'}, null, null, null, null, null, null, null, null]};
+        var sortingParameters = [[0, 'desc']];
+        var tableDataAddress = '{{ request.route_path('get_entity_tickets', id=entity.id) }}';
     </script>
-
-
 
 <script>
 {#    // fill tickets table with dynamic data#}

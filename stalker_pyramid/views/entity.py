@@ -908,7 +908,7 @@ def delete_entity_dialog(request):
 
 @view_config(
     route_name='delete_entity',
-     permission='Delete_Task'
+    permission='Delete_Task'
 )
 def delete_entity(request):
     """deletes the task with the given id
