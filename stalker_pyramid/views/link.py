@@ -543,15 +543,32 @@ def delete_reference(request):
     ref = Link.query.get(ref_id)
 
     files_to_remove = []
+    references_to_delete = []
+
     if ref:
+        logger.debug('ref.id         : %s' % ref.id)
         original_filename = ref.original_filename
-        # check if it has a thumbnail
-        if ref.thumbnail:
+        # check if it has a web version
+        web_version = ref.thumbnail
+        if web_version:
+            logger.debug('web_version.id : %s' % web_version.id)
             # remove the file first
-            files_to_remove.append(ref.thumbnail.full_path)
+            files_to_remove.append(web_version.full_path)
+
+            # also check the thumbnail
+            thumbnail = web_version.thumbnail
+
+            if thumbnail:
+                logger.debug('thumbnail      : %s' % thumbnail)
+                # remove the file first
+                files_to_remove.append(thumbnail.full_path)
+
+                # delete the thumbnail Link from the database
+                references_to_delete.append(thumbnail)
 
             # delete the thumbnail Link from the database
-            DBSession.delete(ref.thumbnail)
+            references_to_delete.append(web_version)
+
         # remove the reference itself
         files_to_remove.append(ref.full_path)
 
@@ -559,17 +576,28 @@ def delete_reference(request):
         # IMPORTANT: Because there is no link from Link -> Task deleting a Link
         #            directly will raise an IntegrityError, so remove the Link
         #            from the associated Task before deleting it
+        prefix = ''
         from stalker import Task
         for task in Task.query.filter(Task.references.contains(ref)).all():
             logger.debug('%s is referencing %s, '
                          'breaking this relation' % (task, ref))
             task.references.remove(ref)
-        DBSession.delete(ref)
+            if prefix == '':
+                # get the repository
+                repo = task.project.repository
+                prefix = repo.path
+
+        references_to_delete.append(ref)
+
+        # delete Links from database
+        for r in references_to_delete:
+            DBSession.delete(r)
 
         # now delete files
         for f in files_to_remove:
             # convert the paths to system path
-            f_system = MediaManager.convert_file_link_to_full_path(f)
+            f_system = os.path.join(prefix, f)
+            logger.debug('deleting : %s' % f_system)
             try:
                 os.remove(f_system)
             except OSError:
