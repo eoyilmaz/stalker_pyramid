@@ -213,7 +213,6 @@ class MediaManagerTestCase(unittest2.TestCase):
         })
         db.DBSession.flush()
         db.DBSession.commit()
-        # transaction.commit()
 
     def tearDown(self):
         """clean up the test
@@ -221,10 +220,10 @@ class MediaManagerTestCase(unittest2.TestCase):
         shutil.rmtree(defaults.server_side_storage_path)
 
         # remove generic_temp_folder
-        # shutil.rmtree(self.temp_test_data_folder, ignore_errors=True)
+        shutil.rmtree(self.temp_test_data_folder, ignore_errors=True)
 
         # remove repository
-        # shutil.rmtree(self.test_repo_path, ignore_errors=True)
+        shutil.rmtree(self.test_repo_path, ignore_errors=True)
 
         # clean up test database
         # from stalker.db.declarative import Base
@@ -326,32 +325,49 @@ class MediaManagerTestCase(unittest2.TestCase):
         )
         self.assertEqual(
             result,
-            [
-                {
-                    'pix_fmt': 'yuv444p',
-                    'index': '0',
-                    'codec_tag': '0x31637661',
-                    'level': '30',
-                    'r_frame_rate': '25/1',
+            {
+                'video_info': {
+                    'TAG:encoder': 'Lavf55.19.104',
+                    'nb_streams': '1',
                     'start_time': '0.000000',
-                    'time_base': '1/12800',
-                    'codec_tag_string': 'avc1',
-                    'codec_type': 'video',
-                    'has_b_frames': '2',
-                    'width': '640',
-                    'codec_name': 'h264',
-                    'codec_long_name': 'H.264 / AVC / MPEG-4 AVC / MPEG-4 '
-                                       'part 10',
-                    'display_aspect_ratio': '8:5',
-                    'sample_aspect_ratio': '1:1',
-                    'TAG:language': 'und',
-                    'height': '400',
-                    'nb_frames': '10',
-                    'codec_time_base': '1/50',
-                    'duration': '0.320000',
-                    'avg_frame_rate': '125/4'
-                }
-            ]
+                    'format_long_name':
+                        'QuickTime/MPEG-4/Motion JPEG 2000 format',
+                    'format_name': 'mov,mp4,m4a,3gp,3g2,mj2',
+                    'filename': self.test_video_path_mp4,
+                    'TAG:compatible_brands': 'isomiso2avc1mp41',
+                    'bit_rate': '2163440.000000',
+                    'TAG:major_brand': 'isom',
+                    'duration': '0.400000',
+                    'TAG:minor_version': '512',
+                    'size': '108172.000000'
+                },
+                'stream_info': [
+                    {
+                        'pix_fmt': 'yuv444p',
+                        'index': '0',
+                        'codec_tag': '0x31637661',
+                        'level': '30',
+                        'r_frame_rate': '25/1',
+                        'start_time': '0.000000',
+                        'time_base': '1/12800',
+                        'codec_tag_string': 'avc1',
+                        'codec_type': 'video',
+                        'has_b_frames': '2',
+                        'width': '640',
+                        'codec_name': 'h264',
+                        'codec_long_name':
+                            'H.264 / AVC / MPEG-4 AVC / MPEG-4 part 10',
+                        'display_aspect_ratio': '8:5',
+                        'sample_aspect_ratio': '1:1',
+                        'TAG:language': 'und',
+                        'height': '400',
+                        'nb_frames': '10',
+                        'codec_time_base': '1/50',
+                        'duration': '0.320000',
+                        'avg_frame_rate': '125/4'
+                    }
+                ]
+            }
         )
 
     def test_generate_thumbnail_with_image_files_is_working_properly(self):
@@ -380,6 +396,7 @@ class MediaManagerTestCase(unittest2.TestCase):
                 # '/home/eoyilmaz/Videos/14078313.mp4'
                 # '/home/eoyilmaz/Videos/omo_MMR_30sn_040812.mov'
                 # '/home/eoyilmaz/Videos/CG/BreakDowns/Commercials/Adidas-Carry/Carry_adidas_carry_60.mov'
+                # '/home/eoyilmaz/Videos/Photography/Nikon_D3_vs_D3s.flv'
             )
 
         # check if thumbnail is properly generated

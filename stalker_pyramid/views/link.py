@@ -21,11 +21,12 @@ import shutil
 import subprocess
 import tempfile
 import datetime
-
+import copy
 import os
 import logging
 import uuid
 import base64
+
 import transaction
 from HTMLParser import HTMLParser
 from PIL import Image
@@ -84,7 +85,6 @@ class ImgToLinkConverter(HTMLParser):
         self.raw_data = data
 
     def handle_starttag(self, tag, attrs):
-        # print tag, attrs
         attrs_dict = {}
         if tag == 'img':
             # convert attributes to a dict
@@ -754,19 +754,43 @@ class MediaManager(object):
         # TODO: split this in to two different methods, one generating
         #       thumbnails from the video and another one accepting three
         #       images
-        video_info = self.get_video_info(file_full_path)
+        media_info = self.get_video_info(file_full_path)
+        video_info = media_info['video_info']
+
         # get the correct stream
         video_stream = None
-        for stream in video_info:
+        for stream in media_info['stream_info']:
             if stream['codec_type'] == 'video':
                 video_stream = stream
 
-        try:
-            nb_frames = int(video_stream['nb_frames'])
-        except KeyError:
+        nb_frames = video_stream.get('nb_frames')
+        if nb_frames is None:
             # no nb_frames
-            # generate only from first frame
-            nb_frames = 4
+            # first try to use "r_frame_rate" and "duration"
+            frame_rate = video_stream.get('r_frame_rate')
+
+            if frame_rate is None:  # still no frame rate
+                # try to use the video_info and duration
+                # and try to get frame rate
+                frame_rate = float(video_info.get('TAG:framerate', 23.976))
+            else:
+                # check if it is in Number/Number format
+                if '/' in frame_rate:
+                    nominator, denominator = frame_rate.split('/')
+                    frame_rate = float(nominator)/float(denominator)
+
+            # get duration
+            duration = video_stream.get('duration')
+            if duration == 'N/A':  # no duration
+                duration = float(video_info.get('duration', 1))
+            # else:
+            #     duration = float(duration)
+
+            # at this stage we should have enough info, may not be correct but
+            # we should have something
+            # calculate nb_frames
+            nb_frames = int(duration * frame_rate)
+        nb_frames = int(nb_frames)
 
         start_thumb_path = tempfile.mktemp(suffix=self.thumbnail_format)
         mid_thumb_path = tempfile.mktemp(suffix=self.thumbnail_format)
@@ -775,24 +799,28 @@ class MediaManager(object):
         thumbnail_path = tempfile.mktemp(suffix=self.thumbnail_format)
 
         # generate three thumbnails from the start, middle and end of the file
+        start_frame = int(nb_frames * 0.10)
+        mid_frame = int(nb_frames * 0.5)
+        end_frame = int(nb_frames * 0.90)
+
         #start_frame
         self.ffmpeg(**{
             'i': file_full_path,
             'vf': "select='eq(n, 0)'",
-            'vframes': 1,
+            'vframes': start_frame,
             'o': start_thumb_path
         })
         #mid_frame
         self.ffmpeg(**{
             'i': file_full_path,
-            'vf': "select='eq(n, %s)'" % (int(nb_frames/2.0)),
+            'vf': "select='eq(n, %s)'" % mid_frame,
             'vframes': 1,
             'o': mid_thumb_path
         })
         #end_frame
         self.ffmpeg(**{
             'i': file_full_path,
-            'vf': "select='eq(n, %s)'" % (nb_frames - 2),
+            'vf': "select='eq(n, %s)'" % end_frame,
             'vframes': 1,
             'o': end_thumb_path
         })
@@ -814,9 +842,9 @@ class MediaManager(object):
         })
 
         # remove the intermediate data
-        # os.remove(start_thumb_path)
-        # os.remove(mid_thumb_path)
-        # os.remove(end_thumb_path)
+        os.remove(start_thumb_path)
+        os.remove(mid_thumb_path)
+        os.remove(end_thumb_path)
         return thumbnail_path
 
     def generate_video_for_web(self, file_full_path):
@@ -982,35 +1010,54 @@ class MediaManager(object):
             'show_streams': full_path,
         })
 
-        video_info = []
+        media_info = {
+            'video_info': None,
+            'stream_info': []
+        }
+        video_info = {}
         stream_info = {}
 
-        print output_buffer
-
-        import copy
-
+        # get STREAM info
         line = output_buffer.pop(0).strip()
         while line is not None:
             if line == '[STREAM]':
                 # pop until you find [/STREAM]
                 while line != '[/STREAM]':
-                    print line
                     if '=' in line:
                         flag, value = line.split('=')
                         stream_info[flag] = value
                     line = output_buffer.pop(0).strip()
 
                 copy_stream = copy.deepcopy(stream_info)
-                video_info.append(copy_stream)
+                media_info['stream_info'].append(copy_stream)
                 stream_info = {}
-
             try:
                 line = output_buffer.pop(0).strip()
             except IndexError:
                 line = None
 
-        print video_info
-        return video_info
+        # also get FORMAT info
+        output_buffer = self.ffprobe(**{
+            'show_format': full_path,
+        })
+
+        line = output_buffer.pop(0).strip()
+        while line is not None:
+            if line == '[FORMAT]':
+                # pop until you find [/FORMAT]
+                while line != '[/FORMAT]':
+                    if '=' in line:
+                        flag, value = line.split('=')
+                        video_info[flag] = value
+                    line = output_buffer.pop(0).strip()
+
+                media_info['video_info'] = video_info
+            try:
+                line = output_buffer.pop(0).strip()
+            except IndexError:
+                line = None
+
+        return media_info
 
     def ffmpeg(self, **kwargs):
         """A simple python wrapper for ``ffmpeg`` command.
