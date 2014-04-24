@@ -309,6 +309,12 @@ def main(global_config, **settings):
     config.add_route('serve_repository_files',
                      'repositories/{id}/{partial_file_path:[a-zA-Z0-9/\._\-\+\(\)]*}')
 
+    config.add_route(
+        'forced_download_repository_files',
+        'FDrepositories/{id}/{partial_file_path:[a-zA-Z0-9/\._\-\+\(\)]*}'
+    )
+
+
     config.add_route('video_player', 'video_player')  #html
 
     # *************************************************************************

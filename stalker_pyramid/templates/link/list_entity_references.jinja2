@@ -146,7 +146,11 @@
                     </ul>
                 </div>
 
-                <a class='reference-deleter' ref_id="{{=it.id}}" href="#" title="Delete"><i class="icon-remove red"></i></a>
+                <a class='reference-deleter'
+                   ref_id="{{=it.id}}"
+                   ref_file_name="{{=it.original_filename}}"
+                   href="#"
+                   title="Delete"><i class="icon-remove red"></i></a>
             </div>
         </li>
     </script>
@@ -288,9 +292,13 @@
                     e.preventDefault();
                     e.stopPropagation();
                     var self = $(this);
-                    bootbox.confirm('Delete ?', function (response) {
+                    var ref_id = self.attr('ref_id');
+                    var ref_file_name = self.attr('ref_file_name');
+
+                    var confirm_message = 'Delete ' + ref_file_name + ' ?';
+                    
+                    bootbox.confirm(confirm_message, function (response) {
                         if (response) {
-                            var ref_id = self.attr('ref_id');
                             console.debug('will delete ' + ref_id);
                             // remove the reference in the server
                             var url = '/references/' + ref_id + '/delete';
@@ -364,12 +372,18 @@
             // and add the new thumbnails when uploaded through Dropzone
             $('#dialog_template').on('hidden', function () {
                 // get the data from the storage
+                var repo_id = {{ entity.project.repository.id }};
+                var repo_prepend = 'repositories/' + repo_id + '/';
                 var new_references_storage = $('#new_references_storage');
                 var data = $.parseJSON(new_references_storage.text());
                 // empty the storage
                 new_references_storage.text('');
                 var referenceItemTemplate = doT.template(document.getElementById('tmpl_reference_item').text);
                 for (var i = 0; i < data.length; i++) {
+                    // prepend repsoitories/{id}/ to make it compatible with the
+                    // new style references
+                    data[i].thumbnail_full_path = repo_prepend + data[i].thumbnail_full_path;
+                    data[i].full_path = repo_prepend + data[i].full_path;
                     append_thumbnail({
                         data: data[i],
                         template: referenceItemTemplate,

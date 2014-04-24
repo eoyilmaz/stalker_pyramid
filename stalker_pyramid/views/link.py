@@ -646,6 +646,41 @@ def serve_repository_files(request):
 
 
 @view_config(
+    route_name='forced_download_repository_files'
+)
+def force_download_repository_files(request):
+    """serves files but forces to download
+    """
+    # TODO: check file access
+    partial_file_path = request.matchdict['partial_file_path']
+    repo_id = request.matchdict['id']
+
+    repo = Repository.query.filter_by(id=repo_id).first()
+
+    file_full_path = os.path.join(
+        repo.path,
+        partial_file_path
+    )
+
+    # get the link to get the original file name
+    link = Link.query.filter(Link.full_path == partial_file_path).first()
+    if link:
+        original_filename = link.original_filename
+    else:
+        original_filename = os.path.basename(file_full_path)
+
+    response = FileResponse(
+        file_full_path,
+        request=request,
+        content_type='application/force-download',
+    )
+    # update the content-disposition header
+    response.headers['content-disposition'] = \
+        str('attachment; filename=' + original_filename)
+    return response
+
+
+@view_config(
     route_name='video_player',
     renderer='templates/link/video_player.jinja2'
 )
