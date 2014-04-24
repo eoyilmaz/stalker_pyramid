@@ -80,6 +80,7 @@
 
             // trigger another update
         task_depends_to.trigger('liszt:updated');
+        submit_button.button('loading')
 
         $.getJSON('{{ request.route_url("get_project_tasks", id=entity.project.id) }}').then(function(data){
             console.log('data.length:', data.length);
@@ -115,6 +116,8 @@
             task_depends_to.val(depends_to);
             // trigger another update
             task_depends_to.trigger('liszt:updated');
+
+            submit_button.button('reset')
 
 
         });

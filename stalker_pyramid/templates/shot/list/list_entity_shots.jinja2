@@ -172,7 +172,7 @@
                                data-toggle="modal"
                                data-keyboard=false
                                href='/tasks/{{=it.id }}/update/schedule_timing/dialog'>
-                                <i class="icon-edit bigger-130"></i>
+                                <i class="icon-time bigger-130"></i>
                             </a>
 
                         {{ } }}
@@ -185,6 +185,7 @@
                             <span id='schedule_timing_{{=it.id}}'>{{=it.schedule_timing}}</span>
                             <span id='schedule_unit_{{=it.id}}'>{{=it.schedule_unit }}</span>
                         {{ } }}
+
                         <br/>
                     </div>
 
@@ -198,6 +199,17 @@
                     {{ } else {}}
                         <br/>
                         {{=it.status}}
+                        {{ if (it.update_shot_action) { }}
+
+                            <a class="white pull-right"
+                               data-target="#dialog_template"
+                               data-toggle="modal"
+                               data-keyboard=false
+                               href='/tasks/{{=it.id }}/update/dependencies/dialog'>
+                                <i class="icon-plus bigger-130"></i>
+                            </a>
+
+                        {{ } }}
                     {{ } }}
                 </span>
             </div>
