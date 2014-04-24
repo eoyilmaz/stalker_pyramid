@@ -483,7 +483,7 @@ select count(1) from (
     left outer join "Entity_Tags" on "Links".id = "Entity_Tags".entity_id
     left outer join "SimpleEntities" as "Tag_SimpleEntities" on "Entity_Tags".tag_id = "Tag_SimpleEntities".id
 
-    where (108 = any (tasks.path) or tasks.id = 108) %(search_string)s
+    where (%(id)s = any (tasks.path) or tasks.id = %(id)s) %(search_string)s
 
     group by "Links".id,
         "Links".original_filename
