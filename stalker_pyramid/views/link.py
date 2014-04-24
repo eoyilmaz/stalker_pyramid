@@ -329,11 +329,12 @@ def get_entity_references(request):
         for i, s in enumerate(search_string.split(' ')):
             if i != 0:
                 search_string_buffer.append('and')
-            tmp_search_query = """
+            tmp_search_query = """(
             "Tag_SimpleEntities".name ilike '%(search_wide)s'
             or tasks.entity_type = '%(search_str)s'
             or tasks.full_path ilike '%(search_wide)s'
             or "Links".original_filename ilike '%(search_wide)s'
+            )
             """ % {
                 'search_str': s,
                 'search_wide': '%{s}%'.format(s=s)
@@ -351,7 +352,6 @@ def get_entity_references(request):
     # some fancy queries like getting all the references of tasks of a project
     # also with their tags
     sql_query = """
-    -- select all links assigned to a project tasks or assigned to a task and its children
     -- select all links assigned to a project tasks or assigned to a task and its children
 select * from (
     select
@@ -453,10 +453,12 @@ def get_entity_references_count(request):
             if i != 0:
                 search_string_buffer.append('and')
             tmp_search_query = """
+            (
             "Tag_SimpleEntities".name ilike '%(search_wide)s'
             or tasks.entity_type = '%(search_str)s'
             or tasks.full_path ilike '%(search_wide)s'
             or "Links".original_filename ilike '%(search_wide)s'
+            )
             """ % {
                 'search_str': s,
                 'search_wide': '%{s}%'.format(s=s)
