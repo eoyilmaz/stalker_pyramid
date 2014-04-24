@@ -352,48 +352,57 @@ def get_entity_references(request):
     # also with their tags
     sql_query = """
     -- select all links assigned to a project tasks or assigned to a task and its children
-select
-    "Links".id,
-    'repositories/' || "Repositories".id || '/' || "Links_ForWeb".full_path as full_path,
-    "Links_ForWeb".original_filename,
-    'repositories/' || "Repositories".id || '/' || "Thumbnails".full_path as "thumbnail_full_path",
-    array_agg("Tag_SimpleEntities".name) as tags,
-    array_agg(tasks.id) as entity_id,
-    array_agg(tasks.full_path) as full_path,
-    array_agg(tasks.entity_type) as entity_type
-from (
-    %(tasks_hierarchical_name_table)s
-) as tasks
-join "Task_References" on tasks.id = "Task_References".task_id
-join "Tasks" on tasks.id = "Tasks".id
-join "Projects" on "Tasks".project_id = "Projects".id
-join "Repositories" on "Projects".repository_id = "Repositories".id
-join "Links" on "Task_References".link_id = "Links".id
-join "SimpleEntities" as "Link_SimpleEntities" on "Links".id = "Link_SimpleEntities".id
-join "Links" as "Links_ForWeb" on "Link_SimpleEntities".thumbnail_id = "Links_ForWeb".id
-join "SimpleEntities" as "Links_ForWeb_SimpleEntities" on "Links_ForWeb".id = "Links_ForWeb_SimpleEntities".id
-join "Links" as "Thumbnails" on "Links_ForWeb_SimpleEntities".thumbnail_id = "Thumbnails".id
+    -- select all links assigned to a project tasks or assigned to a task and its children
+select * from (
+    select
+        "Links".id,
+        "Links_ForWeb".original_filename,
+        'repositories/' || task_repositories.repo_id || '/' || "Links_ForWeb".full_path as full_path,
+        'repositories/' || task_repositories.repo_id || '/' || "Thumbnails".full_path as "thumbnail_full_path",
+        array_agg("Tag_SimpleEntities".name) as tags,
+        array_agg(tasks.id) as entity_id,
+        array_agg(tasks.full_path) as entity_full_path,
+        array_agg(tasks.entity_type) as entity_type
+    from (
+        %(tasks_hierarchical_name_table)s
+    ) as tasks
+    join "Task_References" on tasks.id = "Task_References".task_id
 
-left outer join "Entity_Tags" on "Links".id = "Entity_Tags".entity_id
-left outer join "SimpleEntities" as "Tag_SimpleEntities" on "Entity_Tags".tag_id = "Tag_SimpleEntities".id
+    join (
+        select
+            "Tasks".id as task_id,
+            "Repositories".id as repo_id
+        from "Tasks"
+        join "Projects" on "Tasks".project_id = "Projects".id
+        join "Repositories" on "Projects".repository_id = "Repositories".id
+    ) as task_repositories on tasks.id = task_repositories.task_id
 
+    join "Links" on "Task_References".link_id = "Links".id
+    join "SimpleEntities" as "Link_SimpleEntities" on "Links".id = "Link_SimpleEntities".id
+    join "Links" as "Links_ForWeb" on "Link_SimpleEntities".thumbnail_id = "Links_ForWeb".id
+    join "SimpleEntities" as "Links_ForWeb_SimpleEntities" on "Links_ForWeb".id = "Links_ForWeb_SimpleEntities".id
+    join "Links" as "Thumbnails" on "Links_ForWeb_SimpleEntities".thumbnail_id = "Thumbnails".id
 
-where (%(id)s = any (tasks.path) or tasks.id = %(id)s) %(search_string)s
+    left outer join "Entity_Tags" on "Links".id = "Entity_Tags".entity_id
+    left outer join "SimpleEntities" as "Tag_SimpleEntities" on "Entity_Tags".tag_id = "Tag_SimpleEntities".id
 
-group by "Links".id,
-    "Links_ForWeb".full_path,
-    "Links_ForWeb".original_filename,
-    "Repositories".id,
-    "Thumbnails".id
+    where (%(id)s = any (tasks.path) or tasks.id = %(id)s) %(search_string)s
 
-order by "Links".id
+    group by "Links".id,
+        "Links_ForWeb".full_path,
+        "Links_ForWeb".original_filename,
+        task_repositories.repo_id,
+        "Thumbnails".id
+) as data
+
+order by data.id
 
 offset %(offset)s
 limit %(limit)s
     """ % {
         'id': entity_id,
         'tasks_hierarchical_name_table':
-        query_of_tasks_hierarchical_name_table(),
+        query_of_tasks_hierarchical_name_table(ordered=False),
         'search_string': search_query,
         'offset': offset,
         'limit': limit
@@ -408,8 +417,8 @@ limit %(limit)s
     return_val = [
         {
             'id': r[0],
-            'full_path': r[1],
-            'original_filename': r[2],
+            'original_filename': r[1],
+            'full_path': r[2],
             'thumbnail_full_path': r[3],
             'tags': r[4],
             'entity_ids': r[5],
@@ -488,13 +497,13 @@ select count(1) from (
     group by "Links".id,
         "Links".original_filename
 
-    order by "Links".id
+    --order by "Links".id
 
 ) as data
     """ % {
         'id': entity_id,
         'tasks_hierarchical_name_table':
-        query_of_tasks_hierarchical_name_table(),
+        query_of_tasks_hierarchical_name_table(ordered=False),
         'search_string': search_query
     }
 

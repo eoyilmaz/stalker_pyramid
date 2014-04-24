@@ -54,9 +54,11 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 
-def query_of_tasks_hierarchical_name_table():
+def query_of_tasks_hierarchical_name_table(ordered=True):
     """gives query string of finding parents names by hierarchically
     """
+    order_string = 'order by path' if ordered else ''
+
     query = """
     with recursive recursive_task(id, parent_id, path, path_names) as (
         select
@@ -85,8 +87,10 @@ def query_of_tasks_hierarchical_name_table():
         "SimpleEntities".entity_type
     from recursive_task
     join "SimpleEntities" on recursive_task.id = "SimpleEntities".id
-    order by path
-    """
+    %(order_string)s
+    """ % {
+        'order_string': order_string
+    }
     return query
 
 
