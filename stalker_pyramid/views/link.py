@@ -328,7 +328,7 @@ def get_entity_references(request):
         search_string_buffer = ['and (']
         for i, s in enumerate(search_string.split(' ')):
             if i != 0:
-                search_string_buffer.append('or')
+                search_string_buffer.append('and')
             tmp_search_query = """
             "Tag_SimpleEntities".name ilike '%(search_wide)s'
             or tasks.entity_type = '%(search_str)s'
@@ -451,7 +451,7 @@ def get_entity_references_count(request):
         search_string_buffer = ['and (']
         for i, s in enumerate(search_string.split(' ')):
             if i != 0:
-                search_string_buffer.append('or')
+                search_string_buffer.append('and')
             tmp_search_query = """
             "Tag_SimpleEntities".name ilike '%(search_wide)s'
             or tasks.entity_type = '%(search_str)s'
