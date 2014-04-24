@@ -80,36 +80,31 @@
 
             // trigger another update
         task_depends_to.trigger('liszt:updated');
-        submit_button.button('loading')
 
-        $.getJSON('{{ request.route_url("get_project_tasks", id=entity.project.id) }}').then(function(data){
-            console.log('data.length:', data.length);
-
-            {% if entity %}
-                var index = -1;
-                for(var i = 0; i < data.length; i++){
-                    if (data[i].id === {{ entity.id }}){
-                        index = i;
-                        break;
-                    }
-                }
-                if (index !== -1){
-                    data.splice(index, 1);
-                }
-                console.log('data.length:', data.length);
-            {% endif %}
+{#         {% if entity %}#}
+{#                var index = -1;#}
+{#                for(var i = 0; i < data.length; i++){#}
+{#                    if (data[i].id === {{ entity.id }}){#}
+{#                        index = i;#}
+{#                        break;#}
+{#                    }#}
+{#                }#}
+{#                if (index !== -1){#}
+{#                    data.splice(index, 1);#}
+{#                }#}
+{#                console.log('data.length:', data.length);#}
+{#            {% endif %}#}
 
             // now append the data to the task_parent
             {% raw %}
             var task_parent_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
             {% endraw %}
 
-            var parent_task_count = data.length;
             var rendered_template = null;
             // add and empty option to both
 
-            for (var i=0; i < parent_task_count; i++){
-                rendered_template = task_parent_template(data[i]);
+            for (var i=0; i < all_tasks_list.length; i++){
+                rendered_template = task_parent_template(all_tasks_list[i]);
                 task_depends_to.append(rendered_template)
             }
 
@@ -117,10 +112,7 @@
             // trigger another update
             task_depends_to.trigger('liszt:updated');
 
-            submit_button.button('reset')
 
-
-        });
 
 
 

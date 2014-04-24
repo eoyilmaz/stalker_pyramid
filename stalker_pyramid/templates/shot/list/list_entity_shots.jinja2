@@ -218,10 +218,22 @@
     {% endraw %}
 
     <script>
+
+        var all_tasks_list = [];
+
         $(document).ready(function () {
 
             var icon_name = get_icon('shot');
             $('#items_header').append('<i class=' + icon_name + '></i>');
+
+
+
+            $.getJSON('{{ request.route_url("get_project_tasks", id=entity.project.id) }}').then(function(data){
+                console.log('data.length:', data.length);
+
+                all_tasks_list = data
+
+            });
             // fill shots table with dynamic data
             $.getJSON('/shots/children/task_type/').then(function (types_data) {
 
