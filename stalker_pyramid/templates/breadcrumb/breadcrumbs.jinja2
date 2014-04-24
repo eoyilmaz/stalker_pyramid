@@ -8,10 +8,13 @@
     </script>
 
     {% if entity.entity_type == 'Task' or entity.entity_type == 'Asset'or entity.entity_type == 'Shot'or entity.entity_type == 'Sequence' %}
+        {% set task=entity %}
         {% include 'breadcrumb/breadcrumbs_task.jinja2' %}
     {% elif entity.entity_type == 'Ticket' %}
         {% include 'breadcrumb/breadcrumbs_ticket.jinja2' %}
     {% elif entity.entity_type == 'Version' %}
+        {% set task=entity.task %}
+        {% set version=entity %}
         {% include 'breadcrumb/breadcrumbs_version.jinja2' %}
     {% else %}
         {% include 'breadcrumb/breadcrumbs_base.jinja2' %}

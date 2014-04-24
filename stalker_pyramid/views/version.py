@@ -26,8 +26,7 @@ from pyramid.view import view_config
 
 from sqlalchemy import distinct
 
-from stalker.db import DBSession
-from stalker import Task, TimeLog, Version, Link, Entity, defaults
+from stalker import db, Task, TimeLog, Version, Link, Entity, defaults
 
 from stalker_pyramid.views import (get_logged_in_user, get_user_os,
                                    PermissionChecker, get_multi_integer)
@@ -54,7 +53,7 @@ def create_version_dialog(request):
 
     takes = map(
         lambda x: x[0],
-        DBSession.query(distinct(Version.take_name))
+        db.DBSession.query(distinct(Version.take_name))
         .filter(Version.task == task)
         .all()
     )
@@ -179,9 +178,9 @@ def assign_version(request):
         os.remove(full_path)
 
         # it is now safe to delete the link
-        DBSession.add(task)
-        DBSession.delete(link)
-        DBSession.add(version)
+        db.DBSession.add(task)
+        db.DBSession.delete(link)
+        db.DBSession.add(version)
 
     return HTTPOk()
 
@@ -204,7 +203,7 @@ def update_version(request):
         version.name = name
         version.updated_by = logged_in_user
     else:
-        DBSession.add(version)
+        db.DBSession.add(version)
 
     return HTTPOk()
 
@@ -268,9 +267,6 @@ def get_entity_versions(request):
 def list_version_outputs(request):
     """lists the versions of the given task
     """
-
-    logger.debug('list_version_outputs is running')
-
     version_id = request.matchdict.get('id', -1)
     version = Version.query.filter_by(id=version_id).first()
 
@@ -317,3 +313,44 @@ def list_version_children(request):
         'version': version,
         'has_permission': PermissionChecker(request)
     }
+
+
+@view_config(
+    route_name='get_version_outputs_count',
+    renderer='json'
+)
+def get_version_outputs_count(request):
+    """returns the count of the given version
+    """
+    version_id = request.params.get('id')
+
+    sql_query = """select
+count("Links".id)
+from "Versions"
+join "Version_Outputs" on "Versions".id = "Version_Outputs".version_id
+join "Links" on "Version_Outputs".link_id = "Links".id
+where "Versions".id = %(id)s
+    """ % {'id': version_id}
+
+    return db.DBSession.connection().execute(sql_query).fetchone()[0]
+
+
+@view_config(
+    route_name='get_task_version_outputs_count',
+    renderer='json'
+)
+def get_task_version_outputs_count(request):
+    """returns the count of the given version
+    """
+    task_id = request.params.get('id')
+
+    sql_query = """select
+    count("Links".id)
+from "Tasks"
+join "Versions" on "Tasks".id = "Versions".task_id
+join "Version_Outputs" on "Versions".id = "Version_Outputs".version_id
+join "Links" on "Version_Outputs".link_id = "Links".id
+where "Tasks".id = %(id)s
+    """ % {'id': task_id}
+
+    return db.DBSession.connection().execute(sql_query).fetchone()[0]

@@ -667,7 +667,6 @@
 
     <script>
         $.getJSON('/tasks/{{ entity.id }}/', function(data){
-            console.log('data:', data);
             $(function(){
                 // update created and update time of the task
                 $('#task_date_created').html(moment(data[0].date_created).format('YYYY-MM-DD HH:mm'));

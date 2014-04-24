@@ -22,7 +22,7 @@
             "{%- if request.current_route_path() == request.route_path('view_department', id=department.id) -%}'active',{%- else -%},{%- endif -%}",
             '{{ request.route_url('view_department', id=department.id) }}',
             get_icon('dashboard'),
-            ''
+            0
         );
 
         menu_of(
@@ -30,7 +30,7 @@
             "{%- if request.current_route_path() == request.route_path('list_entity_resources', id=department.id) -%}'active',{%- else -%},{%- endif -%}",
             '{{ request.route_url('list_entity_resources', id=department.id) }}',
             get_icon('resource'),
-            ''
+            0
         );
 
         menu_of(
@@ -38,28 +38,28 @@
             "{%- if request.current_route_path() == request.route_path('list_entity_tasks', id=department.id) -%}'active',{%- else -%},{%- endif -%}",
             '{{ request.route_url('list_entity_tasks', id=department.id) }}',
             get_icon('task'),
-            '{{ department.tasks | count }}'
+            {{ department.tasks | count }}
         );
 
 {#        menu_of('Projects',#}
 {#                "{%- if request.current_route_path() == request.route_path('list_department_projects', id=department.id) -%}'active',{%- else -%},{%- endif -%}",#}
 {#                '{{ request.route_url('list_department_projects', id=department.id) }}',#}
 {#                get_icon('project'),#}
-{#                '{{ department.projects | count }}')#}
+{#                {{ department.projects | count }})#}
 
         menu_of(
             'Users',
             "{%- if request.current_route_path() == request.route_path('list_entity_users', id=department.id) -%}'active',{%- else -%},{%- endif -%}",
             '{{ request.route_url('list_entity_users', id=department.id) }}',
             get_icon('user'),
-            '{{ department.users | count }}'
+            {{ department.users | count }}
         );
 
 {#        menu_of('Vacations',#}
 {#                    "{%- if request.current_route_path() == request.route_path('list_entity_vacations', id=department.id) -%}'active',{%- else -%},{%- endif -%}",#}
 {#                    '{{ request.route_url('list_entity_vacations', id=department.id) }}',#}
 {#                    get_icon('vacation'),#}
-{#                    '{{ department.vacations | count }}')#}
+{#                    {{ department.vacations | count }})#}
 
 
     })

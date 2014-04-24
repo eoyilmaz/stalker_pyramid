@@ -24,7 +24,7 @@
             "{%- if request.current_route_path() == request.route_path('list_entity_users', id=group.id) -%}'active',{%- else -%},{%- endif -%}",
             '{{ request.route_url('list_entity_users', id=group.id) }}',
             get_icon('user'),
-            '{{ group.users | count }}'
+            {{ group.users | count }}
         );
 
     })

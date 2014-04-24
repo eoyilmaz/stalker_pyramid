@@ -611,6 +611,12 @@ def main(global_config, **settings):
     config.add_route('list_version_inputs',   'versions/{id}/inputs/list')  # html
     config.add_route('list_version_children', 'versions/{id}/children/list')  # html
 
+    config.add_route('get_version_outputs',       'versions/{id}/outputs')
+    config.add_route('get_version_outputs_count', 'versions/{id}/outputs/count')
+
+    config.add_route('get_task_version_outputs',       'tasks/{id}/versions/outputs')
+    config.add_route('get_task_version_outputs_count', 'tasks/{id}/versions/outputs/count')
+
     # *************************************************************************
     # Department
 
