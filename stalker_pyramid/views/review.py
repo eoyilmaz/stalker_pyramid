@@ -293,7 +293,8 @@ def get_reviews(request, where_conditions):
         "Reviewers_SimpleEntities".name as reviewer_name,
         "Reviewers_SimpleEntities_Links".full_path as reviewer_thumbnail_path,
         array_agg("Reviewer_Departments_SimpleEntities".name) as reviewer_departments,
-        extract(epoch from"Reviews_Simple_Entities".date_created::timestamp AT TIME ZONE 'UTC') * 1000 as date_created
+        extract(epoch from"Reviews_Simple_Entities".date_created::timestamp AT TIME ZONE 'UTC') * 1000 as date_created,
+        "Reviews_Simple_Entities".description
 
     from "Reviews"
         join "SimpleEntities" as "Reviews_Simple_Entities" on "Reviews_Simple_Entities".id = "Reviews".id
@@ -322,7 +323,8 @@ def get_reviews(request, where_conditions):
         "Review_Tasks".review_number,
         "Reviews".reviewer_id,
         "Reviewers_SimpleEntities".name,
-        "Reviewers_SimpleEntities_Links".full_path
+        "Reviewers_SimpleEntities_Links".full_path,
+        "Reviews_Simple_Entities".description
 
     order by "Reviews_Simple_Entities".date_created desc
     """
@@ -348,7 +350,8 @@ def get_reviews(request, where_conditions):
             'reviewer_thumbnail_full_path':r[10],
             'reviewer_department':r[11],
             'date_created':r[12],
-            'is_reviewer':'1' if logged_in_user.id == r[8] else None
+            'is_reviewer':'1' if logged_in_user.id == r[8] else None,
+            'review_description': r[13]
         }
         for r in result.fetchall()
     ]

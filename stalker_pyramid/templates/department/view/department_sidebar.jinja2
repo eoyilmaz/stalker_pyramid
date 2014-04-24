@@ -14,7 +14,7 @@
             '{{ department.name }}',
             '',
             "{%- if department.thumbnail -%}/{{ department.thumbnail.full_path }}{%- else -%}{{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}{%- endif -%}",
-            '/departments/{{ department.id }}/update/dialog'
+            '{%- if has_permission('Update_Department') -%}/departments/{{ department.id }}/update/dialog{%- endif -%}'
         );
 
         menu_of(

@@ -484,20 +484,24 @@ def main(global_config, **settings):
     # Task
 
     # Dialogs
-    config.add_route('create_task_dialog',       'tasks/{id}/create/dialog')
-    config.add_route('update_task_dialog',       'tasks/{id}/update/dialog')
-    config.add_route('review_task_dialog',       'tasks/{id}/review/dialog')
-    config.add_route('cleanup_task_new_reviews_dialog',       'tasks/{id}/cleanup_new_reviews/dialog')
+    config.add_route('create_task_dialog',                  'tasks/{id}/create/dialog')
+    config.add_route('update_task_dialog',                  'tasks/{id}/update/dialog')
+    config.add_route('review_task_dialog',                  'tasks/{id}/review/dialog')
+    config.add_route('cleanup_task_new_reviews_dialog',     'tasks/{id}/cleanup_new_reviews/dialog')
 
     # Actions
-    config.add_route('create_task',              'tasks/create')
-    config.add_route('update_task',              'tasks/{id}/update')
-    config.add_route('inline_update_task',       'tasks/{id}/update/inline')
-    config.add_route('review_task',              'tasks/{id}/review')
-    config.add_route('cleanup_task_new_reviews', 'tasks/{id}/cleanup_new_reviews')
+    config.add_route('create_task',                         'tasks/create')
+    config.add_route('update_task',                         'tasks/{id}/update')
+    config.add_route('inline_update_task',                  'tasks/{id}/update/inline')
+    config.add_route('update_task_schedule_timing',         'tasks/{id}/update/schedule_timing')
+    config.add_route('update_task_schedule_timing_dialog',  'tasks/{id}/update/schedule_timing/dialog')
+    config.add_route('update_task_dependencies',            'tasks/{id}/update/dependencies')
+    config.add_route('update_task_dependencies_dialog',     'tasks/{id}/update/dependencies/dialog')
+    config.add_route('review_task',                         'tasks/{id}/review')
+    config.add_route('cleanup_task_new_reviews',            'tasks/{id}/cleanup_new_reviews')
 
-    config.add_route('duplicate_task_hierarchy', 'tasks/{id}/duplicate')
-    config.add_route('duplicate_task_hierarchy_dialog', 'tasks/{id}/duplicate/dialog')
+    config.add_route('duplicate_task_hierarchy',            'tasks/{id}/duplicate')
+    config.add_route('duplicate_task_hierarchy_dialog',     'tasks/{id}/duplicate/dialog')
 
     config.add_route('view_task',                'tasks/{id}/view')
 
@@ -532,6 +536,7 @@ def main(global_config, **settings):
     config.add_route('approve_task',   'tasks/{id}/approve')
     config.add_route('request_revision',   'tasks/{id}/request_revision')
     config.add_route('request_extra_time', 'tasks/{id}/request_extra_time')
+    config.add_route('request_extra_time_dialog', 'tasks/{id}/request_extra_time/dialog')
 
     config.add_route('delete_task',        'tasks/{id}/delete')
     config.add_route('delete_task_dialog', 'tasks/{id}/delete/dialog')

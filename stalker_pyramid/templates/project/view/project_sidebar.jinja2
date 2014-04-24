@@ -12,7 +12,7 @@
             '{{ project.name }}',
             '{{ project.code }}',
             "{%- if project.thumbnail -%}/{{ project.thumbnail.full_path }}{%- else -%}{{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif")}}{%- endif -%}",
-            '/projects/{{ project.id }}/update/dialog'
+            '{%- if has_permission('Update_Project') -%}/projects/{{ project.id }}/update/dialog{%- endif -%}'
         );
 
         menu_of(

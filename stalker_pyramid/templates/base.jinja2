@@ -197,11 +197,13 @@
                 <h5 class="media-heading"><span style='color: #b1bac1;'>{{=it.name}}</span>
                     <small>{{=it.code}}</small>
                 </h5>
-                <a href={{=it.update_link}}
-                   class="menu-text">
-                    <i class="icon-edit"></i>
-                    Update
-                </a>
+                {{ if (it.update_link) { }}
+                    <a href={{=it.update_link}}
+                       class="menu-text">
+                        <i class="icon-edit"></i>
+                        Update
+                    </a>
+                {{ } }}
             </div>
         </div>
     </li>
