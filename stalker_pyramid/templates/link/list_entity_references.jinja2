@@ -372,7 +372,7 @@
             // and add the new thumbnails when uploaded through Dropzone
             $('#dialog_template').on('hidden', function () {
                 // get the data from the storage
-                var repo_id = {{ entity.project.repository.id }};
+                var repo_id = {% if entity.entity_type == 'Project' %}{{ entity.repository.id }}{% else %}{{ entity.project.repository.id }}{% endif %};
                 var repo_prepend = 'repositories/' + repo_id + '/';
                 var new_references_storage = $('#new_references_storage');
                 var data = $.parseJSON(new_references_storage.text());
