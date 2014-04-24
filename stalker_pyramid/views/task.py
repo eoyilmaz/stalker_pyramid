@@ -579,6 +579,175 @@ def convert_to_dgrid_gantt_task_format(tasks):
 
 
 @view_config(
+    route_name='update_task_schedule_timing_dialog',
+    renderer='templates/task/dialog/update_task_schedule_timing_dialog.jinja2'
+)
+def update_task_schedule_timing_dialog(request):
+    """called when creating tasks
+    """
+    logger.debug('update_task_schedule_timing_dialog is starts')
+
+    task_id = request.matchdict.get('id')
+    task = Task.query.get(task_id)
+
+
+    return {
+        'entity':task
+    }
+
+@view_config(
+    route_name='update_task_schedule_timing'
+)
+def update_task_schedule_timing(request):
+    """Inline updates the given task with the data coming from the request
+    """
+
+    logger.debug('update_task_schedule_timing IS RUNNING')
+
+    logged_in_user = get_logged_in_user(request)
+    utc_now = local_to_utc(datetime.datetime.now())
+
+    # *************************************************************************
+    # collect data
+    schedule_model = request.params.get('schedule_model') # there should be one
+    schedule_timing = float(request.params.get('schedule_timing'))
+    schedule_unit = request.params.get('schedule_unit')
+    update_bid = 1 if request.params.get('update_bid') == 'on' else 0
+
+    if not schedule_timing:
+        transaction.abort()
+        return Response('There are missing parameters: schedule_timing', 500)
+    else:
+        try:
+            schedule_timing = float(schedule_timing)
+        except ValueError:
+            transaction.abort()
+            return Response('Please supply a float or integer value for '
+                            'schedule_timing parameter', 500)
+
+    if not schedule_unit:
+        transaction.abort()
+        return Response('There are missing parameters: schedule_unit', 500)
+    else:
+        if schedule_unit not in ['min','h', 'd', 'w', 'm', 'y']:
+            transaction.abort()
+            return Response("schedule_unit parameter should be one of ['min','h', "
+                            "'d', 'w', 'm', 'y']", 500)
+
+    if not schedule_model:
+        transaction.abort()
+        return Response('There are missing parameters: schedule_model', 500)
+    else:
+        if schedule_model not in ['effort', 'duration', 'length']:
+            transaction.abort()
+            return Response("schedule_model parameter should be on of "
+                            "['effort', 'duration', 'length']", 500)
+
+    logger.debug('schedule_model      : %s' % schedule_model)
+    logger.debug('schedule_timing     : %s' % schedule_timing)
+    logger.debug('schedule_unit       : %s' % schedule_unit)
+    logger.debug('update_bid          : %s' % update_bid)
+
+    # get task
+    task_id = request.matchdict.get('id', -1)
+    task = Task.query.filter(Task.id == task_id).first()
+
+    # update the task
+    if not task:
+        transaction.abort()
+        return Response("No task found with id : %s" % task_id, 500)
+
+    if task.status.code in ['CMPL','PREV','WIP','HREV','DREV']:
+        transaction.abort()
+        return Response("You can not update %s status task" % task.status.name, 500)
+
+    task.schedule_model = schedule_model
+    task.schedule_unit = schedule_unit
+    task.schedule_timing = schedule_timing
+
+    task.updated_by = logged_in_user
+    task.date_updated = utc_now
+
+    if update_bid:
+        logger.debug('updating bid')
+        task.bid_timing = task.schedule_timing
+        task.bid_unit = task.schedule_unit
+
+
+
+    return Response('Task updated successfully')
+
+@view_config(
+    route_name='update_task_dependencies_dialog',
+    renderer='templates/task/dialog/update_task_dependencies_dialog.jinja2'
+)
+def update_task_dependencies_dialog(request):
+    """called when creating tasks
+    """
+    logger.debug('update_task_dependencies_dialog is starts')
+
+    task_id = request.matchdict.get('id')
+    task = Task.query.get(task_id)
+
+
+    return {
+        'entity':task
+    }
+
+@view_config(
+    route_name='update_task_dependencies'
+)
+def update_task_dependencies(request):
+    """Inline updates the given task with the data coming from the request
+    """
+
+    logger.debug('update_task_dependencies IS RUNNING')
+
+    logged_in_user = get_logged_in_user(request)
+    utc_now = local_to_utc(datetime.datetime.now())
+
+    depend_ids = get_multi_integer(request, 'dependent_ids')
+    depends = Task.query.filter(Task.id.in_(depend_ids)).all()
+
+
+    # get task
+    task_id = request.matchdict.get('id', -1)
+    task = Task.query.filter(Task.id == task_id).first()
+
+    # update the task
+    if not task:
+        transaction.abort()
+        return Response("No task found with id : %s" % task_id, 500)
+
+    if task.status.code in ['CMPL','PREV','WIP','HREV','DREV']:
+        transaction.abort()
+        return Response("You can not update %s status task" % task.status.name, 500)
+
+    try:
+        task.depends = depends
+
+
+    except CircularDependencyError:
+        transaction.abort()
+        message = \
+            '</div>Parent item can not also be a dependent for the ' \
+            'updated item:<br><br>Parent: %s<br>Depends To: %s</div>' % (
+                task.parent.name, map(lambda x: x.name, depends)
+            )
+        transaction.abort()
+        return Response(message, 500)
+
+    task.updated_by = logged_in_user
+    task.date_updated = utc_now
+
+
+
+    return Response('Task updated successfully')
+
+
+
+
+@view_config(
     route_name='inline_update_task'
 )
 def inline_update_task(request):
@@ -588,6 +757,7 @@ def inline_update_task(request):
     logger.debug('INLINE UPDATE TASK IS RUNNING')
 
     logged_in_user = get_logged_in_user(request)
+    utc_now = local_to_utc(datetime.datetime.now())
 
     # *************************************************************************
     # collect data
@@ -656,6 +826,7 @@ def inline_update_task(request):
             setattr(task, attr_name, attr_value)
 
         task.updated_by = logged_in_user
+        task.date_updated = utc_now
 
     else:
         logger.debug('not updating')
@@ -2492,6 +2663,7 @@ def cleanup_task_new_reviews(request):
     DBSession.add(note)
 
     task.notes.append(note)
+
     task.updated_by = logged_in_user
     task.date_updated = utc_now
 
@@ -2782,9 +2954,9 @@ def request_revision(request):
         transaction.abort()
         return Response('There are missing parameters: schedule_unit', 500)
     else:
-        if schedule_unit not in ['h', 'd', 'w', 'm', 'y']:
+        if schedule_unit not in ['min','h', 'd', 'w', 'm', 'y']:
             transaction.abort()
-            return Response("schedule_unit parameter should be one of ['h', "
+            return Response("schedule_unit parameter should be one of ['min','h', "
                             "'d', 'w', 'm', 'y']", 500)
 
     if not schedule_model:

@@ -288,6 +288,17 @@
                         Update
                     </a>
                 </li>
+                <li>
+                    <a id='update_task_dependencies_menu_item'
+                       data-target="#dialog_template"
+                       data-toggle="modal"
+                       data-keyboard=false
+                       href="#"
+                       tabindex="-1">
+                        <i class="'ui-icon icon-pencil bigger-120">&nbsp</i>
+                        Update Dependencies
+                    </a>
+                </li>
             {% endif %}
     
             {% if has_permission('Create_Task') %}
@@ -309,6 +320,7 @@
                     </a>
                 </li>
             {% endif %}
+
     
             <li class="divider"></li>
     
@@ -737,6 +749,15 @@ require([
                 'href',
                 '/tasks/' + selected_ids[0] + '/update/dialog'
             );
+
+            $('#update_task_dependencies_menu_item').attr(
+                'href',
+                '/tasks/' + selected_ids[0] + '/update/dependencies/dialog'
+            );
+
+            console.log('update_task_dependencies_menu_item: '+$('#update_task_dependencies_menu_item').attr('href'))
+
+
 
             $('#add_time_log_menu_item').attr(
                 'href',

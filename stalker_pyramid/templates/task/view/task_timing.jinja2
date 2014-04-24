@@ -1,46 +1,86 @@
-<div id='bid_alert' class="pull-right alert alert-block">
-        <ul class="unstyled spaced">
-            <li>
+<div class="widget-box">
+    <div class="widget-header widget-header-flat widget-header-small">
+          <h5>
+                <i class="icon-time"></i>
+                Timing
+          </h5>
 
-                <b>Bid
-                    : </b>
-                <span id="bid"></span>
-            </li>
-            <li>
+          <div class="widget-toolbar no-border">
+                <button class="btn btn-minier btn-primary dropdown-toggle" data-toggle="dropdown">
+                      min
+                      <i class="icon-angle-down icon-on-right"></i>
+                </button>
 
-                <b>Schedule Hours
-                    : </b> <span id="schedule_timing"></span>
+                <ul class="dropdown-menu dropdown-info pull-right dropdown-caret">
+                      <li class="active">
+                            <a href="#">min</a>
+                      </li>
 
-            </li>
-            <li>
-                <b>Total Logged Hours
-                    : </b> <span id="total_logged"></span>
-            </li>
-            <li>
-                <b>Hours to Complete
-                    : </b> <span id="hours_to_complete"></span>
-            </li>
-        </ul>
+                      <li>
+                            <a href="#">h</a>
+                      </li>
 
-        {% if (entity.schedule_seconds - entity.total_logged_seconds)==0  and entity.status.code=='WIP'%}
+                      <li>
+                            <a href="#">d</a>
+                      </li>
 
-            <button id='task_review_button'
-                    class="btn btn-small btn-danger span12 tooltip-success"
-                    data-rel="tooltip"
-                    data-placement="bottom"
-                    title="Request Extra Time"
-                    data-target="#dialog_template"
-                    data-toggle="modal"
-                    data-keyboard="false"
-                    href="/tasks/{{entity.id}}/request_extra_time/dialog?came_from={{request.current_route_path() }}"
-                    >
-                <i class="icon-time bigger-130"></i> Request Extra Time
-            </button>
+                      <li>
+                            <a href="#">w</a>
+                      </li>
+                </ul>
+          </div>
+    </div>
+
+    <div class="widget-body no-padding">
+          <div class="widget-main no-padding">
+            <div id='bid_alert' class="alert alert-block">
+
+                        <ul class="unstyled spaced">
+                            <li>
+
+                                <b>Bid
+                                    : </b>
+                                <span id="bid"></span>
+                            </li>
+                            <li>
+
+                                <b>Schedule Timing
+                                    : </b> <span id="schedule_timing"></span>
+
+                            </li>
+                            <li>
+                                <b>Total Time Logs
+                                    : </b> <span id="total_logged"></span>
+                            </li>
+                            <li>
+                                <b>Time to Complete
+                                    : </b> <span id="time_to_complete"></span>
+                            </li>
+                        </ul>
+
+                        {% if (entity.schedule_seconds - entity.total_logged_seconds)==0  and entity.status.code=='WIP'%}
+
+                            <button id='task_review_button'
+                                    class="btn btn-small btn-danger span12 tooltip-success"
+                                    data-rel="tooltip"
+                                    data-placement="bottom"
+                                    title="Request Extra Time"
+                                    data-target="#dialog_template"
+                                    data-toggle="modal"
+                                    data-keyboard="false"
+                                    href="/tasks/{{entity.id}}/request_extra_time/dialog?came_from={{request.current_route_path() }}"
+                                    >
+                                <i class="icon-time bigger-130"></i> Request Extra Time
+                            </button>
 
 
 
-        {% endif %}
-</div>
+                        {% endif %}
+                </div>
+          </div><!--/widget-main-->
+    </div><!--/widget-body-->
+</div><!--/widget-box-->
+
 
 
 <script class="code" type="text/javascript">
@@ -90,18 +130,17 @@
         var bid = bid_seconds/schedule_unit_seconds
         var schedule_timing = schedule_timing_seconds/schedule_unit_seconds;
         var total_logged = total_logged_seconds/schedule_unit_seconds;
-        var hours_to_complete = schedule_timing -total_logged
+        var time_to_complete = schedule_timing -total_logged
 
         $('#bid').text(bid+' {{ entity.schedule_unit }}')
         $('#schedule_timing').text(schedule_timing+' {{ entity.schedule_unit }}')
         $('#total_logged').text(total_logged+' {{ entity.schedule_unit }}')
-        $('#hours_to_complete').text(hours_to_complete+' {{ entity.schedule_unit }}')
+        $('#time_to_complete').text(time_to_complete+' {{ entity.schedule_unit }}')
 
 
         if(bid< total_logged)
         {
             $('#bid_alert').addClass('alert-danger')
-
         }
         else{
              $('#bid_alert').addClass('alert-info')

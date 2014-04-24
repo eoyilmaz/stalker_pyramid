@@ -165,30 +165,40 @@
                  style="width:120px; height:105px; padding:5px;">
                 <span>
                     <a class="white" href="/tasks/{{=it.id }}/view">{{=it.name}}</a>
+                    <div class="no-padding">
+                        {{ if (it.update_shot_action) { }}
+                            <a class="white pull-right"
+                               data-target="#dialog_template"
+                               data-toggle="modal"
+                               data-keyboard=false
+                               href='/tasks/{{=it.id }}/update/schedule_timing/dialog'>
+                                <i class="icon-edit bigger-130"></i>
+                            </a>
 
-                    {{ if (it.update_shot_action) { }}
-                    <a class="white pull-right"
-                       data-target="#dialog_template"
-                       data-toggle="modal"
-                       data-keyboard=false
-                       href="/tasks/{{=it.id }}/update/dialog">
-                        <i class="icon-edit bigger-130"></i>
-                    </a>{{ } }}<br/><br/><br/>
+                        {{ } }}
+                        {{ if(it.bid_timing){ }}
+                            <strong>Bid: </strong>
+                            <span id='bid_timing_{{=it.id}}'>{{=it.bid_timing}}</span>
+                            <span id='bid_unit_{{=it.id}}'>{{=it.bid_unit }}</span>
+                            <br/>
+                            <strong>S_T: </strong>
+                            <span id='schedule_timing_{{=it.id}}'>{{=it.schedule_timing}}</span>
+                            <span id='schedule_unit_{{=it.id}}'>{{=it.schedule_unit }}</span>
+                        {{ } }}
+                        <br/>
+                    </div>
 
                     {{ if (it.percent_complete!='') { }}
                         {{=it.status}}
                         <div class="progress progress-success no-padding">
                                 <div style="width:{{=it.percent_complete}}%" class="bar">
                                     <span>{{= it.percent_complete}}%</span>
-
                                 </div>
                          </div>
                     {{ } else {}}
-
                         <br/>
                         {{=it.status}}
                     {{ } }}
-
                 </span>
             </div>
         </td>
@@ -235,6 +245,7 @@
                                 else {
                                     data[i].thumbnail_full_path = '/' + data[i].thumbnail_full_path;
                                 }
+                                data[i].thumbnail_full_path = ''
 
                                 data[i].came_from = '{{ request.current_route_path() }}'
 
@@ -249,10 +260,27 @@
                                     var tasks = data[i][types_data[j].name];
                                     if (tasks) {
                                         var task = tasks[0];
-{#                                        console.log('task '+task[0]);#}
-                                        shot_row.append(cell_template({'id': task[0], 'name': task[1], 'status': task[2], 'status_color': task[2].toLowerCase(), 'percent_complete':(task[2]=='WIP'?task[3]:''),'update_shot_action': data[i].update_shot_action}));
+
+                                        shot_row.append(cell_template({
+                                                                        'id': task[0],
+                                                                        'name': task[1],
+                                                                        'status': task[2],
+                                                                        'status_color': task[2].toLowerCase(),
+                                                                        'percent_complete':(task[2]=='WIP'?task[3]:''),
+                                                                        'update_shot_action': data[i].update_shot_action,
+                                                                        'bid_timing':task[4],
+                                                                        'bid_unit':task[5],
+                                                                        'schedule_timing':task[6],
+                                                                        'schedule_unit':task[7]
+                                                                       }));
                                     } else {
-                                        shot_row.append(cell_template({'id': '', 'name': '', 'status': '', 'status_color': 'black2','percent_complete':''}));
+                                        shot_row.append(cell_template({
+                                                                        'id': '',
+                                                                        'name': '',
+                                                                        'status': '',
+                                                                        'status_color': 'black2',
+                                                                        'percent_complete':''
+                                                                       }));
                                     }
                                 }
 
@@ -269,6 +297,9 @@
 
                             $('#loading_spinner').hide();
                             $('#content').show();
+
+
+
 
                         });
                     });

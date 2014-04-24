@@ -223,7 +223,7 @@ def get_shots(request):
 
     shot_id = request.params.get('entity_id', None)
 
-    logger.debug('get_shots function starts : ')
+    logger.debug('get_shots starts ')
 
     sql_query = """select
     "Shots".id as shot_id,
@@ -257,7 +257,12 @@ def get_shots(request):
                 end)) * 100.0
         )) as percent_complete,
     "Shot_Sequences".sequence_id as sequence_id,
-    "Shot_Sequences_SimpleEntities".name as sequence_name
+    "Shot_Sequences_SimpleEntities".name as sequence_name,
+    array_agg("Tasks".bid_timing) as bid_timing,
+    array_agg("Tasks".bid_unit)::text[] as bid_unit,
+    array_agg("Tasks".schedule_timing) as schedule_timing,
+    array_agg("Tasks".schedule_unit)::text[] as schedule_unit
+
 from "Tasks"
 join "Shots" on "Shots".id = "Tasks".parent_id
 join "SimpleEntities" as "Shot_SimpleEntities" on "Shots".id = "Shot_SimpleEntities".id
@@ -357,8 +362,11 @@ order by "Shot_SimpleEntities".name
         task_statuses = r[9]
         task_statuses_color = r[10]
         task_percent_complete = r[11]
+        task_bid_timing = r[14]
+        task_bid_unit = r[15]
+        task_schedule_timing = r[16]
+        task_schedule_unit = r[17]
 
-        logger.debug('task_types_names %s ' % task_types_names)
         r_data['nulls'] = []
 
         for index1 in range(len(task_types_names)):
@@ -368,15 +376,13 @@ order by "Shot_SimpleEntities".name
                 r_data[task_types_names[index1]]= []
 
         for index in range(len(task_types_names)):
-            logger.debug('task_types_names[index]; %s ' %
-                         task_types_names[index])
             if task_types_names[index]:
                 r_data[task_types_names[index]].append([task_ids[index], task_names[index], task_statuses[index],
-                     task_percent_complete[index]])
+                     task_percent_complete[index], task_bid_timing[index], task_bid_unit[index], task_schedule_timing[index], task_schedule_unit[index]])
             else:
                 r_data['nulls'].append(
                     [task_ids[index], task_names[index], task_statuses[index],
-                     task_percent_complete[index]]
+                     task_percent_complete[index], task_bid_timing[index], task_bid_unit[index], task_schedule_timing[index], task_schedule_unit[index]]
                 )
 
         return_data.append(r_data)
@@ -384,6 +390,7 @@ order by "Shot_SimpleEntities".name
     shot_count = len(return_data)
     content_range = content_range % (0, shot_count - 1, shot_count)
 
+    logger.debug('get_shots ends ')
     resp = Response(
         json_body=return_data
     )
