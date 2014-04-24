@@ -330,7 +330,7 @@ def get_entity_references(request):
             if i != 0:
                 search_string_buffer.append('or')
             tmp_search_query = """
-            '%(search_str)s' = any (entity_tags.tags)
+            "Tag_SimpleEntities".name ilike '%(search_wide)s'
             or tasks.entity_type = '%(search_str)s'
             or tasks.full_path ilike '%(search_wide)s'
             or "Links".original_filename ilike '%(search_wide)s'
@@ -357,7 +357,7 @@ select
     'repositories/' || "Repositories".id || '/' || "Links_ForWeb".full_path as full_path,
     "Links_ForWeb".original_filename,
     'repositories/' || "Repositories".id || '/' || "Thumbnails".full_path as "thumbnail_full_path",
-    entity_tags.tags,
+    array_agg("Tag_SimpleEntities".name) as tags,
     array_agg(tasks.id) as entity_id,
     array_agg(tasks.full_path) as full_path,
     array_agg(tasks.entity_type) as entity_type
@@ -373,15 +373,10 @@ join "SimpleEntities" as "Link_SimpleEntities" on "Links".id = "Link_SimpleEntit
 join "Links" as "Links_ForWeb" on "Link_SimpleEntities".thumbnail_id = "Links_ForWeb".id
 join "SimpleEntities" as "Links_ForWeb_SimpleEntities" on "Links_ForWeb".id = "Links_ForWeb_SimpleEntities".id
 join "Links" as "Thumbnails" on "Links_ForWeb_SimpleEntities".thumbnail_id = "Thumbnails".id
-left outer join (
-    select
-        "Links".id,
-        array_agg("Tag_SimpleEntities".name) as tags
-    from "Links"
-    join "Entity_Tags" on "Links".id = "Entity_Tags".entity_id
-    join "SimpleEntities" as "Tag_SimpleEntities" on "Entity_Tags".tag_id = "Tag_SimpleEntities".id
-    group by "Links".id
-) as entity_tags on "Links".id = entity_tags.id
+
+left outer join "Entity_Tags" on "Links".id = "Entity_Tags".entity_id
+left outer join "SimpleEntities" as "Tag_SimpleEntities" on "Entity_Tags".tag_id = "Tag_SimpleEntities".id
+
 
 where (%(id)s = any (tasks.path) or tasks.id = %(id)s) %(search_string)s
 
@@ -389,8 +384,7 @@ group by "Links".id,
     "Links_ForWeb".full_path,
     "Links_ForWeb".original_filename,
     "Repositories".id,
-    "Thumbnails".id,
-    entity_tags.tags
+    "Thumbnails".id
 
 order by "Links".id
 
@@ -426,18 +420,6 @@ limit %(limit)s
 
     return return_val
 
-@view_config(
-    route_name='video_player',
-    renderer='templates/link/video_player.jinja2'
-)
-def video_player(request):
-    """generates an iframe for video player
-    """
-    return {
-        'video_full_path': request.params.get('video_full_path')
-    }
-
-
 @view_config(route_name='get_project_references_count', renderer='json')
 @view_config(route_name='get_task_references_count', renderer='json')
 @view_config(route_name='get_asset_references_count', renderer='json')
@@ -462,7 +444,7 @@ def get_entity_references_count(request):
             if i != 0:
                 search_string_buffer.append('or')
             tmp_search_query = """
-            '%(search_str)s' = any (entity_tags.tags)
+            "Tag_SimpleEntities".name ilike '%(search_wide)s'
             or tasks.entity_type = '%(search_str)s'
             or tasks.full_path ilike '%(search_wide)s'
             or "Links".original_filename ilike '%(search_wide)s'
@@ -486,39 +468,29 @@ def get_entity_references_count(request):
     -- select all links assigned to a project tasks or assigned to a task and its children
 select count(1) from (
     select
-        "Links".id,
-        "Links".full_path,
-        "Links".original_filename,
-        "Thumbnails".full_path as "thumbnail_full_path",
-        entity_tags.tags,
-        array_agg(tasks.id) as entity_id,
-        array_agg(tasks.full_path) as full_path,
-        array_agg(tasks.entity_type) as entity_type
+        "Links".id
     from (
         %(tasks_hierarchical_name_table)s
     ) as tasks
     join "Task_References" on tasks.id = "Task_References".task_id
     join "Links" on "Task_References".link_id = "Links".id
     join "SimpleEntities" as "Link_SimpleEntities" on "Links".id = "Link_SimpleEntities".id
-    join "Links" as "Thumbnails" on "Link_SimpleEntities".thumbnail_id = "Thumbnails".id
-    left outer join (
-        select
-            "Links".id,
-            array_agg("Tag_SimpleEntities".name) as tags
-        from "Links"
-        join "Entity_Tags" on "Links".id = "Entity_Tags".entity_id
-        join "SimpleEntities" as "Tag_SimpleEntities" on "Entity_Tags".tag_id = "Tag_SimpleEntities".id
-        group by "Links".id
-    ) as entity_tags on "Links".id = entity_tags.id
 
-    where (%(id)s = any (tasks.path) or tasks.id = %(id)s) %(search_string)s
+    join "Links" as "Links_ForWeb" on "Link_SimpleEntities".thumbnail_id = "Links_ForWeb".id
+    join "SimpleEntities" as "Links_ForWeb_SimpleEntities" on "Links_ForWeb".id = "Links_ForWeb_SimpleEntities".id
+    join "Links" as "Thumbnails" on "Links_ForWeb_SimpleEntities".thumbnail_id = "Thumbnails".id
+
+    left outer join "Entity_Tags" on "Links".id = "Entity_Tags".entity_id
+    left outer join "SimpleEntities" as "Tag_SimpleEntities" on "Entity_Tags".tag_id = "Tag_SimpleEntities".id
+
+    where (108 = any (tasks.path) or tasks.id = 108) %(search_string)s
 
     group by "Links".id,
-        "Links".full_path,
-        "Links".original_filename,
-        "Thumbnails".id,
-        entity_tags.tags
-    ) as data
+        "Links".original_filename
+
+    order by "Links".id
+
+) as data
     """ % {
         'id': entity_id,
         'tasks_hierarchical_name_table':
@@ -604,11 +576,9 @@ def delete_reference(request):
                 pass
 
         response = Response('%s removed successfully' % original_filename)
-        response.status_int = 200
         return response
     else:
-        response = Response('No ref with id : %i' % ref_id)
-        response.status_int = 500
+        response = Response('No ref with id : %i' % ref_id, 500)
         transaction.abort()
         return response
 
@@ -673,6 +643,18 @@ def serve_repository_files(request):
     logger.debug('file_full_path : %s' % file_full_path)
 
     return FileResponse(file_full_path)
+
+
+@view_config(
+    route_name='video_player',
+    renderer='templates/link/video_player.jinja2'
+)
+def video_player(request):
+    """generates an iframe for video player
+    """
+    return {
+        'video_full_path': request.params.get('video_full_path')
+    }
 
 
 class MediaManager(object):
@@ -745,11 +727,18 @@ class MediaManager(object):
         :return str: returns the thumbnail path
         """
         # generate thumbnail for the image and save it to a tmp folder
-        thumbnail_path = tempfile.mktemp(suffix=self.thumbnail_format)
+        suffix = self.thumbnail_format
+
         img = Image.open(file_full_path)
         img.thumbnail((2 * self.thumbnail_width, 2 * self.thumbnail_height))
         img.thumbnail((self.thumbnail_width, self.thumbnail_height),
                       Image.ANTIALIAS)
+
+        if img.format == 'GIF':
+            suffix = '.gif'  # force save in gif format
+
+        thumbnail_path = tempfile.mktemp(suffix=suffix)
+
         img.save(thumbnail_path, **self.thumbnail_options)
         return thumbnail_path
 
@@ -761,15 +750,21 @@ class MediaManager(object):
         :return str: returns the thumbnail path
         """
         # generate thumbnail for the image and save it to a tmp folder
-        thumbnail_path = tempfile.mktemp(suffix=self.thumbnail_format)
-        img = Image.open(file_full_path)
+        suffix = self.thumbnail_format
 
+        img = Image.open(file_full_path)
         if img.size[0] > self.web_image_width \
            or img.size[1] > self.web_image_height:
-            img.thumbnail((2 * self.thumbnail_width,
-                           2 * self.thumbnail_height))
-            img.thumbnail((self.thumbnail_width, self.thumbnail_height),
+            img.thumbnail((2 * self.web_image_width,
+                           2 * self.web_image_height))
+            img.thumbnail((self.web_image_width, self.web_image_height),
                           Image.ANTIALIAS)
+
+        if img.format == 'GIF':
+            suffix = '.gif'  # force save in gif format
+
+        thumbnail_path = tempfile.mktemp(suffix=suffix)
+
         img.save(thumbnail_path)
         return thumbnail_path
 
@@ -892,7 +887,7 @@ class MediaManager(object):
           given path
         :return str: returns the thumbnail path
         """
-        extension = os.path.splitext(file_full_path)[-1]
+        extension = os.path.splitext(file_full_path)[-1].lower()
         # check if it is an image or video or non of them
         if extension in self.image_formats:
             # generate a thumbnail from image
@@ -914,7 +909,7 @@ class MediaManager(object):
           file in the given path.
         :return str: returns the media file path.
         """
-        extension = os.path.splitext(file_full_path)[-1]
+        extension = os.path.splitext(file_full_path)[-1].lower()
         # check if it is an image or video or non of them
         if extension in self.image_formats:
             # generate a thumbnail from image
@@ -1403,6 +1398,54 @@ class MediaManager(object):
 
         return random_file_full_path
 
+    def format_filename(self, filename):
+        """formats the filename to comply with file naming rules of Stalker
+        Pyramid
+        """
+        if isinstance(filename, str):
+            filename = filename.decode('utf-8')
+
+        # replace Turkish characters
+        bad_character_map = {
+            '\xc3\xa7': 'c',
+            '\xc4\x9f': 'g',
+            '\xc4\xb1': 'i',
+            '\xc3\xb6': 'o',
+            '\xc5\x9f': 's',
+            '\xc3\xbc': 'u',
+            '\xc3\x87': 'C',
+            '\xc4\x9e': 'G',
+            '\xc4\xb0': 'I',
+            '\xc3\x96': 'O',
+            '\xc3\x9c': 'U',
+
+            u'\xe7': 'c',
+            u'\u011f': 'g',
+            u'\u0131': 'i',
+            u'\xf6': 'o',
+            u'\u015f': 's',
+            u'\xfc': 'u',
+            u'\xc7': 'C',
+            u'\u011e': 'G',
+            u'\u0130': 'I',
+            u'\xd6': 'O',
+            u'\xdc': 'U',
+        }
+        filename_buffer = []
+        for char in filename:
+            if char in bad_character_map:
+                filename_buffer.append(bad_character_map[char])
+            else:
+                filename_buffer.append(char)
+        filename = ''.join(filename_buffer)
+
+        # replace ' ' with '_'
+        import re
+        basename, extension = os.path.splitext(filename)
+        filename = '%s%s' % (re.sub(r'[\s\.\\/:\*\?"<>|=,]+', '_', basename), extension)
+
+        return filename
+
     def upload_file(self, file_object, file_path=None, filename=None):
         """Uploads files to the given path.
 
@@ -1421,6 +1464,8 @@ class MediaManager(object):
 
         if filename is None:
             filename = tempfile.mktemp(dir=file_path)
+        else:
+            filename = self.format_filename(filename)
 
         file_full_path = os.path.join(file_path, filename)
         if os.path.exists(file_full_path):

@@ -644,6 +644,46 @@ class MediaManagerTestCase(unittest2.TestCase):
         self.assertEqual('test_video.mp4', link2.original_filename)
         self.assertEqual(link1.original_filename, link2.original_filename)
 
+    def test_upload_reference_with_unsupported_characters_in_file_name(self):
+        """testing if the filename will be formatted properly to a suitable one
+        if it contains unsupported characters in
+        MediaManager.upload_reference()
+        """
+        test_file_names = [
+            ('Screen Shot 2014-01-09 at 3.08.09 PM.jpg',
+             'Screen_Shot_2014-01-09_at_3_08_09_PM.jpg'),
+            ('pet sise_08.jpg', 'pet_sise_08.jpg'),
+            ('03-MOB\xc4\xb0LYA (1).jpg', '03-MOBILYA_(1).jpg'),
+            ('b-376152-polis_arabas\xc4\xb1.jpg', 'b-376152-polis_arabasi.jpg'),
+            ('kasap-d\xc3\xbckkan\xc4\xb1-b644.jpg', 'kasap-dukkani-b644.jpg'),
+            ('\xc3\xa7\xc4\x9f\xc4\xb1\xc3\xb6\xc5\x9f\xc3\xbc'
+             '\xc3\x87\xc4\x9e\xc4\xb0\xc3\x96\xc3\x9c.jpg',
+             'cgiosuCGIOU.jpg'),
+            ('\\/:\*\?"<>|.jpg', '_.jpg'),
+            ('eGhsczN1MTI=_o_taklac-gvercinler.jpg',
+             'eGhsczN1MTI__o_taklac-gvercinler.jpg'),
+            ('FB,8241,84,konfor-rahat-taba-erkek-ayakkabi.jpg',
+             'FB_8241_84_konfor-rahat-taba-erkek-ayakkabi.jpg')
+        ]
+
+        # create a temp file and ask to save over it
+        # upload an image file as a reference
+        for test_value, expected_result in test_file_names:
+            with open(self.test_image_path) as f:
+                link1 = self.test_media_manager.upload_reference(
+                    self.test_task2, f, test_value
+                )
+            #the file in filesystem is saved correctly
+            self.assertEqual(
+                os.path.basename(link1.full_path),
+                expected_result
+            )
+            # but original filename is intact
+            self.assertEqual(
+                link1.original_filename,
+                test_value
+            )
+
     def test_randomize_filename_is_working_properly(self):
         """testing if MediaManager.randomize_filename() is working properly
         """

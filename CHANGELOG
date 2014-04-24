@@ -2,6 +2,13 @@
 Stalker Pyramid Changes
 =======================
 
+0.1.10
+======
+
+* MediaManager now replaces any Turkish characters with English versions of them.
+* Added script for moving old style references from SPL to the Fileserver with new style References
+* Added script to remove any unused file from SPL
+
 0.1.9
 =====
 
