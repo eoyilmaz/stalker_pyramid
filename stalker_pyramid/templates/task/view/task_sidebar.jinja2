@@ -105,14 +105,6 @@
     $(function () {
         //$('#reference_count').text(data);
         menu_of(
-            'References',
-            "{%- if request.current_route_path() == request.route_path('list_task_references', id=task.id) -%} 'active', {%- else -%},{%- endif -%}",
-            '{{ request.route_url('list_task_references', id=task.id) }}',
-            get_icon('reference'),
-            '/entities/{{ task.id }}/references/count/'
-        );
-
-        menu_of(
             'Dashboard',
             "{%- if request.current_route_path() == request.route_path('view_task', id=task.id) -%}'active',{%- else -%},{%- endif -%}",
             '{{ request.route_url('view_task', id=task.id) }}',
@@ -168,6 +160,14 @@
             '{{ request.route_url('list_task_version_outputs', id=task.id) }}',
             get_icon('version_output'),
             '{{ request.route_url('get_task_version_outputs_count', id=task.id) }}'
+        );
+
+        menu_of(
+            'References',
+            "{%- if request.current_route_path() == request.route_path('list_task_references', id=task.id) -%} 'active', {%- else -%},{%- endif -%}",
+            '{{ request.route_url('list_task_references', id=task.id) }}',
+            get_icon('reference'),
+            '/entities/{{ task.id }}/references/count/'
         );
 
         menu_of(
