@@ -138,7 +138,7 @@
                             }
                         }
 
-                        console.log('fd:', fd);
+{#                        console.log('fd:', fd);#}
 
                         deferred = $.ajax({
                             url: submit_url,
@@ -189,16 +189,14 @@
                     }
 
                     deferred.done(function (res) {
-                        console.log('code is here 1');
                         {#                    if (res.status == 'OK'){#}
                         {#                        $('#entity_avatar').get(0).src = res.url;#}
                         {#                    } else {#}
                         {#                        alert(res.message);#}
                         {#                    }#}
-                        console.log('code is here 2');
                     }).fail(function (res) {
-                                {#                    alert("Failure");#}
-                            });
+                        {#                    alert("Failure");#}
+                    });
 
                     return deferred.promise();
                 },

@@ -343,10 +343,10 @@
                 shot_sequences = '{{ entity.sequences[0].id }}';
             {% endif %}
 
-            console.log('shot_sequences :', shot_sequences);
+{#            console.log('shot_sequences :', shot_sequences);#}
         {% endif %}
 
-        console.log('shot_sequences :', shot_sequences);
+{#        console.log('shot_sequences :', shot_sequences);#}
     
 
         {% if depends_to %}
@@ -495,7 +495,7 @@
 
         field_update_mode_checker();
         $.getJSON('{{ request.route_url("get_project_tasks", id=project.id) }}').then(function(data){
-            console.log('data.length:', data.length);
+{#            console.log('data.length:', data.length);#}
             {# remove self from the list #}
             {% if entity %}
                 var index = -1;
@@ -508,7 +508,7 @@
                 if (index !== -1){
                     data.splice(index, 1);
                 }
-                console.log('data.length:', data.length);
+{#                console.log('data.length:', data.length);#}
             {% endif %}
 
             // now append the data to the task_parent
@@ -707,7 +707,7 @@
         //
         // Update the resource field
         //
-        console.log('selected_resources : ', selected_resources);
+{#        console.log('selected_resources : ', selected_resources);#}
 
         // set the field to updating mode
         task_resources.attr('is_updating', true);
@@ -766,7 +766,7 @@
             var curr_value = $(this).val();
             $(this).val(curr_value <= 1000 ? curr_value >= 1 ? curr_value : 1 : 1000 );
         });
-        console.log('entity.priority : ', priority);
+{#        console.log('entity.priority : ', priority);#}
 
         {# ***************************************************************** #}
         {# Submit Button #}
@@ -784,7 +784,7 @@
             var task_form = $('#task_form');
             var form_data = task_form.serialize();
             form_data += '&project_id={{ project.id }}&entity_type='+entity_type_value;
-            console.log('form_data :', form_data);
+{#            console.log('form_data :', form_data);#}
 
             if ( task_form.validate() ){
                 // prevent multiple sends

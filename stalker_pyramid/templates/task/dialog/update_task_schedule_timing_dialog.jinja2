@@ -125,7 +125,7 @@
 
             var task_form = $('#task_form');
             var form_data = task_form.serialize();
-            console.log('form_data :', form_data);
+{#            console.log('form_data :', form_data);#}
 
             if ( task_form.validate() ){
                 // prevent multiple sends
@@ -144,7 +144,7 @@
                     $('#schedule_timing_{{ entity.id }}').text($('#task_schedule_timing').val())
                     $('#schedule_unit_{{ entity.id }}').text($('#task_schedule_unit').val())
 
-                    console.log($('#task_update_bid').prop('checked'))
+{#                    console.log($('#task_update_bid').prop('checked'))#}
 
                     if($('#task_update_bid').prop('checked')){
                         $('#bid_timing_{{ entity.id }}').text($('#task_schedule_timing').val())
@@ -222,7 +222,6 @@
             }
 
         });
-
 
         console.log('initialize task dialog end')
     }

@@ -755,7 +755,7 @@ require([
                 '/tasks/' + selected_ids[0] + '/update/dependencies/dialog'
             );
 
-            console.log('update_task_dependencies_menu_item: '+$('#update_task_dependencies_menu_item').attr('href'))
+{#            console.log('update_task_dependencies_menu_item: '+$('#update_task_dependencies_menu_item').attr('href'))#}
 
 
 
@@ -867,11 +867,8 @@ require([
 
         $.getJSON('/entities/' + selected_ids[0] + '/').then(function (data) {
 
-            console.log('data name'+ data[0].name);
+{#            console.log('data name'+ data[0].name);#}
             // warn the user about what is going to happen and ask if it is ok
-
-
-
 
             $('#dialog_template').modal({
                 'remote': '/tasks/' + selected_ids[0] + '/duplicate/dialog?came_from={{ request.current_route_path() }}'
