@@ -35,8 +35,8 @@ from sqlalchemy.exc import IntegrityError
 
 from stalker.db import DBSession
 from stalker import (defaults, User, Task, Entity, Project, StatusList,
-                     Status, TaskJugglerScheduler, Studio, Asset, Shot,
-                     Sequence, Ticket, Type, Note, Review)
+                     Status, Studio, Asset, Shot, Sequence, Ticket, Type, Note,
+                     Review)
 from stalker.exceptions import CircularDependencyError, StatusError
 
 from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
@@ -2427,39 +2427,6 @@ def create_task(request):
     return Response('Task created successfully')
 
 
-@view_config(route_name='auto_schedule_tasks')
-def auto_schedule_tasks(request):
-    """schedules all the tasks of active projects
-    """
-    logged_in_user = get_logged_in_user(request)
-
-    # get the studio
-    studio = Studio.query.first()
-
-    if not studio:
-        transaction.abort()
-        return Response("There is no Studio instance\n"
-                        "Please create a studio first", 500)
-
-    tj_scheduler = TaskJugglerScheduler()
-    studio.scheduler = tj_scheduler
-
-    try:
-        stderr = studio.schedule(scheduled_by=logged_in_user)
-
-        # update schedule timings to UTC
-        studio.last_scheduled_at = local_to_utc(studio.last_scheduled_at)
-        studio.scheduling_started_at = \
-            local_to_utc(studio.scheduling_started_at)
-
-        c = StdErrToHTMLConverter(stderr)
-        return Response(c.html(replace_links=True))
-    except RuntimeError as e:
-        c = StdErrToHTMLConverter(e)
-        transaction.abort()
-        return Response(c.html(replace_links=True), 500)
-
-
 def get_last_version_of_task(request, is_published=''):
     """finds last published version of task
     """
@@ -2586,6 +2553,7 @@ def cleanup_task_new_reviews_dialog(request):
         'action': action
     }
 
+
 def get_answered_reviews(task, review_set_number):
     """deletes reviews object which status is NEW
     """
@@ -2595,17 +2563,14 @@ def get_answered_reviews(task, review_set_number):
     answered_reviews = []
 
     for review in reviews:
-
         status_new = Status.query.filter_by(code='NEW').first()
         if review.status is not status_new:
-
             answered_reviews.append(review)
-
-
 
     logger.debug('get_answered_reviews ends')
 
     return answered_reviews
+
 
 @view_config(
     route_name='cleanup_task_new_reviews'
@@ -2675,7 +2640,6 @@ def cleanup_task_new_reviews(request):
     return Response('Successfully Unanswered reviews are cleaned!')
 
 
-
 @view_config(
     route_name='review_sequence_dialog',
     renderer='templates/task/dialog/review_task_dialog.jinja2'
@@ -2716,7 +2680,6 @@ def review_task_dialog(request):
 
     if review:
         review_description = review.description
-
 
     project = entity.project
 
@@ -2759,10 +2722,6 @@ def review_task(request):
         return request_revision(request)
 
 
-
-
-
-
 def cleanup_unanswered_reviews(task, review_set_number):
     """deletes reviews object which status is NEW
     """
@@ -2770,7 +2729,6 @@ def cleanup_unanswered_reviews(task, review_set_number):
     reviews = task.review_set(review_set_number)
 
     for review in reviews:
-
         status_new = Status.query.filter_by(code='NEW').first()
         if review.status == status_new:
 
@@ -2789,15 +2747,12 @@ def cleanup_unanswered_reviews(task, review_set_number):
 def forced_review(reviewer, task):
     """deletes all new reviews and creates a review with approved status
     """
-
     logger.debug('forced_review starts')
 
     cleanup_unanswered_reviews(task, task.review_number + 1)
-
     review = Review(reviewer=reviewer, task=task)
 
     return review
-
 
 
 @view_config(
@@ -2860,9 +2815,13 @@ def approve_task(request):
     try:
         review.approve()
 
-        review.description = '%(resource_note)s <br/> <b>%(reviewer_name)s</b>: %(reviewer_note)s' % {'resource_note': review.description,
-                                                                                             'reviewer_name': logged_in_user.name,
-                                                                                             'reviewer_note': note.content }
+        review.description = \
+            '%(resource_note)s <br/> <b>%(reviewer_name)s</b>: ' \
+            '%(reviewer_note)s' % {
+                'resource_note': review.description,
+                'reviewer_name': logged_in_user.name,
+                'reviewer_note': note.content
+            }
 
         review.date_updated = utc_now
 
@@ -2894,7 +2853,8 @@ def approve_task(request):
             '%(note)s'
 
         message = Message(
-            subject='Task Reviewed: "%(task_hierarchical_name)s" has been approved by %(user)s!' % {
+            subject='Task Reviewed: "%(task_hierarchical_name)s" has been '
+                    'approved by %(user)s!' % {
                 'task_hierarchical_name': task_hierarchical_name,
                 'user': logged_in_user
             },
@@ -3032,22 +2992,21 @@ def request_revision(request):
             transaction.abort()
             return Response('There is no review', 500)
 
-
         try:
             review.request_revision(
-                    schedule_timing,
-                    schedule_unit,
-                    '%(resource_note)s <br/> <b>%(reviewer_name)s</b>: %(reviewer_note)s' % {'resource_note': review.description,
-                                                                                             'reviewer_name': logged_in_user.name,
-                                                                                             'reviewer_note': note.content }
-                )
+                schedule_timing,
+                schedule_unit,
+                '%(resource_note)s <br/> <b>%(reviewer_name)s</b>: '
+                '%(reviewer_note)s' % {
+                    'resource_note': review.description,
+                    'reviewer_name': logged_in_user.name,
+                    'reviewer_note': note.content
+                }
+            )
             review.date_updated = utc_now
-
-
 
         except StatusError as e:
                 return Response('StatusError: %s' % e, 500)
-
 
     task.notes.append(note)
     task.updated_by = logged_in_user
@@ -3076,7 +3035,8 @@ def request_revision(request):
             '%(note)s'
 
         message = Message(
-            subject='Task Reviewed: "%(task_hierarchical_name)s" has been requested revision by %(user)s!' % {
+            subject='Task Reviewed: "%(task_hierarchical_name)s" has been '
+                    'requested revision by %(user)s!' % {
                 'task_hierarchical_name': task_hierarchical_name,
                 'user': logged_in_user
             },
@@ -3121,8 +3081,10 @@ def request_review_task_dialog(request):
 
     request_review_mode = request.params.get('request_review_mode', 'Progress')
 
-    selected_responsible_id = request.params.get('selected_responsible_id', '-1')
-    selected_responsible = User.query.filter_by(id=selected_responsible_id).first()
+    selected_responsible_id = \
+        request.params.get('selected_responsible_id', '-1')
+    selected_responsible = \
+        User.query.filter_by(id=selected_responsible_id).first()
 
     if request_review_mode == 'Progress':
         version = get_last_version_of_task(request, is_published='')

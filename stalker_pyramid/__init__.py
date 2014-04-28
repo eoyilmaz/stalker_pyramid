@@ -239,6 +239,7 @@ def main(global_config, **settings):
 
     config.add_route('schedule_info',               'schedule_info')  # json
     config.add_route('studio_scheduling_mode',      'studio_scheduling_mode')
+    config.add_route('auto_schedule_tasks',         'auto_schedule_tasks')
 
     # *************************************************************************
     # Project
@@ -519,8 +520,6 @@ def main(global_config, **settings):
 
     config.add_route('get_gantt_tasks',          'tasks/{id}/gantt')
     config.add_route('get_gantt_task_children',  'tasks/{id}/children/gantt')
-
-    config.add_route('auto_schedule_tasks', 'auto_schedule_tasks')
 
     config.add_route('get_tasks',         'tasks/')
     config.add_route('get_task',          'tasks/{id}/')
