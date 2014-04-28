@@ -273,28 +273,19 @@
                                     var cell_template = doT.template($('#tmpl_taskCell').html());
                                     var cell_row_template = doT.template($('#tmpl_taskCellRow').html());
 
-
                                     for (var j = 0; j < types_data.length; j++) {
-
                                         var tasks = data[i][types_data[j].name];
-
 {#                                        console.log(types_data[j].name + ' : ' + data[i][types_data[j].name])#}
 
                                         if (tasks) {
-
                                             asset_row.append(cell_template({'type_id': types_data[j].id + '_' + data[i].id }));
 
                                             var task_cell = $('#task_cell_' + types_data[j].id + '_' + data[i].id);
 
                                             for (var k = 0; k < tasks.length; k++) {
-
                                                 var task = tasks[k]
-
                                                 task_cell.append(cell_row_template({'id': task[0], 'name': task[1], 'status': task[2], 'status_color': task[2].toLowerCase(), 'percent_complete': (task[2] == 'WIP' ? task[3] : ''), 'update_asset_action': data[i].update_asset_action}));
-
-
                                             }
-
 
                                         } else {
                                             {#                                        asset_row.append(cell_template({'type_name': '', 'id': '', 'name': '', 'status': '', 'status_color': 'black2','percent_complete':''}));#}
@@ -312,8 +303,6 @@
                                     }
 
                                 }
-
-
 
                                 var oTable1 = $('#assets_table').dataTable();
 
