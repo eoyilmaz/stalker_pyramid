@@ -25,7 +25,7 @@ import pyramid_beaker
 
 from zope.sqlalchemy import ZopeTransactionExtension
 
-__version__ = '0.1.7'
+__version__ = '0.1.10'
 
 
 # before anything about stalker create the defaults
@@ -239,6 +239,7 @@ def main(global_config, **settings):
 
     config.add_route('schedule_info',               'schedule_info')  # json
     config.add_route('studio_scheduling_mode',      'studio_scheduling_mode')
+    config.add_route('auto_schedule_tasks',         'auto_schedule_tasks')
 
     # *************************************************************************
     # Project
@@ -304,6 +305,18 @@ def main(global_config, **settings):
 
     config.add_route('list_repositories', 'repositories/list')  # html
     config.add_route('get_repositories', 'repositories/')  # json
+
+    # serve files in repository
+    config.add_route('serve_repository_files',
+                     'repositories/{id}/{partial_file_path:[a-zA-Z0-9/\._\-\+\(\)]*}')
+
+    config.add_route(
+        'forced_download_repository_files',
+        'FDrepositories/{id}/{partial_file_path:[a-zA-Z0-9/\._\-\+\(\)]*}'
+    )
+
+
+    config.add_route('video_player', 'video_player')  #html
 
     # *************************************************************************
     # Structure
@@ -508,8 +521,6 @@ def main(global_config, **settings):
     config.add_route('get_gantt_tasks',          'tasks/{id}/gantt')
     config.add_route('get_gantt_task_children',  'tasks/{id}/children/gantt')
 
-    config.add_route('auto_schedule_tasks', 'auto_schedule_tasks')
-
     config.add_route('get_tasks',         'tasks/')
     config.add_route('get_task',          'tasks/{id}/')
     config.add_route('get_task_children', 'tasks/{id}/children/')
@@ -598,6 +609,14 @@ def main(global_config, **settings):
     config.add_route('list_version_outputs',  'versions/{id}/outputs/list')  # html
     config.add_route('list_version_inputs',   'versions/{id}/inputs/list')  # html
     config.add_route('list_version_children', 'versions/{id}/children/list')  # html
+
+    config.add_route('list_task_version_outputs',  'tasks/{id}/versions/outputs/list')  # html
+
+    config.add_route('get_version_outputs',       'versions/{id}/outputs')
+    config.add_route('get_version_outputs_count', 'versions/{id}/outputs/count')
+
+    config.add_route('get_task_version_outputs',       'tasks/{id}/versions/outputs')
+    config.add_route('get_task_version_outputs_count', 'tasks/{id}/versions/outputs/count')
 
     # *************************************************************************
     # Department

@@ -397,7 +397,7 @@
                 type: 'text',
                 name: 'username',
                 success: function (response, newValue) {
-                    console.log('newValue ' + newValue);
+{#                    console.log('newValue ' + newValue);#}
 
                     var params = $.param({
                         attr_name: 'name',
@@ -439,7 +439,7 @@
                             $.post(
                                 inline_update_url, params
                             ).done(function () {
-                                console.log('done');
+{#                                console.log('done');#}
                             }).fail(function (jqXHR) {
                                 bootbox.alert('<div id="message" class="alert alert-danger bigger-110">' + jqXHR.responseText + '</div>');
 
@@ -667,7 +667,6 @@
 
     <script>
         $.getJSON('/tasks/{{ entity.id }}/', function(data){
-            console.log('data:', data);
             $(function(){
                 // update created and update time of the task
                 $('#task_date_created').html(moment(data[0].date_created).format('YYYY-MM-DD HH:mm'));

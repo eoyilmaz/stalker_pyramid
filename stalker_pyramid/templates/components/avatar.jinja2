@@ -1,11 +1,13 @@
 
 <div class="profile-picture"
-     style="text-align: center; overflow: hidden; width: 150px">
+     style="text-align: center; overflow: hidden; width: 150px;">
     <img id="entity_avatar"
          class="editable"
          alt="Avatar"
-         style="height: 100%; width: 100%; display: inline;
-                position: relative; left: 100%; margin-left: -200%"
+         style="width: 100%; height: auto; display: inline;
+                position: relative; padding: 0;
+{#                left: 100%; margin-left: -200%;#}
+                top: 0"
          src="{%- if entity.thumbnail -%}
                 /{{ entity.thumbnail.full_path }}
             {%- else -%}
@@ -28,7 +30,7 @@
             //it seems that editable plugin calls appendChild, and as Image doesn't have it, it causes errors on IE at unpredicted points
             //so let's have a fake appendChild for it!
 
-            var last_gritter
+            var last_gritter;
             $('#entity_avatar').editable({
                 type: 'image',
                 name: 'avatar',
@@ -40,13 +42,13 @@
                     /**
                      //this will override the default before_change that only accepts image files
                      before_change: function(files, dropped) {
-return true;
-},
+                    return true;
+                    },
                      */
 
                     //and a few extra ones here
                     name: 'file',//put the field name here as well, will be used inside the custom plugin
-                    max_size: 11000000,//~100Kb
+                    max_size: 11000000, //~10Mb
                     on_error: function (code) {//on_error function will be called when the selected file has a problem
                         if (last_gritter) $.gritter.remove(last_gritter);
                         if (code == 1) {//file format error
@@ -55,7 +57,7 @@ return true;
                                 text: 'Please choose a jpg|gif|png image!',
                                 class_name: 'gritter-error gritter-center'
                             });
-                        } else if (code == 2) {//file size rror
+                        } else if (code == 2) {//file size error
                             last_gritter = $.gritter.add({
                                 title: 'File too big!',
                                 text: 'Image size should not exceed 100Kb!',
@@ -74,23 +76,22 @@ return true;
                     var submit_url = '/upload_files';
                     var deferred;
 
-
 //if value is empty, means no valid files were selected
 //but it may still be submitted by the plugin, because "" (empty string) is different from previous non-empty value whatever it was
 //so we return just here to prevent problems
                     var value = $('#entity_avatar').next().find('input[type=hidden]:eq(0)').val();
                     if (!value || value.length == 0) {
-                        deferred = new $.Deferred
+                        deferred = new $.Deferred;
                         deferred.resolve();
                         return deferred.promise();
                     }
 
-                    var $form = $('#entity_avatar').next().find('.editableform:eq(0)')
+                    var $form = $('#entity_avatar').next().find('.editableform:eq(0)');
                     var file_input = $form.find('input[type=file]:eq(0)');
 
 //user iframe for older browsers that don't support file upload via FormData & Ajax
                     if (!("FormData" in window)) {
-                        deferred = new $.Deferred
+                        deferred = new $.Deferred;
 
                         var iframe_id = 'temporary-iframe-' + (new Date()).getTime() + '-' + (parseInt(Math.random() * 1000));
                         $form.after('<iframe id="' + iframe_id + '" name="' + iframe_id + '" frameborder="0" width="0" height="0" src="about:blank" style="position:absolute;z-index:-1;"></iframe>');
@@ -137,7 +138,7 @@ return true;
                             }
                         }
 
-                        console.log('fd:', fd);
+{#                        console.log('fd:', fd);#}
 
                         deferred = $.ajax({
                             url: submit_url,
@@ -165,43 +166,37 @@ return true;
                             },
                             success: function (data) {
                                 // file is uploaded successfully
-                                // and hopefully a link is created (data.link_ids[0])
                                 // now attach it to this user as a thumbnail
 
                                 $.post('/assign_thumbnail',
-                                                $.param({
-                                                    'link_ids': data.link_ids,
-                                                    'entity_id': {{ entity.id }}
-                                                })
-                                        ).done(function (data1) {
-                                            // and get back user data so we can now
-                                            // where to set the current thumbnail
-                                            // update the thumbnail
+                                    $.param({
+                                        'full_path': data.files[0].full_path,
+                                        'entity_id': {{ entity.id }}
+                                    })
+                                ).done(function (data1) {
+                                    // and get back user data so we can now
+                                    // where to set the current thumbnail
+                                    // update the thumbnail
 
-
-                                            $.getJSON('/entities/{{ entity.id }}/').done(function (data2) {
-
-                                                var new_thumb_path = '/' + data2[0].thumbnail_full_path;
-                                                $('#entity_avatar').attr('src', new_thumb_path);
-                                                // also update side bar
-
-                                            });
-                                        });
+                                    $.getJSON('/entities/{{ entity.id }}/').done(function (data2) {
+                                        var new_thumb_path = '/' + data2[0].thumbnail_full_path;
+                                        $('#entity_avatar').attr('src', new_thumb_path);
+                                        // also update side bar
+                                    });
+                                });
                             }
                         });
                     }
 
                     deferred.done(function (res) {
-                        console.log('code is here 1');
                         {#                    if (res.status == 'OK'){#}
                         {#                        $('#entity_avatar').get(0).src = res.url;#}
                         {#                    } else {#}
                         {#                        alert(res.message);#}
                         {#                    }#}
-                        console.log('code is here 2');
                     }).fail(function (res) {
-                                {#                    alert("Failure");#}
-                            });
+                        {#                    alert("Failure");#}
+                    });
 
                     return deferred.promise();
                 },

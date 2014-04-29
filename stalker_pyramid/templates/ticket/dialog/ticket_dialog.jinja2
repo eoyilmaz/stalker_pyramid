@@ -86,7 +86,7 @@
 </div>
 
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/chosen.jquery.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/moment.min.js") }}'></script>
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/moment.min.js") }}'></script>#}
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.autosize-min.js") }}'></script>
 {#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootstrap-tag.min.js") }}'></script>#}
 
@@ -178,7 +178,7 @@
         ticket_links.attr('is_updating', true);
         field_update_mode_checker();
         $.getJSON('{{ request.route_url("get_project_tasks", id=project.id) }}').then(function(data){
-            console.log('data.length:', data.length);
+{#            console.log('data.length:', data.length);#}
 
             // now append the data to the ticket_links
             {% raw %}
@@ -225,7 +225,7 @@
 
             var form = $('#ticket_form');
             var form_data = form.serialize();
-            console.log('form_data :', form_data);
+{#            console.log('form_data :', form_data);#}
 
             // prevent multiple sends
             if (form.attr('is_sending') == 'true'){

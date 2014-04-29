@@ -34,11 +34,10 @@ from stalker.db import DBSession
 from stalker import User, Ticket, Project, Note, Type, Task
 
 from stalker_pyramid.views import (get_logged_in_user, PermissionChecker,
-                                   milliseconds_since_epoch,
                                    dummy_email_address, local_to_utc,
                                    get_multi_integer)
 from stalker_pyramid.views.link import (replace_img_data_with_links,
-                                        convert_file_link_to_full_path)
+                                        MediaManager)
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -286,7 +285,7 @@ def update_ticket(request):
                 link.created_by = logged_in_user
 
                 # manage attachments
-                link_full_path = convert_file_link_to_full_path(link.full_path)
+                link_full_path = MediaManager.convert_file_link_to_full_path(link.full_path)
                 link_data = open(link_full_path, "rb").read()
 
                 link_extension = os.path.splitext(link.filename)[1].lower()

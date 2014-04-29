@@ -72,9 +72,8 @@
     </div>
 </div>
 
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/moment.min.js") }}'></script>
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/moment.min.js") }}'></script>#}
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.autosize-min.js") }}'></script>
-
 
 <script>
     function init_dialog() {
@@ -120,25 +119,23 @@
                 task_form.attr('is_sending', true);
             }
             $.post(
-                            submit_form_url,
-                            form_data
-                    ).done(function () {
-                        $('#dialog_template').modal('hide');
-                        // reload page
-                        setTimeout(function () { // wait for hide event to finish
-                            window.location.reload();
-                        }, 0);
-                    }).fail(function (jqXHR) {
-                        task_form.attr('is_sending', false);
+                submit_form_url,
+                form_data
+            ).done(function () {
+                $('#dialog_template').modal('hide');
+                // reload page
+                setTimeout(function () { // wait for hide event to finish
+                    window.location.reload();
+                }, 0);
+            }).fail(function (jqXHR) {
+                task_form.attr('is_sending', false);
 
-                        // reset submit button
-                        submit_button.button('reset');
-                        bootbox.alert('<h6 class="red"><i class="icon-warning-sign"></i> Failed</h6>' + jqXHR.responseText);
+                // reset submit button
+                submit_button.button('reset');
+                bootbox.alert('<h6 class="red"><i class="icon-warning-sign"></i> Failed</h6>' + jqXHR.responseText);
 
-                    });
+            });
         });
-
-
 
         console.log('initialize request extra time dialog end')
     }

@@ -28,3 +28,12 @@ class DummyMultiDict(dict):
             return self.__getitem__(key)
         except KeyError:
             return []
+
+
+class DummyFileParam(object):
+    """dummy FileParam object for testing
+    """
+
+    def __init__(self, filename=None, file=None):
+        self.filename = filename
+        self.file = file

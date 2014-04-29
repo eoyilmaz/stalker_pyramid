@@ -1,13 +1,13 @@
 <ul id="breadcrumb_task" class="breadcrumb">
 
     <li>
-        <a href="{{ request.route_url('view_project', id=entity.project.id) }}">{{ entity.project.name }}</a>
+        <a href="{{ request.route_url('view_project', id=task.project.id) }}">{{ task.project.name }}</a>
         <span class="divider">
           <i class="icon-angle-right arrow-icon"></i>
         </span>
     </li>
 
-    {% for parent in entity.parents %}
+    {% for parent in task.parents %}
         <li>
             <a href="{{ request.route_url('view_task', id=parent.id) }}">{{ parent.name }}</a>
             <span class="divider">
@@ -15,9 +15,7 @@
             </span>
         </li>
     {% endfor %}
-    <li class="active">{{ entity.name }}
-
-    </li>
+    <li class="active">{{ task.name }}</li>
 </ul>
 <!--.breadcrumb-->
 

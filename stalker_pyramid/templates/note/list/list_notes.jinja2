@@ -106,7 +106,7 @@
         var note_activity_template = doT.template($('#tmpl_note_activity').html());
 
         $.getJSON('/entities/{{ entity.id }}/notes/').then(function (data) {
-            console.log('done')
+{#            console.log('done')#}
 
             for (var i = 0; i < data.length; i++) {
 
@@ -125,7 +125,7 @@
 
                 {% endif %}
 
-                console.log(data[i].note_type_name)
+{#                console.log(data[i].note_type_name)#}
                 if (data[i].note_type_name == 'Simple Text' || !data[i].note_type_name) {
 
                     notes.append(note_simple_template(data[i]));

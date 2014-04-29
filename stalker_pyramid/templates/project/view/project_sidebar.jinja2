@@ -28,77 +28,64 @@
             "{%- if request.current_route_path() == request.route_path('list_entity_tickets', id=project.id) -%}'active',{%- else -%},{%- endif -%}",
             '{{ request.route_url('list_entity_tickets', id=project.id) }}',
             get_icon('ticket'),
-            '{{ project.open_tickets | count }}'
+            {{ project.open_tickets | count }}
         );
 
-        $.getJSON('/projects/{{ project.id }}/tasks/count/?leaf=1').then(function (data) {
-            menu_of(
-                'Tasks',
-                "{%- if request.current_route_path() == request.route_path('list_entity_tasks', id=project.id) -%}'active',{%- else -%},{%- endif -%}",
-                '{{ request.route_url('list_entity_tasks', id=project.id) }}',
-                get_icon('task'),
-                data
-            );
-        });
+        menu_of(
+            'Tasks',
+            "{%- if request.current_route_path() == request.route_path('list_entity_tasks', id=project.id) -%}'active',{%- else -%},{%- endif -%}",
+            '{{ request.route_url('list_entity_tasks', id=project.id) }}',
+            get_icon('task'),
+            '/projects/{{ project.id }}/tasks/count/?leaf=1'
+        );
 
-        $.getJSON('/projects/{{ project.id }}/assets/count/').then(function (data) {
-            menu_of(
-                'Assets',
-                "{%- if request.current_route_path() == request.route_path('list_project_assets', id=project.id) -%}'active',{%- else -%},{%- endif -%}",
-                '{{ request.route_url('list_project_assets', id=project.id) }}',
-                get_icon('asset'),
-                data
-            );
-        });
+        menu_of(
+            'Assets',
+            "{%- if request.current_route_path() == request.route_path('list_project_assets', id=project.id) -%}'active',{%- else -%},{%- endif -%}",
+            '{{ request.route_url('list_project_assets', id=project.id) }}',
+            get_icon('asset'),
+            '/projects/{{ project.id }}/assets/count/'
+        );
 
-        $.getJSON('/projects/{{ project.id }}/sequences/count/').then(function (data) {
-            menu_of(
-                'Sequences',
-                "{%- if request.current_route_path() == request.route_path('list_project_sequences', id=project.id) -%}'active',{%- else -%},{%- endif -%}",
-                '{{ request.route_url('list_project_sequences', id=project.id) }}',
-                get_icon('sequence'),
-                data
-            );
-        });
+        menu_of(
+            'Sequences',
+            "{%- if request.current_route_path() == request.route_path('list_project_sequences', id=project.id) -%}'active',{%- else -%},{%- endif -%}",
+            '{{ request.route_url('list_project_sequences', id=project.id) }}',
+            get_icon('sequence'),
+            '/projects/{{ project.id }}/sequences/count/'
+        );
 
-        $.getJSON('/projects/{{ project.id }}/shots/count/').then(function (data) {
-            menu_of('Shots',
-                "{%- if request.current_route_path() == request.route_path('list_project_shots', id=project.id) -%}'active',{%- else -%},{%- endif -%}",
-                '{{ request.route_url('list_project_shots', id=project.id) }}',
-                get_icon('shot'),
-                data);
-        });
+        menu_of('Shots',
+            "{%- if request.current_route_path() == request.route_path('list_project_shots', id=project.id) -%}'active',{%- else -%},{%- endif -%}",
+            '{{ request.route_url('list_project_shots', id=project.id) }}',
+            get_icon('shot'),
+            '/projects/{{ project.id }}/shots/count/'
+        );
 
-        $.getJSON('/entities/{{ project.id }}/users/count/').then(function (data) {
-            menu_of(
-                'Users',
-                "{%- if request.current_route_path() == request.route_path('list_project_users', id=project.id) -%}'active',{%- else -%},{%- endif -%}",
-                '{{ request.route_url('list_project_users', id=project.id) }}',
-                get_icon('user'),
-                data
-            );
-        });
+        menu_of(
+            'Users',
+            "{%- if request.current_route_path() == request.route_path('list_project_users', id=project.id) -%}'active',{%- else -%},{%- endif -%}",
+            '{{ request.route_url('list_project_users', id=project.id) }}',
+            get_icon('user'),
+            '/entities/{{ project.id }}/users/count/'
+        );
 
-        $.getJSON('/entities/{{ project.id }}/references/count/').then(function(data){
-             menu_of(
-                'References',
-                "{%- if request.current_route_path() == request.route_path('list_entity_references', id=project.id) -%}'active',{%- else -%},{%- endif -%}",
-                '{{ request.route_url('list_entity_references', id=project.id) }}',
-                get_icon('reference'),
-                data
-             )
-        });
+        menu_of(
+            'References',
+            "{%- if request.current_route_path() == request.route_path('list_entity_references', id=project.id) -%}'active',{%- else -%},{%- endif -%}",
+            '{{ request.route_url('list_entity_references', id=project.id) }}',
+            get_icon('reference'),
+            '/entities/{{ project.id }}/references/count/'
+        );
 
-        $.getJSON('/projects/{{ project.id }}/reviews/count/').then(function(data){
-            menu_of(
-                'Reviews',
-                "{%- if request.current_route_path() == request.route_path('list_project_reviews', id=project.id) -%}'active',{%- else -%},{%- endif -%}",
-                '{{ request.route_url('list_project_reviews', id=project.id) }}',
-                get_icon('review'),
-                data
-            )
-        });
-    })
+        menu_of(
+            'Reviews',
+            "{%- if request.current_route_path() == request.route_path('list_project_reviews', id=project.id) -%}'active',{%- else -%},{%- endif -%}",
+            '{{ request.route_url('list_project_reviews', id=project.id) }}',
+            get_icon('review'),
+            '/projects/{{ project.id }}/reviews/count/'
+        );
+    });
 </script>
 
 <script type="text/javascript">

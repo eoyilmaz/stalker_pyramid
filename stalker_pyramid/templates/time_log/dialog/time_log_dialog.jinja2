@@ -130,7 +130,7 @@
 
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/chosen.jquery.min.js") }}'></script>
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-datepicker.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/moment.min.js") }}'></script>
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/moment.min.js") }}'></script>#}
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/daterangepicker.min.js") }}'></script>
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-timepicker.min.js") }}'></script>
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.autosize-min.js") }}'></script>
@@ -143,7 +143,7 @@
 function init_dialog() {
     console.debug('starting to initialize time_log dialog!!!');
 
-    console.log('mode {{ mode }}')
+{#    console.log('mode {{ mode }}')#}
 
     var dialog_template_label = $('#dialog_template_label');
     dialog_template_label.find('span').remove();

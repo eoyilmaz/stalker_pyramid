@@ -26,9 +26,10 @@ from pyramid.response import Response
 from pyramid.view import view_config
 
 from stalker.db import DBSession
-from stalker import Studio, WorkingHours
+from stalker import Studio, WorkingHours, TaskJugglerScheduler
 import transaction
-from stalker_pyramid.views import (get_time, get_logged_in_user, local_to_utc)
+from stalker_pyramid.views import (get_time, get_logged_in_user, local_to_utc,
+                                   StdErrToHTMLConverter)
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -169,6 +170,39 @@ def update_studio(request):
         # Commit will be handled by the zope transaction extension
 
     return HTTPOk()
+
+
+@view_config(route_name='auto_schedule_tasks')
+def auto_schedule_tasks(request):
+    """schedules all the tasks of active projects
+    """
+    logged_in_user = get_logged_in_user(request)
+
+    # get the studio
+    studio = Studio.query.first()
+
+    if not studio:
+        transaction.abort()
+        return Response("There is no Studio instance\n"
+                        "Please create a studio first", 500)
+
+    tj_scheduler = TaskJugglerScheduler()
+    studio.scheduler = tj_scheduler
+
+    try:
+        stderr = studio.schedule(scheduled_by=logged_in_user)
+
+        # update schedule timings to UTC
+        studio.scheduling_started_at = \
+            local_to_utc(studio.scheduling_started_at)
+        studio.last_scheduled_at = local_to_utc(studio.last_scheduled_at)
+
+        c = StdErrToHTMLConverter(stderr)
+        return Response(c.html(replace_links=True))
+    except RuntimeError as e:
+        c = StdErrToHTMLConverter(e)
+        transaction.abort()
+        return Response(c.html(replace_links=True), 500)
 
 
 @view_config(

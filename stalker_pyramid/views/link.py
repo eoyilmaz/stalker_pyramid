@@ -17,11 +17,16 @@
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
-
+import shutil
+import subprocess
+import tempfile
+import datetime
+import copy
 import os
 import logging
 import uuid
 import base64
+
 import transaction
 from HTMLParser import HTMLParser
 from PIL import Image
@@ -31,10 +36,11 @@ from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPOk
 
 from stalker.db import DBSession
-from stalker import Entity, Link, defaults
+from stalker import Entity, Link, defaults, Repository, Version
 
 from stalker_pyramid.views import (get_logged_in_user, get_multi_integer,
-                                   get_tags, StdErrToHTMLConverter)
+                                   get_tags, StdErrToHTMLConverter,
+                                   local_to_utc, get_multi_string)
 
 
 logger = logging.getLogger(__name__)
@@ -79,7 +85,6 @@ class ImgToLinkConverter(HTMLParser):
         self.raw_data = data
 
     def handle_starttag(self, tag, attrs):
-        # print tag, attrs
         attrs_dict = {}
         if tag == 'img':
             # convert attributes to a dict
@@ -94,9 +99,11 @@ class ImgToLinkConverter(HTMLParser):
             # get the file type and use it as extension
             image_data = ImageData(src)
             # generate a path for this file
-            file_full_path, link_full_path = \
-                generate_local_file_path(image_data.extension)
-            original_name = os.path.basename(link_full_path)
+            file_full_path = \
+                MediaManager.generate_local_file_path(image_data.extension)
+            link_full_path = \
+                MediaManager.convert_full_path_to_file_link(file_full_path)
+            original_name = os.path.basename(file_full_path)
 
             # create folders
             try:
@@ -153,16 +160,20 @@ def replace_img_data_with_links(raw_data):
     renderer='json'
 )
 def upload_files(request):
-    """uploads a list of files to the server, creates Link instances in server
-    and returns the created link ids with a response to let the front end
-    request a linkage between the entity and the uploaded files
+    """Uploads a list of files to the server.
+
+    It will store the files in a temp folder and return the placement of the
+    files in the server to let the front end request a linkage between the
+    entity and the uploaded files, like using them as a reference for some
+    entities or as a thumbnail for others etc.
     """
     # decide if it is single or multiple files
     file_params = request.POST.getall('file')
     logger.debug('file_params: %s ' % file_params)
 
+    mm = MediaManager()
     try:
-        new_links = upload_files_to_server(request, file_params)
+        new_files_info = mm.upload_with_request_params(file_params)
     except IOError as e:
         c = StdErrToHTMLConverter(e)
         response = Response(c.html())
@@ -170,13 +181,10 @@ def upload_files(request):
         transaction.abort()
         return response
     else:
-        # store the link object
-        DBSession.add_all(new_links)
-
-        logger.debug('created links for uploaded files: %s' % new_links)
+        logger.debug('created links for uploaded files: %s' % new_files_info)
 
         return {
-            'link_ids': [link.id for link in new_links]
+            'files': new_files_info
         }
 
 
@@ -186,28 +194,50 @@ def upload_files(request):
 def assign_thumbnail(request):
     """assigns the thumbnail to the given entity
     """
-    link_ids = get_multi_integer(request, 'link_ids[]')
+    full_path = request.params.get('full_path')
     entity_id = request.params.get('entity_id', -1)
 
-    link = Link.query.filter(Link.id.in_(link_ids)).first()
     entity = Entity.query.filter_by(id=entity_id).first()
 
-    logger.debug('link_ids  : %s' % link_ids)
-    logger.debug('link      : %s' % link)
-    logger.debug('entity_id : %s' % entity_id)
-    logger.debug('entity    : %s' % entity)
+    logger.debug('full_path : %s' % full_path)
+    logger.debug('entity_id  : %s' % entity_id)
+    logger.debug('entity     : %s' % entity)
 
     logged_in_user = get_logged_in_user(request)
-    if entity and link:
-        entity.thumbnail = link
+    if entity and full_path:
+        mm = MediaManager()
+        thumbnail_path = mm.generate_thumbnail(full_path)
+        thumbnail_extension = os.path.splitext(thumbnail_path)[-1]
 
-        # resize the thumbnail
-        file_full_path = convert_file_link_to_full_path(link.full_path)
-        img = Image.open(file_full_path)
-        if img.format != 'GIF':
-            img.thumbnail((1024, 1024))
-            img.thumbnail((512, 512), Image.ANTIALIAS)
-            img.save(file_full_path)
+        # move the thumbnail to SPL
+        thumbnail_spl_path = mm.generate_local_file_path(
+            extension=thumbnail_extension
+        )
+        thumbnail_spl_relative_path = thumbnail_spl_path.replace(
+            defaults.server_side_storage_path, 'SPL'
+        )
+        try:
+            os.makedirs(os.path.dirname(thumbnail_spl_path))
+        except OSError:  # dir exists
+            pass
+
+        # move the file there
+        shutil.move(thumbnail_path, thumbnail_spl_path)
+
+        logger.debug('thumbnail_path              : %s' % thumbnail_path)
+        logger.debug('thumbnail_extension         : %s' % thumbnail_extension)
+        logger.debug('thumbnail_spl_path          : %s' % thumbnail_spl_path)
+        logger.debug('thumbnail_spl_relative_path : %s' %
+                     thumbnail_spl_relative_path)
+
+        # now create a link for the thumbnail
+        utc_now = local_to_utc(datetime.datetime.now())
+        link = Link(
+            full_path=thumbnail_spl_relative_path,
+            created_by=logged_in_user,
+            date_created=utc_now
+        )
+        entity.thumbnail = link
 
         DBSession.add(entity)
         DBSession.add(link)
@@ -220,51 +250,44 @@ def assign_thumbnail(request):
     renderer='json'
 )
 def assign_reference(request):
-    """assigns the link to the given entity as a new reference
+    """assigns the given files as references for the given entity
     """
-    link_ids = get_multi_integer(request, 'link_ids[]')
-    removed_link_ids = get_multi_integer(request, 'removed_link_ids[]')
-    entity_id = request.params.get('entity_id', -1)
+    full_paths = request.POST.getall('full_paths[]')
+    original_filenames = request.POST.getall('original_filenames[]')
 
+    entity_id = request.params.get('entity_id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
-    links = Link.query.filter(Link.id.in_(link_ids)).all()
-    removed_links = Link.query.filter(Link.id.in_(removed_link_ids)).all()
 
     # Tags
     tags = get_tags(request)
 
     logged_in_user = get_logged_in_user(request)
 
-    logger.debug('link_ids      : %s' % link_ids)
-    logger.debug('links         : %s' % links)
-    logger.debug('entity_id     : %s' % entity_id)
-    logger.debug('entity        : %s' % entity)
-    logger.debug('tags          : %s' % tags)
-    logger.debug('removed_links : %s' % removed_links)
+    logger.debug('full_paths         : %s' % full_paths)
+    logger.debug('original_filenames : %s' % original_filenames)
+    logger.debug('entity_id          : %s' % entity_id)
+    logger.debug('entity             : %s' % entity)
+    logger.debug('tags               : %s' % tags)
 
-    # remove all the removed links
-    for removed_link in removed_links:
-        # no need to search for any linked tasks here
-        DBSession.delete(removed_link)
+    links = []
+    if entity and full_paths:
+        mm = MediaManager()
+        for full_path, original_filename in zip(full_paths, original_filenames):
+            l = mm.upload_reference(entity, open(full_path), original_filename)
+            l.created_by = logged_in_user
+            l.date_created = local_to_utc(datetime.datetime.now())
+            l.date_updated = l.date_created
 
-    if entity and links:
-        entity.references.extend(links)
-
-        # assign all the tags to the links
-        for link in links:
-            # add the ones not in the tags already
             for tag in tags:
-                if tag not in link.tags:
-                    link.tags.append(tag)
-            #link.tags.extend(tags)
-            # generate thumbnail
-            thumbnail = generate_thumbnail(link)
-            link.thumbnail = thumbnail
-            thumbnail.created_by = logged_in_user
-            DBSession.add(thumbnail)
+                if tag not in l.tags:
+                    l.tags.extend(tags)
 
-        DBSession.add(entity)
-        DBSession.add_all(links)
+            DBSession.add(l)
+            links.append(l)
+
+    # to generate ids for links
+    transaction.commit()
+    DBSession.add_all(links)
 
     # return new links as json data
     # in response text
@@ -278,65 +301,6 @@ def assign_reference(request):
             'tags': [tag.name for tag in link.tags]
         } for link in links
     ]
-
-
-def convert_file_link_to_full_path(link_path):
-    """converts the given Stalker Pyramid Local file link to a real full path
-
-    :param link_path: A link to a file in SPL starting with SPL
-      (ex: SPL/b0/e6/b0e64b16c6bd4857a91be47fb2517b53.jpg)
-    :returns: str
-    """
-    if 'SPL/' in link_path:
-        link_full_path = link_path[len('SPL/'):]
-    else:
-        link_full_path = link_path
-
-    file_full_path = os.path.join(
-        defaults.server_side_storage_path,
-        link_full_path
-    )
-    return file_full_path
-
-
-def generate_thumbnail(link):
-    """Generates a thumbnail for the given link
-
-    :param link: Generates a thumbnail for the given link
-    :return:
-    """
-    # TODO: support video files (somehow, gif thumbs may be???)
-    file_full_path = convert_file_link_to_full_path(link.full_path)
-
-    extension = os.path.splitext(file_full_path)[-1]
-
-    link_original_filename, link_original_extension = \
-        os.path.splitext(link.original_filename)
-
-    thumbnail_original_filename = \
-        link_original_filename + '_t' + link_original_extension
-
-    # generate thumbnails for those references
-    img = Image.open(file_full_path)
-    img.thumbnail((1024, 1024))  # TODO: connect this to a config variable
-    img.thumbnail((512, 512), Image.ANTIALIAS)
-
-    thumbnail_full_path, thumbnail_link_full_path = \
-        generate_local_file_path(extension)
-
-    # create the dirs before saving
-    try:
-        os.makedirs(os.path.dirname(thumbnail_full_path))
-    except OSError:  # path exists
-        pass
-    img.save(thumbnail_full_path)
-
-    # create a link to be the thumbnail of the original
-    thumbnail = Link(
-        full_path=thumbnail_link_full_path,
-        original_filename=thumbnail_original_filename
-    )
-    return thumbnail
 
 
 @view_config(route_name='get_project_references', renderer='json')
@@ -364,12 +328,13 @@ def get_entity_references(request):
         search_string_buffer = ['and (']
         for i, s in enumerate(search_string.split(' ')):
             if i != 0:
-                search_string_buffer.append('or')
-            tmp_search_query = """
-            '%(search_str)s' = any (entity_tags.tags)
+                search_string_buffer.append('and')
+            tmp_search_query = """(
+            "Tag_SimpleEntities".name ilike '%(search_wide)s'
             or tasks.entity_type = '%(search_str)s'
             or tasks.full_path ilike '%(search_wide)s'
             or "Links".original_filename ilike '%(search_wide)s'
+            )
             """ % {
                 'search_str': s,
                 'search_wide': '%{s}%'.format(s=s)
@@ -388,48 +353,56 @@ def get_entity_references(request):
     # also with their tags
     sql_query = """
     -- select all links assigned to a project tasks or assigned to a task and its children
-select
-    "Links".id,
-    "Links".full_path,
-    "Links".original_filename,
-    "Thumbnails".full_path as "thumbnail_full_path",
-    entity_tags.tags,
-    array_agg(tasks.id) as entity_id,
-    array_agg(tasks.full_path) as full_path,
-    array_agg(tasks.entity_type) as entity_type
-from (
-    %(tasks_hierarchical_name_table)s
-) as tasks
-join "Task_References" on tasks.id = "Task_References".task_id
-join "Links" on "Task_References".link_id = "Links".id
-join "SimpleEntities" as "Link_SimpleEntities" on "Links".id = "Link_SimpleEntities".id
-join "Links" as "Thumbnails" on "Link_SimpleEntities".thumbnail_id = "Thumbnails".id
-left outer join (
+select * from (
     select
         "Links".id,
-        array_agg("Tag_SimpleEntities".name) as tags
-    from "Links"
-    join "Entity_Tags" on "Links".id = "Entity_Tags".entity_id
-    join "SimpleEntities" as "Tag_SimpleEntities" on "Entity_Tags".tag_id = "Tag_SimpleEntities".id
-    group by "Links".id
-) as entity_tags on "Links".id = entity_tags.id
+        "Links_ForWeb".original_filename,
+        'repositories/' || task_repositories.repo_id || '/' || "Links_ForWeb".full_path as full_path,
+        'repositories/' || task_repositories.repo_id || '/' || "Thumbnails".full_path as "thumbnail_full_path",
+        array_agg("Tag_SimpleEntities".name) as tags,
+        array_agg(tasks.id) as entity_id,
+        array_agg(tasks.full_path) as entity_full_path,
+        array_agg(tasks.entity_type) as entity_type
+    from (
+        %(tasks_hierarchical_name_table)s
+    ) as tasks
+    join "Task_References" on tasks.id = "Task_References".task_id
 
-where (%(id)s = any (tasks.path) or tasks.id = %(id)s) %(search_string)s
+    join (
+        select
+            "Tasks".id as task_id,
+            "Repositories".id as repo_id
+        from "Tasks"
+        join "Projects" on "Tasks".project_id = "Projects".id
+        join "Repositories" on "Projects".repository_id = "Repositories".id
+    ) as task_repositories on tasks.id = task_repositories.task_id
 
-group by "Links".id,
-    "Links".full_path,
-    "Links".original_filename,
-    "Thumbnails".id,
-    entity_tags.tags
+    join "Links" on "Task_References".link_id = "Links".id
+    join "SimpleEntities" as "Link_SimpleEntities" on "Links".id = "Link_SimpleEntities".id
+    join "Links" as "Links_ForWeb" on "Link_SimpleEntities".thumbnail_id = "Links_ForWeb".id
+    join "SimpleEntities" as "Links_ForWeb_SimpleEntities" on "Links_ForWeb".id = "Links_ForWeb_SimpleEntities".id
+    join "Links" as "Thumbnails" on "Links_ForWeb_SimpleEntities".thumbnail_id = "Thumbnails".id
 
-order by "Links".id
+    left outer join "Entity_Tags" on "Links".id = "Entity_Tags".entity_id
+    left outer join "SimpleEntities" as "Tag_SimpleEntities" on "Entity_Tags".tag_id = "Tag_SimpleEntities".id
+
+    where (%(id)s = any (tasks.path) or tasks.id = %(id)s) %(search_string)s
+
+    group by "Links".id,
+        "Links_ForWeb".full_path,
+        "Links_ForWeb".original_filename,
+        task_repositories.repo_id,
+        "Thumbnails".id
+) as data
+
+order by data.id
 
 offset %(offset)s
 limit %(limit)s
     """ % {
         'id': entity_id,
         'tasks_hierarchical_name_table':
-        query_of_tasks_hierarchical_name_table(),
+        query_of_tasks_hierarchical_name_table(ordered=False),
         'search_string': search_query,
         'offset': offset,
         'limit': limit
@@ -444,8 +417,8 @@ limit %(limit)s
     return_val = [
         {
             'id': r[0],
-            'full_path': r[1],
-            'original_filename': r[2],
+            'original_filename': r[1],
+            'full_path': r[2],
             'thumbnail_full_path': r[3],
             'tags': r[4],
             'entity_ids': r[5],
@@ -455,7 +428,6 @@ limit %(limit)s
     ]
 
     return return_val
-
 
 @view_config(route_name='get_project_references_count', renderer='json')
 @view_config(route_name='get_task_references_count', renderer='json')
@@ -479,12 +451,14 @@ def get_entity_references_count(request):
         search_string_buffer = ['and (']
         for i, s in enumerate(search_string.split(' ')):
             if i != 0:
-                search_string_buffer.append('or')
+                search_string_buffer.append('and')
             tmp_search_query = """
-            '%(search_str)s' = any (entity_tags.tags)
+            (
+            "Tag_SimpleEntities".name ilike '%(search_wide)s'
             or tasks.entity_type = '%(search_str)s'
             or tasks.full_path ilike '%(search_wide)s'
             or "Links".original_filename ilike '%(search_wide)s'
+            )
             """ % {
                 'search_str': s,
                 'search_wide': '%{s}%'.format(s=s)
@@ -505,43 +479,33 @@ def get_entity_references_count(request):
     -- select all links assigned to a project tasks or assigned to a task and its children
 select count(1) from (
     select
-        "Links".id,
-        "Links".full_path,
-        "Links".original_filename,
-        "Thumbnails".full_path as "thumbnail_full_path",
-        entity_tags.tags,
-        array_agg(tasks.id) as entity_id,
-        array_agg(tasks.full_path) as full_path,
-        array_agg(tasks.entity_type) as entity_type
+        "Links".id
     from (
         %(tasks_hierarchical_name_table)s
     ) as tasks
     join "Task_References" on tasks.id = "Task_References".task_id
     join "Links" on "Task_References".link_id = "Links".id
     join "SimpleEntities" as "Link_SimpleEntities" on "Links".id = "Link_SimpleEntities".id
-    join "Links" as "Thumbnails" on "Link_SimpleEntities".thumbnail_id = "Thumbnails".id
-    left outer join (
-        select
-            "Links".id,
-            array_agg("Tag_SimpleEntities".name) as tags
-        from "Links"
-        join "Entity_Tags" on "Links".id = "Entity_Tags".entity_id
-        join "SimpleEntities" as "Tag_SimpleEntities" on "Entity_Tags".tag_id = "Tag_SimpleEntities".id
-        group by "Links".id
-    ) as entity_tags on "Links".id = entity_tags.id
+
+    join "Links" as "Links_ForWeb" on "Link_SimpleEntities".thumbnail_id = "Links_ForWeb".id
+    join "SimpleEntities" as "Links_ForWeb_SimpleEntities" on "Links_ForWeb".id = "Links_ForWeb_SimpleEntities".id
+    join "Links" as "Thumbnails" on "Links_ForWeb_SimpleEntities".thumbnail_id = "Thumbnails".id
+
+    left outer join "Entity_Tags" on "Links".id = "Entity_Tags".entity_id
+    left outer join "SimpleEntities" as "Tag_SimpleEntities" on "Entity_Tags".tag_id = "Tag_SimpleEntities".id
 
     where (%(id)s = any (tasks.path) or tasks.id = %(id)s) %(search_string)s
 
     group by "Links".id,
-        "Links".full_path,
-        "Links".original_filename,
-        "Thumbnails".id,
-        entity_tags.tags
-    ) as data
+        "Links".original_filename
+
+    --order by "Links".id
+
+) as data
     """ % {
         'id': entity_id,
         'tasks_hierarchical_name_table':
-        query_of_tasks_hierarchical_name_table(),
+        query_of_tasks_hierarchical_name_table(ordered=False),
         'search_string': search_query
     }
 
@@ -549,108 +513,6 @@ select count(1) from (
     result = DBSession.connection().execute(text(sql_query))
 
     return result.fetchone()[0]
-
-
-def generate_local_file_path(extension):
-    """generates file paths in server side storage
-
-    :param extension: desired file extension
-    :return:
-    """
-    # upload it to the stalker server side storage path
-    new_filename = uuid.uuid4().hex + extension
-    first_folder = new_filename[:2]
-    second_folder = new_filename[2:4]
-    file_path = os.path.join(
-        defaults.server_side_storage_path,
-        first_folder,
-        second_folder
-    )
-    link_path = os.path.join(
-        'SPL',
-        first_folder,
-        second_folder
-    )
-    file_full_path = os.path.join(
-        file_path,
-        new_filename
-    )
-    link_full_path = os.path.join(
-        link_path,
-        new_filename
-    )
-    return file_full_path, link_full_path
-
-
-def upload_files_to_server(request, file_params):
-    """Uploads files from a request.POST to the given path
-
-    Uses the hex representation of a uuid4 sequence as the filename.
-
-    The first two digits of the uuid4 is used for the first folder name,
-    there are 256 possible variations, then the third and fourth characters
-    are used for the second folder name (again 256 other possibilities) and
-    then the uuid4 sequence with the original file extension generates the
-    filename.
-
-    The extension is used on purpose where OSes like windows can infer the file
-    type from the extension.
-
-    SPL/{{uuid4[:2]}}/{{uuid4[2:4]}}//{{uuid4}}.extension
-
-    :param request: The request object.
-    :param str file_params: The name of the parameter that holds the files.
-    :returns [(str, str)]: The original filename and the file path on the
-    server.
-    """
-    links = []
-    # get the file names
-    for file_param in file_params:
-        filename = file_param.filename
-        extension = os.path.splitext(filename)[1]
-        input_file = file_param.file
-
-        logger.debug('file_param : %s' % file_param)
-        logger.debug('filename   : %s' % filename)
-        logger.debug('extension  : %s' % extension)
-        logger.debug('input_file : %s' % input_file)
-
-        file_full_path, link_full_path = generate_local_file_path(extension)
-        file_path = os.path.dirname(file_full_path)
-
-        # write down to a temp file first
-        temp_file_path = file_full_path + '~'
-
-        # create folders
-        try:
-            os.makedirs(file_path)
-        except OSError:  # Path exist
-            pass
-
-        output_file = open(temp_file_path, 'wb')  # TODO: guess ascii or binary mode
-
-        input_file.seek(0)
-        while True:  # TODO: use 'with'
-            data = input_file.read(2 << 16)
-            if not data:
-                break
-            output_file.write(data)
-        output_file.close()
-
-        # data is written completely, rename temp file to original file
-        os.rename(temp_file_path, file_full_path)
-
-        # create a Link instance and return it
-        new_link = Link(
-            full_path=link_full_path,
-            original_filename=filename,
-            created_by=get_logged_in_user(request)
-        )
-        DBSession.add(new_link)
-        links.append(new_link)
-
-    transaction.commit()
-    return links
 
 
 @view_config(
@@ -664,15 +526,32 @@ def delete_reference(request):
     ref = Link.query.get(ref_id)
 
     files_to_remove = []
+    references_to_delete = []
+
     if ref:
+        logger.debug('ref.id         : %s' % ref.id)
         original_filename = ref.original_filename
-        # check if it has a thumbnail
-        if ref.thumbnail:
+        # check if it has a web version
+        web_version = ref.thumbnail
+        if web_version:
+            logger.debug('web_version.id : %s' % web_version.id)
             # remove the file first
-            files_to_remove.append(ref.thumbnail.full_path)
+            files_to_remove.append(web_version.full_path)
+
+            # also check the thumbnail
+            thumbnail = web_version.thumbnail
+
+            if thumbnail:
+                logger.debug('thumbnail      : %s' % thumbnail)
+                # remove the file first
+                files_to_remove.append(thumbnail.full_path)
+
+                # delete the thumbnail Link from the database
+                references_to_delete.append(thumbnail)
 
             # delete the thumbnail Link from the database
-            DBSession.delete(ref.thumbnail)
+            references_to_delete.append(web_version)
+
         # remove the reference itself
         files_to_remove.append(ref.full_path)
 
@@ -680,28 +559,37 @@ def delete_reference(request):
         # IMPORTANT: Because there is no link from Link -> Task deleting a Link
         #            directly will raise an IntegrityError, so remove the Link
         #            from the associated Task before deleting it
+        prefix = ''
         from stalker import Task
         for task in Task.query.filter(Task.references.contains(ref)).all():
             logger.debug('%s is referencing %s, '
                          'breaking this relation' % (task, ref))
             task.references.remove(ref)
-        DBSession.delete(ref)
+            if prefix == '':
+                # get the repository
+                repo = task.project.repository
+                prefix = repo.path
+
+        references_to_delete.append(ref)
+
+        # delete Links from database
+        for r in references_to_delete:
+            DBSession.delete(r)
 
         # now delete files
         for f in files_to_remove:
             # convert the paths to system path
-            f_system = convert_file_link_to_full_path(f)
+            f_system = os.path.join(prefix, f)
+            logger.debug('deleting : %s' % f_system)
             try:
                 os.remove(f_system)
             except OSError:
                 pass
 
         response = Response('%s removed successfully' % original_filename)
-        response.status_int = 200
         return response
     else:
-        response = Response('No ref with id : %i' % ref_id)
-        response.status_int = 500
+        response = Response('No ref with id : %i' % ref_id, 500)
         transaction.abort()
         return response
 
@@ -713,7 +601,7 @@ def serve_files(request):
     """serves files in the stalker server side storage
     """
     partial_file_path = request.matchdict['partial_file_path']
-    file_full_path = convert_file_link_to_full_path(partial_file_path)
+    file_full_path = MediaManager.convert_file_link_to_full_path(partial_file_path)
     return FileResponse(file_full_path)
 
 
@@ -724,7 +612,7 @@ def force_download_files(request):
     """serves files but forces to download
     """
     partial_file_path = request.matchdict['partial_file_path']
-    file_full_path = convert_file_link_to_full_path(partial_file_path)
+    file_full_path = MediaManager.convert_file_link_to_full_path(partial_file_path)
     # get the link to get the original file name
     link = Link.query.filter(
         Link.full_path == 'SPL/' + partial_file_path).first()
@@ -742,3 +630,1167 @@ def force_download_files(request):
     response.headers['content-disposition'] = \
         str('attachment; filename=' + original_filename)
     return response
+
+
+@view_config(
+    route_name='serve_repository_files'
+)
+def serve_repository_files(request):
+    """serves files in the stalker repositories
+    """
+    # TODO: check file access
+    repo_id = request.matchdict['id']
+    partial_file_path = request.matchdict['partial_file_path']
+
+    repo = Repository.query.filter_by(id=repo_id).first()
+    # assert isinstance(repo, Repository)
+
+    file_full_path = os.path.join(
+        repo.path,
+        partial_file_path
+    )
+
+    logger.debug('serve_repository_files is running')
+    logger.debug('file_full_path : %s' % file_full_path)
+
+    return FileResponse(file_full_path)
+
+
+@view_config(
+    route_name='forced_download_repository_files'
+)
+def force_download_repository_files(request):
+    """serves files but forces to download
+    """
+    # TODO: check file access
+    partial_file_path = request.matchdict['partial_file_path']
+    repo_id = request.matchdict['id']
+
+    repo = Repository.query.filter_by(id=repo_id).first()
+
+    file_full_path = os.path.join(
+        repo.path,
+        partial_file_path
+    )
+
+    # get the link to get the original file name
+    link = Link.query.filter(Link.full_path == partial_file_path).first()
+    if link:
+        original_filename = link.original_filename
+    else:
+        original_filename = os.path.basename(file_full_path)
+
+    response = FileResponse(
+        file_full_path,
+        request=request,
+        content_type='application/force-download',
+    )
+    # update the content-disposition header
+    response.headers['content-disposition'] = \
+        str('attachment; filename=' + original_filename)
+    return response
+
+
+@view_config(
+    route_name='video_player',
+    renderer='templates/link/video_player.jinja2'
+)
+def video_player(request):
+    """generates an iframe for video player
+    """
+    return {
+        'video_full_path': request.params.get('video_full_path')
+    }
+
+
+class MediaManager(object):
+    """Manages media files.
+
+    MediaManager is the media hub of Stalker Pyramid. It is responsible of the
+    uploads/downloads of media files and all kind of conversions.
+
+    It can convert image, video and audio files. The default format for image
+    files is PNG and the default format for video os WebM (VP8), and mp3
+    (stereo, 96 kBit/s) is the default format for audio files.
+
+    It can filter files from request parameters and upload them to the server,
+    also for image files it will generate thumbnails and versions to be viewed
+    from web.
+
+    It can handle image sequences, and will create only one Link object per
+    image sequence. The thumbnail of an image sequence will be a gif image.
+
+    It will generate a zip file to serve all the images in an image sequence.
+    """
+
+    def __init__(self):
+        self.reference_path = 'References/Stalker_Pyramid/'
+        self.version_output_path = 'Outputs/Stalker_Pyramid/'
+
+        # accepted image formats
+        self.image_formats = [
+            '.gif', '.ico', '.iff',
+            '.jpg', '.jpeg', '.png', '.tga', '.tif',
+            '.tiff', '.bmp', '.exr',
+        ]
+
+        # accepted video formats
+        self.video_formats = [
+            '.3gp', '.a64', '.asf', '.avi', '.dnxhd', '.f4v', '.filmstrip',
+            '.flv', '.h261', '.h263', '.h264', '.ipod', '.m4v', '.matroska',
+            '.mjpeg', '.mov', '.mp4', '.mpeg', '.mpg', '.mpeg1video',
+            '.mpeg2video', '.mv', '.mxf', '.ogg', '.rm', '.swf', '.vc1',
+            '.vcd', '.vob', '.webm'
+        ]
+
+        # thumbnail format
+        self.thumbnail_format = '.jpg'
+        self.thumbnail_width = 512
+        self.thumbnail_height = 512
+        self.thumbnail_options = {  # default options for thumbnails
+            'quality': 80
+        }
+
+        # images and videos for web
+        self.web_image_format = '.jpg'
+        self.web_image_width = 1920
+        self.web_image_height = 1080
+
+        self.web_video_format = '.webm'
+        self.web_video_width = 960
+        self.web_video_height = 540
+        self.web_video_bitrate = 2048  # in kBits/sec
+
+        # commands
+        self.ffmpeg_command_path = '/usr/bin/ffmpeg'
+        self.ffprobe_command_path = '/usr/local/bin/ffprobe'
+
+    def generate_image_thumbnail(self, file_full_path):
+        """Generates a thumbnail for the given image file
+
+        :param file_full_path: Generates a thumbnail for the given file in the
+          given path
+        :return str: returns the thumbnail path
+        """
+        # generate thumbnail for the image and save it to a tmp folder
+        suffix = self.thumbnail_format
+
+        img = Image.open(file_full_path)
+        img.thumbnail((2 * self.thumbnail_width, 2 * self.thumbnail_height))
+        img.thumbnail((self.thumbnail_width, self.thumbnail_height),
+                      Image.ANTIALIAS)
+
+        if img.format == 'GIF':
+            suffix = '.gif'  # force save in gif format
+
+        thumbnail_path = tempfile.mktemp(suffix=suffix)
+
+        img.save(thumbnail_path, **self.thumbnail_options)
+        return thumbnail_path
+
+    def generate_image_for_web(self, file_full_path):
+        """Generates a version suitable to be viewed from a web browser.
+
+        :param file_full_path: Generates a thumbnail for the given file in the
+          given path.
+        :return str: returns the thumbnail path
+        """
+        # generate thumbnail for the image and save it to a tmp folder
+        suffix = self.thumbnail_format
+
+        img = Image.open(file_full_path)
+        if img.size[0] > self.web_image_width \
+           or img.size[1] > self.web_image_height:
+            img.thumbnail((2 * self.web_image_width,
+                           2 * self.web_image_height))
+            img.thumbnail((self.web_image_width, self.web_image_height),
+                          Image.ANTIALIAS)
+
+        if img.format == 'GIF':
+            suffix = '.gif'  # force save in gif format
+
+        thumbnail_path = tempfile.mktemp(suffix=suffix)
+
+        img.save(thumbnail_path)
+        return thumbnail_path
+
+    def generate_video_thumbnail(self, file_full_path):
+        """Generates a thumbnail for the given video link
+
+        :param str file_full_path: A string showing the full path of the video
+          file.
+        """
+        # TODO: split this in to two different methods, one generating
+        #       thumbnails from the video and another one accepting three
+        #       images
+        media_info = self.get_video_info(file_full_path)
+        video_info = media_info['video_info']
+
+        # get the correct stream
+        video_stream = None
+        for stream in media_info['stream_info']:
+            if stream['codec_type'] == 'video':
+                video_stream = stream
+
+        nb_frames = video_stream.get('nb_frames')
+        if nb_frames is None:
+            # no nb_frames
+            # first try to use "r_frame_rate" and "duration"
+            frame_rate = video_stream.get('r_frame_rate')
+
+            if frame_rate is None:  # still no frame rate
+                # try to use the video_info and duration
+                # and try to get frame rate
+                frame_rate = float(video_info.get('TAG:framerate', 23.976))
+            else:
+                # check if it is in Number/Number format
+                if '/' in frame_rate:
+                    nominator, denominator = frame_rate.split('/')
+                    frame_rate = float(nominator)/float(denominator)
+
+            # get duration
+            duration = video_stream.get('duration')
+            if duration == 'N/A':  # no duration
+                duration = float(video_info.get('duration', 1))
+            # else:
+            #     duration = float(duration)
+
+            # at this stage we should have enough info, may not be correct but
+            # we should have something
+            # calculate nb_frames
+            nb_frames = int(duration * frame_rate)
+        nb_frames = int(nb_frames)
+
+        start_thumb_path = tempfile.mktemp(suffix=self.thumbnail_format)
+        mid_thumb_path = tempfile.mktemp(suffix=self.thumbnail_format)
+        end_thumb_path = tempfile.mktemp(suffix=self.thumbnail_format)
+
+        thumbnail_path = tempfile.mktemp(suffix=self.thumbnail_format)
+
+        # generate three thumbnails from the start, middle and end of the file
+        start_frame = int(nb_frames * 0.10)
+        mid_frame = int(nb_frames * 0.5)
+        end_frame = int(nb_frames * 0.90)
+
+        #start_frame
+        self.ffmpeg(**{
+            'i': file_full_path,
+            'vf': "select='eq(n, 0)'",
+            'vframes': start_frame,
+            'o': start_thumb_path
+        })
+        #mid_frame
+        self.ffmpeg(**{
+            'i': file_full_path,
+            'vf': "select='eq(n, %s)'" % mid_frame,
+            'vframes': 1,
+            'o': mid_thumb_path
+        })
+        #end_frame
+        self.ffmpeg(**{
+            'i': file_full_path,
+            'vf': "select='eq(n, %s)'" % end_frame,
+            'vframes': 1,
+            'o': end_thumb_path
+        })
+
+        # now merge them
+        self.ffmpeg(**{
+            'i': [start_thumb_path, mid_thumb_path, end_thumb_path],
+            'filter_complex':
+                "[0:0] scale=3*%(tw)s/4:-1, pad=%(tw)s:%(th)s [s]; "
+                "[1:0] scale=3*%(tw)s/4:-1, fade=out:300:30:alpha=1 [m]; "
+                "[2:0] scale=3*%(tw)s/4:-1, fade=out:300:30:alpha=1 [e]; "
+                "[s][e] overlay=%(tw)s/4:%(th)s-h [x]; "
+                "[x][m] overlay=%(tw)s/8:%(th)s/2-h/2" %
+                {
+                    'tw': self.thumbnail_width,
+                    'th': self.thumbnail_height
+                },
+            'o': thumbnail_path
+        })
+
+        # remove the intermediate data
+        os.remove(start_thumb_path)
+        os.remove(mid_thumb_path)
+        os.remove(end_thumb_path)
+        return thumbnail_path
+
+    def generate_video_for_web(self, file_full_path):
+        """Generates a web friendly version for the given video.
+
+        :param str file_full_path: A string showing the full path of the video
+          file.
+        """
+        web_version_full_path = tempfile.mktemp(suffix=self.web_video_format)
+        self.convert_to_webm(file_full_path, web_version_full_path)
+        return web_version_full_path
+
+    def generate_thumbnail(self, file_full_path):
+        """Generates a thumbnail for the given link
+
+        :param file_full_path: Generates a thumbnail for the given file in the
+          given path
+        :return str: returns the thumbnail path
+        """
+        extension = os.path.splitext(file_full_path)[-1].lower()
+        # check if it is an image or video or non of them
+        if extension in self.image_formats:
+            # generate a thumbnail from image
+            return self.generate_image_thumbnail(file_full_path)
+        elif extension in self.video_formats:
+            return self.generate_video_thumbnail(file_full_path)
+
+        # not an image nor a video so no thumbnail, raise RuntimeError
+        raise RuntimeError('%s is not an image nor a video file, can not '
+                           'generate a thumbnail for it!' %
+                           file_full_path)
+
+    def generate_media_for_web(self, file_full_path):
+        """Generates a media suitable for web browsers.
+
+        It will generate PNG for images, and a WebM for video files.
+
+        :param file_full_path: Generates a web suitable version for the given
+          file in the given path.
+        :return str: returns the media file path.
+        """
+        extension = os.path.splitext(file_full_path)[-1].lower()
+        # check if it is an image or video or non of them
+        if extension in self.image_formats:
+            # generate a thumbnail from image
+            return self.generate_image_for_web(file_full_path)
+        elif extension in self.video_formats:
+            return self.generate_video_for_web(file_full_path)
+
+        # not an image nor a video so no thumbnail, raise RuntimeError
+        raise RuntimeError('%s is not an image nor a video file!' %
+                           file_full_path)
+
+    @classmethod
+    def generate_local_file_path(cls, extension=''):
+        """Generates file paths in server side storage.
+
+        :param extension: Desired file extension
+        :return:
+        """
+        # upload it to the stalker server side storage path
+        new_filename = uuid.uuid4().hex + extension
+        first_folder = new_filename[:2]
+        second_folder = new_filename[2:4]
+
+        file_path = os.path.join(
+            defaults.server_side_storage_path,
+            first_folder,
+            second_folder
+        )
+
+        file_full_path = os.path.join(
+            file_path,
+            new_filename
+        )
+
+        return file_full_path
+
+    @classmethod
+    def convert_file_link_to_full_path(cls, link_path):
+        """OBSOLETE: converts the given Stalker Pyramid Local file link to a
+        real full path.
+
+        :param link_path: A link to a file in SPL starting with SPL
+          (ex: SPL/b0/e6/b0e64b16c6bd4857a91be47fb2517b53.jpg)
+        :returns: str
+        """
+        logger.debug('link_path: %s' % link_path)
+        if not isinstance(link_path, (str, unicode)):
+            raise TypeError(
+                '"link_path" argument in '
+                '%(class)s.convert_file_link_to_full_path() method should be '
+                'a str, not %(link_path_class)s' % {
+                    'class': cls.__name__,
+                    'link_path_class': link_path.__class__.__name__
+                }
+            )
+
+        # if not link_path.startswith('SPL'):
+        #     raise ValueError(
+        #         '"link_path" argument in '
+        #         '%(class)s.convert_file_link_to_full_path() method should be '
+        #         'a str starting with "SPL/"' % {
+        #             'class': cls.__name__
+        #         }
+        #     )
+
+        spl_prefix = 'SPL/'
+        if spl_prefix in link_path:
+            link_full_path = link_path[len(spl_prefix):]
+        else:
+            link_full_path = link_path
+
+        file_full_path = os.path.join(
+            defaults.server_side_storage_path,
+            link_full_path
+        )
+        return file_full_path
+
+    @classmethod
+    def convert_full_path_to_file_link(cls, full_path):
+        """OBSOLETE: Converts the given full path to Stalker Pyramid Local
+        Storage relative path.
+
+        :param full_path: The full path of the file in SPL.
+          (ex: /home/stalker/Stalker_Storage/b0/e6/b0e64b16c6bd4857a91be47fb2517b53.jpg)
+        :returns: str
+        """
+        if not isinstance(full_path, (str, unicode)):
+            raise TypeError(
+                '"full_path" argument in '
+                '%(class)s.convert_full_path_to_file_link() method should be '
+                'a str, not %(full_path_class)s' % {
+                    'class': cls.__name__,
+                    'full_path_class': full_path.__class__.__name__
+                }
+            )
+
+        if not full_path.startswith(defaults.server_side_storage_path):
+            raise ValueError(
+                '"full_path" argument in '
+                '%(class)s.convert_full_path_to_file_link() method should be '
+                'a str starting with "%(spl)s"' % {
+                    'class': cls.__name__,
+                    'spl': defaults.server_side_storage_path,
+                }
+            )
+
+        spl_prefix = 'SPL/'
+        return os.path.normpath(
+            full_path.replace(defaults.server_side_storage_path, spl_prefix)
+        )
+
+    def get_video_info(self, full_path):
+        """Returns the video info like the duration  in seconds and fps.
+
+        Uses ffmpeg to extract information about the video file.
+
+        :param str full_path: The full path of the video file
+        :return: int
+        """
+        output_buffer = self.ffprobe(**{
+            'show_streams': full_path,
+        })
+
+        media_info = {
+            'video_info': None,
+            'stream_info': []
+        }
+        video_info = {}
+        stream_info = {}
+
+        # get STREAM info
+        line = output_buffer.pop(0).strip()
+        while line is not None:
+            if line == '[STREAM]':
+                # pop until you find [/STREAM]
+                while line != '[/STREAM]':
+                    if '=' in line:
+                        flag, value = line.split('=')
+                        stream_info[flag] = value
+                    line = output_buffer.pop(0).strip()
+
+                copy_stream = copy.deepcopy(stream_info)
+                media_info['stream_info'].append(copy_stream)
+                stream_info = {}
+            try:
+                line = output_buffer.pop(0).strip()
+            except IndexError:
+                line = None
+
+        # also get FORMAT info
+        output_buffer = self.ffprobe(**{
+            'show_format': full_path,
+        })
+
+        line = output_buffer.pop(0).strip()
+        while line is not None:
+            if line == '[FORMAT]':
+                # pop until you find [/FORMAT]
+                while line != '[/FORMAT]':
+                    if '=' in line:
+                        flag, value = line.split('=')
+                        video_info[flag] = value
+                    line = output_buffer.pop(0).strip()
+
+                media_info['video_info'] = video_info
+            try:
+                line = output_buffer.pop(0).strip()
+            except IndexError:
+                line = None
+
+        return media_info
+
+    def ffmpeg(self, **kwargs):
+        """A simple python wrapper for ``ffmpeg`` command.
+        """
+        # there is only one special keyword called 'o'
+
+        # this will raise KeyError if there is no 'o' key which is good to
+        # prevent the rest to execute
+        output = kwargs.get('o')
+        try:
+            kwargs.pop('o')
+        except KeyError:  # no output
+            pass
+
+        # generate args
+        args = [self.ffmpeg_command_path]
+        for key in kwargs:
+            flag = '-' + key
+            value = kwargs[key]
+            if not isinstance(value, list):
+                # append the flag
+                args.append(flag)
+                # append the value
+                args.append(str(value))
+            else:
+                # it is a multi flag
+                # so append the flag every time you append the key
+                for v in value:
+                    args.append(flag)
+                    args.append(str(v))
+
+            # overwrite output
+
+        # use all cpus
+        import multiprocessing
+        num_of_threads = multiprocessing.cpu_count()
+        args.append('-threads')
+        args.append('%s' % num_of_threads)
+
+        # overwrite any file
+        args.append('-y')
+
+        # append the output
+        if output != '' and output is not None:  # for info only
+            args.append(output)
+
+        logger.debug('calling ffmpeg with args: %s' % args)
+
+        process = subprocess.Popen(args, stderr=subprocess.PIPE)
+
+        # loop until process finishes and capture stderr output
+        stderr_buffer = []
+        while True:
+            stderr = process.stderr.readline()
+
+            if stderr == '' and process.poll() is not None:
+                break
+
+            if stderr != '':
+                stderr_buffer.append(stderr)
+
+        # if process.returncode:
+        #     # there is an error
+        #     raise RuntimeError(stderr_buffer)
+
+        logger.debug(stderr_buffer)
+        logger.debug('process completed!')
+        return stderr_buffer
+
+    def ffprobe(self, **kwargs):
+        """A simple python wrapper for ``ffprobe`` command.
+        """
+        # generate args
+        args = [self.ffprobe_command_path]
+        for key in kwargs:
+            flag = '-' + key
+            value = kwargs[key]
+            if not isinstance(value, list):
+                # append the flag
+                args.append(flag)
+                # append the value
+                args.append(str(value))
+            else:
+                # it is a multi flag
+                # so append the flag every time you append the key
+                for v in value:
+                    args.append(flag)
+                    args.append(str(v))
+
+        logger.debug('calling ffprobe with args: %s' % args)
+
+        process = subprocess.Popen(args, stdout=subprocess.PIPE)
+
+        # loop until process finishes and capture stderr output
+        stdout_buffer = []
+        while True:
+            stdout = process.stdout.readline()
+
+            if stdout == '' and process.poll() is not None:
+                break
+
+            if stdout != '':
+                stdout_buffer.append(stdout)
+
+        # if process.returncode:
+        #     # there is an error
+        #     raise RuntimeError(stderr_buffer)
+
+        logger.debug(stdout_buffer)
+        logger.debug('process completed!')
+        return stdout_buffer
+
+    @classmethod
+    def convert_to_h264(cls, input_path, output_path, options=None):
+        """converts the given input to h264
+        """
+        if options is None:
+            options = {}
+
+        # change the extension to mp4
+        output_path = '%s%s' % (os.path.splitext(output_path)[0], '.mp4')
+
+        conversion_options = {
+            'i': input_path,
+            'vcodec': 'libx264',
+            'profile:v': 'main',
+            'b:v': '4096k',
+            'o': output_path
+        }
+        conversion_options.update(options)
+
+        cls.ffmpeg(**conversion_options)
+
+        return output_path
+
+    def convert_to_webm(self, input_path, output_path, options=None):
+        """Converts the given input to webm format
+
+        :param input_path: A string of path, can have wild card characters
+        :param output_path: The output path
+        :param options: Extra options to pass to the ffmpeg command
+        :return:
+        """
+        if options is None:
+            options = {}
+
+        # change the extension to webm
+        output_path = '%s%s' % (os.path.splitext(output_path)[0], '.webm')
+
+        conversion_options = {
+            'i': input_path,
+            'vcodec': 'libvpx',
+            'b:v': '%sk' % self.web_video_bitrate,
+            'o': output_path
+        }
+        conversion_options.update(options)
+
+        self.ffmpeg(**conversion_options)
+
+        return output_path
+
+    def convert_to_prores(self, input_path, output_path, options=None):
+        """Converts the given input to Apple Prores 422 format.
+
+        :param input_path: A string of path, can have wild card characters
+        :param output_path: The output path
+        :param options: Extra options to pass to the ffmpeg command
+        :return:
+        """
+        if options is None:
+            options = {}
+
+        # change the extension to webm
+        output_path = '%s%s' % (os.path.splitext(output_path)[0], '.mov')
+
+        conversion_options = {
+            'i': input_path,
+            'probesize': 5000000,
+            'f': 'image2',
+            'profile:v': 3,
+            'qscale:v': 13,  # use between 9 - 13
+            'vcodec': 'prores_ks',
+            'vendor': 'ap10',
+            'pix_fmt': 'yuv422p10le',
+            'o': output_path
+        }
+        conversion_options.update(options)
+
+        self.ffmpeg(**conversion_options)
+
+        return output_path
+
+    def convert_to_mjpeg(self, input_path, output_path, options=None):
+        """Converts the given input to Apple Motion Jpeg format.
+
+        :param input_path: A string of path, can have wild card characters
+        :param output_path: The output path
+        :param options: Extra options to pass to the ffmpeg command
+        :return:
+        """
+        if options is None:
+            options = {}
+
+        # change the extension to webm
+        output_path = '%s%s' % (os.path.splitext(output_path)[0], '.mov')
+
+        # ffmpeg -y
+        # -probesize 5000000
+        # -f image2
+        # -r 48
+        # -force_fps
+        # -i ${DPX_HERO}
+        # -c:v mjpeg
+        # -qscale:v 1
+        # -vendor ap10
+        # -pix_fmt yuvj422p
+        # -s 2048x1152
+        # -r 48 output.mov
+        conversion_options = {
+            'i': input_path,
+            'probesize': 5000000,
+            'f': 'image2',
+            'qscale:v': 1,
+            'vcodec': 'mjpeg',
+            'vendor': 'ap10',
+            'pix_fmt': 'yuv422p',
+            'o': output_path
+        }
+        conversion_options.update(options)
+
+        self.ffmpeg(**conversion_options)
+
+        return output_path
+
+    @classmethod
+    def convert_to_animated_gif(cls, input_path, output_path, options=None):
+        """converts the given input to animated gif
+
+        :param input_path: A string of path, can have wild card characters
+        :param output_path: The output path
+        :param options: Extra options to pass to the ffmpeg command
+        :return:
+        """
+        if options is None:
+            options = {}
+
+        # change the extension to gif
+        output_path = '%s%s' % (os.path.splitext(output_path)[0], '.gif')
+
+        conversion_options = {
+            'i': input_path,
+            'o': output_path
+        }
+        conversion_options.update(options)
+
+        cls.ffmpeg(**conversion_options)
+
+        return output_path
+
+    def upload_with_request_params(self, file_params):
+        """upload objects with request params
+
+        :param file_params: An object with two attributes, first a
+          ``filename`` attribute and a ``file`` which is a file like object.
+        """
+        uploaded_file_info = []
+        # get the file names
+        for file_param in file_params:
+            filename = file_param.filename
+            file_object = file_param.file
+
+            # upload to a temp path
+            uploaded_file_full_path = self.upload_file(
+                file_object,
+                tempfile.mkdtemp(),
+                filename
+            )
+
+            # return the file information
+            file_info = {
+                'full_path': uploaded_file_full_path,
+                'original_filename': filename
+            }
+
+            uploaded_file_info.append(file_info)
+
+        return uploaded_file_info
+
+    def randomize_file_name(self, full_path):
+        """randomizes the file name by adding a the first 4 characters of a
+        UUID4 sequence to it.
+
+        :param str full_path: The filename to be randomized
+        :return: str
+        """
+        # get the filename
+        path = os.path.dirname(full_path)
+        filename = os.path.basename(full_path)
+
+        # get the base name
+        basename, extension = os.path.splitext(filename)
+
+        # generate uuid4 sequence until there is no file with that name
+        def generate():
+            random_part = '_%s' % uuid.uuid4().hex[:4]
+            return os.path.join(
+                path, '%s%s%s' % (basename, random_part, extension)
+            )
+
+        random_file_full_path = generate()
+        # generate until we have something unique
+        # it will be the first one 99.9% of time
+        while os.path.exists(random_file_full_path):
+            random_file_full_path = generate()
+
+        return random_file_full_path
+
+    def format_filename(self, filename):
+        """formats the filename to comply with file naming rules of Stalker
+        Pyramid
+        """
+        if isinstance(filename, str):
+            filename = filename.decode('utf-8')
+
+        # replace Turkish characters
+        bad_character_map = {
+            '\xc3\xa7': 'c',
+            '\xc4\x9f': 'g',
+            '\xc4\xb1': 'i',
+            '\xc3\xb6': 'o',
+            '\xc5\x9f': 's',
+            '\xc3\xbc': 'u',
+            '\xc3\x87': 'C',
+            '\xc4\x9e': 'G',
+            '\xc4\xb0': 'I',
+            '\xc3\x96': 'O',
+            '\xc3\x9c': 'U',
+
+            u'\xe7': 'c',
+            u'\u011f': 'g',
+            u'\u0131': 'i',
+            u'\xf6': 'o',
+            u'\u015f': 's',
+            u'\xfc': 'u',
+            u'\xc7': 'C',
+            u'\u011e': 'G',
+            u'\u0130': 'I',
+            u'\xd6': 'O',
+            u'\xdc': 'U',
+        }
+        filename_buffer = []
+        for char in filename:
+            if char in bad_character_map:
+                filename_buffer.append(bad_character_map[char])
+            else:
+                filename_buffer.append(char)
+        filename = ''.join(filename_buffer)
+
+        # replace ' ' with '_'
+        import re
+        basename, extension = os.path.splitext(filename)
+        filename = '%s%s' % (re.sub(r'[\s\.\\/:\*\?"<>|=,]+', '_', basename), extension)
+
+        return filename
+
+    def upload_file(self, file_object, file_path=None, filename=None):
+        """Uploads files to the given path.
+
+        The data of the files uploaded from a Web application is hold in a file
+        like object. This method dumps the content of this file like object to
+        the given path.
+
+        :param file_object: File like object holding the data.
+        :param str file_path: The path of the file to output the data to. If it
+          is skipped the data will be written to a temp folder.
+        :param str filename: The desired file name for the uploaded file. If it
+          is skipped a unique temp filename will be generated.
+        """
+        if file_path is None:
+            file_path = tempfile.gettempdir()
+
+        if filename is None:
+            filename = tempfile.mktemp(dir=file_path)
+        else:
+            filename = self.format_filename(filename)
+
+        file_full_path = os.path.join(file_path, filename)
+        if os.path.exists(file_full_path):
+            file_full_path = self.randomize_file_name(file_full_path)
+
+        # write down to a temp file first
+        temp_file_full_path = '%s~' % file_full_path
+
+        # create folders
+        try:
+            os.makedirs(file_path)
+        except OSError:  # Path exist
+            pass
+
+        with open(temp_file_full_path, 'wb') as output_file:
+            file_object.seek(0)
+            while True:
+                data = file_object.read(2 << 16)
+                if not data:
+                    break
+                output_file.write(data)
+
+        # data is written completely, rename temp file to original file
+        os.rename(temp_file_full_path, file_full_path)
+
+        return file_full_path
+
+    def upload_reference(self, task, file_object, filename):
+        """Uploads a reference for the given task to
+        Task.path/References/Stalker_Pyramid/ folder and create a Link object
+        to there. Again the Link object will have a Repository root relative
+        path.
+
+        It will also create a thumbnail under
+        {{Task.absolute_path}}/References/Stalker_Pyramid/Thumbs folder and a
+        web friendly version (PNG for images, WebM for video files) under
+        {{Task.absolute_path}}/References/Stalker_Pyramid/ForWeb folder.
+
+        :param task: The task that a reference is uploaded to. Should be an
+          instance of :class:`.Task` class.
+        :type task: :class:`.Task`
+        :param file_object: The file like object holding the content of the
+          uploaded file.
+        :param str filename: The original filename.
+        :returns: :class:`.Link` instance.
+        """
+        ############################################################
+        # ORIGINAL
+        ############################################################
+        file_path = os.path.join(
+            os.path.join(task.absolute_path),
+            self.reference_path
+        )
+
+        # upload it
+        reference_file_full_path = \
+            self.upload_file(file_object, file_path, filename)
+
+        reference_file_file_name = os.path.basename(reference_file_full_path)
+        reference_file_base_name = \
+            os.path.splitext(reference_file_file_name)[0]
+
+        # create a Link instance and return it.
+        # use a Repository relative path
+        repo = task.project.repository
+        assert isinstance(repo, Repository)
+        relative_full_path = repo.make_relative(reference_file_full_path)
+
+        link = Link(full_path=relative_full_path, original_filename=filename)
+
+        # create a thumbnail for the given reference
+        # don't forget that the first thumbnail is the Web viewable version
+        # and the second thumbnail is the thumbnail
+
+        ############################################################
+        # WEB VERSION
+        ############################################################
+        web_version_temp_full_path = \
+            self.generate_media_for_web(reference_file_full_path)
+        web_version_extension = \
+            os.path.splitext(web_version_temp_full_path)[-1]
+        web_version_full_path = \
+            os.path.join(
+                os.path.dirname(reference_file_full_path),
+                'ForWeb',
+                reference_file_base_name + web_version_extension
+            )
+        web_version_repo_relative_full_path = \
+            repo.make_relative(web_version_full_path)
+        web_version_link = Link(
+            full_path=web_version_repo_relative_full_path,
+            original_filename=filename
+        )
+
+        # move it to repository
+        try:
+            os.makedirs(os.path.dirname(web_version_full_path))
+        except OSError:  # path exists
+            pass
+        shutil.move(web_version_temp_full_path, web_version_full_path)
+
+        ############################################################
+        # THUMBNAIL
+        ############################################################
+        # finally generate a Thumbnail
+        thumbnail_temp_full_path = \
+            self.generate_thumbnail(reference_file_full_path)
+        thumbnail_extension = os.path.splitext(thumbnail_temp_full_path)[-1]
+
+        thumbnail_full_path = \
+            os.path.join(
+                os.path.dirname(reference_file_full_path),
+                'Thumbnail',
+                reference_file_base_name + thumbnail_extension
+            )
+        thumbnail_repo_relative_full_path = \
+            repo.make_relative(thumbnail_full_path)
+        thumbnail_link = Link(
+            full_path=thumbnail_repo_relative_full_path,
+            original_filename=filename
+        )
+
+        # move it to repository
+        try:
+            os.makedirs(os.path.dirname(thumbnail_full_path))
+        except OSError:  # path exists
+            pass
+        shutil.move(thumbnail_temp_full_path, thumbnail_full_path)
+
+        ############################################################
+        # LINK Objects
+        ############################################################
+        # link them
+        # assign it as a reference to the given task
+        task.references.append(link)
+        link.thumbnail = web_version_link
+        web_version_link.thumbnail = thumbnail_link
+
+        return link
+
+    def upload_version(self, task, file_object, take_name=None, extension=''):
+        """Uploads versions to the Task.path/ folder and creates a Version
+        object to there. Again the Version object will have a Repository root
+        relative path.
+
+        The filename of the version will be automatically generated by Stalker.
+
+        :param task: The task that a version is uploaded to. Should be an
+          instance of :class:`.Task` class.
+        :param file_object: A file like object holding the content of the
+          version.
+        :param str take_name: A string showing the the take name of the
+          Version. If skipped defaults.version_take_name will be used.
+        :param str extension: The file extension of the version.
+        :returns: :class:`.Version` instance.
+        """
+        if take_name is None:
+            take_name = defaults.version_take_name
+
+        v = Version(task=task,
+                    take_name=take_name,
+                    created_with='Stalker Pyramid')
+        v.update_paths()
+        v.extension = extension
+
+        # upload it
+        self.upload_file(file_object, v.absolute_path, v.filename)
+
+        return v
+
+    def upload_version_output(self, version, file_object, filename):
+        """Uploads a file as an output for the given :class:`.Version`
+        instance. Will store the file in
+        {{Version.absolute_path}}/Outputs/Stalker_Pyramid/ folder.
+
+        It will also generate a thumbnail in
+        {{Version.absolute_path}}/Outputs/Stalker_Pyramid/Thumbs folder and a
+        web friendly version (PNG for images, WebM for video files) under
+        {{Version.absolute_path}}/Outputs/Stalker_Pyramid/ForWeb folder.
+
+        :param version: A :class:`.Version` instance that the output is
+          uploaded for.
+        :type version: :class:`.Version`
+        :param file_object: The file like object holding the content of the
+          uploaded file.
+        :param str filename: The original filename.
+        :returns: :class:`.Link` instance.
+        """
+        ############################################################
+        # ORIGINAL
+        ############################################################
+        file_path = os.path.join(
+            os.path.join(version.absolute_path),
+            self.version_output_path
+        )
+
+        # upload it
+        version_output_file_full_path = \
+            self.upload_file(file_object, file_path, filename)
+
+        version_output_file_name = \
+            os.path.basename(version_output_file_full_path)
+        version_output_base_name = \
+            os.path.splitext(version_output_file_name)[0]
+
+        # create a Link instance and return it.
+        # use a Repository relative path
+        repo = version.task.project.repository
+        assert isinstance(repo, Repository)
+        relative_full_path = repo.make_relative(version_output_file_full_path)
+
+        link = Link(full_path=relative_full_path, original_filename=filename)
+
+        # create a thumbnail for the given version output
+        # don't forget that the first thumbnail is the Web viewable version
+        # and the second thumbnail is the thumbnail
+
+        ############################################################
+        # WEB VERSION
+        ############################################################
+        web_version_temp_full_path = \
+            self.generate_media_for_web(version_output_file_full_path)
+        web_version_extension = \
+            os.path.splitext(web_version_temp_full_path)[-1]
+        web_version_full_path = \
+            os.path.join(
+                os.path.dirname(version_output_file_full_path),
+                'ForWeb',
+                version_output_base_name + web_version_extension
+            )
+        web_version_repo_relative_full_path = \
+            repo.make_relative(web_version_full_path)
+        web_version_link = Link(
+            full_path=web_version_repo_relative_full_path,
+            original_filename=filename
+        )
+
+        # move it to repository
+        try:
+            os.makedirs(os.path.dirname(web_version_full_path))
+        except OSError:  # path exists
+            pass
+        shutil.move(web_version_temp_full_path, web_version_full_path)
+
+        ############################################################
+        # THUMBNAIL
+        ############################################################
+        # finally generate a Thumbnail
+        thumbnail_temp_full_path = \
+            self.generate_thumbnail(version_output_file_full_path)
+        thumbnail_extension = os.path.splitext(thumbnail_temp_full_path)[-1]
+
+        thumbnail_full_path = \
+            os.path.join(
+                os.path.dirname(version_output_file_full_path),
+                'Thumbnail',
+                version_output_base_name + thumbnail_extension
+            )
+        thumbnail_repo_relative_full_path = \
+            repo.make_relative(thumbnail_full_path)
+        thumbnail_link = Link(
+            full_path=thumbnail_repo_relative_full_path,
+            original_filename=filename
+        )
+
+        # move it to repository
+        try:
+            os.makedirs(os.path.dirname(thumbnail_full_path))
+        except OSError:  # path exists
+            pass
+        shutil.move(thumbnail_temp_full_path, thumbnail_full_path)
+
+        ############################################################
+        # LINK Objects
+        ############################################################
+        # link them
+        # assign it as an output to the given version
+        version.outputs.append(link)
+        link.thumbnail = web_version_link
+        web_version_link.thumbnail = thumbnail_link
+
+        return link

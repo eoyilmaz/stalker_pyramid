@@ -229,7 +229,7 @@
 
 
             $.getJSON('{{ request.route_url("get_project_tasks", id=entity.project.id) }}').then(function(data){
-                console.log('data.length:', data.length);
+{#                console.log('data.length:', data.length);#}
 
                 all_tasks_list = data
 

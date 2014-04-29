@@ -41,7 +41,7 @@
 
             eventClick: function (calEvent, jsEvent, view) {
 
-                console.log('eventClicked')
+{#                console.log('eventClicked')#}
                 if (calEvent.entity_type == 'vacations') {
                     {% if has_permission('Update_Vacation') %}
 
@@ -68,7 +68,7 @@
 
             eventMouseover: function(event, jsEvent, view){
                 // add title attribute to each event
-                //console.log('eventMouseOver is running!');
+{#                //console.log('eventMouseOver is running!');#}
                 setTimeout(function(){
                     $(jsEvent.target).find('.fc-event-title').each(function(){
                         var self = $(this);

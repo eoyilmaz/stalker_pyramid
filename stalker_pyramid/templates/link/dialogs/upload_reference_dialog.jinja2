@@ -63,6 +63,7 @@
         $('.modal-header>h3').text('Upload References');
 
         var submit_button = $('#dialog_template_submit_button');
+        submit_button.data('loading-text', 'Converting Files, Please Wait...');
 
         var field_update_mode_checker = function(){
             // checks if the important fields are still updating
@@ -103,49 +104,37 @@
 
         //This is for holding info about the uploaded link ids
         var entity_id = {{ entity.id }};
-        var link_ids = [];
-        var removed_link_ids = [];
         var files = [];
 
         var uploading_file_counter = 0;
 
-        $(".dropzone").dropzone({
+        var dzone = new Dropzone($(".dropzone")[0], {
             init: function(){
                 this.on("addedfile", function(file){
                     // set the submit button to loading state
                     uploading_file_counter += 1;
-                    $("#dialog_template_submit_button").button('loading');
+                    submit_button.button('loading');
                 }).on("success", function(file, response){
-                    console.debug('response :', response);
-                    console.debug('files    :', file);
-                    // store the Link.id in file object
-                    file.link_id = response.link_ids[0];
-                    // also store the Link.id in link_ids for ease of use
-                    link_ids.push(response.link_ids[0]);
-                    // store the file in files
-                    files.push(file);
+                    // store the full_path in file object
+                    file.full_path = response.files[0].full_path;
+                    file.original_filename = response.files[0].original_filename;
                 }).on("complete", function(file){
                     // restore the button state
                     uploading_file_counter -= 1;
                     if (uploading_file_counter == 0){
-                        $('#dialog_template_submit_button').button('reset');
+                        submit_button.button('reset');
                     }
-                }).on("removedfile", function(file){
-                    console.debug('file has removed:', file);
-                    // remove the file 
-                    var index = files.indexOf(file);
-                    files.splice(1, index);
-                    var id = link_ids.splice(1, index);
-                    removed_link_ids.push(id);
+{#                }).on("removedfile", function(file){#}
+{#                    console.debug('file has removed:', file);#}
                 }).on("canceled", function(){
                     uploading_file_counter -= 1;
                     if (uploading_file_counter == 0){
-                        $("#dialog_template_submit_button").button('reset');
+                        submit_button.button('reset');
                     }
                 });
             },
             paramName: "file", // The name that will be used to transfer the file
-            maxFilesize: 10, // MB
+{#            maxFilesize: 10, // MB#}
 
             addRemoveLinks: true,
             dictDefaultMessage: '<span class="bigger-150 bolder"><i class="icon-caret-right red"></i> Drop files</span> to upload \
@@ -158,30 +147,59 @@
         });
 
         // register submit event
-        $('#dialog_template_submit_button').on('click', function(e){
+        submit_button.on('click', function(e){
             e.preventDefault();
             e.stopPropagation();
-            console.debug('entity_id        : ', entity_id);
-            console.debug('link_ids         : ', link_ids);
-            console.debug('removed_link_ids : ', removed_link_ids);
+            // disable it
+            // disable the Submit button
+            setTimeout(function(){submit_button.button('loading')}, 0);
+
             var tags_list = $('#reference_tags_input').val().split(', ');
-            console.debug('tags             : ', tags_list);
+
+{#            console.debug('accepted_files   : ', dzone.getAcceptedFiles());#}
+{#            console.debug('entity_id        : ', entity_id);#}
+{#            console.debug('tags             : ', tags_list);#}
+
+            // prepare data
+            var file_info = [];
+            var full_paths = [];
+            var original_filenames = [];
+            var accepted_files = dzone.getAcceptedFiles();
+            var f;
+            for (var i=0; i < accepted_files.length; i++){
+                f = accepted_files[i];
+                full_paths.push(f.full_path);
+                original_filenames.push(f.original_filename);
+                file_info.push({
+                    'full_path': f.full_path,
+                    'original_filename': f.original_filename
+                })
+            }
+            
+{#            console.debug('file_info          :', file_info);#}
+{#            console.debug('full_paths         :', full_paths);#}
+{#            console.debug('original_filenames :', original_filenames);#}
+
             $.post('{{ request.route_url('assign_reference') }}', {
                 entity_id: entity_id,
-                link_ids: link_ids,
-                removed_link_ids: removed_link_ids,
+                file_info: file_info,
+                full_paths: full_paths,
+                original_filenames: original_filenames,
                 tags: tags_list
             }).done(function(jqXHR){
                 // alert the user about the added files
                 // reload references
                 // get the data in jqXHR
-                console.debug('jqXHR : ', jqXHR);
+{#                console.debug('jqXHR : ', jqXHR);#}
                 $('#new_references_storage').text(JSON.stringify(jqXHR));
-
                 $('#dialog_template').modal('hide');
-            }).fail(function(){
+            }).fail(function(error){
                 // alert the user about what is failed
+                // re enable submit button
+                // enable the Submit button
+                setTimeout(function(){submit_button.button('reset')}, 0);
             });
+
         });
     };
 

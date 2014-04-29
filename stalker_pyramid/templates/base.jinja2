@@ -115,7 +115,7 @@
         }
 
         .modal-body {
-            max-height: 650px;
+            max-height: 90% {# 650px #};
         }
 
         {# fix for autocomplete and jquery-ui#}
@@ -310,14 +310,32 @@
         var sidebar_list = $('#sidebar_list');
         var link_template = doT.template($('#tmpl_sidebar_link').html());
 
-
-        sidebar_list.append(link_template({
+        var options = {
             'title': title,
             'state': state,
             'link': address,
             'icon': icon,
-            'count': count
-        }));
+            'count': typeof(count) === 'number' ? count : 0
+        };
+
+        var rendered_template = $($.parseHTML(link_template(options)));
+        sidebar_list.append(rendered_template);
+
+        var badge = rendered_template.find('.badge');
+
+        // update the badge
+        if ( typeof(count) === 'string' ) {
+            // it is the address of the source
+            var url = count;
+            $.getJSON(url).then(function (data) {
+                count = data;
+                // now update the side bar badge
+                if (count > 0){
+                    badge.text(count).removeClass('badge-success').addClass('badge-important');
+                }
+            });
+        }
+
     }
 </script>
 <script>
@@ -563,6 +581,9 @@
                     break;
                 case 'version':
                     return 'icon-sitemap';
+                    break;
+                case 'version_output':
+                    return 'icon-camera-retro';
                     break;
                 case 'user':
                     return 'icon-user';

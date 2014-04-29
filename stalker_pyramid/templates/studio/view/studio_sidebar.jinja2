@@ -22,7 +22,7 @@
             "{%- if request.current_route_path() == request.route_path('view_studio', id=studio.id) -%}'active',{%- else -%},{%- endif -%}",
             '{{ request.route_url('view_studio', id=studio.id) }}',
             get_icon('dashboard'),
-            ''
+            0
         );
 
         menu_of(
@@ -30,7 +30,7 @@
             "{%- if request.current_route_path() == request.route_path('list_entity_resources', id=studio.id) -%}'active',{%- else -%},{%- endif -%}",
             '{{ request.route_url('list_entity_resources', id=studio.id) }}',
             get_icon('resource'),
-            ''
+            0
         );
 
         menu_of(
@@ -38,7 +38,7 @@
             "{%- if request.current_route_path() == request.route_path('list_entity_tasks', id=studio.id) -%}'active',{%- else -%},{%- endif -%}",
             '{{ request.route_url('list_entity_tasks', id=studio.id) }}',
             get_icon('task'),
-            '{{ studio.tasks | count }}'
+            {{ studio.tasks | count }}
         );
 
         menu_of(
@@ -46,7 +46,7 @@
             "{%- if request.current_route_path() == request.route_path('list_studio_projects', id=studio.id) -%}'active',{%- else -%},{%- endif -%}",
             '{{ request.route_url('list_studio_projects', id=studio.id) }}',
             get_icon('project'),
-            '{{ studio.projects | count }}'
+            {{ studio.projects | count }}
         );
 
         menu_of(
@@ -54,7 +54,7 @@
             "{%- if request.current_route_path() == request.route_path('list_studio_users', id=studio.id) -%}'active',{%- else -%},{%- endif -%}",
             '{{ request.route_url('list_studio_users', id=studio.id) }}',
             get_icon('user'),
-            '{{ studio.users | count }}'
+            {{ studio.users | count }}
         );
 
         menu_of(
@@ -62,7 +62,7 @@
             "{%- if request.current_route_path() == request.route_path('list_studio_departments', id=studio.id) -%}'active',{%- else -%},{%- endif -%}",
             '{{ request.route_url('list_studio_departments', id=studio.id) }}',
             get_icon('department'),
-            ''
+            0
         );
 
         menu_of(
@@ -70,7 +70,7 @@
             "{%- if request.current_route_path() == request.route_path('list_groups') -%}'active',{%- else -%},{%- endif -%}",
             '{{ request.route_url('list_groups') }}',
             get_icon('group'),
-            ''
+            0
         );
 
         menu_of(
@@ -78,7 +78,7 @@
             "{%- if request.current_route_path() == request.route_path('list_studio_vacations', id=studio.id) -%}'active',{%- else -%},{%- endif -%}",
             '{{ request.route_url('list_studio_vacations', id=studio.id) }}',
             get_icon('vacation'),
-            '{{ studio.vacations | count }}'
+            {{ studio.vacations | count }}
         );
 
     })

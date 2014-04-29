@@ -26,7 +26,7 @@ from pyramid.view import view_config
 from stalker.db import DBSession
 from stalker import (User, Task, Project)
 
-from stalker_pyramid.views import get_logged_in_user, StdErrToHTMLConverter
+from stalker_pyramid.views import get_logged_in_user
 from stalker_pyramid.views.task import query_of_tasks_hierarchical_name_table
 
 
@@ -95,15 +95,17 @@ def get_task_reviews(request):
     logger.debug('get_task_reviews is running')
 
     task_id = request.matchdict.get('id', -1)
-    task = Task.query.filter(Task.id == task_id).first()
+    #task = Task.query.filter(Task.id == task_id).first()
 
-    if not task:
-        transaction.abort()
-        return Response('There is no task with id: %s' % task_id, 500)
+    # if not task:
+    #     transaction.abort()
+    #     return Response('There is no task with id: %s' % task_id, 500)
 
-    where_conditions = """where "Review_Tasks".id = %(task_id)s""" %{'task_id': task.id}
+    where_conditions = """where "Review_Tasks".id = %(task_id)s""" % {
+        'task_id': task_id
+    }
 
-    return get_reviews(request,where_conditions)
+    return get_reviews(request, where_conditions)
 
 
 @view_config(
@@ -137,7 +139,7 @@ def get_task_reviews_count(request):
 def get_task_last_reviews(request):
     """RESTful version of getting all reviews of a task
     """
-    logger.debug('get_task_reviews is running')
+    logger.debug('get_task_last_reviews is running')
 
     task_id = request.matchdict.get('id', -1)
     task = Task.query.filter(Task.id == task_id).first()
@@ -188,16 +190,13 @@ def get_task_last_reviews(request):
 def get_user_reviews(request):
     """RESTful version of getting all reviews of a task
     """
-    logger.debug('get_task_reviews is running')
+    logger.debug('get_user_reviews is running')
 
     reviewer_id = request.matchdict.get('id', -1)
-    reviewer = User.query.filter(User.id == reviewer_id).first()
 
-    if not reviewer:
-        transaction.abort()
-        return Response('There is no user with id: %s' % reviewer_id, 500)
-
-    where_conditions = """where "Reviews".reviewer_id = %(reviewer_id)s"""% {'reviewer_id':reviewer_id}
+    where_conditions = """where "Reviews".reviewer_id = %(reviewer_id)s""" % {
+        'reviewer_id': reviewer_id
+    }
 
     return get_reviews(request, where_conditions)
 
@@ -258,16 +257,18 @@ def get_project_reviews_count(request):
     logger.debug('get_project_reviews_count is running')
 
     project_id = request.matchdict.get('id', -1)
-    project = Project.query.filter(Project.id == project_id).first()
+    # project = Project.query.filter(Project.id == project_id).first()
 
-    if not project:
-        transaction.abort()
-        return Response('There is no project with id: %s' % project_id, 500)
+    # if not project:
+    #     transaction.abort()
+    #     return Response('There is no project with id: %s' % project_id, 500)
 
-    where_conditions =  """where "Review_Tasks".project_id = %(project_id)s
-    and "Reviews_Statuses".code ='NEW' """ % {'project_id':project_id}
+    where_conditions = """
+    where "Review_Tasks".project_id = %(project_id)s
+    and "Reviews_Statuses".code = 'NEW'
+    """ % {'project_id': project_id}
 
-    reviews = get_reviews(request,where_conditions)
+    reviews = get_reviews(request, where_conditions)
 
     return len(reviews)
 
@@ -329,9 +330,13 @@ def get_reviews(request, where_conditions):
     order by "Reviews_Simple_Entities".date_created desc
     """
 
-    logger.debug('where_conditions: %s ' % where_conditions)
+    # logger.debug('where_conditions: %s ' % where_conditions)
 
-    sql_query = sql_query % {'where_conditions': where_conditions, 'tasks_hierarchical_name_table': query_of_tasks_hierarchical_name_table()}
+    sql_query = sql_query % {
+        'where_conditions': where_conditions,
+        'tasks_hierarchical_name_table':
+            query_of_tasks_hierarchical_name_table()
+    }
 
     result = DBSession.connection().execute(sql_query)
 
@@ -356,11 +361,23 @@ def get_reviews(request, where_conditions):
         for r in result.fetchall()
     ]
 
-
-
-
     return return_data
 
 
+def get_reviews_count(request, where_conditions):
+    """returns the count of reviews
+    """
+    sql_query = """
+select
+    count(1)
+from "Reviews"
+    join "Tasks" as "Review_Tasks" on "Review_Tasks".id = "Reviews".task_id
+    join "Statuses" as "Reviews_Statuses" on "Reviews_Statuses".id = "Reviews".status_id
+where %(where_conditions)s
+    """
 
+    sql_query = sql_query % {
+        'where_conditions': where_conditions
+    }
 
+    return DBSession.connection().execute(sql_query).fetchone()[0]

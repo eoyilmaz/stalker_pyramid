@@ -103,29 +103,14 @@
 
 <script type="text/javascript">
     $(function () {
-        $.getJSON('/entities/{{ task.id }}/references/count/').then(function (data) {
-            $('#reference_count').text(data);
-
-            menu_of(
-                'References',
-                "{%- if request.current_route_path() == request.route_path('list_task_references', id=task.id) -%} 'active', {%- else -%},{%- endif -%}",
-                '{{ request.route_url('list_task_references', id=task.id) }}',
-                get_icon('reference'),
-                data
-            )
-        });
-    });
-</script>
-
-<script type="text/javascript">
-    $(document).ready(function () {
+        //$('#reference_count').text(data);
         menu_of(
             'Dashboard',
             "{%- if request.current_route_path() == request.route_path('view_task', id=task.id) -%}'active',{%- else -%},{%- endif -%}",
             '{{ request.route_url('view_task', id=task.id) }}',
             get_icon('dashboard'),
-            ''
-        )
+            0
+        );
 
         {% if entity.entity_type == 'Sequence' %}
             menu_of(
@@ -133,16 +118,16 @@
                 "{%- if request.current_route_path() == request.route_path('list_sequence_shots', id=task.id) -%}'active',{%- else -%},{%- endif -%}",
                 '{{ request.route_url('list_sequence_shots', id=task.id) }}',
                 get_icon('shot'),
-                ''
-            )
+                0
+            );
 
             menu_of(
                 'Previses',
                 "{%- if request.current_route_path() == request.route_path('list_sequence_tasks', id=task.id, _query={'task_type': Previs }) -%}'active',{%- else -%},{%- endif -%}",
                 "/sequences/{{ task.id }}/tasks/list?task_type=Previs",
                 get_icon('previs'),
-                ''
-            )
+                0
+            );
         {% endif %}
 
         menu_of(
@@ -150,7 +135,7 @@
             "{%- if request.current_route_path() == request.route_path('list_entity_tasks', id=task.id) -%}'active',{%- else -%},{%- endif -%}",
             '{{ request.route_url('list_entity_tasks', id=task.id) }}',
             get_icon('task'),
-            '{{ task.tasks | count }}'
+            {{ task.tasks | count }}
         );
 
         menu_of(
@@ -158,8 +143,7 @@
             "{%- if request.current_route_path() == request.route_path('list_task_tickets', id=task.id) -%}'active',{%- else -%},{%- endif -%}",
             '{{ request.route_url('list_task_tickets', id=task.id) }}',
             get_icon('ticket'),
-            ''
-            {# TODO: fix this, it should be task.open_tickets, but stalker doesn't support it yet #}
+            0 {# TODO: fix this, it should be task.open_tickets, but stalker doesn't support it yet #}
         );
 
         menu_of(
@@ -167,19 +151,32 @@
             "{%- if request.current_route_path() == request.route_path('list_task_versions', id=task.id) -%}'active',{%- else -%},{%- endif -%}",
             '{{ request.route_url('list_task_versions', id=task.id) }}',
             get_icon('version'),
-            '{{ task.versions | count }}'
+            {{ task.versions | count }}
         );
 
+        menu_of(
+            'Version Outputs',
+            "{%- if request.current_route_path() == request.route_path('list_task_version_outputs', id=task.id) -%}'active',{%- else -%},{%- endif -%}",
+            '{{ request.route_url('list_task_version_outputs', id=task.id) }}',
+            get_icon('version_output'),
+            '{{ request.route_url('get_task_version_outputs_count', id=task.id) }}'
+        );
 
-        $.getJSON('/tasks/{{ task.id }}/reviews/count/').then(function (data) {
-            menu_of(
-                'Reviews',
-                "{%- if request.current_route_path() == request.route_path('list_task_reviews', id=task.id) -%}'active',{%- else -%},{%- endif -%}",
-                '{{ request.route_url('list_task_reviews', id=task.id) }}',
-                get_icon('review'),
-                data
-            )
-        });
+        menu_of(
+            'References',
+            "{%- if request.current_route_path() == request.route_path('list_task_references', id=task.id) -%} 'active', {%- else -%},{%- endif -%}",
+            '{{ request.route_url('list_task_references', id=task.id) }}',
+            get_icon('reference'),
+            '/entities/{{ task.id }}/references/count/'
+        );
+
+        menu_of(
+            'Reviews',
+            "{%- if request.current_route_path() == request.route_path('list_task_reviews', id=task.id) -%}'active',{%- else -%},{%- endif -%}",
+            '{{ request.route_url('list_task_reviews', id=task.id) }}',
+            get_icon('review'),
+            '/tasks/{{ task.id }}/reviews/count/'
+        );
 
         $('#delete_task_button').on('click', function (e) {
             e.preventDefault();

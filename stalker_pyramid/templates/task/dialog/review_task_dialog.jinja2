@@ -107,7 +107,7 @@
     </div>
 </div>
 
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/moment.min.js") }}'></script>
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/moment.min.js") }}'></script>#}
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.autosize-min.js") }}'></script>
 
 
@@ -246,7 +246,7 @@
             {% endif %}
 
 
-            console.log('form_data :', form_data);
+{#            console.log('form_data :', form_data);#}
 
             // prevent multiple sends
             if (task_form.attr('is_sending') == 'true') {

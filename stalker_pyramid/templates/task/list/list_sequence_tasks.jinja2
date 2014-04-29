@@ -197,7 +197,7 @@
                                     var tasks = data[i][types_data[j].name];
                                     if (tasks) {
                                         var task = tasks[0];
-                                        console.log('task '+task[0])
+{#                                        console.log('task '+task[0])#}
                                         task_row.append(cell_template({'id': task[0], 'name': task[1], 'status': task[2], 'status_color': task[2].toLowerCase(), 'percent_complete':(task[2]=='WIP'?task[3]:''),'update_task_action': data[i].update_task_action}));
                                     } else {
                                         task_row.append(cell_template({'id': '', 'name': '', 'status': '', 'status_color': 'black2','percent_complete':''}));
