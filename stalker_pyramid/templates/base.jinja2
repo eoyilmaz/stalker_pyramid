@@ -255,6 +255,43 @@
 {% endraw %}
 
 <script>
+
+    var unit_by_seconds = function(unit){
+
+        switch (unit) {
+                 case 'min':
+                    return 60;
+                    break;
+                case 'h':
+                    return 60*60;
+                    break;
+                case 'd':
+                    return 9*60*60;
+                    break;
+                 case 'w':
+                    return 9*6*60*60;
+                    break;
+                 case 'm':
+                    return 1;
+                    break;
+                 case 'y':
+                    return 1;
+                    break;
+        }
+
+    }
+
+    var calculate_seconds = function(timing,unit){
+
+        var u_seconds = unit_by_seconds(unit)
+
+        return  timing*u_seconds;
+
+    }
+
+</script>
+
+<script>
     var page_of = function (name, code, thumbnail_full_path, update_link) {
         var sidebar_list = $('#sidebar_list');
         var media_template = doT.template($('#tmpl_sidebar_media').html());

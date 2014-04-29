@@ -11,7 +11,7 @@
 
         </div>
     </div>
-    <div class="widget-body"
+    <div class="widget-body no-padding"
          style="background-color: rgba(255,255,255,.4)">
         <div class="widget-main">
 
@@ -26,9 +26,9 @@
 
             {% if has_permission('Create_Review') and  entity.status.code == 'PREV' %}
 
-                <div id="force_review_button" class="position-relative pull-right">
+                <div id="force_review_button" class="no-padding">
 
-                    <button class="btn btn-minier bigger btn-info dropdown-toggle"
+                    <button class="btn btn-small btn-info dropdown-toggle span12"
                             data-toggle="dropdown">
                         <i class="icon-angle-down icon-only bigger-120"></i>
                         Force
@@ -69,9 +69,9 @@
                     </ul>
                 <div class="space-4"></div>
                 </div>
-                <div id="cleanup_button" class="position-relative pull-right hide" >
+                <div id="cleanup_button" class="position-relative hide" >
 
-                    <button class="btn btn-minier bigger btn-danger"
+                    <button class="btn btn-small bigger btn-danger span12"
                             href='/tasks/{{ entity.id }}/cleanup_new_reviews/dialog?came_from={{ request.current_route_path() }}'
                             data-rel="tooltip"
                             data-placement="bottom"
@@ -157,15 +157,15 @@
                 )
             )
 
-            if(data[0].review_number>0){
-                
-                $('#responsible_body_toolbar').append( 
-                    $('#responsible_body_toolbar').append(
-                        '<div class="pull-left"><i class="icon-hand-right grey"></i><a href="/tasks/{{ entity.id }}/reviews/list">View all reviews &hellip;</a></div>'
-                    )
-                )
-
-            }
+{#            if(data[0].review_number>0){#}
+{#                #}
+{#                $('#responsible_body_toolbar').append( #}
+{#                    $('#responsible_body_toolbar').append(#}
+{#                        '<div class="pull-left"><i class="icon-hand-right grey"></i><a href="/tasks/{{ entity.id }}/reviews/list">View all reviews &hellip;</a></div>'#}
+{#                    )#}
+{#                )#}
+{##}
+{#            }#}
 
 
             //show the user info on right or left depending on its position

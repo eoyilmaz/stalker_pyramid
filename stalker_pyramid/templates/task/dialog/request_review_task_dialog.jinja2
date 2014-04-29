@@ -95,7 +95,10 @@
     function init_dialog() {
         console.debug('starting to initialize confirm dialog!!!');
 
-        $('#dialog_template_label').text('Request Review Dialog');
+        // update dialog header
+        var dialog_template_label = $('#dialog_template_label');
+        dialog_template_label.find('span').remove();
+        dialog_template_label.append('<span class="green">Request Review Dialog</span>');
 
         {% if selected_responsible == None  %}
 
