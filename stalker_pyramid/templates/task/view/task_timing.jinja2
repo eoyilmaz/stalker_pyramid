@@ -5,39 +5,38 @@
                 Timing
           </h5>
 
-          <div class="widget-toolbar no-border">
-                <button class="btn btn-minier btn-primary dropdown-toggle" data-toggle="dropdown">
-                      min
-                      <i class="icon-angle-down icon-on-right"></i>
-                </button>
-
-                <ul class="dropdown-menu dropdown-info pull-right dropdown-caret">
-                      <li class="active">
-                            <a href="#">min</a>
-                      </li>
-
-                      <li>
-                            <a href="#">h</a>
-                      </li>
-
-                      <li>
-                            <a href="#">d</a>
-                      </li>
-
-                      <li>
-                            <a href="#">w</a>
-                      </li>
-                </ul>
-          </div>
+{#          <div class="widget-toolbar no-border">#}
+{#                <button class="btn btn-minier btn-primary dropdown-toggle" data-toggle="dropdown">#}
+{#                      min#}
+{#                      <i class="icon-angle-down icon-on-right"></i>#}
+{#                </button>#}
+{##}
+{#                <ul class="dropdown-menu dropdown-info pull-right dropdown-caret">#}
+{#                      <li class="active">#}
+{#                            <a href="#">min</a>#}
+{#                      </li>#}
+{##}
+{#                      <li>#}
+{#                            <a href="#">h</a>#}
+{#                      </li>#}
+{##}
+{#                      <li>#}
+{#                            <a href="#">d</a>#}
+{#                      </li>#}
+{##}
+{#                      <li>#}
+{#                            <a href="#">w</a>#}
+{#                      </li>#}
+{#                </ul>#}
+{#          </div>#}
     </div>
 
     <div class="widget-body no-padding">
           <div class="widget-main no-padding">
-            <div id='bid_alert' class="alert alert-block">
+            <div id='bid_alert' class="alert alert-block no-padding" >
 
-                        <ul class="unstyled spaced">
+                        <ul class="unstyled spaced"  style="margin-left: 10px">
                             <li>
-
                                 <b>Bid
                                     : </b>
                                 <span id="bid"></span>
@@ -58,26 +57,28 @@
                             </li>
                         </ul>
 
-                        {% if (entity.schedule_seconds - entity.total_logged_seconds)==0  and entity.status.code=='WIP'%}
-
-                            <button id='task_review_button'
-                                    class="btn btn-small btn-danger span12 tooltip-success"
-                                    data-rel="tooltip"
-                                    data-placement="bottom"
-                                    title="Request Extra Time"
-                                    data-target="#dialog_template"
-                                    data-toggle="modal"
-                                    data-keyboard="false"
-                                    href="/tasks/{{entity.id}}/request_extra_time/dialog?came_from={{request.current_route_path() }}"
-                                    >
-                                <i class="icon-time bigger-130"></i> Request Extra Time
-                            </button>
 
 
-
-                        {% endif %}
                 </div>
           </div><!--/widget-main-->
+         {% if (entity.schedule_seconds - entity.total_logged_seconds)==0  and entity.status.code=='WIP'%}
+        <div class="widget-toolbox clearfix">
+
+
+                                <button id='task_review_button'
+                                        class="btn btn-small btn-danger span12"
+                                        data-placement="bottom"
+                                        title="Request Extra Time"
+                                        data-target="#dialog_template"
+                                        data-toggle="modal"
+                                        data-keyboard="false"
+                                        href="/tasks/{{entity.id}}/request_extra_time/dialog?came_from={{request.current_route_path() }}"
+                                        >
+                                    <i class="icon-time bigger-130"></i> Request Extra Time</button>
+
+
+        </div>
+          {% endif %}
     </div><!--/widget-body-->
 </div><!--/widget-box-->
 
@@ -88,37 +89,37 @@
 
 
 
-        var unit_by_seconds = function(unit){
-
-             switch (unit) {
-                 case 'min':
-                    return 60;
-                    break;
-                case 'h':
-                    return 60*60;
-                    break;
-                case 'd':
-                    return 9*60*60;
-                    break;
-                 case 'w':
-                    return 9*6*60*60;
-                    break;
-                 case 'm':
-                    return 1;
-                    break;
-                 case 'y':
-                    return 1;
-                    break;
-            }
-        }
-
-        var calculate_seconds = function(timing,unit){
-
-           var u_seconds = unit_by_seconds(unit)
-
-           return  timing*u_seconds;
-
-        }
+{#        var unit_by_seconds = function(unit){#}
+{##}
+{#             switch (unit) {#}
+{#                 case 'min':#}
+{#                    return 60;#}
+{#                    break;#}
+{#                case 'h':#}
+{#                    return 60*60;#}
+{#                    break;#}
+{#                case 'd':#}
+{#                    return 9*60*60;#}
+{#                    break;#}
+{#                 case 'w':#}
+{#                    return 9*6*60*60;#}
+{#                    break;#}
+{#                 case 'm':#}
+{#                    return 1;#}
+{#                    break;#}
+{#                 case 'y':#}
+{#                    return 1;#}
+{#                    break;#}
+{#            }#}
+{#        }#}
+{##}
+{#        var calculate_seconds = function(timing,unit){#}
+{##}
+{#           var u_seconds = unit_by_seconds(unit)#}
+{##}
+{#           return  timing*u_seconds;#}
+{##}
+{#        }#}
 
         var schedule_unit_seconds = unit_by_seconds('{{ entity.schedule_unit }}')
 

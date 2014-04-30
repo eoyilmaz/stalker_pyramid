@@ -172,6 +172,7 @@ function init_dialog() {
         end_time_value.setHours(19);
     }
 
+
     {# ***************************************************************** #}
     {# Update Remaining Hours #}
     // Calculate remaining hours
@@ -179,14 +180,13 @@ function init_dialog() {
         // total hours of time_logs should have been given by Stalker
         // calculate the remaining hours
         $.getJSON('/tasks/' + time_log_task.val() + '/').then(function (data) {
-
-
-            var bid_timing = parseFloat(data[0].bid_timing) *9
+            var bid_seconds = calculate_seconds(parseFloat(data[0].bid_timing), data[0].bid_unit)
+            var bid_hours = bid_seconds /3600
             var schedule_seconds = parseFloat(data[0].schedule_seconds)
             var schedule_hours = (schedule_seconds / 3600)
             var total_logged_seconds = parseFloat(data[0].total_logged_seconds)
             var total_logged_hours = total_logged_seconds / 3600
-            var total_extended_hours = (schedule_hours - bid_timing)>0?(schedule_hours - bid_timing):0;
+            var total_extended_hours = (schedule_hours - bid_hours)>0?(schedule_hours - bid_hours):0;
 
             var remaining_seconds = schedule_seconds - total_logged_seconds;
 
@@ -221,7 +221,7 @@ function init_dialog() {
 
                 information.append(
                     '<span class="pull_left"><div id="message" class="alert alert-success bigger-110">' +
-                    '<strong>Bid: </strong>' + bid_timing +
+                    '<strong>Bid: </strong>' + bid_hours +
                     '<br/><strong>Scheduled Hours: </strong>' + schedule_hours +
                     '<br/><strong>Total Logged Hours: </strong>' + total_logged_hours + ' ( '+total_logged_hours_msg+' )'+
                     '</div></span>'
@@ -233,7 +233,7 @@ function init_dialog() {
 
                 information.append(
                         '<span class="pull_left"><div id="message" class="alert alert-danger bigger-110">' +
-                        '<strong>Bid: </strong>' + bid_timing +
+                        '<strong>Bid: </strong>' + bid_hours +
                         '<br/><strong>Scheduled Hours: </strong>' + schedule_hours + ' ( extendeded <strong>'+ total_extended_hours +'</strong> hours )' +
                         '<br/><strong>Total Logged Hours: </strong>' + total_logged_hours + ' ( '+total_logged_hours_msg+' )'+
                         '</div></span>'
