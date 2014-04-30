@@ -833,7 +833,7 @@ class MediaManager(object):
                 video_stream = stream
 
         nb_frames = video_stream.get('nb_frames')
-        if nb_frames is None:
+        if nb_frames is None or nb_frames == 'N/A':
             # no nb_frames
             # first try to use "r_frame_rate" and "duration"
             frame_rate = video_stream.get('r_frame_rate')
