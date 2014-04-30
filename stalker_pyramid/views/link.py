@@ -1462,6 +1462,7 @@ class MediaManager(object):
             '\xc3\x87': 'C',
             '\xc4\x9e': 'G',
             '\xc4\xb0': 'I',
+            '\xc5\x9e': 'S',
             '\xc3\x96': 'O',
             '\xc3\x9c': 'U',
 
@@ -1474,6 +1475,7 @@ class MediaManager(object):
             u'\xc7': 'C',
             u'\u011e': 'G',
             u'\u0130': 'I',
+            u'\u015e': 'S',
             u'\xd6': 'O',
             u'\xdc': 'U',
         }
