@@ -738,7 +738,7 @@ class MediaManager(object):
         self.video_formats = [
             '.3gp', '.a64', '.asf', '.avi', '.dnxhd', '.f4v', '.filmstrip',
             '.flv', '.h261', '.h263', '.h264', '.ipod', '.m4v', '.matroska',
-            '.mjpeg', '.mov', '.mp4', '.mpeg', '.mpg', '.mpeg1video',
+            '.mjpeg', '.mkv', '.mov', '.mp4', '.mpeg', '.mpg', '.mpeg1video',
             '.mpeg2video', '.mv', '.mxf', '.ogg', '.rm', '.swf', '.vc1',
             '.vcd', '.vob', '.webm'
         ]
