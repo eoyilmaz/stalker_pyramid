@@ -63,7 +63,6 @@
         $('.modal-header>h3').text('Upload References');
 
         var submit_button = $('#dialog_template_submit_button');
-        submit_button.data('loading-text', 'Converting Files, Please Wait...');
 
         var field_update_mode_checker = function(){
             // checks if the important fields are still updating
@@ -113,6 +112,7 @@
                 this.on("addedfile", function(file){
                     // set the submit button to loading state
                     uploading_file_counter += 1;
+                    submit_button.data('loading-text', 'Uploading Files, Please Wait...');
                     submit_button.button('loading');
                 }).on("success", function(file, response){
                     // store the full_path in file object
@@ -152,7 +152,10 @@
             e.stopPropagation();
             // disable it
             // disable the Submit button
-            setTimeout(function(){submit_button.button('loading')}, 0);
+            setTimeout(function(){
+                submit_button.data('loading-text', 'Converting Files, Please Wait...');
+                submit_button.button('loading')}, 0
+            );
 
             var tags_list = $('#reference_tags_input').val().split(', ');
 
