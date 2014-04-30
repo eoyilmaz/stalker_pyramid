@@ -193,15 +193,15 @@
 {#                console.debug('jqXHR : ', jqXHR);#}
                 $('#new_references_storage').text(JSON.stringify(jqXHR));
                 $('#dialog_template').modal('hide');
-            }).fail(function(error){
+            }).fail(function(jqXHR){
                 // alert the user about what is failed
-                // re enable submit button
+                bootbox.alert(jqXHR.responseText);
                 // enable the Submit button
                 setTimeout(function(){submit_button.button('reset')}, 0);
             });
 
         });
-    };
+    }
 
     function destruct_dialog(){
         // reduce counter
@@ -214,5 +214,5 @@
         // destroy dialog
         console.debug('destroy dialog from upload_reference.jinja2 running!');
         $('#dialog_template').data('modal', null);
-    };
+    }
 </script>
