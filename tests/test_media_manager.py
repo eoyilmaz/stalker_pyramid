@@ -663,7 +663,8 @@ class MediaManagerTestCase(unittest2.TestCase):
             ('eGhsczN1MTI=_o_taklac-gvercinler.jpg',
              'eGhsczN1MTI__o_taklac-gvercinler.jpg'),
             ('FB,8241,84,konfor-rahat-taba-erkek-ayakkabi.jpg',
-             'FB_8241_84_konfor-rahat-taba-erkek-ayakkabi.jpg')
+             'FB_8241_84_konfor-rahat-taba-erkek-ayakkabi.jpg'),
+            ('++_The_B_U_2013_720p.jpg', '__The_B_U_2013_720p.jpg')
         ]
 
         # create a temp file and ask to save over it

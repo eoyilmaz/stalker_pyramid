@@ -1490,7 +1490,7 @@ class MediaManager(object):
         # replace ' ' with '_'
         import re
         basename, extension = os.path.splitext(filename)
-        filename = '%s%s' % (re.sub(r'[\s\.\\/:\*\?"<>|=,]+', '_', basename), extension)
+        filename = '%s%s' % (re.sub(r'[\s\.\\/:\*\?"<>|=,+]+', '_', basename), extension)
 
         return filename
 
