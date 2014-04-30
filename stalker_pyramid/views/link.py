@@ -330,7 +330,7 @@ def get_entity_references(request):
             if i != 0:
                 search_string_buffer.append('and')
             tmp_search_query = """(
-            '%(search_wide)s' any (tag.name)
+            '%(search_wide)s' = any (tags.name)
             or tasks.entity_type = '%(search_str)s'
             or tasks.full_path ilike '%(search_wide)s'
             or "Links".original_filename ilike '%(search_wide)s'
@@ -474,7 +474,7 @@ def get_entity_references_count(request):
                 search_string_buffer.append('and')
             tmp_search_query = """
             (
-            '%(search_wide)s' any (tag.name)
+            '%(search_wide)s' = any (tags.name)
             or tasks.entity_type = '%(search_str)s'
             or tasks.full_path ilike '%(search_wide)s'
             or "Links".original_filename ilike '%(search_wide)s'
