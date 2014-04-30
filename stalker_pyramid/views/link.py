@@ -359,7 +359,7 @@ select * from (
         "Links_ForWeb".original_filename,
         'repositories/' || task_repositories.repo_id || '/' || "Links_ForWeb".full_path as full_path,
         'repositories/' || task_repositories.repo_id || '/' || "Thumbnails".full_path as "thumbnail_full_path",
-        array_agg("Tag_SimpleEntities".name) as tags,
+        tags.name as tags,
         array_agg(tasks.id) as entity_id,
         array_agg(tasks.full_path) as entity_full_path,
         array_agg(tasks.entity_type) as entity_type
@@ -383,8 +383,17 @@ select * from (
     join "SimpleEntities" as "Links_ForWeb_SimpleEntities" on "Links_ForWeb".id = "Links_ForWeb_SimpleEntities".id
     join "Links" as "Thumbnails" on "Links_ForWeb_SimpleEntities".thumbnail_id = "Thumbnails".id
 
-    left outer join "Entity_Tags" on "Links".id = "Entity_Tags".entity_id
-    left outer join "SimpleEntities" as "Tag_SimpleEntities" on "Entity_Tags".tag_id = "Tag_SimpleEntities".id
+    -- tags
+    --left outer join "Entity_Tags" on "Links".id = "Entity_Tags".entity_id
+    --left outer join "SimpleEntities" as "Tag_SimpleEntities" on "Entity_Tags".tag_id = "Tag_SimpleEntities".id
+    left outer join (
+        select
+            entity_id,
+            array_agg(name) as name
+        from "Entity_Tags"
+        join "SimpleEntities" on "Entity_Tags".tag_id = "SimpleEntities".id
+        group by "Entity_Tags".entity_id
+    ) as tags on "Links".id = tags.entity_id
 
     where (%(id)s = any (tasks.path) or tasks.id = %(id)s) %(search_string)s
 
@@ -392,7 +401,8 @@ select * from (
         "Links_ForWeb".full_path,
         "Links_ForWeb".original_filename,
         task_repositories.repo_id,
-        "Thumbnails".id
+        "Thumbnails".id,
+        tags.name
 ) as data
 
 order by data.id
@@ -782,6 +792,10 @@ class MediaManager(object):
 
         if img.format == 'GIF':
             suffix = '.gif'  # force save in gif format
+        else:
+            # check if the image is in RGB mode
+            if img.mode != "RGB":
+                img = img.convert("RGB")
 
         thumbnail_path = tempfile.mktemp(suffix=suffix)
 
@@ -808,6 +822,10 @@ class MediaManager(object):
 
         if img.format == 'GIF':
             suffix = '.gif'  # force save in gif format
+        else:
+            # check if the image is in RGB mode
+            if img.mode != "RGB":
+                img = img.convert("RGB")
 
         thumbnail_path = tempfile.mktemp(suffix=suffix)
 

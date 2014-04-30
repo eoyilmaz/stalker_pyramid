@@ -26,6 +26,7 @@ will generate the missing Web versions for them.
 
 import os
 import sys
+import copy
 
 from pyramid.paster import (
     get_appsettings,
@@ -52,12 +53,12 @@ def move_references():
     # get all tasks that has a reference
     tasks = Task.query.filter(Task.references!=None).all()
 
-    print 'Number of Tasks that has a reference: %s' % len(tasks)
+    #print 'Number of Tasks that has a reference: %s' % len(tasks)
 
     processed_references = {}
     for t in tasks:
         # go over references
-        task_references = t.references
+        task_references = copy.copy(t.references)
         for r in task_references:
             if r.full_path.startswith('SPL'):
                 if r.id not in processed_references:
