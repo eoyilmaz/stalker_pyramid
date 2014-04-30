@@ -330,7 +330,7 @@ def get_entity_references(request):
             if i != 0:
                 search_string_buffer.append('and')
             tmp_search_query = """(
-            "Tag_SimpleEntities".name ilike '%(search_wide)s'
+            '%(search_wide)s' any (tag.name)
             or tasks.entity_type = '%(search_str)s'
             or tasks.full_path ilike '%(search_wide)s'
             or "Links".original_filename ilike '%(search_wide)s'
@@ -354,55 +354,65 @@ def get_entity_references(request):
     sql_query = """
     -- select all links assigned to a project tasks or assigned to a task and its children
 select * from (
+select
+    "Links".id,
+    "Links".original_filename,
+    'repositories/' || task_repositories.repo_id || '/' || "Links_ForWeb".full_path as full_path,
+    'repositories/' || task_repositories.repo_id || '/' || "Thumbnails".full_path as "thumbnail_full_path",
+    tags.name as tags,
+    array_agg(tasks.id) as entity_id,
+    array_agg(tasks.full_path) as entity_full_path,
+    array_agg(tasks.entity_type) as entity_type
+
+-- start with tasks (with full names)
+from (
+    %(tasks_hierarchical_name_table)s
+) as tasks
+
+
+-- find Links (References)
+join "Task_References" on tasks.id = "Task_References".task_id
+join "Links" on "Task_References".link_id = "Links".id
+
+
+-- tags
+join (
     select
-        "Links".id,
-        "Links_ForWeb".original_filename,
-        'repositories/' || task_repositories.repo_id || '/' || "Links_ForWeb".full_path as full_path,
-        'repositories/' || task_repositories.repo_id || '/' || "Thumbnails".full_path as "thumbnail_full_path",
-        tags.name as tags,
-        array_agg(tasks.id) as entity_id,
-        array_agg(tasks.full_path) as entity_full_path,
-        array_agg(tasks.entity_type) as entity_type
-    from (
-        %(tasks_hierarchical_name_table)s
-    ) as tasks
-    join "Task_References" on tasks.id = "Task_References".task_id
+        entity_id,
+        array_agg(name) as name
+    from "Entity_Tags"
+    join "SimpleEntities" on "Entity_Tags".tag_id = "SimpleEntities".id
+    group by "Entity_Tags".entity_id
+) as tags on "Links".id = tags.entity_id
 
-    join (
-        select
-            "Tasks".id as task_id,
-            "Repositories".id as repo_id
-        from "Tasks"
-        join "Projects" on "Tasks".project_id = "Projects".id
-        join "Repositories" on "Projects".repository_id = "Repositories".id
-    ) as task_repositories on tasks.id = task_repositories.task_id
 
-    join "Links" on "Task_References".link_id = "Links".id
-    join "SimpleEntities" as "Link_SimpleEntities" on "Links".id = "Link_SimpleEntities".id
-    join "Links" as "Links_ForWeb" on "Link_SimpleEntities".thumbnail_id = "Links_ForWeb".id
-    join "SimpleEntities" as "Links_ForWeb_SimpleEntities" on "Links_ForWeb".id = "Links_ForWeb_SimpleEntities".id
-    join "Links" as "Thumbnails" on "Links_ForWeb_SimpleEntities".thumbnail_id = "Thumbnails".id
+-- find repository id
+join (
+    select
+        "Tasks".id as task_id,
+        "Repositories".id as repo_id
+    from "Tasks"
+    join "Projects" on "Tasks".project_id = "Projects".id
+    join "Repositories" on "Projects".repository_id = "Repositories".id
+) as task_repositories on tasks.id = task_repositories.task_id
 
-    -- tags
-    --left outer join "Entity_Tags" on "Links".id = "Entity_Tags".entity_id
-    --left outer join "SimpleEntities" as "Tag_SimpleEntities" on "Entity_Tags".tag_id = "Tag_SimpleEntities".id
-    left outer join (
-        select
-            entity_id,
-            array_agg(name) as name
-        from "Entity_Tags"
-        join "SimpleEntities" on "Entity_Tags".tag_id = "SimpleEntities".id
-        group by "Entity_Tags".entity_id
-    ) as tags on "Links".id = tags.entity_id
 
-    where (%(id)s = any (tasks.path) or tasks.id = %(id)s) %(search_string)s
+-- continue on links
+join "SimpleEntities" as "Link_SimpleEntities" on "Links".id = "Link_SimpleEntities".id
+join "Links" as "Links_ForWeb" on "Link_SimpleEntities".thumbnail_id = "Links_ForWeb".id
+join "SimpleEntities" as "Links_ForWeb_SimpleEntities" on "Links_ForWeb".id = "Links_ForWeb_SimpleEntities".id
+join "Links" as "Thumbnails" on "Links_ForWeb_SimpleEntities".thumbnail_id = "Thumbnails".id
 
-    group by "Links".id,
-        "Links_ForWeb".full_path,
-        "Links_ForWeb".original_filename,
-        task_repositories.repo_id,
-        "Thumbnails".id,
-        tags.name
+
+
+where (%(id)s = any (tasks.path) or tasks.id = %(id)s) %(search_string)s
+
+group by "Links".id,
+    "Links_ForWeb".full_path,
+    "Links".original_filename,
+    task_repositories.repo_id,
+    "Thumbnails".id,
+    tags.name
 ) as data
 
 order by data.id
@@ -464,7 +474,7 @@ def get_entity_references_count(request):
                 search_string_buffer.append('and')
             tmp_search_query = """
             (
-            "Tag_SimpleEntities".name ilike '%(search_wide)s'
+            '%(search_wide)s' any (tag.name)
             or tasks.entity_type = '%(search_str)s'
             or tasks.full_path ilike '%(search_wide)s'
             or "Links".original_filename ilike '%(search_wide)s'
@@ -488,29 +498,40 @@ def get_entity_references_count(request):
     sql_query = """
     -- select all links assigned to a project tasks or assigned to a task and its children
 select count(1) from (
+select
+    "Links".id
+
+-- start with tasks (with fullnames)
+from (
+    %(tasks_hierarchical_name_table)s
+) as tasks
+
+
+-- find Links (References)
+join "Task_References" on tasks.id = "Task_References".task_id
+join "Links" on "Task_References".link_id = "Links".id
+
+
+-- tags
+join (
     select
-        "Links".id
-    from (
-        %(tasks_hierarchical_name_table)s
-    ) as tasks
-    join "Task_References" on tasks.id = "Task_References".task_id
-    join "Links" on "Task_References".link_id = "Links".id
-    join "SimpleEntities" as "Link_SimpleEntities" on "Links".id = "Link_SimpleEntities".id
+        entity_id,
+        array_agg(name) as name
+    from "Entity_Tags"
+    join "SimpleEntities" on "Entity_Tags".tag_id = "SimpleEntities".id
+    group by "Entity_Tags".entity_id
+) as tags on "Links".id = tags.entity_id
 
-    join "Links" as "Links_ForWeb" on "Link_SimpleEntities".thumbnail_id = "Links_ForWeb".id
-    join "SimpleEntities" as "Links_ForWeb_SimpleEntities" on "Links_ForWeb".id = "Links_ForWeb_SimpleEntities".id
-    join "Links" as "Thumbnails" on "Links_ForWeb_SimpleEntities".thumbnail_id = "Thumbnails".id
 
-    left outer join "Entity_Tags" on "Links".id = "Entity_Tags".entity_id
-    left outer join "SimpleEntities" as "Tag_SimpleEntities" on "Entity_Tags".tag_id = "Tag_SimpleEntities".id
+-- continue on links
+join "SimpleEntities" as "Link_SimpleEntities" on "Links".id = "Link_SimpleEntities".id
 
-    where (%(id)s = any (tasks.path) or tasks.id = %(id)s) %(search_string)s
+where (%(id)s = any (tasks.path) or tasks.id = %(id)s) %(search_string)s
 
-    group by "Links".id,
-        "Links".original_filename
-
-    --order by "Links".id
-
+group by
+    "Links".id,
+    "Links".original_filename,
+    tags.name
 ) as data
     """ % {
         'id': entity_id,
