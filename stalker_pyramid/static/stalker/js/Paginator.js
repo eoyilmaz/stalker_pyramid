@@ -229,7 +229,9 @@ try {
     };
 
     $.fn.paginator.render_left_icon = function () {
-        return '<li class="disabled">' +
+        var icon_class = current_page_number === 1 ? 'disabled' : '';
+
+        return '<li class="' + icon_class + '">' +
             '<a class="paginator_page_icon" href="#" data-page-number="-1">' +
             '   <i class="icon-double-angle-left">' +
             '   </i>' +
@@ -237,7 +239,9 @@ try {
     };
 
     $.fn.paginator.render_right_icon = function () {
-        return '<li>' +
+        var icon_class = current_page_number === number_of_pages ? 'disabled' : '';
+
+        return '<li class="' + icon_class + '">' +
             '   <a class="paginator_page_icon" href="#" data-page-number="+1">' +
             '       <i class="icon-double-angle-right">' +
             '       </i>' +
@@ -246,9 +250,9 @@ try {
     };
 
     $.fn.paginator.render_page_icon = function (page_number) {
-        var template = '<li>';
+        var template = '<li class="paginator_page_box">';
         if (page_number === current_page_number) {
-            template = '<li class="active">';
+            template = '<li class="paginator_page_box active">';
         }
         template += '<a class="paginator_page_icon" href="#" data-page-number="' + page_number + '">' + page_number + '</a></li>';
         return template;
@@ -264,7 +268,9 @@ try {
             e.stopPropagation();
             e.preventDefault();
             var self = $(this);
-            $.fn.paginator.set_current_page(self.data('page-number'));
+            if (!self.parent().hasClass('disabled')) {
+                $.fn.paginator.set_current_page(self.data('page-number'));
+            }
         });
     };
 

@@ -1052,7 +1052,12 @@ require([
                             moment(data.scheduling_started_at).format('YYYY-MM-DD HH:mm') +
                             '), please wait until the current scheduling is done!</div>';
                     bootbox.alert(message);
-                    $('.bootbox').prepend('<div class="modal-header alert-danger"><strong>Fail</strong></div>');
+                    $('.bootbox')
+                        .prepend('<div class="modal-header alert-danger"><strong>Fail</strong></div>')
+                        .css({
+                            'max-height': '90%',
+                            'overflow-y': 'auto'
+                        });
                 } else {
                     // suitable to be scheduled
                     var dialog = $("#schedule-dialog-message").dialog({

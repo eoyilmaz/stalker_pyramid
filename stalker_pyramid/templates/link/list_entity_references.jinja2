@@ -32,6 +32,8 @@
 
     <link rel="stylesheet"
           href='{{ request.static_url("stalker_pyramid:static/ace/css/dropzone.css") }}'/>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/stalker/css/Paginator.css") }}'/>
 
 {% endblock pre_header %}
 
@@ -107,7 +109,7 @@
         <li id="Reference_{{=it.id}}">
             <a href="/{{=it.full_path}}"
                download_href="/FD{{=it.full_path}}"
-               title="{{=it.original_filename}} | {{=it.entity_names}}"
+               title="{{=it.original_filename}}&#013;{{=it.entity_names}}&#013;&#013;{{=it.tags }}"
                data-rel="colorbox"
                class="cboxElement">
                 <div style="text-align: center; overflow: hidden; width: 150px">
@@ -117,9 +119,15 @@
                          src="/{{=it.thumbnail_full_path ? it.thumbnail_full_path : 'static/stalker/images/Placeholder_0.png' }}">
 
                     <div class="tags">
-                        {{~ it.tags :t}}
-                        <span class="label label-info">{{=t}}</span>
-                        {{~}}
+                        <!--{{~ it.tags :t}}-->
+                        <!--<span class="label label-info">{{=t}}</span>-->
+                        <!--{{~}}-->
+
+                        {{? it.full_path.indexOf('.webm') !== -1 }}
+                        <span class="label label-success">
+                            <i class="icon-film"></i>
+                        </span>
+                        {{?}}
                     </div>
                 </div>
             </a>

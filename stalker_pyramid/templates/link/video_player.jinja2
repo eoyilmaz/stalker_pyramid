@@ -21,14 +21,15 @@
 <head>
     <meta name="viewport" content="width=device-width">
 </head>
-    <body>
-        <video controls=""
-               autoplay="true"
-               name="media"
-               style="width: 90%; height: 90%; position: relative; ">
-            <source src="{{ video_full_path }}"
-                    type="video/webm">
-        </video>
+    <body style="background-color: black; text-align: center">
+        <div style="width: auto; height: 100%; position: relative; max-width: 100%;">
+            <video controls=""
+                   autoplay="true"
+                   name="media"
+                   style="width: auto; height: 95%; position: relative; max-width: 100%">
+                <source src="{{ video_full_path }}"
+                        type="video/webm">
+            </video>
             <iframe style="display: none !important;
 {#                           position: fixed !important;#}
                            padding: 0px !important;
@@ -41,5 +42,6 @@
                            z-index: 2147483647 !important;
                            border: none !important;">
             </iframe>
+        </div>
     </body>
 </html>

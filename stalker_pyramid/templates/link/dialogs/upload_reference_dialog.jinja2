@@ -63,7 +63,6 @@
         $('.modal-header>h3').text('Upload References');
 
         var submit_button = $('#dialog_template_submit_button');
-        submit_button.data('loading-text', 'Converting Files, Please Wait...');
 
         var field_update_mode_checker = function(){
             // checks if the important fields are still updating
@@ -113,6 +112,7 @@
                 this.on("addedfile", function(file){
                     // set the submit button to loading state
                     uploading_file_counter += 1;
+                    submit_button.data('loading-text', 'Uploading Files, Please Wait...');
                     submit_button.button('loading');
                 }).on("success", function(file, response){
                     // store the full_path in file object
@@ -134,7 +134,7 @@
                 });
             },
             paramName: "file", // The name that will be used to transfer the file
-{#            maxFilesize: 10, // MB#}
+            maxFilesize: 2048, // MB
 
             addRemoveLinks: true,
             dictDefaultMessage: '<span class="bigger-150 bolder"><i class="icon-caret-right red"></i> Drop files</span> to upload \
@@ -152,7 +152,10 @@
             e.stopPropagation();
             // disable it
             // disable the Submit button
-            setTimeout(function(){submit_button.button('loading')}, 0);
+            setTimeout(function(){
+                submit_button.data('loading-text', 'Converting Files, Please Wait...');
+                submit_button.button('loading')}, 0
+            );
 
             var tags_list = $('#reference_tags_input').val().split(', ');
 
@@ -193,15 +196,15 @@
 {#                console.debug('jqXHR : ', jqXHR);#}
                 $('#new_references_storage').text(JSON.stringify(jqXHR));
                 $('#dialog_template').modal('hide');
-            }).fail(function(error){
+            }).fail(function(jqXHR){
                 // alert the user about what is failed
-                // re enable submit button
+                bootbox.alert(jqXHR.responseText);
                 // enable the Submit button
                 setTimeout(function(){submit_button.button('reset')}, 0);
             });
 
         });
-    };
+    }
 
     function destruct_dialog(){
         // reduce counter
@@ -214,5 +217,5 @@
         // destroy dialog
         console.debug('destroy dialog from upload_reference.jinja2 running!');
         $('#dialog_template').data('modal', null);
-    };
+    }
 </script>

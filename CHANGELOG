@@ -5,9 +5,19 @@ Stalker Pyramid Changes
 0.1.10
 ======
 
-* MediaManager now replaces any Turkish characters with English versions of them.
-* Added script for moving old style references from SPL to the Fileserver with new style References
-* Added script to remove any unused file from SPL
+* **Update:** MediaManager now replaces any Turkish characters with English
+  versions of them.
+
+* **New:** Added script for moving old style references from SPL to the
+  Fileserver with new style References
+
+* **New:** Added script to remove any unused file from SPL
+
+* **Fix:** Fixed ``video_player.jinja2`` to center the video and maximize it to
+  the whole screen,
+
+* **Fix:** Fixed ``upload_reference`` dialog ``submit`` button to show correct
+  message on file upload and video convertion.
 
 0.1.9
 =====
