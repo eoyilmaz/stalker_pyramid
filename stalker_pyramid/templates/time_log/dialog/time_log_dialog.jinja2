@@ -181,17 +181,23 @@ function init_dialog() {
         // calculate the remaining hours
         $.getJSON('/tasks/' + time_log_task.val() + '/').then(function (data) {
 
+            var sch_unit  = 'h'
 
+            var schedule_unit_seconds = unit_by_seconds(sch_unit);
 
             var bid_seconds = calculate_seconds(parseFloat(data[0].bid_timing), data[0].bid_unit)
-            var bid_hours = bid_seconds /3600
-            var schedule_seconds = parseFloat(data[0].schedule_seconds)
-            var schedule_hours = (schedule_seconds / 3600)
-            var total_logged_seconds = parseFloat(data[0].total_logged_seconds)
-            var total_logged_hours = total_logged_seconds / 3600
-            var total_extended_hours = (schedule_hours - bid_hours)>0?(schedule_hours - bid_hours):0;
+            var schedule_timing_seconds = parseFloat(data[0].schedule_seconds);
+            var total_logged_seconds = parseFloat(data[0].total_logged_seconds);
 
-            var remaining_seconds = schedule_seconds - total_logged_seconds;
+
+            var bid = bid_seconds/schedule_unit_seconds
+            var schedule_timing = schedule_timing_seconds/schedule_unit_seconds;
+            var total_logged = total_logged_seconds/schedule_unit_seconds;
+            var time_to_complete = schedule_timing-total_logged;
+
+            var total_extended_time = (schedule_timing - bid)>0?(schedule_timing - bid):0;
+
+            var remaining_seconds = schedule_timing_seconds - total_logged_seconds;
 
             var start_end = get_start_end();
             var start = start_end[0];
@@ -218,15 +224,15 @@ function init_dialog() {
 
             information.find('span').remove();
 
-            var total_logged_hours_msg = total_logged_hours>=schedule_hours?'spent all scheduled hours':'you can enter max <strong>'+(schedule_hours-total_logged_hours)+'</strong> hours'
+            var total_logged_hours_msg = time_to_complete<=0?'spent all scheduled hours':'you can enter max <strong>'+ time_to_complete +sch_unit +'</strong>'
 
-            if(total_extended_hours==0){
+            if(total_extended_time==0){
 
                 information.append(
                     '<span class="pull_left"><div id="message" class="alert alert-success bigger-110">' +
-                    '<strong>Bid: </strong>' + bid_hours +
-                    '<br/><strong>Scheduled Hours: </strong>' + schedule_hours +
-                    '<br/><strong>Total Logged Hours: </strong>' + total_logged_hours + ' ( '+total_logged_hours_msg+' )'+
+                    '<strong>Bid: </strong>' + bid + sch_unit +
+                    '<br/><strong>Scheduled Time: </strong>' + schedule_timing + sch_unit +
+                    '<br/><strong>Total Time Logged: </strong>' + total_logged +sch_unit + ' ( '+total_logged_hours_msg+' )'+
                     '</div></span>'
                 );
 
@@ -236,9 +242,9 @@ function init_dialog() {
 
                 information.append(
                         '<span class="pull_left"><div id="message" class="alert alert-danger bigger-110">' +
-                        '<strong>Bid: </strong>' + bid_hours +
-                        '<br/><strong>Scheduled Hours: </strong>' + schedule_hours + ' ( extendeded <strong>'+ total_extended_hours +'</strong> hours )' +
-                        '<br/><strong>Total Logged Hours: </strong>' + total_logged_hours + ' ( '+total_logged_hours_msg+' )'+
+                        '<strong>Bid: </strong>' + bid +sch_unit +
+                        '<br/><strong>Scheduled Time: </strong>' + schedule_timing + sch_unit +' ( extendeded <strong>'+ total_extended_time +sch_unit +'</strong> )' +
+                        '<br/><strong>Total Time Logged: </strong>' + total_logged + sch_unit +' ( '+total_logged_hours_msg+' )'+
                         '</div></span>'
                 );
             }

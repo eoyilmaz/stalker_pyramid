@@ -25,7 +25,7 @@ from pyramid.view import view_config
 from pyramid.response import Response
 
 from stalker.db import DBSession
-from stalker import (db, defaults, Entity, Studio, Project, User, Group, Department)
+from stalker import (db, defaults, Entity, Studio, Project, User, Group, Department,Sequence,Asset,Shot,Ticket,Task)
 import transaction
 
 import stalker_pyramid
@@ -759,7 +759,7 @@ def get_search_result(request):
     logger.debug('get_search_result is running')
 
     q_string = request.params.get('str', -1)
-    logger.debug('q_string: %s' % q_string)
+
 
     sql_query_buffer = [
         'select id, name, entity_type from "SimpleEntities"',
@@ -772,7 +772,11 @@ def get_search_result(request):
         sql_query_buffer.append(
             """"SimpleEntities".name ilike '%{s}%' """.format(s=part)
         )
+
+
     sql_query = '\n'.join(sql_query_buffer)
+
+
 
     from sqlalchemy import text  # to be able to use "%" sign use this function
     result = DBSession.connection().execute(text(sql_query))
@@ -802,6 +806,12 @@ def submit_search(request):
 
     logger.debug('qString : %s' % q_string)
 
+    logger.debug('q_string: %s' % q_string)
+    entity_type = None
+    q_entity_type =''
+    if ':'  in q_string:
+        q_string, entity_type = q_string.split(':')
+
     result_location = '/'
 
     if q_string:
@@ -818,7 +828,16 @@ def submit_search(request):
             sql_query_buffer.append(
                 """"SimpleEntities".name ilike '%{s}%' """.format(s=part)
             )
+        if entity_type:
+
+            q_entity_type = '&entity_type=%s'%entity_type
+
+            sql_query_buffer.append(
+                """and "SimpleEntities".entity_type='%s' """ % entity_type
+            )
         sql_query = '\n'.join(sql_query_buffer)
+
+        logger.debug('sql_query:  %s' % sql_query)
 
         from sqlalchemy import text
         result = DBSession.connection().execute(text(sql_query))
@@ -828,7 +847,8 @@ def submit_search(request):
 
         if entity_count > 1:
             result_location = \
-                '/list/search_results?str=%s&eid=%s' % (q_string, entity_id)
+                '/list/search_results?str=%s&eid=%s%s' % (q_string, entity_id,q_entity_type)
+
         elif entity_count == 1:
             sql_query_buffer[0] = 'select "SimpleEntities".id'
             sql_query = '\n'.join(sql_query_buffer)
@@ -855,13 +875,27 @@ def list_search_result(request):
     """lists the search result, it should use raw SQL instead of Python
     """
     qString = request.params.get('str', None)
+    q_entity_type = request.params.get('entity_type', None)
+
     entity_id = request.params.get('eid', None)
 
     entity = Entity.query.filter_by(id=entity_id).first()
 
-    results = Entity.query.filter(
-        Entity.name.ilike('%' + qString + '%')
-    ).all()
+    results = []
+
+    if q_entity_type:
+
+        query_string = '%(class_name)s.query.filter(%(class_name)s.name.ilike(\'%(qString)s\')).order_by(%(class_name)s.name.asc())'
+        query_string = query_string % {'class_name': q_entity_type, 'qString': qString}
+
+        logger.debug(query_string)
+        q = eval(query_string)
+
+        results = q.all()
+    else:
+        results = Entity.query.filter(
+            Entity.name.ilike('%' + qString + '%')
+        ).all()
 
     projects = Project.query.all()
     logged_in_user = get_logged_in_user(request)

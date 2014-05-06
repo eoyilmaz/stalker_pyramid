@@ -38,6 +38,7 @@ from stalker_pyramid.views import (get_logged_in_user, PermissionChecker,
                                    get_multi_integer)
 from stalker_pyramid.views.link import (replace_img_data_with_links,
                                         MediaManager)
+from stalker_pyramid.views.type import query_type
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -303,10 +304,13 @@ def update_ticket(request):
                 attachments.append(attachment)
             DBSession.add_all(links)
 
+        note_type = query_type('Note', 'Ticket Comment')
+        note_type.html_class = 'yellow'
         note = Note(
             content=comment,
             created_by=logged_in_user,
-            date_created=utc_now
+            date_created=utc_now,
+            type= note_type
         )
         ticket.comments.append(note)
         DBSession.add(note)

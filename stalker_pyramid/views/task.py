@@ -3089,7 +3089,7 @@ def request_review_task_dialog(request):
     if request_review_mode == 'Progress':
         version = get_last_version_of_task(request, is_published='')
     else:
-        version = get_last_version_of_task(request, is_published='')
+        version = get_last_version_of_task(request, is_published='t')
 
     if version['id'] == '-':
         if task.type:
@@ -3187,6 +3187,7 @@ def request_progress_review(request):
     task_link_internal = get_task_link_internal(request, task, task_hierarchical_name)
 
     for responsible in selected_responsible_list:
+        logger.debug('responsible: %s' % responsible)
         recipients.append(responsible.email)
 
         request_review_ticket = Ticket(
@@ -3210,23 +3211,31 @@ def request_progress_review(request):
         request_review_ticket.links.append(task)
         DBSession.add(request_review_ticket)
 
+        note_type = query_type('Note', 'Ticket Comment')
+        note_type.html_class = 'pink'
+
         ticket_comment = Note(
             content=note,
             created_by=logged_in_user,
             date_created=utc_now,
-            date_updated=utc_now
+            date_updated=utc_now,
+            type = note_type
         )
 
         DBSession.add(ticket_comment)
 
         request_review_ticket.comments.append(ticket_comment)
+        task.notes.append(ticket_comment)
+        task.updated_by = logged_in_user
+        task.date_updated = utc_now
+
 
     # Send mail to
     send_email = request.params.get('send_email', 1)  # for testing purposes
 
     if send_email:
         recipients.append(logged_in_user.email)
-        recipients.extend(task.responsible)
+        # recipients.extend(task.responsible)
 
         description_temp = \
             '%(user)s has requested you to do a progress review for ' \
@@ -3255,6 +3264,8 @@ def request_progress_review(request):
             )
         )
 
+
+        logger.debug('mailer send')
         mailer.send(message)
 
     logger.debug(
@@ -3740,7 +3751,9 @@ def get_child_task_events(task):
             'resources': resources,
             'percent_complete': task.percent_complete,
             'total_logged_seconds': task.total_logged_seconds,
-            'schedule_seconds': task.schedule_seconds
+            'schedule_seconds': task.schedule_seconds,
+            'schedule_unit': task.schedule_unit
+
             # 'hours_to_complete': time_log.hours_to_complete,
             # 'notes': time_log.notes
         })
@@ -3826,6 +3839,7 @@ def get_task_dependency(request):
                 'percent_complete': dep_task.percent_complete,
                 'total_logged_seconds': dep_task.total_logged_seconds,
                 'schedule_seconds': dep_task.schedule_seconds,
+                'schedule_unit': dep_task.schedule_unit,
                 'resources': resources
             }
         )

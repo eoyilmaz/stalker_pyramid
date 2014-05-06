@@ -544,16 +544,12 @@
                             resources[prop_id]['additionalParameters']['children'] = {};
                         }
 
-                        var hours_to_complete = (data[i].schedule_seconds - data[i].total_logged_seconds) / 3600;
-                        var hour_to_complete_str = '';
 
-                        if (hours_to_complete > 0) {
-                            hour_to_complete_str = '<span> ( ' + hours_to_complete + ' h )</span>'
-                        }
+                        time_to_complete_str = '<span> ( ' +  time_to_complete(data[i].schedule_seconds, data[i].total_logged_seconds, data[i].schedule_unit) + ' )</span>'
 
                         var percent_complete_str = '<span class="label label-' + data[i].status_color + '">' + data[i].status + '</span>';
 
-                        resources[prop_id]['additionalParameters']['children'][(data[i].id).toString()] = {name: '<span  class="pull-left"><a href="/tasks/' + data[i].id + '/view">' + data[i].title + '  </a></span>' + hour_to_complete_str + percent_complete_str, type: 'item'}
+                        resources[prop_id]['additionalParameters']['children'][(data[i].id).toString()] = {name: '<span  class="pull-left"><a href="/tasks/' + data[i].id + '/view">' + data[i].title + '  </a></span>' + time_to_complete_str + percent_complete_str, type: 'item'}
 
                         $('#resources_box').show();
                     }
@@ -592,18 +588,13 @@
 
                     var task_id = (data[i].id).toString();
 
-                    var hours_to_complete = (data[i].schedule_seconds - data[i].total_logged_seconds) / 3600;
-                    var hour_to_complete_str = '';
-
-                    if (hours_to_complete > 0) {
-                        hour_to_complete_str = '<span> ( ' + hours_to_complete + ' h )</span>';
-                    }
-
                     var percent_complete_str = '<span class="label label-' + data[i].status_color + '">' + data[i].status + '</span>';
+
+                    time_to_complete_str = '<span> ( ' +  time_to_complete(data[i].schedule_seconds,data[i].total_logged_seconds,data[i].schedule_unit) + ' h )</span>'
 
                     if (!depends[task_id]) {
                         depends[task_id] = {
-                            'name': '<span><a href="/tasks/' + data[i].id + '/view">' + data[i].name + '  </a></span>' + hour_to_complete_str,
+                            'name': '<span><a href="/tasks/' + data[i].id + '/view">' + data[i].name + '  </a></span>' +time_to_complete_str,
                             'type': 'folder',
                             'icon-class': data[i].status_color
                         }

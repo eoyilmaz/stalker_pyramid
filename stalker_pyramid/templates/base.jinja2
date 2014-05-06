@@ -256,6 +256,8 @@
 
 <script>
 
+
+
     var unit_by_seconds = function(unit){
 
         switch (unit) {
@@ -286,6 +288,16 @@
         var u_seconds = unit_by_seconds(unit)
 
         return  timing*u_seconds;
+
+    }
+
+    var time_to_complete = function(total_seconds, spend_seconds, unit){
+
+        var schedule_unit_seconds = unit_by_seconds(unit)
+
+        return  ((total_seconds - spend_seconds) / schedule_unit_seconds)+' '+ unit;
+
+
 
     }
 
