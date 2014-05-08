@@ -478,8 +478,8 @@ def append_entities_to_entity(request):
     entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
 
-    selected_list = get_multi_integer(request, 'selected_items[]')
-
+    # selected_list = get_multi_integer(request, 'selected_items[]')
+    selected_list = get_multi_integer(request, 'selected_ids')
     logger.debug('selected_list: %s' % selected_list)
 
     if entity and selected_list:

@@ -50,7 +50,36 @@
     </div>
     <div class="hr hr8 hr-double"></div>
     <div class="space"></div>
+    <div class="row-fluid">
+    <div class="profile-user-info profile-user-info-striped">
+        <div class="profile-info-row">
+            <div class="profile-info-name">Name</div>
+                <div class="profile-info-value">
+                    <span id="editable_entity_name">{{ entity.name }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
 
 
 {% endblock page_content %}
+{% block extrascripts %}
+    <script type="text/javascript">
+         $(document).ready(function () {
+
+             $.getJSON('/schedule_info/').then(function (data) {
+
+                data.is_scheduling
+                data.is_scheduling_by_id
+                data.is_scheduling_by
+                data.scheduling_started_at
+                data.last_scheduled_at
+                data.last_scheduling_took
+                data.last_scheduled_by
+
+
+             })
+         })
+    </script>
+{% endblock extrascripts %}
 

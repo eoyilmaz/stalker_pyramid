@@ -1,50 +1,76 @@
-<div class='row-fluid'>
-    <div class='span12'>
-
-        <form id='append_form'
+<div class="row-fluid" >
+    <form id='append_form'
               class='form-horizontal'
               role='form'
               method='post'>
-            <div class='row-fluid'>
-                <div id="multiple_select_list"></div>
-            </div>
-        </form>
+            <table id="multiple_select_list" class="table table-striped table-bordered table-hover" >
+                <thead>
+                    <tr>
+                        <th>Thumbnail</th>
+                        <th>Name</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
 
-        <div class="space-5"></div>
-        <div class="hr dotted"></div>
-        <div class="space-10"></div>
+                </tbody>
+            </table>
+    </form>
 
-    </div>
 </div>
-
-
-
 {% raw %}
 <script id="tmpl_append_item" type="text/x-dot-template">
-    <div class="profile-activity clearfix" id="stack_item_{{=it.id}}" sel=""
-         onclick="clicked({{=it.id}})">
 
-        <div>
-            <img class="pull-left"
+    <tr id="stack_item_{{=it.id}}" sel="" onclick="clicked({{=it.id}})">
+        <td>
+            <img style='width:auto; height: 40px;'
+                     class="img-thumbnail"
                  src="{{=it.thumbnail_full_path }}">
+        </td>
+        <td>
+            <span>{{=it.name }}</span><br/>
+            <span>{{=it.description}}</span>
+        </td>
+        <td>
+            <input id="selected_{{=it.id}}"
+                       name="selected_ids"
+                       type="checkbox"
+                       class="ace ace-checkbox-2">
+                <span class="lbl"></span>
+        </td>
 
-            <div class="user">{{=it.name }}</div>
-
-            <div id="stack_item_{{=it.id }}-ok" class="light-green"
-                 style="position: absolute; right: 12px;bottom: 8px; display: none">
-                <i class="icon-ok icon-2x"></i>
-            </div>
-
-            <div class="time">
-                {{=it.description}}
-            </div>
-
-
-        </div>
-    </div>
+   </tr>
 </script>
 {% endraw %}
 
+{#{% raw %}#}
+{#<script id="tmpl_append_item" type="text/x-dot-template">#}
+{#    <div class="profile-activity clearfix" id="stack_item_{{=it.id}}" sel=""#}
+{#         onclick="clicked({{=it.id}})">#}
+{##}
+{#        <div>#}
+{#            <img class="pull-left"#}
+{#                 src="{{=it.thumbnail_full_path }}">#}
+{##}
+{#            <div class="user">{{=it.name }}</div>#}
+{##}
+{#            <div id="stack_item_{{=it.id }}-ok" class="light-green"#}
+{#                 style="position: absolute; right: 12px;bottom: 8px; display: none">#}
+{#                <i class="icon-ok icon-2x"></i>#}
+{#            </div>#}
+{##}
+{#            <div class="time">#}
+{#                {{=it.description}}#}
+{#            </div>#}
+{##}
+{##}
+{#        </div>#}
+{#    </div>#}
+{#</script>#}
+{#{% endraw %}#}
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.dataTables.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.dataTables.bootstrap.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/dataTable_num-html_sort.js") }}'></script>
 
 <script type="text/javascript">
 
@@ -98,10 +124,13 @@
         {# ***************************************************************** #}
         $(document).ready(function () {
 
+            var tableParameters = {}
+            var sortingParameters = [[0, 'asc'], [1, 'desc']]
+
             $.getJSON('/entities/{{ entity.id }}/{{ entities_name }}/out_stack/').then(function (data) {
 
                 var item_template = doT.template($('#tmpl_append_item').html());
-                var multiple_select_list = $('#multiple_select_list')
+                var table_body = $('#multiple_select_list>tbody');
 
                 // append new options to the select
                 for (var i = 0; i < data.length; i++) {
@@ -123,21 +152,62 @@
                         data[i].description = '<i class="icon-file-text-alt"></i> ' + data[i].description;
                     }
 
-                    multiple_select_list.append(item_template(data[i]));
+                    table_body.append(item_template(data[i]));
                 }
+
+                 var oTable = $('#multiple_select_list').dataTable({
+                                                                        "sScrollY": "400px",
+                                                                        "bPaginate": false,
+                                                                        "bInfo": false,
+                                                                        "bScrollInfinite": true,
+                                                                        "bScrollCollapse": true,
+                                                                        "iScrollLoadGap": 50
+                                                                    });
+
+{#                 oTable.fnSort(sortingParameters);#}
+
+                $('.ace-checkbox-2').on('click', function () {
+
+                    if (!this.checked) {
+                        this.value = '';
+                        return;
+                    }
+                    this.value = (this.id).split('_')[1];
+                    console.log(this.value)
+
+                });
 
             });
 
 
         });
 
+        $(document).ready(function () {
 
-        $('#dialog_template_submit_button').on('click', function (e) {
-            console.debug('this is running!');
-            submitStackData();
-            e.preventDefault();
-            e.stopPropagation();
+            var submit_button = $('#dialog_template_submit_button');
+            submit_button.on('click', function (e) {
+
+                e.stopPropagation();
+                e.preventDefault();
+                submit_button.button('loading');
+
+                var append_form = $("#append_form");
+
+
+                $.post('/entities/{{ entity.id }}/append', append_form.serialize()
+                                        ).done(function (response_text) {
+                                            window.location.assign('{{ came_from }}');
+                                            submit_button.button('reset');
+                                            $('#dialog_template').modal('hide');
+
+                                        }).fail(function (jqXHR) {
+                                            bootbox.alert(jqXHR.responseText);
+                                            submit_button.button('reset');
+                                        });
+            });
         });
+
+
 
 
         console.debug('finished initializing the append_class_to_entity dialog!')
