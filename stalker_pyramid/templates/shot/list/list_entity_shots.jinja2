@@ -131,7 +131,7 @@
                      class="img-thumbnail"
                      src="{{=it.thumbnail_full_path }}">
             </td>
-            <td style="width:auto; height: 100px;" id="shot_summary_cell_{{=it.id}}">
+            <td id="shot_summary_cell_{{=it.id}}">
                 <a href='{{=it.link}}'>{{=it.name}}</a>
                 {{ if (it.update_shot_action) { }}
                 <a class="blue pull-right"
@@ -162,9 +162,9 @@
     <script id="tmpl_taskCell" type="text/x-dot-template">
         <td class="no-padding" style="width:120px;">
             <div class="{{=it.status_color}}"
-                 style="width:120px; height:105px; padding:5px;">
+                 style="padding:5px; height: 120px"">
                 <span>
-                    <a class="white" href="/tasks/{{=it.id }}/view">{{=it.name}}</a>
+                    <strong><a class="white" href="/tasks/{{=it.id }}/view">{{=it.name}}</a></strong>
                     <div class="no-padding">
                         {{ if (it.update_shot_action) { }}
                             <a class="white pull-right"
@@ -229,12 +229,6 @@
 
 
 
-            $.getJSON('{{ request.route_url("get_project_tasks", id=entity.project.id) }}').then(function(data){
-{#                console.log('data.length:', data.length);#}
-
-                all_tasks_list = data
-
-            });
             // fill shots table with dynamic data
             $.getJSON('/shots/children/task_type/').then(function (types_data) {
 
