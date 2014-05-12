@@ -220,6 +220,7 @@ def get_assets_type_task_types(request):
     from "SimpleEntities"
     join "SimpleEntities" as "Task_SimpleEntities" on "SimpleEntities".id = "Task_SimpleEntities".type_id
     join "Tasks" on "Task_SimpleEntities".id = "Tasks".id
+
     join "Assets" on "Tasks".parent_id = "Assets".id
     join "SimpleEntities" as "Assets_SimpleEntities" on "Assets_SimpleEntities".id = "Assets".id
 
@@ -315,11 +316,14 @@ def get_assets(request):
                             else 0
                         end)) * 100.0
                 )) as percent_complete,
-            "Assets_Types_SimpleEntities".name as asset_type_name
+            "Assets_Types_SimpleEntities".name as asset_type_name,
+            array_agg("Task_Resource_SimpleEntities".name) as resources
         from "Tasks"
         join "Assets" on "Assets".id = "Tasks".parent_id
         join "SimpleEntities" as "Asset_SimpleEntities" on "Assets".id = "Asset_SimpleEntities".id
         join "SimpleEntities" as "Task_SimpleEntities" on "Tasks".id = "Task_SimpleEntities".id
+        left outer join "Task_Resources"  on "Tasks".id = "Task_Resources".task_id
+        left outer join "SimpleEntities" as "Task_Resource_SimpleEntities" on "Task_Resources".resource_id = "Task_Resource_SimpleEntities".id
         left join "Types" as "Assets_Types" on "Assets_Types".id = "Asset_SimpleEntities".type_id
         join "SimpleEntities" as "Assets_Types_SimpleEntities" on "Assets_Types_SimpleEntities".id = "Assets_Types".id
         left join "Links" on "Asset_SimpleEntities".thumbnail_id = "Links".id
@@ -402,6 +406,7 @@ def get_assets(request):
         task_names = r[8]
         task_statuses = r[9]
         task_percent_complete = r[11]
+        task_resource = r[13]
 
         logger.debug('task_types_names %s ' % task_types_names)
         r_data['nulls'] = []
@@ -416,34 +421,16 @@ def get_assets(request):
                     [task_ids[index],
                      task_names[index],
                      task_statuses[index],
-                     task_percent_complete[index]]
+                     task_percent_complete[index],
+                     task_resource[index]]
                 )
             else:
                 r_data['nulls'].append(
                     [task_ids[index], task_names[index], task_statuses[index],
-                     task_percent_complete[index]]
+                     task_percent_complete[index], task_resource[index]]
                 )
 
         return_data.append(r_data)
-
-    # data = [
-    #     {
-    #         'id': r[0],
-    #         'name': r[1],
-    #         'code': r[2],
-    #         'description': r[3],
-    #         'type_id': r[4],
-    #         'type_name': r[5],
-    #         'date_created': r[6],
-    #         'created_by_id': r[7],
-    #         'created_by_name': r[8],
-    #         'thumbnail_full_path': r[9],
-    #         'status': r[10],
-    #         'status_color': r[11],
-    #         'percent_complete': r[12]
-    #     } for r in result.fetchall()
-    # ]
-
 
 
     return return_data

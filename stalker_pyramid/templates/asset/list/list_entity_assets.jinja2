@@ -166,7 +166,7 @@
 
     {% raw %}
     <script id="tmpl_taskCell" type="text/x-dot-template">
-        <td class="no-padding" style="width:100px;">
+        <td class="no-padding" style="width:100px; height:auto">
             <div style="height:{{=it.height}}px;" class="{{=it.status_color}}" id="task_cell_{{=it.type_id}}">
             </div>
 
@@ -177,8 +177,8 @@
     {% raw %}
     <script id="tmpl_taskCellRow" type="text/x-dot-template">
 
-        <div class="{{=it.status_color}}" style="min-height:40px; height:{{=it.height}}px;">
-                <span>
+
+                <div class="{{=it.status_color}}" style="min-height:60px; height:{{=it.height}}px;">
                     <a class="white" href="/tasks/{{=it.id }}/view">{{=it.name}}</a>
 
                     {{ if (it.update_asset_action) { }}
@@ -189,7 +189,7 @@
                        href="/tasks/{{=it.id }}/update/dialog">
                         <i class="icon-edit bigger-130"></i>
                     </a>{{ } }}<br/>
-
+                    <a class="white" href="#">{{=it.resource_name }}</a><br/>
                     {{ if (it.percent_complete!='') { }}
                         <div class="progress progress-success no-padding">
                             <div style="width:{{=it.percent_complete}}%"
@@ -199,14 +199,15 @@
                             </div>
                         </div>
                     {{ } else {}}
-
                         {{=it.status}}
                     {{ } }}
 
-                </span>
+                </div>
+    {{=it.hr}}
 
 
-        </div>
+
+
 
     </script>
     {% endraw %}
@@ -271,7 +272,7 @@
 
                                     var cell_template = doT.template($('#tmpl_taskCell').html());
                                     var cell_row_template = doT.template($('#tmpl_taskCellRow').html());
-                                    var task_cell_height = 120;
+                                    var task_cell_height = 150;
 
 
 
@@ -298,7 +299,10 @@
                                                                                     'status_color': task[2].toLowerCase(),
                                                                                     'percent_complete': (task[2] == 'WIP' ? task[3] : ''),
                                                                                     'update_asset_action': data[i].update_asset_action,
-                                                                                    'height':task_cell_row_height}));
+                                                                                    'resource_name': task[4]?task[4]:'',
+                                                                                    'height':task_cell_row_height,
+                                                                                    'hr': k < tasks.length-1?'<div class="hr hr2"></div>':''}));
+
                                             }
 
                                         } else
