@@ -419,3 +419,8 @@ tr .odd > td .ticket_BLOCKER {
   font-size: 24px;
   color: #FE7E3E;
 }
+.popover-content {
+  max-height: 300px;
+  max-width: 400px;
+  overflow: auto;
+}

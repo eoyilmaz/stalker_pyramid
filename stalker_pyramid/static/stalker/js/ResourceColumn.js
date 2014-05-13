@@ -113,7 +113,7 @@ define([
                 '<span class="data_bar" >' + total_hours + '</span>'
             ));
             data_bar.text(total_hours);
-            data_bar.attr('data-content', tasks_title_buffer.join('<br/>') + '">').attr('data-rel', 'popover');
+            data_bar.attr('data-content', tasks_title_buffer.join('<br/>')).attr('data-rel', 'popover');
             log_bar_container.append(log_bar);
             log_bar_container.append(data_bar);
 
