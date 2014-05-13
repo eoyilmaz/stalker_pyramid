@@ -107,13 +107,17 @@ define([
                     '<a href="/tasks/' + task.id + '/view">' + task.name + '</a>'
                 );
             }
+            tasks_title = tasks_title_buffer.join('<br/>');
+            if (tasks_title === '') {
+                tasks_title = "<span>-- No Tasks --</span>";
+            }
 
             var total_hours = (total_logged_millies / 3600000).toFixed(0);
             data_bar = $($.parseHTML(
                 '<div class="data_bar" >' + total_hours + '</div>'
             ));
             data_bar.text(total_hours);
-            data_bar.attr('data-content', tasks_title_buffer.join('<br/>')).attr('data-rel', 'popover');
+            data_bar.attr('data-content', tasks_title).attr('data-rel', 'popover');
             log_bar_container.append(log_bar);
             log_bar_container.append(data_bar);
 
@@ -620,9 +624,23 @@ define([
             $(td).find('[data-rel=popover]').popover({
                 html:true,
                 container: 'body',
+//                trigger: 'click hover',
+//                trigger: 'click focus hover manual',
 //                placement: 'auto right',
-//                trigger: 'hover focus',
+            }).on('show.bs.popover', function () {
+                // remove all the other popovers
+                var self = this;
+                $('[data-rel=popover]').each(function(){
+                    if (this !== self) {
+                        $(this).popover('hide');
+                    } else {
+                        $(this).popover({
+                            trigger: 'hover',
+                        })
+                    }
+                });
             });
+            
         };
 
         column.refresh = function (options) {
