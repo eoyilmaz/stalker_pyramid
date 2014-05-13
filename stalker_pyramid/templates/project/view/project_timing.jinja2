@@ -110,23 +110,25 @@
 
             } else {
 
-                    var dialog = $("#schedule-dialog-message").dialog({
-                        modal: true,
-                        title: "Scheduling Tasks",
-                        title_html: true,
-                        width: 340,
-                        height: 155
-                    });
 
-                    var timer_function;
-                    var timer = 0;
-                    var last_scheduled_at = moment(data.last_scheduled_at);
-                    var last_scheduling_took = Number(data.last_scheduling_took) || 100;
-                    var schedule_progress = $('#schedule-progress');
-                    var schedule_progress_bar = schedule_progress.find('.bar');
 
 
                     project_schedule_button.on('click', function () {
+
+                        var dialog = $("#schedule-dialog-message").dialog({
+                            modal: true,
+                            title: "Scheduling Tasks",
+                            title_html: true,
+                            width: 340,
+                            height: 155
+                        });
+    
+                        var timer_function;
+                        var timer = 0;
+                        var last_scheduled_at = moment(data.last_scheduled_at);
+                        var last_scheduling_took = Number(data.last_scheduling_took) || 100;
+                        var schedule_progress = $('#schedule-progress');
+                        var schedule_progress_bar = schedule_progress.find('.bar');
 
                         // set the system on scheduling
                         $.post('{{ request.route_url("studio_scheduling_mode", _query={"mode": 1}) }}').then(function(){
