@@ -6,8 +6,22 @@
     function drawCalendar(cid, events) {
 
         var update_event_action = function (eType, eId) {
-            $('#dialog_template').modal({
+            var event_dialog = $('#dialog_template');
+
+            event_dialog.modal({
                 'remote': "/" + eType + "/" + eId + "/update/dialog?came_from={{ request.current_route_path() }}"
+            });
+        };
+
+        var create_event_action = function (start, end, allDay, eId, eType) {
+            var event_dialog = $('#dialog_template');
+
+            event_dialog.attr('start', start);
+            event_dialog.attr('end', end);
+            event_dialog.attr('allDay', allDay);
+
+            event_dialog.modal({
+                'remote': "/entities/"+eId+"/"+eType+"s/create/dialog?came_from={{ request.current_route_path() }}"
             });
         };
 
@@ -19,20 +33,21 @@
 
                     select: function (start, end, allDay) {
 
-                        var now = new Date();
-                        if(now> end){
+                        {% if  event_type=='TimeLog' %}
 
-                            var event_dialog = $('#dialog_template');
+                            var now = new Date();
 
-                            event_dialog.attr('start', start);
-                            event_dialog.attr('end', end);
-                            event_dialog.attr('allDay', allDay);
+                            if(now>end){
 
-                            event_dialog.modal({
-                                'remote': "/entities/{{ entity.id }}/{{ event_type.lower() }}s/create/dialog?came_from={{ request.current_route_path() }}"
-                            });
+                                create_event_action(start, end,allDay, '{{ entity.id }}', '{{ event_type.lower() }}')
 
-                        }
+                            }
+
+                        {% else %}
+
+                            create_event_action(start, end,allDay, '{{ entity.id }}', '{{ event_type.lower() }}')
+
+                        {% endif %}
 
                         calendar.fullCalendar('unselect');
                     },
@@ -46,23 +61,35 @@
                     {% if has_permission('Update_Vacation') %}
 
                         if (calEvent.title == 'StudioWide') {
+
                             {% if has_permission('Update_Studio') %}
+
                                 update_event_action(calEvent.entity_type, calEvent.eId);
+
                             {% endif %}
+
                         } else {
+
                             update_event_action(calEvent.entity_type, calEvent.eId);
+
                         }
                     {% endif %}
                 } else if (calEvent.entity_type == 'timelogs') {
+
                     {% if has_permission('Update_TimeLog') %}
+
                         update_event_action(calEvent.entity_type, calEvent.eId);
+
                     {% endif %}
+
                 } else if (calEvent.entity_type == 'tasks') {
 
-
                     {% if has_permission('Read_Task') %}
+
                         window.location.assign("/tasks/" + calEvent.eId + "/view");
+
                     {% endif %}
+
                 }
             },
 

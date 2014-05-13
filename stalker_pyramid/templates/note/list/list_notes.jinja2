@@ -2,13 +2,11 @@
     <div class="span12">
         <div class="timeline-container">
 
-
             <div class="timeline-items" id="notes">
 
             </div>
-            <!--/.timeline-items-->
+
         </div>
-        <!--/.timeline-container-->
 
     </div>
 </div>
@@ -125,7 +123,6 @@
 
                 {% endif %}
 
-{#                console.log(data[i].note_type_name)#}
                 if (data[i].note_type_name == 'Simple Text' || !data[i].note_type_name) {
 
                     notes.append(note_simple_template(data[i]));

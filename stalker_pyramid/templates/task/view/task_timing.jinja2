@@ -88,39 +88,6 @@
     $(document).ready(function () {
 
 
-
-{#        var unit_by_seconds = function(unit){#}
-{##}
-{#             switch (unit) {#}
-{#                 case 'min':#}
-{#                    return 60;#}
-{#                    break;#}
-{#                case 'h':#}
-{#                    return 60*60;#}
-{#                    break;#}
-{#                case 'd':#}
-{#                    return 9*60*60;#}
-{#                    break;#}
-{#                 case 'w':#}
-{#                    return 9*6*60*60;#}
-{#                    break;#}
-{#                 case 'm':#}
-{#                    return 1;#}
-{#                    break;#}
-{#                 case 'y':#}
-{#                    return 1;#}
-{#                    break;#}
-{#            }#}
-{#        }#}
-{##}
-{#        var calculate_seconds = function(timing,unit){#}
-{##}
-{#           var u_seconds = unit_by_seconds(unit)#}
-{##}
-{#           return  timing*u_seconds;#}
-{##}
-{#        }#}
-
         var schedule_unit_seconds = unit_by_seconds('{{ entity.schedule_unit }}')
 
         var bid_seconds = calculate_seconds({{ entity.bid_timing }}, '{{ entity.bid_unit }}')

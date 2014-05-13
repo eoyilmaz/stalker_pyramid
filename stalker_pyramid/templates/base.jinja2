@@ -256,6 +256,8 @@
 
 <script>
 
+
+
     var unit_by_seconds = function(unit){
 
         switch (unit) {
@@ -286,6 +288,16 @@
         var u_seconds = unit_by_seconds(unit)
 
         return  timing*u_seconds;
+
+    }
+
+    var time_to_complete = function(total_seconds, spend_seconds, unit){
+
+        var schedule_unit_seconds = unit_by_seconds(unit)
+
+        return  ((total_seconds - spend_seconds) / schedule_unit_seconds)+' '+ unit;
+
+
 
     }
 
@@ -469,6 +481,7 @@
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/x-editable/ace-editable.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/date.format.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/date.stalker.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.gritter.min.js") }}'></script>
 
     <script type="text/javascript">
         // choose default skin
@@ -622,6 +635,18 @@
 
     {# Pop Flash Messages #}
     <script type='text/javascript'>
+
+        {% for message in request.session.pop_flash() %}
+            {% set message_type=message.split(':')[0] %}
+            {% set message_content=message.split(':')[1] %}
+
+{#            $.gritter.add({#}
+{#                        title: '{{ message_type.title() }}',#}
+{#                        text: '{{ message_content|safe }}',#}
+{#                        class_name: 'gritter-{{ message_type }}'#}
+{#            });#}
+        {% endfor %}
+
         $(function () {
             $('.flash-message').slideToggle().removeClass('hide');
         });
@@ -634,11 +659,17 @@
             settings.type = settings.type || 'success';
             console.debug('settings: ', settings);
 
-            var template = doT.template($('#tmpl_flash_message').text());
-            $(settings.container).prepend($.parseHTML(template(settings)));
+            $.gritter.add({
+                    title: settings.title,
+                    text: settings.message,
+                    class_name: 'gritter-'+settings.type
+            });
 
-            var visible_flash_messages = $('.flash-message.hide');
-            visible_flash_messages.slideToggle().removeClass('hide');
+{#            var template = doT.template($('#tmpl_flash_message').text());#}
+{#            $(settings.container).prepend($.parseHTML(template(settings)));#}
+{##}
+{#            var visible_flash_messages = $('.flash-message.hide');#}
+{#            visible_flash_messages.slideToggle().removeClass('hide');#}
         }
     </script>
 

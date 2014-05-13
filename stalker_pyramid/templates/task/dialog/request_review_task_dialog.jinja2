@@ -95,7 +95,6 @@
     function init_dialog() {
         console.debug('starting to initialize confirm dialog!!!');
 
-        // update dialog header
         var dialog_template_label = $('#dialog_template_label');
         dialog_template_label.find('span').remove();
         dialog_template_label.append('<span class="green">Request Review Dialog</span>');
@@ -118,7 +117,7 @@
             // append a single empty option to the responsible field
             task_responsible.append('<option value=""></option>');
 
-            var responsible_ids = []
+            var responsible_ids = [];
             {% for responsible in task.responsible %}
 
                 task_responsible.append(responsible_template({'id': '{{ responsible.id }}', 'name': '{{responsible.name}}' }));

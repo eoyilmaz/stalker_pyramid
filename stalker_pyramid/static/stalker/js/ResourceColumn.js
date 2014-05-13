@@ -110,7 +110,7 @@ define([
 
             var total_hours = (total_logged_millies / 3600000).toFixed(0);
             data_bar = $($.parseHTML(
-                '<span class="data_bar" >' + total_hours + '</span>'
+                '<div class="data_bar" >' + total_hours + '</div>'
             ));
             data_bar.text(total_hours);
             data_bar.attr('data-content', tasks_title_buffer.join('<br/>')).attr('data-rel', 'popover');

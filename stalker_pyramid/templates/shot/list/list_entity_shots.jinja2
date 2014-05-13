@@ -127,7 +127,7 @@
                     class="label label-{{=it.status_color}}">{{=it.status}}</span><br/><br/>
             </td>
             <td>
-                <img style='width:auto; height: 100px;'
+                <img style="width:auto; height: 100px;"
                      class="img-thumbnail"
                      src="{{=it.thumbnail_full_path }}">
             </td>
@@ -162,9 +162,9 @@
     <script id="tmpl_taskCell" type="text/x-dot-template">
         <td class="no-padding" style="width:120px;">
             <div class="{{=it.status_color}}"
-                 style="width:120px; height:105px; padding:5px;">
+                 style="padding:5px; height: 120px"">
                 <span>
-                    <a class="white" href="/tasks/{{=it.id }}/view">{{=it.name}}</a>
+                    <strong><a class="white" href="/tasks/{{=it.id }}/view">{{=it.name}}</a></strong>
                     <div class="no-padding">
                         {{ if (it.update_shot_action) { }}
                             <a class="white pull-right"
@@ -185,8 +185,8 @@
                             <span id='schedule_timing_{{=it.id}}'>{{=it.schedule_timing}}</span>
                             <span id='schedule_unit_{{=it.id}}'>{{=it.schedule_unit }}</span>
                         {{ } }}
-
                         <br/>
+                        <span>{{=it.resource_name}}</span>
                     </div>
 
                     {{ if (it.percent_complete!='') { }}
@@ -196,8 +196,9 @@
                                     <span>{{= it.percent_complete}}%</span>
                                 </div>
                          </div>
+                    <br/>
                     {{ } else {}}
-                        <br/>
+
                         {{=it.status}}
                         {{ if (it.update_shot_action) { }}
 
@@ -228,12 +229,6 @@
 
 
 
-            $.getJSON('{{ request.route_url("get_project_tasks", id=entity.project.id) }}').then(function(data){
-{#                console.log('data.length:', data.length);#}
-
-                all_tasks_list = data
-
-            });
             // fill shots table with dynamic data
             $.getJSON('/shots/children/task_type/').then(function (types_data) {
 
@@ -295,7 +290,8 @@
                                                                         'bid_timing':task[4],
                                                                         'bid_unit':task[5],
                                                                         'schedule_timing':task[6],
-                                                                        'schedule_unit':task[7]
+                                                                        'schedule_unit':task[7],
+                                                                        'resource_name':task[8]
                                                                        }));
                                     } else {
                                         shot_row.append(cell_template({
@@ -303,7 +299,8 @@
                                                                         'name': '',
                                                                         'status': '',
                                                                         'status_color': 'black2',
-                                                                        'percent_complete':''
+                                                                        'percent_complete':'',
+                                                                        'resource_name':''
                                                                        }));
                                     }
                                 }

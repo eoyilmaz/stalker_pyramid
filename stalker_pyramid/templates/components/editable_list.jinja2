@@ -6,7 +6,7 @@
         </h4>
         {% if has_permission('Update_'+list_item_type) %}
             <div class="widget-toolbar action-buttons">
-                <a href="#" data-action="reload">
+                <a href="#" data-action="reload" >
                     <i class="icon-refresh"></i>
                 </a>
 
@@ -63,8 +63,11 @@
 
 {% raw %}
 <script id="tmpl_item_delete" type="text/x-dot-template">
-    <a href='{{=it.item_delete_link }}' class="red">
-        <i class="icon-remove bigger-125"></i>
+    <a data-target="#dialog_template"
+       data-toggle="modal"
+       data-keyboard=false
+       href='{{=it.item_delete_link }}' class="red">
+       <i class="icon-remove bigger-125"></i>
     </a>
 </script>
 {% endraw %}
@@ -124,7 +127,7 @@
                     {% if has_permission('Delete_'+list_item_type)%}
 
                         var delete_template = doT.template($('#tmpl_item_delete').html());
-                        data[i].item_delete_link = '/entities/'+data[i].id+'/{{user.id}}/remove?came_from={{ request.current_route_path() }}';
+                        data[i].item_delete_link = '/entities/'+data[i].id+'/{{user.id}}/remove/dialog?came_from={{ request.current_route_path() }}';
                         $('#editable_list_item_actions_' + data[i].id).append(delete_template(data[i]));
 
                     {% endif %}
