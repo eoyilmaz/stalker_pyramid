@@ -62,8 +62,10 @@ define([
         var period_end = moment(start_date.endOf(period_unit));
 
         var total_logged_millies;
-        var log_bar, data_bar;
+        var tasks_in_between;
+        var log_bar, data_bar, tasks_title, tasks_title_buffer;
         var log_bar_container;
+        var i;
 
         var parent_div = $($.parseHTML('<div class="logContainer"></div>'));
         parent_div.css({
@@ -82,29 +84,42 @@ define([
 
         while (period_start < end_date) {
             total_logged_millies = resource.total_logged_milliseconds(+period_start, +period_end);
+            tasks_in_between = resource.tasks_in_between(period_start, period_end);
+
             // draw a div at that range with the height of total_logged_millies
-//            if (total_logged_millies > 0 || added_first_time_log) {
-                added_first_time_log = true;
-                log_bar_container = $($.parseHTML('<div class="log_bar layout"></div>'));
-                log_bar_container.css({
-                    left: Math.floor((period_start - start_date) / scale),
-                    width: Math.floor((period_end - period_start) / scale)
-                });
+            added_first_time_log = true;
+            log_bar_container = $($.parseHTML('<div class="log_bar layout"></div>'));
+            log_bar_container.css({
+                left: Math.floor((period_start - start_date) / scale),
+                width: Math.floor((period_end - period_start) / scale)
+            });
 
-                log_bar = $($.parseHTML('<div class="log_bar log"></div>'));
-                log_bar.css({
-                    height: Math.floor(total_logged_millies * denominator)
-                });
+            log_bar = $($.parseHTML('<div class="log_bar log"></div>'));
+            log_bar.css({
+                height: Math.floor(total_logged_millies * denominator)
+            });
 
-                data_bar = $($.parseHTML('<div class="data_bar"></div>'));
-                var total_hours = (total_logged_millies / 3600000).toFixed(0);
-                data_bar.text(total_hours);
-                log_bar_container.append(log_bar);
-                log_bar_container.append(data_bar);
-                parent_div.append(
-                    log_bar_container
+            tasks_title_buffer = [];
+            var task;
+            for (i = 0; i < tasks_in_between.length; i += 1) {
+                task = tasks_in_between[i];
+                tasks_title_buffer.push(
+                    '<a href="/tasks/' + task.id + '/view">' + task.name + '</a>'
                 );
-//            }
+            }
+
+            var total_hours = (total_logged_millies / 3600000).toFixed(0);
+            data_bar = $($.parseHTML(
+                '<span class="data_bar" >' + total_hours + '</span>'
+            ));
+            data_bar.text(total_hours);
+            data_bar.attr('data-content', tasks_title_buffer.join('<br/>') + '">').attr('data-rel', 'popover');
+            log_bar_container.append(log_bar);
+            log_bar_container.append(data_bar);
+
+            parent_div.append(
+                log_bar_container
+            );
             // get the new start and end values
             period_start.add(step_size, step_unit).startOf(step_unit);
             period_end.add(step_size, step_unit).endOf(step_unit);
@@ -599,6 +614,15 @@ define([
 
             // render today
             render_today(td, column.start, zoom_levels[column.scale].scale);
+
+            
+            // draw popover
+            $(td).find('[data-rel=popover]').popover({
+                html:true,
+                container: 'body',
+//                placement: 'auto right',
+//                trigger: 'hover focus',
+            });
         };
 
         column.refresh = function (options) {

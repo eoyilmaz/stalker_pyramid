@@ -124,7 +124,7 @@ def create_user(request):
             # request.session.flash('error:' + e.message)
             # HTTPFound(location=came_from)
             transaction.abort()
-            return Response('BaseException: %s'%e.message, 500)
+            return Response('BaseException: %s' % e, 500)
     else:
         logger.debug('not all parameters are in request.params')
         log_param(request, 'name')
@@ -676,6 +676,8 @@ def get_resources(request):
     """
     # TODO: This is a very ugly function, please define the borders and use cases correctly and then clean it
 
+    from stalker_pyramid.views.task import query_of_tasks_hierarchical_name_table
+
     start = time.time()
     # return users for now
     # /resources/
@@ -749,52 +751,53 @@ def get_resources(request):
         """
 
         tasks_query = """select
-            "Tasks".id,
+            tasks.id,
+            tasks.full_path,
             extract(epoch from "Tasks".computed_start::timestamp AT TIME ZONE 'UTC') * 1000 as start,
             extract(epoch from "Tasks".computed_end::timestamp AT TIME ZONE 'UTC') * 1000 as end
-        from "Tasks"
-        """
+        -- start with tasks (with full names)
+        from (
+            %(tasks_hierarchical_name_table)s
+        ) as tasks
+            join "Tasks" on tasks.id = "Tasks".id
+        """ % {
+            'tasks_hierarchical_name_table':
+                query_of_tasks_hierarchical_name_table(ordered=False)
+        }
 
         has_children = False
 
         if entity_type == "User":
-            time_log_query += "where resource_id = %s"
+            time_log_query += "where resource_id = %(id)s"
 
             tasks_query += """join "Task_Resources" on "Tasks".id = "Task_Resources".task_id
-                where not (
-                    exists (
-                        select 1
-                        from (
-                            select "Tasks".parent_id
-                            from "SimpleEntities"
-                                join "Tasks" on "SimpleEntities".id = "Tasks".id
-                            ) AS all_tasks
-                        where all_tasks.parent_id = "Tasks".id
-                    )
-                ) and resource_id = %s
+            where not (
+                exists (
+                    select 1
+                    from "Tasks"
+                    where "Tasks".parent_id = tasks.id
+                )
+            ) and resource_id = %(id)s
             """
 
             has_children = False
         elif entity_type in ["Department", "Studio"]:
             time_log_query += """
             join "User_Departments" on "User_Departments".uid = "TimeLogs".resource_id
-            where did = %s"""
+            where did = %(id)s"""
 
             tasks_query += """join "Task_Resources" on "Tasks".id = "Task_Resources".task_id
             join "User_Departments" on "Task_Resources".resource_id = "User_Departments".uid
+            join "SimpleEntities" as "Task_SimpleEntities" on "Tasks".id = "Task_SimpleEntities".id
             where not (
                 exists (
                     select 1
-                    from (
-                        select "Tasks".parent_id
-                        from "SimpleEntities"
-                            join "Tasks" on "SimpleEntities".id = "Tasks".id
-                        ) AS all_tasks
-                    where all_tasks.parent_id = "Tasks".id
+                    from "Tasks"
+                    where "Tasks".parent_id = tasks.id
                 )
             )
-            and did = %s
-            group by "Tasks".id, "Tasks".start, "Tasks".end, "Tasks".computed_start, "Tasks".computed_end
+            and did = %(id)s
+            group by tasks.id, tasks.full_path, "Tasks".start, "Tasks".end, "Tasks".computed_start, "Tasks".computed_end
             order by start
             """
 
@@ -804,28 +807,26 @@ def get_resources(request):
             # return all the time logs of the users in that project
             time_log_query += """
             join "User_Departments" on "User_Departments".uid = "TimeLogs".resource_id
-            -- where did = %s
+            -- where did = %(id)s
             """
 
             tasks_query += """
             -- select all the leaf tasks of the users of a specific Project
             select
                 "Tasks".id,
+                "Task_SimpleEntities".name,
                 extract(epoch from "Tasks".computed_start::timestamp AT TIME ZONE 'UTC') * 1000 as start,
                 extract(epoch from "Tasks".computed_end::timestamp AT TIME ZONE 'UTC') * 1000 as end
             from "Tasks"
+                join "SimpleEntities" as "Task_SimpleEntities" on "Tasks".id = "Task_SimpleEntities".id
                 where not (
                     exists (
                         select 1
-                        from (
-                            select "Tasks".parent_id
-                            from "SimpleEntities"
-                                join "Tasks" on "SimpleEntities".id = "Tasks".id
-                            ) AS all_tasks
-                        where all_tasks.parent_id = "Tasks".id
+                        from "Tasks"
+                        where "Tasks".parent_id = tasks.id
                     )
-                ) and project_id = %s
-            group by id, start, "end", "Tasks".computed_start, "Tasks".computed_end
+                ) and project_id = %(id)s
+            group by id, "Task_SimpleEntities".name, start, "end", "Tasks".computed_start, "Tasks".computed_end
             order by start
             """
 
@@ -843,9 +844,9 @@ def get_resources(request):
         join "SimpleEntities" on "SimpleEntities".id = "Users".id
         join "User_Departments" on "User_Departments".uid = "Users".id
         join "Departments" on "User_Departments".did = "Departments".id
-        where "Departments".id = %s
+        where "Departments".id = %(id)s
         order by name
-        """ % parent_id
+        """ % {'id': parent_id}
 
         time_log_query = """select
             "TimeLogs".id,
@@ -853,38 +854,38 @@ def get_resources(request):
             extract(epoch from "TimeLogs".start::timestamp AT TIME ZONE 'UTC') * 1000 as start,
             extract(epoch from "TimeLogs".end::timestamp AT TIME ZONE 'UTC') * 1000 as end
         from "TimeLogs"
-        where resource_id = %s
+        where resource_id = %(id)s
         """
 
         tasks_query = """select
-            "Tasks".id,
+            tasks.id,
+            tasks.full_path,
             extract(epoch from "Tasks".computed_start::timestamp AT TIME ZONE 'UTC') * 1000 as start,
             extract(epoch from "Tasks".computed_end::timestamp AT TIME ZONE 'UTC') * 1000 as end
-        from "Tasks"
-            join "Task_Resources" on "Tasks".id = "Task_Resources".task_id
+        from (
+            %(tasks_hierarchical_name_table)s
+        ) as tasks
+            join "Tasks" on tasks.id = "Tasks".id
+            join "Task_Resources" on tasks.id = "Task_Resources".task_id
         where
             not (
                 exists (
                     select 1
-                    from (
-                        select "Tasks".parent_id
-                        from "SimpleEntities"
-                            join "Tasks" on "SimpleEntities".id = "Tasks".id
-                        ) AS all_tasks
-                    where all_tasks.parent_id = "Tasks".id
+                    from "Tasks"
+                    where "Tasks".parent_id = tasks.id
                 )
-            ) and resource_id = %s
+            ) and resource_id = %(id)s
         """
 
         has_children = False
 
-    logger.debug('resource_sql_query : %s' % resource_sql_query)
-    logger.debug('time_log_query : %s' % time_log_query)
-    logger.debug('tasks_sql_query : %s' % tasks_query)
+    # logger.debug('resource_sql_query : %s' % resource_sql_query)
+    # logger.debug('time_log_query : %s' % time_log_query)
+    # logger.debug('tasks_sql_query : %s' % tasks_query)
 
     resources_result = execute(resource_sql_query).fetchall()
 
-    logger.debug('resources_result : %s' % resources_result)
+    # logger.debug('resources_result : %s' % resources_result)
 
     link = '/%s/%s/view' % (entity_type.lower(), '%s')
     data = [
@@ -901,14 +902,24 @@ def get_resources(request):
                     'task_id': tr[1],
                     'start': tr[2],
                     'end': tr[3]
-                } for tr in execute(time_log_query % rr[0]).fetchall()
+                } for tr in execute(
+                    time_log_query % {
+                        'id': rr[0]
+                    }).fetchall()
             ],
             'tasks': [
                 {
                     'id': tr[0],
-                    'start': tr[1],
-                    'end': tr[2]
-                } for tr in execute(tasks_query % rr[0]).fetchall()
+                    'name': tr[1],
+                    'start': tr[2],
+                    'end': tr[3]
+                } for tr in execute(
+                    tasks_query % {
+                        'tasks_hierarchical_name_table':
+                            query_of_tasks_hierarchical_name_table(False),
+                        'id': rr[0]
+                    }
+                ).fetchall()
             ]
         } for rr in resources_result
     ]
