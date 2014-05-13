@@ -1,0 +1,181 @@
+<div class="widget-box">
+    <div class="widget-header widget-header-flat widget-header-small">
+          <h5>
+                <i class="icon-wrench"></i>
+                Schedule Info
+          </h5>
+    </div>
+
+    <div class="widget-body no-padding">
+          <div class="widget-main no-padding">
+                <div id='bid_alert' class="alert alert-info no-padding" >
+                    <div class="profile-info-row">
+                        <div class="profile-info-name">Starts</div>
+                        <div class="profile-info-value">
+                                <span id="project_start">{{ entity.computed_start }}</span>
+                        </div>
+                    </div>
+                    <div class="profile-info-row">
+                        <div class="profile-info-name">Ends</div>
+                        <div class="profile-info-value">
+                                <span id="project_end">{{ entity.computed_end }}</span>
+                        </div>
+                    </div>
+
+                    <div class="profile-info-row">
+                        <div class="profile-info-name">Scheduled By</div>
+                        <div class="profile-info-value">
+                                <span id="project_last_schedule_by"></span>
+                        </div>
+                    </div>
+                    <div class="profile-info-row">
+                        <div class="profile-info-name">Scheduled At</div>
+                        <div class="profile-info-value">
+                                <span class="editable"
+                                      id="project_last_schedule_at"></span>
+                        </div>
+                    </div>
+                    <div class="profile-info-row">
+                        <div class="profile-info-name">Scheduling Took</div>
+                        <div class="profile-info-value">
+                                <span class="editable"
+                                      id="project_last_schedule_took"></span>
+                        </div>
+                    </div>
+
+                </div>
+          </div><!--/widget-main-->
+         {% if has_permission('Update_Project') %}
+            <div class="widget-toolbox clearfix">
+
+                <button id='project_schedule_button'
+                        class="btn btn-block btn-purple">
+                <i class="icon-wrench bigger-120"></i> Schedule Project</button>
+                <div id="schedule-dialog-message" class="hide">
+                <div id="schedule-progress" class="progress progress-success progress-striped" data-percent="0%">
+                    <div class="bar" style="width: 0%;"></div>
+                </div>
+
+                <div id="schedule-dialog-info">
+                    <table>
+                        <tr>
+                            <td style="text-align: right; font-weight: bold; padding-right: 10px;">Last Scheduled By:</td>
+                            <td id="last_scheduled_by"></td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: right; font-weight: bold; padding-right: 10px;">Last Scheduled At:</td>
+                            <td id="last_scheduled_at"></td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: right; font-weight: bold; padding-right: 10px;">Last Scheduling Took:</td>
+                            <td id="last_scheduling_took"></td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: right; font-weight: bold; padding-right: 10px;">Current Scheduling Time:</td>
+                            <td id="current_scheduling_time"></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            </div>
+         {% endif %}
+
+    </div><!--/widget-body-->
+</div><!--/widget-box-->
+
+
+
+<script class="code" type="text/javascript">
+    $(document).ready(function () {
+
+
+
+        $.getJSON('/schedule_info').then(function (data) {
+
+
+            $('#project_last_schedule_by').append(data.last_scheduled_by)
+            $('#project_last_schedule_at').append(new Date(data.last_scheduled_at).format('yyyy-mm-dd HH:MM'))
+            $('#project_last_schedule_took').append(parseInt(data.last_scheduling_took/60) +' minutes')
+
+            var project_schedule_button = $('#project_schedule_button')
+
+            if (data.is_scheduling){
+
+                    project_schedule_button.text('Scheduling by '+data.is_scheduling_by );
+
+                    project_schedule_button.on('click', function () {
+
+                    })
+
+            } else {
+
+                    var dialog = $("#schedule-dialog-message").dialog({
+                        modal: true,
+                        title: "Scheduling Tasks",
+                        title_html: true,
+                        width: 340,
+                        height: 155
+                    });
+
+                    var timer_function;
+                    var timer = 0;
+                    var last_scheduled_at = moment(data.last_scheduled_at);
+                    var last_scheduling_took = Number(data.last_scheduling_took) || 100;
+                    var schedule_progress = $('#schedule-progress');
+                    var schedule_progress_bar = schedule_progress.find('.bar');
+
+
+                    project_schedule_button.on('click', function () {
+
+                        // set the system on scheduling
+                        $.post('{{ request.route_url("studio_scheduling_mode", _query={"mode": 1}) }}').then(function(){
+                            // update schedule fields with data
+                            // suitable to be scheduled
+                            project_schedule_button.text('Scheduling by '+data.is_scheduling_by );
+
+                            $('#last_scheduled_by').append(data.last_scheduled_by);
+                            $('#last_scheduled_at').append(last_scheduled_at.format('YYYY-MM-DD HH:mm'));
+                            $('#last_scheduling_took').append(last_scheduling_took.toFixed(0), ' seconds');
+
+
+                            // start timer
+                            function myTimer() {
+                                timer += 1;
+                                $('#current_scheduling_time').html(timer);
+                                // extend the progress bar
+                                var percent = Math.min(
+                                                    100,
+                                                    timer / last_scheduling_took * 100
+                                                ).toFixed(1);
+                                                schedule_progress.attr('data-percent', percent + '%');
+                                                schedule_progress_bar.css({'width': percent + '%'});
+                            }
+                            // run it every 1 seconds
+                            timer_function = setInterval(function(){myTimer()}, 1000);
+
+                            // now do the scheduling
+                            $.post(
+                                '{{ request.route_url("auto_schedule_tasks") }}'
+                            ).done(function (data) {
+                                var message = '<div>' + data + '</div>';
+                                bootbox.alert(message);
+                                $('.bootbox').prepend('<div class="modal-header alert-success"><strong>Success</strong></div>');
+                            }).fail(function (jqXHR) {
+                                var message = '<div>' + jqXHR.responseText + '</div>';
+                                bootbox.alert(message);
+                                $('.bootbox').prepend('<div class="modal-header alert-danger"><strong>Fail</strong></div>');
+                            })
+                        });
+
+
+
+                    })
+
+
+            }
+
+
+        })
+    });
+</script>
