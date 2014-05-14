@@ -1099,9 +1099,33 @@ def get_tasks(request):
     parent_id = request.params.get('parent_id')
     task_id = request.params.get('task_id')
 
+    search_string = request.params.get('search', '')
+    search_query = ''
+    if search_string != '':
+        search_string_buffer = ['and (']
+        for i, s in enumerate(search_string.split(' ')):
+            if i != 0:
+                search_string_buffer.append('and')
+            tmp_search_query = """(
+            '%(search_wide)s' = any (tags.name)
+            or tasks.entity_type = '%(search_str)s'
+            or tasks.full_path ilike '%(search_wide)s'
+            or "Links".original_filename ilike '%(search_wide)s'
+            )
+            """ % {
+                'search_str': s,
+                'search_wide': '%{s}%'.format(s=s)
+            }
+            search_string_buffer.append(tmp_search_query)
+        search_string_buffer.append(')')
+        search_query = '\n'.join(search_string_buffer)
+    logger.debug('search_query: %s' % search_query)
+
+
     sql_query = """select 
     tasks.id,
     tasks.entity_type,
+    task_types.name as task_type,
     tasks.name,
     tasks.full_path,
     "Tasks".project_id,
@@ -1269,6 +1293,17 @@ left outer join (
 -- Task Status
 join "Statuses" on "Tasks".status_id = "Statuses".id
 
+-- Task Type
+left join (
+    select
+        "Tasks".id,
+        "Type_SimpleEntities".name
+    from "Tasks"
+    join "SimpleEntities" as "Task_SimpleEntities" on "Tasks".id = "Task_SimpleEntities".id
+    join "Types" on "Task_SimpleEntities".type_id = "Types".id
+    join "SimpleEntities" as "Type_SimpleEntities" on "Types".id = "Type_SimpleEntities".id
+) as task_types on tasks.id = task_types.id
+
 %(where_condition)s
 
 order by tasks.name
@@ -1326,31 +1361,32 @@ order by tasks.name
     return_data = [
         {
             'id': r[8],
-            'type': r[1],
-            'name': r[2],
-            'full_path': r[3],
-            'project_id': r[4],
-            'parent_id': r[5],
-            'description': r[6],
-            'date_created': r[7],
-            'date_updated': r[8],
-            'hasChildren': r[9],
-            'link': r[10],
-            'priority': r[11],
-            'dependencies': local_raw_data_to_array(r[12]),
-            'resources': local_raw_data_to_array(r[13]),
-            'responsible': local_raw_data_to_array(r[14]),
-            'bid_timing': r[15],
-            'bid_unit': r[16],
-            'schedule_timing': r[17],
-            'schedule_unit': r[18],
-            'schedule_model': r[19],
-            'schedule_seconds': r[20],
-            'total_logged_seconds': r[21],
-            'completed': r[22],
-            'start': r[23],
-            'end': r[24],
-            'status': r[25],
+            'entity_type': r[1],
+            'task_type': r[2],
+            'name': r[3],
+            'full_path': r[4],
+            'project_id': r[5],
+            'parent_id': r[6],
+            'description': r[7],
+            'date_created': r[8],
+            'date_updated': r[9],
+            'hasChildren': r[10],
+            'link': r[11],
+            'priority': r[12],
+            'dependencies': local_raw_data_to_array(r[13]),
+            'resources': local_raw_data_to_array(r[14]),
+            'responsible': local_raw_data_to_array(r[15]),
+            'bid_timing': r[16],
+            'bid_unit': r[17],
+            'schedule_timing': r[18],
+            'schedule_unit': r[19],
+            'schedule_model': r[20],
+            'schedule_seconds': r[21],
+            'total_logged_seconds': r[22],
+            'completed': r[23],
+            'start': r[24],
+            'end': r[25],
+            'status': r[26],
         }
         for r in result.fetchall()
     ]

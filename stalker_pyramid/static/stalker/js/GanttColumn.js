@@ -75,10 +75,10 @@ define([
         });
         $(parent).append(parent_div);
 
-        if (task.type === 'Project') {
+        if (task.entity_type === 'Project') {
             task_bar = $($.parseHTML(templates.projectBar(task)));
-        } else if (task.type === 'Task' || task.type === 'Asset' ||
-                   task.type === 'Shot' || task.type === 'Sequence') {
+        } else if (task.entity_type === 'Task' || task.entity_type === 'Asset' ||
+                   task.entity_type === 'Shot' || task.entity_type === 'Sequence') {
             if (task.hasChildren) {
                 task_bar = $($.parseHTML(templates.parentTaskBar(task)));
             } else {

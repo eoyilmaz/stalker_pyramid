@@ -32,7 +32,8 @@ function Task(kwargs) {
 
     this.priority = kwargs.priority || 500;
 
-    this.type = kwargs.type || null;
+    this.entity_type = kwargs.entity_type || null;
+    this.task_type = kwargs.task_type || null;
 
 //    this.status = "STATUS_UNDEFINED";
 
