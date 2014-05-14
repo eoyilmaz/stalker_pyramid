@@ -27,7 +27,7 @@ function Task(kwargs) {
     'use strict';
     this.id = kwargs.id || null;
     this.name = kwargs.name || null;
-    this.hierarchy_name = kwargs.hierarchy_name || null;
+    this.full_path = kwargs.full_path || null;
     this.description = kwargs.description || null;
 
     this.priority = kwargs.priority || 500;

@@ -23,7 +23,7 @@ define([
         id: null,
 
         name: '',
-        hierarchy_name: '',
+        full_path: '',
         description: '',
 
         priority: 500,
@@ -80,7 +80,7 @@ define([
 
             this.id = settings.id || null;
             this.name = settings.name || null;
-//            this.hierarchy_name = settings.hierarchy_name || '';
+            this.full_path = settings.full_path || '';
             this.description = settings.description || null;
 
             this.priority = settings.priority || 500;
