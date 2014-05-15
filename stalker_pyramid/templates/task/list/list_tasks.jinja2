@@ -627,6 +627,8 @@ require([
     });
     $(window).trigger('resize');
 
+    {# TODO: If this is a studio then the query should contain all project ids #}
+    {#       Also we should check for departments #}
     var gantt_chart = new GanttGrid({
         id: gantt_chart_dgrid_id,
         width: '100%',
@@ -634,7 +636,7 @@ require([
         store: tasks_cache_store,
         query: {
             // initialize with the entity itself
-            task_id: {{ entity.id }}
+            parent_id: {{ entity.id }}
         },
         loadingMessage: "<div style='float: left' class='dijitIconLoading'>&nbsp</div><div>Loading</div>",
         noDataMessage: "",
