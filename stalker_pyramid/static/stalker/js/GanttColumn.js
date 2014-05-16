@@ -569,7 +569,7 @@ define([
             var column_set = 'set-1'; // this is a hardcoded dirty fix
             if (column.grid.is_hidden_column(column_set)){
                 // add as hidden
-                console.log('hiding :', column_set);
+                //console.log('hiding :', column_set);
                 column.grid.hide_column('set-1');
             }
         };

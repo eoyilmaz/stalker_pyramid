@@ -5,17 +5,17 @@
          name="{{=it.name}}"
          start={{=it.start}}
          end={{=it.end}}
-         type="{{=it.type}}"
+         type="{{=it.entity_type}}"
          hasChildren={{=it.hasChildren}}>
-        <i class="{{? it.type == 'Task' }}
+        <i class="{{? it.entity_type == 'Task' }}
           icon-tasks
-          {{?? it.type == 'Asset' }}
+          {{?? it.entity_type == 'Asset' }}
           icon-puzzle-piece
-          {{?? it.type == 'Shot' }}
+          {{?? it.entity_type == 'Shot' }}
           icon-camera
-          {{?? it.type == 'Sequence' }}
+          {{?? it.entity_type == 'Sequence' }}
           icon-film
-          {{?? it.type == 'Project' }}
+          {{?? it.entity_type == 'Project' }}
           icon-folder-close-alt
           {{?}}">&nbsp</i>
         <a href="{{=it.link}}">{{=it.name}}</a>
@@ -26,15 +26,15 @@
     <div class="projectBox" projectId="{{=it.id}}">
         <div class="layout">
             <div class="projectLabel">
-                <i class="{{? it.type == 'Task' }}
+                <i class="{{? it.entity_type == 'Task' }}
                     icon-tasks
-                    {{?? it.type == 'Asset' }}
+                    {{?? it.entity_type == 'Asset' }}
                     icon-puzzle-piece
-                    {{?? it.type == 'Shot' }}
+                    {{?? it.entity_type == 'Shot' }}
                     icon-camera
-                    {{?? it.type == 'Sequence' }}
+                    {{?? it.entity_type == 'Sequence' }}
                     icon-film
-                    {{?? it.type == 'Project' }}
+                    {{?? it.entity_type == 'Project' }}
                     icon-folder-close-alt
                     {{?}}">&nbsp</i>
                 {{=it.link()}}
@@ -56,15 +56,15 @@
                 {{=it.schedule_timing}}{{=it.schedule_unit}}
             </div>
             <div class="taskLabel">
-                <i class="{{? it.type == 'Task' }}
+                <i class="{{? it.entity_type == 'Task' }}
               icon-tasks
-              {{?? it.type == 'Asset' }}
+              {{?? it.entity_type == 'Asset' }}
               icon-puzzle-piece
-              {{?? it.type == 'Shot' }}
+              {{?? it.entity_type == 'Shot' }}
               icon-camera
-              {{?? it.type == 'Sequence' }}
+              {{?? it.entity_type == 'Sequence' }}
               icon-film
-              {{?? it.type == 'Project' }}
+              {{?? it.entity_type == 'Project' }}
               icon-folder-close-alt
               {{?}}">&nbsp</i>
                 {{=it.link()}}
@@ -83,20 +83,20 @@
 </script>
 
 <script id="tmpl_taskEditRow" type="text/x-dot-template">
-    <i class="{{? it.type == 'Task' }}
+    <i class="{{? it.entity_type == 'Task' }}
           icon-tasks
-          {{?? it.type == 'Asset' }}
+          {{?? it.entity_type == 'Asset' }}
           icon-puzzle-piece
-          {{?? it.type == 'Shot' }}
+          {{?? it.entity_type == 'Shot' }}
           icon-camera
-          {{?? it.type == 'Sequence' }}
+          {{?? it.entity_type == 'Sequence' }}
           icon-film
-          {{?? it.type == 'Project' }}
+          {{?? it.entity_type == 'Project' }}
           icon-folder-close-alt
           {{?}}">&nbsp</i>
     <a href="/tasks/{{=it.id}}/view"
        name="{{=it.id}}"
-       type="{{=it.type}}">{{=it.name}}</a>
+       type="{{=it.entity_type}}">{{=it.name}}</a>
 </script>
 
 
@@ -106,17 +106,17 @@
          name="{{=it.name}}"
          start={{=it.start}}
          end={{=it.end}}
-         type="{{=it.type}}"
+         type="{{=it.entity_type}}"
          hasChildren={{=it.hasChildren}}>
-        <i class="{{? it.type == 'Task' }}
+        <i class="{{? it.entity_type == 'Task' }}
             icon-tasks
-            {{?? it.type == 'Asset' }}
+            {{?? it.entity_type == 'Asset' }}
             icon-puzzle-piece
-            {{?? it.type == 'Shot' }}
+            {{?? it.entity_type == 'Shot' }}
             icon-camera
-            {{?? it.type == 'Sequence' }}
+            {{?? it.entity_type == 'Sequence' }}
             icon-film
-            {{?? it.type == 'Project' }}
+            {{?? it.entity_type == 'Project' }}
             icon-folder-close-alt
             {{?}}">&nbsp</i>
         <a href="{{=it.link}}">{{=it.name}}</a>
@@ -130,15 +130,15 @@
             <div class="leftPin"></div>
             <div class="rightPin"></div>
             <div class="taskLabel">
-                <i class="{{? it.type == 'Task' }}
+                <i class="{{? it.entity_type == 'Task' }}
                     icon-tasks
-                    {{?? it.type == 'Asset' }}
+                    {{?? it.entity_type == 'Asset' }}
                     icon-puzzle-piece
-                    {{?? it.type == 'Shot' }}
+                    {{?? it.entity_type == 'Shot' }}
                     icon-camera
-                    {{?? it.type == 'Sequence' }}
+                    {{?? it.entity_type == 'Sequence' }}
                     icon-film
-                    {{?? it.type == 'Project' }}
+                    {{?? it.entity_type == 'Project' }}
                     icon-folder-close-alt
                     {{?}}">&nbsp</i>
                 {{=it.link()}}
@@ -1221,7 +1221,7 @@ require([
         var start_date = moment().subtract(6, 'month').startOf('day');
         var end_date = moment().add(6, 'month').endOf('day');
         start_end_date_range_picker.val(
-                start_date.format('MM/DD/YYYY') + ' - ' + end_date.format('MM/DD/YYYY')
+            start_date.format('MM/DD/YYYY') + ' - ' + end_date.format('MM/DD/YYYY')
         );
 
         start_end_date_range_picker.data().daterangepicker.updateFromControl();

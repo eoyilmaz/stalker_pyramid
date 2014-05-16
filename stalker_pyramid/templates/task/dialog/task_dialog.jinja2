@@ -42,12 +42,24 @@
             <div class='control-group'>
                 <label class='span3 control-label' for='task_parent'>Parent</label>
                 <div class='span9'>
-                    <select id='task_parent'
+                    <input id='task_parent'
                             name='parent_id'
-                            class='input-block-level'
+                            class='input-block-level span11'
                             name='task_parent_id'
                             is_updating=false
-                            data-placeholder='Parent'></select>
+                            data-placeholder='Parent'>
+                    <span id='task_parent_helper' class="help-button"
+{#                          data-rel="popover"#}
+                          title="
+Type task names directly or use the following tags:&#013;&#013;
+field:value&#013;&#013;
+You can use multiple fields&#013;
+field:value,field:value&#013;&#013;
+name:Assets,parent_name:Tasks&#013;&#013;
+Supported fields are:&#013;&#013;
+id, name, full_path, project_id,&#013;
+entity_type, task_type, resource_id,&#013;
+resource_name, status">?</span>
                 </div>
                 <div class='hidden'
                      id="parent_storage"
@@ -111,7 +123,7 @@
                                type='text'
                                is_updating=false
                                {% if mode=='update' %}{% if entity.type %}value="{{ entity.type.name }}"{% endif %}{% endif %}
-                                >
+                               >
                     </div>
                 </div>
             </div>
@@ -164,12 +176,18 @@
                 <div class='control-group'>
                     <label class='span3 control-label' for='task_depends_to'>Depends To</label>
                     <div class='span9'>
-                        <select id='task_depends_to'
-                                multiple=''
-                                class='input-block-level tag-input-style'
-                                name='dependent_ids'
-                                data-placeholder='Depends To'
-                                is_updating=false></select>
+{#                        <select id='task_depends_to'#}
+{#                                multiple=''#}
+{#                                class='input-block-level tag-input-style'#}
+{#                                name='dependent_ids'#}
+{#                                data-placeholder='Depends To'#}
+{#                                is_updating=false></select>#}
+                        <input id='task_depends_to'
+                               class='input-block-level tag-input-style'
+                               type='text'
+                               name='dependent_ids'
+                               data-placeholder='Depends To'
+                               is_updating=false>
                     </div>
                     <div class='hidden'
                          id="dependent_tasks_storage"
@@ -299,7 +317,7 @@
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.autosize-min.js") }}'></script>
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.inputlimiter.1.3.1.min.js") }}'></script>
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.maskedinput.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootstrap-tag.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/bootstrap-tag.js") }}'></script>
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.validate.min.js") }}'></script>
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/additional-methods.min.js") }}'></script>
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/fuelux/fuelux.spinner.min.js") }}'></script>
@@ -342,12 +360,7 @@
             {% if entity.sequences[0] %}
                 shot_sequences = '{{ entity.sequences[0].id }}';
             {% endif %}
-
-{#            console.log('shot_sequences :', shot_sequences);#}
         {% endif %}
-
-{#        console.log('shot_sequences :', shot_sequences);#}
-    
 
         {% if depends_to %}
             depends_to = [
@@ -474,73 +487,263 @@
 
         {# ***************************************************************** #}
         {# Parent and Depends To#}
-        // create a chosen first
-        var task_parent = $('#task_parent').chosen({
-            search_contains: true,
-            enable_split_word_search: true,
-            allow_single_deselect: true
-        });
-
-        var task_depends_to = $('#task_depends_to').chosen({
-            search_contains: true,
-            enable_split_word_search: true
-        });
-
         // ********************************************************************
         // get tasks of that project as json from server
         // set the submit button to loading state while data is get from the server
         // set the fields to updating mode
-        task_parent.attr('is_updating', true);
-        task_depends_to.attr('is_updating', true);
+        var task_parent = $('#task_parent');
+        var task_depends_to = $('#task_depends_to');
 
-        field_update_mode_checker();
-        $.getJSON('{{ request.route_url("get_project_tasks", id=project.id) }}').then(function(data){
-{#            console.log('data.length:', data.length);#}
-            {# remove self from the list #}
-            {% if entity %}
-                var index = -1;
-                for(var i = 0; i < data.length; i++){
-                    if (data[i].id === {{ entity.id }}){
-                        index = i;
-                        break;
+        /**
+         * Queries Task data from server
+         * 
+         * @param search_string
+         *   A string value containing the query words
+         * @param callback
+         *   A function that will be called with the retrieved data
+         */
+        var get_task_data = function(search_string, callback){
+
+            var search_buffer;
+            var search_params = {
+                project_id: {{ project.id }} // always use project id
+            };
+
+            // iterate over each key value pair
+            var key_value_pair, key, value;
+
+            if (search_string.indexOf(':') === -1){
+                if (search_string.length < 3){
+                    // not finished typing yet
+                    return;
+                }
+                
+                search_buffer = search_string.split(' ');
+                // use a direct search with given words as the task full_path
+                $.extend(
+                    search_params,
+                    {
+                        path: search_buffer
+                    }
+                );
+            } else {
+                // so we have some key value pairs
+                search_buffer = search_string.split(',');
+                
+                var current_pair;
+                for (var i = 0; i < search_buffer.length; i += 1){
+                    current_pair = search_buffer[i];
+
+                    if (current_pair.length === 0 || current_pair.indexOf(':') === -1){
+                        // not finished typing yet
+                        continue;
+                    }
+
+                    key_value_pair = search_buffer[i].split(':');
+
+                    key = key_value_pair[0];
+                    value = key_value_pair[1].replace(/[\s]+/, ' ').trim(); //.split(' ');
+
+                    if (value === '') {
+                        // not finished typing yet
+                        continue;
+                    }
+                    
+                    // if there is a key expand it
+                    if (search_params[key] !== undefined){
+                        search_params[key].push(value);
+                    } else {
+                        search_params[key] = [value];
                     }
                 }
-                if (index !== -1){
-                    data.splice(index, 1);
-                }
-{#                console.log('data.length:', data.length);#}
-            {% endif %}
-
-            // now append the data to the task_parent
-            {% raw %}
-            var task_parent_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
-            {% endraw %}
-
-            var parent_task_count = data.length;
-            var rendered_template = null;
-            // add and empty option to both
-            task_parent.append('<option val="">&nbsp;</option>');
-            for (var i=0; i < parent_task_count; i++){
-                rendered_template = task_parent_template(data[i]);
-                task_parent.append(rendered_template);
-                task_depends_to.append(rendered_template)
             }
 
-            // select the given parent
-            task_parent.val(parent_id);
-            task_depends_to.val(depends_to);
+            $.getJSON('/tasks/', search_params, function (data) {
+                var input_source = [];
+                var result_count = data.length;
+                for (var i = 0; i < Math.min(result_count, 25); i++) {
+                    input_source.push(data[i].full_path);
+                }
+                if (result_count > 25) {
+                    input_source.push('' + (result_count - 25) + ' more items...');
+                }
+                callback(input_source);
+            });
+        }
 
-            // trigger another update
-            task_parent.trigger('liszt:updated');
-            // trigger another update
-            task_depends_to.trigger('liszt:updated');
+        task_parent.bind("keydown", function(event) {
+            if(event.keyCode === $.ui.keyCode.TAB &&
+               $(this).data( "ui-autocomplete").menu.active) {
+                event.preventDefault();
+            }
+        }).autocomplete({
+            placeholder: 'Parent',
+            source: function (request, response) {
+                // condition search terms here
+                var search_string = request.term;
+                get_task_data(search_string, response);
+            },
+            search: function () {
+                // custom minLength
+{#                var term = 'Rig';#}
+{#                return term.length >= 2;#}
+                return true;
+            },
+            focus: function () {
+                // prevent value inserted on focus
+                return false;
+            },
+            select: function(event, ui) {
+                var current_value = ui.item.value;
+                this.value = current_value;
+                // get item id, I don't like doing it by parsing the string
+                // but it seems the easiest one
+                var id = current_value.match(/\(([0-9]+)\)/);
 
-            // set the fields to normal mode
-            task_parent.attr('is_updating', false);
-            task_depends_to.attr('is_updating', false);
+                // store it HTML node
+                $('#parent_storage').attr('parent_id', id[1]);
 
-            field_update_mode_checker();
+                return false;
+            }
         });
+
+        task_depends_to.tag({
+            placeholder: task_depends_to.data('placeholder'),
+            allowNewItems: false,
+            source: function(request, response){
+
+                console.debug('request:', request);
+                console.debug('response:', response);
+
+                get_task_data(request, response);
+            }
+        }).on('shown', function(e){
+            e.stopPropagation();
+        });
+        // fix input width
+        task_depends_to.parent().addClass('span12');
+
+
+
+
+{#                #}
+{#                #}
+{#            undefined.on('keyup', function () {#}
+{#            // should contain key:value pairs or single values#}
+{#            var search_str = task_parent.val();#}
+{##}
+{#            if (search_str.indexOf(':') > -1) {#}
+{#                // prepare data#}
+{#                #}
+{#                // filter more than 1 spaces and coma (,) characters with a#}
+{#                // single space#}
+{#                //search_str = search_str.replace(/[\s,]+/, ' ');#}
+{##}
+{#                // split from spaces#}
+{#                console.debug('search_str:', search_str);#}
+{#                var search_buffer = search_str.split(' ');#}
+{##}
+{#                // iterate over each key value pair#}
+{#                var key_value_pair, key, value;#}
+{#                var search_params = {};#}
+{##}
+{#                var has_enough_char = false;#}
+{#                for (var i = 0; i < search_buffer.length; i += 1){#}
+{#                    key_value_pair = search_buffer[i].split(':');#}
+{#                    if (key_value_pair.length === 1){#}
+{#                        // there is no key just a value so insert default key value#}
+{#                        // which is "task_name"#}
+{#                        key_value_pair.splice(0, 0, 'task_name');#}
+{#                    }#}
+{#                    key = key_value_pair[0];#}
+{#                    value = key_value_pair[1];#}
+{#                    search_params[key] = value;#}
+{#                    #}
+{#                    if (!has_enough_char && value.length > 2) {#}
+{#                        has_enough_char = true;#}
+{#                    }#}
+{#                    #}
+{#                    console.debug('key: ', key);#}
+{#                    console.debug('value: ', value);#}
+{#                }#}
+{##}
+{#                console.debug('search_params: ', search_params);#}
+{##}
+{#                #}
+{#                if (has_enough_char) {#}
+{#                    // now we should have search_params, fill in to the field#}
+{#                    $.getJSON('/tasks/', $.param(search_params)).then(function (data) {#}
+{#                        var input_source = [];#}
+{#                        var result_count = data.length;#}
+{#                        for (var i = 0; i < result_count; i++) {#}
+{#                            input_source.push(data[i].full_path);#}
+{#                        }#}
+{##}
+{#                        console.debug('input_source:', input_source);#}
+{##}
+{#                        console.debug('result_count: ', result_count);#}
+{#                        task_parent.autocomplete({#}
+{#                            delay: 0,#}
+{#                            source: input_source,#}
+{#                            minLength: 0#}
+{#                        });#}
+{##}
+{#                        task_parent.#}
+{#                    });#}
+{#                }#}
+{#            }#}
+{#        });#}
+
+
+{#        task_parent.attr('is_updating', true);#}
+{#        task_depends_to.attr('is_updating', true);#}
+{##}
+{#        field_update_mode_checker();#}
+{#        $.getJSON('{{ request.route_url("get_project_tasks", id=project.id) }}').then(function(data){#}
+            {# remove self from the list #}
+{#            {% if entity %}#}
+{#                var index = -1;#}
+{#                for(var i = 0; i < data.length; i++){#}
+{#                    if (data[i].id === {{ entity.id }}){#}
+{#                        index = i;#}
+{#                        break;#}
+{#                    }#}
+{#                }#}
+{#                if (index !== -1){#}
+{#                    data.splice(index, 1);#}
+{#                }#}
+{#            {% endif %}#}
+{##}
+{#            // now append the data to the task_parent#}
+{#            {% raw %}#}
+{#            var task_parent_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');#}
+{#            {% endraw %}#}
+{##}
+{#            var parent_task_count = data.length;#}
+{#            var rendered_template = null;#}
+{#            // add and empty option to both#}
+{#            task_parent.append('<option val="">&nbsp;</option>');#}
+{#            for (var i=0; i < parent_task_count; i++){#}
+{#                rendered_template = task_parent_template(data[i]);#}
+{#                task_parent.append(rendered_template);#}
+{#                task_depends_to.append(rendered_template)#}
+{#            }#}
+{##}
+{#            // select the given parent#}
+{#            task_parent.val(parent_id);#}
+{#            task_depends_to.val(depends_to);#}
+{##}
+{#            // trigger another update#}
+{#            task_parent.trigger('liszt:updated');#}
+{#            // trigger another update#}
+{#            task_depends_to.trigger('liszt:updated');#}
+{##}
+{#            // set the fields to normal mode#}
+{#            task_parent.attr('is_updating', false);#}
+{#            task_depends_to.attr('is_updating', false);#}
+{##}
+{#            field_update_mode_checker();#}
+{#        });#}
 
         {# ***************************************************************** #}
         {# Code #}
@@ -874,7 +1077,7 @@
 
         {% if entity%}
             {% if entity.status.code != 'WFD' and entity.status.code != 'RTS'%}
-                 $('#task_depends_to').attr('disabled','disabled')
+                 task_depends_to.attr('disabled','disabled');
             {% endif %}
         {% endif %}
         console.log('initialize task dialog end')

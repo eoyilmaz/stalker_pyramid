@@ -1774,7 +1774,7 @@ class TaskViewSimpleFunctionsTestCase(unittest2.TestCase):
 
         self.assertEqual("""where (
     tasks.id = 23
-    and tasks.name ilike '%Lighting%'
+    and (tasks.name ilike '%Lighting%' or tasks.full_path ilike '%Lighting%')
     and tasks.entity_type = 'Task'
     and task_types.name ilike '%Lighting%'
     and exists (

@@ -1094,8 +1094,8 @@ def generate_task_where_clause(input_params):
       like this::
 
         input_params = {
-            'id': 23,
-            'name': 'Lighting',
+            'id': [23],
+            'name': ['Lighting'],
             'entity_type': 'Task',
             'task_type': 'Lighting',
             'resource': 'Ozgur'
@@ -1105,9 +1105,10 @@ def generate_task_where_clause(input_params):
 
         where (
             tasks.id = 23
-            or tasks.name = '%Lighting%'
-            or tasks.entity_type = '%Task%'
-            or task_types.name = '%Lighting%'
+            or tasks.name ilike '%Lighting%'
+            or tasks.full_path ilike '%Lighting%'
+            or tasks.entity_type ilike '%Task%'
+            or task_types.name ilike '%Lighting%'
             or exists (
                 select * from (
                     select unnest(resource_info.resource_name)
@@ -1139,41 +1140,51 @@ def generate_task_where_clause(input_params):
     search_string = ''
     search_string_buffer = []
 
-    for id_ in input_params.get('id', []):
+    for id_ in input_params.get('id[]', input_params.get('id', [])):
         search_string_buffer.append(
             'tasks.id = {id}'.format(id=id_)
         )
 
-    for parent_id in input_params.get('parent_id', []):
+    for parent_id in input_params.get('parent_id[]',
+                                      input_params.get('parent_id', [])):
         search_string_buffer.append(
             "tasks.parent_id = {parent_id}".format(parent_id=parent_id)
         )
 
-    for name in input_params.get('name', []):
+    for name in input_params.get('name[]', input_params.get('name', [])):
         search_string_buffer.append(
-            "tasks.name ilike '%{name}%'".format(name=name)
+            "tasks.name ilike '%{name}%' ".format(name=name)
         )
 
-    for entity_type in input_params.get('entity_type', []):
+    for name in input_params.get('path[]', input_params.get('path', [])):
+        search_string_buffer.append(
+            "tasks.full_path ilike '%{name}%'".format(name=name)
+        )
+
+    for entity_type in input_params.get('entity_type[]',
+                                        input_params.get('entity_type', [])):
         search_string_buffer.append(
             "tasks.entity_type = '{entity_type}'".format(
                 entity_type=entity_type
             )
         )
 
-    for task_type in input_params.get('task_type', []):
+    for task_type in input_params.get('task_type[]',
+                                      input_params.get('task_type', [])):
         search_string_buffer.append(
             "task_types.name ilike '%{task_type}%'".format(task_type=task_type)
         )
 
-    for project_id in input_params.get('project_id', []):
+    for project_id in input_params.get('project_id[]',
+                                       input_params.get('project_id', [])):
         search_string_buffer.append(
             """"Tasks".project_id = {project_id}""".format(
                 project_id=project_id
             )
         )
 
-    for resource_id in input_params.get('resource_id', []):
+    for resource_id in input_params.get('resource_id[]',
+                                        input_params.get('resource_id', [])):
         search_string_buffer.append(
             """exists (
         select * from (
@@ -1182,7 +1193,9 @@ def generate_task_where_clause(input_params):
         where x.resource_id = {resource_id}
     )""".format(resource_id=resource_id))
 
-    for resource_name in input_params.get('resource_name', []):
+    for resource_name in \
+        input_params.get('resource_name[]',
+                         input_params.get('resource_name', [])):
         search_string_buffer.append(
             """exists (
         select * from (
@@ -1191,7 +1204,7 @@ def generate_task_where_clause(input_params):
         where x.resource_name like '%{resource_name}%'
     )""".format(resource_name=resource_name))
 
-    for status in input_params.get('status', []):
+    for status in input_params.get('status[]', input_params.get('status', [])):
         search_string_buffer.append(
             """"Statuses".code ilike '%{status}%'""".format(status=status)
         )
@@ -1215,6 +1228,8 @@ def get_tasks(request):
     """
     logger.debug('get_tasks is running')
     start = time.time()
+
+    logger.debug('request.params.dict_of_lists(): %s' % request.params.dict_of_lists())
 
     where_condition = generate_task_where_clause(request.params.dict_of_lists())
 

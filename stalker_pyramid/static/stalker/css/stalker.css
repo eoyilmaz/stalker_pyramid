@@ -251,36 +251,83 @@ tr .odd > td .ticket_BLOCKER {
 }
 .dgrid-selected .pln {
   background-color: #cddce5;
+  color: black;
+}
+.dgrid-selected .pln a {
+  color: black;
 }
 .dgrid-selected .new {
   background-color: #cddce5;
+  color: black;
+}
+.dgrid-selected .new a {
+  color: black;
 }
 .dgrid-selected .wfd {
   background-color: #cddce5;
+  color: black;
+}
+.dgrid-selected .wfd a {
+  color: black;
 }
 .dgrid-selected .rts {
   background-color: #f37d69;
+  color: black;
+}
+.dgrid-selected .rts a {
+  color: black;
 }
 .dgrid-selected .wip {
   background-color: #ffe879;
+  color: black;
+}
+.dgrid-selected .wip a {
+  color: black;
+}
+.dgrid-selected .wip a {
+  color: black;
 }
 .dgrid-selected .stop {
   background-color: #f37d69;
+  color: black;
+}
+.dgrid-selected .stop a {
+  color: black;
 }
 .dgrid-selected .oh {
   background-color: #f37d69;
+  color: black;
+}
+.dgrid-selected .oh a {
+  color: black;
 }
 .dgrid-selected .prev {
   background-color: #91d5ff;
+  color: black;
+}
+.dgrid-selected .prev a {
+  color: black;
 }
 .dgrid-selected .hrev {
   background-color: #915ee6;
+  color: black;
+}
+.dgrid-selected .hrev a {
+  color: black;
 }
 .dgrid-selected .drev {
   background-color: #915ee6;
+  color: black;
+}
+.dgrid-selected .drev a {
+  color: black;
 }
 .dgrid-selected .cmpl {
   background-color: #a4d191;
+  color: black;
+}
+.dgrid-selected .cmpl a {
+  color: black;
 }
 .label-red,
 .badge-red {
@@ -426,4 +473,12 @@ tr .odd > td .ticket_BLOCKER {
   max-height: 300px;
   max-width: 500px;
   overflow: auto;
+}
+.ui-autocomplete-loading {
+  background: #ffffff url('../images/ui-anim_basic_16x16.gif') right center no-repeat !important;
+}
+.ui-autocomplete {
+  max-height: 100px;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
