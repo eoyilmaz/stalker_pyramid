@@ -89,7 +89,7 @@ class StdErrToHTMLConverter():
 
     def __init__(self, error):
         if isinstance(error, Exception):
-            self.error_message = error.message
+            self.error_message = str(error)
         else:
             self.error_message = error
 

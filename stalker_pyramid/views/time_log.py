@@ -238,7 +238,7 @@ def update_time_log(request):
             time_log.updated_by = logged_in_user
             time_log.date_updated = utc_now
         except OverBookedError as e:
-            logger.debug('e.message: %s' % str(e))
+            logger.debug('e: %s' % str(e))
             response = Response(str(e), 500)
             transaction.abort()
             return response

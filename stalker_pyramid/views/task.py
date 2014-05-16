@@ -74,13 +74,14 @@ def query_of_tasks_hierarchical_name_table(ordered=True):
             task.id,
             task.parent_id,
             (parent.path || task.parent_id) as path,
-            (parent.path_names || '|' || "Parent_SimpleEntities".name) as path_names
+            (parent.path_names || ' | ' || "Parent_SimpleEntities".name) as path_names
         from "Tasks" as task
         join recursive_task as parent on task.parent_id = parent.id
         join "SimpleEntities" as "Parent_SimpleEntities" on parent.id = "Parent_SimpleEntities".id
         --where parent.id = t_path.parent_id
     ) select
         recursive_task.id,
+        recursive_task.parent_id,
         recursive_task.path,
         recursive_task.path_names,
         "SimpleEntities".name || ' (' || recursive_task.id || ') (' || recursive_task.path_names || ')' as full_path,
@@ -2399,8 +2400,8 @@ def create_task(request):
         #         new_entity.responsible = responsible
 
     except (AttributeError, TypeError, CircularDependencyError) as e:
-        logger.debug('The Error Message: %s' % e.message)
-        response = Response('%s' % e.message, 500)
+        logger.debug('The Error Message: %s' % e)
+        response = Response('%s' % e, 500)
         transaction.abort()
         return response
     else:
@@ -2408,9 +2409,9 @@ def create_task(request):
         try:
             transaction.commit()
         except IntegrityError as e:
-            logger.debug(e.message)
+            logger.debug(str(e))
             transaction.abort()
-            return Response(e.message, 500)
+            return Response(str(e), 500)
         else:
             logger.debug('flushing the DBSession, no problem here!')
             DBSession.flush()

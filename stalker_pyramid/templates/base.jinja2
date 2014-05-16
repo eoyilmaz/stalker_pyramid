@@ -485,12 +485,14 @@
 
     <script type="text/javascript">
         // choose default skin
-        var skin_class = 'skin-1';
-        var body = $(document.body);
-        body.removeClass('skin-1 skin-2 skin-3');
-        body.addClass(skin_class);
-        $('.ace-nav > li.grey').addClass('dark');
-
+        $(function () {
+            var skin_class = 'skin-1';
+            var body = $(document.body);
+            body.removeClass('skin-1 skin-2 skin-3');
+            body.addClass(skin_class);
+            $('.ace-nav > li.grey').addClass('dark');
+        });
+        
         // if it is smaller resize the page content to the window height
         var resize_page_content = function () {
             var page_content = $('.page-content');

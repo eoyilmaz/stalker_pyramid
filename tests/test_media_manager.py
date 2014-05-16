@@ -243,7 +243,7 @@ class MediaManagerTestCase(unittest2.TestCase):
             '"link_path" argument in '
             'MediaManager.convert_file_link_to_full_path() method should be '
             'a str, not int',
-            cm.exception.message
+            str(cm.exception)
         )
 
     # def test_convert_file_link_to_full_path_link_path_is_not_starting_with_spl(self):
@@ -259,7 +259,7 @@ class MediaManagerTestCase(unittest2.TestCase):
     #         '"link_path" argument in '
     #         'MediaManager.convert_file_link_to_full_path() method should be '
     #         'a str starting with "SPL/"',
-    #         cm.exception.message
+    #         str(cm.exception)
     #     )
 
     def test_convert_file_link_to_full_path_is_working_properly(self):
@@ -285,7 +285,7 @@ class MediaManagerTestCase(unittest2.TestCase):
             '"full_path" argument in '
             'MediaManager.convert_full_path_to_file_link() method should be '
             'a str, not int',
-            cm.exception.message
+            str(cm.exception)
         )
 
     def test_convert_full_path_to_file_link_full_path_is_not_starting_with_spl(self):
@@ -301,7 +301,7 @@ class MediaManagerTestCase(unittest2.TestCase):
             '"full_path" argument in '
             'MediaManager.convert_full_path_to_file_link() method should be '
             'a str starting with "%s"' % defaults.server_side_storage_path,
-            cm.exception.message
+            str(cm.exception)
         )
 
     def test_convert_full_path_to_file_link_is_working_properly(self):
@@ -422,7 +422,7 @@ class MediaManagerTestCase(unittest2.TestCase):
         self.assertEqual(
             '%s is not an image nor a video file, can not generate a '
             'thumbnail for it!' % test_path,
-            cm.exception.message
+            str(cm.exception)
         )
 
     def test_upload_file_will_return_uploaded_file_full_path(self):

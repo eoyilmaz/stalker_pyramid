@@ -91,7 +91,7 @@ def create_group(request):
             logger.debug('***create group method ends ***')
 
         except BaseException as e:
-            request.session.flash('error:' + e.message)
+            request.session.flash('error: %s' % e)
             HTTPFound(location=came_from)
     else:
         logger.debug('not all parameters are in request.params')

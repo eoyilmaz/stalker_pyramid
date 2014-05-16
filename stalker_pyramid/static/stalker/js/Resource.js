@@ -115,6 +115,30 @@ define([
                 }
             }
             return total_millies;
+        },
+
+        /**
+         * Returns the tasks between given dates
+         * 
+         * @param start
+         * @param end
+         * @returns {Array}
+         */
+        tasks_in_between: function (start, end) {
+            var tasks = this.tasks,
+                tasks_count = tasks.length,
+                tasks_in_between_list = [],
+                task = null,
+                i;
+
+            // for dates after today consider only tasks
+            for (i = 0; i < tasks_count; i += 1) {
+                task = tasks[i];
+                if (task.start <= end && task.end >= start) {
+                    tasks_in_between_list.push(tasks[i]);
+                }
+            }
+            return tasks_in_between_list;
         }
 
     });
