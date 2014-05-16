@@ -1832,15 +1832,7 @@ def get_entity_tasks_by_filter(request):
     array_agg("Responsible_SimpleEntities".id) as responsible_id,
     array_agg("Responsible_SimpleEntities".name) as responsible_name,
     coalesce("Type_SimpleEntities".name,'') as type_name,
-    coalesce(
-        -- for parent tasks
-        (case "Tasks".schedule_seconds
-            when 0 then 0
-            else "Tasks".total_logged_seconds::float / "Tasks".schedule_seconds * 100
-         end
-        ),
-        -- for child tasks we need to count the total seconds of related TimeLogs
-        (coalesce("Task_TimeLogs".duration, 0.0))::float /
+    (coalesce("Task_TimeLogs".duration, 0.0))::float /
             ("Tasks".schedule_timing * (case "Tasks".schedule_unit
                 when 'min' then 60
                 when 'h' then 3600
@@ -1851,7 +1843,7 @@ def get_entity_tasks_by_filter(request):
                 else 0
             end)
             ) * 100.0
-    ) as percent_complete,
+    as percent_complete,
     array_agg("Resource_SimpleEntities".id) as resource_id,
     array_agg("Resource_SimpleEntities".name) as resource_name,
     "Statuses_SimpleEntities".name as status_name,
