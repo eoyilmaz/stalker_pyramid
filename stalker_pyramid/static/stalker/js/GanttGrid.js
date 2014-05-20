@@ -22,7 +22,7 @@ define([
     // Creates a new grid with one column set definition to display tasks & resources and a second
     // column set for the actual gantt chart
     "use strict";
-    return declare([OnDemandGrid, ColumnSet, Selection, Keyboard, DijitRegistry, ColumnResizer], {
+    return declare([OnDemandGrid, ColumnSet, Selection, Keyboard, DijitRegistry], {
         keyMap: lang.mixin({}, Keyboard.defaultKeyMap, {
             38: function (event) { // up arrow
                 event.preventDefault();
@@ -302,21 +302,16 @@ define([
                             renderCell: function (object, value, node, options) {
                                 var template = templates.taskEditRow;
                                 var template_var = {};
+
                                 template_var.font_weight = object.hasChildren ? 'bold' : 'normal';
                                 template_var.contextMenuClass = 'taskEditRow';
+
                                 if (object.entity_type === 'Project') {
-                                    template = templates.projectEditRow;
                                     template_var.contextMenuClass = 'projectEditRow';
                                 } else {
                                     if (object.hasChildren) {
-                                        template = templates.parentTaskEditRow;
                                         template_var.contextMenuClass = 'parentTaskEditRow';
-                                    }// else {
-//                                        template_var.responsible = {
-//                                            id: object.responsible.id,
-//                                            name: object.responsible.name
-//                                        };
-                                    //}
+                                    }
                                 }
 
                                 template_var.hasChildren = object.hasChildren;

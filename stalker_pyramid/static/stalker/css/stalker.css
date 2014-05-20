@@ -478,7 +478,74 @@ tr .odd > td .ticket_BLOCKER {
   background: #ffffff url('../images/ui-anim_basic_16x16.gif') right center no-repeat !important;
 }
 .ui-autocomplete {
-  max-height: 100px;
+  max-height: 80px;
   overflow-x: hidden;
   overflow-y: auto;
+}
+@media only screen and (-webkit-min-device-pixel-ratio: 2), only screen and (min-resolution: 144dpi) {
+  .chzn-rtl .chzn-search input[type="text"],
+  .chzn-container-single .chzn-single abbr,
+  .chzn-container-single .chzn-single div b,
+  .chzn-container-single .chzn-search input[type="text"],
+  .chzn-container-multi .chzn-choices li.search-choice .search-choice-close,
+  .chzn-container .chzn-results-scroll-down span,
+  .chzn-container .chzn-results-scroll-up span {
+    background-image: none !important;
+    background-repeat: no-repeat !important;
+    background-size: auto !important;
+  }
+}
+/* a second style (like tag input) */
+.tag-input-style + .chzn-container-multi .chzn-choices li.search-choice {
+  background-image: none;
+  background-color: #91b8d0;
+  color: #FFFFFF;
+  display: inline-block;
+  font-size: 13px;
+  font-weight: normal;
+  margin-bottom: 3px;
+  margin-right: 0;
+  padding: 6px 22px 7px 9px;
+  position: relative;
+  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s ease 0s;
+  vertical-align: baseline;
+  white-space: nowrap;
+  border: none;
+  -webkit-box-shadow: none;
+  -moz-box-shadow: none;
+  box-shadow: none;
+  -webkit-border-radius: 0;
+  -moz-border-radius: 0;
+  border-radius: 0;
+}
+.tag-input-style + .chzn-container-multi .chzn-choices li.search-choice .search-choice-close {
+  position: absolute;
+  top: 5px;
+  bottom: 0;
+  right: 0;
+  width: 12px;
+  height: 12px;
+  line-height: 25px;
+  text-align: center;
+}
+.tag-input-style + .chzn-container-multi .chzn-choices li.search-choice .search-choice-close:before {
+  color: #FFF;
+  position: static;
+  font-size: 11px;
+}
+.tag-input-style + .chzn-container-multi .chzn-choices li.search-choice .search-choice-close:hover {
+  background-color: rgba(0, 0, 0, 0.2);
+}
+.tag-input-style + .chzn-container-multi .chzn-choices li.search-choice .search-choice-close:hover:before {
+  color: #FFF;
+}
+.tag-input-style + .chzn-container-multi.chzn-rtl .chzn-choices li.search-choice {
+  padding: 6px 9px 7px 22px;
+  margin-left: 0;
+  margin-right: 3px;
+}
+.tag-input-style + .chzn-container-multi.chzn-rtl .chzn-choices li.search-choice .search-choice-close {
+  right: auto;
+  left: 0;
 }

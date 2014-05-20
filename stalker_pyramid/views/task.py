@@ -1229,77 +1229,65 @@ def get_tasks(request):
     logger.debug('get_tasks is running')
     start = time.time()
 
-    logger.debug('request.params.dict_of_lists(): %s' % request.params.dict_of_lists())
+    # set the content range to prevent JSONRest Store to query the data twice
+    content_range = '%s-%s/%s'
 
-    where_condition = generate_task_where_clause(request.params.dict_of_lists())
+    entity_type = "Task"
+    if 'task_id' in request.params:
+        # check if this is a Task or Project
+        task_id = int(request.params.get('task_id', -1))
 
-    logger.debug('where_condition: %s' % where_condition)
+        # get the entity_type of this data
+        entity_type = DBSession.connection().execute(
+            """select entity_type from "SimpleEntities" where id=%s""" %
+            task_id
+        ).fetchone()[0]
 
-    sql_query = """--(
-    select
-        tasks.id,
-        tasks.entity_type,
-        task_types.name as task_type,
-        tasks.name,
-        tasks.full_path,
-        "Tasks".project_id,
-        "Tasks".parent_id,
-        "Task_SimpleEntities".description,
+    logger.debug('entity_type: %s' % entity_type)
 
-        -- audit info
-        (extract(epoch from "Task_SimpleEntities".date_created::timestamp at time zone 'UTC') * 1000)::bigint as date_created,
-        (extract(epoch from "Task_SimpleEntities".date_updated::timestamp at time zone 'UTC') * 1000)::bigint as date_updated,
+    if entity_type != 'Project':
+        where_condition = generate_task_where_clause(request.params.dict_of_lists())
 
-        exists (
-            select 1
-            from "Tasks" as "Child_Tasks"
-            where "Child_Tasks".parent_id = "Tasks".id
-        ) as has_children,
+        logger.debug('where_condition: %s' % where_condition)
 
-        '/' || lower("Task_SimpleEntities".entity_type) || 's/' || "Tasks".id || '/view' as link,
+        sql_query = """
+        select
+            tasks.id,
+            tasks.entity_type,
+            task_types.name as task_type,
+            tasks.name,
+            tasks.full_path,
+            "Tasks".project_id,
+            "Tasks".parent_id,
+            "Task_SimpleEntities".description,
 
-        "Tasks".priority as priority,
+            -- audit info
+            (extract(epoch from "Task_SimpleEntities".date_created::timestamp at time zone 'UTC') * 1000)::bigint as date_created,
+            (extract(epoch from "Task_SimpleEntities".date_updated::timestamp at time zone 'UTC') * 1000)::bigint as date_updated,
 
-        dep_info.info as dep_info,
-        resource_info.info as resource_info,
-        tasks.responsible_info,
+            exists (
+                select 1
+                from "Tasks" as "Child_Tasks"
+                where "Child_Tasks".parent_id = "Tasks".id
+            ) as has_children,
 
-        "Tasks".bid_timing,
-        "Tasks".bid_unit,
+            '/' || lower("Task_SimpleEntities".entity_type) || 's/' || "Tasks".id || '/view' as link,
 
-        "Tasks".schedule_timing,
-        "Tasks".schedule_unit,
-        "Tasks".schedule_model,
+            "Tasks".priority as priority,
 
-        coalesce("Tasks".schedule_seconds,
-            "Tasks".schedule_timing * (case "Tasks".schedule_unit
-                when 'min' then 60
-                when 'h' then 3600
-                when 'd' then 32400
-                when 'w' then 147600
-                when 'm' then 590400
-                when 'y' then 7696277
-                else 0
-            end)
-        ) as schedule_seconds,
+            dep_info.info as dep_info,
+            resource_info.info as resource_info,
+            tasks.responsible_info,
 
-        coalesce(
-            -- for parent tasks
-            "Tasks".total_logged_seconds,
-            -- for child tasks we need to count the total seconds of related TimeLogs
-            coalesce("Task_TimeLogs".duration, 0.0)
-        ) as total_logged_seconds,
+            "Tasks".bid_timing,
+            "Tasks".bid_unit,
 
-        coalesce(
-            -- for parent tasks
-            (case "Tasks".schedule_seconds
-                when 0 then 0
-                else "Tasks".total_logged_seconds::float / "Tasks".schedule_seconds * 100
-             end
-            ),
-            -- for child tasks we need to count the total seconds of related TimeLogs
-            (coalesce("Task_TimeLogs".duration, 0.0))::float /
-                ("Tasks".schedule_timing * (case "Tasks".schedule_unit
+            "Tasks".schedule_timing,
+            "Tasks".schedule_unit,
+            "Tasks".schedule_model,
+
+            coalesce("Tasks".schedule_seconds,
+                "Tasks".schedule_timing * (case "Tasks".schedule_unit
                     when 'min' then 60
                     when 'h' then 3600
                     when 'd' then 32400
@@ -1307,160 +1295,187 @@ def get_tasks(request):
                     when 'm' then 590400
                     when 'y' then 7696277
                     else 0
-                end)) * 100.0
-        ) as percent_complete,
+                end)
+            ) as schedule_seconds,
 
-        (extract(epoch from coalesce("Tasks".computed_start::timestamp AT TIME ZONE 'UTC', "Tasks".end::timestamp AT TIME ZONE 'UTC')) * 1000)::bigint as "start",
-        (extract(epoch from coalesce("Tasks".computed_end::timestamp AT TIME ZONE 'UTC', "Tasks".end::timestamp AT TIME ZONE 'UTC')) * 1000)::bigint as "end",
+            coalesce(
+                -- for parent tasks
+                "Tasks".total_logged_seconds,
+                -- for child tasks we need to count the total seconds of related TimeLogs
+                coalesce("Task_TimeLogs".duration, 0.0)
+            ) as total_logged_seconds,
 
-        lower("Statuses".code) as status
+            coalesce(
+                -- for parent tasks
+                (case "Tasks".schedule_seconds
+                    when 0 then 0
+                    else "Tasks".total_logged_seconds::float / "Tasks".schedule_seconds * 100
+                 end
+                ),
+                -- for child tasks we need to count the total seconds of related TimeLogs
+                (coalesce("Task_TimeLogs".duration, 0.0))::float /
+                    ("Tasks".schedule_timing * (case "Tasks".schedule_unit
+                        when 'min' then 60
+                        when 'h' then 3600
+                        when 'd' then 32400
+                        when 'w' then 147600
+                        when 'm' then 590400
+                        when 'y' then 7696277
+                        else 0
+                    end)) * 100.0
+            ) as percent_complete,
 
-    from (
-        %(tasks_hierarchical_name)s
-    ) as tasks
-    join "Tasks" on tasks.id = "Tasks".id
-    join "SimpleEntities" as "Task_SimpleEntities" on tasks.id = "Task_SimpleEntities".id
-    -- Dependencies
-    left outer join (
+            (extract(epoch from coalesce("Tasks".computed_start::timestamp AT TIME ZONE 'UTC', "Tasks".end::timestamp AT TIME ZONE 'UTC')) * 1000)::bigint as "start",
+            (extract(epoch from coalesce("Tasks".computed_end::timestamp AT TIME ZONE 'UTC', "Tasks".end::timestamp AT TIME ZONE 'UTC')) * 1000)::bigint as "end",
+
+            lower("Statuses".code) as status
+
+        from (
+            %(tasks_hierarchical_name)s
+        ) as tasks
+        join "Tasks" on tasks.id = "Tasks".id
+        join "SimpleEntities" as "Task_SimpleEntities" on tasks.id = "Task_SimpleEntities".id
+        -- Dependencies
+        left outer join (
+            select
+                task_id,
+                array_agg((depends_to_id, "SimpleEntities".name)) as info
+            from "Task_Dependencies"
+            join "SimpleEntities" on "Task_Dependencies".depends_to_id = "SimpleEntities".id
+            group by task_id
+        ) as dep_info on tasks.id = dep_info.task_id
+        -- Resources
+        left outer join (
+            select
+                "Tasks".id as task_id,
+                array_agg(("Resource_SimpleEntities".id, "Resource_SimpleEntities".name)) as info,
+                array_agg("Resource_SimpleEntities".id) as resource_id,
+                array_agg("Resource_SimpleEntities".name) as resource_name
+            from "Tasks"
+            join "Task_Resources" on "Tasks".id = "Task_Resources".task_id
+            join "SimpleEntities" as "Resource_SimpleEntities" on "Task_Resources".resource_id = "Resource_SimpleEntities".id
+            group by "Tasks".id
+        ) as resource_info on "Tasks".id = resource_info.task_id
+        -- TimeLogs for Leaf Tasks
+        left outer join (
+            select
+                "TimeLogs".task_id,
+                extract(epoch from sum("TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC')) as duration
+            from "TimeLogs"
+            group by task_id
+        ) as "Task_TimeLogs" on "Task_TimeLogs".task_id = tasks.id
+
+        -- Task Status
+        join "Statuses" on "Tasks".status_id = "Statuses".id
+
+        -- Task Type
+        left join (
+            select
+                "Tasks".id,
+                "Type_SimpleEntities".name
+            from "Tasks"
+            join "SimpleEntities" as "Task_SimpleEntities" on "Tasks".id = "Task_SimpleEntities".id
+            join "Types" on "Task_SimpleEntities".type_id = "Types".id
+            join "SimpleEntities" as "Type_SimpleEntities" on "Types".id = "Type_SimpleEntities".id
+        ) as task_types on tasks.id = task_types.id
+
+        %(where_condition)s
+
+        order by tasks.name
+        """
+
+        sql_query = sql_query % {
+            'where_condition': where_condition,
+            'tasks_hierarchical_name':
+            query_of_tasks_hierarchical_name_table(ordered=False)
+        }
+
+    else:
+        sql_query = """
+        -- Projects Part
         select
-            task_id,
-            array_agg((depends_to_id, "SimpleEntities".name)) as info
-        from "Task_Dependencies"
-        join "SimpleEntities" on "Task_Dependencies".depends_to_id = "SimpleEntities".id
-        group by task_id
-    ) as dep_info on tasks.id = dep_info.task_id
-    -- Resources
-    left outer join (
-        select
-            "Tasks".id as task_id,
-            array_agg(("Resource_SimpleEntities".id, "Resource_SimpleEntities".name)) as info,
-            array_agg("Resource_SimpleEntities".id) as resource_id,
-            array_agg("Resource_SimpleEntities".name) as resource_name
-        from "Tasks"
-        join "Task_Resources" on "Tasks".id = "Task_Resources".task_id
-        join "SimpleEntities" as "Resource_SimpleEntities" on "Task_Resources".resource_id = "Resource_SimpleEntities".id
-        group by "Tasks".id
-    ) as resource_info on "Tasks".id = resource_info.task_id
-    -- TimeLogs for Leaf Tasks
-    left outer join (
-        select
-            "TimeLogs".task_id,
-            extract(epoch from sum("TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC')) as duration
-        from "TimeLogs"
-        group by task_id
-    ) as "Task_TimeLogs" on "Task_TimeLogs".task_id = tasks.id
+            "Projects".id as id,
+            'Project' as entity_type,
+            '' as task_type,
+            "Project_SimpleEntities".name as name,
+            "Project_SimpleEntities".name as full_path,
+            NULL,
+            NULL as parent_id,
+            "Project_SimpleEntities".description,
 
-    -- Task Status
-    join "Statuses" on "Tasks".status_id = "Statuses".id
+            -- audit info
+            (extract(epoch from "Project_SimpleEntities".date_created::timestamp at time zone 'UTC') * 1000)::bigint as date_created,
+            (extract(epoch from "Project_SimpleEntities".date_updated::timestamp at time zone 'UTC') * 1000)::bigint as date_updated,
 
-    -- Task Type
-    left join (
-        select
-            "Tasks".id,
-            "Type_SimpleEntities".name
-        from "Tasks"
-        join "SimpleEntities" as "Task_SimpleEntities" on "Tasks".id = "Task_SimpleEntities".id
-        join "Types" on "Task_SimpleEntities".type_id = "Types".id
-        join "SimpleEntities" as "Type_SimpleEntities" on "Types".id = "Type_SimpleEntities".id
-    ) as task_types on tasks.id = task_types.id
+            exists (
+                select 1
+                from "Tasks" as "Child_Tasks"
+                where "Child_Tasks".project_id = "Projects".id
+            ) as has_children,
 
-    %(where_condition)s
+            '/projects/' || "Projects".id || '/view' as link,
 
-    order by tasks.name
---) union (
---    -- Projects Part
---    select
---        "Projects".id as id,
---        'Project' as entity_type,
---        '' as task_type,
---        "Project_SimpleEntities".name as name,
---        "Project_SimpleEntities".name as full_path,
---        NULL,
---        NULL as parent_id,
---        "Project_SimpleEntities".description,
---
---        -- audit info
---        (extract(epoch from "Project_SimpleEntities".date_created::timestamp at time zone 'UTC') * 1000)::bigint as date_created,
---        (extract(epoch from "Project_SimpleEntities".date_updated::timestamp at time zone 'UTC') * 1000)::bigint as date_updated,
---
---        exists (
---            select 1
---            from "Tasks" as "Child_Tasks"
---            where "Child_Tasks".project_id = "Projects".id
---        ) as has_children,
---
---        '/projects/' || "Projects".id || '/view' as link,
---
---        500,
---
---        NULL,--array_agg((NULL, NULL)),
---        NULL,--array_agg((NULL, NULL)),
---        NULL,--array_agg((NULL, NULL)),
---
---        0 as bid_timing,
---        'min' as bid_unit,
---
---        0 as schedule_timing,
---        'min' as schedule_unit,
---        'effort' as schedule_model,
---        total_schedule_seconds as schedule_seconds,
---
---        project_schedule_info.total_logged_seconds as total_logged_seconds,
---
---        project_schedule_info.total_logged_seconds / total_schedule_seconds  * 100 as percent_complete,
---
---        (extract(epoch from coalesce("Projects".computed_start::timestamp AT TIME ZONE 'UTC', "Projects".end::timestamp AT TIME ZONE 'UTC')) * 1000)::bigint as "start",
---        (extract(epoch from coalesce("Projects".computed_end::timestamp AT TIME ZONE 'UTC', "Projects".end::timestamp AT TIME ZONE 'UTC')) * 1000)::bigint as "end",
---
---        NULL as status
---
---    from "Projects"
---    join "SimpleEntities" as "Project_SimpleEntities" on "Projects".id = "Project_SimpleEntities".id
---    join (
---        select
---            "Tasks".project_id as project_id,
---            sum(coalesce("Tasks".total_logged_seconds, coalesce("Task_TimeLogs".duration, 0.0))::float) as total_logged_seconds, 
---            sum(coalesce(
---                "Tasks".schedule_seconds,
---                (
---                    "Tasks".schedule_timing * (
---                        case "Tasks".schedule_unit
---                            when 'min' then 60
---                            when 'h' then 3600
---                            when 'd' then 32400
---                            when 'w' then 147600
---                            when 'm' then 590400
---                            when 'y' then 7696277
---                            else 0
---                        end
---                    )
---                )
---            )) as total_schedule_seconds
---        from "Tasks"
---
---        -- TimeLogs for Leaf Tasks
---        left outer join (
---            select
---                "TimeLogs".task_id,
---                extract(epoch from sum("TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC')) as duration
---            from "TimeLogs"
---            group by task_id
---        ) as "Task_TimeLogs" on "Task_TimeLogs".task_id = "Tasks".id
---
---        where "Tasks".parent_id is NULL
---        group by "Tasks".project_id
---    ) as project_schedule_info on "Projects".id = project_schedule_info.project_id
---)
-    """
+            500,
 
-    # set the content range to prevent JSONRest Store to query the data twice
-    content_range = '%s-%s/%s'
+            NULL,--array_agg((NULL, NULL)),
+            NULL,--array_agg((NULL, NULL)),
+            NULL,--array_agg((NULL, NULL)),
 
-    sql_query = sql_query % {
-        'where_condition': where_condition,
-        'tasks_hierarchical_name':
-        query_of_tasks_hierarchical_name_table(ordered=False)
-    }
+            0 as bid_timing,
+            'min' as bid_unit,
+
+            0 as schedule_timing,
+            'min' as schedule_unit,
+            'effort' as schedule_model,
+            total_schedule_seconds as schedule_seconds,
+
+            project_schedule_info.total_logged_seconds as total_logged_seconds,
+
+            project_schedule_info.total_logged_seconds / total_schedule_seconds  * 100 as percent_complete,
+
+            (extract(epoch from coalesce("Projects".computed_start::timestamp AT TIME ZONE 'UTC', "Projects".end::timestamp AT TIME ZONE 'UTC')) * 1000)::bigint as "start",
+            (extract(epoch from coalesce("Projects".computed_end::timestamp AT TIME ZONE 'UTC', "Projects".end::timestamp AT TIME ZONE 'UTC')) * 1000)::bigint as "end",
+
+            lower("Statuses".code) as status
+
+        from "Projects"
+        join "SimpleEntities" as "Project_SimpleEntities" on "Projects".id = "Project_SimpleEntities".id
+        join "Statuses" on "Projects".status_id = "Statuses".id
+        join (
+            select
+                "Tasks".project_id as project_id,
+                sum(coalesce("Tasks".total_logged_seconds, coalesce("Task_TimeLogs".duration, 0.0))::float) as total_logged_seconds, 
+                sum(coalesce(
+                    "Tasks".schedule_seconds,
+                    (
+                        "Tasks".schedule_timing * (
+                            case "Tasks".schedule_unit
+                                when 'min' then 60
+                                when 'h' then 3600
+                                when 'd' then 32400
+                                when 'w' then 147600
+                                when 'm' then 590400
+                                when 'y' then 7696277
+                                else 0
+                            end
+                        )
+                    )
+                )) as total_schedule_seconds
+            from "Tasks"
+            -- TimeLogs for Leaf Tasks
+            left outer join (
+                select
+                    "TimeLogs".task_id,
+                    extract(epoch from sum("TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC')) as duration
+                from "TimeLogs"
+                group by task_id
+            ) as "Task_TimeLogs" on "Task_TimeLogs".task_id = "Tasks".id
+
+            where "Tasks".parent_id is NULL
+            group by "Tasks".project_id
+        ) as project_schedule_info on "Projects".id = project_schedule_info.project_id
+        where "Projects".id = %s
+        """ % task_id
 
     from sqlalchemy import text  # to be able to use "%" sign use this function
     result = DBSession.connection().execute(text(sql_query))
@@ -3856,20 +3871,31 @@ group by "Input_Version_Task_SimpleEntities".id,
     return resp
 
 
-def unbind_task_hierarchy_from_tickets(task):
+def unbind_task_hierarchy_relations(task):
     """unbinds the given task and any child of it from any ticket
     """
+    # TODO: the following is a recursive call to this function which is bound
+    #       to raise a RuntimeError with the increasing number of task
+    #       hierarchy.
     for child_task in task.children:
-        unbind_task_hierarchy_from_tickets(child_task)
-    unbind_task_from_tickets(task)
+        unbind_task_hierarchy_relations(child_task)
+    unbind_task_relations(task)
 
 
-def unbind_task_from_tickets(task):
+def unbind_task_relations(task):
     """unbinds the given task from any tickets related to it
     """
     tickets = Ticket.query.filter(Ticket.links.contains(task)).all()
     for ticket in tickets:
         ticket.links.remove(task)
+
+    from stalker import Version
+    with DBSession.no_autoflush:
+        task.references = []
+        for v in task.versions:
+            v.inputs = []
+            for tv in Version.query.filter(Version.inputs.contains(v)):
+                tv.inputs.remove(v)
 
 
 @view_config(
@@ -3914,7 +3940,8 @@ def delete_task(request):
         return Response('Can not find a Task with id: %s' % task_id, 500)
 
     try:
-        unbind_task_hierarchy_from_tickets(task)
+        unbind_task_hierarchy_relations(task)
+        unbind_task_relations(task)
 
         DBSession.delete(task)
         #transaction.commit()

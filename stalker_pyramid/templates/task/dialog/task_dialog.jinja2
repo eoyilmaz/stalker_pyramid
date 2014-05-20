@@ -49,17 +49,7 @@
                             is_updating=false
                             data-placeholder='Parent'>
                     <span id='task_parent_helper' class="help-button"
-{#                          data-rel="popover"#}
-                          title="
-Type task names directly or use the following tags:&#013;&#013;
-field:value&#013;&#013;
-You can use multiple fields&#013;
-field:value,field:value&#013;&#013;
-name:Assets,parent_name:Tasks&#013;&#013;
-Supported fields are:&#013;&#013;
-id, name, full_path, project_id,&#013;
-entity_type, task_type, resource_id,&#013;
-resource_name, status">?</span>
+                          title="">?</span>
                 </div>
                 <div class='hidden'
                      id="parent_storage"
@@ -176,18 +166,14 @@ resource_name, status">?</span>
                 <div class='control-group'>
                     <label class='span3 control-label' for='task_depends_to'>Depends To</label>
                     <div class='span9'>
-{#                        <select id='task_depends_to'#}
-{#                                multiple=''#}
-{#                                class='input-block-level tag-input-style'#}
-{#                                name='dependent_ids'#}
-{#                                data-placeholder='Depends To'#}
-{#                                is_updating=false></select>#}
                         <input id='task_depends_to'
-                               class='input-block-level tag-input-style'
+                               class='input-block-level tag-input-style span11'
                                type='text'
                                name='dependent_ids'
                                data-placeholder='Depends To'
                                is_updating=false>
+                        <span id='task_depends_to_helper' class="help-button"
+                              title="">?</span>
                     </div>
                     <div class='hidden'
                          id="dependent_tasks_storage"
@@ -309,6 +295,25 @@ resource_name, status">?</span>
     </div>
 </div>
 
+<!-- help text for parent and dependent task fields-->
+<script id="tmpl_title_help" type="text/x-dot-template">
+Type task names directly or use "field:value" format:
+
+name:Task Name
+
+You can use multiple fields
+
+field:value,field:value
+
+name:Assets,parent_name:Tasks
+
+Supported fields are:
+
+id, name, full_path, project_id,
+entity_type, task_type, resource_id,
+resource_name, status
+</script>
+
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/chosen.jquery.min.js") }}'></script>
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-datepicker.min.js") }}'></script>
 {#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/moment.min.js") }}'></script>#}
@@ -326,6 +331,8 @@ resource_name, status">?</span>
 <script>
     function init_dialog(){
         console.log('initialize task dialog start');
+
+        var timeout_buffer; // it is used in delaying AJAX calls see task_depends_to
 
         // update dialog header
         $('#dialog_template_label').text('{{ mode.title() }} Task Dialog');
@@ -561,11 +568,12 @@ resource_name, status">?</span>
             $.getJSON('/tasks/', search_params, function (data) {
                 var input_source = [];
                 var result_count = data.length;
-                for (var i = 0; i < Math.min(result_count, 25); i++) {
+                var max_count = 25;
+                for (var i = 0; i < Math.min(result_count, max_count); i++) {
                     input_source.push(data[i].full_path);
                 }
-                if (result_count > 25) {
-                    input_source.push('' + (result_count - 25) + ' more items...');
+                if (result_count > max_count) {
+                    input_source.push('' + (result_count - max_count) + ' more items...');
                 }
                 callback(input_source);
             });
@@ -581,7 +589,15 @@ resource_name, status">?</span>
             source: function (request, response) {
                 // condition search terms here
                 var search_string = request.term;
-                get_task_data(search_string, response);
+
+                // delay ajax call for 300 milliseconds
+                if (timeout_buffer) {
+                    clearTimeout(timeout_buffer);
+                }
+    
+                timeout_buffer = setTimeout(function() {
+                    get_task_data(search_string, response);
+                }, 300);
             },
             search: function () {
                 // custom minLength
@@ -607,22 +623,38 @@ resource_name, status">?</span>
             }
         });
 
+
         task_depends_to.tag({
             placeholder: task_depends_to.data('placeholder'),
             allowNewItems: false,
             source: function(request, response){
-
-                console.debug('request:', request);
-                console.debug('response:', response);
-
-                get_task_data(request, response);
+                // delay ajax call for 300 milliseconds
+                if (timeout_buffer) {
+                    clearTimeout(timeout_buffer);
+                }
+    
+                timeout_buffer = setTimeout(function() {
+                    get_task_data(request, response);
+                }, 300);
+            },
+            resultFilter: function(value){
+                // filter the results coming from the typeahead
+                console.debug('value in:', value);
+                value = value.match(/[\w\s\d]+\([0-9]+\)/);
+                return value;
             }
         }).on('shown', function(e){
             e.stopPropagation();
         });
         // fix input width
-        task_depends_to.parent().addClass('span12');
+        task_depends_to.parent().addClass('input-block-level span12');
 
+        // add tool tip helps
+        var tool_tip_help_text = document.getElementById('tmpl_title_help').text;
+
+        $('#task_parent_helper').attr('title', tool_tip_help_text);
+        $('#task_depends_to_helper').attr('title', tool_tip_help_text);
+        $('#task_depends_to').attr('title', tool_tip_help_text);
 
 
 

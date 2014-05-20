@@ -63,13 +63,13 @@
                     self.skip = false;
                 })
                 .on('keydown', function (event) {
-                    if (event.keyCode === 188 || event.keyCode === 13 || event.keyCode === 9) {
+                    if (event.keyCode  === 188 || event.keyCode  === 13 || event.keyCode  === 9) {
                         if ($.trim($(this).val()) && (!self.element.siblings('.typeahead').length || self.element.siblings('.typeahead').is(':hidden'))) {
                             if (event.keyCode !== 9) {
                                 event.preventDefault();
                             }
                             self.process();
-                        } else if (event.keyCode === 188) {
+                        } else if (event.keyCode === 188 && self.options.allowNewItems) {
                             if (!self.element.siblings('.typeahead').length || self.element.siblings('.typeahead').is(':hidden')) {
                                 event.preventDefault();
                             } else {
@@ -95,9 +95,24 @@
                 .typeahead({
                     source: self.options.source,
                     matcher: function (value) {
-                        return ~value.toLowerCase().indexOf(this.query.toLowerCase()) && (self.inValues(value) === -1 || self.options.allowDuplicates);
+                        console.debug('value 12:', value);
+
+                        var query = this.query.toLowerCase();
+                        if (query.indexOf(':') !== -1) {
+                            if (!self.options.allowNewItems) {
+                                return true;
+                            }
+                        }
+
+                        return ~value.toLowerCase().indexOf(query) && (self.inValues(value) === -1 || self.options.allowDuplicaes);
                     },
-                    updater: $.proxy(self.add, self)
+                    updater: function (value) {
+                        // remove the full path part of the values
+                        if (typeof self.options.resultFilter === 'function') {
+                            value = self.options.resultFilter(value);
+                        }
+                        $.proxy(self.add, self)(value);
+                    }
                 });
 
             $(self.input.data('typeahead').$menu).on('mousedown', function () {
@@ -107,9 +122,20 @@
 //            this.element.trigger('shown'); // this was causing init_dialogs to be triggered
         },
         inValues: function (value) {
+            // if there is a result filter the value may become an object
+            // instead of a plain string
+            if (typeof value !== 'string') {
+                value = value.input;
+            }
+
             if (this.options.caseInsensitive) {
                 var index = -1;
                 $.each(this.values, function (indexInArray, valueOfElement) {
+
+                    if (typeof valueOfElement !== 'string') {
+                        valueOfElement = valueOfElement.input;
+                    }
+
                     if (valueOfElement.toLowerCase() === value.toLowerCase()) {
                         index = indexInArray;
                         return false;
@@ -165,14 +191,20 @@
                 this.element.trigger('removed', [value]);
             }
         },
+        /**
+         * Processes anything on the input field, it first splits the input
+         * from the coma (,) characters and then trims them
+         */
         process: function () {
-            var values = $.grep($.map(this.input.val().split(','), $.trim), function (value) {
-                    return value.length > 0;
-                }),
-                self = this;
-            $.each(values, function () {
-                self.add(this);
-            });
+            if (this.options.allowNewItems) {
+                var values = $.grep($.map(this.input.val().split(','), $.trim), function (value) {
+                        return value.length > 0;
+                    }),
+                    self = this;
+                $.each(values, function () {
+                    self.add(this);
+                });
+            }
             this.input.val('');
         },
         skip: false
@@ -199,7 +231,8 @@
         caseInsensitive: true,
         placeholder: '',
         source: [],
-        allowNewItems: true
+        allowNewItems: true,
+        resultFilter: undefined
     };
 
     $.fn.tag.Constructor = Tag;

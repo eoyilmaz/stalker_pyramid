@@ -39,6 +39,9 @@
 @odd_ticket_border_color: #EE9999;
 @odd_ticket_background: none repeat scroll 0 0 #FFEEDD;
 
+@tag-bg:#91B8D0;
+
+
 .form-horizontal .control-group {
     margin-bottom: 5px;
 }
@@ -619,7 +622,92 @@ tr {
 }
 
 .ui-autocomplete {
-    max-height: 100px;
+    max-height: 80px;
     overflow-x: hidden;
     overflow-y: auto;
 }
+
+
+.box-shadow(@shadow) {
+  -webkit-box-shadow: @shadow;
+     -moz-box-shadow: @shadow;
+          box-shadow: @shadow;
+}
+
+// Border Radius
+.border-radius(@radius) {
+  -webkit-border-radius: @radius;
+     -moz-border-radius: @radius;
+          border-radius: @radius;
+}
+
+// modifications for chzn (instead of choosen)
+@media only screen and (-webkit-min-device-pixel-ratio: 2), only screen and (min-resolution: 144dpi)  {
+  .chzn-rtl .chzn-search input[type="text"], .chzn-container-single .chzn-single abbr, .chzn-container-single .chzn-single div b, .chzn-container-single .chzn-search input[type="text"], .chzn-container-multi .chzn-choices li.search-choice .search-choice-close, .chzn-container .chzn-results-scroll-down span, .chzn-container .chzn-results-scroll-up span {
+      background-image: none !important;
+      background-repeat: no-repeat !important;
+      background-size: auto !important;
+  }
+}
+
+/* a second style (like tag input) */
+.tag-input-style + .chzn-container-multi {
+    .chzn-choices li.search-choice {
+        background-image: none;
+        background-color: @tag-bg;
+        color: #FFFFFF;
+        display: inline-block;
+        font-size: 13px;
+        font-weight: normal;
+        margin-bottom: 3px;
+        margin-right: 0;
+        padding: 6px 22px 7px 9px;
+        position: relative;
+        text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.15);
+        transition: all 0.2s ease 0s;
+        vertical-align: baseline;
+        white-space: nowrap;
+
+        border: none;
+        .box-shadow(none);
+        .border-radius(0);
+
+        .search-choice-close {
+            position: absolute;
+            top: 5px;
+            bottom: 0;
+            right: 0;
+            width: 12px;
+            height: 12px;
+            line-height: 25px;
+            text-align: center;
+
+            &:before {
+                color: #FFF;
+                position: static;
+                font-size: 11px;
+            }
+
+            &:hover {
+                background-color: rgba(0, 0, 0, 0.2);
+                &:before {
+                    color: #FFF;
+                }
+            }
+        }
+    }
+}
+
+.tag-input-style + .chzn-container-multi.chzn-rtl {
+    .chzn-choices li.search-choice {
+        padding: 6px 9px 7px 22px;
+        margin-left: 0;
+        margin-right: 3px;
+
+        .search-choice-close {
+            right: auto;
+            left: 0;
+        }
+    }
+}
+
