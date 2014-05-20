@@ -565,11 +565,9 @@ require([
     var tasks_jsonRest_store = new JsonRest({
         target: target,
         getChildren: function (parent, options) {
-            console.log('getChildren is running!');
             return this.query({parent_id: parent.id}, options);
         },
         mayHaveChildren: function (parent) {
-            console.log('mayHaveChildren is running!');
             return parent.hasChildren;
         }
     });

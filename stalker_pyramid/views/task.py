@@ -892,6 +892,7 @@ def update_task(request):
         parent = Task.query.filter(Task.id == parent_id).first()
     else:
         parent = None
+
     name = str(request.params.get('name', None))
     description = request.params.get('description', '')
     schedule_model = request.params.get('schedule_model')
@@ -899,7 +900,7 @@ def update_task(request):
     schedule_unit = request.params.get('schedule_unit')
     update_bid = 1 if request.params.get('update_bid') == 'on' else 0
 
-    depend_ids = get_multi_integer(request, 'dependent_ids')
+    depend_ids = get_multi_integer(request, 'dependent_ids[]')
     depends = Task.query.filter(Task.id.in_(depend_ids)).all()
 
     resource_ids = get_multi_integer(request, 'resource_ids')
@@ -967,20 +968,24 @@ def update_task(request):
     except CircularDependencyError as e:
         transaction.abort()
         message = StdErrToHTMLConverter(e)
-        transaction.abort()
         return Response(message.html(), 500)
 
-    try:
-        task.depends = depends
-    except CircularDependencyError:
-        transaction.abort()
-        message = \
-            '</div>Parent item can not also be a dependent for the ' \
-            'updated item:<br><br>Parent: %s<br>Depends To: %s</div>' % (
-                parent.name, map(lambda x: x.name, depends)
-            )
-        transaction.abort()
-        return Response(message, 500)
+    if prev_parent != parent:
+        updated_parent = True
+
+    if task.status.code in ['RTS', 'WFD']:
+        try:
+            task.depends = depends
+        except CircularDependencyError:
+            transaction.abort()
+            message = \
+                '</div>Parent item can not also be a dependent for the ' \
+                'updated item:<br><br>Parent: %s<br>Depends To: %s</div>' % (
+                    parent.name, map(lambda x: x.name, depends)
+                )
+            transaction.abort()
+            return Response(message, 500)
+    logger.debug('task in DBSession: %s' % (task in DBSession))
 
     task.schedule_model = schedule_model
     task.schedule_unit = schedule_unit

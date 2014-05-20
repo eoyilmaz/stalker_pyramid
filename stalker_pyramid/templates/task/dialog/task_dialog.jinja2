@@ -51,12 +51,6 @@
                     <span id='task_parent_helper' class="help-button"
                           title="">?</span>
                 </div>
-                <div class='hidden'
-                     id="parent_storage"
-                     parent_id={% if parent %}{{ parent.id }}{% else %}-1{% endif %}>
-                    {# this is a storage for parent_id, which is set externally by the #}
-                    {# template engine #}
-                 </div>
             </div>
 
             {# Name #}
@@ -175,12 +169,6 @@
                         <span id='task_depends_to_helper' class="help-button"
                               title="">?</span>
                     </div>
-                    <div class='hidden'
-                         id="dependent_tasks_storage"
-                         dependent_ids="[{% for dep in depends_to %}{% if loop.index0 %},{% endif %}{{ dep.id }}{% endfor %}]">
-                        {# this is a storage for dependent_ids, which is set externally by the #}
-                        {# template engine #}
-                     </div>
                 </div>
 
                 {# Resources #}
@@ -194,12 +182,6 @@
                                 data-placeholder='Resources'
                                 is_updating=false></select>
                     </div>
-                    <div class='hidden'
-                         id="resources_storage"
-                         resource_ids="[{% if entity %}{% for resource in entity.resources %}{% if loop.index0 %},{% endif %}{{ resource.id }}{% endfor %}{% endif %}]">
-                        {# this is a storage for resource_ids, which is set externally by the #}
-                        {# template engine #}
-                     </div>
                 </div>
     
                 {# Responsible #}
@@ -267,8 +249,7 @@
                     <div class="span9">
                         <input id="task_update_bid"
                                type="checkbox"
-                               name="update_bid"
-                               checked="checked"/>
+                               name="update_bid"/>
                     </div>
                 </div>
                 {% endif %}
@@ -349,6 +330,7 @@ resource_name, status
         var type = '';
         var depends_to = [];
         var parent_id = null;
+        var parent_info = "";
         var schedule_timing = 1;
         var schedule_unit = 'h';
         var schedule_model = 'effort';
@@ -359,6 +341,7 @@ resource_name, status
         var shot_cut_in = 1;
         var shot_cut_out = 1;
         var shot_sequences =[];
+        var disable_dependency_field = false;
 
 
         {% if entity.entity_type == 'Shot' %}
@@ -370,14 +353,13 @@ resource_name, status
         {% endif %}
 
         {% if depends_to %}
-            depends_to = [
-                {% for dep in depends_to %}
-                    {% if loop.index0 %},{% endif %}{{ dep.id }}
-                {% endfor %}
-            ];
-        {% endif %}
-        {% if parent %}
-            parent_id = {{ parent.id }};
+            depends_to = [];
+            var dep_item = [];
+            {% for dep in depends_to %}
+                dep_item = ["{{ dep.name }} ({{ dep.id }})"];
+                dep_item.input = "{{ dep.name }} ({{ dep.id }}) ({{ dep.project.code }}{% for dep_parent in dep.parents %} | {{ dep_parent.name }}{% endfor %})";
+                depends_to.push(dep_item);
+            {% endfor %}
         {% endif %}
 
         {% if mode=='update' %}
@@ -393,11 +375,12 @@ resource_name, status
             {% if entity.type %}
                 type = '{{ entity.type.name }}';
             {% endif %}
-            depends_to = [
-                {% for dep in entity.depends %}
-                    {% if loop.index0 %},{% endif %}{{ dep.id }}
-                {% endfor %}
-            ];
+            depends_to = [];
+            {% for dep in entity.depends %}
+                dep_item = ["{{ dep.name }} ({{ dep.id }})"];
+                dep_item.input = "{{ dep.name }} ({{ dep.id }}) ({{ dep.project.code }}{% for dep_parent in dep.parents %} | {{ dep_parent.name }}{% endfor %})";
+                depends_to.push(dep_item);
+            {% endfor %}
             schedule_timing = {{ entity.schedule_timing }};
             schedule_unit = '{{ entity.schedule_unit }}';
             schedule_model = '{{ entity.schedule_model }}';
@@ -414,6 +397,9 @@ resource_name, status
                 {% endfor %}
             ];
             entity_type = '{{ entity.entity_type }}';
+            {% if entity.status.code != 'WFD' and entity.status.code != 'RTS'%}
+                disable_dependency_field = true;
+            {% endif %}
         {% endif %}
 
         var submit_button = $('#dialog_template_submit_button');
@@ -577,7 +563,15 @@ resource_name, status
                 }
                 callback(input_source);
             });
-        }
+        };
+
+        {% if parent %}
+            // do a query for parent_info
+            $.getJSON('/tasks/?id={{ parent.id }}', function(data){
+                task_parent.val(data[0].full_path);
+            });
+        {% endif %}
+
 
         task_parent.bind("keydown", function(event) {
             if(event.keyCode === $.ui.keyCode.TAB &&
@@ -601,8 +595,6 @@ resource_name, status
             },
             search: function () {
                 // custom minLength
-{#                var term = 'Rig';#}
-{#                return term.length >= 2;#}
                 return true;
             },
             focus: function () {
@@ -617,12 +609,11 @@ resource_name, status
                 var id = current_value.match(/\(([0-9]+)\)/);
 
                 // store it HTML node
-                $('#parent_storage').attr('parent_id', id[1]);
+                //$('#parent_storage').attr('parent_id', id[1]);
 
                 return false;
             }
         });
-
 
         task_depends_to.tag({
             placeholder: task_depends_to.data('placeholder'),
@@ -632,150 +623,32 @@ resource_name, status
                 if (timeout_buffer) {
                     clearTimeout(timeout_buffer);
                 }
-    
+
                 timeout_buffer = setTimeout(function() {
                     get_task_data(request, response);
                 }, 300);
             },
             resultFilter: function(value){
                 // filter the results coming from the typeahead
-                console.debug('value in:', value);
-                value = value.match(/[\w\s\d]+\([0-9]+\)/);
+                value = value.match(/[\w\s\d&!?\+\-]+\([0-9]+\)/);
                 return value;
-            }
+            },
+            values: depends_to,
+            disabled: disable_dependency_field
         }).on('shown', function(e){
             e.stopPropagation();
         });
+
         // fix input width
         task_depends_to.parent().addClass('input-block-level span12');
+
 
         // add tool tip helps
         var tool_tip_help_text = document.getElementById('tmpl_title_help').text;
 
         $('#task_parent_helper').attr('title', tool_tip_help_text);
         $('#task_depends_to_helper').attr('title', tool_tip_help_text);
-        $('#task_depends_to').attr('title', tool_tip_help_text);
-
-
-
-{#                #}
-{#                #}
-{#            undefined.on('keyup', function () {#}
-{#            // should contain key:value pairs or single values#}
-{#            var search_str = task_parent.val();#}
-{##}
-{#            if (search_str.indexOf(':') > -1) {#}
-{#                // prepare data#}
-{#                #}
-{#                // filter more than 1 spaces and coma (,) characters with a#}
-{#                // single space#}
-{#                //search_str = search_str.replace(/[\s,]+/, ' ');#}
-{##}
-{#                // split from spaces#}
-{#                console.debug('search_str:', search_str);#}
-{#                var search_buffer = search_str.split(' ');#}
-{##}
-{#                // iterate over each key value pair#}
-{#                var key_value_pair, key, value;#}
-{#                var search_params = {};#}
-{##}
-{#                var has_enough_char = false;#}
-{#                for (var i = 0; i < search_buffer.length; i += 1){#}
-{#                    key_value_pair = search_buffer[i].split(':');#}
-{#                    if (key_value_pair.length === 1){#}
-{#                        // there is no key just a value so insert default key value#}
-{#                        // which is "task_name"#}
-{#                        key_value_pair.splice(0, 0, 'task_name');#}
-{#                    }#}
-{#                    key = key_value_pair[0];#}
-{#                    value = key_value_pair[1];#}
-{#                    search_params[key] = value;#}
-{#                    #}
-{#                    if (!has_enough_char && value.length > 2) {#}
-{#                        has_enough_char = true;#}
-{#                    }#}
-{#                    #}
-{#                    console.debug('key: ', key);#}
-{#                    console.debug('value: ', value);#}
-{#                }#}
-{##}
-{#                console.debug('search_params: ', search_params);#}
-{##}
-{#                #}
-{#                if (has_enough_char) {#}
-{#                    // now we should have search_params, fill in to the field#}
-{#                    $.getJSON('/tasks/', $.param(search_params)).then(function (data) {#}
-{#                        var input_source = [];#}
-{#                        var result_count = data.length;#}
-{#                        for (var i = 0; i < result_count; i++) {#}
-{#                            input_source.push(data[i].full_path);#}
-{#                        }#}
-{##}
-{#                        console.debug('input_source:', input_source);#}
-{##}
-{#                        console.debug('result_count: ', result_count);#}
-{#                        task_parent.autocomplete({#}
-{#                            delay: 0,#}
-{#                            source: input_source,#}
-{#                            minLength: 0#}
-{#                        });#}
-{##}
-{#                        task_parent.#}
-{#                    });#}
-{#                }#}
-{#            }#}
-{#        });#}
-
-
-{#        task_parent.attr('is_updating', true);#}
-{#        task_depends_to.attr('is_updating', true);#}
-{##}
-{#        field_update_mode_checker();#}
-{#        $.getJSON('{{ request.route_url("get_project_tasks", id=project.id) }}').then(function(data){#}
-            {# remove self from the list #}
-{#            {% if entity %}#}
-{#                var index = -1;#}
-{#                for(var i = 0; i < data.length; i++){#}
-{#                    if (data[i].id === {{ entity.id }}){#}
-{#                        index = i;#}
-{#                        break;#}
-{#                    }#}
-{#                }#}
-{#                if (index !== -1){#}
-{#                    data.splice(index, 1);#}
-{#                }#}
-{#            {% endif %}#}
-{##}
-{#            // now append the data to the task_parent#}
-{#            {% raw %}#}
-{#            var task_parent_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');#}
-{#            {% endraw %}#}
-{##}
-{#            var parent_task_count = data.length;#}
-{#            var rendered_template = null;#}
-{#            // add and empty option to both#}
-{#            task_parent.append('<option val="">&nbsp;</option>');#}
-{#            for (var i=0; i < parent_task_count; i++){#}
-{#                rendered_template = task_parent_template(data[i]);#}
-{#                task_parent.append(rendered_template);#}
-{#                task_depends_to.append(rendered_template)#}
-{#            }#}
-{##}
-{#            // select the given parent#}
-{#            task_parent.val(parent_id);#}
-{#            task_depends_to.val(depends_to);#}
-{##}
-{#            // trigger another update#}
-{#            task_parent.trigger('liszt:updated');#}
-{#            // trigger another update#}
-{#            task_depends_to.trigger('liszt:updated');#}
-{##}
-{#            // set the fields to normal mode#}
-{#            task_parent.attr('is_updating', false);#}
-{#            task_depends_to.attr('is_updating', false);#}
-{##}
-{#            field_update_mode_checker();#}
-{#        });#}
+        task_depends_to.attr('title', tool_tip_help_text);
 
         {# ***************************************************************** #}
         {# Code #}
@@ -860,7 +733,7 @@ resource_name, status
             // set the field to updating mode
             shot_sequence.attr('is_updating', true);
             field_update_mode_checker();
-            $.getJSON('/projects/' + project.id + '/sequences/').then(function(data){
+            $.getJSON('/tasks/?entity_type=Sequence&project_id=' + project.id).then(function(data){
                 // remove current options
                 shot_sequence.find('option').remove();
 
@@ -879,7 +752,6 @@ resource_name, status
 
                 shot_sequence.val(shot_sequences);
                 shot_sequence.trigger('liszt:updated');
-
 
                 field_update_mode_checker();
             });
@@ -1011,15 +883,43 @@ resource_name, status
             e.preventDefault();
 
             // disable submit button
-            setTimeout(function(){submit_button.button('loading')}, 0);
+{#            setTimeout(function(){submit_button.button('loading')}, 0);#}
 
             // enable fields
             var entity_type_value = $('#task_entity_type').val();
 
             var task_form = $('#task_form');
-            var form_data = task_form.serialize();
-            form_data += '&project_id={{ project.id }}&entity_type='+entity_type_value;
-{#            console.log('form_data :', form_data);#}
+            var form_data_as_array = task_form.serializeArray();
+            var form_data = {};
+            var name_value_object;
+
+            // decompress data
+            for (var i=0; i < form_data_as_array.length; i += 1) {
+                name_value_object = {};
+                name_value_object[form_data_as_array[i]['name']] = form_data_as_array[i]['value'];
+                form_data = $.extend(form_data, name_value_object);
+            }
+
+            form_data['project_id'] = {{ project.id }}
+            form_data['entity_type'] = entity_type_value;
+
+            // add parent info
+            var parent_id = '';
+            var parent_match = task_parent.val().match(/\(([\d]+)\)/);
+            if (parent_match) {
+                parent_id = parent_match[1];
+            }
+            form_data['parent_id'] = parent_id;
+
+            // filter dependent_ids
+            if (form_data['dependent_ids'] !== '' && form_data['dependent_ids'] !== undefined) {
+                form_data['dependent_ids'] = $.map(form_data['dependent_ids'].split(','), function (value) {
+                    value = value.match(/\(([0-9]+)\)/)[1];
+                    return value;
+                });
+            } else {
+                form_data['dependent_ids'] = [];
+            }
 
             if ( task_form.validate() ){
                 // prevent multiple sends
@@ -1107,11 +1007,6 @@ resource_name, status
 
         });
 
-        {% if entity%}
-            {% if entity.status.code != 'WFD' and entity.status.code != 'RTS'%}
-                 task_depends_to.attr('disabled','disabled');
-            {% endif %}
-        {% endif %}
         console.log('initialize task dialog end')
     }
 </script>

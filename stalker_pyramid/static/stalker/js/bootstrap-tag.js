@@ -26,7 +26,22 @@
         this.values = $.grep($.map(this.element.val().split(','), $.trim), function (value) {
             return value.length > 0;
         });
+
         this.show();
+
+        // for a moment allow new items so the data in the input field can be injected
+        var original_setting = this.options.allowNewItems;
+        this.options.allowNewItems = true;
+
+        for (var i=0; i < this.options.values.length; i += 1){
+            this.add(this.options.values[i]);
+        }
+
+        this.options.allowNewItems = original_setting;
+
+        if (this.options.disabled){
+            this.input.attr('disabled', 'disabled');
+        }
     };
 
     Tag.prototype = {
@@ -95,8 +110,6 @@
                 .typeahead({
                     source: self.options.source,
                     matcher: function (value) {
-                        console.debug('value 12:', value);
-
                         var query = this.query.toLowerCase();
                         if (query.indexOf(':') !== -1) {
                             if (!self.options.allowNewItems) {
@@ -149,17 +162,24 @@
         createBadge: function (value) {
             var self = this;
 
-            $('<span/>', {
+            var tag = $('<span/>', {
                 'class': "tag"
-            })
-                .text(value)
-                .append(
+            }).text(value);
+
+            if (!self.options.disabled){
+                tag.append(
                     $('<button type="button" class="close">&times;</button>')
                         .on('click', function () {
                             self.remove(self.element.siblings('.tag').index($(this).closest('.tag')));
                         })
-                )
-                .insertBefore(self.element);
+                );
+            }
+            if (value.input !== undefined){
+                tag.attr('title', value.input);
+            } else {
+                tag.attr('title', value);
+            }
+            tag.insertBefore(self.element);
         },
         add: function (value) {
             var self = this;
@@ -197,10 +217,12 @@
          */
         process: function () {
             if (this.options.allowNewItems) {
-                var values = $.grep($.map(this.input.val().split(','), $.trim), function (value) {
-                        return value.length > 0;
-                    }),
-                    self = this;
+                var values, self = this;
+
+                values = $.grep($.map(this.input.val().split(','), $.trim), function (value) {
+                    return value.length > 0;
+                });
+
                 $.each(values, function () {
                     self.add(this);
                 });
@@ -232,7 +254,8 @@
         placeholder: '',
         source: [],
         allowNewItems: true,
-        resultFilter: undefined
+        resultFilter: undefined,
+        values: []
     };
 
     $.fn.tag.Constructor = Tag;
