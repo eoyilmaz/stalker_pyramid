@@ -42,7 +42,7 @@
                 <div class="widget-main">
 
                     <a href="/users/{{=it.created_by_id}}/view">{{=it.created_by_name}}</a>
-                    {{=it.content.replace('\n', '<br\>')}}
+                    {{=it.content.replace(/[\n]/g, '<br\>')}}
 
                 </div>
             </div>
