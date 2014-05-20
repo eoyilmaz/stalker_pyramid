@@ -2,7 +2,7 @@
     <div class="navbar-inner">
         <div class='container-fluid'>
             <a class="brand" href="/">Stalker</a>
-            <ul class="nav navbar-nav">
+            <ul class="nav navbar-nav" style="z-index: 1040;">
                 <li>
                     <a href="{{ request.route_url('view_user', id=logged_in_user.id) }}">Home</a>
                 </li>
@@ -126,7 +126,7 @@
                     {{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_0.png") }}
                 {%- endif -%}">
 
-                        <small>Welcome,</small>
+{#                        <small>Welcome,</small>#}
                         {{ logged_in_user.name }}
                         </span>
 
