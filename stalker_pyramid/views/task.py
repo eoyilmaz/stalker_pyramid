@@ -903,10 +903,10 @@ def update_task(request):
     depend_ids = get_multi_integer(request, 'dependent_ids[]')
     depends = Task.query.filter(Task.id.in_(depend_ids)).all()
 
-    resource_ids = get_multi_integer(request, 'resource_ids')
+    resource_ids = get_multi_integer(request, 'resource_ids[]')
     resources = User.query.filter(User.id.in_(resource_ids)).all()
 
-    responsible_ids = get_multi_integer(request, 'responsible_ids')
+    responsible_ids = get_multi_integer(request, 'responsible_ids[]')
     responsible = User.query.filter(User.id.in_(responsible_ids)).all()
 
     priority = request.params.get('priority', 500)

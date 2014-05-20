@@ -890,14 +890,35 @@ resource_name, status
 
             var task_form = $('#task_form');
             var form_data_as_array = task_form.serializeArray();
-            var form_data = {};
+            var form_data = {
+                'responsible_ids': [],
+                'resource_ids': []
+            };
             var name_value_object;
+            var current_value;
+            var key, value;
 
-            // decompress data
+            // decompress array data to an object
             for (var i=0; i < form_data_as_array.length; i += 1) {
                 name_value_object = {};
-                name_value_object[form_data_as_array[i]['name']] = form_data_as_array[i]['value'];
-                form_data = $.extend(form_data, name_value_object);
+                key = form_data_as_array[i]['name'];
+                value = form_data_as_array[i]['value'];
+
+                // check if form_data already has this key
+                if (form_data[key] === undefined) {
+                    form_data[key] = value;
+                } else {
+                    // so it has a key
+                    // check if it is an array
+                    if ( form_data[key] instanceof Array) {
+                        // push the new value to it
+                        form_data[key].push(value);
+                    } else {
+                        // convert it to an array
+                        current_value = form_data[key];
+                        form_data[key] = [current_value, value];
+                    }
+                }
             }
 
             form_data['project_id'] = {{ project.id }}
