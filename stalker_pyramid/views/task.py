@@ -1253,7 +1253,7 @@ def get_tasks(request):
 
     logger.debug('entity_type: %s' % entity_type)
 
-    if entity_type != 'Project':
+    if entity_type not in ['Project', 'Studio']:
         where_condition = generate_task_where_clause(request.params.dict_of_lists())
 
         logger.debug('where_condition: %s' % where_condition)
@@ -1482,8 +1482,13 @@ def get_tasks(request):
             where "Tasks".parent_id is NULL
             group by "Tasks".project_id
         ) as project_schedule_info on "Projects".id = project_schedule_info.project_id
-        where "Projects".id = %s
-        """ % task_id
+        """
+
+        if entity_type == 'Project':
+            sql_query = '%s %s' % (
+                sql_query,
+                'where "Projects".id = %s' % task_id
+            )
 
     from sqlalchemy import text  # to be able to use "%" sign use this function
     result = DBSession.connection().execute(text(sql_query))

@@ -124,14 +124,10 @@ require([
     'dojo/store/Memory',
     'dojo/store/JsonRest',
 
-    "dgrid/List",
-    "dgrid/Grid",
-    'dojox/data/JsonRestStore',
-
     'stalker/js/ResourceGrid',
 
     'dojo/domReady!'
-], function (Cache, Memory, JsonRest, List, Grid, JsonRestStore, ResourceGrid){
+], function (Cache, Memory, JsonRest, ResourceGrid){
 
     // The Memory
     var target = '{{ request.route_url('get_resource', id=entity.id) }}';
