@@ -60,32 +60,30 @@ def query_of_tasks_hierarchical_name_table(ordered=True):
     order_string = 'order by path' if ordered else ''
 
     query = """
-    with recursive recursive_task(id, parent_id, path, path_names, responsible_info) as (
+    with recursive recursive_task(id, parent_id, path, path_names, responsible_id) as (
         select
             task.id,
             task.project_id,
             array[task.project_id] as path,
             ("Projects".code || '') as path_names,
             coalesce(
-                task_responsible.responsible_info,
                 (
                     select
-                        array_agg(("SimpleEntities".id, "SimpleEntities".name)) as responsible_info
+                        array_agg(responsible_id)
+                    from "Task_Responsible"
+                    where "Task_Responsible".task_id = task.id
+                    group by task_id
+                ),
+                (
+                    select
+                        array_agg(projects.lead_id) as responsible_id
                     from "Projects" as projects
-                    join "SimpleEntities" on "Projects".lead_id = "SimpleEntities".id
                     where projects.id = "Projects".id
+                    group by projects.id
                 )
-            ) as responsible_info
+            ) as responsible_id
         from "Tasks" as task
         join "Projects" on task.project_id = "Projects".id
-        left join (
-            select
-                task_id,
-                array_agg((responsible_id, name)) as responsible_info
-            from "Task_Responsible"
-            join "SimpleEntities" on "Task_Responsible".responsible_id = "SimpleEntities".id
-            group by task_id
-        ) as task_responsible on task.id = task_responsible.task_id
         where task.parent_id is NULL
     union all
         select
@@ -93,19 +91,19 @@ def query_of_tasks_hierarchical_name_table(ordered=True):
             task.parent_id,
             (parent.path || task.parent_id) as path,
             (parent.path_names || ' | ' || "Parent_SimpleEntities".name) as path_names,
-            coalesce(task_responsible.responsible_info, parent.responsible_info) as responsible_info
+            coalesce(
+                (
+                    select
+                        array_agg(responsible_id)
+                    from "Task_Responsible"
+                    where "Task_Responsible".task_id = task.id
+                    group by task_id
+                ),
+                parent.responsible_id
+            ) as responsible_id
         from "Tasks" as task
         join recursive_task as parent on task.parent_id = parent.id
         join "SimpleEntities" as "Parent_SimpleEntities" on parent.id = "Parent_SimpleEntities".id
-        left join (
-            select
-                task_id,
-                array_agg((responsible_id, name)) as responsible_info
-            from "Task_Responsible"
-            join "SimpleEntities" on "Task_Responsible".responsible_id = "SimpleEntities".id
-            group by task_id
-        ) as task_responsible on task.id = task_responsible.task_id
-        --where parent.id = t_path.parent_id
     ) select
         recursive_task.id,
         "SimpleEntities".name as name,
@@ -114,7 +112,7 @@ def query_of_tasks_hierarchical_name_table(ordered=True):
         recursive_task.path_names,
         "SimpleEntities".name || ' (' || recursive_task.id || ') (' || recursive_task.path_names || ')' as full_path,
         "SimpleEntities".entity_type,
-        recursive_task.responsible_info
+        recursive_task.responsible_id
     from recursive_task
     join "SimpleEntities" on recursive_task.id = "SimpleEntities".id
     %(order_string)s
@@ -1091,14 +1089,14 @@ def raw_data_to_array(raw_data):
     return data
 
 
-def generate_task_where_clause(input_params):
-    """Generates search strings from the given dictionary
+def generate_where_clause(params):
+    """Generates where clause strings from the given dictionary
 
-    :param dict input_params: A dictionary of search strings where the keys are
+    :param dict params: A dictionary of search strings where the keys are
       the field name and the values are the desired values. So a dictionary
       like this::
 
-        input_params = {
+        params = {
             'id': [23],
             'name': ['Lighting'],
             'entity_type': 'Task',
@@ -1124,7 +1122,7 @@ def generate_task_where_clause(input_params):
 
       It will use only the available keys, so giving a dictionary like::
 
-        input_params = {
+        params = {
             'id': 23,
             'resource': 'Ozgur'
         }
@@ -1142,55 +1140,55 @@ def generate_task_where_clause(input_params):
         )
     """
 
-    search_string = ''
-    search_string_buffer = []
+    where_string = ''
+    where_string_buffer = []
 
-    for id_ in input_params.get('id[]', input_params.get('id', [])):
-        search_string_buffer.append(
+    for id_ in params.get('id[]', params.get('id', [])):
+        where_string_buffer.append(
             'tasks.id = {id}'.format(id=id_)
         )
 
-    for parent_id in input_params.get('parent_id[]',
-                                      input_params.get('parent_id', [])):
-        search_string_buffer.append(
+    for parent_id in params.get('parent_id[]',
+                                params.get('parent_id', [])):
+        where_string_buffer.append(
             "tasks.parent_id = {parent_id}".format(parent_id=parent_id)
         )
 
-    for name in input_params.get('name[]', input_params.get('name', [])):
-        search_string_buffer.append(
+    for name in params.get('name[]', params.get('name', [])):
+        where_string_buffer.append(
             "tasks.name ilike '%{name}%' ".format(name=name)
         )
 
-    for name in input_params.get('path[]', input_params.get('path', [])):
-        search_string_buffer.append(
+    for name in params.get('path[]', params.get('path', [])):
+        where_string_buffer.append(
             "tasks.full_path ilike '%{name}%'".format(name=name)
         )
 
-    for entity_type in input_params.get('entity_type[]',
-                                        input_params.get('entity_type', [])):
-        search_string_buffer.append(
+    for entity_type in params.get('entity_type[]',
+                                  params.get('entity_type', [])):
+        where_string_buffer.append(
             "tasks.entity_type = '{entity_type}'".format(
                 entity_type=entity_type
             )
         )
 
-    for task_type in input_params.get('task_type[]',
-                                      input_params.get('task_type', [])):
-        search_string_buffer.append(
+    for task_type in params.get('task_type[]',
+                                params.get('task_type', [])):
+        where_string_buffer.append(
             "task_types.name ilike '%{task_type}%'".format(task_type=task_type)
         )
 
-    for project_id in input_params.get('project_id[]',
-                                       input_params.get('project_id', [])):
-        search_string_buffer.append(
+    for project_id in params.get('project_id[]',
+                                 params.get('project_id', [])):
+        where_string_buffer.append(
             """"Tasks".project_id = {project_id}""".format(
                 project_id=project_id
             )
         )
 
-    for resource_id in input_params.get('resource_id[]',
-                                        input_params.get('resource_id', [])):
-        search_string_buffer.append(
+    for resource_id in params.get('resource_id[]',
+                                  params.get('resource_id', [])):
+        where_string_buffer.append(
             """exists (
         select * from (
             select unnest(resource_info.resource_id)
@@ -1199,9 +1197,9 @@ def generate_task_where_clause(input_params):
     )""".format(resource_id=resource_id))
 
     for resource_name in \
-        input_params.get('resource_name[]',
-                         input_params.get('resource_name', [])):
-        search_string_buffer.append(
+        params.get('resource_name[]',
+                   params.get('resource_name', [])):
+        where_string_buffer.append(
             """exists (
         select * from (
             select unnest(resource_info.resource_name)
@@ -1209,19 +1207,107 @@ def generate_task_where_clause(input_params):
         where x.resource_name like '%{resource_name}%'
     )""".format(resource_name=resource_name))
 
-    for status in input_params.get('status[]', input_params.get('status', [])):
-        search_string_buffer.append(
+    for responsible_id in params.get('responsible_id[]',
+                                     params.get('responsible_id', [])):
+        where_string_buffer.append(
+            """{responsible_id} = any (tasks.responsible_id)""".format(
+                responsible_id=responsible_id
+            )
+        )
+
+    for resource_name in \
+        params.get('resource_name[]',
+                   params.get('resource_name', [])):
+        where_string_buffer.append(
+            """exists (
+        select * from (
+            select unnest(resource_info.resource_name)
+        ) x(resource_name)
+        where x.resource_name like '%{resource_name}%'
+    )""".format(resource_name=resource_name))
+
+    for status in params.get('status[]', params.get('status', [])):
+        where_string_buffer.append(
             """"Statuses".code ilike '%{status}%'""".format(status=status)
         )
 
-    if len(search_string_buffer):
-        # need to indent the first element by hand
-        search_string_buffer[0] = '{indent}%s' % search_string_buffer[0]
-        search_string = \
-            'where (\n%s\n)' % '\n{indent}and '.join(search_string_buffer)
-        search_string = search_string.format(indent=' ' * 4)
+    if 'leaf_only' in params:
+        where_string_buffer.append(
+            """not exists (
+        select 1 from "Tasks"
+        where "Tasks".parent_id = tasks.id
+    )""")
 
-    return search_string
+    if len(where_string_buffer):
+        # need to indent the first element by hand
+        where_string_buffer[0] = '{indent}%s' % where_string_buffer[0]
+        where_string = \
+            'where (\n%s\n)' % '\n{indent}and '.join(where_string_buffer)
+        where_string = where_string.format(indent=' ' * 4)
+
+    return where_string
+
+
+def generate_order_by_clause(params):
+    """Generates order_by clause strings from the given list.
+
+    :param list params: A list of column names to sort the result to::
+
+        params = [
+            'id', 'name', 'full_path', 'parent_id',
+            'resource', 'status', 'project_id',
+            'task_type', 'entity_type', 'percent_complete'
+        ]
+
+      will result a search string like::
+
+        order by
+            tasks.id, tasks.name, tasks.full_path,
+            tasks.parent_id, , resource_info.info,
+            "Statuses".code, "Tasks".project_id, task_types.name,
+            tasks.entity_type
+    """
+
+    order_by_string = ''
+    order_by_string_buffer = []
+
+    column_dict = {
+        'id': 'tasks.id',
+        'parent_id': "tasks.parent_id",
+        'name': "tasks.name",
+        'path': "tasks.full_path",
+        'full_path': "tasks.full_path",
+        'entity_type': "tasks.entity_type",
+        'task_type': "task_types.name",
+        'project_id': '"Tasks".project_id',
+        'date_created': 'date_created',
+        'date_updated': 'date_updated',
+        'has_children': 'has_children',
+        'link': 'link',
+        'priority': 'priority',
+        'depends_to': 'dep_info',
+        'resource': "resource_info.info",
+        'responsible': 'responsible_id',
+        'bid_timing': '"Tasks".bid_timing',
+        'bid_unit': '"Tasks".bid_unit',
+        'schedule_timing': '"Tasks".schedule_timing',
+        'schedule_unit': '"Tasks".schedule_unit',
+        'schedule_model': '"Tasks".schedule_model',
+        'schedule_seconds': 'schedule_seconds',
+        'total_logged_seconds': 'total_logged_seconds',
+        'percent_complete': 'percent_complete',
+        'start': 'start',
+        'end': '"end"',
+        'status': '"Statuses".code',
+    }
+    for column_name in params:
+        order_by_string_buffer.append(column_dict[column_name])
+
+    if len(order_by_string_buffer):
+        # need to indent the first element by hand
+        order_by_string = 'order by %s' % ', '.join(order_by_string_buffer)
+
+    return order_by_string
 
 
 @view_config(
@@ -1233,9 +1319,6 @@ def get_tasks(request):
     """
     logger.debug('get_tasks is running')
     start = time.time()
-
-    logger.debug('request.params: %s' % request.params)
-    logger.debug('request.params.dict_of_lists(): %s' % request.params.dict_of_lists())
 
     # set the content range to prevent JSONRest Store to query the data twice
     content_range = '%s-%s/%s'
@@ -1253,8 +1336,15 @@ def get_tasks(request):
 
     logger.debug('entity_type: %s' % entity_type)
 
+    order_by_params = request.GET.getall('order_by')
+    logger.debug('order_by_params: %s' % order_by_params)
+    order_by = generate_order_by_clause(order_by_params)
+    if order_by == '':
+        # use default
+        order_by = 'order by tasks.name'
+
     if entity_type not in ['Project', 'Studio']:
-        where_condition = generate_task_where_clause(request.params.dict_of_lists())
+        where_condition = generate_where_clause(request.params.dict_of_lists())
 
         logger.debug('where_condition: %s' % where_condition)
 
@@ -1285,7 +1375,7 @@ def get_tasks(request):
 
             dep_info.info as dep_info,
             resource_info.info as resource_info,
-            tasks.responsible_info,
+            tasks.responsible_id,
 
             "Tasks".bid_timing,
             "Tasks".bid_unit,
@@ -1293,7 +1383,6 @@ def get_tasks(request):
             "Tasks".schedule_timing,
             "Tasks".schedule_unit,
             "Tasks".schedule_model,
-
             coalesce("Tasks".schedule_seconds,
                 "Tasks".schedule_timing * (case "Tasks".schedule_unit
                     when 'min' then 60
@@ -1364,6 +1453,7 @@ def get_tasks(request):
             join "SimpleEntities" as "Resource_SimpleEntities" on "Task_Resources".resource_id = "Resource_SimpleEntities".id
             group by "Tasks".id
         ) as resource_info on "Tasks".id = resource_info.task_id
+
         -- TimeLogs for Leaf Tasks
         left outer join (
             select
@@ -1389,11 +1479,12 @@ def get_tasks(request):
 
         %(where_condition)s
 
-        order by tasks.name
+        %(order_by)s
         """
 
         sql_query = sql_query % {
             'where_condition': where_condition,
+            'order_by': order_by,
             'tasks_hierarchical_name':
             query_of_tasks_hierarchical_name_table(ordered=False)
         }
@@ -1512,7 +1603,7 @@ def get_tasks(request):
             'priority': r[12],
             'dependencies': local_raw_data_to_array(r[13]),
             'resources': local_raw_data_to_array(r[14]),
-            'responsible': local_raw_data_to_array(r[15]),
+            'responsible': r[15],
             'bid_timing': r[16],
             'bid_unit': r[17],
             'schedule_timing': r[18],
