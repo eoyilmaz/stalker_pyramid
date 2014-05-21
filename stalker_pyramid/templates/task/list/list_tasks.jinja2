@@ -245,17 +245,6 @@
                         Update
                     </a>
                 </li>
-                <li>
-                    <a id='update_task_dependencies_menu_item'
-                       data-target="#dialog_template"
-                       data-toggle="modal"
-                       data-keyboard=false
-                       href="#"
-                       tabindex="-1">
-                        <i class="'ui-icon icon-pencil bigger-120">&nbsp</i>
-                        Update Dependencies
-                    </a>
-                </li>
             {% endif %}
     
             {% if has_permission('Create_Task') %}
@@ -730,7 +719,7 @@ require([
 
             $('#create_ticket_menu_item').attr(
                 'href',
-                '/tickets/-1/create/dialog?task_id='+ selected_ids[0] + '&project_id={{ project_id }}'
+                '/tickets/-1/create/dialog?task_id='+ selected_ids[0] + '&project_id={{ project.id }}'
             );
         }
     });
