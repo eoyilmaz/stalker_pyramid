@@ -1,40 +1,17 @@
 {% raw %}
-<script id="tmpl_projectEditRow" type="text/x-dot-template">
-    <div class="projectEditRow"
-         dataId="{{=it.id}}"
-         name="{{=it.name}}"
-         start={{=it.start}}
-         end={{=it.end}}
-         type="{{=it.type}}"
-         hasChildren={{=it.hasChildren}}>
-        <i class="{{? it.type == 'Task' }}
-          icon-tasks
-          {{?? it.type == 'Asset' }}
-          icon-puzzle-piece
-          {{?? it.type == 'Shot' }}
-          icon-camera
-          {{?? it.type == 'Sequence' }}
-          icon-film
-          {{?? it.type == 'Project' }}
-          icon-folder-close-alt
-          {{?}}">&nbsp</i>
-        <a href="{{=it.link}}">{{=it.name}}</a>
-    </div>
-</script>
-
 <script id="tmpl_projectBar" type="text/x-dot-template">
     <div class="projectBox" projectId="{{=it.id}}">
         <div class="layout">
             <div class="projectLabel">
-                <i class="{{? it.type == 'Task' }}
+                <i class="{{? it.entity_type == 'Task' }}
                     icon-tasks
-                    {{?? it.type == 'Asset' }}
+                    {{?? it.entity_type == 'Asset' }}
                     icon-puzzle-piece
-                    {{?? it.type == 'Shot' }}
+                    {{?? it.entity_type == 'Shot' }}
                     icon-camera
-                    {{?? it.type == 'Sequence' }}
+                    {{?? it.entity_type == 'Sequence' }}
                     icon-film
-                    {{?? it.type == 'Project' }}
+                    {{?? it.entity_type == 'Project' }}
                     icon-folder-close-alt
                     {{?}}">&nbsp</i>
                 {{=it.link()}}
@@ -43,6 +20,28 @@
     </div>
 </script>
 
+<script id="tmpl_parentTaskBar" type="text/x-dot-template">
+    <div class="parentTaskBox" dataId="{{=it.id}}">
+        <div class="layout {{=it.hasExternalDep?'extDep':''}}">
+            <div class="leftPin"></div>
+            <div class="rightPin"></div>
+            <div class="taskLabel">
+                <i class="{{? it.entity_type == 'Task' }}
+                    icon-tasks
+                    {{?? it.entity_type == 'Asset' }}
+                    icon-puzzle-piece
+                    {{?? it.entity_type == 'Shot' }}
+                    icon-camera
+                    {{?? it.entity_type == 'Sequence' }}
+                    icon-film
+                    {{?? it.entity_type == 'Project' }}
+                    icon-folder-close-alt
+                    {{?}}">&nbsp</i>
+                {{=it.link()}}
+            </div>
+        </div>
+    </div>
+</script>
 
 <script id="tmpl_taskBar" type="text/x-dot-template">
     <div class="taskBox" dataId="{{=it.id}}">
@@ -56,15 +55,15 @@
                 {{=it.schedule_timing}}{{=it.schedule_unit}}
             </div>
             <div class="taskLabel">
-                <i class="{{? it.type == 'Task' }}
+                <i class="{{? it.entity_type == 'Task' }}
               icon-tasks
-              {{?? it.type == 'Asset' }}
+              {{?? it.entity_type == 'Asset' }}
               icon-puzzle-piece
-              {{?? it.type == 'Shot' }}
+              {{?? it.entity_type == 'Shot' }}
               icon-camera
-              {{?? it.type == 'Sequence' }}
+              {{?? it.entity_type == 'Sequence' }}
               icon-film
-              {{?? it.type == 'Project' }}
+              {{?? it.entity_type == 'Project' }}
               icon-folder-close-alt
               {{?}}">&nbsp</i>
                 {{=it.link()}}
@@ -83,67 +82,27 @@
 </script>
 
 <script id="tmpl_taskEditRow" type="text/x-dot-template">
-    <i class="{{? it.type == 'Task' }}
-          icon-tasks
-          {{?? it.type == 'Asset' }}
-          icon-puzzle-piece
-          {{?? it.type == 'Shot' }}
-          icon-camera
-          {{?? it.type == 'Sequence' }}
-          icon-film
-          {{?? it.type == 'Project' }}
-          icon-folder-close-alt
-          {{?}}">&nbsp</i>
-    <a href="/tasks/{{=it.id}}/view"
-       name="{{=it.id}}"
-       type="{{=it.type}}">{{=it.name}}</a>
-</script>
-
-
-<script id="tmpl_parentTaskEditRow" type="text/x-dot-template">
     <div class="{{=it.contextMenuClass}}"
          dataId="{{=it.id}}"
          name="{{=it.name}}"
          start={{=it.start}}
          end={{=it.end}}
-         type="{{=it.type}}"
+         type="{{=it.entity_type}}"
          hasChildren={{=it.hasChildren}}>
-        <i class="{{? it.type == 'Task' }}
-            icon-tasks
-            {{?? it.type == 'Asset' }}
-            icon-puzzle-piece
-            {{?? it.type == 'Shot' }}
-            icon-camera
-            {{?? it.type == 'Sequence' }}
-            icon-film
-            {{?? it.type == 'Project' }}
-            icon-folder-close-alt
-            {{?}}">&nbsp</i>
-        <a href="{{=it.link}}">{{=it.name}}</a>
-    </div>
-</script>
-
-
-<script id="tmpl_parentTaskBar" type="text/x-dot-template">
-    <div class="parentTaskBox" dataId="{{=it.id}}">
-        <div class="layout {{=it.hasExternalDep?'extDep':''}}">
-            <div class="leftPin"></div>
-            <div class="rightPin"></div>
-            <div class="taskLabel">
-                <i class="{{? it.type == 'Task' }}
-                    icon-tasks
-                    {{?? it.type == 'Asset' }}
-                    icon-puzzle-piece
-                    {{?? it.type == 'Shot' }}
-                    icon-camera
-                    {{?? it.type == 'Sequence' }}
-                    icon-film
-                    {{?? it.type == 'Project' }}
-                    icon-folder-close-alt
-                    {{?}}">&nbsp</i>
-                {{=it.link()}}
-            </div>
-        </div>
+        <i class="{{? it.entity_type == 'Task' }}
+                  icon-tasks
+                  {{?? it.entity_type == 'Asset' }}
+                  icon-puzzle-piece
+                  {{?? it.entity_type == 'Shot' }}
+                  icon-camera
+                  {{?? it.entity_type == 'Sequence' }}
+                  icon-film
+                  {{?? it.entity_type == 'Project' }}
+                  icon-folder-close-alt
+                  {{?}}">&nbsp</i>
+        <a href="/tasks/{{=it.id}}/view"
+           name="{{=it.id}}"
+           type="{{=it.entity_type}}">{{=it.name}}</a>
     </div>
 </script>
 
@@ -170,8 +129,6 @@
     templates.parentTaskBar = doT.template(document.getElementById('tmpl_parentTaskBar').text);
     templates.taskBar = doT.template(document.getElementById('tmpl_taskBar').text);
 
-    templates.projectEditRow = doT.template(document.getElementById('tmpl_projectEditRow').text);
-    templates.parentTaskEditRow = doT.template(document.getElementById('tmpl_parentTaskEditRow').text);
     templates.taskEditRow = doT.template(document.getElementById('tmpl_taskEditRow').text);
 
     templates.projectLink = doT.template(document.getElementById('tmpl_projectLink').text);
@@ -286,17 +243,6 @@
                        tabindex="-1">
                         <i class="'ui-icon icon-pencil bigger-120">&nbsp</i>
                         Update
-                    </a>
-                </li>
-                <li>
-                    <a id='update_task_dependencies_menu_item'
-                       data-target="#dialog_template"
-                       data-toggle="modal"
-                       data-keyboard=false
-                       href="#"
-                       tabindex="-1">
-                        <i class="'ui-icon icon-pencil bigger-120">&nbsp</i>
-                        Update Dependencies
                     </a>
                 </li>
             {% endif %}
@@ -627,6 +573,8 @@ require([
     });
     $(window).trigger('resize');
 
+    {# TODO: If this is a studio then the query should contain all project ids #}
+    {#       Also we should check for departments #}
     var gantt_chart = new GanttGrid({
         id: gantt_chart_dgrid_id,
         width: '100%',
@@ -634,7 +582,7 @@ require([
         store: tasks_cache_store,
         query: {
             // initialize with the entity itself
-            task_id: {{ entity.id }}
+            id: {{ entity.id }}
         },
         loadingMessage: "<div style='float: left' class='dijitIconLoading'>&nbsp</div><div>Loading</div>",
         noDataMessage: "",
@@ -769,15 +717,10 @@ require([
                 '/tasks/' + selected_ids[0] + '/request_review/dialog'
             );
 
-            $.getJSON('/tasks/' + selected_ids[0] + '/').then(function (data) {
-                $('#create_ticket_menu_item').attr(
-                    'href',
-                    '/tickets/-1/create/dialog?task_id='+ selected_ids[0] + '&project_id={{ project_id }}'
-                );
-            });
-
-
-
+            $('#create_ticket_menu_item').attr(
+                'href',
+                '/tickets/-1/create/dialog?task_id='+ selected_ids[0] + '&project_id={{ project.id }}'
+            );
         }
     });
 
@@ -1219,7 +1162,7 @@ require([
         var start_date = moment().subtract(6, 'month').startOf('day');
         var end_date = moment().add(6, 'month').endOf('day');
         start_end_date_range_picker.val(
-                start_date.format('MM/DD/YYYY') + ' - ' + end_date.format('MM/DD/YYYY')
+            start_date.format('MM/DD/YYYY') + ' - ' + end_date.format('MM/DD/YYYY')
         );
 
         start_end_date_range_picker.data().daterangepicker.updateFromControl();

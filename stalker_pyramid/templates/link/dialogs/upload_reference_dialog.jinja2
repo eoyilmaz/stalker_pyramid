@@ -85,7 +85,6 @@
         field_update_mode_checker();
         var fill_tags = function(){
             $.getJSON('/tags/?as_list=1').then(function(data){
-{#                console.debug('tags: ', data);#}
                 tag_input.tag({
                     placeholder: tag_input.attr('placeholder'),
                     source: data

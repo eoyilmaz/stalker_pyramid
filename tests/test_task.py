@@ -1753,3 +1753,139 @@ class TaskViewTestCase(unittest2.TestCase):
         task.update_task_statuses_with_dependencies(self.test_task8)
         self.assertEqual(self.test_task8.status, self.status_rts)
 
+
+class TaskViewSimpleFunctionsTestCase(unittest2.TestCase):
+    """tests the simple functions that doesn't need a request
+    """
+
+    def test_generate_task_where_clause_case1(self):
+        """testing if the view.tasks.generate_task_where_clause() is working
+        properly
+        """
+        test_value = {
+            'id': [23],
+            'name': ['Lighting'],
+            'entity_type': ['Task'],
+            'task_type': ['Lighting'],
+            'resource_name': ['Ozgur']
+        }
+
+        result = task.generate_task_where_clause(test_value)
+
+        self.assertEqual("""where (
+    tasks.id = 23
+    and (tasks.name ilike '%Lighting%' or tasks.full_path ilike '%Lighting%')
+    and tasks.entity_type = 'Task'
+    and task_types.name ilike '%Lighting%'
+    and exists (
+        select * from (
+            select unnest(resource_info.resource_name)
+        ) x(resource_name)
+        where x.resource_name like '%Ozgur%'
+    )
+)""", result)
+
+    def test_generate_task_where_clause_case2(self):
+        """testing if the view.tasks.generate_task_where_clause() is working
+        properly
+        """
+        test_value = {
+            'id': [23],
+            'task_type': ['Lighting'],
+            'resource_name': ['Ozgur']
+        }
+
+        result = task.generate_task_where_clause(test_value)
+
+        self.assertEqual("""where (
+    tasks.id = 23
+    and task_types.name ilike '%Lighting%'
+    and exists (
+        select * from (
+            select unnest(resource_info.resource_name)
+        ) x(resource_name)
+        where x.resource_name like '%Ozgur%'
+    )
+)""", result)
+
+    def test_generate_task_where_clause_case3(self):
+        """testing if the view.tasks.generate_task_where_clause() is working
+        properly
+        """
+        test_value = {
+            'resource_name': ['Ozgur']
+        }
+
+        result = task.generate_task_where_clause(test_value)
+
+        self.assertEqual("""where (
+    exists (
+        select * from (
+            select unnest(resource_info.resource_name)
+        ) x(resource_name)
+        where x.resource_name like '%Ozgur%'
+    )
+)""", result)
+
+    def test_generate_task_where_clause_case4(self):
+        """testing if the view.tasks.generate_task_where_clause() is working
+        properly
+        """
+        test_value = {
+            'resource_id': [26]
+        }
+
+        result = task.generate_task_where_clause(test_value)
+
+        self.assertEqual("""where (
+    exists (
+        select * from (
+            select unnest(resource_info.resource_id)
+        ) x(resource_id)
+        where x.resource_id = 26
+    )
+)""", result)
+
+    def test_generate_task_where_clause_case5(self):
+        """testing if the view.tasks.generate_task_where_clause() is working
+        properly
+        """
+        test_value = {
+            'task_type': ['Lighting', 'Comp'],
+        }
+
+        result = task.generate_task_where_clause(test_value)
+
+        self.assertEqual("""where (
+    task_types.name = '%Lighting%'
+    and task_types.name = '%Comp%'
+)""", result)
+
+    def test_generate_task_where_clause_case6(self):
+        """testing if the view.tasks.generate_task_where_clause() is working
+        properly
+        """
+        test_value = {
+            'project_id': [23],
+        }
+
+        result = task.generate_task_where_clause(test_value)
+
+        self.assertEqual("""where (
+    "Tasks".project_id = 23
+)""", result)
+
+    def test_generate_task_where_clause_case5(self):
+        """testing if the view.tasks.generate_task_where_clause() is working
+        properly
+        """
+        test_value = {
+            'status': ['WIP', 'DREV'],
+        }
+
+        result = task.generate_task_where_clause(test_value)
+
+        self.assertEqual("""where (
+    "Statuses".code ilike '%WIP%'
+    and "Statuses".code ilike '%DREV%'
+)""", result)

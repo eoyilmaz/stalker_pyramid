@@ -728,7 +728,7 @@
         $(function () {
             var event_dialog = $('#dialog_template');
             event_dialog.on('shown', function (e) {
-                $('#dialog_template_delete_button').hide()
+                $('#dialog_template_delete_button').hide();
                 e.stopPropagation();
                 e.preventDefault();
                 try {
@@ -760,7 +760,7 @@
         $(function () {
             var html_dialog = $('#html_template');
             html_dialog.on('shown', function (e) {
-                 e.stopPropagation();
+                e.stopPropagation();
                 e.preventDefault();
                 try {
                     init_html_modal();
@@ -769,7 +769,7 @@
                 }
             });
             html_dialog.on('hidden', function (e) {
-                 e.stopPropagation();
+                e.stopPropagation();
                 e.preventDefault();
 
                 try {

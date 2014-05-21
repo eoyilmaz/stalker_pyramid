@@ -60,32 +60,61 @@ def query_of_tasks_hierarchical_name_table(ordered=True):
     order_string = 'order by path' if ordered else ''
 
     query = """
-    with recursive recursive_task(id, parent_id, path, path_names) as (
+    with recursive recursive_task(id, parent_id, path, path_names, responsible_info) as (
         select
             task.id,
             task.project_id,
             array[task.project_id] as path,
-            ("Projects".code || '') as path_names
+            ("Projects".code || '') as path_names,
+            coalesce(
+                task_responsible.responsible_info,
+                (
+                    select
+                        array_agg(("SimpleEntities".id, "SimpleEntities".name)) as responsible_info
+                    from "Projects" as projects
+                    join "SimpleEntities" on "Projects".lead_id = "SimpleEntities".id
+                    where projects.id = "Projects".id
+                )
+            ) as responsible_info
         from "Tasks" as task
         join "Projects" on task.project_id = "Projects".id
+        left join (
+            select
+                task_id,
+                array_agg((responsible_id, name)) as responsible_info
+            from "Task_Responsible"
+            join "SimpleEntities" on "Task_Responsible".responsible_id = "SimpleEntities".id
+            group by task_id
+        ) as task_responsible on task.id = task_responsible.task_id
         where task.parent_id is NULL
     union all
         select
             task.id,
             task.parent_id,
             (parent.path || task.parent_id) as path,
-            (parent.path_names || ' | ' || "Parent_SimpleEntities".name) as path_names
+            (parent.path_names || ' | ' || "Parent_SimpleEntities".name) as path_names,
+            coalesce(task_responsible.responsible_info, parent.responsible_info) as responsible_info
         from "Tasks" as task
         join recursive_task as parent on task.parent_id = parent.id
         join "SimpleEntities" as "Parent_SimpleEntities" on parent.id = "Parent_SimpleEntities".id
+        left join (
+            select
+                task_id,
+                array_agg((responsible_id, name)) as responsible_info
+            from "Task_Responsible"
+            join "SimpleEntities" on "Task_Responsible".responsible_id = "SimpleEntities".id
+            group by task_id
+        ) as task_responsible on task.id = task_responsible.task_id
         --where parent.id = t_path.parent_id
     ) select
         recursive_task.id,
+        "SimpleEntities".name as name,
         recursive_task.parent_id,
         recursive_task.path,
         recursive_task.path_names,
         "SimpleEntities".name || ' (' || recursive_task.id || ') (' || recursive_task.path_names || ')' as full_path,
-        "SimpleEntities".entity_type
+        "SimpleEntities".entity_type,
+        recursive_task.responsible_info
     from recursive_task
     join "SimpleEntities" on recursive_task.id = "SimpleEntities".id
     %(order_string)s
@@ -96,15 +125,16 @@ def query_of_tasks_hierarchical_name_table(ordered=True):
 
 
 def get_task_hierarchical_name(task_id):
-    """ give task names in hierarchy"""
+    """return full path of a task with given id
+    """
 
     sql_query = """
         Select
-            "ParentTasks".full_path as task_name
+            tasks.full_path as task_name
         from (
             %(tasks_hierarchical_name_table)s
-        ) as "ParentTasks"
-        where "ParentTasks".id =%(task_id)s
+        ) as tasks
+        where tasks.id = %(task_id)s
     """
     sql_query = sql_query % {
         'tasks_hierarchical_name_table':
@@ -113,8 +143,8 @@ def get_task_hierarchical_name(task_id):
     }
 
     result = DBSession.connection().execute(sql_query).fetchone()
-    task_hierarchical_name = result[0]
-    return task_hierarchical_name
+
+    return result[0]
 
 
 def get_task_link_internal(request, task, task_hierarchical_name):
@@ -207,7 +237,6 @@ def fix_task_statuses(request):
         assert isinstance(task, Task)
         task.update_status_with_dependent_statuses()
         task.update_status_with_children_statuses()
-
 
     request.session.flash('success: Task status is fixed!')
 
@@ -421,8 +450,6 @@ def duplicate_task_hierarchy_dialog(request):
     }
 
 
-
-
 @view_config(
     route_name='duplicate_task_hierarchy'
 )
@@ -485,14 +512,14 @@ def convert_to_dgrid_gantt_project_format(projects):
     start = time.time()
     logger.debug('convert_to_dgrid_gantt_project_format is running')
 
-    def hasChildren(project):
+    def has_children(proj):
         logger.debug('hasChildren is running')
         start_inner = time.time()
 
         sql_query = """select count(1)
         from "Tasks"
         where "Tasks".parent_id is NULL and "Tasks".project_id = %s
-        """ % project.id
+        """ % proj.id
         r = DBSession.connection().execute(sql_query).fetchone()[0]
         end_inner = time.time()
 
@@ -504,17 +531,21 @@ def convert_to_dgrid_gantt_project_format(projects):
         {
             'bid_timing': project.duration.days,
             'bid_unit': 'd',
-            'completed': project.total_logged_seconds / project.schedule_seconds if project.schedule_seconds else 0,
+            'completed':
+            project.total_logged_seconds / project.schedule_seconds
+            if project.schedule_seconds else 0,
             'description': project.description,
             'end': milliseconds_since_epoch(
                 project.computed_end if project.computed_end else project.end),
             'id': project.id,
             'link': '/projects/%s/view' % project.id,
             'name': project.name,
-            'hasChildren': hasChildren(project),
+            'hasChildren': has_children(project),
             'schedule_seconds': project.schedule_seconds,
             'start': milliseconds_since_epoch(
-                project.computed_start if project.computed_start else project.start),
+                project.computed_start
+                if project.computed_start else project.start
+            ),
             'total_logged_seconds': project.total_logged_seconds,
             'type': project.entity_type,
             'status': project.status.code.lower()
@@ -595,10 +626,10 @@ def update_task_schedule_timing_dialog(request):
     task_id = request.matchdict.get('id')
     task = Task.query.get(task_id)
 
-
     return {
-        'entity':task
+        'entity': task
     }
+
 
 @view_config(
     route_name='update_task_schedule_timing'
@@ -606,7 +637,6 @@ def update_task_schedule_timing_dialog(request):
 def update_task_schedule_timing(request):
     """Inline updates the given task with the data coming from the request
     """
-
     logger.debug('update_task_schedule_timing IS RUNNING')
 
     logged_in_user = get_logged_in_user(request)
@@ -614,7 +644,7 @@ def update_task_schedule_timing(request):
 
     # *************************************************************************
     # collect data
-    schedule_model = request.params.get('schedule_model') # there should be one
+    schedule_model = request.params.get('schedule_model')
     schedule_timing = float(request.params.get('schedule_timing'))
     schedule_unit = request.params.get('schedule_unit')
     update_bid = 1 if request.params.get('update_bid') == 'on' else 0
@@ -634,10 +664,12 @@ def update_task_schedule_timing(request):
         transaction.abort()
         return Response('There are missing parameters: schedule_unit', 500)
     else:
-        if schedule_unit not in ['min','h', 'd', 'w', 'm', 'y']:
+        if schedule_unit not in ['min', 'h', 'd', 'w', 'm', 'y']:
             transaction.abort()
-            return Response("schedule_unit parameter should be one of ['min','h', "
-                            "'d', 'w', 'm', 'y']", 500)
+            return Response(
+                "schedule_unit parameter should be one of ['min','h', 'd', "
+                "'w', 'm', 'y']", 500
+            )
 
     if not schedule_model:
         transaction.abort()
@@ -662,9 +694,11 @@ def update_task_schedule_timing(request):
         transaction.abort()
         return Response("No task found with id : %s" % task_id, 500)
 
-    if task.status.code in ['CMPL','PREV','WIP','HREV','DREV']:
+    if task.status.code in ['CMPL', 'PREV', 'WIP', 'HREV', 'DREV']:
         transaction.abort()
-        return Response("You can not update %s status task" % task.status.name, 500)
+        return Response(
+            "You can not update %s status task" % task.status.name, 500
+        )
 
     task.schedule_model = schedule_model
     task.schedule_unit = schedule_unit
@@ -678,9 +712,8 @@ def update_task_schedule_timing(request):
         task.bid_timing = task.schedule_timing
         task.bid_unit = task.schedule_unit
 
-
-
     return Response('Task updated successfully')
+
 
 @view_config(
     route_name='update_task_dependencies_dialog',
@@ -694,10 +727,10 @@ def update_task_dependencies_dialog(request):
     task_id = request.matchdict.get('id')
     task = Task.query.get(task_id)
 
-
     return {
-        'entity':task
+        'entity': task
     }
+
 
 @view_config(
     route_name='update_task_dependencies'
@@ -714,7 +747,6 @@ def update_task_dependencies(request):
     depend_ids = get_multi_integer(request, 'dependent_ids')
     depends = Task.query.filter(Task.id.in_(depend_ids)).all()
 
-
     # get task
     task_id = request.matchdict.get('id', -1)
     task = Task.query.filter(Task.id == task_id).first()
@@ -724,14 +756,14 @@ def update_task_dependencies(request):
         transaction.abort()
         return Response("No task found with id : %s" % task_id, 500)
 
-    if task.status.code in ['CMPL','PREV','WIP','HREV','DREV']:
+    if task.status.code in ['CMPL', 'PREV', 'WIP', 'HREV', 'DREV']:
         transaction.abort()
-        return Response("You can not update %s status task" % task.status.name, 500)
+        return Response(
+            "You can not update %s status task" % task.status.name, 500
+        )
 
     try:
         task.depends = depends
-
-
     except CircularDependencyError:
         transaction.abort()
         message = \
@@ -745,11 +777,7 @@ def update_task_dependencies(request):
     task.updated_by = logged_in_user
     task.date_updated = utc_now
 
-
-
     return Response('Task updated successfully')
-
-
 
 
 @view_config(
@@ -770,7 +798,7 @@ def inline_update_task(request):
     attr_value = request.params.get('attr_value', None)
 
     logger.debug('attr_name %s', attr_name)
-    logger.debug('attr_value %s',attr_value)
+    logger.debug('attr_value %s', attr_value)
 
     # get task
     task_id = request.matchdict.get('id', -1)
@@ -783,11 +811,13 @@ def inline_update_task(request):
 
     if attr_name and attr_value:
 
-        logger.debug('attr_name %s',attr_name)
+        logger.debug('attr_name %s', attr_name)
 
         if attr_name == 'type':
 
-            type_query = Type.query.filter_by(target_entity_type=task.entity_type)
+            type_query = Type.query.filter_by(
+                target_entity_type=task.entity_type
+            )
             type_ = type_query.filter_by(id=attr_value).first()
 
             if not type_:
@@ -810,7 +840,11 @@ def inline_update_task(request):
                     link.created_by = logged_in_user
 
                     # manage attachments
-                    link_full_path = MediaManager.convert_file_link_to_full_path(link.full_path)
+                    link_full_path = \
+                        MediaManager.convert_file_link_to_full_path(
+                            link.full_path
+                        )
+
                     link_data = open(link_full_path, "rb").read()
 
                     link_extension = os.path.splitext(link.filename)[1].lower()
@@ -837,7 +871,9 @@ def inline_update_task(request):
         logger.debug('not updating')
         return Response("MISSING PARAMETERS", 500)
 
-    return Response('Task updated successfully %s %s'%(attr_name,attr_value))
+    return Response(
+        'Task updated successfully %s %s' % (attr_name, attr_value)
+    )
 
 
 @view_config(
@@ -856,20 +892,21 @@ def update_task(request):
         parent = Task.query.filter(Task.id == parent_id).first()
     else:
         parent = None
+
     name = str(request.params.get('name', None))
     description = request.params.get('description', '')
-    schedule_model = request.params.get('schedule_model') # there should be one
+    schedule_model = request.params.get('schedule_model')
     schedule_timing = float(request.params.get('schedule_timing'))
     schedule_unit = request.params.get('schedule_unit')
     update_bid = 1 if request.params.get('update_bid') == 'on' else 0
 
-    depend_ids = get_multi_integer(request, 'dependent_ids')
+    depend_ids = get_multi_integer(request, 'dependent_ids[]')
     depends = Task.query.filter(Task.id.in_(depend_ids)).all()
 
-    resource_ids = get_multi_integer(request, 'resource_ids')
+    resource_ids = get_multi_integer(request, 'resource_ids[]')
     resources = User.query.filter(User.id.in_(resource_ids)).all()
 
-    responsible_ids = get_multi_integer(request, 'responsible_ids')
+    responsible_ids = get_multi_integer(request, 'responsible_ids[]')
     responsible = User.query.filter(User.id.in_(responsible_ids)).all()
 
     priority = request.params.get('priority', 500)
@@ -931,20 +968,24 @@ def update_task(request):
     except CircularDependencyError as e:
         transaction.abort()
         message = StdErrToHTMLConverter(e)
-        transaction.abort()
         return Response(message.html(), 500)
 
-    try:
-        task.depends = depends
-    except CircularDependencyError:
-        transaction.abort()
-        message = \
-            '</div>Parent item can not also be a dependent for the ' \
-            'updated item:<br><br>Parent: %s<br>Depends To: %s</div>' % (
-                parent.name, map(lambda x: x.name, depends)
-            )
-        transaction.abort()
-        return Response(message, 500)
+    if prev_parent != parent:
+        updated_parent = True
+
+    if task.status.code in ['RTS', 'WFD']:
+        try:
+            task.depends = depends
+        except CircularDependencyError:
+            transaction.abort()
+            message = \
+                '</div>Parent item can not also be a dependent for the ' \
+                'updated item:<br><br>Parent: %s<br>Depends To: %s</div>' % (
+                    parent.name, map(lambda x: x.name, depends)
+                )
+            transaction.abort()
+            return Response(message, 500)
+    logger.debug('task in DBSession: %s' % (task in DBSession))
 
     task.schedule_model = schedule_model
     task.schedule_unit = schedule_unit
@@ -1032,7 +1073,7 @@ def raw_data_to_array(raw_data):
         [[int, string], [int, string] ... [int, string]]
     """
     data = []
-    if len(raw_data) > 7:  # in which case it is not '{"(,)"}'
+    if raw_data is not None and len(raw_data) > 7:  # in which case it is not '{"(,)"}'
         json_data = json.loads(
             raw_data.replace('{', '[')
             .replace('}', ']')
@@ -1050,6 +1091,139 @@ def raw_data_to_array(raw_data):
     return data
 
 
+def generate_task_where_clause(input_params):
+    """Generates search strings from the given dictionary
+
+    :param dict input_params: A dictionary of search strings where the keys are
+      the field name and the values are the desired values. So a dictionary
+      like this::
+
+        input_params = {
+            'id': [23],
+            'name': ['Lighting'],
+            'entity_type': 'Task',
+            'task_type': 'Lighting',
+            'resource': 'Ozgur'
+        }
+
+      will result a search string like::
+
+        where (
+            tasks.id = 23
+            or tasks.name ilike '%Lighting%'
+            or tasks.full_path ilike '%Lighting%'
+            or tasks.entity_type ilike '%Task%'
+            or task_types.name ilike '%Lighting%'
+            or exists (
+                select * from (
+                    select unnest(resource_info.resource_name)
+                ) x(resource_name)
+                where x.resource_name like '%Ozgur%'
+            )
+        )
+
+      It will use only the available keys, so giving a dictionary like::
+
+        input_params = {
+            'id': 23,
+            'resource': 'Ozgur'
+        }
+
+      will result::
+
+        where (
+            tasks.id = 23
+            or exists (
+                select * from (
+                    select unnest(resource_info.resource_name)
+                ) x(resource_name)
+                where x.resource_name like '%Ozgur%'
+            )
+        )
+    """
+
+    search_string = ''
+    search_string_buffer = []
+
+    for id_ in input_params.get('id[]', input_params.get('id', [])):
+        search_string_buffer.append(
+            'tasks.id = {id}'.format(id=id_)
+        )
+
+    for parent_id in input_params.get('parent_id[]',
+                                      input_params.get('parent_id', [])):
+        search_string_buffer.append(
+            "tasks.parent_id = {parent_id}".format(parent_id=parent_id)
+        )
+
+    for name in input_params.get('name[]', input_params.get('name', [])):
+        search_string_buffer.append(
+            "tasks.name ilike '%{name}%' ".format(name=name)
+        )
+
+    for name in input_params.get('path[]', input_params.get('path', [])):
+        search_string_buffer.append(
+            "tasks.full_path ilike '%{name}%'".format(name=name)
+        )
+
+    for entity_type in input_params.get('entity_type[]',
+                                        input_params.get('entity_type', [])):
+        search_string_buffer.append(
+            "tasks.entity_type = '{entity_type}'".format(
+                entity_type=entity_type
+            )
+        )
+
+    for task_type in input_params.get('task_type[]',
+                                      input_params.get('task_type', [])):
+        search_string_buffer.append(
+            "task_types.name ilike '%{task_type}%'".format(task_type=task_type)
+        )
+
+    for project_id in input_params.get('project_id[]',
+                                       input_params.get('project_id', [])):
+        search_string_buffer.append(
+            """"Tasks".project_id = {project_id}""".format(
+                project_id=project_id
+            )
+        )
+
+    for resource_id in input_params.get('resource_id[]',
+                                        input_params.get('resource_id', [])):
+        search_string_buffer.append(
+            """exists (
+        select * from (
+            select unnest(resource_info.resource_id)
+        ) x(resource_id)
+        where x.resource_id = {resource_id}
+    )""".format(resource_id=resource_id))
+
+    for resource_name in \
+        input_params.get('resource_name[]',
+                         input_params.get('resource_name', [])):
+        search_string_buffer.append(
+            """exists (
+        select * from (
+            select unnest(resource_info.resource_name)
+        ) x(resource_name)
+        where x.resource_name like '%{resource_name}%'
+    )""".format(resource_name=resource_name))
+
+    for status in input_params.get('status[]', input_params.get('status', [])):
+        search_string_buffer.append(
+            """"Statuses".code ilike '%{status}%'""".format(status=status)
+        )
+
+    if len(search_string_buffer):
+        # need to indent the first element by hand
+        search_string_buffer[0] = '{indent}%s' % search_string_buffer[0]
+        search_string = \
+            'where (\n%s\n)' % '\n{indent}and '.join(search_string_buffer)
+        search_string = search_string.format(indent=' ' * 4)
+
+    return search_string
+
+
 @view_config(
     route_name='get_tasks',
     renderer='json'
@@ -1060,22 +1234,68 @@ def get_tasks(request):
     logger.debug('get_tasks is running')
     start = time.time()
 
-    parent_id = request.params.get('parent_id')
-    task_id = request.params.get('task_id')
+    logger.debug('request.params: %s' % request.params)
+    logger.debug('request.params.dict_of_lists(): %s' % request.params.dict_of_lists())
 
-    sql_query = """select
-        "Tasks".bid_timing as bid_timing,
-        "Tasks".bid_unit as bid_unit,
-        coalesce(
-            -- for parent tasks
-            (case "Tasks".schedule_seconds
-                when 0 then 0
-                else "Tasks".total_logged_seconds::float / "Tasks".schedule_seconds * 100
-             end
-            ),
-            -- for child tasks we need to count the total seconds of related TimeLogs
-            (coalesce("Task_TimeLogs".duration, 0.0))::float /
-                ("Tasks".schedule_timing * (case "Tasks".schedule_unit
+    # set the content range to prevent JSONRest Store to query the data twice
+    content_range = '%s-%s/%s'
+
+    entity_type = "Task"
+    if 'id' in request.params:
+        # check if this is a Task or Project
+        task_id = int(request.params.get('id', -1))
+
+        # get the entity_type of this data
+        entity_type = DBSession.connection().execute(
+            """select entity_type from "SimpleEntities" where id=%s""" %
+            task_id
+        ).fetchone()[0]
+
+    logger.debug('entity_type: %s' % entity_type)
+
+    if entity_type != 'Project':
+        where_condition = generate_task_where_clause(request.params.dict_of_lists())
+
+        logger.debug('where_condition: %s' % where_condition)
+
+        sql_query = """
+        select
+            tasks.id,
+            tasks.entity_type,
+            task_types.name as task_type,
+            tasks.name,
+            tasks.full_path,
+            "Tasks".project_id,
+            "Tasks".parent_id,
+            "Task_SimpleEntities".description,
+
+            -- audit info
+            (extract(epoch from "Task_SimpleEntities".date_created::timestamp at time zone 'UTC') * 1000)::bigint as date_created,
+            (extract(epoch from "Task_SimpleEntities".date_updated::timestamp at time zone 'UTC') * 1000)::bigint as date_updated,
+
+            exists (
+                select 1
+                from "Tasks" as "Child_Tasks"
+                where "Child_Tasks".parent_id = "Tasks".id
+            ) as has_children,
+
+            '/' || lower("Task_SimpleEntities".entity_type) || 's/' || "Tasks".id || '/view' as link,
+
+            "Tasks".priority as priority,
+
+            dep_info.info as dep_info,
+            resource_info.info as resource_info,
+            tasks.responsible_info,
+
+            "Tasks".bid_timing,
+            "Tasks".bid_unit,
+
+            "Tasks".schedule_timing,
+            "Tasks".schedule_unit,
+            "Tasks".schedule_model,
+
+            coalesce("Tasks".schedule_seconds,
+                "Tasks".schedule_timing * (case "Tasks".schedule_unit
                     when 'min' then 60
                     when 'h' then 3600
                     when 'd' then 32400
@@ -1083,60 +1303,67 @@ def get_tasks(request):
                     when 'm' then 590400
                     when 'y' then 7696277
                     else 0
-                end)) * 100.0
-        ) as percent_complete,
-        array_agg(
-            distinct(
-                "Task_Dependencies".id,
-                "Task_Dependencies".name
-            )
-        ) as dependencies,
-        "SimpleEntities".description,
-        extract(epoch from coalesce("Tasks".computed_end::timestamp AT TIME ZONE 'UTC', "Tasks".end::timestamp AT TIME ZONE 'UTC')) * 1000 as end,
-        exists (
-           select 1
-            from "Tasks" as "Child_Tasks"
-            where "Child_Tasks".parent_id = "Tasks".id
-        ) as hasChildren,
-        "Task_Hierarchy".parent_names as hierarchy_name,
-        "Tasks".id as id,
-        '/' || lower("SimpleEntities".entity_type) || 's/' || "Tasks".id || '/view' as link,
-        "SimpleEntities".name,
-        coalesce("Parent_Tasks".id, "Tasks".project_id) as parent_id,
-        "Tasks".priority as priority,
-        array_agg(
-            distinct(
-                "Task_Resources".resource_id,
-                "Task_Resources".resource_name
-            )
-        ) as resources,
-        "Tasks".schedule_model,
-        coalesce("Tasks".schedule_seconds,
-            "Tasks".schedule_timing * (case "Tasks".schedule_unit
-                when 'min' then 60
-                when 'h' then 3600
-                when 'd' then 32400
-                when 'w' then 147600
-                when 'm' then 590400
-                when 'y' then 7696277
-                else 0
-            end)
-        ) as schedule_seconds,
-        "Tasks".schedule_timing,
-        "Tasks".schedule_unit,
-        extract(epoch from coalesce("Tasks".computed_start::timestamp AT TIME ZONE 'UTC', "Tasks".start::timestamp AT TIME ZONE 'UTC')) * 1000 as start,
-        lower("Task_Status".code) as status,
-        coalesce(
-            -- for parent tasks
-            "Tasks".total_logged_seconds,
-            -- for child tasks we need to count the total seconds of related TimeLogs
-            coalesce("Task_TimeLogs".duration, 0.0)
-        ) as total_logged_seconds,
-        "SimpleEntities".entity_type,
-        extract(epoch from "SimpleEntities".date_created::timestamp at time zone 'UTC') * 1000 as date_created,
-        extract(epoch from "SimpleEntities".date_updated::timestamp at time zone 'UTC') * 1000 as date_updated
-    from "Tasks"
-        left outer join "Tasks" as "Parent_Tasks" on "Tasks".parent_id = "Parent_Tasks".id
+                end)
+            ) as schedule_seconds,
+
+            coalesce(
+                -- for parent tasks
+                "Tasks".total_logged_seconds,
+                -- for child tasks we need to count the total seconds of related TimeLogs
+                coalesce("Task_TimeLogs".duration, 0.0)
+            ) as total_logged_seconds,
+
+            coalesce(
+                -- for parent tasks
+                (case "Tasks".schedule_seconds
+                    when 0 then 0
+                    else "Tasks".total_logged_seconds::float / "Tasks".schedule_seconds * 100
+                 end
+                ),
+                -- for child tasks we need to count the total seconds of related TimeLogs
+                (coalesce("Task_TimeLogs".duration, 0.0))::float /
+                    ("Tasks".schedule_timing * (case "Tasks".schedule_unit
+                        when 'min' then 60
+                        when 'h' then 3600
+                        when 'd' then 32400
+                        when 'w' then 147600
+                        when 'm' then 590400
+                        when 'y' then 7696277
+                        else 0
+                    end)) * 100.0
+            ) as percent_complete,
+
+            (extract(epoch from coalesce("Tasks".computed_start::timestamp AT TIME ZONE 'UTC', "Tasks".end::timestamp AT TIME ZONE 'UTC')) * 1000)::bigint as "start",
+            (extract(epoch from coalesce("Tasks".computed_end::timestamp AT TIME ZONE 'UTC', "Tasks".end::timestamp AT TIME ZONE 'UTC')) * 1000)::bigint as "end",
+
+            lower("Statuses".code) as status
+
+        from (
+            %(tasks_hierarchical_name)s
+        ) as tasks
+        join "Tasks" on tasks.id = "Tasks".id
+        join "SimpleEntities" as "Task_SimpleEntities" on tasks.id = "Task_SimpleEntities".id
+        -- Dependencies
+        left outer join (
+            select
+                task_id,
+                array_agg((depends_to_id, "SimpleEntities".name)) as info
+            from "Task_Dependencies"
+            join "SimpleEntities" on "Task_Dependencies".depends_to_id = "SimpleEntities".id
+            group by task_id
+        ) as dep_info on tasks.id = dep_info.task_id
+        -- Resources
+        left outer join (
+            select
+                "Tasks".id as task_id,
+                array_agg(("Resource_SimpleEntities".id, "Resource_SimpleEntities".name)) as info,
+                array_agg("Resource_SimpleEntities".id) as resource_id,
+                array_agg("Resource_SimpleEntities".name) as resource_name
+            from "Tasks"
+            join "Task_Resources" on "Tasks".id = "Task_Resources".task_id
+            join "SimpleEntities" as "Resource_SimpleEntities" on "Task_Resources".resource_id = "Resource_SimpleEntities".id
+            group by "Tasks".id
+        ) as resource_info on "Tasks".id = resource_info.task_id
         -- TimeLogs for Leaf Tasks
         left outer join (
             select
@@ -1144,162 +1371,154 @@ def get_tasks(request):
                 extract(epoch from sum("TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC')) as duration
             from "TimeLogs"
             group by task_id
-        ) as "Task_TimeLogs" on "Task_TimeLogs".task_id = "Tasks".id
-        -- Dependencies
-        left outer join (
+        ) as "Task_TimeLogs" on "Task_TimeLogs".task_id = tasks.id
+
+        -- Task Status
+        join "Statuses" on "Tasks".status_id = "Statuses".id
+
+        -- Task Type
+        left join (
             select
-                "SimpleEntities".id as id,
-                "SimpleEntities".name as name,
-                "Task_Dependencies".task_id
-            from "Task_Dependencies"
-                join "SimpleEntities" on "Task_Dependencies".depends_to_id = "SimpleEntities".id
-        ) as "Task_Dependencies" on "Tasks".id = "Task_Dependencies".task_id
-        join "SimpleEntities" on "Tasks".id = "SimpleEntities".id
-        -- hierarcy name
+                "Tasks".id,
+                "Type_SimpleEntities".name
+            from "Tasks"
+            join "SimpleEntities" as "Task_SimpleEntities" on "Tasks".id = "Task_SimpleEntities".id
+            join "Types" on "Task_SimpleEntities".type_id = "Types".id
+            join "SimpleEntities" as "Type_SimpleEntities" on "Types".id = "Type_SimpleEntities".id
+        ) as task_types on tasks.id = task_types.id
+
+        %(where_condition)s
+
+        order by tasks.name
+        """
+
+        sql_query = sql_query % {
+            'where_condition': where_condition,
+            'tasks_hierarchical_name':
+            query_of_tasks_hierarchical_name_table(ordered=False)
+        }
+
+    else:
+        sql_query = """
+        -- Projects Part
+        select
+            "Projects".id as id,
+            'Project' as entity_type,
+            '' as task_type,
+            "Project_SimpleEntities".name as name,
+            "Project_SimpleEntities".name as full_path,
+            NULL,
+            NULL as parent_id,
+            "Project_SimpleEntities".description,
+
+            -- audit info
+            (extract(epoch from "Project_SimpleEntities".date_created::timestamp at time zone 'UTC') * 1000)::bigint as date_created,
+            (extract(epoch from "Project_SimpleEntities".date_updated::timestamp at time zone 'UTC') * 1000)::bigint as date_updated,
+
+            exists (
+                select 1
+                from "Tasks" as "Child_Tasks"
+                where "Child_Tasks".project_id = "Projects".id
+            ) as has_children,
+
+            '/projects/' || "Projects".id || '/view' as link,
+
+            500,
+
+            NULL,--array_agg((NULL, NULL)),
+            NULL,--array_agg((NULL, NULL)),
+            NULL,--array_agg((NULL, NULL)),
+
+            0 as bid_timing,
+            'min' as bid_unit,
+
+            0 as schedule_timing,
+            'min' as schedule_unit,
+            'effort' as schedule_model,
+            total_schedule_seconds as schedule_seconds,
+
+            project_schedule_info.total_logged_seconds as total_logged_seconds,
+
+            project_schedule_info.total_logged_seconds / total_schedule_seconds  * 100 as percent_complete,
+
+            (extract(epoch from coalesce("Projects".computed_start::timestamp AT TIME ZONE 'UTC', "Projects".end::timestamp AT TIME ZONE 'UTC')) * 1000)::bigint as "start",
+            (extract(epoch from coalesce("Projects".computed_end::timestamp AT TIME ZONE 'UTC', "Projects".end::timestamp AT TIME ZONE 'UTC')) * 1000)::bigint as "end",
+
+            lower("Statuses".code) as status
+
+        from "Projects"
+        join "SimpleEntities" as "Project_SimpleEntities" on "Projects".id = "Project_SimpleEntities".id
+        join "Statuses" on "Projects".status_id = "Statuses".id
         join (
             select
-                parent_data.id as id,
-                "SimpleEntities".name || ' (' || "SimpleEntities".id || ') (' ||
-                array_to_string(array_agg(
-                    case
-                        when "SimpleEntities_parent".entity_type = 'Project'
-                        then "Projects".code
-                        else "SimpleEntities_parent".name
-                    end),
-                    ' | '
-                ) || ')'
-                as parent_names
-                from (
-                    with recursive parent_ids(id, parent_id, n) as (
-                            select task.id, coalesce(task.parent_id, task.project_id), 0
-                            from "Tasks" task
-                        union all
-                            select task.id, parent.parent_id, parent.n + 1
-                            from "Tasks" task, parent_ids parent
-                            where task.parent_id = parent.id
+                "Tasks".project_id as project_id,
+                sum(coalesce("Tasks".total_logged_seconds, coalesce("Task_TimeLogs".duration, 0.0))::float) as total_logged_seconds, 
+                sum(coalesce(
+                    "Tasks".schedule_seconds,
+                    (
+                        "Tasks".schedule_timing * (
+                            case "Tasks".schedule_unit
+                                when 'min' then 60
+                                when 'h' then 3600
+                                when 'd' then 32400
+                                when 'w' then 147600
+                                when 'm' then 590400
+                                when 'y' then 7696277
+                                else 0
+                            end
+                        )
                     )
-                    select
-                        parent_ids.id, parent_id as parent_id, parent_ids.n
-                        from parent_ids
-                        order by id, parent_ids.n desc
-                ) as parent_data
-                join "SimpleEntities" on "SimpleEntities".id = parent_data.id
-                join "SimpleEntities" as "SimpleEntities_parent" on "SimpleEntities_parent".id = parent_data.parent_id
-                left outer join "Projects" on parent_data.parent_id = "Projects".id
-                group by parent_data.id, "SimpleEntities".name, "SimpleEntities".id
-        ) as "Task_Hierarchy" on "Tasks".id = "Task_Hierarchy".id
-        -- resources
-        left outer join (
-            select
-                "SimpleEntities".id as resource_id,
-                "SimpleEntities".name as resource_name,
-                "Task_Resources".task_id as task_id
-            from "Task_Resources"
-            join "SimpleEntities" on "Task_Resources".resource_id = "SimpleEntities".id
-        ) as "Task_Resources" on "Tasks".id = "Task_Resources".task_id
-        -- status
-        join "Statuses" as "Task_Status" on "Tasks".status_id = "Task_Status".id
-        -- left outer join "Task_Responsible" on "Task_Responsible".task_id = "Tasks".id
-    where %(where_condition)s
-    group by
-        "Tasks".bid_timing,
-        "Tasks".bid_unit,
-        "Tasks".total_logged_seconds,
-        "Tasks".schedule_seconds,
-        "Tasks".id,
-        "Task_TimeLogs".duration,
-        "Tasks".schedule_timing,
-        "Tasks".schedule_unit,
-        "SimpleEntities".description,
-        "Tasks".computed_end,
-        "Tasks".end,
-        "Task_Hierarchy".parent_names,
-        "SimpleEntities".entity_type,
-        "SimpleEntities".name,
-        "Tasks".id,
-        "Tasks".priority,
-        -- "Task_Responsible".responsible_id,
-        "Tasks".schedule_model,
-        "Tasks".computed_start,
-        "Tasks".start,
-        "Task_Status".code,
-        "Parent_Tasks".id,
-        "Tasks".project_id,
-        "SimpleEntities".date_created,
-        "SimpleEntities".date_updated
-    order by "SimpleEntities".name
-    """
+                )) as total_schedule_seconds
+            from "Tasks"
+            -- TimeLogs for Leaf Tasks
+            left outer join (
+                select
+                    "TimeLogs".task_id,
+                    extract(epoch from sum("TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC')) as duration
+                from "TimeLogs"
+                group by task_id
+            ) as "Task_TimeLogs" on "Task_TimeLogs".task_id = "Tasks".id
 
-    # set the content range to prevent JSONRest Store to query the data twice
-    content_range = '%s-%s/%s'
-    where_condition = ''
-    if task_id:
-        task = Entity.query.filter(Entity.id == task_id).first()
-        if isinstance(task, (Project, Studio)):
-            # no where condition
-            if isinstance(task, Project):
-                return_data = convert_to_dgrid_gantt_project_format([task])
-                # just return here to avoid any further error
-                content_range = content_range % (0, 1, 1)
-            else:
-                convert_data = Project.query.all()
-                return_data = convert_to_dgrid_gantt_project_format(
-                    convert_data)
-                # just return here to avoid any further error
-                content_range = content_range % (
-                    0, len(convert_data) - 1, len(convert_data))
-            resp = Response(
-                json_body=return_data
-            )
-            resp.content_range = content_range
-            end = time.time()
-            logger.debug('%s rows retrieved in %s seconds' % (len(return_data),
-                                                              (end - start)))
-            return resp
+            where "Tasks".parent_id is NULL
+            group by "Tasks".project_id
+        ) as project_schedule_info on "Projects".id = project_schedule_info.project_id
+        where "Projects".id = %s
+        """ % task_id
 
-        elif isinstance(task, Task):
-            where_condition = '"Tasks".id = %s' % task_id
-
-    elif parent_id:
-        parent = Entity.query.filter(Entity.id == parent_id).first()
-        if isinstance(parent, Project):
-            where_condition = '"Parent_Tasks".id is NULL and "Tasks".project_id = %s' % parent_id
-        elif isinstance(parent, Task):
-            where_condition = '"Parent_Tasks".id = %s' % parent_id
-
-    sql_query = sql_query % {'where_condition': where_condition}
-
-    # convert to dgrid format right here in place
-    result = DBSession.connection().execute(sql_query)
+    from sqlalchemy import text  # to be able to use "%" sign use this function
+    result = DBSession.connection().execute(text(sql_query))
 
     # use local functions to speed things up
     local_raw_data_to_array = raw_data_to_array
     return_data = [
         {
-            'bid_timing': r[0],
-            'bid_unit': r[1],
-            'completed': r[2],
-            'dependencies': local_raw_data_to_array(r[3]),
-            'description': r[4],
-            'end': r[5],
-            'hasChildren': r[6],
-            'hierarchy_name': r[7],
-            'id': r[8],
-            'link': r[9],
-            'name': r[10],
-            'parent_id': r[11],
+            'id': r[0],
+            'entity_type': r[1],
+            'task_type': r[2],
+            'name': r[3],
+            'full_path': r[4],
+            'project_id': r[5],
+            'parent_id': r[6],
+            'description': r[7],
+            'date_created': r[8],
+            'date_updated': r[9],
+            'hasChildren': r[10],
+            'link': r[11],
             'priority': r[12],
-            'resources': local_raw_data_to_array(r[13]),
-            'schedule_model': r[14],
-            'schedule_seconds': r[15],
-            'schedule_timing': r[16],
-            'schedule_unit': r[17],
-            'start': r[18],
-            'status': r[19],
-            'total_logged_seconds': r[20],
-            'type': r[21],
-            'date_created': r[22],
-            'date_updated': r[23],
+            'dependencies': local_raw_data_to_array(r[13]),
+            'resources': local_raw_data_to_array(r[14]),
+            'responsible': local_raw_data_to_array(r[15]),
+            'bid_timing': r[16],
+            'bid_unit': r[17],
+            'schedule_timing': r[18],
+            'schedule_unit': r[19],
+            'schedule_model': r[20],
+            'schedule_seconds': r[21],
+            'total_logged_seconds': r[22],
+            'completed': r[23],
+            'start': r[24],
+            'end': r[25],
+            'status': r[26],
         }
         for r in result.fetchall()
     ]
@@ -1403,6 +1622,7 @@ def get_entity_tasks(request):
     resp.content_range = content_range
     return resp
 
+
 @view_config(
     route_name='get_user_tasks',
     renderer='json'
@@ -1436,8 +1656,7 @@ def get_user_tasks(request):
         statuses = Status.query.filter(Status.code.in_(status_codes)).all()
 
     if statuses:
-        temp_buffer = [where_condition]
-        temp_buffer.append(""" and (""")
+        temp_buffer = [where_condition, """ and ("""]
         for i, status in enumerate(statuses):
             if i > 0:
                 temp_buffer.append(' or')
@@ -1449,7 +1668,7 @@ def get_user_tasks(request):
 
     sql_query = sql_query % {
         'tasks_hierarchical_name_table':
-            query_of_tasks_hierarchical_name_table(),
+        query_of_tasks_hierarchical_name_table(),
         'where_condition': where_condition
     }
 
@@ -1552,7 +1771,6 @@ def get_gantt_tasks(request):
 
                 # do a depth first search for child tasks
                 for root_task in root_tasks:
-                    # logger.debug('root_task: %s, parent: %s' % (root_task, root_task.parent))
                     tasks.extend(depth_first_flatten(root_task))
 
         else:  # Task, Asset, Shot, Sequence
@@ -1720,7 +1938,6 @@ def get_user_tasks_count(request):
     if status_codes:
         statuses = Status.query.filter(Status.code.in_(status_codes)).all()
 
-    tasks = []
     if statuses:
         tasks = [task for task in user.tasks if task.status in statuses]
     else:
@@ -1806,7 +2023,6 @@ def get_entity_tasks_stats(request):
     return resp
 
 
-
 @view_config(
     route_name='get_entity_tasks_by_filter',
     renderer='json'
@@ -1822,10 +2038,10 @@ def get_entity_tasks_by_filter(request):
     entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
 
-    logger.debug('entity_id: %s'% entity_id)
+    logger.debug('entity_id: %s' % entity_id)
 
     filter_id = request.matchdict.get('f_id', -1)
-    filter = Entity.query.filter_by(id=filter_id).first()
+    filter_ = Entity.query.filter_by(id=filter_id).first()
 
     sql_query = """select
     "Task_Resources".task_id as task_id,
@@ -2009,23 +2225,24 @@ def get_entity_tasks_by_filter(request):
     where_condition_for_entity = ''
 
     if isinstance(entity, User):
-         where_condition_for_entity = \
-             '"Task_Resources".resource_id = %s' % entity_id
+        where_condition_for_entity = \
+            '"Task_Resources".resource_id = %s' % entity_id
     elif isinstance(entity, Project):
         where_condition_for_entity = '"Tasks".project_id =%s' % entity_id
 
     where_condition_for_filter = ''
 
-    if isinstance(filter, User):
-         where_condition_for_entity = ''
-         where_condition_for_filter = \
-             '"Tasks_Responsible".responsible_id = %s' % filter_id
-    elif isinstance(filter, Status):
+    if isinstance(filter_, User):
+        where_condition_for_entity = ''
+        where_condition_for_filter = \
+            '"Tasks_Responsible".responsible_id = %s' % filter_id
+    elif isinstance(filter_, Status):
         where_condition_for_filter = \
             'and "Statuses_SimpleEntities".id = %s' % filter_id
 
     sql_query = sql_query % {
-        'tasks_hierarchical_name_table': query_of_tasks_hierarchical_name_table(),
+        'tasks_hierarchical_name_table':
+        query_of_tasks_hierarchical_name_table(),
         'where_condition_for_entity': where_condition_for_entity,
         'where_condition_for_filter': where_condition_for_filter
     }
@@ -2049,7 +2266,7 @@ def get_entity_tasks_by_filter(request):
             'project_id': r[11],
             'project_name': r[12],
             'request_review': '1' if (logged_in_user.id in r[6] or r[2] == logged_in_user.id) and r[9] == 'WIP' else None,
-            'review': '1' if logged_in_user.id in  r[13] and r[9]=='PREV' else None,
+            'review': '1' if logged_in_user.id in r[13] and r[9] == 'PREV' else None,
             'hour_to_complete':r[14],
             'hour_based_on_bid':r[17],
             'start_date':milliseconds_since_epoch(r[15]),
@@ -2058,11 +2275,11 @@ def get_entity_tasks_by_filter(request):
         for r in result.fetchall()
     ]
 
-    task_count = len(return_data)
+    #task_count = len(return_data)
     # content_range = content_range % (0, task_count - 1, task_count)
 
     # logger.debug('return_data: %s' % return_data)
-    end = time.time()
+    #end = time.time()
 
     resp = Response(
         json_body=return_data
@@ -2171,7 +2388,6 @@ def update_asset_dialog(request):
     return data_dialog(request, mode='update', entity_type='Asset')
 
 
-
 @view_config(
     route_name='create_shot_dialog',
     renderer='templates/task/dialog/task_dialog.jinja2'
@@ -2212,7 +2428,6 @@ def update_sequence_dialog(request):
     return data_dialog(request, mode='update', entity_type='Sequence')
 
 
-
 @view_config(route_name='create_task')
 def create_task(request):
     """runs when adding a new task
@@ -2227,7 +2442,7 @@ def create_task(request):
     description = request.params.get('description', '')
     # is_milestone = request.params.get('is_milestone', None)
 
-    schedule_model = request.params.get('schedule_model')  # there should be one
+    schedule_model = request.params.get('schedule_model')
     schedule_timing = float(request.params.get('schedule_timing'))
     schedule_unit = request.params.get('schedule_unit')
 
@@ -2280,11 +2495,11 @@ def create_task(request):
     if not project_id or not name:
         logger.debug('there are missing parameters')
 
-        def get_param(param):
-            if param in request.params:
-                logger.debug('%s: %s' % (param, request.params[param]))
+        def get_param(p):
+            if p in request.params:
+                logger.debug('%s: %s' % (p, request.params[p]))
             else:
-                logger.debug('%s not in params' % param)
+                logger.debug('%s not in params' % p)
 
         get_param('project_id')
         get_param('name')
@@ -2330,9 +2545,9 @@ def create_task(request):
 
     # check the statuses of the dependencies to decide the newly created task
     # status
-    status_wfd = Status.query.filter_by(code='WFD').first()
+    # status_wfd = Status.query.filter_by(code='WFD').first()
     status_rts = Status.query.filter_by(code='RTS').first()
-    status_cmpl = Status.query.filter_by(code='CMPL').first()
+    # status_cmpl = Status.query.filter_by(code='CMPL').first()
     status = status_rts
 
     #if depends:
@@ -2519,24 +2734,23 @@ def get_last_version_of_task(request, is_published=''):
 
     return version
 
+
 @view_config(
     route_name='cleanup_task_new_reviews_dialog',
     renderer='templates/modals/confirm_dialog.jinja2'
 )
 def cleanup_task_new_reviews_dialog(request):
-
     """works when task has at least one answered review
     """
     logger.debug('cleanup_task_new_reviews_dialog is starts')
 
     task_id = request.matchdict.get('id')
-    task = Task.query.get(task_id)
 
     action = '/tasks/%s/cleanup_new_reviews' % task_id
-
     came_from = request.params.get('came_from', '/')
 
-    message = 'All unanswered reviews will be deleted and review set will be finalized.<br><br>Are you sure?'
+    message = 'All unanswered reviews will be deleted and review set will ' \
+              'be finalized.<br><br>Are you sure?'
 
     logger.debug('action: %s' % action)
 
@@ -2591,20 +2805,19 @@ def cleanup_task_new_reviews(request):
         transaction.abort()
         return Response('Task status is not pending review', 500)
 
-
     answered_reviews = get_answered_reviews(task, task.review_number + 1)
-
     if len(answered_reviews) == 0:
         transaction.abort()
-        return Response('There is no answered review. You have to make a review. Ask admin if you dont see farce review button', 500)
-
+        return Response(
+            "There is no answered review. You have to make a review. Ask "
+            "admin if you don't see farce review button", 500
+        )
 
     cleanup_unanswered_reviews(task, task.review_number + 1)
 
     answered_reviews = get_answered_reviews(task, task.review_number + 1)
 
     a_review = answered_reviews[0]
-
     try:
         a_review.finalize_review_set()
     except Exception as e:
@@ -2664,10 +2877,17 @@ def review_task_dialog(request):
     version = get_last_version_of_task(request, is_published='')
 
     status_new = Status.query.filter_by(code='NEW').first()
-    review = Review.query.filter(Review.reviewer_id == logged_in_user.id).filter(Review.task_id==entity.id).filter(Review.status==status_new).first()
+    review = Review.query\
+        .filter(Review.reviewer_id == logged_in_user.id)\
+        .filter(Review.task_id == entity.id)\
+        .filter(Review.status == status_new)\
+        .first()
 
     if forced:
-        review = Review.query.filter(Review.task_id==entity.id).filter(Review.status==status_new).first()
+        review = Review.query\
+            .filter(Review.task_id == entity.id)\
+            .filter(Review.status == status_new)\
+            .first()
 
     review_description = 'No Comment'
 
@@ -2677,15 +2897,15 @@ def review_task_dialog(request):
     project = entity.project
 
     return {
-        'review_description':review_description,
+        'review_description': review_description,
         'has_permission': PermissionChecker(request),
         'logged_in_user': logged_in_user,
         'task': entity,
         'project': project,
         'came_from': came_from,
-        'version':version,
-        'review_mode':review_mode,
-        'forced':forced
+        'version': version,
+        'review_mode': review_mode,
+        'forced': forced
     }
 
 
@@ -2785,8 +3005,8 @@ def approve_task(request):
     if forced:
         has_permission = PermissionChecker(request)
         if has_permission('Create_Review'):
-           review = forced_review(logged_in_user, task);
-           review.date_created = utc_now
+            review = forced_review(logged_in_user, task)
+            review.date_created = utc_now
         else:
             return Response('You dont have permission', 500)
     else:
@@ -2847,7 +3067,8 @@ def approve_task(request):
 
         message = Message(
             subject='Task Reviewed: "%(task_hierarchical_name)s" has been '
-                    'approved by %(user)s!' % {
+                    'approved by %(user)s!' %
+            {
                 'task_hierarchical_name': task_hierarchical_name,
                 'user': logged_in_user
             },
@@ -2873,7 +3094,6 @@ def approve_task(request):
             pass
 
     request.session.flash('success:Approved task')
-
     return Response('Successfully approved task')
 
 
@@ -2911,10 +3131,12 @@ def request_revision(request):
         transaction.abort()
         return Response('There are missing parameters: schedule_unit', 500)
     else:
-        if schedule_unit not in ['min','h', 'd', 'w', 'm', 'y']:
+        if schedule_unit not in ['min', 'h', 'd', 'w', 'm', 'y']:
             transaction.abort()
-            return Response("schedule_unit parameter should be one of ['min','h', "
-                            "'d', 'w', 'm', 'y']", 500)
+            return Response(
+                "schedule_unit parameter should be one of ['min','h', 'd', "
+                "'w', 'm', 'y']", 500
+            )
 
     if not schedule_model:
         transaction.abort()
@@ -2949,10 +3171,11 @@ def request_revision(request):
     note = Note(
         content='Expanded the timing of the task by <b>'
                 '%(schedule_timing)s %(schedule_unit)s</b>.<br/>'
-                '%(description)s' %{
+                '%(description)s' % {
                     'schedule_timing': schedule_timing,
                     'schedule_unit': schedule_unit,
-                    'description': description},
+                    'description': description
+                },
         created_by=logged_in_user,
         date_created=utc_now,
         date_updated=utc_now,
@@ -2965,8 +3188,13 @@ def request_revision(request):
         if has_permission('Create_Review'):
            # review = forced_review(logged_in_user, task);
            # review.date_created = utc_now
-            assert isinstance(task,Task)
-            task.request_revision(logged_in_user,note.content,schedule_timing,schedule_unit)
+            assert isinstance(task, Task)
+            task.request_revision(
+                logged_in_user,
+                note.content,
+                schedule_timing,
+                schedule_unit
+            )
         else:
             return Response('You dont have permission', 500)
     else:
@@ -3030,9 +3258,9 @@ def request_revision(request):
         message = Message(
             subject='Task Reviewed: "%(task_hierarchical_name)s" has been '
                     'requested revision by %(user)s!' % {
-                'task_hierarchical_name': task_hierarchical_name,
-                'user': logged_in_user
-            },
+                        'task_hierarchical_name': task_hierarchical_name,
+                        'user': logged_in_user
+                    },
             sender=dummy_email_address,
             recipients=recipients,
             body=get_description_text(
@@ -3106,9 +3334,9 @@ def request_review_task_dialog(request):
         'came_from': came_from,
         'action': action,
         'version': version,
-        'task':task,
-        'selected_responsible':selected_responsible,
-        'task_type':task.type.name if task.type else "No"
+        'task': task,
+        'selected_responsible': selected_responsible,
+        'task_type': task.type.name if task.type else "No"
     }
 
 
@@ -3170,14 +3398,15 @@ def request_progress_review(request):
 
     # Create ticket_type if it does not exist
     ticket_type_name = 'In Progress-Review'
-    ticket_type = query_type('Ticket',ticket_type_name)
+    ticket_type = query_type('Ticket', ticket_type_name)
 
     recipients = []
 
     # Create tickets for selected responsible
     user_link_internal = get_user_link_internal(request, logged_in_user)
     task_hierarchical_name = get_task_hierarchical_name(task.id)
-    task_link_internal = get_task_link_internal(request, task, task_hierarchical_name)
+    task_link_internal = get_task_link_internal(request, task,
+                                                task_hierarchical_name)
 
     for responsible in selected_responsible_list:
         logger.debug('responsible: %s' % responsible)
@@ -3186,12 +3415,11 @@ def request_progress_review(request):
         request_review_ticket = Ticket(
             project=task.project,
             summary='In Progress Review Request: %s' % task_hierarchical_name,
-            description=
-                '%(sender)s has requested you to do <b>a progress review</b> '
-                'for %(task)s' % {
-                    'sender': user_link_internal,
-                    'task': task_link_internal
-                },
+            description='%(sender)s has requested you to do <b>a progress '
+                        'review</b> for %(task)s' % {
+                            'sender': user_link_internal,
+                            'task': task_link_internal
+                        },
             type=ticket_type,
             created_by=logged_in_user,
             date_created=utc_now,
@@ -3212,7 +3440,7 @@ def request_progress_review(request):
             created_by=logged_in_user,
             date_created=utc_now,
             date_updated=utc_now,
-            type = note_type
+            type=note_type
         )
 
         DBSession.add(ticket_comment)
@@ -3221,7 +3449,6 @@ def request_progress_review(request):
         task.notes.append(ticket_comment)
         task.updated_by = logged_in_user
         task.date_updated = utc_now
-
 
     # Send mail to
     send_email = request.params.get('send_email', 1)  # for testing purposes
@@ -3256,7 +3483,6 @@ def request_progress_review(request):
                 note
             )
         )
-
 
         logger.debug('mailer send')
         mailer.send(message)
@@ -3307,7 +3533,10 @@ def request_final_review(request):
         review.created_by = logged_in_user
         review.date_created = utc_now
         review.date_updated = utc_now
-        review.description = "<br/><b>%(resource_name)s :<b> %(note)s"%{'resource_name':logged_in_user.name,'note':note.content}
+        review.description = "<br/><b>%(resource_name)s :<b> %(note)s" % {
+            'resource_name': logged_in_user.name,
+            'note': note.content
+        }
 
     if send_email:
         #*******************************************************************
@@ -3382,8 +3611,8 @@ def request_final_review(request):
             html=description_temp % {
                 "user": '<strong>%s</strong>' % logged_in_user.name,
                 'responsible': responsible_names_html,
-                "task_hierarchical_name":
-                    '<strong>%s</strong>' % task_hierarchical_name,
+                "task_hierarchical_name": '<strong>%s</strong>' %
+                                          task_hierarchical_name,
                 "note": '<br/><br/> %s ' % note.content,
                 "spacing": '<br><br>'
             }
@@ -3403,6 +3632,8 @@ def request_final_review(request):
     )
 
     return Response('Your final review request has been sent to responsible')
+
+
 @view_config(
     route_name='request_extra_time_dialog',
     renderer='templates/task/dialog/request_extra_time_dialog.jinja2'
@@ -3422,7 +3653,7 @@ def request_extra_time_dialog(request):
     return {
         'came_from': came_from,
         'action': action,
-        'task':task
+        'task': task
     }
 
 
@@ -3439,10 +3670,9 @@ def request_extra_time(request):
     task_id = request.matchdict.get('id', -1)
     task = Task.query.filter(Task.id == task_id).first()
 
-
     if not task:
         transaction.abort()
-        return Response('There is noooooo task with id: %s' % task_id, 500)
+        return Response('There is no task with id: %s' % task_id, 500)
 
     if task.is_container:
             transaction.abort()
@@ -3452,7 +3682,6 @@ def request_extra_time(request):
     schedule_timing = request.params.get('schedule_timing')
     schedule_unit = request.params.get('schedule_unit')
     schedule_model = request.params.get('schedule_model')
-
 
     if not schedule_timing:
         transaction.abort()
@@ -3498,10 +3727,11 @@ def request_extra_time(request):
     note = Note(
         content='<i class="icon-heart"></i> Requesting extra time <b>'
                 '%(schedule_timing)s %(schedule_unit)s</b>.<br/>'
-                '%(description)s' %{
+                '%(description)s' % {
                     'schedule_timing': schedule_timing,
                     'schedule_unit': schedule_unit,
-                    'description': description},
+                    'description': description
+                },
         created_by=logged_in_user,
         date_created=utc_now,
         date_updated=utc_now,
@@ -3516,7 +3746,10 @@ def request_extra_time(request):
         review.created_by = logged_in_user
         review.date_created = utc_now
         review.date_updated = utc_now
-        review.description = "<b>%(resource_name)s</b>: %(note)s " % {'resource_name':logged_in_user.name,'note':note.content}
+        review.description = "<b>%(resource_name)s</b>: %(note)s " % {
+            'resource_name': logged_in_user.name,
+            'note': note.content
+        }
 
     if send_email:
         #*******************************************************************
@@ -3559,8 +3792,6 @@ def request_extra_time(request):
         except ValueError:
             pass
 
-
-
     logger.debug(
         'success:Your extra time request has been sent to responsible'
     )
@@ -3570,8 +3801,6 @@ def request_extra_time(request):
     )
 
     return Response('Your extra time request has been sent to responsible')
-
-
 
 
 @view_config(
@@ -3642,20 +3871,31 @@ group by "Input_Version_Task_SimpleEntities".id,
     return resp
 
 
-def unbind_task_hierarchy_from_tickets(task):
+def unbind_task_hierarchy_relations(task):
     """unbinds the given task and any child of it from any ticket
     """
+    # TODO: the following is a recursive call to this function which is bound
+    #       to raise a RuntimeError with the increasing number of task
+    #       hierarchy.
     for child_task in task.children:
-        unbind_task_hierarchy_from_tickets(child_task)
-    unbind_task_from_tickets(task)
+        unbind_task_hierarchy_relations(child_task)
+    unbind_task_relations(task)
 
 
-def unbind_task_from_tickets(task):
+def unbind_task_relations(task):
     """unbinds the given task from any tickets related to it
     """
     tickets = Ticket.query.filter(Ticket.links.contains(task)).all()
     for ticket in tickets:
         ticket.links.remove(task)
+
+    from stalker import Version
+    with DBSession.no_autoflush:
+        task.references = []
+        for v in task.versions:
+            v.inputs = []
+            for tv in Version.query.filter(Version.inputs.contains(v)):
+                tv.inputs.remove(v)
 
 
 @view_config(
@@ -3668,13 +3908,13 @@ def delete_task_dialog(request):
     logger.debug('delete_department_dialog is starts')
 
     task_id = request.matchdict.get('id')
-    task = Task.query.get(task_id)
+    #task = Task.query.get(task_id)
 
     action = '/tasks/%s/delete' % task_id
-
     came_from = request.params.get('came_from', '/')
-
-    message = 'All the selected tasks and their child tasks and all the TimeLogs entered and all the Versions created for those tasks are going to be deleted.<br><br>Are you sure?'
+    message = 'All the selected tasks and their child tasks and all the ' \
+              'TimeLogs entered and all the Versions created for those ' \
+              'tasks are going to be deleted.<br><br>Are you sure?'
 
     logger.debug('action: %s' % action)
 
@@ -3700,7 +3940,8 @@ def delete_task(request):
         return Response('Can not find a Task with id: %s' % task_id, 500)
 
     try:
-        unbind_task_hierarchy_from_tickets(task)
+        unbind_task_hierarchy_relations(task)
+        unbind_task_relations(task)
 
         DBSession.delete(task)
         #transaction.commit()
@@ -3807,14 +4048,14 @@ def get_task_dependency(request):
     task_id = request.matchdict.get('id', -1)
     task = Task.query.filter_by(id=task_id).first()
 
-    type = request.matchdict.get('type', -1)
+    type_ = request.matchdict.get('type', -1)
 
     list_of_dep_tasks_json = []
     list_of_dep_tasks = []
 
-    if type == 'depends':
+    if type_ == 'depends':
         list_of_dep_tasks = task.depends
-    elif type == 'dependent_of':
+    elif type_ == 'dependent_of':
         list_of_dep_tasks = task.dependent_of
 
     for dep_task in list_of_dep_tasks:
@@ -3853,8 +4094,9 @@ def get_task_children_task_type(request):
 
     if not task_type:
         transaction.abort()
-        return Response('Can not find a Type with name: %s' % task_type_name, 500)
-
+        return Response(
+            'Can not find a Type with name: %s' % task_type_name, 500
+        )
 
     sql_query = """select
         "SimpleEntities".id as type_id,
@@ -3900,4 +4142,3 @@ def get_task_children_task_type(request):
     )
     resp.content_range = content_range
     return resp
-

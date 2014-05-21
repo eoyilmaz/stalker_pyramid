@@ -27,12 +27,13 @@ function Task(kwargs) {
     'use strict';
     this.id = kwargs.id || null;
     this.name = kwargs.name || null;
-    this.hierarchy_name = kwargs.hierarchy_name || null;
+    this.full_path = kwargs.full_path || null;
     this.description = kwargs.description || null;
 
     this.priority = kwargs.priority || 500;
 
-    this.type = kwargs.type || null;
+    this.entity_type = kwargs.entity_type || null;
+    this.task_type = kwargs.task_type || null;
 
 //    this.status = "STATUS_UNDEFINED";
 

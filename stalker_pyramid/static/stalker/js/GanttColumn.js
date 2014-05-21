@@ -75,10 +75,10 @@ define([
         });
         $(parent).append(parent_div);
 
-        if (task.type === 'Project') {
+        if (task.entity_type === 'Project') {
             task_bar = $($.parseHTML(templates.projectBar(task)));
-        } else if (task.type === 'Task' || task.type === 'Asset' ||
-                   task.type === 'Shot' || task.type === 'Sequence') {
+        } else if (task.entity_type === 'Task' || task.entity_type === 'Asset' ||
+                   task.entity_type === 'Shot' || task.entity_type === 'Sequence') {
             if (task.hasChildren) {
                 task_bar = $($.parseHTML(templates.parentTaskBar(task)));
             } else {
@@ -569,7 +569,7 @@ define([
             var column_set = 'set-1'; // this is a hardcoded dirty fix
             if (column.grid.is_hidden_column(column_set)){
                 // add as hidden
-                console.log('hiding :', column_set);
+                //console.log('hiding :', column_set);
                 column.grid.hide_column('set-1');
             }
         };

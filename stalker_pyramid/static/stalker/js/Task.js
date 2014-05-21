@@ -23,12 +23,13 @@ define([
         id: null,
 
         name: '',
-        hierarchy_name: '',
+        full_path: '',
         description: '',
 
         priority: 500,
 
-        type: 'Task',
+        entity_type: 'Task',
+        task_type: '',
 
         children: [],
         child_ids: [],
@@ -80,12 +81,13 @@ define([
 
             this.id = settings.id || null;
             this.name = settings.name || null;
-//            this.hierarchy_name = settings.hierarchy_name || '';
+            this.full_path = settings.full_path || '';
             this.description = settings.description || null;
 
             this.priority = settings.priority || 500;
 
-            this.type = settings.type || 'Task';
+            this.entity_type = settings.entity_type || 'Task';
+            this.task_type = settings.task_type || '';
 
             this.parent_id = settings.parent_id || null;
             this.parent = settings.parent || null;
@@ -143,7 +145,7 @@ define([
 
         link: function () {
             var rendered;
-            if (this.type === 'Project') {
+            if (this.entity_type === 'Project') {
                 rendered = templates.projectLink(this);
             } else {
                 rendered = templates.taskLink(this);

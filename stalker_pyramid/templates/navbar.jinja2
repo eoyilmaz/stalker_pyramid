@@ -2,7 +2,7 @@
     <div class="navbar-inner">
         <div class='container-fluid'>
             <a class="brand" href="/">Stalker</a>
-            <ul class="nav navbar-nav">
+            <ul class="nav navbar-nav" style="z-index: 1040;">
                 <li>
                     <a href="{{ request.route_url('view_user', id=logged_in_user.id) }}">Home</a>
                 </li>
@@ -126,7 +126,7 @@
                     {{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_0.png") }}
                 {%- endif -%}">
 
-                        <small>Welcome,</small>
+{#                        <small>Welcome,</small>#}
                         {{ logged_in_user.name }}
                         </span>
 
@@ -210,29 +210,25 @@
             var notifications = $('#notifications');
             var total_tickets = data.length;
 
-            if (total_tickets < 0) {
+            if (total_tickets === 0) {
                 notifications.append('<a data-toggle="dropdown" class="dropdown-toggle" href="#"><i class="icon-bell-alt icon-bell light-grey"></i><span class="badge badge-important">0</span></a>');
-                return;
+            } else {
+                notifications.append('<a data-toggle="dropdown" class="dropdown-toggle" href="#"><i class="icon-bell-alt icon-animated-bell"></i><span class="badge badge-important">' + total_tickets + '</span></a>');
             }
 
-            notifications.append('<a data-toggle="dropdown" class="dropdown-toggle" href="#"><i class="icon-bell-alt icon-animated-bell"></i><span class="badge badge-important">' + total_tickets + '</span></a>');
             notifications.append('<ul class="pull-right dropdown-navbar dropdown-menu dropdown-caret dropdown-closer"></ul>');
 
             var row_template = doT.template($('#tmpl_notificationRow').html());
 
-            $(function () {
-                var notifications_list = $('#notifications').find('ul');
-                notifications_list.append('<li class="nav-header"><i class="icon-warning-sign"></i>' + total_tickets + '  Tickets</li>');
+            var notifications_list = notifications.find('ul');
+            notifications_list.append('<li class="nav-header"><i class="icon-warning-sign"></i>' + total_tickets + ' Open Tickets</li>');
 
-                var i = 0;
-                var limit = Math.min(5, data.length);
-                for (i = 0; i < limit; i++) {
-                    notifications_list.append(row_template(data[i]));
-                }
+            var limit = Math.min(5, total_tickets);
+            for (var i = 0; i < limit; i++) {
+                notifications_list.append(row_template(data[i]));
+            }
 
-                notifications_list.append('<li><a href="{{ request.route_path('list_entity_tickets', id=logged_in_user.id) }}">See all tickets<i class="icon-arrow-right"></i></a></li>');
-            });
-
+            notifications_list.append('<li><a href="{{ request.route_path('list_entity_tickets', id=logged_in_user.id) }}">See all tickets<i class="icon-arrow-right"></i></a></li>');
         });
     });
 

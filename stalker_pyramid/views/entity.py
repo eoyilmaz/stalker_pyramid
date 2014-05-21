@@ -760,7 +760,6 @@ def get_search_result(request):
 
     q_string = request.params.get('str', -1)
 
-
     sql_query_buffer = [
         'select id, name, entity_type from "SimpleEntities"',
         'where'
@@ -773,10 +772,7 @@ def get_search_result(request):
             """"SimpleEntities".name ilike '%{s}%' """.format(s=part)
         )
 
-
     sql_query = '\n'.join(sql_query_buffer)
-
-
 
     from sqlalchemy import text  # to be able to use "%" sign use this function
     result = DBSession.connection().execute(text(sql_query))

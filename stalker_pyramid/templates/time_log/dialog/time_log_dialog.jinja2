@@ -580,25 +580,23 @@ function init_dialog() {
                 })
             ).done(function (response_text) {
 {#                window.location.assign('{{ came_from }}');#}
-
-
-                        submit_button.button('reset');
-                        $('#dialog_template').modal('hide');
-
-                         var calendar = $('#calendar')
-
-                            calendar.fullCalendar('renderEvent',
-                                {
-                                    eId: time_log_task.val(),
-                                    entity_type: 'timelogs',
-                                    title: response_text,
-                                    start: start,
-                                    end: end,
-                                    className: 'label-success',
-                                    allDay: false
-                                },
-                                true // make the event "stick"
-                            );
+                submit_button.button('reset');
+                $('#dialog_template').modal('hide');
+    
+                 var calendar = $('#calendar')
+    
+                    calendar.fullCalendar('renderEvent',
+                        {
+                            eId: time_log_task.val(),
+                            entity_type: 'timelogs',
+                            title: response_text,
+                            start: start,
+                            end: end,
+                            className: 'label-success',
+                            allDay: false
+                        },
+                        true // make the event "stick"
+                    );
             }).fail(function (jqXHR) {
                 bootbox.alert('<div id="message" class="alert alert-danger bigger-110">'+jqXHR.responseText+'</div>');
                 submit_button.button('reset');
