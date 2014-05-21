@@ -731,23 +731,21 @@ tr .odd > td .ticket_BLOCKER {
   right: auto;
   left: 0;
 }
-@media only screen and (max-width: 979px) {
-  .modal {
-    width: 640px;
-    min-height: 80%;
-    margin-left: -320px;
-    margin-top: auto;
-    margin-bottom: auto;
-    margin-right: auto;
-    /* place center */
-  }
+.modal {
+  width: 640px;
+  min-height: 80%;
+  margin-left: -320px;
+  margin-top: auto;
+  margin-bottom: auto;
+  margin-right: auto;
+  /* place center */
 }
 @media only screen and (max-width: 767px) {
   .modal {
-    width: 90%;
+    width: 100%;
     /* desired relative width */
-    min-height: 90%;
-    left: 5%;
+    min-height: 95%;
+    left: 0%;
     /* (100%-width)/2 */
     margin-left: auto;
     margin-top: auto;
