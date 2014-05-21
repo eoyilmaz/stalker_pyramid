@@ -3078,13 +3078,13 @@ def approve_task(request):
                 description_temp,
                 logged_in_user.name,
                 task_hierarchical_name,
-                note.content
+                note.content if note.content else '-- no notes --'
             ),
             html=get_description_html(
                 description_temp,
                 logged_in_user.name,
                 task_hierarchical_name,
-                note.content
+                note.content if note.content else '-- no notes --'
             )
         )
 
@@ -3267,13 +3267,13 @@ def request_revision(request):
                 description_temp,
                 logged_in_user.name,
                 task_hierarchical_name,
-                note.content
+                note.content if note.content else '-- no notes --'
             ),
             html=get_description_html(
                 description_temp,
                 logged_in_user.name,
                 task_hierarchical_name,
-                note.content
+                note.content if note.content else '-- no notes --'
             )
         )
 
@@ -3474,13 +3474,13 @@ def request_progress_review(request):
                 description_temp,
                 logged_in_user.name,
                 task_hierarchical_name,
-                note
+                note if note else '-- no notes --'
             ),
             html=get_description_html(
                 description_temp,
                 logged_in_user.name,
                 task_hierarchical_name,
-                note
+                note if note else '-- no notes --'
             )
         )
 
@@ -3563,13 +3563,13 @@ def request_final_review(request):
                 description_temp,
                 logged_in_user.name,
                 task_hierarchical_name,
-                note.content
+                note.content if note.content else '-- no notes --'
             ),
             html=get_description_html(
                 description_temp,
                 logged_in_user.name,
                 task_hierarchical_name,
-                note.content
+                note.content if note.content else '-- no notes --'
             )
         )
 
@@ -3777,13 +3777,13 @@ def request_extra_time(request):
                 description_temp,
                 logged_in_user.name,
                 task_hierarchical_name,
-                note.content
+                note.content if note.content else '-- no notes --'
             ),
             html=get_description_html(
                 description_temp,
                 logged_in_user.name,
                 task_hierarchical_name,
-                note.content
+                note.content if note.content else '-- no notes --'
             )
         )
 
