@@ -3847,7 +3847,7 @@ def get_task_dependency(request):
 def get_task_children_task_type(request):
     """returns the Task Types defined under the Shot container
     """
-    task_type_name = request.matchdict.get('task_type', -1)
+    task_type_name = request.matchdict.get('type', -1)
 
     task_type = Type.query.filter_by(name=task_type_name).first()
 

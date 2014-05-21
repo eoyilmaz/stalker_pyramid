@@ -151,7 +151,7 @@
             "{%- if request.current_route_path() == request.route_path('list_task_versions', id=task.id) -%}'active',{%- else -%},{%- endif -%}",
             '{{ request.route_url('list_task_versions', id=task.id) }}',
             get_icon('version'),
-            {{ task.versions | count }}
+            0
         );
 
         menu_of(
@@ -159,7 +159,7 @@
             "{%- if request.current_route_path() == request.route_path('list_task_version_outputs', id=task.id) -%}'active',{%- else -%},{%- endif -%}",
             '{{ request.route_url('list_task_version_outputs', id=task.id) }}',
             get_icon('version_output'),
-            '{{ request.route_url('get_task_version_outputs_count', id=task.id) }}'
+            0
         );
 
         menu_of(
