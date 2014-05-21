@@ -1234,13 +1234,16 @@ def get_tasks(request):
     logger.debug('get_tasks is running')
     start = time.time()
 
+    logger.debug('request.params: %s' % request.params)
+    logger.debug('request.params.dict_of_lists(): %s' % request.params.dict_of_lists())
+
     # set the content range to prevent JSONRest Store to query the data twice
     content_range = '%s-%s/%s'
 
     entity_type = "Task"
-    if 'task_id' in request.params:
+    if 'id' in request.params:
         # check if this is a Task or Project
-        task_id = int(request.params.get('task_id', -1))
+        task_id = int(request.params.get('id', -1))
 
         # get the entity_type of this data
         entity_type = DBSession.connection().execute(
