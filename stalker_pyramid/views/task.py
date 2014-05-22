@@ -54,8 +54,9 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 
-def query_of_tasks_hierarchical_name_table(ordered=True):
-    """gives query string of finding parents names by hierarchically
+def generate_recursive_task_query(ordered=True):
+    """generates a query string that recursively gathers task information
+    starting from the root tasks to the leaf tasks.
     """
     order_string = 'order by path' if ordered else ''
 
@@ -122,21 +123,20 @@ def query_of_tasks_hierarchical_name_table(ordered=True):
     return query
 
 
-def get_task_hierarchical_name(task_id):
+def get_task_full_path(task_id):
     """return full path of a task with given id
     """
-
     sql_query = """
         Select
             tasks.full_path as task_name
         from (
-            %(tasks_hierarchical_name_table)s
+            %(generate_recursive_task_query)s
         ) as tasks
         where tasks.id = %(task_id)s
     """
     sql_query = sql_query % {
-        'tasks_hierarchical_name_table':
-        query_of_tasks_hierarchical_name_table(),
+        'generate_recursive_task_query':
+        generate_recursive_task_query(),
         'task_id': task_id
     }
 
@@ -145,13 +145,13 @@ def get_task_hierarchical_name(task_id):
     return result[0]
 
 
-def get_task_link_internal(request, task, task_hierarchical_name):
+def get_task_link_internal(request, task, task_full_path):
     """ TODO: add some doc string here
     """
     task_link_internal = \
         '<a href="%(url)s">%(name)s (%(task_entity_type)s)</a>' % {
             "url": request.route_path('view_task', id=task.id),
-            "name": task_hierarchical_name,
+            "name": task_full_path,
             "task_entity_type": task.entity_type
         }
     return task_link_internal
@@ -168,25 +168,30 @@ def get_user_link_internal(request, user):
     return user_link_internal
 
 
-def get_description_text(description_temp, user_name, task_hierarchical_name, note):
+def get_description_text(description_temp,
+                         user_name,
+                         task_full_path,
+                         note):
     """ TODO: add some doc string here
     """
     description_text = description_temp % {
         "user": user_name,
-        "task_hierarchical_name": task_hierarchical_name,
+        "task_full_path": task_full_path,
         "note": note,
         "spacing": '\n\n'
     }
     return description_text
 
 
-def get_description_html(description_temp, user_name, task_hierarchical_name, note):
+def get_description_html(description_temp,
+                         user_name,
+                         task_full_path,
+                         note):
     """ TODO: add some doc string here
     """
     description_html = description_temp % {
         "user": '<strong>%s</strong>' % user_name,
-        "task_hierarchical_name":
-            '<strong>%s</strong>' % task_hierarchical_name,
+        "task_full_path": '<strong>%s</strong>' % task_full_path,
         "note": '<br/><br/> %s ' % note,
         "spacing": '<br><br>'
     }
@@ -788,7 +793,6 @@ def inline_update_task(request):
     logger.debug('INLINE UPDATE TASK IS RUNNING')
 
     logged_in_user = get_logged_in_user(request)
-    utc_now = local_to_utc(datetime.datetime.now())
 
     # *************************************************************************
     # collect data
@@ -863,6 +867,7 @@ def inline_update_task(request):
             setattr(task, attr_name, attr_value)
 
         task.updated_by = logged_in_user
+        utc_now = local_to_utc(datetime.datetime.now())
         task.date_updated = utc_now
 
     else:
@@ -1035,6 +1040,8 @@ def update_task(request):
 
         if task.parent:
             task.parent.update_status_with_children_statuses()
+
+    task.date_updated = local_to_utc(datetime.datetime.now())
 
     return Response('Task updated successfully')
 
@@ -1324,6 +1331,7 @@ def get_tasks(request):
     content_range = '%s-%s/%s'
 
     entity_type = "Task"
+    task_id = -1
     if 'id' in request.params:
         # check if this is a Task or Project
         task_id = int(request.params.get('id', -1))
@@ -1486,7 +1494,7 @@ def get_tasks(request):
             'where_condition': where_condition,
             'order_by': order_by,
             'tasks_hierarchical_name':
-            query_of_tasks_hierarchical_name_table(ordered=False)
+            generate_recursive_task_query(ordered=False)
         }
 
     else:
@@ -1728,7 +1736,7 @@ def get_user_tasks(request):
     flat json format
     """
     logger.debug('get_user_tasks starts')
-    logged_in_user = get_logged_in_user(request)
+
     # get all the tasks related in the given project
     user_id = request.matchdict.get('id', -1)
 
@@ -1739,7 +1747,7 @@ def get_user_tasks(request):
         join "Task_Resources" on "Task_Resources".task_id = "Tasks".id
         join "Statuses" as "Task_Statuses" on "Task_Statuses".id = "Tasks".status_id
         left join (
-            %(tasks_hierarchical_name_table)s
+            %(generate_recursive_task_query)s
         ) as "ParentTasks" on "Tasks".id = "ParentTasks".id
         %(where_condition)s
     """
@@ -1763,8 +1771,8 @@ def get_user_tasks(request):
     logger.debug('where_condition: %s' % where_condition)
 
     sql_query = sql_query % {
-        'tasks_hierarchical_name_table':
-        query_of_tasks_hierarchical_name_table(),
+        'generate_recursive_task_query':
+        generate_recursive_task_query(),
         'where_condition': where_condition
     }
 
@@ -2287,7 +2295,7 @@ def get_entity_tasks_by_filter(request):
     left join "SimpleEntities" as "Responsible_SimpleEntities" on "Responsible_SimpleEntities".id = "Tasks_Responsible".responsible_id
     left join "SimpleEntities" as "Type_SimpleEntities" on "Tasks_SimpleEntities".type_id = "Type_SimpleEntities".id
     left join (
-        %(tasks_hierarchical_name_table)s
+        %(generate_recursive_task_query)s
     ) as "ParentTasks" on "Tasks".id = "ParentTasks".id
 
     left outer join (
@@ -2337,8 +2345,8 @@ def get_entity_tasks_by_filter(request):
             'and "Statuses_SimpleEntities".id = %s' % filter_id
 
     sql_query = sql_query % {
-        'tasks_hierarchical_name_table':
-        query_of_tasks_hierarchical_name_table(),
+        'generate_recursive_task_query':
+        generate_recursive_task_query(),
         'where_condition_for_entity': where_condition_for_entity,
         'where_condition_for_filter': where_condition_for_filter
     }
@@ -3153,19 +3161,19 @@ def approve_task(request):
         for responsible in task.responsible:
             recipients.append(responsible.email)
 
-        task_hierarchical_name = get_task_hierarchical_name(task.id)
+        task_full_path = get_task_full_path(task.id)
 
         description_temp = \
             '%(user)s has approved ' \
-            '%(task_hierarchical_name)s with the following ' \
+            '%(task_full_path)s with the following ' \
             'comment:%(spacing)s' \
             '%(note)s'
 
         message = Message(
-            subject='Task Reviewed: "%(task_hierarchical_name)s" has been '
+            subject='Task Reviewed: "%(task_full_path)s" has been '
                     'approved by %(user)s!' %
             {
-                'task_hierarchical_name': task_hierarchical_name,
+                'task_full_path': task_full_path,
                 'user': logged_in_user
             },
             sender=dummy_email_address,
@@ -3173,13 +3181,13 @@ def approve_task(request):
             body=get_description_text(
                 description_temp,
                 logged_in_user.name,
-                task_hierarchical_name,
+                task_full_path,
                 note.content if note.content else '-- no notes --'
             ),
             html=get_description_html(
                 description_temp,
                 logged_in_user.name,
-                task_hierarchical_name,
+                task_full_path,
                 note.content if note.content else '-- no notes --'
             )
         )
@@ -3342,19 +3350,19 @@ def request_revision(request):
         for resource in task.resources:
             recipients.append(resource.email)
 
-        task_hierarchical_name = get_task_hierarchical_name(task.id)
+        task_full_path = get_task_full_path(task.id)
 
         description_temp = \
             '%(user)s has requested a revision to ' \
-            '%(task_hierarchical_name)s' \
+            '%(task_full_path)s' \
             '. The following description is supplied for the ' \
             'revision request:%(spacing)s' \
             '%(note)s'
 
         message = Message(
-            subject='Task Reviewed: "%(task_hierarchical_name)s" has been '
+            subject='Task Reviewed: "%(task_full_path)s" has been '
                     'requested revision by %(user)s!' % {
-                        'task_hierarchical_name': task_hierarchical_name,
+                        'task_full_path': task_full_path,
                         'user': logged_in_user
                     },
             sender=dummy_email_address,
@@ -3362,13 +3370,13 @@ def request_revision(request):
             body=get_description_text(
                 description_temp,
                 logged_in_user.name,
-                task_hierarchical_name,
+                task_full_path,
                 note.content if note.content else '-- no notes --'
             ),
             html=get_description_html(
                 description_temp,
                 logged_in_user.name,
-                task_hierarchical_name,
+                task_full_path,
                 note.content if note.content else '-- no notes --'
             )
         )
@@ -3500,9 +3508,9 @@ def request_progress_review(request):
 
     # Create tickets for selected responsible
     user_link_internal = get_user_link_internal(request, logged_in_user)
-    task_hierarchical_name = get_task_hierarchical_name(task.id)
+    task_full_path = get_task_full_path(task.id)
     task_link_internal = get_task_link_internal(request, task,
-                                                task_hierarchical_name)
+                                                task_full_path)
 
     for responsible in selected_responsible_list:
         logger.debug('responsible: %s' % responsible)
@@ -3510,7 +3518,7 @@ def request_progress_review(request):
 
         request_review_ticket = Ticket(
             project=task.project,
-            summary='In Progress Review Request: %s' % task_hierarchical_name,
+            summary='In Progress Review Request: %s' % task_full_path,
             description='%(sender)s has requested you to do <b>a progress '
                         'review</b> for %(task)s' % {
                             'sender': user_link_internal,
@@ -3555,27 +3563,27 @@ def request_progress_review(request):
 
         description_temp = \
             '%(user)s has requested you to do a progress review for ' \
-            '%(task_hierarchical_name)s with the following note:' \
+            '%(task_full_path)s with the following note:' \
             '%(spacing)s%(note)s '
 
         mailer = get_mailer(request)
 
         message = Message(
-            subject='Review Request: "%(task_hierarchical_name)s)' % {
-                'task_hierarchical_name': task_hierarchical_name
+            subject='Review Request: "%(task_full_path)s)' % {
+                'task_full_path': task_full_path
             },
             sender=dummy_email_address,
             recipients=recipients,
             body=get_description_text(
                 description_temp,
                 logged_in_user.name,
-                task_hierarchical_name,
+                task_full_path,
                 note if note else '-- no notes --'
             ),
             html=get_description_html(
                 description_temp,
                 logged_in_user.name,
-                task_hierarchical_name,
+                task_full_path,
                 note if note else '-- no notes --'
             )
         )
@@ -3642,29 +3650,29 @@ def request_final_review(request):
         for responsible in task.responsible:
             recipients.append(responsible.email)
 
-        task_hierarchical_name = get_task_hierarchical_name(task.id)
+        task_full_path = get_task_full_path(task.id)
         description_temp = \
             '%(user)s has requested you to do a final review for ' \
-            '%(task_hierarchical_name)s with the following note:%(note)s'
+            '%(task_full_path)s with the following note:%(note)s'
 
         mailer = get_mailer(request)
 
         message = Message(
-            subject='Review Request: "%(task_hierarchical_name)s)' % {
-                'task_hierarchical_name': task_hierarchical_name
+            subject='Review Request: "%(task_full_path)s)' % {
+                'task_full_path': task_full_path
             },
             sender=dummy_email_address,
             recipients=recipients,
             body=get_description_text(
                 description_temp,
                 logged_in_user.name,
-                task_hierarchical_name,
+                task_full_path,
                 note.content if note.content else '-- no notes --'
             ),
             html=get_description_html(
                 description_temp,
                 logged_in_user.name,
-                task_hierarchical_name,
+                task_full_path,
                 note.content if note.content else '-- no notes --'
             )
         )
@@ -3682,7 +3690,7 @@ def request_final_review(request):
 
         description_temp = \
             'Your final review request from %(responsible)s for ' \
-            '%(task_hierarchical_name)s with the following note has been ' \
+            '%(task_full_path)s with the following note has been ' \
             'sent:%(note)s'
 
         mailer = get_mailer(request)
@@ -3692,23 +3700,23 @@ def request_final_review(request):
             map(lambda x: '<strong>%s</strong>' % x.name, task.responsible)
         )
         message = Message(
-            subject='Review Request: "%(task_hierarchical_name)s)' % {
-                'task_hierarchical_name': task_hierarchical_name
+            subject='Review Request: "%(task_full_path)s)' % {
+                'task_full_path': task_full_path
             },
             sender=dummy_email_address,
             recipients=recipients,
             body=description_temp % {
                 "user": logged_in_user.name,
                 'responsible': responsible_names,
-                "task_hierarchical_name": task_hierarchical_name,
+                "task_full_path": task_full_path,
                 "note": note.content,
                 "spacing": '\n\n'
             },
             html=description_temp % {
                 "user": '<strong>%s</strong>' % logged_in_user.name,
                 'responsible': responsible_names_html,
-                "task_hierarchical_name": '<strong>%s</strong>' %
-                                          task_hierarchical_name,
+                "task_full_path": '<strong>%s</strong>' %
+                                          task_full_path,
                 "note": '<br/><br/> %s ' % note.content,
                 "spacing": '<br><br>'
             }
@@ -3855,30 +3863,30 @@ def request_extra_time(request):
         for responsible in task.responsible:
             recipients.append(responsible.email)
 
-        task_hierarchical_name = get_task_hierarchical_name(task.id)
+        task_full_path = get_task_full_path(task.id)
 
         description_temp = \
             '%(user)s has requested extra time for ' \
-            '%(task_hierarchical_name)s with the following note:%(note)s'
+            '%(task_full_path)s with the following note:%(note)s'
 
         mailer = get_mailer(request)
 
         message = Message(
-            subject='Extra Time Request: "%(task_hierarchical_name)s)' % {
-                'task_hierarchical_name': task_hierarchical_name
+            subject='Extra Time Request: "%(task_full_path)s)' % {
+                'task_full_path': task_full_path
             },
             sender=dummy_email_address,
             recipients=recipients,
             body=get_description_text(
                 description_temp,
                 logged_in_user.name,
-                task_hierarchical_name,
+                task_full_path,
                 note.content if note.content else '-- no notes --'
             ),
             html=get_description_html(
                 description_temp,
                 logged_in_user.name,
-                task_hierarchical_name,
+                task_full_path,
                 note.content if note.content else '-- no notes --'
             )
         )

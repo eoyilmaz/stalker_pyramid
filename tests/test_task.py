@@ -1927,7 +1927,7 @@ class TaskViewSimpleFunctionsTestCase(unittest2.TestCase):
     )
 )""", result)
 
-    def test_generate_where_clause_case9(self):
+    def test_generate_where_clause_case10(self):
         """testing if the view.tasks.generate_where_clause() is working
         properly
         """
