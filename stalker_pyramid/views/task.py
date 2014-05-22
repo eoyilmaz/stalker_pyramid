@@ -1250,6 +1250,11 @@ def generate_where_clause(params):
             "resource_info.info is not NULL"
         )
 
+    if 'has_no_resource' in params:
+        where_string_buffer.append(
+            "resource_info.info is NULL"
+        )
+
     if len(where_string_buffer):
         # need to indent the first element by hand
         where_string_buffer[0] = '{indent}%s' % where_string_buffer[0]
