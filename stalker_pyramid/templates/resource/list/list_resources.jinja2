@@ -124,10 +124,11 @@ require([
     'dojo/store/Memory',
     'dojo/store/JsonRest',
 
+    'stalker/js/Resource',
     'stalker/js/ResourceGrid',
 
     'dojo/domReady!'
-], function (Cache, Memory, JsonRest, ResourceGrid){
+], function (Cache, Memory, JsonRest, Resource, ResourceGrid){
 
     // The Memory
     var target = '{{ request.route_url('get_resource', id=entity.id) }}';
@@ -170,7 +171,8 @@ require([
             id: {{ entity.id }}
         },
         loadingMessage: "<div style='float: left' class='dijitIconLoading'>&nbsp</div><div>Loading</div>",
-        noDataMessage: "",
+        noDataMessage: "No data",
+        data_wrapper: Resource,
         pageSkip: 0,
         cellNavigation: false
     }, resource_chart_dom_id);

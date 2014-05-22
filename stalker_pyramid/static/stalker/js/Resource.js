@@ -31,9 +31,7 @@ define([
 
         constructor: function (settings) {
             //this.grid = settings.grid;
-//            console.log('code is here 1');
             this.studio = new Studio();
-//            console.log('code is here 2');
             this.id = settings.id || null;
             this.name = settings.name || null;
             this.type = settings.type || null;
@@ -62,13 +60,21 @@ define([
                 this.tasks.push(temp_task);
             }
 
-//            console.log('code is here 3');
         },
 
         link: function () {
             return templates.resourceLink(this);
         },
 
+        /**
+         * Returns the total logged seconds between the given dates
+         * 
+         * @param start
+         *   the start date as milliseconds
+         * @param end
+         *   the end date as milliseconds
+         * @returns {number}
+         */
         total_logged_milliseconds: function (start, end) {
             // returns the amount of logged seconds between the given dates
             var time_logs = this.time_logs,
@@ -139,6 +145,51 @@ define([
                 }
             }
             return tasks_in_between_list;
+        },
+
+        /**
+         * a synonym for total_logged_milliseconds
+         * 
+         * @param start
+         *   the start date as milliseconds
+         * @param end
+         *   the end date as milliseconds
+         * @returns {number}
+         */
+        data_in_between: function(start, end) {
+            return this.total_logged_milliseconds(start, end);
+        },
+
+        /**
+         * returns the labels of tasks between the given dates
+         *
+         * @param start
+         * @param end
+         */
+        data_labels: function (start, end) {
+            var tasks = this.tasks_in_between(start, end);
+            var task, tasks_title, tasks_title_buffer = [];
+            for (var i = 0; i < tasks.length; i += 1) {
+                task = tasks[i];
+                tasks_title_buffer.push(
+                    '<a href="/tasks/' + task.id + '/view">' + task.name + '</a>'
+                );
+            }
+            tasks_title = tasks_title_buffer.join('<br/>');
+            if (tasks_title === '') {
+                tasks_title = "<span>-- No Tasks --</span>";
+            }
+            return tasks_title;
+        },
+
+        /**
+         * returns the efficiency of this resource, it is 1 by default but if
+         * this resource is a department then the efficiency can be bigger than
+         * 1
+         * 
+         */
+        data_scale: function() {
+            return this.resource_count;
         }
 
     });
