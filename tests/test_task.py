@@ -1942,6 +1942,20 @@ class TaskViewSimpleFunctionsTestCase(unittest2.TestCase):
     and 26 = any (tasks.responsible_id)
 )""", result)
 
+    def test_generate_where_clause_case11(self):
+        """testing if the view.tasks.generate_where_clause() is working
+        properly
+        """
+        test_value = {
+            'has_resource': 1
+        }
+
+        result = task.generate_where_clause(test_value)
+
+        self.assertEqual("""where (
+    resource_info.info is not NULL
+)""", result)
+
     def test_generate_order_by_clause_case_1(self):
         """testing if the view.tasks.generate_order_by_clause() is working
         properly
