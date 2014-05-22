@@ -22,11 +22,10 @@ define([
     "dojo/_base/array",
     'dojo/_base/lang',
     "dojo/date/locale",
-    'stalker/js/Resource',
     'stalker/js/HeaderCell'
-], function (domConstruct, array, lang, locale, Resource, draw_header_cell) {
+], function (domConstruct, array, lang, locale, draw_header_cell) {
     // module:
-    //     ResourceColumn
+    //     DiscreetDataColumn
     // summary:
     //     A dgrid column plugin that generates box charts in a column.
     'use strict';
@@ -491,18 +490,6 @@ define([
         //     - scale: number
         //         The number of milliseconds that one pixel represents.
 
-        if (typeof(column.start) === 'function') {
-            column.start = +column.start();
-        } else {
-            column.start = +column.start;
-        }
-
-        if (typeof(column.end) === 'function') {
-            column.end = +column.end();
-        } else {
-            column.end = +column.end;
-        }
-
         /**
          * Renders the today line under to the given parent
          * 
@@ -584,23 +571,13 @@ define([
          * summary:
          *     Renders a task.
          * object: Object
-         *     An object representing a task with the following special
-         *     keys:
-         *     - start: Date|number
-         *         The start time for the task, either as a Date object or
-         *         in milliseconds since the Unix epoch. 
-         *     - end: Date|number
-         *         The end time for the task, either as a Date object or in
-         *         milliseconds since the Unix epoch.
-         *     - completed: number
-         *         The amount of the task that has been completed, between
-         *         0 and 1.
-         *     - dependencies: any[]
-         *         An array of data objects or data object identifiers that
-         *         this task depends on.
+         *     An object representing data with the following functions:
+         *     - data_in_between(start, end)
+         *     - data_labels()
+         *     - data_scale()
          *
          * @param data
-         *     Resource Data
+         *     Data
          * @param value
          *     unused
          * @param {Object} td
@@ -695,6 +672,8 @@ define([
          *     DomNode
          */
         column.renderHeaderCell = function (th) {
+            column.fetch_date_values();
+
             // fix scrolling
             var table_width = zoom_levels[column.scale].table_width(column.start, column.end);
             column.grid.addCssRule(".dgrid-column-chart", "width: " + table_width + "px");
@@ -721,6 +700,35 @@ define([
 
             // render today
             render_today(th, column.start, zoom_levels[column.scale].scale);
+        };
+
+        column.fetch_date_values = function() {
+            if (column.scale === null || column.scale === undefined) {
+                // get data from grid
+                column.scale = column.grid.scale;
+            }
+
+            if (column.start === null || column.start === undefined) {
+                // get data from grid
+                column.start = column.grid.start;
+                
+                if (typeof(column.start) === 'function') {
+                    column.start = +column.start();
+                } else {
+                    column.start = +column.start;
+                }
+            }
+
+            if (column.end === null || column.end === undefined) {
+                // get data from grid
+                column.end = column.grid.end;
+                
+                if (typeof(column.end) === 'function') {
+                    column.end = +column.end();
+                } else {
+                    column.end = +column.end;
+                }
+            }
         };
 
         return column;

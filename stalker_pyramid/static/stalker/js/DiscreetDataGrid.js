@@ -27,16 +27,17 @@ define([
     "dgrid/tree",
     "dgrid/extensions/DijitRegistry",
     "put-selector/put",
-    "stalker/js/ResourceColumn"
+    "stalker/js/DiscreetDataColumn"
 ], function (declare, lang, OnDemandGrid, ColumnSet, Selection, Keyboard, tree,
-             DijitRegistry, put, ResourceColumn) {
+             DijitRegistry, put, DiscreetDataColumn) {
     // module:
     //     GanttGrid
     // summary:
-    //     A dgrid extension to create a gantt chart, with columns for tasks, resources, and timelines
+    //     A dgrid extension to create a chart that represents data between
+    //     discreet dates.
 
-    // Creates a new grid with one column set definition to display tasks & resources and a second
-    // column set for the actual gantt chart
+    // Creates a new grid with one column set definition to display data name
+    // and a second column set for the actual discreet data
     "use strict";
 
     return declare([OnDemandGrid, ColumnSet, Selection, Keyboard, DijitRegistry], {
@@ -50,6 +51,8 @@ define([
          *  essentially allowing one to customize the displayed data
          */
         data_wrapper: Object,
+        start: null,
+        end: null,
         keyMap: lang.mixin({}, Keyboard.defaultKeyMap, {
             //    37 - left
             //    38 - up
@@ -84,32 +87,9 @@ define([
             return selected_ids;
         },
         columnSets: [
-            // Column set to display task and resource
+            // Column set to display discreet data
             [
                 {
-//                    action: {
-//                        label: "Action",
-//                        sortable: false,
-//                        get: function (object) {
-//                            return object;
-//                        },
-//                        formatter: function (object) {
-//                            console.debug('action formatter start');
-//                            var object_type, id_template_str, id_template;
-//                            object_type = object.type;
-//                            id_template_str = '<div class="action-buttons">' +
-//                                '<a onclick="javascript:scrollToTaskItem(' + object.start + ')" class="blue" title="Scroll To"><i class="icon-exchange"></i></a>' +
-//                                '<a href="' + object.link + '" class="green" title="View"><i class="icon-info-sign"></i></a>' +
-//                                '</div>';
-//
-//                            id_template = doT.template(id_template_str);
-//
-//                            var return_val = id_template(object);
-//                            console.debug('action formatter end');
-//                            return return_val;
-//                        },
-//                        resizable: true
-//                    },
                     id: {
                         label: "ID",
                         sortable: false,
@@ -117,10 +97,6 @@ define([
                             return object;
                         },
                         formatter: function (object) {
-//                            console.debug('id formatter start');
-//                            var return_val = '<a href="' + object.link + '">' + object.id + '</a>';
-//                            console.debug('id formatter stop');
-//                            return return_val;
                             return object.id;
                         },
                         resizable: true
@@ -162,21 +138,13 @@ define([
                 }
             ],
 
-            // Column set to display gantt chart; note that this is not associated with
-            // any actual property of the data object because it uses the whole object to
-            // render
+            // Column set to discreet data in separate boxes;
+            // note that this is not associated with
+            // any actual property of the data object because it uses the whole
+            // object to render
             [
                 {
-                    chart: new ResourceColumn({
-                        scale: 'w',
-                        start: function () {
-                            var today = moment();
-                            return today.subtract(6, 'month').startOf('isoweek');
-                        },
-                        end: function () {
-                            var today = moment();
-                            return today.add(6, 'month').endOf('isoweek');
-                        },
+                    chart: new DiscreetDataColumn({
                         sortable: false
                     })
                 }
