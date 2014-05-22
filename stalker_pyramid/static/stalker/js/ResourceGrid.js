@@ -38,7 +38,18 @@ define([
     // Creates a new grid with one column set definition to display tasks & resources and a second
     // column set for the actual gantt chart
     "use strict";
+
     return declare([OnDemandGrid, ColumnSet, Selection, Keyboard, DijitRegistry], {
+        /**
+         *  customize this to add functionality to the data
+         *  
+         *  so pass your own object as the wrapper, it will be used as follows:
+         *  
+         *  data = new Wrapper(data);
+         *  
+         *  essentially allowing one to customize the displayed data
+         */
+        data_wrapper: Object,
         keyMap: lang.mixin({}, Keyboard.defaultKeyMap, {
             //    37 - left
             //    38 - up

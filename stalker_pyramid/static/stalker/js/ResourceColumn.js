@@ -28,12 +28,24 @@ define([
     // module:
     //     ResourceColumn
     // summary:
-    //     A dgrid column plugin that generates resource charts in a column.
+    //     A dgrid column plugin that generates box charts in a column.
     'use strict';
 
     /**
-     * Render the given time log data under to the given parent
-     * 
+     * Render the given data under to the given parent
+     *
+     * The options.data should have the following methods:
+     *
+     *   data_in_between(start, end)
+     *     showing the amount of data supplied
+     *     in between the start and end dates.
+     *
+     *   data_labels(start, end)
+     *     showing the data labels
+     *
+     *   data_scale()
+     *     showing the scale of the data
+     *
      * @param options
      * @returns {*|jQuery|HTMLElement}
      */
@@ -49,9 +61,6 @@ define([
         var height = options.height;
         var millies_possible_in_period = options.millies_possible_in_period;
 
-        // create a TimeLog instance
-        var resource = new Resource(data);
-
         var original_start = moment(start).startOf('day');
 
         var start_date = moment(start).startOf(period_unit).startOf('day');
@@ -61,11 +70,9 @@ define([
         var period_start = moment(start_date.startOf(period_unit));
         var period_end = moment(start_date.endOf(period_unit));
 
-        var total_logged_millies;
-        var tasks_in_between;
-        var log_bar, data_bar, tasks_title, tasks_title_buffer;
+        var data_in_between;
+        var log_bar, data_bar, data_labels;
         var log_bar_container;
-        var i;
 
         var parent_div = $($.parseHTML('<div class="logContainer"></div>'));
         parent_div.css({
@@ -76,18 +83,18 @@ define([
         });
         $(parent).append(parent_div);
 
-        var added_first_time_log = false;
-        var resource_count = resource.resource_count;
+        var added_first_data = false;
+        var data_scale = data.data_scale();
 
         // calculate once
-        var denominator = height / (millies_possible_in_period * resource_count);
+        var denominator = height / (millies_possible_in_period * data_scale);
 
         while (period_start < end_date) {
-            total_logged_millies = resource.total_logged_milliseconds(+period_start, +period_end);
-            tasks_in_between = resource.tasks_in_between(period_start, period_end);
+            data_in_between = data.data_in_between(+period_start, +period_end);
+            data_labels = data.data_labels(period_start, period_end);
 
-            // draw a div at that range with the height of total_logged_millies
-            added_first_time_log = true;
+            // draw a div at that range with the height of data_in_between
+            added_first_data = true;
             log_bar_container = $($.parseHTML('<div class="log_bar layout"></div>'));
             log_bar_container.css({
                 left: Math.floor((period_start - start_date) / scale),
@@ -96,28 +103,15 @@ define([
 
             log_bar = $($.parseHTML('<div class="log_bar log"></div>'));
             log_bar.css({
-                height: Math.floor(total_logged_millies * denominator)
+                height: Math.floor(data_in_between * denominator)
             });
 
-            tasks_title_buffer = [];
-            var task;
-            for (i = 0; i < tasks_in_between.length; i += 1) {
-                task = tasks_in_between[i];
-                tasks_title_buffer.push(
-                    '<a href="/tasks/' + task.id + '/view">' + task.name + '</a>'
-                );
-            }
-            tasks_title = tasks_title_buffer.join('<br/>');
-            if (tasks_title === '') {
-                tasks_title = "<span>-- No Tasks --</span>";
-            }
-
-            var total_hours = (total_logged_millies / 3600000).toFixed(0);
+            var total_hours = (data_in_between / 3600000).toFixed(0);
             data_bar = $($.parseHTML(
                 '<div class="data_bar" >' + total_hours + '</div>'
             ));
             data_bar.text(total_hours);
-            data_bar.attr('data-content', tasks_title).attr('data-rel', 'popover');
+            data_bar.attr('data-content', data_labels).attr('data-rel', 'popover');
             log_bar_container.append(log_bar);
             log_bar_container.append(data_bar);
 
@@ -613,8 +607,10 @@ define([
          *     DomNode
          */
         column.renderCell = function (data, value, td) {
+            // wrap the data with the grid.wrapper
+            var wrapped_data = new this.grid.data_wrapper(data);
             // render cells
-            zoom_levels[column.scale].chart.draw(td, data, column.start, column.end);
+            zoom_levels[column.scale].chart.draw(td, wrapped_data, column.start, column.end);
 
             // render today
             render_today(td, column.start, zoom_levels[column.scale].scale);

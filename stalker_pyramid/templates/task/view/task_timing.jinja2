@@ -4,85 +4,51 @@
                 <i class="icon-time"></i>
                 Timing
           </h5>
-
-{#          <div class="widget-toolbar no-border">#}
-{#                <button class="btn btn-minier btn-primary dropdown-toggle" data-toggle="dropdown">#}
-{#                      min#}
-{#                      <i class="icon-angle-down icon-on-right"></i>#}
-{#                </button>#}
-{##}
-{#                <ul class="dropdown-menu dropdown-info pull-right dropdown-caret">#}
-{#                      <li class="active">#}
-{#                            <a href="#">min</a>#}
-{#                      </li>#}
-{##}
-{#                      <li>#}
-{#                            <a href="#">h</a>#}
-{#                      </li>#}
-{##}
-{#                      <li>#}
-{#                            <a href="#">d</a>#}
-{#                      </li>#}
-{##}
-{#                      <li>#}
-{#                            <a href="#">w</a>#}
-{#                      </li>#}
-{#                </ul>#}
-{#          </div>#}
     </div>
 
     <div class="widget-body no-padding">
-          <div class="widget-main no-padding">
+        <div class="widget-main no-padding">
             <div id='bid_alert' class="alert alert-block no-padding" >
 
-                        <ul class="unstyled spaced"  style="margin-left: 10px">
-                            <li>
-                                <b>Bid
-                                    : </b>
-                                <span id="bid"></span>
-                            </li>
-                            <li>
+                <table class="table">
+                    <tbody>
+                        <tr>
+                            <td style="text-align: right"><strong>Bid</strong></td>
+                            <td><span id="bid"></span></td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: right"><strong>Schedule Timing</strong></td>
+                            <td><span id="schedule_timing"></span></td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: right"><strong>Total Time Logs</strong></td>
+                            <td><span id="total_logged"></span></td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: right"><strong>Time to Complete</strong></td>
+                            <td><span id="time_to_complete"></span></td>
+                        </tr>
+                    </tbody>
+                </table>
 
-                                <b>Schedule Timing
-                                    : </b> <span id="schedule_timing"></span>
-
-                            </li>
-                            <li>
-                                <b>Total Time Logs
-                                    : </b> <span id="total_logged"></span>
-                            </li>
-                            <li>
-                                <b>Time to Complete
-                                    : </b> <span id="time_to_complete"></span>
-                            </li>
-                        </ul>
-
-
-
-                </div>
-          </div><!--/widget-main-->
-         {% if (entity.schedule_seconds - entity.total_logged_seconds)==0  and entity.status.code=='WIP'%}
+            </div>
+        </div><!--/widget-main-->
+        {% if (entity.schedule_seconds - entity.total_logged_seconds)==0  and entity.status.code=='WIP'%}
         <div class="widget-toolbox clearfix">
-
-
-                                <button id='task_review_button'
-                                        class="btn btn-small btn-danger span12"
-                                        data-placement="bottom"
-                                        title="Request Extra Time"
-                                        data-target="#dialog_template"
-                                        data-toggle="modal"
-                                        data-keyboard="false"
-                                        href="/tasks/{{entity.id}}/request_extra_time/dialog?came_from={{request.current_route_path() }}"
-                                        >
-                                    <i class="icon-time bigger-130"></i> Request Extra Time</button>
-
-
+            <button id='task_review_button'
+                    class="btn btn-small btn-danger span12"
+                    data-placement="bottom"
+                    title="Request Extra Time"
+                    data-target="#dialog_template"
+                    data-toggle="modal"
+                    data-keyboard="false"
+                    href="/tasks/{{entity.id}}/request_extra_time/dialog?came_from={{request.current_route_path() }}"
+                    >
+                <i class="icon-time bigger-130"></i> Request Extra Time</button>
         </div>
           {% endif %}
     </div><!--/widget-body-->
 </div><!--/widget-box-->
-
-
 
 <script class="code" type="text/javascript">
     $(document).ready(function () {
