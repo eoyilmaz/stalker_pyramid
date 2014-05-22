@@ -27,7 +27,7 @@ from stalker.db import DBSession
 from stalker import (User, Task, Project)
 
 from stalker_pyramid.views import get_logged_in_user
-from stalker_pyramid.views.task import query_of_tasks_hierarchical_name_table
+from stalker_pyramid.views.task import generate_recursive_task_query
 
 
 logger = logging.getLogger(__name__)
@@ -148,15 +148,17 @@ def get_task_last_reviews(request):
         transaction.abort()
         return Response('There is no task with id: %s' % task_id, 500)
 
-    where_condition1 = """where "Review_Tasks".id = %(task_id)s""" % {'task_id':task_id}
+    where_condition1 = """where "Review_Tasks".id = %(task_id)s""" % {
+        'task_id': task_id
+    }
     where_condition2 = ''
 
     logger.debug("task.status.code : %s" % task.status.code)
     if task.status.code == 'PREV':
-        where_condition2 =""" and "Review_Tasks".review_number +1 = "Reviews".review_number"""
+        where_condition2 = """ and "Review_Tasks".review_number +1 = "Reviews".review_number"""
         where_conditions = '%s %s' % (where_condition1, where_condition2)
 
-        reviews = get_reviews(request,where_conditions)
+        reviews = get_reviews(request, where_conditions)
 
     else:
         # where_condition2 =""" and "Review_Tasks".review_number = "Reviews".review_number"""
@@ -305,7 +307,7 @@ def get_reviews(request, where_conditions):
         join "SimpleEntities" as "Reviewers_SimpleEntities" on "Reviewers_SimpleEntities".id = "Reviews".reviewer_id
         join "User_Departments" as "Reviewers_Departments" on "Reviewers_Departments".uid = "Reviews".reviewer_id
         join "SimpleEntities" as "Reviewer_Departments_SimpleEntities" on "Reviewer_Departments_SimpleEntities".id = "Reviewers_Departments".did
-        left join (%(tasks_hierarchical_name_table)s) as "ParentTasks" on "Review_Tasks".id = "ParentTasks".id
+        left join (%(recursive_task_query)s) as "ParentTasks" on "Review_Tasks".id = "ParentTasks".id
 
         left outer join "Links" as "Reviewers_SimpleEntities_Links" on "Reviewers_SimpleEntities_Links".id = "Reviewers_SimpleEntities".thumbnail_id
 
@@ -334,8 +336,7 @@ def get_reviews(request, where_conditions):
 
     sql_query = sql_query % {
         'where_conditions': where_conditions,
-        'tasks_hierarchical_name_table':
-            query_of_tasks_hierarchical_name_table()
+        'recursive_task_query': generate_recursive_task_query()
     }
 
     result = DBSession.connection().execute(sql_query)

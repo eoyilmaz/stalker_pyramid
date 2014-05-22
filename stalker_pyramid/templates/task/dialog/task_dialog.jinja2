@@ -554,7 +554,7 @@ resource_name, status
             $.getJSON('/tasks/', search_params, function (data) {
                 var input_source = [];
                 var result_count = data.length;
-                var max_count = 25;
+                var max_count = 250;
                 for (var i = 0; i < Math.min(result_count, max_count); i++) {
                     input_source.push(data[i].full_path);
                 }

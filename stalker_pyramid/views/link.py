@@ -346,7 +346,7 @@ def get_entity_references(request):
 
     # we need to do that import here
     from stalker_pyramid.views.task import \
-        query_of_tasks_hierarchical_name_table
+        generate_recursive_task_query
 
     # using Raw SQL queries here to fasten things up quite a bit and also do
     # some fancy queries like getting all the references of tasks of a project
@@ -366,7 +366,7 @@ select
 
 -- start with tasks (with full names)
 from (
-    %(tasks_hierarchical_name_table)s
+    %(recursive_task_query)s
 ) as tasks
 
 
@@ -421,8 +421,8 @@ offset %(offset)s
 limit %(limit)s
     """ % {
         'id': entity_id,
-        'tasks_hierarchical_name_table':
-        query_of_tasks_hierarchical_name_table(ordered=False),
+        'recursive_task_query':
+        generate_recursive_task_query(ordered=False),
         'search_string': search_query,
         'offset': offset,
         'limit': limit
@@ -490,7 +490,7 @@ def get_entity_references_count(request):
 
     # we need to do that import here
     from stalker_pyramid.views.task import \
-        query_of_tasks_hierarchical_name_table
+        generate_recursive_task_query
 
     # using Raw SQL queries here to fasten things up quite a bit and also do
     # some fancy queries like getting all the references of tasks of a project
@@ -503,7 +503,7 @@ select
 
 -- start with tasks (with fullnames)
 from (
-    %(tasks_hierarchical_name_table)s
+    %(recursive_task_query)s
 ) as tasks
 
 
@@ -535,8 +535,8 @@ group by
 ) as data
     """ % {
         'id': entity_id,
-        'tasks_hierarchical_name_table':
-        query_of_tasks_hierarchical_name_table(ordered=False),
+        'recursive_task_query':
+        generate_recursive_task_query(ordered=False),
         'search_string': search_query
     }
 

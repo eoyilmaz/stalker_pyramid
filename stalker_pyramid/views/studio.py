@@ -221,7 +221,9 @@ def schedule_info(request):
         (extract(epoch from scheduling_started_at::timestamp AT TIME ZONE 'UTC') * 1000)::bigint as scheduling_started_at,
         (extract(epoch from last_scheduled_at::timestamp AT TIME ZONE 'UTC') * 1000)::bigint as last_scheduled_at,
         extract(epoch from last_scheduled_at::timestamp AT TIME ZONE 'UTC' - scheduling_started_at::timestamp AT TIME ZONE 'UTC') as last_scheduling_duration,
-        "LastScheduler_SimpleEntities".name as last_scheduled_by
+        "LastScheduler_SimpleEntities".name as last_scheduled_by,
+        (extract(epoch from "Studios".start::timestamp AT TIME ZONE 'UTC') * 1000)::bigint as start,
+        (extract(epoch from "Studios".end::timestamp AT TIME ZONE 'UTC') * 1000)::bigint as end
     from "Studios"
     left outer join "SimpleEntities" as "LastScheduler_SimpleEntities" on "Studios".last_scheduled_by_id = "LastScheduler_SimpleEntities".id
     left outer join "SimpleEntities" as "CurrentScheduler_SimpleEntities" on "Studios".is_scheduling_by_id = "CurrentScheduler_SimpleEntities".id
@@ -239,6 +241,8 @@ def schedule_info(request):
         'last_scheduled_at': r[4],
         'last_scheduling_took': r[5],
         'last_scheduled_by': r[6],
+        'start': r[7],
+        'end': r[8]
     }
 
 

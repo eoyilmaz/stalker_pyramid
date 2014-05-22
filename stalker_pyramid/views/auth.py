@@ -676,7 +676,7 @@ def get_resources(request):
     """
     # TODO: This is a very ugly function, please define the borders and use cases correctly and then clean it
 
-    from stalker_pyramid.views.task import query_of_tasks_hierarchical_name_table
+    from stalker_pyramid.views.task import generate_recursive_task_query
 
     start = time.time()
     # return users for now
@@ -757,12 +757,12 @@ def get_resources(request):
             extract(epoch from "Tasks".computed_end::timestamp AT TIME ZONE 'UTC') * 1000 as end
         -- start with tasks (with full names)
         from (
-            %(tasks_hierarchical_name_table)s
+            %(recursive_task_query)s
         ) as tasks
             join "Tasks" on tasks.id = "Tasks".id
         """ % {
-            'tasks_hierarchical_name_table':
-                query_of_tasks_hierarchical_name_table(ordered=False)
+            'recursive_task_query':
+            generate_recursive_task_query(ordered=False)
         }
 
         has_children = False
@@ -863,7 +863,7 @@ def get_resources(request):
             extract(epoch from "Tasks".computed_start::timestamp AT TIME ZONE 'UTC') * 1000 as start,
             extract(epoch from "Tasks".computed_end::timestamp AT TIME ZONE 'UTC') * 1000 as end
         from (
-            %(tasks_hierarchical_name_table)s
+            %(recursive_task_query)s
         ) as tasks
             join "Tasks" on tasks.id = "Tasks".id
             join "Task_Resources" on tasks.id = "Task_Resources".task_id
@@ -915,8 +915,8 @@ def get_resources(request):
                     'end': tr[3]
                 } for tr in execute(
                     tasks_query % {
-                        'tasks_hierarchical_name_table':
-                            query_of_tasks_hierarchical_name_table(False),
+                        'recursive_task_query':
+                            generate_recursive_task_query(False),
                         'id': rr[0]
                     }
                 ).fetchall()

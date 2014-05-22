@@ -478,7 +478,7 @@ tr .odd > td .ticket_BLOCKER {
   background: #ffffff url('../images/ui-anim_basic_16x16.gif') right center no-repeat !important;
 }
 .ui-autocomplete {
-  max-height: 80px;
+  max-height: 300px;
   overflow-x: hidden;
   overflow-y: auto;
 }

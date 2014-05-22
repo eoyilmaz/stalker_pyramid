@@ -623,10 +623,7 @@ define([
             // draw popover
             $(td).find('[data-rel=popover]').popover({
                 html:true,
-                container: 'body',
-//                trigger: 'click hover',
-//                trigger: 'click focus hover manual',
-//                placement: 'auto right',
+                container: 'body'
             }).on('show.bs.popover', function () {
                 // remove all the other popovers
                 var self = this;
@@ -635,7 +632,7 @@ define([
                         $(this).popover('hide');
                     } else {
                         $(this).popover({
-                            trigger: 'hover',
+                            trigger: 'hover'
                         })
                     }
                 });

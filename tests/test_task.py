@@ -1758,8 +1758,8 @@ class TaskViewSimpleFunctionsTestCase(unittest2.TestCase):
     """tests the simple functions that doesn't need a request
     """
 
-    def test_generate_task_where_clause_case1(self):
-        """testing if the view.tasks.generate_task_where_clause() is working
+    def test_generate_where_clause_case1(self):
+        """testing if the view.tasks.generate_where_clause() is working
         properly
         """
         test_value = {
@@ -1770,7 +1770,7 @@ class TaskViewSimpleFunctionsTestCase(unittest2.TestCase):
             'resource_name': ['Ozgur']
         }
 
-        result = task.generate_task_where_clause(test_value)
+        result = task.generate_where_clause(test_value)
 
         self.assertEqual("""where (
     tasks.id = 23
@@ -1785,8 +1785,8 @@ class TaskViewSimpleFunctionsTestCase(unittest2.TestCase):
     )
 )""", result)
 
-    def test_generate_task_where_clause_case2(self):
-        """testing if the view.tasks.generate_task_where_clause() is working
+    def test_generate_where_clause_case2(self):
+        """testing if the view.tasks.generate_where_clause() is working
         properly
         """
         test_value = {
@@ -1795,7 +1795,7 @@ class TaskViewSimpleFunctionsTestCase(unittest2.TestCase):
             'resource_name': ['Ozgur']
         }
 
-        result = task.generate_task_where_clause(test_value)
+        result = task.generate_where_clause(test_value)
 
         self.assertEqual("""where (
     tasks.id = 23
@@ -1808,15 +1808,15 @@ class TaskViewSimpleFunctionsTestCase(unittest2.TestCase):
     )
 )""", result)
 
-    def test_generate_task_where_clause_case3(self):
-        """testing if the view.tasks.generate_task_where_clause() is working
+    def test_generate_where_clause_case3(self):
+        """testing if the view.tasks.generate_where_clause() is working
         properly
         """
         test_value = {
             'resource_name': ['Ozgur']
         }
 
-        result = task.generate_task_where_clause(test_value)
+        result = task.generate_where_clause(test_value)
 
         self.assertEqual("""where (
     exists (
@@ -1827,15 +1827,15 @@ class TaskViewSimpleFunctionsTestCase(unittest2.TestCase):
     )
 )""", result)
 
-    def test_generate_task_where_clause_case4(self):
-        """testing if the view.tasks.generate_task_where_clause() is working
+    def test_generate_where_clause_case4(self):
+        """testing if the view.tasks.generate_where_clause() is working
         properly
         """
         test_value = {
             'resource_id': [26]
         }
 
-        result = task.generate_task_where_clause(test_value)
+        result = task.generate_where_clause(test_value)
 
         self.assertEqual("""where (
     exists (
@@ -1846,46 +1846,116 @@ class TaskViewSimpleFunctionsTestCase(unittest2.TestCase):
     )
 )""", result)
 
-    def test_generate_task_where_clause_case5(self):
-        """testing if the view.tasks.generate_task_where_clause() is working
+    def test_generate_where_clause_case5(self):
+        """testing if the view.tasks.generate_where_clause() is working
         properly
         """
         test_value = {
             'task_type': ['Lighting', 'Comp'],
         }
 
-        result = task.generate_task_where_clause(test_value)
+        result = task.generate_where_clause(test_value)
 
         self.assertEqual("""where (
     task_types.name = '%Lighting%'
     and task_types.name = '%Comp%'
 )""", result)
 
-    def test_generate_task_where_clause_case6(self):
-        """testing if the view.tasks.generate_task_where_clause() is working
+    def test_generate_where_clause_case6(self):
+        """testing if the view.tasks.generate_where_clause() is working
         properly
         """
         test_value = {
             'project_id': [23],
         }
 
-        result = task.generate_task_where_clause(test_value)
+        result = task.generate_where_clause(test_value)
 
         self.assertEqual("""where (
     "Tasks".project_id = 23
 )""", result)
 
-    def test_generate_task_where_clause_case5(self):
-        """testing if the view.tasks.generate_task_where_clause() is working
+    def test_generate_where_clause_case7(self):
+        """testing if the view.tasks.generate_where_clause() is working
         properly
         """
         test_value = {
             'status': ['WIP', 'DREV'],
         }
 
-        result = task.generate_task_where_clause(test_value)
+        result = task.generate_where_clause(test_value)
 
         self.assertEqual("""where (
     "Statuses".code ilike '%WIP%'
     and "Statuses".code ilike '%DREV%'
 )""", result)
+
+    def test_generate_where_clause_case8(self):
+        """testing if the view.tasks.generate_where_clause() is working
+        properly
+        """
+        test_value = {
+            'status': ['WIP', 'DREV'],
+            'leaf_only': 1
+        }
+
+        result = task.generate_where_clause(test_value)
+
+        self.assertEqual("""where (
+    "Statuses".code ilike '%WIP%'
+    and "Statuses".code ilike '%DREV%'
+    and not exists (
+        select 1 from "Tasks"
+        where "Tasks".parent_id = tasks.id
+    )
+)""", result)
+
+    def test_generate_where_clause_case9(self):
+        """testing if the view.tasks.generate_where_clause() is working
+        properly
+        """
+        test_value = {
+            'leaf_only': 1
+        }
+
+        result = task.generate_where_clause(test_value)
+
+        self.assertEqual("""where (
+    not exists (
+        select 1 from "Tasks"
+        where "Tasks".parent_id = tasks.id
+    )
+)""", result)
+
+    def test_generate_where_clause_case10(self):
+        """testing if the view.tasks.generate_where_clause() is working
+        properly
+        """
+        test_value = {
+            'responsible_id': [25, 26]
+        }
+
+        result = task.generate_where_clause(test_value)
+
+        self.assertEqual("""where (
+    25 = any (tasks.responsible_id)
+    and 26 = any (tasks.responsible_id)
+)""", result)
+
+    def test_generate_order_by_clause_case_1(self):
+        """testing if the view.tasks.generate_order_by_clause() is working
+        properly
+        """
+        test_value = [
+            'id', 'name', 'full_path', 'parent_id',
+            'resource', 'status', 'project_id',
+            'task_type', 'entity_type', 'percent_complete'
+        ]
+
+        result = task.generate_order_by_clause(test_value)
+        self.assertEqual(
+            """order by tasks.id, tasks.name, tasks.full_path, """
+            """tasks.parent_id, resource_info.info, "Statuses".code, """
+            """"Tasks".project_id, task_types.name, tasks.entity_type, """
+            """percent_complete""", result
+        )
