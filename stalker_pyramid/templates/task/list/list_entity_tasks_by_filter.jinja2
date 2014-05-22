@@ -46,8 +46,34 @@
 
 
         $(document).ready(function () {
+
+            var query_str = '';
+
+            {% if entity.entity_type == 'User' %}
+
+                query_str = 'resource_id={{ entity.id }}'
+
+            {% elif entity.entity_type == 'Project'%}
+
+                query_str = 'project_id={{ entity.id }}'
+
+            {% endif %}
+
+            {% if filter.entity_type == 'User' %}
+
+                query_str = 'responsible_id={{ filter.id }}'
+
+            {% elif filter.entity_type == 'Status'%}
+
+                query_str += '&status={{ filter.code }}'
+
+            {% endif %}
+
+            console.log('/tasks/?'+query_str)
+
+
             // fill items table with dynamic data
-            $.getJSON('{{ request.route_path('get_entity_tasks_by_filter', id=entity.id, f_id=filter.id) }}').then(function (data) {
+            $.getJSON('/tasks/?leaf_only=1&'+query_str).then(function (data) {
 
                 var thead_template = doT.template($('#tmpl_itemThead').html());
                 var table_head = $('#items_table>thead');
@@ -65,7 +91,7 @@
                     var table_body = $('#items_table>tbody');
                     for (i = 0; i < data.length; i++) {
                         // fix dates
-                        data[i].start_date = new Date(data[i].start_date).format('yyyy-mm-dd HH:MM');
+                        data[i].start = new Date(data[i].start).format('yyyy-mm-dd HH:MM');
 
                         if (data[i].thumbnail_full_path == null) {
                             data[i].thumbnail_full_path = '{{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}';
@@ -73,6 +99,41 @@
                         else {
                             data[i].thumbnail_full_path = '/' + data[i].thumbnail_full_path;
                         }
+
+                        data[i].hour_based_on_bid = time_to_complete(calculate_seconds(data[i].bid_timing, data[i].bid_unit),data[i].total_logged_seconds,'h')
+                        data[i].hour_to_complete = time_to_complete(data[i].schedule_seconds, data[i].total_logged_seconds,'h')
+
+                        if(data[i].status == 'wip'){
+                            var resources = data[i].resources;
+                            for(var r=0;r<resources.length; r++){
+                                if(resources[r].id == '{{ logged_in_user.id }}' ){
+                                    data[i].request_review ="/tasks/"+data[i].id+"/request_review/dialog?came_from={{ request.current_route_path() }}&request_review_mode=Final"
+                                }
+
+                            }
+                        }
+                        if(data[i].status == 'prev'){
+                            var responsible = data[i].resources;
+                            for(var r=0;r<responsible.length; r++){
+                                if(responsible[r].id == '{{ logged_in_user.id }}' ){
+                                    data[i].review ="/tasks/"+data[i].id+"/review/dialog?came_from={{ request.current_route_path() }}"
+                                }
+
+                            }
+                        }
+
+                        if(data[i].status == 'wip' && data[i].completed == 100){
+                            var resources = data[i].resources;
+                            for(var r=0;r<resources.length; r++){
+                                if(resources[r].id == '{{ logged_in_user.id }}' ){
+                                    data[i].request_extra_time ="/tasks/"+data[i].id+"/request_extra_time/dialog?came_from={{ request.current_route_path() }}"
+                                }
+
+                            }
+                        }
+
+
+
 
                         data[i].came_from = '{{ request.current_route_path() }}'
 

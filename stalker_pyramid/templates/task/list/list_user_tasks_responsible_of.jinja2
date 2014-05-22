@@ -68,25 +68,23 @@
     {% raw %}
     <script id="tmpl_itemRow" type="text/x-dot-template">
         <tr>
-            <td>{{=it.start_date}}</td>
+            <td>{{=it.start}}</td>
             <td><a href='/projects/{{=it.project_id}}/view'>{{=it.project_name}}</a>
             </td>
             <td><a href='/tasks/{{=it.id}}/view'>{{=it.name}}</a></td>
-            <td>{{ for (var i=0; i< it.resource_id.length;i++) { }}<a
-                    href='/users/{{=it.resource_id[i]}}/view'>{{=it.resource_name[i]}}</a><br/>{{
-                } }}
-            </td>
-            <td>{{=it.type}}</td>
+            <td>{{ for(var i=0;i<it.resources.length;i++){ }}<a href='/users/{{=it.resources[i].id}}/view'>{{=it.resources[i].name}}</a>{{ } }}</td>
+
+            <td>{{=it.task_type}}</td>
             <td data-sType="num-html">
                 <div class="progress progress-success">
-                    <div style="width:{{=it.percent_complete}}%"
+                    <div style="width:{{=it.completed}}%"
                          class="bar">
-                        <span class="pull-left">{{= it.percent_complete.toFixed(0) }}%</span>
+                        <span class="pull-left">{{= it.completed.toFixed(0) }}%</span>
                     </div>
                 </div>
             </td>
             <td>
-                <span class="label label-{{=it.status_color}}">{{=it.status}}</span>
+                <span class="label label-{{=it.status}}">{{=it.status}}</span>
             </td>
             <td>
                 <div class="hidden-phone visible-desktop action-buttons">
@@ -94,8 +92,22 @@
                         <i class="icon-zoom-in bigger-130"></i>
                     </a>
 
+                    {{ if (it.request_extra_time)  { }}
+                        <a
+                            class="red"
+                            data-target="#dialog_template"
+                            data-toggle="modal"
+                            data-keyboard=false
+                            data-rel="tooltip"
+                            data-placement="top"
+                            title="Request Extra Time"
+                            href="{{=it.request_extra_time}}">
+                            <i class="icon-time bigger-130"></i>
+                        </a>
+                    {{ } }}
+
                     {{ if (it.request_review) { }}
-                    <a
+                        <a
                             class="green"
                             data-target="#dialog_template"
                             data-toggle="modal"
@@ -103,12 +115,13 @@
                             data-rel="tooltip"
                             data-placement="top"
                             title="Request Review"
-                            href="/tasks/{{=it.id}}/request_review/dialog?came_from={{=it.came_from }}">
-                        <i class="icon-comment-alt bigger-130"></i>
-                    </a>
+                            href="{{=it.request_review}}">
+                            <i class="icon-comment-alt bigger-130"></i>
+                        </a>
+
                     {{ } }}
                     {{ if (it.review) { }}
-                    <a
+                        <a
                             class="purple"
                             data-target="#dialog_template"
                             data-toggle="modal"
@@ -116,10 +129,11 @@
                             data-rel="tooltip"
                             data-placement="top"
                             title="Review"
-                            href="/tasks/{{=it.id}}/review/dialog?came_from={{=it.came_from }}">
-                        <i class="icon-comments bigger-130"></i>
-                    </a>
+                            href="{{=it.review }}">
+                            <i class="icon-comments bigger-130"></i>
+                        </a>
                     {{ } }}
+
 
                 </div>
             </td>
