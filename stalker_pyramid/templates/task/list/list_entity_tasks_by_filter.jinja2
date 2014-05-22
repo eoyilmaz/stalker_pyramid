@@ -100,8 +100,16 @@
                             data[i].thumbnail_full_path = '/' + data[i].thumbnail_full_path;
                         }
 
-                        data[i].hour_based_on_bid = time_to_complete(calculate_seconds(data[i].bid_timing, data[i].bid_unit),data[i].total_logged_seconds,'h')
-                        data[i].hour_to_complete = time_to_complete(data[i].schedule_seconds, data[i].total_logged_seconds,'h')
+                        var bid_seconds = calculate_seconds(data[i].bid_timing, data[i].bid_unit)
+                        data[i].hour_based_on_bid = meaningful_time_between(bid_seconds, data[i].total_logged_seconds)
+                        data[i].hour_to_complete = meaningful_time_between(calculate_seconds(data[i].schedule_timing, data[i].schedule_unit), data[i].total_logged_seconds)
+                        data[i].bid_stat = '#ffffff'
+
+                        if(bid_seconds<data[i].total_logged_seconds){
+                             data[i].bid_stat = '#ff0000'
+                        }
+{#                        data[i].hour_based_on_bid = meaningful_time_calculator(Math.abs((calculate_seconds(data[i].bid_timing, data[i].bid_unit)-data[i].total_logged_seconds)),data[i].bid_unit)#}
+{#                        data[i].hour_to_complete = meaningful_time_calculator(Math.abs((calculate_seconds(data[i].schedule_timing, data[i].schedule_unit)- data[i].total_logged_seconds)),data[i].bid_unit)#}
 
                         if(data[i].status == 'wip'){
                             var resources = data[i].resources;

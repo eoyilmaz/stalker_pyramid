@@ -3303,6 +3303,7 @@ def request_revision(request):
            # review = forced_review(logged_in_user, task);
            # review.date_created = utc_now
             assert isinstance(task, Task)
+            task.least_meaningful_time_unit()
             task.request_revision(
                 logged_in_user,
                 note.content,

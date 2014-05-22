@@ -546,7 +546,7 @@
                         }
 
 
-                        time_to_complete_str = '<span> ( ' +  time_to_complete(data[i].schedule_seconds, data[i].total_logged_seconds, data[i].schedule_unit) + ' )</span>'
+                        time_to_complete_str = '<span> ( ' +  meaningful_time_between(data[i].schedule_seconds, data[i].total_logged_seconds) + ' )</span>'
 
                         var percent_complete_str = '<span class="label label-' + data[i].status_color + '">' + data[i].status + '</span>';
 
@@ -591,7 +591,7 @@
 
                     var percent_complete_str = '<span class="label label-' + data[i].status_color + '">' + data[i].status + '</span>';
 
-                    time_to_complete_str = '<span> ( ' +  time_to_complete(data[i].schedule_seconds,data[i].total_logged_seconds,data[i].schedule_unit) + ' )</span>'
+                    time_to_complete_str = '<span> ( ' +  meaningful_time_between(data[i].schedule_seconds,data[i].total_logged_seconds).time + ' )</span>'
 
                     if (!depends[task_id]) {
                         depends[task_id] = {

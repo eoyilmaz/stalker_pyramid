@@ -151,7 +151,7 @@
             "{%- if request.current_route_path() == request.route_path('list_task_versions', id=task.id) -%}'active',{%- else -%},{%- endif -%}",
             '{{ request.route_url('list_task_versions', id=task.id) }}',
             get_icon('version'),
-            0
+            {{ task.versions | count }}
         );
 
         menu_of(

@@ -256,7 +256,7 @@
 
 <script>
 
-
+    var units = ['y','m','w','d','h','min']
 
     var unit_by_seconds = function(unit){
 
@@ -274,11 +274,13 @@
                     return 9*6*60*60;
                     break;
                  case 'm':
-                    return 1;
+                    return 2419200;
                     break;
                  case 'y':
-                    return 1;
+                    return 31536000;
                     break;
+
+
         }
 
     }
@@ -291,13 +293,93 @@
 
     }
 
-    var time_to_complete = function(total_seconds, spend_seconds, unit){
+    var meaningful_time_between = function(time1, time2){
 
-        var schedule_unit_seconds = unit_by_seconds(unit)
-
-        return  ((total_seconds - spend_seconds) / schedule_unit_seconds)+' '+ unit;
+        var seconds_between = time1-time2
 
 
+
+        return meaningful_time(seconds_between)
+
+    }
+
+    var meaningful_time = function(time){
+
+
+        if (time !=0){
+            if (time % unit_by_seconds('y') == 0){
+                return time/ unit_by_seconds('y')+' y'
+            }
+            else if (time % unit_by_seconds('m') == 0){
+                return time/ unit_by_seconds('m')+' m'
+
+            }
+            else if (time % unit_by_seconds('w') == 0){
+                return time/ unit_by_seconds('w')+ ' w'
+
+            }
+            else if (time % unit_by_seconds('d') == 0){
+                return time/ unit_by_seconds('d')+' d'
+
+            }
+            else if (time % unit_by_seconds('h') == 0){
+                return time/ unit_by_seconds('h')+' h'
+            }
+            else if (time % unit_by_seconds('min') == 0){
+                return time/ unit_by_seconds('min')+' min'
+            }
+        }
+        else{
+            return '0'
+
+        }
+
+    }
+
+    var meaningful_time_calculator = function(time, unit){
+
+        var calc_time = time;
+        var index = units.indexOf(unit)
+        var time_str = ''
+        var u_seconds = unit_by_seconds(unit)
+
+        console.log('time: '+time+' unit: '+unit)
+
+        if(time !=0){
+            if (time > u_seconds){
+
+                var time_unit = parseInt(time/u_seconds)
+                console.log('time_unit: '+time_unit)
+
+                calc_time = calc_time%u_seconds
+
+                time_str +=time_unit+' '+unit
+
+
+                if(time>0){
+
+                    if (index < units.length){
+
+                        time_str +=' '+meaningful_time_calculator(calc_time,units[index+1])
+
+                    }
+                }
+
+            }
+            else{
+                if (index < units.length){
+                   time_str +=' '+meaningful_time_calculator(calc_time,units[index+1])
+                }
+            }
+        }
+        else{
+
+            time_str = ' '
+
+        }
+        console.log('time_str: '+time_str)
+
+        return time_str
 
     }
 
