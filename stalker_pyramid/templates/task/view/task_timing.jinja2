@@ -58,7 +58,7 @@
         var schedule_timing_seconds = {{ entity.schedule_seconds}};
         var total_logged_seconds = {{ entity.total_logged_seconds}};
 
-{#        console.log('schedule_timing_seconds: ' + schedule_timing_seconds +' total_logged_seconds: ' + total_logged_seconds);#}
+{#        console.log('entity.bid_unit: {{ entity.bid_unit }} total_logged_seconds: '+total_logged_seconds+' schedule_timing_seconds: '+schedule_timing_seconds+' bid_seconds:'+bid_seconds);#}
 
         var bid = meaningful_time_calculator(bid_seconds, '{{ entity.bid_unit }}');
         var schedule_timing = meaningful_time_calculator(schedule_timing_seconds, '{{ entity.bid_unit }}');

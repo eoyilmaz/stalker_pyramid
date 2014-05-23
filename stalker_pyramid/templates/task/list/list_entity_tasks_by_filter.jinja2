@@ -65,7 +65,7 @@
                     // fix dates
                     data[i].start = new Date(data[i].start).format('yyyy-mm-dd HH:MM');
 
-                    if (data[i].thumbnail_full_path == null) {
+                    if (data[i].thumbnail_full_path === null) {
                         data[i].thumbnail_full_path = '{{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}';
                     } else {
                         data[i].thumbnail_full_path = '/' + data[i].thumbnail_full_path;
@@ -99,7 +99,7 @@
                     if (data[i].status === 'prev') {
                         responsible = data[i].resources;
                         for (r = 0; r < responsible.length; r++) {
-                            if (responsible[r].id == '{{ logged_in_user.id }}') {
+                            if (responsible[r].id === '{{ logged_in_user.id }}') {
                                 data[i].review ="/tasks/" + data[i].id + "/review/dialog?came_from={{ request.current_route_path() }}";
                             }
                         }
@@ -108,7 +108,7 @@
                     if (data[i].status === 'wip' && data[i].completed == 100) {
                         resources = data[i].resources;
                         for (r = 0; r < resources.length; r++) {
-                            if (resources[r].id == '{{ logged_in_user.id }}') {
+                            if (resources[r].id === '{{ logged_in_user.id }}') {
                                 data[i].request_extra_time ="/tasks/" + data[i].id + "/request_extra_time/dialog?came_from={{ request.current_route_path() }}";
                             }
                         }
