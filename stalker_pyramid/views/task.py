@@ -3302,7 +3302,7 @@ def request_revision(request):
         if has_permission('Create_Review'):
            # review = forced_review(logged_in_user, task);
            # review.date_created = utc_now
-            
+
             task.request_revision(
                 logged_in_user,
                 note.content,
