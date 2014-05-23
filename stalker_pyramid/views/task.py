@@ -3191,7 +3191,7 @@ def approve_task(request):
         )
 
         try:
-            mailer.send(message)
+            mailer.send_to_queue(message)
         except ValueError:  # no internet connection
             pass
 
@@ -3379,10 +3379,10 @@ def request_revision(request):
             )
         )
 
-        try:
-            mailer.send(message)
-        except ValueError:  # no internet connection
-            pass
+        # try:
+        mailer.send_to_queue(message)
+        # except ValueError:  # no internet connection
+        #     pass
 
     request.session.flash('success:Requested revision for the task')
     return Response('Successfully requested revision for the task')
@@ -3587,7 +3587,7 @@ def request_progress_review(request):
         )
 
         logger.debug('mailer send')
-        mailer.send(message)
+        mailer.send_to_queue(message)
 
     logger.debug(
         'success:Your progress review request has been sent to responsible'
@@ -3676,7 +3676,7 @@ def request_final_review(request):
         )
 
         try:
-            mailer.send(message)
+            mailer.send_to_queue(message)
         except ValueError:
             pass
 
@@ -3721,7 +3721,7 @@ def request_final_review(request):
         )
 
         try:
-            mailer.send(message)
+            mailer.send_to_queue(message)
         except ValueError:
             pass
 
@@ -3890,7 +3890,7 @@ def request_extra_time(request):
         )
 
         try:
-            mailer.send(message)
+            mailer.send_to_queue(message)
         except ValueError:
             pass
 

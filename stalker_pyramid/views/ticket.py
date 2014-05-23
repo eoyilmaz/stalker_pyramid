@@ -218,7 +218,7 @@ def create_ticket(request):
             body=description_text,
             html=description_html
         )
-        mailer.send(message)
+        mailer.send_to_queue(message)
 
     DBSession.add(ticket)
 
@@ -369,7 +369,7 @@ def update_ticket(request):
             html=message_body_html,
             attachments=attachments
         )
-        mailer.send(message)
+        mailer.send_to_queue(message)
 
     # mail about changes in ticket status
     if ticket_log:
@@ -418,7 +418,7 @@ def update_ticket(request):
             body=message_body_text,
             html=message_body_html
         )
-        mailer.send(message)
+        mailer.send_to_queue(message)
 
     logger.debug('successfully updated ticket')
 
