@@ -88,8 +88,8 @@
 <script id="tmpl_itemRow" type="text/x-dot-template">
     <tr>
         <td>{{=it.start}}</td>
-        <td><a href='/tasks/{{=it.id}}/view'>{{=it.name}}</a></td>
-        <td>{{ for(var i=0;i<it.responsible.length;i++){ }}<a href='/users/{{=it.responsible[i].id}}/view'>{{=it.responsible[i].name}}</a><br/>{{ } }}</td>
+        <td><a href='/tasks/{{=it.id}}/view'>{{=it.full_path}}</a></td>
+        <td>{{ for(var i=0;i<it.responsible.length;i++){ }}<a href='/users/{{=it.responsible[i]}}/view'>{{=it.responsible[i]}}</a><br/>{{ } }}</td>
         <td>{{=it.task_type}}</td>
         <td data-sType="num-html">
             <div class="progress progress-success">
