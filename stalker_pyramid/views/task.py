@@ -2551,16 +2551,16 @@ def create_task(request):
     # get the resources
     resources = []
     resource_ids = []
-    if 'resource_ids' in request.params:
-        resource_ids = get_multi_integer(request, 'resource_ids')
+    if 'resource_ids[]' in request.params:
+        resource_ids = get_multi_integer(request, 'resource_ids[]')
         resources = User.query.filter(User.id.in_(resource_ids)).all()
 
     # get responsible
 
     responsible = []
     responsible_ids = []
-    if 'responsible_ids' in request.params:
-        responsible_ids = get_multi_integer(request, 'responsible_ids')
+    if 'responsible_ids[]' in request.params:
+        responsible_ids = get_multi_integer(request, 'responsible_ids[]')
         responsible = User.query.filter(User.id.in_(responsible_ids)).all()
 
     priority = request.params.get('priority', 500)
@@ -2630,7 +2630,7 @@ def create_task(request):
 
     # get the dependencies
     logger.debug('request.POST: %s' % request.POST)
-    depends_to_ids = get_multi_integer(request, 'dependent_ids')
+    depends_to_ids = get_multi_integer(request, 'dependent_ids[]')
 
     depends = Task.query.filter(
         Task.id.in_(depends_to_ids)).all() if depends_to_ids else []
