@@ -3290,7 +3290,7 @@ def request_revision(request):
         if has_permission('Create_Review'):
            # review = forced_review(logged_in_user, task);
            # review.date_created = utc_now
-            assert isinstance(task, Task)
+
             task.request_revision(
                 logged_in_user,
                 note.content,
@@ -3421,8 +3421,8 @@ def request_review_task_dialog(request):
                 'Look Development', 'Character Design', 'Model', 'Rig',
                 'Previs', 'Layout', 'Lighting', 'Environment Design',
                 'Matte Painting', 'Animation', 'Camera', 'Simulation',
-                'Postvis', 'Scene Assembly', 'Comp', 'FX', 'Concept',
-                'Groom'
+                'Postvis', 'Scene Assembly', 'Comp', 'FX', 'Sketch',
+                'Color Sketch', 'Groom'
             ]
             if task.type.name in forced_publish_types:
                 action = ''
