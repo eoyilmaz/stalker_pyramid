@@ -8,8 +8,8 @@
 
     <div class="widget-body no-padding">
         <div class="widget-main no-padding">
-            <div id='bid_alert' class="alert alert-block no-padding" >
 
+            <div id='bid_alert' class="alert alert-block no-padding" style="margin-bottom: 0px">
                 <table class="table">
                     <tbody>
                         <tr>
@@ -30,7 +30,11 @@
                         </tr>
                     </tbody>
                 </table>
-
+            </div>
+            <div class="progress no-padding" style="margin-top: 0px; margin-bottom: 0px">
+                    <div id='bid_bar' class="bar bar-info" style="width: 0%;"><div></div></div>
+                    <div id='total_logged_bar' class="bar" style="width: 0%;"></div>
+                    <div id='schedule_timing_bar' class="bar bar-danger" style="width: 0%;"></div>
             </div>
         </div><!--/widget-main-->
         {% if (entity.schedule_seconds - entity.total_logged_seconds)==0  and entity.status.code=='WIP'%}
@@ -54,11 +58,11 @@
     $(document).ready(function () {
 
 
-        var schedule_unit_seconds = unit_by_seconds('{{ entity.schedule_unit }}')
+        var schedule_unit_seconds = unit_by_seconds('{{ entity.schedule_unit }}');
 
-        var bid_seconds = calculate_seconds({{ entity.bid_timing }}, '{{ entity.bid_unit }}')
-        var schedule_timing_seconds ={{ entity.schedule_seconds}};
-        var total_logged_seconds ={{ entity.total_logged_seconds}};
+        var bid_seconds = calculate_seconds({{ entity.bid_timing }}, '{{ entity.bid_unit }}');
+        var schedule_timing_seconds = calculate_seconds({{ entity.schedule_timing }}, '{{ entity.schedule_unit }}');
+        var total_logged_seconds = {{ entity.total_logged_seconds}};
 
         console.log('entity.bid_unit: {{ entity.bid_unit }} total_logged_seconds: '+total_logged_seconds+' schedule_timing_seconds: '+schedule_timing_seconds+' bid_seconds:'+bid_seconds)
 
@@ -72,12 +76,30 @@
         $('#total_logged').text(total_logged);
         $('#time_to_complete').text(time_to_complete);
 
+        var bid_bar_percent = 0;
+        var total_logged_bar_percent = (total_logged_seconds/schedule_timing_seconds)*100;
+        var schedule_timing_bar_percent = 100-total_logged_bar_percent;
         if(bid_seconds < total_logged_seconds)
         {
-            $('#bid_alert').addClass('alert-danger')
+            $('#bid_alert').addClass('alert-danger');
+            $('#total_logged_bar').addClass('bar-warning');
+
+            bid_bar_percent = (bid_seconds/schedule_timing_seconds)*100;
+            total_logged_bar_percent -= bid_bar_percent;
+            schedule_timing_bar_percent = 100-(bid_bar_percent+total_logged_bar_percent);
+
+        }
+        else if(bid_seconds == total_logged_seconds) {
+             $('#bid_alert').addClass('alert-info');
+             $('#total_logged_bar').addClass('bar-success');
         }
         else{
-             $('#bid_alert').addClass('alert-info')
+             $('#bid_alert').addClass('alert-info');
+             $('#total_logged_bar').addClass('bar-warning');
         }
+
+        $('#bid_bar').attr('style','width: '+bid_bar_percent+'%;');
+        $('#total_logged_bar').attr('style','width: '+total_logged_bar_percent+'%;');
+        $('#schedule_timing_bar').attr('style','width: '+schedule_timing_bar_percent+'%;');
     });
 </script>
