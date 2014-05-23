@@ -157,7 +157,7 @@
                                                      <i class='light-blue icon-2x icon-spinner icon-spin'></i>
                                                 </div>
                                                 <div class="space-8"></div>
-                                                <span class="editable" id="editable_entity_description">{{ entity.description | safe }}</span>
+                                                <span class="editable" id="editable_entity_description">{{ entity.description | replace('\n', '<br/>') | safe }}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -609,7 +609,6 @@
                             type: 'item'
                         };
                     }
-
                 }
 
                 drawTree(type + '_tree', depends);
@@ -624,38 +623,39 @@
         get_dependency('dependent_of');
     });
 
-    $(document).ready(function () {
-        $.getJSON('/entities/{{ entity.id }}/version/used_by/tasks/').then(function (data) {
-            var tasks = {};
-            for (var i = 0; i < data.length; i++) {
+    $.getJSON('/entities/{{ entity.id }}/version/used_by/tasks/').then(function (data) {
+        var tasks = {};
+        for (var i = 0; i < data.length; i++) {
 
-                var task_id = (data[i].id).toString();
+            var task_id = (data[i].id).toString();
 
-                if (!tasks[task_id]) {
-                    tasks[task_id] = {
-                        'name': '<span><a href="/tasks/' + data[i].id + '/view">' + data[i].name + '</a></span>',
-                        'type': 'folder',
-                        'icon-class': data[i].status_color
-                    }
+            if (!tasks[task_id]) {
+                tasks[task_id] = {
+                    'name': '<span><a href="/tasks/' + data[i].id + '/view">' + data[i].name + '</a></span>',
+                    'type': 'folder',
+                    'icon-class': data[i].status_color
                 }
-
-                if (!tasks[task_id]['additionalParameters']) {
-                    tasks[task_id]['additionalParameters'] = {};
-                    tasks[task_id]['additionalParameters']['children'] = {};
-                }
-
-                tasks[task_id]['additionalParameters']['children'][(data[i].resource_id).toString()] = {
-                    name: '<span  class="pull-left"><a href="/users/' + data[i].resource_id + '/view">' + data[i].resource_name + '  </a></span>',
-                    type: 'item'
-                };
             }
 
+            if (!tasks[task_id]['additionalParameters']) {
+                tasks[task_id]['additionalParameters'] = {};
+                tasks[task_id]['additionalParameters']['children'] = {};
+            }
+
+            tasks[task_id]['additionalParameters']['children'][(data[i].resource_id).toString()] = {
+                name: '<span  class="pull-left"><a href="/users/' + data[i].resource_id + '/view">' + data[i].resource_name + '  </a></span>',
+                type: 'item'
+            };
+        }
+
+        $(document).ready(function () {
             drawTree('version_used_by_tasks_tree', tasks);
 
             if (data.length == 0) {
                 $('#version_used_by_tasks_tree').append('<div class="alert alert-warning">No tasks</div>');
             }
         });
+
     });
 
     </script>
