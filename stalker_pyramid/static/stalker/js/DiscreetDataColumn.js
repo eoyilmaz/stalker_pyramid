@@ -70,7 +70,7 @@ define([
         var period_end = moment(start_date.endOf(period_unit));
 
         var data_in_between;
-        var log_bar, data_bar, data_labels;
+        var log_bar, data_bar, data_value, data_labels;
         var log_bar_container;
 
         var parent_div = $($.parseHTML('<div class="logContainer"></div>'));
@@ -107,12 +107,18 @@ define([
 
             var total_hours = (data_in_between / 3600000).toFixed(0);
             data_bar = $($.parseHTML(
-                '<div class="data_bar" >' + total_hours + '</div>'
+                '<div class="data_bar" ></div>'
             ));
-            data_bar.text(total_hours);
-            data_bar.attr('data-content', data_labels).attr('data-rel', 'popover');
-            log_bar_container.append(log_bar);
+
+            data_value = $($.parseHTML(
+                '<div class="data_value"></div>'
+            ));
+            data_value.attr('data-content', data_labels).attr('data-rel', 'popover');
+            data_value.text(total_hours);
+
             log_bar_container.append(data_bar);
+            log_bar_container.append(log_bar);
+            log_bar_container.append(data_value);
 
             parent_div.append(
                 log_bar_container

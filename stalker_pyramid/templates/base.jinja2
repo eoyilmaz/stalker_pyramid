@@ -297,33 +297,26 @@
         time = Math.round(time)
 
         if (time !=0){
-            if (time % unit_by_seconds('y') == 0){
+            if (time % unit_by_seconds('y') == 0) {
                 return time / unit_by_seconds('y') + ' y';
-            }
-            else if (time % unit_by_seconds('m') == 0){
+            } else if (time % unit_by_seconds('m') == 0) {
                 return time / unit_by_seconds('m') + ' m';
-            }
-            else if (time % unit_by_seconds('w') == 0){
+            } else if (time % unit_by_seconds('w') == 0) {
                 return time / unit_by_seconds('w') + ' w';
-            }
-            else if (time % unit_by_seconds('d') == 0){
+            } else if (time % unit_by_seconds('d') == 0) {
                 return time / unit_by_seconds('d') + ' d';
-            }
-            else if (time % unit_by_seconds('h') == 0){
+            } else if (time % unit_by_seconds('h') == 0) {
                 return time / unit_by_seconds('h') + ' h';
-            }
-            else if (time % unit_by_seconds('min') == 0){
+            } else if (time % unit_by_seconds('min') == 0) {
                 return time / unit_by_seconds('min') + ' min';
-            }
-            else{
-
+            } else {
                return time + ' seconds';
             }
         }
         else{
             return '0';
         }
-    }
+    };
 
     var meaningful_time_calculator = function(time, unit) {
         var calc_time = Math.round(time);
@@ -331,27 +324,18 @@
         var time_str = '';
         var u_seconds = unit_by_seconds(unit);
 
-
-        if(unit){
-
-            if(calc_time !=0){
-
-                if (calc_time > u_seconds){
-
+        if (unit !== null || unit !== undefined) {
+            if (calc_time !== 0) {
+                if (calc_time > u_seconds) {
                     var time_unit = parseInt(time/u_seconds)
-
                     calc_time = calc_time%u_seconds
-
                     time_str +=time_unit+' '+unit
 
-                    if(calc_time>0){
-
+                    if (calc_time > 0) {
                         if (index < units.length-1){
-
                             time_str +=' '+meaningful_time_calculator(calc_time,units[index+1])
                         }
                     }
-
                 }
                 else{
                     if (index < units.length-1){
@@ -362,7 +346,6 @@
         }
 
         return time_str
-
     }
 
 </script>

@@ -10,16 +10,15 @@
 .log_bar.layout {
     position: absolute;
     height: 26px;
-    bottom: 0px;
+    bottom: 0;
     background-color: #87b87f !important;
 }
 
 .log_bar.log {
     position: absolute;
     width: 100%;
-    bottom: 0px;
+    bottom: 0;
     background-color: #d15b47 !important;
-    /*opacity: 0.5;*/
 }
 
 .data_bar {
@@ -28,6 +27,15 @@
     height: 100%;
     left: 0;
     top: 0;
+    text-align: center;
+}
+
+.data_value {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    bottom: 0;
     text-align: center;
     cursor: pointer;
 }
@@ -56,7 +64,7 @@
 }
 
 th.dgrid-column-chart {
-    padding: 0px;
+    padding: 0;
 }
 
 th.dgrid-column-chart td {
@@ -146,6 +154,6 @@ th.dgrid-column-chart table {
     height: 100%;
     background-color: lightblue;
     position: absolute;
-    top: 0px;
+    top: 0;
     opacity: 0.75;
 }

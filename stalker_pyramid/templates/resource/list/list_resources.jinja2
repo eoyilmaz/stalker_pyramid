@@ -391,7 +391,7 @@ require([
         $('body').on('click', function(event){
             // register a click function to hide any popover that is still shown
             var target = $(event.target);
-            if (!target.hasClass('data_bar')){
+            if (!target.hasClass('data_value')){
                 $('[data-rel=popover]').popover('hide');
             }
         });

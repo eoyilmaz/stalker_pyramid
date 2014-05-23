@@ -329,6 +329,12 @@ tr .odd > td .ticket_BLOCKER {
 .dgrid-selected .cmpl a {
   color: black;
 }
+.dgrid-selected .log_bar.log {
+  background-color: #f37d69 !important;
+}
+.dgrid-selected .data_bar {
+  background-color: #a4d191 !important;
+}
 .label-red,
 .badge-red {
   background-color: #d53f40 !important;
