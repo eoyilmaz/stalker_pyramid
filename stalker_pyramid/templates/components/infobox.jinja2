@@ -2,24 +2,24 @@
 <script id="tmpl_infobox" type="text/x-dot-template">
     <div class="infobox infobox-{{=it.status_color }}" style="width:120px">
 
-            <div class="infobox-icon" style="min-width:40px" id="status_button" ><i class="{{=it.status_icon }}"></i></div>
-            <div class="infobox-data" style="min-width:60px"><span class="infobox-data-number">{{=it.tasks_count }}</span>
+        <div class="infobox-icon" style="min-width:40px" id="status_button" ><i class="{{=it.status_icon }}"></i></div>
+        <div class="infobox-data" style="min-width:60px"><span class="infobox-data-number">{{=it.tasks_count }}</span>
 
-                <div class="infobox-content">
+            <div class="infobox-content">
 
-                    {{ if (it.entity_type == 'Project'){ }}
-                    <a href="/projects/{{=it.entity_id }}/tasks/filter/{{=it.status_id }}/list"
-                       class="{{=it.status_color }}">{{=it.status_code }}</a>
-                    {{ } else { }}
-                    <a data-target="#html_template"
-                       data-toggle="modal"
-                       data-keyboard=false
-                       href="/entities/{{=it.entity_id }}/tasks/filter/{{=it.status_id }}/list"
-                       class="{{=it.status_color }}">{{=it.status_code }}</a>
-                    {{ } }}
-                </div>
-
+                {{ if (it.entity_type === 'Project'){ }}
+                <a href="/projects/{{=it.entity_id }}/tasks/filter/{{=it.status_id }}/list"
+                   class="{{=it.status_color }}">{{=it.status_code }}</a>
+                {{ } else { }}
+                <a data-target="#html_template"
+                   data-toggle="modal"
+                   data-keyboard=false
+                   href="/entities/{{=it.entity_id }}/tasks/filter/{{=it.status_id }}/list"
+                   class="{{=it.status_color }}">{{=it.status_code }}</a>
+                {{ } }}
             </div>
+
+        </div>
 
     </div>
 
@@ -27,15 +27,12 @@
 {% endraw %}
 
 
-
-
-<script class="code" type="text/javascript">
+<script>
     $(document).ready(function () {
         var infobox = $('#infobox');
         var infobox_template = doT.template($('#tmpl_infobox').html());
 
         $.getJSON(infobox.attr('address')).then(function (data) {
-
             var sorting_path = ['WFD','RTS','WIP', 'OH','STOP', 'PREV','HREV', 'DREV', 'CMPL'];
             var sorted_data = [];
 
@@ -43,7 +40,7 @@
             for (var i = 0; i < data.length; i++) {
 
                 data[i].entity_id = '{{ entity.id }}';
-                data[i].entity_type = '{{ entity.entity_type }}'
+                data[i].entity_type = '{{ entity.entity_type }}';
                 if(data[i].status_icon == ''){
                    data[i].status_icon = get_icon(data[i].status_code);
                 }
@@ -60,7 +57,6 @@
                 }
             }
         });
-
     });
 </script>
 

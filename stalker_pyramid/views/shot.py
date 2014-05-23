@@ -331,7 +331,6 @@ order by "Shot_SimpleEntities".name
     if shot_id:
         where_condition = 'where "Shots".id = %(shot_id)s'%({'shot_id':shot_id})
 
-
     update_shot_permission = \
         PermissionChecker(request)('Update_Shot')
     delete_shot_permission = \

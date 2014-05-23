@@ -46,7 +46,7 @@
                     >
                 <i class="icon-time bigger-130"></i> Request Extra Time</button>
         </div>
-          {% endif %}
+        {% endif %}
     </div><!--/widget-body-->
 </div><!--/widget-box-->
 
@@ -66,20 +66,18 @@
         var schedule_timing = meaningful_time_calculator(schedule_timing_seconds, '{{ entity.bid_unit }}');
         var total_logged = meaningful_time_calculator(total_logged_seconds, '{{ entity.bid_unit }}');
         var time_to_complete = meaningful_time_calculator(schedule_timing_seconds-total_logged_seconds, '{{ entity.bid_unit }}');
-{##}
-        $('#bid').text(bid)
-        $('#schedule_timing').text(schedule_timing)
-        $('#total_logged').text(total_logged)
-        $('#time_to_complete').text(time_to_complete)
 
+        $('#bid').text(bid);
+        $('#schedule_timing').text(schedule_timing);
+        $('#total_logged').text(total_logged);
+        $('#time_to_complete').text(time_to_complete);
 
-        if(bid_seconds< total_logged_seconds)
+        if(bid_seconds < total_logged_seconds)
         {
             $('#bid_alert').addClass('alert-danger')
         }
         else{
              $('#bid_alert').addClass('alert-info')
-
         }
     });
 </script>

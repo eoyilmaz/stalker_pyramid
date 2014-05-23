@@ -256,91 +256,74 @@
 
 <script>
 
-    var units = ['y','m','w','d','h','min']
+    var units = ['y','m','w','d','h','min'];
 
     var unit_by_seconds = function(unit){
-
-        switch (unit) {
-                 case 'min':
-                    return 60;
-                    break;
-                case 'h':
-                    return 60*60;
-                    break;
-                case 'd':
-                    return 9*60*60;
-                    break;
-                 case 'w':
-                    return 9*6*60*60;
-                    break;
-                 case 'm':
-                    return 2419200;
-                    break;
-                 case 'y':
-                    return 31536000;
-                    break;
-
-
+       switch (unit) {
+            case 'min':
+                return 60;
+                break;
+            case 'h':
+                return 3600;
+                break;
+           case 'd':
+                return 32400; // TODO: this is not true, please use: stalker.defaults.daily_working_hours
+                break;
+           case 'w':
+                return 194400; // TODO: this is not true, please use: stalker.defaults.weekly_working_hours
+                break;
+           case 'm':
+                return 2419200; // TODO: this is not true, please use: 4 * stalker.defaults.weekly_working_hours
+                break;
+           case 'y':
+                return 31536000; // TODO: this is not true, please use: stalker.defaults.yearly_working_days * stalker.defaults.daily_working_hours
+                break;
         }
-
-    }
+        return 0;
+    };
 
     var calculate_seconds = function(timing,unit){
-
-        var u_seconds = unit_by_seconds(unit)
-
-        return  timing*u_seconds;
-
-    }
+        var u_seconds = unit_by_seconds(unit);
+        return  timing * u_seconds;
+    };
 
     var meaningful_time_between = function(time1, time2){
-
         var seconds_between = time1 - time2;
-
-        return meaningful_time(seconds_between)
-
-    }
+        return meaningful_time(seconds_between);
+    };
 
     var meaningful_time = function(time){
-
-        console.log('time: '+ time);
-
         if (time !=0){
             if (time % unit_by_seconds('y') == 0){
-                return time/ unit_by_seconds('y')+' y';
+                return time / unit_by_seconds('y') + ' y';
             }
             else if (time % unit_by_seconds('m') == 0){
-                return time/ unit_by_seconds('m')+' m';
+                return time / unit_by_seconds('m') + ' m';
             }
             else if (time % unit_by_seconds('w') == 0){
-                return time/ unit_by_seconds('w')+ ' w';
+                return time / unit_by_seconds('w') + ' w';
             }
             else if (time % unit_by_seconds('d') == 0){
-                return time/ unit_by_seconds('d')+' d';
+                return time / unit_by_seconds('d') + ' d';
             }
             else if (time % unit_by_seconds('h') == 0){
-                return time/ unit_by_seconds('h')+' h';
+                return time / unit_by_seconds('h') + ' h';
             }
             else if (time % unit_by_seconds('min') == 0){
-                return time/ unit_by_seconds('min')+' min';
+                return time / unit_by_seconds('min') + ' min';
             }
         }
         else{
-            return '0'
-
+            return '0';
         }
-
     }
 
-    var meaningful_time_calculator = function(time, unit){
-
-        var time_str = ''
+    var meaningful_time_calculator = function(time, unit) {
         var calc_time = time;
-        var index = units.indexOf(unit)
+        var index = units.indexOf(unit);
+        var time_str = '';
+        var u_seconds = unit_by_seconds(unit);
 
-        var u_seconds = unit_by_seconds(unit)
-
-        console.log('time: '+time+' unit: '+unit)
 
         if(unit){
 
@@ -383,7 +366,6 @@
         var sidebar_list = $('#sidebar_list');
         var media_template = doT.template($('#tmpl_sidebar_media').html());
 
-
         sidebar_list.append(media_template({
             'name': name,
             'thumbnail_full_path': thumbnail_full_path,
@@ -392,6 +374,7 @@
         }));
     }
 </script>
+
 <script>
     var menu_of = function (title, state, address, icon, count) {
         var sidebar_list = $('#sidebar_list');
@@ -422,9 +405,9 @@
                 }
             });
         }
-
     }
 </script>
+
 <script>
     var submenu_of = function (id, treeItemType) {
 
@@ -448,13 +431,9 @@
                 var item_sublink = $('#' + treeItemType + 's_sublink');
                 var tree_sublink_template = doT.template($('#tmpl_sidebar_tree_sublink').html());
 
-
                 for (var i = 0; i < data_counts; i++) {
-
-                    data[i].link = '/' + treeItemType.toLowerCase() + 's/' + data[i].id + '/view'
-
-                    item_sublink.append(tree_sublink_template(data[i]))
-
+                    data[i].link = '/' + treeItemType.toLowerCase() + 's/' + data[i].id + '/view';
+                    item_sublink.append(tree_sublink_template(data[i]));
                 }
             });
         });

@@ -1,21 +1,3 @@
-
-{% raw %}
-<script id="tmpl_resourceBar" type="text/x-dot-template">
-    <div class="resourceBox" dataId="{{=it.id}}">
-        <div class="layout">
-            <div class="resourceResourceLabel">{{=it.link()}}</div>
-        </div>
-    </div>
-</script>
-{% endraw %}
-
-<script type='text/javascript'>
-    // ************************************************************************
-    // load templates with doT.js
-    var templates = {};
-    templates.resourceBar = doT.template(document.getElementById('tmpl_resourceBar').text);
-</script>
-
 <div class="row-fluid">
     <div class="span12">
         <!--PAGE CONTENT BEGINS-->
@@ -93,8 +75,8 @@
             </div>
 
             <div class="row-fluid">
-                <div id="{{ entity.entity_type }}_{{ entity.id }}_resource_grid"
-                     class='resource_chart'
+                <div id="{{ entity.entity_type }}_{{ entity.id }}_ddgrid"
+                     class='ddgrid'
                      style='height: 700px'></div>
             </div>
         </div>
@@ -125,10 +107,10 @@ require([
     'dojo/store/JsonRest',
 
     'stalker/js/Resource',
-    'stalker/js/ResourceGrid',
+    'stalker/js/DiscreetDataGrid',
 
     'dojo/domReady!'
-], function (Cache, Memory, JsonRest, Resource, ResourceGrid){
+], function (Cache, Memory, JsonRest, Resource, DiscreetDataGrid){
 
     // The Memory
     var target = '{{ request.route_url('get_resource', id=entity.id) }}';
@@ -151,18 +133,18 @@ require([
     });
     var tasks_cache_store = new Cache(resources_jsonRest_store, resources_memory_store);
 
-    var resource_chart_dom_id = '{{ entity.entity_type }}_{{ entity.id }}_resource_grid';
-    var resource_chart_dgrid_id = '{{ entity.entity_type }}_{{ entity.id }}_resource_grid';
+    var ddgrid_dom_id = '{{ entity.entity_type }}_{{ entity.id }}_ddgrid';
+    var ddgrid_dgrid_id = '{{ entity.entity_type }}_{{ entity.id }}_ddgrid';
 
-    // allow the resource_grid to resize with the window
+    // allow the ddgrid to resize with the window
     $(window).on('resize', function(){
-        var resource_grid_height = $(window).height() - 230;
-        $('#' + resource_chart_dom_id).css({height: resource_grid_height});
+        var ddgrid_height = $(window).height() - 230;
+        $('#' + ddgrid_dom_id).css({height: ddgrid_height});
     });
     $(window).trigger('resize');
 
-    var resource_grid = new ResourceGrid({
-        id: resource_chart_dgrid_id,
+    var ddgrid = new DiscreetDataGrid({
+        id: ddgrid_dgrid_id,
         width: '100%',
         autoHeight: true,
         store: tasks_cache_store,
@@ -172,11 +154,20 @@ require([
         },
         loadingMessage: "<div style='float: left' class='dijitIconLoading'>&nbsp</div><div>Loading</div>",
         noDataMessage: "No data",
-        data_wrapper: Resource,
         pageSkip: 0,
-        cellNavigation: false
-    }, resource_chart_dom_id);
-    resource_grid.startup();
+        cellNavigation: false,
+        data_wrapper: Resource,
+        scale: 'w',
+        start: function () {
+            var today = moment();
+            return today.subtract(6, 'month').startOf('isoweek');
+        },
+        end: function () {
+            var today = moment();
+            return today.add(6, 'month').endOf('isoweek');
+        }
+    }, ddgrid_dom_id);
+    ddgrid.startup();
 
     // ceter on today
     setTimeout(
@@ -187,7 +178,7 @@ require([
     );
 
     // get the resource column
-    var resource_column = resource_grid.columnSets[1][0][0];
+    var resource_column = ddgrid.columnSets[1][0][0];
 
     // Update Button
     $("#resource_update_zoom_level_button").on('click', function(e){
@@ -295,7 +286,7 @@ require([
 
         var dragDetector = $($.parseHTML('<div class="dragDetector"></div>'));
         var zoomBox = $($.parseHTML('<div class="zoomBox"></div>'));
-        $('#' + resource_chart_dom_id).append(zoomBox).append(dragDetector);
+        $('#' + ddgrid_dom_id).append(zoomBox).append(dragDetector);
 
         $('.dragDetector').mousedown(function(e){
             e.stopPropagation();
