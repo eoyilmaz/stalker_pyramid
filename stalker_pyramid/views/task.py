@@ -3434,8 +3434,8 @@ def request_review_task_dialog(request):
                 'Look Development', 'Character Design', 'Model', 'Rig',
                 'Previs', 'Layout', 'Lighting', 'Environment Design',
                 'Matte Painting', 'Animation', 'Camera', 'Simulation',
-                'Postvis', 'Scene Assembly', 'Comp', 'FX', 'Concept',
-                'Groom'
+                'Postvis', 'Scene Assembly', 'Comp', 'FX', 'Sketch',
+                'Color Sketch', 'Groom'
             ]
             if task.type.name in forced_publish_types:
                 action = ''
