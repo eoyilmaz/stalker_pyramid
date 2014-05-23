@@ -293,6 +293,9 @@
     };
 
     var meaningful_time = function(time){
+
+        time = Math.round(time)
+
         if (time !=0){
             if (time % unit_by_seconds('y') == 0){
                 return time / unit_by_seconds('y') + ' y';
@@ -312,6 +315,10 @@
             else if (time % unit_by_seconds('min') == 0){
                 return time / unit_by_seconds('min') + ' min';
             }
+            else{
+
+               return time + ' seconds';
+            }
         }
         else{
             return '0';
@@ -319,7 +326,7 @@
     }
 
     var meaningful_time_calculator = function(time, unit) {
-        var calc_time = time;
+        var calc_time = Math.round(time);
         var index = units.indexOf(unit);
         var time_str = '';
         var u_seconds = unit_by_seconds(unit);
@@ -327,9 +334,9 @@
 
         if(unit){
 
-            if(time !=0){
+            if(calc_time !=0){
 
-                if (time > u_seconds){
+                if (calc_time > u_seconds){
 
                     var time_unit = parseInt(time/u_seconds)
 
@@ -337,12 +344,11 @@
 
                     time_str +=time_unit+' '+unit
 
-                    if(time>0){
+                    if(calc_time>0){
 
                         if (index < units.length-1){
 
                             time_str +=' '+meaningful_time_calculator(calc_time,units[index+1])
-
                         }
                     }
 

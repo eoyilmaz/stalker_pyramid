@@ -97,8 +97,8 @@
                 </div>
             </div>
         </td>
-        <td {{ if (it.hour_based_on_bid<0) { }}style="background-color: #ff0000; opacity:0.8;"{{ } }}>{{=it.hour_based_on_bid}}</td>
-        <td {{ if (it.hour_to_complete<0) { }}style="background-color: #ff0000; opacity:0.8;"{{ } }}>{{=it.hour_to_complete}}</td>
+        <td style="background-color: {{=it.bid_stat}}; opacity:0.8;">{{=it.hour_based_on_bid}}</td>
+        <td>{{=it.hour_to_complete}}</td>
         <td>{{=it.priority}}</td>
         <td>
             <div class="hidden-phone visible-desktop action-buttons">
