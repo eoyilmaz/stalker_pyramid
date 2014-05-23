@@ -328,10 +328,8 @@ order by "Shot_SimpleEntities".name
     elif entity.entity_type == 'Project':
         where_condition = ''
 
-
     if shot_id:
         where_condition = 'where "Shots".id = %(shot_id)s'%({'shot_id':shot_id})
-
 
     update_shot_permission = \
         PermissionChecker(request)('Update_Shot')

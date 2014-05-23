@@ -55,23 +55,27 @@
         var schedule_unit_seconds = unit_by_seconds('{{ entity.schedule_unit }}');
 
         var bid_seconds = calculate_seconds({{ entity.bid_timing }}, '{{ entity.bid_unit }}');
-        var schedule_timing_seconds ={{ entity.schedule_seconds}};
-        var total_logged_seconds ={{ entity.total_logged_seconds}};
+        var schedule_timing_seconds = {{ entity.schedule_seconds}};
+        var total_logged_seconds = {{ entity.total_logged_seconds}};
 
-        var bid = bid_seconds / schedule_unit_seconds;
-        var schedule_timing = schedule_timing_seconds / schedule_unit_seconds;
-        var total_logged = total_logged_seconds / schedule_unit_seconds;
-        var time_to_complete = schedule_timing - total_logged;
+{#        console.log('schedule_timing_seconds: ' + schedule_timing_seconds +' total_logged_seconds: ' + total_logged_seconds);#}
 
-        $('#bid').text(bid+' {{ entity.schedule_unit }}');
-        $('#schedule_timing').text(schedule_timing+' {{ entity.schedule_unit }}');
-        $('#total_logged').text(total_logged+' {{ entity.schedule_unit }}');
-        $('#time_to_complete').text(time_to_complete+' {{ entity.schedule_unit }}');
+        var bid = meaningful_time_calculator(bid_seconds, '{{ entity.bid_unit }}');
+        var schedule_timing = meaningful_time_calculator(schedule_timing_seconds, '{{ entity.bid_unit }}');
+        var total_logged = meaningful_time_calculator(total_logged_seconds, '{{ entity.bid_unit }}');
+        var time_to_complete = meaningful_time_calculator(schedule_timing_seconds-total_logged_seconds, '{{ entity.bid_unit }}');
 
-        if(bid< total_logged) {
-            $('#bid_alert').addClass('alert-danger');
-        } else {
-            $('#bid_alert').addClass('alert-info');
+        $('#bid').text(bid);
+        $('#schedule_timing').text(schedule_timing);
+        $('#total_logged').text(total_logged);
+        $('#time_to_complete').text(time_to_complete);
+
+        if(bid_seconds < total_logged_seconds)
+        {
+            $('#bid_alert').addClass('alert-danger')
+        }
+        else{
+             $('#bid_alert').addClass('alert-info')
         }
     });
 </script>

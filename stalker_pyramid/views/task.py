@@ -1825,18 +1825,6 @@ def get_task(request):
 
 
 @view_config(
-    route_name='get_task_children',
-    renderer='json'
-)
-def get_task_children(request):
-    """RESTful version of getting task children
-    """
-    task_id = request.matchdict.get('id', -1)
-    task = Task.query.filter_by(id=task_id).first()
-    return convert_to_dgrid_gantt_task_format(task.children)
-
-
-@view_config(
     route_name='get_gantt_tasks',
     renderer='json'
 )
@@ -3310,7 +3298,7 @@ def request_revision(request):
                 schedule_unit
             )
         else:
-            return Response('You dont have permission', 500)
+            return Response("You don't have permission", 500)
     else:
 
         status_new = Status.query.filter_by(code='NEW').first()
@@ -4193,66 +4181,3 @@ def get_task_dependency(request):
         )
 
     return list_of_dep_tasks_json
-
-
-@view_config(
-    route_name='get_task_children_task_type',
-    renderer='json'
-)
-def get_task_children_task_type(request):
-    """returns the Task Types defined under the Shot container
-    """
-    task_type_name = request.matchdict.get('task_type', -1)
-
-    task_type = Type.query.filter_by(name=task_type_name).first()
-
-    if not task_type:
-        transaction.abort()
-        return Response(
-            'Can not find a Type with name: %s' % task_type_name, 500
-        )
-
-    sql_query = """select
-        "SimpleEntities".id as type_id,
-        "SimpleEntities".name as type_name
-    from "SimpleEntities"
-    join "SimpleEntities" as "Task_SimpleEntities" on "SimpleEntities".id = "Task_SimpleEntities".type_id
-    join "Tasks" on "Task_SimpleEntities".id = "Tasks".id
-    join (
-        select "Tasks".id as task_id
-
-        from "Tasks"
-        join "SimpleEntities" as "Tasks_SimpleEntities" on "Tasks_SimpleEntities".id = "Tasks".id
-        join "Types" as "Tasks_Types" on "Tasks_Types".id = "Tasks_SimpleEntities".type_id
-
-        where "Tasks_Types".id = %(task_type_id)s
-
-    ) as "Selected_Type_Tasks" on "Selected_Type_Tasks".task_id = "Tasks".parent_id
-    group by "SimpleEntities".id, "SimpleEntities".name
-    order by "SimpleEntities".name"""
-
-    sql_query = sql_query % {'task_type_id': task_type.id}
-
-    result = DBSession.connection().execute(sql_query)
-
-    return_data = [
-        {
-            'id': r[0],
-            'name': r[1]
-
-        }
-        for r in result.fetchall()
-    ]
-
-    content_range = '%s-%s/%s'
-
-    type_count = len(return_data)
-    content_range = content_range % (0, type_count - 1, type_count)
-
-    logger.debug('content_range : %s' % content_range)
-
-    resp = Response(
-        json_body=return_data
-    )
-    resp.content_range = content_range
-    return resp

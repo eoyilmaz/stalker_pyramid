@@ -48,13 +48,11 @@
 
             <div class="hr hr8 hr-double"></div>
 
-
             <div class="space"></div>
 
             <div class="row-fluid">
                 <div id="calendar"></div>
             </div>
-
         </div>
 
     </div>
@@ -87,73 +85,72 @@
 {% raw %}
 <script id="tmpl_itemRow" type="text/x-dot-template">
     <tr>
-        <td>{{=it.start_date}}</td>
+        <td>{{=it.start}}</td>
         <td><a href='/tasks/{{=it.id}}/view'>{{=it.name}}</a></td>
-        <td><a href='/users/{{=it.responsible_id}}/view'>{{=it.responsible_name}}</a></td>
-        <td>{{=it.type}}</td>
+        <td>{{ for(var i=0;i<it.responsible.length;i++){ }}<a href='/users/{{=it.responsible[i].id}}/view'>{{=it.responsible[i].name}}</a><br/>{{ } }}</td>
+        <td>{{=it.task_type}}</td>
         <td data-sType="num-html">
             <div class="progress progress-success">
-                <div style="width:{{=it.percent_complete}}%"
+                <div style="width:{{=it.completed}}%"
                      class="bar">
-                    <span class="pull-left">{{= it.percent_complete.toFixed(0) }}%</span>
+                    <span class="pull-left">{{= it.completed.toFixed(0) }}%</span>
                 </div>
             </div>
         </td>
-        <td {{ if (it.hour_based_on_bid<0) { }}style="background-color: #ff0000; opacity:0.8;"{{ } }}>{{=it.hour_based_on_bid}} h</td>
-        <td {{ if (it.hour_to_complete<0) { }}style="background-color: #ff0000; opacity:0.8;"{{ } }}>{{=it.hour_to_complete}} h</td>
+        <td {{ if (it.hour_based_on_bid<0) { }}style="background-color: #ff0000; opacity:0.8;"{{ } }}>{{=it.hour_based_on_bid}}</td>
+        <td {{ if (it.hour_to_complete<0) { }}style="background-color: #ff0000; opacity:0.8;"{{ } }}>{{=it.hour_to_complete}}</td>
         <td>{{=it.priority}}</td>
         <td>
-                <div class="hidden-phone visible-desktop action-buttons">
-                    <a class="blue" href='/tasks/{{=it.id}}/view'>
-                        <i class="icon-zoom-in bigger-130"></i>
+            <div class="hidden-phone visible-desktop action-buttons">
+                <a class="blue" href='/tasks/{{=it.id}}/view'>
+                    <i class="icon-zoom-in bigger-130"></i>
+                </a>
+
+                {{ if (it.request_extra_time)  { }}
+                    <a
+                        class="red"
+                        data-target="#dialog_template"
+                        data-toggle="modal"
+                        data-keyboard=false
+                        data-rel="tooltip"
+                        data-placement="top"
+                        title="Request Extra Time"
+                        href="{{=it.request_extra_time}}">
+                        <i class="icon-time bigger-130"></i>
+                    </a>
+                {{ } }}
+
+                {{ if (it.request_review) { }}
+                    <a
+                        class="green"
+                        data-target="#dialog_template"
+                        data-toggle="modal"
+                        data-keyboard=false
+                        data-rel="tooltip"
+                        data-placement="top"
+                        title="Request Review"
+                        href="{{=it.request_review}}">
+                        <i class="icon-comment-alt bigger-130"></i>
                     </a>
 
-                    {{ if (it.percent_complete == 100&&it.status_code=='WIP')  { }}
-                        <a
-                            class="red"
-                            data-target="#dialog_template"
-                            data-toggle="modal"
-                            data-keyboard=false
-                            data-rel="tooltip"
-                            data-placement="top"
-                            title="Request Extra Time"
-                            href="/tasks/{{=it.id}}/request_extra_time/dialog?came_from={{=it.came_from }}">
-                            <i class="icon-time bigger-130"></i>
-                        </a>
-                    {{ } }}
-
-                    {{ if (it.request_review) { }}
-                        <a
-                            class="green"
-                            data-target="#dialog_template"
-                            data-toggle="modal"
-                            data-keyboard=false
-                            data-rel="tooltip"
-                            data-placement="top"
-                            title="Request Review"
-                            href="/tasks/{{=it.id}}/request_review/dialog?came_from={{=it.came_from }}&request_review_mode=Final">
-                            <i class="icon-comment-alt bigger-130"></i>
-                        </a>
-                    {{ } }}
-
-                    {{ if (it.review) { }}
-                        <a
-                            class="purple"
-                            data-target="#dialog_template"
-                            data-toggle="modal"
-                            data-keyboard=false
-                            data-rel="tooltip"
-                            data-placement="top"
-                            title="Review"
-                            href="/tasks/{{=it.id}}/review/dialog?came_from={{=it.came_from }}">
-                            <i class="icon-comments bigger-130"></i>
-                        </a>
-                    {{ } }}
+                {{ } }}
+                {{ if (it.review) { }}
+                    <a
+                        class="purple"
+                        data-target="#dialog_template"
+                        data-toggle="modal"
+                        data-keyboard=false
+                        data-rel="tooltip"
+                        data-placement="top"
+                        title="Review"
+                        href="{{=it.review }}">
+                        <i class="icon-comments bigger-130"></i>
+                    </a>
+                {{ } }}
 
 
-                </div>
+            </div>
         </td>
-
     </tr>
 </script>
 {% endraw %}

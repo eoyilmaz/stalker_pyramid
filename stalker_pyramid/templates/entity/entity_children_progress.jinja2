@@ -2,78 +2,47 @@
      class="widget-box transparent">
     <div class="widget-header widget-header-small header-color-grey">
         <h4 class="smaller grey"><span id="review_number" class="badge badge-{{ entity.status.html_class }} badge radius-20"></span>  Progress   </h4>
-
-        <div class="widget-toolbar">
-
-
-        </div>
+        <div class="widget-toolbar"></div>
     </div>
     <div class="widget-body" style="background-color: rgba(255,255,255,.4)">
         <div class="widget-main">
-
-
-            <div id='entity_children' class="profile-skills">
-
-            </div>
-
+            <div id='entity_children' class="profile-skills"></div>
         </div>
-
-
     </div>
 </div>
 
 {% raw %}
 <script id="tmpl_child" type="text/x-dot-template">
-    <div class="row-fluid">
-        <div class="span11 progress progress-{{=it.status_color}}">
-
+    <div class="row-fluid" >
+       <a class="blue" href='/tasks/{{=it.id}}/view'>
+           <div class="progress progress-{{=it.status}}" style="background-color: rgba(50, 50, 50, .4)">
             <div class="bar"
-                 style="width:{{=it.percent_complete}}%; min-width: 5%">
-                <span class="pull-left">{{=it.name  }}</span>
-                <span class="pull-right">{{=it.percent_complete  }}%</span>
+                 style="width:{{=it.bar_width}}%;">
+                <span class="pull-left">{{=it.name}}</span>
+                <span class="pull-right">{{=it.completed}}%</span>
             </div>
-
         </div>
-
-        <div class="span1">
-
-            <a class="blue" href='/tasks/{{=it.id}}/view'>
-                <i class="icon-zoom-in bigger-130"></i>
-            </a>
-
-        </div>
+       </a>
     </div>
 </script>
 {% endraw %}
 
 
-
 <script class="code" type="text/javascript">
-    $(document).ready(function () {
+    $.getJSON('/tasks/?parent_id={{ entity.id }}').then(function (data) {
+        $(function () {
+            var entity_children = $('#entity_children');
+            var child_template = doT.template($('#tmpl_child').html());
 
-        $.getJSON('/{{ entity.entity_type.lower() }}s/children/task_type/').then(function (types_data) {
-            var types = types_data;
-
-            $.getJSON('/entities/{{ entity.project.id }}/{{ entity.entity_type.lower() }}s/?entity_id={{ entity.id }}').then(function (data) {
-                var entity_children = $('#entity_children')
-                var child_template = doT.template($('#tmpl_child').html());
-                var entity_data = data[0];
-
-                for (var i = 0; i < types_data.length; i++) {
-                    var tasks = entity_data[types_data[i].name];
-
-                    if (tasks) {
-                        for (var k = 0; k < tasks.length; k++) {
-                            var task = tasks[k]
-                            if (task) {
-                                entity_children.append(child_template({'id': task[0], 'name': task[1], 'status': task[2], 'status_color': task[2].toLowerCase(), 'percent_complete': task[3]}));
-                            }
-                        }
-                    }
+            for (var i = 0; i < data.length; i++) {
+                if (!data[i].completed) {
+                    data[i].bar_width = 100;
+                    data[i].completed = 0;
+                } else {
+                    data[i].bar_width =  data[i].completed;
                 }
-
-            });
+                entity_children.append(child_template(data[i]));
+            }
         });
-
     });
 </script>

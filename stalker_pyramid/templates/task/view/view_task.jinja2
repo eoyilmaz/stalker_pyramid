@@ -70,8 +70,8 @@
     
                                 <div class="span2">
                                     {% if has_permission('Update_'+entity.entity_type)  %}
-                                            {% include 'components/avatar.jinja2' %}
-                                     {% else %}
+                                        {% include 'components/avatar.jinja2' %}
+                                    {% else %}
                                         <div class="profile-picture"
                                              style="text-align: center; overflow: hidden; width: 150px">
                                             <img id="entity_avatar"
@@ -248,12 +248,14 @@
                                 <div class="row-fluid">
                                     {% include 'review/view/review_card.jinja2' %}
                                 </div>
-                            {% endif %}
+                            {% else %}
 
-                            {% if entity.entity_type == 'Asset' or entity.entity_type == 'Shot' %}
-                                <div class="row-fluid">
-                                    {% include 'entity/entity_children_progress.jinja2' %}
-                                </div>
+                                {% if entity.entity_type == 'Asset' or entity.entity_type == 'Shot' or entity.entity_type == 'Task' %}
+                                    <div class="row-fluid">
+                                        {% include 'entity/entity_children_progress.jinja2' %}
+                                    </div>
+                                {% endif %}
+
                             {% endif %}
 
                             <div class="space-4"></div>
@@ -381,12 +383,10 @@
                 '<strong>File upload error</strong> ' + msg + ' </div>').prependTo('#alerts');
     }
 
-
     $(document).ready(function () {
 
         var icon_name = get_icon('{{ entity.entity_type.lower()}}');
         $('#task_header').append('<i class="' + icon_name + ' bigger-125"></i>{{ entity.name }}');
-
 
         {% if has_permission('Update_Task') %}
             var inline_update_url = '/tasks/{{ entity.id }}/update/inline';
@@ -543,8 +543,7 @@
                             resources[prop_id]['additionalParameters']['children'] = {};
                         }
 
-
-                        time_to_complete_str = '<span> ( ' +  time_to_complete(data[i].schedule_seconds, data[i].total_logged_seconds, data[i].schedule_unit) + ' )</span>'
+                        var time_to_complete_str = '<span> ( ' +  meaningful_time_between(data[i].schedule_seconds, data[i].total_logged_seconds) + ') </span>';
 
                         var percent_complete_str = '<span class="label label-' + data[i].status_color + '">' + data[i].status + '</span>';
 
@@ -589,11 +588,11 @@
 
                     var percent_complete_str = '<span class="label label-' + data[i].status_color + '">' + data[i].status + '</span>';
 
-                    time_to_complete_str = '<span> ( ' +  time_to_complete(data[i].schedule_seconds,data[i].total_logged_seconds,data[i].schedule_unit) + ' h )</span>'
+                    var time_to_complete_str = '<span> ( ' +  meaningful_time_between(data[i].schedule_seconds,data[i].total_logged_seconds).time + ' )</span>';
 
                     if (!depends[task_id]) {
                         depends[task_id] = {
-                            'name': '<span><a href="/tasks/' + data[i].id + '/view">' + data[i].name + '  </a></span>' +time_to_complete_str,
+                            'name': '<span><a href="/tasks/' + data[i].id + '/view">' + data[i].name + '  </a></span>' + time_to_complete_str,
                             'type': 'folder',
                             'icon-class': data[i].status_color
                         }
@@ -605,7 +604,10 @@
                     }
 
                     for (var k = 0; k < data[i].resources.length; k++) {
-                        depends[task_id]['additionalParameters']['children'][(data[i].resources[k].id).toString()] = {name: '<span  class="pull-left"><a href="/users/' + data[i].resources[k].id + '/view">' + data[i].resources[k].name + '  </a></span>', type: 'item'}
+                        depends[task_id]['additionalParameters']['children'][(data[i].resources[k].id).toString()] = {
+                            name: '<span  class="pull-left"><a href="/users/' + data[i].resources[k].id + '/view">' + data[i].resources[k].name + '  </a></span>',
+                            type: 'item'
+                        };
                     }
 
                 }
@@ -631,7 +633,7 @@
 
                 if (!tasks[task_id]) {
                     tasks[task_id] = {
-                        'name': '<span><a href="/tasks/' + data[i].id + '/view">' + data[i].name + '  </a></span>',
+                        'name': '<span><a href="/tasks/' + data[i].id + '/view">' + data[i].name + '</a></span>',
                         'type': 'folder',
                         'icon-class': data[i].status_color
                     }
@@ -642,7 +644,10 @@
                     tasks[task_id]['additionalParameters']['children'] = {};
                 }
 
-                tasks[task_id]['additionalParameters']['children'][(data[i].resource_id).toString()] = {name: '<span  class="pull-left"><a href="/users/' + data[i].resource_id + '/view">' + data[i].resource_name + '  </a></span>', type: 'item'}
+                tasks[task_id]['additionalParameters']['children'][(data[i].resource_id).toString()] = {
+                    name: '<span  class="pull-left"><a href="/users/' + data[i].resource_id + '/view">' + data[i].resource_name + '  </a></span>',
+                    type: 'item'
+                };
             }
 
             drawTree('version_used_by_tasks_tree', tasks);

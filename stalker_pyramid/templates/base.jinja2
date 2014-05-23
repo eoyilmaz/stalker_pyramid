@@ -256,58 +256,104 @@
 
 <script>
 
-
+    var units = ['y','m','w','d','h','min'];
 
     var unit_by_seconds = function(unit){
-
-        switch (unit) {
-                 case 'min':
-                    return 60;
-                    break;
-                case 'h':
-                    return 60*60;
-                    break;
-                case 'd':
-                    return 9*60*60;
-                    break;
-                 case 'w':
-                    return 9*6*60*60;
-                    break;
-                 case 'm':
-                    return 1;
-                    break;
-                 case 'y':
-                    return 1;
-                    break;
+       switch (unit) {
+            case 'min':
+                return 60;
+                break;
+            case 'h':
+                return 3600;
+                break;
+           case 'd':
+                return 32400; // TODO: this is not true, please use: stalker.defaults.daily_working_hours
+                break;
+           case 'w':
+                return 194400; // TODO: this is not true, please use: stalker.defaults.weekly_working_hours
+                break;
+           case 'm':
+                return 2419200; // TODO: this is not true, please use: 4 * stalker.defaults.weekly_working_hours
+                break;
+           case 'y':
+                return 31536000; // TODO: this is not true, please use: stalker.defaults.yearly_working_days * stalker.defaults.daily_working_hours
+                break;
         }
-
-    }
+        return 0;
+    };
 
     var calculate_seconds = function(timing,unit){
+        var u_seconds = unit_by_seconds(unit);
+        return  timing * u_seconds;
+    };
 
-        var u_seconds = unit_by_seconds(unit)
+    var meaningful_time_between = function(time1, time2){
+        var seconds_between = time1 - time2;
+        return meaningful_time(seconds_between);
+    };
 
-        return  timing*u_seconds;
-
+    var meaningful_time = function(time){
+        if (time !=0){
+            if (time % unit_by_seconds('y') == 0){
+                return time / unit_by_seconds('y') + ' y';
+            }
+            else if (time % unit_by_seconds('m') == 0){
+                return time / unit_by_seconds('m') + ' m';
+            }
+            else if (time % unit_by_seconds('w') == 0){
+                return time / unit_by_seconds('w') + ' w';
+            }
+            else if (time % unit_by_seconds('d') == 0){
+                return time / unit_by_seconds('d') + ' d';
+            }
+            else if (time % unit_by_seconds('h') == 0){
+                return time / unit_by_seconds('h') + ' h';
+            }
+            else if (time % unit_by_seconds('min') == 0){
+                return time / unit_by_seconds('min') + ' min';
+            }
+        }
+        else{
+            return '0';
+        }
     }
 
-    var time_to_complete = function(total_seconds, spend_seconds, unit){
+    var meaningful_time_calculator = function(time, unit) {
+        var calc_time = time;
+        var index = units.indexOf(unit);
+        var time_str = '';
+        var u_seconds = unit_by_seconds(unit);
 
-        var schedule_unit_seconds = unit_by_seconds(unit)
+        if (time !=0) {
+            if (time > u_seconds) {
+                var time_unit = parseInt(time / u_seconds);
 
-        return  ((total_seconds - spend_seconds) / schedule_unit_seconds)+' '+ unit;
+                calc_time = calc_time % u_seconds;
 
+                time_str += time_unit + ' ' + unit;
 
+                if (time>0){
+                    if (index < units.length) {
+                        time_str += ' ' + meaningful_time_calculator(calc_time, units[index + 1]);
+                    }
+                }
 
+            } else {
+                if (index < units.length) {
+                   time_str += ' ' + meaningful_time_calculator(calc_time, units[index+1]);
+                }
+            }
+        } else {
+            time_str = ' ';
+        }
+        return time_str;
     }
-
 </script>
 
 <script>
     var page_of = function (name, code, thumbnail_full_path, update_link) {
         var sidebar_list = $('#sidebar_list');
         var media_template = doT.template($('#tmpl_sidebar_media').html());
-
 
         sidebar_list.append(media_template({
             'name': name,
@@ -317,6 +363,7 @@
         }));
     }
 </script>
+
 <script>
     var menu_of = function (title, state, address, icon, count) {
         var sidebar_list = $('#sidebar_list');
@@ -347,16 +394,15 @@
                 }
             });
         }
-
     }
 </script>
+
 <script>
     var submenu_of = function (id, treeItemType) {
 
         $.getJSON('/entities/' + id + '/' + treeItemType.toLowerCase() + 's/').then(function (data) {
 
             $(document).ready(function () {
-
                 var sidebar_list = $('#sidebar_list');
                 var tree_link_template = doT.template($('#tmpl_sidebar_tree_link').html());
                 var data_counts = data.length;
@@ -373,13 +419,9 @@
                 var item_sublink = $('#' + treeItemType + 's_sublink');
                 var tree_sublink_template = doT.template($('#tmpl_sidebar_tree_sublink').html());
 
-
                 for (var i = 0; i < data_counts; i++) {
-
-                    data[i].link = '/' + treeItemType.toLowerCase() + 's/' + data[i].id + '/view'
-
-                    item_sublink.append(tree_sublink_template(data[i]))
-
+                    data[i].link = '/' + treeItemType.toLowerCase() + 's/' + data[i].id + '/view';
+                    item_sublink.append(tree_sublink_template(data[i]));
                 }
             });
         });
