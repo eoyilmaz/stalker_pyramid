@@ -145,38 +145,18 @@
     {% endblock templates %}
 
 </head>
-<body class="navbar-fixed breadcrumbs-fixed skin-1">
-{% for message in request.session.pop_flash() %}
-    {% set message_type=message.split(':')[0] %}
-    {% set message_content=message.split(':')[1] %}
-    <div class="flash-message alert alert-{{ message_type }} text-center hide">
-        <button type="button" class="close" data-dismiss="alert">
-            <i class="icon-remove"></i>
-        </button>
-        <p>
-            <strong>
-                {{ message_type.title() }}!
-            </strong>
-            {{ message_content|safe }}
-        </p>
-    </div>
-{% endfor %}
 
-{% raw %}
-<script id="tmpl_flash_message" type="text/x-dot-template">
-    <div class="flash-message alert alert-{{= it.type }} text-center hide">
-        <button type="button" class="close" data-dismiss="alert">
-            <i class="icon-remove"></i>
-        </button>
-        <p>
-            <strong>
-                {{= it.title }}!
-            </strong>
-            {{= it.message }}
-        </p>
-    </div>
+<body class="navbar-fixed breadcrumbs-fixed skin-1">
+
+<script id="tmpl_flash_message" type="text/x-messages">
+    {% for message in request.session.pop_flash() %}
+        {% set message_type=message.split(':')[0] %}
+        {% set message_content=message.split(':')[1] %}
+        <div type='{{ message_type }}' title='{{ message_type.title() }}!'>
+            {{ message_content|safe }}
+        </div>
+    {% endfor %}
 </script>
-{% endraw %}
 
 
 {% raw %}
@@ -678,42 +658,37 @@
 
     {# Pop Flash Messages #}
     <script type='text/javascript'>
-
-        {% for message in request.session.pop_flash() %}
-            {% set message_type=message.split(':')[0] %}
-            {% set message_content=message.split(':')[1] %}
-
-{#            $.gritter.add({#}
-{#                        title: '{{ message_type.title() }}',#}
-{#                        text: '{{ message_content|safe }}',#}
-{#                        class_name: 'gritter-{{ message_type }}'#}
-{#            });#}
-        {% endfor %}
-
-        $(function () {
-            $('.flash-message').slideToggle().removeClass('hide');
-        });
-
         var flash_message = function (settings) {
-            console.debug('settings: ', settings);
             settings.container = settings.container || 'body';
             settings.title = settings.title || '';
             settings.message = settings.message || '';
             settings.type = settings.type || 'success';
-            console.debug('settings: ', settings);
 
             $.gritter.add({
-                    title: settings.title,
-                    text: settings.message,
-                    class_name: 'gritter-'+settings.type
+                title: settings.title,
+                text: settings.message,
+                class_name: 'gritter-' + settings.type
             });
+        };
 
-{#            var template = doT.template($('#tmpl_flash_message').text());#}
-{#            $(settings.container).prepend($.parseHTML(template(settings)));#}
-{##}
-{#            var visible_flash_messages = $('.flash-message.hide');#}
-{#            visible_flash_messages.slideToggle().removeClass('hide');#}
-        }
+        // flash all session messages as gritter
+        $(function () {
+            var item, title, type, message;
+            var all_messages = $.parseHTML($('#tmpl_flash_message').text());
+            for (var i=0; i < all_messages.length; i++){
+                item = $(all_messages[i]);
+                title = item.attr('title');
+                type = item.attr('type');
+                message = item.text();
+                if (title !== undefined && type !== undefined) {
+                    flash_message({
+                        type: type,
+                        title: title,
+                        message: message
+                    });
+                }
+            }
+        });
     </script>
 
     {# Add came_from attribute to all a's #}

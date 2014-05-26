@@ -167,6 +167,9 @@ def upload_files(request):
     entity and the uploaded files, like using them as a reference for some
     entities or as a thumbnail for others etc.
     """
+    # just to make it safe
+    logger.debug("logged_in_user: %s" % get_logged_in_user(request))
+
     # decide if it is single or multiple files
     file_params = request.POST.getall('file')
     logger.debug('file_params: %s ' % file_params)
@@ -194,6 +197,9 @@ def upload_files(request):
 def assign_thumbnail(request):
     """assigns the thumbnail to the given entity
     """
+    # just to make it safe
+    logged_in_user = get_logged_in_user(request)
+
     full_path = request.params.get('full_path')
     entity_id = request.params.get('entity_id', -1)
 
@@ -203,7 +209,6 @@ def assign_thumbnail(request):
     logger.debug('entity_id  : %s' % entity_id)
     logger.debug('entity     : %s' % entity)
 
-    logged_in_user = get_logged_in_user(request)
     if entity and full_path:
         mm = MediaManager()
         thumbnail_path = mm.generate_thumbnail(full_path)
@@ -252,6 +257,8 @@ def assign_thumbnail(request):
 def assign_reference(request):
     """assigns the given files as references for the given entity
     """
+    logged_in_user = get_logged_in_user(request)
+
     full_paths = request.POST.getall('full_paths[]')
     original_filenames = request.POST.getall('original_filenames[]')
 
@@ -260,8 +267,6 @@ def assign_reference(request):
 
     # Tags
     tags = get_tags(request)
-
-    logged_in_user = get_logged_in_user(request)
 
     logger.debug('full_paths         : %s' % full_paths)
     logger.debug('original_filenames : %s' % original_filenames)
@@ -313,6 +318,9 @@ def get_entity_references(request):
     """called when the references to Project/Task/Asset/Shot/Sequence is
     requested
     """
+    # just to make it safe
+    logger.debug("logged_in_user: %s" % get_logged_in_user(request))
+
     entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter(Entity.id == entity_id).first()
     logger.debug('asking references for entity: %s' % entity)
@@ -553,6 +561,9 @@ group by
 def delete_reference(request):
     """deletes the reference with the given ID
     """
+    # just to make it safe
+    logger.debug("logged_in_user: %s" % get_logged_in_user(request))
+
     ref_id = request.matchdict.get('id')
     ref = Link.query.get(ref_id)
 
@@ -631,6 +642,9 @@ def delete_reference(request):
 def serve_files(request):
     """serves files in the stalker server side storage
     """
+    # just to make it safe
+    logger.debug("logged_in_user: %s" % get_logged_in_user(request))
+
     partial_file_path = request.matchdict['partial_file_path']
     file_full_path = MediaManager.convert_file_link_to_full_path(partial_file_path)
     return FileResponse(file_full_path)
@@ -642,6 +656,9 @@ def serve_files(request):
 def force_download_files(request):
     """serves files but forces to download
     """
+    # just to make it safe
+    logger.debug("logged_in_user: %s" % get_logged_in_user(request))
+
     partial_file_path = request.matchdict['partial_file_path']
     file_full_path = MediaManager.convert_file_link_to_full_path(partial_file_path)
     # get the link to get the original file name
@@ -669,6 +686,9 @@ def force_download_files(request):
 def serve_repository_files(request):
     """serves files in the stalker repositories
     """
+    # just to make it safe
+    logger.debug("logged_in_user: %s" % get_logged_in_user(request))
+
     # TODO: check file access
     repo_id = request.matchdict['id']
     partial_file_path = request.matchdict['partial_file_path']
@@ -693,6 +713,9 @@ def serve_repository_files(request):
 def force_download_repository_files(request):
     """serves files but forces to download
     """
+    # just to make it safe
+    logger.debug("logged_in_user: %s" % get_logged_in_user(request))
+
     # TODO: check file access
     partial_file_path = request.matchdict['partial_file_path']
     repo_id = request.matchdict['id']
@@ -729,6 +752,9 @@ def force_download_repository_files(request):
 def video_player(request):
     """generates an iframe for video player
     """
+    # just to make it safe
+    logger.debug("logged_in_user: %s" % get_logged_in_user(request))
+
     return {
         'video_full_path': request.params.get('video_full_path')
     }
