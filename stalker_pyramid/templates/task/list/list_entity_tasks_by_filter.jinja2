@@ -97,7 +97,7 @@
                     }
 
                     if (data[i].status === 'prev') {
-                        responsible = data[i].resources;
+                        responsible = data[i].responsible;
                         for (r = 0; r < responsible.length; r++) {
                             if (responsible[r] === {{ logged_in_user.id }}) {
                                 data[i].review ="/tasks/" + data[i].id + "/review/dialog?came_from={{ request.current_route_path() }}";
