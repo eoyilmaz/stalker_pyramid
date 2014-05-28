@@ -90,16 +90,16 @@
                     if(data[i].status === 'wip') {
                         resources = data[i].resources;
                         for(r = 0; r < resources.length; r++){
-                            if(resources[r].id === '{{ logged_in_user.id }}' ){
+                            if(resources[r].id === {{ logged_in_user.id }} ){
                                 data[i].request_review = "/tasks/" + data[i].id + "/request_review/dialog?came_from={{ request.current_route_path() }}&request_review_mode=Final";
                             }
                         }
                     }
 
                     if (data[i].status === 'prev') {
-                        responsible = data[i].resources;
+                        responsible = data[i].responsible;
                         for (r = 0; r < responsible.length; r++) {
-                            if (responsible[r] === '{{ logged_in_user.id }}') {
+                            if (responsible[r] === {{ logged_in_user.id }}) {
                                 data[i].review ="/tasks/" + data[i].id + "/review/dialog?came_from={{ request.current_route_path() }}";
                             }
                         }
@@ -108,7 +108,7 @@
                     if (data[i].status === 'wip' && data[i].completed == 100) {
                         resources = data[i].resources;
                         for (r = 0; r < resources.length; r++) {
-                            if (resources[r].id === '{{ logged_in_user.id }}') {
+                            if (resources[r].id === {{ logged_in_user.id }}) {
                                 data[i].request_extra_time ="/tasks/" + data[i].id + "/request_extra_time/dialog?came_from={{ request.current_route_path() }}";
                             }
                         }
