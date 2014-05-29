@@ -21,7 +21,7 @@
 {% raw %}
 <script id="tmpl_append_item" type="text/x-dot-template">
 
-    <tr id="stack_item_{{=it.id}}" sel="" onclick="clicked({{=it.id}})">
+    <tr id="stack_item_{{=it.id}}">
         <td>
             <img style='width:auto; height: 40px;'
                      class="img-thumbnail"
@@ -43,77 +43,52 @@
 </script>
 {% endraw %}
 
-{#{% raw %}#}
-{#<script id="tmpl_append_item" type="text/x-dot-template">#}
-{#    <div class="profile-activity clearfix" id="stack_item_{{=it.id}}" sel=""#}
-{#         onclick="clicked({{=it.id}})">#}
-{##}
-{#        <div>#}
-{#            <img class="pull-left"#}
-{#                 src="{{=it.thumbnail_full_path }}">#}
-{##}
-{#            <div class="user">{{=it.name }}</div>#}
-{##}
-{#            <div id="stack_item_{{=it.id }}-ok" class="light-green"#}
-{#                 style="position: absolute; right: 12px;bottom: 8px; display: none">#}
-{#                <i class="icon-ok icon-2x"></i>#}
-{#            </div>#}
-{##}
-{#            <div class="time">#}
-{#                {{=it.description}}#}
-{#            </div>#}
-{##}
-{##}
-{#        </div>#}
-{#    </div>#}
-{#</script>#}
-{#{% endraw %}#}
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.dataTables.min.js") }}'></script>
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.dataTables.bootstrap.js") }}'></script>
 <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/dataTable_num-html_sort.js") }}'></script>
 
 <script type="text/javascript">
 
-    var data_ids = [];
-
-    function submitStackData() {
-        // gather info
-        // and send
-
-        var selected_items = [];
-        for (var i = 0; i < data_ids.length; i++) {
-            var selected = $('#stack_item_' + data_ids[i]).attr('sel');
-
-            if (selected != "") {
-                selected_items.push(data_ids[i]);
-            }
-        }
-
-        $.post(
-            "{{ request.route_url('append_entities_to_entity', id=entity.id) }}",
-            {'selected_items': selected_items}
-        ).done(function(){
-            window.location.assign('{{ came_from }}');
-        });
-    }
-
-
-    function clicked(id) {
-
-        var selected = $('#stack_item_' + id).attr('sel');
-
-        if (selected == "") {
-            $('#stack_item_' + id).attr('sel', 'ok');
-
-            $('#stack_item_' + id + '-ok').show();
-
-        }
-        else {
-            $('#stack_item_' + id).attr('sel', '')
-            $('#stack_item_' + id + '-ok').hide();
-        }
-
-    }
+{#    var data_ids = [];#}
+{##}
+{#    function submitStackData() {#}
+{#        // gather info#}
+{#        // and send#}
+{##}
+{#        var selected_items = [];#}
+{#        for (var i = 0; i < data_ids.length; i++) {#}
+{#            var selected = $('#stack_item_' + data_ids[i]).attr('sel');#}
+{##}
+{#            if (selected != "") {#}
+{#                selected_items.push(data_ids[i]);#}
+{#            }#}
+{#        }#}
+{##}
+{#        $.post(#}
+{#            "{{ request.route_url('append_entities_to_entity', id=entity.id) }}",#}
+{#            {'selected_items': selected_items}#}
+{#        ).done(function(){#}
+{#            window.location.assign('{{ came_from }}');#}
+{#        });#}
+{#    }#}
+{##}
+{##}
+{#    function clicked(id) {#}
+{##}
+{#        var selected = $('#stack_item_' + id).attr('sel');#}
+{##}
+{#        if (selected == "") {#}
+{#            $('#stack_item_' + id).attr('sel', 'ok');#}
+{##}
+{#            $('#stack_item_' + id + '-ok').show();#}
+{##}
+{#        }#}
+{#        else {#}
+{#            $('#stack_item_' + id).attr('sel', '')#}
+{#            $('#stack_item_' + id + '-ok').hide();#}
+{#        }#}
+{##}
+{#    }#}
     function init_dialog() {
         console.debug('starting to initialize append_class_to_entity dialog!!!');
 
@@ -124,8 +99,7 @@
         {# ***************************************************************** #}
         $(document).ready(function () {
 
-            var tableParameters = {}
-            var sortingParameters = [[0, 'asc'], [1, 'desc']]
+
 
             $.getJSON('/entities/{{ entity.id }}/{{ entities_name }}/out_stack/').then(function (data) {
 
@@ -135,7 +109,7 @@
                 // append new options to the select
                 for (var i = 0; i < data.length; i++) {
 
-                    data_ids.push(data[i].id)
+{#                    data_ids.push(data[i].id)#}
 
                     if (data[i].thumbnail_full_path == null) {
                         data[i].thumbnail_full_path = '{{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}';

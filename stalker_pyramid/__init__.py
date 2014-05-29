@@ -504,6 +504,8 @@ def main(global_config, **settings):
     config.add_route('update_task_schedule_timing_dialog',  'tasks/{id}/update/schedule_timing/dialog')
     config.add_route('update_task_dependencies',            'tasks/{id}/update/dependencies')
     config.add_route('update_task_dependencies_dialog',     'tasks/{id}/update/dependencies/dialog')
+    config.add_route('force_task_status_dialog',            'tasks/{id}/force_status/{status_code}/dialog')
+    config.add_route('force_task_status',                   'tasks/{id}/force_status/{status_code}')
     config.add_route('review_task',                         'tasks/{id}/review')
     config.add_route('cleanup_task_new_reviews',            'tasks/{id}/cleanup_new_reviews')
 
@@ -541,6 +543,12 @@ def main(global_config, **settings):
     config.add_route('request_revision',   'tasks/{id}/request_revision')
     config.add_route('request_extra_time', 'tasks/{id}/request_extra_time')
     config.add_route('request_extra_time_dialog', 'tasks/{id}/request_extra_time/dialog')
+
+    config.add_route('get_task_resources',  'tasks/{id}/resources/') #json
+    config.add_route('remove_task_user_dialog', 'tasks/{id}/remove/{user_type}/{user_id}/dialog')
+    config.add_route('remove_task_user', 'tasks/{id}/remove/{user_type}/{user_id}')
+    config.add_route('add_task_user_dialog', 'tasks/{id}/add/{user_type}/dialog')
+    config.add_route('add_task_user', 'tasks/{id}/add/{user_type}')
 
     config.add_route('delete_task',        'tasks/{id}/delete')
     config.add_route('delete_task_dialog', 'tasks/{id}/delete/dialog')

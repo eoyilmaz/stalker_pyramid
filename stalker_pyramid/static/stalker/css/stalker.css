@@ -99,6 +99,13 @@ tr .odd > td .ticket_BLOCKER {
 .header-color-user + .widget-body {
   border-color: #ffc657;
 }
+.header-color-resource {
+  background: #abbac3;
+  border-color: #abbac3;
+}
+.header-color-resource + .widget-body {
+  border-color: #abbac3;
+}
 .header-color-ticket {
   background: #0c87dd;
   border-color: #0c87dd;
@@ -128,11 +135,14 @@ tr .odd > td .ticket_BLOCKER {
   color: white;
 }
 .new {
-  background-color: #abbac3;
+  background-color: #6fb3e0;
   color: white;
 }
 .new a {
   color: white;
+}
+.label-new {
+  background-color: #6fb3e0 !important;
 }
 .wfd {
   background-color: #abbac3;
@@ -141,12 +151,18 @@ tr .odd > td .ticket_BLOCKER {
 .wfd a {
   color: white;
 }
+.label-wfd {
+  background-color: #abbac3 !important;
+}
 .rts {
   background-color: #d15b47;
   color: white;
 }
 .rts a {
   color: white;
+}
+.label-rts {
+  background-color: #d15b47 !important;
 }
 .wip {
   background-color: #ffc657;
@@ -155,12 +171,28 @@ tr .odd > td .ticket_BLOCKER {
 .wip a {
   color: white;
 }
+.label-wip {
+  background-color: #ffc657 !important;
+}
 .prev {
   background-color: #6fb3e0;
   color: white;
 }
 .prev a {
   color: white;
+}
+.label-prev {
+  background-color: #6fb3e0 !important;
+}
+.rrev {
+  background-color: #7e6eb0;
+  color: white;
+}
+.rrev a {
+  color: white;
+}
+.label-rrev {
+  background-color: #7e6eb0 !important;
 }
 .hrev {
   background-color: #7e6eb0;
@@ -169,12 +201,18 @@ tr .odd > td .ticket_BLOCKER {
 .hrev a {
   color: white;
 }
+.label-hrev {
+  background-color: #7e6eb0 !important;
+}
 .drev {
   background-color: #7e6eb0;
   color: white;
 }
 .drev a {
   color: white;
+}
+.label-drev {
+  background-color: #7e6eb0 !important;
 }
 .stop {
   background-color: #7e6eb0;
@@ -196,6 +234,9 @@ tr .odd > td .ticket_BLOCKER {
 }
 .cmpl a {
   color: white;
+}
+.label-cmpl {
+  background-color: #82af6f !important;
 }
 .black2 {
   background-color: #1f1f1f;

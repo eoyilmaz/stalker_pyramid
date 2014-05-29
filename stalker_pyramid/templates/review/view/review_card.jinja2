@@ -1,91 +1,84 @@
 <div id="resources_box"
-     class="widget-box transparent">
-    <div class="widget-header widget-header-small header-color-grey">
-        <h4 class="smaller grey">
-            Responsible  </h4>
-
-        <div class="widget-toolbar">
-        <div id="responsible_header_toolbar"></div>
-
-
-
+     class="widget-box">
+    <div class="widget-header widget-header-small header-color-resource">
+        <h4 id="responsible_items_header" class="smaller"></h4>
+        <div class="widget-toolbar action-buttons">
+            {% if has_permission('Update_Task') and entity.status.code != 'PREV' %}
+                <a data-target="#dialog_template"
+                   data-toggle="modal"
+                   data-keyboard=false
+                   href='{{ request.route_path('add_task_user_dialog', id=entity.id, user_type='Responsible', _query={'came_from': request.current_route_path()}) }}'
+                   class="white">
+                   <i class="icon-plus"></i>
+                </a>
+            {% endif %}
         </div>
     </div>
     <div class="widget-body no-padding"
          style="background-color: rgba(255,255,255,.4)">
         <div class="widget-main">
-
-
-            <div class="profile-users clearfix" id="review_box">
-            </div>
-
+            <div class="profile-users clearfix" id="review_box"></div>
         </div>
-
         <div class="widget-toolbox clearfix">
-            <div id="responsible_body_toolbar"></div>
-
+            <div class="hr hr8 hr-double"></div>
+            <div class="row-fluid">
+            <div id="responsible_header_toolbar" class="span9"></div>
             {% if has_permission('Create_Review') and  entity.status.code == 'PREV' %}
-
-                <div id="force_review_button" class="no-padding">
-
-                    <button class="btn btn-small btn-info btn-block dropdown-toggle span12"
-                            data-toggle="dropdown">
-                        <i class="icon-angle-down icon-only bigger-120"></i>
-                        Force
-                    </button>
-
-                    <ul class="dropdown-menu dropdown-icon-only dropdown-yellow pull-right dropdown-caret dropdown-close">
-
-                        <li>
-                            <a href="/tasks/{{ entity.id }}/review/dialog?came_from={{ request.current_route_path() }}&review_mode=approve&forced=1"
-                               class="tooltip-success"
-                               data-rel="tooltip"
-                               title="Approve"
-                               data-target="#dialog_template"
-                               data-toggle="modal"
-                               data-keyboard=false
-                               data-placement="top">
-                                       <span class="green">
-                                           <i class="icon-ok bigger-110"></i>
-                                       </span>
-                            </a>
-                        </li>
-
-                        <li>
-                            <a href="/tasks/{{ entity.id }}/review/dialog?came_from={{ request.current_route_path() }}&review_mode=request_revision&forced=1"
-                               class="tooltip-success"
-                               data-rel="tooltip"
-                               title="Request Revision"
-                               data-target="#dialog_template"
-                               data-toggle="modal"
-                               data-keyboard=false
-                               data-placement="top">
-                                        <span class="orange">
-                                            <i class="icon-remove bigger-110"></i>
-                                        </span>
-                            </a>
-                        </li>
-
-                    </ul>
-                <div class="space-4"></div>
+                <div class="span3">
+                    <div id="force_review_button" class="no-padding pull-right">
+                        <button class="btn btn-small btn-info btn-block dropdown-toggle"
+                                data-toggle="dropdown">
+                            <i class="icon-angle-down icon-only bigger-120"></i>
+                            Force
+                        </button>
+                        <ul class="dropdown-menu dropdown-icon-only dropdown-yellow pull-right dropdown-caret dropdown-close">
+                            <li>
+                                <a href="/tasks/{{ entity.id }}/review/dialog?came_from={{ request.current_route_path() }}&review_mode=approve&forced=1"
+                                   class="tooltip-success"
+                                   data-rel="tooltip"
+                                   title="Approve"
+                                   data-target="#dialog_template"
+                                   data-toggle="modal"
+                                   data-keyboard=false
+                                   data-placement="top">
+                                           <span class="green">
+                                               <i class="icon-ok bigger-110"></i>
+                                           </span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/tasks/{{ entity.id }}/review/dialog?came_from={{ request.current_route_path() }}&review_mode=request_revision&forced=1"
+                                   class="tooltip-success"
+                                   data-rel="tooltip"
+                                   title="Request Revision"
+                                   data-target="#dialog_template"
+                                   data-toggle="modal"
+                                   data-keyboard=false
+                                   data-placement="top">
+                                            <span class="orange">
+                                                <i class="icon-remove bigger-110"></i>
+                                            </span>
+                                </a>
+                            </li>
+                        </ul>
+                        <div class="space-4"></div>
+                    </div>
+                    <div id="cleanup_button" class="position-relative hide" >
+                        <button class="btn btn-small bigger btn-danger span12"
+                                href='/tasks/{{ entity.id }}/cleanup_new_reviews/dialog?came_from={{ request.current_route_path() }}'
+                                data-rel="tooltip"
+                                data-placement="bottom"
+                                title="Cleans all unanswered reviews"
+                                data-target="#dialog_template"
+                                data-toggle="modal"
+                                data-keyboard="false">
+                            <i class="icon-trash icon-only bigger-120"></i>
+                            Cleanup Pending Reviews
+                        </button>
+                    </div>
                 </div>
-                <div id="cleanup_button" class="position-relative hide" >
-
-                    <button class="btn btn-small bigger btn-danger span12"
-                            href='/tasks/{{ entity.id }}/cleanup_new_reviews/dialog?came_from={{ request.current_route_path() }}'
-                            data-rel="tooltip"
-                            data-placement="bottom"
-                            title="Cleans all unanswered reviews"
-                            data-target="#dialog_template"
-                            data-toggle="modal"
-                            data-keyboard="false">
-                        <i class="icon-trash icon-only bigger-120"></i>
-                        Cleanup Pending Reviews
-                    </button>
-                </div>
-
-
             {% endif %}
+            </div>
 
 
         </div>
@@ -95,15 +88,18 @@
 {% include 'review/view/reviewer_card.jinja2' %}
 
 <script type="text/javascript">
+    $(document).ready(function () {
+        var icon_name = get_icon('resource');
+        $('#responsible_items_header').append('<i class=' + icon_name + '></i>Responsible');
 
-    $.getJSON('/tasks/{{ entity.id }}/last_reviews/').then(function (data) {
-        $(document).ready(function () {
+        $.getJSON('/tasks/{{ entity.id }}/last_reviews/').then(function (data) {
+
             var review_box = $('#review_box');
             var reviewer_template = doT.template($('#tmpl_reviewer_card').html());
 
             for (var i = 0; i < data.length; i++) {
 
-                if (data[i].review_status_code == 'NEW') {
+                if (data[i].review_status_code == 'new') {
                     data[i].review_status_name = 'Pending';
                     if (data[i].reviewer_id == '{{ logged_in_user.id }}') {
                         $(function () {
@@ -138,34 +134,19 @@
 
                 data[i].came_from = '{{ request.current_route_path() }}'
                 data[i].request_review = false;
-
                 {% if (logged_in_user in entity.resources) and entity.status.code == 'WIP' and entity.is_leaf %}
-
                     data[i].request_review = true;
-
+                {% endif %}
+                data[i].delete_action = false;
+                {% if has_permission('Create_Review') and  entity.status.code != 'PREV' %}
+                    data[i].delete_action = '/tasks/'+data[i].task_id+'/remove/responsible/'+data[i].reviewer_id+'/dialog?came_from={{ request.current_route_path() }}'
                 {% endif %}
 
                 review_box.append(reviewer_template(data[i]));
-
-
             }
-
-            $('#responsible_header_toolbar').append( 
-                $('#responsible_header_toolbar').append(
-
-                    'Review Set <span class="badge badge-{{ entity.status.html_class }} badge radius-20">'+data[0].review_number+'</span>'
-                )
+            $('#responsible_header_toolbar').append(
+                'Review Set <span class="badge badge-{{ entity.status.html_class }} badge radius-20">'+data[0].review_number+'</span>'
             )
-
-{#            if(data[0].review_number>0){#}
-{#                #}
-{#                $('#responsible_body_toolbar').append( #}
-{#                    $('#responsible_body_toolbar').append(#}
-{#                        '<div class="pull-left"><i class="icon-hand-right grey"></i><a href="/tasks/{{ entity.id }}/reviews/list">View all reviews &hellip;</a></div>'#}
-{#                    )#}
-{#                )#}
-{##}
-{#            }#}
 
 
             //show the user info on right or left depending on its position

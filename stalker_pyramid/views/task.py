@@ -4181,3 +4181,258 @@ def get_task_dependency(request):
         )
 
     return list_of_dep_tasks_json
+
+
+@view_config(
+    route_name='force_task_status_dialog',
+    renderer='templates/modals/confirm_dialog.jinja2'
+)
+def force_task_status_dialog(request):
+    """deletes the department with the given id
+    """
+    logger.debug('delete_department_dialog is starts')
+
+    task_id = request.matchdict.get('id')
+    status_code = request.matchdict.get('status_code')
+
+    came_from = request.params.get('came_from', '/')
+    action = '/tasks/%s/force_status/%s' % (task_id, status_code)
+    message = 'Task will be set as %s' \
+                  '<br><br>Are you sure?' % status_code
+
+    logger.debug('action: %s' % action)
+
+    return {
+        'message': message,
+        'came_from': came_from,
+        'action': action
+    }
+
+@view_config(
+    route_name='force_task_status',
+    permission='Create_Review'
+)
+def force_task_status(request):
+    """deletes the task with the given id
+    """
+
+    status_code = request.matchdict.get('status_code')
+    logger.debug('status_code: %s'%status_code)
+    status = Status.query.filter(Status.code == status_code).first()
+    if not status:
+        transaction.abort()
+        return Response('Can not find a status with code: %s' % status_code, 500)
+
+    task_id = request.matchdict.get('id')
+    task = Task.query.get(task_id)
+
+    if not task:
+        transaction.abort()
+        return Response('Can not find a Task with id: %s' % task_id, 500)
+
+    timing, unit = task.least_meaningful_time_unit(task.total_logged_seconds)
+    task.schedule_timing = timing
+    task.schedule_unit = unit
+    task.status = status
+
+    task.update_parent_statuses()
+    for tdep in task.task_dependent_of:
+                dep = tdep.task
+                dep.update_status_with_dependent_statuses()
+                if dep.status.code in ['HREV', 'PREV', 'DREV', 'OH', 'STOP']:
+                    # for tasks that are still be able to continue to work,
+                    # change the dependency_target to "onstart" to allow
+                    # the two of the tasks to work together and still let the
+                    # TJ to be able to schedule the tasks correctly
+                    tdep.dependency_target = 'onstart'
+                # also update the status of parents of dependencies
+                dep.update_parent_statuses()
+
+    logged_in_user = get_logged_in_user(request)
+    utc_now = local_to_utc(datetime.datetime.now())
+
+    note_type = query_type('Note', 'Forced Status')
+    note_type.html_class = 'green2'
+    note = Note(
+        content='%s has changed this task status to %s' % (logged_in_user.name, status.name),
+        created_by=logged_in_user,
+        date_created=utc_now,
+        date_updated=utc_now,
+        type=note_type
+    )
+    DBSession.add(note)
+
+    task.notes.append(note)
+    task.updated_by = logged_in_user
+    task.date_updated = utc_now
+
+    return Response('Success: %s status is set to %s' % (task.name, status.name))
+
+
+@view_config(
+    route_name='get_task_resources',
+    renderer='json'
+)
+def get_task_resources(request):
+    """
+    """
+
+    logger.debug('***get_task_resources method starts ***')
+
+    task_id = request.matchdict.get('id')
+    task = Task.query.get(task_id)
+
+    if not task:
+        transaction.abort()
+        return Response('Can not find a Task with id: %s' % task_id, 500)
+
+    logger.debug(task.resources)
+
+    return [
+        {
+            'id': resource.id,
+            'name': resource.name,
+            'thumbnail_full_path': resource.thumbnail.full_path if resource.thumbnail else None,
+            'description': '',
+            'item_remove_link':'/tasks/%s/remove/resources/%s/dialog?came_from=%s'%( task.id, resource.id, request.current_route_path())
+            if PermissionChecker(request)('Update_Task') else None
+        }
+        for resource in task.resources
+    ]
+
+
+
+@view_config(
+    route_name='remove_task_user_dialog',
+    renderer='templates/modals/confirm_dialog.jinja2'
+)
+def remove_task_user_dialog(request):
+    """deletes the department with the given id
+    """
+    logger.debug('remove_task_resource_dialog is starts')
+
+    task_id = request.matchdict.get('id')
+    user_id = request.matchdict.get('user_id')
+    user_type = request.matchdict.get('user_type')
+
+    task = Task.query.get(task_id)
+    user = User.query.filter(User.id == user_id).first()
+
+    came_from = request.params.get('came_from', '/')
+    action = '/tasks/%s/remove/%s/%s' % (task.id, user_type, user.id)
+    message = '%s will be removed from %s resources' \
+                  '<br><br>Are you sure?' % (user.name, task.name)
+
+    logger.debug('action: %s' % action)
+
+    return {
+        'message': message,
+        'came_from': came_from,
+        'action': action
+    }
+
+@view_config(
+    route_name='remove_task_user',
+    permission='Update_Task'
+)
+def remove_task_user(request):
+    """deletes the task with the given id
+    """
+
+    user_id = request.matchdict.get('user_id')
+    user = User.query.filter(User.id == user_id).first()
+    user_type = request.matchdict.get('user_type')
+
+    if not user:
+        transaction.abort()
+        return Response('Can not find a user with id: %s' % user_id, 500)
+
+    task_id = request.matchdict.get('id')
+    task = Task.query.get(task_id)
+
+    if not task:
+        transaction.abort()
+        return Response('Can not find a Task with id: %s' % task_id, 500)
+
+    if not user_type:
+        transaction.abort()
+        return Response('Missing parameters', 500)
+
+    if user_type=='resources':
+        task.resources.remove(user)
+    elif user_type=='responsible':
+        task.responsible.remove(user)
+
+    logged_in_user = get_logged_in_user(request)
+    utc_now = local_to_utc(datetime.datetime.now())
+
+    task.updated_by = logged_in_user
+    task.date_updated = utc_now
+
+    return Response('Success: %s is removed from %s resources' % (user.name, task.name))
+
+@view_config(
+    route_name='add_task_user_dialog',
+    renderer='templates/task/dialog/add_task_user_dialog.jinja2'
+)
+def add_task_user_dialog(request):
+    """deletes the department with the given id
+    """
+    logger.debug('add_task_resource_dialog is starts')
+
+    task_id = request.matchdict.get('id')
+    task = Task.query.get(task_id)
+
+    came_from = request.params.get('came_from', '/')
+    user_type = request.matchdict.get('user_type')
+
+    return {
+        'task': task,
+        'user_type':user_type,
+        'came_from': came_from
+    }
+
+@view_config(
+    route_name='add_task_user',
+    permission='Update_Task'
+)
+def add_task_user(request):
+    """deletes the task with the given id
+    """
+
+    selected_list = get_multi_integer(request, 'user_ids')
+    users = User.query\
+            .filter(User.id.in_(selected_list)).all()
+
+    if not users:
+        transaction.abort()
+        return Response('Missing parameters', 500)
+
+    task_id = request.matchdict.get('id')
+    task = Task.query.get(task_id)
+
+    if not task:
+        transaction.abort()
+        return Response('Can not find a Task with id: %s' % task_id, 500)
+
+    user_type = request.matchdict.get('user_type')
+
+    if not user_type:
+        transaction.abort()
+        return Response('Missing parameters', 500)
+    # for resource in resources:
+    #     if resource  not in task.resources:
+    #         task.resources.append(resource)
+    if user_type=='resources':
+        task.resources = users
+    elif user_type=='responsible':
+        task.responsible = users
+
+    logged_in_user = get_logged_in_user(request)
+    utc_now = local_to_utc(datetime.datetime.now())
+
+    task.updated_by = logged_in_user
+    task.date_updated = utc_now
+
+    return Response('Success: %s are added to %s resources' % (user_type, task.name))
+

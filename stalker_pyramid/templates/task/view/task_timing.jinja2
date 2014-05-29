@@ -32,9 +32,10 @@
                 </table>
             </div>
             <div class="progress no-padding" style="margin-top: 0px; margin-bottom: 0px;">
-                    <div id='bid_bar' class="bar bar-info" style="width: 0%;"><div></div></div>
+                    <div id='bid_bar' class="bar bar-cmpl" style="width: 0%;"></div>
+                    <div id='separator_bar' class="bar bar-grey" style="width: 0%;"></div>
                     <div id='total_logged_bar' class="bar" style="width: 0%;"></div>
-                    <div id='schedule_timing_bar' class="bar bar-danger" style="width: 0%;"></div>
+                    <div id='schedule_timing_bar' class="bar bar-rts" style="width: 0%;"></div>
             </div>
         </div><!--/widget-main-->
         {% if (entity.schedule_seconds - entity.total_logged_seconds)==0  and entity.status.code=='WIP'%}
@@ -60,9 +61,8 @@
 
         var bid_seconds = calculate_seconds({{ entity.bid_timing }}, '{{ entity.bid_unit }}');
         var schedule_timing_seconds = calculate_seconds({{ entity.schedule_timing }}, '{{ entity.schedule_unit }}');
-        var total_logged_seconds = {{ entity.total_logged_seconds}};
+        var total_logged_seconds = {{entity.total_logged_seconds}};
 
-{#        console.log('entity.bid_unit: {{ entity.bid_unit }} total_logged_seconds: '+total_logged_seconds+' schedule_timing_seconds: '+schedule_timing_seconds+' bid_seconds:'+bid_seconds);#}
 
         var bid = meaningful_time_calculator(bid_seconds, '{{ entity.bid_unit }}');
         var schedule_timing = meaningful_time_calculator(schedule_timing_seconds, '{{ entity.bid_unit }}');
@@ -75,28 +75,35 @@
         $('#time_to_complete').text(time_to_complete);
 
         var bid_bar_percent = 0;
+        var separator_bar_percent = 0;
         var total_logged_bar_percent = (total_logged_seconds/schedule_timing_seconds)*100;
         var schedule_timing_bar_percent = 100-total_logged_bar_percent;
         if(bid_seconds < total_logged_seconds)
         {
             $('#bid_alert').addClass('alert-danger');
-            $('#total_logged_bar').addClass('bar-warning');
 
             bid_bar_percent = (bid_seconds/schedule_timing_seconds)*100;
-            total_logged_bar_percent -= bid_bar_percent;
-            schedule_timing_bar_percent = 100-(bid_bar_percent+total_logged_bar_percent);
-
-        }
-        else if(bid_seconds == total_logged_seconds) {
-             $('#bid_alert').addClass('alert-info');
-             $('#total_logged_bar').addClass('bar-success');
+            separator_bar_percent = 1;
+            total_logged_bar_percent -= (bid_bar_percent+separator_bar_percent);
+            schedule_timing_bar_percent = 100-(bid_bar_percent+separator_bar_percent+total_logged_bar_percent);
         }
         else{
-             $('#bid_alert').addClass('alert-info');
-             $('#total_logged_bar').addClass('bar-warning');
+            $('#bid_alert').addClass('alert-info');
+
         }
 
+        if(schedule_timing_seconds == total_logged_seconds) {
+            $('#total_logged_bar').addClass('bar-cmpl');
+        }
+        else{
+            $('#total_logged_bar').addClass('bar-wip');
+        }
+        console.log('bid_bar_percent: '+bid_bar_percent)
+        console.log('separator_bar_percent: '+separator_bar_percent)
+        console.log('total_logged_bar_percent: '+total_logged_bar_percent)
+        console.log('schedule_timing_bar_percent: '+schedule_timing_bar_percent)
         $('#bid_bar').attr('style','width: '+bid_bar_percent+'%;');
+        $('#separator_bar').attr('style','width: '+separator_bar_percent+'%;');
         $('#total_logged_bar').attr('style','width: '+total_logged_bar_percent+'%;');
         $('#schedule_timing_bar').attr('style','width: '+schedule_timing_bar_percent+'%;');
     });

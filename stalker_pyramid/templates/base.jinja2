@@ -273,8 +273,7 @@
     };
 
     var meaningful_time = function(time){
-
-        time = Math.round(time)
+        time = Math.round(time);
 
         if (time !=0){
             if (time % unit_by_seconds('y') == 0) {
@@ -307,19 +306,19 @@
         if (unit !== null || unit !== undefined) {
             if (calc_time !== 0) {
                 if (calc_time > u_seconds) {
-                    var time_unit = parseInt(time/u_seconds)
-                    calc_time = calc_time%u_seconds
-                    time_str +=time_unit+' '+unit
+                    var time_unit = parseInt(time / u_seconds);
+                    calc_time = calc_time % u_seconds;
+                    time_str +=time_unit + ' ' + unit;
 
                     if (calc_time > 0) {
                         if (index < units.length-1){
-                            time_str +=' '+meaningful_time_calculator(calc_time,units[index+1])
+                            time_str += ' ' + meaningful_time_calculator(calc_time, units[index+1])
                         }
                     }
                 }
                 else{
                     if (index < units.length-1){
-                       time_str +=' '+meaningful_time_calculator(calc_time,units[index+1])
+                       time_str +=' ' + meaningful_time_calculator(calc_time, units[index+1])
                     }
                 }
             }
@@ -593,9 +592,6 @@
                 case 'reference':
                     return 'icon-book';
                     break;
-                case 'resource':
-                    return 'icon-calendar';
-                    break;
                 case 'review':
                     return 'icon-comments-alt';
                     break;
@@ -624,6 +620,9 @@
                     return 'icon-camera-retro';
                     break;
                 case 'user':
+                    return 'icon-user';
+                    break;
+                case 'resource':
                     return 'icon-user';
                     break;
                 default:
