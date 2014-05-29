@@ -1318,6 +1318,7 @@ class MediaManager(object):
             'i': input_path,
             'vcodec': 'libx264',
             'profile:v': 'main',
+            'g': 1,  # key frame every 1 frame
             'b:v': '4096k',
             'o': output_path
         }
