@@ -169,7 +169,7 @@ def get_task_last_reviews(request):
                 'review_id': 0,
                 'review_status_code': 'WTNG',
                 'review_status_name': 'Waiting',
-                'review_status_color': 'orange',
+                'review_status_color': 'wip',
                 'task_id': task.id,
                 'task_review_number': task.review_number,
                 'reviewer_id': responsible.id,
@@ -345,7 +345,7 @@ def get_reviews(request, where_conditions):
         {
             'review_number': r[0],
             'review_id': r[1],
-            'review_status_code': r[2],
+            'review_status_code': r[2].lower(),
             'review_status_name': r[3],
             'review_status_color': r[4],
             'task_id': r[5],

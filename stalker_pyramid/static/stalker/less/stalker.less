@@ -169,6 +169,15 @@ tr {
     }
 }
 
+.header-color-resource {
+    background: @grey;
+    border-color: @grey;
+
+    + .widget-body {
+        border-color: @grey;
+    }
+}
+
 .header-color-ticket {
     background: @blue;
     border-color: @blue;
@@ -210,11 +219,14 @@ tr {
 }
 
 .new {
-    background-color: @grey;
+    background-color: @light-blue;
     color: white;
     a {
         color: white;
     }
+}
+.label-new {
+    background-color: @light-blue !important;
 }
 
 .wfd {
@@ -224,6 +236,9 @@ tr {
         color: white;
     }
 }
+.label-wfd {
+    background-color: @grey !important;
+}
 
 .rts {
     background-color: @red2;
@@ -232,6 +247,9 @@ tr {
         color: white;
     }
 }
+.label-rts {
+    background-color: @red2 !important;
+}
 
 .wip {
     background-color: @orange;
@@ -239,6 +257,9 @@ tr {
     a {
         color: white;
     }
+}
+.label-wip  {
+    background-color: @orange !important;
 }
 
 .prev {
@@ -249,6 +270,21 @@ tr {
     }
 }
 
+.label-prev  {
+    background-color: @light-blue !important;
+}
+.rrev {
+    background-color: @purple2;
+    color: white;
+    a {
+        color: white;
+    }
+}
+
+.label-rrev  {
+    background-color: @purple2 !important;
+}
+
 .hrev {
     background-color: @purple2;
     color: white;
@@ -257,12 +293,19 @@ tr {
     }
 }
 
+.label-hrev  {
+    background-color: @purple2 !important;
+}
+
 .drev {
     background-color: @purple2;
     color: white;
     a {
         color: white;
     }
+}
+.label-drev  {
+    background-color: @purple2 !important;
 }
 
 .stop {
@@ -287,6 +330,9 @@ tr {
     a {
         color: white;
     }
+}
+.label-cmpl  {
+    background-color: @green !important;
 }
 
 .black2 {

@@ -379,7 +379,6 @@ def get_entity_groups(request):
     entity = Entity.query.filter_by(id=entity_id).first()
 
     update_group_permission = PermissionChecker(request)('Update_Department')
-    delete_group_permission = PermissionChecker(request)('Delete_Department')
 
     return [
         {
@@ -389,13 +388,14 @@ def get_entity_groups(request):
                 group.thumbnail.full_path if group.thumbnail else None,
             'created_by_id': group.created_by.id,
             'created_by_name': group.created_by.name,
-            'users_count': len(group.users),
-            'update_group_action':
+            'description': len(group.users),
+            'item_view_link':'/groups/%s/view'%group.id,
+            'item_update_link':
                 '/groups/%s/update/dialog' % group.id
                 if update_group_permission else None,
-            'delete_group_action':
-                '/groups/%s/delete/dialog' % group.id
-                if delete_group_permission else None
+            'item_remove_link':
+                '/entities/%s/%s/remove/dialog?came_from=%s'%(group.id, entity.id, request.current_route_path())
+                if update_group_permission else None
         }
         for group in sorted(entity.groups, key=lambda x: x.name.lower())
     ]

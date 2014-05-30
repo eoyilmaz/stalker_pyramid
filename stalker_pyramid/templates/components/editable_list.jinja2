@@ -4,17 +4,16 @@
         <h4 id="{{ list_item_type.lower() }}_items_header" class="smaller">
 
         </h4>
-        {% if has_permission('Update_'+list_item_type) %}
+        {% if has_permission('Update_'+entity.entity_type) %}
             <div class="widget-toolbar action-buttons">
-                <a href="#" data-action="reload" >
-                    <i class="icon-refresh"></i>
-                </a>
-
-                &nbsp;
                 <a data-target="#dialog_template"
                    data-toggle="modal"
                    data-keyboard=false
-                   href="{{ request.route_url('append_entities_to_entity_dialog', id=user.id, entities=list_item_type, _query={'came_from': request.current_route_path()}) }}"
+                   {% if add_button_address %}
+                   href="{{ add_button_address }}"
+                   {% else %}
+                   href ="{{ request.route_url('append_entities_to_entity_dialog', id=entity.id, entities=list_item_type, _query={'came_from': request.current_route_path()}) }}"
+                   {% endif %}
                    class="white">
                     <i class="icon-plus"></i>
                 </a>
@@ -37,7 +36,7 @@
 
             <div class="time">
                 <i class="icon-user bigger-110"></i>
-                {{=it.users_count }}
+                {{=it.description }}
             </div>
         </div>
         <div id="editable_list_item_actions_{{=it.id}}"
@@ -51,22 +50,22 @@
 
 
 {% raw %}
-<script id="tmpl_item_edit" type="text/x-dot-template">
+<script id="tmpl_item_update" type="text/x-dot-template">
     <a data-target="#dialog_template"
        data-toggle="modal"
        data-keyboard=false
-       href='{{=it.item_edit_link }}' class="blue">
+       href='{{=it.item_update_link }}' class="blue">
         <i class="icon-pencil bigger-125"></i>
     </a>
 </script>
 {% endraw %}
 
 {% raw %}
-<script id="tmpl_item_delete" type="text/x-dot-template">
+<script id="tmpl_item_remove" type="text/x-dot-template">
     <a data-target="#dialog_template"
        data-toggle="modal"
        data-keyboard=false
-       href='{{=it.item_delete_link }}' class="red">
+       href='{{=it.item_remove_link }}' class="red">
        <i class="icon-remove bigger-125"></i>
     </a>
 </script>
@@ -76,6 +75,24 @@
 <script>
     $(document).ready(function () {
 
+        function style_edit_form(form) {
+					//enable datepicker on "sdate" field and switches for "stock" field
+					form.find('input[name=sdate]').datepicker({format:'yyyy-mm-dd' , autoclose:true})
+						.end().find('input[name=stock]')
+							  .addClass('ace ace-switch ace-switch-5').wrap('<label class="inline" />').after('<span class="lbl"></span>');
+
+					//update buttons classes
+					var buttons = form.next().find('.EditButton .fm-button');
+					buttons.addClass('btn btn-small').find('[class*="-icon"]').remove();//ui-icon, s-icon
+					buttons.eq(0).addClass('btn-primary').prepend('<i class="icon-ok"></i>');
+					buttons.eq(1).prepend('<i class="icon-remove"></i>')
+
+					buttons = form.next().find('.navButton a');
+					buttons.find('.ui-icon').remove();
+					buttons.eq(0).append('<i class="icon-chevron-left"></i>');
+					buttons.eq(1).append('<i class="icon-chevron-right"></i>');
+				}
+
         var icon_name = get_icon('{{ list_item_type.lower() }}');
         $('#'+'{{ list_item_type.lower() }}'+'_items_header').append('<i class=' + icon_name + '></i>{{ list_item_type }}s');
 
@@ -83,16 +100,14 @@
         // fill items table with dynamic data
         $.getJSON('{{ address }}').then(function (data) {
 
-
-            var items = data;
             var row_template = doT.template($('#tmpl_list_item').html());
 
             // wait until document is ready
             $(function () {
 
-                var i = 0;
+
                 var editable_list = $('#'+'{{ list_item_type.lower() }}'+'_editable_list');
-                for (i = 0; i < data.length; i++) {
+                for (var i = 0; i < data.length; i++) {
 
                     // fix dates
                     // data[i].date_created = new Date(data[i].date_created).format('yyyy-mm-dd HH:MM');
@@ -104,35 +119,12 @@
                         data[i].thumbnail_full_path = '/' + data[i].thumbnail_full_path;
                     }
 
-                    data[i].item_view_link = '#'
-
-                    {% if has_permission('Read_'+list_item_type)%}
-
-                        data[i].item_view_link = '/{{ list_item_type.lower() }}s/' + data[i].id + '/view';
-
-                    {% endif %}
-
                     // append it to the table
                     editable_list.append(row_template(data[i]));
-
-
-{#                    {% if has_permission('Update_'+list_item_type)%}#}
-{##}
-{#                        var edit_template = doT.template($('#tmpl_item_edit').html());#}
-{#                        data[i].item_edit_link = '/{{ list_item_type.lower() }}s/'+data[i].id+'/update/dialog?came_from={{ request.current_route_path() }}';#}
-{#                        $('#editable_list_item_actions_' + data[i].id).append(edit_template(data[i]));#}
-{##}
-{#                    {% endif %}#}
-
-                    {% if has_permission('Delete_'+list_item_type)%}
-
-                        var delete_template = doT.template($('#tmpl_item_delete').html());
-                        data[i].item_delete_link = '/entities/'+data[i].id+'/{{user.id}}/remove/dialog?came_from={{ request.current_route_path() }}';
+                    if (data[i].item_remove_link){
+                        var delete_template = doT.template($('#tmpl_item_remove').html());
                         $('#editable_list_item_actions_' + data[i].id).append(delete_template(data[i]));
-
-                    {% endif %}
-
-
+                    }
                 }
 
                 if (i == 0) {

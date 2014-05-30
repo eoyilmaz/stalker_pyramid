@@ -43,7 +43,36 @@
     
             <div class="widget-toolbar no-border invoice-info">
                 <span class="invoice-info-label">Status:</span>
-                <span class="label label-{{ entity.status.html_class }}">{{ entity.status.name }}</span>
+                <span class="label label-{{ entity.status.code.lower() }}">{{ entity.status.name }}
+                </span>
+                {% if (entity.status.code == 'WIP' or entity.status.code == 'HREV') and entity.is_leaf%}
+                    <div class="inline position-relative">
+                        <button class="btn btn-minier bigger btn-info dropdown-toggle"
+                                data-toggle="dropdown">
+                            <i class="icon-angle-down icon-only bigger-120"></i>
+                        </button>
+
+                        <ul class="dropdown-menu dropdown-icon-only dropdown-yellow pull-right dropdown-caret dropdown-close">
+
+                            <li>
+                                <a href="/tasks/{{entity.id}}/force_status/CMPL/dialog?came_from={{ request.current_route_path() }}"
+                                   class="tooltip-success"
+                                   data-rel="tooltip"
+                                   title="Force Complete"
+                                   data-target="#dialog_template"
+                                   data-toggle="modal"
+                                   data-keyboard=false
+                                   data-placement="top">
+                                       <span class="green">
+                                           <i class="icon-ok bigger-110"></i>Force Complete
+                                       </span>
+                                </a>
+                            </li>
+
+
+                        </ul>
+                    </div>
+                {% endif %}
                 <br>
     
                 <div class="progress progress-mini progress-success progress-striped {% if entity.status.code == 'WIP' %}active{% endif %}"
@@ -183,12 +212,6 @@
                                             Calendar
                                         </a>
                                     </li>
-                                    {#                    <li class="">#}
-                                    {#                        <a data-toggle="tab" href="#description-tab">#}
-                                    {#                            <i class="blue icon-file bigger-120"></i>#}
-                                    {#                            Description#}
-                                    {#                        </a>#}
-                                    {#                    </li>#}
                                 </ul>
 
                                 <div class="tab-content no-border no-padding">
@@ -221,16 +244,6 @@
                                         {% include 'note/list/list_notes.jinja2' %}
 
                                     </div>
-                                    <!--#messages-tab-->
-                                    {#                    <div id="description-tab"#}
-                                    {#                         class="tab-pane">#}
-                                    {##}
-                                    {#                        #}
-                                    {##}
-                                    {#                    </div>#}
-
-                                    <!--#messages-tab-->
-
                                     <!--/#calendar-tab-->
                                     <div id="calendar-tab" class="tab-pane">
                                         <div id="calendar"></div>
@@ -261,19 +274,28 @@
                             <div class="space-4"></div>
 
                             <div class="row-fluid">
-                                <div id="resources_box"
-                                     class="widget-box  transparent">
-                                    <div class="widget-header widget-header-small">
-                                        <h4 class="smaller grey">
-                                            <i class="icon-user orange"></i>Resources</h4>
-                                    </div>
-                                    <div class="widget-body">
-                                        <div class="widget-main">
-                                            <div id="resource_tree"
-                                                 class="tree"></div>
+
+                                {% if entity.is_leaf %}
+                                    {% set add_button_address = request.route_path('add_task_user_dialog', id=entity.id, user_type='Resources', _query={'came_from': request.current_route_path()}) %}
+                                    {% set address=request.route_path('get_task_resources', id=entity.id) %}
+                                    {% set list_item_type='Resource' %}
+                                    {% include 'components/editable_list.jinja2' %}
+
+                                {% else %}
+                                    <div id="resources_box"
+                                         class="widget-box  transparent">
+                                        <div class="widget-header widget-header-small">
+                                            <h4 class="smaller grey">
+                                                <i class="icon-user orange"></i>Resources</h4>
+                                        </div>
+                                        <div class="widget-body">
+                                            <div class="widget-main">
+                                                <div id="resource_tree"
+                                                     class="tree"></div>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
+                               {% endif %}
                             </div>
 
                             <div class="space-4"></div>

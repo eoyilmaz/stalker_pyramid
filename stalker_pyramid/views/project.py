@@ -31,7 +31,7 @@ from stalker import (User, ImageFormat, Repository, Structure, Status,
 
 from stalker_pyramid.views import (get_date, get_date_range,
                                    get_logged_in_user,
-                                   milliseconds_since_epoch)
+                                   milliseconds_since_epoch, PermissionChecker)
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -210,11 +210,13 @@ def get_entity_projects(request):
             'date_created': milliseconds_since_epoch(project.date_created),
             'created_by_id': project.created_by.id,
             'created_by_name': project.created_by.name,
-            'thumbnail_full_path': project.thumbnail.full_path
-            if project.thumbnail else None,
+            'thumbnail_full_path': project.thumbnail.full_path if project.thumbnail else None,
             'status': project.status.name,
-            'users_count': len(project.users),
-            'percent_complete': project.percent_complete
+            'description': len(project.users),
+            'percent_complete': project.percent_complete,
+            'item_view_link':'/project/%s/view'%project.id,
+            'item_remove_link':'/entities/%s/%s/remove/dialog?came_from=%s'%(project.id, entity.id, request.current_route_path())
+            if PermissionChecker(request)('Update_Project') else None
         }
         for project in entity.projects
     ]

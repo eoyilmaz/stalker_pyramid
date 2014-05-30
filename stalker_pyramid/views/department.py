@@ -268,8 +268,7 @@ def get_entity_departments(request):
 
     update_department_permission = \
         PermissionChecker(request)('Update_Department')
-    delete_department_permission = \
-        PermissionChecker(request)('Delete_Department')
+
 
     departments = []
 
@@ -283,15 +282,13 @@ def get_entity_departments(request):
             department.thumbnail.full_path if department.thumbnail else None,
             'created_by_id': department.created_by.id,
             'created_by_name': department.created_by.name,
-            'users_count': len(department.users)
+            'description': len(department.users),
+            'item_view_link':'/departments/%s/view'%department.id
         }
         if update_department_permission:
-            dep['update_department_action'] = \
+            dep['item_update_link'] = \
                 '/departments/%s/update/dialog' % department.id
-        if delete_department_permission:
-            dep['delete_department_action'] =\
-                '/departments/%s/delete/dialog' % department.id
-
+            dep['item_remove_link'] = '/entities/%s/%s/remove/dialog?came_from=%s'%(department.id, entity.id, request.current_route_path())
         departments.append(dep)
 
     return departments
