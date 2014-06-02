@@ -11,14 +11,26 @@
             <div class='control-group'>
                 <label class='span3 control-label' for='dup_task_parent'>Parent</label>
                 <div class='span9'>
-                    <select id='dup_task_parent'
+                    <input id='dup_task_parent'
                             name='parent_id'
-                            class='input-block-level'
+                            class='input-block-level span11'
                             name='task_parent_id'
                             is_updating=false
-                            data-placeholder='Parent'></select>
+                            data-placeholder='Parent'>
                 </div>
             </div>
+
+{#            <div class='control-group'>#}
+{#                <label class='span3 control-label' for='dup_task_parent'>Parent</label>#}
+{#                <div class='span9'>#}
+{#                    <select id='dup_task_parent'#}
+{#                            name='parent_id'#}
+{#                            class='input-block-level'#}
+{#                            name='task_parent_id'#}
+{#                            is_updating=false#}
+{#                            data-placeholder='Parent'></select>#}
+{#                </div>#}
+{#            </div>#}
 
             <div class='control-group'>
                 <label class='span3 control-label' for='dup_task_name'>Duplicated Task Name</label>
@@ -66,7 +78,7 @@ function init_dialog() {
     dialog_template_label.append('<span>Duplicate Task</span>');
 
     $('#dialog_template_body').attr('style', "height: 350px");
-
+    var timeout_buffer;
     var submit_button = $('#dialog_template_submit_button')
 
 
@@ -74,40 +86,155 @@ function init_dialog() {
     {# Task #}
     var dup_task_parent = $('#dup_task_parent');
 
-    {% raw %}
-        var task_option_template = doT.template(
-           '<option value={{=it.id}}>{{=it.name}}</option>'
-        );
-    {% endraw %}
+    var get_task_data = function(search_string, callback){
+            var search_buffer;
+            var search_params = {
+                project_id: {{ project.id }} // always use project id
+            };
 
-    dup_task_parent.find('option').remove();
+            // iterate over each key value pair
+            var key_value_pair, key, value;
 
-    submit_button.button('loading')
+            if (search_string.indexOf(':') === -1){
+                if (search_string.length < 3){
+                    // not finished typing yet
+                    return;
+                }
 
-    $.getJSON('/projects/{{ entity.project.id }}/tasks/').then(function (data) {
+                search_buffer = search_string.split(' ');
+                // use a direct search with given words as the task full_path
+                $.extend(
+                    search_params,
+                    {
+                        path: search_buffer
+                    }
+                );
+            } else {
+                // so we have some key value pairs
+                search_buffer = search_string.split(',');
 
-       dup_task_parent.append('<option value="-1">&nbsp;</option>');
+                var current_pair;
+                for (var i = 0; i < search_buffer.length; i += 1){
+                    current_pair = search_buffer[i];
 
-       for (var i = 0; i < data.length; i++) {
+                    if (current_pair.length === 0 || current_pair.indexOf(':') === -1){
+                        // not finished typing yet
+                        continue;
+                    }
 
-           dup_task_parent.append(task_option_template(data[i]));
+                    key_value_pair = search_buffer[i].split(':');
 
-       }
+                    key = key_value_pair[0];
+                    value = key_value_pair[1].replace(/[\s]+/, ' ').trim(); //.split(' ');
 
-        dup_task_parent.chosen({
-            search_contains: true,
-            enable_split_word_search: true,
-            allow_single_deselect: true
-        });
+                    if (value === '') {
+                        // not finished typing yet
+                        continue;
+                    }
 
+                    // if there is a key expand it
+                    if (search_params[key] !== undefined){
+                        search_params[key].push(value);
+                    } else {
+                        search_params[key] = [value];
+                    }
+                }
+            }
 
-        dup_task_parent.val('{{ entity.parent.id }}');
+            $.getJSON('/tasks/', search_params, function (data) {
+                var input_source = [];
+                var result_count = data.length;
+                var max_count = 250;
+                for (var i = 0; i < Math.min(result_count, max_count); i++) {
+                    input_source.push(data[i].full_path);
+                }
+                if (result_count > max_count) {
+                    input_source.push('' + (result_count - max_count) + ' more items...');
+                }
+                callback(input_source);
+            });
+        };
 
-        dup_task_parent.trigger('liszt:updated');
-
-        submit_button.button('reset')
-
+    $.getJSON('/tasks/?id={{ entity.parent.id }}', function(data){
+           dup_task_parent.val(data[0].full_path);
     });
+
+    dup_task_parent.bind("keydown", function(event) {
+        if(event.keyCode === $.ui.keyCode.TAB &&
+           $(this).data( "ui-autocomplete").menu.active) {
+            event.preventDefault();
+        }
+    }).autocomplete({
+        placeholder: 'Parent',
+        source: function (request, response) {
+            // condition search terms here
+            var search_string = request.term;
+
+            // delay ajax call for 300 milliseconds
+            if (timeout_buffer) {
+                clearTimeout(timeout_buffer);
+            }
+
+            timeout_buffer = setTimeout(function() {
+                get_task_data(search_string, response);
+            }, 300);
+        },
+        search: function () {
+            // custom minLength
+            return true;
+        },
+        focus: function () {
+            // prevent value inserted on focus
+            return false;
+        },
+        select: function(event, ui) {
+            var current_value = ui.item.value;
+            this.value = current_value;
+            // get item id, I don't like doing it by parsing the string
+            // but it seems the easiest one
+            var id = current_value.match(/\(([0-9]+)\)/);
+
+            // store it HTML node
+            //$('#parent_storage').attr('parent_id', id[1]);
+
+            return false;
+        }
+    });
+
+{#    {% raw %}#}
+{#        var task_option_template = doT.template(#}
+{#           '<option value={{=it.id}}>{{=it.name}}</option>'#}
+{#        );#}
+{#    {% endraw %}#}
+
+{#    dup_task_parent.find('option').remove();#}
+
+{#    submit_button.button('loading');#}
+
+{#    $.getJSON('/projects/{{ entity.project.id }}/tasks/').then(function (data) {#}
+{##}
+{#       dup_task_parent.append('<option value="-1">&nbsp;</option>');#}
+{##}
+{#       for (var i = 0; i < data.length; i++) {#}
+{##}
+{#           dup_task_parent.append(task_option_template(data[i]));#}
+{##}
+{#       }#}
+{##}
+{#        dup_task_parent.chosen({#}
+{#            search_contains: true,#}
+{#            enable_split_word_search: true,#}
+{#            allow_single_deselect: true#}
+{#        });#}
+{##}
+{##}
+{#        dup_task_parent.val('{{ entity.parent.id }}');#}
+{##}
+{#        dup_task_parent.trigger('liszt:updated');#}
+{##}
+{#        submit_button.button('reset')#}
+{##}
+{#    });#}
 
     {# ***************************************************************** #}
     {# Submit Button #}
@@ -128,7 +255,7 @@ function init_dialog() {
                 dup_task_form.attr('action'),
                 dup_task_form.serialize()
             ).done(function () {
-                window.location.assign('{{ came_from }}');
+                window.location.reload();
             }).fail(function (jqXHR) {
                 bootbox.alert('<div id="message" class="alert alert-danger bigger-110">'+jqXHR.responseText+'</div>');
                 submit_button.button('reset');

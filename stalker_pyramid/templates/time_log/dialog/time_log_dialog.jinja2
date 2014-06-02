@@ -583,9 +583,8 @@ function init_dialog() {
                 submit_button.button('reset');
                 $('#dialog_template').modal('hide');
     
-                 var calendar = $('#calendar')
-    
-                    calendar.fullCalendar('renderEvent',
+                 var calendar = $('#calendar');
+                 calendar.fullCalendar('renderEvent',
                         {
                             eId: time_log_task.val(),
                             entity_type: 'timelogs',

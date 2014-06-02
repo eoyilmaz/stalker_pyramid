@@ -35,15 +35,15 @@
 {#PAGE-CONTENT#}
 {% block page_content %}
 
-<div class="row-fluid">
+
     <div class="widget-box transparent invoice-box">
 
         <div class="widget-header widget-header-large ">
             <h4 id='task_header' class="position-relative "></h4>
     
             <div class="widget-toolbar no-border invoice-info">
-                <span class="invoice-info-label">Status:</span>
-                <span class="label label-{{ entity.status.code.lower() }}">{{ entity.status.name }}
+{#                <span class="invoice-info-label">Status:</span>#}
+                <span class="label label-large label-{{ entity.status.code.lower() }}"> {{ entity.status.name }}
                 </span>
                 {% if (entity.status.code == 'WIP' or entity.status.code == 'HREV') and entity.is_leaf%}
                     <div class="inline position-relative">
@@ -68,8 +68,6 @@
                                        </span>
                                 </a>
                             </li>
-
-
                         </ul>
                     </div>
                 {% endif %}
@@ -83,7 +81,7 @@
                 </div>
             </div>
             <div class="widget-toolbar hidden-480">
-                <a href="/tasks/{{ entity.id }}/fix/statuses/">
+                <a id='refresh_task_button' href="/tasks/{{ entity.id }}/fix/statuses/">
                     <i class="icon-refresh"></i>
                 </a>
             </div>
@@ -92,11 +90,9 @@
         <div class="widget-body">
             <div class="widget-main">
                 <div class="row-fluid">
-    
                     <div class="span8">
                         <div class="row-fluid">
                             <div class="row-fluid">
-    
                                 <div class="span2">
                                     {% if has_permission('Update_'+entity.entity_type)  %}
                                         {% include 'components/avatar.jinja2' %}
@@ -126,6 +122,7 @@
                                                   id="editable_entity_name">{{ entity.name }}</span>
                                             </div>
                                         </div>
+
                                         <div class="profile-info-row">
                                             <div class="profile-info-name">Type</div>
     
@@ -357,7 +354,7 @@
             </div>
         </div>
     </div>
-</div>
+
 {% endblock page_content %}
 
 {#EXTRA-SCRIPTS#}
@@ -404,6 +401,21 @@
         $('<div class="alert"> <button type="button" class="close" data-dismiss="alert">&times;</button>' +
                 '<strong>File upload error</strong> ' + msg + ' </div>').prependTo('#alerts');
     }
+
+    $(document).ready(function () {
+
+        $('#refresh_task_button').on('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            $.post('/tasks/{{ entity.id }}/fix/statuses/').done(function (response_text) {
+                            window.location.reload();
+                        }).fail(function (jqXHR) {
+                            bootbox.alert(jqXHR.responseText);
+                        });
+        });
+
+    });
 
     $(document).ready(function () {
 

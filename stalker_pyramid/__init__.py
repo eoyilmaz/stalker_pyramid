@@ -122,6 +122,7 @@ def main(global_config, **settings):
 
     config.add_route('upload_entity_thumbnail_dialog', 'entities/{id}/thumbnail/upload/dialog')
     config.add_route('upload_entity_reference_dialog', 'entities/{id}/references/upload/dialog')
+    config.add_route('upload_entity_version_output_dialog', 'entities/{id}/version_output/upload/dialog')
 
     config.add_route('create_entity_users_dialog',     'entities/{id}/users/create/dialog')
 

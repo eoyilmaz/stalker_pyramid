@@ -243,7 +243,7 @@ def fix_task_statuses(request):
 
     request.session.flash('success: Task status is fixed!')
 
-    return Response('Task status is fixed!')
+    return HTTPOk()
 
 
 @view_config(
