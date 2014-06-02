@@ -192,7 +192,7 @@ def get_description_html(description_temp,
     description_html = description_temp % {
         "user": '<strong>%s</strong>' % user_name,
         "task_full_path": '<strong>%s</strong>' % task_full_path,
-        "note": '<br/><br/> %s ' % note,
+        "note": '<br/><br/> %s ' % note.replace('\n', '<br>'),
         "spacing": '<br><br>'
     }
     return description_html

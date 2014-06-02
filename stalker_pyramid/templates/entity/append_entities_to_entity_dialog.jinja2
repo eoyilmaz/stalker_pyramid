@@ -100,7 +100,6 @@
         $(document).ready(function () {
 
 
-
             $.getJSON('/entities/{{ entity.id }}/{{ entities_name }}/out_stack/').then(function (data) {
 
                 var item_template = doT.template($('#tmpl_append_item').html());
