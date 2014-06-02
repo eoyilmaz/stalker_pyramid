@@ -248,12 +248,28 @@ function init_dialog() {
 
         var dup_task_form = $('#dup_task_form');
 
+        var form_data_as_array = dup_task_form.serializeArray();
+        var form_data = {
+            'responsible_ids': [],
+            'resource_ids': []
+        };
+
+        // add parent info
+        var parent_id = '';
+        var parent_match = dup_task_parent.val().match(/\(([\d]+)\)/);
+        if (parent_match) {
+            parent_id = parent_match[1];
+        }
+        form_data['parent_id'] = parent_id;
+        form_data['dup_task_description'] = $('#dup_task_description').val();
+        form_data['dup_task_name'] = $('#dup_task_name').val();
+
         if (dup_task_form.validate()) {
             // merge end_date and end_time
 
             $.post(
                 dup_task_form.attr('action'),
-                dup_task_form.serialize()
+                form_data
             ).done(function () {
                 window.location.reload();
             }).fail(function (jqXHR) {
