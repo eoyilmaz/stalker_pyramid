@@ -70,16 +70,14 @@ class TaskViewTestCase(unittest2.TestCase):
         DBSession.add(self.test_user2)
 
         # create a couple of tasks
-        self.status_new = Status(name='New', code='NEW')
-        self.status_rts = Status(name='Ready To Start', code='RTS')
-        self.status_wip = Status(name='Work In Progress', code='WIP')
-        self.status_prev = Status(name='Pending Review', code='PREV')
-        self.status_hrev = Status(name='Has Revision', code='HREV')
-        self.status_cmpl = Status(name='Completed', code='CMPL')
-        DBSession.add_all([
-            self.status_new, self.status_rts, self.status_wip,
-            self.status_prev, self.status_hrev, self.status_cmpl
-        ])
+        self.status_new = Status.query.filter_by(code='NEW').first()
+        self.status_wts = Status.query.filter_by(code='WTS').first()
+        self.status_rts = Status.query.filter_by(code='RTS').first()
+        self.status_wip = Status.query.filter_by(code='WIP').first()
+        self.status_prev = Status.query.filter_by(code='PREV').first()
+        self.status_hrev = Status.query.filter_by(code='HREV').first()
+        self.status_drev = Status.query.filter_by(code='DREV').first()
+        self.status_cmpl = Status.query.filter_by(code='CMPL').first()
 
         self.test_project_status_list = StatusList(
             name='Project Statuses',
@@ -89,14 +87,8 @@ class TaskViewTestCase(unittest2.TestCase):
         )
         DBSession.add(self.test_project_status_list)
 
-        self.test_task_statuses = StatusList(
-            name='Task Statuses',
-            target_entity_type='Task',
-            statuses=[self.status_new, self.status_rts, self.status_wip,
-                      self.status_prev, self.status_hrev,
-                      self.status_cmpl]
-        )
-        DBSession.add(self.test_task_statuses)
+        self.test_task_statuses = \
+            StatusList.query.filter_by(target_entity_type='Task').first()
 
         # repository
         self.test_repo = Repository(
@@ -123,7 +115,6 @@ class TaskViewTestCase(unittest2.TestCase):
         self.test_task1 = Task(
             name='Test Task 1',
             project=self.test_project1,
-            status_list=self.test_task_statuses,
             start=datetime.datetime(2013, 6, 20, 0, 0),
             end=datetime.datetime(2013, 6, 30, 0, 0),
             schedule_model='effort',
@@ -135,7 +126,6 @@ class TaskViewTestCase(unittest2.TestCase):
         self.test_task2 = Task(
             name='Test Task 2',
             project=self.test_project1,
-            status_list=self.test_task_statuses,
             start=datetime.datetime(2013, 6, 20, 0, 0),
             end=datetime.datetime(2013, 6, 30, 0, 0),
             schedule_model='effort',
@@ -147,7 +137,6 @@ class TaskViewTestCase(unittest2.TestCase):
         self.test_task3 = Task(
             name='Test Task 3',
             project=self.test_project1,
-            status_list=self.test_task_statuses,
             resources=[self.test_user1, self.test_user2],
             start=datetime.datetime(2013, 6, 20, 0, 0),
             end=datetime.datetime(2013, 6, 30, 0, 0),
@@ -163,8 +152,6 @@ class TaskViewTestCase(unittest2.TestCase):
         self.test_task4 = Task(
             name='Test Task 4',
             parent=self.test_task1,
-            status=self.status_new,
-            status_list=self.test_task_statuses,
             resources=[self.test_user1],
             depends=[self.test_task3],
             start=datetime.datetime(2013, 6, 20, 0, 0),
@@ -178,7 +165,6 @@ class TaskViewTestCase(unittest2.TestCase):
         self.test_task5 = Task(
             name='Test Task 5',
             parent=self.test_task1,
-            status_list=self.test_task_statuses,
             resources=[self.test_user1],
             depends=[self.test_task4],
             start=datetime.datetime(2013, 6, 20, 0, 0),
@@ -192,7 +178,6 @@ class TaskViewTestCase(unittest2.TestCase):
         self.test_task6 = Task(
             name='Test Task 6',
             parent=self.test_task1,
-            status_list=self.test_task_statuses,
             resources=[self.test_user1],
             start=datetime.datetime(2013, 6, 20, 0, 0),
             end=datetime.datetime(2013, 6, 30, 0, 0),
@@ -206,7 +191,6 @@ class TaskViewTestCase(unittest2.TestCase):
         self.test_task7 = Task(
             name='Test Task 7',
             parent=self.test_task2,
-            status_list=self.test_task_statuses,
             resources=[self.test_user2],
             start=datetime.datetime(2013, 6, 20, 0, 0),
             end=datetime.datetime(2013, 6, 30, 0, 0),
@@ -219,7 +203,6 @@ class TaskViewTestCase(unittest2.TestCase):
         self.test_task8 = Task(
             name='Test Task 8',
             parent=self.test_task2,
-            status_list=self.test_task_statuses,
             resources=[self.test_user2],
             start=datetime.datetime(2013, 6, 20, 0, 0),
             end=datetime.datetime(2013, 6, 30, 0, 0),
@@ -229,12 +212,8 @@ class TaskViewTestCase(unittest2.TestCase):
         )
         DBSession.add(self.test_task8)
 
-        self.test_asset_status_list = StatusList(
-            statuses=[self.status_new, self.status_wip,
-                      self.status_prev],
-            target_entity_type='Asset'
-        )
-        DBSession.add(self.test_asset_status_list)
+        self.test_asset_status_list = \
+            StatusList.query.filter_by(target_entity_type='Asset').first()
 
         # create an asset in between
         self.test_asset1 = Asset(
@@ -1987,3 +1966,81 @@ class TaskViewSimpleFunctionsTestCase(unittest2.TestCase):
             """"Tasks".project_id, task_types.name, tasks.entity_type, """
             """percent_complete""", result
         )
+
+
+class TaskForceStatusTestCase(unittest2.TestCase):
+    """tests views.task.force_task_status function
+    """
+
+    def setUp(self):
+        """set the test up
+        """
+
+        db.setup()
+        db.init()
+
+        self.status_new = Status.query.filter_by(code='NEW').first()
+        self.status_wfd = Status.query.filter_by(code='WFD').first()
+        self.status_rts = Status.query.filter_by(code='RTS').first()
+        self.status_wip = Status.query.filter_by(code='WIP').first()
+        self.status_cmpl = Status.query.filter_by(code='CMPL').first()
+
+        self.test_project_statuses = StatusList(
+            name='Project Statuses',
+            target_entity_type='Project',
+            statuses=[self.status_new, self.status_wip, self.status_cmpl]
+        )
+
+        self.test_repo = Repository(
+            name='Test Repository'
+        )
+
+        self.test_project = Project(
+            name='Test Project',
+            code='TP',
+            status_list=self.test_project_statuses,
+            repository=self.test_repo
+        )
+
+        self.test_task1 = Task(name='Task1', project=self.test_project)
+
+        DBSession.add_all([self.test_project])
+        DBSession.commit()
+
+    def test_force_status_in_WFD_task(self):
+        """testing if a force_status() will return a response with code 500 if
+        the task is an WFD task
+        """
+        self.test_task1.status = self.status_wfd
+
+        request = testing.DummyRequest()
+        request.params = {
+            'task_id': self.test_task1.id,
+            'status_code': 'CMPL'
+        }
+
+        response = task.force_task_status(request)
+        self.assertEqual(response.status_code, 500)
+
+        self.assertEqual(response.text, 'Cannot force WFD tasks')
+
+    def test_force_status_in_RTS_task(self):
+        """testing if a force_status() will return a response with code 500 if
+        the task is an RTS task
+        """
+        self.test_task1.status = self.status_rts
+
+        request = testing.DummyRequest()
+        request.params = {
+            'task_id': self.test_task1.id,
+            'status_code': 'CMPL'
+        }
+
+        response = task.force_task_status(request)
+        self.assertEqual(response.status_code, 500)
+
+    def test_task_schedule_timing_values_are_trimmed(self):
+        """testing if the task.schedule_timing value is trimmed to the total
+        logged seconds value
+        """
+        self.fail('test is not implemented yet')
