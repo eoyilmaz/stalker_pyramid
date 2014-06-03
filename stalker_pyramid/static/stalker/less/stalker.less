@@ -20,6 +20,7 @@
 @red: #d53f40;
 @red2: #d15b47;
 @red3: #E2755F;
+@light-orange: rgb(255, 148, 104);
 @orange: #FFC657;
 @light-green: #9abc32;
 @green: #82af6f;
@@ -31,6 +32,7 @@
 @purple: #6f3cc4;
 @purple2: #7e6eb0;
 @grey: #abbac3;
+@dark-grey: #4e5962;
 @black: #1f1f1f;
 
 @ticket_color: #AA2222;
@@ -239,6 +241,16 @@ tr {
 .label-wfd {
     background-color: @grey !important;
 }
+.infobox-wfd>.infobox-icon>[class*="icon-"] {
+    background-color: @grey
+}
+.header-color-wfd {
+    background: @grey;
+    border-color: @grey;
+    + .widget-body {
+        border-color: @grey;
+    }
+}
 
 .rts {
     background-color: @red2;
@@ -249,6 +261,16 @@ tr {
 }
 .label-rts {
     background-color: @red2 !important;
+}
+.infobox-rts>.infobox-icon>[class*="icon-"] {
+    background-color: @red2
+}
+.header-color-rts {
+    background: @red2;
+    border-color: @red2;
+    + .widget-body {
+        border-color: @red2;
+    }
 }
 
 .wip {
@@ -261,6 +283,16 @@ tr {
 .label-wip  {
     background-color: @orange !important;
 }
+.infobox-wip>.infobox-icon>[class*="icon-"] {
+    background-color: @orange
+}
+.header-color-wip {
+    background: @orange;
+    border-color: @orange;
+    + .widget-body {
+        border-color: @orange;
+    }
+}
 
 .prev {
     background-color: @light-blue;
@@ -269,10 +301,20 @@ tr {
         color: white;
     }
 }
-
 .label-prev  {
     background-color: @light-blue !important;
 }
+.infobox-prev>.infobox-icon>[class*="icon-"] {
+    background-color: @light-blue;
+}
+.header-color-prev {
+    background: @light-blue;
+    border-color: @light-blue;
+    + .widget-body {
+        border-color: @light-blue;
+    }
+}
+
 .rrev {
     background-color: @purple2;
     color: white;
@@ -280,9 +322,18 @@ tr {
         color: white;
     }
 }
-
 .label-rrev  {
     background-color: @purple2 !important;
+}
+.infobox-rrev>.infobox-icon>[class*="icon-"] {
+    background-color: @purple2
+}
+.header-color-rrev {
+    background: @purple2;
+    border-color: @purple2;
+    + .widget-body {
+        border-color: @purple2;
+    }
 }
 
 .hrev {
@@ -292,9 +343,18 @@ tr {
         color: white;
     }
 }
-
 .label-hrev  {
     background-color: @purple2 !important;
+}
+.infobox-hrev>.infobox-icon>[class*="icon-"] {
+    background-color: @purple2
+}
+.header-color-hrev {
+    background: @purple2;
+    border-color: @purple2;
+    + .widget-body {
+        border-color: @purple2;
+    }
 }
 
 .drev {
@@ -307,20 +367,60 @@ tr {
 .label-drev  {
     background-color: @purple2 !important;
 }
+.infobox-drev>.infobox-icon>[class*="icon-"] {
+    background-color: @purple2
+}
+.header-color-drev {
+    background: @purple2;
+    border-color: @purple2;
+    + .widget-body {
+        border-color: @purple2;
+    }
+}
 
 .stop {
-    background-color: @purple2;
+    background-color: @dark-grey;
     color: white;
     a {
         color: white;
     }
 }
+.label-stop  {
+    background-color: @dark-grey !important;
+}
+.infobox-stop>.infobox-icon>[class*="icon-"] {
+    background-color: @dark-grey;
+}
+.header-color-stop {
+    background: @dark-grey;
+    border-color: @dark-grey;
+    + .widget-body {
+        border-color: @dark-grey;
+    }
+}
 
 .oh {
-    background-color: @purple2;
-    color: white;
+    background-color: @light-orange;
+    color: @grey;
     a {
-        color: white;
+        color: @grey;
+    }
+}
+.label-oh  {
+    background-color: @light-orange !important;
+    color: @grey;
+    a {
+        color: @grey;
+    }
+}
+.infobox-oh>.infobox-icon>[class*="icon-"] {
+    background-color: @light-orange;
+}
+.header-color-oh {
+    background: @light-orange;
+    border-color: @light-orange;
+    + .widget-body {
+        border-color: @light-orange;
     }
 }
 
@@ -333,6 +433,16 @@ tr {
 }
 .label-cmpl  {
     background-color: @green !important;
+}
+.infobox-cmpl>.infobox-icon>[class*="icon-"] {
+    background-color: @green
+}
+.header-color-cmpl {
+    background: @green;
+    border-color: @green;
+    + .widget-body {
+        border-color: @green;
+    }
 }
 
 .black2 {
@@ -360,12 +470,12 @@ tr {
 
 .progress-stop .bar, .progress .bar-stop {
     background-image: none;
-    background-color: @red2
+    background-color: @dark-grey
 }
 
 .progress-oh .bar, .progress .bar-oh {
     background-image: none;
-    background-color: @red2
+    background-color: @light-orange
 }
 
 .progress-prev.bar, .progress .bar-prev {
@@ -434,7 +544,7 @@ tr {
     }
 
     .stop {
-        background-color: @red2 + @dgrid-focus-color;
+        background-color: @dark-grey + @dgrid-focus-color;
         color: black;
         a {
             color: black;
@@ -442,7 +552,7 @@ tr {
     }
 
     .oh {
-        background-color: @red2 + @dgrid-focus-color;
+        background-color: @light-orange + @dgrid-focus-color;
         color: black;
         a {
             color: black;

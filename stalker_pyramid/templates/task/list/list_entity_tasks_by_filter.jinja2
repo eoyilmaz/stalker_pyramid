@@ -22,14 +22,14 @@
 
 <script>
     function init_html_modal() {
-        console.debug('starting to initialize init_html_modal dialog!!!');
+        console.debug('starting to initialize init_html_modal dialog!!!{{ filter.code  }}');
 
         {% if filter.entity_type == 'Status' %}
             var template_label = $('#html_template_label');
             template_label.find('span').remove();
             template_label.append('<span>{{ filter.name }}</span>');
 
-            $('#html_template_header').attr('class', 'table-header header-color-' + '{{ filter.html_class }}');
+            $('#html_template_header').attr('class', 'table-header header-color-' + '{{ filter.code.lower() }}');
         {% endif %}
 
         var query_str = '';

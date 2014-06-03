@@ -1,6 +1,6 @@
 {% raw %}
 <script id="tmpl_infobox" type="text/x-dot-template">
-    <div class="infobox infobox-{{=it.status_color }}" style="width:120px">
+    <div class="infobox infobox-{{=it.status_code }}" style="width:120px">
 
         <div class="infobox-icon" style="min-width:40px" id="status_button" ><i class="{{=it.status_icon }}"></i></div>
         <div class="infobox-data" style="min-width:60px"><span class="infobox-data-number">{{=it.tasks_count }}</span>
@@ -33,7 +33,7 @@
         var infobox_template = doT.template($('#tmpl_infobox').html());
 
         $.getJSON(infobox.attr('address')).then(function (data) {
-            var sorting_path = ['WFD','RTS','WIP', 'OH','STOP', 'PREV','HREV', 'DREV', 'CMPL'];
+            var sorting_path = ['WFD','RTS','WIP', 'PREV','HREV', 'DREV', 'CMPL', 'OH','STOP'];
             var sorted_data = [];
 
             var index = -1;
@@ -49,6 +49,7 @@
                 if (index !== -1){
                     sorted_data[index] = data[i];
                 }
+                data[i].status_code = (data[i].status_code).toLowerCase();
             }
 
             for (var k = 0; k < sorted_data.length; k++) {

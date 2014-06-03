@@ -154,6 +154,16 @@ tr .odd > td .ticket_BLOCKER {
 .label-wfd {
   background-color: #abbac3 !important;
 }
+.infobox-wfd > .infobox-icon > [class*="icon-"] {
+  background-color: #abbac3;
+}
+.header-color-wfd {
+  background: #abbac3;
+  border-color: #abbac3;
+}
+.header-color-wfd + .widget-body {
+  border-color: #abbac3;
+}
 .rts {
   background-color: #d15b47;
   color: white;
@@ -163,6 +173,16 @@ tr .odd > td .ticket_BLOCKER {
 }
 .label-rts {
   background-color: #d15b47 !important;
+}
+.infobox-rts > .infobox-icon > [class*="icon-"] {
+  background-color: #d15b47;
+}
+.header-color-rts {
+  background: #d15b47;
+  border-color: #d15b47;
+}
+.header-color-rts + .widget-body {
+  border-color: #d15b47;
 }
 .wip {
   background-color: #ffc657;
@@ -174,6 +194,16 @@ tr .odd > td .ticket_BLOCKER {
 .label-wip {
   background-color: #ffc657 !important;
 }
+.infobox-wip > .infobox-icon > [class*="icon-"] {
+  background-color: #ffc657;
+}
+.header-color-wip {
+  background: #ffc657;
+  border-color: #ffc657;
+}
+.header-color-wip + .widget-body {
+  border-color: #ffc657;
+}
 .prev {
   background-color: #6fb3e0;
   color: white;
@@ -183,6 +213,16 @@ tr .odd > td .ticket_BLOCKER {
 }
 .label-prev {
   background-color: #6fb3e0 !important;
+}
+.infobox-prev > .infobox-icon > [class*="icon-"] {
+  background-color: #6fb3e0;
+}
+.header-color-prev {
+  background: #6fb3e0;
+  border-color: #6fb3e0;
+}
+.header-color-prev + .widget-body {
+  border-color: #6fb3e0;
 }
 .rrev {
   background-color: #7e6eb0;
@@ -194,6 +234,16 @@ tr .odd > td .ticket_BLOCKER {
 .label-rrev {
   background-color: #7e6eb0 !important;
 }
+.infobox-rrev > .infobox-icon > [class*="icon-"] {
+  background-color: #7e6eb0;
+}
+.header-color-rrev {
+  background: #7e6eb0;
+  border-color: #7e6eb0;
+}
+.header-color-rrev + .widget-body {
+  border-color: #7e6eb0;
+}
 .hrev {
   background-color: #7e6eb0;
   color: white;
@@ -203,6 +253,16 @@ tr .odd > td .ticket_BLOCKER {
 }
 .label-hrev {
   background-color: #7e6eb0 !important;
+}
+.infobox-hrev > .infobox-icon > [class*="icon-"] {
+  background-color: #7e6eb0;
+}
+.header-color-hrev {
+  background: #7e6eb0;
+  border-color: #7e6eb0;
+}
+.header-color-hrev + .widget-body {
+  border-color: #7e6eb0;
 }
 .drev {
   background-color: #7e6eb0;
@@ -214,19 +274,59 @@ tr .odd > td .ticket_BLOCKER {
 .label-drev {
   background-color: #7e6eb0 !important;
 }
-.stop {
+.infobox-drev > .infobox-icon > [class*="icon-"] {
   background-color: #7e6eb0;
+}
+.header-color-drev {
+  background: #7e6eb0;
+  border-color: #7e6eb0;
+}
+.header-color-drev + .widget-body {
+  border-color: #7e6eb0;
+}
+.stop {
+  background-color: #4e5962;
   color: white;
 }
 .stop a {
   color: white;
 }
+.label-stop {
+  background-color: #4e5962 !important;
+}
+.infobox-stop > .infobox-icon > [class*="icon-"] {
+  background-color: #4e5962;
+}
+.header-color-stop {
+  background: #4e5962;
+  border-color: #4e5962;
+}
+.header-color-stop + .widget-body {
+  border-color: #4e5962;
+}
 .oh {
-  background-color: #7e6eb0;
-  color: white;
+  background-color: #ff9468;
+  color: #abbac3;
 }
 .oh a {
-  color: white;
+  color: #abbac3;
+}
+.label-oh {
+  background-color: #ff9468 !important;
+  color: #abbac3;
+}
+.label-oh a {
+  color: #abbac3;
+}
+.infobox-oh > .infobox-icon > [class*="icon-"] {
+  background-color: #ff9468;
+}
+.header-color-oh {
+  background: #ff9468;
+  border-color: #ff9468;
+}
+.header-color-oh + .widget-body {
+  border-color: #ff9468;
 }
 .cmpl {
   background-color: #82af6f;
@@ -237,6 +337,16 @@ tr .odd > td .ticket_BLOCKER {
 }
 .label-cmpl {
   background-color: #82af6f !important;
+}
+.infobox-cmpl > .infobox-icon > [class*="icon-"] {
+  background-color: #82af6f;
+}
+.header-color-cmpl {
+  background: #82af6f;
+  border-color: #82af6f;
+}
+.header-color-cmpl + .widget-body {
+  border-color: #82af6f;
 }
 .black2 {
   background-color: #1f1f1f;
@@ -263,12 +373,12 @@ tr .odd > td .ticket_BLOCKER {
 .progress-stop .bar,
 .progress .bar-stop {
   background-image: none;
-  background-color: #d15b47;
+  background-color: #4e5962;
 }
 .progress-oh .bar,
 .progress .bar-oh {
   background-image: none;
-  background-color: #d15b47;
+  background-color: #ff9468;
 }
 .progress-prev.bar,
 .progress .bar-prev {
@@ -329,14 +439,14 @@ tr .odd > td .ticket_BLOCKER {
   color: black;
 }
 .dgrid-selected .stop {
-  background-color: #f37d69;
+  background-color: #707b84;
   color: black;
 }
 .dgrid-selected .stop a {
   color: black;
 }
 .dgrid-selected .oh {
-  background-color: #f37d69;
+  background-color: #ffb68a;
   color: black;
 }
 .dgrid-selected .oh a {
