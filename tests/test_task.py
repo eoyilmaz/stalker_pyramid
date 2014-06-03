@@ -2014,6 +2014,9 @@ class TaskForceStatusTestCase(unittest2.TestCase):
         self.test_task1.status = self.status_wfd
 
         request = testing.DummyRequest()
+        request.matchdict = {
+            'id': self.test_task1.id
+        }
         request.params = {
             'task_id': self.test_task1.id,
             'status_code': 'CMPL'
@@ -2031,8 +2034,10 @@ class TaskForceStatusTestCase(unittest2.TestCase):
         self.test_task1.status = self.status_rts
 
         request = testing.DummyRequest()
+        request.matchdict = {
+            'id': self.test_task1.id
+        }
         request.params = {
-            'task_id': self.test_task1.id,
             'status_code': 'CMPL'
         }
 

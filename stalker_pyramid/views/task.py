@@ -4220,10 +4220,6 @@ def force_task_status(request):
     them it will return a response with status_code of 500.
 
     It will work only for tasks with 'WIP' and 'HREV' statuses.
-
-
-
-
     """
 
     status_code = request.matchdict.get('status_code')
