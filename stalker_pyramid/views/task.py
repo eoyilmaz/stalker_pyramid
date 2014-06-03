@@ -1106,9 +1106,9 @@ def generate_where_clause(params):
         params = {
             'id': [23],
             'name': ['Lighting'],
-            'entity_type': 'Task',
-            'task_type': 'Lighting',
-            'resource': 'Ozgur'
+            'entity_type': ['Task'],
+            'task_type': ['Lighting'],
+            'resource': ['Ozgur']
         }
 
       will result a search string like::
@@ -4208,16 +4208,22 @@ def force_task_status_dialog(request):
         'action': action
     }
 
+
 @view_config(
     route_name='force_task_status',
     permission='Create_Review'
 )
 def force_task_status(request):
-    """deletes the task with the given id
+    """Forces the task status to the status given with the status_code parameter.
+
+    It needs task_id and status_code as a parameter in the request, with out
+    them it will return a response with status_code of 500.
+
+    It will work only for tasks with 'WIP' and 'HREV' statuses.
     """
 
     status_code = request.matchdict.get('status_code')
-    logger.debug('status_code: %s'%status_code)
+    logger.debug('status_code: %s' % status_code)
     status = Status.query.filter(Status.code == status_code).first()
     if not status:
         transaction.abort()
