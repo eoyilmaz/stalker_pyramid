@@ -45,29 +45,28 @@
 {#                <span class="invoice-info-label">Status:</span>#}
                 <span class="label label-large label-{{ entity.status.code.lower() }}"> {{ entity.status.name }}
                 </span>
-                {% if entity.is_leaf%}
+                {% if (entity.status.code == 'WIP' or entity.status.code == 'HREV') and entity.is_leaf%}
                     <div class="inline position-relative">
                         <button class="btn btn-minier bigger btn-info dropdown-toggle"
                                 data-toggle="dropdown">
                             <i class="icon-angle-down icon-only bigger-120"></i>
                         </button>
                         <ul class="dropdown-menu dropdown-icon-only dropdown-yellow pull-right dropdown-caret dropdown-close">
-                            {% if (entity.status.code == 'WIP' or entity.status.code == 'HREV') %}
-                                <li>
-                                    <a href="/tasks/{{entity.id}}/force_status/CMPL/dialog?came_from={{ request.current_route_path() }}"
-                                       class="tooltip-success"
-                                       data-rel="tooltip"
-                                       title="Force Complete"
-                                       data-target="#dialog_template"
-                                       data-toggle="modal"
-                                       data-keyboard=false
-                                       data-placement="top">
-                                           <span class="cmpl-text">
-                                               <i class="icon-ok bigger-110"></i>Force Complete
-                                           </span>
-                                    </a>
-                                </li>
-                            {% endif %}
+
+                            <li>
+                                <a href="/tasks/{{entity.id}}/force_status/CMPL/dialog?came_from={{ request.current_route_path() }}"
+                                   class="tooltip-success"
+                                   data-rel="tooltip"
+                                   title="Force Complete"
+                                   data-target="#dialog_template"
+                                   data-toggle="modal"
+                                   data-keyboard=false
+                                   data-placement="top">
+                                       <span class="cmpl-text">
+                                           <i class="icon-ok bigger-110"></i>Force Complete
+                                       </span>
+                                </a>
+                            </li>
                             {% if entity.status.code == 'WIP'%}
                                 <li>
                                     <a href="/tasks/{{entity.id}}/force_status/STOP/dialog?came_from={{ request.current_route_path() }}"
