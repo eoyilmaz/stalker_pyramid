@@ -209,6 +209,10 @@ logger.setLevel(logging.DEBUG)
     renderer='templates/link/dialogs/upload_reference_dialog.jinja2'
 )
 @view_config(
+    route_name='upload_entity_version_output_dialog',
+    renderer='templates/link/dialogs/upload_version_output_dialog.jinja2'
+)
+@view_config(
     route_name='upload_entity_thumbnail_dialog',
     renderer='templates/link/dialogs/upload_thumbnail_dialog.jinja2'
 )

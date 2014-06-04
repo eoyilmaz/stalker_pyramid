@@ -35,7 +35,7 @@ from stalker.db.session import DBSession
 from stalker_pyramid.views import task, milliseconds_since_epoch, local_to_utc
 
 import logging
-from tests import DummyMultiDict
+from stalker_pyramid.testing import DummyMultiDict
 
 logger = logging.getLogger(__name__)
 
@@ -1983,6 +1983,11 @@ class TaskForceStatusTestCase(unittest2.TestCase):
         self.status_wfd = Status.query.filter_by(code='WFD').first()
         self.status_rts = Status.query.filter_by(code='RTS').first()
         self.status_wip = Status.query.filter_by(code='WIP').first()
+        self.status_prev = Status.query.filter_by(code='PREV').first()
+        self.status_hrev = Status.query.filter_by(code='HREV').first()
+        self.status_drev = Status.query.filter_by(code='DREV').first()
+        self.status_stop = Status.query.filter_by(code='STOP').first()
+        self.status_oh = Status.query.filter_by(code='OH').first()
         self.status_cmpl = Status.query.filter_by(code='CMPL').first()
 
         self.test_project_statuses = StatusList(
@@ -2015,14 +2020,11 @@ class TaskForceStatusTestCase(unittest2.TestCase):
 
         request = testing.DummyRequest()
         request.matchdict = {
-            'id': self.test_task1.id
+            'id': self.test_task1.id,
+            'status_code':'CMPL'
         }
-        request.params = {
-            'task_id': self.test_task1.id,
-            'status_code': 'CMPL'
-        }
-
         response = task.force_task_status(request)
+
         self.assertEqual(response.status_code, 500)
 
         self.assertEqual(response.text, 'Cannot force WFD tasks')
@@ -2035,14 +2037,150 @@ class TaskForceStatusTestCase(unittest2.TestCase):
 
         request = testing.DummyRequest()
         request.matchdict = {
-            'id': self.test_task1.id
+            'id': self.test_task1.id,
+            'status_code':'CMPL'
         }
-        request.params = {
-            'status_code': 'CMPL'
-        }
-
         response = task.force_task_status(request)
+
         self.assertEqual(response.status_code, 500)
+
+        self.assertEqual(response.text, 'Cannot force RTS tasks')
+
+    def test_force_status_in_DREV_task(self):
+        """testing if a force_status() will return a response with code 500 if
+        the task is an DREV task
+        """
+        self.test_task1.status = self.status_drev
+
+        request = testing.DummyRequest()
+        request.matchdict = {
+            'id': self.test_task1.id,
+            'status_code':'CMPL'
+        }
+        response = task.force_task_status(request)
+
+        self.assertEqual(response.status_code, 500)
+
+        self.assertEqual(response.text, 'Cannot force DREV tasks')
+
+    def test_force_status_in_PREV_task(self):
+        """testing if a force_status() will return a response with code 500 if
+        the task is an PREV task
+        """
+        self.test_task1.status = self.status_prev
+
+        request = testing.DummyRequest()
+        request.matchdict = {
+            'id': self.test_task1.id,
+            'status_code':'CMPL'
+        }
+        response = task.force_task_status(request)
+
+        self.assertEqual(response.status_code, 500)
+
+        self.assertEqual(response.text, 'Cannot force PREV tasks')
+
+    def test_force_status_task_to_WFD(self):
+        """testing if a force_status() will return a response with code 500 if
+        new status code is WFD
+        """
+        self.test_task1.status = self.status_wip
+
+        request = testing.DummyRequest()
+        request.matchdict = {
+            'id': self.test_task1.id,
+            'status_code':'WFD'
+        }
+        response = task.force_task_status(request)
+
+        self.assertEqual(response.status_code, 500)
+
+        self.assertEqual(response.text, 'Can not set status to: WFD')
+
+    def test_force_status_task_to_RTS(self):
+        """testing if a force_status() will return a response with code 500 if
+        new status code is RTS
+        """
+        self.test_task1.status = self.status_wip
+
+        request = testing.DummyRequest()
+        request.matchdict = {
+            'id': self.test_task1.id,
+            'status_code':'RTS'
+        }
+        response = task.force_task_status(request)
+
+        self.assertEqual(response.status_code, 500)
+
+        self.assertEqual(response.text, 'Can not set status to: RTS')
+
+    def test_force_status_task_to_WIP(self):
+        """testing if a force_status() will return a response with code 500 if
+        new status code is WIP
+        """
+        self.test_task1.status = self.status_wip
+
+        request = testing.DummyRequest()
+        request.matchdict = {
+            'id': self.test_task1.id,
+            'status_code':'WIP'
+        }
+        response = task.force_task_status(request)
+
+        self.assertEqual(response.status_code, 500)
+
+        self.assertEqual(response.text, 'Can not set status to: WIP')
+
+    def test_force_status_task_to_HREV(self):
+        """testing if a force_status() will return a response with code 500 if
+        new status code is HREV
+        """
+        self.test_task1.status = self.status_wip
+
+        request = testing.DummyRequest()
+        request.matchdict = {
+            'id': self.test_task1.id,
+            'status_code':'HREV'
+        }
+        response = task.force_task_status(request)
+
+        self.assertEqual(response.status_code, 500)
+
+        self.assertEqual(response.text, 'Can not set status to: HREV')
+
+    def test_force_status_task_to_PREV(self):
+        """testing if a force_status() will return a response with code 500 if
+        new status code is PREV
+        """
+        self.test_task1.status = self.status_wip
+
+        request = testing.DummyRequest()
+        request.matchdict = {
+            'id': self.test_task1.id,
+            'status_code':'PREV'
+        }
+        response = task.force_task_status(request)
+
+        self.assertEqual(response.status_code, 500)
+
+        self.assertEqual(response.text, 'Can not set status to: PREV')
+
+    def test_force_status_task_to_DREV(self):
+        """testing if a force_status() will return a response with code 500 if
+        new status code is DREV
+        """
+        self.test_task1.status = self.status_wip
+
+        request = testing.DummyRequest()
+        request.matchdict = {
+            'id': self.test_task1.id,
+            'status_code':'DREV'
+        }
+        response = task.force_task_status(request)
+
+        self.assertEqual(response.status_code, 500)
+
+        self.assertEqual(response.text, 'Can not set status to: DREV')
 
     def test_task_schedule_timing_values_are_trimmed(self):
         """testing if the task.schedule_timing value is trimmed to the total

@@ -3,7 +3,7 @@
         <button data-target="#dialog_template"
             data-toggle="modal"
             data-keyboard="false"
-{#            href="{{ request.route_url('upload_entity_version_output_dialog', id=version.id) }}"#}
+            href="{{ request.route_url('upload_entity_version_output_dialog', id=version.id) }}"
             class="pull-left btn btn-small btn-primary">
             <i class="icon-cloud-upload bigger-120"></i>
             Upload Output
@@ -19,11 +19,11 @@
         </div>
 
         <div class="span6">
-            <div class="search pull-right" id="reference-search">
+            <div class="search pull-right" id="output-search">
                 <form class="form-search">
-                    <input id="reference_search_field" type="text" class="input-medium search-query"/>
+                    <input id="output_search_field" type="text" class="input-medium search-query"/>
                     <button class="btn btn-purple btn-small"
-                            id="reference_do_search_button">
+                            id="output_do_search_button">
                         Search
                         <i class="icon-search icon-on-right bigger-110"></i>
                     </button>
@@ -34,7 +34,7 @@
     </div>
 
     <div class="row-fluid">
-        <div id="new_references_storage" class="hidden"></div>
+        <div id="new_outputs_storage" class="hidden"></div>
         <ul class="ace-thumbnails"></ul>
     </div>
 </div>

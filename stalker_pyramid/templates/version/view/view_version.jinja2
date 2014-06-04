@@ -84,13 +84,14 @@
                                     <span><a href="/users/{{ version.created_by.id }}/view">{{ version.created_by.name }}</a></span>
                                 </div>
                             </div>
-
-                            <div class="profile-info-row">
-                                <div class="profile-info-name">Description</div>
-                                <div class="profile-info-value">
-                                    <span>{{ version.description }}</span>
+                            {% if version.description %}
+                                <div class="profile-info-row">
+                                    <div class="profile-info-name">Description</div>
+                                    <div class="profile-info-value">
+                                        <span>{{ version.description }}</span>
+                                    </div>
                                 </div>
-                            </div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>

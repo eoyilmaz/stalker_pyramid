@@ -393,10 +393,6 @@ class MediaManagerTestCase(unittest2.TestCase):
         thumbnail_path = \
             self.test_media_manager.generate_thumbnail(
                 self.test_video_path_mp4
-                # '/home/eoyilmaz/Videos/14078313.mp4'
-                # '/home/eoyilmaz/Videos/omo_MMR_30sn_040812.mov'
-                # '/home/eoyilmaz/Videos/CG/BreakDowns/Commercials/Adidas-Carry/Carry_adidas_carry_60.mov'
-                # '/home/eoyilmaz/Videos/Photography/Nikon_D3_vs_D3s.flv'
             )
 
         # check if thumbnail is properly generated

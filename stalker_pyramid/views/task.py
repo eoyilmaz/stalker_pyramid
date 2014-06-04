@@ -315,6 +315,7 @@ def duplicate_task(task):
         thumbnail=task.thumbnail,
         type=task.type,
         watchers=task.watchers,
+        date_created=local_to_utc(datetime.datetime.now()),
         **extra_kwargs
     )
     dup_task.generic_data = task.generic_data
@@ -4229,6 +4230,10 @@ def force_task_status(request):
         transaction.abort()
         return Response('Can not find a status with code: %s' % status_code, 500)
 
+    if status.code not in ['CMPL','STOP','OH']:
+        transaction.abort()
+        return Response('Can not set status to: %s' % status_code, 500)
+
     task_id = request.matchdict.get('id')
     task = Task.query.get(task_id)
 
@@ -4236,23 +4241,32 @@ def force_task_status(request):
         transaction.abort()
         return Response('Can not find a Task with id: %s' % task_id, 500)
 
-    timing, unit = task.least_meaningful_time_unit(task.total_logged_seconds)
-    task.schedule_timing = timing
-    task.schedule_unit = unit
-    task.status = status
+    if task.status.code not in ['WIP','HREV']:
+        transaction.abort()
+        return Response('Cannot force %s tasks' % task.status.code, 500)
 
-    task.update_parent_statuses()
-    for tdep in task.task_dependent_of:
-                dep = tdep.task
-                dep.update_status_with_dependent_statuses()
-                if dep.status.code in ['HREV', 'PREV', 'DREV', 'OH', 'STOP']:
-                    # for tasks that are still be able to continue to work,
-                    # change the dependency_target to "onstart" to allow
-                    # the two of the tasks to work together and still let the
-                    # TJ to be able to schedule the tasks correctly
-                    tdep.dependency_target = 'onstart'
-                # also update the status of parents of dependencies
-                dep.update_parent_statuses()
+    if status.code == 'STOP':
+        task.stop()
+    elif status.code =='OH':
+        task.hold()
+    elif status.code == 'CMPL':
+        timing, unit = task.least_meaningful_time_unit(task.total_logged_seconds)
+        task.schedule_timing = timing
+        task.schedule_unit = unit
+        task.status = status
+
+        task.update_parent_statuses()
+        for tdep in task.task_dependent_of:
+            dep = tdep.task
+            dep.update_status_with_dependent_statuses()
+            if dep.status.code in ['HREV', 'PREV', 'DREV', 'OH', 'STOP']:
+                # for tasks that are still be able to continue to work,
+                # change the dependency_target to "onstart" to allow
+                # the two of the tasks to work together and still let the
+                # TJ to be able to schedule the tasks correctly
+                tdep.dependency_target = 'onstart'
+            # also update the status of parents of dependencies
+            dep.update_parent_statuses()
 
     logged_in_user = get_logged_in_user(request)
     utc_now = local_to_utc(datetime.datetime.now())
