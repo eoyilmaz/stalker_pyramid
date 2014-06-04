@@ -30,7 +30,6 @@ __version__ = '0.1.10'
 
 # before anything about stalker create the defaults
 from stalker.config import defaults
-from stalker.models.auth import group_finder
 
 import logging
 
@@ -50,6 +49,8 @@ def main(global_config, **settings):
     from stalker import db
     from stalker.db import DBSession
 
+    from stalker_pyramid.views.auth import group_finder
+
     # use the ZopeTransactionExtension for session
     db.setup(settings)
     DBSession.remove()
@@ -65,7 +66,7 @@ def main(global_config, **settings):
 
     config = Configurator(
         settings=settings,
-        root_factory='stalker.models.auth.RootFactory'
+        root_factory='stalker_pyramid.views.auth.RootFactory'
     )
     config.set_authentication_policy(authn_policy)
     config.set_authorization_policy(authz_policy)

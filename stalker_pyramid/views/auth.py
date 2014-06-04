@@ -42,6 +42,72 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 
+def group_finder(login, request):
+    """Returns the group of the given login. The login name will be in
+    'User:{login}' format.
+
+    :param login: The login of the user, both '{login}' and 'User:{login}'
+      format is accepted.
+
+    :param request: The Request object
+
+    :return: Will return the groups of the user in ['Group:{group_name}']
+      format.
+    """
+
+    if ':' in login:
+        login = login.split(':')[1]
+
+    # return the group of the given User object
+    user_obj = User.query.filter_by(login=login).first()
+
+    if user_obj:
+        # just return the groups names if there is any group
+        groups = user_obj.groups
+        if len(groups):
+            return map(lambda x: 'Group:' + x.name, groups)
+
+    return []
+
+
+class RootFactory(object):
+    """The main purpose of having a root factory is to generate the objects
+    used as the context by the request. But in our case it just used to
+    determine the default ACLs.
+    """
+
+    @property
+    def __acl__(self):
+        # create the default acl and give admins all the permissions
+        all_permissions = map(
+            lambda x: x.action + '_' + x.class_name,
+            Permission.query.all()
+        )
+
+        # start with default ACLs
+
+        ACLs = [
+            ('Allow', 'Group:' + defaults.admin_department_name,
+             all_permissions),
+            ('Allow', 'User:' + defaults.admin_name, all_permissions)
+        ]
+
+        # get all users and their ACLs
+        all_users = User.query.all()
+        for user in all_users:
+            ACLs.extend(user.__acl__)
+
+        # get all groups and their ACLs
+        all_groups = Group.query.all()
+        for group in all_groups:
+            ACLs.extend(group.__acl__)
+
+        return ACLs
+
+    def __init__(self, request):
+        pass
+
+
 @view_config(
     route_name='create_user'
 )
@@ -65,7 +131,6 @@ def create_user(request):
     logger.debug('new user login : %s' % login)
     logger.debug('new user email : %s' % email)
     logger.debug('new user password : %s' % password)
-
 
     # create and add a new user
     if name and login and email and password:

@@ -315,6 +315,7 @@ def duplicate_task(task):
         thumbnail=task.thumbnail,
         type=task.type,
         watchers=task.watchers,
+        date_created=local_to_utc(datetime.datetime.now()),
         **extra_kwargs
     )
     dup_task.generic_data = task.generic_data
