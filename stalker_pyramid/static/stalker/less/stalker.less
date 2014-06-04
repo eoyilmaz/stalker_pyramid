@@ -20,7 +20,6 @@
 @red: #d53f40;
 @red2: #d15b47;
 @red3: #E2755F;
-@light-orange: rgb(255, 148, 104);
 @orange: #FFC657;
 @light-green: #9abc32;
 @green: #82af6f;
@@ -206,9 +205,54 @@ tr {
         border-color: @light-green;
     }
 }
+// *********************************
+// Note Types
+// *********************************
+
+.approved {
+    background-color: @green;
+    color: white;
+    a {
+        color: white;
+    }
+}
+.label-approved {
+    background-color: @green !important;
+}
+.infobox-approved>.infobox-icon>[class*="icon-"] {
+    background-color: @green
+}
+.header-color-approved {
+    background: @green;
+    border-color: @green;
+    + .widget-body {
+        border-color: @green;
+    }
+}
+
+.requested_revison {
+    background-color: @purple;
+    color: white;
+    a {
+        color: white;
+    }
+}
+.label-requested_revison {
+    background-color: @purple !important;
+}
+.infobox-requested_revison>.infobox-icon>[class*="icon-"] {
+    background-color: @purple
+}
+.header-color-requested_revison {
+    background: @purple;
+    border-color: @purple;
+    + .widget-body {
+        border-color: @purple;
+    }
+}
 
 // *********************************
-// Statuses
+// Task Statuses
 // *********************************
 
 .pln {
@@ -385,6 +429,13 @@ tr {
         color: white;
     }
 }
+.stop-text {
+
+    color: @dark-grey;
+    a {
+        color: @dark-grey;
+    }
+}
 .label-stop  {
     background-color: @dark-grey !important;
 }
@@ -400,27 +451,34 @@ tr {
 }
 
 .oh {
-    background-color: @light-orange;
-    color: @grey;
+    background-color: @red;
+    color: white;
     a {
-        color: @grey;
+        color: white;
+    }
+}
+.oh-text {
+
+    color: @red;
+    a {
+        color: @red;
     }
 }
 .label-oh  {
-    background-color: @light-orange !important;
-    color: @grey;
+    background-color: @red !important;
+    color: white;
     a {
-        color: @grey;
+        color: white;
     }
 }
 .infobox-oh>.infobox-icon>[class*="icon-"] {
-    background-color: @light-orange;
+    background-color: @red;
 }
 .header-color-oh {
-    background: @light-orange;
-    border-color: @light-orange;
+    background: @red;
+    border-color: @red;
     + .widget-body {
-        border-color: @light-orange;
+        border-color: @red;
     }
 }
 
@@ -429,6 +487,13 @@ tr {
     color: white;
     a {
         color: white;
+    }
+}
+.cmpl-text {
+
+    color: @green;
+    a {
+        color: @green;
     }
 }
 .label-cmpl  {
@@ -475,7 +540,7 @@ tr {
 
 .progress-oh .bar, .progress .bar-oh {
     background-image: none;
-    background-color: @light-orange
+    background-color: @red
 }
 
 .progress-prev.bar, .progress .bar-prev {
@@ -552,10 +617,10 @@ tr {
     }
 
     .oh {
-        background-color: @light-orange + @dgrid-focus-color;
-        color: black;
+        background-color: @red + @dgrid-focus-color;
+        color: white;
         a {
-            color: black;
+            color: white;
         }
     }
 

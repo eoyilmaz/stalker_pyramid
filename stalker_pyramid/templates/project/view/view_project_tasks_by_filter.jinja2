@@ -103,7 +103,7 @@
         <td>{{=it.start}}</td>
         <td><a href='/tasks/{{=it.id}}/view'>{{=it.full_path}}</a></td>
         <td>{{ for(var i=0;i<it.resources.length;i++){ }}<a href='/users/{{=it.resources[i].id}}/view'>{{=it.resources[i].name}}</a><br/>{{ } }}</td>
-        <td>{{ for(var j=0;j<it.responsible.length;j++){ }}<a href='/users/{{=it.responsible[j]}}/view'>{{=it.responsible[j]}}</a><br/>{{ } }}</td>
+        <td>{{ for(var j=0;j<it.responsible.length;j++){ }}<a href='/users/{{=it.responsible[j].id}}/view'>{{=it.responsible[j].name}}</a><br/>{{ } }}</td>
 
         <td>{{=it.task_type}}</td>
         <td data-sType="num-html">
@@ -151,7 +151,7 @@
                     </a>
 
                 {{ } }}
-                {{ if (it.review) { }}
+                    {{ if (it.review) { }}
                     <a
                         class="purple"
                         data-target="#dialog_template"

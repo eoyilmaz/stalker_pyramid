@@ -22,6 +22,7 @@
 
 <script>
     function init_html_modal() {
+
         console.debug('starting to initialize init_html_modal dialog!!!{{ filter.code  }}');
 
         {% if filter.entity_type == 'Status' %}
@@ -71,6 +72,14 @@
                         data[i].thumbnail_full_path = '/' + data[i].thumbnail_full_path;
                     }
 
+                    for (var k=0; k<data[i].responsible.length;k++){
+                        var r_id = data[i].responsible[k];
+                        data[i].responsible[k] = {'id':r_id,
+                                               'name':get_user_name(r_id)}
+
+                    }
+
+
                     var bid_seconds = calculate_seconds(data[i].bid_timing, data[i].bid_unit);
                     data[i].hour_based_on_bid = meaningful_time_between(bid_seconds, data[i].total_logged_seconds);
                     data[i].hour_to_complete = meaningful_time_between(
@@ -99,7 +108,7 @@
                     if (data[i].status === 'prev') {
                         responsible = data[i].responsible;
                         for (r = 0; r < responsible.length; r++) {
-                            if (responsible[r] === {{ logged_in_user.id }}) {
+                            if (responsible[r].id === {{ logged_in_user.id }}) {
                                 data[i].review ="/tasks/" + data[i].id + "/review/dialog?came_from={{ request.current_route_path() }}";
                             }
                         }

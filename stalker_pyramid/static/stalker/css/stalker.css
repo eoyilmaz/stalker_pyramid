@@ -127,6 +127,46 @@ tr .odd > td .ticket_BLOCKER {
 .header-color-version + .widget-body {
   border-color: #9abc32;
 }
+.approved {
+  background-color: #82af6f;
+  color: white;
+}
+.approved a {
+  color: white;
+}
+.label-approved {
+  background-color: #82af6f !important;
+}
+.infobox-approved > .infobox-icon > [class*="icon-"] {
+  background-color: #82af6f;
+}
+.header-color-approved {
+  background: #82af6f;
+  border-color: #82af6f;
+}
+.header-color-approved + .widget-body {
+  border-color: #82af6f;
+}
+.requested_revison {
+  background-color: #6f3cc4;
+  color: white;
+}
+.requested_revison a {
+  color: white;
+}
+.label-requested_revison {
+  background-color: #6f3cc4 !important;
+}
+.infobox-requested_revison > .infobox-icon > [class*="icon-"] {
+  background-color: #6f3cc4;
+}
+.header-color-requested_revison {
+  background: #6f3cc4;
+  border-color: #6f3cc4;
+}
+.header-color-requested_revison + .widget-body {
+  border-color: #6f3cc4;
+}
 .pln {
   background-color: #abbac3;
   color: white;
@@ -291,6 +331,12 @@ tr .odd > td .ticket_BLOCKER {
 .stop a {
   color: white;
 }
+.stop-text {
+  color: #4e5962;
+}
+.stop-text a {
+  color: #4e5962;
+}
 .label-stop {
   background-color: #4e5962 !important;
 }
@@ -305,28 +351,34 @@ tr .odd > td .ticket_BLOCKER {
   border-color: #4e5962;
 }
 .oh {
-  background-color: #ff9468;
-  color: #abbac3;
+  background-color: #d53f40;
+  color: white;
 }
 .oh a {
-  color: #abbac3;
+  color: white;
+}
+.oh-text {
+  color: #d53f40;
+}
+.oh-text a {
+  color: #d53f40;
 }
 .label-oh {
-  background-color: #ff9468 !important;
-  color: #abbac3;
+  background-color: #d53f40 !important;
+  color: white;
 }
 .label-oh a {
-  color: #abbac3;
+  color: white;
 }
 .infobox-oh > .infobox-icon > [class*="icon-"] {
-  background-color: #ff9468;
+  background-color: #d53f40;
 }
 .header-color-oh {
-  background: #ff9468;
-  border-color: #ff9468;
+  background: #d53f40;
+  border-color: #d53f40;
 }
 .header-color-oh + .widget-body {
-  border-color: #ff9468;
+  border-color: #d53f40;
 }
 .cmpl {
   background-color: #82af6f;
@@ -334,6 +386,12 @@ tr .odd > td .ticket_BLOCKER {
 }
 .cmpl a {
   color: white;
+}
+.cmpl-text {
+  color: #82af6f;
+}
+.cmpl-text a {
+  color: #82af6f;
 }
 .label-cmpl {
   background-color: #82af6f !important;
@@ -378,7 +436,7 @@ tr .odd > td .ticket_BLOCKER {
 .progress-oh .bar,
 .progress .bar-oh {
   background-image: none;
-  background-color: #ff9468;
+  background-color: #d53f40;
 }
 .progress-prev.bar,
 .progress .bar-prev {
@@ -446,11 +504,11 @@ tr .odd > td .ticket_BLOCKER {
   color: black;
 }
 .dgrid-selected .oh {
-  background-color: #ffb68a;
-  color: black;
+  background-color: #f76162;
+  color: white;
 }
 .dgrid-selected .oh a {
-  color: black;
+  color: white;
 }
 .dgrid-selected .prev {
   background-color: #91d5ff;
