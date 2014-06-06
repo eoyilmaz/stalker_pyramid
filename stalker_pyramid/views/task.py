@@ -4324,6 +4324,7 @@ def get_task_resources(request):
             'name': resource.name,
             'thumbnail_full_path': resource.thumbnail.full_path if resource.thumbnail else None,
             'description': '',
+            'item_view_link': '/users/%s/view' % resource.id,
             'item_remove_link':'/tasks/%s/remove/resources/%s/dialog?came_from=%s'%( task.id, resource.id, request.current_route_path())
             if PermissionChecker(request)('Update_Task') else None
         }
