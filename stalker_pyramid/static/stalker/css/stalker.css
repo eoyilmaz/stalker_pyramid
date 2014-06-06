@@ -194,8 +194,9 @@ tr .odd > td .ticket_BLOCKER {
 .label-wfd {
   background-color: #abbac3 !important;
 }
-.infobox-wfd > .infobox-icon > [class*="icon-"] {
+.infobox-wfd.infobox-dark {
   background-color: #abbac3;
+  border-color: #abbac3;
 }
 .header-color-wfd {
   background: #abbac3;
@@ -214,7 +215,7 @@ tr .odd > td .ticket_BLOCKER {
 .label-rts {
   background-color: #d15b47 !important;
 }
-.infobox-rts > .infobox-icon > [class*="icon-"] {
+.infobox-rts.infobox-dark {
   background-color: #d15b47;
 }
 .header-color-rts {
@@ -234,7 +235,7 @@ tr .odd > td .ticket_BLOCKER {
 .label-wip {
   background-color: #ffc657 !important;
 }
-.infobox-wip > .infobox-icon > [class*="icon-"] {
+.infobox-wip.infobox-dark {
   background-color: #ffc657;
 }
 .header-color-wip {
@@ -254,7 +255,7 @@ tr .odd > td .ticket_BLOCKER {
 .label-prev {
   background-color: #6fb3e0 !important;
 }
-.infobox-prev > .infobox-icon > [class*="icon-"] {
+.infobox-prev.infobox-dark {
   background-color: #6fb3e0;
 }
 .header-color-prev {
@@ -294,7 +295,7 @@ tr .odd > td .ticket_BLOCKER {
 .label-hrev {
   background-color: #7e6eb0 !important;
 }
-.infobox-hrev > .infobox-icon > [class*="icon-"] {
+.infobox-hrev.infobox-dark {
   background-color: #7e6eb0;
 }
 .header-color-hrev {
@@ -314,7 +315,7 @@ tr .odd > td .ticket_BLOCKER {
 .label-drev {
   background-color: #7e6eb0 !important;
 }
-.infobox-drev > .infobox-icon > [class*="icon-"] {
+.infobox-drev.infobox-dark {
   background-color: #7e6eb0;
 }
 .header-color-drev {
@@ -340,7 +341,7 @@ tr .odd > td .ticket_BLOCKER {
 .label-stop {
   background-color: #4e5962 !important;
 }
-.infobox-stop > .infobox-icon > [class*="icon-"] {
+.infobox-stop.infobox-dark {
   background-color: #4e5962;
 }
 .header-color-stop {
@@ -370,7 +371,7 @@ tr .odd > td .ticket_BLOCKER {
 .label-oh a {
   color: white;
 }
-.infobox-oh > .infobox-icon > [class*="icon-"] {
+.infobox-oh.infobox-dark {
   background-color: #d53f40;
 }
 .header-color-oh {
@@ -396,7 +397,7 @@ tr .odd > td .ticket_BLOCKER {
 .label-cmpl {
   background-color: #82af6f !important;
 }
-.infobox-cmpl > .infobox-icon > [class*="icon-"] {
+.infobox-cmpl.infobox-dark {
   background-color: #82af6f;
 }
 .header-color-cmpl {

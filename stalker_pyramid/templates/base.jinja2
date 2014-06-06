@@ -413,14 +413,13 @@
     var all_users = [];
 
     $.getJSON('/users/').then(function (data) {
-        console.log(data)
+
         all_users = data;
     });
 
     var get_user_name = function(id){
         var user = objectFindByKey(all_users, 'id', id);
         if(user != null){
-            console.log(user.name)
             return user.name;
         }
         return id;
@@ -585,7 +584,7 @@
                     return 'icon-mail-reply-all';
                     break;
                 case 'RTS':
-                    return 'icon-circle-blank';
+                    return 'icon-check-empty';
                     break;
                 case 'CMPL':
                     return 'icon-check';

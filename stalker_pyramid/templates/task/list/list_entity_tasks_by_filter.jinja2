@@ -28,9 +28,13 @@
         {% if filter.entity_type == 'Status' %}
             var template_label = $('#html_template_label');
             template_label.find('span').remove();
-            template_label.append('<span>{{ filter.name }}</span>');
-
-            $('#html_template_header').attr('class', 'table-header header-color-' + '{{ filter.code.lower() }}');
+            {% if is_warning_list %}
+                template_label.append('<span>Black List<small> !! these tasks should be sent to review or extra time should be requested for them !!</small></span>');
+                $('#html_template_header').attr('class', 'table-header header-color-dark');
+            {% else %}
+                template_label.append('<span>{{ filter.name }}</span>');
+                $('#html_template_header').attr('class', 'table-header header-color-' + '{{ filter.code.lower() }}');
+            {% endif %}
         {% endif %}
 
         var query_str = '';
@@ -89,7 +93,6 @@
                                                    ),
                                                    data[i].total_logged_seconds
                                                );
-                    data[i].bid_stat = '#ffffff';
 
                     if(bid_seconds<data[i].total_logged_seconds){
                          data[i].bid_stat = '#ff0000'
@@ -125,12 +128,23 @@
 
                     data[i].came_from = '{{ request.current_route_path() }}';
 
+                    {% if has_permission('Create_Review') %}
+                        if(data[i].hour_to_complete == 0){
+                             data[i].poke_user = true;
+                        }
+                    {% endif %}
+
                     // append it to the table
-                    table_body.append(row_template(data[i]));
+                    {% if is_warning_list %}
+                        if(data[i].hour_to_complete == 0){
+                            table_body.append(row_template(data[i]));
+                        }
+                    {% else %}
+                        table_body.append(row_template(data[i]));
+                    {% endif %}
                 }
 
                 var oTable1 = table.dataTable();
-
                 oTable1.show();
                 $('#loading_spinner').hide();
 
