@@ -67,7 +67,7 @@
                 var resources = {};
                 console.log('loaded')
                 for (var i = 0; i < data.length; i++) {
-                    console.log(data[i].name)
+
                     var prop_id = (data[i].id).toString();
 
                     if (!resources [prop_id]) {
@@ -83,10 +83,10 @@
                         resources[prop_id]['additionalParameters']['children'] = {};
                     }
 
-                    $.getJSON('/tasks/?has_resource=1&leaf_only=1&resource_id='+data[i].id+'&status="WIP"').then(function (tdata) {
-                         console.log('loaded2')
+                    $.getJSON('/tasks/?has_resource=1&leaf_only=1&resource_id='+data[i].id+'&status=WIP').then(function (tdata) {
+                         console.log('loaded2'+tdata.length)
                         for (var k = 0; k < tdata.length; k++) {
-                             console.log(tdata[i].name)
+                             console.log(tdata[k].name)
                             var time_to_complete_str = '<span> ( ' +  meaningful_time_between(tdata[k].schedule_seconds, tdata[k].total_logged_seconds) + ') </span>';
                             var percent_complete_str = '<span class="label label-' + tdata[k].status + '">' + tdata[k].status + '</span>';
                             resources[tdata[k].resources[0].id]['additionalParameters']['children'][(tdata[k].id).toString()] = {name: '<span  class="pull-left"><a href="/tasks/' + tdata[k].id + '/view">' + tdata[k].full_path + '  </a></span>' + time_to_complete_str + percent_complete_str, type: 'item'}

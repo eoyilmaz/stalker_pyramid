@@ -4298,6 +4298,75 @@ def force_task_status(request):
 
     return Response('Success: %s status is set to %s' % (task.name, status.name))
 
+@view_config(
+    route_name='resume_task_dialog',
+    renderer='templates/modals/confirm_dialog.jinja2'
+)
+def resume_task_dialog(request):
+    """resume task dialog for Stopped and Holt tasks
+    """
+    logger.debug('delete_department_dialog is starts')
+
+    task_id = request.matchdict.get('id')
+
+    came_from = request.params.get('came_from', '/')
+    action = '/tasks/%s/resume' % task_id
+    message = 'Task will be resumed' \
+                  '<br><br>Are you sure?'
+
+    logger.debug('action: %s' % action)
+
+    return {
+        'message': message,
+        'came_from': came_from,
+        'action': action
+    }
+
+
+@view_config(
+    route_name='resume_task',
+    permission='Create_Review'
+)
+def resume_task(request):
+    """resume task method for Stopped and Holt tasks
+    """
+
+    task_id = request.matchdict.get('id')
+    task = Task.query.get(task_id)
+
+    if not task:
+        transaction.abort()
+        return Response('Can not find a Task with id: %s' % task_id, 500)
+
+    if task.status.code not in ['OH','STOP']:
+        transaction.abort()
+        return Response('Cannot resume %s tasks' % task.status.code, 500)
+
+    task.resume();
+
+
+    logged_in_user = get_logged_in_user(request)
+    utc_now = local_to_utc(datetime.datetime.now())
+
+    note_type = query_type('Note', 'Resumed')
+    note_type.html_class = 'red'
+    note_type.code = 'resumed'
+
+    note = Note(
+        content='%s has changed this task status to %s' % (logged_in_user.name, task.status.name),
+        created_by=logged_in_user,
+        date_created=utc_now,
+        date_updated=utc_now,
+        type=note_type
+    )
+    DBSession.add(note)
+
+    task.notes.append(note)
+    task.updated_by = logged_in_user
+    task.date_updated = utc_now
+
+    return Response('Success: %s is resumed' % task.name)
+
 
 @view_config(
     route_name='get_task_resources',

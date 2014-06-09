@@ -45,29 +45,30 @@
 {#                <span class="invoice-info-label">Status:</span>#}
                 <span class="label label-large label-{{ entity.status.code.lower() }}"> {{ entity.status.name }}
                 </span>
-                {% if has_permission('Create_Review')%}
-                    {% if (entity.status.code == 'WIP' or entity.status.code == 'HREV') and entity.is_leaf%}
+                {% if has_permission('Create_Review') and entity.is_leaf%}
+
                         <div class="inline position-relative">
                             <button class="btn btn-minier bigger btn-info dropdown-toggle"
                                     data-toggle="dropdown">
                                 <i class="icon-angle-down icon-only bigger-120"></i>
                             </button>
                             <ul class="dropdown-menu dropdown-icon-only dropdown-yellow pull-right dropdown-caret dropdown-close">
-
-                                <li>
-                                    <a href="/tasks/{{entity.id}}/force_status/CMPL/dialog?came_from={{ request.current_route_path() }}"
-                                       class="tooltip-success"
-                                       data-rel="tooltip"
-                                       title="Force Complete"
-                                       data-target="#dialog_template"
-                                       data-toggle="modal"
-                                       data-keyboard=false
-                                       data-placement="top">
-                                           <span class="cmpl-text">
-                                               <i class="icon-ok bigger-110"></i>Force Complete
-                                           </span>
-                                    </a>
-                                </li>
+                                {% if (entity.status.code == 'WIP' or entity.status.code == 'HREV') %}
+                                    <li>
+                                        <a href="/tasks/{{entity.id}}/force_status/CMPL/dialog?came_from={{ request.current_route_path() }}"
+                                           class="tooltip-success"
+                                           data-rel="tooltip"
+                                           title="Force Complete"
+                                           data-target="#dialog_template"
+                                           data-toggle="modal"
+                                           data-keyboard=false
+                                           data-placement="top">
+                                               <span class="cmpl-text">
+                                                   <i class="icon-ok bigger-110"></i>Force Complete
+                                               </span>
+                                        </a>
+                                    </li>
+                                {% endif %}
                                 {% if entity.status.code == 'WIP'%}
                                     <li>
                                         <a href="/tasks/{{entity.id}}/force_status/STOP/dialog?came_from={{ request.current_route_path() }}"
@@ -98,10 +99,26 @@
                                         </a>
                                     </li>
                                 {% endif %}
+                                {% if entity.status.code == 'STOP' or entity.status.code == 'OH' %}
+                                    <li>
+                                        <a href="/tasks/{{entity.id}}/resume/dialog?came_from={{ request.current_route_path() }}"
+                                           class="tooltip-success"
+                                           data-rel="tooltip"
+                                           title="Resume"
+                                           data-target="#dialog_template"
+                                           data-toggle="modal"
+                                           data-keyboard=false
+                                           data-placement="top">
+                                               <span class="wip-text">
+                                                   <i class="icon-play bigger-110"></i>Resume
+                                               </span>
+                                        </a>
+                                    </li>
+                                {% endif %}
                             </ul>
                         </div>
                     {% endif %}
-                {% endif %}
+
                 <br>
     
                 <div class="progress progress-mini progress-success progress-striped {% if entity.status.code == 'WIP' %}active{% endif %}"

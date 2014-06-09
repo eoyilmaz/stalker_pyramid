@@ -508,6 +508,8 @@ def main(global_config, **settings):
     config.add_route('update_task_dependencies_dialog',     'tasks/{id}/update/dependencies/dialog')
     config.add_route('force_task_status_dialog',            'tasks/{id}/force_status/{status_code}/dialog')
     config.add_route('force_task_status',                   'tasks/{id}/force_status/{status_code}')
+    config.add_route('resume_task_dialog',                  'tasks/{id}/resume/dialog')
+    config.add_route('resume_task',                  'tasks/{id}/resume')
     config.add_route('review_task',                         'tasks/{id}/review')
     config.add_route('cleanup_task_new_reviews',            'tasks/{id}/cleanup_new_reviews')
 
