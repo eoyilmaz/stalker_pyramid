@@ -319,7 +319,6 @@ def duplicate_task(task):
         **extra_kwargs
     )
     dup_task.generic_data = task.generic_data
-    dup_task.is_complete = task.is_complete
 
     return dup_task
 
@@ -913,7 +912,7 @@ def update_task(request):
     responsible_ids = get_multi_integer(request, 'responsible_ids[]')
     responsible = User.query.filter(User.id.in_(responsible_ids)).all()
 
-    priority = request.params.get('priority', 500)
+    priority = int(request.params.get('priority', 500))
 
     entity_type = request.params.get('entity_type', None)
     code = request.params.get('code', None)
@@ -2564,7 +2563,7 @@ def create_task(request):
         responsible_ids = get_multi_integer(request, 'responsible_ids[]')
         responsible = User.query.filter(User.id.in_(responsible_ids)).all()
 
-    priority = request.params.get('priority', 500)
+    priority = int(request.params.get('priority', 500))
 
     code = request.params.get('code', '')
     entity_type = request.params.get('entity_type')
