@@ -319,7 +319,6 @@ def duplicate_task(task):
         **extra_kwargs
     )
     dup_task.generic_data = task.generic_data
-    dup_task.is_complete = task.is_complete
 
     return dup_task
 
