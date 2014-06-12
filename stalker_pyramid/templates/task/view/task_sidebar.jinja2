@@ -146,21 +146,25 @@
             0 {# TODO: fix this, it should be task.open_tickets, but stalker doesn't support it yet #}
         );
 
-        menu_of(
-            'Versions',
-            "{%- if request.current_route_path() == request.route_path('list_task_versions', id=task.id) -%}'active',{%- else -%},{%- endif -%}",
-            '{{ request.route_url('list_task_versions', id=task.id) }}',
-            get_icon('version'),
-            {{ task.versions | count }}
-        );
+        {% if entity.is_leaf %}
 
-        menu_of(
-            'Outputs',
-            "{%- if request.current_route_path() == request.route_path('list_task_outputs', id=task.id) -%}'active',{%- else -%},{%- endif -%}",
-            '{{ request.route_url('list_task_outputs', id=task.id) }}',
-            get_icon('version_output'),
-            0
-        );
+            menu_of(
+                'Versions',
+                "{%- if request.current_route_path() == request.route_path('list_task_versions', id=task.id) -%}'active',{%- else -%},{%- endif -%}",
+                '{{ request.route_url('list_task_versions', id=task.id) }}',
+                get_icon('version'),
+                {{ task.versions | count }}
+            );
+
+            menu_of(
+                'Outputs',
+                "{%- if request.current_route_path() == request.route_path('list_task_outputs', id=task.id) -%}'active',{%- else -%},{%- endif -%}",
+                '{{ request.route_url('list_task_outputs', id=task.id) }}',
+                get_icon('version_output'),
+                0
+            );
+
+        {% endif %}
 
         menu_of(
             'References',
