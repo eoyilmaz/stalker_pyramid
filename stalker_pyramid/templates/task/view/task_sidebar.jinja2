@@ -155,9 +155,9 @@
         );
 
         menu_of(
-            'Version Outputs',
-            "{%- if request.current_route_path() == request.route_path('list_task_version_outputs', id=task.id) -%}'active',{%- else -%},{%- endif -%}",
-            '{{ request.route_url('list_task_version_outputs', id=task.id) }}',
+            'Outputs',
+            "{%- if request.current_route_path() == request.route_path('list_task_outputs', id=task.id) -%}'active',{%- else -%},{%- endif -%}",
+            '{{ request.route_url('list_task_outputs', id=task.id) }}',
             get_icon('version_output'),
             0
         );

@@ -206,8 +206,8 @@ logger.setLevel(logging.DEBUG)
     renderer='templates/link/dialogs/upload_reference_dialog.jinja2'
 )
 @view_config(
-    route_name='upload_entity_version_output_dialog',
-    renderer='templates/link/dialogs/upload_version_output_dialog.jinja2'
+    route_name='upload_entity_output_dialog',
+    renderer='templates/link/dialogs/upload_output_dialog.jinja2'
 )
 @view_config(
     route_name='upload_entity_thumbnail_dialog',
@@ -265,6 +265,11 @@ logger.setLevel(logging.DEBUG)
     route_name='list_task_versions',
     renderer='templates/version/list/list_entity_versions.jinja2'
 )
+@view_config(
+    route_name='list_task_outputs',
+    renderer='templates/version/list/list_entity_outputs.jinja2'
+)
+
 
 @view_config(
     route_name='list_user_reviews',

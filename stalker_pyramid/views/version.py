@@ -315,42 +315,42 @@ def list_version_children(request):
     }
 
 
-@view_config(
-    route_name='get_version_outputs_count',
-    renderer='json'
-)
-def get_version_outputs_count(request):
-    """returns the count of the given version
-    """
-    version_id = request.params.get('id')
+# @view_config(
+#     route_name='get_version_outputs_count',
+#     renderer='json'
+# )
+# def get_version_outputs_count(request):
+#     """returns the count of the given version
+#     """
+#     version_id = request.params.get('id')
+#
+#     sql_query = """select
+# count("Links".id)
+# from "Versions"
+# join "Version_Outputs" on "Versions".id = "Version_Outputs".version_id
+# join "Links" on "Version_Outputs".link_id = "Links".id
+# where "Versions".id = %(id)s
+#     """ % {'id': version_id}
+#
+#     return db.DBSession.connection().execute(sql_query).fetchone()[0]
 
-    sql_query = """select
-count("Links".id)
-from "Versions"
-join "Version_Outputs" on "Versions".id = "Version_Outputs".version_id
-join "Links" on "Version_Outputs".link_id = "Links".id
-where "Versions".id = %(id)s
-    """ % {'id': version_id}
-
-    return db.DBSession.connection().execute(sql_query).fetchone()[0]
-
-
-@view_config(
-    route_name='get_task_version_outputs_count',
-    renderer='json'
-)
-def get_task_version_outputs_count(request):
-    """returns the count of the given version
-    """
-    task_id = request.params.get('id')
-
-    sql_query = """select
-    count("Links".id)
-from "Tasks"
-join "Versions" on "Tasks".id = "Versions".task_id
-join "Version_Outputs" on "Versions".id = "Version_Outputs".version_id
-join "Links" on "Version_Outputs".link_id = "Links".id
-where "Tasks".id = %(id)s
-    """ % {'id': task_id}
-
-    return db.DBSession.connection().execute(sql_query).fetchone()[0]
+#
+# @view_config(
+#     route_name='get_task_version_outputs_count',
+#     renderer='json'
+# )
+# def get_task_version_outputs_count(request):
+#     """returns the count of the given version
+#     """
+#     task_id = request.params.get('id')
+#
+#     sql_query = """select
+#     count("Links".id)
+# from "Tasks"
+# join "Versions" on "Tasks".id = "Versions".task_id
+# join "Version_Outputs" on "Versions".id = "Version_Outputs".version_id
+# join "Links" on "Version_Outputs".link_id = "Links".id
+# where "Tasks".id = %(id)s
+#     """ % {'id': task_id}
+#
+#     return db.DBSession.connection().execute(sql_query).fetchone()[0]

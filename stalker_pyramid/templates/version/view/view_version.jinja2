@@ -21,17 +21,29 @@
 
 {% extends "base.jinja2" %}
 
-
+{# BREADCRUMBS #}
 {% block breadcrumbs %}
     {% set listed_type=version.plural_class_name %}
     {% set page_title='version #'  %}
     {% include 'breadcrumb/breadcrumbs.jinja2' %}
 {% endblock breadcrumbs %}
 
+{#SIDEBAR#}
 {% block sidebar %}
     {% include 'sidebar.jinja2' %}
 {% endblock sidebar %}
 
+{#PRE-HEADER #}
+{% block pre_header %}
+
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/ace/css/dropzone.css") }}'/>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/stalker/css/Paginator.css") }}'/>
+
+{% endblock pre_header %}
+
+{#PAGE-CONTENT#}
 {% block page_content %}
 
 {#    {% set page_title=version.filename %}#}
@@ -58,7 +70,7 @@
         <div class="widget-body">
             <div class="widget-main">
                 <div class="row-fluid">
-                    <div class="span5">
+                    <div class="span8">
                         <div class="profile-user-info profile-user-info-striped">
 
                             <div class="profile-info-row">
@@ -97,7 +109,7 @@
                 </div>
                 <div class="hr hr8 hr-double"></div>
                 <div class="row-fluid">
-                    {% include 'link/list_entity_version_outputs.jinja2' %}
+                    {% include 'link/list_outputs.jinja2' %}
                 </div>
 
             </div>

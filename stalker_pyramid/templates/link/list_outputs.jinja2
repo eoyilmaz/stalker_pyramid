@@ -1,102 +1,50 @@
-{# Stalker Pyramid a Web Base Production Asset Management System
- Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
-
- This file is part of Stalker Pyramid.
-
- This library is free software; you can redistribute it and/or
- modify it under the terms of the GNU Lesser General Public
- License as published by the Free Software Foundation;
- version 2.1 of the License.
-
- This library is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- Lesser General Public License for more details.
-
- You should have received a copy of the GNU Lesser General Public
- License along with this library; if not, write to the Free Software
- Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
-#}
-{% extends "base.jinja2" %}
-
-
-{#SIDEBAR#}
-{% block sidebar %}
-
-    {% include 'sidebar.jinja2' %}
-
-{% endblock sidebar %}
-
-{#PRE-HEADER #}
-{% block pre_header %}
-
-    <link rel="stylesheet"
-          href='{{ request.static_url("stalker_pyramid:static/ace/css/dropzone.css") }}'/>
-    <link rel="stylesheet"
-          href='{{ request.static_url("stalker_pyramid:static/stalker/css/Paginator.css") }}'/>
-
-{% endblock pre_header %}
-
-{# BREADCRUMBS #}
-{% block breadcrumbs %}
-
-    {% set page_title='References' %}
-    {% include 'breadcrumb/breadcrumbs.jinja2' %}
-
-{% endblock breadcrumbs %}
-
-{#PAGE-CONTENT#}
-{% block page_content %}
-    {% set page_title='References' %}
-    {% include 'page_header.jinja2' %}
-
-    <div class="row-fluid">
-        <!--PAGE CONTENT BEGINS-->
-        {% if entity.entity_type != 'Project' %}
-            <button data-target="#dialog_template"
-                data-toggle="modal"
-                data-keyboard="false"
-                href="{{ request.route_url('upload_entity_reference_dialog', id=entity.id) }}"
-                class="pull-left btn btn-small btn-primary">
-                <i class="icon-cloud-upload bigger-120"></i>
-                Upload References
-            </button>
-        {% endif %}
-    </div>
-    <div class="space-8"></div>
-    <div class="row-fluid">
-        <div class="row-fluid ">
-            
-            <div class="span6">
-                <div class="pagination" style="margin: 0"></div>
+<div class="row-fluid">
+    {% if entity.entity_type == 'Task' %}
+        <label class="pull-left">
+            <input id='is_published' type="checkbox" class="ace">
+            <span class="lbl"> Only Published Versions</span>
+        </label>
+    {% endif %}
+    {% if entity.entity_type == 'Version' %}
+        <button data-target="#dialog_template"
+            data-toggle="modal"
+            data-keyboard="false"
+            href="{{ request.route_url('upload_entity_output_dialog', id=version.id) }}"
+            class="pull-left btn btn-small btn-primary">
+            <i class="icon-cloud-upload bigger-120"></i>
+            Upload Output
+        </button>
+    {% endif %}
+</div>
+<div class="space-8"></div>
+<div class="row-fluid">
+    <div class="row-fluid ">
+        <div class="span6">
+            <div class="pagination" style="margin: 0"></div>
+        </div>
+        <div class="span6">
+            <div class="search pull-right" id="output-search">
+                <form class="form-search">
+                    <input id="output_search_field" type="text" class="input-medium search-query"/>
+                    <button class="btn btn-purple btn-small"
+                            id="output_do_search_button">
+                        Search
+                        <i class="icon-search icon-on-right bigger-110"></i>
+                    </button>
+                </form>
             </div>
-
-            <div class="span6">
-                <div class="search pull-right" id="reference-search">
-                    <form class="form-search">
-                        <input id="reference_search_field" type="text" class="input-medium search-query"/>
-                        <button class="btn btn-purple btn-small"
-                                id="reference_do_search_button">
-                            Search
-                            <i class="icon-search icon-on-right bigger-110"></i>
-                        </button>
-                    </form>
-                </div>
-            </div>
-
         </div>
 
-        <div class="row-fluid">
-            <div id="new_references_storage" class="hidden"></div>
-            <ul class="ace-thumbnails"></ul>
-        </div>
     </div>
-{% endblock page_content %}
 
-{#EXTRA-SCRIPTS#}
-{% block extrascripts %}
+    <div class="row-fluid">
+        <div id="new_outputs_storage" class="hidden"></div>
+        <ul class="ace-thumbnails"></ul>
+    </div>
+</div>
 
-    
+
+
     <script type="text/javascript"
             src='{{ request.static_url("stalker_pyramid:static/stalker/js/bootstrap-tag.js") }}'></script>
     <script type="text/javascript"
@@ -105,11 +53,11 @@
             src='{{ request.static_url("stalker_pyramid:static/stalker/js/Paginator.js") }}'></script>
 
     {% raw %}
-    <script id="tmpl_reference_item" type="text/x-dot-template">
-        <li id="Reference_{{=it.id}}">
+    <script id="tmpl_output_item" type="text/x-dot-template">
+        <li id="Output_{{=it.id}}">
             <a href="/{{=it.full_path}}"
                download_href="/FD{{=it.full_path}}"
-               title="{{=it.original_filename}}&#013;{{=it.entity_names}}&#013;&#013;{{=it.tags }}"
+               title="{{=it.original_filename}}&#013;{{=it.tags }}&#013;{{=it.version_take_name }} | {{=it.version_number }}"
                data-rel="colorbox"
                class="cboxElement">
                 <div style="text-align: center; overflow: hidden; width: 150px">
@@ -135,26 +83,26 @@
             <div class="tools">
                 <a href="/FD{{=it.full_path}}" title="Download"><i class="icon-cloud-download"></i></a>
                 <a href="javascript:copyToClipboard('http://' + window.location.host +'/FD{{=it.full_path}}')" title="Copy Download Link"><i class="icon-link"></i></a>
-             
-                <div class="dropdown">
-                    <a class="dropdown-toggle" data-toggle="dropdown"
-                       style="display: inline-block;
-                              color: #FFF;
-                              font-size: 18px;
-                              font-weight: normal;
-                              padding: 4px;">
-                        <i class="icon-external-link"></i>
-                    </a>
-                    <ul class="dropdown-menu" role='menu' aria-labelledby="dLabel" style="text-align: left">
-                    {{~ it.entity_ids :t:i }}
-                        <li>
-                            <a href="/entities/{{=t}}/references/list" title="Go To Related Entity">{{=it.entity_names[i]}}</a>
-                        </li>
-                    {{~}}
-                    </ul>
-                </div>
 
-                <a class='reference-deleter'
+                <!--<div class="dropdown">-->
+                    <!--<a class="dropdown-toggle" data-toggle="dropdown"-->
+                       <!--style="display: inline-block;-->
+                              <!--color: #FFF;-->
+                              <!--font-size: 18px;-->
+                              <!--font-weight: normal;-->
+                              <!--padding: 4px;">-->
+                        <!--<i class="icon-external-link"></i>-->
+                    <!--</a>-->
+                    <!--<ul class="dropdown-menu" role='menu' aria-labelledby="dLabel" style="text-align: left">-->
+                    <!--{{~ it.entity_ids :t:i }}-->
+                        <!--<li>-->
+                            <!--<a href="/entities/{{=t}}/outputs/list" title="Go To Related Entity">{{=it.entity_names[i]}}</a>-->
+                        <!--</li>-->
+                    <!--{{~}}-->
+                    <!--</ul>-->
+                <!--</div>-->
+
+                <a class='output-deleter'
                    ref_id="{{=it.id}}"
                    ref_file_name="{{=it.original_filename}}"
                    href="#"
@@ -166,7 +114,7 @@
 
     <script type="text/javascript">
         var colorbox_params = {
-            rel: 'References',
+            rel: 'Outputs',
             loop: false,
             reposition: true,
             scalePhotos: true,
@@ -184,7 +132,7 @@
                 var url = $(this).attr('href');
                 var original_title = $(this).attr('title');
                 var download_url = $(this).attr('download_href');
-                
+
                 var download_link = '<span><a href="' + download_url + '">' + original_title + '</a>';
                 var open_in_new_tab_link = '<a href="' + url + '" target="_blank">(Open In New Tab)</a></span>';
                 return download_link + '&nbsp' + open_in_new_tab_link;
@@ -208,7 +156,7 @@
             //
             // adds only one item to the list
             //
-            // compile the reference item template
+            // compile the output item template
 
             options = $.extend({
                 data: null,
@@ -256,15 +204,15 @@
         };
 
         /**
-         * Draws reference items
+         * Draws output items
          */
-        var draw_reference_items = function (options) {
-            var referenceItemTemplate = doT.template(document.getElementById('tmpl_reference_item').text);
+        var draw_output_items = function (options) {
+            var outputItemTemplate = doT.template(document.getElementById('tmpl_output_item').text);
 
             options = $.extend({
                 current_page: 1,
                 items_per_page: 40,
-                url: '/entities/{{ entity.id }}/references/',
+                url: '/entities/{{ entity.id }}/outputs/',
                 search: ''
             }, options);
 
@@ -277,16 +225,16 @@
                       $.param({
                           'offset': offset,
                           'limit': items_per_page,
-                          'search': options.search
+                          'search': options.search,
+                          'is_published': $('#is_published').prop('checked')?'t':''
                       })).then(function (data) {
                 var ref_count = data.length;
                 // remove any thumbnails first
                 remove_thumbnails();
                 for (var i = 0; i < ref_count; i++) {
-                    console.log('data: '+i)
                     append_thumbnail({
                         data: data[i],
-                        template: referenceItemTemplate,
+                        template: outputItemTemplate,
                         colorbox_params: colorbox_params
                     });
                 }
@@ -297,7 +245,7 @@
 
                 $("#cboxLoadingGraphic").append("<i class='icon-spinner orange'></i>");
 
-                $('.reference-deleter').on('click', function (e) {
+                $('.output-deleter').on('click', function (e) {
                     e.preventDefault();
                     e.stopPropagation();
                     var self = $(this);
@@ -305,16 +253,16 @@
                     var ref_file_name = self.attr('ref_file_name');
 
                     var confirm_message = 'Delete ' + ref_file_name + ' ?';
-                    
+
                     bootbox.confirm(confirm_message, function (response) {
                         if (response) {
                             console.debug('will delete ' + ref_id);
-                            // remove the reference in the server
-                            var url = '/references/' + ref_id + '/delete';
+                            // remove the output in the server
+                            var url = '/outputs/' + ref_id + '/delete';
                             $.post(url).done(function (response_text) {
                                 // use he response text and give info
                                 // and also delete the HTML element
-                                $('#Reference_' + ref_id).toggle('slow', function () {
+                                $('#Output_' + ref_id).toggle('slow', function () {
                                     $(this).remove();
                                 })
                             }).fail(function (jqXHR) {
@@ -328,7 +276,7 @@
 
         /**
          * Creates the paginator
-         * 
+         *
          * @param options
          *   Options for this function
          */
@@ -346,9 +294,9 @@
                 'current_page': options.current_page,
                 'callback': function(current_page_number){
                     // get search string
-                    var search_string = $('#reference_search_field').val();
-    
-                    draw_reference_items({
+                    var search_string = $('#output_search_field').val();
+
+                    draw_output_items({
                         current_page: current_page_number,
                         items_per_page: options.items_per_page,
                         search: search_string
@@ -361,9 +309,9 @@
             // create pagination
             var items_per_page = 40;
             var total_number_of_items;
-            var count_url = '/entities/{{ entity.id }}/references/count/';
+            var count_url = '/entities/{{ entity.id }}/outputs/count/';
 
-            // get total number of references
+            // get total number of outputs
             $.getJSON(count_url, function(data){
                 total_number_of_items = data;
                 create_paginator({
@@ -373,7 +321,7 @@
             });
 
             // for initial one
-            draw_reference_items({
+            draw_output_items({
                 current_page: 1,
                 items_per_page: items_per_page
             });
@@ -381,36 +329,36 @@
             // and add the new thumbnails when uploaded through Dropzone
             $('#dialog_template').on('hidden', function () {
                 // get the data from the storage
-                var repo_id = {% if entity.entity_type == 'Project' %}{{ entity.repository.id }}{% else %}{{ entity.project.repository.id }}{% endif %};
+                var repo_id = {% if entity.entity_type == 'Task' %}{{ entity.project.repository.id }}{% else %}{{ entity.task.project.repository.id }}{% endif %};
                 var repo_prepend = 'repositories/' + repo_id + '/';
-                var new_references_storage = $('#new_references_storage');
-                var data = $.parseJSON(new_references_storage.text());
+                var new_outputs_storage = $('#new_outputs_storage');
+                var data = $.parseJSON(new_outputs_storage.text());
                 // empty the storage
-                new_references_storage.text('');
-                var referenceItemTemplate = doT.template(document.getElementById('tmpl_reference_item').text);
+                new_outputs_storage.text('');
+                var outputItemTemplate = doT.template(document.getElementById('tmpl_output_item').text);
                 for (var i = 0; i < data.length; i++) {
                     // prepend repsoitories/{id}/ to make it compatible with the
-                    // new style references
+                    // new style outputs
                     data[i].thumbnail_full_path = repo_prepend + data[i].thumbnail_full_path;
                     data[i].full_path = repo_prepend + data[i].full_path;
                     append_thumbnail({
                         data: data[i],
-                        template: referenceItemTemplate,
+                        template: outputItemTemplate,
                         colorbox_params: colorbox_params,
                         animate: true
                     });
                 }
             });
-
-            $('#reference_do_search_button').on('click', function(e){
+            $('#is_published').on('change', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
+                console.log($('#is_published').prop('checked'))
 
-                // get search string
-                var search_string = $('#reference_search_field').val();
+                var search_string = $('#output_search_field').val();
                 $.getJSON(count_url,
                     $.param({
-                      'search': search_string
+                      'search': search_string,
+                      'is_published': $('#is_published').prop('checked')?'t':''
                     })).then(function (data) {
 
                     create_paginator({
@@ -418,7 +366,33 @@
                         items_per_page: items_per_page
                     });
 
-                    draw_reference_items({
+                    draw_output_items({
+                        current_page: 1,
+                        items_per_page: items_per_page,
+                        search: search_string
+                    });
+                });
+
+            })
+
+            $('#output_do_search_button').on('click', function(e){
+                e.preventDefault();
+                e.stopPropagation();
+
+                // get search string
+                var search_string = $('#output_search_field').val();
+                $.getJSON(count_url,
+                    $.param({
+                      'search': search_string,
+                      'is_published': $('#is_published').prop('checked')?'t':''
+                    })).then(function (data) {
+
+                    create_paginator({
+                        total_number_of_items: data,
+                        items_per_page: items_per_page
+                    });
+
+                    draw_output_items({
                         current_page: 1,
                         items_per_page: items_per_page,
                         search: search_string
@@ -428,4 +402,3 @@
 
         });
     </script>
-{% endblock extrascripts %}

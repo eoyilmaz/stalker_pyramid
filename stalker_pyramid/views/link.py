@@ -307,6 +307,64 @@ def assign_reference(request):
         } for link in links
     ]
 
+@view_config(
+    route_name='assign_output',
+    renderer='json'
+)
+def assign_version_output(request):
+    """assigns the given files as version outputs for the given entity
+    """
+
+    logger.debug('assign_version_output')
+    logged_in_user = get_logged_in_user(request)
+
+    full_paths = request.POST.getall('full_paths[]')
+    original_filenames = request.POST.getall('original_filenames[]')
+
+    entity_id = request.params.get('entity_id', -1)
+    entity = Entity.query.filter_by(id=entity_id).first()
+
+    # Tags
+    tags = get_tags(request)
+
+    logger.debug('full_paths         : %s' % full_paths)
+    logger.debug('original_filenames : %s' % original_filenames)
+    logger.debug('entity_id          : %s' % entity_id)
+    logger.debug('entity             : %s' % entity)
+    logger.debug('tags               : %s' % tags)
+
+    links = []
+    if entity and full_paths:
+        mm = MediaManager()
+        for full_path, original_filename in zip(full_paths, original_filenames):
+            l = mm.upload_version_output(entity, open(full_path), original_filename)
+            l.created_by = logged_in_user
+            l.date_created = local_to_utc(datetime.datetime.now())
+            l.date_updated = l.date_created
+
+            for tag in tags:
+                if tag not in l.tags:
+                    l.tags.extend(tags)
+
+            DBSession.add(l)
+            links.append(l)
+
+    # to generate ids for links
+    transaction.commit()
+    DBSession.add_all(links)
+
+    # return new links as json data
+    # in response text
+    return [
+        {
+            'id': link.id,
+            'full_path': link.full_path,
+            'original_filename': link.original_filename,
+            'thumbnail_full_path': link.thumbnail.full_path
+            if link.thumbnail else link.full_path,
+            'tags': [tag.name for tag in link.tags]
+        } for link in links
+    ]
 
 @view_config(route_name='get_project_references', renderer='json')
 @view_config(route_name='get_task_references', renderer='json')
@@ -632,6 +690,311 @@ def delete_reference(request):
         return response
     else:
         response = Response('No ref with id : %i' % ref_id, 500)
+        transaction.abort()
+        return response
+
+
+@view_config(route_name='get_version_outputs', renderer='json')
+@view_config(route_name='get_task_outputs', renderer='json')
+@view_config(route_name='get_entity_outputs', renderer='json')
+def get_entity_outputs(request):
+    """called when the outputs to Project/Task/Version is
+    requested
+    """
+    # just to make it safe
+    logger.debug("logged_in_user: %s" % get_logged_in_user(request))
+
+    entity_id = request.matchdict.get('id', -1)
+    entity = Entity.query.filter(Entity.id == entity_id).first()
+    logger.debug('asking references for entity: %s' % entity)
+
+    offset = request.params.get('offset', 0)
+    limit = request.params.get('limit', 1e10)
+
+    search_string = request.params.get('search', '')
+    is_published_str = request.params.get('is_published', '')
+
+    logger.debug('is_published_str: %s' % is_published_str)
+    logger.debug('search_string: %s' % search_string)
+
+    where_condition = ''
+    search_query = ''
+    is_published =''
+
+    if search_string != "":
+        search_string_buffer = ['and (']
+        for i, s in enumerate(search_string.split(' ')):
+            if i != 0:
+                search_string_buffer.append('and')
+            tmp_search_query = """(
+            '%(search_str)s' = any (tags.name)
+            or "Version_Links".original_filename ilike '%(search_wide)s'
+            )
+            """ % {
+                'search_str': s,
+                'search_wide': '%{s}%'.format(s=s)
+            }
+            search_string_buffer.append(tmp_search_query)
+        search_string_buffer.append(')')
+        search_query = '\n'.join(search_string_buffer)
+    logger.debug('search_query: %s' % search_query)
+
+    if is_published_str != '':
+        is_published = """ and "Versions".is_published = 't' """
+
+    logger.debug('is_published: %s' % is_published)
+
+    if entity.entity_type == 'Version':
+        where_condition= """where "Versions".id = %(id)s %(search_query)s %(is_published)s""""" % {'id':entity.id, 'search_query':search_query, 'is_published':is_published }
+    elif entity.entity_type == 'Task':
+        where_condition= """where "Task_SimpleEntities".id = %(id)s %(search_query)s %(is_published)s""""" % {'id':entity.id, 'search_query':search_query, 'is_published':is_published }
+
+    logger.debug('where_condition: %s' % where_condition)
+
+    sql_query = """
+    -- select all links assigned to a project tasks or assigned to a task and its children
+select
+
+
+    "Version_Links".id,
+    "Version_Links".original_filename,
+    'repositories/' || task_repositories.repo_id || '/' || "Links_ForWeb".full_path as full_path,
+    'repositories/' || task_repositories.repo_id || '/' || "Thumbnails".full_path as "thumbnail_full_path",
+    tags.name as tags,
+    "Versions".version_number as version_number,
+    "Versions".take_name as take_name
+
+
+
+from "Version_Outputs"
+join "Versions" on "Versions".id = "Version_Outputs".version_id
+join "SimpleEntities" as "Task_SimpleEntities" on "Task_SimpleEntities".id = "Versions".task_id
+join "Links" as "Version_Links" on "Version_Links".id = "Version_Outputs".link_id
+join "SimpleEntities" as "Link_SimpleEntities" on "Version_Links".id = "Link_SimpleEntities".id
+join "Links" as "Links_ForWeb" on "Link_SimpleEntities".thumbnail_id = "Links_ForWeb".id
+join "SimpleEntities" as "Links_ForWeb_SimpleEntities" on "Links_ForWeb".id = "Links_ForWeb_SimpleEntities".id
+join "Links" as "Thumbnails" on "Links_ForWeb_SimpleEntities".thumbnail_id = "Thumbnails".id
+
+join (
+    select
+        "Tasks".id as task_id,
+        "Repositories".id as repo_id
+    from "Tasks"
+    join "Projects" on "Tasks".project_id = "Projects".id
+    join "Repositories" on "Projects".repository_id = "Repositories".id
+) as task_repositories on "Versions".task_id = task_repositories.task_id
+
+join (
+    select
+        entity_id,
+        array_agg(name) as name
+    from "Entity_Tags"
+    join "SimpleEntities" on "Entity_Tags".tag_id = "SimpleEntities".id
+    group by "Entity_Tags".entity_id
+) as tags on "Version_Links".id = tags.entity_id
+
+
+%(where_condition)s
+
+order by "Version_Links".id
+offset %(offset)s
+limit %(limit)s
+
+    """ % {
+        'where_condition': where_condition,
+        'offset': offset,
+        'limit': limit
+    }
+
+    logger.debug('sql_query: %s' % sql_query)
+
+
+    from sqlalchemy import text  # to be able to use "%" sign use this function
+    result = DBSession.connection().execute(text(sql_query))
+
+    return_val = [
+        {
+            'id': r[0],
+            'original_filename': r[1],
+            'full_path': r[2],
+            'thumbnail_full_path': r[3],
+            'tags': r[4],
+            'version_number': r[5],
+            'version_take_name': r[6]
+        } for r in result.fetchall()
+    ]
+
+    return return_val
+
+
+@view_config(route_name='get_version_outputs_count', renderer='json')
+@view_config(route_name='get_task_outputs_count', renderer='json')
+@view_config(route_name='get_entity_outputs_count', renderer='json')
+def get_entity_outputs_count(request):
+    """called when the count of references to Project/Task/Asset/Shot/Sequence
+    is requested
+    """
+    entity_id = request.matchdict.get('id', -1)
+    entity = Entity.query.filter(Entity.id == entity_id).first()
+    logger.debug('asking outputs for entity: %s' % entity)
+
+    search_string = request.params.get('search', '')
+    is_published_str = request.params.get('is_published', '')
+
+    logger.debug('is_published_str: %s' % is_published_str)
+    logger.debug('search_string: %s' % search_string)
+
+    where_condition = ''
+    search_query = ''
+    is_published =''
+
+    if search_string != "":
+        search_string_buffer = ['and (']
+        for i, s in enumerate(search_string.split(' ')):
+            if i != 0:
+                search_string_buffer.append('and')
+            tmp_search_query = """
+            (
+            '%(search_str)s' = any (tags.name)
+            or "Version_Links".original_filename ilike '%(search_wide)s'
+            )
+            """ % {
+                'search_str': s,
+                'search_wide': '%{s}%'.format(s=s)
+            }
+            search_string_buffer.append(tmp_search_query)
+        search_string_buffer.append(')')
+        search_query = '\n'.join(search_string_buffer)
+    logger.debug('search_query: %s' % search_query)
+
+
+    if is_published_str != '':
+        is_published = """ and "Versions".is_published = 't' """
+
+
+    if entity.entity_type == 'Version':
+        where_condition= """where "Versions".id = %(id)s %(search_query)s %(is_published)s""""" % {'id':entity.id, 'search_query':search_query, 'is_published':is_published }
+    elif entity.entity_type == 'Task':
+        where_condition= """where "Task_SimpleEntities".id = %(id)s %(search_query)s %(is_published)s""""" % {'id':entity.id, 'search_query':search_query, 'is_published':is_published }
+
+    logger.debug('where_condition: %s' % where_condition)
+    # we need to do that import here
+    from stalker_pyramid.views.task import \
+        generate_recursive_task_query
+
+    # using Raw SQL queries here to fasten things up quite a bit and also do
+    # some fancy queries like getting all the references of tasks of a project
+    # also with their tags
+    sql_query = """
+    -- select all links assigned to a project tasks or assigned to a task and its children
+select
+
+    count(1)
+
+from "Version_Outputs"
+join "Versions" on "Versions".id = "Version_Outputs".version_id
+join "SimpleEntities" as "Task_SimpleEntities" on "Task_SimpleEntities".id = "Versions".task_id
+join "Links" as "Version_Links" on "Version_Links".id = "Version_Outputs".link_id
+
+join (
+    select
+        entity_id,
+        array_agg(name) as name
+    from "Entity_Tags"
+    join "SimpleEntities" on "Entity_Tags".tag_id = "SimpleEntities".id
+    group by "Entity_Tags".entity_id
+) as tags on "Version_Links".id = tags.entity_id
+
+%(where_condition)s
+    """ % {
+        'where_condition': where_condition
+    }
+
+
+    from sqlalchemy import text  # to be able to use "%" sign use this function
+    result = DBSession.connection().execute(text(sql_query))
+
+    return result.fetchone()[0]
+
+
+@view_config(
+    route_name='delete_output',
+    permission='Delete_Link'
+)
+def delete_output(request):
+    """deletes the reference with the given ID
+    """
+    # just to make it safe
+    logger.debug("logged_in_user: %s" % get_logged_in_user(request))
+
+    output_id = request.matchdict.get('id')
+    output = Link.query.get(output_id)
+
+    files_to_remove = []
+    outputs_to_delete = []
+
+    if output:
+        logger.debug('output.id         : %s' % output.id)
+        original_filename = output.original_filename
+        # check if it has a web version
+        web_version = output.thumbnail
+        if web_version:
+            logger.debug('web_version.id : %s' % web_version.id)
+            # remove the file first
+            files_to_remove.append(web_version.full_path)
+
+            # also check the thumbnail
+            thumbnail = web_version.thumbnail
+
+            if thumbnail:
+                logger.debug('thumbnail      : %s' % thumbnail)
+                # remove the file first
+                files_to_remove.append(thumbnail.full_path)
+
+                # delete the thumbnail Link from the database
+                outputs_to_delete.append(thumbnail)
+
+            # delete the thumbnail Link from the database
+            outputs_to_delete.append(web_version)
+
+        # remove the reference itself
+        files_to_remove.append(output.full_path)
+
+        # delete the ref Link from the database
+        # IMPORTANT: Because there is no link from Link -> Task deleting a Link
+        #            directly will raise an IntegrityError, so remove the Link
+        #            from the associated Task before deleting it
+        prefix = ''
+        from stalker import Version
+        for version in Version.query.filter(Version.outputs.contains(output)).all():
+            logger.debug('%s output is %s, '
+                         'breaking this relation' % (version, output))
+            version.outputs.remove(output)
+            if prefix == '':
+                # get the repository
+                repo = version.task.project.repository
+                prefix = repo.path
+
+        outputs_to_delete.append(output)
+
+        # delete Links from database
+        for o in outputs_to_delete:
+            DBSession.delete(o)
+
+        # now delete files
+        for f in files_to_remove:
+            # convert the paths to system path
+            f_system = os.path.join(prefix, f)
+            logger.debug('deleting : %s' % f_system)
+            try:
+                os.remove(f_system)
+            except OSError:
+                pass
+
+        response = Response('%s removed successfully' % original_filename)
+        return response
+    else:
+        response = Response('No ref with id : %i' % output_id, 500)
         transaction.abort()
         return response
 
@@ -1789,9 +2152,14 @@ class MediaManager(object):
         # use a Repository relative path
         repo = version.task.project.repository
         assert isinstance(repo, Repository)
-        relative_full_path = repo.make_relative(version_output_file_full_path)
+        relative_full_path = str(repo.make_relative(
+            str(version_output_file_full_path)
+        ))
 
-        link = Link(full_path=relative_full_path, original_filename=filename)
+        link = Link(
+            full_path=relative_full_path,
+            original_filename=str(filename)
+        )
 
         # create a thumbnail for the given version output
         # don't forget that the first thumbnail is the Web viewable version
@@ -1811,7 +2179,7 @@ class MediaManager(object):
                 version_output_base_name + web_version_extension
             )
         web_version_repo_relative_full_path = \
-            repo.make_relative(web_version_full_path)
+            repo.make_relative(str(web_version_full_path))
         web_version_link = Link(
             full_path=web_version_repo_relative_full_path,
             original_filename=filename

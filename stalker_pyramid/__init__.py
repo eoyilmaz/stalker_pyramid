@@ -123,7 +123,7 @@ def main(global_config, **settings):
 
     config.add_route('upload_entity_thumbnail_dialog', 'entities/{id}/thumbnail/upload/dialog')
     config.add_route('upload_entity_reference_dialog', 'entities/{id}/references/upload/dialog')
-    config.add_route('upload_entity_version_output_dialog', 'entities/{id}/version_output/upload/dialog')
+    config.add_route('upload_entity_output_dialog', 'entities/{id}/output/upload/dialog')
 
     config.add_route('create_entity_users_dialog',     'entities/{id}/users/create/dialog')
 
@@ -166,8 +166,6 @@ def main(global_config, **settings):
     config.add_route('get_entity_vacations_count',     'entities/{id}/vacations/count/')
     config.add_route('get_entity_entities_out_stack',  'entities/{id}/{entities}/out_stack/' )
     config.add_route('get_entity_events',              'entities/{id}/events/')  #json
-    config.add_route('get_entity_versions',            'entities/{id}/versions/')  # json
-    config.add_route('get_entity_versions_used_by_tasks', 'entities/{id}/version/used_by/tasks/')
     config.add_route('get_entity_notes',            'entities/{id}/notes/') #json
 
     config.add_route('list_entity_users',              'entities/{id}/users/list')
@@ -194,10 +192,13 @@ def main(global_config, **settings):
     config.add_route('view_entity_department',         'entities/{eid}/departments/{id}/view')
 
     # *************************************************************************
-    # Thumbnail References and Links
+    # Thumbnail  and Links
 
-    config.add_route('get_task_versions',    'tasks/{id}/versions/')  # json
+    config.add_route('upload_files',         'upload_files')
+    config.add_route('assign_thumbnail',     'assign_thumbnail')
 
+    # *************************************************************************
+    # References
 
     config.add_route('get_task_references',        'tasks/{id}/references/')  # json
     config.add_route('get_task_references_count',  'tasks/{id}/references/count/')  # json
@@ -207,16 +208,28 @@ def main(global_config, **settings):
     config.add_route('get_shot_references',        'shots/{id}/references/')  # json
     config.add_route('get_shot_references_count',  'shots/{id}/references/count/')  # json
 
-
-
     config.add_route('get_references',       'references/')
     config.add_route('get_reference',        'references/{id}')
 
+    config.add_route('assign_reference',     'assign_reference')
     config.add_route('delete_reference',     'references/{id}/delete')
 
-    config.add_route('upload_files',         'upload_files')
-    config.add_route('assign_thumbnail',     'assign_thumbnail')
-    config.add_route('assign_reference',     'assign_reference')
+    # *************************************************************************
+    # Outputs
+
+    config.add_route('list_task_outputs',           'tasks/{id}/outputs/list')  # html
+
+    config.add_route('get_entity_outputs',          'entities/{id}/outputs/')
+    config.add_route('get_entity_outputs_count',    'entities/{id}/outputs/count/')
+
+    config.add_route('get_task_outputs',            'tasks/{id}/outputs/')
+    config.add_route('get_task_outputs_count',      'tasks/{id}/outputs/count/')
+
+    config.add_route('get_version_outputs',         'versions/{id}/outputs/')
+    config.add_route('get_version_outputs_count',   'versions/{id}/outputs/count/')
+
+    config.add_route('assign_output',               'assign_output')
+    config.add_route('delete_output',               'outputs/{id}/delete')
 
     # *************************************************************************
     # Studio
@@ -608,26 +621,22 @@ def main(global_config, **settings):
 
     # *************************************************************************
     # Version
-    config.add_route('dialog_create_task_version', 'tasks/{id}/versions/create/dialog')
-    config.add_route('dialog_update_version',      'versions/{id}/update/dialog')
+    config.add_route('dialog_create_task_version',          'tasks/{id}/versions/create/dialog')
+    config.add_route('dialog_update_version',               'versions/{id}/update/dialog')
 
-    config.add_route('create_version', 'versions/create')
-    config.add_route('update_version', 'versions/{id}/update')
+    config.add_route('create_version',                      'versions/create')
+    config.add_route('update_version',                      'versions/{id}/update')
 
-    config.add_route('assign_version', 'assign_version') # TODO: update this address
+    config.add_route('assign_version',                      'assign_version') # TODO: update this address
 
-    config.add_route('view_version',          'versions/{id}/view')
-    config.add_route('list_version_outputs',  'versions/{id}/outputs/list')  # html
-    config.add_route('list_version_inputs',   'versions/{id}/inputs/list')  # html
-    config.add_route('list_version_children', 'versions/{id}/children/list')  # html
+    config.add_route('view_version',                        'versions/{id}/view')
+    config.add_route('list_version_outputs',                'versions/{id}/outputs/list')  # html
+    config.add_route('list_version_inputs',                 'versions/{id}/inputs/list')  # html
+    config.add_route('list_version_children',               'versions/{id}/children/list')  # html
 
-    config.add_route('list_task_version_outputs',  'tasks/{id}/versions/outputs/list')  # html
-
-    config.add_route('get_version_outputs',       'versions/{id}/outputs')
-    config.add_route('get_version_outputs_count', 'versions/{id}/outputs/count')
-
-    config.add_route('get_task_version_outputs',       'tasks/{id}/versions/outputs')
-    config.add_route('get_task_version_outputs_count', 'tasks/{id}/versions/outputs/count')
+    config.add_route('get_task_versions',                   'tasks/{id}/versions/')  # jsons
+    config.add_route('get_entity_versions',                 'entities/{id}/versions/')  # json
+    config.add_route('get_entity_versions_used_by_tasks',   'entities/{id}/version/used_by/tasks/') # json
 
     # *************************************************************************
     # Department

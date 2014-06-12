@@ -1,9 +1,9 @@
 <div class="row-fluid" >
     <form id='append_form'
-              class='form-horizontal'
+              class='form-horizontal no-padding no-scroll'
               role='form'
               method='post'>
-            <table id="multiple_select_list" class="table table-striped table-bordered table-hover" >
+            <table id="multiple_select_list" class="table table-striped table-bordered table-hover no-margin-bottom no-border-top" >
                 <thead>
                     <tr>
                         <th>Thumbnail</th>
@@ -12,7 +12,6 @@
                     </tr>
                 </thead>
                 <tbody>
-
                 </tbody>
             </table>
     </form>
@@ -95,6 +94,7 @@
 
         $('#dialog_template_label').find('span').remove();
         $('#dialog_template_label').append('<span>Append {{ entities_name }}</span>')
+
 
         {# ***************************************************************** #}
         $(document).ready(function () {
