@@ -2563,7 +2563,7 @@ def create_task(request):
         responsible_ids = get_multi_integer(request, 'responsible_ids[]')
         responsible = User.query.filter(User.id.in_(responsible_ids)).all()
 
-    priority = request.params.get('priority', 500)
+    priority = int(request.params.get('priority', 500))
 
     code = request.params.get('code', '')
     entity_type = request.params.get('entity_type')
