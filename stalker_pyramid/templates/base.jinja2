@@ -408,6 +408,39 @@
     }
 </script>
 
+<script>
+
+    var all_users = [];
+
+    $.getJSON('/users/').then(function (data) {
+
+        all_users = data;
+    });
+
+    var get_user_name = function(id){
+        var user = objectFindByKey(all_users, 'id', id);
+        if(user != null){
+            return user.name;
+        }
+        return id;
+    }
+
+    function objectFindByKey(array, key, value) {
+        console.log('key: '+key+' value: '+value);
+        for (var i = 0; i < array.length; i++) {
+
+            if (array[i][key] == value) {
+
+                return array[i];
+            }
+        }
+        return null;
+    }
+
+</script>
+
+
+
 
 {# CONTENT #}
 {% block content %}
@@ -551,7 +584,7 @@
                     return 'icon-mail-reply-all';
                     break;
                 case 'RTS':
-                    return 'icon-circle-blank';
+                    return 'icon-check-empty';
                     break;
                 case 'CMPL':
                     return 'icon-check';

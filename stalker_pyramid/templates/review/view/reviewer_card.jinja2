@@ -36,7 +36,7 @@
                            data-target="#dialog_template"
                            data-toggle="modal"
                            data-keyboard="false"
-                           href='tickets/-1/create/dialog?owner_id={{=it.reviewer_id}}'>
+                           href='/tickets/-1/create/dialog?owner_id={{=it.reviewer_id}}&task_id={{=it.task_id}}&project_id={{=it.project_id  }}'>
                             <i class="icon-ticket light-blue bigger-150"></i>
                         </a>
                         {{ if (it.delete_action) { }}

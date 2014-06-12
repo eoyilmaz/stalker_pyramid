@@ -49,29 +49,29 @@
     </div>
     <div class="hr hr8 hr-double"></div>
     <div class="space"></div>
-    <div class="row-fluid" id="table_row">
-    <div class="widget-box">
-        <div class="widget-header widget-header-small header-color-{{ filter.code.lower() }}">
+    <div class="row-fluid">
+        <div class="widget-box">
+            <div class="widget-header widget-header-small header-color-{{ filter.code.lower() }}">
 
-            <h5 id="items_header" class="smaller">{{ filter.name }}</h5>
+                <h5 id="items_header" class="smaller">{{ filter.name }}</h5>
 
-            <div class="widget-toolbar">
+                <div class="widget-toolbar">
 
-                <a href="#" data-action="collapse">
-                    <i class="icon-chevron-down"></i>
-                </a>
+                    <a href="#" data-action="collapse">
+                        <i class="icon-chevron-down"></i>
+                    </a>
 
-            </div>
-
-        </div>
-        <div class="widget-body">
-            <div class="widget-main no-padding">
-
-                {% include 'task/list/list_entity_tasks_by_filter.jinja2' %}
+                </div>
 
             </div>
+            <div class="widget-body">
+                <div class="widget-main no-padding">
+
+                    {% include 'task/list/list_entity_tasks_by_filter.jinja2' %}
+
+                </div>
+            </div>
         </div>
-    </div>
     </div>
 
 {% endblock page_content %}
@@ -103,7 +103,7 @@
         <td>{{=it.start}}</td>
         <td><a href='/tasks/{{=it.id}}/view'>{{=it.full_path}}</a></td>
         <td>{{ for(var i=0;i<it.resources.length;i++){ }}<a href='/users/{{=it.resources[i].id}}/view'>{{=it.resources[i].name}}</a><br/>{{ } }}</td>
-        <td>{{ for(var j=0;j<it.responsible.length;j++){ }}<a href='/users/{{=it.responsible[j]}}/view'>{{=it.responsible[j]}}</a><br/>{{ } }}</td>
+        <td>{{ for(var j=0;j<it.responsible.length;j++){ }}<a href='/users/{{=it.responsible[j].id}}/view'>{{=it.responsible[j].name}}</a><br/>{{ } }}</td>
 
         <td>{{=it.task_type}}</td>
         <td data-sType="num-html">
@@ -151,7 +151,7 @@
                     </a>
 
                 {{ } }}
-                {{ if (it.review) { }}
+                    {{ if (it.review) { }}
                     <a
                         class="purple"
                         data-target="#dialog_template"

@@ -42,6 +42,21 @@
                      address='/entities/{{ entity.id }}/tasks_stats/'
                      class="infobox-container">
                     {% include 'components/infobox.jinja2' %}
+                    <div class="infobox infobox-black infobox-small">
+                        <div class="infobox-icon">
+                            <i class="icon-bullhorn bigger-230"></i>
+                        </div>
+                        <div class="infobox-data">
+                            <div class="infobox-data-number">
+                                <a data-target="#html_template"
+                                   data-toggle="modal"
+                                   data-keyboard=false
+                                   href="/entities/{{ entity.id }}/tasks/filter/-1/list"
+                                   class="grey">Black List</a>
+
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="space"></div>
             </div>
@@ -87,7 +102,7 @@
     <tr>
         <td>{{=it.start}}</td>
         <td><a href='/tasks/{{=it.id}}/view'>{{=it.full_path}}</a></td>
-        <td>{{ for(var i=0;i<it.responsible.length;i++){ }}<a href='/users/{{=it.responsible[i]}}/view'>{{=it.responsible[i]}}</a><br/>{{ } }}</td>
+        <td>{{ for(var j=0;j<it.responsible.length;j++){ }}<a href='/users/{{=it.responsible[j].id}}/view'>{{=it.responsible[j].name}}</a><br/>{{ } }}</td>
         <td>{{=it.task_type}}</td>
         <td data-sType="num-html">
             <div class="progress progress-success">
@@ -164,6 +179,14 @@
     {% include 'calendar/calendar.jinja2' %}
 
     <script type="text/javascript">
+{#        $(document).ready(function () {#}
+{#            var html_dialog = $('#html_template');#}
+{##}
+{#            html_dialog.modal({#}
+{#                  'remote': "/entities/{{ entity.id }}/tasks/filter/-1/list"#}
+{#            });#}
+{#        });#}
+
         $.getJSON('/users/{{ entity.id }}/events/?keys=time_log&keys=vacation&keys=task').then(function (data) {
             var events = [];
 

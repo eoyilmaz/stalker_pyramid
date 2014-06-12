@@ -99,6 +99,7 @@
 
             for (var i = 0; i < data.length; i++) {
 
+                data[i].project_id = '{{ entity.project.id }}'
                 if (data[i].review_status_code == 'new') {
                     data[i].review_status_name = 'Pending';
                     if (data[i].reviewer_id == '{{ logged_in_user.id }}') {

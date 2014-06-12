@@ -16,13 +16,12 @@
 <script id="tmpl_note_activity" type="text/x-dot-template">
     <div class="timeline-item clearfix">
         <div class="timeline-info">
-            <img alt="" src="{{=it.created_by_thumbnail}}"/>
+           <a href="/users/{{=it.created_by_id}}/view"><img alt="" src="{{=it.created_by_thumbnail}}"/></a>
         </div>
 
         <div class="widget-box">
             <div class="widget-header widget-header-small header-color-{{=it.note_type_color}}">
-                <h5 class="smaller">
-                    <span>{{=it.note_type_name}}</span>
+                <h5 class="smaller">{{=it.note_type_name}}
                 </h5>
 
                 <span class="widget-toolbar no-border date">
@@ -41,7 +40,7 @@
             <div class="widget-body">
                 <div class="widget-main">
 
-                    <a href="/users/{{=it.created_by_id}}/view">{{=it.created_by_name}}</a>
+
                     {{=it.content.replace(/[\n]/g, '<br\>')}}
 
                 </div>
@@ -107,6 +106,8 @@
 {#            console.log('done')#}
 
             for (var i = 0; i < data.length; i++) {
+
+
 
                 data[i].created_date = new Date(parseInt(data[i].created_date));
 

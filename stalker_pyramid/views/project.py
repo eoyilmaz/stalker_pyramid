@@ -27,7 +27,7 @@ from pyramid.view import view_config
 
 from stalker.db import DBSession
 from stalker import (User, ImageFormat, Repository, Structure, Status,
-                     StatusList, Project, Entity, Studio)
+                     StatusList, Project, Entity, Studio, defaults)
 
 from stalker_pyramid.views import (get_date, get_date_range,
                                    get_logged_in_user,
@@ -374,3 +374,80 @@ def get_project_tasks_today(request):
     logger.debug('%s rows took : %s seconds' % (len(data), (end - start)))
 
     return data
+@view_config(
+    route_name='view_project',
+    renderer='templates/project/view/view_project.jinja2'
+)
+def view_project(request):
+    """creates a list_entity_tasks_by_filter by using the given entity and filter
+    """
+    logger.debug('inside view_project')
+
+    # get logged in user
+    logged_in_user = get_logged_in_user(request)
+
+    entity_id = request.matchdict.get('id', -1)
+    entity = Entity.query.filter_by(id=entity_id).first()
+
+    filter_id = request.params.get('f_id', -1)
+    filter_entity = Entity.query.filter_by(id=filter_id).first()
+    is_warning_list = False
+    if not filter_entity:
+        is_warning_list = True
+        filter_entity = Status.query.filter_by(code='WIP').first()
+
+    projects = Project.query.all()
+
+    studio = Studio.query.first()
+    if not studio:
+        studio = defaults
+
+    return {
+        'mode': 'create',
+        'has_permission': PermissionChecker(request),
+        'studio': studio,
+        'logged_in_user': logged_in_user,
+        'entity': entity,
+        'filter': filter_entity,
+        'is_warning_list': is_warning_list,
+        'milliseconds_since_epoch': milliseconds_since_epoch,
+        'projects': projects
+    }
+#
+# @view_config(
+#     route_name='view_project_tasks_by_filter',
+#     renderer='templates/project/view/view_project_tasks_by_filter.jinja2',
+# )
+# def view_project_tasks_by_filter(request):
+#     """creates a view_project_tasks_by_filter by using the given entity and filter
+#     """
+#     logger.debug('inside view_project_tasks_by_filter')
+#
+#     # get logged in user
+#     logged_in_user = get_logged_in_user(request)
+#
+#     entity_id = request.matchdict.get('id', -1)
+#     entity = Entity.query.filter_by(id=entity_id).first()
+#
+#     filter_id = request.matchdict.get('f_id', -1)
+#     filter_entity = Entity.query.filter_by(id=filter_id).first()
+#
+#     if not filter_entity:
+#         filter_entity = Status.query.filter_by(code='WIP').first()
+#
+#     projects = Project.query.all()
+#
+#     studio = Studio.query.first()
+#     if not studio:
+#         studio = defaults
+#
+#     return {
+#         'mode': 'create',
+#         'has_permission': PermissionChecker(request),
+#         'studio': studio,
+#         'logged_in_user': logged_in_user,
+#         'entity': entity,
+#         'filter': filter_entity,
+#         'milliseconds_since_epoch': milliseconds_since_epoch,
+#         'projects': projects
+#     }

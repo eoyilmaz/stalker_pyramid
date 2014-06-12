@@ -2930,6 +2930,8 @@ def cleanup_task_new_reviews(request):
 
     note_type = query_type('Note', 'Cleanup Reviews')
     note_type.html_class = 'red'
+    note_type.code = 'cleanedup_reviews'
+
     note = Note(
         content='%s has cleaned all unanswered reviews' % logged_in_user.name,
         created_by=logged_in_user,
@@ -3095,6 +3097,8 @@ def approve_task(request):
 
     note_type = query_type('Note', 'Approved')
     note_type.html_class = 'green'
+    note_type.code = 'approved'
+
     note = Note(
         content=description,
         created_by=logged_in_user,
@@ -3269,6 +3273,7 @@ def request_revision(request):
 
     note_type = query_type('Note', 'Request Revision')
     note_type.html_class = 'purple'
+    note_type.code = 'requested_revision'
 
     note = Note(
         content='Expanded the timing of the task by <b>'
@@ -3536,6 +3541,7 @@ def request_progress_review(request):
 
         note_type = query_type('Note', 'Ticket Comment')
         note_type.html_class = 'pink'
+        note_type.code = 'ticket_comment'
 
         ticket_comment = Note(
             content=note,
@@ -3620,6 +3626,7 @@ def request_final_review(request):
 
     note_type = query_type('Note', 'Request Review')
     note_type.html_class = 'orange'
+    note_type.code = 'requested_review'
 
     note = Note(
         content=note_str,
@@ -3825,6 +3832,7 @@ def request_extra_time(request):
 
     note_type = query_type('Note', 'Request Extra Time')
     note_type.html_class = 'red2'
+    note_type.code = 'requested_extra_time'
 
     note = Note(
         content='<i class="icon-heart"></i> Requesting extra time <b>'
@@ -4271,7 +4279,9 @@ def force_task_status(request):
     utc_now = local_to_utc(datetime.datetime.now())
 
     note_type = query_type('Note', 'Forced Status')
-    note_type.html_class = 'green2'
+    note_type.html_class = 'red'
+    note_type.code = 'forced_status'
+
     note = Note(
         content='%s has changed this task status to %s' % (logged_in_user.name, status.name),
         created_by=logged_in_user,
@@ -4286,6 +4296,75 @@ def force_task_status(request):
     task.date_updated = utc_now
 
     return Response('Success: %s status is set to %s' % (task.name, status.name))
+
+@view_config(
+    route_name='resume_task_dialog',
+    renderer='templates/modals/confirm_dialog.jinja2'
+)
+def resume_task_dialog(request):
+    """resume task dialog for Stopped and Holt tasks
+    """
+    logger.debug('delete_department_dialog is starts')
+
+    task_id = request.matchdict.get('id')
+
+    came_from = request.params.get('came_from', '/')
+    action = '/tasks/%s/resume' % task_id
+    message = 'Task will be resumed' \
+                  '<br><br>Are you sure?'
+
+    logger.debug('action: %s' % action)
+
+    return {
+        'message': message,
+        'came_from': came_from,
+        'action': action
+    }
+
+
+@view_config(
+    route_name='resume_task',
+    permission='Create_Review'
+)
+def resume_task(request):
+    """resume task method for Stopped and Holt tasks
+    """
+
+    task_id = request.matchdict.get('id')
+    task = Task.query.get(task_id)
+
+    if not task:
+        transaction.abort()
+        return Response('Can not find a Task with id: %s' % task_id, 500)
+
+    if task.status.code not in ['OH','STOP']:
+        transaction.abort()
+        return Response('Cannot resume %s tasks' % task.status.code, 500)
+
+    task.resume();
+
+
+    logged_in_user = get_logged_in_user(request)
+    utc_now = local_to_utc(datetime.datetime.now())
+
+    note_type = query_type('Note', 'Resumed')
+    note_type.html_class = 'red'
+    note_type.code = 'resumed'
+
+    note = Note(
+        content='%s has changed this task status to %s' % (logged_in_user.name, task.status.name),
+        created_by=logged_in_user,
+        date_created=utc_now,
+        date_updated=utc_now,
+        type=note_type
+    )
+    DBSession.add(note)
+
+    task.notes.append(note)
+    task.updated_by = logged_in_user
+    task.date_updated = utc_now
+
+    return Response('Success: %s is resumed' % task.name)
 
 
 @view_config(
@@ -4313,6 +4392,7 @@ def get_task_resources(request):
             'name': resource.name,
             'thumbnail_full_path': resource.thumbnail.full_path if resource.thumbnail else None,
             'description': '',
+            'item_view_link': '/users/%s/view' % resource.id,
             'item_remove_link':'/tasks/%s/remove/resources/%s/dialog?came_from=%s'%( task.id, resource.id, request.current_route_path())
             if PermissionChecker(request)('Update_Task') else None
         }

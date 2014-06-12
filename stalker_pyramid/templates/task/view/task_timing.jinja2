@@ -38,19 +38,19 @@
                     <div id='schedule_timing_bar' class="bar bar-rts" style="width: 0%;"></div>
             </div>
         </div><!--/widget-main-->
-        {% if (entity.schedule_seconds - entity.total_logged_seconds)==0  and entity.status.code=='WIP'%}
-        <div class="widget-toolbox clearfix">
-            <button id='task_review_button'
-                    class="btn btn-small btn-danger span12"
-                    data-placement="bottom"
-                    title="Request Extra Time"
-                    data-target="#dialog_template"
-                    data-toggle="modal"
-                    data-keyboard="false"
-                    href="/tasks/{{entity.id}}/request_extra_time/dialog?came_from={{request.current_route_path() }}"
-                    >
-                <i class="icon-time bigger-130"></i> Request Extra Time</button>
-        </div>
+        {% if (entity.schedule_seconds - entity.total_logged_seconds)==0  and entity.status.code=='WIP' and (logged_in_user.id in entity.resources or has_permission('Create_Review'))%}
+            <div class="widget-toolbox clearfix">
+                <button id='task_review_button'
+                        class="btn btn-small btn-danger span12"
+                        data-placement="bottom"
+                        title="Request Extra Time"
+                        data-target="#dialog_template"
+                        data-toggle="modal"
+                        data-keyboard="false"
+                        href="/tasks/{{entity.id}}/request_extra_time/dialog?came_from={{request.current_route_path() }}"
+                        >
+                    <i class="icon-time bigger-130"></i> Request Extra Time</button>
+            </div>
         {% endif %}
     </div><!--/widget-body-->
 </div><!--/widget-box-->
