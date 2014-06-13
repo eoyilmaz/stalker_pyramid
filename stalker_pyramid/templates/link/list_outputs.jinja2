@@ -55,6 +55,7 @@
     {% raw %}
     <script id="tmpl_output_item" type="text/x-dot-template">
         <li id="Output_{{=it.id}}">
+
             <a href="/{{=it.full_path}}"
                download_href="/FD{{=it.full_path}}"
                title="{{=it.original_filename}}&#013;{{=it.tags }}&#013;{{=it.version_take_name }} | {{=it.version_number }}"
@@ -71,19 +72,24 @@
                         <!--<span class="label label-info">{{=t}}</span>-->
                         <!--{{~}}-->
 
+                        {{? it.version_published }}
+                            <span class="label label-success arrowed-in">published</span>
+                        {{?}}
                         {{? it.full_path.indexOf('.webm') !== -1 }}
                         <span class="label label-success">
                             <i class="icon-film"></i>
                         </span>
                         {{?}}
+                        <span class="label label-info">{{=it.version_take_name }} | {{=it.version_number }}</span>
                     </div>
                 </div>
             </a>
+            <!--<span class="pull-right"><a href="/versions/{{=it.version_id}}/view">{{=it.version_take_name }} | {{=it.version_number }}</span>-->
 
             <div class="tools">
                 <a href="/FD{{=it.full_path}}" title="Download"><i class="icon-cloud-download"></i></a>
                 <a href="javascript:copyToClipboard('http://' + window.location.host +'/FD{{=it.full_path}}')" title="Copy Download Link"><i class="icon-link"></i></a>
-
+                <a href="/versions/{{=it.version_id}}/view" title="View Version"><i class="icon-zoom-in"></i></a>
                 <!--<div class="dropdown">-->
                     <!--<a class="dropdown-toggle" data-toggle="dropdown"-->
                        <!--style="display: inline-block;-->
@@ -169,6 +175,8 @@
             var template = options.template;
             var colorbox_params = options.colorbox_params;
             var animate = options.animate;
+
+            console.log('data '+ data.version_published)
 
             // check if there is any video
             var full_path;
@@ -341,6 +349,7 @@
                     // new style outputs
                     data[i].thumbnail_full_path = repo_prepend + data[i].thumbnail_full_path;
                     data[i].full_path = repo_prepend + data[i].full_path;
+
                     append_thumbnail({
                         data: data[i],
                         template: outputItemTemplate,

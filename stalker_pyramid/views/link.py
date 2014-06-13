@@ -728,6 +728,7 @@ def get_entity_outputs(request):
                 search_string_buffer.append('and')
             tmp_search_query = """(
             '%(search_str)s' = any (tags.name)
+            or "Versions".take_name ilike '%(search_wide)s'
             or "Version_Links".original_filename ilike '%(search_wide)s'
             )
             """ % {
@@ -761,8 +762,10 @@ select
     'repositories/' || task_repositories.repo_id || '/' || "Links_ForWeb".full_path as full_path,
     'repositories/' || task_repositories.repo_id || '/' || "Thumbnails".full_path as "thumbnail_full_path",
     tags.name as tags,
+    "Versions".id as version_id,
     "Versions".version_number as version_number,
-    "Versions".take_name as take_name
+    "Versions".take_name as take_name,
+    "Versions".is_published as version_published
 
 
 
@@ -796,7 +799,7 @@ join (
 
 %(where_condition)s
 
-order by "Version_Links".id
+order by "Versions".id desc
 offset %(offset)s
 limit %(limit)s
 
@@ -819,8 +822,10 @@ limit %(limit)s
             'full_path': r[2],
             'thumbnail_full_path': r[3],
             'tags': r[4],
-            'version_number': r[5],
-            'version_take_name': r[6]
+            'version_id': r[5],
+            'version_number': r[6],
+            'version_take_name': r[7],
+            'version_published':r[8]
         } for r in result.fetchall()
     ]
 
@@ -856,6 +861,7 @@ def get_entity_outputs_count(request):
             tmp_search_query = """
             (
             '%(search_str)s' = any (tags.name)
+            or "Versions".take_name ilike '%(search_wide)s'
             or "Version_Links".original_filename ilike '%(search_wide)s'
             )
             """ % {
