@@ -74,13 +74,13 @@
                         <div class="profile-user-info profile-user-info-striped">
 
                             <div class="profile-info-row">
-                                <div class="profile-info-name">Path</div>
-
+                                <div class="profile-info-name">File</div>
                                 <div class="profile-info-value">
-                                    <span><a href='javascript:copyToClipboard("{{ version.absolute_full_path }}")'>{{ version.absolute_full_path }}</a></span>
+                                    {% set file_name_split=version.full_path.split('/') %}
+                                    {% set full_path=file_name_split[file_name_split | count - 1 ] %}
+                                    <span><a href='javascript:copyToClipboard("{{ version.absolute_full_path }}")'>{{ full_path }}</a></span>
                                 </div>
                             </div>
-
                             {% if version.parent %}
                                 <div class="profile-info-row">
                                     <div class="profile-info-name">Parent</div>

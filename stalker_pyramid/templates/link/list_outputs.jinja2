@@ -5,7 +5,7 @@
             <span class="lbl"> Only Published Versions</span>
         </label>
     {% endif %}
-    {% if entity.entity_type == 'Version' %}
+    {% if entity.entity_type == 'Version' and not viewmode%}
         <button data-target="#dialog_template"
             data-toggle="modal"
             data-keyboard="false"

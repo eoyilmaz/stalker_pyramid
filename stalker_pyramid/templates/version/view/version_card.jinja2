@@ -1,24 +1,35 @@
 <div class="row-fluid">
     <div class="span12">
         <div class="alert alert-info bigger-110">
+
             <ul class="unstyled spaced">
+
                 <li><strong>Task:</strong>
                     <a href="/tasks/{{ task.id }}/view"
                        target="_blank">{{ task.name }}</a>
                 </li>
-                <li><strong>Absolute Path :</strong>
-                    <a href="javascript:copyToClipboard('{{ version.path }}')">{{ version.file_name }}</a>
+                <li><strong>File :</strong>
+                    {% set file_name_split=version.full_path.split('/') %}
+                    {% set full_path=file_name_split[file_name_split | count - 1 ] %}
+                    <a href="javascript:copyToClipboard('{{ version.absolute_full_path }}')">{{ full_path }}</a>
                 </li>
                 <li><strong>Date :</strong> {{ version.date_updated }} (<span
                         class="date">{{ version.date_updated }}</span>)
                 </li>
                 <li><strong>Created by :</strong>
-                    <a href="/users/{{ version.created_by_id }}/view"
-                       target="_blank">{{ version.created_by_name }}</a>
+                    <a href="/users/{{ version.created_by.id }}/view"
+                       target="_blank">{{ version.created_by.name }}</a>
                 </li>
                 <li><strong>Description :</strong> {{ version.description }}
                 </li>
+
+                <li><strong>Outputs: </strong>
+                    <a href="/versions/{{ version.id }}/view"
+                       target="_blank">{{ version.take_name }} | {{ version.version_number }}</a>
+                    <span id="output_count" class="badge badge-important"> 0 </span>
+                </li>
             </ul>
+
         </div>
     </div>
 </div>
@@ -29,5 +40,14 @@
         var date = moment.utc($(this).text());
         $(this).text(date.fromNow());
     });
+
+     $(document).ready(function () {
+        $.getJSON('/tasks/{{ task.id }}/outputs/count/').then(function (data) {
+            var badge = $('#output_count');
+            if (data > 0){
+                badge.text(data).removeClass('badge-important').addClass('badge-success');
+            }
+        });
+     });
 
 </script>

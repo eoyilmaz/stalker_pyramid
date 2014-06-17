@@ -36,7 +36,7 @@ from sqlalchemy.exc import IntegrityError
 from stalker.db import DBSession
 from stalker import (defaults, User, Task, Entity, Project, StatusList,
                      Status, Studio, Asset, Shot, Sequence, Ticket, Type, Note,
-                     Review)
+                     Review, Version)
 from stalker.exceptions import CircularDependencyError, StatusError
 
 from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
@@ -2748,31 +2748,13 @@ def get_last_version_of_task(request, is_published=''):
     sql_query = """
        select
            "Versions".id as version_id,
-           "Versions".parent_id as parent_id,
-           "Version_Tasks".id as task_id,
-           "Version_SimpleEntities".date_updated,
-           "Version_SimpleEntities".created_by_id as created_by_id,
-           "Created_by_SimpleEntities".name as created_by_name,
-           "Version_Links".full_path as absolute_full_path,
-           "Version_SimpleEntities".description as description
+           "Version_SimpleEntities".date_updated as date_updated
 
        from "Versions"
            join "Tasks" as "Version_Tasks" on "Version_Tasks".id = "Versions".task_id
-           join "Links" as "Version_Links" on "Version_Links".id = "Versions".id
            join "SimpleEntities" as "Version_SimpleEntities" on "Version_SimpleEntities".id = "Versions".id
-           join "SimpleEntities" as "Created_by_SimpleEntities" on "Created_by_SimpleEntities".id = "Version_SimpleEntities".created_by_id
 
        where "Version_Tasks".id = %(task_id)s and "Versions".take_name = 'Main' %(is_published_condition)s
-
-       group by
-           "Versions".id,
-           "Versions".parent_id,
-           "Version_Tasks".id,
-           "Version_SimpleEntities".date_updated,
-           "Version_SimpleEntities".created_by_id,
-           "Created_by_SimpleEntities".name,
-           "Version_Links".full_path,
-           "Version_SimpleEntities".description
 
        order by date_updated desc
        limit 1
@@ -2796,30 +2778,34 @@ def get_last_version_of_task(request, is_published=''):
         user_os = get_user_os(request)
         repo = task.project.repository
 
-        path_converter = lambda x: x
+        # path_converter = lambda x: x
+        #
+        # if repo:
+        #     if user_os == 'windows':
+        #         path_converter = repo.to_windows_path
+        #     elif user_os == 'linux':
+        #         path_converter = repo.to_linux_path
+        #     elif user_os == 'osx':
+        #         path_converter = repo.to_osx_path
+        #
+        # file_name_split = result[6].split('/')
 
-        if repo:
-            if user_os == 'windows':
-                path_converter = repo.to_windows_path
-            elif user_os == 'linux':
-                path_converter = repo.to_linux_path
-            elif user_os == 'osx':
-                path_converter = repo.to_osx_path
+        # version =
+        # {
+        #     'id': result[0],
+        #     'parent_id': result[1],
+        #     'task_id': result[2],
+        #     'task_name': task.name,
+        #     'date_updated': result[3],
+        #     'created_by_id': result[4],
+        #     'created_by_name': result[5],
+        #     'path': path_converter(result[6]),
+        #     'description': result[7] if result[7] else 'No description',
+        #     'file_name': '.../%s' % file_name_split[len(file_name_split) - 1]
+        # }
+        version = Version.query.filter(Version.id == result[0]).first()
 
-        file_name_split = result[6].split('/')
 
-        version = {
-            'id': result[0],
-            'parent_id': result[1],
-            'task_id': result[2],
-            'task_name': task.name,
-            'date_updated': result[3],
-            'created_by_id': result[4],
-            'created_by_name': result[5],
-            'path': path_converter(result[6]),
-            'description': result[7] if result[7] else 'No description',
-            'file_name': '.../%s' % file_name_split[len(file_name_split) - 1]
-        }
     else:
         version = {
             'id': '-',
@@ -3419,7 +3405,7 @@ def request_review_task_dialog(request):
     else:
         version = get_last_version_of_task(request, is_published='t')
 
-    if version['id'] == '-':
+    if not version:
         if task.type:
             # TODO: Add this to the config file
             forced_publish_types = [
