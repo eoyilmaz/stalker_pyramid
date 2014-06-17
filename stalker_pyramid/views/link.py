@@ -787,7 +787,7 @@ join (
     join "Repositories" on "Projects".repository_id = "Repositories".id
 ) as task_repositories on "Versions".task_id = task_repositories.task_id
 
-join (
+left outer join (
     select
         entity_id,
         array_agg(name) as name
@@ -902,7 +902,7 @@ join "Versions" on "Versions".id = "Version_Outputs".version_id
 join "SimpleEntities" as "Task_SimpleEntities" on "Task_SimpleEntities".id = "Versions".task_id
 join "Links" as "Version_Links" on "Version_Links".id = "Version_Outputs".link_id
 
-join (
+left outer join (
     select
         entity_id,
         array_agg(name) as name

@@ -234,6 +234,19 @@
 </script>
 {% endraw %}
 
+{% raw %}
+<script id="tmpl_pillsbar_link" type="text/x-dot-template">
+    <li class="{{=it.state}}" link={{=it.link}}>
+        <a data-toggle="tab" href="" >
+            <i class={{=it.icon}}></i>
+            <span class="menu-text">{{=it.title}}</span>
+            <span id="{{=it.title }}_count"
+                  class="badge {{ if (it.count > 0) { }}badge-important{{ } else { }}badge-success{{ } }}">{{=it.count}}</span>
+        </a>
+    </li>
+</script>
+{% endraw %}
+
 <script>
 
     var units = ['y','m','w','d','h','min'];
@@ -346,7 +359,11 @@
 <script>
     var menu_of = function (title, state, address, icon, count) {
         var sidebar_list = $('#sidebar_list');
+        var pillsbar_list = $('#pillsbar_list');
         var link_template = doT.template($('#tmpl_sidebar_link').html());
+        var pill_link_template = doT.template($('#tmpl_pillsbar_link').html());
+
+        console.log(title+ ' : ' +state)
 
         var options = {
             'title': title,
@@ -359,7 +376,16 @@
         var rendered_template = $($.parseHTML(link_template(options)));
         sidebar_list.append(rendered_template);
 
+        var pill_rendered_template = $($.parseHTML(pill_link_template(options)));
+        pillsbar_list.append(pill_rendered_template);
+        pill_rendered_template.on('click', function (e) {
+
+                        window.location.assign($(this).attr('link'));
+
+        })
+
         var badge = rendered_template.find('.badge');
+        var pill_badge = pill_rendered_template.find('.badge');
 
         // update the badge
         if ( typeof(count) === 'string' ) {
@@ -370,6 +396,7 @@
                 // now update the side bar badge
                 if (count > 0){
                     badge.text(count).removeClass('badge-success').addClass('badge-important');
+                    pill_badge.text(count).removeClass('badge-success').addClass('badge-important');
                 }
             });
         }

@@ -12,22 +12,21 @@
         }
     </script>
 
+{#    {% set user=logged_in_user %}#}
+{#    {% include 'auth/view/user_sidebar.jinja2' %}#}
 
-    {% set user=logged_in_user %}
-    {% include 'auth/view/user_sidebar.jinja2' %}
-
-{#    {% if entity.entity_type == 'User' %}#}
-{#        {% set user=entity %}#}
-{#        {% include 'auth/view/user_sidebar.jinja2' %}#}
-{#    {% elif entity.entity_type == 'Asset'or entity.entity_type == 'Shot'or entity.entity_type == 'Sequence'or entity.entity_type == 'Task'%}#}
-{#        {% set task=entity %}#}
-{#        {% include 'task/view/task_sidebar.jinja2' %}#}
-{#    {% else %}#}
-{#        {% if entity.entity_type =='Project' %}#}
-{#            {% set project=entity %}#}
-{#        {% endif %}#}
-{#        {% include '%(entity_type)s/view/%(entity_type)s_sidebar.jinja2' % ({'entity_type': entity.entity_type.lower() }) %}#}
-{#    {% endif %}#}
+    {% if entity.entity_type == 'User' %}
+        {% set user=entity %}
+        {% include 'auth/view/user_sidebar.jinja2' %}
+    {% elif entity.entity_type == 'Asset'or entity.entity_type == 'Shot'or entity.entity_type == 'Sequence'or entity.entity_type == 'Task'%}
+        {% set task=entity %}
+        {% include 'task/view/task_sidebar.jinja2' %}
+    {% else %}
+        {% if entity.entity_type =='Project' %}
+            {% set project=entity %}
+        {% endif %}
+        {% include '%(entity_type)s/view/%(entity_type)s_sidebar.jinja2' % ({'entity_type': entity.entity_type.lower() }) %}
+    {% endif %}
 
     <div class="sidebar-collapse" id="sidebar-collapse">
         <i class="icon-double-angle-left"
