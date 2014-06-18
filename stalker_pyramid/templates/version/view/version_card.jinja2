@@ -11,7 +11,7 @@
                 <li><strong>File :</strong>
                     {% set file_name_split=version.full_path.split('/') %}
                     {% set full_path=file_name_split[file_name_split | count - 1 ] %}
-                    <a href="javascript:copyToClipboard('{{ version.absolute_full_path }}')">{{ full_path }}</a>
+                    <a href="javascript:copyToClipboard('{{ version_path }}')">{{ full_path }}</a>
                 </li>
                 <li><strong>Date :</strong> {{ version.date_updated }} (<span
                         class="date">{{ version.date_updated }}</span>)

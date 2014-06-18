@@ -335,6 +335,23 @@ def get_user_os(request):
         return 'osx'
 
 
+def get_path_converter(request, task):
+
+    user_os = get_user_os(request)
+    repo = task.project.repository
+
+    path_converter = lambda x: x
+
+    if user_os == 'windows':
+        path_converter = repo.to_windows_path
+    elif user_os == 'linux':
+        path_converter = repo.to_linux_path
+    elif user_os == 'osx':
+        path_converter = repo.to_osx_path
+
+    return path_converter
+
+
 def seconds_since_epoch(dt):
     """converts the given datetime.datetime instance to an integer showing the
     seconds from epoch, and does it without using the strftime('%s') which

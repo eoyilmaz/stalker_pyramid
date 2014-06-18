@@ -44,7 +44,7 @@ from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
                                    StdErrToHTMLConverter,
                                    multi_permission_checker,
                                    dummy_email_address, local_to_utc,
-                                   get_user_os)
+                                   get_user_os, get_path_converter)
 from stalker_pyramid.views.link import (replace_img_data_with_links,
                                         MediaManager)
 from stalker_pyramid.views.type import query_type
@@ -2775,34 +2775,6 @@ def get_last_version_of_task(request, is_published=''):
 
     result = DBSession.connection().execute(sql_query).fetchone()
     if result:
-        user_os = get_user_os(request)
-        repo = task.project.repository
-
-        # path_converter = lambda x: x
-        #
-        # if repo:
-        #     if user_os == 'windows':
-        #         path_converter = repo.to_windows_path
-        #     elif user_os == 'linux':
-        #         path_converter = repo.to_linux_path
-        #     elif user_os == 'osx':
-        #         path_converter = repo.to_osx_path
-        #
-        # file_name_split = result[6].split('/')
-
-        # version =
-        # {
-        #     'id': result[0],
-        #     'parent_id': result[1],
-        #     'task_id': result[2],
-        #     'task_name': task.name,
-        #     'date_updated': result[3],
-        #     'created_by_id': result[4],
-        #     'created_by_name': result[5],
-        #     'path': path_converter(result[6]),
-        #     'description': result[7] if result[7] else 'No description',
-        #     'file_name': '.../%s' % file_name_split[len(file_name_split) - 1]
-        # }
         version = Version.query.filter(Version.id == result[0]).first()
 
 
@@ -2971,6 +2943,7 @@ def review_task_dialog(request):
         review_description = review.description
 
     project = entity.project
+    version_path = get_path_converter(request, entity)
 
     return {
         'review_description': review_description,
@@ -2980,6 +2953,7 @@ def review_task_dialog(request):
         'project': project,
         'came_from': came_from,
         'version': version,
+        'version_path':version_path,
         'review_mode': review_mode,
         'forced': forced
     }
@@ -3397,8 +3371,8 @@ def request_review_task_dialog(request):
             forced_publish_types = [
                 'Look Development', 'Character Design', 'Model', 'Rig',
                 'Previs', 'Layout', 'Lighting', 'Environment Design',
-                'Matte Painting', 'Animation', 'Camera', 'Simulation',
-                'Postvis', 'Scene Assembly', 'Comp', 'FX', 'Sketch',
+                'Matte Painting', 'Animation','Animation Bible',  'Camera', 'Simulation',
+                'Postvis', 'Scene Assembly', 'Schematic', 'Comp', 'FX', 'Sketch',
                 'Color Sketch', 'Groom'
             ]
             if task.type.name in forced_publish_types:
@@ -3407,12 +3381,14 @@ def request_review_task_dialog(request):
             action = ''
 
     came_from = request.params.get('came_from', '/')
+    version_path = get_path_converter(request, task)
 
     return {
         'request_review_mode': request_review_mode,
         'came_from': came_from,
         'action': action,
         'version': version,
+        'version_path': version_path,
         'task': task,
         'selected_responsible': selected_responsible,
         'task_type': task.type.name if task.type else "No"
