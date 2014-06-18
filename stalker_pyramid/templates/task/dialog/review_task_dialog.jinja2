@@ -2,7 +2,9 @@
     <div class='span12'>
 
             <div id="version_message">
-                {% include 'version/view/version_card.jinja2' %}
+                {% if version %}
+                    {% include 'version/view/version_card.jinja2' %}
+                {% endif %}
             </div>
 
             <div id="resource_message">
