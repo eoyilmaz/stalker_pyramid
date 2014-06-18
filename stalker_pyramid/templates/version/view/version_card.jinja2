@@ -25,8 +25,8 @@
 
             </ul>
             <div id="outputs_alert" class="alert alert-danger bigger-110">
-                    <a href="/versions/{{ version.id }}/view"
-                       target="_blank">{{ version.take_name }} | {{ version.version_number }} has <span id="output_count"> 0 </span> outputs!</a>
+                    {{ version.take_name }} | {{ version.version_number }} has <span id="output_count"> 0 </span> outputs! <a href="/versions/{{ version.id }}/view"
+                       target="_blank">click to add outputs</a>
 
             </div>
 
