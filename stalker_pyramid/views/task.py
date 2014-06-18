@@ -2806,20 +2806,6 @@ def get_last_version_of_task(request, is_published=''):
         version = Version.query.filter(Version.id == result[0]).first()
 
 
-    else:
-        version = {
-            'id': '-',
-            'parent_id': '-',
-            'task_id': '-',
-            'task_name': '-',
-            'date_updated': '-',
-            'created_by_id': '-',
-            'created_by_name': '-',
-            'path': '-',
-            'description': '-',
-            'file_name': '-'
-        }
-
     return version
 
 

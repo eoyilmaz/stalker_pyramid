@@ -1,9 +1,14 @@
 <div class='row-fluid'>
     <div class='span12'>
 
+
         <div id="version_message">
-            {% include 'version/view/version_card.jinja2' %}
+            {% if version %}
+                {% include 'version/view/version_card.jinja2' %}
+            {%  endif %}
         </div>
+
+        <div class="space"></div>
 
 
         <form id="request_review_task_form"
@@ -130,6 +135,7 @@
         {% endif %}
 
         var url = '{{ action }}';
+        console.log('url : '+url)
         {% if action != '' %}
             var warning_template_id = '#alert-for-{{request_review_mode}}';
 

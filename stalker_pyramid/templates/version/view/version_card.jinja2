@@ -23,12 +23,12 @@
                 <li><strong>Description :</strong> {{ version.description }}
                 </li>
 
-                <li><strong>Outputs: </strong>
-                    <a href="/versions/{{ version.id }}/view"
-                       target="_blank">{{ version.take_name }} | {{ version.version_number }}</a>
-                    <span id="output_count" class="badge badge-important"> 0 </span>
-                </li>
             </ul>
+            <div id="outputs_alert" class="alert alert-danger bigger-110">
+                    <a href="/versions/{{ version.id }}/view"
+                       target="_blank">{{ version.take_name }} | {{ version.version_number }} has <span id="output_count"> 0 </span> outputs!</a>
+
+            </div>
 
         </div>
     </div>
@@ -44,8 +44,10 @@
      $(document).ready(function () {
         $.getJSON('/tasks/{{ task.id }}/outputs/count/').then(function (data) {
             var badge = $('#output_count');
+            var alert = $('#outputs_alert');
             if (data > 0){
-                badge.text(data).removeClass('badge-important').addClass('badge-success');
+                badge.text(data);
+                alert.removeClass('alert-danger').addClass('alert-success');
             }
         });
      });
