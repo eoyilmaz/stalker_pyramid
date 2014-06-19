@@ -146,8 +146,8 @@
 
     {% raw %}
     <script id="tmpl_taskCell" type="text/x-dot-template">
-        <td class="no-padding" style='width:150px;' >
-            <div style="height:{{=it.height}}px;" class="{{=it.status_color}}" id="task_cell_{{=it.type_id}}">
+        <td class="no-padding" style='width:150px; min-height:{{=it.height}}px;' >
+            <div class="{{=it.status_color}}" id="task_cell_{{=it.type_id}}">
             </div>
 
         </td>
