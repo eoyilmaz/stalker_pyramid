@@ -36,27 +36,20 @@
     {% set page_title='Assets' %}
     {% include 'page_header.jinja2' %}
 
-
-
-    <ul class="nav nav-tabs" id="asset_type_tabs">
-
-
-    </ul>
+    <ul class="nav nav-tabs" id="asset_type_tabs"></ul>
 
     <div id="loading_spinner" class="well well-sm">
-
         <div class="inline middle blue bigger-110"><i
                 class="icon-spinner icon-spin orange bigger-125"></i> Loading
             content...
         </div>
     </div>
+
     <div id="content" class="widget-box hide">
         <div class="widget-header widget-header-small header-color-asset">
             <h5 id="items_header" class="smaller"></h5>
-
             <div class="widget-toolbar">
                 {% if has_permission('Create_Asset') %}
-
                     &nbsp
                     <a data-target="#dialog_template"
                        data-toggle="modal"
@@ -67,41 +60,31 @@
                         New
                     </a>
                     &nbsp&nbsp
-
                 {% endif %}
                 <a href="#" data-action="collapse">
                     <i class="icon-chevron-down"></i>
                 </a>
             </div>
-
         </div>
         <div class="widget-body">
             <div class="widget-main no-padding">
-
                 <table id="assets_table"
                        class="table table-striped table-bordered table-hover">
-
                     <thead>
-                    <tr id="assets_table_column">
-                        <th>Status</th>
-                        <th>Thumbnail</th>
-                        <th>Name</th>
-                    </tr>
+                        <tr id="assets_table_column">
+                            <th>Status</th>
+                            <th>Thumbnail</th>
+                            <th>Name</th>
+                        </tr>
                     </thead>
                     <tbody>
-
                     </tbody>
-
                 </table>
-
             </div>
         </div>
     </div>
 
-
-
 {% endblock page_content %}
-
 
 {# EXTRA-SCRIPTS #}
 {% block extrascripts %}
@@ -119,8 +102,6 @@
     </script>
     {% endraw %}
 
-
-
     {% raw %}
     <script id="tmpl_assetColumn" type="text/x-dot-template">
         <th>{{=it.name}}</th>
@@ -129,16 +110,15 @@
 
     {% raw %}
     <script id="tmpl_assetRow" type="text/x-dot-template">
-        <tr id="asset_row_{{=it.id}}">
+        <tr style='height:auto;' id="asset_row_{{=it.id}}">
             <td style="width:20px;"><span
                     class="label label-{{=it.status_color}}">{{=it.status}}</span><br/><br/>
             </td>
-            <td>
-                <img style='width:auto; height: 100px;'
-                     class="img-thumbnail"
+            <td style='width:100px;'>
+                <img style='height:auto;' class="img-thumbnail"
                      src="{{=it.thumbnail_full_path }}">
             </td>
-            <td id="asset_summary_cell_{{=it.id}}">
+            <td style='min-width:200px;' id="asset_summary_cell_{{=it.id}}">
                 <a href='{{=it.link}}'>{{=it.name}}</a>
                 {{ if (it.update_asset_action) { }}
                 <a class="blue pull-right"
@@ -166,7 +146,7 @@
 
     {% raw %}
     <script id="tmpl_taskCell" type="text/x-dot-template">
-        <td class="no-padding" style="width:100px; height:auto">
+        <td class="no-padding" style='width:150px;' >
             <div style="height:{{=it.height}}px;" class="{{=it.status_color}}" id="task_cell_{{=it.type_id}}">
             </div>
 
