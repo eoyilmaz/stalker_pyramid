@@ -29,7 +29,7 @@
             var template_label = $('#html_template_label');
             template_label.find('span').remove();
             {% if is_warning_list %}
-                template_label.append('<span>Black List<small> !! these tasks should be sent to review or extra time should be requested for them !!</small></span>');
+                template_label.append('<span>Black List<small> !! these tasks should have been sent to review or an extra time request should have been made for them !!</small></span>');
                 $('#html_template_header').attr('class', 'table-header header-color-dark');
             {% else %}
                 template_label.append('<span>{{ filter.name }}</span>');
