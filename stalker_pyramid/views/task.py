@@ -2943,7 +2943,8 @@ def review_task_dialog(request):
         review_description = review.description
 
     project = entity.project
-    version_path = get_path_converter(request, entity)
+    path_converter = get_path_converter(request, entity)
+    version_path = path_converter(version.absolute_full_path)
 
     return {
         'review_description': review_description,
@@ -2953,7 +2954,7 @@ def review_task_dialog(request):
         'project': project,
         'came_from': came_from,
         'version': version,
-        'version_path':version_path,
+        'version_path': version_path,
         'review_mode': review_mode,
         'forced': forced
     }
@@ -3381,7 +3382,8 @@ def request_review_task_dialog(request):
             action = ''
 
     came_from = request.params.get('came_from', '/')
-    version_path = get_path_converter(request, task)
+    path_converter = get_path_converter(request, task)
+    version_path = path_converter(version.absolute_full_path)
 
     return {
         'request_review_mode': request_review_mode,
