@@ -2943,8 +2943,10 @@ def review_task_dialog(request):
         review_description = review.description
 
     project = entity.project
-    path_converter = get_path_converter(request, entity)
-    version_path = path_converter(version.absolute_full_path)
+    version_path = ''
+    if version:
+        path_converter = get_path_converter(request, entity)
+        version_path = path_converter(version.absolute_full_path)
 
     return {
         'review_description': review_description,
@@ -3380,10 +3382,12 @@ def request_review_task_dialog(request):
                 action = ''
         else:
             action = ''
+    else:
+        path_converter = get_path_converter(request, task)
+        version_path = path_converter(version.absolute_full_path)
 
     came_from = request.params.get('came_from', '/')
-    path_converter = get_path_converter(request, task)
-    version_path = path_converter(version.absolute_full_path)
+
 
     return {
         'request_review_mode': request_review_mode,
