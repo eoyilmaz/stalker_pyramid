@@ -442,7 +442,7 @@ join "Links" on "Task_References".link_id = "Links".id
 
 
 -- tags
-join (
+left join (
     select
         entity_id,
         array_agg(name) as name
@@ -579,7 +579,7 @@ join "Links" on "Task_References".link_id = "Links".id
 
 
 -- tags
-join (
+left join (
     select
         entity_id,
         array_agg(name) as name
@@ -1286,12 +1286,14 @@ class MediaManager(object):
             duration = video_stream.get('duration')
             if duration == 'N/A':  # no duration
                 duration = float(video_info.get('duration', 1))
-            # else:
-            #     duration = float(duration)
+            else:
+                duration = float(duration)
 
             # at this stage we should have enough info, may not be correct but
             # we should have something
             # calculate nb_frames
+            logger.debug('duration  : %s' % duration)
+            logger.debug('frame_rate: %s' % frame_rate)
             nb_frames = int(duration * frame_rate)
         nb_frames = int(nb_frames)
 
