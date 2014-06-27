@@ -125,16 +125,16 @@
             {% for responsible in task.responsible %}
 
                 task_responsible.append(responsible_template({'id': '{{ responsible.id }}', 'name': '{{responsible.name}}' }));
-                responsible_ids.push('{{ responsible.id }}')
+                responsible_ids.push('{{ responsible.id }}');
 
             {% endfor %}
 
-            task_responsible.val(responsible_ids)
+            task_responsible.val(responsible_ids);
             task_responsible.trigger('liszt:updated');
         {% endif %}
 
         var url = '{{ action }}';
-        console.log('url : '+url)
+{#        console.log('url : '+url);#}
         {% if action != '' %}
             var warning_template_id = '#alert-for-{{request_review_mode}}';
 

@@ -227,7 +227,7 @@
             full_path = data.full_path;
             colorbox_params.iframe = false;
             if (full_path.search('.webm') != -1){
-                console.debug('data: ', data);
+{#                console.debug('data: ', data);#}
                 // it should have video replace the address with video player
                 data.full_path = 'video_player?video_full_path=/' + data.full_path;
                 colorbox_params.iframe = false;
@@ -283,7 +283,7 @@
                 // remove any thumbnails first
                 remove_thumbnails();
                 for (var i = 0; i < ref_count; i++) {
-                    console.log('data: '+i)
+{#                    console.log('data: '+i);#}
                     append_thumbnail({
                         data: data[i],
                         template: referenceItemTemplate,
@@ -308,7 +308,7 @@
                     
                     bootbox.confirm(confirm_message, function (response) {
                         if (response) {
-                            console.debug('will delete ' + ref_id);
+{#                            console.debug('will delete ' + ref_id);#}
                             // remove the reference in the server
                             var url = '/references/' + ref_id + '/delete';
                             $.post(url).done(function (response_text) {

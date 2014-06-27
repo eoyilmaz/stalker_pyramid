@@ -363,7 +363,7 @@
         var link_template = doT.template($('#tmpl_sidebar_link').html());
         var pill_link_template = doT.template($('#tmpl_pillsbar_link').html());
 
-        console.log(title+ ' : ' +state)
+{#        console.log(title+ ' : ' +state);#}
 
         var options = {
             'title': title,
@@ -453,7 +453,7 @@
     }
 
     function objectFindByKey(array, key, value) {
-        console.log('key: '+key+' value: '+value);
+{#        console.log('key: '+key+' value: '+value);#}
         for (var i = 0; i < array.length; i++) {
 
             if (array[i][key] == value) {
