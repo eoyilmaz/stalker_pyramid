@@ -176,14 +176,14 @@
             var colorbox_params = options.colorbox_params;
             var animate = options.animate;
 
-            console.log('data '+ data.version_published)
+{#            console.log('data '+ data.version_published)#}
 
             // check if there is any video
             var full_path;
             full_path = data.full_path;
             colorbox_params.iframe = false;
             if (full_path.search('.webm') != -1){
-                console.debug('data: ', data);
+{#                console.debug('data: ', data);#}
                 // it should have video replace the address with video player
                 data.full_path = 'video_player?video_full_path=/' + data.full_path;
                 colorbox_params.iframe = false;
@@ -264,7 +264,7 @@
 
                     bootbox.confirm(confirm_message, function (response) {
                         if (response) {
-                            console.debug('will delete ' + ref_id);
+{#                            console.debug('will delete ' + ref_id);#}
                             // remove the output in the server
                             var url = '/outputs/' + ref_id + '/delete';
                             $.post(url).done(function (response_text) {
@@ -361,7 +361,7 @@
             $('#is_published').on('change', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log($('#is_published').prop('checked'))
+{#                console.log($('#is_published').prop('checked'));#}
 
                 var search_string = $('#output_search_field').val();
                 $.getJSON(count_url,
