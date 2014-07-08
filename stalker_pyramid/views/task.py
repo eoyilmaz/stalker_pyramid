@@ -330,6 +330,7 @@ def walk_hierarchy(task):
     :return:
     """
     tasks_to_visit = [task]
+
     while len(tasks_to_visit):
         current_task = tasks_to_visit.pop(0)
         tasks_to_visit.extend(current_task.children)
@@ -2774,9 +2775,9 @@ def get_last_version_of_task(request, is_published=''):
     }
 
     result = DBSession.connection().execute(sql_query).fetchone()
+    version = None
     if result:
         version = Version.query.filter(Version.id == result[0]).first()
-
 
     return version
 
@@ -3241,7 +3242,8 @@ def request_revision(request):
 
     if forced:
         has_permission = PermissionChecker(request)
-        if has_permission('Create_Review'):
+        if has_permission('Create_Review') \
+           or logged_in_user in task.responsible:
            # review = forced_review(logged_in_user, task);
            # review.date_created = utc_now
 
@@ -3362,6 +3364,9 @@ def request_review_task_dialog(request):
         request.params.get('selected_responsible_id', '-1')
     selected_responsible = \
         User.query.filter_by(id=selected_responsible_id).first()
+
+    version_path = ''
+    version = None
 
     if request_review_mode == 'Progress':
         version = get_last_version_of_task(request, is_published='')

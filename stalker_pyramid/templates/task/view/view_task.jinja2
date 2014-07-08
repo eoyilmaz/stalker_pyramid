@@ -423,7 +423,7 @@
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.maskedinput.min.js") }}'></script>
 
     {% if entity.children | count == 0 %}
-        {% if has_permission('Update_User') and has_permission('Update_Task') %}
+        {% if entity.status.code=='WIP' and logged_in_user in entity.resources %}
             {% set event_type='TimeLog' %}
         {% endif %}
     {% endif %}
