@@ -461,10 +461,10 @@
             e.stopPropagation();
 
             $.post('/tasks/{{ entity.id }}/fix/statuses/').done(function (response_text) {
-                            window.location.reload();
-                        }).fail(function (jqXHR) {
-                            bootbox.alert(jqXHR.responseText);
-                        });
+                window.location.reload();
+            }).fail(function (jqXHR) {
+                bootbox.alert(jqXHR.responseText);
+            });
         });
 
     });

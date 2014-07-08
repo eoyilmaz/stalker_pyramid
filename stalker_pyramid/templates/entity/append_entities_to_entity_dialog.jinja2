@@ -91,15 +91,11 @@
     function init_dialog() {
         console.debug('starting to initialize append_class_to_entity dialog!!!');
 
-
         $('#dialog_template_label').find('span').remove();
         $('#dialog_template_label').append('<span>Append {{ entities_name }}</span>')
 
-
         {# ***************************************************************** #}
         $(document).ready(function () {
-
-
             $.getJSON('/entities/{{ entity.id }}/{{ entities_name }}/out_stack/').then(function (data) {
 
                 var item_template = doT.template($('#tmpl_append_item').html());
@@ -107,7 +103,6 @@
 
                 // append new options to the select
                 for (var i = 0; i < data.length; i++) {
-
 {#                    data_ids.push(data[i].id)#}
 
                     if (data[i].thumbnail_full_path == null) {
@@ -128,35 +123,29 @@
                     table_body.append(item_template(data[i]));
                 }
 
-                 var oTable = $('#multiple_select_list').dataTable({
-                                                                        "sScrollY": "400px",
-                                                                        "bPaginate": false,
-                                                                        "bInfo": false,
-                                                                        "bScrollInfinite": true,
-                                                                        "bScrollCollapse": true,
-                                                                        "iScrollLoadGap": 50
-                                                                    });
+                var oTable = $('#multiple_select_list').dataTable({
+                    "sScrollY": "400px",
+                    "bPaginate": false,
+                    "bInfo": false,
+                    "bScrollInfinite": true,
+                    "bScrollCollapse": true,
+                    "iScrollLoadGap": 50
+                });
 
 {#                 oTable.fnSort(sortingParameters);#}
 
                 $('.ace-checkbox-2').on('click', function () {
-
                     if (!this.checked) {
                         this.value = '';
                         return;
                     }
                     this.value = (this.id).split('_')[1];
 {#                    console.log(this.value);#}
-
                 });
-
             });
-
-
         });
 
         $(document).ready(function () {
-
             var submit_button = $('#dialog_template_submit_button');
             submit_button.on('click', function (e) {
 
@@ -166,22 +155,17 @@
 
                 var append_form = $("#append_form");
 
-
                 $.post('/entities/{{ entity.id }}/append', append_form.serialize()
-                                        ).done(function (response_text) {
-                                            window.location.assign('{{ came_from }}');
-                                            submit_button.button('reset');
-                                            $('#dialog_template').modal('hide');
-
-                                        }).fail(function (jqXHR) {
-                                            bootbox.alert(jqXHR.responseText);
-                                            submit_button.button('reset');
-                                        });
+                ).done(function (response_text) {
+                    window.location.assign('{{ came_from }}');
+                    submit_button.button('reset');
+                    $('#dialog_template').modal('hide');
+                }).fail(function (jqXHR) {
+                    bootbox.alert(jqXHR.responseText);
+                    submit_button.button('reset');
+                });
             });
         });
-
-
-
 
         console.debug('finished initializing the append_class_to_entity dialog!')
     }
