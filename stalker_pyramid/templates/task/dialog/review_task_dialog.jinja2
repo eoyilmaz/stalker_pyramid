@@ -154,10 +154,12 @@
 
         {% if not version %}
 
-            $('#version_message').append("<div class='alert alert-error bigger-110'>"+
-                                            "<strong>{{ task.name }}</strong> is <strong>{{task.type.name }}</strong> type task."+
-                                            "For <strong>{{task.type.name }} </strong> type task no version is saved to server. Ask resource for details."+
-                                            "</div>");
+            $('#version_message').append(
+                "<div class='alert alert-error bigger-110'>" +
+                "<strong>{{ task.name }}</strong> is <strong>{{task.type.name }}</strong> type task." +
+                "For <strong>{{task.type.name }} </strong> type task no version is saved to server. Ask resource for details." +
+                "</div>"
+            );
 
         {% endif %}
 

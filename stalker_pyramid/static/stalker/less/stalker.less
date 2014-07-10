@@ -1230,14 +1230,26 @@ tr {
         width: 100%; /* desired relative width */
         //    max-width: 600px;
         //    min-width: 600px;
-        min-height: 95%;
-        left: 0%; /* (100%-width)/2 */
+        min-height: 100%;
+        left: 0; /* (100%-width)/2 */
+        top: 0 !important;
         margin-left: auto;
         margin-top: auto;
         margin-bottom: auto;
         margin-right: auto; /* place center */
     }
 }
+
+@media only screen and (min-width: 767px) {
+    .wide {
+        width: 80%;
+        left: 50%;
+        margin-left:-40%;
+        max-height: 100%;
+    }
+}
+
+.wide {}
 
 .modal-body {
     overflow-y: scroll;

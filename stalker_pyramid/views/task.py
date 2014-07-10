@@ -2780,7 +2780,6 @@ def get_last_version_of_task(request, is_published=''):
     if result:
         version = Version.query.filter(Version.id == result[0]).first()
 
-
     return version
 
 
@@ -3244,7 +3243,8 @@ def request_revision(request):
 
     if forced:
         has_permission = PermissionChecker(request)
-        if has_permission('Create_Review') or logged_in_user in task.responsible:
+        if has_permission('Create_Review') \
+           or logged_in_user in task.responsible:
            # review = forced_review(logged_in_user, task);
            # review.date_created = utc_now
 
