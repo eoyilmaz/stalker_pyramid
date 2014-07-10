@@ -36,7 +36,7 @@ from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPOk
 
 from stalker.db import DBSession
-from stalker import Entity, Link, defaults, Repository, Version
+from stalker import Entity, Link, defaults, Repository, Version, Daily
 
 from stalker_pyramid.views import (get_logged_in_user, get_multi_integer,
                                    get_tags, StdErrToHTMLConverter,
@@ -324,14 +324,24 @@ def assign_version_output(request):
     entity_id = request.params.get('entity_id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
 
+    daily_id = request.params.get('daily_id', -1)
+    daily = Daily.query.filter_by(id=daily_id).first()
+
     # Tags
     tags = get_tags(request)
+
+    logger.debug('daily_id         : %s' % daily_id)
 
     logger.debug('full_paths         : %s' % full_paths)
     logger.debug('original_filenames : %s' % original_filenames)
     logger.debug('entity_id          : %s' % entity_id)
     logger.debug('entity             : %s' % entity)
     logger.debug('tags               : %s' % tags)
+
+    version_id = entity.id
+    version_number = entity.version_number
+    version_take_name = entity.take_name
+    version_published = entity.is_published
 
     links = []
     if entity and full_paths:
@@ -348,6 +358,11 @@ def assign_version_output(request):
 
             DBSession.add(l)
             links.append(l)
+            if daily:
+                if l not in daily.links:
+                    daily.links.append(l)
+
+    logger.debug('daily.links : %s' % daily.links)
 
     # to generate ids for links
     transaction.commit()
@@ -362,7 +377,11 @@ def assign_version_output(request):
             'original_filename': link.original_filename,
             'thumbnail_full_path': link.thumbnail.full_path
             if link.thumbnail else link.full_path,
-            'tags': [tag.name for tag in link.tags]
+            'tags': [tag.name for tag in link.tags],
+            'version_id': version_id,
+            'version_number': version_number,
+            'version_take_name': version_take_name,
+            'version_published':version_published
         } for link in links
     ]
 

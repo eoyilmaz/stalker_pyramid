@@ -3,8 +3,8 @@
         <h5 id="items_header" class="smaller"></h5>
 
         <div class="widget-toolbar">
-            {% if has_permission('Create_'+list_item_type) and  add_button_address %}
-
+{#            {% if has_permission('Create_'+list_item_type) and  add_button_address %}#}
+                {% if add_button_address %}
                 &nbsp
                 <a data-target="#dialog_template"
                    data-toggle="modal"
@@ -75,7 +75,7 @@
 
         var loadTableData = function (address, tableId, tableParams, sortingParams) {
 
-{#            console.log('loadTableData' + address);#}
+            console.log('loadTableData' + address);
             // fill items table with dynamic data
             $.getJSON(address).then(function (data) {
 

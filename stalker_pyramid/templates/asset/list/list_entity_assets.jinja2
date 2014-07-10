@@ -156,9 +156,7 @@
 
     {% raw %}
     <script id="tmpl_taskCellRow" type="text/x-dot-template">
-
-
-                <div class="{{=it.status_color}}" style="min-height:60px; height:{{=it.height}}px;">
+                <div class="{{=it.status_color}}" style="min-height:55px; height:{{=it.height}}px;">
                     <a class="white" href="/tasks/{{=it.id }}/view">{{=it.name}}</a>
 
                     {{ if (it.update_asset_action) { }}
@@ -268,7 +266,7 @@
                                             }));
 
                                             var task_cell = $('#task_cell_' + types_data[j].id + '_' + data[i].id);
-                                            var task_cell_row_height = task_cell_height/tasks.length;
+                                            var task_cell_row_height = task_cell_height/tasks.length-5;
                                             for (var k = 0; k < tasks.length; k++) {
                                                 var task = tasks[k]
 
@@ -282,7 +280,6 @@
                                                                                     'resource_name': task[4]?task[4]:'',
                                                                                     'height':task_cell_row_height,
                                                                                     'hr': k < tasks.length-1?'<div class="hr hr2"></div>':''}));
-
                                             }
 
                                         } else

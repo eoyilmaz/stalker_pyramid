@@ -42,6 +42,29 @@
             </form>
         </div>
 
+        {# Auto-Split #}
+        <div class="control-group">
+            <div class="span12">
+                <input id="add_to_daily"
+                       name="add_to_daily"
+                       type="checkbox"
+                       class="ace ace-checkbox-2">
+                <label class="lbl blue" for="add_to_daily"> Send it to a daily</label>
+            </div>
+        </div>
+
+        <div id="dailies_list" class='control-group hide'>
+            <div class="span12">
+                <label class='span3 control-label'
+                       for='daily'>Dailies</label>
+                <div class='span9'>
+                    <select id='daily'
+                            class='input-block-level'
+                            name='daily_id'
+                            required></select>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -145,6 +168,43 @@
             previewTemplate: "<div class=\"dz-preview dz-file-preview\">\n  <div class=\"dz-details\">\n    <div class=\"dz-filename\"><span data-dz-name></span></div>\n    <div class=\"dz-size\" data-dz-size></div>\n    <img data-dz-thumbnail />\n  </div>\n  <div class=\"progress progress-small progress-success progress-striped active\"><span class=\"bar\" data-dz-uploadprogress></span></div>\n  <div class=\"dz-success-mark\"><span></span></div>\n  <div class=\"dz-error-mark\"><span></span></div>\n  <div class=\"dz-error-message\"><span data-dz-errormessage></span></div>\n</div>"
         });
 
+
+        {# Daily #}
+        {% raw %}
+            var daily_option_template = doT.template(
+                '<option value={{=it.id}}>{{=it.name}}</option>'
+            );
+        {% endraw %}
+
+        var daily = $('#daily')
+
+        daily.find('option').remove();
+
+        $.getJSON('{{ request.route_path('get_project_dailies', id=entity.task.project.id) }}').then(function (data) {
+            // append an empty one first
+            daily.append('<option value="-1">&nbsp;</option>');
+            for (var i = 0; i < data.length; i++) {
+                daily.append(daily_option_template(data[i]));
+            }
+
+            daily.chosen({
+                search_contains: true,
+                enable_split_word_search: true,
+                allow_single_deselect: true
+            });
+
+        });
+
+
+        $('#add_to_daily').on('click', function () {
+            if(this.checked){
+                $('#dailies_list').show();
+            }
+            else{
+                $('#dailies_list').hide();
+            }
+        });
+
         // register submit event
         submit_button.on('click', function(e){
             e.preventDefault();
@@ -155,6 +215,7 @@
                 submit_button.data('loading-text', 'Converting Files, Please Wait...');
                 submit_button.button('loading')}, 0
             );
+
 
             var tags_list = $('#output_tags_input').val().split(', ');
 
@@ -177,7 +238,15 @@
                     'original_filename': f.original_filename
                 })
             }
-            
+            var daily_id = null;
+            if($('#add_to_daily').prop('checked')){
+               daily_id = daily.val()
+            }
+            else{
+               daily_id = null
+            }
+
+            console.debug('daily_id          :', daily_id);
 {#            console.debug('file_info          :', file_info);#}
 {#            console.debug('full_paths         :', full_paths);#}
 {#            console.debug('original_filenames :', original_filenames);#}
@@ -187,7 +256,8 @@
                 file_info: file_info,
                 full_paths: full_paths,
                 original_filenames: original_filenames,
-                tags: tags_list
+                tags: tags_list,
+                daily_id:daily_id
             }).done(function(jqXHR){
                 // alert the user about the added files
                 // reload outputs
@@ -211,6 +281,7 @@
 
         // unbind events
         $(".dropzone").unbind();
+        $("#daily").unbind();
         $("#dialog_template_submit_button").unbind();
 
         // destroy dialog

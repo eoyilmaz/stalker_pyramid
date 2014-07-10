@@ -240,6 +240,7 @@ def fix_task_statuses(request):
         assert isinstance(task, Task)
         task.update_status_with_dependent_statuses()
         task.update_status_with_children_statuses()
+        task.update_schedule_info()
 
     request.session.flash('success: Task status is fixed!')
 

@@ -269,8 +269,6 @@ logger.setLevel(logging.DEBUG)
     route_name='list_task_outputs',
     renderer='templates/version/list/list_entity_outputs.jinja2'
 )
-
-
 @view_config(
     route_name='list_user_reviews',
     renderer='templates/review/list/list_reviews.jinja2'
@@ -291,6 +289,14 @@ logger.setLevel(logging.DEBUG)
 @view_config(
     route_name='list_entity_notes',
     renderer='templates/note/list/list_entity_notes.jinja2'
+)
+@view_config(
+    route_name='view_daily',
+    renderer='templates/daily/view/view_daily.jinja2'
+)
+@view_config(
+    route_name='list_project_dailies',
+    renderer='templates/daily/list/list_project_dailies.jinja2'
 )
 def get_entity_related_data(request):
     """view for generic data

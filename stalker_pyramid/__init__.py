@@ -278,6 +278,7 @@ def main(global_config, **settings):
     config.add_route('list_project_tickets',       'projects/{id}/tickets/list')
     config.add_route('list_project_references',    'projects/{id}/references/list')
     config.add_route('list_project_reviews',       'projects/{id}/reviews/list')  # html
+    config.add_route('list_project_dailies',       'projects/{id}/dailies/list')  # html
     # config.add_route('view_project_tasks_by_filter',    'projects/{id}/tasks/filter/{f_id}/list')  # html
 
     config.add_route('get_projects',               'projects/')
@@ -291,13 +292,27 @@ def main(global_config, **settings):
     config.add_route('get_project_sequences_count', 'projects/{id}/sequences/count/')
     config.add_route('get_project_references',     'projects/{id}/references/')  # json
     config.add_route('get_project_references_count', 'projects/{id}/references/count/')  # json
-    config.add_route('get_project_tickets',        'projects/{id}/tickets/')  # json
-    config.add_route('get_project_tickets_count',  'projects/{id}/tickets/count/')  # json
-    config.add_route('get_project_reviews',      'projects/{id}/reviews/') #json
+    config.add_route('get_project_tickets',         'projects/{id}/tickets/')  # json
+    config.add_route('get_project_tickets_count',   'projects/{id}/tickets/count/')  # json
+    config.add_route('get_project_reviews',         'projects/{id}/reviews/') #json
     config.add_route('get_project_reviews_count',      'projects/{id}/reviews/count/') #json
+    config.add_route('get_project_dailies',         'projects/{id}/dailies/') #json
+    config.add_route('get_project_dailies_count',   'projects/{id}/dailies/count/') #json
 
     config.add_route('get_project_tasks_today',    'projects/{id}/tasks/{action}/today/')  # json
     config.add_route('get_project_tasks_in_date',  'projects/{id}/tasks/{action}/{date}/')  # json
+
+    # *************************************************************************
+    # Dailies
+    config.add_route('create_daily_dialog', 'dailies/create/dialog')
+    config.add_route('update_daily_dialog', 'dailies/{id}/update/dialog')
+
+    config.add_route('create_daily',        'dailies/create')
+    config.add_route('update_daily',        'dailies/{id}/update')
+
+    config.add_route('view_daily',          'dailies/{id}/view')
+    config.add_route('get_daily_outputs',          'dailies/{id}/outputs/') # json
+
 
     # *************************************************************************
     # ImageFormat

@@ -127,6 +127,13 @@ tr .odd > td .ticket_BLOCKER {
 .header-color-version + .widget-body {
   border-color: #9abc32;
 }
+.header-color-daily {
+  background: #6fb3e0;
+  border-color: #6fb3e0;
+}
+.header-color-daily + .widget-body {
+  border-color: #6fb3e0;
+}
 .approved {
   background-color: #82af6f;
   color: white;
@@ -184,6 +191,10 @@ tr .odd > td .ticket_BLOCKER {
 .label-new {
   background-color: #6fb3e0 !important;
 }
+.btn-new {
+  background-color: #6fb3e0 !important;
+  border-color: #6fb3e0;
+}
 .wfd {
   background-color: #abbac3;
   color: white;
@@ -192,6 +203,9 @@ tr .odd > td .ticket_BLOCKER {
   color: white;
 }
 .label-wfd {
+  background-color: #abbac3 !important;
+}
+.btn-wfd {
   background-color: #abbac3 !important;
 }
 .infobox-wfd.infobox-dark {
@@ -215,6 +229,9 @@ tr .odd > td .ticket_BLOCKER {
 .label-rts {
   background-color: #d15b47 !important;
 }
+.btn-rts {
+  background-color: #d15b47 !important;
+}
 .infobox-rts.infobox-dark {
   background-color: #d15b47;
 }
@@ -233,6 +250,9 @@ tr .odd > td .ticket_BLOCKER {
   color: white;
 }
 .label-wip {
+  background-color: #ffc657 !important;
+}
+.btn-wip {
   background-color: #ffc657 !important;
 }
 .infobox-wip.infobox-dark {
@@ -255,6 +275,9 @@ tr .odd > td .ticket_BLOCKER {
 .label-prev {
   background-color: #6fb3e0 !important;
 }
+.btn-prev {
+  background-color: #6fb3e0 !important;
+}
 .infobox-prev.infobox-dark {
   background-color: #6fb3e0;
 }
@@ -273,6 +296,9 @@ tr .odd > td .ticket_BLOCKER {
   color: white;
 }
 .label-rrev {
+  background-color: #7e6eb0 !important;
+}
+.btn-rrev {
   background-color: #7e6eb0 !important;
 }
 .infobox-rrev > .infobox-icon > [class*="icon-"] {
@@ -295,6 +321,9 @@ tr .odd > td .ticket_BLOCKER {
 .label-hrev {
   background-color: #7e6eb0 !important;
 }
+.btn-hrev {
+  background-color: #7e6eb0 !important;
+}
 .infobox-hrev.infobox-dark {
   background-color: #7e6eb0;
 }
@@ -313,6 +342,9 @@ tr .odd > td .ticket_BLOCKER {
   color: white;
 }
 .label-drev {
+  background-color: #7e6eb0 !important;
+}
+.btn-drev {
   background-color: #7e6eb0 !important;
 }
 .infobox-drev.infobox-dark {
@@ -339,6 +371,9 @@ tr .odd > td .ticket_BLOCKER {
   color: #4e5962;
 }
 .label-stop {
+  background-color: #4e5962 !important;
+}
+.btn-stop {
   background-color: #4e5962 !important;
 }
 .infobox-stop.infobox-dark {
@@ -371,6 +406,13 @@ tr .odd > td .ticket_BLOCKER {
 .label-oh a {
   color: white;
 }
+.btn-oh {
+  background-color: #d53f40 !important;
+  color: white;
+}
+.btn-oh a {
+  color: white;
+}
 .infobox-oh.infobox-dark {
   background-color: #d53f40;
 }
@@ -395,6 +437,9 @@ tr .odd > td .ticket_BLOCKER {
   color: #82af6f;
 }
 .label-cmpl {
+  background-color: #82af6f !important;
+}
+.btn-cmpl {
   background-color: #82af6f !important;
 }
 .infobox-cmpl.infobox-dark {

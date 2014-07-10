@@ -205,6 +205,15 @@ tr {
         border-color: @light-green;
     }
 }
+
+.header-color-daily {
+    background: @light-blue;
+    border-color: @light-blue;
+
+    + .widget-body {
+        border-color: @light-blue;
+    }
+}
 // *********************************
 // Note Types
 // *********************************
@@ -274,6 +283,10 @@ tr {
 .label-new {
     background-color: @light-blue !important;
 }
+.btn-new {
+    background-color: @light-blue !important;
+    border-color: @light-blue
+}
 
 .wfd {
     background-color: @grey;
@@ -283,6 +296,9 @@ tr {
     }
 }
 .label-wfd {
+    background-color: @grey !important;
+}
+.btn-wfd {
     background-color: @grey !important;
 }
 
@@ -308,6 +324,9 @@ tr {
 .label-rts {
     background-color: @red2 !important;
 }
+.btn-rts {
+    background-color: @red2 !important;
+}
 .infobox-rts.infobox-dark {
     background-color: @red2
 }
@@ -327,6 +346,9 @@ tr {
     }
 }
 .label-wip  {
+    background-color: @orange !important;
+}
+.btn-wip  {
     background-color: @orange !important;
 }
 .infobox-wip.infobox-dark {
@@ -350,6 +372,9 @@ tr {
 .label-prev  {
     background-color: @light-blue !important;
 }
+.btn-prev  {
+    background-color: @light-blue !important;
+}
 .infobox-prev.infobox-dark {
     background-color: @light-blue;
 }
@@ -369,6 +394,9 @@ tr {
     }
 }
 .label-rrev  {
+    background-color: @purple2 !important;
+}
+.btn-rrev  {
     background-color: @purple2 !important;
 }
 .infobox-rrev>.infobox-icon>[class*="icon-"] {
@@ -392,6 +420,9 @@ tr {
 .label-hrev  {
     background-color: @purple2 !important;
 }
+.btn-hrev  {
+    background-color: @purple2 !important;
+}
 .infobox-hrev.infobox-dark {
     background-color: @purple2
 }
@@ -411,6 +442,9 @@ tr {
     }
 }
 .label-drev  {
+    background-color: @purple2 !important;
+}
+.btn-drev  {
     background-color: @purple2 !important;
 }
 .infobox-drev.infobox-dark {
@@ -439,6 +473,9 @@ tr {
     }
 }
 .label-stop  {
+    background-color: @dark-grey !important;
+}
+.btn-stop  {
     background-color: @dark-grey !important;
 }
 .infobox-stop.infobox-dark {
@@ -473,6 +510,13 @@ tr {
         color: white;
     }
 }
+.btn-oh  {
+    background-color: @red !important;
+    color: white;
+    a {
+        color: white;
+    }
+}
 .infobox-oh.infobox-dark {
     background-color: @red;
 }
@@ -499,6 +543,9 @@ tr {
     }
 }
 .label-cmpl  {
+    background-color: @green !important;
+}
+.btn-cmpl  {
     background-color: @green !important;
 }
 .infobox-cmpl.infobox-dark {

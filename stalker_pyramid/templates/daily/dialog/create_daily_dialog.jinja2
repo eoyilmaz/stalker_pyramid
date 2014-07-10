@@ -1,0 +1,102 @@
+<div class="row-fluid">
+
+    <form id='daily_form'
+          class='form-horizontal'
+          role='form'
+          method="post"
+            >
+
+        <div class="row-fluid">
+            {# Name #}
+            <div class="control-group">
+                <label class="span3 control-label"
+                       for="daily_name">Name</label>
+
+                <div class="span9">
+                    <input id="daily_name"
+                           name='name'
+                           type="text"
+                           class="form-control"
+                           placeholder="Name"
+                           required>
+                </div>
+            </div>
+
+            {#Description #}
+            <div class="control-group'">
+                <label for="daily_description"
+                       class="span3 control-label">Description</label>
+
+                <div class="span9">
+                    <textarea id="daily_description"
+                              name='description'
+                              class="autosize-transition"
+                              style="overflow: hidden;
+                                         word-wrap: break-word;
+                                         resize: horizontal;
+                                         height: 50px;"
+                            ></textarea>
+                </div>
+            </div>
+        </div>
+
+    </form>
+</div>
+
+
+<script type="text/javascript">
+
+    function init_dialog() {
+
+        console.debug('starting to initialize daily dialog!!!');
+
+        $('#dialog_template_label').find('span').remove();
+        $('#dialog_template_label').append('<span>New Daily</span>')
+
+        $('#dialog_template_body').attr('style', "height: 350px");
+
+
+        {# ***************************************************************** #}
+        {# Submit Button #}
+
+        var submit_button = $('#dialog_template_submit_button');
+        submit_button.on('click', function (e) {
+            e.stopPropagation();
+            e.preventDefault();
+
+            submit_button.button('loading');
+            var daily_form = $('#daily_form');
+
+            $.post("{{ request.route_url('create_daily') }}",
+                    daily_form.serialize()+ '&' +
+                $.param({
+                    'project_id': {{ project.id }}
+                })
+                        ).done(function () {
+                            window.location.assign('{{ came_from }}');
+                        }).fail(function (jqXHR) {
+                            bootbox.alert(jqXHR.responseText);
+                            submit_button.button('reset');
+                        });
+        });
+
+
+        console.debug('finished initializing the daily dialog!')
+    }
+</script>
+
+<script type="text/javascript">
+
+    function destruct_dialog() {
+
+        $('#daily_name').unbind();
+        $('#daily_description').unbind();
+        $('#dialog_template_submit_button').unbind();
+
+        $('#dialog_template').data('modal', null);
+
+    }
+</script>
+
+
+

@@ -30,6 +30,7 @@ from stalker import (Entity, Note, Type)
 from stalker_pyramid.views import (get_logged_in_user,
                                    milliseconds_since_epoch,
                                    StdErrToHTMLConverter, local_to_utc)
+from stalker_pyramid.views.type import query_type
 
 
 logger = logging.getLogger(__name__)
@@ -40,19 +41,16 @@ logger.setLevel(logging.DEBUG)
     route_name='create_entity_note'
 )
 def create_entity_note(request):
-    """TODO: what does this thing do???
+    """Creates note for requested an entity
     """
 
     logger.debug('create_entity_note is running')
+    utc_now = local_to_utc(datetime.datetime.now())
+    logged_in_user = get_logged_in_user(request)
 
     entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter(Entity.id == entity_id).first()
-
-    content = request.params.get('message', '')
-
-    utc_now = local_to_utc(datetime.datetime.now())
-
-    logged_in_user = get_logged_in_user(request)
+    content = request.params.get('message', None)
 
     if not entity:
         transaction.abort()
@@ -60,36 +58,32 @@ def create_entity_note(request):
 
     logger.debug('content %s' % content)
 
-    if content:
-
-        note_type = Type.query.filter_by(name='Simple Text').first()
-        if note_type is None:
-             # create a new Type
-            note_type = Type(
-                name='Simple Text',
-                code='Simple_Text',
-                target_entity_type='Note',
-                html_class='grey'
-            )
-
-        note = Note(
-            content=content,
-            created_by=logged_in_user,
-            date_created=utc_now,
-            date_updated=utc_now,
-            type=note_type
-        )
-
-        DBSession.add(note)
-        entity.notes.append(note)
-
-        logger.debug('note is created by %s' % logged_in_user.name)
-        request.session.flash('note is created by %s' % logged_in_user.name)
-
-    else:
-
+    if not content:
         transaction.abort()
         return Response( 'No content', 500)
+
+    if content == '':
+        transaction.abort()
+        return Response( 'No content', 500)
+
+
+    note_type = query_type('Note', 'Simple Note')
+    note_type.html_class = 'grey'
+    note_type.code = 'simple_note'
+
+    note = Note(
+        content=content,
+        created_by=logged_in_user,
+        date_created=utc_now,
+        date_updated=utc_now,
+        type=note_type
+    )
+
+    DBSession.add(note)
+    entity.notes.append(note)
+
+    logger.debug('note is created by %s' % logged_in_user.name)
+    request.session.flash('note is created by %s' % logged_in_user.name)
 
     return Response('Task note is created')
 
@@ -110,7 +104,8 @@ def get_entity_notes(request):
         transaction.abort()
         return Response('There is no entity with id: %s' % entity_id, 500)
 
-    sql_query = """select  "User_SimpleEntities".id as user_id,
+    sql_query = """
+        select  "User_SimpleEntities".id as user_id,
                 "User_SimpleEntities".name,
                 "Users_Thumbnail_Links".full_path,
                 "Notes_SimpleEntities".id as note_id,
@@ -127,7 +122,8 @@ def get_entity_notes(request):
         left outer join "Links" as "Users_Thumbnail_Links" on "Users_Thumbnail_Links".id = "User_SimpleEntities".thumbnail_id
         join "Entity_Notes" on "Notes".id = "Entity_Notes".note_id
         where "Entity_Notes".entity_id = %(entity_id)s
-        order by "Notes_SimpleEntities".date_created desc"""
+        order by "Notes_SimpleEntities".date_created desc
+        """
 
     sql_query = sql_query % {'entity_id': entity_id}
 

@@ -34,9 +34,7 @@
                 </form>
             </div>
         </div>
-
     </div>
-
     <div class="row-fluid">
         <div id="new_outputs_storage" class="hidden"></div>
         <ul class="ace-thumbnails"></ul>
@@ -45,369 +43,369 @@
 
 
 
-    <script type="text/javascript"
-            src='{{ request.static_url("stalker_pyramid:static/stalker/js/bootstrap-tag.js") }}'></script>
-    <script type="text/javascript"
-            src='{{ request.static_url("stalker_pyramid:static/ace/js/dropzone.min.js") }}'></script>
-    <script type="text/javascript"
-            src='{{ request.static_url("stalker_pyramid:static/stalker/js/Paginator.js") }}'></script>
+<script type="text/javascript"
+        src='{{ request.static_url("stalker_pyramid:static/stalker/js/bootstrap-tag.js") }}'></script>
+<script type="text/javascript"
+        src='{{ request.static_url("stalker_pyramid:static/ace/js/dropzone.min.js") }}'></script>
+<script type="text/javascript"
+        src='{{ request.static_url("stalker_pyramid:static/stalker/js/Paginator.js") }}'></script>
 
-    {% raw %}
-    <script id="tmpl_output_item" type="text/x-dot-template">
-        <li id="Output_{{=it.id}}">
+{% raw %}
+<script id="tmpl_output_item" type="text/x-dot-template">
+    <li id="Output_{{=it.id}}">
 
-            <a href="/{{=it.full_path}}"
-               download_href="/FD{{=it.full_path}}"
-               title="{{=it.original_filename}}&#013;{{=it.tags }}&#013;{{=it.version_take_name }} | {{=it.version_number }}"
-               data-rel="colorbox"
-               class="cboxElement">
-                <div style="text-align: center; overflow: hidden; width: 150px">
-                    <img alt="150x150"
-                         style="height: 150px; width: auto; max-width: none;
-                            position: relative; left: 100%; margin-left: -200%;"
-                         src="/{{=it.thumbnail_full_path ? it.thumbnail_full_path : 'static/stalker/images/Placeholder_0.png' }}">
+        <a href="/{{=it.full_path}}"
+           download_href="/FD{{=it.full_path}}"
+           title="{{=it.original_filename}}&#013;{{=it.tags }}&#013;{{=it.version_take_name }} | {{=it.version_number }}"
+           data-rel="colorbox"
+           class="cboxElement">
+            <div style="text-align: center; overflow: hidden; width: 150px">
+                <img alt="150x150"
+                     style="height: 150px; width: auto; max-width: none;
+                        position: relative; left: 100%; margin-left: -200%;"
+                     src="/{{=it.thumbnail_full_path ? it.thumbnail_full_path : 'static/stalker/images/Placeholder_0.png' }}">
 
-                    <div class="tags">
-                        <!--{{~ it.tags :t}}-->
-                        <!--<span class="label label-info">{{=t}}</span>-->
-                        <!--{{~}}-->
-
-                        {{? it.version_published }}
-                            <span class="label label-success arrowed-in">published</span>
-                        {{?}}
-                        {{? it.full_path.indexOf('.webm') !== -1 }}
-                        <span class="label label-success">
-                            <i class="icon-film"></i>
-                        </span>
-                        {{?}}
-                        <span class="label label-info">{{=it.version_take_name }} | {{=it.version_number }}</span>
-                    </div>
-                </div>
-            </a>
-            <!--<span class="pull-right"><a href="/versions/{{=it.version_id}}/view">{{=it.version_take_name }} | {{=it.version_number }}</span>-->
-
-            <div class="tools">
-                <a href="/FD{{=it.full_path}}" title="Download"><i class="icon-cloud-download"></i></a>
-                <a href="javascript:copyToClipboard('http://' + window.location.host +'/FD{{=it.full_path}}')" title="Copy Download Link"><i class="icon-link"></i></a>
-                <a href="/versions/{{=it.version_id}}/view" title="View Version"><i class="icon-zoom-in"></i></a>
-                <!--<div class="dropdown">-->
-                    <!--<a class="dropdown-toggle" data-toggle="dropdown"-->
-                       <!--style="display: inline-block;-->
-                              <!--color: #FFF;-->
-                              <!--font-size: 18px;-->
-                              <!--font-weight: normal;-->
-                              <!--padding: 4px;">-->
-                        <!--<i class="icon-external-link"></i>-->
-                    <!--</a>-->
-                    <!--<ul class="dropdown-menu" role='menu' aria-labelledby="dLabel" style="text-align: left">-->
-                    <!--{{~ it.entity_ids :t:i }}-->
-                        <!--<li>-->
-                            <!--<a href="/entities/{{=t}}/outputs/list" title="Go To Related Entity">{{=it.entity_names[i]}}</a>-->
-                        <!--</li>-->
+                <div class="tags">
+                    <!--{{~ it.tags :t}}-->
+                    <!--<span class="label label-info">{{=t}}</span>-->
                     <!--{{~}}-->
-                    <!--</ul>-->
-                <!--</div>-->
 
-                <a class='output-deleter'
-                   ref_id="{{=it.id}}"
-                   ref_file_name="{{=it.original_filename}}"
-                   href="#"
-                   title="Delete"><i class="icon-remove red"></i></a>
+                    {{? it.version_published }}
+                        <span class="label label-success arrowed-in">published</span>
+                    {{?}}
+                    {{? it.full_path.indexOf('.webm') !== -1 }}
+                    <span class="label label-success">
+                        <i class="icon-film"></i>
+                    </span>
+                    {{?}}
+                    <span class="label label-info">{{=it.version_take_name }} | {{=it.version_number }}</span>
+                </div>
             </div>
-        </li>
-    </script>
-    {% endraw %}
+        </a>
+        <!--<span class="pull-right"><a href="/versions/{{=it.version_id}}/view">{{=it.version_take_name }} | {{=it.version_number }}</span>-->
 
-    <script type="text/javascript">
-        var colorbox_params = {
-            rel: 'Outputs',
-            loop: false,
-            reposition: true,
-            scalePhotos: true,
-            scrolling: true,
-            previous: '<i class="icon-arrow-left"></i>',
-            next: '<i class="icon-arrow-right"></i>',
-            close: '&times;',
-            current: '{current} of {total}',
-            maxWidth: '100%',
-            maxHeight: '100%',
-            width: '90%',
-            height: '90%',
-            transition: 'none',
-            title: function () {
-                var url = $(this).attr('href');
-                var original_title = $(this).attr('title');
-                var download_url = $(this).attr('download_href');
+        <div class="tools">
+            <a href="/FD{{=it.full_path}}" title="Download"><i class="icon-cloud-download"></i></a>
+            <a href="javascript:copyToClipboard('http://' + window.location.host +'/FD{{=it.full_path}}')" title="Copy Download Link"><i class="icon-link"></i></a>
+            <a href="/versions/{{=it.version_id}}/view" title="View Version"><i class="icon-zoom-in"></i></a>
+            <!--<div class="dropdown">-->
+                <!--<a class="dropdown-toggle" data-toggle="dropdown"-->
+                   <!--style="display: inline-block;-->
+                          <!--color: #FFF;-->
+                          <!--font-size: 18px;-->
+                          <!--font-weight: normal;-->
+                          <!--padding: 4px;">-->
+                    <!--<i class="icon-external-link"></i>-->
+                <!--</a>-->
+                <!--<ul class="dropdown-menu" role='menu' aria-labelledby="dLabel" style="text-align: left">-->
+                <!--{{~ it.entity_ids :t:i }}-->
+                    <!--<li>-->
+                        <!--<a href="/entities/{{=t}}/outputs/list" title="Go To Related Entity">{{=it.entity_names[i]}}</a>-->
+                    <!--</li>-->
+                <!--{{~}}-->
+                <!--</ul>-->
+            <!--</div>-->
 
-                var download_link = '<span><a href="' + download_url + '">' + original_title + '</a>';
-                var open_in_new_tab_link = '<a href="' + url + '" target="_blank">(Open In New Tab)</a></span>';
-                return download_link + '&nbsp' + open_in_new_tab_link;
-            },
-            onOpen: function () {
-                document.body.style.overflow = 'hidden';
-                // get the element and check if it is the last element
-            },
-            onClosed: function () {
-                document.body.style.overflow = 'auto';
-            },
-            onComplete: function () {
+            <a class='output-deleter'
+               ref_id="{{=it.id}}"
+               ref_file_name="{{=it.original_filename}}"
+               href="#"
+               title="Delete"><i class="icon-remove red"></i></a>
+        </div>
+    </li>
+</script>
+{% endraw %}
+
+<script type="text/javascript">
+    var colorbox_params = {
+        rel: 'Outputs',
+        loop: false,
+        reposition: true,
+        scalePhotos: true,
+        scrolling: true,
+        previous: '<i class="icon-arrow-left"></i>',
+        next: '<i class="icon-arrow-right"></i>',
+        close: '&times;',
+        current: '{current} of {total}',
+        maxWidth: '100%',
+        maxHeight: '100%',
+        width: '90%',
+        height: '90%',
+        transition: 'none',
+        title: function () {
+            var url = $(this).attr('href');
+            var original_title = $(this).attr('title');
+            var download_url = $(this).attr('download_href');
+
+            var download_link = '<span><a href="' + download_url + '">' + original_title + '</a>';
+            var open_in_new_tab_link = '<a href="' + url + '" target="_blank">(Open In New Tab)</a></span>';
+            return download_link + '&nbsp' + open_in_new_tab_link;
+        },
+        onOpen: function () {
+            document.body.style.overflow = 'hidden';
+            // get the element and check if it is the last element
+        },
+        onClosed: function () {
+            document.body.style.overflow = 'auto';
+        },
+        onComplete: function () {
 {#                $.colorbox.resize();#}
-            }
-        };
+        }
+    };
 
-        /**
-         * Appends a new item to the thumbnail list
-         */
-        var append_thumbnail = function (options) {
-            //
-            // adds only one item to the list
-            //
-            // compile the output item template
+    /**
+     * Appends a new item to the thumbnail list
+     */
+    var append_thumbnail = function (options) {
+        //
+        // adds only one item to the list
+        //
+        // compile the output item template
 
-            options = $.extend({
-                data: null,
-                template: null,
-                colorbox_params: {},
-                animate: false
-            }, options);
+        options = $.extend({
+            data: null,
+            template: null,
+            colorbox_params: {},
+            animate: false
+        }, options);
 
-            var data = options.data;
-            var template = options.template;
-            var colorbox_params = options.colorbox_params;
-            var animate = options.animate;
+        var data = options.data;
+        var template = options.template;
+        var colorbox_params = options.colorbox_params;
+        var animate = options.animate;
 
 {#            console.log('data '+ data.version_published)#}
 
-            // check if there is any video
-            var full_path;
-            full_path = data.full_path;
-            colorbox_params.iframe = false;
-            if (full_path.search('.webm') != -1){
+        // check if there is any video
+        var full_path;
+        full_path = data.full_path;
+        colorbox_params.iframe = false;
+        if (full_path.search('.webm') != -1){
 {#                console.debug('data: ', data);#}
-                // it should have video replace the address with video player
-                data.full_path = 'video_player?video_full_path=/' + data.full_path;
-                colorbox_params.iframe = false;
+            // it should have video replace the address with video player
+            data.full_path = 'video_player?video_full_path=/' + data.full_path;
+            colorbox_params.iframe = false;
+        }
+
+        var ref_item = $($.parseHTML(template(data)));
+
+        if (animate) {
+            ref_item.css({display: 'none'});
+        }
+        $('.ace-thumbnails').append(ref_item);
+        if (animate) {
+            ref_item.toggle('slow');
+        }
+
+        ref_item.find('[data-rel="colorbox"]').colorbox(colorbox_params);
+    };
+
+    /**
+     * Removes the thumbnails from list
+     */
+    var remove_thumbnails = function(){
+        var cb_element = $('.ace-thumbnails');
+        cb_element.children().remove('*');
+        cb_element.colorbox.remove();
+    };
+
+    /**
+     * Draws output items
+     */
+    var draw_output_items = function (options) {
+        var outputItemTemplate = doT.template(document.getElementById('tmpl_output_item').text);
+
+        options = $.extend({
+            current_page: 1,
+            items_per_page: 40,
+            url: '/entities/{{ entity.id }}/outputs/',
+            search: ''
+        }, options);
+
+        var current_page = options.current_page;
+        var items_per_page = options.items_per_page;
+
+        var offset = (current_page - 1) * items_per_page;
+        // now generate the template items
+        $.getJSON(options.url,
+                  $.param({
+                      'offset': offset,
+                      'limit': items_per_page,
+                      'search': options.search,
+                      'is_published': $('#is_published').prop('checked')?'t':''
+                  })).then(function (data) {
+            var ref_count = data.length;
+            // remove any thumbnails first
+            remove_thumbnails();
+            for (var i = 0; i < ref_count; i++) {
+                append_thumbnail({
+                    data: data[i],
+                    template: outputItemTemplate,
+                    colorbox_params: colorbox_params
+                });
             }
-
-            var ref_item = $($.parseHTML(template(data)));
-
-            if (animate) {
-                ref_item.css({display: 'none'});
-            }
-            $('.ace-thumbnails').append(ref_item);
-            if (animate) {
-                ref_item.toggle('slow');
-            }
-
-            ref_item.find('[data-rel="colorbox"]').colorbox(colorbox_params);
-        };
-
-        /**
-         * Removes the thumbnails from list
-         */
-        var remove_thumbnails = function(){
-            var cb_element = $('.ace-thumbnails');
-            cb_element.children().remove('*');
-            cb_element.colorbox.remove();
-        };
-
-        /**
-         * Draws output items
-         */
-        var draw_output_items = function (options) {
-            var outputItemTemplate = doT.template(document.getElementById('tmpl_output_item').text);
-
-            options = $.extend({
-                current_page: 1,
-                items_per_page: 40,
-                url: '/entities/{{ entity.id }}/outputs/',
-                search: ''
-            }, options);
-
-            var current_page = options.current_page;
-            var items_per_page = options.items_per_page;
-
-            var offset = (current_page - 1) * items_per_page;
-            // now generate the template items
-            $.getJSON(options.url,
-                      $.param({
-                          'offset': offset,
-                          'limit': items_per_page,
-                          'search': options.search,
-                          'is_published': $('#is_published').prop('checked')?'t':''
-                      })).then(function (data) {
-                var ref_count = data.length;
-                // remove any thumbnails first
-                remove_thumbnails();
-                for (var i = 0; i < ref_count; i++) {
-                    append_thumbnail({
-                        data: data[i],
-                        template: outputItemTemplate,
-                        colorbox_params: colorbox_params
-                    });
-                }
 
 {#                $('.ace-thumbnails [data-rel="colorbox"]').colorbox(#}
 {#                        colorbox_params#}
 {#                );#}
 
-                $("#cboxLoadingGraphic").append("<i class='icon-spinner orange'></i>");
+            $("#cboxLoadingGraphic").append("<i class='icon-spinner orange'></i>");
 
-                $('.output-deleter').on('click', function (e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    var self = $(this);
-                    var ref_id = self.attr('ref_id');
-                    var ref_file_name = self.attr('ref_file_name');
+            $('.output-deleter').on('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                var self = $(this);
+                var ref_id = self.attr('ref_id');
+                var ref_file_name = self.attr('ref_file_name');
 
-                    var confirm_message = 'Delete ' + ref_file_name + ' ?';
+                var confirm_message = 'Delete ' + ref_file_name + ' ?';
 
-                    bootbox.confirm(confirm_message, function (response) {
-                        if (response) {
+                bootbox.confirm(confirm_message, function (response) {
+                    if (response) {
 {#                            console.debug('will delete ' + ref_id);#}
-                            // remove the output in the server
-                            var url = '/outputs/' + ref_id + '/delete';
-                            $.post(url).done(function (response_text) {
-                                // use he response text and give info
-                                // and also delete the HTML element
-                                $('#Output_' + ref_id).toggle('slow', function () {
-                                    $(this).remove();
-                                })
-                            }).fail(function (jqXHR) {
-                                // use the jqXHR.response_text and inform user about what went wrong
-                            });
-                        }
-                    });
+                        // remove the output in the server
+                        var url = '/outputs/' + ref_id + '/delete';
+                        $.post(url).done(function (response_text) {
+                            // use he response text and give info
+                            // and also delete the HTML element
+                            $('#Output_' + ref_id).toggle('slow', function () {
+                                $(this).remove();
+                            })
+                        }).fail(function (jqXHR) {
+                            // use the jqXHR.response_text and inform user about what went wrong
+                        });
+                    }
                 });
             });
-        };
+        });
+    };
 
-        /**
-         * Creates the paginator
-         *
-         * @param options
-         *   Options for this function
-         */
-        var create_paginator = function (options) {
+    /**
+     * Creates the paginator
+     *
+     * @param options
+     *   Options for this function
+     */
+    var create_paginator = function (options) {
 
-            options = $.extend({
-                total_number_of_items: 0,
-                items_per_page: 40,
-                current_page: 1
-            }, options);
+        options = $.extend({
+            total_number_of_items: 0,
+            items_per_page: 40,
+            current_page: 1
+        }, options);
 
-            $('.pagination').paginator({
-                'number_of_items': options.total_number_of_items,
-                'items_per_page': options.items_per_page,
-                'current_page': options.current_page,
-                'callback': function(current_page_number){
-                    // get search string
-                    var search_string = $('#output_search_field').val();
-
-                    draw_output_items({
-                        current_page: current_page_number,
-                        items_per_page: options.items_per_page,
-                        search: search_string
-                    });
-                }
-            });
-        };
-
-        $(function () {
-            // create pagination
-            var items_per_page = 40;
-            var total_number_of_items;
-            var count_url = '/entities/{{ entity.id }}/outputs/count/';
-
-            // get total number of outputs
-            $.getJSON(count_url, function(data){
-                total_number_of_items = data;
-                create_paginator({
-                    total_number_of_items: total_number_of_items,
-                    items_per_page: items_per_page
-                });
-            });
-
-            // for initial one
-            draw_output_items({
-                current_page: 1,
-                items_per_page: items_per_page
-            });
-
-            // and add the new thumbnails when uploaded through Dropzone
-            $('#dialog_template').on('hidden', function () {
-                // get the data from the storage
-                var repo_id = {% if entity.entity_type == 'Task' %}{{ entity.project.repository.id }}{% else %}{{ entity.task.project.repository.id }}{% endif %};
-                var repo_prepend = 'repositories/' + repo_id + '/';
-                var new_outputs_storage = $('#new_outputs_storage');
-                var data = $.parseJSON(new_outputs_storage.text());
-                // empty the storage
-                new_outputs_storage.text('');
-                var outputItemTemplate = doT.template(document.getElementById('tmpl_output_item').text);
-                for (var i = 0; i < data.length; i++) {
-                    // prepend repsoitories/{id}/ to make it compatible with the
-                    // new style outputs
-                    data[i].thumbnail_full_path = repo_prepend + data[i].thumbnail_full_path;
-                    data[i].full_path = repo_prepend + data[i].full_path;
-
-                    append_thumbnail({
-                        data: data[i],
-                        template: outputItemTemplate,
-                        colorbox_params: colorbox_params,
-                        animate: true
-                    });
-                }
-            });
-            $('#is_published').on('change', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-{#                console.log($('#is_published').prop('checked'));#}
-
-                var search_string = $('#output_search_field').val();
-                $.getJSON(count_url,
-                    $.param({
-                      'search': search_string,
-                      'is_published': $('#is_published').prop('checked')?'t':''
-                    })).then(function (data) {
-
-                    create_paginator({
-                        total_number_of_items: data,
-                        items_per_page: items_per_page
-                    });
-
-                    draw_output_items({
-                        current_page: 1,
-                        items_per_page: items_per_page,
-                        search: search_string
-                    });
-                });
-
-            })
-
-            $('#output_do_search_button').on('click', function(e){
-                e.preventDefault();
-                e.stopPropagation();
-
+        $('.pagination').paginator({
+            'number_of_items': options.total_number_of_items,
+            'items_per_page': options.items_per_page,
+            'current_page': options.current_page,
+            'callback': function(current_page_number){
                 // get search string
                 var search_string = $('#output_search_field').val();
-                $.getJSON(count_url,
-                    $.param({
-                      'search': search_string,
-                      'is_published': $('#is_published').prop('checked')?'t':''
-                    })).then(function (data) {
 
-                    create_paginator({
-                        total_number_of_items: data,
-                        items_per_page: items_per_page
-                    });
+                draw_output_items({
+                    current_page: current_page_number,
+                    items_per_page: options.items_per_page,
+                    search: search_string
+                });
+            }
+        });
+    };
 
-                    draw_output_items({
-                        current_page: 1,
-                        items_per_page: items_per_page,
-                        search: search_string
-                    });
+    $(function () {
+        // create pagination
+        var items_per_page = 40;
+        var total_number_of_items;
+        var count_url = '/entities/{{ entity.id }}/outputs/count/';
+
+        // get total number of outputs
+        $.getJSON(count_url, function(data){
+            total_number_of_items = data;
+            create_paginator({
+                total_number_of_items: total_number_of_items,
+                items_per_page: items_per_page
+            });
+        });
+
+        // for initial one
+        draw_output_items({
+            current_page: 1,
+            items_per_page: items_per_page
+        });
+
+        // and add the new thumbnails when uploaded through Dropzone
+        $('#dialog_template').on('hidden', function () {
+            // get the data from the storage
+            var repo_id = {% if entity.entity_type == 'Task' %}{{ entity.project.repository.id }}{% else %}{{ entity.task.project.repository.id }}{% endif %};
+            var repo_prepend = 'repositories/' + repo_id + '/';
+            var new_outputs_storage = $('#new_outputs_storage');
+            var data = $.parseJSON(new_outputs_storage.text());
+            // empty the storage
+            new_outputs_storage.text('');
+            var outputItemTemplate = doT.template(document.getElementById('tmpl_output_item').text);
+            for (var i = 0; i < data.length; i++) {
+                // prepend repsoitories/{id}/ to make it compatible with the
+                // new style outputs
+                data[i].thumbnail_full_path = repo_prepend + data[i].thumbnail_full_path;
+                data[i].full_path = repo_prepend + data[i].full_path;
+
+                append_thumbnail({
+                    data: data[i],
+                    template: outputItemTemplate,
+                    colorbox_params: colorbox_params,
+                    animate: true
+                });
+            }
+        });
+        $('#is_published').on('change', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+{#                console.log($('#is_published').prop('checked'));#}
+
+            var search_string = $('#output_search_field').val();
+            $.getJSON(count_url,
+                $.param({
+                  'search': search_string,
+                  'is_published': $('#is_published').prop('checked')?'t':''
+                })).then(function (data) {
+
+                create_paginator({
+                    total_number_of_items: data,
+                    items_per_page: items_per_page
+                });
+
+                draw_output_items({
+                    current_page: 1,
+                    items_per_page: items_per_page,
+                    search: search_string
                 });
             });
 
+        })
+
+        $('#output_do_search_button').on('click', function(e){
+            e.preventDefault();
+            e.stopPropagation();
+
+            // get search string
+            var search_string = $('#output_search_field').val();
+            $.getJSON(count_url,
+                $.param({
+                  'search': search_string,
+                  'is_published': $('#is_published').prop('checked')?'t':''
+                })).then(function (data) {
+
+                create_paginator({
+                    total_number_of_items: data,
+                    items_per_page: items_per_page
+                });
+
+                draw_output_items({
+                    current_page: 1,
+                    items_per_page: items_per_page,
+                    search: search_string
+                });
+            });
         });
-    </script>
+
+    });
+</script>

@@ -1,0 +1,169 @@
+{# Stalker Pyramid a Web Base Production Asset Management System
+ Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
+
+ This file is part of Stalker Pyramid.
+
+ This library is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation;
+ version 2.1 of the License.
+
+ This library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Lesser General Public License for more details.
+
+ You should have received a copy of the GNU Lesser General Public
+ License along with this library; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+#}
+
+
+{% extends "base.jinja2" %}
+
+{# BREADCRUMBS #}
+{% block breadcrumbs %}
+    {% include 'breadcrumb/breadcrumbs.jinja2' %}
+{% endblock breadcrumbs %}
+
+{#SIDEBAR#}
+{% block sidebar %}
+    {% include 'sidebar.jinja2' %}
+{% endblock sidebar %}
+
+{#PAGE-CONTENT#}
+{% block page_content %}
+
+    {% set page_title=entity.name %}
+    {% include 'page_header.jinja2' %}
+    <div id="daily_tasks" class="row-fluid">
+    </div>
+
+
+{% endblock page_content %}
+{% block extrascripts %}
+    {% raw %}
+        <script id="tmpl_output_item" type="text/x-dot-template">
+            <li id="Output_{{=it.id}}">
+
+                <a href="/{{=it.full_path}}"
+                   download_href="/FD{{=it.full_path}}"
+                   title="{{=it.original_filename}}&#013;{{=it.version_take_name }} | {{=it.version_number }}"
+                   data-rel="colorbox"
+                   class="cboxElement">
+                    <div style="text-align: center; overflow: hidden; width: 150px">
+                        <img alt="150x150"
+                             style="height: 150px; width: auto; max-width: none;
+                                position: relative; left: 100%; margin-left: -200%;"
+                             src="/{{=it.thumbnail_full_path ? it.thumbnail_full_path : 'static/stalker/images/Placeholder_0.png' }}">
+                        <div class="tags">
+                            {{? it.version_published }}
+                                <span class="label label-success arrowed-in">published</span>
+                            {{?}}
+                            {{? it.full_path.indexOf('.webm') !== -1 }}
+                            <span class="label label-success">
+                                <i class="icon-film"></i>
+                            </span>
+                            {{?}}
+                            <span class="label label-info">{{=it.version_take_name }} | {{=it.version_number }}</span>
+                        </div>
+                    </div>
+                </a>
+               <div class="tools">
+                    <a href="/FD{{=it.full_path}}" title="Download"><i class="icon-cloud-download"></i></a>
+                    <a href="javascript:copyToClipboard('http://' + window.location.host +'/FD{{=it.full_path}}')" title="Copy Download Link"><i class="icon-link"></i></a>
+                    <a href="/versions/{{=it.version_id}}/view" title="View Version"><i class="icon-zoom-in"></i></a>
+
+                    <a class='output-deleter'
+                       ref_id="{{=it.link_id}}"
+                       ref_file_name="{{=it.original_filename}}"
+                       href="#"
+                       title="Delete"><i class="icon-remove red"></i></a>
+                </div>
+            </li>
+        </script>
+    {% endraw %}
+    {% raw %}
+        <script id="tmpl_daily_task" type="text/x-dot-template">
+        <div id="daily_task_{{=it.task_id }}" class="row-fluid">
+            <div class="widget-box invoice-box">
+                <div class="widget-header widget-header-small header-color-daily">
+                    <h6><a href='/tasks/{{=it.task_id }}/view' class='white'>{{=it.task_name }}</a></h6>
+                    <div class="widget-toolbar action-buttons">
+                        <span class="label label-large label-{{=it.task_status_code}}"> {{=it.task_status_name}}</span>
+                        <button class="btn btn-minier bigger btn-info dropdown-toggle label-{{=it.task_status_code}}"
+                                        data-toggle="dropdown">
+                                    <i class="icon-angle-down icon-only bigger-120"></i>
+                                </button>
+
+                        <a href="#" data-action="collapse">
+                            <i class="icon-chevron-up"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="widget-body">
+                    <div class="span8 padding-12">
+                        <ul id="outputs_{{=it.task_id }}"  class="ace-thumbnails"></ul>
+                    </div>
+                    <div class="span4" style="background-color: #FFFFFF">
+                        <form id="add_note_form_{{=it.task_id }}">
+                            <div class="form-actions input-append">
+                                 <div class="span11">
+                                        <input placeholder="Type your message here ..."
+                                               type="text" class="width-90"
+                                               name="message"/>
+                                        <button id="add_note_button_{{=it.task_id }}"
+                                                class="btn btn-small btn-info no-radius">
+                                            <i class="icon-share-alt"></i>
+                                            <span class="hidden-phone">Send</span>
+                                        </button>
+                                 </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </script>
+    {% endraw %}
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $.getJSON('/dailies/{{ entity.id }}/outputs/').then(function (data) {
+                var daily_task_template = doT.template($('#tmpl_daily_task').html());
+                var output_template = doT.template($('#tmpl_output_item').html());
+                var daily_tasks_list = $('#daily_tasks');
+                for(var i=0; i< data.length; i++){
+                    var daily_task = $('#daily_task_'+data[i].task_id);
+                    if(daily_task.length==0 ){
+                        daily_tasks_list.append(daily_task_template(data[i]));
+                        $('#add_note_button'+data[i].task_id).on('click', function (e) {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            // disable the submit_button
+                            var submit_button = $(this);
+                            submit_button.button('loading');
+                            var add_note_form = $('#add_note_form'+data[i].task_id);
+                            $.post(
+                                "/entities/"+data[i].task_id+"/note/create",
+                                add_note_form.serialize()
+                            ).done(function () {
+                                window.location.assign('{{ came_from }}');
+                            }).fail(function (jqXHR) {
+                                bootbox.alert('<div id="message" class="alert alert-danger bigger-110">' + jqXHR.responseText + '</div>');
+                                submit_button.button('reset');
+                            });
+                        })
+                    }
+                    var outputs = $('#outputs_'+data[i].task_id);
+                    outputs.append(output_template(data[i]));
+                }
+
+            });
+
+        })
+
+    </script>
+
+
+{% endblock extrascripts %}
