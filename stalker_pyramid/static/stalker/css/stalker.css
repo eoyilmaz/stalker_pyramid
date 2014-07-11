@@ -452,6 +452,64 @@ tr .odd > td .ticket_BLOCKER {
 .header-color-cmpl + .widget-body {
   border-color: #82af6f;
 }
+.open {
+  background-color: #ffc657;
+  color: white;
+}
+.open a {
+  color: white;
+}
+.open-text {
+  color: #ffc657;
+}
+.open-text a {
+  color: #ffc657;
+}
+.open-cmpl {
+  background-color: #ffc657 !important;
+}
+.label-open {
+  background-color: #ffc657 !important;
+}
+.infobox-open.infobox-dark {
+  background-color: #ffc657;
+}
+.header-color-open {
+  background: #ffc657;
+  border-color: #ffc657;
+}
+.header-color-open + .widget-body {
+  border-color: #ffc657;
+}
+.close {
+  background-color: #82af6f;
+  color: white;
+}
+.close a {
+  color: white;
+}
+.close-text {
+  color: #82af6f;
+}
+.close-text a {
+  color: #82af6f;
+}
+.label-close {
+  background-color: #82af6f !important;
+}
+.btn-close {
+  background-color: #82af6f !important;
+}
+.infobox-close.infobox-dark {
+  background-color: #82af6f;
+}
+.header-color-close {
+  background: #82af6f;
+  border-color: #82af6f;
+}
+.header-color-close + .widget-body {
+  border-color: #82af6f;
+}
 .black2 {
   background-color: #1f1f1f;
   color: white;
@@ -499,8 +557,8 @@ tr .odd > td .ticket_BLOCKER {
   background-image: none;
   background-color: #6f3cc4;
 }
-.progress-cmpl .bar,
-.progress .bar-cmpl {
+.progress-close .bar,
+.progress .bar-close {
   background-image: none;
   background-color: #82af6f;
 }

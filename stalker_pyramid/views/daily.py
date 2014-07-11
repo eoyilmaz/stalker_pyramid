@@ -22,6 +22,7 @@
 import datetime
 from pyramid.view import view_config
 from stalker import db, Project, Status, Daily
+from stalker.db import DBSession
 import transaction
 from webob import Response
 from stalker_pyramid.views import get_logged_in_user, logger, PermissionChecker, \
@@ -221,7 +222,7 @@ def get_dailies(request):
         daily = {
             'id': r[0],
             'name': r[1],
-            'status_code':r[2],
+            'status_code':r[2].lower(),
             'status_id':r[3],
             'status_name':r[4],
             'created_by_id':r[5],
@@ -241,6 +242,34 @@ def get_dailies(request):
     )
 
     return resp
+
+@view_config(
+    route_name='get_project_dailies_count',
+    renderer='json'
+)
+def get_dailies_count(request):
+
+
+    project_id = request.matchdict.get('id')
+    logger.debug('---------------------project_id  : %s' % project_id)
+
+    sql_query = """
+select count(1) from (
+select "Dailies".id
+
+from "Projects"
+join "Dailies" on "Dailies".project_id = "Projects".id
+join "Statuses" on "Dailies".status_id = "Statuses".id
+
+where "Statuses".code = 'OPEN' and "Projects".id = %(project_id)s
+) as data
+    """
+    sql_query = sql_query % {'project_id': project_id}
+
+    from sqlalchemy import text  # to be able to use "%" sign use this function
+    result = DBSession.connection().execute(text(sql_query))
+
+    return result.fetchone()[0]
 
 @view_config(
     route_name='get_daily_outputs',
@@ -325,10 +354,6 @@ def get_daily_outputs(request):
 
     return resp
 
-# @view_config(
-#     route_name='get_project_dailies_count',
-#     renderer='json'
-# )
-# def get_dailies_count(request):
+
 
 

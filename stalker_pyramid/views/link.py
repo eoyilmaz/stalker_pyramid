@@ -324,13 +324,13 @@ def assign_version_output(request):
     entity_id = request.params.get('entity_id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
 
-    daily_id = request.params.get('daily_id', -1)
-    daily = Daily.query.filter_by(id=daily_id).first()
+    # daily_id = request.params.get('daily_id', -1)
+    # daily = Daily.query.filter_by(id=daily_id).first()
 
     # Tags
     tags = get_tags(request)
 
-    logger.debug('daily_id         : %s' % daily_id)
+    # logger.debug('daily_id         : %s' % daily_id)
 
     logger.debug('full_paths         : %s' % full_paths)
     logger.debug('original_filenames : %s' % original_filenames)
@@ -358,11 +358,11 @@ def assign_version_output(request):
 
             DBSession.add(l)
             links.append(l)
-            if daily:
-                if l not in daily.links:
-                    daily.links.append(l)
-
-    logger.debug('daily.links : %s' % daily.links)
+    #         if daily:
+    #             if l not in daily.links:
+    #                 daily.links.append(l)
+    #
+    # logger.debug('daily.links : %s' % daily.links)
 
     # to generate ids for links
     transaction.commit()
