@@ -2,6 +2,16 @@
 Stalker Pyramid Changes
 =======================
 
+0.1.11
+======
+
+* **Fix:** Fixed image orientation bug. References are now displayed correctly
+  if they contain an "Image Orientation" among their EXIF tags.
+
+* **Update:** Updated the ColorBox image title field to correctly contain both
+  a download link and a "open in new tab" link to the highest version of the
+  related image.
+
 0.1.10
 ======
 
