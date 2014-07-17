@@ -311,11 +311,11 @@ def assign_reference(request):
     route_name='assign_output',
     renderer='json'
 )
-def assign_version_output(request):
+def assign_output(request):
     """assigns the given files as version outputs for the given entity
     """
 
-    logger.debug('assign_version_output')
+    logger.debug('assign_output')
     logged_in_user = get_logged_in_user(request)
 
     full_paths = request.POST.getall('full_paths[]')
@@ -324,13 +324,13 @@ def assign_version_output(request):
     entity_id = request.params.get('entity_id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
 
-    # daily_id = request.params.get('daily_id', -1)
-    # daily = Daily.query.filter_by(id=daily_id).first()
+    daily_id = request.params.get('daily_id', -1)
+    daily = Daily.query.filter_by(id=daily_id).first()
 
     # Tags
     tags = get_tags(request)
 
-    # logger.debug('daily_id         : %s' % daily_id)
+    logger.debug('daily_id         : %s' % daily_id)
 
     logger.debug('full_paths         : %s' % full_paths)
     logger.debug('original_filenames : %s' % original_filenames)
@@ -358,11 +358,10 @@ def assign_version_output(request):
 
             DBSession.add(l)
             links.append(l)
-    #         if daily:
-    #             if l not in daily.links:
-    #                 daily.links.append(l)
-    #
-    # logger.debug('daily.links : %s' % daily.links)
+            if daily:
+                if l not in daily.links:
+                    daily.links.append(l)
+
 
     # to generate ids for links
     transaction.commit()
@@ -774,8 +773,6 @@ def get_entity_outputs(request):
     sql_query = """
     -- select all links assigned to a project tasks or assigned to a task and its children
 select
-
-
     "Version_Links".id,
     "Version_Links".original_filename,
     'repositories/' || task_repositories.repo_id || '/' || "Links_ForWeb".full_path as full_path,
@@ -784,7 +781,9 @@ select
     "Versions".id as version_id,
     "Versions".version_number as version_number,
     "Versions".take_name as take_name,
-    "Versions".is_published as version_published
+    "Versions".is_published as version_published,
+    "Daily_SimpleEntities".name as daily_name,
+    "Daily_SimpleEntities".id as daily_id
 
 
 
@@ -796,6 +795,8 @@ join "SimpleEntities" as "Link_SimpleEntities" on "Version_Links".id = "Link_Sim
 join "Links" as "Links_ForWeb" on "Link_SimpleEntities".thumbnail_id = "Links_ForWeb".id
 join "SimpleEntities" as "Links_ForWeb_SimpleEntities" on "Links_ForWeb".id = "Links_ForWeb_SimpleEntities".id
 join "Links" as "Thumbnails" on "Links_ForWeb_SimpleEntities".thumbnail_id = "Thumbnails".id
+left outer join "Daily_Links" on "Daily_Links".link_id = "Version_Outputs".link_id
+left outer join "SimpleEntities" as "Daily_SimpleEntities" on "Daily_SimpleEntities".id = "Daily_Links".daily_id
 
 join (
     select
@@ -844,7 +845,9 @@ limit %(limit)s
             'version_id': r[5],
             'version_number': r[6],
             'version_take_name': r[7],
-            'version_published':r[8]
+            'version_published':r[8],
+            'daily_name':r[9],
+            'daily_id':r[10]
         } for r in result.fetchall()
     ]
 

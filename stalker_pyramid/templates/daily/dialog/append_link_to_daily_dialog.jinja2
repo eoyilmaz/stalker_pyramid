@@ -1,0 +1,114 @@
+{# Stalker Pyramid a Web Base Production Asset Management System
+ Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
+
+ This file is part of Stalker Pyramid.
+
+ This library is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation;
+ version 2.1 of the License.
+
+ This library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Lesser General Public License for more details.
+
+ You should have received a copy of the GNU Lesser General Public
+ License along with this library; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+#}
+
+<div class="row-fluid">
+    {% if task.status.code in ['WIP','DREV','PREV'] %}
+         <form id='upload_output_form'
+              class='form-horizontal'
+              role='form'
+              method='post'>
+            {# Dailies #}
+            <div class='control-group' id="dailies_list" >
+
+                <label class='span2 control-label'
+                       for='daily'>Dailies : </label>
+                <select id='daily'
+                        class='span10 input-block-level'
+                        name='daily_id'
+                        data-placeholder='Select a daily'
+                        required>
+                </select>
+            </div>
+         </form>
+    {% else %}
+        <div id="information" class="alert alert-danger bigger-110">Task status is {{ task.status.code }}. To able to send a daily the task status has to be one of statuses: *WIP, *PREV, *DREV.
+                Please check if you enter your time log or ask responsible to change the status of task.</div>
+
+    {% endif %}
+</div>
+
+<script>
+    function init_dialog(){
+        // init dialog
+        console.debug('init dialog from append_link_to_daily_dialog.jinja2 running!');
+         // update dialog header
+        $('.modal-header>h3').text('Append Output To A Daily');
+        {% if task.status.code in ['WIP','DREV','PREV'] %}
+            {# Daily #}
+            {% raw %}
+                var daily_option_template = doT.template(
+                    '<option value={{=it.id}}>{{=it.name}}</option>'
+                );
+            {% endraw %}
+
+            var daily = $('#daily');
+
+            $.getJSON('{{ request.route_path('get_project_dailies', id=task.project.id) }}').then(function (data) {
+                for (var i = 0; i < data.length; i++) {
+                    daily.append(daily_option_template(data[i]));
+                }
+                daily.chosen({
+                    search_contains: true,
+                    enable_split_word_search: true,
+                    allow_single_deselect: true
+                });
+            });
+
+            var submit_button = $('#dialog_template_submit_button');
+            // register submit event
+            submit_button.on('click', function(e){
+                e.preventDefault();
+                e.stopPropagation();
+                // disable the Submit button
+                setTimeout(function(){
+                    submit_button.button('loading')}, 0
+                );
+
+                var daily_id = daily.val();
+
+                $.post('/links/{{ link.id }}/dailies/'+daily_id+'/append').done(function(jqXHR){
+                    $('#dialog_template').modal('hide');
+                    setTimeout(function () { // wait for hide event to finish
+                        window.location.reload();
+                    }, 0);
+                }).fail(function(jqXHR){
+                    // alert the user about what is failed
+                    bootbox.alert(jqXHR.responseText);
+                    // enable the Submit button
+                    setTimeout(function(){submit_button.button('reset')}, 0);
+                });
+
+            });
+        {% endif %}
+    }
+
+    function destruct_dialog(){
+        // reduce counter
+
+        // unbind events
+
+        $("#daily").unbind();
+        $("#dialog_template_submit_button").unbind();
+
+        // destroy dialog
+        console.debug('destroy dialog from upload_output.jinja2 running!');
+        $('#dialog_template').data('modal', null);
+    }
+</script>

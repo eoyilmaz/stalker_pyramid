@@ -532,6 +532,11 @@ tr .odd > td .ticket_BLOCKER {
   background-image: none;
   background-color: #ffc657;
 }
+.progress-cmpl .bar,
+.progress .bar-cmpl {
+  background-image: none;
+  background-color: #82af6f;
+}
 .progress-stop .bar,
 .progress .bar-stop {
   background-image: none;

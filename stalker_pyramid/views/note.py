@@ -29,7 +29,8 @@ from stalker import (Entity, Note, Type)
 
 from stalker_pyramid.views import (get_logged_in_user,
                                    milliseconds_since_epoch,
-                                   StdErrToHTMLConverter, local_to_utc)
+                                   StdErrToHTMLConverter, local_to_utc,
+                                   get_multi_integer)
 from stalker_pyramid.views.type import query_type
 
 
@@ -38,23 +39,25 @@ logger.setLevel(logging.DEBUG)
 
 
 @view_config(
-    route_name='create_entity_note'
+    route_name='create_note'
 )
-def create_entity_note(request):
+def create_note(request):
     """Creates note for requested an entity
     """
+    logger.debug('create_note is running')
 
-    logger.debug('create_entity_note is running')
     utc_now = local_to_utc(datetime.datetime.now())
     logged_in_user = get_logged_in_user(request)
 
-    entity_id = request.matchdict.get('id', -1)
-    entity = Entity.query.filter(Entity.id == entity_id).first()
-    content = request.params.get('message', None)
+    entity_ids = get_multi_integer(request, 'entity_ids')
+    entities = Entity.query.filter(Entity.id.in_(entity_ids)).all()
 
-    if not entity:
+    content = request.params.get('message', None)
+    note_type = request.params.get('type', None)
+
+    if not entities:
         transaction.abort()
-        return Response('There is no entity with id: %s' % entity_id, 500)
+        return Response('There is no entity with id: %s' % entity_ids, 500)
 
     logger.debug('content %s' % content)
 
@@ -66,11 +69,15 @@ def create_entity_note(request):
         transaction.abort()
         return Response( 'No content', 500)
 
+    if not note_type:
+        transaction.abort()
+        return Response( 'No type', 500)
 
-    note_type = query_type('Note', 'Simple Note')
-    note_type.html_class = 'grey'
-    note_type.code = 'simple_note'
+    if note_type == '':
+        transaction.abort()
+        return Response( 'No type', 500)
 
+    note_type = query_type('Note', note_type)
     note = Note(
         content=content,
         created_by=logged_in_user,
@@ -80,7 +87,8 @@ def create_entity_note(request):
     )
 
     DBSession.add(note)
-    entity.notes.append(note)
+    for entity in entities:
+        entity.notes.append(note)
 
     logger.debug('note is created by %s' % logged_in_user.name)
     request.session.flash('note is created by %s' % logged_in_user.name)
@@ -113,15 +121,27 @@ def get_entity_notes(request):
                 "Notes_SimpleEntities".date_created,
                 "Notes_Types_SimpleEntities".id,
                 "Notes_Types_SimpleEntities".name,
-                "Notes_Types_SimpleEntities".html_class
+                "Notes_Types_SimpleEntities".html_class,
+                dailies.name as daily_name,
+                dailies.id as daily_id
 
         from "Notes"
         join "SimpleEntities" as "Notes_SimpleEntities" on "Notes_SimpleEntities".id = "Notes".id
         left outer join "SimpleEntities" as "Notes_Types_SimpleEntities" on "Notes_Types_SimpleEntities".id = "Notes_SimpleEntities".type_id
         join "SimpleEntities" as "User_SimpleEntities" on "Notes_SimpleEntities".created_by_id = "User_SimpleEntities".id
         left outer join "Links" as "Users_Thumbnail_Links" on "Users_Thumbnail_Links".id = "User_SimpleEntities".thumbnail_id
-        join "Entity_Notes" on "Notes".id = "Entity_Notes".note_id
-        where "Entity_Notes".entity_id = %(entity_id)s
+        join "Entity_Notes" as "Search_Entity_Notes" on "Notes".id = "Search_Entity_Notes".note_id
+        left outer join (
+        select
+               "Daily_SimpleEntities".name,
+               "Daily_SimpleEntities".id,
+               "Daily_Notes".note_id
+
+            from "Dailies"
+            join "SimpleEntities" as "Daily_SimpleEntities" on "Daily_SimpleEntities".id = "Dailies".id
+            join "Entity_Notes" as "Daily_Notes" on "Daily_Notes".entity_id = "Dailies".id
+         ) as dailies on dailies.note_id = "Search_Entity_Notes".note_id
+        where "Search_Entity_Notes".entity_id = %(entity_id)s
         order by "Notes_SimpleEntities".date_created desc
         """
 
@@ -139,7 +159,9 @@ def get_entity_notes(request):
             'created_date': milliseconds_since_epoch(r[5]),
             'note_type_id': r[6],
             'note_type_name': r[7],
-            'note_type_color': r[8]
+            'note_type_color': r[8],
+            'daily_name': r[9],
+            'daily_id': r[10]
         }
         for r in result.fetchall()
     ]

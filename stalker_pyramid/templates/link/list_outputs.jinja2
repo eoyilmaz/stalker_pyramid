@@ -69,7 +69,9 @@
                     <!--{{~ it.tags :t}}-->
                     <!--<span class="label label-info">{{=t}}</span>-->
                     <!--{{~}}-->
-
+                    {{? it.daily_id }}
+                        <span class="label label-warning arrowed-in">{{=it.daily_name }}</span>
+                    {{?}}
                     {{? it.version_published }}
                         <span class="label label-success arrowed-in">published</span>
                     {{?}}
@@ -88,6 +90,23 @@
             <a href="/FD{{=it.full_path}}" title="Download"><i class="icon-cloud-download"></i></a>
             <a href="javascript:copyToClipboard('http://' + window.location.host +'/FD{{=it.full_path}}')" title="Copy Download Link"><i class="icon-link"></i></a>
             <a href="/versions/{{=it.version_id}}/view" title="View Version"><i class="icon-zoom-in"></i></a>
+            {{if (it.daily_id) { }}
+                <a data-target="#dialog_template"
+                   data-toggle="modal"
+                   data-keyboard=false
+                   href="/links/{{=it.id}}/dailies/{{=it.daily_id}}/remove/dialog"
+                   title="Remove From Daily">
+                   <i class="icon-eye-close"></i>
+                </a>
+             {{ } else { }}
+                <a data-target="#dialog_template"
+                   data-toggle="modal"
+                   data-keyboard=false
+                   href="/links/{{=it.id}}/dailies/append/dialog?task_id={{=it.task_id}}"
+                   title="Add To A Daily">
+                   <i class="icon-eye-open"></i>
+                </a>
+            {{ } }}
             <!--<div class="dropdown">-->
                 <!--<a class="dropdown-toggle" data-toggle="dropdown"-->
                    <!--style="display: inline-block;-->
@@ -117,6 +136,15 @@
 {% endraw %}
 
 <script type="text/javascript">
+
+    {% if entity.entity_type == 'Task' %}
+        {% set task=entity %}
+    {% else %}
+        {% set task=entity.task %}
+    {% endif %}
+    var task_id = '{{task.id}}'
+
+
     var colorbox_params = {
         rel: 'Outputs',
         loop: false,
@@ -238,6 +266,8 @@
             // remove any thumbnails first
             remove_thumbnails();
             for (var i = 0; i < ref_count; i++) {
+                data[i].task_id = task_id;
+                console.log('task_id '+task_id)
                 append_thumbnail({
                     data: data[i],
                     template: outputItemTemplate,
@@ -335,7 +365,8 @@
         // and add the new thumbnails when uploaded through Dropzone
         $('#dialog_template').on('hidden', function () {
             // get the data from the storage
-            var repo_id = {% if entity.entity_type == 'Task' %}{{ entity.project.repository.id }}{% else %}{{ entity.task.project.repository.id }}{% endif %};
+
+            var repo_id = {{ task.project.repository.id }}
             var repo_prepend = 'repositories/' + repo_id + '/';
             var new_outputs_storage = $('#new_outputs_storage');
             var data = $.parseJSON(new_outputs_storage.text());
@@ -347,6 +378,8 @@
                 // new style outputs
                 data[i].thumbnail_full_path = repo_prepend + data[i].thumbnail_full_path;
                 data[i].full_path = repo_prepend + data[i].full_path;
+                data[i].task_id = task_id;
+                console.log('task_id '+task_id)
 
                 append_thumbnail({
                     data: data[i],

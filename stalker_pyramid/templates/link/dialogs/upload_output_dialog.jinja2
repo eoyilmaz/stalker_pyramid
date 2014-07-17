@@ -19,53 +19,51 @@
 #}
 
 <div class="row-fluid">
-    {# dialog body here #}
-    <div class="span12">
+     <form id='upload_output_form'
+          class='form-horizontal'
+          role='form'
+          method='post'>
+        <div class="span12">
+            <label class="inline">
+                Send To A Daily:
+                <input id="add_to_daily"  type="checkbox" class="ace ace-switch ace-switch-5" />
+                <span class="lbl"></span>
+            </label>
+        </div>
 
-        {# Tags #}
-        <div id="tags_control_group" class="control-group">
-            <div class="controls">
-                <input id="output_tags_input"
-                       type="text"
-                       class="span12"
-                       name="tags"
-                       placeholder="Enter tags ..."/>
+        {# Dailies #}
+        <div class='control-group hide' id="dailies_list" >
+
+            <label class='span2 control-label'
+                   for='daily'>Dailies : </label>
+            <select id='daily'
+                    class='span10 input-block-level'
+                    name='daily_id'
+                    data-placeholder='Select a daily'
+                    required>
+            </select>
+        </div>
+
+
+    </form>
+    <div class="hr dotted"></div>
+    <div id="information" class="alert alert-danger bigger-110 hide">Task status is {{ entity.task.status.code }}. To able to send a daily the task status has to be one of statuses: *WIP, *PREV, *DREV.
+            Please check if you enter your time log or ask responsible to change the status of task.</div>
+
+    <div class="hr dotted"></div>
+
+
+    {# Dropzone #}
+    <div id="dropzone">
+        <form action="/upload_files" class="dropzone" enctype="multipart/form-data">
+            <div class="fallback">
+                <input name="file" type="file" multiple="" />
             </div>
-        </div>
-
-        {# Dropzone #}
-        <div id="dropzone">
-            <form action="/upload_files" class="dropzone" enctype="multipart/form-data">
-                <div class="fallback">
-                    <input name="file" type="file" multiple="" />
-                </div>
-            </form>
-        </div>
-
-        {# Auto-Split #}
-        <div class="control-group">
-            <div class="span12">
-                <input id="add_to_daily"
-                       name="add_to_daily"
-                       type="checkbox"
-                       class="ace ace-checkbox-2">
-                <label class="lbl blue" for="add_to_daily"> Send it to a daily</label>
-            </div>
-        </div>
-
-        <div id="dailies_list" class='control-group hide'>
-            <div class="span12">
-                <label class='span3 control-label'
-                       for='daily'>Dailies</label>
-                <div class='span9'>
-                    <select id='daily'
-                            class='input-block-level'
-                            name='daily_id'
-                            required></select>
-                </div>
-            </div>
-        </div>
+        </form>
     </div>
+
+
+
 </div>
 
 <!--inline scripts related to this page-->
@@ -86,46 +84,11 @@
         $('.modal-header>h3').text('Upload Outputs');
 
         var submit_button = $('#dialog_template_submit_button');
-
-        var field_update_mode_checker = function(){
-            // checks if the important fields are still updating
-            // check if any of the fields are still in updating mode
-            if ($('#output_tags').attr('is_updating') === 'true' ||
-                $('#dropzone').attr('is_updating') === 'true' // this is not setup yet!
-                ) {
-                // disable the Submit button
-                setTimeout(function(){submit_button.button('loading')}, 0);
-            } else {
-                // enable the Submit button
-                setTimeout(function(){submit_button.button('reset')}, 0);
-            }
-        };
-
-        // tags
-        // set the fields to updating mode
-        var tag_input = $('#output_tags_input');
-        tag_input.attr('is_updating', true);
-        field_update_mode_checker();
-        var fill_tags = function(){
-            $.getJSON('/tags/?as_list=1').then(function(data){
-                tag_input.tag({
-                    placeholder: tag_input.attr('placeholder'),
-                    source: data
-                });
-
-                // set the fields to normal mode
-                tag_input.attr('is_updating', false);
-                field_update_mode_checker();
-
-                // fix input width
-                $('#tags_control_group>>.tags').addClass('span12');
-            });
-        };
-        fill_tags();
-
         //This is for holding info about the uploaded link ids
         var entity_id = {{ entity.id }};
         var files = [];
+
+        console.log('{{ entity.task.status.code }}')
 
         var uploading_file_counter = 0;
 
@@ -176,32 +139,40 @@
             );
         {% endraw %}
 
-        var daily = $('#daily')
 
-        daily.find('option').remove();
-
-        $.getJSON('{{ request.route_path('get_project_dailies', id=entity.task.project.id) }}').then(function (data) {
-            // append an empty one first
-            daily.append('<option value="-1">&nbsp;</option>');
-            for (var i = 0; i < data.length; i++) {
-                daily.append(daily_option_template(data[i]));
-            }
-
-            daily.chosen({
-                search_contains: true,
-                enable_split_word_search: true,
-                allow_single_deselect: true
-            });
-
-        });
-
+         var daily = $('#daily');
 
         $('#add_to_daily').on('click', function () {
             if(this.checked){
-                $('#dailies_list').show();
+
+                {% if entity.task.status.code not in ['WIP','DREV','PREV'] %}
+                    $('#information').show();
+                {% else %}
+                    $('#dailies_list').show();
+                    daily.find('option').remove();
+
+                    $.getJSON('{{ request.route_path('get_project_dailies', id=entity.task.project.id) }}').then(function (data) {
+            {#            // append an empty one first#}
+            {#            daily.append('<option value="-1">&nbsp;</option>');#}
+                        for (var i = 0; i < data.length; i++) {
+                            daily.append(daily_option_template(data[i]));
+                        }
+
+                        daily.chosen({
+                            search_contains: true,
+                            enable_split_word_search: true,
+                            allow_single_deselect: true
+                        });
+
+
+                    });
+                {% endif %}
+
             }
             else{
                 $('#dailies_list').hide();
+                daily.find('option').remove();
+                $('#information').hide();
             }
         });
 
@@ -215,13 +186,6 @@
                 submit_button.data('loading-text', 'Converting Files, Please Wait...');
                 submit_button.button('loading')}, 0
             );
-
-
-            var tags_list = $('#output_tags_input').val().split(', ');
-
-{#            console.debug('accepted_files   : ', dzone.getAcceptedFiles());#}
-{#            console.debug('entity_id        : ', entity_id);#}
-{#            console.debug('tags             : ', tags_list);#}
 
             // prepare data
             var file_info = [];
@@ -238,13 +202,14 @@
                     'original_filename': f.original_filename
                 })
             }
-            var daily_id = null;
-            if($('#add_to_daily').prop('checked')){
-               daily_id = daily.val()
-            }
-            else{
-               daily_id = null
-            }
+            var daily_id = -1;
+            {% if entity.task.status.code in ['WIP','DREV','PREV'] %}
+                if($('#add_to_daily').prop('checked')){
+
+                        daily_id = daily.val()
+
+                }
+            {% endif %}
 
             console.debug('daily_id          :', daily_id);
 {#            console.debug('file_info          :', file_info);#}
@@ -256,7 +221,7 @@
                 file_info: file_info,
                 full_paths: full_paths,
                 original_filenames: original_filenames,
-                tags: tags_list,
+                tags: [],
                 daily_id:daily_id
             }).done(function(jqXHR){
                 // alert the user about the added files

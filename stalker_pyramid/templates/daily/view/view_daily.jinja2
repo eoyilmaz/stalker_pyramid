@@ -45,10 +45,9 @@
     {% raw %}
         <script id="tmpl_output_item" type="text/x-dot-template">
             <li id="Output_{{=it.id}}">
-
                 <a href="/{{=it.full_path}}"
                    download_href="/FD{{=it.full_path}}"
-                   title="{{=it.original_filename}}&#013;{{=it.version_take_name }} | {{=it.version_number }}"
+                   title="{{=it.original_filename}}"
                    data-rel="colorbox"
                    class="cboxElement">
                     <div style="text-align: center; overflow: hidden; width: 150px">
@@ -57,15 +56,15 @@
                                 position: relative; left: 100%; margin-left: -200%;"
                              src="/{{=it.thumbnail_full_path ? it.thumbnail_full_path : 'static/stalker/images/Placeholder_0.png' }}">
                         <div class="tags">
-                            {{? it.version_published }}
+                            {{?it.version_is_published }}
                                 <span class="label label-success arrowed-in">published</span>
                             {{?}}
                             {{? it.full_path.indexOf('.webm') !== -1 }}
-                            <span class="label label-success">
-                                <i class="icon-film"></i>
-                            </span>
+                                <span class="label label-success">
+                                    <i class="icon-film"></i>
+                                </span>
                             {{?}}
-                            <span class="label label-info">{{=it.version_take_name }} | {{=it.version_number }}</span>
+                            <span class="label label-info">{{=it.version_take_name }} | {{=it.version_number }} </span>
                         </div>
                     </div>
                 </a>
@@ -75,7 +74,7 @@
                     <a href="/versions/{{=it.version_id}}/view" title="View Version"><i class="icon-zoom-in"></i></a>
 
                     <a class='output-deleter'
-                       ref_id="{{=it.link_id}}"
+                       ref_id="{{=it.id}}"
                        ref_file_name="{{=it.original_filename}}"
                        href="#"
                        title="Delete"><i class="icon-remove red"></i></a>
@@ -84,69 +83,227 @@
         </script>
     {% endraw %}
     {% raw %}
-        <script id="tmpl_daily_task" type="text/x-dot-template">
-        <div id="daily_task_{{=it.task_id }}" class="row-fluid">
-            <div class="widget-box invoice-box">
-                <div class="widget-header widget-header-small header-color-daily">
-                    <h6><a href='/tasks/{{=it.task_id }}/view' class='white'>{{=it.task_name }}</a></h6>
-                    <div class="widget-toolbar action-buttons">
-                        <span class="label label-large label-{{=it.task_status_code}}"> {{=it.task_status_name}}</span>
-                        <button class="btn btn-minier bigger btn-info dropdown-toggle label-{{=it.task_status_code}}"
-                                        data-toggle="dropdown">
-                                    <i class="icon-angle-down icon-only bigger-120"></i>
-                                </button>
-
-                        <a href="#" data-action="collapse">
-                            <i class="icon-chevron-up"></i>
-                        </a>
-                    </div>
+        <script id="tmpl_note_item" type="text/x-dot-template">
+            <div class="timeline-item clearfix">
+                <div class="timeline-info">
+                   <a href="/users/{{=it.created_by_id}}/view"><img alt="" src="{{=it.created_by_thumbnail}}"/></a>
                 </div>
-                <div class="widget-body">
-                    <div class="span8 padding-12">
-                        <ul id="outputs_{{=it.task_id }}"  class="ace-thumbnails"></ul>
+                <div class="widget-box transparent">
+                    <div class="widget-header widget-header-small">
+                        <h5 class="smaller">{{=it.note_type_name}}
+                        </h5>
+                        <span class="widget-toolbar no-border date">
+                        <i class="icon-time bigger-110"></i>
+                            {{=it.created_date}}
+                        </span>
+                        <span class="widget-toolbar">
+                            <a href="#" data-action="collapse">
+                                <i class="icon-chevron-up"></i>
+                            </a>
+                        </span>
                     </div>
-                    <div class="span4" style="background-color: #FFFFFF">
-                        <form id="add_note_form_{{=it.task_id }}">
-                            <div class="form-actions input-append">
-                                 <div class="span11">
-                                        <input placeholder="Type your message here ..."
-                                               type="text" class="width-90"
-                                               name="message"/>
-                                        <button id="add_note_button_{{=it.task_id }}"
-                                                class="btn btn-small btn-info no-radius">
-                                            <i class="icon-share-alt"></i>
-                                            <span class="hidden-phone">Send</span>
-                                        </button>
-                                 </div>
+                    <div class="widget-body">
+                        <div class="widget-main">
+                            {{=it.content.replace(/[\n]/g, '<br\>')}}
+
+                            <div class="space-3"></div>
+
+                            <div class="widget-toolbox clearfix">
+
+                                <div class="pull-right action-buttons">
+
+                                    {{ if (it.delete_note_action) {  }}
+                                    <a class="red"
+                                       data-target="#dialog_template"
+                                       data-toggle="modal"
+                                       data-keyboard=false
+                                       href={{=it.delete_note_action }}>
+                                        <i class="icon-remove red bigger-125"></i>
+                                    </a>
+                                    {{ } }}
+                                </div>
                             </div>
-                        </form>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </script>
+    {% endraw %}
+    {% raw %}
+        <script id="tmpl_daily_task" type="text/x-dot-template">
+            <div id="daily_task_{{=it.task_id }}" class="row-fluid">
+                <div class="widget-box">
+                    <div class="widget-header widget-header-small header-color-daily ">
+                        <h5>
+                            <a href='/tasks/{{=it.task_id }}/view' class="white">
+                                 <i class="icon-tasks bigger-125"></i>
+                                {{=it.task_name }}
+                            </a>
+                        </h5>
+                        <span class="widget-toolbar no-border">
+                            <span class="label label-large label-{{=it.task_status_code}}"> {{=it.task_status_name}}</span>
+                        </span>
+                        <div class="widget-toolbar action-buttons">
+
+                            <a href="#" data-action="collapse">
+                                <i class="icon-chevron-up"></i>
+                            </a>
+
+                        </div>
+                    </div>
+                    <div class="widget-body"  style="margin: 10px">
+                        <div class="row-fluid">
+                            <div class="span6">
+                                <ul id="outputs_{{=it.task_id }}"  class="ace-thumbnails"></ul>
+                            </div>
+                            <div class="span6">
+                                <div class="timeline-container">
+                                    <div class="timeline-items" id="notes_{{=it.task_id }}">
+                                    </div>
+                                </div>
+                                <form id="add_note_form_{{=it.task_id }}">
+                                    <div class="form-actions input-append">
+                                        <div class="itemdiv span1">
+                                            <div class="user">
+                                                <img alt=""
+                                                     src="{{=it.logged_in_user_thumbnail}}"/>
+                                            </div>
+                                         </div>
+                                         <div class="span11">
+                                                <input placeholder="Type your message here ..."
+                                                       type="text" class="width-90"
+                                                       name="message"/>
+                                                <button id="add_note_button_{{=it.task_id }}"
+                                                        class="btn btn-small btn-info no-radius">
+                                                    <i class="icon-share-alt"></i>
+                                                    <span class="hidden-phone">Send</span>
+                                                </button>
+                                         </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="space-8"></div>
         </script>
     {% endraw %}
 
     <script type="text/javascript">
+        var colorbox_params = {
+            rel: 'Outputs',
+            loop: false,
+            reposition: true,
+            scalePhotos: true,
+            scrolling: true,
+            previous: '<i class="icon-arrow-left"></i>',
+            next: '<i class="icon-arrow-right"></i>',
+            close: '&times;',
+            current: '{current} of {total}',
+            maxWidth: '100%',
+            maxHeight: '100%',
+            width: '90%',
+            height: '90%',
+            transition: 'none',
+            title: function () {
+                var url = $(this).attr('href');
+                var original_title = $(this).attr('title');
+                var download_url = $(this).attr('download_href');
+
+                var download_link = '<span><a href="' + download_url + '">' + original_title + '</a>';
+                var open_in_new_tab_link = '<a href="' + url + '" target="_blank">(Open In New Tab)</a></span>';
+                return download_link + '&nbsp' + open_in_new_tab_link;
+            },
+            onOpen: function () {
+                document.body.style.overflow = 'hidden';
+                // get the element and check if it is the last element
+            },
+            onClosed: function () {
+                document.body.style.overflow = 'auto';
+            },
+            onComplete: function () {
+    {#                $.colorbox.resize();#}
+            }
+        };
+
+        var append_thumbnail = function (options) {
+            //
+            // adds only one item to the list
+            //
+            // compile the output item template
+
+            options = $.extend({
+                data: null,
+                template: null,
+                colorbox_params: {},
+                animate: false
+            }, options);
+
+            var data = options.data;
+            var template = options.template;
+            var colorbox_params = options.colorbox_params;
+            var animate = options.animate;
+            var container = options.container;
+
+    {#            console.log('data '+ data.version_published)#}
+
+            // check if there is any video
+            var full_path;
+            full_path = data.full_path;
+            colorbox_params.iframe = false;
+            if (full_path.search('.webm') != -1){
+    {#                console.debug('data: ', data);#}
+                // it should have video replace the address with video player
+                data.full_path = 'video_player?video_full_path=/' + data.full_path;
+                colorbox_params.iframe = false;
+            }
+
+            var ref_item = $($.parseHTML(template(data)));
+
+            if (animate) {
+                ref_item.css({display: 'none'});
+            }
+            container.append(ref_item);
+            if (animate) {
+                ref_item.toggle('slow');
+            }
+
+            ref_item.find('[data-rel="colorbox"]').colorbox(colorbox_params);
+        };
+
         $(document).ready(function () {
             $.getJSON('/dailies/{{ entity.id }}/outputs/').then(function (data) {
+
                 var daily_task_template = doT.template($('#tmpl_daily_task').html());
-                var output_template = doT.template($('#tmpl_output_item').html());
                 var daily_tasks_list = $('#daily_tasks');
+
                 for(var i=0; i< data.length; i++){
-                    var daily_task = $('#daily_task_'+data[i].task_id);
-                    if(daily_task.length==0 ){
-                        daily_tasks_list.append(daily_task_template(data[i]));
-                        $('#add_note_button'+data[i].task_id).on('click', function (e) {
+                    var task = data[i];
+                    var task_div = $('#daily_task_'+task.task_id);
+                    if (task_div.length==0){
+
+                        {% if logged_in_user.thumbnail %}
+                            task.logged_in_user_thumbnail = '/{{ logged_in_user.thumbnail.full_path }}'
+                        {% else %}
+                            task.logged_in_user_thumbnail = {{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_0.png") }}
+                        {% endif %}
+
+                        daily_tasks_list.append(daily_task_template(task));
+                        $('#add_note_button_'+data[i].task_id).on('click', function (e) {
                             e.stopPropagation();
                             e.preventDefault();
-                            // disable the submit_button
                             var submit_button = $(this);
                             submit_button.button('loading');
-                            var add_note_form = $('#add_note_form'+data[i].task_id);
+                            var task_id = parseInt($(this).attr('id').split('add_note_button_')[1]);
+                            var add_note_form = $('#add_note_form_'+task_id);
+
+                            var content = $('#message').val();
+
+                            console.log(add_note_form.serialize())
                             $.post(
-                                "/entities/"+data[i].task_id+"/note/create",
-                                add_note_form.serialize()
+                                "/note/create",
+                                add_note_form.serialize()+'&entity_ids='+task_id+'&entity_ids={{ entity.id }}&'+$.param({'type': "Daily_Note"  })
                             ).done(function () {
                                 window.location.assign('{{ came_from }}');
                             }).fail(function (jqXHR) {
@@ -154,13 +311,49 @@
                                 submit_button.button('reset');
                             });
                         })
+
+                        var output_template = doT.template($('#tmpl_output_item').html());
+                        var outputs = $('#outputs_'+task.task_id);
+                        for(var j=0; j<task.links.length; j++){
+                            var link = task.links[j];
+                            append_thumbnail({
+                                data: link,
+                                template: output_template,
+                                colorbox_params: colorbox_params,
+                                container: outputs
+                            });
+                        }
+
+                        var note_template = doT.template($('#tmpl_note_item').html());
+                        var notes = $('#notes_'+task.task_id);
+                        for(var k=0; k<task.notes.length; k++){
+                            var note = task.notes[k];
+
+                            {% if has_permission('Delete_Note') %}
+
+                               if(note.created_by_id=='{{ logged_in_user.id }}'){
+                                 note.delete_note_action = "/notes/"+note.id+"/delete/dialog?came_from="
+                               }
+
+                            {% endif %}
+
+                            if (note.created_by_thumbnail == null) {
+                                note.created_by_thumbnail = '{{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_0.png") }}';
+                            }
+                            else {
+                                note.created_by_thumbnail = '/' + note.created_by_thumbnail;
+                            }
+                            notes.append(note_template(note));
+                        }
                     }
-                    var outputs = $('#outputs_'+data[i].task_id);
-                    outputs.append(output_template(data[i]));
                 }
 
-            });
+                $('.date').each(function () {
+                    var date = moment.utc($(this).text());
+                    $(this).text(date.fromNow());
+                });
 
+            });
         })
 
     </script>

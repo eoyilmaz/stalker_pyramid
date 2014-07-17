@@ -90,7 +90,7 @@
             'Dailies',
             "{%- if request.current_route_path() == request.route_path('list_project_dailies', id=project.id) -%}'active',{%- else -%},{%- endif -%}",
             '{{ request.route_url('list_project_dailies', id=project.id) }}',
-            get_icon('dailies'),
+            get_icon('daily'),
             '/projects/{{ project.id }}/dailies/count/'
         );
 

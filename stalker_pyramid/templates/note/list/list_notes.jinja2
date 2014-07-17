@@ -39,10 +39,7 @@
 
             <div class="widget-body">
                 <div class="widget-main">
-
-
                     {{=it.content.replace(/[\n]/g, '<br\>')}}
-
                 </div>
             </div>
         </div>
@@ -89,25 +86,76 @@
             </div>
         </div>
     </div>
+</script>
+{% endraw %}
 
+
+{% raw %}
+<script id="tmpl_note_daily" type="text/x-dot-template">
+    <div class="timeline-item clearfix">
+        <div class="timeline-info">
+            <img alt="" src="{{=it.created_by_thumbnail}}"/>
+        </div>
+
+        <div class="widget-box">
+            <div class="widget-header widget-header-small header-color-daily">
+                <h5 class="smaller">Daily : <a class='white' href="/dailies/{{=it.daily_id}}/view"> {{=it.daily_name}}</a>
+                </h5>
+
+                <span class="widget-toolbar no-border date">
+                <i class="icon-time bigger-110"></i>
+                    {{=it.created_date}}
+                </span>
+
+                <span class="widget-toolbar">
+
+                <a href="#" data-action="collapse">
+                    <i class="icon-chevron-up"></i>
+                </a>
+                </span>
+            </div>
+            <div class="widget-body">
+                <div class="widget-main">
+                    <!--<a href="/users/{{=it.created_by_id}}/view">{{=it.created_by_name}}</a>-->
+
+                    {{=it.content}}
+
+                    <div class="space-3"></div>
+
+                    <div class="widget-toolbox clearfix">
+
+                        <div class="pull-right action-buttons">
+
+                            {{ if (it.delete_note_action) {  }}
+                            <a class="red"
+                               data-target="#dialog_template"
+                               data-toggle="modal"
+                               data-keyboard=false
+                               href={{=it.delete_note_action }}>
+                                <i class="icon-remove red bigger-125"></i>
+                            </a>
+                            {{ } }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </script>
 {% endraw %}
 <script type="text/javascript">
 
     $(document).ready(function () {
 
-
         var logged_in_user_id = '{{ logged_in_user.id }}'
         var notes = $('#notes');
         var note_simple_template = doT.template($('#tmpl_note_simple_text').html());
         var note_activity_template = doT.template($('#tmpl_note_activity').html());
+        var note_daily_template = doT.template($('#tmpl_note_daily').html());
 
         $.getJSON('/entities/{{ entity.id }}/notes/').then(function (data) {
-{#            console.log('done')#}
 
             for (var i = 0; i < data.length; i++) {
-
-
 
                 data[i].created_date = new Date(parseInt(data[i].created_date));
 
@@ -128,13 +176,14 @@
 
                     notes.append(note_simple_template(data[i]));
                 }
+                else if (data[i].note_type_name == 'Daily_Note') {
+
+                        notes.append(note_daily_template(data[i]));
+                }
                 else {
 
                     notes.append(note_activity_template(data[i]));
                 }
-
-
-
             }
 
             $('.date').each(function () {

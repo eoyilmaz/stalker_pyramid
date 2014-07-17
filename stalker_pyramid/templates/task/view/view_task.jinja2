@@ -419,8 +419,10 @@
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.maskedinput.min.js") }}'></script>
 
     {% if entity.children | count == 0 %}
-        {% if entity.status.code=='WIP' and logged_in_user in entity.resources %}
-            {% set event_type='TimeLog' %}
+        {% if entity.status.code in ['RTS','WIP','HREV','DREV']%}
+            {% if logged_in_user in entity.resources  or logged_in_user in entity.responsible or has_permission('Update_User')%}
+                {% set event_type='TimeLog' %}
+            {% endif %}
         {% endif %}
     {% endif %}
 
@@ -585,8 +587,8 @@
             var add_note_form = $('#add_note_form');
 
             $.post(
-                "/entities/{{ entity.id }}/note/create",
-                add_note_form.serialize()
+                "/note/create",
+                add_note_form.serialize()+'&'+$.param({'type': "Simple Text", 'entity_ids':{{ entity.id }} })
             ).done(function () {
                 window.location.assign('{{ came_from }}');
             }).fail(function (jqXHR) {

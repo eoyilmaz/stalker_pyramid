@@ -21,7 +21,7 @@
 
 import datetime
 from pyramid.view import view_config
-from stalker import db, Project, Status, Daily
+from stalker import db, Project, Status, Daily, Link, Task
 from stalker.db import DBSession
 import transaction
 from webob import Response
@@ -282,47 +282,107 @@ def get_daily_outputs(request):
 
     sql_query = """
         select
-            "Tasks".id as task_id,
+            "Link_Tasks".id as task_id,
             "ParentTasks".full_path as task_name,
             "Task_Statuses".code as task_status_code,
             "Task_Status_SimpleEntities".name as task_status_name,
-            "Versions".id as version_id,
-            "Versions".take_name as version_take_name,
-            "Versions".version_number as version_number,
-            "Versions".is_published as version_is_published,
-            "Links".id as link_id,
-            'repositories/' || task_repositories.repo_id || '/' || "Links".original_filename as link_original_filename,
-            'repositories/' || task_repositories.repo_id || '/' || "Links_ForWeb".full_path as link_full_path,
-            'repositories/' || task_repositories.repo_id || '/' || "Thumbnails".full_path as link_thumbnail_full_path
+            array_agg(link_data.link_id) as link_id,
+            array_agg(link_data.link_original_filename) as link_original_filename,
+            array_agg(link_data.link_full_path) as link_full_path,
+            array_agg(link_data.link_thumbnail_full_path) as link_thumbnail_full_path,
+            array_agg(link_data.version_id) as version_id,
+            array_agg(link_data.version_take_name) as version_take_name,
+            array_agg(link_data.version_number) as version_number,
+            array_agg(link_data.version_is_published) as version_is_published,
+            daily_note.note_id as note_id,
+            daily_note.user_id as user_id,
+            daily_note.user_name as user_name,
+            daily_note.user_thumbnail as user_thumbnail,
+            daily_note.note_content as note_content,
+            daily_note.note_date_created as note_date_created,
+            daily_note.note_type_name as note_type_name
 
-        from "Daily_Links"
-        join "Dailies" on "Dailies".id = "Daily_Links".daily_id
-        join "Links" on "Links".id = "Daily_Links".link_id
-        join "SimpleEntities" as "Link_SimpleEntities" on "Link_SimpleEntities".id = "Links".id
-        join "Links" as "Links_ForWeb" on "Link_SimpleEntities".thumbnail_id = "Links_ForWeb".id
-        join "SimpleEntities" as "Links_ForWeb_SimpleEntities" on "Links_ForWeb".id = "Links_ForWeb_SimpleEntities".id
-        join "Links" as "Thumbnails" on "Links_ForWeb_SimpleEntities".thumbnail_id = "Thumbnails".id
-        join "Version_Outputs" on "Version_Outputs".link_id = "Daily_Links".link_id
-        join "Versions" on "Versions".id = "Version_Outputs".version_id
-        join "Tasks" on "Tasks".id = "Versions".task_id
-        join "Statuses" as "Task_Statuses" on "Task_Statuses".id = "Tasks".status_id
-        join "SimpleEntities" as "Task_Status_SimpleEntities" on "Task_Status_SimpleEntities".id = "Tasks".status_id
-
-        left join (
-            %(generate_recursive_task_query)s
-        ) as "ParentTasks" on "Tasks".id = "ParentTasks".id
-
-        -- find repository id
+        from "Dailies"
+        join "Daily_Links" on "Daily_Links".daily_id = "Dailies".id
         join (
             select
                 "Tasks".id as task_id,
-                "Repositories".id as repo_id
-            from "Tasks"
-            join "Projects" on "Tasks".project_id = "Projects".id
-            join "Repositories" on "Projects".repository_id = "Repositories".id
-        ) as task_repositories on "Tasks".id = task_repositories.task_id
+                "Versions".id as version_id,
+                "Versions".take_name as version_take_name,
+                "Versions".version_number as version_number,
+                "Versions".is_published as version_is_published,
+                "Links".id as link_id,
+                'repositories/' || task_repositories.repo_id || '/' || "Links".original_filename as link_original_filename,
+                'repositories/' || task_repositories.repo_id || '/' || "Links_ForWeb".full_path as link_full_path,
+                'repositories/' || task_repositories.repo_id || '/' || "Thumbnails".full_path as link_thumbnail_full_path
+
+
+            from "Links"
+            join "SimpleEntities" as "Link_SimpleEntities" on "Link_SimpleEntities".id = "Links".id
+            join "Links" as "Links_ForWeb" on "Link_SimpleEntities".thumbnail_id = "Links_ForWeb".id
+            join "SimpleEntities" as "Links_ForWeb_SimpleEntities" on "Links_ForWeb".id = "Links_ForWeb_SimpleEntities".id
+            join "Links" as "Thumbnails" on "Links_ForWeb_SimpleEntities".thumbnail_id = "Thumbnails".id
+            join "Version_Outputs" on "Version_Outputs".link_id = "Links".id
+            join "Versions" on "Versions".id = "Version_Outputs".version_id
+            join "Tasks" on "Tasks".id = "Versions".task_id
+            join (
+                select
+                    "Tasks".id as task_id,
+                    "Repositories".id as repo_id
+                from "Tasks"
+                join "Projects" on "Tasks".project_id = "Projects".id
+                join "Repositories" on "Projects".repository_id = "Repositories".id
+            ) as task_repositories on "Tasks".id = task_repositories.task_id
+        ) as link_data on link_data.link_id = "Daily_Links".link_id
+        join "Tasks" as "Link_Tasks" on "Link_Tasks".id = link_data.task_id
+        join "Statuses" as "Task_Statuses" on "Task_Statuses".id = "Link_Tasks".status_id
+        join "SimpleEntities" as "Task_Status_SimpleEntities" on "Task_Status_SimpleEntities".id = "Link_Tasks".status_id
+
+        --find the task daily notes
+        left outer join (
+            select
+                "Task_Notes".entity_id as task_id,
+                array_agg( "User_SimpleEntities".id) as user_id,
+                array_agg( "User_SimpleEntities".name) as user_name,
+                array_agg( "Users_Thumbnail_Links".full_path) as user_thumbnail,
+                array_agg( "Notes_SimpleEntities".id) as note_id,
+                array_agg( "Notes_SimpleEntities".description) as note_content,
+                array_agg( "Notes_SimpleEntities".date_created) as note_date_created,
+                array_agg( "Notes_Types_SimpleEntities".id) as note_type_id,
+                array_agg( "Notes_Types_SimpleEntities".name) as note_type_name
+
+            from "Notes"
+            join "SimpleEntities" as "Notes_SimpleEntities" on "Notes_SimpleEntities".id = "Notes".id
+            left outer join "SimpleEntities" as "Notes_Types_SimpleEntities" on "Notes_Types_SimpleEntities".id = "Notes_SimpleEntities".type_id
+            join "SimpleEntities" as "User_SimpleEntities" on "Notes_SimpleEntities".created_by_id = "User_SimpleEntities".id
+            left outer join "Links" as "Users_Thumbnail_Links" on "Users_Thumbnail_Links".id = "User_SimpleEntities".thumbnail_id
+            join "Entity_Notes" as "Daily_Notes" on "Daily_Notes".note_id = "Notes".id
+            join "Entity_Notes" as "Task_Notes" on "Task_Notes".note_id = "Daily_Notes".note_id
+
+            where "Daily_Notes".entity_id =  %(daily_id)s and "Notes_Types_SimpleEntities".name = 'Daily_Note'
+
+            group by "Task_Notes".entity_id
+        ) as daily_note on daily_note.task_id = "Link_Tasks".id
+
+        left join (
+            %(generate_recursive_task_query)s
+        ) as "ParentTasks" on "Link_Tasks".id = "ParentTasks".id
 
         where "Dailies".id = %(daily_id)s
+
+        group by
+            "Link_Tasks".id,
+            "ParentTasks".full_path,
+            "Task_Statuses".code,
+            "Task_Status_SimpleEntities".name,
+            daily_note.note_id,
+            daily_note.user_id,
+            daily_note.user_name,
+            daily_note.user_thumbnail,
+            daily_note.note_content,
+            daily_note.note_date_created,
+            daily_note.note_type_name
+
     """
     sql_query = sql_query % {'daily_id': daily_id, 'generate_recursive_task_query': generate_recursive_task_query()}
 
@@ -331,19 +391,63 @@ def get_daily_outputs(request):
     tasks = []
 
     for r in result.fetchall():
+        links =[]
+
+        link_ids = r[4]
+        original_filename = r[5]
+        full_path = r[6]
+        thumbnail_full_path = r[7]
+        version_ids = r[8]
+        version_take_names = r[9]
+        version_numbers = r[10]
+        versions_is_published = r[11]
+
+        for i in range(len(link_ids)):
+            link = {
+                    'id':link_ids[i],
+                    'original_filename':original_filename[i],
+                    'full_path': full_path[i],
+                    'thumbnail_full_path':thumbnail_full_path[i],
+                    'version_id':version_ids[i],
+                    'version_take_name': version_take_names[i],
+                    'version_number':version_numbers[i],
+                    'version_is_published':versions_is_published[i]
+            }
+            if link not in links:
+                links.append(link)
+
+        notes =[]
+
+        note_ids = r[12]
+        note_created_by_ids = r[13]
+        note_created_by_names = r[14]
+        note_created_by_thumbnails = r[15]
+        note_contents = r[16]
+        note_created_dates = r[17]
+        note_type_names = r[18]
+
+        if note_ids:
+            for j in range(len(note_ids)):
+                if note_ids[j]:
+                    note = {
+                            'id':note_ids[j],
+                            'created_by_id':note_created_by_ids[j],
+                            'created_by_name': note_created_by_names[j],
+                            'created_by_thumbnail':note_created_by_thumbnails[j],
+                            'content':note_contents[j],
+                            'created_date': milliseconds_since_epoch(note_created_dates[j]),
+                            'note_type_name': note_type_names[j]
+                    }
+                    if note not in notes:
+                        notes.append(note)
+
         task = {
             'task_id': r[0],
             'task_name': r[1],
             'task_status_code': r[2].lower(),
             'task_status_name': r[3],
-            'version_id':r[4],
-            'version_take_name': r[5],
-            'version_number': r[6],
-            'version_published':r[7],
-            'link_id':r[8],
-            'original_filename':r[9],
-            'full_path':r[10],
-            'thumbnail_full_path':r[11]
+            'links': links,
+            'notes':notes
         }
         tasks.append(task)
 
@@ -354,6 +458,112 @@ def get_daily_outputs(request):
 
     return resp
 
+
+@view_config(
+    route_name='append_link_to_daily_dialog',
+    renderer='templates/daily/dialog/append_link_to_daily_dialog.jinja2'
+)
+def append_link_to_daily_dialog(request):
+
+    logger.debug('append_link_to_daily_dialog starts')
+
+    link_id = request.matchdict.get('id')
+    link = Link.query.filter_by(id=link_id).first()
+
+    task_id = request.params.get('task_id', '-1')
+    task = Task.query.filter_by(id=task_id).first()
+
+    came_from = request.params.get('came_from', '/')
+
+    return {
+        'came_from': came_from,
+        'link': link,
+        'task': task
+    }
+
+@view_config(
+    route_name='append_link_to_daily',
+    renderer='json'
+)
+def append_link_to_daily(request):
+
+    link_id = request.matchdict.get('id')
+    link = Link.query.filter_by(id=link_id).first()
+
+    daily_id = request.matchdict.get('did')
+    daily = Daily.query.filter_by(id=daily_id).first()
+
+    if not link:
+        transaction.abort()
+        return Response('There is no link with id: %s' % link_id, 500)
+
+    if not daily:
+        transaction.abort()
+        return Response('There is no daily with id: %s' % daily_id, 500)
+
+    if link not in daily.links:
+        daily.links.append(link)
+
+    request.session.flash(
+        'success: Output is added to daily: %s '% daily.name
+    )
+
+    return Response('Output is added to daily: %s '% daily.name)
+
+
+@view_config(
+    route_name='remove_link_to_daily_dialog',
+    renderer='templates/modals/confirm_dialog.jinja2'
+)
+def remove_link_to_daily_dialog(request):
+
+    logger.debug('remove_link_to_daily_dialog is starts')
+
+    link_id = request.matchdict.get('id')
+    daily_id = request.matchdict.get('did')
+    daily = Daily.query.filter_by(id=daily_id).first()
+
+    action = '/links/%s/dailies/%s/remove' % (link_id, daily_id)
+    came_from = request.params.get('came_from', '/')
+    message = 'The selected output are going to be remove from %s daily ' \
+              '<br><br>Are you sure?' % daily.name
+
+    logger.debug('action: %s' % action)
+
+    return {
+        'message': message,
+        'came_from': came_from,
+        'action': action
+    }
+
+
+@view_config(
+    route_name='remove_link_to_daily'
+)
+def remove_link_to_daily(request):
+
+    link_id = request.matchdict.get('id')
+    link = Link.query.filter_by(id=link_id).first()
+
+    daily_id = request.matchdict.get('did')
+    daily = Daily.query.filter_by(id=daily_id).first()
+
+    if not link:
+        transaction.abort()
+        return Response('There is no link with id: %s' % link_id, 500)
+
+    if not daily:
+        transaction.abort()
+        return Response('There is no daily with id: %s' % daily_id, 500)
+
+    if link in daily.links:
+        daily.links.remove(link)
+
+    request.session.flash(
+        'success: Output is removed from daily: %s '% daily.name
+    )
+
+    return Response('Output is removed to daily: %s '% daily.name)
 
 
 

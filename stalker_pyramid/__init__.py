@@ -135,10 +135,6 @@ def main(global_config, **settings):
     config.add_route('delete_entity_dialog', 'entities/{id}/delete/dialog')
     config.add_route('delete_entity', 'entities/{id}/delete')
 
-    config.add_route('create_entity_note', 'entities/{id}/note/create')
-    config.add_route('delete_note_dialog', 'notes/{id}/delete/dialog')
-    config.add_route('delete_note', 'notes/{id}/delete')
-
     # get routes returns json
     config.add_route('get_entity',                     'entities/{id}/')
     config.add_route('get_entity_users',               'entities/{id}/users/')
@@ -166,7 +162,7 @@ def main(global_config, **settings):
     config.add_route('get_entity_vacations_count',     'entities/{id}/vacations/count/')
     config.add_route('get_entity_entities_out_stack',  'entities/{id}/{entities}/out_stack/' )
     config.add_route('get_entity_events',              'entities/{id}/events/')  #json
-    config.add_route('get_entity_notes',            'entities/{id}/notes/') #json
+    config.add_route('get_entity_notes',               'entities/{id}/notes/') #json
 
     config.add_route('list_entity_users',              'entities/{id}/users/list')
     config.add_route('list_entity_departments',        'entities/{id}/departments/list')  # html
@@ -180,7 +176,7 @@ def main(global_config, **settings):
     config.add_route('list_entity_vacations',          'entities/{id}/vacations/list')  # html
     config.add_route('list_entity_versions',           'entities/{id}/versions/list')  # html
     config.add_route('list_entity_resources',          'entities/{id}/resources/list')  # html
-    config.add_route('list_entity_notes',            'entities/{id}/notes/list') #html
+    config.add_route('list_entity_notes',              'entities/{id}/notes/list') #html
 
 
     config.add_route('append_entities_to_entity_dialog',  'entities/{id}/{entities}/append/dialog')
@@ -190,6 +186,14 @@ def main(global_config, **settings):
     config.add_route('view_entity_tasks',              'entities/{id}/tasks/view')
     config.add_route('view_entity_group',              'entities/{eid}/groups/{id}/view')
     config.add_route('view_entity_department',         'entities/{eid}/departments/{id}/view')
+
+
+    # *************************************************************************
+    # Notes
+    config.add_route('create_note', 'note/create')
+    config.add_route('update_note', 'note/{id}/update')
+    config.add_route('delete_note_dialog', 'notes/{id}/delete/dialog')
+    config.add_route('delete_note', 'notes/{id}/delete')
 
     # *************************************************************************
     # Thumbnail  and Links
@@ -312,6 +316,11 @@ def main(global_config, **settings):
 
     config.add_route('view_daily',          'dailies/{id}/view')
     config.add_route('get_daily_outputs',          'dailies/{id}/outputs/') # json
+
+    config.add_route('append_link_to_daily_dialog', 'links/{id}/dailies/append/dialog')
+    config.add_route('append_link_to_daily', 'links/{id}/dailies/{did}/append')
+    config.add_route('remove_link_to_daily_dialog', 'links/{id}/dailies/{did}/remove/dialog')
+    config.add_route('remove_link_to_daily', 'links/{id}/dailies/{did}/remove')
 
 
     # *************************************************************************
