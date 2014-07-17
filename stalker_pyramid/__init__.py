@@ -25,7 +25,7 @@ import pyramid_beaker
 
 from zope.sqlalchemy import ZopeTransactionExtension
 
-__version__ = '0.1.10'
+__version__ = '0.1.11'
 
 
 # before anything about stalker create the defaults

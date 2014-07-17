@@ -19,7 +19,10 @@ requires = [
     'jinja2',
     'pyramid_jinja2',
     'pillow',
-    'stalker>=0.2.2', 'webtest', 'mocker'
+    'stalker>=0.2.2',
+    'exifread',
+    'webtest',
+    'mocker'
 ]
 
 setup(name='stalker_pyramid',

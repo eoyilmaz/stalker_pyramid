@@ -36,11 +36,10 @@ from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPOk
 
 from stalker.db import DBSession
-from stalker import Entity, Link, defaults, Repository, Version, Daily
+from stalker import Entity, Link, defaults, Repository, Version
 
-from stalker_pyramid.views import (get_logged_in_user, get_multi_integer,
-                                   get_tags, StdErrToHTMLConverter,
-                                   local_to_utc, get_multi_string)
+from stalker_pyramid.views import (get_logged_in_user, get_tags,
+                                   StdErrToHTMLConverter, local_to_utc)
 
 
 logger = logging.getLogger(__name__)
@@ -441,6 +440,8 @@ select * from (
 select
     "Links".id,
     "Links".original_filename,
+
+    'repositories/' || task_repositories.repo_id || '/' || "Links".full_path as hires_full_path,
     'repositories/' || task_repositories.repo_id || '/' || "Links_ForWeb".full_path as full_path,
     'repositories/' || task_repositories.repo_id || '/' || "Thumbnails".full_path as "thumbnail_full_path",
     tags.name as tags,
@@ -522,12 +523,13 @@ limit %(limit)s
         {
             'id': r[0],
             'original_filename': r[1],
-            'full_path': r[2],
-            'thumbnail_full_path': r[3],
-            'tags': r[4],
-            'entity_ids': r[5],
-            'entity_names': r[6],
-            'entity_types': r[7]
+            'hires_full_path': r[2],
+            'full_path': r[3],
+            'thumbnail_full_path': r[4],
+            'tags': r[5],
+            'entity_ids': r[6],
+            'entity_names': r[7],
+            'entity_types': r[8]
         } for r in result.fetchall()
     ]
 
@@ -1213,6 +1215,43 @@ class MediaManager(object):
         self.ffmpeg_command_path = '/usr/bin/ffmpeg'
         self.ffprobe_command_path = '/usr/local/bin/ffprobe'
 
+    def reorient_image(self, img):
+        """re-orients rotated images by looking at EXIF data
+        """
+        # get the image rotation from EXIF information
+        import exifread
+
+        file_full_path = img.filename
+
+        with open(file_full_path) as f:
+            tags = exifread.process_file(f)
+
+        orientation_string = tags.get('Image Orientation')
+
+        if orientation_string:
+            orientation = orientation_string.values[0]
+            if orientation == 1:
+                # do nothing
+                pass
+            elif orientation == 2:  # flipped in X
+                img = img.transpose(Image.FLIP_LEFT_RIGHT)
+            elif orientation == 3:  # rotated 180 degree
+                img = img.transpose(Image.ROTATE_180)
+            elif orientation == 4:  # flipped in Y
+                img = img.transpose(Image.FLIP_TOP_BOTTOM)
+            elif orientation == 5:  #
+                img = img.transpose(Image.ROTATE_270)
+                img = img.transpose(Image.FLIP_LEFT_RIGHT)
+            elif orientation == 6:
+                img = img.transpose(Image.FLIP_LEFT_RIGHT)
+            elif orientation == 7:
+                img = img.transpose(Image.ROTATE_90)
+                img = img.transpose(Image.FLIP_LEFT_RIGHT)
+            elif orientation == 8:
+                img = img.transpose(Image.ROTATE_90)
+
+        return img
+
     def generate_image_thumbnail(self, file_full_path):
         """Generates a thumbnail for the given image file
 
@@ -1224,9 +1263,13 @@ class MediaManager(object):
         suffix = self.thumbnail_format
 
         img = Image.open(file_full_path)
+        # do a double scale
         img.thumbnail((2 * self.thumbnail_width, 2 * self.thumbnail_height))
         img.thumbnail((self.thumbnail_width, self.thumbnail_height),
                       Image.ANTIALIAS)
+
+        # re-orient images
+        img = self.reorient_image(img)
 
         if img.format == 'GIF':
             suffix = '.gif'  # force save in gif format
@@ -1253,10 +1296,17 @@ class MediaManager(object):
         img = Image.open(file_full_path)
         if img.size[0] > self.web_image_width \
            or img.size[1] > self.web_image_height:
-            img.thumbnail((2 * self.web_image_width,
-                           2 * self.web_image_height))
-            img.thumbnail((self.web_image_width, self.web_image_height),
-                          Image.ANTIALIAS)
+            # do a double scale
+            img.thumbnail(
+                (2 * self.web_image_width, 2 * self.web_image_height)
+            )
+            img.thumbnail(
+                (self.web_image_width, self.web_image_height),
+                Image.ANTIALIAS
+            )
+
+        # re-orient images
+        img = self.reorient_image(img)
 
         if img.format == 'GIF':
             suffix = '.gif'  # force save in gif format
