@@ -36,7 +36,7 @@ from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPOk
 
 from stalker.db import DBSession
-from stalker import Entity, Link, defaults, Repository, Version
+from stalker import Entity, Link, defaults, Repository, Version, Daily
 
 from stalker_pyramid.views import (get_logged_in_user, get_tags,
                                    StdErrToHTMLConverter, local_to_utc)
