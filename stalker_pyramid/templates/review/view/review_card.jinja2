@@ -7,7 +7,7 @@
                 <a data-target="#dialog_template"
                    data-toggle="modal"
                    data-keyboard=false
-                   href='{{ request.route_path('add_task_user_dialog', id=entity.id, user_type='Responsible', _query={'came_from': request.current_route_path()}) }}'
+                   href='{{ request.route_path('change_task_users_dialog', id=entity.id, user_type='Responsible', _query={'came_from': request.current_route_path()}) }}'
                    class="white">
                    <i class="icon-plus"></i>
                 </a>

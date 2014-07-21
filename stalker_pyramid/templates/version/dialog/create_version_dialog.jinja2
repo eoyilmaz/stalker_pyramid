@@ -1,0 +1,145 @@
+{# Stalker Pyramid a Web Base Production Asset Management System
+ Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
+
+ This file is part of Stalker Pyramid.
+
+ This library is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation;
+ version 2.1 of the License.
+
+ This library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Lesser General Public License for more details.
+
+ You should have received a copy of the GNU Lesser General Public
+ License along with this library; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+#}
+
+<div class="row-fluid">
+    <form id='upload_version_form'
+        class='form-horizontal'
+        role='form'
+        method='post'>
+        <div class='control-group'>
+            <label class='span2 control-label' for='input_version'>File</label>
+            <div class='span10'>
+                <input type="file" id="input_version" required>
+            </div>
+        </div>
+        <div class="control-group">
+            <label class="span2 control-label" for="version_take_name">Take Name</label>
+            <div class="span10 controls">
+                <input type="text"
+                       id="version_take_name"
+                       class='span9 input-block-level'
+                       name='version_take_name'
+                       required/>&nbsp;&nbsp;
+                <input class="ace" type="checkbox" id="is_published" />
+                <label class="lbl" for="is_published"> Is Published</label>
+            </div>
+        </div>
+        <div class='control-group'>
+            <label class='span2 control-label' for='version_description'>Description</label>
+            <div class='span10'>
+                <textarea id='version_description'
+                          name='version_description'
+                          class='autosize-transition span12'
+                          style='overflow: hidden; word-wrap: break-word;resize: horizontal;height: 150px;'></textarea>
+            </div>
+        </div>
+    </form>
+    <div class="hr dotted"></div>
+</div>
+
+<script>
+
+    function init_dialog(){
+
+
+        // init dialog
+        console.debug('init dialog from create_version_dialog.jinja2 running!');
+
+         $('.modal-header>h3').text('Create Version');
+
+        $('#input_version').ace_file_input({
+            no_file:'No File ...',
+            btn_choose:'Choose',
+            btn_change:'Change',
+            droppable:false,
+            onchange:null,
+            thumbnail:false, //| true | large
+            blacklist:'exe|php'
+            //whitelist:'gif|png|jpg|jpeg'
+        });
+
+
+
+        var submit_button = $('#dialog_template_submit_button');
+
+        // register submit event
+        submit_button.on('click', function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            // disable it
+            // disable the Submit button
+            setTimeout(function(){
+                submit_button.data('loading-text', 'Converting Files, Please Wait...');
+                submit_button.button('loading')}, 0
+            );
+
+            // prepare data
+            var file_info = [];
+            var full_paths = [];
+            var original_filenames = [];
+            var accepted_file = dzone.getAcceptedFiles();
+            var f;
+            for (var i=0; i < accepted_files.length; i++){
+                f = accepted_files[i];
+                full_paths.push(f.full_path);
+                original_filenames.push(f.original_filename);
+                file_info.push({
+                    'full_path': f.full_path,
+                    'original_filename': f.original_filename
+                })
+            }
+
+
+            $.post('{{ request.route_url('assign_version') }}', {
+                entity_id: entity_id,
+                file_info: file_info,
+                full_paths: full_paths,
+                original_filenames: original_filenames
+            }).done(function(jqXHR){
+                // alert the user about the added files
+                // reload outputs
+                // get the data in jqXHR
+{#                console.debug('jqXHR : ', jqXHR);#}
+                $('#new_outputs_storage').text(JSON.stringify(jqXHR));
+                $('#dialog_template').modal('hide');
+            }).fail(function(jqXHR){
+                // alert the user about what is failed
+                bootbox.alert(jqXHR.responseText);
+                // enable the Submit button
+                setTimeout(function(){submit_button.button('reset')}, 0);
+            });
+
+        });
+    }
+
+    function destruct_dialog(){
+        // reduce counter
+        counter -= 1;
+
+        // unbind events
+        $(".dropzone").unbind();
+        $("#daily").unbind();
+        $("#dialog_template_submit_button").unbind();
+
+        // destroy dialog
+        console.debug('destroy dialog from upload_output.jinja2 running!');
+        $('#dialog_template').data('modal', null);
+    }
+</script>

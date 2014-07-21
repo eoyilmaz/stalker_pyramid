@@ -211,10 +211,7 @@
                 }
             {% endif %}
 
-            console.debug('daily_id          :', daily_id);
-{#            console.debug('file_info          :', file_info);#}
-{#            console.debug('full_paths         :', full_paths);#}
-{#            console.debug('original_filenames :', original_filenames);#}
+
 
             $.post('{{ request.route_url('assign_output') }}', {
                 entity_id: entity_id,

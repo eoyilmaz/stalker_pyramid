@@ -37,8 +37,8 @@ logger.setLevel(logging.DEBUG)
 
 
 @view_config(
-    route_name='dialog_create_task_version',
-    renderer='templates/version/dialog_create_version.jinja2',
+    route_name='create_version_dialog',
+    renderer='templates/version/dialog/create_version_dialog.jinja2',
 )
 def create_version_dialog(request):
     """creates a create_version_dialog by using the given task
@@ -48,7 +48,7 @@ def create_version_dialog(request):
     # get logged in user
     logged_in_user = get_logged_in_user(request)
 
-    task_id = request.matchdict.get('id', -1)
+    task_id = request.matchdict.get('tid', -1)
     task = Task.query.filter(Task.task_id == task_id).first()
 
     takes = map(
@@ -62,7 +62,6 @@ def create_version_dialog(request):
         takes.append(defaults.version_take_name)
 
     return {
-        'mode': 'CREATE',
         'has_permission': PermissionChecker(request),
         'logged_in_user': logged_in_user,
         'task': task,
@@ -72,8 +71,8 @@ def create_version_dialog(request):
 
 
 @view_config(
-    route_name='dialog_update_version',
-    renderer='templates/version/dialog_create_version.jinja2',
+    route_name='update_version_dialog',
+    renderer='templates/version/dialog/update_version_dialog.jinja2',
 )
 def update_version_dialog(request):
     """updates a create_version_dialog by using the given task

@@ -43,10 +43,8 @@
 
 
     {% if entity.entity_type == 'Studio' %}
-        {% set address=request.route_path('get_users') %}
         {% set add_button_address=request.route_path('create_user_dialog') %}
     {% else %}
-        {% set address=request.route_path('get_entity_users', id=entity.id) %}
         {% set add_button_title='Add' %}
         {% set add_button_address=request.route_url('append_entities_to_entity_dialog', id=entity.id, entities='User', _query={'came_from': request.current_route_path()}) %}
     {% endif %}

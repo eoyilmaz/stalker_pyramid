@@ -588,8 +588,11 @@ def main(global_config, **settings):
     config.add_route('get_task_resources',  'tasks/{id}/resources/') #json
     config.add_route('remove_task_user_dialog', 'tasks/{id}/remove/{user_type}/{user_id}/dialog')
     config.add_route('remove_task_user', 'tasks/{id}/remove/{user_type}/{user_id}')
-    config.add_route('add_task_user_dialog', 'tasks/{id}/add/{user_type}/dialog')
-    config.add_route('add_task_user', 'tasks/{id}/add/{user_type}')
+    config.add_route('change_tasks_users_dialog', 'tasks/change/{user_type}/dialog')
+    config.add_route('change_tasks_users', 'tasks/change/{user_type}')
+    config.add_route('change_task_users_dialog', 'tasks/{id}/change/{user_type}/dialog')
+    config.add_route('change_task_users', 'tasks/{id}/change/{user_type}')
+
 
     config.add_route('delete_task',        'tasks/{id}/delete')
     config.add_route('delete_task_dialog', 'tasks/{id}/delete/dialog')
@@ -645,8 +648,8 @@ def main(global_config, **settings):
 
     # *************************************************************************
     # Version
-    config.add_route('dialog_create_task_version',          'tasks/{id}/versions/create/dialog')
-    config.add_route('dialog_update_version',               'versions/{id}/update/dialog')
+    config.add_route('create_version_dialog',          'tasks/{tid}/versions/create/dialog')
+    config.add_route('update_version_dialog',          'versions/{id}/update/dialog')
 
     config.add_route('create_version',                      'versions/create')
     config.add_route('update_version',                      'versions/{id}/update')

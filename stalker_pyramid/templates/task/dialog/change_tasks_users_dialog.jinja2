@@ -1,5 +1,5 @@
 <div class="row-fluid" >
-    <form id='append_form'
+    <form id='change_form'
               class='form-horizontal'
               role='form'
               method='post'>
@@ -10,8 +10,7 @@
                                 multiple=''
                                 class='input-block-level tag-input-style'
                                 name='user_ids'
-                                data-placeholder={{ user_type }}
-                                is_updating=false></select>
+                                data-placeholder={{ user_type }}></select>
                     </div>
                 </div>
     </form>
@@ -24,17 +23,9 @@
 
         $('#dialog_template_label').find('span').remove();
         $('#dialog_template_label').append('<span>Append {{ user_type }}</span>');
-        $('#dialog_template_body').attr('style', "height: 300px");
 
         {# ***************************************************************** #}
         $(document).ready(function () {
-            var selected_users = [];
-
-            selected_users = [
-                {% for user in task[ user_type.lower()] %}
-                    {{ user.id }},
-                {% endfor %}
-            ];
 
             var task_users = $('#task_users');
 
@@ -47,7 +38,7 @@
                 var user_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
             {% endraw %}
 
-            $.getJSON('/projects/{{ task.project.id }}/users/?simple=1').then(function(data){
+            $.getJSON('/projects/{{ project_id }}/users/?simple=1').then(function(data){
                 // remove current elements
                 task_users.find('option').remove();
 
@@ -57,10 +48,17 @@
                 for (var i=0; i < data_count; i++){
                     task_users.append(user_template(data[i]));
                 }
+                {% if tasks | count == 1 %}
+                    var selected_users = [
+                        {% for user in tasks[0][ user_type.lower()] %}
+                            {{ user.id }},
+                        {% endfor %}
+                    ];
 
-                if (selected_users.length > 0){
-                    task_users.val(selected_users);
-                }
+                    if (selected_users.length > 0){
+                        task_users.val(selected_users);
+                    }
+                {% endif %}
                 // update the chosen fields
                 task_users.trigger('liszt:updated');
             });
@@ -76,13 +74,25 @@
                 e.preventDefault();
                 submit_button.button('loading');
 
-                var append_form = $("#append_form");
+                var change_form = $("#change_form");
 
-                $.post('/tasks/{{ task.id }}/add/{{ user_type.lower() }}', append_form.serialize()
+                var task_ids = [];
+                {% for task in tasks %}
+                    task_ids.push({{ task.id }});
+                {% endfor %}
+
+
+                console.log('task_ids: '+task_ids);
+
+                $.post('/tasks/change/{{ user_type.lower() }}',
+                                        change_form.serialize()+'&' +$.param({'task_ids':task_ids})
                                         ).done(function (response_text) {
-                                            window.location.assign('{{ came_from }}');
                                             submit_button.button('reset');
                                             $('#dialog_template').modal('hide');
+                                            setTimeout(function () { // wait for hide event to finish
+                                                window.location.reload();
+                                            }, 0);
+
                                         }).fail(function (jqXHR) {
                                             bootbox.alert(jqXHR.responseText);
                                             submit_button.button('reset');

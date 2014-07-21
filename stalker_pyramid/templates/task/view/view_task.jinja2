@@ -321,7 +321,7 @@
                             <div class="row-fluid">
 
                                 {% if entity.is_leaf %}
-                                    {% set add_button_address = request.route_path('add_task_user_dialog', id=entity.id, user_type='Resources', _query={'came_from': request.current_route_path()}) %}
+                                    {% set add_button_address = request.route_path('change_task_users_dialog', id=entity.id, user_type='Resources', _query={'came_from': request.current_route_path()}) %}
                                     {% set address=request.route_path('get_task_resources', id=entity.id) %}
                                     {% set list_item_type='Resource' %}
                                     {% include 'components/editable_list.jinja2' %}

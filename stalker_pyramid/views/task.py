@@ -4431,13 +4431,90 @@ def remove_task_user(request):
     return Response('Success: %s is removed from %s resources' % (user.name, task.name))
 
 @view_config(
-    route_name='add_task_user_dialog',
-    renderer='templates/task/dialog/add_task_user_dialog.jinja2'
+    route_name='change_tasks_users_dialog',
+    renderer='templates/task/dialog/change_tasks_users_dialog.jinja2'
 )
-def add_task_user_dialog(request):
-    """deletes the department with the given id
+def change_tasks_users_dialog(request):
+    """changes task users with the given users dialog
     """
-    logger.debug('add_task_resource_dialog is starts')
+    logger.debug('change_tasks_users_dialog is starts')
+
+    selected_task_list = get_multi_integer(request, 'task_ids', 'GET')
+    logger.debug('selected_task_list : %s' % selected_task_list)
+
+    tasks = Task.query.filter(Task.id.in_(selected_task_list)).all()
+    logger.debug('tasks : %s' % tasks)
+
+    project_id = request.params.get('project_id', '-1')
+    logger.debug('project_id : %s' % project_id)
+
+    came_from = request.params.get('came_from', '/')
+    user_type = request.matchdict.get('user_type')
+
+    return {
+        'tasks': tasks,
+        'user_type':user_type,
+        'came_from': came_from,
+        'project_id':project_id
+    }
+
+@view_config(
+    route_name='change_tasks_users',
+    permission='Update_Task'
+)
+def change_tasks_users(request):
+    """changes task users with the given users
+    """
+
+    selected_list = get_multi_integer(request, 'user_ids')
+    users = User.query\
+            .filter(User.id.in_(selected_list)).all()
+
+    if not users:
+        transaction.abort()
+        return Response('Missing parameters', 500)
+
+    selected_task_list = get_multi_integer(request, 'task_ids[]')
+    logger.debug('selected_task_list : %s' % selected_task_list)
+
+    tasks = Task.query.filter(Task.id.in_(selected_task_list)).all()
+    logger.debug('tasks : %s' % tasks)
+
+    if not tasks:
+        transaction.abort()
+        return Response('Can not find any Task', 500)
+
+    user_type = request.matchdict.get('user_type')
+
+    if not user_type:
+        transaction.abort()
+        return Response('Missing parameters', 500)
+
+    if user_type=='resources':
+        for task in tasks:
+            task.resources = users
+    elif user_type=='responsible':
+        for task in tasks:
+            task.responsible = users
+
+    logged_in_user = get_logged_in_user(request)
+    utc_now = local_to_utc(datetime.datetime.now())
+
+    task.updated_by = logged_in_user
+    task.date_updated = utc_now
+
+    return Response('Success: %s are added to selected tasks' % user_type)
+
+
+
+@view_config(
+    route_name='change_task_users_dialog',
+    renderer='templates/task/dialog/change_task_users_dialog.jinja2'
+)
+def change_task_users_dialog(request):
+    """changes task users with the given users dialog
+    """
+    logger.debug('change_task_users_dialog is starts')
 
     task_id = request.matchdict.get('id')
     task = Task.query.get(task_id)
@@ -4452,11 +4529,11 @@ def add_task_user_dialog(request):
     }
 
 @view_config(
-    route_name='add_task_user',
+    route_name='change_task_users',
     permission='Update_Task'
 )
-def add_task_user(request):
-    """deletes the task with the given id
+def change_task_users(request):
+    """changes task users with the given users
     """
 
     selected_list = get_multi_integer(request, 'user_ids')

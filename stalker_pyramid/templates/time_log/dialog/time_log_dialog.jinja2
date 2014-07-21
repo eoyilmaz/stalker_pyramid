@@ -429,8 +429,6 @@ function init_dialog() {
                         ).done(function (response_text) {
                             bootbox.alert('<div id="message" class="alert alert-success bigger-110">'+response_text+'</div>');
                             window.location.assign('{{ came_from }}');
-
-
                         }).fail(function (jqXHR) {
                             bootbox.alert('<div id="message" class="alert alert-danger bigger-110">'+jqXHR.responseText+'</div>');
                             delete_button.button('reset');

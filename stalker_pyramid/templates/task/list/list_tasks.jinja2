@@ -254,6 +254,15 @@
                     </a>
                 </li>
             {% endif %}
+
+            {% if has_permission('Update_Task') %}
+                <li>
+                    <a id="change_tasks_users_menu_item">
+                        <i class="'ui-icon icon-exchange bigger-120">&nbsp</i>
+                        Change Resources
+                    </a>
+                </li>
+            {% endif %}
     
             {% if has_permission('Delete_Task') %}
                 <li>
@@ -870,6 +879,40 @@ require([
         event_dialog.modal({
             'remote': $(this).attr('href') + '?came_from="' + window.location.pathname + '"'
         });
+    });
+
+    $('#change_tasks_users_menu_item').on('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        // get the selection list
+        var selected_ids = gantt_chart.selected_ids();
+{#        console.debug('selected_ids: ', selected_ids);#}
+        if (selected_ids.length == 0) {
+            bootbox.alert('Please select at least one item from the ' +
+                    'GanttChart!');
+            return;
+        }
+        var _query = '?project_id={{ project.id }}';
+        for (var i=0; i<selected_ids.length; i++){
+           _query +='&task_ids='+selected_ids[i];
+        }
+        var remote = '/tasks/change/Resources/dialog'+_query
+        console.log ('remote: '+remote)
+        var event_dialog = $('#dialog_template');
+        event_dialog.modal({
+            'remote': remote
+        });
+{#        $.post('/tasks/change/Resources/dialog'+_query#}
+{#                    ).done(function (response_text) {#}
+{#                        bootbox.alert(response_text);#}
+{#                        // reload the gantt chart#}
+{#                        gantt_column.reload();#}
+{#                    }).fail(function (jqXHR) {#}
+{#                        bootbox.alert(jqXHR.responseText);#}
+{#                    });#}
+
+
     });
 
     $('#delete_task_menu_item').on('click', function (e) {
