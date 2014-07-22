@@ -89,9 +89,9 @@
                                         ).done(function (response_text) {
                                             submit_button.button('reset');
                                             $('#dialog_template').modal('hide');
-                                            setTimeout(function () { // wait for hide event to finish
-                                                window.location.reload();
-                                            }, 0);
+{#                                            setTimeout(function () { // wait for hide event to finish#}
+{#                                                window.location.reload();#}
+{#                                            }, 0);#}
 
                                         }).fail(function (jqXHR) {
                                             bootbox.alert(jqXHR.responseText);
