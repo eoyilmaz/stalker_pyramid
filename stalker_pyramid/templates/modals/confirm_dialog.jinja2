@@ -22,11 +22,7 @@
             var submit_button = $(this);
 
 
-            var url;
-            url = '{{ action }}';
-
-{#            console.debug('url: '+url);#}
-
+            var url= '{{ action }}';
             if(url==''){
                 $('#dialog_template').modal('hide');
             }

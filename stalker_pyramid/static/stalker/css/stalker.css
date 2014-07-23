@@ -465,7 +465,7 @@ tr .odd > td .ticket_BLOCKER {
 .open-text a {
   color: #ffc657;
 }
-.open-cmpl {
+.btn-open {
   background-color: #ffc657 !important;
 }
 .label-open {
@@ -481,34 +481,34 @@ tr .odd > td .ticket_BLOCKER {
 .header-color-open + .widget-body {
   border-color: #ffc657;
 }
-.close {
-  background-color: #82af6f;
+.cls {
+  background-color: #abbac3;
   color: white;
 }
-.close a {
+.cls a {
   color: white;
 }
-.close-text {
-  color: #82af6f;
+.cls-text {
+  color: #abbac3;
 }
-.close-text a {
-  color: #82af6f;
+.cls-text a {
+  color: #abbac3;
 }
-.label-close {
-  background-color: #82af6f !important;
+.label-cls {
+  background-color: #abbac3 !important;
 }
-.btn-close {
-  background-color: #82af6f !important;
+.btn-cls {
+  background-color: #abbac3 !important;
 }
-.infobox-close.infobox-dark {
-  background-color: #82af6f;
+.infobox-cls.infobox-dark {
+  background-color: #abbac3;
 }
-.header-color-close {
-  background: #82af6f;
-  border-color: #82af6f;
+.header-color-cls {
+  background: #abbac3;
+  border-color: #abbac3;
 }
-.header-color-close + .widget-body {
-  border-color: #82af6f;
+.header-color-cls + .widget-body {
+  border-color: #abbac3;
 }
 .black2 {
   background-color: #1f1f1f;

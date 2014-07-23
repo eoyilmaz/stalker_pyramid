@@ -1358,6 +1358,7 @@ def get_tasks(request):
 
     order_by_params = request.GET.getall('order_by')
     logger.debug('order_by_params: %s' % order_by_params)
+
     order_by = generate_order_by_clause(order_by_params)
     if order_by == '':
         # use default

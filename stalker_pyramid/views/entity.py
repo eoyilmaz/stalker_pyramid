@@ -903,7 +903,7 @@ def delete_entity_dialog(request):
     entity_id = request.matchdict.get('id')
     entity = Entity.query.get(entity_id)
 
-    action = '/entity/%s/delete' % entity_id
+    action = '/entities/%s/delete' % entity_id
 
     came_from = request.params.get('came_from', '/')
 

@@ -52,57 +52,92 @@
 {% block extrascripts %}
 
     {% raw %}
-    <script id="tmpl_itemThead" type="text/x-dot-template">
-
-    <tr>
-        <th>Daily</th>
-        <th>Created By</th>
-        <th>Status</th>
-        <th>Links</th>
-        <th></th>
-    </tr>
-    </script>
+        <script id="tmpl_itemThead" type="text/x-dot-template">
+            <tr>
+                <th>Daily</th>
+                <th>Created By</th>
+                <th>Status</th>
+                <th>Links</th>
+                <th></th>
+            </tr>
+        </script>
     {% endraw %}
 
     {% raw %}
-    <script id="tmpl_itemRow" type="text/x-dot-template">
-        <tr>
-            <td><a href='{{=it.item_view_link}}'>{{=it.name}}</a>
-            </td>
-            <td><a href='/users/{{=it.created_by_id}}/view'>{{=it.created_by_name}}</a>
-            </td>
-            <td><span class="label label-large label-{{=it.status_code }}"> {{=it.status_name }}</span>
-            </td>
-            <td>{{=it.link_count}}
-            </td>
-            <td>
-                 {{ if (it.item_update_link) { }}
-                <a  class="blue"
+        <script id="tmpl_itemRow" type="text/x-dot-template">
+            <tr>
+                <td><a href='{{=it.item_view_link}}'>{{=it.name}}</a>
+                </td>
+                <td><a href='/users/{{=it.created_by_id}}/view'>{{=it.created_by_name}}</a>
+                </td>
+                <td><span class="label label-large label-{{=it.status_code }}"> {{=it.status_name }}</span>
+                    <div class="inline position-relative">
+                        <button class="btn btn-minier bigger dropdown-toggle btn-{{=it.status_code }}"
+                                data-toggle="dropdown">
+                            <i class="icon-angle-down icon-only bigger-120"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-icon-only dropdown-yellow pull-right dropdown-caret dropdown-close">
+                            <li>
+                                {{ if (it.status_code == 'open') {}}
+                                    <a href="/dailies/{{=it.id}}/update/inline/dialog?attr_name=status&attr_value=CLS"
+                                       class="tooltip-success"
+                                       data-rel="tooltip"
+                                       data-target="#dialog_template"
+                                       data-toggle="modal"
+                                       data-keyboard=false
+                                       title="Closed">
+                                           <span class="cmpl-text">
+                                               <i class="icon-ok bigger-110"></i>Closed
+                                           </span>
+                                    </a>
+                                {{ } else { }}
+                                    <a href="/dailies/{{=it.id}}/update/inline/dialog?attr_name=status&attr_value=OPEN"
+                                       class="tooltip-success"
+                                       data-rel="tooltip"
+                                       data-target="#dialog_template"
+                                       data-toggle="modal"
+                                       data-keyboard=false
+                                       title="Open">
+                                           <span class="cmpl-text">
+                                               <i class="icon-ok bigger-110"></i>Open
+                                           </span>
+                                    </a>
+                                {{ } }}
+                            </li>
+                        </ul>
+                    </div>
+                </td>
+                <td>{{=it.link_count}}
+                </td>
+                <td>
+                     {{ if (it.item_update_link) { }}
+                    <a  class="blue"
+                        data-target="#dialog_template"
+                        data-toggle="modal"
+                        data-keyboard=false
+                        href="{{=it.item_update_link}}">
+                        <i class="icon-edit bigger-130"></i>
+                    </a>{{ } }}
 
-                    href="{{=it.item_update_link}}">
-                    <i class="icon-edit bigger-130"></i>
-                </a>{{ } }}
-
-                {{ if (it.item_remove_link) { }}
-                <a  class="red"
-                    data-target="#dialog_template"
-                    data-toggle="modal"
-                    data-keyboard=false
-                    href="{{=it.item_remove_link}}">
-                    <i class="icon-trash bigger-130"></i>
-                </a>{{ } }}
-            </td>
-        </tr>
-    </script>
+                    {{ if (it.item_remove_link) { }}
+                    <a  class="red"
+                        data-target="#dialog_template"
+                        data-toggle="modal"
+                        data-keyboard=false
+                        href="{{=it.item_remove_link}}">
+                        <i class="icon-trash bigger-130"></i>
+                    </a>{{ } }}
+                </td>
+            </tr>
+        </script>
     {% endraw %}
 
     <script>
+        var tableParameters = {};
+        var sortingParameters = [[0, 'desc'], [1, 'desc']];
+        var tableDataAddress = '{{ request.route_path('get_project_dailies', id=entity.id) }}';
 
-        var tableParameters = {}
-        var sortingParameters = [[0, 'asc'], [1, 'desc']]
-        var tableDataAddress = '{{ request.route_path('get_project_dailies', id=entity.id) }}'
 
-{#     console.log('tableDataAddress' + tableDataAddress)#}
 
     </script>
 

@@ -91,7 +91,7 @@ def create_note(request):
         entity.notes.append(note)
 
     logger.debug('note is created by %s' % logged_in_user.name)
-    request.session.flash('note is created by %s' % logged_in_user.name)
+    request.session.flash('success: note is created by %s' % logged_in_user.name)
 
     return Response('Task note is created')
 

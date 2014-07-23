@@ -59,7 +59,6 @@
 {% block extrascripts %}
     {% raw %}
     <script id="tmpl_itemThead" type="text/x-dot-template">
-
         <tr>
             <th>Thumbnail</th>
             <th>Name</th>
@@ -113,15 +112,13 @@
 
     <script>
 
-        var tableParameters = {"aoColumns": [null, null, null, {'sType': 'num-html'},{'sType': 'num-html'},null, null]}
-        var sortingParameters = [[0, 'asc']]
-        var tableDataAddress = '{{ request.route_path('get_entity_users', id=entity.id) }}'
-
+        var tableParameters = {"aoColumns": [null, null, null, {'sType': 'num-html'},{'sType': 'num-html'},null, null]};
+        var sortingParameters = [[0, 'asc']];
+        var tableDataAddress;
         {% if entity.entity_type == 'Studio' %}
-            tableDataAddress = '{{ request.route_path('get_users') }}'
+            tableDataAddress = '{{ request.route_path('get_users') }}';
         {% else %}
-            tableDataAddress = '{{ request.route_path('get_entity_users', id=entity.id) }}'
-
+            tableDataAddress = '{{ request.route_path('get_entity_users', id=entity.id) }}';
         {% endif %}
 
     </script>

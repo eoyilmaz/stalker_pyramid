@@ -87,22 +87,14 @@
 
     <script>
 
-        var tableParameters = {}
-        var sortingParameters = [
-            [0, 'asc']
-        ]
+        var tableParameters = {};
+        var sortingParameters = [[0, 'asc']];
         var tableDataAddress;
-
-
         {% if entity %}
-            tableDataAddress = '{{request.route_path('get_entity_groups', id=entity.id) }}'
-
+            tableDataAddress = '{{request.route_path('get_entity_groups', id=entity.id) }}';
         {% else %}
-            tableDataAddress = '{{ request.route_path('get_groups') }}'
+            tableDataAddress = '{{ request.route_path('get_groups') }}';
         {% endif %}
-
-{#        console.log('tableDataAddress' + tableDataAddress)#}
-
     </script>
 
 {% endblock extrascripts %}

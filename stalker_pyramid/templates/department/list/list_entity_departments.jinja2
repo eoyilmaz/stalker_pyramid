@@ -102,13 +102,9 @@
     {% endraw %}
 
     <script>
-
-        var tableParameters = {}
-        var sortingParameters = [[0, 'asc'], [1, 'desc']]
-        var tableDataAddress = '{{ request.route_path('get_entity_departments', id=entity.id) }}'
-
-{#     console.log('tableDataAddress' + tableDataAddress)#}
-
+        var tableParameters = {};
+        var sortingParameters = [[0, 'asc'], [1, 'desc']];
+        var tableDataAddress = '{{ request.route_path('get_entity_departments', id=entity.id) }}';
     </script>
 
 {% endblock extrascripts %}

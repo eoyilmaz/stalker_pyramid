@@ -313,6 +313,8 @@ def main(global_config, **settings):
 
     config.add_route('create_daily',        'dailies/create')
     config.add_route('update_daily',        'dailies/{id}/update')
+    config.add_route('inline_update_daily', 'dailies/{id}/update/inline')
+    config.add_route('inline_update_daily_dialog', 'dailies/{id}/update/inline/dialog')
 
     config.add_route('view_daily',          'dailies/{id}/view')
     config.add_route('get_daily_outputs',          'dailies/{id}/outputs/') # json

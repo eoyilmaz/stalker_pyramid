@@ -21,18 +21,21 @@
 
 import datetime
 from pyramid.view import view_config
+from pyramid_mailer.message import Attachment
 from stalker import db, Project, Status, Daily, Link, Task
 from stalker.db import DBSession
 import transaction
 from webob import Response
 from stalker_pyramid.views import get_logged_in_user, logger, PermissionChecker, \
     milliseconds_since_epoch, local_to_utc
+from stalker_pyramid.views.link import replace_img_data_with_links, \
+    MediaManager
 from stalker_pyramid.views.task import generate_recursive_task_query
 
 
 @view_config(
     route_name='create_daily_dialog',
-    renderer='templates/daily/dialog/create_daily_dialog.jinja2'
+    renderer='templates/daily/dialog/daily_dialog.jinja2'
 )
 def create_daily_dialog(request):
     """called when creating dailies
@@ -72,8 +75,8 @@ def create_daily(request):
     name = request.params.get('name')
     description = request.params.get('description')
 
-    status_code = 'OPEN'
-    status = Status.query.filter(Status.code == status_code).first()
+    status_id = request.params.get('status_id')
+    status = Status.query.filter(Status.id == status_id).first()
 
     project_id = request.params.get('project_id', None)
     project = Project.query.filter(Project.id == project_id).first()
@@ -105,7 +108,7 @@ def create_daily(request):
 
 @view_config(
     route_name='update_daily_dialog',
-    renderer='templates/daily/dialog/update_daily_dialog.jinja2'
+    renderer='templates/daily/dialog/daily_dialog.jinja2'
 )
 def update_daily_dialog(request):
     """called when updating dailies
@@ -119,7 +122,9 @@ def update_daily_dialog(request):
     daily_id = request.matchdict.get('id', -1)
     daily = Daily.query.filter(Daily.id == daily_id).first()
 
+
     return {
+        'mode':'Update',
         'has_permission': PermissionChecker(request),
         'logged_in_user': logged_in_user,
         'daily': daily,
@@ -148,8 +153,8 @@ def update_daily(request):
     name = request.params.get('name')
     description = request.params.get('description')
 
-    status_code = request.params.get('status_code', None)
-    status = Status.query.filter(Status.code == status_code).first()
+    status_id = request.params.get('status_id')
+    status = Status.query.filter(Status.id == status_id).first()
 
     if not name:
         return Response('Please supply a name', 500)
@@ -167,9 +172,7 @@ def update_daily(request):
     daily.date_updated = utc_now
     daily.updated_by = logged_in_user
 
-
-
-    request.session.flash('Success: Successfully updated daily')
+    request.session.flash('success: Successfully updated daily')
     return Response('Successfully updated daily')
 
 @view_config(
@@ -180,6 +183,9 @@ def get_dailies(request):
 
     project_id = request.matchdict.get('id')
     logger.debug('---------------------project_id  : %s' % project_id)
+
+    status_code = request.params.get('status_code',None)
+    status = Status.query.filter(Status.code==status_code).first()
 
     sql_query = """
         select
@@ -207,9 +213,15 @@ def get_dailies(request):
             join "Dailies" on "Dailies".id = "Daily_Links".daily_id
             group by "Daily_Links".daily_id
         ) as daily_count on daily_count.daily_id ="Dailies".id
-        where "Projects".id = %(project_id)s
+        where "Projects".id = %(project_id)s %(additional_condition)s
     """
-    sql_query = sql_query % {'project_id': project_id}
+
+    additional_condition = ''
+    if status:
+        additional_condition = 'and "Dailies_Statuses".id=%s' % status.id
+
+
+    sql_query = sql_query % {'project_id': project_id, 'additional_condition':additional_condition}
 
     result = db.DBSession.connection().execute(sql_query)
 
@@ -566,4 +578,89 @@ def remove_link_to_daily(request):
     return Response('Output is removed to daily: %s '% daily.name)
 
 
+@view_config(
+    route_name='inline_update_daily_dialog',
+    renderer='templates/modals/confirm_dialog.jinja2'
+)
+def inline_update_daily_dialog(request):
+    """works when task has at least one answered review
+    """
+    logger.debug('inline_update_daily_dialog is starts')
+
+    daily_id = request.matchdict.get('id')
+    daily = Daily.query.filter(Daily.id == daily_id).first()
+
+    attr_name = request.params.get('attr_name', None)
+    attr_value = request.params.get('attr_value', None)
+
+    action = '/dailies/%s/update/inline?attr_name=%s&attr_value=%s' % (daily_id,attr_name, attr_value)
+    came_from = request.params.get('came_from', '/')
+
+    message = '%s of %s Daily is going to set to %s. ' \
+              '<br><br>Are you sure?'% (attr_name.upper(), daily.name, attr_value )
+
+    logger.debug('action: %s' % action)
+
+    return {
+        'message': message,
+        'came_from': came_from,
+        'action': action
+    }
+
+@view_config(
+    route_name='inline_update_daily'
+)
+def inline_update_daily(request):
+    """Inline updates the given daily with the data coming from the request
+    """
+
+    logger.debug('INLINE UPDATE DAILY IS RUNNING')
+
+    logged_in_user = get_logged_in_user(request)
+
+    # *************************************************************************
+    # collect data
+    attr_name = request.params.get('attr_name', None)
+    attr_value = request.params.get('attr_value', None)
+
+    logger.debug('attr_name %s', attr_name)
+    logger.debug('attr_value %s', attr_value)
+
+    # get daily
+    daily_id = request.matchdict.get('id', -1)
+    daily = Daily.query.filter(Daily.id == daily_id).first()
+
+    # update the daily
+    if not daily:
+        transaction.abort()
+        return Response("No daily found with id : %s" % daily_id, 500)
+
+    if attr_name and attr_value:
+
+        logger.debug('attr_name %s', attr_name)
+
+        if attr_name == 'status':
+
+
+            status = Status.query.filter_by(code=attr_value).first()
+
+            if not status:
+                transaction.abort()
+                return Response("No type found with id : %s" % attr_value, 500)
+
+            daily.status = status
+        else:
+            setattr(daily, attr_name, attr_value)
+
+        daily.updated_by = logged_in_user
+        utc_now = local_to_utc(datetime.datetime.now())
+        daily.date_updated = utc_now
+
+    else:
+        logger.debug('not updating')
+        return Response("MISSING PARAMETERS", 500)
+
+    return Response(
+        'Daily updated successfully %s %s' % (attr_name, attr_value)
+    )
 

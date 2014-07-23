@@ -60,7 +60,7 @@
 
             var daily = $('#daily');
 
-            $.getJSON('{{ request.route_path('get_project_dailies', id=task.project.id) }}').then(function (data) {
+            $.getJSON('{{ request.route_path('get_project_dailies', id=task.project.id, _query={'status_code':'OPEN'}) }}').then(function (data) {
                 for (var i = 0; i < data.length; i++) {
                     daily.append(daily_option_template(data[i]));
                 }
