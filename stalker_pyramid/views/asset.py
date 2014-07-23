@@ -317,7 +317,8 @@ def get_assets(request):
                         end)) * 100.0
                 )) as percent_complete,
             "Assets_Types_SimpleEntities".name as asset_type_name,
-            array_agg("Task_Resource_SimpleEntities".name) as resources
+            array_agg("Task_Resource_SimpleEntities".name) as resources,
+            array_agg("Task_Resource_SimpleEntities".id) as resources_id
         from "Tasks"
         join "Assets" on "Assets".id = "Tasks".parent_id
         join "SimpleEntities" as "Asset_SimpleEntities" on "Assets".id = "Asset_SimpleEntities".id
@@ -407,6 +408,7 @@ def get_assets(request):
         task_statuses = r[9]
         task_percent_complete = r[11]
         task_resource = r[13]
+        task_resource_id = r[14]
 
         logger.debug('task_types_names %s ' % task_types_names)
         r_data['nulls'] = []
@@ -416,19 +418,18 @@ def get_assets(request):
                 r_data[task_types_names[index1]]= []
 
         for index in range(len(task_types_names)):
+            task = {
+                     'id':task_ids[index],
+                     'name':task_names[index],
+                     'status':task_statuses[index],
+                     'percent':task_percent_complete[index],
+                     'resource_name':task_resource[index],
+                     'resource_id':task_resource_id[index]
+                    }
             if task_types_names[index]:
-                r_data[task_types_names[index]].append(
-                    [task_ids[index],
-                     task_names[index],
-                     task_statuses[index],
-                     task_percent_complete[index],
-                     task_resource[index]]
-                )
+                r_data[task_types_names[index]].append(task)
             else:
-                r_data['nulls'].append(
-                    [task_ids[index], task_names[index], task_statuses[index],
-                     task_percent_complete[index], task_resource[index]]
-                )
+                r_data['nulls'].append(task)
 
         return_data.append(r_data)
 

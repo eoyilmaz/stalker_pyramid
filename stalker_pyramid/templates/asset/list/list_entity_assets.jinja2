@@ -167,7 +167,7 @@
                        href="/tasks/{{=it.id }}/update/dialog">
                         <i class="icon-edit bigger-130"></i>
                     </a>{{ } }}<br/>
-                    <a class="white" href="#">{{=it.resource_name }}</a><br/>
+                    <a class="white" href="/users/{{=it.resource_id }}/view">{{=it.resource_name }}</a><br/>
                     {{ if (it.percent_complete!='') { }}
                         <div class="progress progress-success no-padding">
                             <div style="width:{{=it.percent_complete}}%"
@@ -266,13 +266,14 @@
                                                 var task = tasks[k]
 
                                                 task_cell.append(cell_row_template({
-                                                                                    'id': task[0],
-                                                                                    'name': task[1],
-                                                                                    'status': task[2],
-                                                                                    'status_color': task[2].toLowerCase(),
-                                                                                    'percent_complete': (task[2] == 'WIP' ? task[3] : ''),
+                                                                                    'id': task.id,
+                                                                                    'name': task.name,
+                                                                                    'status': task.status,
+                                                                                    'status_color': task.status.toLowerCase(),
+                                                                                    'percent_complete': (task.status == 'WIP' ? task.percent : ''),
                                                                                     'update_asset_action': data[i].update_asset_action,
-                                                                                    'resource_name': task[4]?task[4]:'',
+                                                                                    'resource_name': task.resource_name?task.resource_name:'',
+                                                                                    'resource_id': task.resource_id?task.resource_id:'',
                                                                                     'height':task_cell_row_height,
                                                                                     'hr': k < tasks.length-1?'<div class="hr hr2"></div>':''}));
                                             }
