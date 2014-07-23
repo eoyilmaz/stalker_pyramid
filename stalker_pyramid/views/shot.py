@@ -262,7 +262,7 @@ def get_shots(request):
     array_agg("Tasks".bid_unit)::text[] as bid_unit,
     array_agg("Tasks".schedule_timing) as schedule_timing,
     array_agg("Tasks".schedule_unit)::text[] as schedule_unit,
-    array_agg("Resources_SimpleEntities".name) as resource_name
+    array_agg("Resources_SimpleEntities".name) as resource_name,
     array_agg("Resources_SimpleEntities".id) as resource_id
 
 from "Tasks"
