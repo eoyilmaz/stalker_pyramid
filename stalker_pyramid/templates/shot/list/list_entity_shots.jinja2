@@ -165,17 +165,18 @@
                  style="padding:5px; height: 120px"">
                 <span>
                     <strong><a class="white" href="/tasks/{{=it.id }}/view">{{=it.name}}</a></strong>
-                    <div class="no-padding">
-                        {{ if (it.update_shot_action) { }}
+                    {{ if (it.update_shot_action) { }}
+
                             <a class="white pull-right"
                                data-target="#dialog_template"
                                data-toggle="modal"
                                data-keyboard=false
-                               href='/tasks/{{=it.id }}/update/schedule_timing/dialog'>
-                                <i class="icon-time bigger-130"></i>
+                               href="/tasks/{{=it.id }}/update/dialog">
+                                <i class="icon-edit bigger-130"></i>
                             </a>
 
                         {{ } }}
+                    <div class="no-padding">
                         {{ if(it.bid_timing){ }}
                             <strong>Bid: </strong>
                             <span id='bid_timing_{{=it.id}}'>{{=it.bid_timing}}</span>
@@ -200,17 +201,7 @@
                     {{ } else {}}
 
                         {{=it.status}}
-                        {{ if (it.update_shot_action) { }}
 
-                            <a class="white pull-right"
-                               data-target="#dialog_template"
-                               data-toggle="modal"
-                               data-keyboard=false
-                               href='/tasks/{{=it.id }}/update/dependencies/dialog'>
-                                <i class="icon-plus bigger-130"></i>
-                            </a>
-
-                        {{ } }}
                     {{ } }}
                 </span>
             </div>
