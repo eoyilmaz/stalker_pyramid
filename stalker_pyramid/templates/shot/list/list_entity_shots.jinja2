@@ -186,7 +186,7 @@
                             <span id='schedule_unit_{{=it.id}}'>{{=it.schedule_unit }}</span>
                         {{ } }}
                         <br/>
-                        <span>{{=it.resource_name}}</span>
+                        <span><a href='/users/{{=it.rresource_id}}/view'>{{=it.resource_name}}</a></span>
                     </div>
 
                     {{ if (it.percent_complete!='') { }}
@@ -281,18 +281,19 @@
                                         var task = tasks[0];
 
                                         shot_row.append(cell_template({
-                                                                        'id': task[0],
-                                                                        'name': task[1],
-                                                                        'status': task[2],
-                                                                        'status_color': task[2].toLowerCase(),
-                                                                        'percent_complete':(task[2]=='WIP'?task[3]:''),
+                                                                        'id': task.id,
+                                                                        'name': task.name,
+                                                                        'status': task.status,
+                                                                        'status_color': task.status.toLowerCase(),
+                                                                        'percent_complete':(task.status=='WIP'?task.percent:''),
                                                                         'update_shot_action': data[i].update_shot_action,
-                                                                        'bid_timing':task[4],
-                                                                        'bid_unit':task[5],
-                                                                        'schedule_timing':task[6],
-                                                                        'schedule_unit':task[7],
-                                                                        'resource_name':task[8]
-                                                                       }));
+                                                                        'bid_timing':task.bid_timing,
+                                                                        'bid_unit':task.bid_unit,
+                                                                        'schedule_timing':task.schedule_timing,
+                                                                        'schedule_unit':task.schedule_unit,
+                                                                        'resource_name':task.resource_name,
+                                                                        'resource_id':task.resource_id
+                                        }));
                                     } else {
                                         shot_row.append(cell_template({
                                                                         'id': '',

@@ -317,7 +317,7 @@ def get_assets(request):
                         end)) * 100.0
                 )) as percent_complete,
             "Assets_Types_SimpleEntities".name as asset_type_name,
-            array_agg("Task_Resource_SimpleEntities".name) as resources,
+            array_agg("Task_Resource_SimpleEntities".name) as resources_name,
             array_agg("Task_Resource_SimpleEntities".id) as resources_id
         from "Tasks"
         join "Assets" on "Assets".id = "Tasks".parent_id
@@ -407,7 +407,7 @@ def get_assets(request):
         task_names = r[8]
         task_statuses = r[9]
         task_percent_complete = r[11]
-        task_resource = r[13]
+        task_resource_name = r[13]
         task_resource_id = r[14]
 
         logger.debug('task_types_names %s ' % task_types_names)
@@ -423,7 +423,7 @@ def get_assets(request):
                      'name':task_names[index],
                      'status':task_statuses[index],
                      'percent':task_percent_complete[index],
-                     'resource_name':task_resource[index],
+                     'resource_name':task_resource_name[index],
                      'resource_id':task_resource_id[index]
                     }
             if task_types_names[index]:

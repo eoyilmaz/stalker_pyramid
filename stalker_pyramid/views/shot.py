@@ -263,6 +263,7 @@ def get_shots(request):
     array_agg("Tasks".schedule_timing) as schedule_timing,
     array_agg("Tasks".schedule_unit)::text[] as schedule_unit,
     array_agg("Resources_SimpleEntities".name) as resource_name
+    array_agg("Resources_SimpleEntities".id) as resource_id
 
 from "Tasks"
 join "Shots" on "Shots".id = "Tasks".parent_id
@@ -369,7 +370,8 @@ order by "Shot_SimpleEntities".name
         task_bid_unit = r[15]
         task_schedule_timing = r[16]
         task_schedule_unit = r[17]
-        task_resource = r[18]
+        task_resource_name = r[18]
+        task_resource_id = r[19]
 
         r_data['nulls'] = []
 
@@ -380,14 +382,22 @@ order by "Shot_SimpleEntities".name
                 r_data[task_types_names[index1]]= []
 
         for index in range(len(task_types_names)):
+            task = {
+                     'id':task_ids[index],
+                     'name':task_names[index],
+                     'status':task_statuses[index],
+                     'percent':task_percent_complete[index],
+                     'bid_timing':task_bid_timing[index],
+                     'bid_unit':task_bid_unit[index],
+                     'schedule_timing':task_schedule_timing[index],
+                     'schedule_unit':task_schedule_unit[index],
+                     'resource_name':task_resource_name[index],
+                     'resource_id':task_resource_id[index]
+                    }
             if task_types_names[index]:
-                r_data[task_types_names[index]].append([task_ids[index], task_names[index], task_statuses[index],
-                     task_percent_complete[index], task_bid_timing[index], task_bid_unit[index], task_schedule_timing[index], task_schedule_unit[index],task_resource[index]])
+                r_data[task_types_names[index]].append(task)
             else:
-                r_data['nulls'].append(
-                    [task_ids[index], task_names[index], task_statuses[index],
-                     task_percent_complete[index], task_bid_timing[index], task_bid_unit[index], task_schedule_timing[index], task_schedule_unit[index],task_resource[index]]
-                )
+                r_data['nulls'].append(task)
 
         return_data.append(r_data)
 
