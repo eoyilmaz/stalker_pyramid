@@ -19,8 +19,8 @@
 </div>
 {% raw %}
     <script id="tmpl_related_asset_item" type="text/x-dot-template">
-        <li>
-            <a href="/assets/{{=it.id}}/view" data-rel="colorbox">
+        <li id="related_asset_{{=it.id}}">
+            <a href="/assets/{{=it.id}}/view" style="width: 100px; height: auto; data-rel="colorbox">
                 <img alt="150x150" src={{=it.thumbnail_full_path  }} />
                 <div class="text">
                 <div class="inner">{{=it.name}}</div>
@@ -33,7 +33,9 @@
 
 <script type="text/javascript">
     $(document).ready(function () {
-         $.getJSON('/tasks/{{ entity.id }}/related/Asset/').then(function (data) {
+        var related_asset_template = doT.template($('#tmpl_related_asset_item').html());
+        var related_assets_list = $('#related_assets_list');
+        $.getJSON('/tasks/{{ entity.id }}/related/Asset/').then(function (data) {
              for (var i = 0; i < data.length; i++) {
                  console.log(data[i].name)
                  if (data[i].thumbnail_full_path == null) {
@@ -43,9 +45,11 @@
                     data[i].thumbnail_full_path = '/' + data[i].thumbnail_full_path;
                 }
 
-                var related_asset_template = doT.template($('#tmpl_related_asset_item').html());
-                var related_assets_list = $('#related_assets_list');
-                related_assets_list.append(related_asset_template(data));
+
+                var related_asset_li = $('#related_asset_'+data[i].id);
+                if (related_asset_li.length==0){
+                    related_assets_list.append(related_asset_template(data[i]));
+                }
              }
         })
     })
