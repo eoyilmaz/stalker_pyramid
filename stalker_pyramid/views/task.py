@@ -4028,6 +4028,58 @@ def delete_task(request):
     return Response('Successfully deleted task: %s' % task_id)
 
 
+
+
+@view_config(
+    route_name='get_task_related_entities',
+    renderer='json'
+)
+def get_task_related_entity(request):
+
+    task_id = request.matchdict.get('id')
+    task = Task.query.get(task_id)
+
+    entity_type = request.matchdict.get('e_type')
+
+    if not task:
+        transaction.abort()
+        return Response('Can not find a Task with id: %s' % task_id, 500)
+
+
+    task_related_assets = []
+    task_related_assets.extend(get_task_related_entities(task, entity_type))
+    return task_related_assets
+
+
+def get_task_related_entities(task, entity_type):
+
+    task_related_assets = []
+    if task.children:
+        for child in task.children:
+            task_related_assets.extend(get_task_related_entities(child, entity_type))
+    else:
+        for dep_task in task.depends:
+            asset = get_task_parent(dep_task, entity_type)
+            if asset:
+                if asset not in task_related_assets:
+                    task_related_assets.append({
+                                'id': asset.id,
+                                'name': asset.name,
+                                'thumbnail_full_path': asset.thumbnail.full_path if asset.thumbnail else None
+                                })
+
+    return task_related_assets
+
+def get_task_parent(task, entity_type):
+    if task.parent:
+        if task.parent.entity_type == entity_type:
+            return task.parent
+        else:
+            get_task_parent(task.parent, entity_type)
+    else:
+        return task
+
+
 def get_child_task_events(task):
     task_events = []
 

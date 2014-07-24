@@ -571,6 +571,8 @@ def main(global_config, **settings):
     config.add_route('get_task_events',   'tasks/{id}/events/')  #json
     config.add_route('get_task_children_task_type',  'tasks/{type}/children/task_type/')  # json
 
+
+    config.add_route('get_task_related_entities',  'tasks/{id}/related/{e_type}/') # json
     config.add_route('get_task_dependency',  'tasks/{id}/dependency/{type}/') # json
     config.add_route('get_task_tickets',  'tasks/{id}/tickets')  # json
 

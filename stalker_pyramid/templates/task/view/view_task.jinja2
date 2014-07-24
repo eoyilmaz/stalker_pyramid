@@ -361,41 +361,46 @@
                                         </div>
                                     </div>
                                 </div>
+
+
+                                <div class="space-4"></div>
+
+                                <div class="row-fluid">
+                                    <div id="depends_box"
+                                         style="width: 50%"
+                                         class="span6 widget-box transparent">
+                                        <div class="widget-header widget-header-small header-color-grey">
+                                            <h4 class="smaller">
+                                                <i class="icon-long-arrow-left"></i>Depends To
+                                            </h4>
+                                        </div>
+                                        <div class="widget-body">
+                                            <div class="widget-main">
+                                                <div id="depends_tree" class="tree"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div id="dependent_of_box"
+                                         style="width: 50%"
+                                         class="span6 widget-box transparent">
+                                        <div class="widget-header widget-header-small header-color-grey">
+                                            <h4 class="smaller">Dependent Of
+                                                <i class="icon-long-arrow-right"></i>
+                                            </h4>
+                                        </div>
+                                        <div class="widget-body">
+                                            <div class="widget-main">
+                                                <div id="dependent_of_tree" class="tree"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% else %}
+                                {% if entity.type.name == 'Scene' %}
+                                    {% include 'asset/list/list_task_related_assets.jinja2' %}
+                                {% endif %}
                             {% endif %}
-
-                            <div class="space-4"></div>
-
-                            <div class="row-fluid">
-                                <div id="depends_box"
-                                     style="width: 50%"
-                                     class="span6 widget-box transparent">
-                                    <div class="widget-header widget-header-small header-color-grey">
-                                        <h4 class="smaller">
-                                            <i class="icon-long-arrow-left"></i>Depends To
-                                        </h4>
-                                    </div>
-                                    <div class="widget-body">
-                                        <div class="widget-main">
-                                            <div id="depends_tree" class="tree"></div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div id="dependent_of_box"
-                                     style="width: 50%"
-                                     class="span6 widget-box transparent">
-                                    <div class="widget-header widget-header-small header-color-grey">
-                                        <h4 class="smaller">Dependent Of
-                                            <i class="icon-long-arrow-right"></i>
-                                        </h4>
-                                    </div>
-                                    <div class="widget-body">
-                                        <div class="widget-main">
-                                            <div id="dependent_of_tree" class="tree"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -437,7 +442,7 @@
 {#        });#}
 {#    </script>#}
 
-    <script type="text/javascript">
+<script type="text/javascript">
 
     function showErrorAlert(reason, detail) {
         var msg = '';
@@ -610,6 +615,9 @@
                 var title = data[i].title;
 
                 if (data[i].entity_type == 'tasks') {
+
+
+
                     for (var k = 0; k < data[i].resources.length; k++) {
                         var prop_id = (data[i].resources[k].id).toString();
                         title += ' - ' + data[i].resources[k].name;
@@ -653,6 +661,8 @@
                 events.push(event);
             }
 
+
+
             drawCalendar('calendar', events);
             drawTree('resource_tree', resources);
         });
@@ -669,9 +679,6 @@
                 for (var i = 0; i < data.length; i++) {
 
                     var task_id = (data[i].id).toString();
-
-                    var percent_complete_str = '<span class="label label-' + data[i].status_color + '">' + data[i].status + '</span>';
-
                     var time_to_complete_str = '<span> ( ' +  meaningful_time_between(data[i].schedule_seconds,data[i].total_logged_seconds) + ' )</span>';
 
                     if (!depends[task_id]) {
@@ -702,9 +709,11 @@
                 }
             });
         };
+        {% if entity.is_leaf %}
+            get_dependency('depends');
+            get_dependency('dependent_of');
 
-        get_dependency('depends');
-        get_dependency('dependent_of');
+        {% endif %}
     });
 
     $.getJSON('/entities/{{ entity.id }}/version/used_by/tasks/').then(function (data) {

@@ -1,0 +1,53 @@
+<div class="row-fluid">
+    <div id="related_assets"
+         class="widget-box transparent">
+        <div class="widget-header  widget-header-small">
+            <h4 class="smaller">
+                <i class="icon-long-arrow-down"></i>Related Assets
+            </h4>
+        </div>
+        <div class="widget-body">
+            <div class="widget-main">
+                <div >
+                    <ul id="related_assets_list" class="ace-thumbnails">
+
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% raw %}
+    <script id="tmpl_related_asset_item" type="text/x-dot-template">
+        <li>
+            <a href="/assets/{{=it.id}}/view" data-rel="colorbox">
+                <img alt="150x150" src={{=it.thumbnail_full_path  }} />
+                <div class="text">
+                <div class="inner">{{=it.name}}</div>
+                </div>
+            </a>
+        </li>
+     </script>
+{% endraw %}
+
+
+<script type="text/javascript">
+    $(document).ready(function () {
+         $.getJSON('/tasks/{{ entity.id }}/related/Asset/').then(function (data) {
+             for (var i = 0; i < data.length; i++) {
+                 console.log(data[i].name)
+                 if (data[i].thumbnail_full_path == null) {
+                    data[i].thumbnail_full_path = '{{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}';
+                }
+                else {
+                    data[i].thumbnail_full_path = '/' + data[i].thumbnail_full_path;
+                }
+
+                var related_asset_template = doT.template($('#tmpl_related_asset_item').html());
+                var related_assets_list = $('#related_assets_list');
+                related_assets_list.append(related_asset_template(data));
+             }
+        })
+    })
+
+</script>
