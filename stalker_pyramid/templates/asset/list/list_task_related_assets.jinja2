@@ -1,14 +1,13 @@
 <div class="row-fluid">
-    <div id="related_assets"
-         class="widget-box transparent">
+    <div class="widget-box transparent">
         <div class="widget-header  widget-header-small">
-            <h4 class="smaller">
-                <i class="icon-long-arrow-down"></i>Related Assets
+            <h4 class="smaller grey">
+                <i class="icon-puzzle-piece blue"></i>Related Assets
             </h4>
         </div>
         <div class="widget-body">
             <div class="widget-main">
-                <div >
+                <div class="row-fluid">
                     <ul id="related_assets_list" class="ace-thumbnails">
 
                     </ul>
@@ -17,6 +16,8 @@
         </div>
     </div>
 </div>
+
+<div class="space-4"></div>
 {% raw %}
     <script id="tmpl_related_asset_item" type="text/x-dot-template">
         <li id="related_asset_{{=it.id}}">

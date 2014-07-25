@@ -310,9 +310,12 @@
                                 </div>
                             {% else %}
                                 {% if entity.entity_type == 'Asset' or entity.entity_type == 'Shot' or entity.entity_type == 'Task' %}
-                                        <div class="row-fluid">
-                                            {% include 'entity/entity_children_progress.jinja2' %}
-                                        </div>
+                                    {% if entity.type.name == 'Scene'%}
+                                        {% include 'asset/list/list_task_related_assets.jinja2' %}
+                                    {% endif %}
+                                    <div class="row-fluid">
+                                        {% include 'entity/entity_children_progress.jinja2' %}
+                                    </div>
                                 {% endif %}
                             {% endif %}
 
@@ -327,6 +330,7 @@
                                     {% include 'components/editable_list.jinja2' %}
 
                                 {% else %}
+
                                     <div id="resources_box"
                                          class="widget-box  transparent">
                                         <div class="widget-header widget-header-small">
@@ -396,10 +400,7 @@
                                         </div>
                                     </div>
                                 </div>
-                            {% else %}
-                                {% if entity.type.name == 'Scene' %}
-                                    {% include 'asset/list/list_task_related_assets.jinja2' %}
-                                {% endif %}
+
                             {% endif %}
                         </div>
                     </div>
