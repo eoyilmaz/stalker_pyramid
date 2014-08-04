@@ -88,7 +88,7 @@ def create_daily(request):
         return Response('Please supply a description', 500)
 
     if not status:
-        return Response('There is no status with code: %s' % status_code, 500)
+        return Response('There is no status with code: %s' % status_id, 500)
 
     if not project:
         return Response('There is no project with id: %s' % project_id, 500)
