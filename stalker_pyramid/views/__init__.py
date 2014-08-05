@@ -97,7 +97,7 @@ class StdErrToHTMLConverter():
         """replaces tjp ids in error messages with proper links
         """
         import re
-        pattern = r"Project[\w0-9\._]+[0-9]"
+        pattern = r"Task[\w0-9\._]+[0-9]"
 
         all_tjp_ids = re.findall(pattern, message)
         new_message = message

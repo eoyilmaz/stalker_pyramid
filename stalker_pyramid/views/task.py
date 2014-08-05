@@ -313,7 +313,7 @@ def duplicate_task(task):
         responsible=task.responsible,
         start=task.start,
         end=task.end,
-        thumbnail=task.thumbnail,
+        # thumbnail=task.thumbnail,
         type=task.type,
         watchers=task.watchers,
         date_created=local_to_utc(datetime.datetime.now()),
