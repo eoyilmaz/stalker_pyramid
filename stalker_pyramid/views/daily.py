@@ -447,25 +447,25 @@ def get_daily_outputs(request):
 
         notes = []
 
-        note_ids = r[12]
-        note_created_by_ids = r[13]
-        note_created_by_names = r[14]
-        note_created_by_thumbnails = r[15]
-        note_contents = r[16]
-        note_created_dates = r[17]
-        note_type_names = r[18]
+        note_ids = r[13]
+        note_created_by_ids = r[14]
+        note_created_by_names = r[15]
+        note_created_by_thumbnails = r[16]
+        note_contents = r[17]
+        note_created_dates = r[18]
+        note_type_names = r[19]
 
         if note_ids:
             for j in range(len(note_ids)):
                 if note_ids[j]:
                     note = {
-                            'id':note_ids[j],
-                            'created_by_id':note_created_by_ids[j],
-                            'created_by_name': note_created_by_names[j],
-                            'created_by_thumbnail':note_created_by_thumbnails[j],
-                            'content':note_contents[j],
-                            'created_date': milliseconds_since_epoch(note_created_dates[j]),
-                            'note_type_name': note_type_names[j]
+                        'id': note_ids[j],
+                        'created_by_id': note_created_by_ids[j],
+                        'created_by_name': note_created_by_names[j],
+                        'created_by_thumbnail': note_created_by_thumbnails[j],
+                        'content': note_contents[j],
+                        'created_date': milliseconds_since_epoch(note_created_dates[j]),
+                        'note_type_name': note_type_names[j]
                     }
                     if note not in notes:
                         notes.append(note)
@@ -476,7 +476,7 @@ def get_daily_outputs(request):
             'task_status_code': r[2].lower(),
             'task_status_name': r[3],
             'links': links,
-            'notes':notes
+            'notes': notes
         }
         tasks.append(task)
 
