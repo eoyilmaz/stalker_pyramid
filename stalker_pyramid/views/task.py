@@ -44,7 +44,7 @@ from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
                                    StdErrToHTMLConverter,
                                    multi_permission_checker,
                                    dummy_email_address, local_to_utc,
-                                   get_user_os, get_path_converter)
+                                   get_path_converter)
 from stalker_pyramid.views.link import (replace_img_data_with_links,
                                         MediaManager)
 from stalker_pyramid.views.type import query_type
@@ -571,7 +571,7 @@ def convert_to_dgrid_gantt_task_format(tasks):
     # This should use pure SQL
     if not isinstance(tasks, list):
         response = HTTPServerError()
-        response.text = u'This is a not a list of tasks'
+        response.text = 'This is a not a list of tasks'
         raise response
 
     return [
@@ -4354,7 +4354,7 @@ def resume_task(request):
         transaction.abort()
         return Response('Cannot resume %s tasks' % task.status.code, 500)
 
-    task.resume();
+    task.resume()
 
 
     logged_in_user = get_logged_in_user(request)
