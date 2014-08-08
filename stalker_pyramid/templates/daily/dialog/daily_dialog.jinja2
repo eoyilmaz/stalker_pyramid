@@ -105,7 +105,7 @@
             submit_button.button('loading');
             var daily_form = $('#daily_form');
 
-            var action = '/dailies/create/';
+            var action = '/dailies/create';
             {% if mode=='Update' %}
                 action='/dailies/{{ daily.id }}/update';
                 {% set project = daily.project %}
