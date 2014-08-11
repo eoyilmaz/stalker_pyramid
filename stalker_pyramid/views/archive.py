@@ -140,7 +140,9 @@ sourceimages/3dPaintTextures"""
         from stalker import Repository
         all_repos = Repository.query.all()
         for repo in all_repos:
-            os.environ['$REPO%s' % repo.id] = repo.path
+            logger.debug('adding repo variable $REPO%s: %s' % (repo.id,
+                                                               repo.path))
+            os.environ['REPO%s' % repo.id] = repo.path
 
         # create a new Default Project
         tempdir = tempfile.gettempdir()
