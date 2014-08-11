@@ -136,6 +136,12 @@ sourceimages/3dPaintTextures"""
         :param path: The path to the file which wanted to be flattened
         :return:
         """
+        # export repository paths first
+        from stalker import Repository
+        all_repos = Repository.query.all()
+        for repo in all_repos:
+            os.environ['$REPO%s' % repo.id] = repo.path
+
         # create a new Default Project
         tempdir = tempfile.gettempdir()
 
@@ -151,6 +157,10 @@ sourceimages/3dPaintTextures"""
 
         while len(ref_paths):
             ref_path = ref_paths.pop(0)
+            for repo in all_repos:
+                if repo.is_in_repo(ref_path):
+                    ref_path = repo.to_native_path(ref_path)
+
             new_ref_paths = \
                 cls._move_file_and_fix_references(
                     ref_path,
@@ -180,7 +190,6 @@ sourceimages/3dPaintTextures"""
           paths with.
         :return list: returns a list of paths
         """
-        #reference_resolution = {}
         original_file_name = os.path.basename(path)
         logger.debug('original_file_name: %s' % original_file_name)
 
