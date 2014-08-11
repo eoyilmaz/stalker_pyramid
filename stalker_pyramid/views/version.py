@@ -353,3 +353,87 @@ def list_version_children(request):
 #     """ % {'id': task_id}
 #
 #     return db.DBSession.connection().execute(sql_query).fetchone()[0]
+
+
+@view_config(
+    route_name='pack_version'
+)
+def pack_version(request):
+    """packs the requested version and returns a download link for it
+    """
+    version_id = request.matchdict.get('id')
+    version = Version.query.get(version_id)
+
+    if version:
+        # before doing anything check if the file exists
+        import os
+        archive_path = os.path.join(
+            version.absolute_path,
+            version.nice_name + '.zip'
+        )
+        if os.path.exists(archive_path):
+            # just serve the same file
+            logger.debug('ZIP exists, not creating it again!')
+            new_zip_path = archive_path
+        else:
+            # create the zip file
+            logger.debug('ZIP does not exists, creating it!')
+            import shutil
+            from stalker_pyramid.views.archive import Archiver
+
+            path = version.absolute_full_path
+            arch = Archiver()
+            task = version.task
+            if False:
+                assert(isinstance(version, Version))
+                assert(isinstance(task, Task))
+            project_name = version.nice_name
+            project_path = arch.flatten(path, project_name=project_name)
+
+            # append link file
+            stalker_link_file_path = os.path.join(project_path,
+                                                  'scenes/stalker_links.txt')
+
+            import stalker_pyramid
+            version_upload_link = '%s/tasks/%s/versions/list' % (
+                stalker_pyramid.stalker_server_external_url,
+                task.id
+            )
+            request_review_link = '%s/tasks/%s/view' % (
+                stalker_pyramid.stalker_server_external_url,
+                task.id
+            )
+            with open(stalker_link_file_path, 'w+') as f:
+                f.write("Version Upload Link: %s\n"
+                        "Request Review Link: %s\n" % (version_upload_link,
+                                                       request_review_link))
+            zip_path = arch.archive(project_path)
+
+            new_zip_path = os.path.join(
+                version.absolute_path,
+                os.path.basename(zip_path)
+            )
+
+            # move the zip right beside the original version file
+            shutil.move(zip_path, new_zip_path)
+
+            # now remove the temp files
+            shutil.rmtree(project_path, ignore_errors=True)
+
+        # open the zip file in browser
+        # serve the file new_zip_path
+        from pyramid.response import FileResponse
+
+        logger.debug('serving packed version file: %s' % new_zip_path)
+
+        response = FileResponse(
+            new_zip_path,
+            request=request,
+            content_type='application/force-download',
+        )
+
+        # update the content-disposition header
+        response.headers['content-disposition'] = \
+            str('attachment; filename=' + os.path.basename(new_zip_path))
+
+        return response

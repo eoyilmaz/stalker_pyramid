@@ -38,6 +38,10 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.WARNING)
 
 
+stalker_server_external_url = None
+stalker_server_internal_url = None
+
+
 def main(global_config, **settings):
     """ This function returns a Pyramid WSGI application.
     """
@@ -55,6 +59,12 @@ def main(global_config, **settings):
     db.setup(settings)
     DBSession.remove()
     DBSession.configure(extension=ZopeTransactionExtension())
+
+    # setup internal and external urls
+    global stalker_server_external_url
+    global stalker_server_internal_url
+    stalker_server_external_url = settings.get('stalker.external_url')
+    stalker_server_internal_url = settings.get('stalker.internal_url')
 
     # setup authorization and authentication
     authn_policy = AuthTktAuthenticationPolicy(
@@ -668,6 +678,8 @@ def main(global_config, **settings):
     config.add_route('get_task_versions',                   'tasks/{id}/versions/')  # jsons
     config.add_route('get_entity_versions',                 'entities/{id}/versions/')  # json
     config.add_route('get_entity_versions_used_by_tasks',   'entities/{id}/version/used_by/tasks/') # json
+
+    config.add_route('pack_version', 'versions/{id}/pack')  # json
 
     # *************************************************************************
     # Department

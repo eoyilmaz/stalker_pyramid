@@ -85,7 +85,7 @@
             bid_bar_percent = (bid_seconds/schedule_timing_seconds)*100;
             separator_bar_percent = 1;
             total_logged_bar_percent -= (bid_bar_percent+separator_bar_percent);
-            schedule_timing_bar_percent = 100-(bid_bar_percent+separator_bar_percent+total_logged_bar_percent);
+            schedule_timing_bar_percent = 100 -(bid_bar_percent+separator_bar_percent+total_logged_bar_percent);
         }
         else{
             $('#bid_alert').addClass('alert-info');
@@ -102,9 +102,9 @@
 {#        console.log('separator_bar_percent: '+separator_bar_percent);#}
 {#        console.log('total_logged_bar_percent: '+total_logged_bar_percent);#}
 {#        console.log('schedule_timing_bar_percent: '+schedule_timing_bar_percent);#}
-        $('#bid_bar').attr('style','width: '+bid_bar_percent+'%;');
-        $('#separator_bar').attr('style','width: '+separator_bar_percent+'%;');
-        $('#total_logged_bar').attr('style','width: '+total_logged_bar_percent+'%;');
-        $('#schedule_timing_bar').attr('style','width: '+schedule_timing_bar_percent+'%;');
+        $('#bid_bar').attr('style','width: ' + bid_bar_percent + '%;');
+        $('#separator_bar').attr('style','width: ' + separator_bar_percent + '%;');
+        $('#total_logged_bar').attr('style','width: ' + total_logged_bar_percent + '%;');
+        $('#schedule_timing_bar').attr('style','width: ' + schedule_timing_bar_percent + '%;');
     });
 </script>
