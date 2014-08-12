@@ -113,7 +113,7 @@
                     </div>
                     <div class="widget-body">
                         <div class="widget-main">
-                            {{=it.content.replace(/[\n]/g, '<br\>')}}
+                            {{=it.content.replace(/[\n]/g,'<br>')}}
 
                             <div class="space-3"></div>
 
@@ -126,7 +126,7 @@
                                        data-target="#dialog_template"
                                        data-toggle="modal"
                                        data-keyboard=false
-                                       href={{=it.delete_note_action }}>
+                                       href={{=it.delete_note_action}} >
                                         <i class="icon-remove red bigger-125"></i>
                                     </a>
                                     {{ } }}
@@ -299,9 +299,9 @@
                     if (task_div.length==0){
 
                         {% if logged_in_user.thumbnail %}
-                            task.logged_in_user_thumbnail = '/{{ logged_in_user.thumbnail.full_path }}'
+                            task.logged_in_user_thumbnail = '/{{ logged_in_user.thumbnail.full_path }}';
                         {% else %}
-                            task.logged_in_user_thumbnail = {{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_0.png") }}
+                            task.logged_in_user_thumbnail = '{{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_0.png") }}';
                         {% endif %}
 
                         daily_tasks_list.append(daily_task_template(task));
