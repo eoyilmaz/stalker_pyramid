@@ -19,7 +19,7 @@
 #}
 
 <div class="row-fluid">
-    {% if task.status.code in ['WIP','DREV','PREV'] %}
+    {% if task.status.code in ['WIP','DREV','PREV', 'CMPL'] %}
          <form id='upload_output_form'
               class='form-horizontal'
               role='form'
@@ -50,7 +50,7 @@
         console.debug('init dialog from append_link_to_daily_dialog.jinja2 running!');
          // update dialog header
         $('.modal-header>h3').text('Append Output To A Daily');
-        {% if task.status.code in ['WIP','DREV','PREV'] %}
+        {% if task.status.code in ['WIP','DREV','PREV', 'CMPL'] %}
             {# Daily #}
             {% raw %}
                 var daily_option_template = doT.template(

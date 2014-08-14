@@ -145,7 +145,7 @@
         $('#add_to_daily').on('click', function () {
             if(this.checked){
 
-                {% if entity.task.status.code not in ['WIP','DREV','PREV'] %}
+                {% if entity.task.status.code not in ['WIP','DREV','PREV','CMPL'] %}
                     $('#information').show();
                 {% else %}
                     $('#dailies_list').show();
