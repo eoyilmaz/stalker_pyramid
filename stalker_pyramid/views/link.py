@@ -443,8 +443,10 @@ select
 
     'repositories/' || task_repositories.repo_id || '/' || "Links".full_path as hires_full_path,
     'repositories/' || task_repositories.repo_id || '/' || "Links_ForWeb".full_path as full_path,
-    'repositories/' || task_repositories.repo_id || '/' || "Thumbnails".full_path as "thumbnail_full_path",
+    'repositories/' || task_repositories.repo_id || '/' || "Thumbnails".full_path as thumbnail_full_path,
+
     tags.name as tags,
+
     array_agg(tasks.id) as entity_id,
     array_agg(tasks.full_path) as entity_full_path,
     array_agg(tasks.entity_type) as entity_type

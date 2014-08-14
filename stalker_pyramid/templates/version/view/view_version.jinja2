@@ -103,6 +103,13 @@
                                     </div>
                                 </div>
                             {% endif %}
+                            <div class="profile-info-row">
+                                <div class="profile-info-name">Download</div>
+                                <div class="profile-info-value">
+                                    <span><a href='{{ request.route_url('pack_version', id=version.id) }}'>Download as self contained ZIP file</a></span>
+                                </div>
+                            </div>
+
                         </div>
                     </div>
                 </div>

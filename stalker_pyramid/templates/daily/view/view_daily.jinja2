@@ -46,8 +46,16 @@
         <script id="tmpl_output_item" type="text/x-dot-template">
             <li id="Output_{{=it.id}}">
                 <a href="/{{=it.full_path}}"
-                   download_href="/FD{{=it.full_path}}"
-                   title="{{=it.original_filename}}"
+
+                   thumbnail_href="{{=it.thumbnail_full_path}}"
+                   web_href="{{=it.full_path}}"
+                   hires_href="{{=it.hires_full_path}}"
+    
+                   original_filename="{{=it.original_filename}}"
+    
+                   tags="{{=it.tags }}"
+    
+                   title="{{=it.original_filename}}&#013;{{=it.entity_names}}&#013;&#013;{{=it.tags }}"
                    data-rel="colorbox"
                    class="cboxElement">
                     <div style="text-align: center; overflow: hidden; width: 150px">
@@ -82,6 +90,7 @@
             </li>
         </script>
     {% endraw %}
+
     {% raw %}
         <script id="tmpl_note_item" type="text/x-dot-template">
             <div class="timeline-item clearfix">
@@ -104,7 +113,7 @@
                     </div>
                     <div class="widget-body">
                         <div class="widget-main">
-                            {{=it.content.replace(/[\n]/g, '<br\>')}}
+                            {{=it.content.replace(/[\n]/g,'<br>')}}
 
                             <div class="space-3"></div>
 
@@ -117,7 +126,7 @@
                                        data-target="#dialog_template"
                                        data-toggle="modal"
                                        data-keyboard=false
-                                       href={{=it.delete_note_action }}>
+                                       href={{=it.delete_note_action}} >
                                         <i class="icon-remove red bigger-125"></i>
                                     </a>
                                     {{ } }}
@@ -136,7 +145,7 @@
                     <div class="widget-header widget-header-small header-color-daily ">
                         <h5>
                             <a href='/tasks/{{=it.task_id }}/view' class="white">
-                                 <i class="icon-tasks bigger-125"></i>
+                                <i class="icon-tasks bigger-125"></i>
                                 {{=it.task_name }}
                             </a>
                         </h5>
@@ -144,11 +153,9 @@
                             <span class="label label-large label-{{=it.task_status_code}}"> {{=it.task_status_name}}</span>
                         </span>
                         <div class="widget-toolbar action-buttons">
-
                             <a href="#" data-action="collapse">
                                 <i class="icon-chevron-up"></i>
                             </a>
-
                         </div>
                     </div>
                     <div class="widget-body"  style="margin: 10px">
@@ -168,17 +175,17 @@
                                                 <img alt=""
                                                      src="{{=it.logged_in_user_thumbnail}}"/>
                                             </div>
-                                         </div>
-                                         <div class="span11">
-                                                <input placeholder="Type your message here ..."
-                                                       type="text" class="width-90"
-                                                       name="message"/>
-                                                <button id="add_note_button_{{=it.task_id }}"
-                                                        class="btn btn-small btn-info no-radius">
-                                                    <i class="icon-share-alt"></i>
-                                                    <span class="hidden-phone">Send</span>
-                                                </button>
-                                         </div>
+                                        </div>
+                                        <div class="span11">
+                                            <input placeholder="Type your message here ..."
+                                                   type="text" class="width-90"
+                                                   name="message"/>
+                                            <button id="add_note_button_{{=it.task_id }}"
+                                                    class="btn btn-small btn-info no-radius">
+                                                <i class="icon-share-alt"></i>
+                                                <span class="hidden-phone">Send</span>
+                                            </button>
+                                        </div>
                                     </div>
                                 </form>
                             </div>
@@ -207,13 +214,21 @@
             height: '90%',
             transition: 'none',
             title: function () {
+                // Filename (Tags)| Hires (DL)
+                
                 var url = $(this).attr('href');
-                var original_title = $(this).attr('title');
-                var download_url = $(this).attr('download_href');
 
-                var download_link = '<span><a href="' + download_url + '">' + original_title + '</a>';
-                var open_in_new_tab_link = '<a href="' + url + '" target="_blank">(Open In New Tab)</a></span>';
-                return download_link + '&nbsp' + open_in_new_tab_link;
+                var original_title = $(this).attr('original_filename');
+
+                var tags = $(this).attr('tags');
+
+                var view_hires_url = '/' + $(this).attr('hires_href');
+                var download_hires_url = '/FD' + $(this).attr('hires_href');
+
+                var open_hires_in_new_tab_link = '<a title="View Hires in new Tab"  href="' + view_hires_url + '" target="_blank">Hires</a></span>';
+                var download_hires_link = '<span><a title="Download Hires" class="icon-cloud-download" href="' + download_hires_url + '">&nbsp</a></span>';
+
+                return original_title + '&nbsp|&nbsp' + open_hires_in_new_tab_link + ' &nbsp '+ download_hires_link;
             },
             onOpen: function () {
                 document.body.style.overflow = 'hidden';
@@ -223,7 +238,7 @@
                 document.body.style.overflow = 'auto';
             },
             onComplete: function () {
-    {#                $.colorbox.resize();#}
+{#                $.colorbox.resize();#}
             }
         };
 
@@ -284,9 +299,9 @@
                     if (task_div.length==0){
 
                         {% if logged_in_user.thumbnail %}
-                            task.logged_in_user_thumbnail = '/{{ logged_in_user.thumbnail.full_path }}'
+                            task.logged_in_user_thumbnail = '/{{ logged_in_user.thumbnail.full_path }}';
                         {% else %}
-                            task.logged_in_user_thumbnail = {{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_0.png") }}
+                            task.logged_in_user_thumbnail = '{{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_0.png") }}';
                         {% endif %}
 
                         daily_tasks_list.append(daily_task_template(task));
@@ -300,7 +315,8 @@
 
                             var content = $('#message').val();
 
-                            console.log(add_note_form.serialize())
+{#                            console.log(add_note_form.serialize());#}
+
                             $.post(
                                 "/note/create",
                                 add_note_form.serialize()+'&entity_ids='+task_id+'&entity_ids={{ entity.id }}&'+$.param({'type': "Daily_Note"  })
@@ -310,10 +326,10 @@
                                 bootbox.alert('<div id="message" class="alert alert-danger bigger-110">' + jqXHR.responseText + '</div>');
                                 submit_button.button('reset');
                             });
-                        })
+                        });
 
                         var output_template = doT.template($('#tmpl_output_item').html());
-                        var outputs = $('#outputs_'+task.task_id);
+                        var outputs = $('#outputs_' + task.task_id);
                         for(var j=0; j<task.links.length; j++){
                             var link = task.links[j];
                             append_thumbnail({
@@ -331,7 +347,7 @@
 
                             {% if has_permission('Delete_Note') %}
 
-                               if(note.created_by_id=='{{ logged_in_user.id }}'){
+                               if(note.created_by_id === '{{ logged_in_user.id }}'){
                                  note.delete_note_action = "/notes/"+note.id+"/delete/dialog?came_from="
                                }
 
@@ -348,10 +364,10 @@
                     }
                 }
 
-                $('.date').each(function () {
-                    var date = moment.utc($(this).text());
-                    $(this).text(date.fromNow());
-                });
+{#                $('.date').each(function () {#}
+{#                    var date = moment.utc($(this).text());#}
+{#                    $(this).text(date.fromNow());#}
+{#                });#}
 
             });
         })

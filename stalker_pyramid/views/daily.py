@@ -21,15 +21,16 @@
 
 import datetime
 from pyramid.view import view_config
-from pyramid_mailer.message import Attachment
+
 from stalker import db, Project, Status, Daily, Link, Task
-from stalker.db import DBSession
+
 import transaction
+
 from webob import Response
-from stalker_pyramid.views import get_logged_in_user, logger, PermissionChecker, \
-    milliseconds_since_epoch, local_to_utc
-from stalker_pyramid.views.link import replace_img_data_with_links, \
-    MediaManager
+from stalker_pyramid.views import (get_logged_in_user, logger,
+                                   PermissionChecker, milliseconds_since_epoch,
+                                   local_to_utc)
+
 from stalker_pyramid.views.task import generate_recursive_task_query
 
 
@@ -106,6 +107,7 @@ def create_daily(request):
 
     return Response('Daily Created successfully')
 
+
 @view_config(
     route_name='update_daily_dialog',
     renderer='templates/daily/dialog/daily_dialog.jinja2'
@@ -121,7 +123,6 @@ def update_daily_dialog(request):
 
     daily_id = request.matchdict.get('id', -1)
     daily = Daily.query.filter(Daily.id == daily_id).first()
-
 
     return {
         'mode':'Update',
@@ -163,8 +164,7 @@ def update_daily(request):
         return Response('Please supply a description', 500)
 
     if not status:
-        return Response('There is no status with code: %s' % status_code, 500)
-
+        return Response('There is no status with code: %s' % status.code, 500)
 
     daily.name = name
     daily.description = description
@@ -174,6 +174,7 @@ def update_daily(request):
 
     request.session.flash('success: Successfully updated daily')
     return Response('Successfully updated daily')
+
 
 @view_config(
     route_name='get_project_dailies',
@@ -234,18 +235,22 @@ def get_dailies(request):
         daily = {
             'id': r[0],
             'name': r[1],
-            'status_code':r[2].lower(),
-            'status_id':r[3],
-            'status_name':r[4],
-            'created_by_id':r[5],
-            'created_by_name':r[6],
-            'link_count':r[7] if r[7] else 0,
-            'item_view_link':'/dailies/%s/view'%r[0]
+            'status_code': r[2].lower(),
+            'status_id': r[3],
+            'status_name': r[4],
+            'created_by_id': r[5],
+            'created_by_name': r[6],
+            'link_count': r[7] if r[7] else 0,
+            'item_view_link': '/dailies/%s/view' % r[0]
         }
         if update_daily_permission:
             daily['item_update_link'] = \
                 '/dailies/%s/update/dialog' % daily['id']
-            daily['item_remove_link'] = '/entities/%s/delete/dialog?came_from=%s'%(daily['id'], request.current_route_path())
+            daily['item_remove_link'] =\
+                '/entities/%s/delete/dialog?came_from=%s' % (
+                    daily['id'],
+                    request.current_route_path()
+                )
 
         dailies.append(daily)
     logger.debug('---------------------dailies  : %s' % dailies)
@@ -255,13 +260,14 @@ def get_dailies(request):
 
     return resp
 
+
 @view_config(
     route_name='get_project_dailies_count',
     renderer='json'
 )
 def get_dailies_count(request):
-
-
+    """missing docstring
+    """
     project_id = request.matchdict.get('id')
     logger.debug('---------------------project_id  : %s' % project_id)
 
@@ -279,15 +285,18 @@ where "Statuses".code = 'OPEN' and "Projects".id = %(project_id)s
     sql_query = sql_query % {'project_id': project_id}
 
     from sqlalchemy import text  # to be able to use "%" sign use this function
-    result = DBSession.connection().execute(text(sql_query))
+    result = db.DBSession.connection().execute(text(sql_query))
 
     return result.fetchone()[0]
+
 
 @view_config(
     route_name='get_daily_outputs',
     renderer='json'
 )
 def get_daily_outputs(request):
+    """missing docstring
+    """
 
     daily_id = request.matchdict.get('id')
     logger.debug('daily_id  : %s' % daily_id)
@@ -299,13 +308,17 @@ def get_daily_outputs(request):
             "Task_Statuses".code as task_status_code,
             "Task_Status_SimpleEntities".name as task_status_name,
             array_agg(link_data.link_id) as link_id,
-            array_agg(link_data.link_original_filename) as link_original_filename,
-            array_agg(link_data.link_full_path) as link_full_path,
-            array_agg(link_data.link_thumbnail_full_path) as link_thumbnail_full_path,
+
+            array_agg(link_data.original_filename) as link_original_filename,
+            array_agg(link_data.hires_full_path) as link_hires_full_path,
+            array_agg(link_data.full_path) as link_full_path,
+            array_agg(link_data.thumbnail_full_path) as link_thumbnail_full_path,
+
             array_agg(link_data.version_id) as version_id,
             array_agg(link_data.version_take_name) as version_take_name,
             array_agg(link_data.version_number) as version_number,
             array_agg(link_data.version_is_published) as version_is_published,
+
             daily_note.note_id as note_id,
             daily_note.user_id as user_id,
             daily_note.user_name as user_name,
@@ -324,10 +337,11 @@ def get_daily_outputs(request):
                 "Versions".version_number as version_number,
                 "Versions".is_published as version_is_published,
                 "Links".id as link_id,
-                'repositories/' || task_repositories.repo_id || '/' || "Links".original_filename as link_original_filename,
-                'repositories/' || task_repositories.repo_id || '/' || "Links_ForWeb".full_path as link_full_path,
-                'repositories/' || task_repositories.repo_id || '/' || "Thumbnails".full_path as link_thumbnail_full_path
+                "Links".original_filename as original_filename,
 
+                'repositories/' || task_repositories.repo_id || '/' || "Links".full_path as hires_full_path,
+                'repositories/' || task_repositories.repo_id || '/' || "Links_ForWeb".full_path as full_path,
+                'repositories/' || task_repositories.repo_id || '/' || "Thumbnails".full_path as thumbnail_full_path
 
             from "Links"
             join "SimpleEntities" as "Link_SimpleEntities" on "Link_SimpleEntities".id = "Links".id
@@ -403,52 +417,55 @@ def get_daily_outputs(request):
     tasks = []
 
     for r in result.fetchall():
-        links =[]
+        links = []
 
         link_ids = r[4]
         original_filename = r[5]
-        full_path = r[6]
-        thumbnail_full_path = r[7]
-        version_ids = r[8]
-        version_take_names = r[9]
-        version_numbers = r[10]
-        versions_is_published = r[11]
+        hires_full_path = r[6]
+        full_path = r[7]
+        thumbnail_full_path = r[8]
+
+        version_ids = r[9]
+        version_take_names = r[10]
+        version_numbers = r[11]
+        versions_is_published = r[12]
 
         for i in range(len(link_ids)):
             link = {
-                    'id':link_ids[i],
-                    'original_filename':original_filename[i],
-                    'full_path': full_path[i],
-                    'thumbnail_full_path':thumbnail_full_path[i],
-                    'version_id':version_ids[i],
-                    'version_take_name': version_take_names[i],
-                    'version_number':version_numbers[i],
-                    'version_is_published':versions_is_published[i]
+                'id': link_ids[i],
+                'original_filename': original_filename[i],
+                'hires_full_path': hires_full_path[i],
+                'full_path': full_path[i],
+                'thumbnail_full_path': thumbnail_full_path[i],
+                'version_id': version_ids[i],
+                'version_take_name': version_take_names[i],
+                'version_number': version_numbers[i],
+                'version_is_published': versions_is_published[i]
             }
             if link not in links:
                 links.append(link)
 
-        notes =[]
+        notes = []
 
-        note_ids = r[12]
-        note_created_by_ids = r[13]
-        note_created_by_names = r[14]
-        note_created_by_thumbnails = r[15]
-        note_contents = r[16]
-        note_created_dates = r[17]
-        note_type_names = r[18]
+        note_ids = r[13]
+        note_created_by_ids = r[14]
+        note_created_by_names = r[15]
+        note_created_by_thumbnails = r[16]
+        note_contents = r[17]
+        note_created_dates = r[18]
+        note_type_names = r[19]
 
         if note_ids:
             for j in range(len(note_ids)):
                 if note_ids[j]:
                     note = {
-                            'id':note_ids[j],
-                            'created_by_id':note_created_by_ids[j],
-                            'created_by_name': note_created_by_names[j],
-                            'created_by_thumbnail':note_created_by_thumbnails[j],
-                            'content':note_contents[j],
-                            'created_date': milliseconds_since_epoch(note_created_dates[j]),
-                            'note_type_name': note_type_names[j]
+                        'id': note_ids[j],
+                        'created_by_id': note_created_by_ids[j],
+                        'created_by_name': note_created_by_names[j],
+                        'created_by_thumbnail': note_created_by_thumbnails[j],
+                        'content': note_contents[j],
+                        'created_date': milliseconds_since_epoch(note_created_dates[j]),
+                        'note_type_name': note_type_names[j]
                     }
                     if note not in notes:
                         notes.append(note)
@@ -459,7 +476,7 @@ def get_daily_outputs(request):
             'task_status_code': r[2].lower(),
             'task_status_name': r[3],
             'links': links,
-            'notes':notes
+            'notes': notes
         }
         tasks.append(task)
 
