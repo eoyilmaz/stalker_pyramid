@@ -346,11 +346,9 @@
                             var note = task.notes[k];
 
                             {% if has_permission('Delete_Note') %}
-
                                if(note.created_by_id === '{{ logged_in_user.id }}'){
                                  note.delete_note_action = "/notes/"+note.id+"/delete/dialog?came_from="
                                }
-
                             {% endif %}
 
                             if (note.created_by_thumbnail == null) {
