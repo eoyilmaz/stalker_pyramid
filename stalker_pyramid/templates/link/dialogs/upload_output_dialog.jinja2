@@ -145,13 +145,13 @@
         $('#add_to_daily').on('click', function () {
             if(this.checked){
 
-                {% if entity.task.status.code not in ['WIP','DREV','PREV'] %}
+                {% if entity.task.status.code not in ['WIP','DREV','PREV','CMPL'] %}
                     $('#information').show();
                 {% else %}
                     $('#dailies_list').show();
                     daily.find('option').remove();
 
-                    $.getJSON('{{ request.route_path('get_project_dailies', id=entity.task.project.id) }}').then(function (data) {
+                    $.getJSON('{{ request.route_path('get_project_dailies', id=entity.task.project.id, _query={'status_code':'OPEN'}) }}').then(function (data) {
             {#            // append an empty one first#}
             {#            daily.append('<option value="-1">&nbsp;</option>');#}
                         for (var i = 0; i < data.length; i++) {
