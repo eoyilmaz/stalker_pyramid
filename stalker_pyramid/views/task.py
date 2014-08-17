@@ -3128,7 +3128,7 @@ def approve_task(request):
                     'approved by %(user)s!' %
             {
                 'task_full_path': task_full_path,
-                'user': logged_in_user
+                'user': logged_in_user.name
             },
             sender=dummy_email_address,
             recipients=recipients,
@@ -3319,7 +3319,7 @@ def request_revision(request):
             subject='Task Reviewed: "%(task_full_path)s" has been '
                     'requested revision by %(user)s!' % {
                         'task_full_path': task_full_path,
-                        'user': logged_in_user
+                        'user': logged_in_user.name
                     },
             sender=dummy_email_address,
             recipients=recipients,
