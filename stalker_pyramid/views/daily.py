@@ -408,6 +408,9 @@ def get_daily_outputs(request):
             daily_note.note_content,
             daily_note.note_date_created,
             daily_note.note_type_name
+        order by
+            "ParentTasks".full_path
+
 
     """
     sql_query = sql_query % {'daily_id': daily_id, 'generate_recursive_task_query': generate_recursive_task_query()}
