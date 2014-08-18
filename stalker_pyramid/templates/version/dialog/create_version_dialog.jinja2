@@ -26,7 +26,7 @@
         <div class='control-group'>
             <label class='span2 control-label' for='input_version'>File</label>
             <div class='span10'>
-                <input type="file" id="input_version" required>
+                <input type="file" id="input_version" name="file_object" required>
             </div>
         </div>
         <div class="control-group">
@@ -50,6 +50,12 @@
                           style='overflow: hidden; word-wrap: break-word;resize: horizontal;height: 150px;'></textarea>
             </div>
         </div>
+        <div class='control-group'>
+            <div class='span12 align-right'>
+                <input class="ace" type="checkbox" id="bind_to_originals" />
+                <label class="lbl" for="bind_to_originals"> Bind To Originals</label>
+            </div>
+        </div>
     </form>
     <div class="hr dotted"></div>
 </div>
@@ -57,12 +63,12 @@
 <script>
 
     function init_dialog(){
-
-
         // init dialog
         console.debug('init dialog from create_version_dialog.jinja2 running!');
 
-         $('.modal-header>h3').text('Create Version');
+        var task_id = {{ task.id }};
+        
+        $('.modal-header>h3').text('Create Version');
 
         $('#input_version').ace_file_input({
             no_file:'No File ...',
@@ -91,51 +97,53 @@
             );
 
             // prepare data
-            var file_info = [];
-            var full_paths = [];
-            var original_filenames = [];
-            var accepted_file = dzone.getAcceptedFiles();
-            var f;
-            for (var i=0; i < accepted_files.length; i++){
-                f = accepted_files[i];
-                full_paths.push(f.full_path);
-                original_filenames.push(f.original_filename);
-                file_info.push({
-                    'full_path': f.full_path,
-                    'original_filename': f.original_filename
-                })
-            }
+            var form_data = new FormData();
 
+            var file_info = $('#input_version').data('ace_input_files');
 
-            $.post('{{ request.route_url('assign_version') }}', {
-                entity_id: entity_id,
-                file_info: file_info,
-                full_paths: full_paths,
-                original_filenames: original_filenames
-            }).done(function(jqXHR){
+            form_data.append('file_object', file_info[0]);
+            form_data.append('task_id', task_id);
+            form_data.append('take_name', $('#version_take_name').val());
+            form_data.append('is_published', $('#is_published').val());
+            form_data.append('description', $('#version_description').val());
+            form_data.append('bind_to_originals', $('#bind_to_originals').val());
+
+            $.ajax({
+                url: '{{ request.route_url('create_version') }}',
+                type: 'POST',
+                processData: false,
+                contentType: false,
+                dataType: 'json',
+                enctype: 'multipart/form-data',
+                data: form_data,
+                xhr: function () {
+                    var req = $.ajaxSettings.xhr();
+                    return req;
+                }
+            }).done(function (jqXHR) {
                 // alert the user about the added files
                 // reload outputs
                 // get the data in jqXHR
-{#                console.debug('jqXHR : ', jqXHR);#}
+                {#                console.debug('jqXHR : ', jqXHR);#}
                 $('#new_outputs_storage').text(JSON.stringify(jqXHR));
                 $('#dialog_template').modal('hide');
-            }).fail(function(jqXHR){
+            }).fail(function (jqXHR) {
                 // alert the user about what is failed
                 bootbox.alert(jqXHR.responseText);
                 // enable the Submit button
-                setTimeout(function(){submit_button.button('reset')}, 0);
+                setTimeout(function () {
+                    submit_button.button('reset')
+                }, 0);
             });
 
         });
     }
 
     function destruct_dialog(){
-        // reduce counter
-        counter -= 1;
-
+{#        // reduce counter#}
+{#        counter -= 1;#}
         // unbind events
-        $(".dropzone").unbind();
-        $("#daily").unbind();
+        $("#input_version").unbind();
         $("#dialog_template_submit_button").unbind();
 
         // destroy dialog

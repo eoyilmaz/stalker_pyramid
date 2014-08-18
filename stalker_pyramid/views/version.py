@@ -17,19 +17,18 @@
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
-import os
 import logging
-import shutil
+import os
 
-from pyramid.httpexceptions import HTTPOk
 from pyramid.view import view_config
+from pyramid.response import Response
 
 from sqlalchemy import distinct
 
-from stalker import db, Task, TimeLog, Version, Link, Entity, defaults
+from stalker import db, Task, Version, Entity, defaults
 
 from stalker_pyramid.views import (get_logged_in_user, get_user_os,
-                                   PermissionChecker, get_multi_integer)
+                                   PermissionChecker)
 from stalker_pyramid.views.link import MediaManager
 
 logger = logging.getLogger(__name__)
@@ -92,119 +91,57 @@ def update_version_dialog(request):
     }
 
 
-# @view_config(
-#     route_name='create_version'
-# )
-# def create_version(request):
-#     """runs when creating a version
-#     """
-#     logged_in_user = get_logged_in_user(request)
-#
-#     task_id = request.params.get('task_id')
-#     task = Task.query.filter(Task.id==task_id).first()
-#
-#     if task:
-#
-#         version = Version(
-#             task=task,
-#             created_by=logged_in_user,
-#         )
-#
-#         DBSession.add(version)
-#     else:
-#         HTTPServerError()
-#
-#     return HTTPOk()
-
-
 @view_config(
-    route_name='assign_version',
+    route_name='create_version'
 )
-def assign_version(request):
-    """assigns the version to the given entity
+def create_version(request):
+    """runs when creating a version
     """
     logged_in_user = get_logged_in_user(request)
 
-    # TODO: this should be renamed to create version
-    # collect data
-    link_ids = get_multi_integer(request, 'link_ids')
-    task_id = request.params.get('task_id', -1)
+    task_id = request.params.get('task_id')
+    task = Task.query.filter(Task.id == task_id).first()
 
-    link = Link.query.filter(Link.id.in_(link_ids)).first()
-    task = Task.query.filter_by(id=task_id).first()
+    take_name = request.params.get('take_name', 'Main')
+    is_published = \
+        True if request.params.get('is_published') == 'on' else False
+    description = request.params.get('description')
+    bind_to_originals = \
+        True if request.params.get('bind_to_originals') == 'on' else False
 
-    logger.debug('link_ids  : %s' % link_ids)
-    logger.debug('link      : %s' % link)
-    logger.debug('task_id   : %s' % task_id)
-    logger.debug('task      : %s' % task)
+    file_object = request.POST.getall('file_object')[0]
 
-    if task and link:
-        # delete the link and create a version instead
-        full_path = MediaManager.convert_file_link_to_full_path(link.full_path)
-        take_name = request.params.get('take_name', defaults.version_take_name)
-        publish = bool(request.params.get('publish'))
+    logger.debug('file_object: %s' % file_object)
+    logger.debug('take_name: %s' % take_name)
+    logger.debug('is_published: %s' % is_published)
+    logger.debug('description: %s' % description)
+    logger.debug('bind_to_originals: %s' % bind_to_originals)
 
-        logger.debug('publish : %s' % publish)
+    if task:
+        extension = os.path.splitext(file_object.filename)[-1]
+        mm = MediaManager()
+        v = mm.upload_version(
+            task=task,
+            file_object=file_object.file,
+            take_name=take_name,
+            extension=extension
+        )
 
-        path_and_filename, extension = os.path.splitext(full_path)
+        v.created_by = logged_in_user
+        v.is_published = is_published
 
-        version = Version(task=task, take_name=take_name,
-                          created_by=logged_in_user)
-        version.is_published = publish
+        # check if bind_to_originals is true
+        if bind_to_originals and extension == '.ma':
+            from stalker_pyramid.views import archive
+            arch = archive.Archiver()
+            arch.bind_to_original(v.absolute_full_path)
 
-        # generate path values
-        version.update_paths()
-        version.extension = extension
-
-        # specify that this version is created with Stalker Pyramid
-        version.created_with = 'StalkerPyramid'  # TODO: that should also be a
-                                                 #       config value
-
-        # now move the link file to the version.absolute_full_path
-        try:
-            os.makedirs(
-                os.path.dirname(version.absolute_full_path)
-            )
-        except OSError:
-            # dir exists
-            pass
-
-        logger.debug('full_path : %s' % full_path)
-        logger.debug('version.absolute_full_path : %s' %
-                     version.absolute_full_path)
-
-        shutil.copyfile(full_path, version.absolute_full_path)
-        os.remove(full_path)
-
-        # it is now safe to delete the link
-        db.DBSession.add(task)
-        db.DBSession.delete(link)
-        db.DBSession.add(version)
-
-    return HTTPOk()
-
-
-@view_config(
-    route_name='update_version'
-)
-def update_version(request):
-    """runs when updating a version
-    """
-    logged_in_user = get_logged_in_user(request)
-
-    version_id = request.params.get('version_id')
-    version = TimeLog.query.filter_by(id=version_id).first()
-
-    name = request.params.get('name')
-
-    if version and name:
-
-        version.name = name
-        version.updated_by = logged_in_user
+        db.DBSession.add(v)
+        logger.debug('version added to: %s' % v.absolute_full_path)
     else:
-        db.DBSession.add(version)
+        return Response('No task with id: %s' % task_id, 500)
 
-    return HTTPOk()
+    return Response('Version is uploaded successfully')
 
 
 @view_config(
