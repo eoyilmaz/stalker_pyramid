@@ -57,6 +57,9 @@
             </div>
         </div>
     </form>
+    <div id="upload_progress_control" class="progress" data-percent="0%">
+        <div id="upload_progress_bar" class="bar" style="width:0;"></div>
+    </div>
     <div class="hr dotted"></div>
 </div>
 
@@ -92,7 +95,7 @@
             // disable it
             // disable the Submit button
             setTimeout(function(){
-                submit_button.data('loading-text', 'Converting Files, Please Wait...');
+                submit_button.data('loading-text', 'Uploading Version, Please Wait...');
                 submit_button.button('loading')}, 0
             );
 
@@ -115,7 +118,30 @@
                 contentType: false,
 {#                dataType: 'json',#}
                 enctype: 'multipart/form-data',
-                data: form_data
+                data: form_data,
+                xhr: function() {
+                    var xhr = new window.XMLHttpRequest();
+                    //Upload progress
+                    xhr.upload.addEventListener("progress", function(evt){
+                        if (evt.lengthComputable) {
+                            var percentComplete = evt.loaded / evt.total;
+                            //Do something with upload progress
+                            //console.log(percentComplete);
+                            $('#upload_progress_control').attr('data-percent', (percentComplete * 100).toFixed(1) + '%');
+                            $('#upload_progress_bar').css({'width': (percentComplete * 100).toFixed(1) + '%'});
+                        }
+                    }, false);
+
+{#                    //Download progress#}
+{#                    xhr.addEventListener("progress", function(evt){#}
+{#                        if (evt.lengthComputable) {#}
+{#                            var percentComplete = evt.loaded / evt.total;#}
+{#                            //Do something with download progress#}
+{#                            console.log(percentComplete);#}
+{#                        }#}
+{#                    }, false);#}
+                    return xhr;
+                  }
             }).done(function (jqXHR) {
                 // alert the user about the added files
                 // reload outputs
@@ -126,6 +152,7 @@
                 console.debug('jqXHR:', jqXHR);
                 bootbox.alert(jqXHR.responseText);
                 // enable the Submit button
+            }).always(function (jqXHR) {
                 setTimeout(function () {
                     submit_button.button('reset')
                 }, 0);
