@@ -113,22 +113,17 @@
                 type: 'POST',
                 processData: false,
                 contentType: false,
-                dataType: 'json',
+{#                dataType: 'json',#}
                 enctype: 'multipart/form-data',
-                data: form_data,
-                xhr: function () {
-                    var req = $.ajaxSettings.xhr();
-                    return req;
-                }
+                data: form_data
             }).done(function (jqXHR) {
                 // alert the user about the added files
                 // reload outputs
                 // get the data in jqXHR
-                {#                console.debug('jqXHR : ', jqXHR);#}
-                $('#new_outputs_storage').text(JSON.stringify(jqXHR));
                 $('#dialog_template').modal('hide');
             }).fail(function (jqXHR) {
                 // alert the user about what is failed
+                console.debug('jqXHR:', jqXHR);
                 bootbox.alert(jqXHR.responseText);
                 // enable the Submit button
                 setTimeout(function () {
