@@ -246,7 +246,6 @@
                             <div class="tabbable"
                                  style="background-color: rgba(255,255,255,.7)">
                                 <ul class="nav nav-tabs">
-
                                     <li class="active">
                                         <a data-toggle="tab" href="#messages-tab">
                                             <i class="green icon-list-alt bigger-120"></i>
@@ -254,7 +253,7 @@
                                         </a>
                                     </li>
                                     <li class="">
-                                        <a data-toggle="tab" href="#calendar-tab">
+                                        <a id="calendar_tab" data-toggle="tab" href="#calendar-tab">
                                             <i class="orange icon-calendar bigger-120"></i>
                                             Calendar
                                         </a>
@@ -458,8 +457,7 @@
                 '<strong>File upload error</strong> ' + msg + ' </div>').prependTo('#alerts');
     }
 
-    $(document).ready(function () {
-
+    $(function () {
         $('#refresh_task_button').on('click', function (e) {
             e.preventDefault();
             e.stopPropagation();
@@ -470,10 +468,9 @@
                 bootbox.alert(jqXHR.responseText);
             });
         });
-
     });
 
-    $(document).ready(function () {
+    $(function () {
 
         var icon_name = get_icon('{{ entity.entity_type.lower()}}');
         $('#task_header').append('<i class="' + icon_name + ' bigger-125"></i>{{ entity.name }}');
@@ -605,8 +602,8 @@
 
     });
 
-    $(document).ready(function () {
-        $.getJSON('/tasks/{{ entity.id }}/events/').then(function (data) {
+    $.getJSON('/tasks/{{ entity.id }}/events/').then(function (data) {
+        $(function () {
             var events = [];
             var resources = {};
 
@@ -616,9 +613,6 @@
                 var title = data[i].title;
 
                 if (data[i].entity_type == 'tasks') {
-
-
-
                     for (var k = 0; k < data[i].resources.length; k++) {
                         var prop_id = (data[i].resources[k].id).toString();
                         title += ' - ' + data[i].resources[k].name;
@@ -662,18 +656,14 @@
                 events.push(event);
             }
 
-
-
             drawCalendar('calendar', events);
             drawTree('resource_tree', resources);
         });
     });
 
 
-    $(document).ready(function () {
-
+    $(function () {
         var get_dependency = function (type) {
-
             $.getJSON('/tasks/{{ entity.id }}/dependency/' + type + '/').then(function (data) {
 
                 var depends = {};
@@ -742,14 +732,13 @@
             };
         }
 
-        $(document).ready(function () {
+        $(function () {
             drawTree('version_used_by_tasks_tree', tasks);
 
             if (data.length == 0) {
                 $('#version_used_by_tasks_tree').append('<div class="alert alert-warning">No tasks</div>');
             }
         });
-
     });
 
     </script>
@@ -762,6 +751,28 @@
                 $('#task_date_updated').html(moment(data[0].date_updated).format('YYYY-MM-DD HH:mm'));
             })
         })
+    </script>
+
+    <script>
+    // fix calendar not showing up
+    $(function(){
+        $('#calendar_tab').on('click', function(){
+            // check if the title is visible
+            // meaning that calendar tab is working (somebody clicked it before)
+            var today_button = $('.fc-button-today');
+            if (today_button.attr('fixed_visibility_bug') !== '1') {
+                console.debug('calendar is not visible');
+                // it is not shown yet
+                // so trigger a click for the today button
+                setTimeout(function(){
+                    today_button.trigger('click');
+                }, 0);
+                today_button.attr('fixed_visibility_bug', '1');
+            } else {
+                console.debug('calendar is visible');
+            }
+        });
+    });
     </script>
     
 {% endblock extrascripts %}

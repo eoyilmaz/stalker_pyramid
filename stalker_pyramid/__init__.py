@@ -540,6 +540,8 @@ def main(global_config, **settings):
 
     # *************************************************************************
     # Task
+    config.add_route('get_task_external_link',              'tasks/{id}/external_link')
+    config.add_route('get_task_internal_link',              'tasks/{id}/internal_link')
 
     # Dialogs
     config.add_route('create_task_dialog',                  'tasks/{id}/create/dialog')

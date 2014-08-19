@@ -58,8 +58,8 @@ def create_time_log_dialog(request):
     """
     logger.debug('inside time_log_dialog')
 
-    came_from = request.params.get('came_from','/')
-    logger.debug('came_from %s: '% came_from)
+    came_from = request.params.get('came_from', '/')
+    logger.debug('came_from %s: ' % came_from)
 
     # get logged in user
     logged_in_user = get_logged_in_user(request)
@@ -77,7 +77,7 @@ def create_time_log_dialog(request):
         'studio': studio,
         'logged_in_user': logged_in_user,
         'entity': entity,
-        'came_from':came_from,
+        'came_from': came_from,
         'milliseconds_since_epoch': milliseconds_since_epoch,
     }
 

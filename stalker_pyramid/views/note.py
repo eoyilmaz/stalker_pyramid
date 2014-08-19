@@ -23,6 +23,9 @@ import datetime
 import transaction
 from pyramid.response import Response
 from pyramid.view import view_config
+from pyramid_mailer import get_mailer
+from pyramid_mailer.message import Message
+
 
 from stalker.db import DBSession
 from stalker import (Entity, Note, Type)
@@ -30,7 +33,9 @@ from stalker import (Entity, Note, Type)
 from stalker_pyramid.views import (get_logged_in_user,
                                    milliseconds_since_epoch,
                                    StdErrToHTMLConverter, local_to_utc,
-                                   get_multi_integer)
+                                   get_multi_integer, dummy_email_address)
+from stalker_pyramid.views.task import get_task_full_path, \
+    get_task_external_link
 from stalker_pyramid.views.type import query_type
 
 
@@ -86,9 +91,46 @@ def create_note(request):
         type=note_type
     )
 
+    from stalker import Task
     DBSession.add(note)
+    mailer = get_mailer(request)
+
     for entity in entities:
         entity.notes.append(note)
+        if isinstance(entity, Task):
+            task = entity
+
+            recipients = []
+            for resource in task.resources:
+                recipients.append(resource.email)
+
+            for responsible in task.responsible:
+                recipients.append(responsible.email)
+
+            # create an email
+            task_full_path = get_task_full_path(task.id)
+            message = Message(
+                subject='Note Added: "%(task_full_path)s"' % {
+                    'task_full_path': task_full_path
+                },
+                sender=dummy_email_address,
+                recipients=recipients,
+                body='%(user)s has added the following note to '
+                     '%(task_full_path)s:\n%(note)s' %
+                     {
+                         'user': logged_in_user.name,
+                         'task_full_path': task_full_path,
+                         'note': content
+                     },
+                html='<b>%(user)s</b> has added the following note to '
+                     '%(task_external_link)s:\n%(note)s' %
+                     {
+                         'user': logged_in_user.name,
+                         'task_external_link': get_task_external_link(task.id),
+                         'note': content
+                     }
+            )
+            mailer.send_to_queue(message)
 
     logger.debug('note is created by %s' % logged_in_user.name)
     request.session.flash('success: note is created by %s' % logged_in_user.name)
