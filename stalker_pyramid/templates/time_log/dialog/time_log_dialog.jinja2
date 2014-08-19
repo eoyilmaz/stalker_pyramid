@@ -390,7 +390,6 @@ function init_dialog() {
 
     {% elif mode == 'update' %}
 
-
         time_log_form.attr("action", "{{ request.route_url('update_time_log', id=time_log.id) }}");
         time_log_resource.append('<option value={{ time_log.resource.id }} selected>{{ time_log.resource.name }}</option>');
 

@@ -109,7 +109,7 @@ def update_time_log_dialog(request):
         'has_permission': PermissionChecker(request),
         'studio': studio,
         'logged_in_user': logged_in_user,
-        'task': time_log.task,
+        'entity': time_log.task,
         'came_from': came_from,
         'time_log': time_log,
         'milliseconds_since_epoch': milliseconds_since_epoch
