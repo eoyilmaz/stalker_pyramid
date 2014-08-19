@@ -327,9 +327,9 @@ def get_time_logs(request):
     ) as parent_names on "TimeLogs".task_id = parent_names.id
     """
 
-    if entity_type == u'User':
+    if entity_type == 'User':
         sql_query += 'where "TimeLogs".resource_id = %s' % entity_id
-    elif entity_type == u'Task':
+    elif entity_type == 'Task':
         sql_query += 'where "TimeLogs".task_id = %s' % entity_id
     elif entity_type is None:
         return []
