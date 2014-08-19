@@ -116,14 +116,14 @@ def create_note(request):
                 sender=dummy_email_address,
                 recipients=recipients,
                 body='%(user)s has added the following note to '
-                     '%(task_full_path)s:\n%(note)s' %
+                     '%(task_full_path)s:\n\n%(note)s' %
                      {
                          'user': logged_in_user.name,
                          'task_full_path': task_full_path,
                          'note': content
                      },
                 html='<b>%(user)s</b> has added the following note to '
-                     '%(task_external_link)s:\n%(note)s' %
+                     '%(task_external_link)s:<br><br>%(note)s' %
                      {
                          'user': logged_in_user.name,
                          'task_external_link': get_task_external_link(task.id),
