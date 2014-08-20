@@ -22,14 +22,12 @@
     function init_dialog() {
         console.debug('starting to initialize add_task_user_dialog dialog!!!');
 
-        var label = $('#dialog_template_label');
-        label.find('span').remove();
-        label.append('<span>Append {{ user_type }}</span>');
-        $('#dialog_template_body').attr('style', "height: 300px");
-
-
-        {# ***************************************************************** #}
-        $(document).ready(function () {
+        $(function () {
+            var label = $('#dialog_template_label');
+            label.find('span').remove();
+            label.append('<span>Append {{ user_type }}</span>');
+            $('#dialog_template_body').attr('style', "height: 300px");
+    
             var selected_users = [];
 
             selected_users = [
@@ -67,10 +65,6 @@
                 task_users.trigger('liszt:updated');
             });
 
-        });
-
-        $(document).ready(function () {
-
             var submit_button = $('#dialog_template_submit_button');
             submit_button.on('click', function (e) {
 
@@ -80,15 +74,17 @@
 
                 var append_form = $("#append_form");
 
-                $.post('/tasks/{{ task.id }}/change/{{ user_type.lower() }}', append_form.serialize()
-                                        ).done(function (response_text) {
-                                            window.location.assign('{{ came_from }}');
-                                            submit_button.button('reset');
-                                            $('#dialog_template').modal('hide');
-                                        }).fail(function (jqXHR) {
-                                            bootbox.alert(jqXHR.responseText);
-                                            submit_button.button('reset');
-                                        });
+                $.post(
+                    '/tasks/{{ task.id }}/change/{{ user_type.lower() }}',
+                    append_form.serialize()
+                ).done(function (response_text) {
+                    window.location.assign('{{ came_from }}');
+                    submit_button.button('reset');
+                    $('#dialog_template').modal('hide');
+                }).fail(function (jqXHR) {
+                    bootbox.alert(jqXHR.responseText);
+                    submit_button.button('reset');
+                });
             });
         });
 
