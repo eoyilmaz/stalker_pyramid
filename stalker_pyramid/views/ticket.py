@@ -291,7 +291,8 @@ def update_ticket(request):
                 link.created_by = logged_in_user
 
                 # manage attachments
-                link_full_path = MediaManager.convert_file_link_to_full_path(link.full_path)
+                link_full_path = \
+                    MediaManager.convert_file_link_to_full_path(link.full_path)
                 link_data = open(link_full_path, "rb").read()
 
                 link_extension = os.path.splitext(link.filename)[1].lower()
@@ -315,7 +316,7 @@ def update_ticket(request):
             content=comment,
             created_by=logged_in_user,
             date_created=utc_now,
-            type= note_type
+            type=note_type
         )
         ticket.comments.append(note)
         DBSession.add(note)

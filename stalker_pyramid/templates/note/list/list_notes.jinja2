@@ -1,13 +1,9 @@
 <div class="row-fluid">
     <div class="span12">
         <div class="timeline-container">
-
             <div class="timeline-items" id="notes">
-
             </div>
-
         </div>
-
     </div>
 </div>
 
@@ -145,15 +141,13 @@
 {% endraw %}
 <script type="text/javascript">
 
-    $(document).ready(function () {
-
-        var logged_in_user_id = '{{ logged_in_user.id }}'
-        var notes = $('#notes');
-        var note_simple_template = doT.template($('#tmpl_note_simple_text').html());
-        var note_activity_template = doT.template($('#tmpl_note_activity').html());
-        var note_daily_template = doT.template($('#tmpl_note_daily').html());
-
-        $.getJSON('/entities/{{ entity.id }}/notes/').then(function (data) {
+    $.getJSON('/entities/{{ entity.id }}/notes/').then(function (data) {
+        $(function () {
+            var logged_in_user_id = '{{ logged_in_user.id }}';
+            var notes = $('#notes');
+            var note_simple_template = doT.template($('#tmpl_note_simple_text').html());
+            var note_activity_template = doT.template($('#tmpl_note_activity').html());
+            var note_daily_template = doT.template($('#tmpl_note_daily').html());
 
             for (var i = 0; i < data.length; i++) {
 

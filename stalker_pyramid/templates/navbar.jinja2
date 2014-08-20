@@ -185,7 +185,7 @@
 <script id="tmpl_notificationRow" type="text/x-dot-template">
     <li>
         <a href="/tickets/{{= it.id }}/view">
-            <img src="/{{=it.created_by_thumbnail}}"
+            <img src="/{{=it.created_by_thumbnail ? it.created_by_thumbnail : 'static/stalker/images/Placeholder_0.png' }}"
                  class="msg-photo"/>
             <span class="msg-body">
                 <span class="msg-title">

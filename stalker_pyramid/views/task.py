@@ -135,8 +135,7 @@ def get_task_full_path(task_id):
         where tasks.id = %(task_id)s
     """
     sql_query = sql_query % {
-        'generate_recursive_task_query':
-        generate_recursive_task_query(),
+        'generate_recursive_task_query': generate_recursive_task_query(),
         'task_id': task_id
     }
 
@@ -145,16 +144,50 @@ def get_task_full_path(task_id):
     return result[0]
 
 
-def get_task_link_internal(request, task, task_full_path):
-    """ TODO: add some doc string here
+def get_task_internal_link(task_id):
+    """returns an internal link for the given task
     """
-    task_link_internal = \
-        '<a href="%(url)s">%(name)s (%(task_entity_type)s)</a>' % {
-            "url": request.route_path('view_task', id=task.id),
-            "name": task_full_path,
-            "task_entity_type": task.entity_type
-        }
-    return task_link_internal
+    task_full_path = get_task_full_path(task_id)
+    from stalker_pyramid import stalker_server_internal_url
+    internal_link = '%s/tasks/%s/view' % (stalker_server_internal_url, task_id)
+    return '<a href="%(internal_link)s">%(task_full_path)s</a>' % {
+        'internal_link': internal_link,
+        'task_full_path': task_full_path
+    }
+
+
+def get_task_external_link(task_id):
+    """returns an external link for the given task
+    """
+    task_full_path = get_task_full_path(task_id)
+    from stalker_pyramid import stalker_server_external_url
+    external_link = '%s/tasks/%s/view' % (stalker_server_external_url, task_id)
+    return '<a href="%(external_link)s">%(task_full_path)s</a>' % {
+        'external_link': external_link,
+        'task_full_path': task_full_path
+    }
+
+
+@view_config(
+    route_name='get_task_internal_link',
+    renderer='json'
+)
+def get_task_internal_link_view(request):
+    """returns an internal url for the given task
+    """
+    task_id = request.matchdict.get('id')
+    return get_task_internal_link(task_id)
+
+
+@view_config(
+    route_name='get_task_external_link',
+    renderer='json'
+)
+def get_task_external_link_view(request):
+    """returns an external url for the given task
+    """
+    task_id = request.matchdict.get('id')
+    return get_task_external_link(task_id)
 
 
 def get_user_link_internal(request, user):
@@ -3141,7 +3174,7 @@ def approve_task(request):
             html=get_description_html(
                 description_temp,
                 logged_in_user.name,
-                task_full_path,
+                get_task_external_link(task.id),
                 note.content if note.content else '-- no notes --'
             )
         )
@@ -3332,7 +3365,7 @@ def request_revision(request):
             html=get_description_html(
                 description_temp,
                 logged_in_user.name,
-                task_full_path,
+                get_task_external_link(task.id),
                 note.content if note.content else '-- no notes --'
             )
         )
@@ -3473,8 +3506,7 @@ def request_progress_review(request):
     # Create tickets for selected responsible
     user_link_internal = get_user_link_internal(request, logged_in_user)
     task_full_path = get_task_full_path(task.id)
-    task_link_internal = get_task_link_internal(request, task,
-                                                task_full_path)
+    task_link_internal = get_task_internal_link(task.id)
 
     for responsible in selected_responsible_list:
         logger.debug('responsible: %s' % responsible)
@@ -3548,7 +3580,7 @@ def request_progress_review(request):
             html=get_description_html(
                 description_temp,
                 logged_in_user.name,
-                task_full_path,
+                get_task_external_link(task.id),
                 note if note else '-- no notes --'
             )
         )
@@ -3638,7 +3670,7 @@ def request_final_review(request):
             html=get_description_html(
                 description_temp,
                 logged_in_user.name,
-                task_full_path,
+                get_task_external_link(task.id),
                 note.content if note.content else '-- no notes --'
             )
         )
@@ -3682,7 +3714,7 @@ def request_final_review(request):
                 "user": '<strong>%s</strong>' % logged_in_user.name,
                 'responsible': responsible_names_html,
                 "task_full_path": '<strong>%s</strong>' %
-                                          task_full_path,
+                                  get_task_external_link(task.id),
                 "note": '<br/><br/> %s ' % note.content,
                 "spacing": '<br><br>'
             }
@@ -3853,7 +3885,7 @@ def request_extra_time(request):
             html=get_description_html(
                 description_temp,
                 logged_in_user.name,
-                task_full_path,
+                get_task_external_link(task.id),
                 note.content if note.content else '-- no notes --'
             )
         )

@@ -178,7 +178,11 @@ function init_dialog() {
     var update_hours_to_complete = function () {
         // total hours of time_logs should have been given by Stalker
         // calculate the remaining hours
-        $.getJSON('/tasks/' + time_log_task.val() + '/').then(function (data) {
+        var task_id = parseInt(time_log_task.val());
+        console.debug('task_id:', task_id);
+        if (task_id === -1){ return }
+
+        $.getJSON('/tasks/' + task_id + '/').then(function (data) {
 
             var sch_unit  = 'h';
 
@@ -290,6 +294,7 @@ function init_dialog() {
             $('#percent_bar').attr('style', 'width:' + completed_percent + '%');
             $('#percent_bar_container').attr('data-percent', completed_percent + '%');
         });
+        
     };
 
     var time_log_form = $("#time_log_form");
@@ -342,7 +347,7 @@ function init_dialog() {
                 update_hours_to_complete();
             });
 
-        {% elif entity.entity_type  == 'Task'%}
+        {% elif entity.entity_type == 'Task'%}
              information.append(
                 '<span class="pull_left"><div id="message" class="alert alert-info bigger-110">' +
                 '<i class="icon-exclamation-sign bigger-120 red"></i> Please select a user' +
@@ -352,8 +357,8 @@ function init_dialog() {
             {# ***************************************************************** #}
             {# Task #}
 
-            parent_name = '{{ task.project.code }}';
-            {% for parent in time_log.task.parents %}
+            parent_name = '{{ entity.project.code }}';
+            {% for parent in entity.parents %}
                 parent_name += ' | {{parent.name}}';
             {% endfor %}
 
@@ -385,13 +390,12 @@ function init_dialog() {
 
     {% elif mode == 'update' %}
 
-
         time_log_form.attr("action", "{{ request.route_url('update_time_log', id=time_log.id) }}");
         time_log_resource.append('<option value={{ time_log.resource.id }} selected>{{ time_log.resource.name }}</option>');
 
         $('#time_log_description').text("{{ time_log.description }}");
 
-        parent_name = '{{ task.project.code }}';
+        parent_name = '{{ entity.project.code }}';
         {% for parent in time_log.task.parents %}
             parent_name += ' | {{parent.name}}';
         {% endfor %}
@@ -659,6 +663,8 @@ function init_dialog() {
 
 <script type="text/javascript">
     function destruct_dialog() {
+        console.debug('started un-initializing the time_log dialog!');
+
         $('#time_log_task').unbind();
         $('#time_log_resource').unbind();
         $('#start_end_date_range_picker').unbind();
@@ -668,5 +674,6 @@ function init_dialog() {
 
         $('#dialog_template').data('modal', null);
 
+        console.debug('finished un-initializing the time_log dialog!');
     }
 </script>

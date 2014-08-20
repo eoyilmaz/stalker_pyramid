@@ -96,7 +96,7 @@
             var project_schedule_button = $('#project_schedule_button');
 
             if (data.is_scheduling){
-                project_schedule_button.text('Scheduling by '+data.is_scheduling_by );
+                project_schedule_button.text('Scheduling by ' + data.is_scheduling_by );
                 project_schedule_button.on('click', function () {});
             } else {
                 project_schedule_button.on('click', function () {
@@ -119,7 +119,7 @@
                     $.post('{{ request.route_url("studio_scheduling_mode", _query={"mode": 1}) }}').then(function(){
                         // update schedule fields with data
                         // suitable to be scheduled
-                        project_schedule_button.text('Scheduling by '+data.is_scheduling_by );
+                        project_schedule_button.text('Scheduling by ' + data.is_scheduling_by );
 
                         $('#last_scheduled_by').append(data.last_scheduled_by);
                         $('#last_scheduled_at').append(last_scheduled_at.format('YYYY-MM-DD HH:mm'));
@@ -141,10 +141,13 @@
                         $.post(
                             '{{ request.route_url("auto_schedule_tasks") }}'
                         ).done(function (data) {
+                            // close the dialog and show the message
+                            dialog.dialog('destroy');
                             var message = '<div>' + data + '</div>';
                             bootbox.alert(message);
                             $('.bootbox').prepend('<div class="modal-header alert-success"><strong>Success</strong></div>');
                         }).fail(function (jqXHR) {
+                            dialog.dialog('destroy');
                             var message = '<div>' + jqXHR.responseText + '</div>';
                             bootbox.alert(message);
                             $('.bootbox').prepend('<div class="modal-header alert-danger"><strong>Fail</strong></div>');

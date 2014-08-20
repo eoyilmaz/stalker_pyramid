@@ -249,8 +249,7 @@
     }
 
     $(function(){
-        
-        $('#comment_editor').ace_wysiwyg({
+        $('#note_editor').ace_wysiwyg({
             toolbar: [
                 'font',
                 null,
@@ -285,7 +284,7 @@
                 maxFileSize : 2000000,
                 fileUploadError: showErrorAlert
             }
-        }).prev().addClass('wysiwyg-style1')
+        }).prev().addClass('wysiwyg-style1');
 
         //Add Image Resize Functionality to Chrome and Safari
         //webkit browsers don't have image resize functionality when content is editable
@@ -300,7 +299,7 @@
                 lastResizableImg.resizable("destroy");
                 lastResizableImg.removeData('resizable');
                 lastResizableImg = null;
-            };
+            }
 
             var enableImageResize = function () {
                 $('.wysiwyg-editor').on('mousedown', function (e) {

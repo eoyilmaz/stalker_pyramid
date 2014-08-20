@@ -58,8 +58,8 @@ def create_time_log_dialog(request):
     """
     logger.debug('inside time_log_dialog')
 
-    came_from = request.params.get('came_from','/')
-    logger.debug('came_from %s: '% came_from)
+    came_from = request.params.get('came_from', '/')
+    logger.debug('came_from %s: ' % came_from)
 
     # get logged in user
     logged_in_user = get_logged_in_user(request)
@@ -77,7 +77,7 @@ def create_time_log_dialog(request):
         'studio': studio,
         'logged_in_user': logged_in_user,
         'entity': entity,
-        'came_from':came_from,
+        'came_from': came_from,
         'milliseconds_since_epoch': milliseconds_since_epoch,
     }
 
@@ -109,7 +109,7 @@ def update_time_log_dialog(request):
         'has_permission': PermissionChecker(request),
         'studio': studio,
         'logged_in_user': logged_in_user,
-        'task': time_log.task,
+        'entity': time_log.task,
         'came_from': came_from,
         'time_log': time_log,
         'milliseconds_since_epoch': milliseconds_since_epoch
@@ -327,9 +327,9 @@ def get_time_logs(request):
     ) as parent_names on "TimeLogs".task_id = parent_names.id
     """
 
-    if entity_type == u'User':
+    if entity_type == 'User':
         sql_query += 'where "TimeLogs".resource_id = %s' % entity_id
-    elif entity_type == u'Task':
+    elif entity_type == 'Task':
         sql_query += 'where "TimeLogs".task_id = %s' % entity_id
     elif entity_type is None:
         return []

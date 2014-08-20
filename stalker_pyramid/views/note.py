@@ -19,10 +19,13 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 import logging
 import datetime
+import os
 
 import transaction
 from pyramid.response import Response
 from pyramid.view import view_config
+from pyramid_mailer import get_mailer
+from pyramid_mailer.message import Message, Attachment
 
 from stalker.db import DBSession
 from stalker import (Entity, Note, Type)
@@ -30,7 +33,11 @@ from stalker import (Entity, Note, Type)
 from stalker_pyramid.views import (get_logged_in_user,
                                    milliseconds_since_epoch,
                                    StdErrToHTMLConverter, local_to_utc,
-                                   get_multi_integer)
+                                   get_multi_integer, dummy_email_address)
+from stalker_pyramid.views.link import replace_img_data_with_links, \
+    MediaManager
+from stalker_pyramid.views.task import get_task_full_path, \
+    get_task_external_link
 from stalker_pyramid.views.type import query_type
 
 
@@ -52,18 +59,17 @@ def create_note(request):
     entity_ids = get_multi_integer(request, 'entity_ids')
     entities = Entity.query.filter(Entity.id.in_(entity_ids)).all()
 
-    content = request.params.get('message', None)
+    content = request.params.get('content', None)
+    content_as_text = request.params.get('content_as_text', content)
     note_type = request.params.get('type', None)
 
     if not entities:
         transaction.abort()
         return Response('There is no entity with id: %s' % entity_ids, 500)
 
-    logger.debug('content %s' % content)
-
     if not content:
         transaction.abort()
-        return Response( 'No content', 500)
+        return Response('No content', 500)
 
     if content == '':
         transaction.abort()
@@ -75,7 +81,49 @@ def create_note(request):
 
     if note_type == '':
         transaction.abort()
-        return Response( 'No type', 500)
+        return Response('No type', 500)
+
+    attachments = []
+    total_attachement_size = 0
+    if content:
+        # convert images to Links
+        content, links = replace_img_data_with_links(content)
+
+        if links:
+            # update created_by attributes of links
+            for link in links:
+                link.created_by = logged_in_user
+
+                # manage attachments
+                link_full_path = \
+                    MediaManager.convert_file_link_to_full_path(link.full_path)
+                link_data = open(link_full_path, "rb").read()
+
+                link_extension = os.path.splitext(link.filename)[1].lower()
+                mime_type = ''
+                if link_extension in ['.jpeg', '.jpg']:
+                    mime_type = 'image/jpg'
+                elif link_extension in ['.png']:
+                    mime_type = 'image/png'
+
+                # check the link size
+                # do not send attachments bigger than 10 MB
+                try:
+                    current_link_size = os.path.getsize(link_full_path)
+                    if total_attachement_size < 10485760 \
+                       and current_link_size < 10485760:
+                        attachment = Attachment(
+                            link.filename,
+                            mime_type,
+                            link_data
+                        )
+                        attachments.append(attachment)
+                        total_attachement_size += current_link_size
+                except OSError:
+                    # link doesn't exist
+                    pass
+
+            DBSession.add_all(links)
 
     note_type = query_type('Note', note_type)
     note = Note(
@@ -86,9 +134,47 @@ def create_note(request):
         type=note_type
     )
 
+    from stalker import Task
     DBSession.add(note)
+    mailer = get_mailer(request)
+
     for entity in entities:
         entity.notes.append(note)
+        if isinstance(entity, Task):
+            task = entity
+
+            recipients = []
+            for resource in task.resources:
+                recipients.append(resource.email)
+
+            for responsible in task.responsible:
+                recipients.append(responsible.email)
+
+            # create an email
+            task_full_path = get_task_full_path(task.id)
+            message = Message(
+                subject='Note Added: "%(task_full_path)s"' % {
+                    'task_full_path': task_full_path
+                },
+                sender=dummy_email_address,
+                recipients=recipients,
+                body='%(user)s has added the following note to '
+                     '%(task_full_path)s:\n\n%(note)s' %
+                     {
+                         'user': logged_in_user.name,
+                         'task_full_path': task_full_path,
+                         'note': content_as_text
+                     },
+                html='<b>%(user)s</b> has added the following note to '
+                     '%(task_external_link)s:<br><br>%(note)s' %
+                     {
+                         'user': logged_in_user.name,
+                         'task_external_link': get_task_external_link(task.id),
+                         'note': content_as_text
+                     },
+                attachments=attachments
+            )
+            mailer.send_to_queue(message)
 
     logger.debug('note is created by %s' % logged_in_user.name)
     request.session.flash('success: note is created by %s' % logged_in_user.name)

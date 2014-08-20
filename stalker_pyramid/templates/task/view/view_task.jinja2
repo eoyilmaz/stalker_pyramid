@@ -246,7 +246,6 @@
                             <div class="tabbable"
                                  style="background-color: rgba(255,255,255,.7)">
                                 <ul class="nav nav-tabs">
-
                                     <li class="active">
                                         <a data-toggle="tab" href="#messages-tab">
                                             <i class="green icon-list-alt bigger-120"></i>
@@ -254,7 +253,7 @@
                                         </a>
                                     </li>
                                     <li class="">
-                                        <a data-toggle="tab" href="#calendar-tab">
+                                        <a id="calendar_tab" data-toggle="tab" href="#calendar-tab">
                                             <i class="orange icon-calendar bigger-120"></i>
                                             Calendar
                                         </a>
@@ -268,17 +267,18 @@
 
                                         <form id="add_note_form">
 
-                                            <div class="form-actions input-append">
-                                                <div class="itemdiv span1">
-                                                    <div class="user">
-                                                        <img alt=""
-                                                             src="{%- if logged_in_user.thumbnail -%}/{{ logged_in_user.thumbnail.full_path }}{%- else -%}{{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_0.png") }}{%- endif -%}"/>
-                                                    </div>
-                                                </div>
-                                                <div class="span11">
-                                                    <input placeholder="Type your message here ..."
-                                                           type="text" class="width-90"
-                                                           name="message"/>
+                                            <div class="form-actions">
+{#                                                <div class="itemdiv">#}
+{#                                                    <div class="user">#}
+{#                                                        <img alt=""#}
+{#                                                             src="{%- if logged_in_user.thumbnail -%}/{{ logged_in_user.thumbnail.full_path }}{%- else -%}{{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_0.png") }}{%- endif -%}"/>#}
+{#                                                    </div>#}
+{#                                                </div>#}
+                                                <div class="control-group">
+{#                                                    <input placeholder="Type your message here ..."#}
+{#                                                           type="text" class="width-90"#}
+{#                                                           name="message"/>#}
+                                                    <div class="wysiwyg-editor" id="note_editor"></div>
                                                     <button id="add_note_button"
                                                             class="btn btn-small btn-info no-radius">
                                                         <i class="icon-share-alt"></i>
@@ -418,12 +418,14 @@
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.gritter.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.slimscroll.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.hotkeys.min.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootstrap-wysiwyg.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/select2.min.js") }}'></script>
-{#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-datepicker.min.js") }}'></script>#}
-{#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/fuelux/fuelux.spinner.min.js") }}'></script>#}
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.maskedinput.min.js") }}'></script>
 
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/markdown/markdown.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/markdown/bootstrap-markdown.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.hotkeys.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/bootstrap-wysiwyg.js") }}'></script>
+    
     {% if entity.children | count == 0 %}
         {% if entity.status.code in ['RTS','WIP','HREV','DREV']%}
             {% if logged_in_user in entity.resources  or logged_in_user in entity.responsible or has_permission('Update_User')%}
@@ -458,8 +460,7 @@
                 '<strong>File upload error</strong> ' + msg + ' </div>').prependTo('#alerts');
     }
 
-    $(document).ready(function () {
-
+    $(function () {
         $('#refresh_task_button').on('click', function (e) {
             e.preventDefault();
             e.stopPropagation();
@@ -470,10 +471,9 @@
                 bootbox.alert(jqXHR.responseText);
             });
         });
-
     });
 
-    $(document).ready(function () {
+    $(function () {
 
         var icon_name = get_icon('{{ entity.entity_type.lower()}}');
         $('#task_header').append('<i class="' + icon_name + ' bigger-125"></i>{{ entity.name }}');
@@ -590,13 +590,22 @@
             var submit_button = $(this);
             submit_button.button('loading');
 
-            var add_note_form = $('#add_note_form');
+            var editor = $('.wysiwyg-editor');
+            var content = editor.cleanHtml();
+            var content_as_text = editor.text();
 
             $.post(
                 "/note/create",
-                add_note_form.serialize()+'&'+$.param({'type': "Simple Text", 'entity_ids':{{ entity.id }} })
+                $.param({
+                    content: content,
+                    content_as_text: content_as_text,
+                    type: "Simple Text",  {# TODO: it is not simple text anymore, update it. #}
+                    entity_ids:{{ entity.id }}
+                })
             ).done(function () {
                 window.location.assign('{{ came_from }}');
+{#                // just append the note to the top#}
+{#                var note_simple_template = doT.template($('#tmpl_note_simple_text').html());#}
             }).fail(function (jqXHR) {
                 bootbox.alert('<div id="message" class="alert alert-danger bigger-110">' + jqXHR.responseText + '</div>');
                 submit_button.button('reset');
@@ -605,8 +614,8 @@
 
     });
 
-    $(document).ready(function () {
-        $.getJSON('/tasks/{{ entity.id }}/events/').then(function (data) {
+    $.getJSON('/tasks/{{ entity.id }}/events/').then(function (data) {
+        $(function () {
             var events = [];
             var resources = {};
 
@@ -616,9 +625,6 @@
                 var title = data[i].title;
 
                 if (data[i].entity_type == 'tasks') {
-
-
-
                     for (var k = 0; k < data[i].resources.length; k++) {
                         var prop_id = (data[i].resources[k].id).toString();
                         title += ' - ' + data[i].resources[k].name;
@@ -662,18 +668,14 @@
                 events.push(event);
             }
 
-
-
             drawCalendar('calendar', events);
             drawTree('resource_tree', resources);
         });
     });
 
 
-    $(document).ready(function () {
-
+    $(function () {
         var get_dependency = function (type) {
-
             $.getJSON('/tasks/{{ entity.id }}/dependency/' + type + '/').then(function (data) {
 
                 var depends = {};
@@ -742,19 +744,17 @@
             };
         }
 
-        $(document).ready(function () {
+        $(function () {
             drawTree('version_used_by_tasks_tree', tasks);
 
             if (data.length == 0) {
                 $('#version_used_by_tasks_tree').append('<div class="alert alert-warning">No tasks</div>');
             }
         });
-
     });
+</script>
 
-    </script>
-
-    <script>
+<script>
         $.getJSON('/tasks/{{ entity.id }}/', function(data){
             $(function(){
                 // update created and update time of the task
@@ -762,6 +762,149 @@
                 $('#task_date_updated').html(moment(data[0].date_updated).format('YYYY-MM-DD HH:mm'));
             })
         })
-    </script>
-    
+</script>
+
+<script>
+    // fix calendar not showing up
+    $(function(){
+        $('#calendar_tab').on('click', function(){
+            // check if the title is visible
+            // meaning that calendar tab is working (somebody clicked it before)
+            var today_button = $('.fc-button-today');
+            if (today_button.attr('fixed_visibility_bug') !== '1') {
+                console.debug('calendar is not visible');
+                // it is not shown yet
+                // so trigger a click for the today button
+                setTimeout(function(){
+                    today_button.trigger('click');
+                }, 0);
+                today_button.attr('fixed_visibility_bug', '1');
+            } else {
+                console.debug('calendar is visible');
+            }
+        });
+    });
+</script>
+
+<script type="text/javascript">
+
+    function showErrorAlert(reason, detail) {
+        var msg = '';
+        if (reason === 'unsupported-file-type') {
+            msg = "Unsupported format " + detail;
+        } else if (reason === 'big-file-size') {
+            msg = "File is too big " + detail + ' bytes';
+        } else {
+            console.log("error uploading file", reason, detail);
+        }
+        $('<div class="alert"> <button type="button" class="close" data-dismiss="alert">&times;</button>' +
+                '<strong>File upload error</strong> ' + msg + ' </div>').prependTo('#alerts');
+    }
+
+    $(function(){
+        $('#note_editor').ace_wysiwyg({
+            toolbar: [
+                'font',
+                null,
+                'fontSize',
+                null,
+                {name: 'bold', className: 'btn-info'},
+                {name: 'italic', className: 'btn-info'},
+                {name: 'strikethrough', className: 'btn-info'},
+                {name: 'underline', className: 'btn-info'},
+                null,
+                {name: 'insertunorderedlist', className: 'btn-success'},
+                {name: 'insertorderedlist', className: 'btn-success'},
+                {name: 'outdent', className: 'btn-purple'},
+                {name: 'indent', className: 'btn-purple'},
+                null,
+                {name: 'justifyleft', className: 'btn-primary'},
+                {name: 'justifycenter', className: 'btn-primary'},
+                {name: 'justifyright', className: 'btn-primary'},
+                {name: 'justifyfull', className: 'btn-inverse'},
+                null,
+                {name: 'createLink', className: 'btn-pink'},
+                {name: 'unlink', className: 'btn-pink'},
+                null,
+                {name: 'insertImage', className: 'btn-success'},
+                null,
+                'foreColor',
+                null,
+                {name: 'undo', className: 'btn-grey'},
+                {name: 'redo', className: 'btn-grey'}
+            ],
+            'wysiwyg': {
+                maxFileSize : 2000000,
+                fileUploadError: showErrorAlert
+            }
+        }).prev().addClass('wysiwyg-style1');
+
+        //Add Image Resize Functionality to Chrome and Safari
+        //webkit browsers don't have image resize functionality when content is editable
+        //so let's add something using jQuery UI resizable
+        //another option would be opening a dialog for user to enter dimensions.
+        if (typeof jQuery.ui !== 'undefined' && /applewebkit/.test(navigator.userAgent.toLowerCase())) {
+
+            var lastResizableImg = null;
+
+            function destroyResizable() {
+                if (lastResizableImg == null) return;
+                lastResizableImg.resizable("destroy");
+                lastResizableImg.removeData('resizable');
+                lastResizableImg = null;
+            }
+
+            var enableImageResize = function () {
+                $('.wysiwyg-editor').on('mousedown', function (e) {
+                    var target = $(e.target);
+                    if (e.target instanceof HTMLImageElement) {
+                        if (!target.data('resizable')) {
+                            target.resizable({
+                                aspectRatio: e.target.width / e.target.height
+                            });
+                            target.data('resizable', true);
+
+                            if (lastResizableImg != null) {//disable previous resizable image
+                                lastResizableImg.resizable("destroy");
+                                lastResizableImg.removeData('resizable');
+                            }
+                            lastResizableImg = target;
+                        }
+                    }
+                }).on('click', function (e) {
+                    if (lastResizableImg != null && !(e.target instanceof HTMLImageElement)) {
+                        destroyResizable();
+                    }
+                }).on('keydown', function () {
+                    destroyResizable();
+                });
+            };
+
+            enableImageResize();
+
+{#            //or we can load the jQuery UI dynamically only if needed#}
+{#            if (typeof jQuery.ui !== 'undefined') enableImageResize();#}
+{#            else {//load jQuery UI if not loaded#}
+{#                $.getScript($path_assets + "/js/jquery-ui-1.10.3.custom.min.js", function (data,#}
+{#                                                                                           textStatus,#}
+{#                                                                                           jqxhr) {#}
+{#                    if ('ontouchend' in document) {//also load touch-punch for touch devices#}
+{#                        $.getScript($path_assets + "/js/jquery.ui.touch-punch.min.js", function (data,#}
+{#                                                                                                 textStatus,#}
+{#                                                                                                 jqxhr) {#}
+{#                            enableImageResize();#}
+{#                        });#}
+{#                    } else    enableImageResize();#}
+{#                });#}
+{#            }#}
+        }
+
+        // remove speech input
+        $('.wysiwyg-speech-input').remove();
+
+    });
+</script>
+
+
+
 {% endblock extrascripts %}

@@ -129,6 +129,7 @@ def create_version(request):
 
         v.created_by = logged_in_user
         v.is_published = is_published
+        v.created_with = "StalkerPyramid"
 
         # check if bind_to_originals is true
         if bind_to_originals and extension == '.ma':
@@ -141,7 +142,7 @@ def create_version(request):
     else:
         return Response('No task with id: %s' % task_id, 500)
 
-    return Response('Version is uploaded successfully')
+    return Response('Version is uploaded successfully!')
 
 
 @view_config(
