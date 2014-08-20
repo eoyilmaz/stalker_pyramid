@@ -68,7 +68,7 @@
             </div>
 
             {# Code #}
-            <div id='code_inputs' class="control-group">
+            <div class="code_inputs control-group">
                 <label class="span3 control-label" for="task_code">Code</label>
                 <div class="span9">
                     <input id="task_code"
@@ -97,164 +97,156 @@
             </div>
 
             {# Asset Type #}
-            <div id='asset_inputs'>
-                <div class='control-group'>
-                    <label class='span3 control-label' for='asset_type'>Asset Type</label>
-                    <div class='span9'>
-                        <input id='asset_type'
-                               class='input-block-level'
-                               name='asset_type'
-                               type='text'
-                               is_updating=false
-                               {% if mode=='update' %}{% if entity.type %}value="{{ entity.type.name }}"{% endif %}{% endif %}
-                               >
-                    </div>
+            <div class='asset_inputs control-group'>
+                <label class='span3 control-label' for='asset_type'>Asset Type</label>
+                <div class='span9'>
+                    <input id='asset_type'
+                           class='input-block-level'
+                           name='asset_type'
+                           type='text'
+                           is_updating=false
+                           {% if mode=='update' %}{% if entity.type %}value="{{ entity.type.name }}"{% endif %}{% endif %}
+                           >
                 </div>
             </div>
 
             {# Shot Sequence #}
-            <div id='shot_inputs'>
-                <div class='control-group'>
-                    <label class="span3 control-label" for='shot_sequence'>Sequence</label>
-                    <div class='span9'>
-                        <select id='shot_sequence'
+            <div class='shot_inputs control-group'>
+                <label class="span3 control-label" for='shot_sequence'>Sequence</label>
+                <div class='span9'>
+                    <select id='shot_sequence'
+                            class='input-block-level'
+                            name='shot_sequence_id'
+                            is_updating=false></select>
+                </div>
+            </div>
+
+            <div class='shot_inputs control-group'>
+                <label class="span3 control-label" for='shot_cut_in'>Cut In & Out</label>
+                <div class='span9'>
+                    <input id='shot_cut_in'
+                           class='input-block-level'
+                           name='cut_in'
+                           is_updating=false
+                           {% if mode=='update' %}{% if entity.type %}value="{{ entity.cut_in }}"{% endif %}{% endif %}>
+                    <input id='shot_cut_out'
+                           class='input-block-level'
+                           name='cut_out'
+                           is_updating=false
+                           {% if mode=='update' %}{% if entity.type %}value="{{ entity.cut_out }}"{% endif %}{% endif %}>
+                </div>
+            </div>
+
+            {# Task Type #}
+            <div class='task_inputs control-group'>
+                <label class='span3 control-label' for='task_type'>Task Type</label>
+                <div class='span9'>
+                    <input id='task_type'
+                           class='input-block-level'
+                           name='task_type'
+                           type='text'
+                           is_updating=false
+                           {% if mode=='update' %}{% if entity.type %}value="{{ entity.type.name }}"{% endif %}{% endif %}>
+                </div>
+            </div>
+
+            {# Depends_to #}
+            <div class='task_inputs control-group'>
+                <label class='span3 control-label' for='task_depends_to'>Depends To</label>
+                <div class='span9'>
+                    <input id='task_depends_to'
+                           class='input-block-level tag-input-style span11'
+                           type='text'
+                           name='dependent_ids'
+                           data-placeholder='Depends To'
+                           is_updating=false>
+                    <span id='task_depends_to_helper' class="help-button"
+                          title="">?</span>
+                </div>
+            </div>
+
+            {# Resources #}
+            <div class='task_inputs control-group'>
+                <label class='span3 control-label' for='task_resources'>Resources</label>
+                <div class='span9'>
+                    <select id='task_resources'
+                            multiple=''
+                            class='input-block-level tag-input-style'
+                            name='resource_ids'
+                            data-placeholder='Resources'
+                            is_updating=false></select>
+                </div>
+            </div>
+
+            {# Responsible #}
+            <div class='control-group'>
+                <label class='span3 control-label' for='task_responsible'>Responsible</label>
+                <div class='span9'>
+                    <select id='task_responsible'
+                            multiple=''
+                            class='input-block-level tag-input-style'
+                            name='responsible_ids'
+                            data-placeholder='Responsible'
+                            is_updating=false></select>
+                </div>
+                <div class='hidden'
+                     id="responsibles_storage"
+                     responsible_id="[{% if entity %}{% for responsible in entity.responsible %}{% if loop.index0 %},{% endif %}{{ responsible.id }}{% endfor %}{% endif %}]">
+                    {# this is a storage for resource_ids, which is set externally by the #}
+                    {# template engine #}
+                 </div>
+            </div>
+
+            {# Constraints #}
+
+            {# Schedule Timing #}
+            <div class='task_inputs control-group'>
+                <label class='span3 control-label' for='task_schedule_timing'>Schedule Timing</label>
+                <div class='span9'>
+                    <div class='span2'>
+                        <input id='task_schedule_timing'
+                               class='input-block-level'
+                               name='schedule_timing'
+                               type='text'
+                               value={% if mode=='update' %}{{ entity.schedule_timing }}{% else %}1{% endif %}
+                               min=1
+                               required>
+                    </div>
+                    <div class='span3'>
+                        <select id='task_schedule_unit'
+                               class='input-block-level'
+                               name='schedule_unit'>
+                            <option value='min'>Minutes</option>
+                            <option value='h'>Hours</option>
+                            <option value='d'>Days</option>
+                            <option value='w'>Weeks</option>
+                            <option value='m'>Months</option>
+                            <option value='y'>Years</option>
+                        </select>
+                    </div>
+                    <div class='span3'>
+                        <select id='task_schedule_model'
                                 class='input-block-level'
-                                name='shot_sequence_id'
-                                is_updating=false></select>
-                    </div>
-                </div>
-
-                <div class='control-group'>
-                    <label class="span3 control-label" for='shot_cut_in'>Cut In & Out</label>
-                    <div class='span9'>
-                        <input id='shot_cut_in'
-                               class='input-block-level'
-                               name='cut_in'
-                               is_updating=false
-                               {% if mode=='update' %}{% if entity.type %}value="{{ entity.cut_in }}"{% endif %}{% endif %}>
-                        <input id='shot_cut_out'
-                               class='input-block-level'
-                               name='cut_out'
-                               is_updating=false
-                               {% if mode=='update' %}{% if entity.type %}value="{{ entity.cut_out }}"{% endif %}{% endif %}>
+                                name='schedule_model'>
+                            <option value='effort'>Effort</option>
+                            <option value='duration'>Duration</option>
+                            <option value='length'>Length</option>
+                        </select>
                     </div>
                 </div>
             </div>
 
-            <div id='task_inputs'>
-                {# Task Type #}
-                <div class='control-group'>
-                    <label class='span3 control-label' for='task_type'>Task Type</label>
-                    <div class='span9'>
-                        <input id='task_type'
-                               class='input-block-level'
-                               name='task_type'
-                               type='text'
-                               is_updating=false
-                               {% if mode=='update' %}{% if entity.type %}value="{{ entity.type.name }}"{% endif %}{% endif %}
-                               >
-                    </div>
+            {# Update Bid #}
+            {% if mode == 'update' %}
+            <div class='task_inputs control-group'>
+                <label class="span3 control-label" for="task_update_bid">Update Bid</label>
+                <div class="span9">
+                    <input id="task_update_bid"
+                           type="checkbox"
+                           name="update_bid"/>
                 </div>
-
-                {# Depends_to #}
-                <div class='control-group'>
-                    <label class='span3 control-label' for='task_depends_to'>Depends To</label>
-                    <div class='span9'>
-                        <input id='task_depends_to'
-                               class='input-block-level tag-input-style span11'
-                               type='text'
-                               name='dependent_ids'
-                               data-placeholder='Depends To'
-                               is_updating=false>
-                        <span id='task_depends_to_helper' class="help-button"
-                              title="">?</span>
-                    </div>
-                </div>
-
-                {# Resources #}
-                <div class='control-group'>
-                    <label class='span3 control-label' for='task_resources'>Resources</label>
-                    <div class='span9'>
-                        <select id='task_resources'
-                                multiple=''
-                                class='input-block-level tag-input-style'
-                                name='resource_ids'
-                                data-placeholder='Resources'
-                                is_updating=false></select>
-                    </div>
-                </div>
-    
-                {# Responsible #}
-                <div class='control-group'>
-                    <label class='span3 control-label' for='task_responsible'>Responsible</label>
-                    <div class='span9'>
-                        <select id='task_responsible'
-                                multiple=''
-                                class='input-block-level tag-input-style'
-                                name='responsible_ids'
-                                data-placeholder='Responsible'
-                                is_updating=false></select>
-                    </div>
-                    <div class='hidden'
-                         id="responsibles_storage"
-                         responsible_id="[{% if entity %}{% for responsible in entity.responsible %}{% if loop.index0 %},{% endif %}{{ responsible.id }}{% endfor %}{% endif %}]">
-                        {# this is a storage for resource_ids, which is set externally by the #}
-                        {# template engine #}
-                     </div>
-                </div>
-
-                {# Constraints #}
-    
-                {# Schedule Timing #}
-                <div class='control-group'>
-                    <label class='span3 control-label' for='task_schedule_timing'>Schedule Timing</label>
-                    <div class='span9'>
-                        <div class='span2'>
-                            <input id='task_schedule_timing'
-                                   class='input-block-level'
-                                   name='schedule_timing'
-                                   type='text'
-                                   value={% if mode=='update' %}{{ entity.schedule_timing }}{% else %}1{% endif %}
-                                   min=1
-                                   required>
-                        </div>
-                        <div class='span3'>
-                            <select id='task_schedule_unit'
-                                   class='input-block-level'
-                                   name='schedule_unit'>
-                                <option value='min'>Minutes</option>
-                                <option value='h'>Hours</option>
-                                <option value='d'>Days</option>
-                                <option value='w'>Weeks</option>
-                                <option value='m'>Months</option>
-                                <option value='y'>Years</option>
-                            </select>
-                        </div>
-                        <div class='span3'>
-                            <select id='task_schedule_model'
-                                    class='input-block-level'
-                                    name='schedule_model'>
-                                <option value='effort'>Effort</option>
-                                <option value='duration'>Duration</option>
-                                <option value='length'>Length</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
-                {# Update Bid #}
-                {% if mode == 'update' %}
-                <div class='control-group'>
-                    <label class="span3 control-label" for="task_update_bid">Update Bid</label>
-                    <div class="span9">
-                        <input id="task_update_bid"
-                               type="checkbox"
-                               name="update_bid"/>
-                    </div>
-                </div>
-                {% endif %}
-
             </div>
+            {% endif %}
 
             {# Priority #}
             <div class='control-group'>
@@ -432,10 +424,10 @@ resource_name, status
         {# set the entity type #}
         task_entity_type.val("{{ entity_type }}");
 
-        var task_inputs = $('#task_inputs');
-        var shot_inputs = $('#shot_inputs');
-        var code_inputs = $('#code_inputs');
-        var asset_inputs = $('#asset_inputs');
+        var task_inputs = $('.task_inputs');
+        var shot_inputs = $('.shot_inputs');
+        var code_inputs = $('.code_inputs');
+        var asset_inputs = $('.asset_inputs');
 
         var update_entity_type_fields = function(){
             // Asset - Code and Asset Type
@@ -452,19 +444,19 @@ resource_name, status
                 task_inputs.show();
             } else if (entity_type_value === 'Asset'){
                 shot_inputs.hide();
+                task_inputs.hide();
                 code_inputs.show();
                 asset_inputs.show();
-                task_inputs.hide();
             } else if (entity_type_value === 'Shot'){
+                asset_inputs.hide();
+                task_inputs.hide();
                 shot_inputs.show();
                 code_inputs.show();
-                asset_inputs.hide();
-                task_inputs.hide();
             } else if (entity_type_value === 'Sequence'){
                 shot_inputs.hide();
-                code_inputs.show();
                 asset_inputs.hide();
                 task_inputs.hide();
+                code_inputs.show();
             }
         };
 
