@@ -343,7 +343,7 @@ def duplicate_task(task):
         status=new,
         status_list=task.status_list,
         tags=task.tags,
-        responsible=task.responsible,
+        # responsible=task.responsible,
         start=task.start,
         end=task.end,
         # thumbnail=task.thumbnail,
