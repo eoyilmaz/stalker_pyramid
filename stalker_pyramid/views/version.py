@@ -28,7 +28,7 @@ from sqlalchemy import distinct
 from stalker import db, Task, Version, Entity, defaults
 
 from stalker_pyramid.views import (get_logged_in_user, get_user_os,
-                                   PermissionChecker)
+                                   PermissionChecker, milliseconds_since_epoch)
 from stalker_pyramid.views.link import MediaManager
 
 logger = logging.getLogger(__name__)
@@ -176,6 +176,7 @@ def get_entity_versions(request):
         elif user_os == 'osx':
             path_converter = repo.to_osx_path
 
+
     return [{
         'id': version.id,
         'task': {'id': version.task.id,
@@ -193,6 +194,9 @@ def get_entity_versions(request):
         },
         'is_published': version.is_published,
         'version_number': version.version_number,
+        'date_created': milliseconds_since_epoch(version.date_updated),
+        'created_with': version.created_with,
+        'description':version.description
     } for version in entity.versions]
 
 

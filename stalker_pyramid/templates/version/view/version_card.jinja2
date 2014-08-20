@@ -35,8 +35,8 @@
 </div>
 
 <script>
-    $('.date').each(function () {
 
+    $('.date').each(function () {
         var date = moment.utc($(this).text());
         $(this).text(date.fromNow());
     });

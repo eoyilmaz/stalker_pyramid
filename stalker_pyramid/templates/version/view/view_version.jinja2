@@ -62,7 +62,9 @@
 
             </div>
             <div class="widget-toolbar hidden-480">
-
+                <a href='javascript:copyToClipboard("{{ version.absolute_full_path }}")'>
+                                    <i class="icon-file"></i>
+                                </a>
             </div>
         </div>
 
@@ -71,15 +73,21 @@
                 <div class="row-fluid">
                     <div class="span8">
                         <div class="profile-user-info profile-user-info-striped">
-
                             <div class="profile-info-row">
-                                <div class="profile-info-name">File</div>
+                                <div class="profile-info-name">Updated Date</div>
                                 <div class="profile-info-value">
-                                    {% set file_name_split=version.full_path.split('/') %}
-                                    {% set full_path=file_name_split[file_name_split | count - 1 ] %}
-                                    <span><a href='javascript:copyToClipboard("{{ version.absolute_full_path }}")'>{{ full_path }}</a></span>
+                                    <span>{{ version.date_updated }} (<span
+                        class="date">{{ version.date_updated }}</span>)</span>
                                 </div>
                             </div>
+{#                            <div class="profile-info-row">#}
+{#                                <div class="profile-info-name">File</div>#}
+{#                                <div class="profile-info-value">#}
+{#                                    {% set file_name_split=version.full_path.split('/') %}#}
+{#                                    {% set full_path=file_name_split[file_name_split | count - 1 ] %}#}
+{#                                    <span><a href='javascript:copyToClipboard("{{ version.absolute_full_path }}")'>{{ full_path }}</a></span>#}
+{#                                </div>#}
+{#                            </div>#}
                             {% if version.parent %}
                                 <div class="profile-info-row">
                                     <div class="profile-info-name">Parent</div>
@@ -93,6 +101,12 @@
                                 <div class="profile-info-name">Created By</div>
                                 <div class="profile-info-value">
                                     <span><a href="/users/{{ version.created_by.id }}/view">{{ version.created_by.name }}</a></span>
+                                </div>
+                            </div>
+                            <div class="profile-info-row">
+                                <div class="profile-info-name">Created With</div>
+                                <div class="profile-info-value">
+                                    <span>{{ version.created_with }}</span>
                                 </div>
                             </div>
                             {% if version.description %}
@@ -125,18 +139,21 @@
 {% endblock page_content %}
 
 {% block extrascripts %}
+
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery-ui-1.10.3.custom.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.ui.touch-punch.min.js") }}'></script>
     <script type="text/javascript">
         $(document).ready(function () {
-
             var icon_name = get_icon('version');
             $('#version_header').append('<i class="' + icon_name + ' bigger-125"></i>{{ version.take_name }} | {{ version.version_number }}');
         });
 
+        $('.date').each(function () {
+            var date = moment.utc($(this).text());
+            $(this).text(date.fromNow());
+        });
+
     </script>
-
-
 
 
 {% endblock extrascripts %}
