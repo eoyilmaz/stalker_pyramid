@@ -601,14 +601,16 @@ def main(global_config, **settings):
     config.add_route('request_extra_time', 'tasks/{id}/request_extra_time')
     config.add_route('request_extra_time_dialog', 'tasks/{id}/request_extra_time/dialog')
 
-    config.add_route('get_task_resources',  'tasks/{id}/resources/') #json
-    config.add_route('remove_task_user_dialog', 'tasks/{id}/remove/{user_type}/{user_id}/dialog')
-    config.add_route('remove_task_user', 'tasks/{id}/remove/{user_type}/{user_id}')
+    config.add_route('get_task_resources',        'tasks/{id}/resources/') #json
+    config.add_route('remove_task_user_dialog',   'tasks/{id}/remove/{user_type}/{user_id}/dialog')
+    config.add_route('remove_task_user',          'tasks/{id}/remove/{user_type}/{user_id}')
     config.add_route('change_tasks_users_dialog', 'tasks/change/{user_type}/dialog')
-    config.add_route('change_tasks_users', 'tasks/change/{user_type}')
-    config.add_route('change_task_users_dialog', 'tasks/{id}/change/{user_type}/dialog')
-    config.add_route('change_task_users', 'tasks/{id}/change/{user_type}')
+    config.add_route('change_tasks_users',        'tasks/change/{user_type}')
+    config.add_route('change_task_users_dialog',  'tasks/{id}/change/{user_type}/dialog')
+    config.add_route('change_task_users',         'tasks/{id}/change/{user_type}')
 
+    config.add_route('add_tasks_dependencies_dialog', 'tasks/add/dependencies/dialog')
+    config.add_route('add_tasks_dependencies',        'tasks/add/dependencies')
 
     config.add_route('delete_task',        'tasks/{id}/delete')
     config.add_route('delete_task_dialog', 'tasks/{id}/delete/dialog')

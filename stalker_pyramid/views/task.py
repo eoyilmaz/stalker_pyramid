@@ -4342,6 +4342,7 @@ def force_task_status(request):
 
     return Response('Success: %s status is set to %s' % (task.name, status.name))
 
+
 @view_config(
     route_name='resume_task_dialog',
     renderer='templates/modals/confirm_dialog.jinja2'
@@ -4445,7 +4446,6 @@ def get_task_resources(request):
     ]
 
 
-
 @view_config(
     route_name='remove_task_user_dialog',
     renderer='templates/modals/confirm_dialog.jinja2'
@@ -4474,6 +4474,7 @@ def remove_task_user_dialog(request):
         'came_from': came_from,
         'action': action
     }
+
 
 @view_config(
     route_name='remove_task_user',
@@ -4515,6 +4516,7 @@ def remove_task_user(request):
 
     return Response('Success: %s is removed from %s resources' % (user.name, task.name))
 
+
 @view_config(
     route_name='change_tasks_users_dialog',
     renderer='templates/task/dialog/change_tasks_users_dialog.jinja2'
@@ -4542,6 +4544,7 @@ def change_tasks_users_dialog(request):
         'came_from': came_from,
         'project_id':project_id
     }
+
 
 @view_config(
     route_name='change_tasks_users',
@@ -4591,7 +4594,6 @@ def change_tasks_users(request):
     return Response('Success: %s are added to selected tasks' % user_type)
 
 
-
 @view_config(
     route_name='change_task_users_dialog',
     renderer='templates/task/dialog/change_task_users_dialog.jinja2'
@@ -4613,6 +4615,7 @@ def change_task_users_dialog(request):
         'came_from': came_from
     }
 
+
 @view_config(
     route_name='change_task_users',
     permission='Update_Task'
@@ -4623,7 +4626,7 @@ def change_task_users(request):
 
     selected_list = get_multi_integer(request, 'user_ids')
     users = User.query\
-            .filter(User.id.in_(selected_list)).all()
+        .filter(User.id.in_(selected_list)).all()
 
     if not users:
         transaction.abort()
@@ -4644,9 +4647,9 @@ def change_task_users(request):
     # for resource in resources:
     #     if resource  not in task.resources:
     #         task.resources.append(resource)
-    if user_type=='resources':
+    if user_type == 'resources':
         task.resources = users
-    elif user_type=='responsible':
+    elif user_type == 'responsible':
         task.responsible = users
 
     logged_in_user = get_logged_in_user(request)
@@ -4657,3 +4660,53 @@ def change_task_users(request):
 
     return Response('Success: %s are added to %s resources' % (user_type, task.name))
 
+
+@view_config(
+    route_name='add_tasks_dependencies_dialog',
+    renderer='templates/task/dialog/add_tasks_dependencies_dialog.jinja2'
+)
+def add_tasks_dependencies_dialog(request):
+    """creates the add task dependency dialog
+    """
+    # get task ids and pass it to the dialog
+    # also get the project id
+    task_ids = get_multi_integer(request, 'task_ids', 'GET')
+    project_id = request.params.get('project_id')
+
+    logger.debug('task_ids: %s' % task_ids)
+
+    return {
+        'task_ids': task_ids,
+        'project_id': project_id
+    }
+
+
+@view_config(
+    route_name='add_tasks_dependencies',
+    renderer='json'
+)
+def add_tasks_dependencies(request):
+    """it will add the given dependencies to the given tasks without removing
+    them
+    """
+    task_ids = get_multi_integer(request, 'task_ids[]')
+    dep_ids = get_multi_integer(request, 'dependent_ids[]')
+
+    logger.debug('task_ids: %s' % task_ids)
+    logger.debug('dep_ids: %s' % dep_ids)
+
+    # get each task
+    tasks = Task.query.filter(Task.id.in_(task_ids)).all()
+    deps = Task.query.filter(Task.id.in_(dep_ids)).all()
+
+    from stalker.exceptions import CircularDependencyError, StatusError
+
+    for t in tasks:
+        for d in deps:
+            if d not in t.depends:
+                try:
+                    t.depends.append(d)
+                except (CircularDependencyError, StatusError):
+                    pass
+
+    return Response('Tasks updated successfully!')

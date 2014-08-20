@@ -487,84 +487,6 @@ resource_name, status
         var task_parent = $('#task_parent');
         var task_depends_to = $('#task_depends_to');
 
-        /**
-         * Queries Task data from server
-         * 
-         * @param search_string
-         *   A string value containing the query words
-         * @param callback
-         *   A function that will be called with the retrieved data
-         */
-        var get_task_data = function(search_string, callback){
-
-            var search_buffer;
-            var search_params = {
-                project_id: {{ project.id }} // always use project id
-            };
-
-            // iterate over each key value pair
-            var key_value_pair, key, value;
-
-            if (search_string.indexOf(':') === -1){
-                if (search_string.length < 3){
-                    // not finished typing yet
-                    return;
-                }
-                
-                search_buffer = search_string.split(' ');
-                // use a direct search with given words as the task full_path
-                $.extend(
-                    search_params,
-                    {
-                        path: search_buffer
-                    }
-                );
-            } else {
-                // so we have some key value pairs
-                search_buffer = search_string.split(',');
-                
-                var current_pair;
-                for (var i = 0; i < search_buffer.length; i += 1){
-                    current_pair = search_buffer[i];
-
-                    if (current_pair.length === 0 || current_pair.indexOf(':') === -1){
-                        // not finished typing yet
-                        continue;
-                    }
-
-                    key_value_pair = search_buffer[i].split(':');
-
-                    key = key_value_pair[0];
-                    value = key_value_pair[1].replace(/[\s]+/, ' ').trim(); //.split(' ');
-
-                    if (value === '') {
-                        // not finished typing yet
-                        continue;
-                    }
-                    
-                    // if there is a key expand it
-                    if (search_params[key] !== undefined){
-                        search_params[key].push(value);
-                    } else {
-                        search_params[key] = [value];
-                    }
-                }
-            }
-
-            $.getJSON('/tasks/', search_params, function (data) {
-                var input_source = [];
-                var result_count = data.length;
-                var max_count = 250;
-                for (var i = 0; i < Math.min(result_count, max_count); i++) {
-                    input_source.push(data[i].full_path);
-                }
-                if (result_count > max_count) {
-                    input_source.push('' + (result_count - max_count) + ' more items...');
-                }
-                callback(input_source);
-            });
-        };
-
         {% if parent %}
             // do a query for parent_info
             $.getJSON('/tasks/?id={{ parent.id }}', function(data){
@@ -590,7 +512,11 @@ resource_name, status
                 }
     
                 timeout_buffer = setTimeout(function() {
-                    get_task_data(search_string, response);
+                    get_task_data({
+                        project_id: {{ project.id }},
+                        search_string: search_string,
+                        callback:response
+                    });
                 }, 300);
             },
             search: function () {
@@ -625,7 +551,11 @@ resource_name, status
                 }
 
                 timeout_buffer = setTimeout(function() {
-                    get_task_data(request, response);
+                    get_task_data({
+                        project_id: {{ project.id }},
+                        search_string: request,
+                        callback: response
+                    });
                 }, 300);
             },
             resultFilter: function(value){

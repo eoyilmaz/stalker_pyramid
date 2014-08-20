@@ -3,21 +3,20 @@
               class='form-horizontal'
               role='form'
               method='post'>
-            <div class='control-group'>
-                    <label class='span3 control-label' for='task_users'>{{ user_type }}</label>
-                    <div class='span9'>
-                        <select id='task_users'
-                                multiple=''
-                                class='input-block-level tag-input-style'
-                                name='user_ids'
-                                data-placeholder={{ user_type }}></select>
-                    </div>
-                </div>
+        <div class='control-group'>
+            <label class='span3 control-label' for='task_users'>{{ user_type }}</label>
+            <div class='span9'>
+                <select id='task_users'
+                        multiple=''
+                        class='input-block-level tag-input-style'
+                        name='user_ids'
+                        data-placeholder={{ user_type }}></select>
+            </div>
+        </div>
     </form>
 </div>
 
 <script type="text/javascript">
-
     function init_dialog() {
         console.debug('starting to initialize add_task_user_dialog dialog!!!');
 
@@ -27,7 +26,7 @@
         {# ***************************************************************** #}
         $(document).ready(function () {
 
-            var task_users = $('#task_users');
+            var task_users = $('#task_dependencies');
 
             task_users.chosen({
                 search_contains: true,

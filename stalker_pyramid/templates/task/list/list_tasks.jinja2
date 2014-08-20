@@ -164,7 +164,7 @@
                 <li class="dropdown-submenu">
     
                     <a href="#" tabindex="-1">
-                        <i class="'ui-icon icon-plus bigger-120">&nbsp</i>
+                        <i class="icon-plus bigger-120">&nbsp</i>
                         Create
                     </a>
     
@@ -174,7 +174,7 @@
                                data-toggle="modal"
                                data-keyboard=false
                                href='{{ request.route_url("create_task_dialog", id=-1, _query={'project_id': project.id}) }}'>
-                                <i class="'ui-icon icon-tasks bigger-120">&nbsp</i>
+                                <i class="icon-tasks bigger-120">&nbsp</i>
                                 Task
                             </a>
                         </li>
@@ -183,7 +183,7 @@
                             <a id='child_task_button'
                                original-href='{{ request.route_url("create_task_dialog", id=-1) }}'
                                href='#'>
-                                <i class="'ui-icon icon-tasks bigger-120">&nbsp</i>
+                                <i class="icon-tasks bigger-120">&nbsp</i>
                                 Child Task
                             </a>
                         </li>
@@ -192,7 +192,7 @@
                             <a id='dependent_task_button'
                                original-href='{{ request.route_url("create_task_dialog", id=-1) }}'
                                href='#'>
-                                <i class="'ui-icon icon-tasks bigger-120">&nbsp</i>
+                                <i class="icon-tasks bigger-120">&nbsp</i>
                                 Dependent Task
                             </a>
                         </li>
@@ -204,7 +204,7 @@
                                data-toggle="modal"
                                data-keyboard=false
                                href='{{ request.route_url("create_asset_dialog", id=-1, _query={'project_id': project.id}) }}'>
-                                <i class="'ui-icon icon-puzzle-piece bigger-120">&nbsp</i>
+                                <i class="icon-puzzle-piece bigger-120">&nbsp</i>
                                 Asset
                             </a>
                         </li>
@@ -214,7 +214,7 @@
                                data-toggle="modal"
                                data-keyboard=false
                                href='{{ request.route_url("create_shot_dialog", id=-1, _query={'project_id': project.id}) }}'>
-                                <i class="'ui-icon icon-camera bigger-120">&nbsp</i>
+                                <i class="icon-camera bigger-120">&nbsp</i>
                                 Shot
                             </a>
                         </li>
@@ -224,7 +224,7 @@
                                data-toggle="modal"
                                data-keyboard=false
                                href='{{ request.route_url("create_sequence_dialog", id=-1, _query={'project_id': project.id}) }}'>
-                                <i class="'ui-icon icon-film bigger-120">&nbsp</i>
+                                <i class="icon-film bigger-120">&nbsp</i>
                                 Sequence
                             </a>
                         </li>
@@ -240,7 +240,7 @@
                        data-keyboard=false
                        href="#"
                        tabindex="-1">
-                        <i class="'ui-icon icon-pencil bigger-120">&nbsp</i>
+                        <i class="icon-pencil bigger-120">&nbsp</i>
                         Update
                     </a>
                 </li>
@@ -249,7 +249,7 @@
             {% if has_permission('Create_Task') %}
                 <li>
                     <a id="duplicate_task_hierarchy_menu_item">
-                        <i class="'ui-icon icon-copy bigger-120">&nbsp</i>
+                        <i class="icon-copy bigger-120">&nbsp</i>
                         Duplicate Hierarchy
                     </a>
                 </li>
@@ -258,8 +258,17 @@
             {% if has_permission('Update_Task') %}
                 <li>
                     <a id="change_tasks_users_menu_item">
-                        <i class="'ui-icon icon-exchange bigger-120">&nbsp</i>
+                        <i class="icon-user bigger-120">&nbsp</i>
                         Change Resources
+                    </a>
+                </li>
+            {% endif %}
+    
+            {% if has_permission('Update_Task') %}
+                <li>
+                    <a id="add_tasks_dependencies_menu_item">
+                        <i class="icon-tasks bigger-120">&nbsp</i>
+                        Add Dependencies
                     </a>
                 </li>
             {% endif %}
@@ -269,7 +278,7 @@
                     <a id="delete_task_menu_item"
                        class="red"
                        href=''>
-                        <i class="'ui-icon icon-trash bigger-120">&nbsp</i>
+                        <i class="icon-trash bigger-120">&nbsp</i>
                         Delete
                     </a>
                 </li>
@@ -282,7 +291,7 @@
                 <a id='add_time_log_menu_item'
                    class="green"
                    href='#'>
-                    <i class="'ui-icon icon-time bigger-120">&nbsp</i>
+                    <i class="icon-time bigger-120">&nbsp</i>
                     Add Time Log
                 </a>
             </li>
@@ -294,7 +303,7 @@
                    data-toggle="modal"
                    data-keyboard="false"
                    href="#">
-                    <i class="'ui-icon icon-comment bigger-120">&nbsp</i>
+                    <i class="icon-comment bigger-120">&nbsp</i>
                     Request Review
                 </a>
             </li>
@@ -305,7 +314,7 @@
                    data-toggle="modal"
                    data-keyboard="false"
                    href="#">
-                    <i class="'ui-icon icon-ticket bigger-120">&nbsp</i>
+                    <i class="icon-ticket bigger-120">&nbsp</i>
                     Create Ticket
                 </a>
             </li>
@@ -912,6 +921,39 @@ require([
 {#                        bootbox.alert(jqXHR.responseText);#}
 {#                    });#}
 
+
+    });
+
+    $('#add_tasks_dependencies_menu_item').on('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        // get the selection list
+        var selected_ids = gantt_chart.selected_ids();
+{#        console.debug('selected_ids: ', selected_ids);#}
+        if (selected_ids.length == 0) {
+            bootbox.alert('Please select at least one item from the ' +
+                'GanttChart!');
+            return;
+        }
+        var _query = '?project_id={{ project.id }}';
+        for (var i=0; i<selected_ids.length; i++){
+           _query +='&task_ids='+selected_ids[i];
+        }
+        var remote = "{{ request.route_url('add_tasks_dependencies_dialog') }}" + _query;
+        console.log ('remote: ' + remote);
+        var event_dialog = $('#dialog_template');
+        event_dialog.modal({
+            'remote': remote
+        });
+{#        $.post('/tasks/change/Resources/dialog'+_query#}
+{#                    ).done(function (response_text) {#}
+{#                        bootbox.alert(response_text);#}
+{#                        // reload the gantt chart#}
+{#                        gantt_column.reload();#}
+{#                    }).fail(function (jqXHR) {#}
+{#                        bootbox.alert(jqXHR.responseText);#}
+{#                    });#}
 
     });
 

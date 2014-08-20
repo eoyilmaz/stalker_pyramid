@@ -120,8 +120,7 @@
                             //IE10 throws "SCRIPT5: Access is denied" exception,
                             //so we need to add the key/value pairs one by one
                             fd = new FormData();
-                            $.each($form.serializeArray(), function (index,
-                                                                     item) {
+                            $.each($form.serializeArray(), function (index, item) {
                                 fd.append(item.name, item.value);
                             });
                             //and then add files because files are not included in serializeArray()'s result
