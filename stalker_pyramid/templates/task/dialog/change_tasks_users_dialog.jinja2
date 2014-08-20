@@ -20,13 +20,14 @@
     function init_dialog() {
         console.debug('starting to initialize add_task_user_dialog dialog!!!');
 
-        $('#dialog_template_label').find('span').remove();
-        $('#dialog_template_label').append('<span>Append {{ user_type }}</span>');
+        var label = $('#dialog_template_label');
+        label.find('span').remove();
+        label.append('<span>Append {{ user_type }}</span>');
 
         {# ***************************************************************** #}
         $(document).ready(function () {
 
-            var task_users = $('#task_dependencies');
+            var task_users = $('#task_users');
 
             task_users.chosen({
                 search_contains: true,
