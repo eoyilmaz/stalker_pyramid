@@ -22,9 +22,11 @@
     function init_dialog() {
         console.debug('starting to initialize add_task_user_dialog dialog!!!');
 
-        $('#dialog_template_label').find('span').remove();
-        $('#dialog_template_label').append('<span>Append {{ user_type }}</span>');
+        var label = $('#dialog_template_label');
+        label.find('span').remove();
+        label.append('<span>Append {{ user_type }}</span>');
         $('#dialog_template_body').attr('style', "height: 300px");
+
 
         {# ***************************************************************** #}
         $(document).ready(function () {
