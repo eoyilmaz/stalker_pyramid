@@ -33,7 +33,7 @@
                 $('#html_template_header').attr('class', 'table-header header-color-dark');
             {% else %}
                 template_label.append('<span>{{ filter.name }}</span>');
-                $('#html_template_header').attr('class', 'table-header header-color-' + '{{ filter.code.lower() }}');
+                $('#html_template_header').attr('class', 'table-header header-color-status_{{ filter.code.lower() }}');
             {% endif %}
         {% endif %}
 

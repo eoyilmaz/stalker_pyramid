@@ -1,4 +1,4 @@
-<span class="label label-large label-{{ entity.status.code.lower() }}"> {{ entity.status.name }}</span>
+<span class="label label-large label-status_{{ entity.status.code.lower() }}"> {{ entity.status.name }}</span>
 {% if has_permission('Create_Review') and entity.is_leaf%}
     <div class="inline position-relative">
         <button class="btn btn-minier bigger btn-info dropdown-toggle"
@@ -17,7 +17,7 @@
                        data-toggle="modal"
                        data-keyboard=false
                        data-placement="top">
-                           <span class="cmpl-text">
+                           <span class="status_cmpl-text">
                                <i class="icon-ok bigger-110"></i>Force Complete
                            </span>
                     </a>
@@ -33,7 +33,7 @@
                        data-toggle="modal"
                        data-keyboard=false
                        data-placement="top">
-                           <span class="stop-text">
+                           <span class="status_stop-text">
                                <i class="icon-stop bigger-110"></i>Stop Task
                            </span>
                     </a>
@@ -47,7 +47,7 @@
                        data-toggle="modal"
                        data-keyboard=false
                        data-placement="top">
-                           <span class="oh-text">
+                           <span class="status_oh-text">
                                <i class="icon-pause bigger-110"></i>Hold Task
                            </span>
                     </a>

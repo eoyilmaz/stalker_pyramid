@@ -80,7 +80,7 @@
             <td><a href='/users/{{=it.reviewer_id }}/view'>{{=it.reviewer_name}}</a>
             </td>
             <td>{{ if (it.review_status_name == 'New') { }}
-                <span class="label label-prev">Pending</span>
+                <span class="label label-status_prev">Pending</span>
 
                 {{ if(it.is_reviewer=='1'){ }}
 
