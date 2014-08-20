@@ -99,7 +99,7 @@
     <script id="tmpl_itemRow" type="text/x-dot-template">
 
         <tr {{=it.is_published? 'class="green"' : '' }}>
-            <td>{{= it.date_created}} </td>
+            <td style="width:70px;">{{= it.date_created}} </td>
             <td><a href="/versions/{{= it.id }}/view" {{=it.is_published? 'class="green"' : '' }}>
                     {{= it.take_name }} | {{= it.version_number }}
                 </a>
