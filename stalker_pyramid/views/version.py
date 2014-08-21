@@ -131,6 +131,7 @@ def create_version(request):
         v.created_by = logged_in_user
         v.is_published = is_published
         v.created_with = "StalkerPyramid"
+        v.description = description
 
         # check if bind_to_originals is true
         if bind_to_originals and extension == '.ma':
