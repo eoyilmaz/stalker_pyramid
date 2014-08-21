@@ -438,9 +438,7 @@
 <script>
 
     var all_users = [];
-
     $.getJSON('/users/').then(function (data) {
-
         all_users = data;
     });
 
@@ -450,14 +448,12 @@
             return user.name;
         }
         return id;
-    }
+    };
 
     function objectFindByKey(array, key, value) {
 {#        console.log('key: '+key+' value: '+value);#}
         for (var i = 0; i < array.length; i++) {
-
-            if (array[i][key] == value) {
-
+            if (array[i][key] == value){
                 return array[i];
             }
         }
@@ -696,7 +692,7 @@
 
     <script type="text/javascript">
         {% if entity %}
-            $(document).ready(function () {
+            $(function () {
                 document.title = 'STALKER / {{ entity.name }}'
             });
         {% endif %}
@@ -704,7 +700,7 @@
 
     {# Ace Settings Box #}
     <script type="text/javascript">
-        $(document).ready(function () {
+        $(function () {
             // hide ace-settings bar
             $('#ace-settings-box').toggleClass('open');
         });

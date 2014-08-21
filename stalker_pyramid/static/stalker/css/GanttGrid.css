@@ -381,10 +381,10 @@ th.dgrid-column-chart table {
     height: 100%;
 }
 
-.gantt .dgrid-column-action {
-    width: 40px;
-    text-align: center;
-}
+/*.gantt .dgrid-column-action {*/
+    /*width: 40px;*/
+    /*text-align: center;*/
+/*}*/
 
 .gantt .dgrid-column-id {
     width: 40px;
@@ -400,8 +400,12 @@ th.dgrid-column-chart table {
     text-align: center;
 }
 
+.gantt .dgrid-column-responsible {
+    width: 95px;
+}
+
 .gantt .dgrid-column-resource {
-    width: 150px;
+    width: 95px;
 }
 
 .gantt .dgrid-column-timing {
