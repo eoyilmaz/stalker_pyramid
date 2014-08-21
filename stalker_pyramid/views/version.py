@@ -92,7 +92,8 @@ def update_version_dialog(request):
 
 
 @view_config(
-    route_name='create_version'
+    route_name='create_version',
+    permission='Create_Version'
 )
 def create_version(request):
     """runs when creating a version
@@ -104,10 +105,10 @@ def create_version(request):
 
     take_name = request.params.get('take_name', 'Main')
     is_published = \
-        True if request.params.get('is_published') == 'on' else False
+        True if request.params.get('is_published') == 'true' else False
     description = request.params.get('description')
     bind_to_originals = \
-        True if request.params.get('bind_to_originals') == 'on' else False
+        True if request.params.get('bind_to_originals') == 'true' else False
 
     file_object = request.POST.getall('file_object')[0]
 

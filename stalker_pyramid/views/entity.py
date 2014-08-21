@@ -754,6 +754,8 @@ def get_search_result(request):
             """"SimpleEntities".name ilike '%{s}%' """.format(s=part)
         )
 
+    sql_query_buffer.append('order by "SimpleEntities".name')
+
     sql_query = '\n'.join(sql_query_buffer)
 
     from sqlalchemy import text  # to be able to use "%" sign use this function
@@ -890,6 +892,7 @@ def list_search_result(request):
         'studio': studio,
         'results': results
     }
+
 
 @view_config(
     route_name='delete_entity_dialog',

@@ -107,9 +107,9 @@
             form_data.append('file_object', file_info[0]);
             form_data.append('task_id', task_id);
             form_data.append('take_name', $('#version_take_name').val());
-            form_data.append('is_published', $('#is_published').val());
+            form_data.append('is_published', $('#is_published').prop('checked'));
             form_data.append('description', $('#version_description').val());
-            form_data.append('bind_to_originals', $('#bind_to_originals').val());
+            form_data.append('bind_to_originals', $('#bind_to_originals').prop('checked'));
 
             $.ajax({
                 url: '{{ request.route_url('create_version') }}',
