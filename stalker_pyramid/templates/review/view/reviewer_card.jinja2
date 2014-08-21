@@ -58,7 +58,7 @@
             <div class="body">
                 <div>
                     {{ if (it.review_status_name != 'Waiting'){ }}
-                        <span class="label label-{{=it.review_status_code }}">{{=it.review_status_name }}</span>
+                        <span class="label label-status_{{=it.review_status_code }}">{{=it.review_status_name }}</span>
                     {{ } }}
                     {{ if (it.review_status_link) { }}
                     <div class="inline position-relative">

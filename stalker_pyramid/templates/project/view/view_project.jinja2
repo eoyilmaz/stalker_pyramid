@@ -36,7 +36,7 @@
 
                 <div class="widget-toolbar no-border invoice-info">
                     <span class="invoice-info-label">Status:</span>
-                    <span class="label label-{{ entity.status.html_class }}">{{ entity.status.name }}</span>
+                    <span class="label label-status_{{ entity.status.html_class }}">{{ entity.status.name }}</span>
                     <br>
 
                     <div class="progress progress-mini progress-success progress-striped {% if entity.status.code == 'WIP' %}active{% endif %}"

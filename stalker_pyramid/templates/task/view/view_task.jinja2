@@ -644,7 +644,7 @@
 
                         var time_to_complete_str = '<span> ( ' +  meaningful_time_between(data[i].schedule_seconds, data[i].total_logged_seconds) + ') </span>';
 
-                        var percent_complete_str = '<span class="label label-' + data[i].status_color + '">' + data[i].status + '</span>';
+                        var percent_complete_str = '<span class="label label-status_' + data[i].status_color + '">' + data[i].status + '</span>';
 
                         resources[prop_id]['additionalParameters']['children'][(data[i].id).toString()] = {name: '<span  class="pull-left"><a href="/tasks/' + data[i].id + '/view">' + data[i].title + '  </a></span>' + time_to_complete_str + percent_complete_str, type: 'item'}
 
