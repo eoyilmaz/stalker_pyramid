@@ -915,7 +915,8 @@ def inline_update_task(request):
 
 
 @view_config(
-    route_name='update_task'
+    route_name='update_task',
+    permission='Update_Task'
 )
 def update_task(request):
     """Updates the given task with the data coming from the request
@@ -2488,7 +2489,8 @@ def data_dialog(request, mode='create', entity_type='Task'):
 
 @view_config(
     route_name='create_task_dialog',
-    renderer='templates/task/dialog/task_dialog.jinja2'
+    renderer='templates/task/dialog/task_dialog.jinja2',
+    permission='Create_Task'
 )
 def create_task_dialog(request):
     """called when creating tasks
@@ -2498,7 +2500,8 @@ def create_task_dialog(request):
 
 @view_config(
     route_name='update_task_dialog',
-    renderer='templates/task/dialog/task_dialog.jinja2'
+    renderer='templates/task/dialog/task_dialog.jinja2',
+    permission='Update_Task'
 )
 def update_task_dialog(request):
     """called when updating tasks
@@ -2508,7 +2511,8 @@ def update_task_dialog(request):
 
 @view_config(
     route_name='create_asset_dialog',
-    renderer='templates/task/dialog/task_dialog.jinja2'
+    renderer='templates/task/dialog/task_dialog.jinja2',
+    permission='Create_Task'
 )
 def create_asset_dialog(request):
     """called when creating assets
@@ -2518,7 +2522,8 @@ def create_asset_dialog(request):
 
 @view_config(
     route_name='update_asset_dialog',
-    renderer='templates/task/dialog/task_dialog.jinja2'
+    renderer='templates/task/dialog/task_dialog.jinja2',
+    permission='Update_Task'
 )
 def update_asset_dialog(request):
     """called when updating assets
@@ -2528,7 +2533,8 @@ def update_asset_dialog(request):
 
 @view_config(
     route_name='create_shot_dialog',
-    renderer='templates/task/dialog/task_dialog.jinja2'
+    renderer='templates/task/dialog/task_dialog.jinja2',
+    permission='Create_Task'
 )
 def create_shot_dialog(request):
     """called when creating shots
@@ -2538,7 +2544,8 @@ def create_shot_dialog(request):
 
 @view_config(
     route_name='update_shot_dialog',
-    renderer='templates/task/dialog/task_dialog.jinja2'
+    renderer='templates/task/dialog/task_dialog.jinja2',
+    permission='Update_Task'
 )
 def update_shot_dialog(request):
     """called when updating shots
@@ -2548,7 +2555,8 @@ def update_shot_dialog(request):
 
 @view_config(
     route_name='create_sequence_dialog',
-    renderer='templates/task/dialog/task_dialog.jinja2'
+    renderer='templates/task/dialog/task_dialog.jinja2',
+    permission='Create_Task'
 )
 def create_sequence_dialog(request):
     """called when creating sequences
@@ -2558,7 +2566,8 @@ def create_sequence_dialog(request):
 
 @view_config(
     route_name='update_sequence_dialog',
-    renderer='templates/task/dialog/task_dialog.jinja2'
+    renderer='templates/task/dialog/task_dialog.jinja2',
+    permission='Update_Task'
 )
 def update_sequence_dialog(request):
     """called when updating sequences
@@ -2566,7 +2575,10 @@ def update_sequence_dialog(request):
     return data_dialog(request, mode='update', entity_type='Sequence')
 
 
-@view_config(route_name='create_task')
+@view_config(
+    route_name='create_task',
+    permission='Create_Task',
+)
 def create_task(request):
     """runs when adding a new task
     """
@@ -2862,7 +2874,7 @@ def get_answered_reviews(task, review_set_number):
 
 
 @view_config(
-    route_name='cleanup_task_new_reviews'
+    route_name='cleanup_task_new_reviews',
 )
 def cleanup_task_new_reviews(request):
 
@@ -2871,6 +2883,8 @@ def cleanup_task_new_reviews(request):
     logger.debug('cleanup_task_new_reviews is starts')
 
     logged_in_user = get_logged_in_user(request)
+
+    multi_permission_checker(request, ['Update_Task', 'Update_Review'])
 
     utc_now = local_to_utc(datetime.datetime.now())
 

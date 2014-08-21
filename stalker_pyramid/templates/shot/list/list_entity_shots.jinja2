@@ -161,7 +161,7 @@
     {% raw %}
     <script id="tmpl_taskCell" type="text/x-dot-template">
         <td class="no-padding" style="width:120px;">
-            <div class="{{=it.status_color}}"
+            <div class="status_{{=it.status_color}}"
                  style="padding:5px; height: 120px"">
                 <span>
                     <strong><a class="white" href="/tasks/{{=it.id }}/view">{{=it.name}}</a></strong>
@@ -190,11 +190,11 @@
                         <span><a href='/users/{{=it.resource_id}}/view'>{{=it.resource_name}}</a></span>
                     </div>
 
-                    {{ if (it.percent_complete!='') { }}
+                    {{ if (it.percent_complete !== '') { }}
                         {{=it.status}}
                         <div class="progress progress-success no-padding">
                                 <div style="width:{{=it.percent_complete}}%" class="bar">
-                                    <span>{{= it.percent_complete}}%</span>
+                                    <span>{{= it.percent_complete.toFixed(1)}}%</span>
                                 </div>
                          </div>
                     <br/>

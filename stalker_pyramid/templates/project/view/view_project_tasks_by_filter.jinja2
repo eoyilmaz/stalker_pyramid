@@ -56,19 +56,15 @@
                 <h5 id="items_header" class="smaller">{{ filter.name }}</h5>
 
                 <div class="widget-toolbar">
-
                     <a href="#" data-action="collapse">
                         <i class="icon-chevron-down"></i>
                     </a>
-
                 </div>
 
             </div>
             <div class="widget-body">
                 <div class="widget-main no-padding">
-
                     {% include 'task/list/list_entity_tasks_by_filter.jinja2' %}
-
                 </div>
             </div>
         </div>
@@ -110,7 +106,7 @@
             <div class="progress progress-success">
                 <div style="width:{{=it.completed}}%"
                      class="bar">
-                    <span class="pull-left">{{= it.completed.toFixed(0) }}%</span>
+                    <span class="pull-left">{{= it.completed.toFixed(1) }}%</span>
                 </div>
             </div>
         </td>
