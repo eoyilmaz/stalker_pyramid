@@ -375,6 +375,33 @@ define([
                             }
                         }
                     },
+                    resource: {
+                        label: "Resource",
+                        sortable: false,
+                        resizable: true,
+                        get: function (object) {
+                            return object;
+                        },
+                        renderCell: function (object, value, node, options) {
+                            var ret = '', i, resource;
+                            if (object.resources) {
+                                for (i = 0; i < object.resources.length; i++) {
+                                    resource = object.resources[i];
+                                    ret = ret + (ret === "" ? "" : ", ") + templates.resourceLink(resource);
+                                }
+                            }
+                            $(node).addClass('status_' + object.status).append(
+                                $.parseHTML(ret)
+                            );
+                            // check if hidden
+                            var column_id = 'resource';
+                            var grid = this.grid;
+                            if (grid.is_hidden_column(column_id)) {
+                                // also hide this one by default
+                                $(node).css({'display': 'none'});
+                            }
+                        }
+                    },
                     responsible: {
                         label: "Responsible",
                         sortable: false,
@@ -391,33 +418,6 @@ define([
                                         'name': get_user_name(object.responsible[i])
                                     };
                                     ret = ret + (ret === "" ? "" : ", ") + templates.resourceLink(responsible);
-                                }
-                            }
-                            $(node).addClass('status_' + object.status).append(
-                                $.parseHTML(ret)
-                            );
-                            // check if hidden
-                            var column_id = 'resource';
-                            var grid = this.grid;
-                            if (grid.is_hidden_column(column_id)) {
-                                // also hide this one by default
-                                $(node).css({'display': 'none'});
-                            }
-                        }
-                    },
-                    resource: {
-                        label: "Resource",
-                        sortable: false,
-                        resizable: true,
-                        get: function (object) {
-                            return object;
-                        },
-                        renderCell: function (object, value, node, options) {
-                            var ret = '', i, resource;
-                            if (object.resources) {
-                                for (i = 0; i < object.resources.length; i++) {
-                                    resource = object.resources[i];
-                                    ret = ret + (ret === "" ? "" : ", ") + templates.resourceLink(resource);
                                 }
                             }
                             $(node).addClass('status_' + object.status).append(
