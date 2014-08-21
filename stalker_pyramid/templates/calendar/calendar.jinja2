@@ -45,7 +45,8 @@
             {% endif %}
 
             eventClick: function (calEvent, jsEvent, view) {
-
+                jsEvent.preventDefault();
+                jsEvent.stopPropagation();
 {#                console.log('eventClicked')#}
                 if (calEvent.entity_type == 'vacations') {
                     {% if has_permission('Update_Vacation') %}
@@ -62,9 +63,11 @@
                         update_event_action(calEvent.entity_type, calEvent.eId);
                     {% endif %}
                 } else if (calEvent.entity_type == 'tasks') {
-                    {% if has_permission('Read_Task') %}
+                    if(jsEvent.button == 0) {
                         window.location.assign("/tasks/" + calEvent.eId + "/view");
-                    {% endif %}
+                    } else if (jsEvent.button == 1) {
+                        window.open("/tasks/" + calEvent.eId + "/view", '_blank');
+                    }
                 }
             },
 
