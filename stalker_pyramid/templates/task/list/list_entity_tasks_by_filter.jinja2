@@ -43,19 +43,19 @@
     
     
             {% if entity.entity_type == 'User' %}
-                query_str = 'resource_id={{ entity.id }}';
+                query_str = 'has_resource=1&leaf_only=1&resource_id={{ entity.id }}';
             {% elif entity.entity_type == 'Project'%}
-                query_str = 'project_id={{ entity.id }}';
+                query_str = 'has_resource=1&leaf_only=1&project_id={{ entity.id }}';
             {% endif %}
     
             {% if filter.entity_type == 'User' %}
-                query_str = 'responsible_id={{ filter.id }}';
+                query_str = 'has_resource=1&leaf_only=1&responsible_id={{ filter.id }}';
             {% elif filter.entity_type == 'Status'%}
                 query_str += '&status={{ filter.code }}';
             {% endif %}
         {% endif %}
 
-        $.getJSON('/tasks/?has_resource=1&leaf_only=1&' + query_str).then(function (data) {
+        $.getJSON('/tasks/?' + query_str).then(function (data) {
             // fill items table with dynamic data
             // wait until document is ready
             $(function () {

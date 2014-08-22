@@ -363,8 +363,6 @@
         var link_template = doT.template($('#tmpl_sidebar_link').html());
         var pill_link_template = doT.template($('#tmpl_pillsbar_link').html());
 
-{#        console.log(title+ ' : ' +state);#}
-
         var options = {
             'title': title,
             'state': state,
@@ -379,10 +377,8 @@
         var pill_rendered_template = $($.parseHTML(pill_link_template(options)));
         pillsbar_list.append(pill_rendered_template);
         pill_rendered_template.on('click', function (e) {
-
-                        window.location.assign($(this).attr('link'));
-
-        })
+            window.location.assign($(this).attr('link'));
+        });
 
         var badge = rendered_template.find('.badge');
         var pill_badge = pill_rendered_template.find('.badge');

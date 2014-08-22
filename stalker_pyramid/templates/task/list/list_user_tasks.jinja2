@@ -14,7 +14,7 @@
 {% endblock sidebar %}
 
 {% block page_content %}
-    {% set page_title='You are responsible of these tasks ' %}
+    {% set page_title='You are assigned to these tasks ' %}
     {% include 'page_header.jinja2' %}
 
     <div class="widget-box {{ collapsed }}">
@@ -30,8 +30,7 @@
         </div>
         <div class="widget-body">
             <div class="widget-main no-padding">
-                {# TODO: use query_str instead of filter #}
-                {% set filter=entity %}
+                {% set query_str='resource_id=%s' % entity.id %}
                 {% include 'task/list/list_entity_tasks_by_filter.jinja2' %}
             </div>
         </div>
@@ -119,8 +118,8 @@
                             href="{{=it.request_review}}">
                             <i class="icon-comment-alt bigger-130"></i>
                         </a>
-                    {{ } }}
 
+                    {{ } }}
                     {{ if (it.review) { }}
                         <a
                             class="purple"

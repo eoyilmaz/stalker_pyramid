@@ -408,6 +408,7 @@ def main(global_config, **settings):
     config.add_route('get_user_groups',       'users/{id}/groups/')  # json
     config.add_route('get_user_tasks',        'users/{id}/tasks/')  # json
     config.add_route('get_user_tasks_count',  'users/{id}/tasks/count/')  # json
+    config.add_route('get_user_tasks_responsible_of_count', 'users/{id}/tasks/responsible_of/count') # html
     config.add_route('get_user_vacations',    'users/{id}/vacations/')  # json
     config.add_route('get_user_vacations_count', 'users/{id}/vacations/count/')  # json
     config.add_route('get_user_tickets',      'users/{id}/tickets/')  # json
@@ -428,7 +429,7 @@ def main(global_config, **settings):
     config.add_route('list_user_projects',    'users/{id}/projects/list')  # html
     config.add_route('list_user_time_logs',   'users/{id}/time_logs/list')  # html
     config.add_route('list_user_tickets',     'users/{id}/tickets/list')  # html
-    config.add_route('list_user_tasks_responsible_of', 'users/{id}/tasks/list/responsible_of') # html
+    config.add_route('list_user_tasks_responsible_of',       'users/{id}/tasks/list/responsible_of') # html
     config.add_route('list_user_tasks_watching',       'users/{id}/tasks/list/watching') # html
     config.add_route('list_user_reviews',              'users/{id}/reviews/list')  # html
 
@@ -580,6 +581,8 @@ def main(global_config, **settings):
     config.add_route('get_gantt_task_children',  'tasks/{id}/children/gantt')
 
     config.add_route('get_tasks',         'tasks/')
+    config.add_route('get_tasks_count',         'tasks/count/')
+
     config.add_route('get_task',          'tasks/{id}/')
     config.add_route('get_task_events',   'tasks/{id}/events/')  #json
     config.add_route('get_task_children_task_type',  'tasks/{type}/children/task_type/')  # json

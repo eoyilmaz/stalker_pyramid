@@ -158,7 +158,7 @@ logger.setLevel(logging.DEBUG)
 )
 @view_config(
     route_name='list_user_tasks',
-    renderer='templates/task/list/list_entity_tasks.jinja2'
+    renderer='templates/task/list/list_user_tasks.jinja2'
 )
 @view_config(
     route_name='list_user_tasks_responsible_of',

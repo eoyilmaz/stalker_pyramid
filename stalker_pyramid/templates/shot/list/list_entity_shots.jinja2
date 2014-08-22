@@ -193,10 +193,10 @@
                     {{ if (it.percent_complete !== '') { }}
                         {{=it.status}}
                         <div class="progress progress-success no-padding">
-                                <div style="width:{{=it.percent_complete}}%" class="bar">
-                                    <span>{{= it.percent_complete.toFixed(1)}}%</span>
-                                </div>
-                         </div>
+                            <div style="width:{{=it.percent_complete}}%" class="bar">
+                                <span>{{= it.percent_complete.toFixed(1)}}%</span>
+                            </div>
+                        </div>
                     <br/>
                     {{ } else {}}
 
@@ -210,117 +210,113 @@
     {% endraw %}
 
     <script>
+        $(function(){
+            var icon_name = get_icon('shot');
+            $('#items_header').append('<i class=' + icon_name + '></i>');
+        });
+    </script>
+    
+    <script>
 
         var all_tasks_list = [];
 
-        $(document).ready(function () {
+        // fill shots table with dynamic data
+        // first get all the children task types
+        // to define the columns
+        $.getJSON('/shots/children/task_type/').then(function (types_data) {
 
-            var icon_name = get_icon('shot');
-            $('#items_header').append('<i class=' + icon_name + '></i>');
+            var types = types_data;
 
-
-
-            // fill shots table with dynamic data
-            $.getJSON('/shots/children/task_type/').then(function (types_data) {
-
-                var types = types_data;
+            $(function () {
                 var column_template = doT.template($('#tmpl_shotColumn').html());
+                var k;
+                var table_column = $('#shots_table_column');
+                for (k = 0; k < types_data.length; k++) {
+                    // append it to the table
+                    table_column.append(column_template(types[k]));
+                }
 
-                $(function () {
-                    var k;
-                    var table_column = $('#shots_table_column');
-                    for (k = 0; k < types_data.length; k++) {
+                $.getJSON('/entities/{{ entity.id }}/shots/').then(function (data) {
 
-                        // append it to the table
-                        table_column.append(column_template(types[k]));
-                    }
-
-                    $.getJSON('/entities/{{ entity.id }}/shots/').then(function (data) {
-
-                        var shots = data;
-                        var shot_template = doT.template($('#tmpl_shotRow').html());
+                    var shots = data;
+                    var shot_template = doT.template($('#tmpl_shotRow').html());
 
 
-                        // wait until document is ready
-                        $(function () {
-                            var i;
-                            var table_body = $('#shots_table>tbody');
-                            for (i = 0; i < data.length; i++) {
+                    // wait until document is ready
+                    $(function () {
+                        var i;
+                        var table_body = $('#shots_table').find('tbody');
 
-                                data[i].link = '/shots/' + data[i].id + '/view';
+                        for (i = 0; i < data.length; i++) {
+                            data[i].link = '/shots/' + data[i].id + '/view';
 
-                                if (data[i].thumbnail_full_path == null) {
-                                    data[i].thumbnail_full_path = '{{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}';
-                                }
-                                else {
-                                    data[i].thumbnail_full_path = '/' + data[i].thumbnail_full_path;
-                                }
-                                data[i].thumbnail_full_path = ''
+                            if (data[i].thumbnail_full_path == null) {
+                                data[i].thumbnail_full_path = '{{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}';
+                            } else {
+                                data[i].thumbnail_full_path = '/' + data[i].thumbnail_full_path;
+                            }
+                            data[i].thumbnail_full_path = '';
 
-                                data[i].came_from = '{{ request.current_route_path() }}'
+                            data[i].came_from = '{{ request.current_route_path() }}';
 
+                            // append it to the table
+                            table_body.append(shot_template(data[i]));
 
-                                // append it to the table
-                                table_body.append(shot_template(data[i]));
+                            var cell_template = doT.template($('#tmpl_taskCell').html());
+                            var shot_row = $('#shot_row_' + data[i].id);
 
-                                var cell_template = doT.template($('#tmpl_taskCell').html());
-                                var shot_row = $('#shot_row_' + data[i].id);
+                            for (var j = 0; j < types_data.length; j++) {
+                                var tasks = data[i][types_data[j].name];
+                                if (tasks) {
+                                    var task = tasks[0];
 
-                                for (var j = 0; j < types_data.length; j++) {
-                                    var tasks = data[i][types_data[j].name];
-                                    if (tasks) {
-                                        var task = tasks[0];
-
-                                        shot_row.append(cell_template({
-                                                                        'id': task.id,
-                                                                        'name': task.name,
-                                                                        'status': task.status,
-                                                                        'status_color': task.status.toLowerCase(),
-                                                                        'percent_complete':(task.status=='WIP'?task.percent:''),
-                                                                        'update_shot_action': data[i].update_shot_action,
-                                                                        'bid_timing':task.bid_timing,
-                                                                        'bid_unit':task.bid_unit,
-                                                                        'schedule_timing':task.schedule_timing,
-                                                                        'schedule_unit':task.schedule_unit,
-                                                                        'resource_name':task.resource_name,
-                                                                        'resource_id':task.resource_id
-                                        }));
-                                    } else {
-                                        shot_row.append(cell_template({
-                                                                        'id': '',
-                                                                        'name': '',
-                                                                        'status': '',
-                                                                        'status_color': 'black2',
-                                                                        'percent_complete':'',
-                                                                        'resource_name':''
-                                                                       }));
-                                    }
-                                }
-
-                                var shot_summary_cell = $('#shot_summary_cell_' + data[i].id);
-                                var shot_summary_cell_template = doT.template($('#tmpl_shotSummaryCell').html());
-
-                                for (var n = 0; n < data[i]['nulls'].length; n++) {
-                                    var null_type_task = data[i]['nulls'][n];
-                                    shot_summary_cell.append(shot_summary_cell_template({'link': '/tasks/' + null_type_task[0] + '/update/dialog', 'name': null_type_task[1], 'status': null_type_task[2], 'status_color': null_type_task[3]}));
+                                    shot_row.append(
+                                        cell_template({
+                                            'id': task.id,
+                                            'name': task.name,
+                                            'status': task.status,
+                                            'status_color': task.status.toLowerCase(),
+                                            'percent_complete':(task.status=='WIP'?task.percent:''),
+                                            'update_shot_action': data[i].update_shot_action,
+                                            'bid_timing':task.bid_timing,
+                                            'bid_unit':task.bid_unit,
+                                            'schedule_timing':task.schedule_timing,
+                                            'schedule_unit':task.schedule_unit,
+                                            'resource_name':task.resource_name,
+                                            'resource_id':task.resource_id
+                                        })
+                                    );
+                                } else {
+                                    shot_row.append(
+                                        cell_template({
+                                            'id': '',
+                                            'name': '',
+                                            'status': '',
+                                            'status_color': 'black2',
+                                            'percent_complete':'',
+                                            'resource_name':''
+                                        })
+                                    );
                                 }
                             }
 
-                            var oTable1 = $('#shots_table').dataTable();
+                            var shot_summary_cell = $('#shot_summary_cell_' + data[i].id);
+                            var shot_summary_cell_template = doT.template($('#tmpl_shotSummaryCell').html());
 
-                            $('#loading_spinner').hide();
-                            $('#content').show();
+                            for (var n = 0; n < data[i]['nulls'].length; n++) {
+                                var null_type_task = data[i]['nulls'][n];
+                                shot_summary_cell.append(shot_summary_cell_template({'link': '/tasks/' + null_type_task[0] + '/update/dialog', 'name': null_type_task[1], 'status': null_type_task[2], 'status_color': null_type_task[3]}));
+                            }
+                        }
 
+                        var oTable1 = $('#shots_table').dataTable();
 
+                        $('#loading_spinner').hide();
+                        $('#content').show();
 
-
-                        });
                     });
-
-
                 });
-            })
-
+            });
         });
     </script>
 
