@@ -150,6 +150,12 @@ def create_note(request):
             for responsible in task.responsible:
                 recipients.append(responsible.email)
 
+            for watcher in task.watchers:
+                recipients.append(watcher.email)
+
+            # make the list unique
+            recipients = list(set(recipients))
+
             # create an email
             task_full_path = get_task_full_path(task.id)
             message = Message(

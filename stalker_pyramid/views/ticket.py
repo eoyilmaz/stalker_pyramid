@@ -193,6 +193,9 @@ def create_ticket(request):
             for resource in link.resources:
                 recipients.append(resource.email)
 
+            for watcher in link.watchers:
+                recipients.append(watcher.email)
+
         # make recipients unique
         recipients = list(set(recipients))
 
@@ -279,6 +282,11 @@ def update_ticket(request):
         ticket.created_by.email,
         ticket.owner.email
     ]
+
+    # append watchers of ticket.links to recipients
+    for link in ticket.links:
+        for watcher in link.watchers:
+            recipients.append(watcher.email)
 
     # mail the comment to anybody related to the ticket
     if comment:

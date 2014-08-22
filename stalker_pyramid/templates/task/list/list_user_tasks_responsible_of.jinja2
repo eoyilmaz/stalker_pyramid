@@ -30,6 +30,7 @@
         </div>
         <div class="widget-body">
             <div class="widget-main no-padding">
+                {% TODO: use query_str instead of filter %}
                 {% set filter=entity %}
                 {% include 'task/list/list_entity_tasks_by_filter.jinja2' %}
             </div>

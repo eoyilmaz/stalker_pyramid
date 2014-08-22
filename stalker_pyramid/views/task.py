@@ -3183,6 +3183,12 @@ def approve_task(request):
         for responsible in task.responsible:
             recipients.append(responsible.email)
 
+        for watcher in task.watchers:
+            recipients.append(watcher.email)
+
+        # make the list unique
+        recipients = list(set(recipients))
+
         task_full_path = get_task_full_path(task.id)
 
         description_temp = \
@@ -3373,6 +3379,12 @@ def request_revision(request):
 
         for resource in task.resources:
             recipients.append(resource.email)
+
+        for watcher in task.watchers:
+            recipients.append(watcher.email)
+
+        # make the list unique
+        recipients = list(set(recipients))
 
         task_full_path = get_task_full_path(task.id)
 
@@ -3593,10 +3605,17 @@ def request_progress_review(request):
         recipients.append(logged_in_user.email)
         # recipients.extend(task.responsible)
 
+        for watcher in task.watchers:
+            recipients.append(watcher.email)
+
+        # make the list unique
+        recipients = list(set(recipients))
+
         description_temp = \
-            '%(user)s has requested you to do a progress review for ' \
+            '%(user)s has requested an in-progress review for ' \
             '%(task_full_path)s with the following note:' \
-            '%(spacing)s%(note)s '
+            '%(spacing)s' \
+            '%(note)s '
 
         mailer = get_mailer(request)
 
@@ -3620,7 +3639,6 @@ def request_progress_review(request):
             )
         )
 
-        logger.debug('mailer send')
         mailer.send_to_queue(message)
 
     logger.debug(
@@ -3683,9 +3701,15 @@ def request_final_review(request):
         for responsible in task.responsible:
             recipients.append(responsible.email)
 
+        for watcher in task.watchers:
+            recipients.append(watcher.email)
+
+        # make the list unique
+        recipients = list(set(recipients))
+
         task_full_path = get_task_full_path(task.id)
         description_temp = \
-            '%(user)s has requested you to do a final review for ' \
+            '%(user)s has requested a final review for ' \
             '%(task_full_path)s with the following note:%(note)s'
 
         mailer = get_mailer(request)
@@ -3896,6 +3920,12 @@ def request_extra_time(request):
 
         for responsible in task.responsible:
             recipients.append(responsible.email)
+
+        for watcher in task.watchers:
+            recipients.append(watcher.email)
+
+        # make the list unique
+        recipients = list(set(recipients))
 
         task_full_path = get_task_full_path(task.id)
 
