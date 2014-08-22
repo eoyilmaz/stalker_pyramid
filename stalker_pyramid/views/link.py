@@ -442,7 +442,7 @@ select
     "Links".original_filename,
 
     'repositories/' || task_repositories.repo_id || '/' || "Links".full_path as hires_full_path,
-    'repositories/' || task_repositories.repo_id || '/' || "Links_ForWeb".full_path as full_path,
+    'repositories/' || task_repositories.repo_id || '/' || "Links_ForWeb".full_path as webres_full_path,
     'repositories/' || task_repositories.repo_id || '/' || "Thumbnails".full_path as thumbnail_full_path,
 
     tags.name as tags,
@@ -526,7 +526,7 @@ limit %(limit)s
             'id': r[0],
             'original_filename': r[1],
             'hires_full_path': r[2],
-            'full_path': r[3],
+            'webres_full_path': r[3],
             'thumbnail_full_path': r[4],
             'tags': r[5],
             'entity_ids': r[6],
@@ -1121,6 +1121,8 @@ def force_download_repository_files(request):
         repo.path,
         partial_file_path
     )
+
+    logger.debug('partial_file_path: %s' % partial_file_path)
 
     # get the link to get the original file name
     link = Link.query.filter(Link.full_path == partial_file_path).first()
@@ -2106,17 +2108,20 @@ class MediaManager(object):
             self.generate_media_for_web(reference_file_full_path)
         web_version_extension = \
             os.path.splitext(web_version_temp_full_path)[-1]
+
+        web_version_file_name = '%s%s' % (reference_file_base_name,
+                                          web_version_extension)
         web_version_full_path = \
             os.path.join(
                 os.path.dirname(reference_file_full_path),
                 'ForWeb',
-                reference_file_base_name + web_version_extension
+                web_version_file_name
             )
         web_version_repo_relative_full_path = \
             repo.make_relative(web_version_full_path)
         web_version_link = Link(
             full_path=web_version_repo_relative_full_path,
-            original_filename=filename
+            original_filename=web_version_file_name
         )
 
         # move it to repository
@@ -2133,18 +2138,20 @@ class MediaManager(object):
         thumbnail_temp_full_path = \
             self.generate_thumbnail(reference_file_full_path)
         thumbnail_extension = os.path.splitext(thumbnail_temp_full_path)[-1]
+        thumbnail_file_name = '%s%s' % (reference_file_base_name,
+                                        thumbnail_extension)
 
         thumbnail_full_path = \
             os.path.join(
                 os.path.dirname(reference_file_full_path),
                 'Thumbnail',
-                reference_file_base_name + thumbnail_extension
+                thumbnail_file_name
             )
         thumbnail_repo_relative_full_path = \
             repo.make_relative(thumbnail_full_path)
         thumbnail_link = Link(
             full_path=thumbnail_repo_relative_full_path,
-            original_filename=filename
+            original_filename=thumbnail_file_name
         )
 
         # move it to repository
