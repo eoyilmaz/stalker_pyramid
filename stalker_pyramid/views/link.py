@@ -1219,7 +1219,8 @@ class MediaManager(object):
         self.ffmpeg_command_path = '/usr/bin/ffmpeg'
         self.ffprobe_command_path = '/usr/local/bin/ffprobe'
 
-    def reorient_image(self, img):
+    @classmethod
+    def reorient_image(cls, img):
         """re-orients rotated images by looking at EXIF data
         """
         # get the image rotation from EXIF information

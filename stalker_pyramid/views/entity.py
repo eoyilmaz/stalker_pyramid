@@ -165,6 +165,10 @@ logger.setLevel(logging.DEBUG)
     renderer='templates/task/list/list_user_tasks_responsible_of.jinja2'
 )
 @view_config(
+    route_name='list_user_tasks_watching',
+    renderer='templates/task/list/list_user_tasks_watching.jinja2'
+)
+@view_config(
     route_name='list_task_tasks',
     renderer='templates/task/list/list_entity_tasks.jinja2'
 )
@@ -327,6 +331,7 @@ def get_entity_related_data(request):
         'studio': studio,
         'came_from': came_from
     }
+
 
 @view_config(
     route_name='get_entity',

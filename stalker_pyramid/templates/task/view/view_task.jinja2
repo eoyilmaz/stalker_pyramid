@@ -126,8 +126,23 @@
                          style="width: {{ entity.percent_complete }}%;"></div>
                 </div>
             </div>
-            <div class="widget-toolbar hidden-480">
-                <a id='refresh_task_button' href="/tasks/{{ entity.id }}/fix/statuses/">
+            <div class="widget-toolbar">
+                    <a id='watch_or_unwatch_task_button'
+                       class="btn btn-inverse btn-small"
+                        {% if logged_in_user in entity.watchers %}
+                           title='Unwatch this task'
+                           href="/tasks/{{ entity.id }}/unwatch"
+                           watching='true'>
+                            <i class="icon-eye-close"></i>
+                        {% else %}
+                           title='Watch this task'
+                           href="/tasks/{{ entity.id }}/watch"
+                           watching='false'>
+                            <i class="icon-eye-open"></i>
+                        {% endif %}
+                    </a>
+                <a id='refresh_task_button' href="/tasks/{{ entity.id }}/fix/statuses/"
+                   class="btn btn-inverse btn-small">
                     <i class="icon-refresh"></i>
                 </a>
             </div>
@@ -471,7 +486,35 @@
                 bootbox.alert(jqXHR.responseText);
             });
         });
+
+        $('#watch_or_unwatch_task_button').on('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            var self = $(this);
+            var url = self.attr('href');
+            $.post(url).done(function(){
+                // change icon
+                if (self.attr('watching') === 'true') {
+                    self.attr('watching', 'false');
+                    self.find('i').removeClass('icon-eye-close').addClass('icon-eye-open');
+                    flash_message({
+                        title: 'Unwatching Task',
+                        message: 'You are now unwatching this task'
+                    })
+                } else {
+                    self.attr('watching', 'true');
+                    self.find('i').removeClass('icon-eye-open').addClass('icon-eye-close');
+                    flash_message({
+                        title: 'Watching Task',
+                        message: 'You are now watching this task'
+                    })
+                }
+            });
+        });
+
     });
+
+
 
     $(function () {
 

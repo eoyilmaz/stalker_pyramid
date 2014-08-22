@@ -113,9 +113,17 @@ def generate_recursive_task_query(ordered=True):
         recursive_task.path_names,
         "SimpleEntities".name || ' (' || recursive_task.id || ') (' || recursive_task.path_names || ')' as full_path,
         "SimpleEntities".entity_type,
-        recursive_task.responsible_id
+        recursive_task.responsible_id,
+        task_watchers.watcher_id
     from recursive_task
     join "SimpleEntities" on recursive_task.id = "SimpleEntities".id
+    left join (
+        select
+            "Task_Watchers".task_id,
+            array_agg("Task_Watchers".watcher_id) as watcher_id
+        from "Task_Watchers"
+        group by "Task_Watchers".task_id
+    ) as task_watchers on recursive_task.id = task_watchers.task_id
     %(order_string)s
     """ % {
         'order_string': order_string
@@ -1144,7 +1152,8 @@ def generate_where_clause(params):
             'name': ['Lighting'],
             'entity_type': ['Task'],
             'task_type': ['Lighting'],
-            'resource': ['Ozgur']
+            'resource': ['Ozgur'],
+            'responsible_id': [25, 26]
         }
 
       will result a search string like::
@@ -1258,6 +1267,14 @@ def generate_where_clause(params):
             )
         )
 
+    for watcher_id in params.get('watcher_id[]',
+                                 params.get('watcher_id', [])):
+        where_string_buffer.append(
+            """{watcher_id} = any (tasks.watcher_id)""".format(
+                watcher_id=watcher_id
+            )
+        )
+
     for resource_name in \
         params.get('resource_name[]',
                    params.get('resource_name', [])):
@@ -1341,6 +1358,7 @@ def generate_order_by_clause(params):
         'depends_to': 'dep_info',
         'resource': "resource_info.info",
         'responsible': 'responsible_id',
+        'watcher': 'watcher_id',
         'bid_timing': '"Tasks".bid_timing',
         'bid_unit': '"Tasks".bid_unit',
         'schedule_timing': '"Tasks".schedule_timing',
@@ -1431,6 +1449,7 @@ def get_tasks(request):
             dep_info.info as dep_info,
             resource_info.info as resource_info,
             tasks.responsible_id,
+            tasks.watcher_id,
 
             "Tasks".bid_timing,
             "Tasks".bid_unit,
@@ -1574,6 +1593,7 @@ def get_tasks(request):
             NULL,--array_agg((NULL, NULL)),
             NULL,--array_agg((NULL, NULL)),
             NULL,--array_agg((NULL, NULL)),
+            NULL,--array_agg((NULL, NULL)),
 
             0 as bid_timing,
             'min' as bid_unit,
@@ -1659,17 +1679,18 @@ def get_tasks(request):
             'dependencies': local_raw_data_to_array(r[13]),
             'resources': local_raw_data_to_array(r[14]),
             'responsible': r[15],
-            'bid_timing': r[16],
-            'bid_unit': r[17],
-            'schedule_timing': r[18],
-            'schedule_unit': r[19],
-            'schedule_model': r[20],
-            'schedule_seconds': r[21],
-            'total_logged_seconds': r[22],
-            'completed': r[23],
-            'start': r[24],
-            'end': r[25],
-            'status': r[26],
+            'watcher': r[16],
+            'bid_timing': r[17],
+            'bid_unit': r[18],
+            'schedule_timing': r[19],
+            'schedule_unit': r[20],
+            'schedule_model': r[21],
+            'schedule_seconds': r[22],
+            'total_logged_seconds': r[23],
+            'completed': r[24],
+            'start': r[25],
+            'end': r[26],
+            'status': r[27],
         }
         for r in result.fetchall()
     ]
@@ -4724,3 +4745,35 @@ def add_tasks_dependencies(request):
                     pass
 
     return Response('Tasks updated successfully!')
+
+
+@view_config(
+    route_name='watch_task'
+)
+def watch_task(request):
+    """add task to the logged in users watch list
+    """
+    logged_in_user = get_logged_in_user(request)
+    task_id = request.matchdict.get('id')
+    task = Task.query.get(task_id)
+
+    if logged_in_user not in task.watchers:
+        task.watchers.append(logged_in_user)
+
+    return Response('Task successfully added to watch list')
+
+
+@view_config(
+    route_name='unwatch_task'
+)
+def unwatch_task(request):
+    """remove task from the logged in users watch list
+    """
+    logged_in_user = get_logged_in_user(request)
+    task_id = request.matchdict.get('id')
+    task = Task.query.get(task_id)
+
+    if logged_in_user in task.watchers:
+        task.watchers.remove(logged_in_user)
+
+    return Response('Task successfully removed from watch list')

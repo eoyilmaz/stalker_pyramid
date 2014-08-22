@@ -22,7 +22,7 @@ import mocker
 
 import datetime
 
-import unittest2
+import unittest
 import transaction
 
 from pyramid import testing
@@ -40,7 +40,7 @@ from stalker_pyramid.testing import DummyMultiDict
 logger = logging.getLogger(__name__)
 
 
-class TaskViewTestCase(unittest2.TestCase):
+class TaskViewTestCase(unittest.TestCase):
     """tests task view
     """
 
@@ -1733,7 +1733,7 @@ class TaskViewTestCase(unittest2.TestCase):
         self.assertEqual(self.test_task8.status, self.status_rts)
 
 
-class TaskViewSimpleFunctionsTestCase(unittest2.TestCase):
+class TaskViewSimpleFunctionsTestCase(unittest.TestCase):
     """tests the simple functions that doesn't need a request
     """
 
@@ -1949,6 +1949,20 @@ class TaskViewSimpleFunctionsTestCase(unittest2.TestCase):
     resource_info.info is NULL
 )""", result)
 
+    def test_generate_where_clause_case13(self):
+        """testing if the view.tasks.generate_where_clause() is working
+        properly
+        """
+        test_value = {
+            'watcher_id': [26]
+        }
+
+        result = task.generate_where_clause(test_value)
+
+        self.assertEqual("""where (
+    26 = any (tasks.watcher_id)
+)""", result)
+
     def test_generate_order_by_clause_case_1(self):
         """testing if the view.tasks.generate_order_by_clause() is working
         properly
@@ -1968,7 +1982,7 @@ class TaskViewSimpleFunctionsTestCase(unittest2.TestCase):
         )
 
 
-class TaskForceStatusTestCase(unittest2.TestCase):
+class TaskForceStatusTestCase(unittest.TestCase):
     """tests views.task.force_task_status function
     """
 

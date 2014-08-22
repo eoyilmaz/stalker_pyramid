@@ -429,7 +429,8 @@ def main(global_config, **settings):
     config.add_route('list_user_time_logs',   'users/{id}/time_logs/list')  # html
     config.add_route('list_user_tickets',     'users/{id}/tickets/list')  # html
     config.add_route('list_user_tasks_responsible_of', 'users/{id}/tasks/list/responsible_of') # html
-    config.add_route('list_user_reviews',          'users/{id}/reviews/list')  # html
+    config.add_route('list_user_tasks_watching',       'users/{id}/tasks/list/watching') # html
+    config.add_route('list_user_reviews',              'users/{id}/reviews/list')  # html
 
     config.add_route('view_user_tasks',       'users/{id}/tasks/view')  # html
     config.add_route('view_user_versions',    'users/{id}/versions/view')
@@ -617,6 +618,9 @@ def main(global_config, **settings):
 
     config.add_route('fix_task_statuses',      'tasks/{id}/fix/statuses/')
     config.add_route('fix_task_schedule_info', 'tasks/{id}/fix/schedule_info/')
+
+    config.add_route('watch_task',   'tasks/{id}/watch')
+    config.add_route('unwatch_task', 'tasks/{id}/unwatch')
 
     # *************************************************************************
     # TimeLog
