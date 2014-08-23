@@ -108,7 +108,7 @@
 
             <ul class="nav ace-nav pull-right">
                 <li id="tasks_of_logged_in_user" class="grey red">
-                    <a  href="{{ request.route_path('list_entity_tasks', id=logged_in_user.id) }}">
+                    <a  href="{{ request.route_path('list_user_tasks', id=logged_in_user.id) }}">
                         <i class="icon-tasks"></i>
                         <span id="nav_bar_task_count" class="badge badge-grey badge-yellow"></span>
                     </a>
