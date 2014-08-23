@@ -498,15 +498,17 @@
                     self.attr('watching', 'false');
                     self.find('i').removeClass('icon-eye-close').addClass('icon-eye-open');
                     flash_message({
-                        title: 'Unwatching Task',
-                        message: 'You are now unwatching this task'
+                        title: 'Unwatch Task',
+                        message: 'You are not watching this task anymore!',
+                        type: 'error'
                     })
                 } else {
                     self.attr('watching', 'true');
                     self.find('i').removeClass('icon-eye-open').addClass('icon-eye-close');
                     flash_message({
                         title: 'Watching Task',
-                        message: 'You are now watching this task'
+                        message: 'You are now watching this task!',
+                        type: 'success'
                     })
                 }
             });

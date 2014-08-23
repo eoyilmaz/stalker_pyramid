@@ -401,22 +401,17 @@
 
 <script>
     var submenu_of = function (id, treeItemType) {
-
         $.getJSON('/entities/' + id + '/' + treeItemType.toLowerCase() + 's/').then(function (data) {
-
-            $(document).ready(function () {
-
+            $(function () {
                 var sidebar_list = $('#sidebar_list');
                 var tree_link_template = doT.template($('#tmpl_sidebar_tree_link').html());
                 var data_counts = data.length;
 
                 if (data_counts > 0) {
-
                     sidebar_list.append(tree_link_template({
                         'title': treeItemType + 's',
                         'icon': get_icon(treeItemType.toLowerCase())
                     }));
-
                 }
 
                 var item_sublink = $('#' + treeItemType + 's_sublink');
@@ -432,6 +427,7 @@
 </script>
 
 <script>
+    // cache user ids and names
     var all_users = [];
     $.getJSON('/users/').then(function (data) {
         all_users = data;
@@ -446,7 +442,6 @@
     };
 
     function objectFindByKey(array, key, value) {
-{#        console.log('key: '+key+' value: '+value);#}
         for (var i = 0; i < array.length; i++) {
             if (array[i][key] == value){
                 return array[i];
@@ -714,7 +709,7 @@
             settings.container = settings.container || 'body';
             settings.title = settings.title || '';
             settings.message = settings.message || '';
-            settings.type = settings.type || 'success';
+            settings.type = settings.type || 'success'; // success, warning, error
 
             $.gritter.add({
                 title: settings.title,
