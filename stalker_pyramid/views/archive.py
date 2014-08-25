@@ -12,7 +12,7 @@ import logging
 import re
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.WARNING)
+logger.setLevel(logging.DEBUG)
 
 
 class Archiver(object):

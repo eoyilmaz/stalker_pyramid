@@ -70,9 +70,9 @@
                 </td>
                 <td><a href='/users/{{=it.created_by_id}}/view'>{{=it.created_by_name}}</a>
                 </td>
-                <td><span class="label label-large label-{{=it.status_code }}"> {{=it.status_name }}</span>
+                <td><span class="label label-large label-status_{{=it.status_code }}"> {{=it.status_name }}</span>
                     <div class="inline position-relative">
-                        <button class="btn btn-minier bigger dropdown-toggle btn-{{=it.status_code }}"
+                        <button class="btn btn-minier bigger dropdown-toggle btn-status_{{=it.status_code }}"
                                 data-toggle="dropdown">
                             <i class="icon-angle-down icon-only bigger-120"></i>
                         </button>
@@ -86,7 +86,7 @@
                                        data-toggle="modal"
                                        data-keyboard=false
                                        title="Closed">
-                                           <span class="cmpl-text">
+                                           <span class="status_cmpl-text">
                                                <i class="icon-ok bigger-110"></i>Closed
                                            </span>
                                     </a>
@@ -98,7 +98,7 @@
                                        data-toggle="modal"
                                        data-keyboard=false
                                        title="Open">
-                                           <span class="cmpl-text">
+                                           <span class="status_cmpl-text">
                                                <i class="icon-ok bigger-110"></i>Open
                                            </span>
                                     </a>

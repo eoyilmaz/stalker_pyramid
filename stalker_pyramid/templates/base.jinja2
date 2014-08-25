@@ -363,8 +363,6 @@
         var link_template = doT.template($('#tmpl_sidebar_link').html());
         var pill_link_template = doT.template($('#tmpl_pillsbar_link').html());
 
-{#        console.log(title+ ' : ' +state);#}
-
         var options = {
             'title': title,
             'state': state,
@@ -379,10 +377,8 @@
         var pill_rendered_template = $($.parseHTML(pill_link_template(options)));
         pillsbar_list.append(pill_rendered_template);
         pill_rendered_template.on('click', function (e) {
-
-                        window.location.assign($(this).attr('link'));
-
-        })
+            window.location.assign($(this).attr('link'));
+        });
 
         var badge = rendered_template.find('.badge');
         var pill_badge = pill_rendered_template.find('.badge');
@@ -405,22 +401,17 @@
 
 <script>
     var submenu_of = function (id, treeItemType) {
-
         $.getJSON('/entities/' + id + '/' + treeItemType.toLowerCase() + 's/').then(function (data) {
-
-            $(document).ready(function () {
-
+            $(function () {
                 var sidebar_list = $('#sidebar_list');
                 var tree_link_template = doT.template($('#tmpl_sidebar_tree_link').html());
                 var data_counts = data.length;
 
                 if (data_counts > 0) {
-
                     sidebar_list.append(tree_link_template({
                         'title': treeItemType + 's',
                         'icon': get_icon(treeItemType.toLowerCase())
                     }));
-
                 }
 
                 var item_sublink = $('#' + treeItemType + 's_sublink');
@@ -436,11 +427,9 @@
 </script>
 
 <script>
-
+    // cache user ids and names
     var all_users = [];
-
     $.getJSON('/users/').then(function (data) {
-
         all_users = data;
     });
 
@@ -450,14 +439,11 @@
             return user.name;
         }
         return id;
-    }
+    };
 
     function objectFindByKey(array, key, value) {
-{#        console.log('key: '+key+' value: '+value);#}
         for (var i = 0; i < array.length; i++) {
-
-            if (array[i][key] == value) {
-
+            if (array[i][key] == value){
                 return array[i];
             }
         }
@@ -562,6 +548,7 @@
     <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/date.format.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/date.stalker.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.gritter.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/utils.js") }}'></script>
 
     <script type="text/javascript">
         // choose default skin
@@ -695,7 +682,7 @@
 
     <script type="text/javascript">
         {% if entity %}
-            $(document).ready(function () {
+            $(function () {
                 document.title = 'STALKER / {{ entity.name }}'
             });
         {% endif %}
@@ -703,7 +690,7 @@
 
     {# Ace Settings Box #}
     <script type="text/javascript">
-        $(document).ready(function () {
+        $(function () {
             // hide ace-settings bar
             $('#ace-settings-box').toggleClass('open');
         });
@@ -722,7 +709,7 @@
             settings.container = settings.container || 'body';
             settings.title = settings.title || '';
             settings.message = settings.message || '';
-            settings.type = settings.type || 'success';
+            settings.type = settings.type || 'success'; // success, warning, error
 
             $.gritter.add({
                 title: settings.title,

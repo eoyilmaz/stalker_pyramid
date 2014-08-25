@@ -162,27 +162,13 @@ def get_shots_children_task_type(request):
 
     result = DBSession.connection().execute(sql_query)
 
-    return_data = [
+    return [
         {
             'id': r[0],
             'name': r[1]
-
         }
         for r in result.fetchall()
     ]
-
-    content_range = '%s-%s/%s'
-
-    type_count = len(return_data)
-    content_range = content_range % (0, type_count - 1, type_count)
-
-    logger.debug('content_range : %s' % content_range)
-
-    resp = Response(
-        json_body=return_data
-    )
-    resp.content_range = content_range
-    return resp
 
 
 @view_config(

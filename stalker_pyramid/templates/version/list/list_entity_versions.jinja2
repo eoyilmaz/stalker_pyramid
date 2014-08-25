@@ -91,8 +91,7 @@
     {% endraw %}
 
 
-
-     {# ***************************************************************************************#}
+    {# ***************************************************************************************#}
     {# Task Row Template#}
 
     {% raw %}
@@ -132,15 +131,11 @@
     </script>
     {% endraw %}
 
-
     <script>
-
-        var tableParameters = {"aoColumns": [null,  null, null, null, null,null,null]}
-        var sortingParameters = [[0, 'desc']]
-        var tableDataAddress = '{{ request.route_path('get_entity_versions', id=entity.id) }}'
-
+        var tableParameters = {"aoColumns": [null,  null, null, null, null,null,null]};
+        var sortingParameters = [[0, 'desc']];
+        var tableDataAddress = '{{ request.route_path('get_entity_versions', id=entity.id) }}';
     </script>
-
 
 {% endblock extrascripts %}
 

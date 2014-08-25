@@ -43,11 +43,11 @@
     
             <div class="widget-toolbar no-border invoice-info">
 {#                <span class="invoice-info-label">Status:</span>#}
-                <span class="label label-large label-{{ entity.status.code.lower() }}"> {{ entity.status.name }}
+                <span class="label label-large label-status_{{ entity.status.code.lower() }}"> {{ entity.status.name }}
                 </span>
                     {% if has_permission('Create_Review') and entity.is_leaf%}
                         <div class="inline position-relative">
-                            <button class="btn btn-minier bigger dropdown-toggle btn-{{ entity.status.code.lower() }}"
+                            <button class="btn btn-minier bigger dropdown-toggle btn-status_{{ entity.status.code.lower() }}"
                                     data-toggle="dropdown">
                                 <i class="icon-angle-down icon-only bigger-120"></i>
                             </button>
@@ -62,7 +62,7 @@
                                            data-toggle="modal"
                                            data-keyboard=false
                                            data-placement="top">
-                                               <span class="cmpl-text">
+                                               <span class="status_cmpl-text">
                                                    <i class="icon-ok bigger-110"></i>Force Complete
                                                </span>
                                         </a>
@@ -78,7 +78,7 @@
                                            data-toggle="modal"
                                            data-keyboard=false
                                            data-placement="top">
-                                               <span class="stop-text">
+                                               <span class="status_stop-text">
                                                    <i class="icon-stop bigger-110"></i>Stop Task
                                                </span>
                                         </a>
@@ -92,7 +92,7 @@
                                            data-toggle="modal"
                                            data-keyboard=false
                                            data-placement="top">
-                                               <span class="oh-text">
+                                               <span class="status_oh-text">
                                                    <i class="icon-pause bigger-110"></i>Hold Task
                                                </span>
                                         </a>
@@ -126,8 +126,23 @@
                          style="width: {{ entity.percent_complete }}%;"></div>
                 </div>
             </div>
-            <div class="widget-toolbar hidden-480">
-                <a id='refresh_task_button' href="/tasks/{{ entity.id }}/fix/statuses/">
+            <div class="widget-toolbar">
+                    <a id='watch_or_unwatch_task_button'
+                       class="btn btn-inverse btn-small"
+                        {% if logged_in_user in entity.watchers %}
+                           title='Unwatch this task'
+                           href="/tasks/{{ entity.id }}/unwatch"
+                           watching='true'>
+                            <i class="icon-eye-close"></i>
+                        {% else %}
+                           title='Watch this task'
+                           href="/tasks/{{ entity.id }}/watch"
+                           watching='false'>
+                            <i class="icon-eye-open"></i>
+                        {% endif %}
+                    </a>
+                <a id='refresh_task_button' href="/tasks/{{ entity.id }}/fix/statuses/"
+                   class="btn btn-inverse btn-small">
                     <i class="icon-refresh"></i>
                 </a>
             </div>
@@ -471,7 +486,37 @@
                 bootbox.alert(jqXHR.responseText);
             });
         });
+
+        $('#watch_or_unwatch_task_button').on('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            var self = $(this);
+            var url = self.attr('href');
+            $.post(url).done(function(){
+                // change icon
+                if (self.attr('watching') === 'true') {
+                    self.attr('watching', 'false');
+                    self.find('i').removeClass('icon-eye-close').addClass('icon-eye-open');
+                    flash_message({
+                        title: 'Unwatch Task',
+                        message: 'You are not watching this task anymore!',
+                        type: 'error'
+                    })
+                } else {
+                    self.attr('watching', 'true');
+                    self.find('i').removeClass('icon-eye-open').addClass('icon-eye-close');
+                    flash_message({
+                        title: 'Watching Task',
+                        message: 'You are now watching this task!',
+                        type: 'success'
+                    })
+                }
+            });
+        });
+
     });
+
+
 
     $(function () {
 
@@ -644,7 +689,7 @@
 
                         var time_to_complete_str = '<span> ( ' +  meaningful_time_between(data[i].schedule_seconds, data[i].total_logged_seconds) + ') </span>';
 
-                        var percent_complete_str = '<span class="label label-' + data[i].status_color + '">' + data[i].status + '</span>';
+                        var percent_complete_str = '<span class="label label-status_' + data[i].status_color + '">' + data[i].status + '</span>';
 
                         resources[prop_id]['additionalParameters']['children'][(data[i].id).toString()] = {name: '<span  class="pull-left"><a href="/tasks/' + data[i].id + '/view">' + data[i].title + '  </a></span>' + time_to_complete_str + percent_complete_str, type: 'item'}
 

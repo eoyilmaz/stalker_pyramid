@@ -5,7 +5,7 @@
 <ul id="sidebar_list" class='nav nav-list'></ul>
 
 <script>
-    $(document).ready(function () {
+    $(function () {
         page_of('{{ user.name }}',
                 '{{ user.login }}',
                 '{%- if user.thumbnail -%}/{{ user.thumbnail.full_path }}{%- else -%}{{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_0.png")}}{%- endif -%}',
@@ -22,11 +22,27 @@
         );
 
         menu_of(
+            'My Tasks',
+            "{%- if request.current_route_path() == request.route_path('list_user_tasks', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
+            '{{ request.route_url('list_user_tasks', id=user.id) }}',
+            get_icon('task'),
+            '/users/{{ entity.id }}/tasks/count/'
+        );
+
+        menu_of(
             'Responsible of',
             "{%- if request.current_route_path() == request.route_path('list_user_tasks_responsible_of', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
             '{{ request.route_url('list_user_tasks_responsible_of', id=user.id) }}',
             get_icon('task'),
-            ''
+            '/tasks/count/?responsible_id={{ entity.id }}&leaf_only=1&has_resource=1'
+        );
+
+        menu_of(
+            'Watch List',
+            "{%- if request.current_route_path() == request.route_path('list_user_tasks_watching', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
+            '{{ request.route_url('list_user_tasks_watching', id=user.id) }}',
+            get_icon('task'),
+            '/tasks/count/?watcher_id={{ entity.id }}&leaf_only=1'
         );
 
         menu_of(

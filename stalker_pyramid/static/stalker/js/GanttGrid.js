@@ -243,34 +243,34 @@ define([
             // Column set to display task and resource
             [
                 {
-                    action: {
-                        label: "Action",
-                        sortable: false,
-                        get: function (object) {
-                            return object;
-                        },
-                        renderCell: function (object, value, node, options) {
-                            var entity_type = object.entity_type;
-                            var id_template_str = '<div class="action-buttons">' +
-                                '<a onclick="javascript:scrollToTaskItem(' + object.start + ')" title="Scroll To"><i class="icon-exchange"></i></a>' +
-                                '<a href="' + object.link + '" title="View"><i class="icon-info-sign"></i></a>' +
-                                '</div>';
-
-                            var id_template = doT.template(id_template_str);
-                            var node_js = $(node);
-                            node_js.addClass(object.status).append(
-                                $.parseHTML(id_template(object))
-                            );
-                            // check if hidden
-                            var column_id = 'action';
-                            var grid = this.grid;
-                            if (grid.is_hidden_column(column_id)) {
-                                // also hide this one by default
-                                node_js.css({'display': 'none'});
-                            }
-                        },
-                        resizable: false
-                    },
+//                    action: {
+//                        label: "Action",
+//                        sortable: false,
+//                        get: function (object) {
+//                            return object;
+//                        },
+//                        renderCell: function (object, value, node, options) {
+//                            var entity_type = object.entity_type;
+//                            var id_template_str = '<div class="action-buttons">' +
+//                                '<a onclick="javascript:scrollToTaskItem(' + object.start + ')" title="Scroll To"><i class="icon-exchange"></i></a>' +
+//                                '<a href="' + object.link + '" title="View"><i class="icon-info-sign"></i></a>' +
+//                                '</div>';
+//
+//                            var id_template = doT.template(id_template_str);
+//                            var node_js = $(node);
+//                            node_js.addClass('status_' + object.status).append(
+//                                $.parseHTML(id_template(object))
+//                            );
+//                            // check if hidden
+//                            var column_id = 'action';
+//                            var grid = this.grid;
+//                            if (grid.is_hidden_column(column_id)) {
+//                                // also hide this one by default
+//                                node_js.css({'display': 'none'});
+//                            }
+//                        },
+//                        resizable: false
+//                    },
                     id: {
                         label: "ID",
                         sortable: false,
@@ -278,7 +278,7 @@ define([
                             return object;
                         },
                         renderCell: function (object, value, node, options) {
-                            $(node).addClass(object.status).append(
+                            $(node).addClass('status_' + object.status).append(
                                 $.parseHTML('<a href="' + object.link + '">' + object.id + '</a>')
                             );
                             // check if hidden
@@ -322,7 +322,7 @@ define([
                                 template_var.end = object.end;
                                 template_var.entity_type = object.entity_type;
 
-                                $(node).addClass(object.status).append(
+                                $(node).addClass('status_' + object.status).append(
                                     $.parseHTML(template(template_var))
                                 );
                                 // check if hidden
@@ -363,8 +363,8 @@ define([
                             // check if it has a floating part
                             p_complete_str = p_complete.toFixed(0);
 
-                            $(node).addClass(object.status).append(
-                                $.parseHTML('<div class="' + object.status + '">' + p_complete_str + '</div>')
+                            $(node).addClass('status_' + object.status).append(
+                                $.parseHTML('<div class="status_' + object.status + '">' + p_complete_str + '</div>')
                             );
                             // check if hidden
                             var column_id = 'complete';
@@ -390,7 +390,37 @@ define([
                                     ret = ret + (ret === "" ? "" : ", ") + templates.resourceLink(resource);
                                 }
                             }
-                            $(node).addClass(object.status).append(
+                            $(node).addClass('status_' + object.status).append(
+                                $.parseHTML(ret)
+                            );
+                            // check if hidden
+                            var column_id = 'resource';
+                            var grid = this.grid;
+                            if (grid.is_hidden_column(column_id)) {
+                                // also hide this one by default
+                                $(node).css({'display': 'none'});
+                            }
+                        }
+                    },
+                    responsible: {
+                        label: "Responsible",
+                        sortable: false,
+                        resizable: true,
+                        get: function (object) {
+                            return object;
+                        },
+                        renderCell: function (object, value, node, options) {
+                            var ret = '', i, responsible;
+                            if (object.responsible) {
+                                for (i = 0; i < object.responsible.length; i++) {
+                                    responsible = {
+                                        'id': object.responsible[i],
+                                        'name': get_user_name(object.responsible[i])
+                                    };
+                                    ret = ret + (ret === "" ? "" : ", ") + templates.resourceLink(responsible);
+                                }
+                            }
+                            $(node).addClass('status_' + object.status).append(
                                 $.parseHTML(ret)
                             );
                             // check if hidden
@@ -440,7 +470,7 @@ define([
                                     }
                                 }
                             }
-                            $(node).addClass(object.status).text(timing);
+                            $(node).addClass('status_' + object.status).text(timing);
                             // check if hidden
                             var column_id = 'timing';
                             var grid = this.grid;
@@ -459,7 +489,7 @@ define([
                         },
                         renderCell: function (object, value, node, options) {
                             var start_date = moment(object.start);
-                            $(node).addClass(object.status);
+                            $(node).addClass('status_' + object.status);
                             $(node).text(
                                 start_date.format("YYYY-MM-DD HH:mm")
                             );
@@ -481,7 +511,7 @@ define([
                         },
                         renderCell: function (object, value, node, options) {
                             var end_date = moment(object.end);
-                            $(node).addClass(object.status);
+                            $(node).addClass('status_' + object.status);
                             $(node).text(
                                 end_date.format("YYYY-MM-DD HH:mm")
                             );
@@ -502,9 +532,9 @@ define([
                             return object;
                         },
                         renderCell: function (object, value, node, options) {
-                            $(node).addClass(object.status);
+                            $(node).addClass('status_' + object.status);
                             $(node).append(
-                                $.parseHTML('<span class="' + object.status + '">' + object.status + '</span>')
+                                $.parseHTML('<span class="status_' + object.status + '">' + object.status + '</span>')
                             );
                             // check if hidden
                             var column_id = 'status';
@@ -522,7 +552,7 @@ define([
                             return object;
                         },
                         renderCell: function(object, value, node, options) {
-                            $(node).addClass(object.status);
+                            $(node).addClass('status_' + object.status);
 
                             if (object.entity_type !== 'Project') {
                                 var link_template = doT.template('<a href="/tasks/{{= it.id}}/view">{{= it.name}}</a>');

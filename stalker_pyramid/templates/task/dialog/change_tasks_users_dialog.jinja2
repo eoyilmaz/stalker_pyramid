@@ -3,30 +3,28 @@
               class='form-horizontal'
               role='form'
               method='post'>
-            <div class='control-group'>
-                    <label class='span3 control-label' for='task_users'>{{ user_type }}</label>
-                    <div class='span9'>
-                        <select id='task_users'
-                                multiple=''
-                                class='input-block-level tag-input-style'
-                                name='user_ids'
-                                data-placeholder={{ user_type }}></select>
-                    </div>
-                </div>
+        <div class='control-group'>
+            <label class='span3 control-label' for='task_users'>{{ user_type }}</label>
+            <div class='span9'>
+                <select id='task_users'
+                        multiple=''
+                        class='input-block-level tag-input-style'
+                        name='user_ids'
+                        data-placeholder={{ user_type }}></select>
+            </div>
+        </div>
     </form>
 </div>
 
 <script type="text/javascript">
-
     function init_dialog() {
         console.debug('starting to initialize add_task_user_dialog dialog!!!');
 
-        $('#dialog_template_label').find('span').remove();
-        $('#dialog_template_label').append('<span>Append {{ user_type }}</span>');
-
-        {# ***************************************************************** #}
-        $(document).ready(function () {
-
+        $(function () {
+            var label = $('#dialog_template_label');
+            label.find('span').remove();
+            label.append('<span>Append {{ user_type }}</span>');
+    
             var task_users = $('#task_users');
 
             task_users.chosen({
@@ -63,10 +61,6 @@
                 task_users.trigger('liszt:updated');
             });
 
-        });
-
-        $(document).ready(function () {
-
             var submit_button = $('#dialog_template_submit_button');
             submit_button.on('click', function (e) {
 
@@ -81,22 +75,21 @@
                     task_ids.push({{ task.id }});
                 {% endfor %}
 
+                console.log('task_ids: ' + task_ids);
 
-                console.log('task_ids: '+task_ids);
-
-                $.post('/tasks/change/{{ user_type.lower() }}',
-                                        change_form.serialize()+'&' +$.param({'task_ids':task_ids})
-                                        ).done(function (response_text) {
-                                            submit_button.button('reset');
-                                            $('#dialog_template').modal('hide');
-{#                                            setTimeout(function () { // wait for hide event to finish#}
-{#                                                window.location.reload();#}
-{#                                            }, 0);#}
-
-                                        }).fail(function (jqXHR) {
-                                            bootbox.alert(jqXHR.responseText);
-                                            submit_button.button('reset');
-                                        });
+                $.post(
+                    '/tasks/change/{{ user_type.lower() }}',
+                    change_form.serialize() + '&' + $.param({'task_ids':task_ids})
+                ).done(function (response_text) {
+                    submit_button.button('reset');
+                    $('#dialog_template').modal('hide');
+{#                    setTimeout(function () { // wait for hide event to finish#}
+{#                        window.location.reload();#}
+{#                    }, 0);#}
+                }).fail(function (jqXHR) {
+                    bootbox.alert(jqXHR.responseText);
+                    submit_button.button('reset');
+                });
             });
         });
 

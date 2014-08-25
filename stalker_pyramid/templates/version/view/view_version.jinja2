@@ -35,8 +35,8 @@
 
 {#PRE-HEADER #}
 {% block pre_header %}
-    <link rel="stylesheet"
-          href='{{ request.static_url("stalker_pyramid:static/ace/css/dropzone.css") }}'/>
+{#    <link rel="stylesheet"#}
+{#          href='{{ request.static_url("stalker_pyramid:static/ace/css/dropzone.css") }}'/>#}
     <link rel="stylesheet"
           href='{{ request.static_url("stalker_pyramid:static/stalker/css/Paginator.css") }}'/>
 
@@ -63,8 +63,8 @@
             </div>
             <div class="widget-toolbar hidden-480">
                 <a href='javascript:copyToClipboard("{{ version.absolute_full_path }}")'>
-                                    <i class="icon-file"></i>
-                                </a>
+                    <i class="icon-file"></i>
+                </a>
             </div>
         </div>
 
@@ -76,8 +76,7 @@
                             <div class="profile-info-row">
                                 <div class="profile-info-name">Updated Date</div>
                                 <div class="profile-info-value">
-                                    <span>{{ version.date_updated }} (<span
-                        class="date">{{ version.date_updated }}</span>)</span>
+                                    <span>{{ version.date_updated }} (<span class="date">{{ version.date_updated }}</span>)</span>
                                 </div>
                             </div>
 {#                            <div class="profile-info-row">#}
@@ -139,21 +138,17 @@
 {% endblock page_content %}
 
 {% block extrascripts %}
-
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery-ui-1.10.3.custom.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.ui.touch-punch.min.js") }}'></script>
     <script type="text/javascript">
-        $(document).ready(function () {
+        $(function () {
             var icon_name = get_icon('version');
             $('#version_header').append('<i class="' + icon_name + ' bigger-125"></i>{{ version.take_name }} | {{ version.version_number }}');
-        });
 
-        $('.date').each(function () {
-            var date = moment.utc($(this).text());
-            $(this).text(date.fromNow());
+            $('.date').each(function () {
+                var date = moment.utc($(this).text());
+                $(this).text(date.fromNow());
+            });
         });
-
     </script>
-
-
 {% endblock extrascripts %}

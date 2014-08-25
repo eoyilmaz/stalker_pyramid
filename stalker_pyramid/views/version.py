@@ -92,7 +92,8 @@ def update_version_dialog(request):
 
 
 @view_config(
-    route_name='create_version'
+    route_name='create_version',
+    permission='Create_Version'
 )
 def create_version(request):
     """runs when creating a version
@@ -104,10 +105,10 @@ def create_version(request):
 
     take_name = request.params.get('take_name', 'Main')
     is_published = \
-        True if request.params.get('is_published') == 'on' else False
+        True if request.params.get('is_published') == 'true' else False
     description = request.params.get('description')
     bind_to_originals = \
-        True if request.params.get('bind_to_originals') == 'on' else False
+        True if request.params.get('bind_to_originals') == 'true' else False
 
     file_object = request.POST.getall('file_object')[0]
 
@@ -130,6 +131,7 @@ def create_version(request):
         v.created_by = logged_in_user
         v.is_published = is_published
         v.created_with = "StalkerPyramid"
+        v.description = description
 
         # check if bind_to_originals is true
         if bind_to_originals and extension == '.ma':
@@ -177,7 +179,6 @@ def get_entity_versions(request):
         elif user_os == 'osx':
             path_converter = repo.to_osx_path
 
-
     return [{
         'id': version.id,
         'task': {'id': version.task.id,
@@ -197,7 +198,7 @@ def get_entity_versions(request):
         'version_number': version.version_number,
         'date_created': milliseconds_since_epoch(version.date_updated),
         'created_with': version.created_with,
-        'description':version.description
+        'description': version.description
     } for version in entity.versions]
 
 

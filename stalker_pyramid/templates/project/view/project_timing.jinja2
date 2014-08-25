@@ -126,9 +126,10 @@
                         $('#last_scheduling_took').append(last_scheduling_took.toFixed(0), ' seconds');
 
                         // start timer
+                        var current_scheduling_time = $('#current_scheduling_time');
                         function myTimer() {
                             timer += 1;
-                            $('#current_scheduling_time').html(timer);
+                            current_scheduling_time.html(timer);
                             // extend the progress bar
                             var percent = Math.min(100, timer / last_scheduling_took * 100).toFixed(1);
                             schedule_progress.attr('data-percent', percent + '%');

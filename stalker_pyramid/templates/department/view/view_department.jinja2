@@ -88,7 +88,7 @@
                         for (var k = 0; k < tdata.length; k++) {
 {#                             console.log(tdata[k].name);#}
                             var time_to_complete_str = '<span> ( ' +  meaningful_time_between(tdata[k].schedule_seconds, tdata[k].total_logged_seconds) + ') </span>';
-                            var percent_complete_str = '<span class="label label-' + tdata[k].status + '">' + tdata[k].status + '</span>';
+                            var percent_complete_str = '<span class="label label-status_' + tdata[k].status + '">' + tdata[k].status + '</span>';
                             resources[tdata[k].resources[0].id]['additionalParameters']['children'][(tdata[k].id).toString()] = {name: '<span  class="pull-left"><a href="/tasks/' + tdata[k].id + '/view">' + tdata[k].full_path + '  </a></span>' + time_to_complete_str + percent_complete_str, type: 'item'}
                         }
                     });

@@ -112,7 +112,7 @@
     <script id="tmpl_assetRow" type="text/x-dot-template">
         <tr style='height:auto;' id="asset_row_{{=it.id}}">
             <td style="width:20px;"><span
-                    class="label label-{{=it.status_color}}">{{=it.status}}</span><br/><br/>
+                    class="label label-status_{{=it.status_color}}">{{=it.status}}</span><br/><br/>
             </td>
             <td style='width:100px;'>
                 <img style='height:auto;' class="img-thumbnail"
@@ -147,7 +147,7 @@
     {% raw %}
     <script id="tmpl_taskCell" type="text/x-dot-template">
         <td class="no-padding" style='width:150px; min-height:{{=it.height}}px;' >
-            <div class="{{=it.status_color}}" id="task_cell_{{=it.type_id}}">
+            <div class="status_{{=it.status_color}}" id="task_cell_{{=it.type_id}}">
             </div>
 
         </td>
@@ -156,7 +156,7 @@
 
     {% raw %}
     <script id="tmpl_taskCellRow" type="text/x-dot-template">
-                <div class="{{=it.status_color}}" style="min-height:55px; height:{{=it.height}}px;">
+                <div class="status_{{=it.status_color}}" style="min-height:55px; height:{{=it.height}}px;">
                     <a class="white" href="/tasks/{{=it.id }}/view">{{=it.name}}</a>
 
                     {{ if (it.update_asset_action) { }}
@@ -177,7 +177,7 @@
                             </div>
                         </div>
                     {{ } else {}}
-                        {{=it.status}}
+                        <div>{{=it.status}}</div>
                     {{ } }}
 
                 </div>
@@ -185,25 +185,20 @@
     </script>
     {% endraw %}
 
-
-
     <script>
-        $(document).ready(function () {
-
+        $(function () {
 
             var icon_name = get_icon('asset');
             $('#items_header').append('<i class=' + icon_name + '></i>');
             // fill assets table with dynamic data
-
 
             var get_assets_by_type = function (asset_type_id) {
                 $.getJSON('/assets/types/' + asset_type_id + '/task_types/').then(function (types_data) {
 
                     var types = types_data;
 
-                    var column_template = doT.template($('#tmpl_assetColumn').html());
-
                     $(function () {
+                        var column_template = doT.template($('#tmpl_assetColumn').html());
                         var x;
                         var table_column = $('#assets_table_column');
                         for (x = 0; x < types_data.length; x++) {
@@ -214,7 +209,6 @@
 
 
                         $.getJSON('/entities/{{ entity.id }}/assets/?asset_type_id=' + asset_type_id).then(function (data) {
-
                             var assets = data;
                             var asset_template = doT.template($('#tmpl_assetRow').html());
 
@@ -235,7 +229,6 @@
 
                                     data[i].came_from = '{{ request.current_route_path() }}'
 
-
                                     // append it to the table
                                     table_body.append(asset_template(data[i]));
 
@@ -247,51 +240,51 @@
                                     var cell_row_template = doT.template($('#tmpl_taskCellRow').html());
                                     var task_cell_height = 150;
 
-
-
                                     for (var j = 0; j < types_data.length; j++) {
-
                                         var tasks = data[i][types_data[j].name];
-
                                         if (tasks) {
-                                            asset_row.append(cell_template({
-                                                                                'type_id': types_data[j].id + '_' + data[i].id ,
-                                                                                'status_color': 'black2',
-                                                                                'height':task_cell_height
-                                            }));
+                                            asset_row.append(
+                                                cell_template({
+                                                    'type_id': types_data[j].id + '_' + data[i].id ,
+                                                    'status_color': 'black2',
+                                                    'height':task_cell_height
+                                                })
+                                            );
 
                                             var task_cell = $('#task_cell_' + types_data[j].id + '_' + data[i].id);
                                             var task_cell_row_height = task_cell_height/tasks.length-5;
                                             for (var k = 0; k < tasks.length; k++) {
                                                 var task = tasks[k]
 
-                                                task_cell.append(cell_row_template({
-                                                                                    'id': task.id,
-                                                                                    'name': task.name,
-                                                                                    'status': task.status,
-                                                                                    'status_color': task.status.toLowerCase(),
-                                                                                    'percent_complete': (task.status == 'WIP' ? task.percent : ''),
-                                                                                    'update_asset_action': data[i].update_asset_action,
-                                                                                    'resource_name': task.resource_name?task.resource_name:'',
-                                                                                    'resource_id': task.resource_id?task.resource_id:'',
-                                                                                    'height':task_cell_row_height,
-                                                                                    'hr': k < tasks.length-1?'<div class="hr hr2"></div>':''}));
+                                                task_cell.append(
+                                                    cell_row_template({
+                                                        'id': task.id,
+                                                        'name': task.name,
+                                                        'status': task.status,
+                                                        'status_color': task.status.toLowerCase(),
+                                                        'percent_complete': (task.status == 'WIP' ? task.percent : ''),
+                                                        'update_asset_action': data[i].update_asset_action,
+                                                        'resource_name': task.resource_name?task.resource_name:'',
+                                                        'resource_id': task.resource_id?task.resource_id:'',
+                                                        'height':task_cell_row_height,
+                                                        'hr': k < tasks.length-1?'<div class="hr hr2"></div>':''
+                                                    })
+                                                );
                                             }
 
-                                        } else
-                                        {
-                                                asset_row.append(cell_template({
-                                                                                'type_name': '',
-                                                                                'id': '',
-                                                                                'name': '',
-                                                                                'status': '',
-                                                                                'status_color': 'black2',
-                                                                                'percent_complete':'',
-                                                                                 'height':task_cell_height
-                                                                            }));
-
+                                        } else {
+                                            asset_row.append(
+                                                cell_template({
+                                                    'type_name': '',
+                                                    'id': '',
+                                                    'name': '',
+                                                    'status': '',
+                                                    'status_color': 'black2',
+                                                    'percent_complete':'',
+                                                     'height':task_cell_height
+                                                })
+                                            );
                                         }
-
                                     }
 
                                     var asset_summary_cell_template = doT.template($('#tmpl_assetSummaryCell').html());
@@ -300,66 +293,45 @@
                                         var null_type_task = data[i]['nulls'][n];
                                         asset_summary_cell.append(asset_summary_cell_template({'link': '/tasks/' + null_type_task[0] + '/update/dialog', 'name': null_type_task[1], 'status': null_type_task[2], 'status_color': null_type_task[3]}));
                                     }
-
-
-
                                 }
 
                                 var oTable1 = $('#assets_table').dataTable();
-
-
-
                                 $('#loading_spinner').hide();
                                 $('#content').show();
-
                             });
                         });
-
-
                     });
                 })
-            }
+            };
 
             $.getJSON('/assets/types/').then(function (types) {
                 var link_template = doT.template($('#tmpl_assetTypeLink').html());
 
-                var asset_type_tabs = $('#asset_type_tabs')
+                var asset_type_tabs = $('#asset_type_tabs');
 
                 var selected_asset_id = types[0].asset_type_id;
 
                 {% if asset_type_id %}
-                    selected_asset_id = '{{ asset_type_id }}'
+                    selected_asset_id = '{{ asset_type_id }}';
                 {% endif %}
 
                 for (var i = 0; i < types.length; i++) {
-
-                    types[i].class = ''
+                    types[i].class = '';
 
                     if (selected_asset_id == types[i].asset_type_id ){
-
                         types[i].class = 'active'
                     }
 
                     asset_type_tabs.append(link_template(types[i]))
 
-
-
                     $('#' + types[i].asset_type_id).on('click', function (e) {
-
                         window.location.assign('/projects/{{ entity.id }}/assets/list?asset_type_id='+$(this).attr('id'));
-
                     })
-
-
                 }
-
                 get_assets_by_type(selected_asset_id)
             });
 
-
         });
     </script>
-
-
 {% endblock extrascripts %}
 

@@ -78,12 +78,12 @@
                 <div class="progress progress-success">
                     <div style="width:{{=it.percent_complete}}%"
                          class="bar">
-                        <span class="pull-left">{{=it.percent_complete}}%</span>
+                        <span class="pull-left">{{=it.percent_complete.toFixed(1)}}%</span>
                     </div>
                 </div>
             </td>
             <td>
-                <span class="label label-{{=it.status_color}}">{{=it.status}}</span>
+                <span class="label label-status_{{=it.status_color}}">{{=it.status}}</span>
             </td>
             <td><a href='/users/{{=it.created_by_id}}/view'>{{=it.created_by_name}}</a>
             </td>

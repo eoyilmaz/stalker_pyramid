@@ -158,11 +158,15 @@ logger.setLevel(logging.DEBUG)
 )
 @view_config(
     route_name='list_user_tasks',
-    renderer='templates/task/list/list_entity_tasks.jinja2'
+    renderer='templates/task/list/list_user_tasks.jinja2'
 )
 @view_config(
     route_name='list_user_tasks_responsible_of',
     renderer='templates/task/list/list_user_tasks_responsible_of.jinja2'
+)
+@view_config(
+    route_name='list_user_tasks_watching',
+    renderer='templates/task/list/list_user_tasks_watching.jinja2'
 )
 @view_config(
     route_name='list_task_tasks',
@@ -331,6 +335,7 @@ def get_entity_related_data(request):
         'studio': studio,
         'came_from': came_from
     }
+
 
 @view_config(
     route_name='get_entity',
@@ -758,6 +763,8 @@ def get_search_result(request):
             """"SimpleEntities".name ilike '%{s}%' """.format(s=part)
         )
 
+    sql_query_buffer.append('order by "SimpleEntities".name')
+
     sql_query = '\n'.join(sql_query_buffer)
 
     from sqlalchemy import text  # to be able to use "%" sign use this function
@@ -894,6 +901,7 @@ def list_search_result(request):
         'studio': studio,
         'results': results
     }
+
 
 @view_config(
     route_name='delete_entity_dialog',

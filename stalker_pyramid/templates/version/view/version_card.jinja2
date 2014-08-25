@@ -41,8 +41,8 @@
         $(this).text(date.fromNow());
     });
 
-     $(document).ready(function () {
-        $.getJSON('/tasks/{{ task.id }}/outputs/count/').then(function (data) {
+    $.getJSON('/tasks/{{ task.id }}/outputs/count/').then(function (data) {
+        $(function () {
             var badge = $('#output_count');
             var alert = $('#outputs_alert');
             if (data > 0){

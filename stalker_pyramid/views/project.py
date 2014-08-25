@@ -374,6 +374,8 @@ def get_project_tasks_today(request):
     logger.debug('%s rows took : %s seconds' % (len(data), (end - start)))
 
     return data
+
+
 @view_config(
     route_name='view_project',
     renderer='templates/project/view/view_project.jinja2'

@@ -1,0 +1,107 @@
+<div class="row-fluid" >
+    <form id='change_form'
+              class='form-horizontal'
+              role='form'
+              method='post'>
+
+        {# Depends_to #}
+        <div class='control-group'>
+            <label class='span3 control-label' for='task_depends_to'>Depends To</label>
+            <div class='span9'>
+                <input id='task_depends_to'
+                       class='input-block-level tag-input-style span11'
+                       type='text'
+                       name='dependent_ids'
+                       data-placeholder='Depends To'
+                       is_updating=false>
+                <span id='task_depends_to_helper' class="help-button"
+                      title="">?</span>
+            </div>
+        </div>
+    </form>
+</div>
+
+{#<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.autosize-min.js") }}'></script>#}
+<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/bootstrap-tag.js") }}'></script>
+
+<script type="text/javascript">
+    function init_dialog() {
+        console.debug('starting to initialize add_task_dependencies_dialog dialog!!!');
+
+        var timeout_buffer; // it is used in delaying AJAX calls see task_depends_to
+        var task_depends_to = $('#task_depends_to');
+
+        task_depends_to.tag({
+            placeholder: task_depends_to.data('placeholder'),
+            allowNewItems: false,
+            source: function(request, response){
+                // delay ajax call for 300 milliseconds
+                if (timeout_buffer) {
+                    clearTimeout(timeout_buffer);
+                }
+
+                timeout_buffer = setTimeout(function() {
+                    get_task_data({
+                        project_id: {{ project_id }},
+                        search_string: request,
+                        callback: response
+                    });
+                }, 300);
+            },
+            resultFilter: function(value){
+                // filter the results coming from the typeahead
+                value = value.match(/[\w\s\d&!?\+\-]+\([0-9]+\)/);
+                return value;
+            },
+            values: [],
+            disabled: false
+        }).on('shown', function(e){
+            e.stopPropagation();
+        });
+
+        // fix input width
+        task_depends_to.parent().addClass('input-block-level span12');
+
+        var form = $('#change_form');
+        var submit_button = $('#dialog_template_submit_button');
+        submit_button.on('click', function(e) {
+            e.stopPropagation();
+            e.preventDefault();
+
+            var fd = {
+                task_ids: [],
+                dependent_ids: []
+            };
+
+            fd.task_ids = [{% for task_id in task_ids %}{{ task_id }}, {% endfor %}];
+
+            var raw_dependent_ids = form.serializeArray()[0].value;
+            fd.dependent_ids = $.map(raw_dependent_ids.split(','), function (value) {
+                value = value.match(/\(([0-9]+)\)/)[1];
+                return value;
+            });
+
+            submit_button.button('loading');
+            $.post(
+                '{{ request.route_url("add_tasks_dependencies") }}',
+                fd
+            ).done(function(jqXHR){
+                submit_button.button('reset');
+                $('#dialog_template').modal('hide');
+            }).fail(function(jqXHR){
+                //console.debug('fail --> jqXHR:', jqXHR);
+                bootbox.alert(jqXHR.responseText);
+                submit_button.button('reset');
+            });
+        });
+
+        console.debug('finished initializing the add_task_dependencies_dialog dialog!')
+    }
+</script>
+
+<script type="text/javascript">
+    function destruct_dialog() {
+        $('#dialog_template_submit_button').unbind();
+        $('#dialog_template').data('modal', null);
+    }
+</script>

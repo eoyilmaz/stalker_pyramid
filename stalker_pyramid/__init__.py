@@ -413,6 +413,7 @@ def main(global_config, **settings):
     config.add_route('get_user_groups',       'users/{id}/groups/')  # json
     config.add_route('get_user_tasks',        'users/{id}/tasks/')  # json
     config.add_route('get_user_tasks_count',  'users/{id}/tasks/count/')  # json
+    config.add_route('get_user_tasks_responsible_of_count', 'users/{id}/tasks/responsible_of/count') # html
     config.add_route('get_user_vacations',    'users/{id}/vacations/')  # json
     config.add_route('get_user_vacations_count', 'users/{id}/vacations/count/')  # json
     config.add_route('get_user_tickets',      'users/{id}/tickets/')  # json
@@ -433,8 +434,9 @@ def main(global_config, **settings):
     config.add_route('list_user_projects',    'users/{id}/projects/list')  # html
     config.add_route('list_user_time_logs',   'users/{id}/time_logs/list')  # html
     config.add_route('list_user_tickets',     'users/{id}/tickets/list')  # html
-    config.add_route('list_user_tasks_responsible_of', 'users/{id}/tasks/list/responsible_of') # html
-    config.add_route('list_user_reviews',          'users/{id}/reviews/list')  # html
+    config.add_route('list_user_tasks_responsible_of',       'users/{id}/tasks/list/responsible_of') # html
+    config.add_route('list_user_tasks_watching',       'users/{id}/tasks/list/watching') # html
+    config.add_route('list_user_reviews',              'users/{id}/reviews/list')  # html
 
     config.add_route('view_user_tasks',       'users/{id}/tasks/view')  # html
     config.add_route('view_user_versions',    'users/{id}/versions/view')
@@ -586,6 +588,8 @@ def main(global_config, **settings):
     config.add_route('get_gantt_task_children',  'tasks/{id}/children/gantt')
 
     config.add_route('get_tasks',         'tasks/')
+    config.add_route('get_tasks_count',         'tasks/count/')
+
     config.add_route('get_task',          'tasks/{id}/')
     config.add_route('get_task_events',   'tasks/{id}/events/')  #json
     config.add_route('get_task_children_task_type',  'tasks/{type}/children/task_type/')  # json
@@ -608,20 +612,25 @@ def main(global_config, **settings):
     config.add_route('request_extra_time', 'tasks/{id}/request_extra_time')
     config.add_route('request_extra_time_dialog', 'tasks/{id}/request_extra_time/dialog')
 
-    config.add_route('get_task_resources',  'tasks/{id}/resources/') #json
-    config.add_route('remove_task_user_dialog', 'tasks/{id}/remove/{user_type}/{user_id}/dialog')
-    config.add_route('remove_task_user', 'tasks/{id}/remove/{user_type}/{user_id}')
+    config.add_route('get_task_resources',        'tasks/{id}/resources/') #json
+    config.add_route('remove_task_user_dialog',   'tasks/{id}/remove/{user_type}/{user_id}/dialog')
+    config.add_route('remove_task_user',          'tasks/{id}/remove/{user_type}/{user_id}')
     config.add_route('change_tasks_users_dialog', 'tasks/change/{user_type}/dialog')
-    config.add_route('change_tasks_users', 'tasks/change/{user_type}')
-    config.add_route('change_task_users_dialog', 'tasks/{id}/change/{user_type}/dialog')
-    config.add_route('change_task_users', 'tasks/{id}/change/{user_type}')
+    config.add_route('change_tasks_users',        'tasks/change/{user_type}')
+    config.add_route('change_task_users_dialog',  'tasks/{id}/change/{user_type}/dialog')
+    config.add_route('change_task_users',         'tasks/{id}/change/{user_type}')
 
+    config.add_route('add_tasks_dependencies_dialog', 'tasks/add/dependencies/dialog')
+    config.add_route('add_tasks_dependencies',        'tasks/add/dependencies')
 
     config.add_route('delete_task',        'tasks/{id}/delete')
     config.add_route('delete_task_dialog', 'tasks/{id}/delete/dialog')
 
     config.add_route('fix_task_statuses',      'tasks/{id}/fix/statuses/')
     config.add_route('fix_task_schedule_info', 'tasks/{id}/fix/schedule_info/')
+
+    config.add_route('watch_task',   'tasks/{id}/watch')
+    config.add_route('unwatch_task', 'tasks/{id}/unwatch')
 
     # *************************************************************************
     # TimeLog

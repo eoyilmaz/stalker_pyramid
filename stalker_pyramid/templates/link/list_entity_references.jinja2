@@ -109,11 +109,14 @@
     {% raw %}
     <script id="tmpl_reference_item" type="text/x-dot-template">
         <li id="Reference_{{=it.id}}">
-            <a href="/{{=it.full_path}}"
+            <a href="/{{=it.webres_full_path}}"
 
-               thumbnail_href="{{=it.thumbnail_full_path}}"
-               web_href="{{=it.full_path}}"
-               hires_href="{{=it.hires_full_path}}"
+               thumbnail_full_path="{{=it.thumbnail_full_path}}"
+               webres_full_path="{{=it.webres_full_path}}"
+               hires_full_path="{{=it.hires_full_path}}"
+
+               webres_download_path="{{=it.webres_download_path}}"
+               hires_download_path="{{=it.hires_download_path}}"
 
                original_filename="{{=it.original_filename}}"
 
@@ -133,7 +136,7 @@
                         <!--<span class="label label-info">{{=t}}</span>-->
                         <!--{{~}}-->
 
-                        {{? it.full_path.indexOf('.webm') !== -1 }}
+                        {{? it.webres_full_path.indexOf('.webm') !== -1 }}
                         <span class="label label-success">
                             <i class="icon-film"></i>
                         </span>
@@ -143,8 +146,8 @@
             </a>
 
             <div class="tools">
-                <a href="/FD{{=it.full_path}}" title="Download"><i class="icon-cloud-download"></i></a>
-                <a href="javascript:copyToClipboard('http://' + window.location.host +'/FD{{=it.full_path}}')" title="Copy Download Link"><i class="icon-link"></i></a>
+                <a href="/FD{{=it.webres_download_path}}" title="Download Web Version"><i class="icon-cloud-download green"></i></a>
+                <a href="/FD{{=it.hires_download_path}}" title="Download Original"><i class="icon-cloud-download blue"></i></a>
              
                 <div class="dropdown">
                     <a class="dropdown-toggle" data-toggle="dropdown"
@@ -192,20 +195,28 @@
             transition: 'none',
             title: function () {
                 // Filename (Tags)| Hires (DL)
-                
+
                 var url = $(this).attr('href');
 
                 var original_title = $(this).attr('original_filename');
 
                 var tags = $(this).attr('tags');
 
-                var view_hires_url = '/' + $(this).attr('hires_href');
-                var download_hires_url = '/FD' + $(this).attr('hires_href');
+                var view_hires_url = '/' + $(this).attr('hires_full_path');
+                var download_hires_url = '/FD' + $(this).attr('hires_download_path');
 
-                var open_hires_in_new_tab_link = '<a title="View Hires in new Tab"  href="' + view_hires_url + '" target="_blank">Hires</a></span>';
-                var download_hires_link = '<span><a title="Download Hires" class="icon-cloud-download" href="' + download_hires_url + '">&nbsp</a></span>';
+                var view_webres_url = '/' + $(this).attr('webres_full_path');
+                var download_webres_url = '/FD' + $(this).attr('webres_download_path');
 
-                return original_title + '&nbsp(' + tags + ')&nbsp|&nbsp' + open_hires_in_new_tab_link + ' &nbsp '+ download_hires_link;
+                var open_hires_in_new_tab_link = '<a title="View Original in new Tab"  href="' + view_hires_url + '" target="_blank">Original</a></span>';
+                var download_hires_link = '<span><a title="Download Original" class="icon-cloud-download blue" href="' + download_hires_url + '">&nbsp</a></span>';
+
+                var open_webres_in_new_tab_link = '<a title="View Web Version in new Tab"  href="' + view_webres_url + '" target="_blank">Web Version</a></span>';
+                var download_webres_link = '<span><a title="Download Web Version" class="icon-cloud-download green" href="' + download_webres_url + '">&nbsp</a></span>';
+
+                return original_title + '&nbsp(' + tags + ')&nbsp|&nbsp' +
+                       open_webres_in_new_tab_link + ' &nbsp ' + download_webres_link + '&nbsp|&nbsp' +
+                       open_hires_in_new_tab_link + ' &nbsp ' + download_hires_link;
             },
             onOpen: function () {
                 document.body.style.overflow = 'hidden';
@@ -241,13 +252,17 @@
             var animate = options.animate;
 
             // check if there is any video
-            var full_path;
-            full_path = data.full_path;
+            var thumbnail_full_path, webres_full_path, hires_full_path,
+                webres_download_path, hires_download_path;
+
+            data.hires_download_path = data.hires_full_path;
+            data.webres_download_path = data.webres_full_path;
+
             colorbox_params.iframe = false;
-            if (full_path.search('.webm') != -1){
+            if (data.webres_full_path.search('.webm') != -1){
 {#                console.debug('data: ', data);#}
                 // it should have video replace the address with video player
-                data.full_path = 'video_player?video_full_path=/' + data.full_path;
+                data.webres_full_path = 'video_player?video_full_path=/' + data.webres_full_path;
                 colorbox_params.iframe = false;
             }
 
@@ -410,7 +425,7 @@
                     // prepend repsoitories/{id}/ to make it compatible with the
                     // new style references
                     data[i].thumbnail_full_path = repo_prepend + data[i].thumbnail_full_path;
-                    data[i].full_path = repo_prepend + data[i].full_path;
+                    data[i].webres_full_path = repo_prepend + data[i].webres_full_path;
                     append_thumbnail({
                         data: data[i],
                         template: referenceItemTemplate,
