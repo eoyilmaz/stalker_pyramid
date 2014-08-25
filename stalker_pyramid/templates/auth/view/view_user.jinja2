@@ -197,6 +197,13 @@
                 var start_date = new Date(parseInt(data[i].start));
                 var end_date = new Date(parseInt(data[i].end));
 
+                if(data[i].entity_type == 'tasks'){
+                    var now = new Date();
+                    if(now>end_date){
+                        console.log(data[i].title +' : '+ end_date)
+                    }
+                }
+
                 var event = {
                     eId: data[i].id,
                     entity_type: data[i].entity_type,

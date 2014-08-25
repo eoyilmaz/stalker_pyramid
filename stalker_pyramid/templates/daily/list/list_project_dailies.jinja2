@@ -37,8 +37,8 @@
 
 {# PAGE-CONTENT #}
 {% block page_content %}
-    {% set page_title='Dailies' %}
-    {% include 'page_header.jinja2' %}
+{#    {% set page_title='Dailies' %}#}
+{#    {% include 'page_header.jinja2' %}#}
 
 
     {% set add_button_address=request.route_path('create_daily_dialog', _query={'project_id':entity.id, 'came_from':request.current_route_path()}) %}

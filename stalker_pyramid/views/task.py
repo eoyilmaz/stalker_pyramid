@@ -4131,8 +4131,8 @@ def get_child_task_events(task):
             #     task.name,
             #     ' | '.join([parent.name for parent in task.parents])),
             'title': task.name,
-            'start': milliseconds_since_epoch(task.start),
-            'end': milliseconds_since_epoch(task.end),
+            'start': milliseconds_since_epoch(task.computed_start),
+            'end': milliseconds_since_epoch(task.computed_end),
             'className': 'label',
             'allDay': False,
             'status': task.status.name,
@@ -4243,7 +4243,7 @@ def get_task_dependency(request):
 def force_task_status_dialog(request):
     """deletes the department with the given id
     """
-    logger.debug('delete_department_dialog is starts')
+    logger.debug('force_task_status_dialog is starts')
 
     task_id = request.matchdict.get('id')
     status_code = request.matchdict.get('status_code')

@@ -168,6 +168,8 @@ def main(global_config, **settings):
     config.add_route('get_entity_assets_count',        'entities/{id}/assets/count/')
     config.add_route('get_entity_shots',               'entities/{id}/shots/')
     config.add_route('get_entity_shots_count',         'entities/{id}/shots/count/')
+    config.add_route('get_entity_scenes',              'entities/{id}/scenes/')
+    config.add_route('get_entity_scenes_count',        'entities/{id}/scenes/count/')
     config.add_route('get_entity_vacations',           'entities/{id}/vacations/')
     config.add_route('get_entity_vacations_count',     'entities/{id}/vacations/count/')
     config.add_route('get_entity_entities_out_stack',  'entities/{id}/{entities}/out_stack/' )
@@ -177,6 +179,7 @@ def main(global_config, **settings):
     config.add_route('list_entity_users',              'entities/{id}/users/list')
     config.add_route('list_entity_departments',        'entities/{id}/departments/list')  # html
     config.add_route('list_entity_groups',             'entities/{id}/groups/list')  # html
+    config.add_route('list_entity_scenes',             'entities/{id}/scenes/list')  # html
     config.add_route('list_entity_shots',              'entities/{id}/shots/list')  # html
     config.add_route('list_entity_tasks',              'entities/{id}/tasks/list')  # html
     config.add_route('list_entity_tasks_by_filter',    'entities/{id}/tasks/filter/{f_id}/list')  # html
@@ -304,6 +307,8 @@ def main(global_config, **settings):
     config.add_route('get_project_shots_count',    'projects/{id}/shots/count/')
     config.add_route('get_project_sequences',      'projects/{id}/sequences/')
     config.add_route('get_project_sequences_count', 'projects/{id}/sequences/count/')
+    config.add_route('get_project_scenes',          'projects/{id}/scenes/')
+    config.add_route('get_project_scenes_count',    'projects/{id}/scenes/count/')
     config.add_route('get_project_references',     'projects/{id}/references/')  # json
     config.add_route('get_project_references_count', 'projects/{id}/references/count/')  # json
     config.add_route('get_project_tickets',         'projects/{id}/tickets/')  # json
@@ -512,7 +517,9 @@ def main(global_config, **settings):
 
     config.add_route('get_shots_children_task_type',  'shots/children/task_type/')  # json
 
-
+    # *************************************************************************
+    # Scene
+    config.add_route('get_scenes_children_task_type',  'scenes/children/task_type/')  # json
 
     # *************************************************************************
     # Sequence
