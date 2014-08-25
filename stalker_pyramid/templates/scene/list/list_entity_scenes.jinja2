@@ -250,7 +250,7 @@
                                 var task = data[i][types[j].name];
 
                                 if (task) {
-                                    task.status_color = task.status;
+                                    task.status_color = 'status_'+task.status;
                                     if (task.id){
                                         scene_row.append(cell_template(task));
                                     }
