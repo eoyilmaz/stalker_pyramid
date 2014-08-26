@@ -3835,7 +3835,7 @@ def request_progress_review(request):
     # Create tickets for selected responsible
     user_link_internal = get_user_link_internal(request, logged_in_user)
     task_full_path = get_task_full_path(task.id)
-    task_link_internal = get_task_internal_link(task.id)
+    task_link_internal = request.route_path('view_task', id=task.id)
 
     for responsible in selected_responsible_list:
         logger.debug('responsible: %s' % responsible)
