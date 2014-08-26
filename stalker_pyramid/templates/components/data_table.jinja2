@@ -65,7 +65,7 @@
     $(document).ready(function () {
 
         var icon_name = get_icon('{{ list_item_type.lower() }}');
-        $('#items_header').append('<i class="' + icon_name + ' bigger-125"></i>');
+        $('#items_header').append('<i class="' + icon_name + ' bigger-125"></i> {{ list_item_type }}s');
 
         {% if collapsed %}
             $('#items_header').append('<small class="white">List of {{ list_item_type }}s</small>')

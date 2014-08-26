@@ -206,6 +206,10 @@ logger.setLevel(logging.DEBUG)
     renderer='templates/sequence/list/list_entity_sequences.jinja2'
 )
 @view_config(
+    route_name='list_entity_scenes',
+    renderer='templates/scene/list/list_entity_scenes.jinja2'
+)
+@view_config(
     route_name='upload_entity_reference_dialog',
     renderer='templates/link/dialogs/upload_reference_dialog.jinja2'
 )
