@@ -61,7 +61,7 @@
                     <input id='ticket_links'
                            class='input-block-level tag-input-style span11'
                            type='text'
-                           name='link_ids'
+                           name='link_names'
                            data-placeholder='Links'>
                     <span id='links_helper' class="help-button"
                       title="">?</span>
@@ -108,8 +108,7 @@
         var field_update_mode_checker = function(){
             // checks if the important fields are still updating
             // check if any of the fields are still in updating mode
-            if ($('#ticket_owner').attr('is_updating') === 'true' ||
-                $('#ticket_links').attr('is_updating') === 'true') {
+            if ($('#ticket_owner').attr('is_updating') === 'true') {
                 // disable the Submit button
                 setTimeout(function(){submit_button.button('loading')}, 0);
             } else {
@@ -213,12 +212,17 @@
 
             var link_ids;
 
-            var raw_link_ids = form_data[4].value;
+
+
+            var raw_link_ids = form.serializeArray()[5].value;
+
+
             link_ids = $.map(raw_link_ids.split(','), function (value) {
                 value = value.match(/\(([0-9]+)\)/)[1];
                 return value;
             });
-            form_data['link_ids'] = link_ids;
+            console.log(link_ids)
+
 
             // prevent multiple sends
             if (form.attr('is_sending') == 'true'){
@@ -228,7 +232,10 @@
             }
             $.post(
                 submit_form_url,
-                form_data
+                form_data+ '&' +
+                $.param({
+                    'link_ids':link_ids
+                })
              ).done(function(){
                 $('#dialog_template').modal('hide');
                 // reload page
