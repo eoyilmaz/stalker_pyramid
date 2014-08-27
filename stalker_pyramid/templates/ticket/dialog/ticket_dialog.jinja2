@@ -58,12 +58,13 @@
             <div class='control-group'>
                 <label class='span3 control-label' for='ticket_links'>Links</label>
                 <div class='span9'>
-                    <select id='ticket_links'
-                            multiple=''
-                            class='input-block-level tag-input-style'
-                            name='link_ids'
-                            data-placeholder='Links'
-                            is_updating=false></select>
+                    <input id='ticket_links'
+                           class='input-block-level tag-input-style span11'
+                           type='text'
+                           name='link_ids'
+                           data-placeholder='Links'>
+                    <span id='links_helper' class="help-button"
+                      title="">?</span>
                 </div>
             </div>
 
@@ -84,7 +85,8 @@
 
     </div>
 </div>
-
+<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/bootstrap-tag.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/utils.js") }}'></script>
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/chosen.jquery.min.js") }}'></script>
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.autosize-min.js") }}'></script>
 
@@ -162,53 +164,39 @@
 
         {# ***************************************************************** #}
         {# Links #}
-        // create a chosen first
-        var ticket_links = $('#ticket_links').chosen({
-            search_contains: true,
-            enable_split_word_search: true
+
+        var timeout_buffer; // it is used in delaying AJAX calls see task_depends_to
+        var ticket_links = $('#ticket_links');
+
+        ticket_links.tag({
+            placeholder: ticket_links.data('placeholder'),
+            allowNewItems: false,
+            source: function(request, response){
+                // delay ajax call for 300 milliseconds
+                if (timeout_buffer) {
+                    clearTimeout(timeout_buffer);
+                }
+                timeout_buffer = setTimeout(function() {
+                    get_task_data({
+                        project_id: {{ project.id }},
+                        search_string: request,
+                        callback: response
+                    });
+                }, 300);
+            },
+            resultFilter: function(value){
+                // filter the results coming from the typeahead
+                value = value.match(/[\w\s\d&!?\+\-]+\([0-9]+\)/);
+                return value;
+            },
+            values: [],
+            disabled: false
+        }).on('shown', function(e){
+            e.stopPropagation();
         });
 
-        // ********************************************************************
-        // get tasks of that project as json from server
-        // set the submit button to loading state while data is get from the server
-        // set the fields to updating mode
-        ticket_links.attr('is_updating', true);
-        field_update_mode_checker();
-        $.getJSON('{{ request.route_url("get_project_tasks", id=project.id) }}').then(function(data){
-{#            console.log('data.length:', data.length);#}
-
-            // now append the data to the ticket_links
-            {% raw %}
-            var ticket_link_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
-            {% endraw %}
-
-            var task_count = data.length;
-            var rendered_template = null;
-            // add and empty option
-            ticket_links.append('<option val="">&nbsp;</option>');
-            for (var i=0; i < task_count; i++){
-                rendered_template = ticket_link_template(data[i]);
-                ticket_links.append(rendered_template)
-            }
-
-
-
-            ticket_links.val('{{ task_id }}');
-
-
-
-            // trigger another update
-            ticket_links.trigger('liszt:updated');
-
-            // set the fields to normal mode
-            ticket_links.attr('is_updating', false);
-            field_update_mode_checker();
-
-
-
-        });
-
-
+        // fix input width
+        ticket_links.parent().addClass('input-block-level span12');
         {# ***************************************************************** #}
         {# Submit Button #}
 
@@ -222,7 +210,15 @@
 
             var form = $('#ticket_form');
             var form_data = form.serialize();
-{#            console.log('form_data :', form_data);#}
+
+            var link_ids;
+
+            var raw_link_ids = form_data[4].value;
+            link_ids = $.map(raw_link_ids.split(','), function (value) {
+                value = value.match(/\(([0-9]+)\)/)[1];
+                return value;
+            });
+            form_data['link_ids'] = link_ids;
 
             // prevent multiple sends
             if (form.attr('is_sending') == 'true'){
@@ -233,7 +229,7 @@
             $.post(
                 submit_form_url,
                 form_data
-            ).done(function(){
+             ).done(function(){
                 $('#dialog_template').modal('hide');
                 // reload page
                 setTimeout(function () { // wait for hide event to finish
