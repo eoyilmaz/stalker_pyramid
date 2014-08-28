@@ -151,6 +151,9 @@
                         </h5>
                         <span class="widget-toolbar no-border">
                             <span class="label label-large label-status_{{=it.task_status_code}}"> {{=it.task_status_name}}</span>
+                            <!--<a href='/users/{{=it.task_resource_id }}/view' class="white">-->
+                                <!--{{=it.task_resource_name }}-->
+                            <!--</a>-->
                         </span>
                         <div class="widget-toolbar action-buttons">
                             <a href="#" data-action="collapse">
@@ -319,7 +322,7 @@
 
                             $.post(
                                 "/note/create",
-                                add_note_form.serialize()+'&entity_ids='+task_id+'&entity_ids={{ entity.id }}&'+$.param({'type': "Daily_Note"  })
+                                add_note_form.serialize()+'&entity_ids='+task_id+'&entity_ids={{ entity.id }}&'+$.param({'type': "Daily_Note",'content':content  })
                             ).done(function () {
                                 window.location.assign('{{ came_from }}');
                             }).fail(function (jqXHR) {

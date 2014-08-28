@@ -363,6 +363,7 @@ def get_daily_outputs(request):
         join "Tasks" as "Link_Tasks" on "Link_Tasks".id = link_data.task_id
         join "Statuses" as "Task_Statuses" on "Task_Statuses".id = "Link_Tasks".status_id
         join "SimpleEntities" as "Task_Status_SimpleEntities" on "Task_Status_SimpleEntities".id = "Link_Tasks".status_id
+        join "Task_Resources"  on "Task_Resources".task_id = "Link_Tasks".status_id
 
         --find the task daily notes
         left outer join (
