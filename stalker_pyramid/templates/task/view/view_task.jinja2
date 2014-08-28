@@ -223,12 +223,17 @@
                                                 </strong>
                                             </div>
                                         </div>
+
                                     </div>
+
                                 </div>
     
                                 <div class="span3">
                                     {% if entity.is_leaf %}
                                         {% include 'task/view/task_timing.jinja2' %}
+                                    {% elif entity.entity_type == 'Shot'%}
+                                        {% include 'shot/view/shot_cut_timing.jinja2' %}
+
                                     {% endif %}
                                 </div>
                             </div>
@@ -529,7 +534,7 @@
             //editables
             $('#editable_entity_name').editable({
                 type: 'text',
-                name: 'username',
+                name: 'name',
                 success: function (response, newValue) {
 {#                    console.log('newValue ' + newValue);#}
 
