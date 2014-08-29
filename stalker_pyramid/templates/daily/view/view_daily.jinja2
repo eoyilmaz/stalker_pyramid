@@ -182,7 +182,7 @@
                                         <div class="span11">
                                             <input placeholder="Type your message here ..."
                                                    type="text" class="width-90"
-                                                   name="message"/>
+                                                   name="content"/>
                                             <button id="add_note_button_{{=it.task_id }}"
                                                     class="btn btn-small btn-info no-radius">
                                                 <i class="icon-share-alt"></i>
@@ -318,11 +318,11 @@
 
                             var content = $('#message').val();
 
-{#                            console.log(add_note_form.serialize());#}
+                            console.log(add_note_form.serialize());
 
                             $.post(
                                 "/note/create",
-                                add_note_form.serialize()+'&entity_ids='+task_id+'&entity_ids={{ entity.id }}&'+$.param({'type': "Daily_Note",'content':content  })
+                                add_note_form.serialize()+'&entity_ids='+task_id+'&entity_ids={{ entity.id }}&'+$.param({'type': "Daily_Note"})
                             ).done(function () {
                                 window.location.assign('{{ came_from }}');
                             }).fail(function (jqXHR) {
@@ -365,10 +365,10 @@
                     }
                 }
 
-{#                $('.date').each(function () {#}
-{#                    var date = moment.utc($(this).text());#}
-{#                    $(this).text(date.fromNow());#}
-{#                });#}
+                $('.date').each(function () {
+                    var date = moment.utc($(this).text());
+                    $(this).text(date.fromNow());
+                });
 
             });
         })
