@@ -325,7 +325,10 @@ def get_daily_outputs(request):
             daily_note.user_thumbnail as user_thumbnail,
             daily_note.note_content as note_content,
             daily_note.note_date_created as note_date_created,
-            daily_note.note_type_name as note_type_name
+            daily_note.note_type_name as note_type_name,
+
+            "Resource_SimpleEntities".name as resource_name,
+            "Resource_SimpleEntities".id as resource_id
 
         from "Dailies"
         join "Daily_Links" on "Daily_Links".daily_id = "Dailies".id
@@ -363,7 +366,8 @@ def get_daily_outputs(request):
         join "Tasks" as "Link_Tasks" on "Link_Tasks".id = link_data.task_id
         join "Statuses" as "Task_Statuses" on "Task_Statuses".id = "Link_Tasks".status_id
         join "SimpleEntities" as "Task_Status_SimpleEntities" on "Task_Status_SimpleEntities".id = "Link_Tasks".status_id
-
+        join "Task_Resources" on "Task_Resources".task_id = "Link_Tasks".id
+        join "SimpleEntities" as "Resource_SimpleEntities" on "Resource_SimpleEntities".id = "Task_Resources".resource_id
         --find the task daily notes
         left outer join (
             select
@@ -401,6 +405,8 @@ def get_daily_outputs(request):
             "ParentTasks".full_path,
             "Task_Statuses".code,
             "Task_Status_SimpleEntities".name,
+            "Resource_SimpleEntities".name,
+            "Resource_SimpleEntities".id,
             daily_note.note_id,
             daily_note.user_id,
             daily_note.user_name,
@@ -478,6 +484,8 @@ def get_daily_outputs(request):
             'task_name': r[1],
             'task_status_code': r[2].lower(),
             'task_status_name': r[3],
+            'task_resource_name': r[20],
+            'task_resource_id': r[21],
             'links': links,
             'notes': notes
         }

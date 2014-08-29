@@ -151,9 +151,7 @@
                         </h5>
                         <span class="widget-toolbar no-border">
                             <span class="label label-large label-status_{{=it.task_status_code}}"> {{=it.task_status_name}}</span>
-                            <!--<a href='/users/{{=it.task_resource_id }}/view' class="white">-->
-                                <!--{{=it.task_resource_name }}-->
-                            <!--</a>-->
+
                         </span>
                         <div class="widget-toolbar action-buttons">
                             <a href="#" data-action="collapse">
@@ -161,7 +159,15 @@
                             </a>
                         </div>
                     </div>
-                    <div class="widget-body"  style="margin: 10px">
+                    <div class="widget-body">
+                        <div class="row-fluid">
+                               <span  class="pull-right">
+                                   Resource :
+                                   <a href='/users/{{=it.task_resource_id }}/view'>
+                                        {{=it.task_resource_name }}&nbsp;&nbsp;&nbsp;
+                                   </a>
+                               </span>
+                         </div>
                         <div class="row-fluid">
                             <div class="span6">
                                 <ul id="outputs_{{=it.task_id }}"  class="ace-thumbnails"></ul>
