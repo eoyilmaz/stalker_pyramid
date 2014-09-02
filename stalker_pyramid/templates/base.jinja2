@@ -429,12 +429,18 @@
 <script>
     // cache user ids and names
     var all_users = [];
+    var all_projects = [];
+
     $.getJSON('/users/').then(function (data) {
         all_users = data;
     });
 
-    var get_user_name = function(id){
-        var user = objectFindByKey(all_users, 'id', id);
+    $.getJSON('/projects/').then(function (data) {
+        all_projects = data;
+    });
+
+    var get_entity_name = function(id, entity_list){
+        var user = objectFindByKey(entity_list, 'id', id);
         if(user != null){
             return user.name;
         }
@@ -449,6 +455,16 @@
         }
         return null;
     }
+
+    var get_user_name = function(id){
+        return get_entity_name(id, all_users);
+    };
+
+    var get_project_name = function(id){
+        return get_entity_name(id, all_projects);
+    };
+
+
 
 </script>
 

@@ -26,8 +26,10 @@ from stalker.db import DBSession
 from stalker import Sequence, StatusList, Status, Shot, Project, Entity
 
 import logging
+import transaction
 from webob import Response
-from stalker_pyramid.views import get_logged_in_user, PermissionChecker
+from stalker_pyramid.views import get_logged_in_user, PermissionChecker, \
+    local_to_utc
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -92,6 +94,7 @@ def create_shot(request):
     return HTTPOk()
 
 
+
 @view_config(
     route_name='update_shot'
 )
@@ -130,6 +133,8 @@ def update_shot(request):
         shot.date_updated = datetime.datetime.now()
         shot.cut_in = cut_in
         shot.cut_out = cut_out
+
+
 
         DBSession.add(shot)
 

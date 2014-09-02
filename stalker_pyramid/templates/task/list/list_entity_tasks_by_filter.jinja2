@@ -78,6 +78,8 @@
                     } else {
                         data[i].thumbnail_full_path = '/' + data[i].thumbnail_full_path;
                     }
+                    data[i].project_name = get_project_name(data[i].project_id)
+
 
                     for (var k=0; k<data[i].responsible.length;k++){
                         var r_id = data[i].responsible[k];

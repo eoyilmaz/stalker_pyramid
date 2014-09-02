@@ -60,6 +60,9 @@ def create_note(request):
     entities = Entity.query.filter(Entity.id.in_(entity_ids)).all()
 
     content = request.params.get('content', None)
+
+    logger.debug('content : %s ' % content)
+
     content_as_text = request.params.get('content_as_text', content)
     note_type = request.params.get('type', None)
 

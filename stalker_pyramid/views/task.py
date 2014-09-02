@@ -875,7 +875,6 @@ def inline_update_task(request):
             # convert images to Links
             attachments = []
             description, links = replace_img_data_with_links(attr_value)
-
             task.description = description
 
             if links:
@@ -906,6 +905,9 @@ def inline_update_task(request):
                     attachments.append(attachment)
                 db.DBSession.add_all(links)
         else:
+            if attr_name == 'cut_in' or attr_name == 'cut_out':
+                attr_value = int(attr_value)
+
             setattr(task, attr_name, attr_value)
 
         task.updated_by = logged_in_user

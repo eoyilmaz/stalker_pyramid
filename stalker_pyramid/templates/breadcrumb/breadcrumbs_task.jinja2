@@ -15,8 +15,13 @@
             </span>
         </li>
     {% endfor %}
-    <li class="active">{{ task.name }}</li>
+    <li class="dropdown-submenu">
+        <a tabindex="-1" href="{{ request.route_url('view_task', id=task.id) }}">{{ task.name }}&nbsp;&nbsp;</a>
+        <ul class="dropdown-menu dropdown-danger">
+            {% for sibling_task in task.parent.children  %}
+                <li><a href="{{ request.route_url('view_task', id=sibling_task.id) }}">{{ sibling_task.name }}</a></li>
+           {% endfor %}
+        </ul>
+    </li>
 </ul>
 <!--.breadcrumb-->
-
-

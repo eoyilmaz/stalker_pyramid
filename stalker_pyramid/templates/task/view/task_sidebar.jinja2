@@ -118,7 +118,13 @@
                 "{%- if request.current_route_path() == request.route_path('list_sequence_shots', id=task.id) -%}'active',{%- else -%},{%- endif -%}",
                 '{{ request.route_url('list_sequence_shots', id=task.id) }}',
                 get_icon('shot'),
-                '/entities/{{ project.id }}/shots/count/'
+                '/entities/{{ task.project.id }}/shots/count/'
+            );
+            menu_of('Scenes',
+                "{%- if request.current_route_path() == request.route_path('list_entity_scenes', id=task.id) -%}'active',{%- else -%},{%- endif -%}",
+                '{{ request.route_url('list_entity_scenes', id=task.id) }}',
+                get_icon('shot'),
+                0
             );
         {% endif %}
 

@@ -76,6 +76,8 @@
             fd.task_ids = [{% for task_id in task_ids %}{{ task_id }}, {% endfor %}];
 
             var raw_dependent_ids = form.serializeArray()[0].value;
+
+            console.log(raw_dependent_ids)
             fd.dependent_ids = $.map(raw_dependent_ids.split(','), function (value) {
                 value = value.match(/\(([0-9]+)\)/)[1];
                 return value;

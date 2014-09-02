@@ -1,0 +1,110 @@
+<div class="widget-box">
+    <div class="widget-header widget-header-flat widget-header-small">
+          <h5>
+                <i class="icon-film"></i>
+                CUT INFO
+          </h5>
+    </div>
+
+    <div class="widget-body no-padding">
+        <div class="widget-main no-padding">
+            <div class="alert alert-info alert-block no-padding" style="margin-bottom: 0px;">
+
+                <table class="table">
+                    <tbody>
+                        <tr>
+                            <td style="text-align: left"><strong>Cut In</strong></td>
+                            <td><span class="editable" id="shot_view_cut_in">{{ entity.cut_in }}</span></td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: left"><strong>Cut Out</strong></td>
+                            <td><span class="editable" id="shot_view_cut_out">{{ entity.cut_out }}</span></td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: left"><strong>Cut Duration</strong></td>
+                            <td><span class="editable" id="shot_view_cut_duration">{{ entity.cut_duration }} frames</span></td>
+                        </tr>
+
+                    </tbody>
+                </table>
+            </div>
+        </div><!--/widget-main-->
+    </div><!--/widget-body-->
+</div><!--/widget-box-->
+{#<div class="profile-user-info profile-user-info-striped">#}
+{#    <div class="profile-info-row">#}
+{#        <div class="profile-info-name"> Cut In </div>#}
+{#        <div class="profile-info-value">#}
+{#            <span class="editable" id="shot_view_cut_in">{{ entity.cut_in }}</span>#}
+{#        </div>#}
+{#    </div>#}
+{#    <div class="profile-info-row">#}
+{#        <div class="profile-info-name"> Cut Out </div>#}
+{#        <div class="profile-info-value">#}
+{#            <span class="editable" id="shot_view_cut_out">{{ entity.cut_out }}</span>#}
+{#        </div>#}
+{#    </div>#}
+{#    <div class="profile-info-row">#}
+{#        <div class="profile-info-name"> Duration </div>#}
+{#        <div class="profile-info-value">#}
+{#            <span class="editable" id="shot_view_cut_duration">{{ entity.cut_duration }} frames</span>#}
+{#        </div>#}
+{#    </div>#}
+{#</div>#}
+
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/fuelux/fuelux.spinner.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/x-editable/bootstrap-editable.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/x-editable/ace-editable.min.js") }}'></script>
+
+
+<script type="text/javascript">
+     $(function () {
+          {% if has_permission('Update_Task') %}
+                var inline_update_url = '/tasks/{{ entity.id }}/update/inline';
+                $('#shot_view_cut_in').editable({
+                            type: 'spinner',
+                            name: 'cut_in',
+                            spinner : {
+                                        min : 1, max:99, step:1
+                                    },
+                            success: function (response, newValue) {
+
+                                var params = $.param({
+                                    attr_name: 'cut_in',
+                                    attr_value: parseInt(newValue)
+                                });
+
+                                $.post(
+                                    inline_update_url, params
+                                ).done(function () {
+                                    console.log('done');
+                                }).fail(function (jqXHR) {
+                                    bootbox.alert('<div id="message" class="alert alert-danger bigger-110">' + jqXHR.responseText + '</div>');
+                                });
+                            }
+                        });
+
+                $('#shot_view_cut_out').editable({
+                            type: 'spinner',
+                            name: 'cut_out',
+                            spinner : {
+                                        min : 0, max:99, step:15
+                                    },
+                            success: function (response, newValue) {
+                                var params = $.param({
+                                    attr_name: 'cut_out',
+                                    attr_value: parseInt(newValue)
+                                });
+
+                                $.post(
+                                    inline_update_url, params
+                                ).done(function () {
+                                    console.log('done');
+                                }).fail(function (jqXHR) {
+                                    bootbox.alert('<div id="message" class="alert alert-danger bigger-110">' + jqXHR.responseText + '</div>');
+                                });
+                            }
+                        });
+         {% endif %}
+     });
+</script>
