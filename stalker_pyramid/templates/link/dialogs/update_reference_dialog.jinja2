@@ -33,9 +33,11 @@
             </li>
         </ul>
     </div>
-    {# Tags #}
+</div>
 
-    <div class="controls">
+{# Tags #}
+<div class="row-fluid">
+    <div id='tags_control_group' class="reference_tags_input">
         <input id="reference_tags_input"
                type="text"
                class="span12"
@@ -44,7 +46,6 @@
                value="{% for tag in reference.tags %}{% if loop.index0>0 %},{% endif %}{{tag.name}}{% endfor %}"
                />
     </div>
-
 </div>
 
 <!--inline scripts related to this page-->
@@ -97,7 +98,7 @@
                 field_update_mode_checker();
 
                 // fix input width
-                $('#tags_control_group>>.tags').addClass('span12');
+                $('#tags_control_group').find('.tags').addClass('span12');
             });
         };
         fill_tags();
