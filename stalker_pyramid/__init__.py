@@ -231,6 +231,9 @@ def main(global_config, **settings):
     config.add_route('assign_reference',     'assign_reference')
     config.add_route('delete_reference',     'references/{id}/delete')
 
+    config.add_route('update_reference_dialog', 'references/{id}/update/dialog')
+    config.add_route('update_reference',        'references/{id}/update')
+
     # *************************************************************************
     # Outputs
 

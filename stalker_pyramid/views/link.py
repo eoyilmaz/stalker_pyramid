@@ -306,6 +306,51 @@ def assign_reference(request):
         } for link in links
     ]
 
+
+@view_config(
+    route_name='update_reference_dialog',
+    renderer='templates/link/dialogs/update_reference_dialog.jinja2'
+)
+def update_reference_dialog(request):
+    """update reference dialog
+    """
+    reference_id = request.matchdict.get('id')
+    ref = Link.query.get(reference_id)
+
+    # try to get the repository that this reference resides
+    from stalker import Task
+    t = Task.query.filter(Task.references.contains(ref)).first()
+
+    repo_id = -1
+    if t:
+        repo_id = t.project.repository.id
+
+    return {
+        'reference': ref,
+        'repo_id': repo_id
+    }
+
+
+@view_config(
+    route_name='update_reference'
+)
+def update_reference(request):
+    """update reference
+    """
+    ref_id = request.matchdict.get('id')
+    ref = Link.query.get(ref_id)
+
+    # Tags
+    tags = get_tags(request)
+
+    if ref:
+        ref.tags = tags
+    else:
+        return Response('No reference with id: %s' % ref_id)
+
+    return Response('Successfully updated reference %s' % ref_id)
+
+
 @view_config(
     route_name='assign_output',
     renderer='json'
@@ -382,6 +427,7 @@ def assign_output(request):
             'version_published':version_published
         } for link in links
     ]
+
 
 @view_config(route_name='get_project_references', renderer='json')
 @view_config(route_name='get_task_references', renderer='json')

@@ -88,14 +88,13 @@
 
                 <div class="row-fluid">
                     <div class="form-actions">
-
                         <button id='submit_button' type="button"
                                 class='btn btn-success pull-right'>
                             <i class="icon-edit"></i> Update
                         </button>
                     </div>
-
                 </div>
+
             </div>
         </div>
     </div>
@@ -114,13 +113,8 @@
 {#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/x-editable/bootstrap-editable.min.js") }}'></script>#}
 {#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/x-editable/ace-editable.min.js") }}'></script>#}
 
-
     <script type="text/javascript">
-
-
-        $(document).ready(function () {
-
-
+        $(function () {
             var submit_button = $('#submit_button');
             submit_button.on('click', function (e) {
 
@@ -129,20 +123,20 @@
                 submit_button.button('loading');
 
                 var department_update_form = $("#department_form");
-                $.post('/departments/{{ entity.id}}/update', department_update_form.serialize()
-                        ).done(function (response_text) {
-                            bootbox.alert(response_text);
-                            window.location.assign('{{ came_from }}');
-                            submit_button.button('reset');
-                        }).fail(function (jqXHR) {
-                            bootbox.alert(jqXHR.responseText);
-                            submit_button.button('reset');
-                        });
+                $.post(
+                    '/departments/{{ entity.id}}/update',
+                    department_update_form.serialize()
+                ).done(function (response_text) {
+                    bootbox.alert(response_text);
+                    window.location.assign('{{ came_from }}');
+                    submit_button.button('reset');
+                }).fail(function (jqXHR) {
+                    bootbox.alert(jqXHR.responseText);
+                    submit_button.button('reset');
+                });
 
             });
         });
-
-
     </script>
 
 {% endblock extrascripts %}
