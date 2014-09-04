@@ -1,0 +1,147 @@
+{# Stalker Pyramid a Web Base Production Asset Management System
+ Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
+
+ This file is part of Stalker Pyramid.
+
+ This library is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation;
+ version 2.1 of the License.
+
+ This library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Lesser General Public License for more details.
+
+ You should have received a copy of the GNU Lesser General Public
+ License along with this library; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+#}
+
+<div class="row-fluid">
+    {# dialog body here #}
+    <div class="controls">
+        <ul class="ace-thumbnails">
+            <li>
+
+                <div style="text-align: center; overflow: hidden; width: 150px">
+                    <img alt="150x150"
+                         style="height: 150px; width: auto; max-width: none; position: relative; left: 100%; margin-left: -200%;"
+                         src="/repositories/{{repo_id}}/{{reference.thumbnail.thumbnail.full_path}}">
+                </div>
+
+            </li>
+        </ul>
+    </div>
+</div>
+
+{# Tags #}
+<div class="row-fluid">
+    <div id='tags_control_group' class="reference_tags_input">
+        <input id="reference_tags_input"
+               type="text"
+               class="span12"
+               name="tags"
+               placeholder="Enter tags ..."
+               value="{% for tag in reference.tags %}{% if loop.index0>0 %},{% endif %}{{tag.name}}{% endfor %}"/>
+    </div>
+</div>
+
+<!--inline scripts related to this page-->
+
+
+<script>
+    var counter = 0;
+    function init_dialog(){
+        if (counter>0){
+            return;
+        }
+        counter +=1;
+
+        // init dialog
+        console.debug('init dialog from update_reference.jinja2 running!');
+
+        // update dialog header
+        $('.modal-header>h3').text('Update References');
+
+        var submit_button = $('#dialog_template_submit_button');
+
+        var field_update_mode_checker = function(){
+            // checks if the important fields are still updating
+            // check if any of the fields are still in updating mode
+            if ($('#reference_tags').attr('is_updating') === 'true' ||
+                $('#dropzone').attr('is_updating') === 'true' // this is not setup yet!
+                ) {
+                // disable the Submit button
+                setTimeout(function(){submit_button.button('loading')}, 0);
+            } else {
+                // enable the Submit button
+                setTimeout(function(){submit_button.button('reset')}, 0);
+            }
+        };
+
+        // tags
+        // set the fields to updating mode
+        var tag_input = $('#reference_tags_input');
+        tag_input.attr('is_updating', true);
+        field_update_mode_checker();
+        var fill_tags = function(){
+            $.getJSON('/tags/?as_list=1').then(function(data){
+                tag_input.tag({
+                    placeholder: tag_input.attr('placeholder'),
+                    source: data
+                });
+
+                // set the fields to normal mode
+                tag_input.attr('is_updating', false);
+                field_update_mode_checker();
+
+                // fix input width
+                $('#tags_control_group').find('.tags').addClass('span12');
+            });
+        };
+        fill_tags();
+
+        // register submit event
+        submit_button.on('click', function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            // disable it
+            // disable the Submit button
+            setTimeout(function(){
+                submit_button.data('loading-text', 'Updating reference, Please Wait...');
+                submit_button.button('loading')}, 0
+            );
+
+            var tags_list = $('#reference_tags_input').val().split(', ');
+
+            $.post('{{ request.route_url('update_reference', id=reference.id) }}', {
+                tags: tags_list
+            }).done(function(jqXHR){
+                // alert the user about the added files
+                // reload references
+                // get the data in jqXHR
+{#                console.debug('jqXHR : ', jqXHR);#}
+                $('#dialog_template').modal('hide');
+            }).fail(function(jqXHR){
+                // alert the user about what is failed
+                bootbox.alert(jqXHR.responseText);
+                // enable the Submit button
+                setTimeout(function(){submit_button.button('reset')}, 0);
+            });
+
+        });
+    }
+
+    function destruct_dialog(){
+        // reduce counter
+        counter -= 1;
+
+        // unbind events
+        $("#dialog_template_submit_button").unbind();
+
+        // destroy dialog
+        console.debug('destroy dialog from update_reference.jinja2 running!');
+        $('#dialog_template').data('modal', null);
+    }
+</script>

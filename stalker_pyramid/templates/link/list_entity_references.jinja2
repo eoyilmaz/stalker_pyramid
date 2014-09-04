@@ -167,6 +167,14 @@
                     </ul>
                 </div>
 
+                <a class='reference-updater'
+                   ref_id="{{=it.id}}"
+                   data-target="#dialog_template"
+                   data-toggle="modal"
+                   data-keyboard=false
+                   href='/references/{{=it.id}}/update/dialog'
+                   title="Update"><i class="icon-edit orange2"></i></a>
+
                 <a class='reference-deleter'
                    ref_id="{{=it.id}}"
                    ref_file_name="{{=it.original_filename}}"
