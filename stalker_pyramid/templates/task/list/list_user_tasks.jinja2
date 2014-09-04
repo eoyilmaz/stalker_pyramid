@@ -1,9 +1,5 @@
 {% extends "base.jinja2" %}
 
-{% block pre_header %}
-    {% include 'task/list/list_tasks_preheader.jinja2' %}
-{% endblock pre_header %}
-
 {% block breadcrumbs %}
     {% set page_title='Tasks' %}
     {% include 'breadcrumb/breadcrumbs.jinja2' %}
@@ -30,7 +26,7 @@
         </div>
         <div class="widget-body">
             <div class="widget-main no-padding">
-                {% set query_str='resource_id=%s' % entity.id %}
+                {% set query_str='resource_id=%s&status=RTS&status=WIP&status=WFD&status=HREV' % entity.id %}
                 {% include 'task/list/list_entity_tasks_by_filter.jinja2' %}
             </div>
         </div>

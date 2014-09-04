@@ -36,14 +36,8 @@
 {#    {% set page_title='Scenes' %}#}
 {#    {% include 'page_header.jinja2' %}#}
 
-    <div id="loading_spinner" class="well well-sm">
 
-        <div class="inline middle blue bigger-110"><i
-                class="icon-spinner icon-spin orange bigger-125"></i> Loading
-            content...
-        </div>
-    </div>
-    <div id="content" class="widget-box hide">
+    <div class="widget-box">
         <div class="widget-header widget-header-small header-color-shot">
             <h5 id="items_header" class="smaller"></h5>
 
@@ -70,9 +64,15 @@
         </div>
         <div class="widget-body">
             <div class="widget-main no-padding">
+                <div id="loading_spinner" class="well well-sm">
+                    <div class="inline middle blue bigger-110"><i
+                            class="icon-spinner icon-spin orange bigger-125"></i> Loading
+                        content...
+                    </div>
+                </div>
 
                 <table id="scenes_table"
-                       class="table table-striped table-bordered table-hover">
+                       class="table table-striped table-bordered table-hover hide">
 
                     <thead>
                     <tr id="scenes_table_column">
@@ -109,7 +109,7 @@
 
     {% raw %}
     <script id="tmpl_sceneRow" type="text/x-dot-template">
-        <tr id="scene_row_{{=it.id}}">
+        <tr id="scene_row_{{=it.id}}" style="position: relative; height: 100%">
             <td style="width:20px;">
                 <a href='/tasks/{{=it.id}}/view'>{{=it.name}}</a><br/>
             </td>
@@ -141,22 +141,31 @@
     {% endraw %}
 
     {% raw %}
+    <script id="tmpl_taskCell_empty" type="text/x-dot-template">
+        <td class="no-padding" style="width:120px; position: relative; height: 100%;">
+            <div class="black2"
+                 style="min-height:100px; position: relative; height: 100%; width: 100%;"">
+
+            </div>
+        </td>
+    </script>
+    {% endraw %}
+    {% raw %}
     <script id="tmpl_taskCell" type="text/x-dot-template">
-        <td class="no-padding" style="width:120px;">
+        <td class="no-padding" style="width:120px; position: relative; height: 100%;">
             <div class="{{=it.status_color}}"
-                 style="padding:5px; min-height:80px"">
+                 style="min-height:100px; position: relative; height: 100%; width: 100%;"">
                 <span>
                     <strong><a class="white" href="/tasks/{{=it.id }}/view">{{=it.name}}</a></strong>
-                    {{ if (it.update_scene_action) { }}
-                            <a class="white pull-right"
-                               data-target="#dialog_template"
-                               data-toggle="modal"
-                               data-keyboard=false
-                               href="/tasks/{{=it.id }}/update/dialog">
-                                <i class="icon-edit bigger-130"></i>
-                            </a>
 
-                        {{ } }}
+                        <a class="pull-right"
+                           data-target="#dialog_template"
+                           data-toggle="modal"
+                           data-keyboard=false
+                           href="{{=it.update_task_resource_action}}">
+                            <i class="icon-edit bigger-130"></i>
+                        </a>
+
                     <div class="no-padding">
                         <span><a href='/users/{{=it.resource_id}}/view'>{{=it.resource_name}}</a></span>
                     </div>
@@ -179,11 +188,20 @@
 
     {% raw %}
     <script id="tmpl_taskCell_shot_task" type="text/x-dot-template">
-        <td class="no-padding" style="width:120px;">
+        <td class="no-padding" style="width:120px; position: relative; height: 100%;">
             <div class="{{=it.status_color}}"
-                 style="padding:5px; min-height:80px;"">
+                 style="min-height:100px;position: absolute; height: 100%; width: 100%;"">
                 <span>
                     <strong>{{=it.name}}</strong>
+
+                    <a class="pull-right"
+                       data-target="#dialog_template"
+                       data-toggle="modal"
+                       data-keyboard=false
+                       href="{{=it.update_task_resource_action}}">
+                        <i class="icon-edit bigger-130"></i>
+                    </a>
+
                     <div class="no-padding">
                         {{ for(var j=0;j<it.resource_ids.length;j++){ }}<a href='/users/{{=it.resource_ids[j]}}/view'>{{=it.resource_names[j] }}</a><br/>{{ } }}
                         <span>{{= it.num_of_task}}</span>
@@ -223,8 +241,67 @@
                 for (k = 0; k < types.length; k++) {
                     table_column.append(column_template(types[k]));
                 }
-                $('#loading_spinner').hide();
-                $('#content').show();
+
+{#                var oTable1 = $('#scenes_table').dataTable({#}
+{#                                               'sAjaxSource':'/entities/{{ entity.id }}/scenes/',#}
+{#                                               "bServerSide": true,#}
+{#                                               "fnServerData": function ( sSource, aoData, fnCallback, oSettings ) {#}
+{#                                                   console.log('sSource: '+sSource);#}
+{#                                                   console.log('aoData: '+fnCallback);#}
+{#                                                   oSettings.jqXHR = $.ajax( {#}
+{#                                                        "dataType": 'json',#}
+{#                                                        "type": "POST",#}
+{#                                                        "url": sSource,#}
+{#                                                        "data": aoData,#}
+{#                                                        "success": function(data){#}
+{#                                                            for (var i = 0; i < data.length; i++) {#}
+{#                                                                  console.debug(data[i].name)#}
+{#                                                                    var scenes = data;#}
+{#                                                                    var scene_template = doT.template($('#tmpl_sceneRow').html());#}
+{##}
+{#                                                                    // wait until document is ready#}
+{#                                                                    $(function () {#}
+{#                                                                        var i;#}
+{#                                                                        var table_body = $('#scenes_table>tbody');#}
+{#                                                                        for (i = 0; i < data.length; i++) {#}
+{##}
+{#                                                                            data[i].link = '/tasks/' + data[i].id + '/view';#}
+{#                                                                            // append it to the table#}
+{#                                                                            table_body.append(scene_template(data[i]));#}
+{##}
+{#                                                                            var cell_template = doT.template($('#tmpl_taskCell').html());#}
+{#                                                                            var empty_cell_template = doT.template($('#tmpl_taskCell_empty').html());#}
+{#                                                                            var shot_task_cell_template = doT.template($('#tmpl_taskCell_shot_task').html());#}
+{##}
+{#                                                                            var scene_row = $('#scene_row_' + data[i].id);#}
+{##}
+{#                                                                            for (var j = 0; j < types.length; j++) {#}
+{#                                                                                var task = data[i][types[j].name];#}
+{##}
+{#                                                                                if (task) {#}
+{#                                                                                    task.status_color = 'status_'+task.status;#}
+{#                                                                                    if (task.id){#}
+{#                                                                                        scene_row.append(cell_template(task));#}
+{#                                                                                    }#}
+{#                                                                                    else {#}
+{#                                                                                        scene_row.append(shot_task_cell_template(task));#}
+{#                                                                                    }#}
+{#                                                                                }#}
+{#                                                                                else{#}
+{#                                                                                    scene_row.append(empty_cell_template(null));#}
+{#                                                                                }#}
+{#                                                                            }#}
+{##}
+{##}
+{#                                                            }#}
+{##}
+{#                                                   } );#}
+{#                                               }#}
+{#                                    });#}
+{##}
+{#                        $('#loading_spinner').hide();#}
+{#                        $('#scenes_table').show();#}
+
 
                 $.getJSON('/entities/{{ entity.id }}/scenes/').then(function (data) {
 
@@ -242,6 +319,7 @@
                             table_body.append(scene_template(data[i]));
 
                             var cell_template = doT.template($('#tmpl_taskCell').html());
+                            var empty_cell_template = doT.template($('#tmpl_taskCell_empty').html());
                             var shot_task_cell_template = doT.template($('#tmpl_taskCell_shot_task').html());
 
                             var scene_row = $('#scene_row_' + data[i].id);
@@ -259,23 +337,29 @@
                                     }
                                 }
                                 else{
-                                    scene_row.append(cell_template({'id': '',
-                                                                    'name': '',
-                                                                    'resource_name':'',
-                                                                    'resource_id':'',
-                                                                    'percent':0,
-                                                                    'status': '',
-                                                                    'status_color':'black2'
-                                                                       }));
+                                    scene_row.append(empty_cell_template(null));
                                 }
                             }
 
                         }
 
-                        var oTable1 = $('#scenes_table').dataTable();
+                        var oTable1 = $('#scenes_table').dataTable({
+                                               'sAjaxSource':'/entities/{{ entity.id }}/scenes/',
+                                               "bServerSide": true,
+                                               "fnServerData": function ( sSource, aoData, fnCallback, oSettings ) {
+                                                   console.log('otable')
+                                                   oSettings.jqXHR = $.ajax( {
+                                                        "dataType": 'json',
+                                                        "type": "POST",
+                                                        "url": sSource,
+                                                        "data": aoData,
+                                                        "success": fnCallback
+                                                   } );
+                                               }
+                                    });
 
                         $('#loading_spinner').hide();
-                        $('#content').show();
+                        $('#scenes_table').show();
                     });
                 });
             });

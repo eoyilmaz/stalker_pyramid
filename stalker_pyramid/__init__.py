@@ -285,6 +285,7 @@ def main(global_config, **settings):
     config.add_route('update_project',             'projects/{id}/update')
 
     config.add_route('view_project',               'projects/{id}/view')
+    config.add_route('view_project_reports',       'projects/{id}/view/reports')
 
     config.add_route('list_projects',              'projects/list')  # html
     config.add_route('list_project_users',         'projects/{id}/users/list')

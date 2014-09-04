@@ -94,6 +94,14 @@
             '/projects/{{ project.id }}/dailies/count/'
         );
 
+        menu_of(
+            'Reports',
+            "{%- if request.current_route_path() == request.route_path('view_project_reports', id=project.id) -%}'active',{%- else -%},{%- endif -%}",
+            '{{ request.route_url('view_project_reports', id=project.id) }}',
+            get_icon('report'),
+            ''
+        );
+
     });
 </script>
 

@@ -1859,15 +1859,28 @@ class TaskViewSimpleFunctionsTestCase(unittest.TestCase):
         properly
         """
         test_value = {
-            'status': ['WIP', 'DREV'],
+            'status': ['WFD', 'RTS', 'WIP', 'DREV', 'HREV'],
         }
 
         result = task.generate_where_clause(test_value)
 
-        self.assertEqual("""where (
-    "Statuses".code ilike '%WIP%'
-    and "Statuses".code ilike '%DREV%'
-)""", result)
+        self.maxDiff = None
+
+        expected_result = """where (
+    (
+    "Statuses".code ilike '%WFD%'
+    or "Statuses".code ilike '%RTS%'
+    or "Statuses".code ilike '%WIP%'
+    or "Statuses".code ilike '%DREV%'
+    or "Statuses".code ilike '%HREV%'
+    )
+)"""
+
+        print(expected_result)
+        print('--------------------')
+        print(result)
+
+        self.assertEqual(expected_result, result)
 
     def test_generate_where_clause_case8(self):
         """testing if the view.tasks.generate_where_clause() is working
@@ -1880,14 +1893,22 @@ class TaskViewSimpleFunctionsTestCase(unittest.TestCase):
 
         result = task.generate_where_clause(test_value)
 
-        self.assertEqual("""where (
+
+        expected_result = """where (
+    (
     "Statuses".code ilike '%WIP%'
-    and "Statuses".code ilike '%DREV%'
+    or "Statuses".code ilike '%DREV%'
+    )
     and not exists (
         select 1 from "Tasks"
         where "Tasks".parent_id = tasks.id
     )
-)""", result)
+)"""
+        print(expected_result)
+        print('--------------------')
+        print(result)
+
+        self.assertEqual(expected_result, result)
 
     def test_generate_where_clause_case9(self):
         """testing if the view.tasks.generate_where_clause() is working
@@ -1931,9 +1952,13 @@ class TaskViewSimpleFunctionsTestCase(unittest.TestCase):
 
         result = task.generate_where_clause(test_value)
 
+
+
         self.assertEqual("""where (
     resource_info.info is not NULL
 )""", result)
+
+
 
     def test_generate_where_clause_case12(self):
         """testing if the view.tasks.generate_where_clause() is working
@@ -1962,6 +1987,26 @@ class TaskViewSimpleFunctionsTestCase(unittest.TestCase):
         self.assertEqual("""where (
     26 = any (tasks.watcher_id)
 )""", result)
+
+
+    def test_generate_where_clause_case14(self):
+        """testing if the view.tasks.generate_where_clause() is working
+        properly
+        """
+        test_value = {
+            'parent_id': [98422]
+        }
+
+        result = task.generate_where_clause(test_value)
+
+        expected_result = """where (
+    tasks.parent_id = 98422
+)"""
+        print(expected_result)
+        print('--------------------')
+        print(result)
+
+        self.assertEqual(expected_result, result)
 
     def test_generate_order_by_clause_case_1(self):
         """testing if the view.tasks.generate_order_by_clause() is working
