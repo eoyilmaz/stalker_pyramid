@@ -270,6 +270,7 @@ function init_dialog() {
             ).done(function () {
 {#                window.location.reload();#}
                 // close the dialog
+                submit_button.button('reset');
                 $('#dialog_template').modal('hide');
             }).fail(function (jqXHR) {
                 bootbox.alert('<div id="message" class="alert alert-danger bigger-110">'+jqXHR.responseText+'</div>');
