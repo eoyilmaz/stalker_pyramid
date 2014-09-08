@@ -268,7 +268,7 @@ function init_dialog() {
                 dup_task_form.attr('action'),
                 form_data
             ).done(function () {
-                window.location.reload();
+{#                window.location.reload();#}
             }).fail(function (jqXHR) {
                 bootbox.alert('<div id="message" class="alert alert-danger bigger-110">'+jqXHR.responseText+'</div>');
                 submit_button.button('reset');
