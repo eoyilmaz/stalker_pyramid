@@ -62,49 +62,49 @@
           {% if has_permission('Update_Task') %}
                 var inline_update_url = '/tasks/{{ entity.id }}/update/inline';
                 $('#shot_view_cut_in').editable({
-                            type: 'spinner',
-                            name: 'cut_in',
-                            spinner : {
-                                        min : 1, max:99, step:1
-                                    },
-                            success: function (response, newValue) {
+                    type: 'spinner',
+                    name: 'cut_in',
+                    spinner : {
+                        min : 1, max:99, step:1
+                    },
+                    success: function (response, newValue) {
 
-                                var params = $.param({
-                                    attr_name: 'cut_in',
-                                    attr_value: parseInt(newValue)
-                                });
-
-                                $.post(
-                                    inline_update_url, params
-                                ).done(function () {
-                                    console.log('done');
-                                }).fail(function (jqXHR) {
-                                    bootbox.alert('<div id="message" class="alert alert-danger bigger-110">' + jqXHR.responseText + '</div>');
-                                });
-                            }
+                        var params = $.param({
+                            attr_name: 'cut_in',
+                            attr_value: parseInt(newValue)
                         });
+
+                        $.post(
+                            inline_update_url, params
+                        ).done(function () {
+                            console.log('done');
+                        }).fail(function (jqXHR) {
+                            bootbox.alert('<div id="message" class="alert alert-danger bigger-110">' + jqXHR.responseText + '</div>');
+                        });
+                    }
+                });
 
                 $('#shot_view_cut_out').editable({
-                            type: 'spinner',
-                            name: 'cut_out',
-                            spinner : {
-                                        min : 0, max:99, step:15
-                                    },
-                            success: function (response, newValue) {
-                                var params = $.param({
-                                    attr_name: 'cut_out',
-                                    attr_value: parseInt(newValue)
-                                });
-
-                                $.post(
-                                    inline_update_url, params
-                                ).done(function () {
-                                    console.log('done');
-                                }).fail(function (jqXHR) {
-                                    bootbox.alert('<div id="message" class="alert alert-danger bigger-110">' + jqXHR.responseText + '</div>');
-                                });
-                            }
+                    type: 'spinner',
+                    name: 'cut_out',
+                    spinner : {
+                                min : 0, max:99, step:15
+                            },
+                    success: function (response, newValue) {
+                        var params = $.param({
+                            attr_name: 'cut_out',
+                            attr_value: parseInt(newValue)
                         });
+
+                        $.post(
+                            inline_update_url, params
+                        ).done(function () {
+                            console.log('done');
+                        }).fail(function (jqXHR) {
+                            bootbox.alert('<div id="message" class="alert alert-danger bigger-110">' + jqXHR.responseText + '</div>');
+                        });
+                    }
+                });
          {% endif %}
      });
 </script>

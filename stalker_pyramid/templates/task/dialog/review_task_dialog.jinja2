@@ -261,23 +261,22 @@
             } else {
                 task_form.attr('is_sending', true);
             }
-            $.post(
-                            submit_form_url,
-                            form_data
-                    ).done(function () {
-                        $('#dialog_template').modal('hide');
-                        // reload page
-                        setTimeout(function () { // wait for hide event to finish
-                            window.location.reload();
-                        }, 0);
-                    }).fail(function (jqXHR) {
-                        task_form.attr('is_sending', false);
+            $.post(submit_form_url,
+                   form_data
+            ).done(function () {
+                $('#dialog_template').modal('hide');
+                // reload page
+                setTimeout(function () { // wait for hide event to finish
+                    window.location.reload();
+                }, 0);
+            }).fail(function (jqXHR) {
+                task_form.attr('is_sending', false);
 
-                        // reset submit button
-                        submit_button.button('reset');
-                        bootbox.alert('<h6 class="red"><i class="icon-warning-sign"></i> Failed</h6>' + jqXHR.responseText);
+                // reset submit button
+                submit_button.button('reset');
+                bootbox.alert('<h6 class="red"><i class="icon-warning-sign"></i> Failed</h6>' + jqXHR.responseText);
 
-                    });
+            });
         });
 
                 $('.date').each(function () {
