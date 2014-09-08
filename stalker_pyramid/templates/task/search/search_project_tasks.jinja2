@@ -10,8 +10,6 @@
 {% endblock sidebar %}
 
 {% block page_content %}
-    {% set page_title='You are responsible of these tasks ' %}
-    {% include 'page_header.jinja2' %}
 
     <div class="widget-box {{ collapsed }}">
         <div class="widget-header widget-header-small header-color-grey }}">
@@ -22,12 +20,10 @@
                     <i class="icon-chevron-down"></i>
                 </a>
             </div>
-
         </div>
         <div class="widget-body">
             <div class="widget-main no-padding">
-                {# TODO: use query_str instead of filter #}
-                {% set filter=entity %}
+                {% set query_str='resource_id=%s&status=RTS&status=WIP&status=WFD&status=HREV' % entity.id %}
                 {% include 'task/list/list_entity_tasks_by_filter.jinja2' %}
             </div>
         </div>
@@ -89,47 +85,6 @@
                         <i class="icon-pencil bigger-120">&nbsp</i>
                     </a>
 
-                    {{ if (it.request_extra_time)  { }}
-                        <a
-                            class="red"
-                            data-target="#dialog_template"
-                            data-toggle="modal"
-                            data-keyboard=false
-                            data-rel="tooltip"
-                            data-placement="top"
-                            title="Request Extra Time"
-                            href="{{=it.request_extra_time}}">
-                            <i class="icon-time bigger-130"></i>
-                        </a>
-                    {{ } }}
-
-                    {{ if (it.request_review) { }}
-                        <a
-                            class="green"
-                            data-target="#dialog_template"
-                            data-toggle="modal"
-                            data-keyboard=false
-                            data-rel="tooltip"
-                            data-placement="top"
-                            title="Request Review"
-                            href="{{=it.request_review}}">
-                            <i class="icon-comment-alt bigger-130"></i>
-                        </a>
-                    {{ } }}
-
-                    {{ if (it.review) { }}
-                        <a
-                            class="purple"
-                            data-target="#dialog_template"
-                            data-toggle="modal"
-                            data-keyboard=false
-                            data-rel="tooltip"
-                            data-placement="top"
-                            title="Review"
-                            href="{{=it.review }}">
-                            <i class="icon-comments bigger-130"></i>
-                        </a>
-                    {{ } }}
 
                 </div>
             </td>

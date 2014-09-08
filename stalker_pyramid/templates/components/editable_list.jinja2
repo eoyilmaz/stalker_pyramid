@@ -73,25 +73,25 @@
 
 
 <script>
-    $(document).ready(function () {
+    $(function () {
 
         function style_edit_form(form) {
-					//enable datepicker on "sdate" field and switches for "stock" field
-					form.find('input[name=sdate]').datepicker({format:'yyyy-mm-dd' , autoclose:true})
-						.end().find('input[name=stock]')
-							  .addClass('ace ace-switch ace-switch-5').wrap('<label class="inline" />').after('<span class="lbl"></span>');
+            //enable datepicker on "sdate" field and switches for "stock" field
+            form.find('input[name=sdate]').datepicker({format:'yyyy-mm-dd' , autoclose:true})
+                .end().find('input[name=stock]')
+                      .addClass('ace ace-switch ace-switch-5').wrap('<label class="inline" />').after('<span class="lbl"></span>');
 
-					//update buttons classes
-					var buttons = form.next().find('.EditButton .fm-button');
-					buttons.addClass('btn btn-small').find('[class*="-icon"]').remove();//ui-icon, s-icon
-					buttons.eq(0).addClass('btn-primary').prepend('<i class="icon-ok"></i>');
-					buttons.eq(1).prepend('<i class="icon-remove"></i>')
+            //update buttons classes
+            var buttons = form.next().find('.EditButton .fm-button');
+            buttons.addClass('btn btn-small').find('[class*="-icon"]').remove();//ui-icon, s-icon
+            buttons.eq(0).addClass('btn-primary').prepend('<i class="icon-ok"></i>');
+            buttons.eq(1).prepend('<i class="icon-remove"></i>')
 
-					buttons = form.next().find('.navButton a');
-					buttons.find('.ui-icon').remove();
-					buttons.eq(0).append('<i class="icon-chevron-left"></i>');
-					buttons.eq(1).append('<i class="icon-chevron-right"></i>');
-				}
+            buttons = form.next().find('.navButton a');
+            buttons.find('.ui-icon').remove();
+            buttons.eq(0).append('<i class="icon-chevron-left"></i>');
+            buttons.eq(1).append('<i class="icon-chevron-right"></i>');
+        }
 
         var icon_name = get_icon('{{ list_item_type.lower() }}');
         $('#'+'{{ list_item_type.lower() }}'+'_items_header').append('<i class=' + icon_name + '></i>{{ list_item_type }}s');
@@ -104,8 +104,6 @@
 
             // wait until document is ready
             $(function () {
-
-
                 var editable_list = $('#'+'{{ list_item_type.lower() }}'+'_editable_list');
                 for (var i = 0; i < data.length; i++) {
 

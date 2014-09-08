@@ -38,7 +38,7 @@
         var related_assets_list = $('#related_assets_list');
         $.getJSON('/tasks/{{ entity.id }}/related/Asset/').then(function (data) {
              for (var i = 0; i < data.length; i++) {
-                 console.log(data[i].name)
+
                  if (data[i].thumbnail_full_path == null) {
                     data[i].thumbnail_full_path = '{{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}';
                 }

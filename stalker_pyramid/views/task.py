@@ -1287,10 +1287,17 @@ def generate_where_clause(params):
         where x.resource_name like '%{resource_name}%'
     )""".format(resource_name=resource_name))
 
-    for status in params.get('status[]', params.get('status', [])):
-        where_string_buffer.append(
-            """"Statuses".code ilike '%{status}%'""".format(status=status)
-        )
+    statuses = params.get('status[]', params.get('status', []))
+    if statuses:
+        where_string_status = """("""
+        where_string_status += """\n{indent}"Statuses".code ilike '%{status}%'""".format(status=statuses[0],indent=' '*4)
+        if len(statuses)>1:
+            for i in range(1,len(statuses)):
+                where_string_status += """\n{indent}or "Statuses".code ilike '%{status}%'""".format(status=statuses[i],indent=' '*4)
+
+        where_string_status += """\n    )"""
+
+        where_string_buffer.append(where_string_status)
 
     if 'leaf_only' in params:
         where_string_buffer.append(

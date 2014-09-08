@@ -330,7 +330,7 @@
                                 </div>
                             {% else %}
                                 {% if entity.entity_type == 'Asset' or entity.entity_type == 'Shot' or entity.entity_type == 'Task' %}
-                                    {% if entity.type.name == 'Scene'%}
+                                    {% if entity.type.name == 'Scene' or entity.entity_type == 'Shot'%}
                                         {% include 'asset/list/list_task_related_assets.jinja2' %}
                                     {% endif %}
                                     <div class="row-fluid">

@@ -145,6 +145,17 @@
     {% endraw %}
 
     {% raw %}
+    <script id="tmpl_taskCell_empty" type="text/x-dot-template">
+        <td class="no-padding" style="width:150px;">
+            <div class="black2"
+                 style="min-height:{{=it.height}}px"">
+
+            </div>
+        </td>
+    </script>
+    {% endraw %}
+
+    {% raw %}
     <script id="tmpl_taskCell" type="text/x-dot-template">
         <td class="no-padding" style='width:150px; min-height:{{=it.height}}px;' >
             <div class="status_{{=it.status_color}}" id="task_cell_{{=it.type_id}}">
@@ -237,6 +248,7 @@
                                     var asset_summary_cell = $('#asset_summary_cell_' + data[i].id);
 
                                     var cell_template = doT.template($('#tmpl_taskCell').html());
+                                    var empty_cell_template = doT.template($('#tmpl_taskCell_empty').html());
                                     var cell_row_template = doT.template($('#tmpl_taskCellRow').html());
                                     var task_cell_height = 150;
 
@@ -252,7 +264,7 @@
                                             );
 
                                             var task_cell = $('#task_cell_' + types_data[j].id + '_' + data[i].id);
-                                            var task_cell_row_height = task_cell_height/tasks.length-5;
+                                            var task_cell_row_height = task_cell_height/tasks.length-5*(tasks.length-1);
                                             for (var k = 0; k < tasks.length; k++) {
                                                 var task = tasks[k]
 
@@ -274,15 +286,7 @@
 
                                         } else {
                                             asset_row.append(
-                                                cell_template({
-                                                    'type_name': '',
-                                                    'id': '',
-                                                    'name': '',
-                                                    'status': '',
-                                                    'status_color': 'black2',
-                                                    'percent_complete':'',
-                                                     'height':task_cell_height
-                                                })
+                                                empty_cell_template({'height':task_cell_height})
                                             );
                                         }
                                     }

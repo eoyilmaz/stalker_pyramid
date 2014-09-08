@@ -235,12 +235,17 @@ order by "Task_Scenes".id"""
     # set the content range to prevent JSONRest Store to query the data twice
     content_range = '%s-%s/%s'
     where_condition = ''
+    project_id = ''
 
     if entity.entity_type == 'Project':
-        where_condition = 'where "Tasks".project_id = %s' % entity_id
+        where_condition = 'where "Tasks".project_id = %s' % entity.id
+        project_id = entity.id
+
+
 
     elif entity.entity_type == 'Sequence':
         where_condition = 'where "Shot_Sequences".sequence_id = %s' % entity_id
+        project_id = entity.project.id
 
     sql_query = sql_query % {'where_condition': where_condition}
 
@@ -272,40 +277,52 @@ order by "Task_Scenes".id"""
         shot_task_resource_names = r[14]
         shot_task_resource_ids = r[15]
 
+        update_task_permission = PermissionChecker(request)('Update_Task')
+
 
         for i in range(len(layout_task_type_names)):
-             r_data[layout_task_type_names[i]]= {'id':'', 'name':'','resource_id':'','resource_name':''}
+            task_type_name = layout_task_type_names[i]
+            r_data[task_type_name]= {'id':'', 'name':'','resource_id':'','resource_name':'', 'update_task_resource_action':None}
 
         for j in range(len(layout_task_type_names)):
-
-            r_data[layout_task_type_names[j]]['id'] = layout_task_ids[j]
-            r_data[layout_task_type_names[j]]['name'] = layout_task_type_names[j]
-            r_data[layout_task_type_names[j]]['resource_name'] = layout_task_resource_names[j]
-            r_data[layout_task_type_names[j]]['resource_id'] = layout_task_resource_ids[j]
-            r_data[layout_task_type_names[j]]['status'] = layout_task_status_codes[j].lower()
+            task_type_name = layout_task_type_names[j]
+            task = r_data[task_type_name]
+            task['id'] = layout_task_ids[j]
+            task['name'] = task_type_name
+            task['resource_name'] = layout_task_resource_names[j]
+            task['resource_id'] = layout_task_resource_ids[j]
+            task['status'] = layout_task_status_codes[j].lower()
+            if update_task_permission:
+                task['update_task_resource_action'] =request.route_url('change_tasks_users_dialog', user_type='Resources',  _query={'project_id':project_id,'task_ids': [task['id']]})
 
         for m in range(len(shot_task_types)):
-             r_data[shot_task_types[m]]= {'name':shot_task_types[m], 'ids':[], 'resource_ids':[],'resource_names':[], 'percent':0, 'child_statuses':[], 'status':'', 'num_of_task':0 }
+            shot_task_type_name = shot_task_types[m]
+            r_data[shot_task_type_name]= {'name':shot_task_type_name, 'ids':[], 'resource_ids':[],'resource_names':[], 'percent':0, 'child_statuses':[], 'status':'', 'num_of_task':0, 'update_task_resource_action':None}
 
         for k in range(len(shot_task_types)):
+            shot_task_type_name = shot_task_types[k]
+            shot_task = r_data[shot_task_type_name]
+            if shot_task_ids[k] not in shot_task['ids']:
+                shot_task['ids'].append(shot_task_ids[k])
 
-            if shot_task_ids[k] not in r_data[shot_task_types[k]]['ids']:
-                r_data[shot_task_types[k]]['ids'].append(shot_task_ids[k])
+            if shot_task_resource_ids[k] not in shot_task['resource_ids']:
+                shot_task['resource_ids'].append(shot_task_resource_ids[k])
+                shot_task['resource_names'].append(shot_task_resource_names[k])
 
-            if shot_task_resource_ids[k] not in r_data[shot_task_types[k]]['resource_ids']:
-                r_data[shot_task_types[k]]['resource_ids'].append(shot_task_resource_ids[k])
-                r_data[shot_task_types[k]]['resource_names'].append(shot_task_resource_names[k])
+            if shot_task_status_codes[k] not in shot_task['child_statuses']:
+                shot_task['child_statuses'].append(shot_task_status_codes[k])
 
-            if shot_task_status_codes[k] not in r_data[shot_task_types[k]]['child_statuses']:
-                r_data[shot_task_types[k]]['child_statuses'].append(shot_task_status_codes[k])
-
-            r_data[shot_task_types[k]]['percent'] += int(shot_task_percents[k])
-            r_data[shot_task_types[k]]['num_of_task'] += 1
+            shot_task['percent'] += float(shot_task_percents[k])
+            shot_task['num_of_task'] += 1
 
 
         for l in range(len(shot_task_types)):
-            r_data[shot_task_types[l]]['status'] = get_parent_task_status(r_data[shot_task_types[l]]['child_statuses']).lower()
-            r_data[shot_task_types[l]]['percent'] = r_data[shot_task_types[l]]['percent']/r_data[shot_task_types[l]]['num_of_task']
+            shot_task_type_name = shot_task_types[l]
+            shot_task = r_data[shot_task_type_name]
+            shot_task['status'] = get_parent_task_status(shot_task['child_statuses']).lower()
+            shot_task['percent'] = shot_task['percent']/shot_task['num_of_task']
+            if update_task_permission:
+                shot_task['update_task_resource_action'] =request.route_url('change_tasks_users_dialog', user_type='Resources',  _query={'project_id':project_id,'task_ids': shot_task['ids']})
 
 
         return_data.append(r_data)
