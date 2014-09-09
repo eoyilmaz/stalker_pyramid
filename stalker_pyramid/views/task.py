@@ -35,7 +35,7 @@ from sqlalchemy.exc import IntegrityError
 
 from stalker import (db, defaults, User, Task, Entity, Project, StatusList,
                      Status, Studio, Asset, Shot, Sequence, Ticket, Type, Note,
-                     Review, Version)
+                     Review, Version, TimeLog)
 from stalker.exceptions import CircularDependencyError, StatusError
 
 from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
@@ -281,6 +281,7 @@ def fix_task_statuses(request):
         task.update_status_with_dependent_statuses()
         task.update_status_with_children_statuses()
         task.update_schedule_info()
+        fix_task_computed_time(task)
 
     request.session.flash('success: Task status is fixed!')
 
@@ -4655,14 +4656,16 @@ def force_task_status(request):
 
     if status.code == 'STOP':
         task.stop()
+        fix_task_computed_time(task)
     elif status.code =='OH':
         task.hold()
+        fix_task_computed_time(task)
     elif status.code == 'CMPL':
         timing, unit = task.least_meaningful_time_unit(task.total_logged_seconds)
         task.schedule_timing = timing
         task.schedule_unit = unit
         task.status = status
-
+        # fix_task_computed_time(task)
         task.update_parent_statuses()
         for tdep in task.task_dependent_of:
             dep = tdep.task
@@ -5098,3 +5101,73 @@ def unwatch_task(request):
         task.watchers.remove(logged_in_user)
 
     return Response('Task successfully removed from watch list')
+
+
+def fix_task_computed_time(task):
+
+    """Fix task's computed_start and computed_end time based on timelogs of the given task.
+
+    :param task: The stalker task instance that the time log will be
+      investigated.
+    :type task: :class:`stalker.models.task.Task`
+    :return: :class:`datetime.datetime`
+    """
+
+    if task.status.code not in ['CMPL','STOP','OH']:
+        return
+
+    else:
+        start_time = get_actual_start_time(task)
+        end_time = get_actual_end_time(task)
+
+        task.computed_start = start_time
+        task.computed_end = end_time
+
+        logger.debug('Task computed time is fixed!')
+
+def get_actual_start_time(task):
+    """Returns the start time of the earliest time logs of the given task if it
+    has any time logs, or it will return the task start_time.
+
+    :param task: The stalker task instance that the time log will be
+      investigated.
+    :type task: :class:`stalker.models.task.Task`
+    :return: :class:`datetime.datetime`
+    """
+
+    if not isinstance(task, Task):
+        raise TypeError(
+            'task should be an instance of stalker.models.task.Task, not %s' %
+            task.__class__.__name__
+        )
+
+
+    first_time_log = TimeLog.query.filter(TimeLog.task == task).order_by(TimeLog.start.asc()).first()
+
+    if first_time_log:
+        return first_time_log.start
+
+    return task.computed_start
+
+def get_actual_end_time(task):
+    """Returns the end time of the latest time logs of the given task if it
+    has any time logs, or it will return the task end_time.
+
+    :param task: The stalker task instance that the time log will be
+      investigated.
+    :type task: :class:`stalker.models.task.Task`
+    :return: :class:`datetime.datetime`
+    """
+
+    if not isinstance(task, Task):
+        raise TypeError(
+            'task should be an instance of stalker.models.task.Task, not %s' %
+            task.__class__.__name__
+        )
+
+    end_time_log = TimeLog.query.filter(TimeLog.task == task).order_by(TimeLog.end.desc()).first()
+
+    if end_time_log:
+        return end_time_log.end
+
+    return task.computed_end
