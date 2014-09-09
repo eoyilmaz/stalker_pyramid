@@ -4665,7 +4665,7 @@ def force_task_status(request):
         task.schedule_timing = timing
         task.schedule_unit = unit
         task.status = status
-        # fix_task_computed_time(task)
+        fix_task_computed_time(task)
         task.update_parent_statuses()
         for tdep in task.task_dependent_of:
             dep = tdep.task
