@@ -78,21 +78,18 @@
             submit_button.button('loading');
 
 
-            var group_create_form = $('#group_create_form')
+            var group_create_form = $('#group_create_form');
 
-            $.post(
-                            "{{ request.route_url('create_group') }}",
-                            group_create_form.serialize()
-                    ).done(function () {
+            $.post("{{ request.route_url('create_group') }}",
+                   group_create_form.serialize()
+            ).done(function () {
+                window.location.assign('{{ came_from }}');
+            }).fail(function (jqXHR) {
 
-                        window.location.assign('{{ came_from }}');
+                bootbox.alert(jqXHR.responseText);
+                submit_button.button('reset');
 
-                    }).fail(function (jqXHR) {
-
-                        bootbox.alert(jqXHR.responseText);
-                        submit_button.button('reset');
-
-                    });
+            });
         });
 
 

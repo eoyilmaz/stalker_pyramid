@@ -112,16 +112,18 @@
             {% endif %}
 
 
-            $.post(action, daily_form.serialize()+ '&' +
-                            $.param({
-                                'project_id': {{ project.id }}
-                            })
-                        ).done(function () {
-                            window.location.reload();
-                        }).fail(function (jqXHR) {
-                            bootbox.alert(jqXHR.responseText);
-                            submit_button.button('reset');
-                        });
+            $.post(
+                action,
+                daily_form.serialize()+ '&' +
+                $.param({
+                    'project_id': {{ project.id }}
+                })
+            ).done(function () {
+                window.location.reload();
+            }).fail(function (jqXHR) {
+                bootbox.alert(jqXHR.responseText);
+                submit_button.button('reset');
+            });
         });
 
 
