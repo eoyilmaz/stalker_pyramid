@@ -988,7 +988,6 @@ left outer join (
         'where_condition': where_condition
     }
 
-
     from sqlalchemy import text  # to be able to use "%" sign use this function
     result = DBSession.connection().execute(text(sql_query))
 
@@ -1054,6 +1053,14 @@ def delete_output(request):
                 prefix = repo.path
 
         outputs_to_delete.append(output)
+
+        # delete the Link to daily relation
+        for daily in Daily.query.filter(Daily.links.contains(output)).all():
+            logger.debug(
+                '%s is connected to %s, breaking this connection' %
+                (output, daily)
+            )
+            daily.links.remove(output)
 
         # delete Links from database
         for o in outputs_to_delete:
