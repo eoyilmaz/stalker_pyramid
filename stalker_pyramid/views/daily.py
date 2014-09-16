@@ -197,7 +197,8 @@ def get_dailies(request):
             "Dailies_Statuses_SimpleEntities".name,
             "Dailies_SimpleEntities".created_by_id,
             "Dailies_Creator_SimpleEntities".name,
-            daily_count.link_count
+            daily_count.link_count,
+            (extract(epoch from "Dailies_SimpleEntities".date_created::timestamp at time zone 'UTC') * 1000)::bigint as date_created
 
         from "Projects"
         join "Dailies" on "Dailies".project_id = "Projects".id
@@ -241,7 +242,8 @@ def get_dailies(request):
             'created_by_id': r[5],
             'created_by_name': r[6],
             'link_count': r[7] if r[7] else 0,
-            'item_view_link': '/dailies/%s/view' % r[0]
+            'item_view_link': '/dailies/%s/view' % r[0],
+            'date_created':r[8]
         }
         if update_daily_permission:
             daily['item_update_link'] = \

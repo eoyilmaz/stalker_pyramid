@@ -54,6 +54,7 @@
     {% raw %}
         <script id="tmpl_itemThead" type="text/x-dot-template">
             <tr>
+                <th>Created Date</th>
                 <th>Daily</th>
                 <th>Created By</th>
                 <th>Status</th>
@@ -66,6 +67,8 @@
     {% raw %}
         <script id="tmpl_itemRow" type="text/x-dot-template">
             <tr>
+                <td>{{=it.date_created}}
+                </td>
                 <td><a href='{{=it.item_view_link}}'>{{=it.name}}</a>
                 </td>
                 <td><a href='/users/{{=it.created_by_id}}/view'>{{=it.created_by_name}}</a>
