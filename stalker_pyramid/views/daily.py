@@ -183,7 +183,7 @@ def update_daily(request):
 def get_dailies(request):
 
     project_id = request.matchdict.get('id')
-    logger.debug('get_dailies is working for the project which id is %s : %s' % project_id)
+    logger.debug('get_dailies is working for the project which id is: %s' % project_id)
 
     status_code = request.params.get('status_code',None)
     status = Status.query.filter(Status.code==status_code).first()
