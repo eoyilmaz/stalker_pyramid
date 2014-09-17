@@ -10,6 +10,7 @@ import os
 import tempfile
 import logging
 import re
+import shutil
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
