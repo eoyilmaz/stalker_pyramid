@@ -232,7 +232,7 @@
             var icon_name = get_icon('shot');
             $('#items_header').append('<i class=' + icon_name + '></i>');
 
-            var types = [{name:'Storyboard'}, {name:'Schematic'},{name:'Previs'}, {name:'Shot Previs'}, {name:'Animation'}, {name:'Camera'}, {name:'Scene Assembly'}, {name:'Lighting'}, {name:'Comp'}];
+            var types = [{name:'Storyboard'},{name:'Schematic'},{name:'Previs'},{name:'Edit'},{name:'Sound'},  {name:'Shot Previs'}, {name:'Animation'}, {name:'Camera'}, {name:'Scene Assembly'}, {name:'Lighting'}, {name:'Comp'}];
             var column_template = doT.template($('#tmpl_sceneColumn').html());
 
             $(function () {
@@ -308,7 +308,6 @@
                     var scenes = data;
                     var scene_template = doT.template($('#tmpl_sceneRow').html());
 
-                    // wait until document is ready
                     $(function () {
                         var i;
                         var table_body = $('#scenes_table>tbody');
@@ -343,20 +342,7 @@
 
                         }
 
-                        var oTable1 = $('#scenes_table').dataTable({
-                                               'sAjaxSource':'/entities/{{ entity.id }}/scenes/',
-                                               "bServerSide": true,
-                                               "fnServerData": function ( sSource, aoData, fnCallback, oSettings ) {
-                                                   console.log('otable')
-                                                   oSettings.jqXHR = $.ajax( {
-                                                        "dataType": 'json',
-                                                        "type": "POST",
-                                                        "url": sSource,
-                                                        "data": aoData,
-                                                        "success": fnCallback
-                                                   } );
-                                               }
-                                    });
+                        var oTable1 = $('#scenes_table').dataTable();
 
                         $('#loading_spinner').hide();
                         $('#scenes_table').show();

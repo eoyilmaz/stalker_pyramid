@@ -185,15 +185,34 @@ def get_shots_children_task_type(request):
     renderer='json'
 )
 def get_shots_count(request):
-    """returns the count of Shots in the given Project
+    """returns the count of Shots in the given Project or Sequence
     """
-    project_id = request.matchdict.get('id', -1)
+
+    logger.debug('get_shots_count starts')
+
+    entity_id = request.matchdict.get('id', -1)
+    entity = Entity.query.filter(Entity.id == entity_id).first()
 
     sql_query = """select
         count(1)
     from "Shots"
         join "Tasks" on "Shots".id = "Tasks".id
-    where "Tasks".project_id = %s""" % project_id
+    %(where_condition)s"""
+
+    where_condition = ''
+
+
+
+    if entity.entity_type == 'Sequence':
+        where_condition = """left join "Shot_Sequences" on "Shot_Sequences".shot_id = "Shots".id
+                          where "Shot_Sequences".sequence_id = %s""" % entity_id
+
+    elif entity.entity_type == 'Project':
+        where_condition = 'where "Tasks".project_id = %s' % entity_id
+
+    logger.debug('where_condition : %s ' % where_condition)
+    sql_query = sql_query % {'where_condition': where_condition}
+
 
     return DBSession.connection().execute(sql_query).fetchone()[0]
 
@@ -318,7 +337,7 @@ order by "Shot_SimpleEntities".name
         where_condition = 'where "Shot_Sequences".sequence_id = %s' % entity_id
 
     elif entity.entity_type == 'Project':
-        where_condition = ''
+        where_condition = 'where "Tasks".project_id = %s' % entity_id
 
     if shot_id:
         where_condition = 'where "Shots".id = %(shot_id)s'%({'shot_id':shot_id})

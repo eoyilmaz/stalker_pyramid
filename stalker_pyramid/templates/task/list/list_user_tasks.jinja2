@@ -47,6 +47,7 @@
             <th>Type</th>
             <th>Completed</th>
             <th>Status</th>
+            <th>Priority</th>
             <th></th>
         </tr>
     </script>
@@ -73,6 +74,7 @@
             <td>
                 <span class="label label-status_{{=it.status}}">{{=it.status}}</span>
             </td>
+            <td>{{=it.priority}}</td>
             <td>
                 <div class="hidden-phone visible-desktop action-buttons">
                     <a class="blue" href='/tasks/{{=it.id}}/view'>

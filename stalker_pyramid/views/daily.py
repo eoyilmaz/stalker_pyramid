@@ -42,7 +42,7 @@ def create_daily_dialog(request):
     """called when creating dailies
     """
     came_from = request.params.get('came_from','/')
-    logger.debug('came_from %s: '% came_from)
+    # logger.debug('came_from %s: '% came_from)
 
     # get logged in user
     logged_in_user = get_logged_in_user(request)
@@ -116,7 +116,7 @@ def update_daily_dialog(request):
     """called when updating dailies
     """
     came_from = request.params.get('came_from','/')
-    logger.debug('came_from %s: '% came_from)
+    # logger.debug('came_from %s: '% came_from)
 
     # get logged in user
     logged_in_user = get_logged_in_user(request)
@@ -183,7 +183,7 @@ def update_daily(request):
 def get_dailies(request):
 
     project_id = request.matchdict.get('id')
-    logger.debug('---------------------project_id  : %s' % project_id)
+    logger.debug('get_dailies is working for the project which id is: %s' % project_id)
 
     status_code = request.params.get('status_code',None)
     status = Status.query.filter(Status.code==status_code).first()
@@ -197,7 +197,8 @@ def get_dailies(request):
             "Dailies_Statuses_SimpleEntities".name,
             "Dailies_SimpleEntities".created_by_id,
             "Dailies_Creator_SimpleEntities".name,
-            daily_count.link_count
+            daily_count.link_count,
+            (extract(epoch from "Dailies_SimpleEntities".date_created::timestamp at time zone 'UTC') * 1000)::bigint as date_created
 
         from "Projects"
         join "Dailies" on "Dailies".project_id = "Projects".id
@@ -241,7 +242,8 @@ def get_dailies(request):
             'created_by_id': r[5],
             'created_by_name': r[6],
             'link_count': r[7] if r[7] else 0,
-            'item_view_link': '/dailies/%s/view' % r[0]
+            'item_view_link': '/dailies/%s/view' % r[0],
+            'date_created':r[8]
         }
         if update_daily_permission:
             daily['item_update_link'] = \
@@ -253,7 +255,7 @@ def get_dailies(request):
                 )
 
         dailies.append(daily)
-    logger.debug('---------------------dailies  : %s' % dailies)
+
     resp = Response(
         json_body=dailies
     )
@@ -269,7 +271,7 @@ def get_dailies_count(request):
     """missing docstring
     """
     project_id = request.matchdict.get('id')
-    logger.debug('---------------------project_id  : %s' % project_id)
+    logger.debug('get_dailies_count is working for the project which id is %s' % project_id)
 
     sql_query = """
 select count(1) from (
@@ -299,7 +301,7 @@ def get_daily_outputs(request):
     """
 
     daily_id = request.matchdict.get('id')
-    logger.debug('daily_id  : %s' % daily_id)
+    logger.debug('get_daily_outputs is working for the daily which id is : %s' % daily_id)
 
     sql_query = """
         select
@@ -491,7 +493,6 @@ def get_daily_outputs(request):
         }
         tasks.append(task)
 
-    logger.debug('---------------------tasks  : %s' % tasks)
     resp = Response(
         json_body=tasks
     )
@@ -505,7 +506,7 @@ def get_daily_outputs(request):
 )
 def append_link_to_daily_dialog(request):
 
-    logger.debug('append_link_to_daily_dialog starts')
+    logger.debug('append_link_to_daily_dialog is working')
 
     link_id = request.matchdict.get('id')
     link = Link.query.filter_by(id=link_id).first()
@@ -568,7 +569,7 @@ def remove_link_to_daily_dialog(request):
     message = 'The selected output are going to be remove from %s daily ' \
               '<br><br>Are you sure?' % daily.name
 
-    logger.debug('action: %s' % action)
+
 
     return {
         'message': message,
@@ -613,7 +614,7 @@ def remove_link_to_daily(request):
 def inline_update_daily_dialog(request):
     """works when task has at least one answered review
     """
-    logger.debug('inline_update_daily_dialog is starts')
+    logger.debug('inline_update_daily_dialog is working')
 
     daily_id = request.matchdict.get('id')
     daily = Daily.query.filter(Daily.id == daily_id).first()
@@ -627,7 +628,6 @@ def inline_update_daily_dialog(request):
     message = '%s of %s Daily is going to set to %s. ' \
               '<br><br>Are you sure?'% (attr_name.upper(), daily.name, attr_value )
 
-    logger.debug('action: %s' % action)
 
     return {
         'message': message,
@@ -642,7 +642,7 @@ def inline_update_daily(request):
     """Inline updates the given daily with the data coming from the request
     """
 
-    logger.debug('INLINE UPDATE DAILY IS RUNNING')
+    logger.debug('inline_update_daily is working')
 
     logged_in_user = get_logged_in_user(request)
 
