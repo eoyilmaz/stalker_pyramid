@@ -241,8 +241,6 @@ order by "Task_Scenes".id"""
         where_condition = 'where "Tasks".project_id = %s' % entity.id
         project_id = entity.id
 
-
-
     elif entity.entity_type == 'Sequence':
         where_condition = 'where "Shot_Sequences".sequence_id = %s' % entity_id
         project_id = entity.project.id
