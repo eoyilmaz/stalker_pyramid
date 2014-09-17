@@ -136,16 +136,15 @@ sourceimages/3dPaintTextures"""
         :param path: The path to the file which wanted to be flattened
         :return:
         """
-        # export repository paths first
+        # create a new Default Project
+        tempdir = tempfile.gettempdir()
         from stalker import Repository
         all_repos = Repository.query.all()
         for repo in all_repos:
-            logger.debug('adding repo variable $REPO%s: %s' % (repo.id,
-                                                               repo.path))
+            logger.debug(
+                'adding repo variable $REPO%s: %s' % (repo.id, repo.path)
+            )
             os.environ['REPO%s' % repo.id] = repo.path
-
-        # create a new Default Project
-        tempdir = tempfile.gettempdir()
 
         default_project_path = \
             cls.create_default_project(path=tempdir, name=project_name)
@@ -159,6 +158,7 @@ sourceimages/3dPaintTextures"""
 
         while len(ref_paths):
             ref_path = ref_paths.pop(0)
+            # fix different OS paths
             for repo in all_repos:
                 if repo.is_in_repo(ref_path):
                     ref_path = repo.to_native_path(ref_path)
@@ -192,27 +192,37 @@ sourceimages/3dPaintTextures"""
           paths with.
         :return list: returns a list of paths
         """
+        # fix any env vars
+        path = os.path.expandvars(path)
+
         original_file_name = os.path.basename(path)
         logger.debug('original_file_name: %s' % original_file_name)
 
-        # read the data of the original file
-        with open(os.path.expandvars(path)) as f:
-            data = f.read()
-
-        ref_paths = cls._extract_references(data)
-        # fix all reference paths
-        for ref_path in ref_paths:
-            data = data.replace(
-                ref_path,
-                '%s/%s' % (refs_folder, os.path.basename(ref_path))
-            )
-
-        # now write all the data back to a new temp scene
-        temp_file_path = \
+        new_file_path = \
             os.path.join(project_path, scenes_folder, original_file_name)
 
-        with open(temp_file_path, 'w+') as f:
-            f.write(data)
+        ref_paths = []
+
+        # only get new ref paths for '.ma' files
+        if path.endswith('.ma'):
+            # read the data of the original file
+            with open(path) as f:
+                data = f.read()
+
+            ref_paths = cls._extract_references(data)
+            # fix all reference paths
+            for ref_path in ref_paths:
+                data = data.replace(
+                    ref_path,
+                    '%s/%s' % (refs_folder, os.path.basename(ref_path))
+                )
+
+            # now write all the data back to a new temp scene
+            with open(new_file_path, 'w+') as f:
+                f.write(data)
+        else:
+            # just copy the file
+            shutil.copy(path, new_file_path)
 
         return ref_paths
 
@@ -224,18 +234,26 @@ sourceimages/3dPaintTextures"""
 
         :return:
         """
-        # path_regex = r'\$REPO[\w\./]+'
-        split_regex = r'\s'
-
+        path_regex = r'\$REPO[\w\d\/_\.]+'
         # so we have all the data
         # extract references
-        ref_paths = []
-        lines = data.split(';\n')
-        for line in lines:
-            if line.startswith('file -r'):
-                ref_path = re.split(split_regex, line)[-1].replace('"', '')
-                # and store it
-                ref_paths.append(ref_path)
+        ref_paths = re.findall(path_regex, data)
+
+        return ref_paths
+
+    @classmethod
+    def _extract_local_references(cls, data):
+        """returns the list of local references (references that are referenced
+        from scenes/refs folder) in the given maya file
+
+        :param str data: The content of the maya scene file
+
+        :return:
+        """
+        path_regex = r'scenes/refs/[\w\d\/_\.]+'
+        # so we have all the data
+        # extract references
+        ref_paths = re.findall(path_regex, data)
 
         return ref_paths
 
@@ -284,7 +302,7 @@ sourceimages/3dPaintTextures"""
         with open(path) as f:
             data = f.read()
 
-        ref_paths = cls._extract_references(data)
+        ref_paths = cls._extract_local_references(data)
         for ref_path in ref_paths:
             ref_file_name = os.path.basename(ref_path)
 
