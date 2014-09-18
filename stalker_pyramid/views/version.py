@@ -312,7 +312,7 @@ def pack_version(request):
         import os
         archive_path = os.path.join(
             version.absolute_path,
-            version.nice_name + '.zip'
+            os.path.basename(version.filename) + '.zip'
         )
         if os.path.exists(archive_path):
             # just serve the same file
