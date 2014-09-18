@@ -310,10 +310,11 @@ def pack_version(request):
     if version:
         # before doing anything check if the file exists
         import os
-        archive_path = os.path.join(
-            version.absolute_path,
-            os.path.basename(version.filename) + '.zip'
-        )
+
+        version_filename_without_extension = \
+            os.path.splitext(version.filename)[0]
+        archive_name = '%s%s' % (version_filename_without_extension, '.zip')
+        archive_path = os.path.join(version.absolute_path, archive_name)
         if os.path.exists(archive_path):
             # just serve the same file
             logger.debug('ZIP exists, not creating it again!')
@@ -330,7 +331,7 @@ def pack_version(request):
             if False:
                 assert(isinstance(version, Version))
                 assert(isinstance(task, Task))
-            project_name = os.path.basename(version.filename)
+            project_name = version_filename_without_extension
             project_path = arch.flatten(path, project_name=project_name)
 
             # append link file
