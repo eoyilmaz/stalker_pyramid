@@ -330,7 +330,7 @@ def pack_version(request):
             if False:
                 assert(isinstance(version, Version))
                 assert(isinstance(task, Task))
-            project_name = version.nice_name
+            project_name = os.path.basename(version.filename)
             project_path = arch.flatten(path, project_name=project_name)
 
             # append link file
