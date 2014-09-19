@@ -209,7 +209,7 @@
     <script type="text/javascript">
         var colorbox_params = {
             rel: 'Outputs',
-            loop: false,
+            loop: true,
             reposition: true,
             scalePhotos: true,
             scrolling: true,
@@ -296,7 +296,7 @@
             ref_item.find('[data-rel="colorbox"]').colorbox(colorbox_params);
         };
 
-        $(document).ready(function () {
+        $(function () {
             $.getJSON('/dailies/{{ entity.id }}/outputs/').then(function (data) {
 
                 var daily_task_template = doT.template($('#tmpl_daily_task').html());
@@ -337,6 +337,10 @@
                             });
                         });
 
+                        var local_colorbox_params = {};
+                        $.extend(local_colorbox_params, colorbox_params);
+                        local_colorbox_params['rel'] = 'Group' + data[i]['task_id'];
+
                         var output_template = doT.template($('#tmpl_output_item').html());
                         var outputs = $('#outputs_' + task.task_id);
                         for(var j=0; j<task.links.length; j++){
@@ -344,7 +348,7 @@
                             append_thumbnail({
                                 data: link,
                                 template: output_template,
-                                colorbox_params: colorbox_params,
+                                colorbox_params: local_colorbox_params,
                                 container: outputs
                             });
                         }
