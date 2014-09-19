@@ -9,18 +9,79 @@
 
     {% for parent in task.parents %}
         <li>
-            <a href="{{ request.route_url('view_task', id=parent.id) }}">{{ parent.name }}</a>
-            <span class="divider">
-                <i class="icon-angle-right arrow-icon"></i>
-            </span>
+            <div class="btn-group">
+                <button tabindex="-1"
+                        data-toggle="dropdown"
+                        class="btn btn-mini btn-danger dropdown-toggle">{{ parent.name }}&nbsp
+                    <i class="icon-angle-down icon-on-right"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-danger">
+                    {% if parent.parent %}
+                        {% set sibling_tasks = parent.parent.children %}
+                    {% else %}
+                        {% set sibling_tasks = parent.project.root_tasks %}
+                    {% endif %}
+    
+                    {% for sibling_task in sibling_tasks|sort(attribute='name') %}
+                        <li><a href="{{ request.route_url('view_task', id=sibling_task.id) }}">{{ sibling_task.name }}</a></li>
+                    {% endfor %}
+                </ul>
+            </div>
         </li>
     {% endfor %}
+
+
     <li>
-        <a href="{{ request.route_url('view_task', id=task.id) }}">{{ task.name }}</a>
-        <span class="divider">
-            <i class="icon-angle-right arrow-icon"></i>
-        </span>
+        <div class="btn-group">
+            <button tabindex="-1"
+                    data-toggle="dropdown"
+                    class="btn btn-mini btn-danger dropdown-toggle">{{ task.name }}&nbsp;
+                <i class="icon-angle-down icon-on-right"></i>
+            </button>
+
+            <ul class="dropdown-menu dropdown-danger">
+
+                {% if task.parent %}
+                    {% set sibling_tasks = task.parent.children %}
+                {% else %}
+                    {% set sibling_tasks = task.project.root_tasks %}
+                {% endif %}
+
+                {% for sibling_task in sibling_tasks|sort(attribute='name') %}
+                    {% if sibling_task != task %}
+                        <li><a href="{{ request.route_url('view_task', id=sibling_task.id) }}">{{ sibling_task.name }}</a></li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </div>
     </li>
+
+{#    {% if task.children %}#}
+{#        <div class="btn-group">#}
+{#            <button tabindex="-1"#}
+{#                    data-toggle="dropdown"#}
+{#                    class="btn btn-mini btn-success dropdown-toggle">Child Tasks&nbsp;#}
+{#                <i class="icon-angle-down icon-on-right"></i>#}
+{#            </button>#}
+{##}
+{#            <ul class="dropdown-menu dropdown-danger">#}
+{##}
+{#                {% set sibling_tasks = task.children %}#}
+{##}
+{#                {% for sibling_task in sibling_tasks|sort(attribute='name') %}#}
+{#                    {% if sibling_task != task %}#}
+{#                        <li><a href="{{ request.route_url('view_task', id=sibling_task.id) }}">{{ sibling_task.name }}</a></li>#}
+{#                    {% endif %}#}
+{#                {% endfor %}#}
+{#            </ul>#}
+{#        </div>#}
+{#    {% else %}#}
+{#        <div class="btn-group">#}
+{#            <button tabindex="-1"#}
+{#                    class="btn btn-mini disabled">No Child Tasks#}
+{#            </button>#}
+{#        </div>#}
+{#    {% endif %}#}
 
     <li>
         <a href="{{ request.route_url('list_task_versions', id=entity.task.id) }}">Versions</a>
