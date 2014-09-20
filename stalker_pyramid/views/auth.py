@@ -395,11 +395,6 @@ def get_users_count(request):
     permission='List_User'
 )
 @view_config(
-    route_name='get_users',
-    renderer='json',
-    permission='List_User'
-)
-@view_config(
     route_name='get_user',
     renderer='json',
     permission='Read_User'
@@ -415,12 +410,10 @@ def get_users(request):
 
     entity_type = None
 
-
     update_user_permission = PermissionChecker(request)('Update_User')
     delete_user_permission = PermissionChecker(request)('Delete_User')
 
-    delete_user_action ='/users/%(id)s/delete/dialog'
-
+    delete_user_action = '/users/%(id)s/delete/dialog'
 
     if entity_id:
         sql_query = \
@@ -537,6 +530,94 @@ def get_users(request):
                  ((end - start), len(data)))
     return data
 
+
+@view_config(
+    route_name='get_users',
+    renderer='json',
+    permission='List_User'
+)
+def get_users_simple(request):
+    """simply return the users without dealing a lot of other details
+    """
+    start = time.time()
+    sql_query = """select
+        "Users".id,
+        "SimpleEntities".name,
+        "Users".login,
+        "Users".email,
+        user_departments."dep_ids",
+        user_departments."dep_names",
+        user_groups."group_ids",
+        user_groups."group_names",
+        tasks.task_count,
+        tickets.ticket_count,
+        "Links".full_path
+    from "SimpleEntities"
+    join "Users" on "SimpleEntities".id = "Users".id
+    left outer join (
+        select
+            uid,
+            array_agg(did) as dep_ids,
+            array_agg(name) as dep_names
+        from "User_Departments"
+        join "SimpleEntities" on "User_Departments".did = "SimpleEntities".id
+        group by uid
+    ) as user_departments on user_departments.uid = "Users".id
+    left outer join (
+        select
+            uid,
+            array_agg(gid) as group_ids,
+            array_agg(name) as group_names
+        from "User_Groups"
+        join "SimpleEntities" on "User_Groups".gid = "SimpleEntities".id
+        group by uid
+    ) as user_groups on user_groups.uid = "Users".id
+    left outer join (
+        select resource_id, count(task_id) as task_count from "Task_Resources" group by resource_id
+    ) as tasks on tasks.resource_id = "Users".id
+    left outer join (
+        select
+            owner_id,
+            count("Tickets".id) as ticket_count
+        from "Tickets"
+        join "SimpleEntities" on "Tickets".status_id = "SimpleEntities".id
+        where "SimpleEntities".name = 'New'
+        group by owner_id, name
+    ) as tickets on tickets.owner_id = "Users".id
+    left outer join "Links" on "SimpleEntities".thumbnail_id = "Links".id
+    """
+
+    result = DBSession.connection().execute(sql_query)
+    data = [
+        {
+            'id': r[0],
+            'name': r[1],
+            'login': r[2],
+            'email': r[3],
+            'departments': [
+                {
+                    'id': r[4][i],
+                    'name': r[5][i]
+                } for i, a in enumerate(r[4])
+            ] if r[4] else [],
+            'groups': [
+                {
+                    'id': r[6],
+                    'name': r[7]
+                } for i in range(len(r[6]))
+            ] if r[6] else [],
+            'tasksCount': r[8] or 0,
+            'ticketsCount': r[9] or 0,
+            'thumbnail_full_path': r[10] if r[10] else None,
+            'update_user_action': '/users/%s/update/dialog' % r[0],
+            'delete_user_action': '/users/%s/delete/dialog' % r[0],
+        } for r in result.fetchall()
+    ]
+
+    end = time.time()
+    logger.debug('get_users_simple took : %s seconds for %s rows' %
+                 ((end - start), len(data)))
+    return data
 
 
 def get_permissions_from_multi_dict(multi_dict):
@@ -1015,18 +1096,19 @@ def delete_user_dialog(request):
     user = User.query.get(user_id)
 
     came_from = request.params.get('came_from', request.current_route_path())
-    action = '/users/%s/delete?came_from=%s'% (user_id,came_from)
+    action = '/users/%s/delete?came_from=%s' % (user_id, came_from)
 
-
-    message = 'Are you sure you want to <strong>delete User %s </strong>?'% (user.name)
+    message = \
+        'Are you sure you want to ' \
+        '<strong>delete User %s </strong>?' % user.name
 
     logger.debug('action: %s' % action)
 
     return {
-            'came_from': came_from,
-            'message': message,
-            'action': action
-        }
+        'came_from': came_from,
+        'message': message,
+        'action': action
+    }
 
 
 @view_config(

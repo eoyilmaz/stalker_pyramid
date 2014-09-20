@@ -310,6 +310,10 @@ logger.setLevel(logging.DEBUG)
     route_name='list_project_dailies',
     renderer='templates/daily/list/list_project_dailies.jinja2'
 )
+@view_config(
+    route_name='test_page',
+    renderer='templates/test_page.jinja2'
+)
 def get_entity_related_data(request):
     """view for generic data
     """
@@ -576,9 +580,13 @@ def remove_entity_from_entity(request):
         HTTPServerError()
 
     return Response(
-        'success:%s <strong>%s</strong> is successfully removed from %s \'s %s'
-        % (selected_entity.entity_type, selected_entity.name, entity.name,
-           attr_name)
+        'success:%s <strong>%s</strong> is '
+        'successfully removed from %s \'s %s' % (
+            selected_entity.entity_type,
+            selected_entity.name,
+            entity.name,
+            attr_name
+        )
     )
 
 

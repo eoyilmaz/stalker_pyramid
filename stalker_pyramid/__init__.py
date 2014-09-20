@@ -757,6 +757,9 @@ def main(global_config, **settings):
     # Type
     config.add_route('get_types', 'types/')
 
+
+    config.add_route('test_page', 'test_page')
+
     config.scan(ignore='stalker.env')
     return config.make_wsgi_app()
 

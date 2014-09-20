@@ -41,7 +41,7 @@ from stalker_pyramid.views.task import generate_recursive_task_query
 def create_daily_dialog(request):
     """called when creating dailies
     """
-    came_from = request.params.get('came_from','/')
+    came_from = request.params.get('came_from', '/')
     # logger.debug('came_from %s: '% came_from)
 
     # get logged in user
@@ -57,8 +57,8 @@ def create_daily_dialog(request):
         'has_permission': PermissionChecker(request),
         'logged_in_user': logged_in_user,
         'project': project,
-        'came_from':came_from,
-        'mode':'Create',
+        'came_from': came_from,
+        'mode': 'Create',
         'milliseconds_since_epoch': milliseconds_since_epoch
     }
 
@@ -622,12 +622,16 @@ def inline_update_daily_dialog(request):
     attr_name = request.params.get('attr_name', None)
     attr_value = request.params.get('attr_value', None)
 
-    action = '/dailies/%s/update/inline?attr_name=%s&attr_value=%s' % (daily_id,attr_name, attr_value)
+    action = \
+        '/dailies/%s/update/inline?attr_name=%s&attr_value=%s' % (daily_id,
+                                                                  attr_name,
+                                                                  attr_value)
     came_from = request.params.get('came_from', '/')
 
     message = '%s of %s Daily is going to set to %s. ' \
-              '<br><br>Are you sure?'% (attr_name.upper(), daily.name, attr_value )
-
+              '<br><br>Are you sure?' % (attr_name.upper(),
+                                         daily.name,
+                                         attr_value)
 
     return {
         'message': message,

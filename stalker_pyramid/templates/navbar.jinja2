@@ -8,101 +8,48 @@
                 </li>
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle"
-                       data-toggle="dropdown">Studio <b class="caret"></b></a>
+                       data-toggle="dropdown">Studio <span class="caret"></span></a>
                     <ul class="dropdown-menu">
-                        {% if not studio %}#}
-                            {% if has_permission('Create_Studio') %}
-                                <li><a href="#">Create Studio</a>
-                                </li>
-                            {% endif %}
+                        {% if not studio %}
+                            <li><a href="#">Create Studio</a>
+                            </li>
                         {% else %}
-                            {% if has_permission('Read_Studio') %}
-                                <li>
-                                    <a href="{{ request.route_url('view_studio', id=studio.id) }}">{{ studio.name }}</a>
-                                </li>
-                            {% endif %}
-                        {% endif %}
-                        {% if has_permission('Create_User') %}
-                            <li class="divider"></li>
-                            <li><a class=""
-                                   data-target="#dialog_template"
-                                   data-toggle="modal"
-                                   data-keyboard=false
-                                   href='{{ request.route_url('create_user_dialog', _query={'came_from': request.current_route_path()} ) }}'>New
-                                User
-                            </a>
-                            </li>
-                        {% endif %}
-                        {% if has_permission('Create_Department') %}
-                            <li><a class=""
-                                   data-target="#dialog_template"
-                                   data-toggle="modal"
-                                   data-keyboard=false
-                                   href='{{ request.route_url('create_department_dialog', _query={'came_from': request.current_route_path()}) }}'>New
-                                Department
-                            </a>
-
-                            </li>
-                        {% endif %}
-                        {% if has_permission('Create_Group') %}
-                            <li><a class=""
-                                   data-target="#dialog_template"
-                                   data-toggle="modal"
-                                   data-keyboard=false
-                                   href='{{ request.route_url('create_group_dialog', _query={'came_from': request.current_route_path()}) }}'>New
-                                Group
-                            </a>
-                                {#                    <a href="/groups/-1/create/dialog">New Group</a>#}
+                            <li>
+                                <a href="{{ request.route_url('view_studio', id=studio.id) }}">{{ studio.name }}</a>
                             </li>
                         {% endif %}
                     </ul>
                 </li>
                 <li class="dropdown">
                     <a href="#" class="dropdown-toggle"
-                       data-toggle="dropdown">Crew <b
-                            class="caret"></b></a>
+                       data-toggle="dropdown">Crew <span class="caret"></span></a>
                     <ul class="dropdown-menu" role="menu"
                         aria-labelledby="dropdownMenu">
-                        {% if has_permission('List_User') %}
                             <li>
                                 <a href="{{ request.route_url('list_studio_users', id=studio.id) }}">Users</a>
                             </li>
-                        {% endif %}
-                        {% if has_permission('List_Department') %}
                             <li>
                                 <a tabindex="-1"
                                    href="{{ request.route_url('list_studio_departments', id=studio.id) }}">Departments</a>
                             </li>
-                        {% endif %}
-                        {% if has_permission('List_Group') %}
                             <li>
                                 <a tabindex="-1"
                                    href="{{ request.route_url('list_groups') }}">Groups</a>
                             </li>
-                        {% endif %}
                     </ul>
                 </li>
-                {% if has_permission('List_Project') %}
-                    <li class="dropdown">
-                        <a href="#" class="dropdown-toggle"
-                           data-toggle="dropdown">Projects <b
-                                class="caret"></b></a>
-                        <ul class="dropdown-menu">
-                            {% for project in projects %}
-                                <li>
-                                    <a href="{{ request.route_url('view_project', id=project.id) }}">{{ project.name }}</a>
-                                </li>
-                            {% endfor %}
-                            {% if has_permission('Create_Project') %}
-                                <li class="divider"></li>
-                                <li>
-                                    <a href="/projects/-1/create/dialog">New
-                                        Project</a>
-                                </li>
-                            {% endif %}
-                        </ul>
-                    </li>
-                {% endif %}
+
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle"
+                       data-toggle="dropdown">Projects <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        {% for project in projects %}
+                            <li>
+                                <a href="{{ request.route_url('view_project', id=project.id) }}">{{ project.name }}</a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </li>
             </ul>
 
 
@@ -112,24 +59,14 @@
                         <i class="icon-tasks"></i>
                         <span id="nav_bar_task_count" class="badge badge-grey badge-yellow"></span>
                     </a>
-
                 </li>
-                <li id="notifications" class="purple">
 
-                </li>
+                <li id="notifications" class="purple"></li>
                 <li class="light-blue">
                     <a data-toggle="dropdown" href="#" class="dropdown-toggle">
                         <img id="logged_in_user_avatar" class="nav-user-photo"
-                             src="{%- if logged_in_user.thumbnail -%}
-                    /{{ logged_in_user.thumbnail.full_path }}
-                {%- else -%}
-                    {{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_0.png") }}
-                {%- endif -%}">
-
-{#                        <small>Welcome,</small>#}
+                             src="{%- if logged_in_user.thumbnail -%}/{{ logged_in_user.thumbnail.full_path }}{%- else -%}{{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_0.png") }}{%- endif -%}">
                         {{ logged_in_user.name }}
-                        </span>
-
                         <i class="icon-caret-down"></i>
                     </a>
 
@@ -173,8 +110,8 @@
             </div>
 
             <div class="progress progress-mini ">
-                <div style="width:{{=it.percent_complete }}%"
-                     class="bar"></div>
+                <div class="bar"
+                     style="width:{{=it.percent_complete }}%"></div>
             </div>
         </a>
     </li>
@@ -204,9 +141,8 @@
 
 
 <script type="text/javascript">
-
     $.getJSON('/users/{{ logged_in_user.id }}/open_tickets/').then(function (data) {
-        $(document).ready(function () {
+        $(function () {
             var notifications = $('#notifications');
             var total_tickets = data.length;
 
@@ -237,5 +173,4 @@
             $('#nav_bar_task_count').text(data);
         })
     });
-
 </script>

@@ -17,7 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
-from fpformat import fix_task_computed_time
+
+# from fpformat import fix_task_computed_time
 
 import mocker
 
@@ -1764,9 +1765,9 @@ class TaskViewSimpleFunctionsTestCase(unittest.TestCase):
 
         result = task.generate_where_clause(test_value)
 
-        self.assertEqual("""where (
+        expected_result = """where (
     tasks.id = 23
-    and (tasks.name ilike '%Lighting%' or tasks.full_path ilike '%Lighting%')
+    and tasks.name ilike '%Lighting%'
     and tasks.entity_type = 'Task'
     and task_types.name ilike '%Lighting%'
     and exists (
@@ -1775,7 +1776,13 @@ class TaskViewSimpleFunctionsTestCase(unittest.TestCase):
         ) x(resource_name)
         where x.resource_name like '%Ozgur%'
     )
-)""", result)
+)"""
+
+        print(expected_result)
+        print('--------------------')
+        print(result)
+
+        self.assertEqual(expected_result, result)
 
     def test_generate_where_clause_case2(self):
         """testing if the view.tasks.generate_where_clause() is working
@@ -1848,10 +1855,13 @@ class TaskViewSimpleFunctionsTestCase(unittest.TestCase):
 
         result = task.generate_where_clause(test_value)
 
-        self.assertEqual("""where (
-    task_types.name = '%Lighting%'
-    and task_types.name = '%Comp%'
-)""", result)
+        expected_result = """where (
+    (task_types.name ilike '%Lighting%' or task_types.name ilike '%Comp%')
+)"""
+        print(expected_result)
+        print('--------------------')
+        print(result)
+        self.assertEqual(expected_result, result)
 
     def test_generate_where_clause_case6(self):
         """testing if the view.tasks.generate_where_clause() is working
@@ -1950,10 +1960,14 @@ class TaskViewSimpleFunctionsTestCase(unittest.TestCase):
 
         result = task.generate_where_clause(test_value)
 
-        self.assertEqual("""where (
-    25 = any (tasks.responsible_id)
-    and 26 = any (tasks.responsible_id)
-)""", result)
+        expected_result = """where (
+    (25 = any (tasks.responsible_id) or 26 = any (tasks.responsible_id))
+)"""
+        print(expected_result)
+        print('--------------------')
+        print(result)
+
+        self.assertEqual(expected_result, result)
 
     def test_generate_where_clause_case11(self):
         """testing if the view.tasks.generate_where_clause() is working
@@ -1964,8 +1978,6 @@ class TaskViewSimpleFunctionsTestCase(unittest.TestCase):
         }
 
         result = task.generate_where_clause(test_value)
-
-
 
         self.assertEqual("""where (
     resource_info.info is not NULL
@@ -2001,7 +2013,6 @@ class TaskViewSimpleFunctionsTestCase(unittest.TestCase):
     26 = any (tasks.watcher_id)
 )""", result)
 
-
     def test_generate_where_clause_case14(self):
         """testing if the view.tasks.generate_where_clause() is working
         properly
@@ -2020,6 +2031,78 @@ class TaskViewSimpleFunctionsTestCase(unittest.TestCase):
         print(result)
 
         self.assertEqual(expected_result, result)
+
+    def test_generate_where_clause_case15(self):
+        """testing if the view.tasks.generate_where_clause() is working
+        properly
+        """
+        test_value = {
+            'path': ['108|207']
+        }
+
+        result = task.generate_where_clause(test_value)
+
+        expected_result = """where (
+    tasks.path ilike '%108|207%'
+)"""
+        print(expected_result)
+        print('--------------------')
+        print(result)
+
+        self.assertEqual(expected_result, result)
+
+    def test_generate_where_clause_case16(self):
+        """testing if the view.tasks.generate_where_clause() is working
+        properly
+        """
+        test_value = {
+            'path': ['108|207', '108|210']
+        }
+
+        result = task.generate_where_clause(test_value)
+
+        expected_result = """where (
+    (tasks.path ilike '%108|207%' or tasks.path ilike '%108|210%')
+)"""
+        print(expected_result)
+        print('--------------------')
+        print(result)
+
+        self.assertEqual(expected_result, result)
+
+    def test_generate_where_clause_case17(self):
+        """testing if the view.tasks.generate_where_clause() is working
+        properly
+        """
+        test_value = {
+            'responsible_id': [25, 26],
+            'has_no_resource': 1,
+            'watcher_id': [26, 456],
+            'parent_id': [98422, 8454],
+            'path': ['108|207', '108|210']
+        }
+
+        result = task.generate_where_clause(test_value)
+
+        expected_result = """where (
+    (tasks.parent_id = 98422 or tasks.parent_id = 8454)
+    and (tasks.path ilike '%108|207%' or tasks.path ilike '%108|210%')
+    and (25 = any (tasks.responsible_id) or 26 = any (tasks.responsible_id))
+    and (26 = any (tasks.watcher_id) or 456 = any (tasks.watcher_id))
+    and resource_info.info is NULL
+)"""
+        print(expected_result)
+        print('--------------------')
+        print(result)
+
+        self.assertEqual(expected_result, result)
+
+
+
+
+
+
+
 
     def test_generate_order_by_clause_case_1(self):
         """testing if the view.tasks.generate_order_by_clause() is working

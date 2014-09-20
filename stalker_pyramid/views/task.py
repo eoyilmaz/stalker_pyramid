@@ -64,7 +64,7 @@ def generate_recursive_task_query(ordered=True):
         select
             task.id,
             task.project_id,
-            array[task.project_id] as path,
+            task.project_id::text as path,
             ("Projects".code || '') as path_names,
             coalesce(
                 (
@@ -89,7 +89,7 @@ def generate_recursive_task_query(ordered=True):
         select
             task.id,
             task.parent_id,
-            (parent.path || task.parent_id) as path,
+            (parent.path || '|' || task.parent_id::text) as path,
             (parent.path_names || ' | ' || "Parent_SimpleEntities".name) as path_names,
             coalesce(
                 (
@@ -1155,23 +1155,25 @@ def generate_where_clause(params):
             'entity_type': ['Task'],
             'task_type': ['Lighting'],
             'resource': ['Ozgur'],
-            'responsible_id': [25, 26]
+            'responsible_id': [25, 26],
+            'path': ['108', '108|26']
         }
 
       will result a search string like::
 
         where (
             tasks.id = 23
-            or tasks.name ilike '%Lighting%'
-            or tasks.full_path ilike '%Lighting%'
-            or tasks.entity_type ilike '%Task%'
-            or task_types.name ilike '%Lighting%'
-            or exists (
+            and tasks.name ilike '%Lighting%'
+            and tasks.full_path ilike '%Lighting%'
+            and tasks.entity_type ilike '%Task%'
+            and task_types.name ilike '%Lighting%'
+            and exists (
                 select * from (
                     select unnest(resource_info.resource_name)
                 ) x(resource_name)
                 where x.resource_name like '%Ozgur%'
             )
+            and (tasks.path ilike '%108%' or tasks.path ilike '%108|26%')
         )
 
       It will use only the available keys, so giving a dictionary like::
@@ -1185,7 +1187,7 @@ def generate_where_clause(params):
 
         where (
             tasks.id = 23
-            or exists (
+            and exists (
                 select * from (
                     select unnest(resource_info.resource_name)
                 ) x(resource_name)
@@ -1197,104 +1199,194 @@ def generate_where_clause(params):
     where_string = ''
     where_string_buffer = []
 
+    def compress_buffer(buff=None, conditional='or'):
+        """returns a compressed buffer
+        :param list buff: a list of strings to be compressed
+        :param str conditional: 'or' or 'and' will be placed in between each
+          compressed buffer element
+        """
+        if buff is None:
+            buff = []
+
+        template = '(%s)'  # for multiple conditions of same kind we need
+                           # parentheses
+        if len(buff) == 1:
+            template = '%s'  # we have only 1 condition
+                             # no need to have parentheses
+
+        return template % (' %s ' % conditional).join(buff)
+
+    # id
+    temp_buffer = []
     for id_ in params.get('id[]', params.get('id', [])):
-        where_string_buffer.append(
+        temp_buffer.append(
             'tasks.id = {id}'.format(id=id_)
         )
+    if len(temp_buffer):
+        where_string_buffer.append(
+            compress_buffer(temp_buffer, 'or')
+        )
 
+    # parent_id
+    temp_buffer = []
     for parent_id in params.get('parent_id[]',
                                 params.get('parent_id', [])):
-        where_string_buffer.append(
+        temp_buffer.append(
             "tasks.parent_id = {parent_id}".format(parent_id=parent_id)
         )
-
-    for name in params.get('name[]', params.get('name', [])):
+    if len(temp_buffer):
         where_string_buffer.append(
-            "tasks.name ilike '%{name}%' ".format(name=name)
+            compress_buffer(temp_buffer, 'or')
         )
 
-    for name in params.get('path[]', params.get('path', [])):
+    # name
+    temp_buffer = []
+    for name in params.get('name[]', params.get('name', [])):
+        temp_buffer.append(
+            "tasks.name ilike '%{name}%'".format(name=name)
+        )
+    if len(temp_buffer):
         where_string_buffer.append(
+            compress_buffer(temp_buffer, 'or')
+        )
+
+    # path
+    temp_buffer = []
+    for name in params.get('path[]', params.get('path', [])):
+        temp_buffer.append(
+            "tasks.path ilike '%{name}%'".format(name=name)
+        )
+    if len(temp_buffer):
+        where_string_buffer.append(
+            compress_buffer(temp_buffer, 'or')
+        )
+
+    # full_path
+    temp_buffer = []
+    for name in params.get('full_path[]', params.get('full_path', [])):
+        temp_buffer.append(
             "tasks.full_path ilike '%{name}%'".format(name=name)
         )
+    if len(temp_buffer):
+        where_string_buffer.append(
+            compress_buffer(temp_buffer, 'or')
+        )
 
+    # entity_type
+    temp_buffer = []
     for entity_type in params.get('entity_type[]',
                                   params.get('entity_type', [])):
-        where_string_buffer.append(
+        temp_buffer.append(
             "tasks.entity_type = '{entity_type}'".format(
                 entity_type=entity_type
             )
         )
-
-    for task_type in params.get('task_type[]',
-                                params.get('task_type', [])):
+    if len(temp_buffer):
         where_string_buffer.append(
-            "task_types.name ilike '%{task_type}%'".format(task_type=task_type)
+            compress_buffer(temp_buffer, 'or')
         )
 
+    # task_type
+    temp_buffer = []
+    for task_type in params.get('task_type[]',
+                                params.get('task_type', [])):
+        temp_buffer.append(
+            "task_types.name ilike '%{task_type}%'".format(task_type=task_type)
+        )
+    if len(temp_buffer):
+        where_string_buffer.append(
+            compress_buffer(temp_buffer, 'or')
+        )
+
+    # project_id
+    temp_buffer = []
     for project_id in params.get('project_id[]',
                                  params.get('project_id', [])):
-        where_string_buffer.append(
+        temp_buffer.append(
             """"Tasks".project_id = {project_id}""".format(
                 project_id=project_id
             )
         )
+    if len(temp_buffer):
+        where_string_buffer.append(
+            compress_buffer(temp_buffer, 'or')
+        )
 
+    # resource_id
+    temp_buffer = []
     for resource_id in params.get('resource_id[]',
                                   params.get('resource_id', [])):
-        where_string_buffer.append(
+        temp_buffer.append(
             """exists (
         select * from (
             select unnest(resource_info.resource_id)
         ) x(resource_id)
         where x.resource_id = {resource_id}
     )""".format(resource_id=resource_id))
+    if len(temp_buffer):
+        where_string_buffer.append(
+            compress_buffer(temp_buffer, 'or')
+        )
 
+    # resource_name
+    temp_buffer = []
     for resource_name in \
         params.get('resource_name[]',
                    params.get('resource_name', [])):
-        where_string_buffer.append(
+        temp_buffer.append(
             """exists (
         select * from (
             select unnest(resource_info.resource_name)
         ) x(resource_name)
         where x.resource_name like '%{resource_name}%'
     )""".format(resource_name=resource_name))
+    if len(temp_buffer):
+        where_string_buffer.append(
+            compress_buffer(temp_buffer, 'or')
+        )
 
+    # responsible_id
+    temp_buffer = []
     for responsible_id in params.get('responsible_id[]',
                                      params.get('responsible_id', [])):
-        where_string_buffer.append(
+        temp_buffer.append(
             """{responsible_id} = any (tasks.responsible_id)""".format(
                 responsible_id=responsible_id
             )
         )
+    if len(temp_buffer):
+        where_string_buffer.append(
+            compress_buffer(temp_buffer, 'or')
+        )
 
+    # watcher_id
+    temp_buffer = []
     for watcher_id in params.get('watcher_id[]',
                                  params.get('watcher_id', [])):
-        where_string_buffer.append(
+        temp_buffer.append(
             """{watcher_id} = any (tasks.watcher_id)""".format(
                 watcher_id=watcher_id
             )
         )
-
-    for resource_name in \
-        params.get('resource_name[]',
-                   params.get('resource_name', [])):
+    if len(temp_buffer):
         where_string_buffer.append(
-            """exists (
-        select * from (
-            select unnest(resource_info.resource_name)
-        ) x(resource_name)
-        where x.resource_name like '%{resource_name}%'
-    )""".format(resource_name=resource_name))
+            compress_buffer(temp_buffer, 'or')
+        )
+
+
 
     statuses = params.get('status[]', params.get('status', []))
     if statuses:
         where_string_status = """("""
-        where_string_status += """\n{indent}"Statuses".code ilike '%{status}%'""".format(status=statuses[0],indent=' '*4)
-        if len(statuses)>1:
-            for i in range(1,len(statuses)):
-                where_string_status += """\n{indent}or "Statuses".code ilike '%{status}%'""".format(status=statuses[i],indent=' '*4)
+        where_string_status += \
+            """\n{indent}"Statuses".code ilike '%{status}%'""".format(
+                status=statuses[0],
+                indent=' ' * 4
+            )
+        if len(statuses) > 1:
+            for i in range(1, len(statuses)):
+                where_string_status += \
+                    """\n{indent}or "Statuses".code ilike '%{status}%'""".format(status=statuses[i],indent=' '*4)
 
         where_string_status += """\n    )"""
 
@@ -1390,37 +1482,30 @@ def generate_order_by_clause(params):
     return order_by_string
 
 
-@view_config(
-    route_name='get_tasks',
-    renderer='json'
-)
-def get_tasks(request):
-    """RESTful version of getting all tasks
-    """
-    logger.debug('get_tasks is running')
+def query_tasks(
+        limit=None,
+        offset=None,
+        order_by_params=None,
+        where_clause=None,
+        task_id=None):
+
     start = time.time()
 
-    # set the content range to prevent JSONRest Store to query the data twice
-    content_range = '%s-%s/%s'
-    offset = request.params.get('offset')
-    limit = request.params.get('limit')
-
     entity_type = "Task"
-    task_id = -1
-    if 'id' in request.params:
+    if task_id:
         # check if this is a Task or Project
-        task_id = int(request.params.get('id', -1))
-
         # get the entity_type of this data
         entity_type = db.DBSession.connection().execute(
             """select entity_type from "SimpleEntities" where id=%s""" %
             task_id
         ).fetchone()[0]
+    else:
+        task_id = -1
 
     logger.debug('entity_type: %s' % entity_type)
 
-    order_by_params = request.GET.getall('order_by')
-    logger.debug('order_by_params: %s' % order_by_params)
+    if order_by_params is None:
+        order_by_params = []
 
     order_by = generate_order_by_clause(order_by_params)
     if order_by == '':
@@ -1428,9 +1513,8 @@ def get_tasks(request):
         order_by = 'order by tasks.name'
 
     if entity_type not in ['Project', 'Studio']:
-        where_condition = generate_where_clause(request.params.dict_of_lists())
 
-        logger.debug('where_condition: %s' % where_condition)
+        logger.debug('where_clause: %s' % where_clause)
 
         sql_query = """
         select
@@ -1438,6 +1522,7 @@ def get_tasks(request):
             tasks.entity_type,
             task_types.name as task_type,
             tasks.name,
+            tasks.path,
             tasks.full_path,
             "Tasks".project_id,
             "Tasks".parent_id,
@@ -1562,13 +1647,13 @@ def get_tasks(request):
             join "SimpleEntities" as "Type_SimpleEntities" on "Types".id = "Type_SimpleEntities".id
         ) as task_types on tasks.id = task_types.id
 
-        %(where_condition)s
+        %(where_clause)s
 
         %(order_by)s
         """
 
         sql_query = sql_query % {
-            'where_condition': where_condition,
+            'where_clause': where_clause,
             'order_by': order_by,
             'tasks_hierarchical_name':
             generate_recursive_task_query(ordered=False)
@@ -1582,6 +1667,7 @@ def get_tasks(request):
             'Project' as entity_type,
             '' as task_type,
             "Project_SimpleEntities".name as name,
+            "Projects".id as path,
             "Project_SimpleEntities".name as full_path,
             NULL,
             NULL as parent_id,
@@ -1666,16 +1752,13 @@ def get_tasks(request):
                 sql_query,
                 'where "Projects".id = %s' % task_id
             )
-
     if offset:
         sql_query = '%s offset %s' % (sql_query, offset)
-
     if limit:
         sql_query = '%s limit %s' % (sql_query, limit)
-
     from sqlalchemy import text  # to be able to use "%" sign use this function
-    result = db.DBSession.connection().execute(text(sql_query))
 
+    result = db.DBSession.connection().execute(text(sql_query))
     # use local functions to speed things up
     local_raw_data_to_array = raw_data_to_array
     return_data = [
@@ -1684,41 +1767,75 @@ def get_tasks(request):
             'entity_type': r[1],
             'task_type': r[2],
             'name': r[3],
-            'full_path': r[4],
-            'project_id': r[5],
-            'parent_id': r[6],
-            'description': r[7],
-            'date_created': r[8],
-            'date_updated': r[9],
-            'hasChildren': r[10],
-            'link': r[11],
-            'priority': r[12],
-            'dependencies': local_raw_data_to_array(r[13]),
-            'resources': local_raw_data_to_array(r[14]),
-            'responsible': r[15],
-            'watcher': r[16],
-            'bid_timing': r[17],
-            'bid_unit': r[18],
-            'schedule_timing': r[19],
-            'schedule_unit': r[20],
-            'schedule_model': r[21],
-            'schedule_seconds': r[22],
-            'total_logged_seconds': r[23],
-            'completed': r[24],
-            'start': r[25],
-            'end': r[26],
-            'status': r[27],
+            'path': r[4],
+            'full_path': r[5],
+            'project_id': r[6],
+            'parent_id': r[7],
+            'description': r[8],
+            'date_created': r[9],
+            'date_updated': r[10],
+            'hasChildren': r[11],
+            'link': r[12],
+            'priority': r[13],
+            'dependencies': local_raw_data_to_array(r[14]),
+            'resources': local_raw_data_to_array(r[15]),
+            'responsible': r[16],
+            'watcher': r[17],
+            'bid_timing': r[18],
+            'bid_unit': r[19],
+            'schedule_timing': r[20],
+            'schedule_unit': r[21],
+            'schedule_model': r[22],
+            'schedule_seconds': r[23],
+            'total_logged_seconds': r[24],
+            'completed': r[25],
+            'start': r[26],
+            'end': r[27],
+            'status': r[28],
         }
         for r in result.fetchall()
     ]
-
-    task_count = len(return_data)
-    content_range = content_range % (0, task_count - 1, task_count)
 
     # logger.debug('return_data: %s' % return_data)
     end = time.time()
     logger.debug('%s rows retrieved in %s seconds' % (len(return_data),
                                                       (end - start)))
+    return return_data
+
+
+@view_config(
+    route_name='get_tasks',
+    renderer='json'
+)
+def get_tasks(request):
+    """RESTful version of getting all tasks
+    """
+    logger.debug('get_tasks is running')
+
+    # set the content range to prevent JSONRest Store to query the data twice
+    offset = request.params.get('offset', 0)
+    limit = request.params.get('limit')
+
+    order_by_params = request.GET.getall('order_by')
+    logger.debug('order_by_params: %s' % order_by_params)
+
+    where_clause = generate_where_clause(request.params.dict_of_lists())
+
+    task_id = None
+    if 'id' in request.params:
+        # check if this is a Task or Project
+        task_id = int(request.params.get('id', -1))
+
+    return_data = query_tasks(
+        limit=limit,
+        offset=offset,
+        order_by_params=order_by_params,
+        where_clause=where_clause,
+        task_id=task_id,
+    )
+
+    task_count = len(return_data)
+    content_range = '%s-%s/%s' % (offset, offset + task_count - 1, task_count)
 
     resp = Response(
         json_body=return_data
@@ -1735,7 +1852,6 @@ def get_tasks_count(request):
     """RESTful version of getting all tasks
     """
     logger.debug('get_tasks_count is running')
-    start = time.time()
 
     # set the content range to prevent JSONRest Store to query the data twice
     content_range = '%s-%s/%s'
@@ -1763,9 +1879,9 @@ def get_tasks_count(request):
     #     order_by = 'order by tasks.name'
 
     if entity_type not in ['Project', 'Studio']:
-        where_condition = generate_where_clause(request.params.dict_of_lists())
+        where_clause = generate_where_clause(request.params.dict_of_lists())
 
-        logger.debug('where_condition: %s' % where_condition)
+        logger.debug('where_clause: %s' % where_clause)
 
         sql_query = """select count(result.id) from (
         select
@@ -1897,12 +2013,12 @@ def get_tasks_count(request):
             join "SimpleEntities" as "Type_SimpleEntities" on "Types".id = "Type_SimpleEntities".id
         ) as task_types on tasks.id = task_types.id
 
-        %(where_condition)s
+        %(where_clause)s
         ) as result
         """
 
         sql_query = sql_query % {
-            'where_condition': where_condition,
+            'where_clause': where_clause,
             'tasks_hierarchical_name':
             generate_recursive_task_query(ordered=False)
         }
@@ -2115,10 +2231,10 @@ def get_user_tasks(request):
         left join (
             %(generate_recursive_task_query)s
         ) as "ParentTasks" on "Tasks".id = "ParentTasks".id
-        %(where_condition)s
+        %(where_clause)s
     """
 
-    where_condition = 'where "Task_Resources".resource_id = %s' % user_id
+    where_clause = 'where "Task_Resources".resource_id = %s' % user_id
 
     statuses = []
     status_codes = request.GET.getall('status')
@@ -2126,20 +2242,20 @@ def get_user_tasks(request):
         statuses = Status.query.filter(Status.code.in_(status_codes)).all()
 
     if statuses:
-        temp_buffer = [where_condition, """ and ("""]
+        temp_buffer = [where_clause, """ and ("""]
         for i, status in enumerate(statuses):
             if i > 0:
                 temp_buffer.append(' or')
             temp_buffer.append(""" "Task_Statuses".code='%s'""" % status.code)
         temp_buffer.append(' )')
-        where_condition = ''.join(temp_buffer)
+        where_clause = ''.join(temp_buffer)
 
-    logger.debug('where_condition: %s' % where_condition)
+    logger.debug('where_clause: %s' % where_clause)
 
     sql_query = sql_query % {
         'generate_recursive_task_query':
         generate_recursive_task_query(),
-        'where_condition': where_condition
+        'where_clause': where_clause
     }
 
     result = db.DBSession.connection().execute(sql_query)
@@ -2422,7 +2538,7 @@ def get_entity_tasks_stats(request):
             join "Tasks" on "Statuses".id = "Tasks".status_id
             join "SimpleEntities" as "Statuses_SimpleEntities" on "Statuses_SimpleEntities".id = "Statuses".id
 
-        %(where_condition_for_entity)s
+        %(where_clause_for_entity)s
 
         and not (
             exists (
@@ -2440,17 +2556,17 @@ def get_entity_tasks_stats(request):
            "Statuses_SimpleEntities".name,
            "Statuses_SimpleEntities".html_class
     """
-    where_condition_for_entity = ''
+    where_clause_for_entity = ''
 
     if isinstance(entity, User):
-        where_condition_for_entity = \
+        where_clause_for_entity = \
             'join "Task_Resources" on "Task_Resources".task_id = "Tasks".id ' \
             'where "Task_Resources".resource_id =%s' % entity_id
     elif isinstance(entity, Project):
-        where_condition_for_entity = 'where "Tasks".project_id =%s' % entity_id
+        where_clause_for_entity = 'where "Tasks".project_id =%s' % entity_id
 
     sql_query = sql_query % {
-        'where_condition_for_entity': where_condition_for_entity
+        'where_clause_for_entity': where_clause_for_entity
     }
 
     # convert to dgrid format right here in place
@@ -2657,7 +2773,7 @@ def get_entity_tasks_by_filter(request):
 
             where "Reviews_Statuses".code = 'NEW') as "Reviewers" on "Reviewers".task_id = "Tasks".id
 
-    where %(where_condition_for_entity)s %(where_condition_for_filter)s
+    where %(where_clause_for_entity)s %(where_clause_for_filter)s
 
     group by
         "Task_Resources".task_id,
@@ -2674,29 +2790,29 @@ def get_entity_tasks_by_filter(request):
         type_name,
         priority
     """
-    where_condition_for_entity = ''
+    where_clause_for_entity = ''
 
     if isinstance(entity, User):
-        where_condition_for_entity = \
+        where_clause_for_entity = \
             '"Task_Resources".resource_id = %s' % entity_id
     elif isinstance(entity, Project):
-        where_condition_for_entity = '"Tasks".project_id =%s' % entity_id
+        where_clause_for_entity = '"Tasks".project_id =%s' % entity_id
 
-    where_condition_for_filter = ''
+    where_clause_for_filter = ''
 
     if isinstance(filter_, User):
-        where_condition_for_entity = ''
-        where_condition_for_filter = \
+        where_clause_for_entity = ''
+        where_clause_for_filter = \
             '"Tasks_Responsible".responsible_id = %s' % filter_id
     elif isinstance(filter_, Status):
-        where_condition_for_filter = \
+        where_clause_for_filter = \
             'and "Statuses_SimpleEntities".id = %s' % filter_id
 
     sql_query = sql_query % {
         'generate_recursive_task_query':
         generate_recursive_task_query(),
-        'where_condition_for_entity': where_condition_for_entity,
-        'where_condition_for_filter': where_condition_for_filter
+        'where_clause_for_entity': where_clause_for_entity,
+        'where_clause_for_filter': where_clause_for_filter
     }
 
     # convert to dgrid format right here in place
@@ -4417,13 +4533,13 @@ def delete_task(request):
     return Response('Successfully deleted task: %s' % task_id)
 
 
-
-
 @view_config(
     route_name='get_task_related_entities',
     renderer='json'
 )
 def get_task_related_entity(request):
+    """TODO: Add Docstring please
+    """
 
     task_id = request.matchdict.get('id')
     task = Task.query.get(task_id)
@@ -4434,30 +4550,34 @@ def get_task_related_entity(request):
         transaction.abort()
         return Response('Can not find a Task with id: %s' % task_id, 500)
 
-
     task_related_assets = []
     task_related_assets.extend(get_task_related_entities(task, entity_type))
     return task_related_assets
 
 
 def get_task_related_entities(task, entity_type):
+    """TODO: Add Docstring please
+    """
 
     task_related_assets = []
     if task.children:
         for child in task.children:
-            task_related_assets.extend(get_task_related_entities(child, entity_type))
+            task_related_assets.extend(
+                get_task_related_entities(child, entity_type)
+            )
     else:
         for dep_task in task.depends:
             asset = get_task_parent(dep_task, entity_type)
             if asset:
                 if asset not in task_related_assets:
                     task_related_assets.append({
-                                'id': asset.id,
-                                'name': asset.name,
-                                'thumbnail_full_path': asset.thumbnail.full_path if asset.thumbnail else None
-                                })
+                        'id': asset.id,
+                        'name': asset.name,
+                        'thumbnail_full_path': asset.thumbnail.full_path if asset.thumbnail else None
+                    })
 
     return task_related_assets
+
 
 def get_task_parent(task, entity_type):
     if task.parent:
@@ -4467,62 +4587,6 @@ def get_task_parent(task, entity_type):
             get_task_parent(task.parent, entity_type)
     else:
         return task
-
-
-def get_child_task_events(task):
-    task_events = []
-
-    if task.children:
-        for child in task.children:
-            task_events.extend(get_child_task_events(child))
-    else:
-        resources = []
-        for resource in task.resources:
-            resources.append({'name': resource.name, 'id': resource.id})
-
-        # logger.debug('resources %s' % resources)
-        task_events.append({
-            'id': task.id,
-            'entity_type': task.plural_class_name.lower(),
-            # 'title': '%s (%s)' % (
-            #     task.name,
-            #     ' | '.join([parent.name for parent in task.parents])),
-            'title': task.name,
-            'start': milliseconds_since_epoch(task.computed_start),
-            'end': milliseconds_since_epoch(task.computed_end),
-            'className': 'label',
-            'allDay': False,
-            'status': task.status.name,
-            'status_color': task.status.html_class,
-            'resources': resources,
-            'percent_complete': task.percent_complete,
-            'total_logged_seconds': task.total_logged_seconds,
-            'schedule_seconds': task.schedule_seconds,
-            'schedule_unit': task.schedule_unit
-
-            # 'hours_to_complete': time_log.hours_to_complete,
-            # 'notes': time_log.notes
-        })
-
-        for time_log in task.time_logs:
-        # logger.debug('time_log.task.id : %s' % time_log.task.id)
-        # assert isinstance(time_log, TimeLog)
-            task_events.append({
-                'id': time_log.id,
-                'entity_type': time_log.plural_class_name.lower(),
-                'resource_name': time_log.resource.name,
-                'title': time_log.task.name,
-                'start': milliseconds_since_epoch(time_log.start),
-                'end': milliseconds_since_epoch(time_log.end),
-                'className': 'label-success',
-                'allDay': False,
-                'status': time_log.task.status.name,
-                'status_color': time_log.task.status.html_class
-            })
-            # logger.debug('resource_id %s' % time_log.resource.id)
-            # logger.debug('resource_name %s' % time_log.resource.name)
-
-    return task_events
 
 
 @view_config(
@@ -4537,12 +4601,61 @@ def get_task_events(request):
     logger.debug('get_task_events is running')
 
     task_id = request.matchdict.get('id', -1)
-    task = Task.query.filter_by(id=task_id).first()
 
-    logger.debug('task_id : %s' % task_id)
+    logger.debug('task_id: %s' % task_id)
 
-    events = []
-    events.extend(get_child_task_events(task))
+    # first get the one individual task
+    our_task = query_tasks(
+        where_clause=generate_where_clause({'id': [task_id]})
+    )
+
+    # use its path to query its all children
+    # generate a second where condition
+    all_tasks = query_tasks(
+        where_clause=generate_where_clause({
+            'path': [our_task[0]['path']]
+        })
+    )
+
+    task_ids = [task['id'] for task in all_tasks]
+
+    sql_query = """select
+    "TimeLogs".id,
+    'timelogs' as entity_type,
+    "Resource_SimpleEntities".name as resource_name,
+    "Task_SimpleEntities".name as task_name,
+    (extract(epoch from "TimeLogs".start::timestamp at time zone 'UTC') * 1000)::bigint as start,
+    (extract(epoch from "TimeLogs".end::timestamp at time zone 'UTC') * 1000)::bigint as end,
+    'label-success', --className
+    false, --allDay
+    "Statuses".code as task_status
+    from "TimeLogs"
+    join "Tasks" on "TimeLogs".task_id = "Tasks".id
+    join "SimpleEntities" as "Task_SimpleEntities" on "Tasks".id = "Task_SimpleEntities".id
+    join "SimpleEntities" as "Resource_SimpleEntities" on "TimeLogs".resource_id = "Resource_SimpleEntities".id
+    join "Statuses" on "Tasks".status_id = "Statuses".id
+    where "TimeLogs".task_id in %s
+    """ % str(task_ids).replace('[', '(').replace(']', ')')
+
+    # now query all the time logs
+    from sqlalchemy import text  # to be able to use "%" sign use this function
+    result = db.DBSession.connection().execute(text(sql_query))
+
+    events = [
+        {
+            'id': r[0],
+            'entity_type': r[1],
+            'resource_name': r[2],
+            'title': r[3],
+            'start': r[4],
+            'end': r[5],
+            'className': r[6],
+            'allDay': r[7],
+            'status': r[8],
+            'status_color': ''
+        } for r in result.fetchall()
+    ]
+
     return events
 
 
@@ -4915,7 +5028,7 @@ def change_tasks_users(request):
 
     selected_list = get_multi_integer(request, 'user_ids')
     users = User.query\
-            .filter(User.id.in_(selected_list)).all()
+        .filter(User.id.in_(selected_list)).all()
 
     if not users:
         transaction.abort()

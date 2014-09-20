@@ -499,7 +499,7 @@ select
 
 -- start with tasks (with full names)
 from (
-    %(recursive_task_query)s
+    {recursive_task_query}
 ) as tasks
 
 
@@ -536,9 +536,7 @@ join "Links" as "Links_ForWeb" on "Link_SimpleEntities".thumbnail_id = "Links_Fo
 join "SimpleEntities" as "Links_ForWeb_SimpleEntities" on "Links_ForWeb".id = "Links_ForWeb_SimpleEntities".id
 join "Links" as "Thumbnails" on "Links_ForWeb_SimpleEntities".thumbnail_id = "Thumbnails".id
 
-
-
-where (%(id)s = any (tasks.path) or tasks.id = %(id)s) %(search_string)s
+where (tasks.path ilike '%{id}%' or tasks.id = {id}) {search_string}
 
 group by "Links".id,
     "Links_ForWeb".full_path,
@@ -550,16 +548,16 @@ group by "Links".id,
 
 order by data.id
 
-offset %(offset)s
-limit %(limit)s
-    """ % {
-        'id': entity_id,
-        'recursive_task_query':
-        generate_recursive_task_query(ordered=False),
-        'search_string': search_query,
-        'offset': offset,
-        'limit': limit
-    }
+offset {offset}
+limit {limit}
+    """.format(
+        id=entity_id,
+        recursive_task_query=generate_recursive_task_query(ordered=False),
+        search_string=search_query,
+        offset=offset,
+        limit=limit
+    )
+
 
     # if offset and limit:
     #     sql_query += "offset %s limit %s" % (offset, limit)
@@ -623,8 +621,7 @@ def get_entity_references_count(request):
     logger.debug('search_query: %s' % search_query)
 
     # we need to do that import here
-    from stalker_pyramid.views.task import \
-        generate_recursive_task_query
+    from stalker_pyramid.views.task import generate_recursive_task_query
 
     # using Raw SQL queries here to fasten things up quite a bit and also do
     # some fancy queries like getting all the references of tasks of a project
@@ -637,7 +634,7 @@ select
 
 -- start with tasks (with fullnames)
 from (
-    %(recursive_task_query)s
+    {recursive_task_query}
 ) as tasks
 
 
@@ -660,19 +657,18 @@ left join (
 -- continue on links
 join "SimpleEntities" as "Link_SimpleEntities" on "Links".id = "Link_SimpleEntities".id
 
-where (%(id)s = any (tasks.path) or tasks.id = %(id)s) %(search_string)s
+where (tasks.path ilike '%{id}%' or tasks.id = {id}) {search_string}
 
 group by
     "Links".id,
     "Links".original_filename,
     tags.name
 ) as data
-    """ % {
-        'id': entity_id,
-        'recursive_task_query':
-        generate_recursive_task_query(ordered=False),
-        'search_string': search_query
-    }
+    """.format(
+        id=entity_id,
+        recursive_task_query=generate_recursive_task_query(ordered=False),
+        search_string=search_query
+    )
 
     from sqlalchemy import text  # to be able to use "%" sign use this function
     result = DBSession.connection().execute(text(sql_query))
