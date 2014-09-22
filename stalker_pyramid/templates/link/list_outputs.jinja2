@@ -65,6 +65,8 @@
 
            original_filename="{{=it.original_filename}}"
 
+           tags="{{=it.tags }}"
+
            title="{{=it.original_filename}}&#013;{{=it.tags }}&#013;{{=it.version_take_name }} | {{=it.version_number }}"
            data-rel="colorbox"
            class="cboxElement">
@@ -159,6 +161,8 @@
 
             var original_title = $(this).attr('original_filename');
 
+            var tags = $(this).attr('tags');
+
             var view_hires_url = '/' + $(this).attr('hires_full_path');
             var download_hires_url = '/FD' + $(this).attr('hires_download_path');
 
@@ -172,7 +176,7 @@
             var download_webres_link = '<span><a title="Download Web Version" class="icon-cloud-download green" href="' + download_webres_url + '">&nbsp</a></span>';
 
 
-            return original_title + ' |&nbsp' +
+            return original_title + '&nbsp(' + tags + ')&nbsp|&nbsp' +
                    open_webres_in_new_tab_link + ' &nbsp ' + download_webres_link + '&nbsp|&nbsp' +
                    open_hires_in_new_tab_link + ' &nbsp ' + download_hires_link;
         },
