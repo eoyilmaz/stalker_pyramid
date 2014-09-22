@@ -189,11 +189,12 @@
             document.body.style.overflow = 'auto';
         },
         onComplete: function () {
-            // fit image to colorbox
+            // fit image to colorBox
             var photo = $('.cboxPhoto');
-            var width = photo.width;
-            var height = photo.height;
-            if (width > height) {
+            var photo_ratio = photo.width() / photo.height();
+            var cbox_content = $('#cboxContent');
+            var cbox_ratio = cbox_content.width() / cbox_content.height();
+            if (photo_ratio > cbox_ratio) {
                 photo.css({
                     width: '100%',
                     height: 'auto',
