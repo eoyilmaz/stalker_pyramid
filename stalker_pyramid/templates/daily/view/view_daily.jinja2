@@ -249,23 +249,44 @@
             onComplete: function () {
                 // fit image to colorBox
                 var photo = $('.cboxPhoto');
-                var photo_ratio = photo.width() / photo.height();
-                var cbox_content = $('#cboxContent');
-                var cbox_ratio = cbox_content.width() / cbox_content.height();
+                var photo_width = photo.width();
+                var photo_height = photo.height();
+                var photo_ratio = photo_width / photo_height;
+    
+                var cbox = $('#cboxContent');
+                var cbox_width = cbox.width();
+                var cbox_height = cbox.height();
+                var cbox_ratio = cbox_width / cbox_height;
+    
+                var multiplier;
+                var css_options = {
+                    'margin-left': 0,
+                    'margin-right': 0,
+                    'margin-top': 0,
+                    'margin-bottom': 0,
+                    position: 'relative'
+                };
+    
                 if (photo_ratio > cbox_ratio) {
-                    photo.css({
+                    multiplier = cbox_width / photo_width;
+                    photo_height *= multiplier;
+    
+                    photo.css($.extend(css_options, {
                         width: '100%',
                         height: 'auto',
-                        'margin-left': 0,
-                        'margin-right': 0
-                    });
+                        left: 0,
+                        top: (cbox_height - photo_height) * 0.5 - 20 + 'px'
+                    }));
                 } else {
-                    photo.css({
+                    multiplier = cbox_height / photo_height;
+                    photo_width *= multiplier;
+    
+                    photo.css($.extend(css_options, {
                         width: 'auto',
                         height: '100%',
-                        'margin-top': 0,
-                        'margin-bottom': 0
-                    });
+                        left: (cbox_width - photo_width) * 0.5 + 'px',
+                        top: 0
+                    }));
                 }
             }
         };
