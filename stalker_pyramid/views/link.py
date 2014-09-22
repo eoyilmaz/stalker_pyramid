@@ -558,7 +558,6 @@ limit {limit}
         limit=limit
     )
 
-
     # if offset and limit:
     #     sql_query += "offset %s limit %s" % (offset, limit)
 
@@ -821,9 +820,13 @@ def get_entity_outputs(request):
 select
     "Version_Links".id,
     "Version_Links".original_filename,
-    'repositories/' || task_repositories.repo_id || '/' || "Links_ForWeb".full_path as full_path,
-    'repositories/' || task_repositories.repo_id || '/' || "Thumbnails".full_path as "thumbnail_full_path",
+
+    'repositories/' || task_repositories.repo_id || '/' || "Version_Links".full_path as hires_full_path,
+    'repositories/' || task_repositories.repo_id || '/' || "Links_ForWeb".full_path as webres_full_path,
+    'repositories/' || task_repositories.repo_id || '/' || "Thumbnails".full_path as thumbnail_full_path,
+
     tags.name as tags,
+
     "Versions".id as version_id,
     "Versions".version_number as version_number,
     "Versions".take_name as take_name,
@@ -877,7 +880,6 @@ limit %(limit)s
 
     logger.debug('sql_query: %s' % sql_query)
 
-
     from sqlalchemy import text  # to be able to use "%" sign use this function
     result = DBSession.connection().execute(text(sql_query))
 
@@ -885,15 +887,16 @@ limit %(limit)s
         {
             'id': r[0],
             'original_filename': r[1],
-            'full_path': r[2],
-            'thumbnail_full_path': r[3],
-            'tags': r[4],
-            'version_id': r[5],
-            'version_number': r[6],
-            'version_take_name': r[7],
-            'version_published':r[8],
-            'daily_name':r[9],
-            'daily_id':r[10]
+            'hires_full_path': r[2],
+            'webres_full_path': r[3],
+            'thumbnail_full_path': r[4],
+            'tags': r[5],
+            'version_id': r[6],
+            'version_number': r[7],
+            'version_take_name': r[8],
+            'version_published':r[9],
+            'daily_name':r[10],
+            'daily_id':r[11]
         } for r in result.fetchall()
     ]
 

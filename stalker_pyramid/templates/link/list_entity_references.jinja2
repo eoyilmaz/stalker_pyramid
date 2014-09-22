@@ -260,15 +260,11 @@
             var animate = options.animate;
 
             // check if there is any video
-            var thumbnail_full_path, webres_full_path, hires_full_path,
-                webres_download_path, hires_download_path;
-
             data.hires_download_path = data.hires_full_path;
             data.webres_download_path = data.webres_full_path;
 
             colorbox_params.iframe = false;
             if (data.webres_full_path.search('.webm') != -1){
-{#                console.debug('data: ', data);#}
                 // it should have video replace the address with video player
                 data.webres_full_path = 'video_player?video_full_path=/' + data.webres_full_path;
                 colorbox_params.iframe = false;
@@ -331,10 +327,6 @@
                         colorbox_params: colorbox_params
                     });
                 }
-
-{#                $('.ace-thumbnails [data-rel="colorbox"]').colorbox(#}
-{#                        colorbox_params#}
-{#                );#}
 
                 $("#cboxLoadingGraphic").append("<i class='icon-spinner orange'></i>");
 
