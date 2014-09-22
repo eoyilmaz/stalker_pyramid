@@ -193,20 +193,20 @@
             var photo = $('.cboxPhoto');
             var width = photo.width;
             var height = photo.height;
-            if (width >= height) {
-                photo.css({
-                    width: 'auto',
-                    height: '100%',
-                    'margin-top': 0,
-                    'margin-bottom': 0
-                })
-            } else {
+            if (width > height) {
                 photo.css({
                     width: '100%',
                     height: 'auto',
                     'margin-left': 0,
                     'margin-right': 0
-                })
+                });
+            } else {
+                photo.css({
+                    width: 'auto',
+                    height: '100%',
+                    'margin-top': 0,
+                    'margin-bottom': 0
+                });
             }
         }
     };
