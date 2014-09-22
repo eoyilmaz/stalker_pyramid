@@ -769,7 +769,7 @@ tr .odd > td .ticket_BLOCKER {
   margin: 0 0px !important;
 }
 #cboxLoadingGraphic {
-  background: #FFF none !important;
+  background: #000 none !important;
   text-align: center;
 }
 #cboxLoadingGraphic > [class*="icon-"] {
