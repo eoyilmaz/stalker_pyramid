@@ -159,6 +159,8 @@ def create_note(request):
             # make the list unique
             recipients = list(set(recipients))
 
+            logger.debug('sending %s note to %s' % (task.id, recipients))
+
             # create an email
             task_full_path = get_task_full_path(task.id)
             message = Message(

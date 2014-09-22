@@ -70,6 +70,8 @@
     </script>
     {% endraw %}
 
+    {# TODO: update review statuses to use status names instead of status colors #}
+
     {% raw %}
     <script id="tmpl_itemRow" type="text/x-dot-template">
         <tr>
@@ -126,7 +128,7 @@
 
                 {{ } else{ }}
 
-                <span class="label label-status_{{=it.review_status_color }}">{{=it.review_status_name }}</span>
+                <span class="label label-{{=it.review_status_color }}">{{=it.review_status_name }}</span>
                 {{ } }}
                 {{ if (it.review_description) { }}
                 <br/>
