@@ -20,7 +20,7 @@
 
 from pyramid.view import view_config
 
-from stalker.db import DBSession
+from stalker import db
 from stalker import Type
 
 import logging
@@ -37,18 +37,32 @@ def get_types(request):
     of for the desired type with the given target_entity_type
     """
     target_entity_type = request.params.get('target_entity_type')
+
+    sql_query = """select
+    "SimpleEntities".id,
+    "SimpleEntities".name
+from "Types"
+join "SimpleEntities" on "Types".id = "SimpleEntities".id
+"""
+
     if target_entity_type:
-        return [
-            {
-                'name': type_.name,
-                'id': type_.id
-            }
-            for type_ in Type.query.filter(
-                Type._target_entity_type == target_entity_type
-            ).all()
-        ]
-    else:
-        return [type_.name for type_ in Type.query.all()]
+        sql_query += \
+            """where "Types".target_entity_type = '%s'
+            """ % target_entity_type
+
+    sql_query += """order by "SimpleEntities".name"""
+
+    logger.debug('sql_query: %s' % sql_query)
+
+    result = db.DBSession.connection().execute(sql_query)
+
+    return [
+        {
+            'id': r[0],
+            'name': r[1]
+        }
+        for r in result.fetchall()
+    ]
 
 
 def query_type(entity_type, type_name):
@@ -69,6 +83,6 @@ def query_type(entity_type, type_name):
             code=type_name,
             target_entity_type=entity_type
         )
-        DBSession.add(type_)
+        db.DBSession.add(type_)
 
     return type_
