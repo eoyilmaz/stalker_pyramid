@@ -313,3 +313,69 @@ function page_of(name, code, thumbnail_full_path, update_link) {
         'update_link': update_link
     }));
 }
+
+
+/**
+ * Appends a new item to the thumbnail list
+ *
+ * @param options
+ *   An object that holds options.
+ */
+function append_thumbnail(options) {
+    'use strict';
+    //
+    // adds only one item to the list
+    //
+    // compile the output item template
+
+    options = $.extend({
+        data: null,
+        template: null,
+        colorbox_params: {},
+        animate: false,
+        container: null
+    }, options);
+
+    var data = options.data;
+    var template = options.template;
+    var colorbox_params = options.colorbox_params;
+    var animate = options.animate;
+    var container = options.container;
+
+    // check if there is any video
+    data.hires_download_path = data.hires_full_path;
+    data.webres_download_path = data.webres_full_path;
+
+    colorbox_params.iframe = false;
+    if (data.webres_full_path.search('.webm') !== -1) {
+        // it should have video replace the address with video player
+        data.webres_full_path = 'video_player?video_full_path=/' + data.webres_full_path;
+        colorbox_params.iframe = false;
+    }
+
+    var ref_item = $($.parseHTML(template(data)));
+
+    if (animate) {
+        ref_item.css({display: 'none'});
+    }
+
+    container.append(ref_item);
+    if (animate) {
+        ref_item.toggle('slow');
+    }
+
+    ref_item.find('[data-rel="colorbox"]').colorbox(colorbox_params);
+}
+
+/**
+ * Removes the thumbnails from list
+ */
+var remove_thumbnails = function (options) {
+    'use strict';
+    options = $.extend({
+        container: null
+    }, options);
+    var container = options.container;
+    container.children().remove('*');
+    container.colorbox.remove();
+};

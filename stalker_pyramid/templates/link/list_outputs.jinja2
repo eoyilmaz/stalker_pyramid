@@ -232,60 +232,6 @@
     };
 
     /**
-     * Appends a new item to the thumbnail list
-     */
-    var append_thumbnail = function (options) {
-        //
-        // adds only one item to the list
-        //
-        // compile the output item template
-
-        options = $.extend({
-            data: null,
-            template: null,
-            colorbox_params: {},
-            animate: false
-        }, options);
-
-        var data = options.data;
-        var template = options.template;
-        var colorbox_params = options.colorbox_params;
-        var animate = options.animate;
-
-        // check if there is any video
-        data.hires_download_path = data.hires_full_path;
-        data.webres_download_path = data.webres_full_path;
-
-        colorbox_params.iframe = false;
-        if (data.webres_full_path.search('.webm') != -1){
-            // it should have video replace the address with video player
-            data.webres_full_path = 'video_player?video_full_path=/' + data.webres_full_path;
-            colorbox_params.iframe = false;
-        }
-
-        var ref_item = $($.parseHTML(template(data)));
-
-        if (animate) {
-            ref_item.css({display: 'none'});
-        }
-        $('.ace-thumbnails').append(ref_item);
-        if (animate) {
-            ref_item.toggle('slow');
-        }
-
-        ref_item.find('[data-rel="colorbox"]').colorbox(colorbox_params);
-    };
-
-    /**
-     * Removes the thumbnails from list
-     */
-    var remove_thumbnails = function(){
-        var cb_element = $('.ace-thumbnails');
-        cb_element.children().remove('*');
-        cb_element.colorbox.remove();
-    };
-
-    /**
      * Draws output items
      */
     var draw_output_items = function (options) {
@@ -312,13 +258,19 @@
                   })).then(function (data) {
             var ref_count = data.length;
             // remove any thumbnails first
-            remove_thumbnails();
+
+            var cbox_element = $('.ace-thumbnails');
+
+            remove_thumbnails({
+                container: cbox_element
+            });
             for (var i = 0; i < ref_count; i++) {
                 data[i].task_id = task_id;
                 append_thumbnail({
                     data: data[i],
                     template: outputItemTemplate,
-                    colorbox_params: colorbox_params
+                    colorbox_params: colorbox_params,
+                    container: cbox_element
                 });
             }
 
@@ -422,13 +374,14 @@
                 data[i].thumbnail_full_path = repo_prepend + data[i].thumbnail_full_path;
                 data[i].full_path = repo_prepend + data[i].full_path;
                 data[i].task_id = task_id;
-                console.log('task_id '+task_id)
+                console.log('task_id '+task_id);
 
                 append_thumbnail({
                     data: data[i],
                     template: outputItemTemplate,
                     colorbox_params: colorbox_params,
-                    animate: true
+                    animate: true,
+                    container: $('.ace-thumbnails')
                 });
             }
         });

@@ -45,12 +45,15 @@
     {% raw %}
         <script id="tmpl_output_item" type="text/x-dot-template">
             <li id="Output_{{=it.id}}">
-                <a href="/{{=it.full_path}}"
+                <a href="/{{=it.webres_full_path}}"
 
-                   thumbnail_href="{{=it.thumbnail_full_path}}"
-                   web_href="{{=it.full_path}}"
-                   hires_href="{{=it.hires_full_path}}"
-    
+                   thumbnail_full_path="{{=it.thumbnail_full_path}}"
+                   webres_full_path="{{=it.webres_full_path}}"
+                   hires_full_path="{{=it.hires_full_path}}"
+
+                   webres_download_path="{{=it.webres_download_path}}"
+                   hires_download_path="{{=it.hires_download_path}}"
+
                    original_filename="{{=it.original_filename}}"
     
                    tags="{{=it.tags }}"
@@ -67,7 +70,7 @@
                             {{?it.version_is_published }}
                                 <span class="label label-success arrowed-in">published</span>
                             {{?}}
-                            {{? it.full_path.indexOf('.webm') !== -1 }}
+                            {{? it.webres_full_path.indexOf('.webm') !== -1 }}
                                 <span class="label label-success">
                                     <i class="icon-film"></i>
                                 </span>
@@ -77,8 +80,9 @@
                     </div>
                 </a>
                <div class="tools">
-                    <a href="/FD{{=it.full_path}}" title="Download"><i class="icon-cloud-download"></i></a>
-                    <a href="javascript:copyToClipboard('http://' + window.location.host +'/FD{{=it.full_path}}')" title="Copy Download Link"><i class="icon-link"></i></a>
+                    <a href="/FD{{=it.webres_download_path}}" title="Download Web Version"><i class="icon-cloud-download green"></i></a>
+                    <a href="/FD{{=it.hires_download_path}}" title="Download Original"><i class="icon-cloud-download blue"></i></a>
+
                     <a href="/versions/{{=it.version_id}}/view" title="View Version"><i class="icon-zoom-in"></i></a>
 
                     <a class='output-deleter'
@@ -224,20 +228,28 @@
             transition: 'none',
             title: function () {
                 // Filename (Tags)| Hires (DL)
-                
+
                 var url = $(this).attr('href');
 
                 var original_title = $(this).attr('original_filename');
 
                 var tags = $(this).attr('tags');
 
-                var view_hires_url = '/' + $(this).attr('hires_href');
-                var download_hires_url = '/FD' + $(this).attr('hires_href');
+                var view_hires_url = '/' + $(this).attr('hires_full_path');
+                var download_hires_url = '/FD' + $(this).attr('hires_download_path');
 
-                var open_hires_in_new_tab_link = '<a title="View Hires in new Tab"  href="' + view_hires_url + '" target="_blank">Hires</a></span>';
-                var download_hires_link = '<span><a title="Download Hires" class="icon-cloud-download" href="' + download_hires_url + '">&nbsp</a></span>';
+                var view_webres_url = '/' + $(this).attr('webres_full_path');
+                var download_webres_url = '/FD' + $(this).attr('webres_download_path');
 
-                return original_title + '&nbsp|&nbsp' + open_hires_in_new_tab_link + ' &nbsp '+ download_hires_link;
+                var open_hires_in_new_tab_link = '<a title="View Original in new Tab"  href="' + view_hires_url + '" target="_blank">Original</a></span>';
+                var download_hires_link = '<span><a title="Download Original" class="icon-cloud-download blue" href="' + download_hires_url + '">&nbsp</a></span>';
+
+                var open_webres_in_new_tab_link = '<a title="View Web Version in new Tab"  href="' + view_webres_url + '" target="_blank">Web Version</a></span>';
+                var download_webres_link = '<span><a title="Download Web Version" class="icon-cloud-download green" href="' + download_webres_url + '">&nbsp</a></span>';
+
+                return original_title + '&nbsp(' + tags + ')&nbsp|&nbsp' +
+                       open_webres_in_new_tab_link + ' &nbsp ' + download_webres_link + '&nbsp|&nbsp' +
+                       open_hires_in_new_tab_link + ' &nbsp ' + download_hires_link;
             },
             onOpen: function () {
                 document.body.style.overflow = 'hidden';
@@ -291,53 +303,8 @@
             }
         };
 
-        var append_thumbnail = function (options) {
-            //
-            // adds only one item to the list
-            //
-            // compile the output item template
-
-            options = $.extend({
-                data: null,
-                template: null,
-                colorbox_params: {},
-                animate: false
-            }, options);
-
-            var data = options.data;
-            var template = options.template;
-            var colorbox_params = options.colorbox_params;
-            var animate = options.animate;
-            var container = options.container;
-
-    {#            console.log('data '+ data.version_published)#}
-
-            // check if there is any video
-            var full_path;
-            full_path = data.full_path;
-            colorbox_params.iframe = false;
-            if (full_path.search('.webm') != -1){
-    {#                console.debug('data: ', data);#}
-                // it should have video replace the address with video player
-                data.full_path = 'video_player?video_full_path=/' + data.full_path;
-                colorbox_params.iframe = false;
-            }
-
-            var ref_item = $($.parseHTML(template(data)));
-
-            if (animate) {
-                ref_item.css({display: 'none'});
-            }
-            container.append(ref_item);
-            if (animate) {
-                ref_item.toggle('slow');
-            }
-
-            ref_item.find('[data-rel="colorbox"]').colorbox(colorbox_params);
-        };
-
-        $(function () {
-            $.getJSON('/dailies/{{ entity.id }}/outputs/').then(function (data) {
+        $.getJSON('/dailies/{{ entity.id }}/outputs/').then(function (data) {
+            $(function () {
 
                 var daily_task_template = doT.template($('#tmpl_daily_task').html());
                 var daily_tasks_list = $('#daily_tasks');
@@ -383,7 +350,7 @@
 
                         var output_template = doT.template($('#tmpl_output_item').html());
                         var outputs = $('#outputs_' + task.task_id);
-                        for(var j=0; j<task.links.length; j++){
+                        for (var j=0; j < task.links.length; j++){
                             var link = task.links[j];
                             append_thumbnail({
                                 data: link,
@@ -395,7 +362,7 @@
 
                         var note_template = doT.template($('#tmpl_note_item').html());
                         var notes = $('#notes_'+task.task_id);
-                        for(var k=0; k<task.notes.length; k++){
+                        for (var k=0; k<task.notes.length; k++){
                             var note = task.notes[k];
 
                             {% if has_permission('Delete_Note') %}
@@ -422,8 +389,6 @@
 
             });
         })
-
     </script>
-
 
 {% endblock extrascripts %}

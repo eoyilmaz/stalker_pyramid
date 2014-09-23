@@ -181,6 +181,8 @@ def update_daily(request):
     renderer='json'
 )
 def get_dailies(request):
+    """returns dailies with the given id
+    """
 
     project_id = request.matchdict.get('id')
     logger.debug('get_dailies is working for the project which id is: %s' % project_id)
@@ -313,7 +315,7 @@ def get_daily_outputs(request):
 
             array_agg(link_data.original_filename) as link_original_filename,
             array_agg(link_data.hires_full_path) as link_hires_full_path,
-            array_agg(link_data.full_path) as link_full_path,
+            array_agg(link_data.webres_full_path) as link_webres_full_path,
             array_agg(link_data.thumbnail_full_path) as link_thumbnail_full_path,
 
             array_agg(link_data.version_id) as version_id,
@@ -345,7 +347,7 @@ def get_daily_outputs(request):
                 "Links".original_filename as original_filename,
 
                 'repositories/' || task_repositories.repo_id || '/' || "Links".full_path as hires_full_path,
-                'repositories/' || task_repositories.repo_id || '/' || "Links_ForWeb".full_path as full_path,
+                'repositories/' || task_repositories.repo_id || '/' || "Links_ForWeb".full_path as webres_full_path,
                 'repositories/' || task_repositories.repo_id || '/' || "Thumbnails".full_path as thumbnail_full_path
 
             from "Links"
@@ -446,7 +448,7 @@ def get_daily_outputs(request):
                 'id': link_ids[i],
                 'original_filename': original_filename[i],
                 'hires_full_path': hires_full_path[i],
-                'full_path': full_path[i],
+                'webres_full_path': full_path[i],
                 'thumbnail_full_path': thumbnail_full_path[i],
                 'version_id': version_ids[i],
                 'version_take_name': version_take_names[i],
