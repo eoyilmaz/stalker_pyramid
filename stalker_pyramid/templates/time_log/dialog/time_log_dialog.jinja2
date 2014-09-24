@@ -220,6 +220,9 @@ function init_dialog() {
 
             var remaining_minutes_after_this_time_log = parseInt(remaining_seconds_after_this_time_log / 60);
             information.find('span').remove();
+            var remaining_minutes_after_this_time_log_string = meaningful_time_calculator(Math.abs(remaining_seconds_after_this_time_log), 'h');
+
+
 
             var total_logged_hours_msg = time_to_complete<=0?'spent all scheduled hours':'you can enter max <strong>'+ time_to_complete +sch_unit +'</strong>';
 
@@ -254,7 +257,7 @@ function init_dialog() {
                 submit_button.attr('disabled', false);
                 alert_information.append(
                     "<span class='pull_left'>If you enter this time log, <strong>" +
-                    remaining_minutes_after_this_time_log +
+                    remaining_minutes_after_this_time_log_string +
                     "</strong> minutes will remain to complete this task.</span>"
                 );
                 $('#percent_bar_container').show();
@@ -271,7 +274,7 @@ function init_dialog() {
             else {
 
                 var exceeding_message ='<span><div id="message" class="alert alert-error bigger-110">' +
-                    '<span class="pull_left ">You need <strong>' + remaining_minutes_after_this_time_log +
+                    '<span class="pull_left ">You need <strong>' + remaining_minutes_after_this_time_log_string +
                     '</strong> extra minutes. Please request for extra minutes. </span>' +
 
                     '</div></span>';
