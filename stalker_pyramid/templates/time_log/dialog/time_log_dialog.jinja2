@@ -9,7 +9,6 @@
           method='post'>
 
         <div class='row-fluid'>
-
             {# Task #}
             <div class='control-group'>
                 <label class='span2 control-label'
@@ -161,8 +160,6 @@ function init_dialog() {
     var start_date_value = new Date(event_dialog.attr('start'));
     var end_date_value = new Date(event_dialog.attr('end'));
 
-
-
     var start_time_value = start_date_value;
     var end_time_value = end_date_value;
 
@@ -170,7 +167,6 @@ function init_dialog() {
         start_time_value.setHours(10);
         end_time_value.setHours(19);
     }
-
 
     {# ***************************************************************** #}
     {# Update Remaining Hours #}
@@ -206,7 +202,7 @@ function init_dialog() {
             var start = start_end[0];
             var end = start_end[1];
 
-            var timing_resolution = 3600000; // 1 hour
+            var timing_resolution = 600000; // 1 hour
             var duration_millis = end.getTime() - start.getTime();
 
             // round the duration millis
@@ -222,7 +218,7 @@ function init_dialog() {
             var remaining_seconds_after_this_time_log = remaining_seconds - duration_seconds;
             var remaining_hours = parseInt(remaining_seconds/3600);
 
-            var remaining_hours_after_this_time_log = parseInt(remaining_seconds_after_this_time_log / 3600);
+            var remaining_minutes_after_this_time_log = parseInt(remaining_seconds_after_this_time_log / 60);
             information.find('span').remove();
 
             var total_logged_hours_msg = time_to_complete<=0?'spent all scheduled hours':'you can enter max <strong>'+ time_to_complete +sch_unit +'</strong>';
@@ -250,24 +246,21 @@ function init_dialog() {
                 );
             }
 
-
-
-
             var alert_information = $('#alert_information');
             alert_information.find('span').remove();
             var completed_percent;
 
-            if (remaining_hours_after_this_time_log > 0) {
+            if (remaining_minutes_after_this_time_log > 0) {
                 submit_button.attr('disabled', false);
                 alert_information.append(
                     "<span class='pull_left'>If you enter this time log, <strong>" +
-                    remaining_hours_after_this_time_log +
-                    "</strong> hours will remain to complete this task.</span>"
+                    remaining_minutes_after_this_time_log +
+                    "</strong> minutes will remain to complete this task.</span>"
                 );
                 $('#percent_bar_container').show();
                 completed_percent = (100 - ((remaining_seconds_after_this_time_log / parseFloat(data[0].schedule_seconds)) * 100)).toFixed(1);
             }
-            else if(remaining_hours_after_this_time_log==0){
+            else if(remaining_minutes_after_this_time_log==0){
                 submit_button.attr('disabled', false);
                 alert_information.append(
                     "<span class='pull_left'>If you enter this time log, all schedule hours will be spent </span>"
@@ -278,8 +271,8 @@ function init_dialog() {
             else {
 
                 var exceeding_message ='<span><div id="message" class="alert alert-error bigger-110">' +
-                    '<span class="pull_left ">You need <strong>' + remaining_hours_after_this_time_log +
-                    '</strong> extra hours. Please request for extra hours. </span>' +
+                    '<span class="pull_left ">You need <strong>' + remaining_minutes_after_this_time_log +
+                    '</strong> extra minutes. Please request for extra minutes. </span>' +
 
                     '</div></span>';
 
@@ -410,8 +403,6 @@ function init_dialog() {
 
         update_hours_to_complete();
 
-
-
         {% if has_permission('Delete_TimeLog') %}
             $('#dialog_template_delete_button').show();
             $('#dialog_template_delete_button').on('click', function (e) {
@@ -457,6 +448,9 @@ function init_dialog() {
         var start_date_string = date_range[0].split('/');
         var end_date_string = date_range[1].split('/');
         var start_time_string = $('#start_time').val().split(':');
+
+
+
         var end_time_string = $('#end_time').val().split(':');
 
         var start = new Date(
@@ -467,6 +461,7 @@ function init_dialog() {
             parseInt(start_time_string[1]),
             0, 0
         );
+
         var end = new Date(
             parseInt(end_date_string[2]),
             parseInt(end_date_string[0]) - 1,
@@ -475,9 +470,6 @@ function init_dialog() {
             parseInt(end_time_string[1]),
             0, 0
         );
-
-
-
 
         if(start.getDate() == end.getDate() && start.getMonth()==end.getMonth()) {
 
