@@ -537,14 +537,16 @@
             var event_dialog = $('#dialog_template');
 
             var init_them_all = function(){
-                try {
-                    setTimeout(function(){
-                        // init_dialog() will be loaded with the dialog itself
-                        init_dialog();
-                    });
-                } catch (e) {
-                    console.log(e);
-                    setTimeout(init_them_all, 1000);
+                if (event_dialog.find('script.dialog_loaded')[0] !== undefined){
+                    try {
+                        setTimeout(function(){
+                            // init_dialog() will be loaded with the dialog itself
+                            init_dialog();
+                        });
+                    } catch (e) {
+                        console.log(e);
+                        setTimeout(init_them_all, 250);
+                    }
                 }
             };
 
