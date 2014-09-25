@@ -535,26 +535,29 @@
     <script type="text/javascript">
         $(function () {
             var event_dialog = $('#dialog_template');
+
+            var init_them_all = function(){
+                if (init_dialog !== undefined || init_dialog !== null) {
+                    try {
+                        setTimeout(function(){
+                            // init_dialog() will be loaded with the dialog itself
+                            init_dialog();
+                        });
+                    } catch (e) {
+                        console.log(e);
+                    }
+                } else {
+                    setTimeout(init_them_all, 1000);
+                }
+            };
+
             event_dialog.on('shown', function (e) {
                 $('#dialog_template_delete_button').hide();
                 e.stopPropagation();
                 e.preventDefault();
-                var success = null;
-                var max_retry = 10;
-
-                while(init_dialog === undefined) {
-                    // wait here for a second
-                }
-
-                try {
-                    setTimeout(function(){
-                        // init_dialog() will be loaded with the dialog itself
-                        init_dialog();
-                    });
-                } catch (e) {
-                    console.log(e);
-                }
+                init_them_all();
             });
+
             event_dialog.on('hidden', function (e) {
                 e.stopPropagation();
                 e.preventDefault();
