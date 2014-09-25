@@ -1,14 +1,11 @@
 <div class="widget-box">
     <div class="widget-header widget-header-flat widget-header-small">
-          <h5>
-                <i class="icon-time"></i>
-                Timing
-          </h5>
+        <h5><i class="icon-time"></i>Timing ({{ entity.time_logs | count}} TimeLogs)</h5>
     </div>
 
     <div class="widget-body no-padding">
         <div class="widget-main no-padding">
-            <div id='bid_alert' class="alert alert-block no-padding" style="margin-bottom: 0px;">
+            <div id='bid_alert' class="alert alert-block no-padding" style="margin-bottom: 0;">
 
                 <table class="table">
                     <tbody>
@@ -31,14 +28,14 @@
                     </tbody>
                 </table>
             </div>
-            <div class="progress no-padding" style="margin-top: 0px; margin-bottom: 0px;">
-                    <div id='bid_bar' class="bar bar-cmpl" style="width: 0%;"></div>
-                    <div id='separator_bar' class="bar bar-grey" style="width: 0%;"></div>
-                    <div id='total_logged_bar' class="bar" style="width: 0%;"></div>
-                    <div id='schedule_timing_bar' class="bar bar-rts" style="width: 0%;"></div>
+            <div class="progress no-padding" style="margin-top: 0; margin-bottom: 0;">
+                    <div id='bid_bar' class="bar bar-cmpl" style="width: 0;"></div>
+                    <div id='separator_bar' class="bar bar-grey" style="width: 0;"></div>
+                    <div id='total_logged_bar' class="bar" style="width: 0;"></div>
+                    <div id='schedule_timing_bar' class="bar bar-rts" style="width: 0;"></div>
             </div>
         </div><!--/widget-main-->
-        {% if (entity.schedule_seconds - entity.total_logged_seconds)==0  and entity.status.code=='WIP' and (logged_in_user in entity.resources or has_permission('Create_Review'))%}
+        {% if (entity.schedule_seconds - entity.total_logged_seconds)==0  and entity.status.code=='WIP' and (logged_in_user in entity.resources or has_permission('Create_Review')) %}
             <div class="widget-toolbox clearfix">
                 <button id='task_review_button'
                         class="btn btn-small btn-danger span12"
@@ -55,14 +52,13 @@
     </div><!--/widget-body-->
 </div><!--/widget-box-->
 
-<script class="code" type="text/javascript">
-    $(document).ready(function () {
+<script>
+    $(function () {
         var schedule_unit_seconds = unit_by_seconds('{{ entity.schedule_unit }}');
 
         var bid_seconds = calculate_seconds({{ entity.bid_timing }}, '{{ entity.bid_unit }}');
         var schedule_timing_seconds = calculate_seconds({{ entity.schedule_timing }}, '{{ entity.schedule_unit }}');
         var total_logged_seconds = {{entity.total_logged_seconds}};
-
 
         var bid = meaningful_time_calculator(bid_seconds, '{{ entity.bid_unit }}');
         var schedule_timing = meaningful_time_calculator(schedule_timing_seconds, '{{ entity.bid_unit }}');
