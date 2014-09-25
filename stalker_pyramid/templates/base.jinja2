@@ -537,7 +537,7 @@
             var event_dialog = $('#dialog_template');
 
             var init_them_all = function(){
-                if (init_dialog !== undefined || init_dialog !== null) {
+                if (init_dialog !== undefined && init_dialog !== null) {
                     try {
                         setTimeout(function(){
                             // init_dialog() will be loaded with the dialog itself
