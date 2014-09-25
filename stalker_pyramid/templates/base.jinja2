@@ -539,6 +539,13 @@
                 $('#dialog_template_delete_button').hide();
                 e.stopPropagation();
                 e.preventDefault();
+                var success = null;
+                var max_retry = 10;
+
+                while(init_dialog === undefined) {
+                    // wait here for a second
+                }
+
                 try {
                     setTimeout(function(){
                         // init_dialog() will be loaded with the dialog itself
