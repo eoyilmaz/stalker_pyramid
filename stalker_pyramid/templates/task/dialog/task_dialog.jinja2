@@ -1,273 +1,3 @@
-<div class='row-fluid'>
-    <div class='span12'>
-
-        <form id='task_form'
-              class='form-horizontal'
-              role='form'
-              method='post'
-              action="{{ request.route_url('create_task') }}">
-
-            {# Entity Type #}
-            <div class='control-group'>
-                <label class='span3 control-label' for='task_entity_type'>Entity Type</label>
-                <div class='span9'>
-                    {% if mode == 'create' %}
-                    <select id='task_entity_type'
-                            class='input-block-level'
-                            name='entity_type'
-                            required>
-                        <option value="Task">Task</option>
-                        <option value="Asset">Asset</option>
-                        <option value="Shot">Shot</option>
-                        <option value="Sequence">Sequence</option>
-                    </select>
-                    {% else %}
-                        <input type='text' id="task_entity_type" value="{{ entity.entity_type }}" disabled="true">
-                    {% endif %}
-                </div>
-            </div>
-
-            {# Project #}
-            <div class='control-group'>
-                <label class='span3 control-label' for='task_project'>Project</label>
-                <div class='span9'>
-                    <input type="text" id='task_project'
-                           class='input-block-level'
-                           name='project_id'
-                           required>
-                </div>
-            </div>
-
-            {# Parent #}
-            <div class='control-group'>
-                <label class='span3 control-label' for='task_parent'>Parent</label>
-                <div class='span9'>
-                    <input id='task_parent'
-                            name='parent_id'
-                            class='input-block-level span11'
-                            name='task_parent_id'
-                            is_updating=false
-                            data-placeholder='Parent'>
-                    <span id='task_parent_helper' class="help-button"
-                          title="">?</span>
-                </div>
-            </div>
-
-            {# Name #}
-            <div class="control-group">
-                <label class="span3 control-label" for="task_name">Name</label>
-                <div class="span9">
-                    <input id="task_name"
-                           class='input-block-level'
-                           name='name'
-                           type="text"
-                           class="form-control"
-                           {% if mode=='update' %}value="{{ entity.name }}"{% endif %}
-                           required>
-                </div>
-            </div>
-
-            {# Code #}
-            <div class="code_inputs control-group">
-                <label class="span3 control-label" for="task_code">Code</label>
-                <div class="span9">
-                    <input id="task_code"
-                           class='input-block-level'
-                           name='code'
-                           type="text"
-                           class="form-control"
-                           {% if mode=='update' %}value="{{ entity.code }}"{% endif %}
-                            >
-                </div>
-            </div>
-
-            {# Description #}
-            <div class='control-group'>
-                <label class='span3 control-label' for='task_description'>Description</label>
-                <div class='span9'>
-                    <textarea id="task_description"
-                              name='description'
-                              class="autosize-transition span12"
-                              style="overflow: hidden;
-                                     word-wrap: break-word;
-                                     resize: horizontal;
-                                     height: 50px;"
-                              ></textarea>
-                </div>
-            </div>
-
-            {# Asset Type #}
-            <div class='asset_inputs control-group'>
-                <label class='span3 control-label' for='asset_type'>Asset Type</label>
-                <div class='span9'>
-                    <input id='asset_type'
-                           class='input-block-level'
-                           name='asset_type'
-                           type='text'
-                           is_updating=false
-                           {% if mode=='update' %}{% if entity.type %}value="{{ entity.type.name }}"{% endif %}{% endif %}
-                           >
-                </div>
-            </div>
-
-            {# Shot Sequence #}
-            <div class='shot_inputs control-group'>
-                <label class="span3 control-label" for='shot_sequence'>Sequence</label>
-                <div class='span9'>
-                    <select id='shot_sequence'
-                            class='input-block-level'
-                            name='shot_sequence_id'
-                            is_updating=false></select>
-                </div>
-            </div>
-
-            <div class='shot_inputs control-group'>
-                <label class="span3 control-label" for='shot_cut_in'>Cut In & Out</label>
-                <div class='span9'>
-                    <input id='shot_cut_in'
-                           class='input-block-level'
-                           name='cut_in'
-                           is_updating=false
-                           {% if mode=='update' %}{% if entity.type %}value="{{ entity.cut_in }}"{% endif %}{% endif %}>
-                    <input id='shot_cut_out'
-                           class='input-block-level'
-                           name='cut_out'
-                           is_updating=false
-                           {% if mode=='update' %}{% if entity.type %}value="{{ entity.cut_out }}"{% endif %}{% endif %}>
-                </div>
-            </div>
-
-            {# Task Type #}
-            <div class='task_inputs control-group'>
-                <label class='span3 control-label' for='task_type'>Task Type</label>
-                <div class='span9'>
-                    <input id='task_type'
-                           class='input-block-level'
-                           name='task_type'
-                           type='text'
-                           is_updating=false
-                           {% if mode=='update' %}{% if entity.type %}value="{{ entity.type.name }}"{% endif %}{% endif %}>
-                </div>
-            </div>
-
-            {# Depends_to #}
-            <div class='task_inputs control-group'>
-                <label class='span3 control-label' for='task_depends_to'>Depends To</label>
-                <div class='span9'>
-                    <input id='task_depends_to'
-                           class='input-block-level tag-input-style span11'
-                           type='text'
-                           name='dependent_ids'
-                           data-placeholder='Depends To'
-                           is_updating=false>
-                    <span id='task_depends_to_helper' class="help-button"
-                          title="">?</span>
-                </div>
-            </div>
-
-            {# Resources #}
-            <div class='task_inputs control-group'>
-                <label class='span3 control-label' for='task_resources'>Resources</label>
-                <div class='span9'>
-                    <select id='task_resources'
-                            multiple=''
-                            class='input-block-level tag-input-style'
-                            name='resource_ids'
-                            data-placeholder='Resources'
-                            is_updating=false></select>
-                </div>
-            </div>
-
-            {# Responsible #}
-            <div class='control-group'>
-                <label class='span3 control-label' for='task_responsible'>Responsible</label>
-                <div class='span9'>
-                    <select id='task_responsible'
-                            multiple=''
-                            class='input-block-level tag-input-style'
-                            name='responsible_ids'
-                            data-placeholder='Responsible'
-                            is_updating=false></select>
-                </div>
-                <div class='hidden'
-                     id="responsibles_storage"
-                     responsible_id="[{% if entity %}{% for responsible in entity.responsible %}{% if loop.index0 %},{% endif %}{{ responsible.id }}{% endfor %}{% endif %}]">
-                    {# this is a storage for resource_ids, which is set externally by the #}
-                    {# template engine #}
-                 </div>
-            </div>
-
-            {# Constraints #}
-
-            {# Schedule Timing #}
-            <div class='task_inputs control-group'>
-                <label class='span3 control-label' for='task_schedule_timing'>Schedule Timing</label>
-                <div class='span9'>
-                    <div class='span2'>
-                        <input id='task_schedule_timing'
-                               class='input-block-level'
-                               name='schedule_timing'
-                               type='text'
-                               value={% if mode=='update' %}{{ entity.schedule_timing }}{% else %}1{% endif %}
-                               min=1
-                               required>
-                    </div>
-                    <div class='span3'>
-                        <select id='task_schedule_unit'
-                               class='input-block-level'
-                               name='schedule_unit'>
-                            <option value='min'>Minutes</option>
-                            <option value='h'>Hours</option>
-                            <option value='d'>Days</option>
-                            <option value='w'>Weeks</option>
-                            <option value='m'>Months</option>
-                            <option value='y'>Years</option>
-                        </select>
-                    </div>
-                    <div class='span3'>
-                        <select id='task_schedule_model'
-                                class='input-block-level'
-                                name='schedule_model'>
-                            <option value='effort'>Effort</option>
-                            <option value='duration'>Duration</option>
-                            <option value='length'>Length</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            {# Update Bid #}
-            {% if mode == 'update' %}
-            <div class='task_inputs control-group'>
-                <label class="span3 control-label" for="task_update_bid">Update Bid</label>
-                <div class="span9">
-                    <input id="task_update_bid"
-                           type="checkbox"
-                           name="update_bid"/>
-                </div>
-            </div>
-            {% endif %}
-
-            {# Priority #}
-            <div class='control-group'>
-                <label class='span3 control-label' for='task_priority'>Priority</label>
-                <div class='span9'>
-                    <input id='task_priority'
-                           name='priority'
-                           type='text'
-                           placeholder='Priority'
-                           value={% if mode == 'update' %}{{ entity.priority }}{% else %}500{% endif %}
-                           min=1
-                           max=1000
-                           required>
-                </div>
-            </div>
-
-        </form>
-
-    </div>
-</div>
-
 <!-- help text for parent and dependent task fields-->
 <script id="tmpl_title_help" type="text/x-dot-template">
 Type task names directly or use "field:value" format:
@@ -301,7 +31,7 @@ resource_name, status
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/fuelux/fuelux.spinner.min.js") }}'></script>
 
 
-<script>}
+<script>
     function init_dialog(){
         console.log('initialize task dialog start');
 
@@ -970,3 +700,275 @@ resource_name, status
         console.log('destruct task dialog end');
     }
 </script>
+
+
+
+<div class='row-fluid'>
+    <div class='span12'>
+
+        <form id='task_form'
+              class='form-horizontal'
+              role='form'
+              method='post'
+              action="{{ request.route_url('create_task') }}">
+
+            {# Entity Type #}
+            <div class='control-group'>
+                <label class='span3 control-label' for='task_entity_type'>Entity Type</label>
+                <div class='span9'>
+                    {% if mode == 'create' %}
+                    <select id='task_entity_type'
+                            class='input-block-level'
+                            name='entity_type'
+                            required>
+                        <option value="Task">Task</option>
+                        <option value="Asset">Asset</option>
+                        <option value="Shot">Shot</option>
+                        <option value="Sequence">Sequence</option>
+                    </select>
+                    {% else %}
+                        <input type='text' id="task_entity_type" value="{{ entity.entity_type }}" disabled="true">
+                    {% endif %}
+                </div>
+            </div>
+
+            {# Project #}
+            <div class='control-group'>
+                <label class='span3 control-label' for='task_project'>Project</label>
+                <div class='span9'>
+                    <input type="text" id='task_project'
+                           class='input-block-level'
+                           name='project_id'
+                           required>
+                </div>
+            </div>
+
+            {# Parent #}
+            <div class='control-group'>
+                <label class='span3 control-label' for='task_parent'>Parent</label>
+                <div class='span9'>
+                    <input id='task_parent'
+                            name='parent_id'
+                            class='input-block-level span11'
+                            name='task_parent_id'
+                            is_updating=false
+                            data-placeholder='Parent'>
+                    <span id='task_parent_helper' class="help-button"
+                          title="">?</span>
+                </div>
+            </div>
+
+            {# Name #}
+            <div class="control-group">
+                <label class="span3 control-label" for="task_name">Name</label>
+                <div class="span9">
+                    <input id="task_name"
+                           class='input-block-level'
+                           name='name'
+                           type="text"
+                           class="form-control"
+                           {% if mode=='update' %}value="{{ entity.name }}"{% endif %}
+                           required>
+                </div>
+            </div>
+
+            {# Code #}
+            <div class="code_inputs control-group">
+                <label class="span3 control-label" for="task_code">Code</label>
+                <div class="span9">
+                    <input id="task_code"
+                           class='input-block-level'
+                           name='code'
+                           type="text"
+                           class="form-control"
+                           {% if mode=='update' %}value="{{ entity.code }}"{% endif %}
+                            >
+                </div>
+            </div>
+
+            {# Description #}
+            <div class='control-group'>
+                <label class='span3 control-label' for='task_description'>Description</label>
+                <div class='span9'>
+                    <textarea id="task_description"
+                              name='description'
+                              class="autosize-transition span12"
+                              style="overflow: hidden;
+                                     word-wrap: break-word;
+                                     resize: horizontal;
+                                     height: 50px;"
+                              ></textarea>
+                </div>
+            </div>
+
+            {# Asset Type #}
+            <div class='asset_inputs control-group'>
+                <label class='span3 control-label' for='asset_type'>Asset Type</label>
+                <div class='span9'>
+                    <input id='asset_type'
+                           class='input-block-level'
+                           name='asset_type'
+                           type='text'
+                           is_updating=false
+                           {% if mode=='update' %}{% if entity.type %}value="{{ entity.type.name }}"{% endif %}{% endif %}
+                           >
+                </div>
+            </div>
+
+            {# Shot Sequence #}
+            <div class='shot_inputs control-group'>
+                <label class="span3 control-label" for='shot_sequence'>Sequence</label>
+                <div class='span9'>
+                    <select id='shot_sequence'
+                            class='input-block-level'
+                            name='shot_sequence_id'
+                            is_updating=false></select>
+                </div>
+            </div>
+
+            <div class='shot_inputs control-group'>
+                <label class="span3 control-label" for='shot_cut_in'>Cut In & Out</label>
+                <div class='span9'>
+                    <input id='shot_cut_in'
+                           class='input-block-level'
+                           name='cut_in'
+                           is_updating=false
+                           {% if mode=='update' %}{% if entity.type %}value="{{ entity.cut_in }}"{% endif %}{% endif %}>
+                    <input id='shot_cut_out'
+                           class='input-block-level'
+                           name='cut_out'
+                           is_updating=false
+                           {% if mode=='update' %}{% if entity.type %}value="{{ entity.cut_out }}"{% endif %}{% endif %}>
+                </div>
+            </div>
+
+            {# Task Type #}
+            <div class='task_inputs control-group'>
+                <label class='span3 control-label' for='task_type'>Task Type</label>
+                <div class='span9'>
+                    <input id='task_type'
+                           class='input-block-level'
+                           name='task_type'
+                           type='text'
+                           is_updating=false
+                           {% if mode=='update' %}{% if entity.type %}value="{{ entity.type.name }}"{% endif %}{% endif %}>
+                </div>
+            </div>
+
+            {# Depends_to #}
+            <div class='task_inputs control-group'>
+                <label class='span3 control-label' for='task_depends_to'>Depends To</label>
+                <div class='span9'>
+                    <input id='task_depends_to'
+                           class='input-block-level tag-input-style span11'
+                           type='text'
+                           name='dependent_ids'
+                           data-placeholder='Depends To'
+                           is_updating=false>
+                    <span id='task_depends_to_helper' class="help-button"
+                          title="">?</span>
+                </div>
+            </div>
+
+            {# Resources #}
+            <div class='task_inputs control-group'>
+                <label class='span3 control-label' for='task_resources'>Resources</label>
+                <div class='span9'>
+                    <select id='task_resources'
+                            multiple=''
+                            class='input-block-level tag-input-style'
+                            name='resource_ids'
+                            data-placeholder='Resources'
+                            is_updating=false></select>
+                </div>
+            </div>
+
+            {# Responsible #}
+            <div class='control-group'>
+                <label class='span3 control-label' for='task_responsible'>Responsible</label>
+                <div class='span9'>
+                    <select id='task_responsible'
+                            multiple=''
+                            class='input-block-level tag-input-style'
+                            name='responsible_ids'
+                            data-placeholder='Responsible'
+                            is_updating=false></select>
+                </div>
+                <div class='hidden'
+                     id="responsibles_storage"
+                     responsible_id="[{% if entity %}{% for responsible in entity.responsible %}{% if loop.index0 %},{% endif %}{{ responsible.id }}{% endfor %}{% endif %}]">
+                    {# this is a storage for resource_ids, which is set externally by the #}
+                    {# template engine #}
+                 </div>
+            </div>
+
+            {# Constraints #}
+
+            {# Schedule Timing #}
+            <div class='task_inputs control-group'>
+                <label class='span3 control-label' for='task_schedule_timing'>Schedule Timing</label>
+                <div class='span9'>
+                    <div class='span2'>
+                        <input id='task_schedule_timing'
+                               class='input-block-level'
+                               name='schedule_timing'
+                               type='text'
+                               value={% if mode=='update' %}{{ entity.schedule_timing }}{% else %}1{% endif %}
+                               min=1
+                               required>
+                    </div>
+                    <div class='span3'>
+                        <select id='task_schedule_unit'
+                               class='input-block-level'
+                               name='schedule_unit'>
+                            <option value='min'>Minutes</option>
+                            <option value='h'>Hours</option>
+                            <option value='d'>Days</option>
+                            <option value='w'>Weeks</option>
+                            <option value='m'>Months</option>
+                            <option value='y'>Years</option>
+                        </select>
+                    </div>
+                    <div class='span3'>
+                        <select id='task_schedule_model'
+                                class='input-block-level'
+                                name='schedule_model'>
+                            <option value='effort'>Effort</option>
+                            <option value='duration'>Duration</option>
+                            <option value='length'>Length</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            {# Update Bid #}
+            {% if mode == 'update' %}
+            <div class='task_inputs control-group'>
+                <label class="span3 control-label" for="task_update_bid">Update Bid</label>
+                <div class="span9">
+                    <input id="task_update_bid"
+                           type="checkbox"
+                           name="update_bid"/>
+                </div>
+            </div>
+            {% endif %}
+
+            {# Priority #}
+            <div class='control-group'>
+                <label class='span3 control-label' for='task_priority'>Priority</label>
+                <div class='span9'>
+                    <input id='task_priority'
+                           name='priority'
+                           type='text'
+                           placeholder='Priority'
+                           value={% if mode == 'update' %}{{ entity.priority }}{% else %}500{% endif %}
+                           min=1
+                           max=1000
+                           required>
+                </div>
+            </div>
+
+        </form>
+
+    </div>
+</div>
