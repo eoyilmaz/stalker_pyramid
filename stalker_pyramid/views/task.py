@@ -108,7 +108,7 @@ def generate_recursive_task_query(ordered=True):
         recursive_task.id,
         "SimpleEntities".name as name,
         recursive_task.parent_id,
-        recursive_task.path,
+        recursive_task.path || '|' || recursive_task.id as path,
         recursive_task.path_names,
         "SimpleEntities".name || ' (' || recursive_task.id || ') (' || recursive_task.path_names || ')' as full_path,
         "SimpleEntities".entity_type,
@@ -4609,7 +4609,7 @@ def get_task_events(request):
         where_clause=generate_where_clause({'id': [task_id]})
     )
 
-    # use its path to query its all children
+    # use its path to query all of its children
     # generate a second where condition
     all_tasks = query_tasks(
         where_clause=generate_where_clause({
@@ -4629,12 +4629,12 @@ def get_task_events(request):
     'label-success', --className
     false, --allDay
     "Statuses".code as task_status
-    from "TimeLogs"
+from "TimeLogs"
     join "Tasks" on "TimeLogs".task_id = "Tasks".id
     join "SimpleEntities" as "Task_SimpleEntities" on "Tasks".id = "Task_SimpleEntities".id
     join "SimpleEntities" as "Resource_SimpleEntities" on "TimeLogs".resource_id = "Resource_SimpleEntities".id
     join "Statuses" on "Tasks".status_id = "Statuses".id
-    where "TimeLogs".task_id in %s
+where "TimeLogs".task_id in %s
     """ % str(task_ids).replace('[', '(').replace(']', ')')
 
     # now query all the time logs
