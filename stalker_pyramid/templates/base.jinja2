@@ -542,8 +542,9 @@
                 try {
                     setTimeout(function(){
                         // init_dialog() will be loaded with the dialog itself
-
-                        init_dialog();
+                        $(function(){
+                            init_dialog();
+                        });
                     });
                 } catch (e) {
                     console.log(e);
