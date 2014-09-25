@@ -1,11 +1,10 @@
 {% set department=entity %}
 
-<div class="row-fluid">
+<script class="dialog_loaded"></script>
 
+<div class="row-fluid">
     {% set mode='Create' %}
     {% include 'department/dialog/department_basic_information_form.jinja2' %}
-
-
 </div>
 
 
@@ -13,9 +12,7 @@
 
 
 <script type="text/javascript">
-
     function init_dialog() {
-
         console.debug('starting to initialize department dialog!!!');
 
         $('#dialog_template_label').find('span').remove();

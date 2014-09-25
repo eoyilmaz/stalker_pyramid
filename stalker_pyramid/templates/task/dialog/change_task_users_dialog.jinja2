@@ -1,19 +1,21 @@
+<script class="dialog_loaded"></script>
+
 <div class="row-fluid" >
     <form id='append_form'
               class='form-horizontal'
               role='form'
               method='post'>
-            <div class='control-group'>
-                    <label class='span3 control-label' for='task_users'>{{ user_type }}</label>
-                    <div class='span9'>
-                        <select id='task_users'
-                                multiple=''
-                                class='input-block-level tag-input-style'
-                                name='user_ids'
-                                data-placeholder={{ user_type }}
-                                is_updating=false></select>
-                    </div>
-                </div>
+        <div class='control-group'>
+            <label class='span3 control-label' for='task_users'>{{ user_type }}</label>
+            <div class='span9'>
+                <select id='task_users'
+                        multiple=''
+                        class='input-block-level tag-input-style'
+                        name='user_ids'
+                        data-placeholder={{ user_type }}
+                        is_updating=false></select>
+            </div>
+        </div>
     </form>
 </div>
 
