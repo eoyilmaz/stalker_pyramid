@@ -537,16 +537,13 @@
             var event_dialog = $('#dialog_template');
 
             var init_them_all = function(){
-                if (init_dialog !== undefined && init_dialog !== null) {
-                    try {
-                        setTimeout(function(){
-                            // init_dialog() will be loaded with the dialog itself
-                            init_dialog();
-                        });
-                    } catch (e) {
-                        console.log(e);
-                    }
-                } else {
+                try {
+                    setTimeout(function(){
+                        // init_dialog() will be loaded with the dialog itself
+                        init_dialog();
+                    });
+                } catch (e) {
+                    console.log(e);
                     setTimeout(init_them_all, 1000);
                 }
             };
