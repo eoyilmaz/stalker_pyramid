@@ -48,9 +48,7 @@
                 {% endif %}
 
                 {% for sibling_task in sibling_tasks|sort(attribute='name') %}
-                    {% if sibling_task != task %}
-                        <li><a href="{{ request.route_url('view_task', id=sibling_task.id) }}">{{ sibling_task.name }}</a></li>
-                    {% endif %}
+                    <li><a {% if sibling_task == task %}class="disabled"{% endif %} href="{{ request.route_url('view_task', id=sibling_task.id) }}">{{ sibling_task.name }}</a></li>
                 {% endfor %}
             </ul>
         </div>
