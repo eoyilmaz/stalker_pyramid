@@ -30,7 +30,7 @@ import logging
 from webob import Response
 import stalker_pyramid
 from stalker_pyramid.views import get_logged_in_user, PermissionChecker, \
-    milliseconds_since_epoch
+    milliseconds_since_epoch, get_multi_integer, get_multi_string
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -125,8 +125,8 @@ def list_project_assets(request):
 
 
     studio = Studio.query.first()
-
     entity_id = request.matchdict.get('id')
+
     if not entity_id:
         entity = studio
     else:
@@ -284,6 +284,10 @@ def get_assets(request):
 
     asset_id = request.params.get('entity_id', None)
 
+    asset_type_names = get_multi_string(request, 'asset_type_names')
+
+
+
     sql_query = """
         select
             "Assets".id as asset_id,
@@ -377,6 +381,15 @@ def get_assets(request):
         where_conditions = """and "Assets_Types_SimpleEntities".id = %(asset_type_id)s""" %({'asset_type_id':asset_type_id})
     if asset_id:
         where_conditions = """and "Assets".id = %(asset_id)s""" %({'asset_id':asset_id})
+    if len(asset_type_names):
+        asset_type_names_buffer = []
+        for asset_type_name in asset_type_names:
+            asset_type_names_buffer.append(""""Assets_Types_SimpleEntities".name = '%s'""" % asset_type_name)
+
+        logger.debug('asset_type_names_buffer : %s' % asset_type_names_buffer)
+        where_conditions_for_type_names =' or '.join(asset_type_names_buffer)
+        where_conditions = """and (%s)""" % where_conditions_for_type_names
+        logger.debug('where_conditions : %s' % where_conditions)
 
     sql_query = sql_query % {'where_conditions':where_conditions, 'project_id':project_id}
 
@@ -410,7 +423,7 @@ def get_assets(request):
         task_resource_name = r[13]
         task_resource_id = r[14]
 
-        logger.debug('task_types_names %s ' % task_types_names)
+        # logger.debug('task_types_names %s ' % task_types_names)
         r_data['nulls'] = []
 
         for index1 in range(len(task_types_names)):
