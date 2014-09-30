@@ -94,9 +94,11 @@ def add_related_assets(request):
 
     character_ids = get_multi_integer(request, 'character_ids')
     characters = Asset.query.filter(Asset.id.in_(character_ids)).all()
+
     active_prop_ids = get_multi_integer(request, 'active_prop_ids')
     active_props = Asset.query.filter(Asset.id.in_(active_prop_ids)).all()
     characters.extend(active_props)
+
     vehicle_ids = get_multi_integer(request, 'vehicle_ids')
     vehicles = Asset.query.filter(Asset.id.in_(vehicle_ids)).all()
     characters.extend(vehicles)
@@ -126,16 +128,14 @@ def add_related_assets(request):
 
         shots = Shot.query.filter(Shot.parent == shots_folder).all()
         for shot in shots:
-            message = update_shot_task_dependecies('append', shot, 'Animation', character_dependencies, logged_in_user, utc_now)
-            messages.append(message)
-            message = update_shot_task_dependecies('append', shot, 'Scene Assembly', asset_dependencies, logged_in_user, utc_now)
-            messages.append(message)
+            update_shot_task_dependecies('append', shot, 'Animation', character_dependencies, logged_in_user, utc_now)
+            update_shot_task_dependecies('append', shot, 'Scene Assembly', asset_dependencies, logged_in_user, utc_now)
+
 
     elif entity.entity_type == 'Shot':
-        message = update_shot_task_dependecies('append', entity, 'Animation', character_dependencies, logged_in_user, utc_now)
-        messages.append(message)
-        message = update_shot_task_dependecies('append', entity, 'Scene Assembly', asset_dependencies, logged_in_user, utc_now)
-        messages.append(message)
+        update_shot_task_dependecies('append', entity, 'Animation', character_dependencies, logged_in_user, utc_now)
+        update_shot_task_dependecies('append', entity, 'Scene Assembly', asset_dependencies, logged_in_user, utc_now)
+
 
     # if len(messages)>0:
     #     response_messages = \
@@ -220,16 +220,14 @@ def remove_related_assets(request):
 
         shots = Shot.query.filter(Shot.parent == shots_folder).all()
         for shot in shots:
-            message = update_shot_task_dependecies('remove', shot, 'Animation', character_dependencies, logged_in_user, utc_now)
-            messages.append(message)
-            message = update_shot_task_dependecies('remove', shot, 'Scene Assembly', asset_dependencies, logged_in_user, utc_now)
-            messages.append(message)
+            update_shot_task_dependecies('remove', shot, 'Animation', character_dependencies, logged_in_user, utc_now)
+            update_shot_task_dependecies('remove', shot, 'Scene Assembly', asset_dependencies, logged_in_user, utc_now)
+
 
     elif entity.entity_type == 'Shot':
-        message = update_shot_task_dependecies('remove', entity, 'Animation', character_dependencies, logged_in_user, utc_now)
-        messages.append(message)
-        message = update_shot_task_dependecies('remove', entity, 'Scene Assembly', asset_dependencies, logged_in_user, utc_now)
-        messages.append(message)
+        update_shot_task_dependecies('remove', entity, 'Animation', character_dependencies, logged_in_user, utc_now)
+        update_shot_task_dependecies('remove', entity, 'Scene Assembly', asset_dependencies, logged_in_user, utc_now)
+
 
     # logger.debug('messages %s' % messages)
     # if len(messages)>0:
@@ -241,7 +239,7 @@ def remove_related_assets(request):
 
 def find_asset_task_by_type(asset, type_name):
     if type_name == 'Rig':
-        rig_type = Type.query.filter_by(name='Rig').first()
+
         animation_test_type = Type.query.filter_by(name='Animation Test').first()
         animation_bible_type = Type.query.filter_by(name='Animation Bible').first()
 
@@ -291,21 +289,21 @@ def update_shot_task_dependecies(action, shot, task_name, dependencies, user, u_
                     task.depends.append(dependency)
                     task.updated_by = user
                     task.date_updated = u_now
-                    return '%s: %s is added to dependencies of %s, ' % (shot.name, dependency.name, task.name)
-                else:
-                    return '%s: %s is already depended to %s, ' % (shot.name, task.name, dependency.name)
+                #     return '%s: %s is added to dependencies of %s, ' % (shot.name, dependency.name, task.name)
+                # else:
+                #     return '%s: %s is already depended to %s, ' % (shot.name, task.name, dependency.name)
             elif action == 'remove':
                 if dependency in task.depends:
                     task.depends.remove(dependency)
                     task.updated_by = user
                     task.date_updated = u_now
-                    return '%s: %s is removed to dependencies of %s, ' % (shot.name, dependency.name, task.name)
-                else:
-                    return '%s: %s does not depend to %s, ' % (shot.name, task.name, dependency.name)
-            else:
-                return 'There is no type'
+                #     return '%s: %s is removed to dependencies of %s, ' % (shot.name, dependency.name, task.name)
+                # else:
+                #     return '%s: %s does not depend to %s, ' % (shot.name, task.name, dependency.name)
+            # else:
+            #     return 'There is no type'
 
-        else:
-            return 'There is no dependency task'
+        # else:
+        #     return 'There is no dependency task'
 
 
