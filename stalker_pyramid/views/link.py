@@ -473,6 +473,9 @@ def get_entity_references(request):
         search_query = '\n'.join(search_string_buffer)
     logger.debug('search_query: %s' % search_query)
 
+    path_id = '%|{id}|%' if entity.entity_type != 'Project' else '%{id}|%'
+    path_id = path_id.format(id=entity_id)
+
     # we need to do that import here
     from stalker_pyramid.views.task import \
         generate_recursive_task_query
@@ -536,7 +539,7 @@ join "Links" as "Links_ForWeb" on "Link_SimpleEntities".thumbnail_id = "Links_Fo
 join "SimpleEntities" as "Links_ForWeb_SimpleEntities" on "Links_ForWeb".id = "Links_ForWeb_SimpleEntities".id
 join "Links" as "Thumbnails" on "Links_ForWeb_SimpleEntities".thumbnail_id = "Thumbnails".id
 
-where (tasks.path ilike '|%{id}%|' or tasks.id = {id}) {search_string}
+where (tasks.path ilike '{path_id}' or tasks.id = {id}) {search_string}
 
 group by "Links".id,
     "Links_ForWeb".full_path,
@@ -552,6 +555,7 @@ offset {offset}
 limit {limit}
     """.format(
         id=entity_id,
+        path_id=path_id,
         recursive_task_query=generate_recursive_task_query(ordered=False),
         search_string=search_query,
         offset=offset,
@@ -619,6 +623,9 @@ def get_entity_references_count(request):
         search_query = '\n'.join(search_string_buffer)
     logger.debug('search_query: %s' % search_query)
 
+    path_id = '%|{id}|%' if entity.entity_type != 'Project' else '%{id}|%'
+    path_id = path_id.format(id=entity_id)
+
     # we need to do that import here
     from stalker_pyramid.views.task import generate_recursive_task_query
 
@@ -656,7 +663,7 @@ left join (
 -- continue on links
 join "SimpleEntities" as "Link_SimpleEntities" on "Links".id = "Link_SimpleEntities".id
 
-where (tasks.path ilike '%{id}%' or tasks.id = {id}) {search_string}
+where (tasks.path ilike '{path_id}' or tasks.id = {id}) {search_string}
 
 group by
     "Links".id,
@@ -665,6 +672,7 @@ group by
 ) as data
     """.format(
         id=entity_id,
+        path_id=path_id,
         recursive_task_query=generate_recursive_task_query(ordered=False),
         search_string=search_query
     )
