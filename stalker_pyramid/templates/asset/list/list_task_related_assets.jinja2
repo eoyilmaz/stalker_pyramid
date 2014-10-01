@@ -1,9 +1,27 @@
 <div class="row-fluid">
     <div class="widget-box transparent">
         <div class="widget-header  widget-header-small">
-            <h4 class="smaller grey">
-                <i class="icon-puzzle-piece blue"></i>Related Assets
-            </h4>
+             <h4 class="smaller grey">
+                 <i class="icon-puzzle-piece blue"></i>Related Assets
+             </h4>
+
+             <div class="widget-toolbar">
+                {% if has_permission('Update_Task') %}
+                    &nbsp
+                    <a data-target="#dialog_template"
+                       data-toggle="modal"
+                       data-keyboard=false
+                       href="{{ request.route_url("add_related_assets_dialog", id=entity.id, _query={'project_id': entity.project.id }) }}"
+                       class="white">
+                        <i class="icon-plus"></i>
+                        New
+                    </a>
+                    &nbsp&nbsp
+                {% endif %}
+                <a href="#" data-action="collapse">
+                    <i class="icon-chevron-down"></i>
+                </a>
+            </div>
         </div>
         <div class="widget-body">
             <div class="widget-main">
@@ -21,13 +39,32 @@
 {% raw %}
     <script id="tmpl_related_asset_item" type="text/x-dot-template">
         <li id="related_asset_{{=it.id}}">
-            <a href="/assets/{{=it.id}}/view" style="width: 100px; height: auto; data-rel="colorbox">
-                <img alt="150x150" src={{=it.thumbnail_full_path  }} />
+            <div>
+                <img alt="150x150" src={{=it.thumbnail_full_path }} style="height: 80px; width: auto" />
                 <div class="text">
-                <div class="inner">{{=it.name}}</div>
+                    <div class="inner">
+                        <span>{{=it.name}}</span>
+
+                        <br />
+                        <a href="/assets/{{=it.id}}/view" data-rel="colorbox">
+                            <i class="icon-zoom-in"></i>
+                        </a>
+
+                        <a data-rel="tooltip"
+                               data-placement="bottom"
+                               title="Remove Asset"
+                               data-target="#dialog_template"
+                               data-toggle="modal"
+                               data-keyboard="false"
+                               href="/entities/{{=it.e_id}}/assets/{{=it.id}}/remove/dialog" >
+                            <i class="icon-trash"></i>
+                        </a>
+
+                    </div>
                 </div>
-            </a>
+            </div>
         </li>
+
      </script>
 {% endraw %}
 
@@ -45,7 +82,7 @@
                 else {
                     data[i].thumbnail_full_path = '/' + data[i].thumbnail_full_path;
                 }
-
+                data[i].e_id = '{{ entity.id }}'
 
                 var related_asset_li = $('#related_asset_'+data[i].id);
                 if (related_asset_li.length==0){

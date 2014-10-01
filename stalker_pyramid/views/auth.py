@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
+
+
 import time
 import datetime
 
@@ -201,10 +203,6 @@ def create_user(request):
         response.status_int = 500
         return response
 
-    response = Response('User created successfully')
-    response.status_int = 200
-    return response
-
 
 @view_config(
     route_name='update_user'
@@ -324,7 +322,6 @@ def get_users_count(request):
         # there is no entity_type for that entity
         return []
 
-    start = time.time()
     sql_query = """select
         count("Users".id)
     from "SimpleEntities"
@@ -651,8 +648,8 @@ def get_permissions_from_multi_dict(multi_dict):
         else:
 
             if access in ['Allow', 'Deny'] and \
-                            class_name in all_class_names and \
-                            action in all_actions:
+               class_name in all_class_names and \
+               action in all_actions:
 
                 # get permissions
                 permission = Permission.query \
@@ -697,20 +694,21 @@ def login(request):
 
     came_from = request.params.get('came_from', referrer)
 
-    login = request.params.get('login', '')
+    login_name = request.params.get('login', '')
     password = request.params.get('password', '')
     has_error = False
 
     if 'submit' in request.params:
         # get the user again (first got it in validation)
         user_obj = User.query \
-            .filter(or_(User.login == login, User.email == login)).first()
+            .filter(or_(User.login == login_name, User.email == login_name))\
+            .first()
 
         if user_obj:
-            login = user_obj.login
+            login_name = user_obj.login
 
         if user_obj and user_obj.check_password(password):
-            headers = remember(request, login)
+            headers = remember(request, login_name)
             # form submission succeeded
             return HTTPFound(
                 location=came_from,
@@ -720,7 +718,7 @@ def login(request):
             has_error = True
 
     return {
-        'login': login,
+        'login': login_name,
         'password': password,
         'has_error': has_error,
         'came_from': came_from
@@ -767,12 +765,12 @@ def home(request):
 def check_login_availability(request):
     """checks it the given login is available
     """
-    login = request.matchdict['login']
-    logger.debug('checking availability for: %s' % login)
+    login_name = request.matchdict['login']
+    logger.debug('checking availability for: %s' % login_name)
 
     available = 1
-    if login:
-        user = User.query.filter(User.login == login).first()
+    if login_name:
+        user = User.query.filter(User.login == login_name).first()
         if user:
             available = 0
 

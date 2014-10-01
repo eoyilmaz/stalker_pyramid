@@ -1,0 +1,145 @@
+<script class="dialog_loaded"></script>
+
+<div class="row-fluid" >
+    <form id='add_related_asset_form'
+              class='form-horizontal'
+              role='form'
+              method='post'>
+        <div class='control-group'>
+            <label class='span3 control-label' for='characters'>Characters</label>
+            <div class='span9'>
+                <select id='characters'
+                        multiple=''
+                        class='input-block-level tag-input-style'
+                        name='character_ids'
+                        ></select>
+            </div>
+        </div>
+        <div class='control-group'>
+            <label class='span3 control-label' for='vehicles'>Vehicles</label>
+            <div class='span9'>
+                <select id='vehicles'
+                        multiple=''
+                        class='input-block-level tag-input-style'
+                        name='vehicle_ids'
+                        ></select>
+            </div>
+        </div>
+        <div class='control-group'>
+            <label class='span3 control-label' for='active_props'>Active Props</label>
+            <div class='span9'>
+                <select id='active_props'
+                        multiple=''
+                        class='input-block-level tag-input-style'
+                        name='active_prop_ids'
+                        ></select>
+            </div>
+        </div>
+        <div class='control-group'>
+            <label class='span3 control-label' for='environments'>Environment</label>
+            <div class='span9'>
+                <select id='environments'
+                        multiple=''
+                        class='input-block-level tag-input-style'
+                        name='environment_ids'></select>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script type="text/javascript">
+    var get_asset_by_type = function(query, field_name, asset_template){
+
+        var field = $('#'+field_name);
+
+        field.chosen({
+            search_contains: true,
+            enable_split_word_search: true
+        });
+
+        $.getJSON('/projects/{{ project.id }}/assets/?'+query).then(function(data){
+            // remove current elements
+            field.find('option').remove();
+
+            // append new ones
+            var data_count = data.length;
+            // append a single empty option to the responsible field
+            for (var i=0; i < data_count; i++){
+                field.append(asset_template(data[i]));
+            }
+
+            // update the chosen fields
+            field.trigger('liszt:updated');
+        });
+
+
+    }
+
+    function init_dialog() {
+        console.debug('starting to initialize add_related_assets dialog!!!');
+
+        $(function () {
+            var label = $('#dialog_template_label');
+            label.find('span').remove();
+            label.append('<span>Add Assets</span>');
+
+
+
+            {% raw %}
+                var asset_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
+            {% endraw %}
+
+            var character_type_names=['Character%20A1', 'Character%20A2','Character%20B','Character%20C','Character%20F'];
+            var characters_type_query ='asset_type_names='+character_type_names[0];
+            for (var i=1; i<character_type_names.length; i++){
+                characters_type_query +='&asset_type_names='+character_type_names[i];
+            }
+            get_asset_by_type(characters_type_query, 'characters', asset_template);
+
+            var environment_type_names=['Exterior', 'Interior','Building','Building%20Part','BG-Building'];
+            var environment_type_query ='asset_type_names='+environment_type_names[0];
+            for (var j=1; j<environment_type_names.length; j++){
+                environment_type_query +='&asset_type_names='+environment_type_names[j];
+            }
+            get_asset_by_type(environment_type_query, 'environments', asset_template);
+
+            get_asset_by_type('asset_type_names=Active%20Prop', 'active_props', asset_template);
+            get_asset_by_type('asset_type_names=Vehicle', 'vehicles', asset_template);
+
+
+
+            var submit_button = $('#dialog_template_submit_button');
+            submit_button.on('click', function (e) {
+
+                e.stopPropagation();
+                e.preventDefault();
+                submit_button.button('loading');
+
+                var add_related_asset_form = $("#add_related_asset_form");
+
+                $.post(
+                    '/entities/{{ entity.id }}/assets/add',
+                    add_related_asset_form.serialize()
+                ).done(function (response_text) {
+                    submit_button.button('reset');
+                    $('#dialog_template').modal('hide');
+                    setTimeout(function () { // wait for hide event to finish
+                        window.location.reload();
+                    }, 0);
+                }).fail(function (jqXHR) {
+                    bootbox.alert(jqXHR.responseText);
+                    submit_button.button('reset');
+                });
+            });
+        });
+
+        console.debug('finished initializing the add_related_assets dialog!')
+    }
+</script>
+
+<script type="text/javascript">
+    function destruct_dialog() {
+        $('#dialog_template_submit_button').unbind();
+        $('#dialog_template').data('modal', null);
+    }
+</script>

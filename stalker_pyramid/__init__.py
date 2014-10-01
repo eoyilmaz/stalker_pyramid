@@ -758,6 +758,15 @@ def main(global_config, **settings):
     config.add_route('get_types', 'types/')
 
 
+    # *************************************************************************
+    # Anima
+    config.add_route('add_related_assets_dialog', 'entities/{id}/assets/add/dialog')
+    config.add_route('add_related_assets', 'entities/{id}/assets/add')
+    config.add_route('remove_related_asset_dialog', 'entities/{id}/assets/{a_id}/remove/dialog')
+    config.add_route('remove_related_asset', 'entities/{id}/assets/{a_id}/remove')
+
+
+
     config.add_route('test_page', 'test_page')
 
     config.scan(ignore='stalker.env')
