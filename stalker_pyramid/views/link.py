@@ -536,7 +536,7 @@ join "Links" as "Links_ForWeb" on "Link_SimpleEntities".thumbnail_id = "Links_Fo
 join "SimpleEntities" as "Links_ForWeb_SimpleEntities" on "Links_ForWeb".id = "Links_ForWeb_SimpleEntities".id
 join "Links" as "Thumbnails" on "Links_ForWeb_SimpleEntities".thumbnail_id = "Thumbnails".id
 
-where (tasks.path ilike '%{id}%' or tasks.id = {id}) {search_string}
+where (tasks.path ilike '|%{id}%|' or tasks.id = {id}) {search_string}
 
 group by "Links".id,
     "Links_ForWeb".full_path,

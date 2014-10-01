@@ -9,12 +9,8 @@
           href='{{ request.static_url("stalker_pyramid:static/ace/css/bootstrap-timepicker.css") }}'/>
     <link rel="stylesheet"
           href='{{ request.static_url("stalker_pyramid:static/ace/css/datepicker.css") }}'/>
-    {#    <link rel="stylesheet"#}
-    {#          href='{{ request.static_url("stalker_pyramid:static/ace/css/jquery.gritter.css") }}'/>#}
     <link rel="stylesheet"
           href='{{ request.static_url("stalker_pyramid:static/ace/css/jquery-ui-1.10.3.custom.min.css") }}'/>
-{#    <link rel="stylesheet"#}
-{#          href='{{ request.static_url("stalker_pyramid:static/ace/css/bootstrap-editable.css") }}'/>#}
     <link rel="stylesheet"
           href='{{ request.static_url("stalker_pyramid:static/ace/css/select2.css") }}'/>
     {% include 'charts/chart_preheader.jinja2' %}
@@ -530,9 +526,7 @@
     });
 
 
-
     $(function () {
-
         var icon_name = get_icon('{{ entity.entity_type.lower()}}');
         $('#task_header').append('<i class="' + icon_name + ' bigger-125"></i>{{ entity.name }}');
 
@@ -739,44 +733,45 @@
     });
 
 
+    var get_dependency = function (type) {
+        $.getJSON('/tasks/{{ entity.id }}/dependency/' + type + '/').then(function (data) {
+
+            var depends = {};
+            for (var i = 0; i < data.length; i++) {
+
+                var task_id = (data[i].id).toString();
+                var time_to_complete_str = '<span> ( ' +  meaningful_time_between(data[i].schedule_seconds,data[i].total_logged_seconds) + ' )</span>';
+
+                if (!depends[task_id]) {
+                    depends[task_id] = {
+                        'name': '<span><a href="/tasks/' + data[i].id + '/view">' + data[i].name + '  </a></span>' + time_to_complete_str,
+                        'type': 'folder',
+                        'icon-class': data[i].status_color
+                    }
+                }
+
+                if (!depends[task_id]['additionalParameters']) {
+                    depends[task_id]['additionalParameters'] = {};
+                    depends[task_id]['additionalParameters']['children'] = {};
+                }
+
+                for (var k = 0; k < data[i].resources.length; k++) {
+                    depends[task_id]['additionalParameters']['children'][(data[i].resources[k].id).toString()] = {
+                        name: '<span  class="pull-left"><a href="/users/' + data[i].resources[k].id + '/view">' + data[i].resources[k].name + '  </a></span>',
+                        type: 'item'
+                    };
+                }
+            }
+
+            drawTree(type + '_tree', depends);
+
+            if (data.length == 0) {
+                $('#' + type + '_tree').append('<div class="alert alert-warning">No tasks</div>');
+            }
+        });
+    };
+
     $(function () {
-        var get_dependency = function (type) {
-            $.getJSON('/tasks/{{ entity.id }}/dependency/' + type + '/').then(function (data) {
-
-                var depends = {};
-                for (var i = 0; i < data.length; i++) {
-
-                    var task_id = (data[i].id).toString();
-                    var time_to_complete_str = '<span> ( ' +  meaningful_time_between(data[i].schedule_seconds,data[i].total_logged_seconds) + ' )</span>';
-
-                    if (!depends[task_id]) {
-                        depends[task_id] = {
-                            'name': '<span><a href="/tasks/' + data[i].id + '/view">' + data[i].name + '  </a></span>' + time_to_complete_str,
-                            'type': 'folder',
-                            'icon-class': data[i].status_color
-                        }
-                    }
-
-                    if (!depends[task_id]['additionalParameters']) {
-                        depends[task_id]['additionalParameters'] = {};
-                        depends[task_id]['additionalParameters']['children'] = {};
-                    }
-
-                    for (var k = 0; k < data[i].resources.length; k++) {
-                        depends[task_id]['additionalParameters']['children'][(data[i].resources[k].id).toString()] = {
-                            name: '<span  class="pull-left"><a href="/users/' + data[i].resources[k].id + '/view">' + data[i].resources[k].name + '  </a></span>',
-                            type: 'item'
-                        };
-                    }
-                }
-
-                drawTree(type + '_tree', depends);
-
-                if (data.length == 0) {
-                    $('#' + type + '_tree').append('<div class="alert alert-warning">No tasks</div>');
-                }
-            });
-        };
         {% if entity.is_leaf %}
             get_dependency('depends');
             get_dependency('dependent_of');

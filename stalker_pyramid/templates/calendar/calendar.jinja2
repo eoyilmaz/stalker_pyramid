@@ -1,10 +1,8 @@
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/fullcalendar.min.js") }}'></script>
 
 <!--inline scripts related to this page-->
-<script type="text/javascript">
-
+<script>
     function drawCalendar(cid, events) {
-
         var update_event_action = function (eType, eId) {
             var event_dialog = $('#dialog_template');
 
@@ -47,7 +45,7 @@
             eventClick: function (calEvent, jsEvent, view) {
                 jsEvent.preventDefault();
                 jsEvent.stopPropagation();
-{#                console.log('eventClicked')#}
+
                 if (calEvent.entity_type == 'vacations') {
                     {% if has_permission('Update_Vacation') %}
                         if (calEvent.title == 'StudioWide') {
@@ -73,7 +71,6 @@
 
             eventMouseover: function(event, jsEvent, view){
                 // add title attribute to each event
-{#                //console.log('eventMouseOver is running!');#}
                 setTimeout(function(){
                     $(jsEvent.target).find('.fc-event-title').each(function(){
                         var self = $(this);
@@ -98,9 +95,7 @@
 
             selectable: true,
             selectHelper: true,
-{#            aspectRatio: 2,#}
             firstDay: 1
         });
-
     }
 </script>
