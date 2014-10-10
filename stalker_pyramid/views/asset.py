@@ -18,7 +18,6 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 
-import time
 import datetime
 
 from pyramid.httpexceptions import HTTPOk
@@ -29,8 +28,8 @@ from stalker.db import DBSession
 import logging
 from webob import Response
 import stalker_pyramid
-from stalker_pyramid.views import get_logged_in_user, PermissionChecker, \
-    milliseconds_since_epoch, get_multi_integer, get_multi_string
+from stalker_pyramid.views import (get_logged_in_user, PermissionChecker,
+                                   milliseconds_since_epoch, get_multi_string)
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -111,6 +110,7 @@ def get_assets_count(request):
 
     return DBSession.connection().execute(sql_query).fetchone()[0]
 
+
 @view_config(
     route_name='list_project_assets',
     renderer='templates/asset/list/list_entity_assets.jinja2'
@@ -122,7 +122,6 @@ def list_project_assets(request):
     logged_in_user = get_logged_in_user(request)
 
     asset_type_id = request.params.get('asset_type_id', None)
-
 
     studio = Studio.query.first()
     entity_id = request.matchdict.get('id')
@@ -157,7 +156,7 @@ def list_project_assets(request):
 def get_assets_types(request):
     """returns the Asset Types
     """
-    sql_query ="""select
+    sql_query = """select
      "Assets_Types_SimpleEntities".id,
      "Assets_Types_SimpleEntities".name
 
@@ -171,7 +170,6 @@ def get_assets_types(request):
         "Assets_Types_SimpleEntities".id
      order by "Assets_Types_SimpleEntities".name
      """
-
 
     result = DBSession.connection().execute(sql_query)
 
@@ -197,6 +195,7 @@ def get_assets_types(request):
     resp.content_range = content_range
     return resp
 
+
 @view_config(
     route_name='get_assets_children_task_type',
     renderer='json'
@@ -208,11 +207,9 @@ def get_assets_types(request):
 def get_assets_type_task_types(request):
     """returns the Task Types defined under the Asset container
     """
-
     type_id = request.matchdict.get('t_id', None)
 
     logger.debug('type_id %s'% type_id)
-
 
     sql_query = """select
         "SimpleEntities".id as type_id,
@@ -229,15 +226,12 @@ def get_assets_type_task_types(request):
     group by "SimpleEntities".id, "SimpleEntities".name
     order by "SimpleEntities".name"""
 
-
     where_condition = ''
 
     if type_id:
         where_condition = 'where "Assets_SimpleEntities".type_id = %(type_id)s'%{'type_id': type_id}
 
     sql_query = sql_query %{'where_condition':where_condition}
-
-
 
     result = DBSession.connection().execute(sql_query)
 
@@ -285,8 +279,6 @@ def get_assets(request):
     asset_id = request.params.get('entity_id', None)
 
     asset_type_names = get_multi_string(request, 'asset_type_names')
-
-
 
     sql_query = """
         select
@@ -384,14 +376,20 @@ def get_assets(request):
     if len(asset_type_names):
         asset_type_names_buffer = []
         for asset_type_name in asset_type_names:
-            asset_type_names_buffer.append(""""Assets_Types_SimpleEntities".name = '%s'""" % asset_type_name)
+            asset_type_names_buffer.append(
+                """"Assets_Types_SimpleEntities".name = '%s'""" %
+                asset_type_name
+            )
 
         logger.debug('asset_type_names_buffer : %s' % asset_type_names_buffer)
-        where_conditions_for_type_names =' or '.join(asset_type_names_buffer)
+        where_conditions_for_type_names = ' or '.join(asset_type_names_buffer)
         where_conditions = """and (%s)""" % where_conditions_for_type_names
         logger.debug('where_conditions : %s' % where_conditions)
 
-    sql_query = sql_query % {'where_conditions':where_conditions, 'project_id':project_id}
+    sql_query = sql_query % {
+        'where_conditions': where_conditions,
+        'project_id': project_id
+    }
 
     update_asset_permission = \
         PermissionChecker(request)('Update_Asset')
@@ -432,19 +430,18 @@ def get_assets(request):
 
         for index in range(len(task_types_names)):
             task = {
-                     'id':task_ids[index],
-                     'name':task_names[index],
-                     'status':task_statuses[index],
-                     'percent':task_percent_complete[index],
-                     'resource_name':task_resource_name[index],
-                     'resource_id':task_resource_id[index]
-                    }
+                'id': task_ids[index],
+                'name': task_names[index],
+                'status': task_statuses[index],
+                'percent': task_percent_complete[index],
+                'resource_name': task_resource_name[index],
+                'resource_id': task_resource_id[index]
+            }
             if task_types_names[index]:
                 r_data[task_types_names[index]].append(task)
             else:
                 r_data['nulls'].append(task)
 
         return_data.append(r_data)
-
 
     return return_data
