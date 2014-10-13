@@ -313,7 +313,6 @@ order by "Task_Scenes".id"""
             shot_task['percent'] += float(shot_task_percents[k])
             shot_task['num_of_task'] += 1
 
-
         for l in range(len(shot_task_types)):
             shot_task_type_name = shot_task_types[l]
             shot_task = r_data[shot_task_type_name]
