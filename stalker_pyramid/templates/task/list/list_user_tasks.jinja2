@@ -26,7 +26,7 @@
         </div>
         <div class="widget-body">
             <div class="widget-main no-padding">
-                {% set query_str='resource_id=%s&status=RTS&status=WIP&status=WFD&status=HREV' % entity.id %}
+                {% set query_str='resource_id=%s&status=RTS&status=WIP&status=WFD&status=HREV&status=DREV' % entity.id %}
                 {% include 'task/list/list_entity_tasks_by_filter.jinja2' %}
             </div>
         </div>

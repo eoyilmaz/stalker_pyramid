@@ -906,7 +906,9 @@ def inline_update_task(request):
                     attachments.append(attachment)
                 db.DBSession.add_all(links)
         else:
-            if attr_name == 'cut_in' or attr_name == 'cut_out':
+            if attr_name == 'cut_in' \
+                    or attr_name == 'cut_out' \
+                    or attr_name == 'priority':
                 attr_value = int(attr_value)
 
             setattr(task, attr_name, attr_value)

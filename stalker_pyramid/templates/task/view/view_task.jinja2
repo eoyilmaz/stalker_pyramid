@@ -219,6 +219,14 @@
                                                 </strong>
                                             </div>
                                         </div>
+                                        <div class="profile-info-row">
+                                            <div class="profile-info-name">Priority</div>
+                                            <div class="profile-info-value">
+
+                                                <span class="editable"
+                                                  id="editable_entity_priority">{{ entity.priority }}</span>
+                                            </div>
+                                        </div>
 
                                     </div>
 
@@ -554,6 +562,28 @@
                     });
                 }
             });
+             $('#editable_entity_priority').editable({
+                    type: 'spinner',
+                    name: 'priority',
+                    spinner : {
+                        min : 500, max:1000, step:1
+                    },
+                    success: function (response, newValue) {
+
+                        var params = $.param({
+                            attr_name: 'priority',
+                            attr_value: parseInt(newValue)
+                        });
+
+                        $.post(
+                            inline_update_url, params
+                        ).done(function () {
+                            console.log('done');
+                        }).fail(function (jqXHR) {
+                            bootbox.alert('<div id="message" class="alert alert-danger bigger-110">' + jqXHR.responseText + '</div>');
+                        });
+                    }
+                });
 
             $.getJSON('/types/?target_entity_type={{ entity.entity_type }}').then(function (available_types) {
                 var entity_types = [];
