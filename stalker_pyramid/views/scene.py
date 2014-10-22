@@ -292,6 +292,7 @@ order by "Task_Scenes".id"""
             task['status'] = layout_task_status_codes[j].lower()
             if update_task_permission:
                 task['update_task_resource_action'] =request.route_url('change_tasks_users_dialog', user_type='Resources',  _query={'project_id':project_id,'task_ids': [task['id']]})
+                task['update_task_priority_action'] =request.route_url('change_tasks_priority_dialog',  _query={'task_ids': [task['id']]})
 
         for m in range(len(shot_task_types)):
             shot_task_type_name = shot_task_types[m]
@@ -320,7 +321,7 @@ order by "Task_Scenes".id"""
             shot_task['percent'] = shot_task['percent']/shot_task['num_of_task']
             if update_task_permission:
                 shot_task['update_task_resource_action'] =request.route_url('change_tasks_users_dialog', user_type='Resources',  _query={'project_id':project_id,'task_ids': shot_task['ids']})
-
+                shot_task['update_task_priority_action'] =request.route_url('change_tasks_priority_dialog',  _query={'task_ids': [shot_task['ids']]})
 
         return_data.append(r_data)
 

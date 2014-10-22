@@ -623,6 +623,8 @@ def main(global_config, **settings):
     config.add_route('change_tasks_users',        'tasks/change/{user_type}')
     config.add_route('change_task_users_dialog',  'tasks/{id}/change/{user_type}/dialog')
     config.add_route('change_task_users',         'tasks/{id}/change/{user_type}')
+    config.add_route('change_tasks_priority_dialog',     'tasks/change_priority/dialog')
+    config.add_route('change_tasks_priority',     'tasks/change_priority')
 
     config.add_route('add_tasks_dependencies_dialog', 'tasks/add/dependencies/dialog')
     config.add_route('add_tasks_dependencies',        'tasks/add/dependencies')

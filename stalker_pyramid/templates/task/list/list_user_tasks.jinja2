@@ -18,6 +18,14 @@
             <h5 id="items_header" class="smaller"></h5>
 
             <div class="widget-toolbar">
+
+                    <a data-target="#dialog_template"
+                       data-toggle="modal"
+                       data-keyboard=false
+                       href="{{ request.route_url("change_tasks_priority_dialog") }}"
+                       class="white">
+                        Priority
+                    </a>
                 <a href="#" data-action="collapse">
                     <i class="icon-chevron-down"></i>
                 </a>
@@ -41,6 +49,7 @@
     <script id="tmpl_itemThead" type="text/x-dot-template">
         <tr>
             <th>Start</th>
+            <th>End</th>
             <th>Project</th>
             <th>Name</th>
             <th>Resource</th>
@@ -57,6 +66,7 @@
     <script id="tmpl_itemRow" type="text/x-dot-template">
         <tr>
             <td>{{=it.start}}</td>
+            <td>{{=it.end}}</td>
             <td><a href='/projects/{{=it.project_id}}/view'>{{=it.project_name}}</a>
             </td>
             <td><a href='/tasks/{{=it.id}}/view'>{{=it.full_path}}</a></td>
@@ -89,7 +99,6 @@
                        tabindex="-1">
                         <i class="icon-pencil bigger-120">&nbsp</i>
                     </a>
-
                     {{ if (it.request_extra_time)  { }}
                         <a
                             class="red"
@@ -133,6 +142,7 @@
                     {{ } }}
 
                 </div>
+
             </td>
 
         </tr>
@@ -140,9 +150,11 @@
     {% endraw %}
 
     <script>
+
         $(function () {
-            init_html_modal()
+            init_html_modal();
         })
+
     </script>
 
 {% endblock extrascripts %}

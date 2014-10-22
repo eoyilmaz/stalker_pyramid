@@ -4991,6 +4991,7 @@ def remove_task_user(request):
     return Response('Success: %s is removed from %s resources' % (user.name, task.name))
 
 
+
 @view_config(
     route_name='change_tasks_users_dialog',
     renderer='templates/task/dialog/change_tasks_users_dialog.jinja2'
@@ -5066,6 +5067,59 @@ def change_tasks_users(request):
     task.date_updated = utc_now
 
     return Response('Success: %s are added to selected tasks' % user_type)
+
+@view_config(
+    route_name='change_tasks_priority_dialog',
+    renderer='templates/task/dialog/change_tasks_priority_dialog.jinja2'
+)
+def change_tasks_priority_dialog(request):
+    """changes task users with the given users dialog
+    """
+    logger.debug('change_tasks_users_dialog is starts')
+
+    selected_task_list = get_multi_integer(request, 'task_ids', 'GET')
+    logger.debug('selected_task_list : %s' % selected_task_list)
+
+    tasks = Task.query.filter(Task.id.in_(selected_task_list)).all()
+    logger.debug('tasks : %s' % tasks)
+
+
+    came_from = request.params.get('came_from', '/')
+
+    return {
+        'tasks': tasks,
+        'came_from': came_from
+    }
+
+
+@view_config(
+    route_name='change_tasks_priority'
+)
+def change_tasks_priority(request):
+    """changes task priority with the given users
+    """
+
+    priority = int(request.params.get('priority', 500))
+
+    selected_task_list = get_multi_integer(request, 'task_ids[]')
+    logger.debug('selected_task_list : %s' % selected_task_list)
+
+    tasks = Task.query.filter(Task.id.in_(selected_task_list)).all()
+    logger.debug('tasks : %s' % tasks)
+
+    if not tasks:
+        transaction.abort()
+        return Response('Can not find any Task', 500)
+
+    logged_in_user = get_logged_in_user(request)
+    utc_now = local_to_utc(datetime.datetime.now())
+
+    for task in tasks:
+        task.priority = priority
+        task.updated_by = logged_in_user
+        task.date_updated = utc_now
+
+    return Response('Success')
 
 
 @view_config(
