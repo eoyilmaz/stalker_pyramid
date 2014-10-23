@@ -72,6 +72,11 @@
                 for (i = 0; i < data.length; i++) {
                     // fix dates
                     data[i].start = new Date(data[i].start).format('yyyy-mm-dd HH:MM');
+                    if(data[i].end){
+
+                        data[i].end = new Date(data[i].end).format('yyyy-mm-dd HH:MM');
+
+                    }
 
                     if (data[i].thumbnail_full_path === null) {
                         data[i].thumbnail_full_path = '{{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}';
