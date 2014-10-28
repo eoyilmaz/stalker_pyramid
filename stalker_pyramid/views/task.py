@@ -30,6 +30,7 @@ from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPServerError, HTTPOk, HTTPForbidden
 from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message, Attachment
+from beaker.cache import cache_region, region_invalidate
 
 from sqlalchemy.exc import IntegrityError
 
@@ -1091,6 +1092,10 @@ def update_task(request):
 
     task.date_updated = local_to_utc(datetime.datetime.now())
 
+    # invalidate the cache region
+    region_invalidate(cached_query_tasks, 'long_term', 'load_tasks')
+    region_invalidate(get_cached_user_tasks, 'long_term', 'load_tasks')
+
     return Response('Task updated successfully')
 
 
@@ -1490,6 +1495,23 @@ def query_tasks(
         order_by_params=None,
         where_clause=None,
         task_id=None):
+    """an intermediate function to make caching work flowlessly
+    """
+    return cached_query_tasks(
+        limit,
+        offset,
+        order_by_params,
+        where_clause,
+        task_id)
+
+
+@cache_region('long_term', 'load_tasks')
+def cached_query_tasks(
+        limit,
+        offset,
+        order_by_params,
+        where_clause,
+        task_id):
 
     start = time.time()
 
@@ -2211,6 +2233,46 @@ def get_entity_tasks(request):
     return resp
 
 
+@cache_region('long_term', 'load_tasks')
+def get_cached_user_tasks(statuses, user_id):
+    """it is an intermediate function to make caching work
+    """
+    sql_query = """select
+        "Tasks".id  as task_id,
+        "ParentTasks".full_path as task_name
+    from "Tasks"
+        join "Task_Resources" on "Task_Resources".task_id = "Tasks".id
+        join "Statuses" as "Task_Statuses" on "Task_Statuses".id = "Tasks".status_id
+        left join (
+            %(generate_recursive_task_query)s
+        ) as "ParentTasks" on "Tasks".id = "ParentTasks".id
+        %(where_clause)s
+    """
+    where_clause = 'where "Task_Resources".resource_id = %s' % user_id
+    if statuses:
+        temp_buffer = [where_clause, """ and ("""]
+        for i, status in enumerate(statuses):
+            if i > 0:
+                temp_buffer.append(' or')
+            temp_buffer.append(""" "Task_Statuses".code='%s'""" % status.code)
+        temp_buffer.append(' )')
+        where_clause = ''.join(temp_buffer)
+    logger.debug('where_clause: %s' % where_clause)
+    sql_query = sql_query % {
+        'generate_recursive_task_query': generate_recursive_task_query(),
+        'where_clause': where_clause
+    }
+    result = db.DBSession.connection().execute(sql_query)
+    return_data = [
+        {
+            'id': r[0],
+            'name': r[1]
+        }
+        for r in result.fetchall()
+    ]
+    return return_data
+
+
 @view_config(
     route_name='get_user_tasks',
     renderer='json'
@@ -2223,52 +2285,12 @@ def get_user_tasks(request):
 
     # get all the tasks related in the given project
     user_id = request.matchdict.get('id', -1)
-
-    sql_query = """select
-        "Tasks".id  as task_id,
-        "ParentTasks".full_path as task_name
-    from "Tasks"
-        join "Task_Resources" on "Task_Resources".task_id = "Tasks".id
-        join "Statuses" as "Task_Statuses" on "Task_Statuses".id = "Tasks".status_id
-        left join (
-            %(generate_recursive_task_query)s
-        ) as "ParentTasks" on "Tasks".id = "ParentTasks".id
-        %(where_clause)s
-    """
-
-    where_clause = 'where "Task_Resources".resource_id = %s' % user_id
-
     statuses = []
     status_codes = request.GET.getall('status')
     if status_codes:
         statuses = Status.query.filter(Status.code.in_(status_codes)).all()
 
-    if statuses:
-        temp_buffer = [where_clause, """ and ("""]
-        for i, status in enumerate(statuses):
-            if i > 0:
-                temp_buffer.append(' or')
-            temp_buffer.append(""" "Task_Statuses".code='%s'""" % status.code)
-        temp_buffer.append(' )')
-        where_clause = ''.join(temp_buffer)
-
-    logger.debug('where_clause: %s' % where_clause)
-
-    sql_query = sql_query % {
-        'generate_recursive_task_query':
-        generate_recursive_task_query(),
-        'where_clause': where_clause
-    }
-
-    result = db.DBSession.connection().execute(sql_query)
-
-    return_data = [
-        {
-            'id': r[0],
-            'name': r[1]
-        }
-        for r in result.fetchall()
-    ]
+    return_data = get_cached_user_tasks(statuses, user_id)
 
     resp = Response(
         json_body=return_data
@@ -2516,18 +2538,8 @@ where "Task_Resources".resource_id = %s
     return db.DBSession.connection().execute(sql_query).fetchone()[0]
 
 
-@view_config(
-    route_name='get_entity_tasks_stats',
-    renderer='json'
-)
-def get_entity_tasks_stats(request):
-    """runs when viewing an task
-    """
-    entity_id = request.matchdict.get('id', -1)
-    entity = Entity.query.filter_by(id=entity_id).first()
-
-    logger.debug('get_entity_tasks_stats is starts')
-
+@cache_region('long_term', 'load_tasks')
+def get_cached_entity_tasks_stats(entity, entity_id):
     sql_query = """
         select
             count("Tasks".id) as count,
@@ -2559,21 +2571,17 @@ def get_entity_tasks_stats(request):
            "Statuses_SimpleEntities".html_class
     """
     where_clause_for_entity = ''
-
     if isinstance(entity, User):
         where_clause_for_entity = \
             'join "Task_Resources" on "Task_Resources".task_id = "Tasks".id ' \
             'where "Task_Resources".resource_id =%s' % entity_id
     elif isinstance(entity, Project):
         where_clause_for_entity = 'where "Tasks".project_id =%s' % entity_id
-
     sql_query = sql_query % {
         'where_clause_for_entity': where_clause_for_entity
     }
-
     # convert to dgrid format right here in place
     result = db.DBSession.connection().execute(sql_query)
-
     return_data = [
         {
             'tasks_count': r[0],
@@ -2581,10 +2589,26 @@ def get_entity_tasks_stats(request):
             'status_code': r[2],
             'status_name': r[3],
             'status_color': r[4],
-            'status_icon':''
+            'status_icon': ''
         }
         for r in result.fetchall()
     ]
+    return return_data
+
+
+@view_config(
+    route_name='get_entity_tasks_stats',
+    renderer='json'
+)
+def get_entity_tasks_stats(request):
+    """runs when viewing an task
+    """
+    entity_id = request.matchdict.get('id', -1)
+    entity = Entity.query.filter_by(id=entity_id).first()
+
+    logger.debug('get_entity_tasks_stats is starts')
+
+    return_data = get_cached_entity_tasks_stats(entity, entity_id)
 
     resp = Response(
         json_body=return_data
@@ -3212,6 +3236,10 @@ def create_task(request):
             logger.debug('flushing the DBSession, no problem here!')
             db.DBSession.flush()
             logger.debug('finished adding Task')
+
+    # invalidate cache region
+    region_invalidate(cached_query_tasks, 'long_term', 'load_tasks')
+    region_invalidate(get_cached_user_tasks, 'long_term', 'load_tasks')
 
     return Response('Task created successfully')
 

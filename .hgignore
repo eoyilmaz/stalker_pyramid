@@ -9,6 +9,7 @@ docs/doctrees/*
 docs/source/generated/*
 docs/source/static_pyramid/stalker_design*.vue
 docs/source/static_pyramid/design
+data/*
 stalker_pyramid/static/dojo*/
 stalker_pyramid/static/dojox*/
 stalker_pyramid/static/dijit*/

@@ -20,6 +20,7 @@
 
 import logging
 import datetime
+from beaker.cache import region_invalidate
 
 from pyramid.httpexceptions import HTTPOk
 from pyramid.response import Response
@@ -196,6 +197,12 @@ def auto_schedule_tasks(request):
         studio.scheduling_started_at = \
             local_to_utc(studio.scheduling_started_at)
         studio.last_scheduled_at = local_to_utc(studio.last_scheduled_at)
+
+        # invalidate cache regions
+        from stalker_pyramid.views.task import cached_query_tasks,\
+            get_cached_user_tasks
+        region_invalidate(cached_query_tasks, 'long_term', 'load_tasks')
+        region_invalidate(get_cached_user_tasks, 'long_term', 'load_tasks')
 
         c = StdErrToHTMLConverter(stderr)
         return Response(c.html(replace_links=True))
