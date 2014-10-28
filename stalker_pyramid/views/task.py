@@ -3514,6 +3514,8 @@ def review_task(request):
 
     # invalidate the cache region
     region_invalidate(cached_query_tasks, 'long_term', 'load_tasks')
+    region_invalidate(get_cached_user_tasks, 'long_term', 'load_tasks')
+    region_invalidate(get_cached_tasks_count, 'long_term', 'load_tasks')
 
     if review_mode == 'Approve':
         return approve_task(request)
