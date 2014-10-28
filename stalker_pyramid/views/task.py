@@ -1868,42 +1868,23 @@ def get_tasks(request):
     return resp
 
 
-@view_config(
-    route_name='get_tasks_count',
-    renderer='json'
-)
-def get_tasks_count(request):
-    """RESTful version of getting all tasks
+@cache_region('long_term', 'load_tasks')
+def get_entity_type(entity_id):
+    """returns entity_type of the given entity with the given entity_id
     """
-    logger.debug('get_tasks_count is running')
+    return db.DBSession.connection().execute(
+        """select entity_type from "SimpleEntities" where id=%s""" %
+        entity_id
+    ).fetchone()[0]
 
-    # set the content range to prevent JSONRest Store to query the data twice
-    content_range = '%s-%s/%s'
 
-    entity_type = "Task"
-    task_id = -1
-    if 'id' in request.params:
-        # check if this is a Task or Project
-        task_id = int(request.params.get('id', -1))
-
-        # get the entity_type of this data
-        entity_type = db.DBSession.connection().execute(
-            """select entity_type from "SimpleEntities" where id=%s""" %
-            task_id
-        ).fetchone()[0]
-
+@cache_region('long_term', 'load_tasks')
+def get_cached_tasks_count(entity_type, where_clause, task_id):
+    """returns a cached value of tasks count
+    """
     logger.debug('entity_type: %s' % entity_type)
 
-    # # order_by_params = request.GET.getall('order_by')
-    # logger.debug('order_by_params: %s' % order_by_params)
-
-    # order_by = generate_order_by_clause(order_by_params)
-    # if order_by == '':
-    #     # use default
-    #     order_by = 'order by tasks.name'
-
     if entity_type not in ['Project', 'Studio']:
-        where_clause = generate_where_clause(request.params.dict_of_lists())
 
         logger.debug('where_clause: %s' % where_clause)
 
@@ -2044,7 +2025,7 @@ def get_tasks_count(request):
         sql_query = sql_query % {
             'where_clause': where_clause,
             'tasks_hierarchical_name':
-            generate_recursive_task_query(ordered=False)
+                generate_recursive_task_query(ordered=False)
         }
 
     else:
@@ -2141,9 +2122,38 @@ def get_tasks_count(request):
                 sql_query,
                 'where "Projects".id = %s' % task_id
             )
-
     from sqlalchemy import text  # to be able to use "%" sign use this function
+
     result = db.DBSession.connection().execute(text(sql_query))
+    return result
+
+
+@view_config(
+    route_name='get_tasks_count',
+    renderer='json'
+)
+def get_tasks_count(request):
+    """RESTful version of getting all tasks
+    """
+    logger.debug('get_tasks_count is running')
+
+    # set the content range to prevent JSONRest Store to query the data twice
+    content_range = '%s-%s/%s'
+
+    entity_type = "Task"
+    task_id = -1
+    if 'id' in request.params:
+        # check if this is a Task or Project
+        task_id = int(request.params.get('id', -1))
+
+        # get the entity_type of this data
+        entity_type = get_entity_type(task_id)
+
+    where_clause = ''
+    if entity_type not in ['Project', 'Studio']:
+        where_clause = generate_where_clause(request.params.dict_of_lists())
+
+    result = get_cached_tasks_count(entity_type, where_clause, task_id)
 
     return result.fetchone()[0]
 
