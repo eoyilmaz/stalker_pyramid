@@ -119,7 +119,10 @@
                             <div class="profile-info-row">
                                 <div class="profile-info-name">Download</div>
                                 <div class="profile-info-value">
-                                    <span><a href='{{ request.route_url('pack_version', id=version.id) }}'>Download as self contained ZIP file</a></span>
+                                    <span><a href='{{ request.route_url('forced_download_repository_files', id=version.task.project.repository.id, partial_file_path=version.full_path) }}'>Download</a></span>
+                                    {% if '.ma' in version.full_path %}
+                                        <span><a href='{{ request.route_url('pack_version', id=version.id) }}'>Download as self contained ZIP file</a></span>
+                                    {% endif %}
                                 </div>
                             </div>
 
