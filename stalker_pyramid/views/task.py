@@ -764,6 +764,11 @@ def update_task_schedule_timing(request):
         task.bid_timing = task.schedule_timing
         task.bid_unit = task.schedule_unit
 
+    # invalidate the cache region
+    region_invalidate(cached_query_tasks, 'long_term', 'load_tasks')
+    region_invalidate(get_cached_user_tasks, 'long_term', 'load_tasks')
+    region_invalidate(get_cached_tasks_count, 'long_term', 'load_tasks')
+
     return Response('Task updated successfully')
 
 
@@ -3886,6 +3891,11 @@ def request_revision(request):
         # except ValueError:  # no internet connection
         #     pass
 
+    # invalidate the cache region
+    region_invalidate(cached_query_tasks, 'long_term', 'load_tasks')
+    region_invalidate(get_cached_user_tasks, 'long_term', 'load_tasks')
+    region_invalidate(get_cached_tasks_count, 'long_term', 'load_tasks')
+
     request.session.flash('success:Requested revision for the task')
     return Response('Successfully requested revision for the task')
 
@@ -4113,6 +4123,11 @@ def request_progress_review(request):
         'success:Your progress review request has been sent to responsible'
     )
 
+    # invalidate the cache region
+    region_invalidate(cached_query_tasks, 'long_term', 'load_tasks')
+    region_invalidate(get_cached_user_tasks, 'long_term', 'load_tasks')
+    region_invalidate(get_cached_tasks_count, 'long_term', 'load_tasks')
+
     return Response(
         'Your progress review request has been sent to responsible'
     )
@@ -4247,6 +4262,11 @@ def request_final_review(request):
             mailer.send_to_queue(message)
         except ValueError:
             pass
+
+    # invalidate the cache region
+    region_invalidate(cached_query_tasks, 'long_term', 'load_tasks')
+    region_invalidate(get_cached_user_tasks, 'long_term', 'load_tasks')
+    region_invalidate(get_cached_tasks_count, 'long_term', 'load_tasks')
 
     logger.debug(
         'success:Your final review request has been sent to responsible'
@@ -4945,6 +4965,7 @@ def resume_task(request):
     # invalidate the cache region
     region_invalidate(cached_query_tasks, 'long_term', 'load_tasks')
     region_invalidate(get_cached_user_tasks, 'long_term', 'load_tasks')
+    region_invalidate(get_cached_tasks_count, 'long_term', 'load_tasks')
 
     return Response('Success: %s is resumed' % task.name)
 
@@ -5342,6 +5363,7 @@ def unwatch_task(request):
         task.watchers.remove(logged_in_user)
 
     # invalidate the cache region
+    region_invalidate(cached_query_tasks, 'long_term', 'load_tasks')
     region_invalidate(get_cached_user_tasks, 'long_term', 'load_tasks')
     region_invalidate(get_cached_tasks_count, 'long_term', 'load_tasks')
 
