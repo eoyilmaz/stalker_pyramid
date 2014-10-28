@@ -927,6 +927,10 @@ def inline_update_task(request):
         logger.debug('not updating')
         return Response("MISSING PARAMETERS", 500)
 
+    # invalidate the cache region
+    region_invalidate(cached_query_tasks, 'long_term', 'load_tasks')
+    region_invalidate(get_cached_user_tasks, 'long_term', 'load_tasks')
+
     return Response(
         'Task updated successfully %s %s' % (attr_name, attr_value)
     )
@@ -3508,6 +3512,9 @@ def review_task(request):
         transaction.abort()
         return Response('No revision is specified', 500)
 
+    # invalidate the cache region
+    region_invalidate(cached_query_tasks, 'long_term', 'load_tasks')
+
     if review_mode == 'Approve':
         return approve_task(request)
     elif review_mode == 'Request Revision':
@@ -4913,7 +4920,6 @@ def resume_task(request):
 
     task.resume()
 
-
     logged_in_user = get_logged_in_user(request)
     utc_now = local_to_utc(datetime.datetime.now())
 
@@ -4933,6 +4939,10 @@ def resume_task(request):
     task.notes.append(note)
     task.updated_by = logged_in_user
     task.date_updated = utc_now
+
+    # invalidate the cache region
+    region_invalidate(cached_query_tasks, 'long_term', 'load_tasks')
+    region_invalidate(get_cached_user_tasks, 'long_term', 'load_tasks')
 
     return Response('Success: %s is resumed' % task.name)
 
@@ -5027,9 +5037,9 @@ def remove_task_user(request):
         transaction.abort()
         return Response('Missing parameters', 500)
 
-    if user_type=='resources':
+    if user_type == 'resources':
         task.resources.remove(user)
-    elif user_type=='responsible':
+    elif user_type == 'responsible':
         task.responsible.remove(user)
 
     logged_in_user = get_logged_in_user(request)
@@ -5038,7 +5048,13 @@ def remove_task_user(request):
     task.updated_by = logged_in_user
     task.date_updated = utc_now
 
-    return Response('Success: %s is removed from %s resources' % (user.name, task.name))
+    # invalidate the cache region
+    region_invalidate(cached_query_tasks, 'long_term', 'load_tasks')
+    region_invalidate(get_cached_user_tasks, 'long_term', 'load_tasks')
+    region_invalidate(get_cached_tasks_count, 'long_term', 'load_tasks')
+
+    return Response('Success: %s is removed from %s resources' %
+                    (user.name, task.name))
 
 
 
@@ -5303,6 +5319,10 @@ def watch_task(request):
     if logged_in_user not in task.watchers:
         task.watchers.append(logged_in_user)
 
+    # invalidate the cache region
+    region_invalidate(get_cached_user_tasks, 'long_term', 'load_tasks')
+    region_invalidate(get_cached_tasks_count, 'long_term', 'load_tasks')
+
     return Response('Task successfully added to watch list')
 
 
@@ -5318,6 +5338,10 @@ def unwatch_task(request):
 
     if logged_in_user in task.watchers:
         task.watchers.remove(logged_in_user)
+
+    # invalidate the cache region
+    region_invalidate(get_cached_user_tasks, 'long_term', 'load_tasks')
+    region_invalidate(get_cached_tasks_count, 'long_term', 'load_tasks')
 
     return Response('Task successfully removed from watch list')
 
