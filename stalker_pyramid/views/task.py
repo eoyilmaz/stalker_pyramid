@@ -4568,6 +4568,11 @@ def delete_task(request):
 
         db.DBSession.delete(task)
         #transaction.commit()
+
+        region_invalidate(cached_query_tasks, 'long_term', 'load_tasks')
+        region_invalidate(get_cached_user_tasks, 'long_term', 'load_tasks')
+        region_invalidate(get_cached_tasks_count, 'long_term', 'load_tasks')
+
         logger.debug(
             'Successfully deleted task: %s (%s)' % (task.name, task_id)
         )
