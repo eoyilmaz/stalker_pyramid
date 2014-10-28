@@ -200,9 +200,10 @@ def auto_schedule_tasks(request):
 
         # invalidate cache regions
         from stalker_pyramid.views.task import cached_query_tasks,\
-            get_cached_user_tasks
+            get_cached_user_tasks, get_cached_tasks_count
         region_invalidate(cached_query_tasks, 'long_term', 'load_tasks')
         region_invalidate(get_cached_user_tasks, 'long_term', 'load_tasks')
+        region_invalidate(get_cached_tasks_count, 'long_term', 'load_tasks')
 
         c = StdErrToHTMLConverter(stderr)
         return Response(c.html(replace_links=True))

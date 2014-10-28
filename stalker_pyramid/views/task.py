@@ -547,6 +547,11 @@ def duplicate_task_hierarchy(request):
         return Response(
             'No task can be found with the given id: %s' % task_id, 500)
 
+    # invalidate the cache region
+    region_invalidate(cached_query_tasks, 'long_term', 'load_tasks')
+    region_invalidate(get_cached_user_tasks, 'long_term', 'load_tasks')
+    region_invalidate(get_cached_tasks_count, 'long_term', 'load_tasks')
+
     return Response('Task %s is duplicated successfully' % task.id)
 
 
@@ -1095,6 +1100,7 @@ def update_task(request):
     # invalidate the cache region
     region_invalidate(cached_query_tasks, 'long_term', 'load_tasks')
     region_invalidate(get_cached_user_tasks, 'long_term', 'load_tasks')
+    region_invalidate(get_cached_tasks_count, 'long_term', 'load_tasks')
 
     return Response('Task updated successfully')
 
@@ -3250,6 +3256,7 @@ def create_task(request):
     # invalidate cache region
     region_invalidate(cached_query_tasks, 'long_term', 'load_tasks')
     region_invalidate(get_cached_user_tasks, 'long_term', 'load_tasks')
+    region_invalidate(get_cached_tasks_count, 'long_term', 'load_tasks')
 
     return Response('Task created successfully')
 
