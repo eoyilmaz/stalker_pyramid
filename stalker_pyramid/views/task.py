@@ -286,6 +286,11 @@ def fix_task_statuses(request):
 
     request.session.flash('success: Task status is fixed!')
 
+    # invalidate the cache region
+    region_invalidate(cached_query_tasks, 'long_term', 'load_tasks')
+    region_invalidate(get_cached_user_tasks, 'long_term', 'load_tasks')
+    region_invalidate(get_cached_tasks_count, 'long_term', 'load_tasks')
+
     return HTTPOk()
 
 
@@ -301,6 +306,11 @@ def fix_task_schedule_info(request):
     if task:
         assert isinstance(task, Task)
         task.update_schedule_info()
+
+    # invalidate the cache region
+    region_invalidate(cached_query_tasks, 'long_term', 'load_tasks')
+    region_invalidate(get_cached_user_tasks, 'long_term', 'load_tasks')
+    region_invalidate(get_cached_tasks_count, 'long_term', 'load_tasks')
 
     return HTTPOk()
 
@@ -834,6 +844,11 @@ def update_task_dependencies(request):
     task.updated_by = logged_in_user
     task.date_updated = utc_now
 
+    # invalidate the cache region
+    region_invalidate(cached_query_tasks, 'long_term', 'load_tasks')
+    region_invalidate(get_cached_user_tasks, 'long_term', 'load_tasks')
+    region_invalidate(get_cached_tasks_count, 'long_term', 'load_tasks')
+
     return Response('Task updated successfully')
 
 
@@ -935,6 +950,7 @@ def inline_update_task(request):
     # invalidate the cache region
     region_invalidate(cached_query_tasks, 'long_term', 'load_tasks')
     region_invalidate(get_cached_user_tasks, 'long_term', 'load_tasks')
+    region_invalidate(get_cached_tasks_count, 'long_term', 'load_tasks')
 
     return Response(
         'Task updated successfully %s %s' % (attr_name, attr_value)
@@ -3362,7 +3378,6 @@ def get_answered_reviews(task, review_set_number):
     route_name='cleanup_task_new_reviews',
 )
 def cleanup_task_new_reviews(request):
-
     """works when task has at least one answered review
     """
     logger.debug('cleanup_task_new_reviews is starts')
@@ -3424,6 +3439,11 @@ def cleanup_task_new_reviews(request):
 
     task.updated_by = logged_in_user
     task.date_updated = utc_now
+
+    # invalidate the cache region
+    region_invalidate(cached_query_tasks, 'long_term', 'load_tasks')
+    region_invalidate(get_cached_user_tasks, 'long_term', 'load_tasks')
+    region_invalidate(get_cached_tasks_count, 'long_term', 'load_tasks')
 
     request.session.flash('success:Unanswered reviews are cleaned!')
     return Response('Successfully Unanswered reviews are cleaned!')
@@ -3693,6 +3713,11 @@ def approve_task(request):
             mailer.send_to_queue(message)
         except ValueError:  # no internet connection
             pass
+
+    # invalidate the cache region
+    region_invalidate(cached_query_tasks, 'long_term', 'load_tasks')
+    region_invalidate(get_cached_user_tasks, 'long_term', 'load_tasks')
+    region_invalidate(get_cached_tasks_count, 'long_term', 'load_tasks')
 
     request.session.flash('success:Approved task')
     return Response('Successfully approved task')
@@ -3988,6 +4013,11 @@ def request_review(request):
         return Response('You are not one of the resources nor the '
                         'responsible of this task, so you can not request a '
                         'review for this task', 500)
+
+    # invalidate the cache region
+    region_invalidate(cached_query_tasks, 'long_term', 'load_tasks')
+    region_invalidate(get_cached_user_tasks, 'long_term', 'load_tasks')
+    region_invalidate(get_cached_tasks_count, 'long_term', 'load_tasks')
 
     if request_review_mode == 'Final':
         return request_final_review(request)
@@ -4444,6 +4474,11 @@ def request_extra_time(request):
         except ValueError:
             pass
 
+    # invalidate the cache region
+    region_invalidate(cached_query_tasks, 'long_term', 'load_tasks')
+    region_invalidate(get_cached_user_tasks, 'long_term', 'load_tasks')
+    region_invalidate(get_cached_tasks_count, 'long_term', 'load_tasks')
+
     logger.debug(
         'success:Your extra time request has been sent to responsible'
     )
@@ -4893,6 +4928,11 @@ def force_task_status(request):
     task.updated_by = logged_in_user
     task.date_updated = utc_now
 
+    # invalidate the cache region
+    region_invalidate(cached_query_tasks, 'long_term', 'load_tasks')
+    region_invalidate(get_cached_user_tasks, 'long_term', 'load_tasks')
+    region_invalidate(get_cached_tasks_count, 'long_term', 'load_tasks')
+
     return Response('Success: %s status is set to %s' % (task.name, status.name))
 
 
@@ -5155,6 +5195,11 @@ def change_tasks_users(request):
     task.updated_by = logged_in_user
     task.date_updated = utc_now
 
+    # invalidate the cache region
+    region_invalidate(cached_query_tasks, 'long_term', 'load_tasks')
+    region_invalidate(get_cached_user_tasks, 'long_term', 'load_tasks')
+    region_invalidate(get_cached_tasks_count, 'long_term', 'load_tasks')
+
     return Response('Success: %s are added to selected tasks' % user_type)
 
 @view_config(
@@ -5207,6 +5252,11 @@ def change_tasks_priority(request):
         task.priority = priority
         task.updated_by = logged_in_user
         task.date_updated = utc_now
+
+    # invalidate the cache region
+    region_invalidate(cached_query_tasks, 'long_term', 'load_tasks')
+    region_invalidate(get_cached_user_tasks, 'long_term', 'load_tasks')
+    region_invalidate(get_cached_tasks_count, 'long_term', 'load_tasks')
 
     return Response('Success')
 
@@ -5275,6 +5325,11 @@ def change_task_users(request):
     task.updated_by = logged_in_user
     task.date_updated = utc_now
 
+    # invalidate the cache region
+    region_invalidate(cached_query_tasks, 'long_term', 'load_tasks')
+    region_invalidate(get_cached_user_tasks, 'long_term', 'load_tasks')
+    region_invalidate(get_cached_tasks_count, 'long_term', 'load_tasks')
+
     return Response('Success: %s are added to %s resources' % (user_type, task.name))
 
 
@@ -5326,6 +5381,11 @@ def add_tasks_dependencies(request):
                 except (CircularDependencyError, StatusError):
                     pass
 
+    # invalidate the cache region
+    region_invalidate(cached_query_tasks, 'long_term', 'load_tasks')
+    region_invalidate(get_cached_user_tasks, 'long_term', 'load_tasks')
+    region_invalidate(get_cached_tasks_count, 'long_term', 'load_tasks')
+
     return Response('Tasks updated successfully!')
 
 
@@ -5343,6 +5403,7 @@ def watch_task(request):
         task.watchers.append(logged_in_user)
 
     # invalidate the cache region
+    region_invalidate(cached_query_tasks, 'long_term', 'load_tasks')
     region_invalidate(get_cached_user_tasks, 'long_term', 'load_tasks')
     region_invalidate(get_cached_tasks_count, 'long_term', 'load_tasks')
 
@@ -5392,6 +5453,7 @@ def fix_task_computed_time(task):
 
         logger.debug('Task computed time is fixed!')
 
+
 def get_actual_start_time(task):
     """Returns the start time of the earliest time logs of the given task if it
     has any time logs, or it will return the task start_time.
@@ -5408,13 +5470,16 @@ def get_actual_start_time(task):
             task.__class__.__name__
         )
 
-
-    first_time_log = TimeLog.query.filter(TimeLog.task == task).order_by(TimeLog.start.asc()).first()
+    first_time_log = TimeLog.query\
+        .filter(TimeLog.task == task)\
+        .order_by(TimeLog.start.asc())\
+        .first()
 
     if first_time_log:
         return first_time_log.start
 
     return task.computed_start
+
 
 def get_actual_end_time(task):
     """Returns the end time of the latest time logs of the given task if it
