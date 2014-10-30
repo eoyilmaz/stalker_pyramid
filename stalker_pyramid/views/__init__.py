@@ -444,3 +444,10 @@ def get_parent_task_status(children_statuses):
     return status
 
 
+def invalidate_all_caches():
+    """invalidates all cache values.
+    Based on: http://stackoverflow.com/a/14251064/3259351
+    """
+    from beaker.cache import cache_managers
+    for _cache in cache_managers.values():
+        _cache.clear()

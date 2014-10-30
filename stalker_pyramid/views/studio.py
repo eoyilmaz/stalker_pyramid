@@ -20,7 +20,6 @@
 
 import logging
 import datetime
-from beaker.cache import region_invalidate
 
 from pyramid.httpexceptions import HTTPOk
 from pyramid.response import Response
@@ -30,7 +29,8 @@ from stalker.db import DBSession
 from stalker import Studio, WorkingHours, TaskJugglerScheduler
 import transaction
 from stalker_pyramid.views import (get_time, get_logged_in_user, local_to_utc,
-                                   StdErrToHTMLConverter)
+                                   StdErrToHTMLConverter,
+                                   invalidate_all_caches)
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -201,9 +201,7 @@ def auto_schedule_tasks(request):
         # invalidate cache regions
         from stalker_pyramid.views.task import cached_query_tasks,\
             get_cached_user_tasks, get_cached_tasks_count
-        region_invalidate(cached_query_tasks, 'long_term', 'load_tasks')
-        region_invalidate(get_cached_user_tasks, 'long_term', 'load_tasks')
-        region_invalidate(get_cached_tasks_count, 'long_term', 'load_tasks')
+        invalidate_all_caches()
 
         c = StdErrToHTMLConverter(stderr)
         return Response(c.html(replace_links=True))
