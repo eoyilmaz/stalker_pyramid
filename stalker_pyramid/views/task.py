@@ -30,7 +30,7 @@ from pyramid.view import view_config
 from pyramid.httpexceptions import HTTPServerError, HTTPOk, HTTPForbidden
 from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message, Attachment
-from beaker.cache import cache_region, region_invalidate
+from beaker.cache import cache_region
 
 from sqlalchemy.exc import IntegrityError
 
@@ -44,7 +44,7 @@ from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
                                    StdErrToHTMLConverter,
                                    multi_permission_checker,
                                    dummy_email_address, local_to_utc,
-                                   get_path_converter)
+                                   get_path_converter, invalidate_all_caches)
 from stalker_pyramid.views.link import (replace_img_data_with_links,
                                         MediaManager)
 from stalker_pyramid.views.type import query_type
@@ -286,10 +286,8 @@ def fix_task_statuses(request):
 
     request.session.flash('success: Task status is fixed!')
 
-    # invalidate the cache region
-    region_invalidate(cached_query_tasks, 'long_term', 'load_tasks')
-    region_invalidate(get_cached_user_tasks, 'long_term', 'load_tasks')
-    region_invalidate(get_cached_tasks_count, 'long_term', 'load_tasks')
+    # invalidate all caches
+    invalidate_all_caches()
 
     return HTTPOk()
 
@@ -307,10 +305,8 @@ def fix_task_schedule_info(request):
         assert isinstance(task, Task)
         task.update_schedule_info()
 
-    # invalidate the cache region
-    region_invalidate(cached_query_tasks, 'long_term', 'load_tasks')
-    region_invalidate(get_cached_user_tasks, 'long_term', 'load_tasks')
-    region_invalidate(get_cached_tasks_count, 'long_term', 'load_tasks')
+    # invalidate all caches
+    invalidate_all_caches()
 
     return HTTPOk()
 
@@ -557,10 +553,8 @@ def duplicate_task_hierarchy(request):
         return Response(
             'No task can be found with the given id: %s' % task_id, 500)
 
-    # invalidate the cache region
-    region_invalidate(cached_query_tasks, 'long_term', 'load_tasks')
-    region_invalidate(get_cached_user_tasks, 'long_term', 'load_tasks')
-    region_invalidate(get_cached_tasks_count, 'long_term', 'load_tasks')
+    # invalidate all caches
+    invalidate_all_caches()
 
     return Response('Task %s is duplicated successfully' % task.id)
 
@@ -774,10 +768,8 @@ def update_task_schedule_timing(request):
         task.bid_timing = task.schedule_timing
         task.bid_unit = task.schedule_unit
 
-    # invalidate the cache region
-    region_invalidate(cached_query_tasks, 'long_term', 'load_tasks')
-    region_invalidate(get_cached_user_tasks, 'long_term', 'load_tasks')
-    region_invalidate(get_cached_tasks_count, 'long_term', 'load_tasks')
+    # invalidate all caches
+    invalidate_all_caches()
 
     return Response('Task updated successfully')
 
@@ -844,10 +836,8 @@ def update_task_dependencies(request):
     task.updated_by = logged_in_user
     task.date_updated = utc_now
 
-    # invalidate the cache region
-    region_invalidate(cached_query_tasks, 'long_term', 'load_tasks')
-    region_invalidate(get_cached_user_tasks, 'long_term', 'load_tasks')
-    region_invalidate(get_cached_tasks_count, 'long_term', 'load_tasks')
+    # invalidate all caches
+    invalidate_all_caches()
 
     return Response('Task updated successfully')
 
@@ -947,10 +937,8 @@ def inline_update_task(request):
         logger.debug('not updating')
         return Response("MISSING PARAMETERS", 500)
 
-    # invalidate the cache region
-    region_invalidate(cached_query_tasks, 'long_term', 'load_tasks')
-    region_invalidate(get_cached_user_tasks, 'long_term', 'load_tasks')
-    region_invalidate(get_cached_tasks_count, 'long_term', 'load_tasks')
+    # invalidate all caches
+    invalidate_all_caches()
 
     return Response(
         'Task updated successfully %s %s' % (attr_name, attr_value)
@@ -1122,10 +1110,8 @@ def update_task(request):
 
     task.date_updated = local_to_utc(datetime.datetime.now())
 
-    # invalidate the cache region
-    region_invalidate(cached_query_tasks, 'long_term', 'load_tasks')
-    region_invalidate(get_cached_user_tasks, 'long_term', 'load_tasks')
-    region_invalidate(get_cached_tasks_count, 'long_term', 'load_tasks')
+    # invalidate all caches
+    invalidate_all_caches()
 
     return Response('Task updated successfully')
 
@@ -3278,10 +3264,8 @@ def create_task(request):
             db.DBSession.flush()
             logger.debug('finished adding Task')
 
-    # invalidate cache region
-    region_invalidate(cached_query_tasks, 'long_term', 'load_tasks')
-    region_invalidate(get_cached_user_tasks, 'long_term', 'load_tasks')
-    region_invalidate(get_cached_tasks_count, 'long_term', 'load_tasks')
+    # invalidate all caches
+    invalidate_all_caches()
 
     return Response('Task created successfully')
 
@@ -3440,10 +3424,8 @@ def cleanup_task_new_reviews(request):
     task.updated_by = logged_in_user
     task.date_updated = utc_now
 
-    # invalidate the cache region
-    region_invalidate(cached_query_tasks, 'long_term', 'load_tasks')
-    region_invalidate(get_cached_user_tasks, 'long_term', 'load_tasks')
-    region_invalidate(get_cached_tasks_count, 'long_term', 'load_tasks')
+    # invalidate all caches
+    invalidate_all_caches()
 
     request.session.flash('success:Unanswered reviews are cleaned!')
     return Response('Successfully Unanswered reviews are cleaned!')
@@ -3537,10 +3519,8 @@ def review_task(request):
         transaction.abort()
         return Response('No revision is specified', 500)
 
-    # invalidate the cache region
-    region_invalidate(cached_query_tasks, 'long_term', 'load_tasks')
-    region_invalidate(get_cached_user_tasks, 'long_term', 'load_tasks')
-    region_invalidate(get_cached_tasks_count, 'long_term', 'load_tasks')
+    # invalidate all caches
+    invalidate_all_caches()
 
     if review_mode == 'Approve':
         return approve_task(request)
@@ -3714,10 +3694,8 @@ def approve_task(request):
         except ValueError:  # no internet connection
             pass
 
-    # invalidate the cache region
-    region_invalidate(cached_query_tasks, 'long_term', 'load_tasks')
-    region_invalidate(get_cached_user_tasks, 'long_term', 'load_tasks')
-    region_invalidate(get_cached_tasks_count, 'long_term', 'load_tasks')
+    # invalidate all caches
+    invalidate_all_caches()
 
     request.session.flash('success:Approved task')
     return Response('Successfully approved task')
@@ -3916,10 +3894,8 @@ def request_revision(request):
         # except ValueError:  # no internet connection
         #     pass
 
-    # invalidate the cache region
-    region_invalidate(cached_query_tasks, 'long_term', 'load_tasks')
-    region_invalidate(get_cached_user_tasks, 'long_term', 'load_tasks')
-    region_invalidate(get_cached_tasks_count, 'long_term', 'load_tasks')
+    # invalidate all caches
+    invalidate_all_caches()
 
     request.session.flash('success:Requested revision for the task')
     return Response('Successfully requested revision for the task')
@@ -4014,10 +3990,8 @@ def request_review(request):
                         'responsible of this task, so you can not request a '
                         'review for this task', 500)
 
-    # invalidate the cache region
-    region_invalidate(cached_query_tasks, 'long_term', 'load_tasks')
-    region_invalidate(get_cached_user_tasks, 'long_term', 'load_tasks')
-    region_invalidate(get_cached_tasks_count, 'long_term', 'load_tasks')
+    # invalidate all caches
+    invalidate_all_caches()
 
     if request_review_mode == 'Final':
         return request_final_review(request)
@@ -4153,10 +4127,8 @@ def request_progress_review(request):
         'success:Your progress review request has been sent to responsible'
     )
 
-    # invalidate the cache region
-    region_invalidate(cached_query_tasks, 'long_term', 'load_tasks')
-    region_invalidate(get_cached_user_tasks, 'long_term', 'load_tasks')
-    region_invalidate(get_cached_tasks_count, 'long_term', 'load_tasks')
+    # invalidate all caches
+    invalidate_all_caches()
 
     return Response(
         'Your progress review request has been sent to responsible'
@@ -4293,10 +4265,8 @@ def request_final_review(request):
         except ValueError:
             pass
 
-    # invalidate the cache region
-    region_invalidate(cached_query_tasks, 'long_term', 'load_tasks')
-    region_invalidate(get_cached_user_tasks, 'long_term', 'load_tasks')
-    region_invalidate(get_cached_tasks_count, 'long_term', 'load_tasks')
+    # invalidate all caches
+    invalidate_all_caches()
 
     logger.debug(
         'success:Your final review request has been sent to responsible'
@@ -4474,10 +4444,8 @@ def request_extra_time(request):
         except ValueError:
             pass
 
-    # invalidate the cache region
-    region_invalidate(cached_query_tasks, 'long_term', 'load_tasks')
-    region_invalidate(get_cached_user_tasks, 'long_term', 'load_tasks')
-    region_invalidate(get_cached_tasks_count, 'long_term', 'load_tasks')
+    # invalidate all caches
+    invalidate_all_caches()
 
     logger.debug(
         'success:Your extra time request has been sent to responsible'
@@ -4633,9 +4601,8 @@ def delete_task(request):
         db.DBSession.delete(task)
         #transaction.commit()
 
-        region_invalidate(cached_query_tasks, 'long_term', 'load_tasks')
-        region_invalidate(get_cached_user_tasks, 'long_term', 'load_tasks')
-        region_invalidate(get_cached_tasks_count, 'long_term', 'load_tasks')
+        # invalidate all caches
+        invalidate_all_caches()
 
         logger.debug(
             'Successfully deleted task: %s (%s)' % (task.name, task_id)
@@ -4928,10 +4895,8 @@ def force_task_status(request):
     task.updated_by = logged_in_user
     task.date_updated = utc_now
 
-    # invalidate the cache region
-    region_invalidate(cached_query_tasks, 'long_term', 'load_tasks')
-    region_invalidate(get_cached_user_tasks, 'long_term', 'load_tasks')
-    region_invalidate(get_cached_tasks_count, 'long_term', 'load_tasks')
+    # invalidate all caches
+    invalidate_all_caches()
 
     return Response('Success: %s status is set to %s' % (task.name, status.name))
 
@@ -5002,10 +4967,8 @@ def resume_task(request):
     task.updated_by = logged_in_user
     task.date_updated = utc_now
 
-    # invalidate the cache region
-    region_invalidate(cached_query_tasks, 'long_term', 'load_tasks')
-    region_invalidate(get_cached_user_tasks, 'long_term', 'load_tasks')
-    region_invalidate(get_cached_tasks_count, 'long_term', 'load_tasks')
+    # invalidate all caches
+    invalidate_all_caches()
 
     return Response('Success: %s is resumed' % task.name)
 
@@ -5111,10 +5074,8 @@ def remove_task_user(request):
     task.updated_by = logged_in_user
     task.date_updated = utc_now
 
-    # invalidate the cache region
-    region_invalidate(cached_query_tasks, 'long_term', 'load_tasks')
-    region_invalidate(get_cached_user_tasks, 'long_term', 'load_tasks')
-    region_invalidate(get_cached_tasks_count, 'long_term', 'load_tasks')
+    # invalidate all caches
+    invalidate_all_caches()
 
     return Response('Success: %s is removed from %s resources' %
                     (user.name, task.name))
@@ -5195,10 +5156,8 @@ def change_tasks_users(request):
     task.updated_by = logged_in_user
     task.date_updated = utc_now
 
-    # invalidate the cache region
-    region_invalidate(cached_query_tasks, 'long_term', 'load_tasks')
-    region_invalidate(get_cached_user_tasks, 'long_term', 'load_tasks')
-    region_invalidate(get_cached_tasks_count, 'long_term', 'load_tasks')
+    # invalidate all caches
+    invalidate_all_caches()
 
     return Response('Success: %s are added to selected tasks' % user_type)
 
@@ -5253,10 +5212,8 @@ def change_tasks_priority(request):
         task.updated_by = logged_in_user
         task.date_updated = utc_now
 
-    # invalidate the cache region
-    region_invalidate(cached_query_tasks, 'long_term', 'load_tasks')
-    region_invalidate(get_cached_user_tasks, 'long_term', 'load_tasks')
-    region_invalidate(get_cached_tasks_count, 'long_term', 'load_tasks')
+    # invalidate all caches
+    invalidate_all_caches()
 
     return Response('Success')
 
@@ -5325,10 +5282,8 @@ def change_task_users(request):
     task.updated_by = logged_in_user
     task.date_updated = utc_now
 
-    # invalidate the cache region
-    region_invalidate(cached_query_tasks, 'long_term', 'load_tasks')
-    region_invalidate(get_cached_user_tasks, 'long_term', 'load_tasks')
-    region_invalidate(get_cached_tasks_count, 'long_term', 'load_tasks')
+    # invalidate all caches
+    invalidate_all_caches()
 
     return Response('Success: %s are added to %s resources' % (user_type, task.name))
 
@@ -5381,10 +5336,8 @@ def add_tasks_dependencies(request):
                 except (CircularDependencyError, StatusError):
                     pass
 
-    # invalidate the cache region
-    region_invalidate(cached_query_tasks, 'long_term', 'load_tasks')
-    region_invalidate(get_cached_user_tasks, 'long_term', 'load_tasks')
-    region_invalidate(get_cached_tasks_count, 'long_term', 'load_tasks')
+    # invalidate all caches
+    invalidate_all_caches()
 
     return Response('Tasks updated successfully!')
 
@@ -5402,10 +5355,8 @@ def watch_task(request):
     if logged_in_user not in task.watchers:
         task.watchers.append(logged_in_user)
 
-    # invalidate the cache region
-    region_invalidate(cached_query_tasks, 'long_term', 'load_tasks')
-    region_invalidate(get_cached_user_tasks, 'long_term', 'load_tasks')
-    region_invalidate(get_cached_tasks_count, 'long_term', 'load_tasks')
+    # invalidate all caches
+    invalidate_all_caches()
 
     return Response('Task successfully added to watch list')
 
@@ -5423,10 +5374,8 @@ def unwatch_task(request):
     if logged_in_user in task.watchers:
         task.watchers.remove(logged_in_user)
 
-    # invalidate the cache region
-    region_invalidate(cached_query_tasks, 'long_term', 'load_tasks')
-    region_invalidate(get_cached_user_tasks, 'long_term', 'load_tasks')
-    region_invalidate(get_cached_tasks_count, 'long_term', 'load_tasks')
+    # invalidate all caches
+    invalidate_all_caches()
 
     return Response('Task successfully removed from watch list')
 
