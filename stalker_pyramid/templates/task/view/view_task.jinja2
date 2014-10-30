@@ -571,17 +571,41 @@
                     success: function (response, newValue) {
 
                         var params = $.param({
-                            attr_name: 'priority',
-                            attr_value: parseInt(newValue)
+                            task_ids: [{{ entity.id }}],
+                            priority: parseInt(newValue),
+                            change_children_priority: false
                         });
 
-                        $.post(
-                            inline_update_url, params
-                        ).done(function () {
-                            console.log('done');
-                        }).fail(function (jqXHR) {
-                            bootbox.alert('<div id="message" class="alert alert-danger bigger-110">' + jqXHR.responseText + '</div>');
-                        });
+                        bootbox.dialog("Do you want to set children tasks' priority to same value? ", [{
+                            "label" : "Yes!",
+                            "class" : "btn-small btn-success",
+                            "callback": function() {
+                                params.change_children_priority = true;
+                                $.post(
+                                        '/tasks/change_priority', params
+                                    ).done(function () {
+                                        console.log('done');
+                                    }).fail(function (jqXHR) {
+                                        bootbox.alert('<div id="message" class="alert alert-danger bigger-110">' + jqXHR.responseText + '</div>');
+                                    });
+                            }
+                            }, {
+                            "label" : "No!",
+                            "class" : "btn-small btn-danger",
+                            "callback": function() {
+                                params.change_children_priority = false;
+                                $.post(
+                                        '/tasks/change_priority', params
+                                    ).done(function () {
+                                        console.log('done');
+                                    }).fail(function (jqXHR) {
+                                        bootbox.alert('<div id="message" class="alert alert-danger bigger-110">' + jqXHR.responseText + '</div>');
+                                    });
+                            }
+                            }]
+                        );
+
+
                     }
                 });
 

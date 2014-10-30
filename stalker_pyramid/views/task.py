@@ -5234,6 +5234,7 @@ def change_tasks_priority(request):
     """
 
     priority = int(request.params.get('priority', 500))
+    change_children_priority = request.params.get('priority', 500)
 
     selected_task_list = get_multi_integer(request, 'task_ids[]')
     logger.debug('selected_task_list : %s' % selected_task_list)
