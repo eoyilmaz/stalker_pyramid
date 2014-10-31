@@ -166,12 +166,10 @@
                             allow_single_deselect: true
                         });
 
-
                     });
                 {% endif %}
 
-            }
-            else{
+            } else {
                 $('#dailies_list').hide();
                 daily.find('option').remove();
                 $('#information').hide();
@@ -205,15 +203,13 @@
                 })
             }
             var daily_id = -1;
-            {% if entity.task.status.code in ['WIP','DREV','PREV'] %}
+            {% if entity.task.status.code in ['WIP', 'DREV', 'PREV', 'CMPL'] %}
                 if($('#add_to_daily').prop('checked')){
-
-                        daily_id = daily.val()
-
+                    daily_id = daily.val()
                 }
             {% endif %}
 
-
+            console.debug('daily_id: ', daily_id);
 
             $.post('{{ request.route_url('assign_output') }}', {
                 entity_id: entity_id,
@@ -221,7 +217,7 @@
                 full_paths: full_paths,
                 original_filenames: original_filenames,
                 tags: [],
-                daily_id:daily_id
+                daily_id: daily_id
             }).done(function(jqXHR){
                 // alert the user about the added files
                 // reload outputs
