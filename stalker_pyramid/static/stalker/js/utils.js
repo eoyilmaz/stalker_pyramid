@@ -336,6 +336,7 @@ function append_thumbnail(options) {
         container: null
     }, options);
 
+
     var data = options.data;
     var template = options.template;
     var colorbox_params = options.colorbox_params;

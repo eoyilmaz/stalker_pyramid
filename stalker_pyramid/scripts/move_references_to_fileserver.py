@@ -51,7 +51,7 @@ def move_references():
     mm = MediaManager()
 
     # get all tasks that has a reference
-    tasks = Task.query.filter(Task.references!=None).all()
+    tasks = Task.query.filter(Task.references != None).all()
 
     #print 'Number of Tasks that has a reference: %s' % len(tasks)
 
@@ -69,14 +69,15 @@ def move_references():
                     # create a new reference out of this path
                     new_ref = None
                     if os.path.exists(current_full_path):
-                        print 'moving %s' % current_full_path
+                        print('moving %s' % current_full_path)
                         with open(current_full_path) as f:
                             new_ref = \
                                 mm.upload_reference(t, f, r.original_filename)
-                        print 'to %s' % new_ref.full_path
+                        print('to %s' % new_ref.full_path)
 
                         # also update tags
-                        print 'adding tags: %s' % map(lambda x: x.name, r.tags)
+                        print('adding tags: %s' %
+                              map(lambda x: x.name, r.tags))
                         new_ref.tags = r.tags
                         # add this new_ref to DBSession
                         db.DBSession.add(new_ref)
@@ -88,7 +89,7 @@ def move_references():
                     }
 
                     # delete the old file
-                    print 'removing old reference at: %s' % current_full_path
+                    print('removing old reference at: %s' % current_full_path)
                     try:
                         os.remove(current_full_path)
                     except OSError:
@@ -101,8 +102,8 @@ def move_references():
                             mm.convert_file_link_to_full_path(
                                 current_thumbnail.full_path
                             )
-                        print 'also removing old thumbnail at: %s' % \
-                            current_thumbnail_full_path
+                        print('also removing old thumbnail at: %s' %
+                              current_thumbnail_full_path)
                         try:
                             os.remove(current_thumbnail_full_path)
                         except OSError:
@@ -121,8 +122,8 @@ def move_references():
         old_ref = v['old_ref']
         new_ref = v['new_ref']
         for task in Task.query.filter(Task.references.contains(old_ref)).all():
-            print '%s is referencing %s, breaking this relation' % \
-                (task, old_ref)
+            print('%s is referencing %s, breaking this relation' %
+                  (task, old_ref))
             task.references.remove(old_ref)
             if new_ref is not None:
                 if new_ref not in task.references:
@@ -139,7 +140,7 @@ def move_references():
         if old_thumbnail:
             db.DBSession.delete(old_thumbnail)
 
-    print "Processed %s Link objects!" % len(processed_references)
+    print("Processed %s Link objects!" % len(processed_references))
 
     # commit to database
     db.DBSession.commit()

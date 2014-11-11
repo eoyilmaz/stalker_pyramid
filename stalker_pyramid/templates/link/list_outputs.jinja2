@@ -361,7 +361,7 @@
         $('#dialog_template').on('hidden', function () {
             // get the data from the storage
 
-            var repo_id = {{ task.project.repository.id }}
+            var repo_id = {{ task.project.repository.id }};
             var repo_prepend = 'repositories/' + repo_id + '/';
             var new_outputs_storage = $('#new_outputs_storage');
             var data = $.parseJSON(new_outputs_storage.text());
@@ -369,12 +369,12 @@
             new_outputs_storage.text('');
             var outputItemTemplate = doT.template(document.getElementById('tmpl_output_item').text);
             for (var i = 0; i < data.length; i++) {
-                // prepend repsoitories/{id}/ to make it compatible with the
+                // prepend repositories/{id}/ to make it compatible with the
                 // new style outputs
                 data[i].thumbnail_full_path = repo_prepend + data[i].thumbnail_full_path;
                 data[i].full_path = repo_prepend + data[i].full_path;
                 data[i].task_id = task_id;
-                console.log('task_id '+task_id);
+                console.log('task_id :' + task_id);
 
                 append_thumbnail({
                     data: data[i],
@@ -385,6 +385,7 @@
                 });
             }
         });
+
         $('#is_published').on('change', function(e) {
             e.preventDefault();
             e.stopPropagation();

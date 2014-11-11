@@ -562,60 +562,29 @@
                     });
                 }
             });
-             $('#editable_entity_priority').editable({
-                    type: 'spinner',
-                    name: 'priority',
-                    spinner : {
-                        min : 500, max:1000, step:1
-                    },
-                    success: function (response, newValue) {
+            $('#editable_entity_priority').editable({
+                type: 'spinner',
+                name: 'priority',
+                spinner : {
+                    min : 0, max:1000, step:1,
+                    icon_up:'icon-caret-up',
+                    icon_down:'icon-caret-down'
+                },
+                success: function (response, newValue) {
+                    var params = $.param({
+                        attr_name: 'priority',
+                        attr_value: parseInt(newValue)
+                    });
 
-                        var params = $.param({
-                            task_ids: [{{ entity.id }}],
-                            priority: parseInt(newValue),
-                            change_children_priority: 'false'
-                        });
-
-                        bootbox.dialog("Do you want to set children tasks' priority to same value? ", [{
-                            "label" : "Yes!",
-                            "class" : "btn-small btn-success",
-                            "callback": function() {
-                                params = $.param({
-                                    task_ids: [{{ entity.id }}],
-                                    priority: parseInt(newValue),
-                                    change_children_priority: 'true'
-                                });
-                                $.post(
-                                        '/tasks/change_priority', params
-                                    ).done(function () {
-                                        console.log('done');
-                                    }).fail(function (jqXHR) {
-                                        bootbox.alert('<div id="message" class="alert alert-danger bigger-110">' + jqXHR.responseText + '</div>');
-                                    });
-                            }
-                            }, {
-                            "label" : "No!",
-                            "class" : "btn-small btn-danger",
-                            "callback": function() {
-                                params = $.param({
-                                    task_ids: [{{ entity.id }}],
-                                    priority: parseInt(newValue),
-                                    change_children_priority: 'false'
-                                });
-                                $.post(
-                                        '/tasks/change_priority', params
-                                    ).done(function () {
-                                        console.log('done');
-                                    }).fail(function (jqXHR) {
-                                        bootbox.alert('<div id="message" class="alert alert-danger bigger-110">' + jqXHR.responseText + '</div>');
-                                    });
-                            }
-                            }]
-                        );
-
-
-                    }
-                });
+                    $.post(
+                        inline_update_url, params
+                    ).done(function () {
+                        console.log('done');
+                    }).fail(function (jqXHR) {
+                        bootbox.alert('<div id="message" class="alert alert-danger bigger-110">' + jqXHR.responseText + '</div>');
+                    });
+                }
+            });
 
             $.getJSON('/types/?target_entity_type={{ entity.entity_type }}').then(function (available_types) {
                 var entity_types = [];

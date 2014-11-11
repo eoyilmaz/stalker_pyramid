@@ -298,10 +298,14 @@ def assign_reference(request):
     return [
         {
             'id': link.id,
-            'full_path': link.full_path,
+
             'original_filename': link.original_filename,
-            'thumbnail_full_path': link.thumbnail.full_path
-            if link.thumbnail else link.full_path,
+
+            'hires_full_path': link.full_path,
+            'webres_full_path': link.thumbnail.full_path,
+            'thumbnail_full_path': link.thumbnail.thumbnail.full_path
+                     if link.thumbnail.thumbnail else link.thumbnail.full_path,
+
             'tags': [tag.name for tag in link.tags]
         } for link in links
     ]
@@ -416,10 +420,14 @@ def assign_output(request):
     return [
         {
             'id': link.id,
-            'full_path': link.full_path,
+
             'original_filename': link.original_filename,
-            'thumbnail_full_path': link.thumbnail.full_path
-            if link.thumbnail else link.full_path,
+
+            'hires_full_path': link.full_path,
+            'webres_full_path': link.thumbnail.full_path,
+            'thumbnail_full_path': link.thumbnail.thumbnail.full_path
+                     if link.thumbnail.thumbnail else link.thumbnail.full_path,
+
             'tags': [tag.name for tag in link.tags],
             'version_id': version_id,
             'version_number': version_number,

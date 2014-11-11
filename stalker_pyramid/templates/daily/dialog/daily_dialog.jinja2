@@ -98,7 +98,6 @@
         });
         {# ***************************************************************** #}
         {# Submit Button #}
-
         var submit_button = $('#dialog_template_submit_button');
         submit_button.on('click', function (e) {
             e.stopPropagation();
@@ -107,20 +106,20 @@
             submit_button.button('loading');
             var daily_form = $('#daily_form');
 
-            var action = '/dailies/create';
+            var url = '/dailies/create';
             {% if mode=='Update' %}
-                action='/dailies/{{ daily.id }}/update';
+                url='/dailies/{{ daily.id }}/update';
                 {% set project = daily.project %}
             {% endif %}
 
-
             $.post(
-                action,
-                daily_form.serialize()+ '&' +
+                url,
+                daily_form.serialize() + '&' +
                 $.param({
                     'project_id': {{ project.id }}
                 })
-            ).done(function () {
+            ).done(function (jqXHR) {
+                //$('#new_outputs_storage').text(JSON.stringify(jqXHR));
                 window.location.reload();
             }).fail(function (jqXHR) {
                 bootbox.alert(jqXHR.responseText);
@@ -128,21 +127,17 @@
             });
         });
 
-
         console.debug('finished initializing the daily dialog!')
     }
 </script>
 
 <script type="text/javascript">
-
     function destruct_dialog() {
-
         $('#daily_name').unbind();
         $('#daily_description').unbind();
         $('#dialog_template_submit_button').unbind();
 
         $('#dialog_template').data('modal', null);
-
     }
 </script>
 

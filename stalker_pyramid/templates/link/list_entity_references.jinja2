@@ -414,7 +414,7 @@
                 new_references_storage.text('');
                 var referenceItemTemplate = doT.template(document.getElementById('tmpl_reference_item').text);
                 for (var i = 0; i < data.length; i++) {
-                    // prepend repsoitories/{id}/ to make it compatible with the
+                    // prepend repositories/{id}/ to make it compatible with the
                     // new style references
                     data[i].thumbnail_full_path = repo_prepend + data[i].thumbnail_full_path;
                     data[i].webres_full_path = repo_prepend + data[i].webres_full_path;
