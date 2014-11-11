@@ -980,6 +980,9 @@ def update_task(request):
     responsible = User.query.filter(User.id.in_(responsible_ids)).all()
 
     priority = int(request.params.get('priority', 500))
+    change_children_priority = request.params.get('change_children_priority', 500)
+    logger.debug('change_children_priority : %s' % change_children_priority)
+
 
     entity_type = request.params.get('entity_type', None)
     code = request.params.get('code', None)
@@ -5193,7 +5196,8 @@ def change_tasks_priority(request):
     """
 
     priority = int(request.params.get('priority', 500))
-    change_children_priority = request.params.get('priority', 500)
+    change_children_priority = request.params.get('change_children_priority', 500)
+    logger.debug('change_children_priority : %s' % change_children_priority)
 
     selected_task_list = get_multi_integer(request, 'task_ids[]')
     logger.debug('selected_task_list : %s' % selected_task_list)
@@ -5212,6 +5216,10 @@ def change_tasks_priority(request):
         task.priority = priority
         task.updated_by = logged_in_user
         task.date_updated = utc_now
+
+        if change_children_priority == 'true':
+            logger.debug('change children priority')
+
 
     # invalidate all caches
     invalidate_all_caches()

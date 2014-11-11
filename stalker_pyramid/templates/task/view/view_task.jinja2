@@ -573,14 +573,18 @@
                         var params = $.param({
                             task_ids: [{{ entity.id }}],
                             priority: parseInt(newValue),
-                            change_children_priority: false
+                            change_children_priority: 'false'
                         });
 
                         bootbox.dialog("Do you want to set children tasks' priority to same value? ", [{
                             "label" : "Yes!",
                             "class" : "btn-small btn-success",
                             "callback": function() {
-                                params.change_children_priority = true;
+                                params = $.param({
+                                    task_ids: [{{ entity.id }}],
+                                    priority: parseInt(newValue),
+                                    change_children_priority: 'true'
+                                });
                                 $.post(
                                         '/tasks/change_priority', params
                                     ).done(function () {
@@ -593,7 +597,11 @@
                             "label" : "No!",
                             "class" : "btn-small btn-danger",
                             "callback": function() {
-                                params.change_children_priority = false;
+                                params = $.param({
+                                    task_ids: [{{ entity.id }}],
+                                    priority: parseInt(newValue),
+                                    change_children_priority: 'false'
+                                });
                                 $.post(
                                         '/tasks/change_priority', params
                                     ).done(function () {
