@@ -3932,8 +3932,8 @@ def request_revision(request):
                 '%(note)s'
 
         message = Message(
-            subject='Task Reviewed: "%(task_full_path)s" has been '
-                    'requested revision by %(user)s!' % {
+            subject='Task Reviewed: Revision Requested to '
+                    '"%(task_full_path)s" by %(user)s!' % {
                         'task_full_path': task_full_path,
                         'user': logged_in_user.name
                     },
