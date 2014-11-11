@@ -1102,3 +1102,40 @@ tr .odd > td .ticket_BLOCKER {
   right: 0;
   left: 0;
 }
+ul.scroll-menu {
+  position: absolute;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  -moz-overflow-scrolling: touch;
+  -ms-overflow-scrolling: touch;
+  -o-overflow-scrolling: touch;
+  overflow-scrolling: touch;
+  width: 100%;
+  height: auto;
+  max-height: 800px;
+  margin: 0;
+  border-left: none;
+  border-right: none;
+  -webkit-border-radius: 0 !important;
+  -moz-border-radius: 0 !important;
+  -ms-border-radius: 0 !important;
+  -o-border-radius: 0 !important;
+  border-radius: 0 !important;
+  -webkit-box-shadow: none;
+  -moz-box-shadow: none;
+  -ms-box-shadow: none;
+  -o-box-shadow: none;
+  box-shadow: none;
+}
+@media only screen and (max-width: 767px) {
+  .nav-search {
+    right: 5px;
+    width: 180px;
+  }
+}
+@media only screen and (max-width: 979px) {
+  .breadcrumb {
+    margin-left: 90px;
+    margin-top: 44px;
+  }
+}

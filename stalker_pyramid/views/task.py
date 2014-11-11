@@ -923,11 +923,15 @@ def inline_update_task(request):
                 db.DBSession.add_all(links)
         else:
             if attr_name == 'cut_in' \
-                    or attr_name == 'cut_out' \
-                    or attr_name == 'priority':
+               or attr_name == 'cut_out' \
+               or attr_name == 'priority':
                 attr_value = int(attr_value)
 
             setattr(task, attr_name, attr_value)
+
+            if attr_name == 'priority':
+                for ct in task.walk_hierarchy():
+                    ct.priority = attr_value
 
         task.updated_by = logged_in_user
         utc_now = local_to_utc(datetime.datetime.now())
@@ -1062,6 +1066,10 @@ def update_task(request):
     task.schedule_timing = schedule_timing
     task.resources = resources
     task.priority = priority
+    # also update all child task priorities
+    for ct in task.walk_hierarchy():
+        ct.priority = priority
+
     task.code = code
     task.updated_by = logged_in_user
 
@@ -4187,6 +4195,7 @@ def request_final_review(request):
 
         # make the list unique
         recipients = list(set(recipients))
+        logger.debug('recipients: %s' % recipients)
 
         task_full_path = get_task_full_path(task.id)
         description_temp = \
@@ -5211,6 +5220,10 @@ def change_tasks_priority(request):
         task.priority = priority
         task.updated_by = logged_in_user
         task.date_updated = utc_now
+
+        # also update all children
+        for ct in task.walk_hierarchy():
+            ct.priority = priority
 
     # invalidate all caches
     invalidate_all_caches()

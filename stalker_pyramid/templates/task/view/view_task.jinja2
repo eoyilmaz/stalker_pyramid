@@ -562,28 +562,29 @@
                     });
                 }
             });
-             $('#editable_entity_priority').editable({
-                    type: 'spinner',
-                    name: 'priority',
-                    spinner : {
-                        min : 500, max:1000, step:1
-                    },
-                    success: function (response, newValue) {
+            $('#editable_entity_priority').editable({
+                type: 'spinner',
+                name: 'priority',
+                spinner : {
+                    min : 0, max:1000, step:1,
+                    icon_up:'icon-caret-up',
+                    icon_down:'icon-caret-down'
+                },
+                success: function (response, newValue) {
+                    var params = $.param({
+                        attr_name: 'priority',
+                        attr_value: parseInt(newValue)
+                    });
 
-                        var params = $.param({
-                            attr_name: 'priority',
-                            attr_value: parseInt(newValue)
-                        });
-
-                        $.post(
-                            inline_update_url, params
-                        ).done(function () {
-                            console.log('done');
-                        }).fail(function (jqXHR) {
-                            bootbox.alert('<div id="message" class="alert alert-danger bigger-110">' + jqXHR.responseText + '</div>');
-                        });
-                    }
-                });
+                    $.post(
+                        inline_update_url, params
+                    ).done(function () {
+                        console.log('done');
+                    }).fail(function (jqXHR) {
+                        bootbox.alert('<div id="message" class="alert alert-danger bigger-110">' + jqXHR.responseText + '</div>');
+                    });
+                }
+            });
 
             $.getJSON('/types/?target_entity_type={{ entity.entity_type }}').then(function (available_types) {
                 var entity_types = [];
