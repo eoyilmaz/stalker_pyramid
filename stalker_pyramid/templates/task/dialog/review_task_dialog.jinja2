@@ -19,8 +19,7 @@
 {#                        <li><strong>Note :</strong><i class="icon-heart"></i> {{ review.description | safe}}#}
 {#                        </li>#}
 {#                    </ul>#}
-                    {% if review_description!='' %}
-
+                    {% if review_description != '' %}
                         {{ review_description | safe }}
                     {% endif %}
                 </div>
@@ -35,16 +34,19 @@
 
                 {# Review Type #}
                 <div class="control-group">
-                    <label class="span3 control-label" for="task_review_mode">Review
-                        Type</label>
+                    <label class="span3 control-label" for="task_review_mode">Review Type</label>
 
                     <div class="span9">
                         <select id='task_review_mode'
                                 class='input-block-level'
                                 name='review'>
-                            <option value="approve">Approve</option>
-                            <option value="request_revision">Request Revision
-                            </option>
+                            {% if review_type in [None, '', 'Final'] %}
+                                <option value="approve">Approve</option>
+                                <option value="request_revision">Request Revision</option>
+                            {% elif review_type == 'Extra Time' %}
+                                <option value="request_revision">Accept Extra Time Request</option>
+                                <option value="approve">Reject Extra Time Request</option>
+                            {% endif %}
                         </select>
                     </div>
                 </div>
@@ -71,8 +73,7 @@
                     {# Schedule Timing #}
                     <div class='control-group hide' id="revision_controls">
                         <label class='span3 control-label'
-                               for='task_schedule_timing'>Schedule
-                            Timing</label>
+                               for='task_schedule_timing'>Schedule Timing</label>
 
                         <div class='span9'>
                             <div class='span2'>
@@ -88,6 +89,7 @@
                                 <select id='task_schedule_unit'
                                         class='input-block-level'
                                         name='schedule_unit'>
+                                    <option value='min'>Minutes</option>
                                     <option value='h'>Hours</option>
                                     <option value='d'>Days</option>
                                     <option value='w'>Weeks</option>
@@ -155,14 +157,12 @@
         dialog_template_label.append('<span class="green">Review Task Dialog</span>');
 
         {% if not version %}
-
             $('#version_message').append(
                 "<div class='alert alert-error bigger-110'>" +
                 "<strong>{{ task.name }}</strong> is <strong>{{task.type.name }}</strong> type task." +
                 "For <strong>{{task.type.name }} </strong> type task no version is saved to server. Ask resource for details." +
                 "</div>"
             );
-
         {% endif %}
 
         // generate default values;
@@ -178,28 +178,24 @@
 
         var submit_button = $('#dialog_template_submit_button');
 
+        var task_review_mode = $('#task_review_mode');
+    
         {% if review_mode %}
-
-            $('#task_review_mode').val('{{ review_mode }}')
+            task_review_mode.val('{{ review_mode }}');
 
             {% if review_mode == 'request_revision' %}
-
                 $('#revision_controls').show();
-
             {% endif %}
 
-            submit_form_url = '/tasks/{{ task.id }}/'+ $('#task_review_mode').val()
+            submit_form_url = '/tasks/{{ task.id }}/'+ task_review_mode.val();
 
         {% endif %}
 
 
         {% if forced %}
-
-            $('#task_review_mode').attr('disabled','disabled');
-
+            task_review_mode.attr('disabled','disabled');
         {% else %}
-
-            $('#task_review_mode').on('change', function () {
+            task_review_mode.on('change', function () {
                 // disable or enable revision_controls
                 $('#revision_controls').toggle();
 
@@ -211,26 +207,56 @@
 
         {# ***************************************************************** #}
         {# Schedule Unit and Model #}
-        $('#task_schedule_unit').val(schedule_unit);
+        var task_schedule_unit = $('#task_schedule_unit');
+        var task_schedule_timing = $('#task_schedule_timing');
+
+        var schedule_timing_setter = function(){
+            // set minimum
+            var value = task_schedule_unit.val();
+            if (value === 'min') {
+                // need to be multiple of 10
+                var timing_value = task_schedule_timing.val();
+                timing_value = (timing_value / 10).toFixed(0) * 10;
+                timing_value = Math.max(10, timing_value);
+                task_schedule_timing.val(timing_value);
+            }
+        };
+
+        task_schedule_timing.on('change', schedule_timing_setter);
+        schedule_timing_setter();
+    
+        task_schedule_unit.on('change', function(e){
+            var value = $(this).val();
+            if(value === 'min'){
+                // set the minimum to 10min
+                // TODO: get studio minimum schedule unit
+                task_schedule_timing.val(10);
+            }
+        });
+
+        task_schedule_unit.val(schedule_unit);
+
         $('#task_schedule_model').val(schedule_model);
+
+
 
         {# ***************************************************************** #}
         {# Priority Spinner #}
         var priority = 500;
         priority = {{ task.priority }};
 
-        $('#task_priority').ace_spinner({
-            value: priority,
-            min: 1,
-            max: 1000,
-            step: 1,
-            btn_up_class: 'btn-info',
-            btn_down_class: 'btn-info'
-        }).on('change', function () {
-                    // check if it is in the range
-                    var curr_value = $(this).val();
-                    $(this).val(curr_value <= 1000 ? curr_value >= 1 ? curr_value : 1 : 1000);
-                });
+{#        $('#task_priority').ace_spinner({#}
+{#            value: priority,#}
+{#            min: 1,#}
+{#            max: 1000,#}
+{#            step: 1,#}
+{#            btn_up_class: 'btn-info',#}
+{#            btn_down_class: 'btn-info'#}
+{#        }).on('change', function () {#}
+{#                    // check if it is in the range#}
+{#                    var curr_value = $(this).val();#}
+{#                    $(this).val(curr_value <= 1000 ? curr_value >= 1 ? curr_value : 1 : 1000);#}
+{#                });#}
 
         {# ***************************************************************** #}
         {# Submit Button #}
@@ -250,7 +276,7 @@
                form_data += '&' +
                 $.param({
                     'forced': 'forced'
-                })
+                });
 
             {% endif %}
 
@@ -295,7 +321,7 @@
         console.log('destruct review task dialog start');
         // unbind events
         $('#task_review_mode').unbind();
-        $('#task_priority').unbind();
+{#        $('#task_priority').unbind();#}
         $('#dialog_template_submit_button').unbind();
 
         // remove dialog
