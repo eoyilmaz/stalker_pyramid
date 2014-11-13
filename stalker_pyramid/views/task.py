@@ -3503,7 +3503,8 @@ def review_task_dialog(request):
         'version': version,
         'version_path': version_path,
         'review_mode': review_mode,
-        'forced': forced
+        'forced': forced,
+        'review_type': review.type.name if review and review.type else ''
     }
 
 
@@ -3592,19 +3593,6 @@ def approve_task(request):
 
     utc_now = local_to_utc(datetime.datetime.now())
 
-    note_type = query_type('Note', 'Approved')
-    note_type.html_class = 'green'
-    note_type.code = 'approved'
-
-    note = Note(
-        content=description,
-        created_by=logged_in_user,
-        date_created=utc_now,
-        date_updated=utc_now,
-        type=note_type
-    )
-    db.DBSession.add(note)
-
     if forced:
         has_permission = PermissionChecker(request)
         if has_permission('Create_Review'):
@@ -3622,11 +3610,29 @@ def approve_task(request):
             .filter(Review.status == status_new)\
             .first()
 
-    logger.debug('review %s' % review)
-
     if not review:
         transaction.abort()
         return Response('There is no review', 500)
+
+    if review.type and review.type.name == 'Extra Time':
+        note_type = query_type('Note', 'Rejected Extra Time Request')
+        note_type.html_class = 'red'
+        note_type.code = 'rejected'
+    else:
+        note_type = query_type('Note', 'Approved')
+        note_type.html_class = 'green'
+        note_type.code = 'approved'
+
+    note = Note(
+        content=description,
+        created_by=logged_in_user,
+        date_created=utc_now,
+        date_updated=utc_now,
+        type=note_type
+    )
+    db.DBSession.add(note)
+
+    logger.debug('review %s' % review)
 
     try:
         review.approve()
@@ -3668,19 +3674,33 @@ def approve_task(request):
 
         task_full_path = get_task_full_path(task.id)
 
-        description_temp = \
-            '%(user)s has approved ' \
-            '%(task_full_path)s with the following ' \
-            'comment:%(spacing)s' \
-            '%(note)s'
+        if review.type and review.type.name == 'Extra Time':
+            description_temp = \
+                '%(user)s has rejected the Extra Time Request for' \
+                '%(task_full_path)s with the following ' \
+                'comment:%(spacing)s' \
+                '%(note)s'
+
+            subject = 'Task Reviewed: Rejected "%(task_full_path)s" ' \
+                      'by %(user)s!' % {
+                          'task_full_path': task_full_path,
+                          'user': logged_in_user.name
+                      }
+        else:
+            description_temp = \
+                '%(user)s has approved ' \
+                '%(task_full_path)s with the following ' \
+                'comment:%(spacing)s' \
+                '%(note)s'
+
+            subject = 'Task Reviewed: Approved "%(task_full_path)s" by ' \
+                      '%(user)s!' % {
+                          'task_full_path': task_full_path,
+                          'user': logged_in_user.name
+                      }
 
         message = Message(
-            subject='Task Reviewed: "%(task_full_path)s" has been '
-                    'approved by %(user)s!' %
-            {
-                'task_full_path': task_full_path,
-                'user': logged_in_user.name
-            },
+            subject=subject,
             sender=dummy_email_address,
             recipients=recipients,
             body=get_description_text(
@@ -3705,8 +3725,15 @@ def approve_task(request):
     # invalidate all caches
     invalidate_all_caches()
 
-    request.session.flash('success:Approved task')
-    return Response('Successfully approved task')
+    if review.type and review.type.name == 'Extra Time':
+        flash_message = 'success:Rejected Extra Time Request!'
+        response_message = 'Successfully rejected extra time request'
+    else:
+        flash_message = 'success:Approved Task!'
+        response_message = 'Successfully approved task'
+
+    request.session.flash(flash_message)
+    return Response(response_message)
 
 
 @view_config(
@@ -3769,39 +3796,33 @@ def request_revision(request):
 
     utc_now = local_to_utc(datetime.datetime.now())
 
-    unit_word = {
-        'h': 'hours',
-        'd': 'days',
-        'w': 'weeks',
-        'm': 'months',
-        'y': 'years'
-    }[schedule_unit]
-
-    note_type = query_type('Note', 'Request Revision')
-    note_type.html_class = 'purple'
-    note_type.code = 'requested_revision'
-
-    note = Note(
-        content='Expanded the timing of the task by <b>'
-                '%(schedule_timing)s %(schedule_unit)s</b>.<br/>'
-                '%(description)s' % {
-                    'schedule_timing': schedule_timing,
-                    'schedule_unit': schedule_unit,
-                    'description': description
-                },
-        created_by=logged_in_user,
-        date_created=utc_now,
-        date_updated=utc_now,
-        type=note_type
-    )
-    db.DBSession.add(note)
+    review = None
 
     if forced:
         has_permission = PermissionChecker(request)
-        if has_permission('Create_Review') \
+        if has_permission('Create_Review')\
            or logged_in_user in task.responsible:
-           # review = forced_review(logged_in_user, task);
-           # review.date_created = utc_now
+            # review = forced_review(logged_in_user, task);
+            # review.date_created = utc_now
+
+            note_type = query_type('Note', 'Request Revision')
+            note_type.html_class = 'purple'
+            note_type.code = 'requested_revision'
+
+            note = Note(
+                content='Expanded the timing of the task by <b>'
+                        '%(schedule_timing)s %(schedule_unit)s</b>.<br/>'
+                        '%(description)s' % {
+                            'schedule_timing': schedule_timing,
+                            'schedule_unit': schedule_unit,
+                            'description': description
+                        },
+                created_by=logged_in_user,
+                date_created=utc_now,
+                date_updated=utc_now,
+                type=note_type
+            )
+            db.DBSession.add(note)
 
             task.request_revision(
                 logged_in_user,
@@ -3809,8 +3830,10 @@ def request_revision(request):
                 schedule_timing,
                 schedule_unit
             )
+
         else:
             return Response("You don't have permission", 500)
+
     else:
 
         status_new = Status.query.filter_by(code='NEW').first()
@@ -3828,6 +3851,30 @@ def request_revision(request):
             return Response('There is no review', 500)
 
         try:
+
+            if review.type and review.type.name == 'Extra Time':
+                note_type = query_type('Note', 'Accepted Extra Time Request')
+                note_type.html_class = 'green'
+                note_type.code = 'accepted'
+            else:
+                note_type = query_type('Note', 'Request Revision')
+                note_type.html_class = 'purple'
+                note_type.code = 'requested_revision'
+
+            note = Note(
+                content='Expanded the timing of the task by <b>'
+                        '%(schedule_timing)s %(schedule_unit)s</b>.<br/>'
+                        '%(description)s' % {
+                            'schedule_timing': schedule_timing,
+                            'schedule_unit': schedule_unit,
+                            'description': description
+                        },
+                created_by=logged_in_user,
+                date_created=utc_now,
+                date_updated=utc_now,
+                type=note_type
+            )
+
             review.request_revision(
                 schedule_timing,
                 schedule_unit,
@@ -3842,6 +3889,8 @@ def request_revision(request):
 
         except StatusError as e:
                 return Response('StatusError: %s' % e, 500)
+
+    db.DBSession.add(note)
 
     task.notes.append(note)
     task.updated_by = logged_in_user
@@ -3868,16 +3917,23 @@ def request_revision(request):
 
         task_full_path = get_task_full_path(task.id)
 
-        description_temp = \
-            '%(user)s has requested a revision to ' \
-            '%(task_full_path)s' \
-            '. The following description is supplied for the ' \
-            'revision request:%(spacing)s' \
-            '%(note)s'
+        if review and review.type and review.type.name == 'Extra Time':
+            description_temp = \
+                '%(user)s has accepted the extra time request ' \
+                '%(task_full_path)s' \
+                '. The following description is supplied:%(spacing)s' \
+                '%(note)s'
+        else:
+            description_temp = \
+                '%(user)s has requested a revision to ' \
+                '%(task_full_path)s' \
+                '. The following description is supplied for the ' \
+                'revision request:%(spacing)s' \
+                '%(note)s'
 
         message = Message(
-            subject='Task Reviewed: "%(task_full_path)s" has been '
-                    'requested revision by %(user)s!' % {
+            subject='Task Reviewed: Revision Requested to '
+                    '"%(task_full_path)s" by %(user)s!' % {
                         'task_full_path': task_full_path,
                         'user': logged_in_user.name
                     },
@@ -3905,8 +3961,16 @@ def request_revision(request):
     # invalidate all caches
     invalidate_all_caches()
 
-    request.session.flash('success:Requested revision for the task')
-    return Response('Successfully requested revision for the task')
+    if review and review.type and review.type.name == 'Extra Time':
+        flash_message = 'success:Accepted Extra Time Request!'
+        response_message = 'Successfully accepted extra time request!'
+    else:
+        flash_message = 'success:Requested a Revision for the task!'
+        response_message = 'Successfully requested revision for the task!'
+
+    request.session.flash(flash_message)
+
+    return Response(response_message)
 
 
 @view_config(
@@ -4171,9 +4235,18 @@ def request_final_review(request):
         type=note_type
     )
 
+    final_type = Type.query.filter(Type.name == 'Final').first()
+    if not final_type:
+        final_type = Type(
+            name='Final',
+            code='Final',
+            target_entity_type='Review'
+        )
+
     task.notes.append(note)
     reviews = task.request_review()
     for review in reviews:
+        review.type = final_type
         review.created_by = logged_in_user
         review.date_created = utc_now
         review.date_updated = utc_now
@@ -4352,10 +4425,10 @@ def request_extra_time(request):
         transaction.abort()
         return Response('There are missing parameters: schedule_unit', 500)
     else:
-        if schedule_unit not in ['h', 'd', 'w', 'm', 'y']:
+        if schedule_unit not in ['min', 'h', 'd', 'w', 'm', 'y']:
             transaction.abort()
-            return Response("schedule_unit parameter should be one of ['h', "
-                            "'d', 'w', 'm', 'y']", 500)
+            return Response("schedule_unit parameter should be one of "
+                            "['min', 'h', 'd', 'w', 'm', 'y']", 500)
 
     if not schedule_model:
         transaction.abort()
@@ -4396,8 +4469,18 @@ def request_extra_time(request):
 
     task.notes.append(note)
 
+    extra_time_type = Type.query.filter(Type.name == 'Extra Time').first()
+    if not extra_time_type:
+        extra_time_type = Type(
+            name='Extra Time',
+            code='ExtraTime',
+            target_entity_type='Review'
+        )
+        db.DBSession.add(extra_time_type)
+
     reviews = task.request_review()
     for review in reviews:
+        review.type = extra_time_type
         review.created_by = logged_in_user
         review.date_created = utc_now
         review.date_updated = utc_now

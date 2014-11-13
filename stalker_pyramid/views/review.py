@@ -297,7 +297,8 @@ def get_reviews(request, where_conditions):
         "Reviewers_SimpleEntities_Links".full_path as reviewer_thumbnail_path,
         array_agg("Reviewer_Departments_SimpleEntities".name) as reviewer_departments,
         extract(epoch from"Reviews_Simple_Entities".date_created::timestamp AT TIME ZONE 'UTC') * 1000 as date_created,
-        "Reviews_Simple_Entities".description
+        "Reviews_Simple_Entities".description,
+        "Review_Types".name as type_name
 
     from "Reviews"
         join "SimpleEntities" as "Reviews_Simple_Entities" on "Reviews_Simple_Entities".id = "Reviews".id
@@ -307,6 +308,7 @@ def get_reviews(request, where_conditions):
         join "SimpleEntities" as "Reviewers_SimpleEntities" on "Reviewers_SimpleEntities".id = "Reviews".reviewer_id
         join "User_Departments" as "Reviewers_Departments" on "Reviewers_Departments".uid = "Reviews".reviewer_id
         join "SimpleEntities" as "Reviewer_Departments_SimpleEntities" on "Reviewer_Departments_SimpleEntities".id = "Reviewers_Departments".did
+        left join "SimpleEntities" as "Review_Types" on "Reviews_Simple_Entities".type_id = "Review_Types".id
         left join (%(recursive_task_query)s) as "ParentTasks" on "Review_Tasks".id = "ParentTasks".id
 
         left outer join "Links" as "Reviewers_SimpleEntities_Links" on "Reviewers_SimpleEntities_Links".id = "Reviewers_SimpleEntities".thumbnail_id
@@ -327,7 +329,8 @@ def get_reviews(request, where_conditions):
         "Reviews".reviewer_id,
         "Reviewers_SimpleEntities".name,
         "Reviewers_SimpleEntities_Links".full_path,
-        "Reviews_Simple_Entities".description
+        "Reviews_Simple_Entities".description,
+        "Review_Types".name
 
     order by "Reviews_Simple_Entities".date_created desc
     """
@@ -357,7 +360,8 @@ def get_reviews(request, where_conditions):
             'reviewer_department':r[11],
             'date_created':r[12],
             'is_reviewer':'1' if logged_in_user.id == r[8] else None,
-            'review_description': r[13]
+            'review_description': r[13],
+            'review_type': r[14] if r[14] else ''
         }
         for r in result.fetchall()
     ]

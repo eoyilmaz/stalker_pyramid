@@ -85,42 +85,70 @@
                 <span class="label label-status_prev">Pending</span>
 
                 {{ if(it.is_reviewer=='1'){ }}
-
                 <div class="inline position-relative">
-                    <button class="btn btn-minier bigger btn-info dropdown-toggle"
-                            data-toggle="dropdown">
+                    <button class="btn btn-minier bigger btn-info dropdown-toggle" data-toggle="dropdown">
                         <i class="icon-angle-down icon-only bigger-120"></i>
                     </button>
 
                     <ul class="dropdown-menu dropdown-icon-only dropdown-yellow pull-right dropdown-caret dropdown-close">
                         <li>
-                            <a href="/tasks/{{=it.task_id}}/review/dialog?review_mode=approve"
-                               class="tooltip-success"
-                               data-rel="tooltip"
-                               title="Approve"
-                               data-target="#dialog_template"
-                               data-toggle="modal"
-                               data-keyboard=false
-                               data-placement="top">
-                                   <span class="green">
-                                       <i class="icon-ok bigger-110"></i>
-                                   </span>
-                            </a>
+                            {{ if(it.review_type === 'Final' || it.review_type == '') { }}
+                                <a href="/tasks/{{=it.task_id}}/review/dialog?review_mode=approve"
+                                   class="tooltip-success"
+                                   data-rel="tooltip"
+                                   title="Approve"
+                                   data-target="#dialog_template"
+                                   data-toggle="modal"
+                                   data-keyboard=false
+                                   data-placement="top">
+                                        <span class="green">
+                                            <i class="icon-ok bigger-110"></i>
+                                        </span>
+                                </a>
+                            {{ } else { }}
+                                <a href="/tasks/{{=it.task_id}}/review/dialog?review_mode=request_revision"
+                                   class="tooltip-success"
+                                   data-rel="tooltip"
+                                   title="Accept Extra Time Request"
+                                   data-target="#dialog_template"
+                                   data-toggle="modal"
+                                   data-keyboard=false
+                                   data-placement="top">
+                                        <span class="green">
+                                               <i class="icon-ok bigger-110"></i>
+                                        </span>
+                                </a>
+                            {{ } }}
                         </li>
 
                         <li>
-                            <a href="/tasks/{{=it.task_id}}/review/dialog?review_mode=request_revision"
-                               class="tooltip-success"
-                               data-rel="tooltip"
-                               title="Request Revision"
-                               data-target="#dialog_template"
-                               data-toggle="modal"
-                               data-keyboard=false
-                               data-placement="top">
-                                    <span class="orange">
-                                        <i class="icon-remove bigger-110"></i>
-                                    </span>
-                            </a>
+                            {{ if(it.review_type === 'Final' || it.review_type == '') { }}
+                                <a href="/tasks/{{=it.task_id}}/review/dialog?review_mode=request_revision"
+                                   class="tooltip-success"
+                                   data-rel="tooltip"
+                                   title="Request Revision"
+                                   data-target="#dialog_template"
+                                   data-toggle="modal"
+                                   data-keyboard=false
+                                   data-placement="top">
+                                        <span class="orange">
+                                            <i class="icon-remove bigger-110"></i>
+                                        </span>
+                                </a>
+                            {{ } else { }}
+                                <a href="/tasks/{{=it.task_id}}/review/dialog?review_mode=approve"
+                                   class="tooltip-success"
+                                   data-rel="tooltip"
+                                   title="Reject Extra Time Request"
+                                   data-target="#dialog_template"
+                                   data-toggle="modal"
+                                   data-keyboard=false
+                                   data-placement="top">
+                                        <span class="orange">
+                                            <i class="icon-remove bigger-110"></i>
+                                        </span>
+                                </a>
+                            {{ } }}
                         </li>
                     </ul>
                 </div>
