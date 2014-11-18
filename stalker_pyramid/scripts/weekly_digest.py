@@ -124,9 +124,12 @@ def send_remainder(user):
         stalker_url=stalker_server_external_url
     )
 
-    with open('/home/eoyilmaz/tmp/rendered_html_template_%s.html' % user.id,
-              'w+') as f:
-        f.write(rendered_template)
+    # with open(
+    #     os.path.expanduser(
+    #         '~/tmp/rendered_html_template_%s.html' % user.id, 'w+'
+    #     )
+    # ) as f:
+    #     f.write(rendered_template)
 
     message = Message(
         subject='Stalker Weekly Digest',
