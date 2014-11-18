@@ -2180,7 +2180,11 @@ def get_tasks_count(request):
 
     result = get_cached_tasks_count(entity_type, where_clause, task_id)
 
-    return result.fetchone()[0]
+    tasks_count = result.fetchone()
+    if tasks_count:
+        return tasks_count[0]
+    else:
+        return 0
 
 
 @view_config(
