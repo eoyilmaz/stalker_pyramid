@@ -4883,7 +4883,7 @@ def get_task_dependency(request):
 
 @view_config(
     route_name='force_task_status_dialog',
-    renderer='templates/modals/confirm_dialog.jinja2'
+    renderer='templates/task/dialog/force_task_status_dialog.jinja2'
 )
 def force_task_status_dialog(request):
     """deletes the department with the given id
@@ -4891,6 +4891,7 @@ def force_task_status_dialog(request):
     logger.debug('force_task_status_dialog is starts')
 
     task_id = request.matchdict.get('id')
+    task = Task.query.filter_by(id=task_id).first()
     status_code = request.matchdict.get('status_code')
 
     came_from = request.params.get('came_from', '/')
@@ -4898,9 +4899,13 @@ def force_task_status_dialog(request):
     message = 'Task will be set as %s' \
                   '<br><br>Are you sure?' % status_code
 
+    version = get_last_version_of_task(request, is_published='t')
+
     logger.debug('action: %s' % action)
 
     return {
+        'version': version,
+        'task': task,
         'message': message,
         'came_from': came_from,
         'action': action
@@ -4942,6 +4947,9 @@ def force_task_status(request):
         transaction.abort()
         return Response('Cannot force %s tasks' % task.status.code, 500)
 
+
+
+
     if status.code == 'STOP':
         task.stop()
         fix_task_computed_time(task)
@@ -4970,12 +4978,17 @@ def force_task_status(request):
     logged_in_user = get_logged_in_user(request)
     utc_now = local_to_utc(datetime.datetime.now())
 
+    note_str = request.params.get('note', '')
+
+    if note_str !='':
+        note_str = 'with this note: <br/><b>%s</b>' % note_str
+
     note_type = query_type('Note', 'Forced Status')
     note_type.html_class = 'red'
     note_type.code = 'forced_status'
 
     note = Note(
-        content='%s has changed this task status to %s' % (logged_in_user.name, status.name),
+        content='%s has changed this task status to %s %s' % (logged_in_user.name, status.name,  note_str),
         created_by=logged_in_user,
         date_created=utc_now,
         date_updated=utc_now,
