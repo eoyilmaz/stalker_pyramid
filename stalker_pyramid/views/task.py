@@ -3688,7 +3688,7 @@ def approve_task(request):
                 '%(note)s'
 
         else:
-            subject = 'Task Approved: "%(task_full_path)s"' % task_full_path
+            subject = 'Task Approved: "%s"' % task_full_path
 
             description_temp = \
                 '%(user)s has approved ' \
