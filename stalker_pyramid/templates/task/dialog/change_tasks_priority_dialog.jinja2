@@ -16,6 +16,8 @@
                            min=1
                            max=1000
                            required>
+                    <input class="ace" type="checkbox" id="children_priority" />
+                    <label class="lbl" for="children_priority">Also change children tasks' priority</label>
                 </div>
             </div>
     </form>
@@ -67,9 +69,10 @@
 
                 console.log('task_ids: ' + task_ids);
 
+
                 $.post(
                     '/tasks/change_priority',
-                    priority_form.serialize() + '&' + $.param({'task_ids':task_ids})
+                    priority_form.serialize() + '&' + $.param({'task_ids':task_ids, 'change_children_priority':$('#children_priority').prop('checked')})
                 ).done(function (response_text) {
                     submit_button.button('reset');
                     $('#dialog_template').modal('hide');
