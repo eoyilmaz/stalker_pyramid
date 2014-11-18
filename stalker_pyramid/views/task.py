@@ -3675,29 +3675,22 @@ def approve_task(request):
         task_full_path = get_task_full_path(task.id)
 
         if review.type and review.type.name == 'Extra Time':
+            subject = 'Request Rejected: "%s"' % task_full_path
+
             description_temp = \
                 '%(user)s has rejected the Extra Time Request for' \
                 '%(task_full_path)s with the following ' \
                 'comment:%(spacing)s' \
                 '%(note)s'
 
-            subject = 'Task Reviewed: Rejected "%(task_full_path)s" ' \
-                      'by %(user)s!' % {
-                          'task_full_path': task_full_path,
-                          'user': logged_in_user.name
-                      }
         else:
+            subject = 'Task Approved: "%(task_full_path)s"' % task_full_path
+
             description_temp = \
                 '%(user)s has approved ' \
                 '%(task_full_path)s with the following ' \
                 'comment:%(spacing)s' \
                 '%(note)s'
-
-            subject = 'Task Reviewed: Approved "%(task_full_path)s" by ' \
-                      '%(user)s!' % {
-                          'task_full_path': task_full_path,
-                          'user': logged_in_user.name
-                      }
 
         message = Message(
             subject=subject,
@@ -3918,12 +3911,16 @@ def request_revision(request):
         task_full_path = get_task_full_path(task.id)
 
         if review and review.type and review.type.name == 'Extra Time':
+            subject = 'Request Accepted: "%s"' % task_full_path
+
             description_temp = \
-                '%(user)s has accepted the extra time request ' \
+                '%(user)s has accepted the extra time request of ' \
                 '%(task_full_path)s' \
                 '. The following description is supplied:%(spacing)s' \
                 '%(note)s'
         else:
+            subject = 'Revision Requested: "%s"' % task_full_path
+
             description_temp = \
                 '%(user)s has requested a revision to ' \
                 '%(task_full_path)s' \
@@ -3932,11 +3929,7 @@ def request_revision(request):
                 '%(note)s'
 
         message = Message(
-            subject='Task Reviewed: Revision Requested to '
-                    '"%(task_full_path)s" by %(user)s!' % {
-                        'task_full_path': task_full_path,
-                        'user': logged_in_user.name
-                    },
+            subject=subject,
             sender=dummy_email_address,
             recipients=recipients,
             body=get_description_text(
@@ -4021,7 +4014,6 @@ def request_review_task_dialog(request):
         version_path = path_converter(version.absolute_full_path)
 
     came_from = request.params.get('came_from', '/')
-
 
     return {
         'request_review_mode': request_review_mode,
@@ -4170,9 +4162,7 @@ def request_progress_review(request):
         mailer = get_mailer(request)
 
         message = Message(
-            subject='Review Request: "%(task_full_path)s)' % {
-                'task_full_path': task_full_path
-            },
+            subject='In Progress Review Request: "%s"' % task_full_path,
             sender=dummy_email_address,
             recipients=recipients,
             body=get_description_text(
@@ -4320,9 +4310,7 @@ def request_final_review(request):
             map(lambda x: '<strong>%s</strong>' % x.name, task.responsible)
         )
         message = Message(
-            subject='Review Request: "%(task_full_path)s)' % {
-                'task_full_path': task_full_path
-            },
+            subject='Review Request: "%s"' % task_full_path,
             sender=dummy_email_address,
             recipients=recipients,
             body=description_temp % {
@@ -4512,9 +4500,7 @@ def request_extra_time(request):
         mailer = get_mailer(request)
 
         message = Message(
-            subject='Extra Time Request: "%(task_full_path)s)' % {
-                'task_full_path': task_full_path
-            },
+            subject='Extra Time Request: "%s"' % task_full_path,
             sender=dummy_email_address,
             recipients=recipients,
             body=get_description_text(
