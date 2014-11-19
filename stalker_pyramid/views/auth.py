@@ -199,9 +199,7 @@ def create_user(request):
         log_param(request, 'email')
         log_param(request, 'password')
 
-        response = Response('There are missing parameters: ')
-        response.status_int = 500
-        return response
+        return Response('There are missing parameters: ', 500)
 
 
 @view_config(

@@ -4937,13 +4937,10 @@ def force_task_status(request):
         transaction.abort()
         return Response('Cannot force %s tasks' % task.status.code, 500)
 
-
-
-
     if status.code == 'STOP':
         task.stop()
         fix_task_computed_time(task)
-    elif status.code =='OH':
+    elif status.code == 'OH':
         task.hold()
         fix_task_computed_time(task)
     elif status.code == 'CMPL':
@@ -4970,7 +4967,7 @@ def force_task_status(request):
 
     note_str = request.params.get('note', '')
 
-    if note_str !='':
+    if note_str != '':
         note_str = 'with this note: <br/><b>%s</b>' % note_str
 
     note_type = query_type('Note', 'Forced Status')
@@ -4978,7 +4975,11 @@ def force_task_status(request):
     note_type.code = 'forced_status'
 
     note = Note(
-        content='%s has changed this task status to %s %s' % (logged_in_user.name, status.name,  note_str),
+        content='%s has changed this task status to %s %s' % (
+            logged_in_user.name,
+            status.name,
+            note_str
+        ),
         created_by=logged_in_user,
         date_created=utc_now,
         date_updated=utc_now,
