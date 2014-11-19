@@ -65,6 +65,8 @@
 
            tags="{{=it.tags }}"
 
+           date_created="{{=it.date_created }}"
+
            title="{{=it.original_filename}}&#013;{{=it.tags }}&#013;{{=it.version_take_name }} | {{=it.version_number }}"
            data-rel="colorbox"
            class="cboxElement">
@@ -78,6 +80,9 @@
                     <!--{{~ it.tags :t}}-->
                     <!--<span class="label label-info">{{=t}}</span>-->
                     <!--{{~}}-->
+                    {{? it.date_created }}
+                        <span class="label label-warning arrowed-in">{{=it.date_created }}</span>
+                    {{?}}
                     {{? it.daily_id }}
                         <span class="label label-warning arrowed-in">{{=it.daily_name }}</span>
                     {{?}}
@@ -174,10 +179,13 @@
 
             var open_webres_in_new_tab_link = '<a title="View Web Version in new Tab"  href="' + view_webres_url + '" target="_blank">Web Version</a></span>';
             var download_webres_link = '<span><a title="Download Web Version" class="icon-cloud-download green" href="' + download_webres_url + '">&nbsp</a></span>';
+            var date_created = $(this).attr('date_created');
+
+
 
             return original_title + '&nbsp(' + tags + ')&nbsp|&nbsp' +
                    open_webres_in_new_tab_link + ' &nbsp ' + download_webres_link + '&nbsp|&nbsp' +
-                   open_hires_in_new_tab_link + ' &nbsp ' + download_hires_link;
+                   open_hires_in_new_tab_link + ' &nbsp ' + download_hires_link + ' &nbsp ' + date_created;
         },
         onOpen: function () {
             document.body.style.overflow = 'hidden';
@@ -266,6 +274,7 @@
             });
             for (var i = 0; i < ref_count; i++) {
                 data[i].task_id = task_id;
+                data[i].date_created = new Date(data[i].date_created).format('yyyy-mm-dd HH:MM');
                 append_thumbnail({
                     data: data[i],
                     template: outputItemTemplate,
@@ -345,6 +354,7 @@
         // get total number of outputs
         $.getJSON(count_url, function(data){
             total_number_of_items = data;
+
             create_paginator({
                 total_number_of_items: total_number_of_items,
                 items_per_page: items_per_page
@@ -372,9 +382,11 @@
                 // prepend repositories/{id}/ to make it compatible with the
                 // new style outputs
                 data[i].thumbnail_full_path = repo_prepend + data[i].thumbnail_full_path;
+                data[i].date_created = new Date(data[i].date_created).format('yyyy-mm-dd HH:MM');
+
                 data[i].full_path = repo_prepend + data[i].full_path;
                 data[i].task_id = task_id;
-                console.log('task_id :' + task_id);
+                console.log('date_created :' + data[i].date_created);
 
                 append_thumbnail({
                     data: data[i],

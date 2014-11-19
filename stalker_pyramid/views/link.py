@@ -848,7 +848,9 @@ select
     "Versions".take_name as take_name,
     "Versions".is_published as version_published,
     "Daily_SimpleEntities".name as daily_name,
-    "Daily_SimpleEntities".id as daily_id
+    "Daily_SimpleEntities".id as daily_id,
+    (extract(epoch from "Link_SimpleEntities".date_created::timestamp at time zone 'UTC') * 1000)::bigint as date_created
+
 
 
 
@@ -884,7 +886,7 @@ left outer join (
 
 %(where_condition)s
 
-order by "Versions".id desc
+order by "Versions".id desc, date_created desc
 offset %(offset)s
 limit %(limit)s
 
@@ -912,7 +914,8 @@ limit %(limit)s
             'version_take_name': r[8],
             'version_published':r[9],
             'daily_name':r[10],
-            'daily_id':r[11]
+            'daily_id':r[11],
+            'date_created':r[12]
         } for r in result.fetchall()
     ]
 
