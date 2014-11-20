@@ -115,7 +115,7 @@
     </form>
     <div class="space-5"></div>
     <div class="hr dotted"></div>
-    <div class="space-10"></div>
+    <div class="space-5"></div>
     <div class="row-fluid padding18">
 
         <div id="alert_information" class="infobox-content"></div>
@@ -125,6 +125,66 @@
         </div>
 
     </div>
+
+
+    <form id='finalize_task_form'
+          class='form-horizontal hide'
+          role='form'
+          method='post' >
+            <div id="" class="alert alert-danger bigger-110">
+                <span class="pull_left ">You have to select one of the following alternatives !</span>
+            </div>
+            <div class="control-group">
+                    <label class="span3 control-label" for="task_review_mode">Request Type</label>
+
+                    <div class="span9">
+                        <select id='task_review_mode'
+                                class='input-block-level'
+                                >
+                                <option value="request_review">If you have finished working on this task, <strong>request review</strong></option>
+                                <option value="request_extra_time">If you keep on working this task, <strong>request extra time</strong></option>
+                        </select>
+                    </div>
+            </div>
+            {# Schedule Timing #}
+            <div class='control-group hide' id="revision_controls">
+                <label class='span3 control-label'
+                       for='task_schedule_timing'>Schedule Timing</label>
+
+                <div class='span9'>
+                    <div class='span2'>
+                        <input id='task_schedule_timing'
+                               class='input-block-level'
+                               name='schedule_timing'
+                               type='text'
+                               value=1
+                               min=1
+                               required>
+                    </div>
+                    <div class='span3'>
+                        <select id='task_schedule_unit'
+                                class='input-block-level'
+                                name='schedule_unit'>
+                            <option value='min'>Minutes</option>
+                            <option value='h'>Hours</option>
+                            <option value='d'>Days</option>
+                            <option value='w'>Weeks</option>
+                            <option value='m'>Months</option>
+                            <option value='y'>Years</option>
+                        </select>
+                    </div>
+                    <div class='span3'>
+                        <select id='task_schedule_model'
+                                class='input-block-level'
+                                name='schedule_model'>
+                            <option value='effort'>Effort</option>
+                            <option value='duration'>Duration</option>
+                        <option value='length'>Length</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+    </form>
 
 </div>
 
@@ -144,6 +204,7 @@ function init_dialog() {
     console.debug('starting to initialize time_log dialog!!!');
 
 {#    console.log('mode {{ mode }}')#}
+    var completed_percent;
 
     var dialog_template_label = $('#dialog_template_label');
     dialog_template_label.find('span').remove();
@@ -154,6 +215,7 @@ function init_dialog() {
 
     var information = $('#information');
 
+    var submit_finalize_form_url;
 
 
     {# ***************************************************************** #}
@@ -169,6 +231,35 @@ function init_dialog() {
         start_time_value.setHours(10);
         end_time_value.setHours(19);
     }
+    {# ***************************************************************** #}
+    {# Schedule Unit and Model #}
+    var task_schedule_unit = $('#task_schedule_unit');
+    var task_schedule_timing = $('#task_schedule_timing');
+
+    var schedule_timing_setter = function(){
+        // set minimum
+        var value = task_schedule_unit.val();
+        if (value === 'min') {
+            // need to be multiple of 10
+            var timing_value = task_schedule_timing.val();
+            timing_value = (timing_value / 10).toFixed(0) * 10;
+            timing_value = Math.max(10, timing_value);
+            task_schedule_timing.val(timing_value);
+        }
+    };
+
+    task_schedule_timing.on('change', schedule_timing_setter);
+    schedule_timing_setter();
+
+    task_schedule_unit.on('change', function(e){
+        var value = $(this).val();
+        if(value === 'min'){
+            // set the minimum to 10min
+            // TODO: get studio minimum schedule unit
+            task_schedule_timing.val(10);
+        }
+    });
+
 
     {# ***************************************************************** #}
     {# Update Remaining Hours #}
@@ -176,9 +267,15 @@ function init_dialog() {
     var update_hours_to_complete = function () {
         // total hours of time_logs should have been given by Stalker
         // calculate the remaining hours
+
+        $('#finalize_task_form').hide();
+
+
+
         var task_id = parseInt(time_log_task.val());
         console.debug('task_id:', task_id);
         if (task_id === -1){ return }
+
 
         $.getJSON('/tasks/' + task_id + '/').then(function (data) {
 
@@ -253,7 +350,7 @@ function init_dialog() {
 
             var alert_information = $('#alert_information');
             alert_information.find('span').remove();
-            var completed_percent;
+
 
             if (remaining_minutes_after_this_time_log > 0) {
                 submit_button.attr('disabled', false);
@@ -271,13 +368,25 @@ function init_dialog() {
                     "<span class='pull_left'>If you enter this time log, all schedule hours will be spent </span>"
                 );
                 $('#percent_bar_container').show();
+                $('#finalize_task_form').show();
+
+                submit_finalize_form_url = '/tasks/'+task_id+'/'+ $('#task_review_mode').val();
+
+                $('#task_review_mode').on('change', function () {
+                    $('#revision_controls').toggle();
+                    submit_finalize_form_url = '/tasks/'+task_id+'/'+ $(this).val();
+
+                    console.log (submit_finalize_form_url)
+                });
+
+
                 completed_percent = (100 - ((remaining_seconds_after_this_time_log / parseFloat(data[0].schedule_seconds)) * 100)).toFixed(1);
             }
             else {
 
                 var exceeding_message ='<span><div id="message" class="alert alert-error bigger-110">' +
                     '<span class="pull_left ">You need <strong>' + remaining_minutes_after_this_time_log_string +
-                    '</strong> extra minutes. Please request for extra minutes. </span>' +
+                    '</strong> extra time. Please request for extra minutes. </span>' +
 
                     '</div></span>';
 
@@ -453,9 +562,6 @@ function init_dialog() {
         var start_date_string = date_range[0].split('/');
         var end_date_string = date_range[1].split('/');
         var start_time_string = $('#start_time').val().split(':');
-
-
-
         var end_time_string = $('#end_time').val().split(':');
 
         var start = new Date(
@@ -546,6 +652,34 @@ function init_dialog() {
     });
 
 
+    var post_finalize_action = function () {
+
+        var finalize_task_form = $('#finalize_task_form');
+        submit_button.button('loading');
+
+        console.log(finalize_task_form.serialize())
+
+        $.post(
+                    submit_finalize_form_url,
+                    finalize_task_form.serialize()+ '&' +
+                    $.param({
+                        'request_review_mode': 'Final'
+                    })
+                ).done(function (response_text) {
+                    setTimeout(function () { // wait for hide event to finish
+                        window.location.reload();
+                    }, 0);
+                    submit_button.button('reset');
+                    $('#dialog_template').modal('hide');
+
+                }).fail(function (jqXHR) {
+                    bootbox.alert('<div id="message" class="alert alert-danger bigger-110">'+jqXHR.responseText+'</div>');
+                    submit_button.button('reset');
+                });
+
+    }
+
+
 
     {# ***************************************************************** #}
     {# Submit Button #}
@@ -554,51 +688,36 @@ function init_dialog() {
         e.preventDefault();
 
         // disable the submit_button
-
-        submit_button.button('loading');
-
         var time_log_form = $('#time_log_form');
+        submit_button.button('loading');
+        // merge end_date and end_time
+        var start_end = get_start_end();
+        var start = start_end[0];
+        var end = start_end[1];
 
-        if (time_log_form.validate()) {
-            // merge end_date and end_time
-            var start_end = get_start_end();
-            var start = start_end[0];
-            var end = start_end[1];
-
-            if(start.getDate() == end.getDate() && start.getMonth()==end.getMonth()) {
-                $('#auto_split_wh').prop('checked','')
-            }
-
-            $.post(
-                time_log_form.attr('action'),
-                time_log_form.serialize() + '&' +
-                $.param({
-                    'start': start.toUTCString(),
-                    'end': end.toUTCString()
-                })
-            ).done(function (response_text) {
-{#                window.location.assign('{{ came_from }}');#}
-                submit_button.button('reset');
-                $('#dialog_template').modal('hide');
-    
-                 var calendar = $('#calendar');
-                 calendar.fullCalendar('renderEvent',
-                        {
-                            eId: time_log_task.val(),
-                            entity_type: 'timelogs',
-                            title: response_text,
-                            start: start,
-                            end: end,
-                            className: 'label-success',
-                            allDay: false
-                        },
-                        true // make the event "stick"
-                    );
-            }).fail(function (jqXHR) {
-                bootbox.alert('<div id="message" class="alert alert-danger bigger-110">'+jqXHR.responseText+'</div>');
-                submit_button.button('reset');
-            });
+        if(start.getDate() == end.getDate() && start.getMonth()==end.getMonth()) {
+            $('#auto_split_wh').prop('checked','')
         }
+
+        $.post(
+                    time_log_form.attr('action'),
+                    time_log_form.serialize() + '&' +
+                    $.param({
+                        'start': start.toUTCString(),
+                        'end': end.toUTCString()
+                    })
+                ).done(function (response_text) {
+                    setTimeout(function () { // wait for hide event to finish
+                        post_finalize_action();
+                    }, 0);
+
+
+                }).fail(function (jqXHR) {
+                    bootbox.alert('<div id="message" class="alert alert-danger bigger-110">'+jqXHR.responseText+'</div>');
+                    submit_button.button('reset');
+                });
+
+
     });
 
     $('#time_log_form').validate({

@@ -169,6 +169,7 @@ def create_time_log(request):
         try:
             assert isinstance(task, Task)
             time_log = task.create_time_log(resource, start_date, end_date)
+            time_log.description = description
             time_log.created_by = logged_in_user
             time_log.date_created = utc_now
         except (OverBookedError, TypeError, DependencyViolationError) as e:
