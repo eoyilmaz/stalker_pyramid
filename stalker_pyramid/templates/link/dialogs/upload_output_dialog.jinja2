@@ -49,11 +49,11 @@
 
     </form>
     <div class="hr dotted"></div>
-    <div id="information" class="alert alert-danger bigger-110 hide">Task status is {{ entity.task.status.code }}. To able to send a daily the task status has to be one of statuses: *WIP, *PREV, *DREV.
-            Please check if you enter your time log or ask responsible to change the status of task.</div>
-
+    <div id="information" class="alert alert-danger bigger-110 hide">
+        Task status is {{ entity.task.status.code }}. To able to send a daily the task status has to be one of statuses: *WIP, *PREV, *DREV.
+        Please check if you enter your time log or ask responsible to change the status of task.
+    </div>
     <div class="hr dotted"></div>
-
 
     {# Dropzone #}
     <div id="dropzone">
@@ -90,7 +90,7 @@
         var entity_id = {{ entity.id }};
         var files = [];
 
-        console.log('{{ entity.task.status.code }}')
+        console.log('{{ entity.task.status.code }}');
 
         var uploading_file_counter = 0;
 
@@ -146,8 +146,7 @@
 
         $('#add_to_daily').on('click', function () {
             if(this.checked){
-
-                {% if entity.task.status.code not in ['WIP','DREV','PREV','CMPL'] %}
+                {% if entity.task.status.code not in ['WIP', 'DREV', 'PREV', 'HREV', 'CMPL'] %}
                     $('#information').show();
                 {% else %}
                     $('#dailies_list').show();
@@ -203,7 +202,7 @@
                 })
             }
             var daily_id = -1;
-            {% if entity.task.status.code in ['WIP', 'DREV', 'PREV', 'CMPL'] %}
+            {% if entity.task.status.code in ['WIP', 'DREV', 'PREV', 'HREV', 'CMPL'] %}
                 if($('#add_to_daily').prop('checked')){
                     daily_id = daily.val()
                 }
