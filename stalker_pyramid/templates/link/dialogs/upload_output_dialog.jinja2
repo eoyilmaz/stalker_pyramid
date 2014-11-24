@@ -45,13 +45,19 @@
                     required>
             </select>
         </div>
-
-
     </form>
+
     <div class="hr dotted"></div>
+
     <div id="information" class="alert alert-danger bigger-110 hide">
-        Task status is {{ entity.task.status.code }}. To able to send a daily the task status has to be one of statuses: *WIP, *PREV, *DREV.
-        Please check if you enter your time log or ask responsible to change the status of task.
+        <span>
+            Task status is {{ entity.task.status.code }}. To able to send a
+            daily the task status has to be one of statuses: *WIP, *PREV, *DREV,
+            *HREV, *CMPL.
+    
+            Please check if you enter your time log or ask responsible to change
+            the status of task.
+        </span>
     </div>
     <div class="hr dotted"></div>
 
@@ -63,8 +69,6 @@
             </div>
         </form>
     </div>
-
-
 
 </div>
 
