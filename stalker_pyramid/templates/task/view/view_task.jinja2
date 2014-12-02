@@ -336,12 +336,13 @@
                     <div class="span4">
                         <div class="entityview-item clearfix">
 
-                            {% if entity.is_leaf %}
-                                <div class="row-fluid">
-                                    {% include 'review/view/review_card.jinja2' %}
-                                </div>
-                            {% else %}
-                                {% if entity.entity_type == 'Asset' or entity.entity_type == 'Shot' or entity.entity_type == 'Task' %}
+                            <div class="row-fluid">
+                                {% include 'review/view/review_card.jinja2' %}
+                            </div>
+                        
+                            {% if not entity.is_leaf %}
+                                <div class="space-4"></div>
+                                {% if entity.entity_type in ['Asset', 'Shot', 'Task'] %}
                                     {% if entity.type.name == 'Scene' or entity.entity_type == 'Shot'%}
                                         {% include 'asset/list/list_task_related_assets.jinja2' %}
                                     {% endif %}
@@ -364,10 +365,10 @@
                                 {% else %}
 
                                     <div id="resources_box"
-                                         class="widget-box  transparent">
-                                        <div class="widget-header widget-header-small">
-                                            <h4 class="smaller grey">
-                                                <i class="icon-user orange"></i>Resources</h4>
+                                         class="widget-box">
+                                        <div class="widget-header widget-header-small header-color-resource">
+                                            <h4 class="smaller">
+                                                <i class="icon-user"></i>Resources</h4>
                                         </div>
                                         <div class="widget-body">
                                             <div class="widget-main">
@@ -384,8 +385,8 @@
                             {% if entity.is_leaf %}
                                 <div class="row-fluid">
                                     <div id="version_used_by_tasks"
-                                         class="widget-box transparent">
-                                        <div class="widget-header  widget-header-small">
+                                         class="widget-box">
+                                        <div class="widget-header widget-header-small header-color-resource">
                                             <h4 class="smaller">
                                                 <i class="icon-long-arrow-down"></i>Versions are used in
                                             </h4>
@@ -404,8 +405,8 @@
                                 <div class="row-fluid">
                                     <div id="depends_box"
                                          style="width: 50%"
-                                         class="span6 widget-box transparent">
-                                        <div class="widget-header widget-header-small header-color-grey">
+                                         class="span6 widget-box">
+                                        <div class="widget-header widget-header-small header-color-resource">
                                             <h4 class="smaller">
                                                 <i class="icon-long-arrow-left"></i>Depends To
                                             </h4>
@@ -419,8 +420,8 @@
 
                                     <div id="dependent_of_box"
                                          style="width: 50%"
-                                         class="span6 widget-box transparent">
-                                        <div class="widget-header widget-header-small header-color-grey">
+                                         class="span6 widget-box">
+                                        <div class="widget-header widget-header-small header-color-resource">
                                             <h4 class="smaller">Dependent Of
                                                 <i class="icon-long-arrow-right"></i>
                                             </h4>
