@@ -54,7 +54,7 @@
         <tr>
             <td>
                 <p>Hi {{user.name}},<br><br>
-                   You are the responsible of the following tasks this week (<b>{{ start_of_week.strftime('%d %b') }} - {{ end_of_week.strftime('%d %b') }}</b> {{ start_of_week.strftime('%Y') }})<br>
+                   You are the <b>Responsible</b> of the following tasks this week (<b>{{ start_of_week.strftime('%d %b') }} - {{ end_of_week.strftime('%d %b') }}</b> {{ start_of_week.strftime('%Y') }})<br>
             </td>
         </tr>
 
@@ -71,6 +71,7 @@
                     <thead>
                         <tr style="font-weight: bold">
                             <td style="padding-right: 2em">Name</td>
+                            <td style="padding-right: 2em">Resources</td>
                             <td style="padding-right: 2em">Due Date</td>
 {#                            <td style="padding-right: 2em">Status</td>#}
                         </tr>
@@ -83,7 +84,12 @@
                                 <td style="font-weight: bold; padding-right: 2em">
                                     <a href="{{ stalker_url }}/tasks/{{ task.id }}/view">{{ task.name }} ({{ task.project.code }}{% for parent in task.parents %} | {{ parent.name }}{% endfor %})</a>
                                 </td>
-                                <td style="padding-right: 2em">{{ end.strftime('%d %b, %a %H:%M') }}</td>
+                                <td style="font-weight: bold; padding-right: 2em">
+                                    {% for resource in task.resources %}
+                                        <a href="{{ stalker_url }}/users/{{ resource.id }}/view">{{ resource.name }}</a>
+                                    {% endfor %}
+                                </td>
+                                <td style="padding-right: 2em">{{ end.strftime('%d %b, %a') }}</td>
 {#                                <td style="padding-right: 2em">{{ task.status.code }}</td>#}
                             </tr>
                         {% endfor %}    
@@ -109,6 +115,7 @@
                     <thead>
                         <tr style="font-weight: bold">
                             <td style="padding-right: 2em">Name</td>
+                            <td style="padding-right: 2em">Resources</td>
                             <td style="padding-right: 2em">Due Date</td>
 {#                            <td style="padding-right: 2em">Status</td>#}
                         </tr>
@@ -121,7 +128,12 @@
                                     <td style="font-weight: bold; padding-right: 2em">
                                         <a href="{{ stalker_url }}/tasks/{{ task.id }}/view">{{ task.name }} ({{ task.project.code }}{% for parent in task.parents %} | {{ parent.name }}{% endfor %})</a>
                                     </td>
-                                    <td style="padding-right: 2em">{{ end.strftime('%d %b, %a %H:%M') }}</td>
+                                    <td style="font-weight: bold; padding-right: 2em">
+                                        {% for resource in task.resources %}
+                                            <a href="{{ stalker_url }}/users/{{ resource.id }}/view">{{ resource.name }}</a>
+                                        {% endfor %}
+                                    </td>
+                                    <td style="padding-right: 2em">{{ end.strftime('%d %b, %a') }}</td>
 {#                                    <td style="padding-right: 2em">{{ task.status.code }}</td>#}
                                 </tr>
                             {% endfor %}

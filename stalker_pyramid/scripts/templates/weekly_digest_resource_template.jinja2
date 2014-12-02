@@ -83,7 +83,7 @@
                                 <td style="font-weight: bold; padding-right: 2em">
                                     <a href="{{ stalker_url }}/tasks/{{ task.id }}/view">{{ task.name }} ({{ task.project.code }}{% for parent in task.parents %} | {{ parent.name }}{% endfor %})</a>
                                 </td>
-                                <td style="padding-right: 2em">{{ end.strftime('%d %b, %a %H:%M') }}</td>
+                                <td style="padding-right: 2em">{{ end.strftime('%d %b, %a') }}</td>
 {#                                <td style="padding-right: 2em">{{ task.status.code }}</td>#}
                             </tr>
                         {% endfor %}    
@@ -121,7 +121,7 @@
                                     <td style="font-weight: bold; padding-right: 2em">
                                         <a href="{{ stalker_url }}/tasks/{{ task.id }}/view">{{ task.name }} ({{ task.project.code }}{% for parent in task.parents %} | {{ parent.name }}{% endfor %})</a>
                                     </td>
-                                    <td style="padding-right: 2em">{{ end.strftime('%d %b, %a %H:%M') }}</td>
+                                    <td style="padding-right: 2em">{{ end.strftime('%d %b, %a') }}</td>
 {#                                    <td style="padding-right: 2em">{{ task.status.code }}</td>#}
                                 </tr>
                             {% endfor %}

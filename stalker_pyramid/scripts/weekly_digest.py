@@ -43,7 +43,7 @@ stalker_server_external_url = None
 here = os.path.dirname(os.path.realpath(sys.argv[0]))
 templates_path = os.path.join(here, 'templates')
 
-responsible_mail_html_template_path = os.path.join(
+resource_mail_html_template_path = os.path.join(
     templates_path,
     'weekly_digest_resource_template.jinja2'
 )
@@ -158,7 +158,7 @@ def send_responsible_remainder(responsible):
 
     start_of_week, end_of_week = get_this_week_dates()
 
-    tasks_ending_this_week = Task.query.join(Task.responsible, User.tasks)\
+    tasks_ending_this_week = Task.query.join(Task.responsible, User.responsible_of)\
         .filter(Task.computed_start < end_of_week)\
         .filter(Task.computed_end > start_of_week)\
         .filter(Task.computed_end < end_of_week)\
@@ -167,10 +167,11 @@ def send_responsible_remainder(responsible):
         .order_by(Task.end)\
         .all()
 
-    tasks_continues = Task.query.join(Task.responsible, User.tasks)\
+    tasks_continues = Task.query.join(Task.responsible, User.responsible_of)\
         .filter(Task.computed_start < end_of_week)\
         .filter(Task.computed_end > end_of_week)\
         .filter(User.id == responsible.id)\
+        .filter(~Task.children.any())\
         .order_by(User.name)\
         .order_by(Task.end)\
         .all()
@@ -191,8 +192,8 @@ def send_responsible_remainder(responsible):
 
     # with open(
     #     os.path.expanduser(
-    #         '~/tmp/rendered_html_template_%s.html' % responsible.id, 'w+'
-    #     )
+    #         '~/tmp/rendered_html_template_%s.html' % responsible.id
+    #     ), 'w+'
     # ) as f:
     #     f.write(rendered_template)
 
@@ -221,21 +222,28 @@ def main(argv=sys.argv):
     global stalker_server_external_url
     global mailer
     global resource_mail_html_template
+    global responsible_mail_html_template
     global resource_mail_html_template_content
+    global responsible_mail_html_template_content
 
     # here = os.path.dirname(os.path.realpath(sys.argv[0]))
     stalker_server_external_url = settings.get('stalker.external_url')
     mailer = Mailer.from_settings(settings)
 
-    with open(responsible_mail_html_template_path) as f:
+    with open(resource_mail_html_template_path) as f:
         resource_mail_html_template_content = f.read()
 
+    with open(responsible_mail_html_template_path) as f:
+        responsible_mail_html_template_content = f.read()
+
     resource_mail_html_template = Template(resource_mail_html_template_content)
+    responsible_mail_html_template = Template(responsible_mail_html_template_content)
 
     db.setup(settings)
 
     for user in User.query.all():
         send_resource_remainder(user)
+        send_responsible_remainder(user)
 
     transaction.commit()
 
