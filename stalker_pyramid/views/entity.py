@@ -809,8 +809,8 @@ def submit_search(request):
 
     logger.debug('q_string: %s' % q_string)
     entity_type = None
-    q_entity_type =''
-    if ':'  in q_string:
+    q_entity_type = ''
+    if ':' in q_string:
         q_string, entity_type = q_string.split(':')
 
     result_location = '/'
@@ -846,20 +846,21 @@ def submit_search(request):
         entity_count = result.fetchone()[0]
         logger.debug('entity_count : %s' % entity_count)
 
-        if entity_count > 1:
-            result_location = \
-                '/list/search_results?str=%s&eid=%s%s' % (q_string, entity_id,q_entity_type)
+        # if entity_count > 1:
+        result_location = \
+            '/list/search_results?str=%s&eid=%s%s' % \
+            (q_string, entity_id, q_entity_type)
 
-        elif entity_count == 1:
-            sql_query_buffer[0] = 'select "SimpleEntities".id'
-            sql_query = '\n'.join(sql_query_buffer)
-
-            logger.debug('sql_query: %s' % sql_query)
-            result = DBSession.connection().execute(text(sql_query))
-
-            entity = Entity.query.get(result.fetchone()[0])
-            result_location = \
-                '/%s/%s/view' % (entity.plural_class_name.lower(), entity.id)
+        # elif entity_count == 1:
+        #     sql_query_buffer[0] = 'select "SimpleEntities".id'
+        #     sql_query = '\n'.join(sql_query_buffer)
+        # 
+        #     logger.debug('sql_query: %s' % sql_query)
+        #     result = DBSession.connection().execute(text(sql_query))
+        # 
+        #     entity = Entity.query.get(result.fetchone()[0])
+        #     result_location = \
+        #         '/%s/%s/view' % (entity.plural_class_name.lower(), entity.id)
 
     logger.debug('result_location : %s' % result_location)
 
