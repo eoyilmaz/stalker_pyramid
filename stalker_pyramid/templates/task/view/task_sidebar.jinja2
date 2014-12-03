@@ -191,19 +191,23 @@
                     'created for those tasks are going to be deleted.<br><br>' +
                     'Are you sure?', function (result) {
                 if (result) {
-                    var id;
+                    var id, parent_id;
                     // TODO: users will probably select parent and child items
                     // together and server will not be able to find the child tasks
                     // after the parent has deleted, so consider that in server
                     // side.
 
                     id = '{{ task.id }}';
+                    var new_url;
+                    {% if task.parent %}
+                        new_url = '/tasks/{{ task.parent.id }}/view';
+                    {% else %}
+                        new_url = '/projects/{{ task.project.id }}/view';
+                    {% endif %}
                     $.post(
                         '/tasks/' + id + '/delete'
                     ).done(function (response_text) {
-                        //bootbox.alert(response_text);
-                        window.location.assign('/projects/{{ task.project.id }}/view');
-                        // reload the gantt chart
+                        window.location.assign(new_url);
                     }).fail(function (jqXHR) {
                         bootbox.alert(jqXHR.responseText);
                     });
