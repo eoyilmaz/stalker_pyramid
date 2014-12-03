@@ -897,7 +897,7 @@ def list_search_result(request):
     else:
         results = Entity.query.filter(
             Entity.name.ilike('%' + qString + '%')
-        ).all()
+        ).order_by(Entity.name.asc()).all()
 
     projects = Project.query.all()
     logged_in_user = get_logged_in_user(request)
