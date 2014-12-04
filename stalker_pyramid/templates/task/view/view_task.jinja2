@@ -772,7 +772,7 @@
             for (var i = 0; i < data.length; i++) {
 
                 var task_id = (data[i].id).toString();
-                var time_to_complete_str = '<span> (' +  meaningful_time_between(data[i].schedule_seconds, data[i].total_logged_seconds) + ')(' + data[i]. + ')</span>';
+                var time_to_complete_str = '<span> (' +  meaningful_time_between(data[i].schedule_seconds, data[i].total_logged_seconds) + ')(' + data[i].priority + ')</span>';
 
                 if (!depends[task_id]) {
                     depends[task_id] = {
