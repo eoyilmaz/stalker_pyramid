@@ -350,6 +350,26 @@ define([
                             }
                         }
                     ),
+                    priority: {
+                        label: 'Prior.',
+                        sortable: false,
+                        resizable: true,
+                        get: function (object) {
+                            return object;
+                        },
+                        renderCell: function (object, value, node, options) {
+                            $(node).addClass('status_' + object.status).append(
+                                $.parseHTML('<div class="status_' + object.status + '">' + object.priority + '</div>')
+                            );
+                            // check if hidden
+                            var column_id = 'priority';
+                            var grid = this.grid;
+                            if (grid.is_hidden_column(column_id)) {
+                                // also hide this one by default
+                                $(node).css({'display': 'none'});
+                            }
+                        }
+                    },
                     complete: {
                         label: '%',
                         sortable: false,
