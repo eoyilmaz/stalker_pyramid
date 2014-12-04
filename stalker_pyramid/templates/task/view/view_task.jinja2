@@ -776,7 +776,7 @@
 
                 if (!depends[task_id]) {
                     depends[task_id] = {
-                        'name': '<span><a href="/tasks/' + data[i].id + '/view">' + data[i].name + '  </a></span>' + time_to_complete_str,
+                        'name': '<span><a href="/tasks/' + data[i].id + '/view" title="' + data[i].path + '">' + data[i].name + '  </a></span>' + time_to_complete_str,
                         'type': 'folder',
                         'icon-class': data[i].status_color
                     }
