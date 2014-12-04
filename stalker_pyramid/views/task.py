@@ -4864,7 +4864,8 @@ def get_task_dependency(request):
                 'total_logged_seconds': dep_task.total_logged_seconds,
                 'schedule_seconds': dep_task.schedule_seconds,
                 'schedule_unit': dep_task.schedule_unit,
-                'resources': resources
+                'resources': resources,
+                'priority': dep_task.priority
             }
         )
 
