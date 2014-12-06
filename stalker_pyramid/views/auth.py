@@ -21,6 +21,7 @@
 
 import time
 import datetime
+from beaker.cache import cache_region
 
 from pyramid.httpexceptions import (HTTPFound, HTTPServerError)
 from pyramid.response import Response
@@ -44,32 +45,34 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 
-def group_finder(login, request):
-    """Returns the group of the given login. The login name will be in
+@cache_region('long_term', 'load_users')
+def cached_group_finder(login_name):
+    if ':' in login_name:
+        login_name = login_name.split(':')[1]
+
+    # return the group of the given User object
+    user_obj = User.query.filter_by(login=login_name).first()
+    if user_obj:
+        # just return the groups names if there is any group
+        groups = user_obj.groups
+        if len(groups):
+            return map(lambda x: 'Group:' + x.name, groups)
+    return []
+
+
+def group_finder(login_name, request):
+    """Returns the group of the given login name. The login name will be in
     'User:{login}' format.
 
-    :param login: The login of the user, both '{login}' and 'User:{login}'
-      format is accepted.
+    :param login_name: The login name of the user, both '{login_name}' and
+      'User:{login_name}' format is accepted.
 
     :param request: The Request object
 
     :return: Will return the groups of the user in ['Group:{group_name}']
       format.
     """
-
-    if ':' in login:
-        login = login.split(':')[1]
-
-    # return the group of the given User object
-    user_obj = User.query.filter_by(login=login).first()
-
-    if user_obj:
-        # just return the groups names if there is any group
-        groups = user_obj.groups
-        if len(groups):
-            return map(lambda x: 'Group:' + x.name, groups)
-
-    return []
+    return cached_group_finder(login_name)
 
 
 class RootFactory(object):
@@ -397,16 +400,16 @@ def get_users_count(request):
 def get_users(request):
     """returns all users or one particular user from database
     """
-    # if there is a simple flag, just return ids and names and login
-    #simple = request.params.get('simple')
+    start = time.time()
 
     # if there is an id it is probably a project
     entity_id = request.matchdict.get('id')
 
     entity_type = None
 
-    update_user_permission = PermissionChecker(request)('Update_User')
-    delete_user_permission = PermissionChecker(request)('Delete_User')
+    has_permission = PermissionChecker(request)
+    has_update_user_permission = has_permission('Update_User')
+    has_delete_user_permission = has_permission('Delete_User')
 
     delete_user_action = '/users/%(id)s/delete/dialog'
 
@@ -424,7 +427,6 @@ def get_users(request):
         # there is no entity_type for that entity
         return []
 
-    start = time.time()
     sql_query = """select
         "Users".id,
         "SimpleEntities".name,
@@ -515,8 +517,11 @@ def get_users(request):
             'tasksCount': r[8] or 0,
             'ticketsCount': r[9] or 0,
             'thumbnail_full_path': r[10] if r[10] else None,
-            'update_user_action':'/users/%s/update/dialog' % r[0] if update_user_permission else None,
-            'delete_user_action':delete_user_action % {'id':r[0],'entity_id':entity_id} if delete_user_permission else None
+            'update_user_action':'/users/%s/update/dialog' % r[0]
+            if has_update_user_permission else None,
+            'delete_user_action':delete_user_action % {
+                'id': r[0], 'entity_id': entity_id
+            } if has_delete_user_permission else None
         } for r in result.fetchall()
     ]
 
