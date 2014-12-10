@@ -12,8 +12,258 @@
 {% block page_content %}
     {% set page_title='Reports' %}
     {% include 'page_header.jinja2' %}
-
+    <div class="row-fluid">
+        <div class="span12">
+            <!--PAGE CONTENT BEGINS-->
+            <div class="left">
+                <div class="btn-toolbar">
+                    <div class="input-prepend" style="height: 30px;
+                                            margin-bottom: 0px;
+                                            margin-left: 7px;
+                                            margin-right: 7px;
+                                            ">
+                        <select id='task_users'
+                               name='task_users'>
+                        </select>
+                    </div>
+                    <div class="input-prepend" style="height: 30px;
+                                            margin-bottom: 0px;
+                                            margin-left: 7px;
+                                            margin-right: 7px;
+                                            ">
+                        <select id='task_type'
+                               name='task_type'>
+                        </select>
+                    </div>
+                    <div class="input-prepend" style="height: 30px;
+                                            margin-bottom: 0px;
+                                            margin-left: 7px;
+                                            margin-right: 7px;
+                                            ">
+                        <select id='task_statuses'
+                               name='task_statuses'>
+                        </select>
+                    </div>
+                    <div id="load_button" class="btn-group">
+                        <button class="btn btn-small btn-success">
+                            <span class="icon-retweet bigger-120"></span>
+                            Load
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
 {% endblock page_content %}
+
+
+{#EXTRA-SCRIPTS#}
+{% block extrascripts %}
+    {% raw %}
+    <script id="tmpl_itemThead" type="text/x-dot-template">
+        <tr>
+            <th>Start</th>
+            <th>End</th>
+            <th>Project</th>
+            <th>Name</th>
+            <th>Resource</th>
+            <th>Type</th>
+            <th>Completed</th>
+            <th>Status</th>
+            <th>Priority</th>
+            <th></th>
+        </tr>
+    </script>
+    {% endraw %}
+
+    {% raw %}
+    <script id="tmpl_itemRow" type="text/x-dot-template">
+        <tr>
+            <td>{{=it.start}}</td>
+            <td>{{=it.end}}</td>
+            <td><a href='/projects/{{=it.project_id}}/view'>{{=it.project_name}}</a>
+            </td>
+            <td><a href='/tasks/{{=it.id}}/view'>{{=it.full_path}}</a></td>
+            <td>{{ for(var i=0;i<it.resources.length;i++){ }}<a href='/users/{{=it.resources[i].id}}/view'>{{=it.resources[i].name}}</a>{{ } }}</td>
+
+            <td>{{=it.task_type}}</td>
+            <td data-sType="num-html">
+                <div class="progress progress-success">
+                    <div style="width:{{=it.completed}}%"
+                         class="bar">
+                        <span class="pull-left">{{= it.completed.toFixed(0) }}%</span>
+                    </div>
+                </div>
+            </td>
+            <td>
+                <span class="label label-status_{{=it.status}}">{{=it.status}}</span>
+            </td>
+            <td>{{=it.priority}}</td>
+            <td>
+                <div class="hidden-phone visible-desktop action-buttons">
+                    <a class="blue" href='/tasks/{{=it.id}}/view'>
+                        <i class="icon-zoom-in bigger-130"></i>
+                    </a>
+
+                    <a id='update_task_item'
+                       data-target="#dialog_template"
+                       data-toggle="modal"
+                       data-keyboard=false
+                       href="/tasks/{{=it.id}}/update/dialog"
+                       tabindex="-1">
+                        <i class="icon-pencil bigger-120">&nbsp</i>
+                    </a>
+                    {{ if (it.request_extra_time)  { }}
+                        <a
+                            class="red"
+                            data-target="#dialog_template"
+                            data-toggle="modal"
+                            data-keyboard=false
+                            data-rel="tooltip"
+                            data-placement="top"
+                            title="Request Extra Time"
+                            href="{{=it.request_extra_time}}">
+                            <i class="icon-time bigger-130"></i>
+                        </a>
+                    {{ } }}
+
+                    {{ if (it.request_review) { }}
+                        <a
+                            class="green"
+                            data-target="#dialog_template"
+                            data-toggle="modal"
+                            data-keyboard=false
+                            data-rel="tooltip"
+                            data-placement="top"
+                            title="Request Review"
+                            href="{{=it.request_review}}">
+                            <i class="icon-comment-alt bigger-130"></i>
+                        </a>
+
+                    {{ } }}
+                    {{ if (it.review) { }}
+                        <a
+                            class="purple"
+                            data-target="#dialog_template"
+                            data-toggle="modal"
+                            data-keyboard=false
+                            data-rel="tooltip"
+                            data-placement="top"
+                            title="Review"
+                            href="{{=it.review }}">
+                            <i class="icon-comments bigger-130"></i>
+                        </a>
+                    {{ } }}
+
+                </div>
+
+            </td>
+
+        </tr>
+    </script>
+    {% endraw %}
+<script type="text/javascript">
+    $(function () {
+
+
+
+        $.getJSON('/projects/{{ entity.id }}/users/?simple=1').then(function (data) {
+
+            var task_users = $('#task_users');
+
+            task_users.chosen({
+                search_contains: true,
+                enable_split_word_search: true,
+                allow_single_deselect: true
+            });
+
+            {% raw %}
+                var user_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
+            {% endraw %}
+
+            var data_count = data.length;
+            task_users.append(user_template({'name':'All Resources', 'id':'-1'}));
+            for (var i=0; i < data_count; i++){
+                    task_users.append(user_template(data[i]));
+                }
+             task_users.trigger('liszt:updated');
+        });
+
+        $.getJSON('/types/?target_entity_type=Task').then(function (available_types) {
+
+             var task_type = $('#task_type');
+
+            task_type.chosen({
+                search_contains: true,
+                enable_split_word_search: true
+            });
+            task_type.find('option').remove();
+
+            {% raw %}
+                var task_type_option_template = doT.template(
+                    '<option value={{=it.id}}>{{=it.name}}</option>'
+                );
+            {% endraw %}
+            task_type.append(task_type_option_template({'name':'All Types', 'id':'-1'}));
+            for (var i = 0; i < available_types.length; i++) {
+                task_type.append(task_type_option_template(available_types[i]));
+            }
+             task_type.trigger('liszt:updated');
+        });
+
+        $.getJSON('/statuses/Task/').then(function (data) {
+
+            var task_statuses = $('#task_statuses');
+
+            task_statuses.chosen({
+                search_contains: true,
+                enable_split_word_search: true
+            });
+
+            {% raw %}
+                var status_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
+            {% endraw %}
+
+            var data_count = data.length;
+            task_statuses.append(status_template({'name':'All Statuses', 'id':'-1'}));
+            for (var i=0; i < data_count; i++){
+                    task_statuses.append(status_template(data[i]));
+                }
+             task_statuses.trigger('liszt:updated');
+        });
+
+        // Load Button
+        $("#load_button").on('click', function(e){
+            e.preventDefault();
+            e.stopPropagation();
+            var task_users = $('#task_users');
+            var resource_id = task_users.val();
+            var entity_id = '{{ entity.id }}';
+            if (resource_id != -1){
+                entity_id = resource_id;
+            }
+
+            $.getJSON('/resources/'+entity_id+'/').then(function (data) {
+
+
+                 var data_count = data.length;
+
+                for (var i=0; i < data_count; i++){
+                         console.log(data[i])
+                    }
+
+
+            });
+        });
+
+
+    });
+</script>
+
+
+
+{% endblock extrascripts %}
+
 
 

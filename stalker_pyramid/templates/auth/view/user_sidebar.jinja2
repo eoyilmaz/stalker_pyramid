@@ -77,6 +77,13 @@
             '/users/{{ entity.id }}/vacations/count/'
         );
 
+        menu_of('Efficiency',
+            "{%- if request.current_route_path() == request.route_path('list_entity_resources', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
+            '{{ request.route_url('list_entity_resources', id=user.id) }}',
+            get_icon('user'),
+            '0'
+        );
+
         submenu_of('{{ user.id }}', 'Project');
 
         submenu_of('{{ user.id }}', 'Department');

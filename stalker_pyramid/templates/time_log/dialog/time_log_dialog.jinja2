@@ -215,7 +215,7 @@ function init_dialog() {
 
     var information = $('#information');
 
-    var submit_finalize_form_url;
+    var submit_finalize_form_url = null;
 
 
     {# ***************************************************************** #}
@@ -274,6 +274,7 @@ function init_dialog() {
 
         var task_id = parseInt(time_log_task.val());
         console.debug('task_id:', task_id);
+        submit_finalize_form_url = null;
         if (task_id === -1){ return }
 
 
@@ -666,16 +667,20 @@ function init_dialog() {
                         'request_review_mode': 'Final'
                     })
                 ).done(function (response_text) {
-                    setTimeout(function () { // wait for hide event to finish
-                        window.location.reload();
-                    }, 0);
-                    submit_button.button('reset');
-                    $('#dialog_template').modal('hide');
-
+                    refresh_page();
                 }).fail(function (jqXHR) {
                     bootbox.alert('<div id="message" class="alert alert-danger bigger-110">'+jqXHR.responseText+'</div>');
                     submit_button.button('reset');
                 });
+    }
+
+    var refresh_page = function(){
+
+        setTimeout(function () { // wait for hide event to finish
+            window.location.reload();
+        }, 0);
+        submit_button.button('reset');
+        $('#dialog_template').modal('hide');
 
     }
 
@@ -707,9 +712,14 @@ function init_dialog() {
                         'end': end.toUTCString()
                     })
                 ).done(function (response_text) {
-                    setTimeout(function () { // wait for hide event to finish
-                        post_finalize_action();
-                    }, 0);
+                    if (completed_percent == 100 && submit_finalize_form_url){
+                        setTimeout(function () { // wait for hide event to finish
+                            post_finalize_action();
+                        }, 0);
+                    }
+                    else{
+                         refresh_page();
+                    }
 
 
                 }).fail(function (jqXHR) {

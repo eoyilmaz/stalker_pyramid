@@ -12,6 +12,7 @@
           href='{{ request.static_url("stalker_pyramid:static/ace/css/daterangepicker.css") }}'/>
 
     {% include 'charts/chart_preheader.jinja2' %}
+
 {% endblock pre_header %}
 
 {#SIDEBAR#}
@@ -33,34 +34,40 @@
     {% include 'page_header.jinja2' %}
     <!--/.page-header-->
 
+
+
     <div class="row-fluid">
 
         <div class="span12">
             <!--PAGE CONTENT BEGINS-->
             <div class="row-fluid">
-                <div id="infobox"
-                     address='/entities/{{ entity.id }}/tasks_stats/'
-                     class="infobox-container">
-                    {% include 'components/infobox.jinja2' %}
-                    <div class="infobox infobox-black infobox-small">
-                        <div class="infobox-icon">
-                            <i class="icon-bullhorn bigger-230"></i>
-                        </div>
-                        <div class="infobox-data">
-                            <div class="infobox-data-number">
-                                <a data-target="#html_template"
-                                   data-toggle="modal"
-                                   data-keyboard=false
-                                   href="/entities/{{ entity.id }}/tasks/filter/-1/list"
-                                   class="grey">Black List</a>
+                <div class="span9">
+                    <div id="infobox"
+                         address='/entities/{{ entity.id }}/tasks_stats/'
+                         class="infobox-container">
+                        {% include 'components/infobox.jinja2' %}
+                        <div class="infobox infobox-black infobox-small">
+                            <div class="infobox-icon">
+                                <i class="icon-bullhorn bigger-230"></i>
+                            </div>
+                            <div class="infobox-data">
+                                <div class="infobox-data-number">
+                                    <a data-target="#html_template"
+                                       data-toggle="modal"
+                                       data-keyboard=false
+                                       href="/entities/{{ entity.id }}/tasks/filter/-1/list"
+                                       class="grey">Black List</a>
+                                </div>
                             </div>
                         </div>
                     </div>
+                    <div class="space"></div>
                 </div>
-                <div class="space"></div>
+                <div class="span3">
+                    <div id="piechart-placeholder"></div>
+                </div>
             </div>
-{##}
-{#            {% include 'resource/list/list_resources.jinja2' %}#}
+
 
             <div class="hr hr8 hr-double"></div>
 
@@ -185,8 +192,14 @@
         {% endif %}
     {% endif %}
 
-    {#    {% include 'charts/bar_chart.jinja2' %}#}
+
     {% include 'calendar/calendar.jinja2' %}
+    {% include 'charts/pie_chart.jinja2' %}
+    <script class="include" type="text/javascript"
+        src='{{ request.static_url("stalker_pyramid:static/jqPlot/jquery.jqplot.min.js") }}'></script>
+
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/flot/jquery.flot.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/flot/jquery.flot.pie.min.js") }}'></script>
 
     <script type="text/javascript">
 {#        $(document).ready(function () {#}
@@ -200,16 +213,21 @@
         $.getJSON('/users/{{ entity.id }}/events/?keys=time_log&keys=vacation&keys=task').then(function (data) {
             var events = [];
 
+            var total_timelogs = 0;
+
             for (var i = 0; i < data.length; i++) {
 
                 var start_date = new Date(parseInt(data[i].start));
                 var end_date = new Date(parseInt(data[i].end));
 
-                if(data[i].entity_type == 'tasks'){
-                    var now = new Date();
-                    if(now>end_date){
-                        console.log(data[i].title +' : '+ end_date)
-                    }
+                if(data[i].entity_type == 'timelogs'){
+{#                    var now = new Date();#}
+{#                    if(now>end_date){#}
+{#                        console.log(data[i].title +' : '+ end_date)#}
+{#                    }#}
+                    var timelog_hours = (end_date-start_date)/1000/60/60;
+                    total_timelogs +=timelog_hours;
+
                 }
 
                 var event = {
@@ -221,11 +239,29 @@
                     className: data[i].className,
                     allDay: data[i].allDay
                 };
+
                 events.push(event);
             }
 
             $(document).ready(function () {
                 drawCalendar('calendar', events);
+
+{#                var placeholder = $('#piechart-placeholder').css({'width':'90%' , 'min-height':'150px'});#}
+{#                  var data = [#}
+{#                    { label: "You have worked",  data: total_timelogs, color: "#68BC31"},#}
+{#                    { label: "Your vacations",  data: 240.5, color: "#2091CF"},#}
+{#                    { label: "We don't know what you did",  data: 8.2, color: "#AF4E96"}#}
+{##}
+{#                  ];#}
+{##}
+{#                 drawPieChart(placeholder, data);#}
+{##}
+{#                 /**#}
+{#                 we saved the drawing function and the data to redraw with different position later when switching to RTL mode dynamically#}
+{#                 so that's not needed actually.#}
+{#                 */#}
+{#                 placeholder.data('chart', data);#}
+{#                 placeholder.data('draw', drawPieChart);#}
             });
 
 {#      TODO: Please use this version later on, which loads events dynamically #}

@@ -115,7 +115,7 @@ require([
     // The Memory
     var target = '{{ request.route_url('get_resource', id=entity.id) }}';
     {% if entity.entity_type == "User" %}
-    var target = '{{ request.route_url('get_resource', id=entity.id) }}';
+        var target = '{{ request.route_url('get_resource', id=entity.id) }}';
     {% elif entity.entity_type == "Department" %}
         var target = '{{ request.route_url('get_resource', id=entity.id) }}';
     {% endif %}

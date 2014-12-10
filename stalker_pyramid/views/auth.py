@@ -948,27 +948,41 @@ def get_resources(request):
             # the resource is a Project return all the project tasks and
             # return all the time logs of the users in that project
             time_log_query += """
-            join "User_Departments" on "User_Departments".uid = "TimeLogs".resource_id
+            join "Project_Users" on "Project_Users".user_id = "TimeLogs".resource_id
             -- where did = %(id)s
             """
 
-            tasks_query += """
-            -- select all the leaf tasks of the users of a specific Project
-            select
-                "Tasks".id,
-                "Task_SimpleEntities".name,
-                extract(epoch from "Tasks".computed_start::timestamp AT TIME ZONE 'UTC') * 1000 as start,
-                extract(epoch from "Tasks".computed_end::timestamp AT TIME ZONE 'UTC') * 1000 as end
-            from "Tasks"
-                join "SimpleEntities" as "Task_SimpleEntities" on "Tasks".id = "Task_SimpleEntities".id
-                where not (
-                    exists (
-                        select 1
-                        from "Tasks"
-                        where "Tasks".parent_id = tasks.id
-                    )
-                ) and project_id = %(id)s
-            group by id, "Task_SimpleEntities".name, start, "end", "Tasks".computed_start, "Tasks".computed_end
+            # tasks_query += """
+            # -- select all the leaf tasks of the users of a specific Project
+            # select
+            #     "Tasks".id,
+            #     "Task_SimpleEntities".name,
+            #     extract(epoch from "Tasks".computed_start::timestamp AT TIME ZONE 'UTC') * 1000 as start,
+            #     extract(epoch from "Tasks".computed_end::timestamp AT TIME ZONE 'UTC') * 1000 as end
+            # from "Tasks"
+            #     join "SimpleEntities" as "Task_SimpleEntities" on "Tasks".id = "Task_SimpleEntities".id
+            #     where not (
+            #         exists (
+            #             select 1
+            #             from "Tasks"
+            #             where "Tasks".parent_id = tasks.id
+            #         )
+            #     ) and project_id = %(id)s
+            # group by id, "Task_SimpleEntities".name, start, "end", "Tasks".computed_start, "Tasks".computed_end
+            # order by start
+            # """
+            tasks_query += """join "Task_Resources" on "Tasks".id = "Task_Resources".task_id
+            join "Project_Users" on "Project_Users".user_id = "Task_Resources".resource_id
+            join "SimpleEntities" as "Task_SimpleEntities" on "Tasks".id = "Task_SimpleEntities".id
+            where not (
+                exists (
+                    select 1
+                    from "Tasks"
+                    where "Tasks".parent_id = tasks.id
+                )
+            )
+            and "Project_Users".project_id = %(id)s
+            group by tasks.id, tasks.full_path, "Tasks".start, "Tasks".end, "Tasks".computed_start, "Tasks".computed_end
             order by start
             """
 
