@@ -239,7 +239,7 @@ def update_ticket(request):
     ticket_id = request.matchdict.get('id', -1)
     ticket = Ticket.query.filter_by(id=ticket_id).first()
 
-    #**************************************************************************
+    # *************************************************************************
     # collect data
     comment = request.params.get('comment')
     comment_as_text = request.params.get('comment_as_text')
@@ -370,8 +370,7 @@ def update_ticket(request):
         # make recipients unique
         recipients = list(set(recipients))
         message = Message(
-            subject="Stalker Pyramid: New comment on Ticket #%s" %
-                    ticket.number,
+            subject="New Comment: Ticket #%s" % ticket.number,
             sender=dummy_email_address,
             recipients=recipients,
             body=message_body_text,
@@ -417,7 +416,7 @@ def update_ticket(request):
         }
 
         message = Message(
-            subject="Stalker Pyramid: Status Update on "
+            subject="Status Updated:"
                     "Ticket #%(ticket_number)s - %(ticket_summary)s" % {
                         'ticket_number': ticket.number,
                         'ticket_summary': ticket.summary

@@ -305,7 +305,6 @@
 
         $.getJSON('/dailies/{{ entity.id }}/outputs/').then(function (data) {
             $(function () {
-
                 var daily_task_template = doT.template($('#tmpl_daily_task').html());
                 var daily_tasks_list = $('#daily_tasks');
 
@@ -350,6 +349,18 @@
 
                         var output_template = doT.template($('#tmpl_output_item').html());
                         var outputs = $('#outputs_' + task.task_id);
+
+                        // order the data according to the filename
+                        task.links = task.links.sort(
+                            function(a, b){
+                                if(a.original_filename > b.original_filename){
+                                    return 1;
+                                } else {
+                                    return -1;
+                                }
+                            }
+                        );
+
                         for (var j=0; j < task.links.length; j++){
                             var link = task.links[j];
                             append_thumbnail({
@@ -361,7 +372,7 @@
                         }
 
                         var note_template = doT.template($('#tmpl_note_item').html());
-                        var notes = $('#notes_'+task.task_id);
+                        var notes = $('#notes_' + task.task_id);
                         for (var k=0; k<task.notes.length; k++){
                             var note = task.notes[k];
 

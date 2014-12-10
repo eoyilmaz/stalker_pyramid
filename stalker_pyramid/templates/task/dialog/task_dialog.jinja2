@@ -743,7 +743,7 @@ resource_name, status
         task_responsible.attr('is_updating', true);
         field_update_mode_checker();
 
-        $.getJSON('/projects/' + project.id + '/users/?simple=1').then(function(data){
+        $.getJSON('/projects/' + project.id + '/users/').then(function(data){
             // remove current elements
             task_resources.find('option').remove();
             task_responsible.find('option').remove();
@@ -805,7 +805,7 @@ resource_name, status
             e.preventDefault();
 
             // disable submit button
-{#            setTimeout(function(){submit_button.button('loading')}, 0);#}
+            setTimeout(function(){submit_button.button('loading')}, 0);
 
             // enable fields
             var entity_type_value = $('#task_entity_type').val();

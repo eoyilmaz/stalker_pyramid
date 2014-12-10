@@ -42,13 +42,22 @@ mailer = None
 stalker_server_external_url = None
 here = os.path.dirname(os.path.realpath(sys.argv[0]))
 templates_path = os.path.join(here, 'templates')
-mail_html_template_path = os.path.join(
+
+resource_mail_html_template_path = os.path.join(
     templates_path,
-    'weekly_digest_template.jinja2'
+    'weekly_digest_resource_template.jinja2'
 )
 
-mail_html_template_content = None
-mail_html_template = None
+responsible_mail_html_template_path = os.path.join(
+    templates_path,
+    'weekly_digest_responsible_template.jinja2'
+)
+
+resource_mail_html_template_content = None
+resource_mail_html_template = None
+
+responsible_mail_html_template_content = None
+responsible_mail_html_template = None
 
 
 def usage(argv):
@@ -88,10 +97,10 @@ def convert_seconds_to_text(seconds):
     return
 
 
-def send_remainder(user):
-    """sends the reminder mail to the user
+def send_resource_remainder(resource):
+    """sends the reminder mail to the resource
     """
-    recipients = [user.email]
+    recipients = [resource.email]
 
     start_of_week, end_of_week = get_this_week_dates()
 
@@ -99,14 +108,14 @@ def send_remainder(user):
         .filter(Task.computed_start < end_of_week)\
         .filter(Task.computed_end > start_of_week)\
         .filter(Task.computed_end < end_of_week)\
-        .filter(User.id == user.id)\
+        .filter(User.id == resource.id)\
         .order_by(Task.end)\
         .all()
 
     tasks_continues = Task.query.join(Task.resources, User.tasks)\
         .filter(Task.computed_start < end_of_week)\
         .filter(Task.computed_end > end_of_week)\
-        .filter(User.id == user.id)\
+        .filter(User.id == resource.id)\
         .order_by(Task.end)\
         .all()
 
@@ -114,8 +123,8 @@ def send_remainder(user):
     if len(tasks_ending_this_week) == 0 and len(tasks_continues) == 0:
         return
 
-    rendered_template = mail_html_template.render(
-        user=user,
+    rendered_template = resource_mail_html_template.render(
+        user=resource,
         tasks_ending_this_week=tasks_ending_this_week,
         tasks_continues=tasks_continues,
         start_of_week=start_of_week,
@@ -126,13 +135,70 @@ def send_remainder(user):
 
     # with open(
     #     os.path.expanduser(
-    #         '~/tmp/rendered_html_template_%s.html' % user.id, 'w+'
+    #         '~/tmp/rendered_html_template_%s.html' % resource.id, 'w+'
     #     )
     # ) as f:
     #     f.write(rendered_template)
 
     message = Message(
         subject='Stalker Weekly Digest',
+        sender=dummy_email_address,
+        recipients=recipients,
+        body='This is an HTMl email',
+        html=rendered_template
+    )
+
+    mailer.send_to_queue(message)
+
+
+def send_responsible_remainder(responsible):
+    """sends the reminder mail to the responsible
+    """
+    recipients = [responsible.email]
+
+    start_of_week, end_of_week = get_this_week_dates()
+
+    tasks_ending_this_week = Task.query.join(Task.responsible, User.responsible_of)\
+        .filter(Task.computed_start < end_of_week)\
+        .filter(Task.computed_end > start_of_week)\
+        .filter(Task.computed_end < end_of_week)\
+        .filter(User.id == responsible.id)\
+        .order_by(User.name)\
+        .order_by(Task.end)\
+        .all()
+
+    tasks_continues = Task.query.join(Task.responsible, User.responsible_of)\
+        .filter(Task.computed_start < end_of_week)\
+        .filter(Task.computed_end > end_of_week)\
+        .filter(User.id == responsible.id)\
+        .filter(~Task.children.any())\
+        .order_by(User.name)\
+        .order_by(Task.end)\
+        .all()
+
+    # skip if he/she doesn't have any tasks
+    if len(tasks_ending_this_week) == 0 and len(tasks_continues) == 0:
+        return
+
+    rendered_template = responsible_mail_html_template.render(
+        user=responsible,
+        tasks_ending_this_week=tasks_ending_this_week,
+        tasks_continues=tasks_continues,
+        start_of_week=start_of_week,
+        end_of_week=end_of_week,
+        utc_to_local=utc_to_local,
+        stalker_url=stalker_server_external_url
+    )
+
+    # with open(
+    #     os.path.expanduser(
+    #         '~/tmp/rendered_html_template_%s.html' % responsible.id
+    #     ), 'w+'
+    # ) as f:
+    #     f.write(rendered_template)
+
+    message = Message(
+        subject='Stalker Weekly Responsible Digest',
         sender=dummy_email_address,
         recipients=recipients,
         body='This is an HTMl email',
@@ -155,22 +221,29 @@ def main(argv=sys.argv):
     # global here
     global stalker_server_external_url
     global mailer
-    global mail_html_template
-    global mail_html_template_content
+    global resource_mail_html_template
+    global responsible_mail_html_template
+    global resource_mail_html_template_content
+    global responsible_mail_html_template_content
 
     # here = os.path.dirname(os.path.realpath(sys.argv[0]))
     stalker_server_external_url = settings.get('stalker.external_url')
     mailer = Mailer.from_settings(settings)
 
-    with open(mail_html_template_path) as f:
-        mail_html_template_content = f.read()
+    with open(resource_mail_html_template_path) as f:
+        resource_mail_html_template_content = f.read()
 
-    mail_html_template = Template(mail_html_template_content)
+    with open(responsible_mail_html_template_path) as f:
+        responsible_mail_html_template_content = f.read()
+
+    resource_mail_html_template = Template(resource_mail_html_template_content)
+    responsible_mail_html_template = Template(responsible_mail_html_template_content)
 
     db.setup(settings)
 
     for user in User.query.all():
-        send_remainder(user)
+        send_resource_remainder(user)
+        send_responsible_remainder(user)
 
     transaction.commit()
 

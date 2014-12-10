@@ -5,7 +5,7 @@
     var DataSourceTree = function (options) {
         this._data = options.data;
         this._delay = options.delay;
-    }
+    };
 
     DataSourceTree.prototype.data = function (options, callback) {
         var self = this;
@@ -19,7 +19,7 @@
         else if ("type" in options && options.type == "folder") {
             if ("additionalParameters" in options && "children" in options.additionalParameters)
                 $data = options.additionalParameters.children;
-            else $data = {}//no data
+            else $data = {};//no data
         }
 
         if ($data != null)//this setTimeout is only for mimicking some random delay

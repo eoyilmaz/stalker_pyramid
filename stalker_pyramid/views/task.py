@@ -4858,13 +4858,18 @@ def get_task_dependency(request):
             {
                 'id': dep_task.id,
                 'name': dep_task.name,
+                'path': '%s (%s) (%s)' %
+                        (dep_task.name,
+                         dep_task.id,
+                         '|'.join([p.name for p in dep_task.parents])),
                 'status': dep_task.status.name,
                 'status_color': dep_task.status.html_class,
                 'percent_complete': dep_task.percent_complete,
                 'total_logged_seconds': dep_task.total_logged_seconds,
                 'schedule_seconds': dep_task.schedule_seconds,
                 'schedule_unit': dep_task.schedule_unit,
-                'resources': resources
+                'resources': resources,
+                'priority': dep_task.priority
             }
         )
 

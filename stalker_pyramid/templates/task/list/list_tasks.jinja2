@@ -439,11 +439,11 @@
                 class="caret"></span>
         </a>
         <ul class="dropdown-menu">
-            <li>
-                <input class="ace" type="checkbox" name="columns[]"
-                       id="action_column_toggler" checked=true/>
-                <label class="lbl" for="action_column_toggler">Action</label>
-            </li>
+{#            <li>#}
+{#                <input class="ace" type="checkbox" name="columns[]"#}
+{#                       id="action_column_toggler" checked=true/>#}
+{#                <label class="lbl" for="action_column_toggler">Action</label>#}
+{#            </li>#}
     
             <li>
                 <input class="ace" type="checkbox" name="columns[]"
@@ -457,6 +457,12 @@
                 <label class="lbl" for="name_column_toggler">Name</label>
             </li>
     
+            <li>
+                <input class="ace" type="checkbox" name="columns[]"
+                       id="priority_column_toggler" checked=true/>
+                <label class="lbl" for="priority_column_toggler">Priority</label>
+            </li>
+
             <li>
                 <input class="ace" type="checkbox" name="columns[]"
                        id="complete_column_toggler" checked=true/>
@@ -626,12 +632,12 @@ require([
 
     // column togglers
     // TODO: implement it to the GanttGrid
-    $('#action_column_toggler').on('click', function (e) {
-        gantt_chart.toggle_column('action');
-        setTimeout(function () {
-            gantt_column.refresh();
-        }, 0);
-    });
+{#    $('#action_column_toggler').on('click', function (e) {#}
+{#        gantt_chart.toggle_column('action');#}
+{#        setTimeout(function () {#}
+{#            gantt_column.refresh();#}
+{#        }, 0);#}
+{#    });#}
     $('#id_column_toggler').on('click', function (e) {
         gantt_chart.toggle_column('id');
         setTimeout(function () {
@@ -640,6 +646,12 @@ require([
     });
     $('#name_column_toggler').on('click', function (e) {
         gantt_chart.toggle_column('name');
+        setTimeout(function () {
+            gantt_column.refresh();
+        }, 0);
+    });
+    $('#priority_column_toggler').on('click', function (e) {
+        gantt_chart.toggle_column('priority');
         setTimeout(function () {
             gantt_column.refresh();
         }, 0);

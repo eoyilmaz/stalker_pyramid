@@ -167,11 +167,13 @@ def create_time_log(request):
         # TimeLog should handle the extension of the effort
         logger.debug('got all the data')
         try:
+            logger.debug('creating time log through task')
             assert isinstance(task, Task)
             time_log = task.create_time_log(resource, start_date, end_date)
             time_log.description = description
             time_log.created_by = logged_in_user
             time_log.date_created = utc_now
+            logger.debug('timelog created!')
         except (OverBookedError, TypeError, DependencyViolationError) as e:
             converter = StdErrToHTMLConverter(e)
             response = Response(converter.html(), 500)
