@@ -202,14 +202,6 @@
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/flot/jquery.flot.pie.min.js") }}'></script>
 
     <script type="text/javascript">
-{#        $(document).ready(function () {#}
-{#            var html_dialog = $('#html_template');#}
-{##}
-{#            html_dialog.modal({#}
-{#                  'remote': "/entities/{{ entity.id }}/tasks/filter/-1/list"#}
-{#            });#}
-{#        });#}
-
         $.getJSON('/users/{{ entity.id }}/events/?keys=time_log&keys=vacation&keys=task').then(function (data) {
             var events = [];
 

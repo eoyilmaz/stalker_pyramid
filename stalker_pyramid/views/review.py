@@ -306,7 +306,7 @@ def get_reviews(request, where_conditions):
         join "Statuses" as "Reviews_Statuses" on "Reviews_Statuses".id = "Reviews".status_id
         join "SimpleEntities" as "Statuses_Simple_Entities" on "Statuses_Simple_Entities".id = "Reviews".status_id
         join "SimpleEntities" as "Reviewers_SimpleEntities" on "Reviewers_SimpleEntities".id = "Reviews".reviewer_id
-        join "User_Departments" as "Reviewers_Departments" on "Reviewers_Departments".uid = "Reviews".reviewer_id
+        join "Department_Users" as "Reviewers_Departments" on "Reviewers_Departments".uid = "Reviews".reviewer_id
         join "SimpleEntities" as "Reviewer_Departments_SimpleEntities" on "Reviewer_Departments_SimpleEntities".id = "Reviewers_Departments".did
         left join "SimpleEntities" as "Review_Types" on "Reviews_Simple_Entities".type_id = "Review_Types".id
         left join (%(recursive_task_query)s) as "ParentTasks" on "Review_Tasks".id = "ParentTasks".id

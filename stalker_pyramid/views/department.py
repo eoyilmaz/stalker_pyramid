@@ -23,7 +23,8 @@ from pyramid.httpexceptions import HTTPServerError, HTTPFound
 from pyramid.view import view_config
 
 from stalker.db import DBSession
-from stalker import User, Department, Entity, Studio, Project, defaults
+from stalker import User, Department, Entity, Studio, Project, defaults, \
+    DepartmentUser
 
 import logging
 import transaction
@@ -31,6 +32,7 @@ from webob import Response
 import stalker_pyramid
 from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
                                    log_param, get_tags, StdErrToHTMLConverter)
+from stalker_pyramid.views.role import query_role
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.WARNING)
@@ -54,7 +56,6 @@ def create_department(request):
     logger.debug('new department name : %s' % name)
 
     if name:
-
         description = request.params.get('description')
 
         lead_id = request.params.get('lead_id', -1)
@@ -71,17 +72,26 @@ def create_department(request):
             new_department = Department(
                 name=name,
                 description=description,
-                lead=lead,
                 created_by=logged_in_user,
                 tags=tags
             )
 
-            DBSession.add(new_department)
+            # create a new Department_User with lead role
+            lead_role = query_role('Lead')
+            dpu = DepartmentUser(
+                department=new_department,
+                user=lead,
+                role=lead_role
+            )
 
-            logger.debug('added new department successfully')
+            DBSession.add(new_department)
+            DBSession.add(dpu)
+
+            logger.debug('added new department successfully!')
 
             request.session.flash(
-                'success:Department <strong>%s</strong> is created successfully' % name
+                'success:Department <strong>%s</strong> is created '
+                'successfully!' % name
             )
 
             logger.debug('***create department method ends ***')
@@ -99,7 +109,7 @@ def create_department(request):
         transaction.abort()
         return response
 
-    response = Response('successfully updated %s department!' % name)
+    response = Response('successfully created %s department!' % name)
     return response
 
 
@@ -124,7 +134,6 @@ def update_department(request):
     logger.debug('department : %s' % department)
     logger.debug('department new name : %s' % name)
 
-
     if department and name:
 
         description = request.params.get('description')
@@ -144,6 +153,22 @@ def update_department(request):
         department.description = description
 
         department.lead = lead
+        lead_role = query_role('Lead')
+        # get the current department lead
+        dpu = DepartmentUser.query\
+            .filter(DepartmentUser.department == department)\
+            .filter(DepartmentUser.role == lead_role)\
+            .first()
+        if not dpu:
+            dpu = DepartmentUser(
+                department=department,
+                user=lead,
+                role=lead_role
+            )
+            DBSession.add(dpu)
+        else:
+            dpu.user = lead
+
         department.tags = tags
         department.updated_by = logged_in_user
         department.date_updated = datetime.datetime.now()
@@ -153,8 +178,9 @@ def update_department(request):
         logger.debug('department is updated successfully')
 
         request.session.flash(
-                'success:Department <strong>%s</strong> is updated successfully' % name
-            )
+            'success:Department <strong>%s</strong> '
+            'is updated successfully' % name
+        )
 
         logger.debug('***update department method ends ***')
     else:
@@ -165,6 +191,7 @@ def update_department(request):
 
     return Response('Successfully updated department: %s' % department_id)
 
+
 @view_config(
     route_name='view_entity_department',
     renderer='templates/department/view/view_department.jinja2'
@@ -172,7 +199,6 @@ def update_department(request):
 def view_entity_department(request):
     """create department dialog
     """
-
     logger.debug('***view_entity_department method starts ***')
 
     logged_in_user = get_logged_in_user(request)
@@ -215,6 +241,7 @@ def get_departments(request):
         for dep in Department.query.order_by(Department.name.asc()).all()
     ]
 
+
 @view_config(
     route_name='get_department',
     renderer='json'
@@ -234,8 +261,6 @@ def get_department(request):
     ]
 
 
-
-
 @view_config(
     route_name='get_departments',
     renderer='json'
@@ -243,12 +268,22 @@ def get_department(request):
 def get_departments(request):
     """returns all the departments in the database
     """
+    sql_query = """select
+    "SimpleEntities".id
+    "SimpleEntities".name
+from "Departments"
+join "SimpleEntities" on "Departments".id = "SimpleEntities".id
+order by "SimpleEntities".name
+"""
+
+    result = DBSession.connection().execute(sql_query)
+
     return [
         {
-            'id': dep.id,
-            'name': dep.name
+            'id': r[0],
+            'name': r[1]
         }
-        for dep in Department.query.order_by(Department.name.asc()).all()
+        for r in result.fetchall()
     ]
 
 
@@ -269,22 +304,31 @@ def get_entity_departments(request):
     update_department_permission = \
         PermissionChecker(request)('Update_Department')
 
-
     departments = []
 
+    lead_role = query_role('Lead')
+
+    # TODO: Update this to use raw SQL
     for department in entity.departments:
+
+        lead = DepartmentUser.query\
+            .filter_by(department=department)\
+            .filter_by(role=lead_role)\
+            .first()
+
         dep = {
             'name': department.name,
             'id': department.id,
-            'lead_id': department.lead.id if department.lead else None,
-            'lead_name': department.lead.name if department.lead else None,
+            'lead_id': lead.id if lead else None,
+            'lead_name': lead.name if lead else None,
             'thumbnail_full_path':
-            department.thumbnail.full_path if department.thumbnail else None,
+                department.thumbnail.full_path if department.thumbnail else None,
             'created_by_id': department.created_by.id,
             'created_by_name': department.created_by.name,
             'description': len(department.users),
-            'item_view_link':'/departments/%s/view'%department.id
+            'item_view_link': '/departments/%s/view' % department.id
         }
+
         if update_department_permission:
             dep['item_update_link'] = \
                 '/departments/%s/update/dialog' % department.id

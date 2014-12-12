@@ -329,12 +329,11 @@ resource_name, status
         var submit_form_url = '{{ request.route_url("create_task") }}';
         var selected_resources = [];
         var entity_type = 'Task';
-        var selected_responsibles = ['{{ project.lead.id }}'];
+        var selected_responsibles = [];
         var shot_cut_in = 1;
         var shot_cut_out = 1;
         var shot_sequences =[];
         var disable_dependency_field = false;
-
 
         {% if entity.entity_type == 'Shot' %}
             shot_cut_in = {{ entity.cut_in }};

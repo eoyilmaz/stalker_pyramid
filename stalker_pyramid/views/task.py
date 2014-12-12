@@ -67,21 +67,12 @@ def generate_recursive_task_query(ordered=True):
             task.project_id,
             task.project_id::text as path,
             ("Projects".code || '') as path_names,
-            coalesce(
-                (
-                    select
-                        array_agg(responsible_id)
-                    from "Task_Responsible"
-                    where "Task_Responsible".task_id = task.id
-                    group by task_id
-                ),
-                (
-                    select
-                        array_agg(projects.lead_id) as responsible_id
-                    from "Projects" as projects
-                    where projects.id = "Projects".id
-                    group by projects.id
-                )
+            (
+                select
+                    array_agg(responsible_id)
+                from "Task_Responsible"
+                where "Task_Responsible".task_id = task.id
+                group by task_id
             ) as responsible_id
         from "Tasks" as task
         join "Projects" on task.project_id = "Projects".id
@@ -1067,14 +1058,15 @@ def update_task(request):
     task.resources = resources
     task.priority = priority
     # also update all child task priorities
-    for ct in task.walk_hierarchy():
-        ct.priority = priority
+    if priority != task.priority:
+        for ct in task.walk_hierarchy():
+            ct.priority = priority
 
     task.code = code
     task.updated_by = logged_in_user
 
     # update responsible
-    if responsible:
+    if responsible != task.responsible:
         if task.parent:
             if task.parent.responsible == responsible:
                 task.responsible = []
@@ -2664,10 +2656,9 @@ def get_entity_tasks_by_filter(request):
     """returns all the tasks in the database related to the given entity in
     flat json format
     """
-
     logged_in_user = get_logged_in_user(request)
 
-     # get all the tasks related in the given project
+    # get all the tasks related in the given project
     entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
 
@@ -2676,24 +2667,24 @@ def get_entity_tasks_by_filter(request):
     filter_id = request.matchdict.get('f_id', -1)
     filter_ = Entity.query.filter_by(id=filter_id).first()
 
-    sql_query = """select
+    sql_query = """
+select
     "Task_Resources".task_id as task_id,
     "ParentTasks".full_path as task_name,
     array_agg("Responsible_SimpleEntities".id) as responsible_id,
     array_agg("Responsible_SimpleEntities".name) as responsible_name,
     coalesce("Type_SimpleEntities".name,'') as type_name,
     (coalesce("Task_TimeLogs".duration, 0.0))::float /
-            ("Tasks".schedule_timing * (case "Tasks".schedule_unit
-                when 'min' then 60
-                when 'h' then 3600
-                when 'd' then 32400
-                when 'w' then 147600
-                when 'm' then 590400
-                when 'y' then 7696277
-                else 0
-            end)
-            ) * 100.0
-    as percent_complete,
+        ("Tasks".schedule_timing * (case "Tasks".schedule_unit
+            when 'min' then 60
+            when 'h' then 3600
+            when 'd' then 32400
+            when 'w' then 147600
+            when 'm' then 590400
+            when 'y' then 7696277
+            else 0
+        end)
+        ) * 100.0 as percent_complete,
     array_agg("Resource_SimpleEntities".id) as resource_id,
     array_agg("Resource_SimpleEntities".name) as resource_name,
     "Statuses_SimpleEntities".name as status_name,
@@ -2703,32 +2694,35 @@ def get_entity_tasks_by_filter(request):
     "Project_SimpleEntities".name as project_name,
     array_agg("Reviewers".reviewer_id) as reviewer_id,
     ((("Tasks".schedule_timing * (case "Tasks".schedule_unit
-                when 'min' then 60
-                when 'h' then 3600
-                when 'd' then 32400
-                when 'w' then 147600
-                when 'm' then 590400
-                when 'y' then 7696277
-                else 0
-            end))-coalesce("Task_TimeLogs".duration, 0.0))/3600
-
+            when 'min' then 60
+            when 'h' then 3600
+            when 'd' then 32400
+            when 'w' then 147600
+            when 'm' then 590400
+            when 'y' then 7696277
+            else 0
+        end)) - coalesce("Task_TimeLogs".duration, 0.0)) / 3600
     ) as hour_to_complete,
     coalesce("Tasks".computed_start,"Tasks".start) as start_date,
     "Tasks".priority as priority,
-    ((("Tasks".bid_timing * (case "Tasks".bid_unit
-                when 'min' then 60
-                when 'h' then 3600
-                when 'd' then 32400
-                when 'w' then 147600
-                when 'm' then 590400
-                when 'y' then 7696277
-                else 0
-            end))-coalesce("Task_TimeLogs".duration, 0.0))/3600
 
+    (
+        (
+            ("Tasks".bid_timing * (
+                case "Tasks".bid_unit
+                    when 'min' then 60
+                    when 'h' then 3600
+                    when 'd' then 32400
+                    when 'w' then 147600
+                    when 'm' then 590400
+                    when 'y' then 7696277
+                else 0
+                end
+            )
+        ) - coalesce("Task_TimeLogs".duration, 0.0)) / 3600.0
     ) as hour_based_on_bid
 
-
-    from "Tasks"
+from "Tasks"
     join "Task_Resources" on "Task_Resources".task_id = "Tasks".id
     join "SimpleEntities" as "Project_SimpleEntities"on "Project_SimpleEntities".id = "Tasks".project_id
     join "Statuses" on "Statuses".id = "Tasks".status_id
@@ -2782,7 +2776,7 @@ def get_entity_tasks_by_filter(request):
         -- select all the residual tasks that are not in the previous union
         select
             "Tasks".id,
-            "Projects".lead_id
+            -1 --"Projects".lead_id
         from "Tasks"
         join "Projects" on "Tasks".project_id = "Projects".id
         left outer join (
