@@ -15,15 +15,16 @@
     function init_dialog() {
         console.debug('starting to initialize department dialog!!!');
 
-        $('#dialog_template_label').find('span').remove();
-        $('#dialog_template_label').append('<span>New Department</span>')
+        var dialog_template_label = $('#dialog_template_label');
 
-        $('#dialog_template_body').attr('style', "height: 350px");
+        dialog_template_label.find('span').remove();
+        dialog_template_label.append('<span>New Department</span>');
 
-
+        var dialog_template_body = $('#dialog_template_body');
+        dialog_template_body.attr('style', "height: 350px");
+        
         {# ***************************************************************** #}
         {# Submit Button #}
-
         var submit_button = $('#dialog_template_submit_button');
         submit_button.on('click', function (e) {
             e.stopPropagation();

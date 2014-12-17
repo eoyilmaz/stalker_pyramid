@@ -335,7 +335,7 @@ def get_users_count(request):
         from "Department_Users"
         join "SimpleEntities" on "Department_Users".did = "SimpleEntities".id
         group by uid
-    ) as user_departments on user_departments.uid = "Users".id
+    ) as department_Users on department_Users.uid = "Users".id
     left outer join (
         select
             uid,
@@ -344,7 +344,7 @@ def get_users_count(request):
         from "Group_Users"
         join "SimpleEntities" on "Group_Users".gid = "SimpleEntities".id
         group by uid
-    ) as user_groups on user_groups.uid = "Users".id
+    ) as group_users on group_users.uid = "Users".id
     left outer join (
         select resource_id, count(task_id) as task_count from "Task_Resources" group by resource_id
     ) as tasks on tasks.resource_id = "Users".id
@@ -432,10 +432,10 @@ def get_users(request):
         "SimpleEntities".name,
         "Users".login,
         "Users".email,
-        user_departments."dep_ids",
-        user_departments."dep_names",
-        user_groups."group_ids",
-        user_groups."group_names",
+        department_users."dep_ids",
+        department_users."dep_names",
+        group_users."group_ids",
+        group_users."group_names",
         tasks.task_count,
         tickets.ticket_count,
         "Links".full_path
@@ -449,7 +449,7 @@ def get_users(request):
         from "Department_Users"
         join "SimpleEntities" on "Department_Users".did = "SimpleEntities".id
         group by uid
-    ) as user_departments on user_departments.uid = "Users".id
+    ) as department_users on department_users.uid = "Users".id
     left outer join (
         select
             uid,
@@ -458,7 +458,7 @@ def get_users(request):
         from "Group_Users"
         join "SimpleEntities" on "Group_Users".gid = "SimpleEntities".id
         group by uid
-    ) as user_groups on user_groups.uid = "Users".id
+    ) as group_users on group_users.uid = "Users".id
     left outer join (
         select resource_id, count(task_id) as task_count from "Task_Resources" group by resource_id
     ) as tasks on tasks.resource_id = "Users".id
@@ -545,10 +545,10 @@ def get_users_simple(request):
         "SimpleEntities".name,
         "Users".login,
         "Users".email,
-        user_departments."dep_ids",
-        user_departments."dep_names",
-        user_groups."group_ids",
-        user_groups."group_names",
+        department_users."dep_ids",
+        department_users."dep_names",
+        group_users."group_ids",
+        group_users."group_names",
         tasks.task_count,
         tickets.ticket_count,
         "Links".full_path
@@ -562,7 +562,7 @@ def get_users_simple(request):
         from "Department_Users"
         join "SimpleEntities" on "Department_Users".did = "SimpleEntities".id
         group by uid
-    ) as user_departments on user_departments.uid = "Users".id
+    ) as department_users on department_users.uid = "Users".id
     left outer join (
         select
             uid,
@@ -571,7 +571,7 @@ def get_users_simple(request):
         from "Group_Users"
         join "SimpleEntities" on "Group_Users".gid = "SimpleEntities".id
         group by uid
-    ) as user_groups on user_groups.uid = "Users".id
+    ) as group_users on group_users.uid = "Users".id
     left outer join (
         select resource_id, count(task_id) as task_count from "Task_Resources" group by resource_id
     ) as tasks on tasks.resource_id = "Users".id

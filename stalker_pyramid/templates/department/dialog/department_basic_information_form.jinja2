@@ -82,37 +82,30 @@
             field.chosen();
         });
     };
-
-
+    
     {# ***************************************************************** #}
     {# User #}
-    $(document).ready(function () {
+    $(function () {
         {% raw %}
         var user_option_template = doT.template(
-                '<option value={{=it.id}}>{{=it.name}}</option>'
+            '<option value={{=it.id}}>{{=it.name}}</option>'
         );
         {% endraw %}
 
         var lead_user = $('#department_lead');
 
         $.getJSON('/users/').then(function (data) {
-
-
             // append new ones
             var data_count = data.length;
             for (var i = 0; i < data_count; i++) {
-
                 lead_user.append(user_option_template(data[i]));
             }
-
 
             {% if mode == 'Update' %}
                 lead_user.val('{{ department.lead.id }}');
                 lead_user.trigger('liszt:updated');
             {% endif %}
 
-
         });
-
     });
 </script>

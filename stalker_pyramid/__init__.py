@@ -156,6 +156,8 @@ def main(global_config, **settings):
     config.add_route('get_entity_groups',              'entities/{id}/groups/')
     config.add_route('get_entity_tasks',               'entities/{id}/tasks/')
     config.add_route('get_entity_tasks_stats',         'entities/{id}/tasks_stats/')
+
+    # TODO: Do we still really need "get_entity_tasks_by_filter"
     config.add_route('get_entity_tasks_by_filter',     'entities/{id}/tasks/filter/{f_id}/')
 
     config.add_route('get_entity_tickets',             'entities/{id}/tickets/')
@@ -767,13 +769,15 @@ def main(global_config, **settings):
 
     # *************************************************************************
     # Tag
-
     config.add_route('get_tags', 'tags/')
 
     # *************************************************************************
     # Type
     config.add_route('get_types', 'types/')
 
+    # *************************************************************************
+    # Role
+    config.add_route('get_roles', 'roles/')  # json
 
     # *************************************************************************
     # Anima
@@ -782,8 +786,8 @@ def main(global_config, **settings):
     config.add_route('remove_related_asset_dialog', 'entities/{id}/assets/{a_id}/remove/dialog')
     config.add_route('remove_related_asset', 'entities/{id}/assets/{a_id}/remove')
 
-
-
+    # *************************************************************************
+    # Test
     config.add_route('test_page', 'test_page')
 
     config.scan(ignore='stalker.env')

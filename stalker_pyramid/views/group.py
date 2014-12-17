@@ -394,7 +394,11 @@ def get_entity_groups(request):
                 '/groups/%s/update/dialog' % group.id
                 if update_group_permission else None,
             'item_remove_link':
-                '/entities/%s/%s/remove/dialog?came_from=%s'%(group.id, entity.id, request.current_route_path())
+                '/entities/%s/%s/remove/dialog?came_from=%s' % (
+                    group.id,
+                    entity.id,
+                    request.current_route_path()
+                )
                 if update_group_permission else None
         }
         for group in sorted(entity.groups, key=lambda x: x.name.lower())

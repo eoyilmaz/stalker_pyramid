@@ -28,10 +28,12 @@ from pyramid.view import view_config
 from stalker.db import DBSession
 from stalker import (User, ImageFormat, Repository, Structure, Status,
                      StatusList, Project, Entity, Studio, defaults)
+from stalker.models.project import ProjectUser
 
 from stalker_pyramid.views import (get_date, get_date_range,
                                    get_logged_in_user,
                                    milliseconds_since_epoch, PermissionChecker)
+from stalker_pyramid.views.role import query_role
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -201,25 +203,39 @@ def get_entity_projects(request):
 
     logger.debug('entity.projects count :%s', entity.projects)
 
-    return [
-        {
-            'id': project.id,
-            'name': project.name,
-            'lead_id': project.lead.id,
-            'lead_name': project.lead.name,
-            'date_created': milliseconds_since_epoch(project.date_created),
-            'created_by_id': project.created_by.id,
-            'created_by_name': project.created_by.name,
-            'thumbnail_full_path': project.thumbnail.full_path if project.thumbnail else None,
-            'status': project.status.name,
-            'description': len(project.users),
-            'percent_complete': project.percent_complete,
-            'item_view_link':'/project/%s/view'%project.id,
-            'item_remove_link':'/entities/%s/%s/remove/dialog?came_from=%s'%(project.id, entity.id, request.current_route_path())
-            if PermissionChecker(request)('Update_Project') else None
-        }
-        for project in entity.projects
-    ]
+    return_data = []
+
+    lead_role = query_role('Lead')
+
+    for project in entity.projects:
+
+        lead = ProjectUser.query\
+            .filter_by(project=project)\
+            .filter_by(role=lead_role)\
+            .first()
+
+        return_data.append(
+            {
+                'id': project.id,
+                'name': project.name,
+
+                'lead_id': lead.id if lead else None,
+                'lead_name': lead.name if lead else None,
+
+                'date_created': milliseconds_since_epoch(project.date_created),
+                'created_by_id': project.created_by.id,
+                'created_by_name': project.created_by.name,
+                'thumbnail_full_path': project.thumbnail.full_path if project.thumbnail else None,
+                'status': project.status.name,
+                'description': len(project.users),
+                'percent_complete': project.percent_complete,
+                'item_view_link':'/project/%s/view'%project.id,
+                'item_remove_link':'/entities/%s/%s/remove/dialog?came_from=%s'%(project.id, entity.id, request.current_route_path())
+                if PermissionChecker(request)('Update_Project') else None
+            }
+        )
+
+    return return_data
 
 
 @view_config(

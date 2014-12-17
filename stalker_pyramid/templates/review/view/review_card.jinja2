@@ -88,7 +88,7 @@
 {% include 'review/view/reviewer_card.jinja2' %}
 
 <script type="text/javascript">
-    $(document).ready(function () {
+    $(function () {
         var icon_name = get_icon('resource');
         $('#responsible_items_header').append('<i class=' + icon_name + '></i>Responsible');
 
@@ -99,7 +99,7 @@
 
             for (var i = 0; i < data.length; i++) {
 
-                data[i].project_id = '{{ entity.project.id }}'
+                data[i].project_id = '{% if entity.entity_type != "Project" %}{{ entity.project.id }}{% else %}{{ entity.id }}{% endif %}';
                 if (data[i].review_status_code == 'new') {
                     data[i].review_status_name = 'Pending';
                     if (data[i].reviewer_id == '{{ logged_in_user.id }}') {
