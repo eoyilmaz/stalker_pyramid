@@ -300,7 +300,7 @@ def main(global_config, **settings):
     config.add_route('list_project_references',    'projects/{id}/references/list')
     config.add_route('list_project_reviews',       'projects/{id}/reviews/list')  # html
     config.add_route('list_project_dailies',       'projects/{id}/dailies/list')  # html
-    # config.add_route('view_project_tasks_by_filter',    'projects/{id}/tasks/filter/{f_id}/list')  # html
+    config.add_route('list_project_budgets',       'projects/{id}/budgets/list')  # html
 
     config.add_route('get_projects',               'projects/')
     config.add_route('get_project_users',          'projects/{id}/users/')
@@ -318,12 +318,27 @@ def main(global_config, **settings):
     config.add_route('get_project_tickets',         'projects/{id}/tickets/')  # json
     config.add_route('get_project_tickets_count',   'projects/{id}/tickets/count/')  # json
     config.add_route('get_project_reviews',         'projects/{id}/reviews/') #json
-    config.add_route('get_project_reviews_count',      'projects/{id}/reviews/count/') #json
+    config.add_route('get_project_reviews_count',   'projects/{id}/reviews/count/') #json
     config.add_route('get_project_dailies',         'projects/{id}/dailies/') #json
     config.add_route('get_project_dailies_count',   'projects/{id}/dailies/count/') #json
+    config.add_route('get_project_budgets',         'projects/{id}/budgets/') #json
+    config.add_route('get_project_budgets_count',   'projects/{id}/budgets/count/') #json
+    config.add_route('get_project_tasks_cost',     'projects/{id}/tasks/cost/') #json
 
     config.add_route('get_project_tasks_today',    'projects/{id}/tasks/{action}/today/')  # json
     config.add_route('get_project_tasks_in_date',  'projects/{id}/tasks/{action}/{date}/')  # json
+
+    # *************************************************************************
+    # Budgets
+    config.add_route('create_budget_dialog', 'budgets/create/dialog')
+    config.add_route('update_budget_dialog', 'budgets/{id}/update/dialog')
+
+    config.add_route('create_budget',        'budgets/create')
+    config.add_route('update_budget',        'budgets/{id}/update')
+
+    config.add_route('view_budget',          'budgets/{id}/view')
+
+    config.add_route('get_budget_entries',   'budgets/{id}/entries/')
 
     # *************************************************************************
     # Dailies
@@ -336,7 +351,7 @@ def main(global_config, **settings):
     config.add_route('inline_update_daily_dialog', 'dailies/{id}/update/inline/dialog')
 
     config.add_route('view_daily',          'dailies/{id}/view')
-    config.add_route('get_daily_outputs',          'dailies/{id}/outputs/') # json
+    config.add_route('get_daily_outputs',   'dailies/{id}/outputs/') # json
 
     config.add_route('append_link_to_daily_dialog', 'links/{id}/dailies/append/dialog')
     config.add_route('append_link_to_daily', 'links/{id}/dailies/{did}/append')

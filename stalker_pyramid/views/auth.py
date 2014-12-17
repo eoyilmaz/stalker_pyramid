@@ -332,8 +332,8 @@ def get_users_count(request):
             uid,
             array_agg(did) as dep_ids,
             array_agg(name) as dep_names
-        from "User_Departments"
-        join "SimpleEntities" on "User_Departments".did = "SimpleEntities".id
+        from "Department_Users"
+        join "SimpleEntities" on "Department_Users".did = "SimpleEntities".id
         group by uid
     ) as user_departments on user_departments.uid = "Users".id
     left outer join (
@@ -341,8 +341,8 @@ def get_users_count(request):
             uid,
             array_agg(gid) as group_ids,
             array_agg(name) as group_names
-        from "User_Groups"
-        join "SimpleEntities" on "User_Groups".gid = "SimpleEntities".id
+        from "Group_Users"
+        join "SimpleEntities" on "Group_Users".gid = "SimpleEntities".id
         group by uid
     ) as user_groups on user_groups.uid = "Users".id
     left outer join (
@@ -365,12 +365,12 @@ def get_users_count(request):
         where "Project_Users".project_id = %(id)s
         """ % {'id': entity_id}
     elif entity_type == "Department":
-        sql_query += """join "User_Departments" on "Users".id = "User_Departments".uid
-        where "User_Departments".did = %(id)s
+        sql_query += """join "Department_Users" on "Users".id = "Department_Users".uid
+        where "Department_Users".did = %(id)s
         """ % {'id': entity_id}
     elif entity_type == "Group":
-        sql_query += """join "User_Groups" on "Users".id = "User_Groups".uid
-        where "User_Groups".gid = %(id)s
+        sql_query += """join "Group_Users" on "Users".id = "Group_Users".uid
+        where "Group_Users".gid = %(id)s
         """ % {'id': entity_id}
     elif entity_type == "Task":
         sql_query += """join "Task_Resources" on "Users".id = "Task_Resources".resource_id
@@ -446,8 +446,8 @@ def get_users(request):
             uid,
             array_agg(did) as dep_ids,
             array_agg(name) as dep_names
-        from "User_Departments"
-        join "SimpleEntities" on "User_Departments".did = "SimpleEntities".id
+        from "Department_Users"
+        join "SimpleEntities" on "Department_Users".did = "SimpleEntities".id
         group by uid
     ) as user_departments on user_departments.uid = "Users".id
     left outer join (
@@ -455,8 +455,8 @@ def get_users(request):
             uid,
             array_agg(gid) as group_ids,
             array_agg(name) as group_names
-        from "User_Groups"
-        join "SimpleEntities" on "User_Groups".gid = "SimpleEntities".id
+        from "Group_Users"
+        join "SimpleEntities" on "Group_Users".gid = "SimpleEntities".id
         group by uid
     ) as user_groups on user_groups.uid = "Users".id
     left outer join (
@@ -479,12 +479,12 @@ def get_users(request):
         where "Project_Users".project_id = %(id)s
         """ % {'id': entity_id}
     elif entity_type == "Department":
-        sql_query += """join "User_Departments" on "Users".id = "User_Departments".uid
-        where "User_Departments".did = %(id)s
+        sql_query += """join "Department_Users" on "Users".id = "Department_Users".uid
+        where "Department_Users".did = %(id)s
         """ % {'id': entity_id}
     elif entity_type == "Group":
-        sql_query += """join "User_Groups" on "Users".id = "User_Groups".uid
-        where "User_Groups".gid = %(id)s
+        sql_query += """join "Group_Users" on "Users".id = "Group_Users".uid
+        where "Group_Users".gid = %(id)s
         """ % {'id': entity_id}
     elif entity_type == "Task":
         sql_query += """join "Task_Resources" on "Users".id = "Task_Resources".resource_id
@@ -559,8 +559,8 @@ def get_users_simple(request):
             uid,
             array_agg(did) as dep_ids,
             array_agg(name) as dep_names
-        from "User_Departments"
-        join "SimpleEntities" on "User_Departments".did = "SimpleEntities".id
+        from "Department_Users"
+        join "SimpleEntities" on "Department_Users".did = "SimpleEntities".id
         group by uid
     ) as user_departments on user_departments.uid = "Users".id
     left outer join (
@@ -568,8 +568,8 @@ def get_users_simple(request):
             uid,
             array_agg(gid) as group_ids,
             array_agg(name) as group_names
-        from "User_Groups"
-        join "SimpleEntities" on "User_Groups".gid = "SimpleEntities".id
+        from "Group_Users"
+        join "SimpleEntities" on "Group_Users".gid = "SimpleEntities".id
         group by uid
     ) as user_groups on user_groups.uid = "Users".id
     left outer join (
@@ -860,7 +860,7 @@ def get_resources(request):
                 "SimpleEntities".entity_type,
                 count(*) as resource_count
             from "SimpleEntities"
-            join "User_Departments" on "User_Departments".did = "SimpleEntities".id
+            join "Department_Users" on "Department_Users".did = "SimpleEntities".id
             where "SimpleEntities".entity_type = '%s'
             """ % entity_type
         elif entity_type == 'User':
@@ -879,7 +879,7 @@ def get_resources(request):
                 "SimpleEntities".entity_type,
                 count(*) as resource_count
             from "SimpleEntities"
-            join "User_Departments" on "User_Departments".did = "SimpleEntities".id
+            join "Department_Users" on "Department_Users".did = "SimpleEntities".id
             """
 
         if resource_id and entity_type not in ["Studio", "Project"]:
@@ -930,11 +930,11 @@ def get_resources(request):
             has_children = False
         elif entity_type in ["Department", "Studio"]:
             time_log_query += """
-            join "User_Departments" on "User_Departments".uid = "TimeLogs".resource_id
+            join "Department_Users" on "Department_Users".uid = "TimeLogs".resource_id
             where did = %(id)s"""
 
             tasks_query += """join "Task_Resources" on "Tasks".id = "Task_Resources".task_id
-            join "User_Departments" on "Task_Resources".resource_id = "User_Departments".uid
+            join "Department_Users" on "Task_Resources".resource_id = "Department_Users".uid
             join "SimpleEntities" as "Task_SimpleEntities" on "Tasks".id = "Task_SimpleEntities".id
             where not (
                 exists (
@@ -1003,8 +1003,8 @@ def get_resources(request):
             1 as resource_count
         from "Users"
         join "SimpleEntities" on "SimpleEntities".id = "Users".id
-        join "User_Departments" on "User_Departments".uid = "Users".id
-        join "Departments" on "User_Departments".did = "Departments".id
+        join "Department_Users" on "Department_Users".uid = "Users".id
+        join "Departments" on "Department_Users".did = "Departments".id
         where "Departments".id = %(id)s
         order by name
         """ % {'id': parent_id}

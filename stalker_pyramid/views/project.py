@@ -259,6 +259,32 @@ def get_project_lead(request):
     return lead_data
 
 
+
+@view_config(
+    route_name='get_project_tasks_cost',
+    renderer='json'
+)
+def get_project_tasks_cost(request):
+    """returns the project lead as a json data
+    """
+    project_id = request.matchdict.get('id', -1)
+    sql_query = """"""""
+    result = db.DBSession.connection().execute(text(sql_query))
+    return_data = [
+        {
+            'id': r[0],
+            'type': r[1],
+            'amount': r[2],
+            'unit': r[3],
+            'cost': r[4],
+            'note': r[5]
+        }
+        for r in result.fetchall()
+    ]
+
+    return return_data
+
+
 @view_config(
     route_name='get_project_tasks_today',
     renderer='json'

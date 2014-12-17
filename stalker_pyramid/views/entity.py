@@ -311,6 +311,14 @@ logger.setLevel(logging.DEBUG)
     renderer='templates/daily/list/list_project_dailies.jinja2'
 )
 @view_config(
+    route_name='view_budget',
+    renderer='templates/budget/view/view_budget.jinja2'
+)
+@view_config(
+    route_name='list_project_budgets',
+    renderer='templates/budget/list/list_project_budgets.jinja2'
+)
+@view_config(
     route_name='test_page',
     renderer='templates/test_page.jinja2'
 )

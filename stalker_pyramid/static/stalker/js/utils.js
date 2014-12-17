@@ -167,6 +167,8 @@ function get_icon(entity_type) {
         return 'icon-eye-open';
     case 'report':
         return 'icon-bar-chart';
+    case 'budget':
+        return 'icon-credit-card';
     default:
         return 'icon-key';
     }

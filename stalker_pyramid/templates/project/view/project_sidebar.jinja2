@@ -102,6 +102,14 @@
             ''
         );
 
+        menu_of(
+            'Budgets',
+            "{%- if request.current_route_path() == request.route_path('list_project_budgets', id=project.id) -%}'active',{%- else -%},{%- endif -%}",
+            '{{ request.route_url('list_project_budgets', id=project.id) }}',
+            get_icon('budget'),
+            '/projects/{{ project.id }}/budgets/count/'
+        );
+
     });
 </script>
 
