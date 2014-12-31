@@ -235,7 +235,7 @@ sourceimages/3dPaintTextures"""
 
         :return:
         """
-        path_regex = r'\$REPO[\w\d\/_\.]+'
+        path_regex = r'\$REPO[\w\d\/_\.@]+'
         # so we have all the data
         # extract references
         ref_paths = re.findall(path_regex, data)
@@ -251,7 +251,7 @@ sourceimages/3dPaintTextures"""
 
         :return:
         """
-        path_regex = r'scenes/refs/[\w\d\/_\.]+'
+        path_regex = r'scenes/refs/[\w\d\/_\.@]+'
         # so we have all the data
         # extract references
         ref_paths = re.findall(path_regex, data)
