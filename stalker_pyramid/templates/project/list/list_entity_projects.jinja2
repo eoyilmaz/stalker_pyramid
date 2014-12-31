@@ -38,7 +38,7 @@
 {#    {% include 'page_header.jinja2' %}#}
 
 
-    {% set add_button_address=request.route_path('project_dialog', id=-1, mode='create') %}
+    {% set add_button_address=request.route_path('create_project_dialog', id=-1) %}
     {% set address=request.route_path('get_entity_projects', id=entity.id) %}
     {% set list_item_type='Project' %}
     {% include 'components/data_table.jinja2' %}

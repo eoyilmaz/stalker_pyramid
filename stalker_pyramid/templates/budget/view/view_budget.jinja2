@@ -38,12 +38,52 @@
     {% include 'page_header.jinja2' %}
 
     <div class="row-fluid">
-        <div class="span12">
-            <table id="grid-table"></table>
-            <div id="grid-pager"></div>
-            <script type="text/javascript">
-                var $path_base = "/";//this will be used in gritter alerts containing images
-            </script>
+        <div class="span7">
+            <div class="widget-box">
+                 <div class="widget-header widget-header-small header-color-green }}">
+                        <h5 id="items_header" class="smaller"></h5>
+                        <div class="widget-toolbar">
+    {#                  {% if has_permission('Create_'+list_item_type) and  add_button_address %}#}
+                            <a data-target="#dialog_template"
+                               data-toggle="modal"
+                               data-keyboard=false
+                               href="{{ request.route_url("create_budgetentry_dialog", id=-1, _query={'budget_id': entity.id })}}"
+                               class="white">
+                                <i class="icon-plus"></i>
+                                Add New Entry
+                            </a>
+
+                        </div>
+                        <div class="widget-toolbar">
+    {#                  {% if has_permission('Create_'+list_item_type) and  add_button_address %}#}
+                            <a id='add_project_entries_to_budget_button' href="#"
+                               class="white">
+                                <i class="icon-plus"></i>
+                                Add Project Defaults
+                            </a>
+
+                        </div>
+                </div>
+                <div class="widget-body">
+                    <div class="widget-main no-padding">
+    {#                    <div id="loading_spinner" class="well well-sm">#}
+    {##}
+    {#                        <div class="inline middle blue bigger-110"><i#}
+    {#                                class="icon-spinner icon-spin orange bigger-125"></i>#}
+    {#                            Loading#}
+    {#                            content...#}
+    {#                        </div>#}
+    {#                    </div>#}
+
+                        <table id="grid-table"></table>
+                        <div id="grid-pager"></div>
+                        <script type="text/javascript">
+                            var $path_base = "/";//this will be used in gritter alerts containing images
+                        </script>
+
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 {% endblock page_content %}
@@ -55,306 +95,321 @@
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-datepicker.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jqGrid/i18n/grid.locale-en.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jqGrid/jquery.jqGrid.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/accounting.min.js") }}'></script>
     <script type="text/javascript">
         $(document).ready(function () {
 
-            $.getJSON('/projects/{{ entity.project.id }}/tasks/cost/').then(function (data) {
+            $('#add_project_entries_to_budget_button').on('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
 
-            var grid_data = data;
-{#            [#}
-{#                {id:"1",type:"Model",amount:"1", unit:"hour", cost:"3000",note:"note"},#}
-{#                {id:"1",type:"Model",amount:"1", unit:"hour", cost:"3000",note:"note"},#}
-{#                {id:"1",type:"Model",amount:"1", unit:"hour", cost:"3000",note:"note"},#}
-{#                {id:"1",type:"Model",amount:"1", unit:"hour", cost:"3000",note:"note"},#}
-{#                {id:"1",type:"Model",amount:"1", unit:"hour", cost:"3000",note:"note"}#}
-{##}
-{##}
-{#            ];#}
+                $.post('{{ request.route_url("add_project_entries_to_budget", id=entity.project.id, bid=entity.id)}}').done(function (response_text) {
+                    window.location.reload();
+                }).fail(function (jqXHR) {
+                    bootbox.alert(jqXHR.responseText);
+                });
+            });
 
-            jQuery(function($) {
-                var grid_selector = "#grid-table";
-                var pager_selector = "#grid-pager";
+            $.getJSON('/budgets/{{ entity.id }}/entries/').then(function (entry_data) {
 
-                jQuery(grid_selector).jqGrid({
-                    //direction: "rtl",
-                    data: grid_data,
-                    datatype: "local",
-                    height: grid_data.length*40,
-                    colNames:[' ', 'Type', 'Amount', 'Unit', 'Cost','Notes'],
-                    colModel:[
-                        {name:'myac',index:'', width:80, fixed:true, sortable:false, resize:false,
-                            formatter:'actions',
-                            formatoptions:{
-                                keys:true,
-                                delOptions:{recreateForm: true, beforeShowForm:beforeDeleteCallback}
-{#                                editformbutton:true, editOptions:{recreateForm: true, beforeShowForm:beforeEditCallback}#}
+                    var grid_data = entry_data;
+                    var total_cost = 0;
+                    var entry_cost = 0;
+                    for(var j=0; j<grid_data.length; j++ ){
+                        entry_cost = grid_data[j].amount*grid_data[j].unit_price;
+                        total_cost += parseInt(entry_cost);
+                        grid_data[j].cost = accounting.formatMoney(entry_cost, { symbol: "TL",  format: "%v %s" });
+                        grid_data[j].unit_price = accounting.formatMoney(grid_data[j].unit_price, { symbol: "TL",  format: "%v %s" });
+                    }
+
+                    grid_data.push({id:"1",type:"Total",amount:"", unit:"", cost: accounting.formatMoney(total_cost,{ symbol: "TL",  format: "%v %s" }),note:""})
+
+                    jQuery(function($) {
+                    var grid_selector = "#grid-table";
+                    var pager_selector = "#grid-pager";
+
+                    jQuery(grid_selector).jqGrid({
+                        //direction: "rtl",
+                        data: grid_data,
+                        datatype: "local",
+                        height: grid_data.length*39,
+                        colNames:[' ', 'Type', 'Amount', 'Unit', 'Unit Price', 'Cost','Notes'],
+                        colModel:[
+                            {name:'myac',index:'', width:80, fixed:true, sortable:false, resize:false,
+                                formatter:'actions',
+                                formatoptions:{
+                                    keys:false,
+                                    delOptions:{recreateForm: true, beforeShowForm:beforeDeleteCallback}
+    {#                                editformbutton:true, editOptions:{recreateForm: true, beforeShowForm:beforeEditCallback}#}
+                                }
+                            },
+                            {name:'type',index:'type', width:220, editable: true, edittype:"select",editoptions:{value:"FE:Model;IN:Animation;TN:Comp;AR:Lighting"}},
+                            {name:'amount',index:'amount',  width:100,editable: true,editoptions:{size:"20",maxlength:"30"}},
+                            {name:'unit',index:'unit', width:100, editable: true, edittype:"select",editoptions:{value:"HR:Hour;FL:Film;"}},
+                            {name:'unit_price',index:'unit_price', width:150, editable: true, edittype:"select",editoptions:{size:"20",maxlength:"30"}},
+                            {name:'cost',index:'cost', width:150, editable: true, edittype:"select",editoptions:{size:"20",maxlength:"30"}},
+                            {name:'note',index:'note', width:250, sortable:false, editable: true, edittype:"textarea", editoptions:{rows:"2",cols:"10"}}
+                        ],
+                        viewrecords : true,
+                        rowNum:grid_data.length,
+                        rowList:[grid_data.length, 10, 10],
+                        pager : pager_selector,
+                        altRows: true,
+    {#                    toppager: true,#}
+                        multiselect: true,
+                        multikey: "ctrlKey",
+                        multiboxonly: true,
+
+                        loadComplete : function() {
+
+                            var table = this;
+                            setTimeout(function(){
+                                styleCheckbox(table);
+                                updateActionIcons(table);
+                                updatePagerIcons(table);
+                                enableTooltips(table);
+
+                                $('#lui_grid-table').hide();
+                            }, 0);
+                        },
+
+                        editurl: $path_base+"/dummy.html",//nothing is saved
+                        caption: ""
+
+                    });
+
+                    //enable search/filter toolbar
+                    //jQuery(grid_selector).jqGrid('filterToolbar',{defaultSearch:true,stringResult:true})
+
+                    //switch element when editing inline
+                    function aceSwitch( cellvalue, options, cell ) {
+                        setTimeout(function(){
+                            $(cell) .find('input[type=checkbox]')
+                                    .wrap('<label class="inline" />')
+                                .addClass('ace ace-switch ace-switch-5')
+                                .after('<span class="lbl"></span>');
+                        }, 0);
+                    }
+                    //enable datepicker
+                    function pickDate( cellvalue, options, cell ) {
+                        setTimeout(function(){
+                            $(cell) .find('input[type=text]')
+                                    .datepicker({format:'yyyy-mm-dd' , autoclose:true});
+                        }, 0);
+                    }
+
+
+
+                    //navButtons
+                    jQuery(grid_selector).jqGrid('navGrid',pager_selector,
+                        { 	//navbar options
+                            edit: true,
+                            editicon : 'icon-pencil blue',
+                            add: true,
+                            addicon : 'icon-plus-sign purple',
+                            del: true,
+                            delicon : 'icon-trash red',
+                            search: true,
+                            searchicon : 'icon-search orange',
+                            refresh: true,
+                            refreshicon : 'icon-refresh green',
+                            view: true,
+                            viewicon : 'icon-zoom-in grey'
+                        },
+                        {
+                            //edit record form
+                            closeAfterEdit: true,
+                            recreateForm: true,
+                            beforeShowForm : function(e) {
+                                var form = $(e[0]);
+                                form.closest('.ui-jqdialog').find('.ui-jqdialog-titlebar').wrapInner('<div class="widget-header" />')
+                                style_edit_form(form);
                             }
                         },
-                        {name:'type',index:'type', width:150, editable: true, edittype:"select",editoptions:{value:"FE:Model;IN:Animation;TN:Comp;AR:Lighting"}},
-                        {name:'amount',index:'amount',  width:150,editable: true,editoptions:{size:"20",maxlength:"30"}},
-                        {name:'unit',index:'unit', width:150, editable: true, edittype:"select",editoptions:{value:"HR:Hour;FL:Film;"}},
-                        {name:'cost',index:'cost', width:150, editable: true, edittype:"select",editoptions:{size:"20",maxlength:"30"}},
-                        {name:'note',index:'note', width:150, sortable:false, editable: true,edittype:"textarea", editoptions:{rows:"2",cols:"10"}}
-                    ],
+                        {
+                            //new record form
+                            closeAfterAdd: true,
+                            recreateForm: true,
+                            viewPagerButtons: false,
+                            beforeShowForm : function(e) {
+                                var form = $(e[0]);
+                                form.closest('.ui-jqdialog').find('.ui-jqdialog-titlebar').wrapInner('<div class="widget-header" />')
+                                style_edit_form(form);
+                            }
+                        },
+                        {
+                            //delete record form
+                            recreateForm: true,
+                            beforeShowForm : function(e) {
+                                var form = $(e[0]);
+                                if(form.data('styled')) return false;
 
-                    viewrecords : true,
-                    rowNum:grid_data.length,
-                    rowList:[grid_data.length,10,10],
-                    pager : pager_selector,
-                    altRows: true,
-                    //toppager: true,
-                    multiselect: true,
-                    //multikey: "ctrlKey",
-                    multiboxonly: true,
+                                form.closest('.ui-jqdialog').find('.ui-jqdialog-titlebar').wrapInner('<div class="widget-header" />')
+                                style_delete_form(form);
 
-                    loadComplete : function() {
+                                form.data('styled', true);
+                            },
+                            onClick : function(e) {
+                                console.log('onClick')
+                                alert(1);
+                            }
+                        },
+                        {
+                            //search form
+                            recreateForm: true,
+                            afterShowSearch: function(e){
+                                var form = $(e[0]);
+                                form.closest('.ui-jqdialog').find('.ui-jqdialog-title').wrap('<div class="widget-header" />')
+                                style_search_form(form);
+                            },
+                            afterRedraw: function(){
+                                style_search_filters($(this));
+                            }
+                            ,
+                            multipleSearch: true
+                            /**
+                            multipleGroup:true,
+                            showQuery: true
+                            */
+                        },
+                        {
+                            //view record form
+                            recreateForm: true,
+                            beforeShowForm: function(e){
+                                var form = $(e[0]);
+                                form.closest('.ui-jqdialog').find('.ui-jqdialog-title').wrap('<div class="widget-header" />')
+                            }
+                        }
+                    )
 
-                        var table = this;
-                        setTimeout(function(){
-                            styleCheckbox(table);
-                            updateActionIcons(table);
-                            updatePagerIcons(table);
-                            enableTooltips(table);
 
-                            $('#lui_grid-table').hide();
-                        }, 0);
-                    },
 
-                    editurl: $path_base+"/dummy.html",//nothing is saved
-                    caption: "jqGrid with inline editing"
+                    function style_edit_form(form) {
+                        //enable datepicker on "sdate" field and switches for "unit" field
+                        form.find('input[name=sdate]').datepicker({format:'yyyy-mm-dd' , autoclose:true})
+                            .end().find('input[name=unit]')
+                                  .addClass('ace ace-switch ace-switch-5').wrap('<label class="inline" />').after('<span class="lbl"></span>');
+
+                        //update buttons classes
+                        var buttons = form.next().find('.EditButton .fm-button');
+                        buttons.addClass('btn btn-small').find('[class*="-icon"]').remove();//ui-icon, s-icon
+                        buttons.eq(0).addClass('btn-primary').prepend('<i class="icon-ok"></i>');
+                        buttons.eq(1).prepend('<i class="icon-remove"></i>')
+
+                        buttons = form.next().find('.navButton a');
+                        buttons.find('.ui-icon').remove();
+                        buttons.eq(0).append('<i class="icon-chevron-left"></i>');
+                        buttons.eq(1).append('<i class="icon-chevron-right"></i>');
+                    }
+
+                    function style_delete_form(form) {
+                        var buttons = form.next().find('.EditButton .fm-button');
+                        buttons.addClass('btn btn-small').find('[class*="-icon"]').remove();//ui-icon, s-icon
+                        buttons.eq(0).addClass('btn-danger').prepend('<i class="icon-trash"></i>');
+                        buttons.eq(1).prepend('<i class="icon-remove"></i>')
+                    }
+
+                    function style_search_filters(form) {
+                        form.find('.delete-rule').val('X');
+                        form.find('.add-rule').addClass('btn btn-small btn-primary');
+                        form.find('.add-group').addClass('btn btn-small btn-success');
+                        form.find('.delete-group').addClass('btn btn-small btn-danger');
+                    }
+                    function style_search_form(form) {
+                        var dialog = form.closest('.ui-jqdialog');
+                        var buttons = dialog.find('.EditTable')
+                        buttons.find('.EditButton a[id*="_reset"]').addClass('btn btn-small btn-info').find('.ui-icon').attr('class', 'icon-retweet');
+                        buttons.find('.EditButton a[id*="_query"]').addClass('btn btn-small btn-inverse').find('.ui-icon').attr('class', 'icon-comment-alt');
+                        buttons.find('.EditButton a[id*="_search"]').addClass('btn btn-small btn-purple').find('.ui-icon').attr('class', 'icon-search');
+                    }
+
+                    function beforeDeleteCallback(e) {
+                        var form = $(e[0]);
+                        if(form.data('styled')) return false;
+
+                        form.closest('.ui-jqdialog').find('.ui-jqdialog-titlebar').wrapInner('<div class="widget-header" />')
+                        style_delete_form(form);
+
+                        form.data('styled', true);
+                    }
+
+                    function beforeEditCallback(e) {
+                        var form = $(e[0]);
+                        form.closest('.ui-jqdialog').find('.ui-jqdialog-titlebar').wrapInner('<div class="widget-header" />')
+                        style_edit_form(form);
+                    }
+
+
+
+                    //it causes some flicker when reloading or navigating grid
+                    //it may be possible to have some custom formatter to do this as the grid is being created to prevent this
+                    //or go back to default browser checkbox styles for the grid
+                    function styleCheckbox(table) {
+                    /**
+                        $(table).find('input:checkbox').addClass('ace')
+                        .wrap('<label />')
+                        .after('<span class="lbl align-top" />')
+
+
+                        $('.ui-jqgrid-labels th[id*="_cb"]:first-child')
+                        .find('input.cbox[type=checkbox]').addClass('ace')
+                        .wrap('<label />').after('<span class="lbl align-top" />');
+                    */
+                    }
+
+
+                    //unlike navButtons icons, action icons in rows seem to be hard-coded
+                    //you can change them like this in here if you want
+                    function updateActionIcons(table) {
+                        console.log('updateActionIcons');
+                        /**
+                        var replacement =
+                        {
+                            'ui-icon-pencil' : 'icon-pencil blue',
+                            'ui-icon-trash' : 'icon-trash red',
+                            'ui-icon-disk' : 'icon-ok green',
+                            'ui-icon-cancel' : 'icon-remove red'
+                        };
+                        $(table).find('.ui-pg-div span.ui-icon').each(function(){
+                            var icon = $(this);
+                            var $class = $.trim(icon.attr('class').replace('ui-icon', ''));
+                            if($class in replacement) icon.attr('class', 'ui-icon '+replacement[$class]);
+                        })
+                        */
+                    }
+
+                    //replace icons with FontAwesome icons like above
+                    function updatePagerIcons(table) {
+
+                        var replacement =
+                        {
+                            'ui-icon-seek-first' : 'icon-double-angle-left bigger-140',
+                            'ui-icon-seek-prev' : 'icon-angle-left bigger-140',
+                            'ui-icon-seek-next' : 'icon-angle-right bigger-140',
+                            'ui-icon-seek-end' : 'icon-double-angle-right bigger-140'
+                        };
+                        $('.ui-pg-table:not(.navtable) > tbody > tr > .ui-pg-button > .ui-icon').each(function(){
+
+                            var icon = $(this);
+                            var $class = $.trim(icon.attr('class').replace('ui-icon', ''));
+
+                            if($class in replacement) icon.attr('class', 'ui-icon '+replacement[$class]);
+                        })
+                    }
+
+                    function enableTooltips(table) {
+
+                        $('.navtable .ui-pg-button').tooltip({container:'body'});
+                        $(table).find('.ui-pg-div').tooltip({container:'body'});
+
+                    }
+
+                    //var selr = jQuery(grid_selector).jqGrid('getGridParam','selrow');
+
 
                 });
-
-                //enable search/filter toolbar
-                //jQuery(grid_selector).jqGrid('filterToolbar',{defaultSearch:true,stringResult:true})
-
-                //switch element when editing inline
-                function aceSwitch( cellvalue, options, cell ) {
-                    setTimeout(function(){
-                        $(cell) .find('input[type=checkbox]')
-                                .wrap('<label class="inline" />')
-                            .addClass('ace ace-switch ace-switch-5')
-                            .after('<span class="lbl"></span>');
-                    }, 0);
-                }
-                //enable datepicker
-                function pickDate( cellvalue, options, cell ) {
-                    setTimeout(function(){
-                        $(cell) .find('input[type=text]')
-                                .datepicker({format:'yyyy-mm-dd' , autoclose:true});
-                    }, 0);
-                }
-
-                //navButtons
-                jQuery(grid_selector).jqGrid('navGrid',pager_selector,
-                    { 	//navbar options
-                        edit: true,
-                        editicon : 'icon-pencil blue',
-                        add: true,
-                        addicon : 'icon-plus-sign purple',
-                        del: true,
-                        delicon : 'icon-trash red',
-                        search: true,
-                        searchicon : 'icon-search orange',
-                        refresh: true,
-                        refreshicon : 'icon-refresh green',
-                        view: true,
-                        viewicon : 'icon-zoom-in grey'
-                    },
-                    {
-                        //edit record form
-                        closeAfterEdit: true,
-                        recreateForm: true,
-                        beforeShowForm : function(e) {
-                            var form = $(e[0]);
-                            form.closest('.ui-jqdialog').find('.ui-jqdialog-titlebar').wrapInner('<div class="widget-header" />')
-                            style_edit_form(form);
-                        }
-                    },
-                    {
-                        //new record form
-                        closeAfterAdd: true,
-                        recreateForm: true,
-                        viewPagerButtons: false,
-                        beforeShowForm : function(e) {
-                            var form = $(e[0]);
-                            form.closest('.ui-jqdialog').find('.ui-jqdialog-titlebar').wrapInner('<div class="widget-header" />')
-                            style_edit_form(form);
-                        }
-                    },
-                    {
-                        //delete record form
-                        recreateForm: true,
-                        beforeShowForm : function(e) {
-                            var form = $(e[0]);
-                            if(form.data('styled')) return false;
-
-                            form.closest('.ui-jqdialog').find('.ui-jqdialog-titlebar').wrapInner('<div class="widget-header" />')
-                            style_delete_form(form);
-
-                            form.data('styled', true);
-                        },
-                        onClick : function(e) {
-                            console.log('onClick')
-                            alert(1);
-                        }
-                    },
-                    {
-                        //search form
-                        recreateForm: true,
-                        afterShowSearch: function(e){
-                            var form = $(e[0]);
-                            form.closest('.ui-jqdialog').find('.ui-jqdialog-title').wrap('<div class="widget-header" />')
-                            style_search_form(form);
-                        },
-                        afterRedraw: function(){
-                            style_search_filters($(this));
-                        }
-                        ,
-                        multipleSearch: true
-                        /**
-                        multipleGroup:true,
-                        showQuery: true
-                        */
-                    },
-                    {
-                        //view record form
-                        recreateForm: true,
-                        beforeShowForm: function(e){
-                            var form = $(e[0]);
-                            form.closest('.ui-jqdialog').find('.ui-jqdialog-title').wrap('<div class="widget-header" />')
-                        }
-                    }
-                )
-
-
-
-                function style_edit_form(form) {
-                    //enable datepicker on "sdate" field and switches for "unit" field
-                    form.find('input[name=sdate]').datepicker({format:'yyyy-mm-dd' , autoclose:true})
-                        .end().find('input[name=unit]')
-                              .addClass('ace ace-switch ace-switch-5').wrap('<label class="inline" />').after('<span class="lbl"></span>');
-
-                    //update buttons classes
-                    var buttons = form.next().find('.EditButton .fm-button');
-                    buttons.addClass('btn btn-small').find('[class*="-icon"]').remove();//ui-icon, s-icon
-                    buttons.eq(0).addClass('btn-primary').prepend('<i class="icon-ok"></i>');
-                    buttons.eq(1).prepend('<i class="icon-remove"></i>')
-
-                    buttons = form.next().find('.navButton a');
-                    buttons.find('.ui-icon').remove();
-                    buttons.eq(0).append('<i class="icon-chevron-left"></i>');
-                    buttons.eq(1).append('<i class="icon-chevron-right"></i>');
-                }
-
-                function style_delete_form(form) {
-                    var buttons = form.next().find('.EditButton .fm-button');
-                    buttons.addClass('btn btn-small').find('[class*="-icon"]').remove();//ui-icon, s-icon
-                    buttons.eq(0).addClass('btn-danger').prepend('<i class="icon-trash"></i>');
-                    buttons.eq(1).prepend('<i class="icon-remove"></i>')
-                }
-
-                function style_search_filters(form) {
-                    form.find('.delete-rule').val('X');
-                    form.find('.add-rule').addClass('btn btn-small btn-primary');
-                    form.find('.add-group').addClass('btn btn-small btn-success');
-                    form.find('.delete-group').addClass('btn btn-small btn-danger');
-                }
-                function style_search_form(form) {
-                    var dialog = form.closest('.ui-jqdialog');
-                    var buttons = dialog.find('.EditTable')
-                    buttons.find('.EditButton a[id*="_reset"]').addClass('btn btn-small btn-info').find('.ui-icon').attr('class', 'icon-retweet');
-                    buttons.find('.EditButton a[id*="_query"]').addClass('btn btn-small btn-inverse').find('.ui-icon').attr('class', 'icon-comment-alt');
-                    buttons.find('.EditButton a[id*="_search"]').addClass('btn btn-small btn-purple').find('.ui-icon').attr('class', 'icon-search');
-                }
-
-                function beforeDeleteCallback(e) {
-                    var form = $(e[0]);
-                    if(form.data('styled')) return false;
-
-                    form.closest('.ui-jqdialog').find('.ui-jqdialog-titlebar').wrapInner('<div class="widget-header" />')
-                    style_delete_form(form);
-
-                    form.data('styled', true);
-                }
-
-                function beforeEditCallback(e) {
-                    var form = $(e[0]);
-                    form.closest('.ui-jqdialog').find('.ui-jqdialog-titlebar').wrapInner('<div class="widget-header" />')
-                    style_edit_form(form);
-                }
-
-
-
-                //it causes some flicker when reloading or navigating grid
-                //it may be possible to have some custom formatter to do this as the grid is being created to prevent this
-                //or go back to default browser checkbox styles for the grid
-                function styleCheckbox(table) {
-                /**
-                    $(table).find('input:checkbox').addClass('ace')
-                    .wrap('<label />')
-                    .after('<span class="lbl align-top" />')
-
-
-                    $('.ui-jqgrid-labels th[id*="_cb"]:first-child')
-                    .find('input.cbox[type=checkbox]').addClass('ace')
-                    .wrap('<label />').after('<span class="lbl align-top" />');
-                */
-                }
-
-
-                //unlike navButtons icons, action icons in rows seem to be hard-coded
-                //you can change them like this in here if you want
-                function updateActionIcons(table) {
-                    console.log('updateActionIcons');
-                    /**
-                    var replacement =
-                    {
-                        'ui-icon-pencil' : 'icon-pencil blue',
-                        'ui-icon-trash' : 'icon-trash red',
-                        'ui-icon-disk' : 'icon-ok green',
-                        'ui-icon-cancel' : 'icon-remove red'
-                    };
-                    $(table).find('.ui-pg-div span.ui-icon').each(function(){
-                        var icon = $(this);
-                        var $class = $.trim(icon.attr('class').replace('ui-icon', ''));
-                        if($class in replacement) icon.attr('class', 'ui-icon '+replacement[$class]);
-                    })
-                    */
-                }
-
-                //replace icons with FontAwesome icons like above
-                function updatePagerIcons(table) {
-
-                    var replacement =
-                    {
-                        'ui-icon-seek-first' : 'icon-double-angle-left bigger-140',
-                        'ui-icon-seek-prev' : 'icon-angle-left bigger-140',
-                        'ui-icon-seek-next' : 'icon-angle-right bigger-140',
-                        'ui-icon-seek-end' : 'icon-double-angle-right bigger-140'
-                    };
-                    $('.ui-pg-table:not(.navtable) > tbody > tr > .ui-pg-button > .ui-icon').each(function(){
-
-                        var icon = $(this);
-                        var $class = $.trim(icon.attr('class').replace('ui-icon', ''));
-
-                        if($class in replacement) icon.attr('class', 'ui-icon '+replacement[$class]);
-                    })
-                }
-
-                function enableTooltips(table) {
-
-                    $('.navtable .ui-pg-button').tooltip({container:'body'});
-                    $(table).find('.ui-pg-div').tooltip({container:'body'});
-
-                }
-
-                //var selr = jQuery(grid_selector).jqGrid('getGridParam','selrow');
-
-
-            });
-           });
-        })
+               });
+        });
     </script>
 {% endblock extrascripts %}
 

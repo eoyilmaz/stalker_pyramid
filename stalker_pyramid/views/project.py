@@ -23,17 +23,22 @@ import datetime
 import logging
 
 from pyramid.httpexceptions import HTTPOk, HTTPServerError, HTTPFound
+from pyramid.response import Response
 from pyramid.view import view_config
 
 from stalker.db import DBSession
 from stalker import (User, ImageFormat, Repository, Structure, Status,
-                     StatusList, Project, Entity, Studio, defaults)
+                     StatusList, Project, Entity, Studio, defaults, Client,
+                     Budget, BudgetEntry)
+from stalker.models import local_to_utc
 from stalker.models.project import ProjectUser
+import transaction
 
 from stalker_pyramid.views import (get_date, get_date_range,
                                    get_logged_in_user,
                                    milliseconds_since_epoch, PermissionChecker)
 from stalker_pyramid.views.role import query_role
+from stalker_pyramid.views.type import query_type
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -53,23 +58,37 @@ def create_project(request):
     name = request.params.get('name')
     code = request.params.get('code')
     fps = int(request.params.get('fps'))
+    # get the dates
+    start, end = get_date_range(request, 'start_and_end_dates')
 
     imf_id = request.params.get('image_format_id', -1)
     imf = ImageFormat.query.filter_by(id=imf_id).first()
+    if not imf:
+        transaction.abort()
+        return Response('Can not find a ImageFormat with code: %s' % imf_id, 500)
 
     repo_id = request.params.get('repository_id', -1)
     repo = Repository.query.filter_by(id=repo_id).first()
+    if not repo:
+        transaction.abort()
+        return Response('Can not find a Repository with code: %s' % repo_id, 500)
 
     structure_id = request.params.get('structure_id', -1)
     structure = Structure.query.filter_by(id=structure_id).first()
-
-    lead_id = request.params.get('lead_id', -1)
-    lead = User.query.filter_by(id=lead_id).first()
+    if not structure:
+        transaction.abort()
+        return Response('Can not find a structure with code: %s' % structure_id, 500)
 
     status = Status.query.filter_by(name='New').first()
+    if not status:
+        transaction.abort()
+        return Response('Can not find a status with code: %s' % status.id, 500)
 
-    # get the dates
-    start, end = get_date_range(request, 'start_and_end_dates')
+    client_id = request.params.get('client_id', -1)
+    client = Client.query.filter_by(id=client_id).first()
+    if not client:
+        transaction.abort()
+        return Response('Can not find a client with id: %s' % client_id, 500)
 
     logger.debug('create_project          :')
 
@@ -81,12 +100,11 @@ def create_project(request):
     logger.debug('repo          : %s' % repo)
     logger.debug('structure_id  : %s' % structure_id)
     logger.debug('structure     : %s' % structure)
-    logger.debug('lead_id       : %s' % lead_id)
-    logger.debug('lead          : %s' % lead)
     logger.debug('start         : %s' % start)
     logger.debug('end           : %s' % end)
+    logger.debug('client_id           : %s' % client_id)
 
-    if name and code and imf and repo and structure and lead_id:
+    if name and code and fps and start and end:
         # status is always New
         # lets create the project
 
@@ -103,11 +121,11 @@ def create_project(request):
                 created_by=logged_in_user,
                 fps=fps,
                 structure=structure,
-                lead=lead,
                 status_list=status_list,
                 status=status,
                 start=start,
-                end=end
+                end=end,
+                client=client
             )
 
             DBSession.add(new_project)
@@ -121,11 +139,12 @@ def create_project(request):
             HTTPFound(location=came_from)
 
     else:
-        logger.debug('there are missing parameters')
-        HTTPServerError()
+        transaction.abort()
+        return Response('There are missing parameters', 500)
 
-    return HTTPFound(
-        location=came_from
+    return Response(
+        'success:Project with the code <strong>%s</strong> is created.'
+        % code
     )
 
 
@@ -138,35 +157,62 @@ def update_project(request):
     logged_in_user = get_logged_in_user(request)
 
     # parameters
-    project_id = request.params.get('project_id', -1)
+    project_id = request.matchdict.get('id', -1)
     project = Project.query.filter_by(id=project_id).first()
+    if not project:
+        transaction.abort()
+        return Response('Can not find a project with code: %s' % project_id, 500)
 
-    name = request.params.get('name')
-
-    fps = int(request.params.get('fps'))
-
-    imf_id = request.params.get('image_format', -1)
+    imf_id = request.params.get('image_format_id', -1)
     imf = ImageFormat.query.filter_by(id=imf_id).first()
+    if not imf:
+        transaction.abort()
+        return Response('Can not find a ImageFormat with code: %s' % imf_id, 500)
 
     repo_id = request.params.get('repository_id', -1)
     repo = Repository.query.filter_by(id=repo_id).first()
+    if not repo:
+        transaction.abort()
+        return Response('Can not find a Repository with code: %s' % repo_id, 500)
 
     structure_id = request.params.get('structure_id', -1)
     structure = Structure.query.filter_by(id=structure_id).first()
-
-    lead_id = request.params.get('lead_id', -1)
-    lead = User.query.filter_by(id=lead_id).first()
+    if not structure:
+        transaction.abort()
+        return Response('Can not find a structure with code: %s' % structure_id, 500)
 
     status_id = request.params.get('status_id', -1)
     status = Status.query.filter_by(id=status_id).first()
+    if not status:
+        transaction.abort()
+        return Response('Can not find a status with code: %s' % status_id, 500)
 
+    client_id = request.params.get('client_id', -1)
+    client = Client.query.filter_by(id=client_id).first()
+    if not client:
+        transaction.abort()
+        return Response('Can not find a client with id: %s' % client_id, 500)
+
+    name = request.params.get('name')
+    fps = int(request.params.get('fps'))
     # get the dates
-    start = get_date(request, 'start')
-    end = get_date(request, 'end')
+    start, end = get_date_range(request, 'start_and_end_dates')
 
-    if project and name and imf and repo and structure and lead and \
-            status:
+    logger.debug('update_project          :')
 
+    logger.debug('name          : %s' % name)
+    logger.debug('fps           : %s' % fps)
+    logger.debug('imf_id        : %s' % imf_id)
+    logger.debug('repo_id       : %s' % repo_id)
+    logger.debug('repo          : %s' % repo)
+    logger.debug('structure_id  : %s' % structure_id)
+    logger.debug('structure     : %s' % structure)
+    logger.debug('start         : %s' % start)
+    logger.debug('end           : %s' % end)
+    logger.debug('project           : %s' % project)
+    logger.debug('client           : %s' % client)
+
+    if name and fps and start and end:
         project.name = name
         project.image_format = imf
         project.repository = repo
@@ -174,18 +220,23 @@ def update_project(request):
         project.date_updated = datetime.datetime.now()
         project.fps = fps
         project.structure = structure
-        project.lead = lead
         project.status = status
         project.start = start
         project.end = end
-
-        DBSession.add(project)
+        project.client = client
 
     else:
-        logger.debug('there are missing parameters')
-        HTTPServerError()
+        transaction.abort()
+        return Response('There are missing parameters', 500)
 
-    return HTTPOk()
+    request.session.flash(
+        'success:Project with the code <strong>%s</strong> is updated.'
+        % project.code
+    )
+    return Response(
+        'success:Project with the code <strong>%s</strong> is updated.'
+        % project.code
+    )
 
 
 @view_config(
@@ -284,21 +335,108 @@ def get_project_tasks_cost(request):
     """returns the project lead as a json data
     """
     project_id = request.matchdict.get('id', -1)
-    sql_query = """"""""
-    result = db.DBSession.connection().execute(text(sql_query))
+    sql_query = """
+        select
+            "Type_SimpleEntities".id,
+            "Type_SimpleEntities".name,
+            "Users".rate,
+            sum((coalesce("Tasks".schedule_seconds,
+                            "Tasks".schedule_timing * (case "Tasks".schedule_unit
+                                when 'min' then 60
+                                when 'h' then 3600
+                                when 'd' then 32400
+                                when 'w' then 147600
+                                when 'm' then 590400
+                                when 'y' then 7696277
+                                else 0
+                            end)
+                        )/3600))
+
+
+            from "Tasks"
+            join "SimpleEntities" as "Task_SimpleEntities" on "Task_SimpleEntities".id = "Tasks".id
+            join "SimpleEntities" as "Type_SimpleEntities" on "Type_SimpleEntities".id = "Task_SimpleEntities".type_id
+            join "Task_Resources" on "Task_Resources".task_id = "Tasks".id
+            join "Users" on "Task_Resources".resource_id = "Users".id
+
+            where "Tasks".project_id = %(project_id)s and not exists (
+                        select 1 from "Tasks" as "All_Tasks"
+                        where "All_Tasks".parent_id = "Tasks".id
+                        )
+
+            group by "Type_SimpleEntities".name,
+            "Type_SimpleEntities".id,
+            "Users".rate
+"""
+
+    sql_query = sql_query % {'project_id': project_id}
+    result = DBSession.connection().execute(sql_query)
     return_data = [
         {
             'id': r[0],
-            'type': r[1],
-            'amount': r[2],
-            'unit': r[3],
-            'cost': r[4],
-            'note': r[5]
+            'type_name': r[1],
+            'amount': r[3],
+            'unit': 'hour',
+            'unit_price': r[2] if r[2] else 50,
+            'note': ''
         }
         for r in result.fetchall()
     ]
 
     return return_data
+
+
+@view_config(
+    route_name='add_project_entries_to_budget'
+)
+def add_project_entries_to_budget(request):
+    """ adds entries to bugdet"""
+
+    logged_in_user = get_logged_in_user(request)
+    utc_now = local_to_utc(datetime.datetime.now())
+
+    project_id = request.matchdict.get('id', -1)
+    project = Project.query.filter(Project.id == project_id).first()
+    if not project:
+        transaction.abort()
+        return Response('Can not find a project with id: %s' % project_id, 500)
+
+    budget_id = request.matchdict.get('bid', -1)
+    budget = Budget.query.filter(Budget.id == budget_id).first()
+    if not budget:
+        transaction.abort()
+        return Response('Can not find a budget with id: %s' % budget_id, 500)
+
+    project_entries = get_project_tasks_cost(request)
+
+
+    for project_entry in project_entries:
+        new_budget_entry_type = query_type('BudgetEntry', project_entry['type_name'])
+        new_budget = True
+        for budget_entry in budget.entries:
+
+            if budget_entry.type == new_budget_entry_type:
+                budget_entry.amount = project_entry['amount']
+                # budget_entry.unit_price = project_entry['unit_price']
+                new_budget = False
+
+        if new_budget:
+            new_budget_entry = BudgetEntry(
+                budget=budget,
+                name=project_entry['type_name'],
+                type=new_budget_entry_type,
+                amount=project_entry['amount'],
+                # unit_price=project_entry['unit_price'],
+                description='',
+                created_by=logged_in_user,
+                date_created=utc_now,
+                date_updated=utc_now
+            )
+            DBSession.add(new_budget_entry)
+
+    return HTTPOk()
+
+
 
 
 @view_config(

@@ -1,0 +1,68 @@
+{% set project=entity %}
+<script class="dialog_loaded"></script>
+
+<div class="row-fluid padding-2">
+
+    <div class="span12">
+        {% set mode='Create' %}
+        {% include 'project/dialog/project_basic_information_form.jinja2' %}
+    </div>
+
+</div>
+
+<script type="text/javascript">
+    function init_dialog() {
+        console.debug('starting to initialize project dialog!!!');
+
+        var dialog_template_label = $('#dialog_template_label');
+        dialog_template_label.find('span').remove();
+        dialog_template_label.append('<span>New Project</span>');
+
+        {# ***************************************************************** #}
+        {# Submit Button #}
+        $(document).ready(function () {
+            var submit_button = $('#dialog_template_submit_button');
+            submit_button.on('click', function (e) {
+                e.stopPropagation();
+                e.preventDefault();
+
+                submit_button.button('loading');
+
+                console.log('project_form');
+
+                var project_form = $('#project_form');
+                if (project_form.validate()) {
+                    $.post(
+                        project_form.attr('action'),
+                        project_form.serialize()
+                    ).done(function () {
+                        window.location.reload();
+                    }).fail(function (jqXHR) {
+                        bootbox.alert(jqXHR.responseText);
+                        submit_button.button('reset');
+                    });
+                }
+            });
+        });
+        console.debug('finished initializing the project dialog!')
+    }
+</script>
+
+<script type="text/javascript">
+
+    function destruct_dialog() {
+        $('#project_form').unbind();
+        $('#project_name').unbind();
+        $('#project_login').unbind();
+        $('#project_email').unbind();
+        $('#project_password').unbind();
+        $('#project_password2').unbind();
+        $('#dialog_template_submit_button').unbind();
+
+        $('#dialog_template').data('modal', null);
+
+    }
+</script>
+
+
+

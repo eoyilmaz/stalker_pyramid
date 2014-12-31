@@ -267,11 +267,13 @@ def main(global_config, **settings):
     config.add_route('get_studio_vacations',  'studios/{id}/vacations/')  # json
     config.add_route('get_studio_vacations_count',  'studios/{id}/vacations/count/')  # json
 
+
     config.add_route('list_studio_tasks',           'studios/{id}/tasks/list')
     config.add_route('list_studio_vacations',       'studios/{id}/vacations/list')  # html
     config.add_route('list_studio_users',           'studios/{id}/users/list')  # html
     config.add_route('list_studio_projects',        'studios/{id}/projects/list')  # html
     config.add_route('list_studio_departments',     'studios/{id}/departments/list')  # html
+    config.add_route('list_studio_clients',         'studios/{id}/clients/list') # html
     config.add_route('list_studio_groups',          'groups/list')  # html
 
     config.add_route('schedule_info',               'schedule_info')  # json
@@ -280,7 +282,8 @@ def main(global_config, **settings):
 
     # *************************************************************************
     # Project
-    config.add_route('project_dialog',             'projects/{id}/{mode}/dialog')
+    config.add_route('create_project_dialog',      'projects/{id}/create/dialog')
+    config.add_route('update_project_dialog',      'projects/{id}/update/dialog')
 
     config.add_route('get_project_tasks',          'projects/{id}/tasks/')  # json
     config.add_route('get_project_tasks_count',    'projects/{id}/tasks/count/')  # json
@@ -291,6 +294,8 @@ def main(global_config, **settings):
 
     config.add_route('view_project',               'projects/{id}/view')
     config.add_route('view_project_reports',       'projects/{id}/view/reports')
+
+    config.add_route('add_project_entries_to_budget',   'projects/{id}/entries/budgets/{bid}/add')
 
     config.add_route('list_projects',              'projects/list')  # html
     config.add_route('list_project_users',         'projects/{id}/users/list')
@@ -325,10 +330,28 @@ def main(global_config, **settings):
     config.add_route('get_project_dailies_count',   'projects/{id}/dailies/count/') #json
     config.add_route('get_project_budgets',         'projects/{id}/budgets/') #json
     config.add_route('get_project_budgets_count',   'projects/{id}/budgets/count/') #json
-    config.add_route('get_project_tasks_cost',     'projects/{id}/tasks/cost/') #json
+    config.add_route('get_project_tasks_cost',      'projects/{id}/tasks/cost/') #json
 
     config.add_route('get_project_tasks_today',    'projects/{id}/tasks/{action}/today/')  # json
     config.add_route('get_project_tasks_in_date',  'projects/{id}/tasks/{action}/{date}/')  # json
+
+     # *************************************************************************
+    # Clients
+    config.add_route('append_user_to_client_dialog', 'clients/{id}/user/append/dialog')
+    config.add_route('append_user_to_client',        'clients/{id}/user/append')
+
+    config.add_route('create_client_dialog',         'clients/create/dialog')
+    config.add_route('update_client_dialog',         'clients/{id}/update/dialog')
+
+    config.add_route('create_client',                'clients/create')
+    config.add_route('update_client',                'clients/{id}/update')
+
+    config.add_route('view_client',                  'clients/{id}/view')
+
+    config.add_route('get_studio_clients',           'studios/{id}/clients/')
+    config.add_route('get_clients',                  'clients/')
+    config.add_route('get_client_users_out_stack',  'clients/{id}/users/out_stack/' )
+
 
     # *************************************************************************
     # Budgets
@@ -341,6 +364,15 @@ def main(global_config, **settings):
     config.add_route('view_budget',          'budgets/{id}/view')
 
     config.add_route('get_budget_entries',   'budgets/{id}/entries/')
+
+    # *************************************************************************
+    # BudgetEntries
+    config.add_route('create_budgetentry_dialog', 'budgetentries/create/dialog')
+
+
+    config.add_route('create_budgetentry',        'budgetentries/create')
+    config.add_route('update_budgetentry',        'budgetentries/{id}/update')
+
 
     # *************************************************************************
     # Dailies
@@ -444,6 +476,8 @@ def main(global_config, **settings):
     config.add_route('get_user_events',       'users/{id}/events/')  # json
     # config.add_route('get_user_worked_hours', 'users/{id}/{frequency}/worked_hours/')  # json
     config.add_route('get_resources',         'resources/')
+
+
     config.add_route('get_entity_resources',  'entities/{id}/resources/')
     config.add_route('get_resource',          'resources/{id}/')
 
@@ -458,6 +492,8 @@ def main(global_config, **settings):
     config.add_route('list_user_tasks_responsible_of',       'users/{id}/tasks/list/responsible_of') # html
     config.add_route('list_user_tasks_watching',       'users/{id}/tasks/list/watching') # html
     config.add_route('list_user_reviews',              'users/{id}/reviews/list')  # html
+    config.add_route('list_resource_rates',    'resources/{id}/rates/list')  # html
+
 
     config.add_route('view_user_tasks',       'users/{id}/tasks/view')  # html
     config.add_route('view_user_versions',    'users/{id}/versions/view')

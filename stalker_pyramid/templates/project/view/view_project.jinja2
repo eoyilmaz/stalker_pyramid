@@ -35,6 +35,7 @@
                 <h4 class="position-relative ">{{entity.name}}</h4>
 
                 <div class="widget-toolbar no-border invoice-info">
+
                     <span class="invoice-info-label">Status:</span>
                     <span class="label label-status_{{ entity.status.html_class }}">{{ entity.status.name }}</span>
                     <br>
@@ -45,6 +46,10 @@
                         <div class="bar"
                              style="width: {{ entity.percent_complete }}%;"></div>
                     </div>
+                </div>
+                <div class="widget-toolbar no-border invoice-info">
+                    {% set client=entity.client %}
+                    {% include 'client/view/client_card.jinja2' %}
                 </div>
 
             </div>
@@ -102,6 +107,7 @@
 
                         </div>
                         <div class="span2">
+
                             {% include 'project/view/project_timing.jinja2' %}
                         </div>
                     </div>

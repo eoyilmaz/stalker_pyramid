@@ -92,6 +92,20 @@ tr .odd > td .ticket_BLOCKER {
 .header-color-department + .widget-body {
   border-color: #6379aa;
 }
+.header-color-client {
+  background: #4e5962;
+  border-color: #4e5962;
+}
+.header-color-client + .widget-body {
+  border-color: #4e5962;
+}
+.header-color-budget {
+  background: #4e5962;
+  border-color: #4e5962;
+}
+.header-color-budget + .widget-body {
+  border-color: #4e5962;
+}
 .header-color-user {
   background: #ffc657;
   border-color: #ffc657;

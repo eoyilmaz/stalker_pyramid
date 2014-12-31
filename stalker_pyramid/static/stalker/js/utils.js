@@ -196,6 +196,7 @@ function chosen_field_creator(field, url, data_template, selected_id, chosen_opt
     field.attr('is_updating', true);
 
     return $.getJSON(url).then(function (data) {
+
         // remove current data
         field.empty();
 
@@ -213,6 +214,35 @@ function chosen_field_creator(field, url, data_template, selected_id, chosen_opt
         }
         // set the field to normal mode
         field.attr('is_updating', false);
+    });
+}
+
+function chosen_searchable_field_creator(field, url, data_template) {
+    'use strict';
+    // fill field with new json data
+    // set the field to updating mode
+    field.attr('is_updating', true);
+
+    return $.getJSON(url).then(function (data) {
+
+        // remove current data
+         // remove current elements
+        field.chosen({
+            search_contains: true,
+            enable_split_word_search: true
+        });
+
+        field.find('option').remove();
+
+        // append new ones
+        var data_count = data.length;
+        // append a single empty option to the responsible field
+        field.append(data_template({'id':"", 'name':"" }));
+        for (var i=0; i < data_count; i++){
+            field.append(data_template(data[i]));
+        }
+
+        field.trigger('liszt:updated');
     });
 }
 

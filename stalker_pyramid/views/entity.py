@@ -39,7 +39,22 @@ from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-
+@view_config(
+    route_name='update_client_dialog',
+    renderer='templates/client/dialog/update_client_dialog.jinja2',
+)
+@view_config(
+    route_name='create_client_dialog',
+    renderer='templates/client/dialog/create_client_dialog.jinja2',
+)
+@view_config(
+    route_name='list_studio_clients',
+    renderer='templates/client/list/list_studio_clients.jinja2'
+)
+@view_config(
+    route_name='view_client',
+    renderer='templates/client/view/view_client.jinja2'
+)
 @view_config(
     route_name='update_user_dialog',
     renderer='templates/auth/dialog/update_user_dialog.jinja2',
@@ -71,6 +86,10 @@ logger.setLevel(logging.DEBUG)
 @view_config(
     route_name='list_users',
     renderer='templates/auth/list/list_entity_users.jinja2'
+)
+@view_config(
+    route_name='list_resource_rates',
+    renderer='templates/resource/list/list_resource_rates.jinja2'
 )
 @view_config(
     route_name='view_user',
@@ -117,8 +136,12 @@ logger.setLevel(logging.DEBUG)
     renderer='templates/department/view/view_department.jinja2'
 )
 @view_config(
-    route_name='project_dialog',
-    renderer='templates/project/dialog/project_dialog.jinja2',
+    route_name='create_project_dialog',
+    renderer='templates/project/dialog/create_project_dialog.jinja2',
+)
+@view_config(
+    route_name='update_project_dialog',
+    renderer='templates/project/dialog/update_project_dialog.jinja2',
 )
 @view_config(
     route_name='view_project_reports',
@@ -437,6 +460,10 @@ def append_entities_to_entity_dialog(request):
         'entity': entity,
         'entities_name': entities_name
     }
+
+
+
+
 
 @view_config(
     route_name='get_entity_entities_out_stack',

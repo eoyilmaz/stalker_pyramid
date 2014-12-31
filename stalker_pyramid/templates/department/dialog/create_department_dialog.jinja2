@@ -33,7 +33,7 @@
             submit_button.button('loading');
             var department_form = $('#department_form');
 
-            $.post("{{ request.route_url('create_department') }}",
+            $.post(department_form.attr('action'),
                    department_form.serialize()
             ).done(function () {
                 window.location.assign('{{ came_from }}');

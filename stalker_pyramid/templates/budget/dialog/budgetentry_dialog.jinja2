@@ -2,7 +2,7 @@
 
 <div class="row-fluid">
 
-    <form id='budget_form'
+    <form id='budgetentry_form'
           class='form-horizontal'
           role='form'
           method="post"
@@ -12,42 +12,75 @@
             {# Name #}
             <div class="control-group">
                 <label class="span3 control-label"
-                       for="budget_name">Name</label>
+                       for="budgetentry_name">Name</label>
                 <div class="span9">
-
-                    <input id="budget_name"
+                    <input id="budgetentry_name"
                            name='name'
                            type="text"
                            class="form-control"
                            placeholder="Name"
-                           {% if mode=='Update' %}
-                            value='{{ budget.name }}'
-                           {% endif %}
                            required>
                 </div>
             </div>
 
-            {#Status #}
+            {#Type #}
             <div class='control-group'>
                 <label class='span3 control-label'
-                       for='budget_type'>Type</label>
+                       for='budgetentry_type'>Type</label>
                 <div class="span5">
-                    <input id='budget_type'
+                    <input id='budgetentry_type'
                            class='input-block-level'
                            name='type_name'
                            type='text'
-                           data-placeholder='Type'
+                           placeholder="Type"
                            is_updating=false
                            >
                 </div>
             </div>
 
+            <div class="control-group">
+                <label class="span3 control-label"
+                       for="budgetentry_amount">Amount</label>
+                <div class="span9">
+                    <input id="budgetentry_amount"
+                           name='amount'
+                           type="text"
+                           class="form-control"
+                           placeholder="Amount"
+                           required>
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="span3 control-label"
+                       for="budgetentry_unit">Unit</label>
+                <div class="span9">
+                    <input id="budgetentry_unit"
+                           name='unit'
+                           type="text"
+                           class="form-control"
+                           placeholder="Unit"
+                           required>
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="span3 control-label"
+                       for="budgetentry_unit_price">Unit Price</label>
+                <div class="span9">
+                    <input id="budgetentry_unit_price"
+                           name='unit_price'
+                           type="text"
+                           class="form-control"
+                           placeholder="Unit Price"
+                           required>
+                </div>
+            </div>
+
             {#Description #}
             <div class="control-group'">
-                <label for="budget_description"
+                <label for="budgetentry_description"
                        class="span3 control-label">Description</label>
                 <div class="span9">
-                    <textarea id="budget_description"
+                    <textarea id="budgetentry_description"
                               name='description'
                               class="autosize-transition"
                               style="overflow: hidden;
@@ -55,7 +88,7 @@
                                          resize: horizontal;
                                          height: 50px;"
 
-                            >{% if mode=='Update' %}{{ budget.description }}{% endif %}</textarea>
+                            ></textarea>
                 </div>
             </div>
 
@@ -69,38 +102,34 @@
 
     function init_dialog() {
 
-        console.debug('starting to initialize budget dialog!!!');
+        console.debug('starting to initialize budgetentry dialog!!!');
 
         var dialog_label = $('#dialog_template_label');
         dialog_label.find('span').remove();
-        dialog_label.append('<span>{{ mode}} Budget</span>');
+        dialog_label.append('<span>{{ mode}} BudgetEntry</span>');
 
         {% raw %}
-            var budget_type_option_template = doT.template(
+            var budgetentry_type_option_template = doT.template(
                 '<option value={{=it.id}}>{{=it.name}}</option>'
             );
         {% endraw %}
 
-        $.getJSON('/types/?target_entity_type=Budget').then(function (available_type) {
-            var budget_type = $('#budget_type');
+        $.getJSON('/types/?target_entity_type=BudgetEntry').then(function (available_types) {
+            var budgetentry_type = $('#budgetentry_type');
 
             var available_types_as_list = [];
-            for (var i=0; i < available_type.length; i++){
-                available_types_as_list.push(available_type[i].name);
+            for (var i=0; i < available_types.length; i++){
+                available_types_as_list.push(available_types[i].name);
             }
 
-            budget_type.autocomplete({
+            budgetentry_type.autocomplete({
                 delay: 0,
                 source: available_types_as_list,
                 minLength: 0
             });
 
-            budget_type.attr('is_updating', false);
+            budgetentry_type.attr('is_updating', false);
 
-            {% if mode=='Update' %}
-                budget_type.val({{ budget.status.id }});
-                budget_type.trigger('liszt:updated');
-            {% endif %}
 
         });
         {# ***************************************************************** #}
@@ -111,19 +140,17 @@
             e.preventDefault();
 
             submit_button.button('loading');
-            var budget_form = $('#budget_form');
+            var budgetentry_form = $('#budgetentry_form');
 
-            var url = '/budgets/create';
-            {% if mode=='Update' %}
-                url='/budgets/{{ budget.id }}/update';
-                {% set project = budget.project %}
-            {% endif %}
+            var url = '/budgetentries/create';
+
 
             $.post(
                 url,
-                budget_form.serialize() + '&' +
+                budgetentry_form.serialize() + '&' +
                 $.param({
-                    'project_id': {{ project.id }}
+                    'budget_id': {{ budget.id }},
+                    'amount': 300
                 })
             ).done(function (jqXHR) {
                 //$('#new_outputs_storage').text(JSON.stringify(jqXHR));
@@ -134,14 +161,14 @@
             });
         });
 
-        console.debug('finished initializing the budget dialog!')
+        console.debug('finished initializing the budgetentry dialog!')
     }
 </script>
 
 <script type="text/javascript">
     function destruct_dialog() {
-        $('#budget_name').unbind();
-        $('#budget_description').unbind();
+        $('#budgetentry_name').unbind();
+        $('#budgetentry_description').unbind();
         $('#dialog_template_submit_button').unbind();
 
         $('#dialog_template').data('modal', null);

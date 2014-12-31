@@ -23,7 +23,7 @@
 {# BREADCRUMBS #}
 {% block breadcrumbs %}
 
-    {% set page_title='Users' %}
+    {% set page_title='clients' %}
     {% include 'breadcrumb/breadcrumbs.jinja2' %}
 
 {% endblock breadcrumbs %}
@@ -38,21 +38,11 @@
 {# PAGE-CONTENT #}
 {% block page_content %}
 
-{#    {% set page_title='Users' %}#}
+{#    {% set page_title='Clients' %}#}
 {#    {% include 'page_header.jinja2' %}#}
 
-
-    {% if entity.entity_type == 'Studio' %}
-        {% set add_button_address=request.route_path('create_user_dialog') %}
-    {% elif entity.entity_type == 'Client' %}
-        {% set add_button_address=request.route_path('append_user_to_client_dialog', id=entity.id, _query={'came_from': request.current_route_path()}) %}
-    {% else %}
-        {% set add_button_title='Add' %}
-        {% set add_button_address=request.route_url('append_entities_to_entity_dialog', id=entity.id, entities='User', _query={'came_from': request.current_route_path()}) %}
-    {% endif %}
-
-
-    {% set list_item_type='User' %}
+    {% set add_button_address=request.route_path('create_client_dialog') %}
+    {% set list_item_type='Client' %}
     {% include 'components/data_table.jinja2' %}
 
 {% endblock page_content %}
@@ -64,10 +54,8 @@
         <tr>
             <th>Thumbnail</th>
             <th>Name</th>
-            <th>Email</th>
-            <th>Tasks Count</th>
-            <th>Tickets Count</th>
-            <th>Status</th>
+            <th>Project Count</th>
+            <th>Description</th>
             <th></th>
         </tr>
     </script>
@@ -80,30 +68,25 @@
                      class="img-thumbnail"
                      src="{{=it.thumbnail_full_path }}">
             </td>
-            <td><a href='/users/{{=it.id}}/view'>{{=it.name}}</a>
+            <td><a href='/clients/{{=it.id}}/view'>{{=it.name}}</a>
             </td>
-            <td><a href='/users/{{=it.id}}/view'>{{=it.email}}</a>
+            <td>{{=it.projectsCount}}
             </td>
-            <td>{{=it.tasksCount}}
-            </td>
-            <td>{{=it.ticketsCount}}
+            <td>{{=it.description}}
             </td>
             <td>
-                <span class="label label-status_{{=it.status_color}}">{{=it.status}}</span>
-            </td>
-            <td>
-                {{ if (it.update_user_action) { }}
-                <a class="blue" href="{{=it.update_user_action}}">
+                {{ if (it.update_client_action) { }}
+                <a class="blue" href="{{=it.update_client_action}}">
                     <i class="icon-edit bigger-130"></i>
                 </a>
                 {{ } }}
 
-                {{ if (it.delete_user_action) { }}
+                {{ if (it.delete_client_action) { }}
                 <a class="red"
                    data-target="#dialog_template"
                    data-toggle="modal"
                    data-keyboard=false
-                   href="{{=it.delete_user_action}}?came_from={{=it.came_from }}">
+                   href="{{=it.delete_client_action}}?came_from={{=it.came_from }}">
                     <i class="icon-trash bigger-130"></i>
                 </a>
                 {{ } }}
@@ -114,14 +97,10 @@
 
     <script>
 
-        var tableParameters = {"aoColumns": [null, null, null, {'sType': 'num-html'},{'sType': 'num-html'},null, null]};
+        var tableParameters = {"aoColumns": [null, null, {'sType': 'num-html'},null, null]};
         var sortingParameters = [[0, 'asc']];
         var tableDataAddress;
-        {% if entity.entity_type == 'Studio' %}
-            tableDataAddress = '{{ request.route_path('get_users') }}';
-        {% else %}
-            tableDataAddress = '{{ request.route_path('get_entity_users', id=entity.id) }}';
-        {% endif %}
+        tableDataAddress = '{{ request.route_path('get_studio_clients', id=studio.id) }}';
 
     </script>
 

@@ -410,6 +410,7 @@ def get_users(request):
     has_permission = PermissionChecker(request)
     has_update_user_permission = has_permission('Update_User')
     has_delete_user_permission = has_permission('Delete_User')
+    has_read_rate_permission = has_permission('Read_Budget')
 
     delete_user_action = '/users/%(id)s/delete/dialog'
 
@@ -438,7 +439,8 @@ def get_users(request):
         group_users."group_names",
         tasks.task_count,
         tickets.ticket_count,
-        "Links".full_path
+        "Links".full_path,
+        "Users".rate
     from "SimpleEntities"
     join "Users" on "SimpleEntities".id = "Users".id
     left outer join (
@@ -495,6 +497,8 @@ def get_users(request):
 
     sql_query += 'order by "SimpleEntities".name'
 
+
+
     result = DBSession.connection().execute(sql_query)
     data = [
         {
@@ -516,7 +520,8 @@ def get_users(request):
             ] if r[6] else [],
             'tasksCount': r[8] or 0,
             'ticketsCount': r[9] or 0,
-            'thumbnail_full_path': r[10] if r[10] else None,
+            'thumbnail_full_path': r[10] if r[has_read_rate_permission] else None,
+            'rate': r[11] if has_read_rate_permission else r[11],
             'update_user_action':'/users/%s/update/dialog' % r[0]
             if has_update_user_permission else None,
             'delete_user_action':delete_user_action % {
@@ -551,7 +556,8 @@ def get_users_simple(request):
         group_users."group_names",
         tasks.task_count,
         tickets.ticket_count,
-        "Links".full_path
+        "Links".full_path,
+        "Users".rate
     from "SimpleEntities"
     join "Users" on "SimpleEntities".id = "Users".id
     left outer join (
@@ -609,6 +615,7 @@ def get_users_simple(request):
             'tasksCount': r[8] or 0,
             'ticketsCount': r[9] or 0,
             'thumbnail_full_path': r[10] if r[10] else None,
+            'rate': r[11] if r[11] else None,
             'update_user_action': '/users/%s/update/dialog' % r[0],
             'delete_user_action': '/users/%s/delete/dialog' % r[0],
         } for r in result.fetchall()

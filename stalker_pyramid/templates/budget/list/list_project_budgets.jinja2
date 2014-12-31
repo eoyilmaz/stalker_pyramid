@@ -54,7 +54,7 @@
                 <th>Created Date</th>
                 <th>Budget</th>
                 <th>Created By</th>
-                <th>Status</th>
+                <th>Type</th>
             </tr>
         </script>
     {% endraw %}
@@ -69,7 +69,7 @@
                 <td><a href='/users/{{=it.created_by_id}}/view'>{{=it.created_by_name}}</a>
                 </td>
                 <td>
-                    <span class="label label-large label-status_{{=it.status_code }}"> {{=it.status_name }}</span>
+                    <span class="label label-large label-status_{{=it.type_name }}"> {{=it.type_name }}</span>
                 </td>
             </tr>
         </script>
