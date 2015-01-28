@@ -42,8 +42,7 @@
                     $('#html_template_header').attr('class', 'table-header header-color-status_{{ filter.code.lower() }}');
                 {% endif %}
             {% endif %}
-    
-    
+
             {% if entity.entity_type == 'User' %}
                 query_str = 'has_resource=1&leaf_only=1&resource_id={{ entity.id }}';
             {% elif entity.entity_type == 'Project'%}
@@ -85,15 +84,22 @@
                     } else {
                         data[i].thumbnail_full_path = '/' + data[i].thumbnail_full_path;
                     }
-                    data[i].project_name = get_project_name(data[i].project_id)
+                    data[i].project_name = get_project_name(data[i].project_id);
 
 
-                    for (var k=0; k<data[i].responsible.length;k++){
-                        var r_id = data[i].responsible[k];
-                        data[i].responsible[k] = {'id':r_id,
-                                               'name':get_user_name(r_id)}
 
+                    if (data[i].responsible !=null){
+                        for (var k=0; k<data[i].responsible.length;k++){
+                            var r_id = data[i].responsible[k];
+                            data[i].responsible[k] = {'id':r_id,
+                                                   'name':get_user_name(r_id)}
+
+                        }
                     }
+                    else{
+                            data[i].responsible = [];
+                        }
+
 
 
                     var bid_seconds = calculate_seconds(data[i].bid_timing, data[i].bid_unit);

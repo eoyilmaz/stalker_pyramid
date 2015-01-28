@@ -1,0 +1,105 @@
+<script class="dialog_loaded"></script>
+
+<div class="row-fluid" >
+    <form id='append_form'
+              class='form-horizontal'
+              role='form'
+              method='post'>
+        <div class='control-group'>
+            <label for='client_user'
+                   class="span2 control-label">User</label>
+            <div class="span10">
+                <select id='client_user'
+                        name='user_id'
+                        data-placeholder='User'
+                        required>
+                </select>
+            </div>
+        </div>
+        <div class='control-group'>
+            <label for='role'
+                   class='span2 control-label'>Role</label>
+            <div class='span5'>
+                <input id='role'
+                           class='input-block-level'
+                           name='role_name'
+                           type='text'
+                           data-placeholder='Role'
+                           is_updating=false
+                           >
+
+            </div>
+        </div>
+    </form>
+</div>
+
+<script type="text/javascript">
+
+    function init_dialog() {
+        console.debug('starting to initialize append_class_to_entity dialog!!!');
+
+        $('#dialog_template_label').find('span').remove();
+        $('#dialog_template_label').append('<span>Append User</span>')
+
+        {# ***************************************************************** #}
+        {# CLIENT #}
+        var client_user = $('#client_user');
+        {% raw %}
+            var client_user_option_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
+        {% endraw %}
+        var deferred = chosen_searchable_field_creator(client_user,'/clients/{{ client.id }}/users/out_stack/', client_user_option_template);
+
+        {# ***************************************************************** #}
+        {# ROLE #}
+        var role = $('#role');
+        {% raw %}
+            var role_option_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
+        {% endraw %}
+        $.getJSON('/roles/').then(function(available_roles){
+            // map available types to an array
+            var available_roles_as_list = [];
+            for (var i=0; i < available_roles.length; i++){
+                available_roles_as_list.push(available_roles[i].name);
+            }
+
+            role.autocomplete({
+                delay: 0,
+                source: available_roles_as_list,
+                minLength: 0
+            });
+
+            role.attr('is_updating', false);
+        });
+
+        {# ***************************************************************** #}
+        {# SUBMIT #}
+        var submit_button = $('#dialog_template_submit_button');
+        submit_button.on('click', function (e) {
+
+            e.stopPropagation();
+            e.preventDefault();
+            submit_button.button('loading');
+
+            var append_form = $("#append_form");
+
+            $.post('/clients/{{ client.id }}/user/append', append_form.serialize()
+            ).done(function (response_text) {
+                window.location.assign('{{ came_from }}');
+                submit_button.button('reset');
+                $('#dialog_template').modal('hide');
+            }).fail(function (jqXHR) {
+                bootbox.alert(jqXHR.responseText);
+                submit_button.button('reset');
+            });
+        });
+
+        console.debug('finished initializing the append_class_to_entity dialog!')
+    }
+</script>
+
+<script type="text/javascript">
+    function destruct_dialog() {
+        $('#dialog_template_submit_button').unbind();
+        $('#dialog_template').data('modal', null);
+    }
+</script>

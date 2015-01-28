@@ -1,0 +1,12 @@
+<div class="media">
+    <a class="pull-left"
+       href="/clients/{{ client.id }}/view"
+       style="text-align: center; overflow: hidden; width: 60px">
+        <img id="sidebar_avatar"
+             style="height: auto; width: 100%; max-width: none;
+                  position: relative; left: 100%; margin-left: -200%"
+                 class="img-thumbnail"
+                 src={%- if client.thumbnail -%}/{{ client.thumbnail.full_path }}{%- else -%}{{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_0.png")}}{%- endif -%}>
+    </a>
+</div>
+

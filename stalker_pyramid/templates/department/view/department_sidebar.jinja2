@@ -55,6 +55,18 @@
             {{ department.users | count }}
         );
 
+        menu_of(
+            'Reports',
+            "{%- if request.current_route_path() == request.route_path('view_department_reports', id=department.id) -%}'active',{%- else -%},{%- endif -%}",
+            '{{ request.route_url('view_department_reports', id=department.id) }}',
+            get_icon('report'),
+            ''
+        );
+
+        {% if department.name == 'Animators' %}
+
+        {% endif %}
+
 {#        menu_of('Vacations',#}
 {#                    "{%- if request.current_route_path() == request.route_path('list_entity_vacations', id=department.id) -%}'active',{%- else -%},{%- endif -%}",#}
 {#                    '{{ request.route_url('list_entity_vacations', id=department.id) }}',#}

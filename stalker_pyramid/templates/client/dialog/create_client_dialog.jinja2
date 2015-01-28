@@ -1,0 +1,61 @@
+{% set client=entity %}
+<script class="dialog_loaded"></script>
+
+<div class="row-fluid padding-2">
+    <div class="span12">
+        {% set mode='Create' %}
+        {% include 'client/dialog/client_basic_information_form.jinja2' %}
+    </div>
+
+</div>
+
+<script type="text/javascript">
+
+    function init_dialog() {
+        console.debug('starting to initialize client dialog!!!');
+
+        var dialog_template_label = $('#dialog_template_label');
+        dialog_template_label.find('span').remove();
+        dialog_template_label.append('<span>New Client</span>');
+
+{#        *****************************************************************#}
+{#        Submit Button#}
+        var submit_button = $('#dialog_template_submit_button');
+        submit_button.on('click', function (e) {
+            e.stopPropagation();
+            e.preventDefault();
+
+            submit_button.button('loading');
+
+            var client_form = $('#client_form');
+            if (client_form.validate()) {
+                $.post(
+                    client_form.attr('action'),
+                    client_form.serialize()
+                ).done(function () {
+                    //window.location.assign('{{ came_from }}');
+                    window.location.reload();
+                }).fail(function (jqXHR) {
+                    bootbox.alert(jqXHR.responseText);
+                    submit_button.button('reset');
+                });
+            }
+        });
+
+        console.debug('finished initializing the client dialog!')
+    }
+</script>
+
+<script type="text/javascript">
+
+    function destruct_dialog() {
+        $('#client_form').unbind();
+        $('#client_name').unbind();
+        $('#client_description').unbind();
+
+        $('#dialog_template_submit_button').unbind();
+
+        $('#dialog_template').data('modal', null);
+
+    }
+</script>

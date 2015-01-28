@@ -39,7 +39,22 @@ from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-
+@view_config(
+    route_name='update_client_dialog',
+    renderer='templates/client/dialog/update_client_dialog.jinja2',
+)
+@view_config(
+    route_name='create_client_dialog',
+    renderer='templates/client/dialog/create_client_dialog.jinja2',
+)
+@view_config(
+    route_name='list_studio_clients',
+    renderer='templates/client/list/list_studio_clients.jinja2'
+)
+@view_config(
+    route_name='view_client',
+    renderer='templates/client/view/view_client.jinja2'
+)
 @view_config(
     route_name='update_user_dialog',
     renderer='templates/auth/dialog/update_user_dialog.jinja2',
@@ -73,8 +88,16 @@ logger.setLevel(logging.DEBUG)
     renderer='templates/auth/list/list_entity_users.jinja2'
 )
 @view_config(
+    route_name='list_resource_rates',
+    renderer='templates/resource/list/list_resource_rates.jinja2'
+)
+@view_config(
     route_name='view_user',
     renderer='templates/auth/view/view_user.jinja2'
+)
+@view_config(
+    route_name='view_user_reports',
+    renderer='templates/auth/report/view_user_reports.jinja2'
 )
 @view_config(
     route_name='update_group_dialog',
@@ -117,8 +140,16 @@ logger.setLevel(logging.DEBUG)
     renderer='templates/department/view/view_department.jinja2'
 )
 @view_config(
-    route_name='project_dialog',
-    renderer='templates/project/dialog/project_dialog.jinja2',
+    route_name='view_department_reports',
+    renderer='templates/department/report/view_department_reports.jinja2',
+)
+@view_config(
+    route_name='create_project_dialog',
+    renderer='templates/project/dialog/create_project_dialog.jinja2',
+)
+@view_config(
+    route_name='update_project_dialog',
+    renderer='templates/project/dialog/update_project_dialog.jinja2',
 )
 @view_config(
     route_name='view_project_reports',
@@ -311,6 +342,14 @@ logger.setLevel(logging.DEBUG)
     renderer='templates/daily/list/list_project_dailies.jinja2'
 )
 @view_config(
+    route_name='view_budget',
+    renderer='templates/budget/view/view_budget.jinja2'
+)
+@view_config(
+    route_name='list_project_budgets',
+    renderer='templates/budget/list/list_project_budgets.jinja2'
+)
+@view_config(
     route_name='test_page',
     renderer='templates/test_page.jinja2'
 )
@@ -429,6 +468,10 @@ def append_entities_to_entity_dialog(request):
         'entity': entity,
         'entities_name': entities_name
     }
+
+
+
+
 
 @view_config(
     route_name='get_entity_entities_out_stack',
@@ -971,3 +1014,150 @@ def delete_entity(request):
         return Response(c.html(), 500)
 
     return Response('Successfully deleted %s: %s' % (entity.entity_type,entity.name))
+
+
+@view_config(
+    route_name='get_entity_total_schedule_seconds',
+    renderer='json'
+)
+def get_entity_total_schedule_seconds(request):
+    """gives entity's task total schedule_seconds
+    """
+    logger.debug('get_project_total_schedule_seconds starts')
+    entity_id = request.matchdict.get('id')
+    entity = Entity.query.filter_by(id=entity_id).first()
+
+    sql_query = """select
+        SUM(
+            "Tasks".schedule_timing * (
+                case "Tasks".schedule_unit
+                    when 'min' then 60
+                    when 'h' then 3600
+                    when 'd' then 32400 -- 9 hours/day
+                    when 'w' then 183600 -- 51 hours/week
+                    when 'm' then 734400  -- 4 week/month * 51 hours/week
+                    when 'y' then 9573418 -- 52.1428 week * 51 hours/week
+                    else 0
+                end
+            )
+        ) as schedule_seconds
+    from "Tasks"
+    join "Task_Resources" on "Task_Resources".task_id = "Tasks".id
+    where not exists(select 1 from "Tasks" as t where t.parent_id = "Tasks".id)
+    %(where_conditions)s
+    """
+    where_conditions = ''
+
+    if entity.entity_type == 'Project':
+        where_conditions = """and "Tasks".project_id = %(project_id)s """ % {'project_id': entity_id}
+    elif entity.entity_type == 'User':
+        where_conditions = """and "Task_Resources".resource_id = %(resource_id)s """ % {'resource_id': entity_id}
+    elif entity.entity_type == 'Department':
+        temp_buffer = [""" and ("""]
+        for i, resource in enumerate(entity.users):
+            if i > 0:
+                temp_buffer.append(' or')
+            temp_buffer.append(""" "Task_Resources".resource_id='%s'""" % resource.id)
+        temp_buffer.append(' )')
+        where_conditions = ''.join(temp_buffer)
+
+    logger.debug('where_conditions: %s' % where_conditions)
+
+    sql_query = sql_query % {'where_conditions': where_conditions}
+
+    result = db.DBSession.connection().execute(sql_query).fetchone()
+
+    logger.debug('get_project_total_schedule_seconds: %s' % result[0])
+    return result[0]
+
+
+
+@view_config(
+    route_name='get_entity_task_min_start',
+    renderer='json'
+)
+def get_entity_task_min_start(request):
+    """gives entity's tasks min start date
+    """
+     
+    logger.debug('get_entity_task_min_start starts')
+    entity_id = request.matchdict.get('id')
+    entity = Entity.query.filter_by(id=entity_id).first()
+
+    sql_query = """select
+            min(extract(epoch from "Tasks".start::timestamp AT TIME ZONE 'UTC')) as start
+        from "Users"
+        join "Task_Resources" on "Task_Resources".resource_id = "Users".id
+        join "Tasks" on "Tasks".id = "Task_Resources".task_id
+
+    where not exists(select 1 from "Tasks" as t where t.parent_id = "Tasks".id)
+    %(where_conditions)s
+    """
+    where_conditions = ''
+
+    if entity.entity_type == 'Project':
+        where_conditions = """and "Tasks".project_id = %(project_id)s """ % {'project_id': entity_id}
+    elif entity.entity_type == 'User':
+        where_conditions = """and "Task_Resources".resource_id = %(resource_id)s """ % {'resource_id': entity_id}
+    elif entity.entity_type == 'Department':
+        temp_buffer = [""" and ("""]
+        for i, resource in enumerate(entity.users):
+            if i > 0:
+                temp_buffer.append(' or')
+            temp_buffer.append(""" "Task_Resources".resource_id='%s'""" % resource.id)
+        temp_buffer.append(' )')
+        where_conditions = ''.join(temp_buffer)
+
+    logger.debug('where_conditions: %s' % where_conditions)
+
+    sql_query = sql_query % {'where_conditions': where_conditions}
+
+    result = db.DBSession.connection().execute(sql_query).fetchone()
+
+    return result[0]
+
+@view_config(
+    route_name='get_entity_task_max_end',
+    renderer='json'
+)
+def get_entity_task_max_end(request):
+    """gives entity's tasks max end date
+    """
+     
+    logger.debug('get_entity_task_max_end starts')
+    entity_id = request.matchdict.get('id')
+    entity = Entity.query.filter_by(id=entity_id).first()
+
+    sql_query = """select
+            max(extract(epoch from "Tasks".end::timestamp AT TIME ZONE 'UTC')) as end
+        from "Users"
+        join "Task_Resources" on "Task_Resources".resource_id = "Users".id
+        join "Tasks" on "Tasks".id = "Task_Resources".task_id
+
+    where not exists(select 1 from "Tasks" as t where t.parent_id = "Tasks".id)
+    %(where_conditions)s
+    """
+    where_conditions = ''
+
+    if entity.entity_type == 'Project':
+        where_conditions = """and "Tasks".project_id = %(project_id)s """ % {'project_id': entity_id}
+    elif entity.entity_type == 'User':
+        where_conditions = """and "Task_Resources".resource_id = %(resource_id)s """ % {'resource_id': entity_id}
+    elif entity.entity_type == 'Department':
+        temp_buffer = [""" and ("""]
+        for i, resource in enumerate(entity.users):
+            if i > 0:
+                temp_buffer.append(' or')
+            temp_buffer.append(""" "Task_Resources".resource_id='%s'""" % resource.id)
+        temp_buffer.append(' )')
+        where_conditions = ''.join(temp_buffer)
+
+    logger.debug('where_conditions: %s' % where_conditions)
+
+    sql_query = sql_query % {'where_conditions': where_conditions}
+
+    result = db.DBSession.connection().execute(sql_query).fetchone()
+
+    return result[0]
+
+

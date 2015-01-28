@@ -18,7 +18,7 @@
     {% if entity.entity_type == 'User' %}
         {% set user=entity %}
         {% include 'auth/view/user_sidebar.jinja2' %}
-    {% elif entity.entity_type == 'Asset'or entity.entity_type == 'Shot'or entity.entity_type == 'Sequence'or entity.entity_type == 'Task'%}
+    {% elif entity.entity_type == 'Asset' or entity.entity_type == 'Shot' or entity.entity_type == 'Sequence' or entity.entity_type == 'Task'%}
         {% set task=entity %}
         {% include 'task/view/task_sidebar.jinja2' %}
     {% else %}

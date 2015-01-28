@@ -1,0 +1,40 @@
+{# Render Client Side Bar #}
+
+{% set client=entity %}
+
+<ul id="sidebar_list" class='nav nav-list'></ul>
+
+<script>
+    $(function () {
+        page_of('{{ client.name }}',
+                '{{ client.login }}',
+                '{%- if client.thumbnail -%}/{{ client.thumbnail.full_path }}{%- else -%}{{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_0.png")}}{%- endif -%}',
+                '{%- if has_permission('Update_Client') or  client.id==logged_in_client.id -%}/clients/{{ client.id }}/update/dialog{%- endif -%}'
+
+        )
+
+        menu_of(
+            'Dashboard',
+            "{%- if request.current_route_path() == request.route_path('view_client', id=client.id) -%}'active',{%- else -%},{%- endif -%}",
+            '{{ request.route_url('view_client', id=client.id) }}',
+            get_icon('dashboard'),
+            ''
+        );
+
+        menu_of(
+            'Users',
+            "{%- if request.current_route_path() == request.route_path('list_entity_users', id=client.id) -%}'active',{%- else -%},{%- endif -%}",
+            '{{ request.route_url('list_entity_users', id=client.id) }}',
+            get_icon('user'),
+            '/entities/{{ client.id }}/users/count/'
+        );
+
+        submenu_of('{{ client.id }}', 'Project');
+
+        
+
+    });
+</script>
+
+
+

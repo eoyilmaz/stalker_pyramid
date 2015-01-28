@@ -28,6 +28,7 @@ from pyramid.response import Response
 from pyramid.security import forget, remember
 from pyramid.view import view_config, forbidden_view_config
 from sqlalchemy import or_
+from stalker.models import local_to_utc
 import transaction
 
 import stalker_pyramid
@@ -203,6 +204,54 @@ def create_user(request):
         log_param(request, 'password')
 
         return Response('There are missing parameters: ', 500)
+
+
+@view_config(
+    route_name='inline_update_user'
+)
+def inline_update_user(request):
+    """Inline updates the given user with the data coming from the request
+    """
+
+    logger.debug('INLINE UPDATE USER IS RUNNING')
+
+    logged_in_user = get_logged_in_user(request)
+
+    logger.debug(request.params)
+
+    # *************************************************************************
+    # collect data
+    attr_name = request.params.get('attr_name', -1)
+
+    logger.debug('attr_name: %s' % attr_name)
+    attr_val = request.params.get(attr_name, None)
+
+    # get user
+    user_id = request.params.get('id', -1)
+    user = User.query.filter(User.id == user_id).first()
+
+    # update the user
+    if not user:
+        transaction.abort()
+        return Response("No user found with id : %s" % user_id, 500)
+
+    if attr_val:
+        if attr_name == 'rate':
+            attr_val = int(attr_val)
+        setattr(user, attr_name, attr_val)
+
+        user.updated_by = logged_in_user
+        utc_now = local_to_utc(datetime.datetime.now())
+        user.date_updated = utc_now
+
+    else:
+        logger.debug('not updating')
+        return Response("MISSING PARAMETERS", 500)
+
+    return Response(
+        'User updated successfully '
+    )
+
 
 
 @view_config(
@@ -410,6 +459,7 @@ def get_users(request):
     has_permission = PermissionChecker(request)
     has_update_user_permission = has_permission('Update_User')
     has_delete_user_permission = has_permission('Delete_User')
+    has_read_rate_permission = has_permission('Read_Budget')
 
     delete_user_action = '/users/%(id)s/delete/dialog'
 
@@ -438,7 +488,8 @@ def get_users(request):
         group_users."group_names",
         tasks.task_count,
         tickets.ticket_count,
-        "Links".full_path
+        "Links".full_path,
+        "Users".rate
     from "SimpleEntities"
     join "Users" on "SimpleEntities".id = "Users".id
     left outer join (
@@ -495,6 +546,8 @@ def get_users(request):
 
     sql_query += 'order by "SimpleEntities".name'
 
+
+
     result = DBSession.connection().execute(sql_query)
     data = [
         {
@@ -516,7 +569,8 @@ def get_users(request):
             ] if r[6] else [],
             'tasksCount': r[8] or 0,
             'ticketsCount': r[9] or 0,
-            'thumbnail_full_path': r[10] if r[10] else None,
+            'thumbnail_full_path': r[10] if r[has_read_rate_permission] else None,
+            'rate': r[11] if has_read_rate_permission else r[11],
             'update_user_action':'/users/%s/update/dialog' % r[0]
             if has_update_user_permission else None,
             'delete_user_action':delete_user_action % {
@@ -551,7 +605,8 @@ def get_users_simple(request):
         group_users."group_names",
         tasks.task_count,
         tickets.ticket_count,
-        "Links".full_path
+        "Links".full_path,
+        "Users".rate
     from "SimpleEntities"
     join "Users" on "SimpleEntities".id = "Users".id
     left outer join (
@@ -609,6 +664,7 @@ def get_users_simple(request):
             'tasksCount': r[8] or 0,
             'ticketsCount': r[9] or 0,
             'thumbnail_full_path': r[10] if r[10] else None,
+            'rate': r[11] if r[11] else None,
             'update_user_action': '/users/%s/update/dialog' % r[0],
             'delete_user_action': '/users/%s/delete/dialog' % r[0],
         } for r in result.fetchall()

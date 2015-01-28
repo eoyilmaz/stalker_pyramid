@@ -2,6 +2,11 @@
       class='form-horizontal'
       role='form'
       method="post"
+         {% if mode == 'Create' %}
+      action="{{ request.route_url(mode.lower()+'_department') }}"
+        {% elif mode == 'Update' %}
+      action="{{ request.route_url(mode.lower()+'_department', id=department.id) }}"
+        {% endif %}
         >
 
     <div class="row-fluid">
@@ -23,24 +28,6 @@
                        required>
             </div>
         </div>
-
-        {# Lead #}
-        <div class="control-group">
-            <label for="department_lead"
-                   class="span3 control-label">Lead</label>
-
-            <div class="span9">
-                <select id="department_lead"
-                        name='lead_id'
-                        type="lead"
-                        class="form-control"
-                        placeholder="Lead"
-                        >
-                </select>
-
-            </div>
-        </div>
-
 
         {#Description #}
         <div class="control-group'">
@@ -67,21 +54,21 @@
 
 
     {# Chosen Field Updater #}
-    var chosen_field_creator = function (field, url, data_template) {
-        // fill image format with new json data
-        return $.getJSON(url).then(function (data) {
-            // remove current data
-            field.empty();
-
-            // append new options to the select
-            for (var i = 0; i < data.length; i++) {
-                field.append(data_template(data[i]));
-            }
-
-            // convert it to chosen
-            field.chosen();
-        });
-    };
+{#    var chosen_field_creator = function (field, url, data_template) {#}
+{#        // fill image format with new json data#}
+{#        return $.getJSON(url).then(function (data) {#}
+{#            // remove current data#}
+{#            field.empty();#}
+{##}
+{#            // append new options to the select#}
+{#            for (var i = 0; i < data.length; i++) {#}
+{#                field.append(data_template(data[i]));#}
+{#            }#}
+{##}
+{#            // convert it to chosen#}
+{#            field.chosen();#}
+{#        });#}
+{#    };#}
     
     {# ***************************************************************** #}
     {# User #}

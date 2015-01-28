@@ -61,6 +61,14 @@
             '/users/{{ user.id }}/reviews/count/'
         );
 
+        menu_of(
+            'Reports',
+            "{%- if request.current_route_path() == request.route_path('view_user_reports', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
+            '{{ request.route_url('view_user_reports', id=user.id) }}',
+            get_icon('report'),
+            ''
+        );
+
 {#        menu_of(#}
 {#            'Tasks',#}
 {#            "{%- if request.current_route_path() == request.route_path('list_entity_tasks', id=user.id) -%}'active',{%- else -%},{%- endif -%}",#}

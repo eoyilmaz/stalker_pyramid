@@ -122,10 +122,9 @@
                 e.preventDefault();
                 submit_button.button('loading');
 
-                var department_update_form = $("#department_form");
-                $.post(
-                    '/departments/{{ entity.id}}/update',
-                    department_update_form.serialize()
+                var department_form = $("#department_form");
+                $.post(department_form.attr('action'),
+                    department_form.serialize()
                 ).done(function (response_text) {
                     bootbox.alert(response_text);
                     window.location.assign('{{ came_from }}');

@@ -1,0 +1,152 @@
+<script class="dialog_loaded"></script>
+
+<div class="row-fluid">
+
+    <form id='budget_form'
+          class='form-horizontal'
+          role='form'
+          method="post"
+            >
+
+        <div class="row-fluid">
+            {# Name #}
+            <div class="control-group">
+                <label class="span3 control-label"
+                       for="budget_name">Name</label>
+                <div class="span9">
+
+                    <input id="budget_name"
+                           name='name'
+                           type="text"
+                           class="form-control"
+                           placeholder="Name"
+                           {% if mode=='Update' %}
+                            value='{{ budget.name }}'
+                           {% endif %}
+                           required>
+                </div>
+            </div>
+
+            {#Status #}
+            <div class='control-group'>
+                <label class='span3 control-label'
+                       for='budget_type'>Type</label>
+                <div class="span5">
+                    <input id='budget_type'
+                           class='input-block-level'
+                           name='type_name'
+                           type='text'
+                           data-placeholder='Type'
+                           is_updating=false
+                           >
+                </div>
+            </div>
+
+            {#Description #}
+            <div class="control-group'">
+                <label for="budget_description"
+                       class="span3 control-label">Description</label>
+                <div class="span9">
+                    <textarea id="budget_description"
+                              name='description'
+                              class="autosize-transition"
+                              style="overflow: hidden;
+                                         word-wrap: break-word;
+                                         resize: horizontal;
+                                         height: 50px;"
+
+                            >{% if mode=='Update' %}{{ budget.description }}{% endif %}</textarea>
+                </div>
+            </div>
+
+        </div>
+
+    </form>
+</div>
+
+
+<script type="text/javascript">
+
+    function init_dialog() {
+
+        console.debug('starting to initialize budget dialog!!!');
+
+        var dialog_label = $('#dialog_template_label');
+        dialog_label.find('span').remove();
+        dialog_label.append('<span>{{ mode}} Budget</span>');
+
+        {% raw %}
+            var budget_type_option_template = doT.template(
+                '<option value={{=it.id}}>{{=it.name}}</option>'
+            );
+        {% endraw %}
+
+        $.getJSON('/types/?target_entity_type=Budget').then(function (available_type) {
+            var budget_type = $('#budget_type');
+
+            var available_types_as_list = [];
+            for (var i=0; i < available_type.length; i++){
+                available_types_as_list.push(available_type[i].name);
+            }
+
+            budget_type.autocomplete({
+                delay: 0,
+                source: available_types_as_list,
+                minLength: 0
+            });
+
+            budget_type.attr('is_updating', false);
+
+            {% if mode=='Update' %}
+                budget_type.val({{ budget.status.id }});
+                budget_type.trigger('liszt:updated');
+            {% endif %}
+
+        });
+        {# ***************************************************************** #}
+        {# Submit Button #}
+        var submit_button = $('#dialog_template_submit_button');
+        submit_button.on('click', function (e) {
+            e.stopPropagation();
+            e.preventDefault();
+
+            submit_button.button('loading');
+            var budget_form = $('#budget_form');
+
+            var url = '/budgets/create';
+            {% if mode=='Update' %}
+                url='/budgets/{{ budget.id }}/update';
+                {% set project = budget.project %}
+            {% endif %}
+
+            $.post(
+                url,
+                budget_form.serialize() + '&' +
+                $.param({
+                    'project_id': {{ project.id }}
+                })
+            ).done(function (jqXHR) {
+                //$('#new_outputs_storage').text(JSON.stringify(jqXHR));
+                window.location.reload();
+            }).fail(function (jqXHR) {
+                bootbox.alert(jqXHR.responseText);
+                submit_button.button('reset');
+            });
+        });
+
+        console.debug('finished initializing the budget dialog!')
+    }
+</script>
+
+<script type="text/javascript">
+    function destruct_dialog() {
+        $('#budget_name').unbind();
+        $('#budget_description').unbind();
+        $('#dialog_template_submit_button').unbind();
+
+        $('#dialog_template').data('modal', null);
+    }
+</script>
+
+
+

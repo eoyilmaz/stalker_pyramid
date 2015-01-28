@@ -44,6 +44,8 @@
 
     {% if entity.entity_type == 'Studio' %}
         {% set add_button_address=request.route_path('create_user_dialog') %}
+    {% elif entity.entity_type == 'Client' %}
+        {% set add_button_address=request.route_path('append_user_to_client_dialog', id=entity.id, _query={'came_from': request.current_route_path()}) %}
     {% else %}
         {% set add_button_title='Add' %}
         {% set add_button_address=request.route_url('append_entities_to_entity_dialog', id=entity.id, entities='User', _query={'came_from': request.current_route_path()}) %}

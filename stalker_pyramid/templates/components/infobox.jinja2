@@ -12,7 +12,7 @@
                 <a data-target="#html_template"
                    data-toggle="modal"
                    data-keyboard=false
-                   href="/tasks/?resources_id={{=it.entity_id }}?status_id={{=it.status_id }}/list"
+                   href='/entities/{{=it.entity_id }}/tasks/filter/{{=it.status_id }}/list'
                    class="white">{{=it.status_code }}</a>
                 {{ } }}
             </div>

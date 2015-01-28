@@ -1,0 +1,294 @@
+{# Stalker Pyramid a Web Base Production Asset Management System
+ Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
+
+ This file is part of Stalker Pyramid.
+
+ This library is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation;
+ version 2.1 of the License.
+
+ This library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Lesser General Public License for more details.
+
+ You should have received a copy of the GNU Lesser General Public
+ License along with this library; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+#}
+
+
+{% extends "base.jinja2" %}
+
+{# BREADCRUMBS #}
+{% block breadcrumbs %}
+    {% include 'breadcrumb/breadcrumbs.jinja2' %}
+{% endblock breadcrumbs %}
+
+{#SIDEBAR#}
+{% block sidebar %}
+    {% include 'sidebar.jinja2' %}
+{% endblock sidebar %}
+
+{#PAGE-CONTENT#}
+{% block page_content %}
+
+    {% set page_title='Resource Rates' %}
+    {% include 'page_header.jinja2' %}
+
+    <div class="row-fluid">
+        <div class="span4">
+            <div class="widget-box">
+                 <div class="widget-header widget-header-small header-color-green }}">
+                        <h5 id="items_header" class="smaller"></h5>
+
+                </div>
+                <div class="widget-body">
+                    <div class="widget-main no-padding">
+    {#                    <div id="loading_spinner" class="well well-sm">#}
+    {##}
+    {#                        <div class="inline middle blue bigger-110"><i#}
+    {#                                class="icon-spinner icon-spin orange bigger-125"></i>#}
+    {#                            Loading#}
+    {#                            content...#}
+    {#                        </div>#}
+    {#                    </div>#}
+
+                        <table id="grid-table"></table>
+                        <div id="grid-pager"></div>
+                        <script type="text/javascript">
+                            var $path_base = "/";//this will be used in gritter alerts containing images
+                        </script>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock page_content %}
+
+{% block extrascripts %}
+    <script type="text/javascript">
+            if("ontouchend" in document) document.write("<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.mobile.custom.min.js") }}'>"+"<"+"/script>");
+        </script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-datepicker.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jqGrid/i18n/grid.locale-en.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jqGrid/jquery.jqGrid.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/accounting.min.js") }}'></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            $.getJSON('/users/').then(function (entry_data) {
+
+                    var grid_data = entry_data;
+
+                    for(var j=0; j<grid_data.length; j++ ){
+
+                    }
+                    jQuery(function($) {
+                        var grid_selector = "#grid-table";
+                        var pager_selector = "#grid-pager";
+
+                        jQuery(grid_selector).jqGrid({
+                            //direction: "rtl",
+                            data: grid_data,
+                            datatype: "local",
+                            height: 800,
+                            colNames:['', 'ID','Name', 'Rate', 'Task Count'],
+                            colModel:[
+                                {name:'myac',index:'', width:70, fixed:true, sortable:false, resize:false,
+                                    formatter:'actions',
+                                    formatoptions:{
+                                        keys:false,
+                                        delbutton:false
+{#                                        delOptions:{recreateForm: true, beforeShowForm:beforeDeleteCallback}#}
+{#                                        //editformbutton:true, editOptions:{recreateForm: true, beforeShowForm:beforeEditCallback}#}
+                                    }
+                                },
+                                {name:'id',index:'id', width:90, sortable:true, editable: false},
+                                {name:'name',index:'name', width:250, sortable:true, editable: false},
+                                {name:'rate',index:'rate',  width:92, editable: true, editoptions:{size:"20",maxlength:"30"}},
+                                {name:'tasksCount',index:'tasksCount',  width:90, editable: false}
+                            ],
+                            viewrecords : true,
+                            rowNum:20,
+                            rowList:[20, 50, 100],
+                            pager : pager_selector,
+                            altRows: true,
+        {#                    toppager: true,#}
+                            multiselect: false,
+{#                            multikey: "ctrlKey",#}
+                            multiboxonly: true,
+
+                            loadComplete : function() {
+
+                                var table = this;
+                                setTimeout(function(){
+                                    styleCheckbox(table);
+                                    updateActionIcons(table);
+                                    updatePagerIcons(table);
+                                    enableTooltips(table);
+
+                                    $('#lui_grid-table').hide();
+                                }, 0);
+                            },
+
+                            editurl:  '/users/update/inline?attr_name=rate',
+                            caption: ""
+                        });
+
+                        //navButtons
+                        jQuery(grid_selector).jqGrid('navGrid',pager_selector,
+                            { 	//navbar options
+                                edit: false,
+                                editicon : 'icon-pencil blue',
+                                add: false,
+                                addicon : 'icon-plus-sign purple',
+                                del: false,
+                                delicon : 'icon-trash red',
+                                search: true,
+                                searchicon : 'icon-search orange',
+                                refresh: true,
+                                refreshicon : 'icon-refresh green',
+                                view: true,
+                                viewicon : 'icon-zoom-in grey'
+                            },
+
+                            {
+                                //search form
+                                recreateForm: true,
+                                afterShowSearch: function(e){
+                                    var form = $(e[0]);
+                                    form.closest('.ui-jqdialog').find('.ui-jqdialog-title').wrap('<div class="widget-header" />')
+                                    style_search_form(form);
+                                },
+                                afterRedraw: function(){
+                                    style_search_filters($(this));
+                                }
+                                ,
+                                multipleSearch: false
+                                /**
+                                multipleGroup:true,
+                                showQuery: true
+                                */
+                            }
+
+                        )
+
+                        function style_edit_form(form) {
+
+                            //update buttons classes
+                            var buttons = form.next().find('.EditButton .fm-button');
+                            buttons.addClass('btn btn-small').find('[class*="-icon"]').remove();//ui-icon, s-icon
+                            buttons.eq(0).addClass('btn-primary').prepend('<i class="icon-ok"></i>');
+                            buttons.eq(1).prepend('<i class="icon-remove"></i>')
+
+                            buttons = form.next().find('.navButton a');
+                            buttons.find('.ui-icon').remove();
+                            buttons.eq(0).append('<i class="icon-chevron-left"></i>');
+                            buttons.eq(1).append('<i class="icon-chevron-right"></i>');
+                        }
+
+                        function style_delete_form(form) {
+                            var buttons = form.next().find('.EditButton .fm-button');
+                            buttons.addClass('btn btn-small').find('[class*="-icon"]').remove();//ui-icon, s-icon
+                            buttons.eq(0).addClass('btn-danger').prepend('<i class="icon-trash"></i>');
+                            buttons.eq(1).prepend('<i class="icon-remove"></i>')
+                        }
+
+                        function style_search_filters(form) {
+                            form.find('.delete-rule').val('X');
+                            form.find('.add-rule').addClass('btn btn-small btn-primary');
+                            form.find('.add-group').addClass('btn btn-small btn-success');
+                            form.find('.delete-group').addClass('btn btn-small btn-danger');
+                        }
+                        function style_search_form(form) {
+                            var dialog = form.closest('.ui-jqdialog');
+                            var buttons = dialog.find('.EditTable')
+                            buttons.find('.EditButton a[id*="_reset"]').addClass('btn btn-small btn-info').find('.ui-icon').attr('class', 'icon-retweet');
+                            buttons.find('.EditButton a[id*="_query"]').addClass('btn btn-small btn-inverse').find('.ui-icon').attr('class', 'icon-comment-alt');
+                            buttons.find('.EditButton a[id*="_search"]').addClass('btn btn-small btn-purple').find('.ui-icon').attr('class', 'icon-search');
+                        }
+
+                        function beforeDeleteCallback(e) {
+                            var form = $(e[0]);
+                            if(form.data('styled')) return false;
+
+                            form.closest('.ui-jqdialog').find('.ui-jqdialog-titlebar').wrapInner('<div class="widget-header" />')
+                            style_delete_form(form);
+
+                            form.data('styled', true);
+                        }
+
+                        function beforeEditCallback(e) {
+                            var form = $(e[0]);
+                            console.log(e[0])
+                            form.closest('.ui-jqdialog').find('.ui-jqdialog-titlebar').wrapInner('<div class="widget-header" />')
+                            style_edit_form(form);
+                        }
+
+                        function styleCheckbox(table) {
+                        /**
+                            $(table).find('input:checkbox').addClass('ace')
+                            .wrap('<label />')
+                            .after('<span class="lbl align-top" />')
+
+
+                            $('.ui-jqgrid-labels th[id*="_cb"]:first-child')
+                            .find('input.cbox[type=checkbox]').addClass('ace')
+                            .wrap('<label />').after('<span class="lbl align-top" />');
+                        */
+                        }
+
+
+                        //unlike navButtons icons, action icons in rows seem to be hard-coded
+                        //you can change them like this in here if you want
+                        function updateActionIcons(table) {
+                            /**
+                            var replacement =
+                            {
+                                'ui-icon-pencil' : 'icon-pencil blue',
+                                'ui-icon-trash' : 'icon-trash red',
+                                'ui-icon-disk' : 'icon-ok green',
+                                'ui-icon-cancel' : 'icon-remove red'
+                            };
+                            $(table).find('.ui-pg-div span.ui-icon').each(function(){
+                                var icon = $(this);
+                                var $class = $.trim(icon.attr('class').replace('ui-icon', ''));
+                                if($class in replacement) icon.attr('class', 'ui-icon '+replacement[$class]);
+                            })
+                            */
+                        }
+
+                        //replace icons with FontAwesome icons like above
+                        function updatePagerIcons(table) {
+                            var replacement =
+                            {
+                                'ui-icon-seek-first' : 'icon-double-angle-left bigger-140',
+                                'ui-icon-seek-prev' : 'icon-angle-left bigger-140',
+                                'ui-icon-seek-next' : 'icon-angle-right bigger-140',
+                                'ui-icon-seek-end' : 'icon-double-angle-right bigger-140'
+                            };
+                            $('.ui-pg-table:not(.navtable) > tbody > tr > .ui-pg-button > .ui-icon').each(function(){
+                                var icon = $(this);
+                                var $class = $.trim(icon.attr('class').replace('ui-icon', ''));
+
+                                if($class in replacement) icon.attr('class', 'ui-icon '+replacement[$class]);
+                            })
+                        }
+
+                        function enableTooltips(table) {
+                            $('.navtable .ui-pg-button').tooltip({container:'body'});
+                            $(table).find('.ui-pg-div').tooltip({container:'body'});
+                        }
+
+                        //var selr = jQuery(grid_selector).jqGrid('getGridParam','selrow');
+
+                });
+            });
+        });
+    </script>
+{% endblock extrascripts %}
+
+

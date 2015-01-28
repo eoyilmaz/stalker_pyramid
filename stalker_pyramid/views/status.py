@@ -258,7 +258,8 @@ def get_statuses_of(request):
     return [
         {
             'id': status.id,
-            'name': status.name + " (" + status.code + ")"
+            'name': status.name + " (" + status.code + ")",
+            'code': status.code
         }
         for status in status_list.statuses
     ]
@@ -278,7 +279,8 @@ def get_statuses_for(request):
     return [
         {
             'id': status.id,
-            'name': status.name + " (" + status.code + ")"
+            'name': status.name + " (" + status.code + ")",
+            'code': status.code
         }
         for status in status_list.statuses
     ] if status_list else []

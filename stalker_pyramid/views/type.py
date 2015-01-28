@@ -52,7 +52,7 @@ join "SimpleEntities" on "Types".id = "SimpleEntities".id
 
     sql_query += """order by "SimpleEntities".name"""
 
-    logger.debug('sql_query: %s' % sql_query)
+
 
     result = db.DBSession.connection().execute(sql_query)
 

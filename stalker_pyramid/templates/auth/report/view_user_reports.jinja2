@@ -1,0 +1,28 @@
+{% extends "base.jinja2" %}
+
+{% block breadcrumbs %}
+    {% set page_title='Timelog Reports' %}
+    {% include 'breadcrumb/breadcrumbs.jinja2' %}
+{% endblock breadcrumbs %}
+
+{% block sidebar %}
+    {% include 'sidebar.jinja2' %}
+{% endblock sidebar %}
+
+{% block page_content %}
+    {% set page_title='Reports' %}
+    {% include 'page_header.jinja2' %}
+    <div class="row-fluid">
+        <div class="span7">
+            {% include 'time_log/report/report_entity_timelogs.jinja2' %}
+        </div>
+        <div class="span5">
+            {% include 'animation_report.jinja2' %}
+        </div>
+    </div>
+{% endblock page_content %}
+
+
+
+
+
