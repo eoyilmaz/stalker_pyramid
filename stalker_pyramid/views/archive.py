@@ -223,7 +223,10 @@ sourceimages/3dPaintTextures"""
                 f.write(data)
         else:
             # just copy the file
-            shutil.copy(path, new_file_path)
+            try:
+                shutil.copy(path, new_file_path)
+            except IOError:
+                pass
 
         return ref_paths
 

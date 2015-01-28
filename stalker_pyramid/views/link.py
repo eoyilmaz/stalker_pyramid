@@ -1284,7 +1284,7 @@ class MediaManager(object):
         self.web_video_format = '.webm'
         self.web_video_width = 960
         self.web_video_height = 540
-        self.web_video_bitrate = 2048  # in kBits/sec
+        self.web_video_bitrate = 4096  # in kBits/sec
 
         # commands
         self.ffmpeg_command_path = '/usr/bin/ffmpeg'
