@@ -133,7 +133,7 @@
                         data: grid_data,
                         datatype: "local",
                         height: grid_data.length*39,
-                        colNames:[' ', 'Type', 'Amount', 'Unit', 'Unit Price', 'Cost','Notes'],
+                        colNames:[' ', 'Type', 'Unit Price',  'Amount', 'Unit','Cost','Notes'],
                         colModel:[
                             {name:'myac',index:'', width:80, fixed:true, sortable:false, resize:false,
                                 formatter:'actions',
@@ -143,11 +143,11 @@
     {#                                editformbutton:true, editOptions:{recreateForm: true, beforeShowForm:beforeEditCallback}#}
                                 }
                             },
-                            {name:'type',index:'type', width:220, editable: true, edittype:"select",editoptions:{value:"FE:Model;IN:Animation;TN:Comp;AR:Lighting"}},
-                            {name:'amount',index:'amount',  width:100,editable: true,editoptions:{size:"20",maxlength:"30"}},
-                            {name:'unit',index:'unit', width:100, editable: true, edittype:"select",editoptions:{value:"HR:Hour;FL:Film;"}},
-                            {name:'unit_price',index:'unit_price', width:150, editable: true, edittype:"select",editoptions:{size:"20",maxlength:"30"}},
-                            {name:'cost',index:'cost', width:150, editable: true, edittype:"select",editoptions:{size:"20",maxlength:"30"}},
+                            {name:'type',index:'type', width:220, editable: false},
+                            {name:'unit_price',index:'unit_price', width:150, editable: false, edittype:"textarea",editoptions:{size:"20",maxlength:"30"}},
+                            {name:'amount',index:'amount',  width:100,editable: true, editoptions:{size:"20",maxlength:"30"}},
+                            {name:'unit',index:'unit', width:100, editable: false, edittype:"select",editoptions:{value:"HR:Hour;FL:Film;"}},
+                            {name:'cost',index:'cost', width:150, editable: false, edittype:"textarea",editoptions:{size:"20",maxlength:"30"}},
                             {name:'note',index:'note', width:250, sortable:false, editable: true, edittype:"textarea", editoptions:{rows:"2",cols:"10"}}
                         ],
                         viewrecords : true,
@@ -156,8 +156,8 @@
                         pager : pager_selector,
                         altRows: true,
     {#                    toppager: true,#}
-                        multiselect: true,
-                        multikey: "ctrlKey",
+                        multiselect: false,
+{#                        multikey: "ctrlKey",#}
                         multiboxonly: true,
 
                         loadComplete : function() {
@@ -177,26 +177,6 @@
                         caption: ""
 
                     });
-
-                    //enable search/filter toolbar
-                    //jQuery(grid_selector).jqGrid('filterToolbar',{defaultSearch:true,stringResult:true})
-
-                    //switch element when editing inline
-                    function aceSwitch( cellvalue, options, cell ) {
-                        setTimeout(function(){
-                            $(cell) .find('input[type=checkbox]')
-                                    .wrap('<label class="inline" />')
-                                .addClass('ace ace-switch ace-switch-5')
-                                .after('<span class="lbl"></span>');
-                        }, 0);
-                    }
-                    //enable datepicker
-                    function pickDate( cellvalue, options, cell ) {
-                        setTimeout(function(){
-                            $(cell) .find('input[type=text]')
-                                    .datepicker({format:'yyyy-mm-dd' , autoclose:true});
-                        }, 0);
-                    }
 
 
 
@@ -243,6 +223,8 @@
                             beforeShowForm : function(e) {
                                 var form = $(e[0]);
                                 if(form.data('styled')) return false;
+
+
 
                                 form.closest('.ui-jqdialog').find('.ui-jqdialog-titlebar').wrapInner('<div class="widget-header" />')
                                 style_delete_form(form);
@@ -361,7 +343,7 @@
                     //unlike navButtons icons, action icons in rows seem to be hard-coded
                     //you can change them like this in here if you want
                     function updateActionIcons(table) {
-                        console.log('updateActionIcons');
+
                         /**
                         var replacement =
                         {

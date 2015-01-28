@@ -22,19 +22,19 @@ import time
 import datetime
 import logging
 
-from pyramid.httpexceptions import HTTPOk, HTTPServerError, HTTPFound
+from pyramid.httpexceptions import HTTPOk, HTTPFound
 from pyramid.response import Response
 from pyramid.view import view_config
 
 from stalker.db import DBSession
-from stalker import (User, ImageFormat, Repository, Structure, Status,
+from stalker import (db, ImageFormat, Repository, Structure, Status,
                      StatusList, Project, Entity, Studio, defaults, Client,
                      Budget, BudgetEntry)
 from stalker.models import local_to_utc
 from stalker.models.project import ProjectUser
 import transaction
 
-from stalker_pyramid.views import (get_date, get_date_range,
+from stalker_pyramid.views import (get_date_range,
                                    get_logged_in_user,
                                    milliseconds_since_epoch, PermissionChecker)
 from stalker_pyramid.views.role import query_role
@@ -197,6 +197,7 @@ def update_project(request):
     fps = int(request.params.get('fps'))
     # get the dates
     start, end = get_date_range(request, 'start_and_end_dates')
+
 
     logger.debug('update_project          :')
 
@@ -409,7 +410,6 @@ def add_project_entries_to_budget(request):
 
     project_entries = get_project_tasks_cost(request)
 
-
     for project_entry in project_entries:
         new_budget_entry_type = query_type('BudgetEntry', project_entry['type_name'])
         new_budget = True
@@ -595,3 +595,4 @@ def view_project(request):
         'milliseconds_since_epoch': milliseconds_since_epoch,
         'projects': projects
     }
+

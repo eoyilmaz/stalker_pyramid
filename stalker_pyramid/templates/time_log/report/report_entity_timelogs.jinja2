@@ -1,0 +1,266 @@
+
+<div class="row-fluid">
+    <div id="chart1"
+         style="margin-top:20px; margin-left:20px; height:400px; background: rgb(57,57,57)">
+     </div>
+</div>
+<div class="row-fluid">
+    <div  id="chart2"
+         style="margin-top:20px; margin-left:20px; height:400px; background: rgb(57,57,57);">
+    </div>
+</div>
+
+<script class="include" type="text/javascript"
+            src='{{ request.static_url("stalker_pyramid:static/jqPlot/jquery.jqplot.min.js") }}'></script>
+<!-- End Don't touch this! -->
+
+<!-- Additional plugins go here -->
+
+<script class="include" type="text/javascript"
+        src='{{ request.static_url("stalker_pyramid:static/jqPlot/plugins/jqplot.categoryAxisRenderer.min.js") }}'></script>
+<script class="include" type="text/javascript"
+        src='{{ request.static_url("stalker_pyramid:static/jqPlot/plugins/jqplot.barRenderer.min.js") }}'></script>
+<script class="include" type="text/javascript"
+        src='{{ request.static_url("stalker_pyramid:static/jqPlot/plugins/jqplot.dateAxisRenderer.min.js") }}'></script>
+<script class="include" type="text/javascript"
+        src='{{ request.static_url("stalker_pyramid:static/jqPlot/plugins/jqplot.logAxisRenderer.min.js") }}'></script>
+<script class="include" type="text/javascript"
+        src='{{ request.static_url("stalker_pyramid:static/jqPlot/plugins/jqplot.canvasAxisTickRenderer.min.js") }}'></script>
+<script class="include" type="text/javascript"
+        src='{{ request.static_url("stalker_pyramid:static/jqPlot/plugins/jqplot.canvasTextRenderer.min.js") }}'></script>
+<script class="include" type="text/javascript"
+        src='{{ request.static_url("stalker_pyramid:static/jqPlot/plugins/jqplot.pointLabels.min.js") }}'></script>
+<script class="include" type="text/javascript"
+        src='{{ request.static_url("stalker_pyramid:static/jqPlot/plugins/jqplot.highlighter.min.js") }}'></script>
+<script class="include" type="text/javascript"
+        src='{{ request.static_url("stalker_pyramid:static/jqPlot/plugins/jqplot.cursor.min.js") }}'></script>
+
+
+<script type="text/javascript">
+    function monthDiff(d1, d2) {
+        var months;
+        months = (d2.getFullYear() - d1.getFullYear()) * 12;
+        months -= d1.getMonth() + 1;
+        months += d2.getMonth();
+        // edit: increment months if d2 comes later in its month than d1 in its month
+        if (d2.getDate() >= d1.getDate())
+            months++
+        // end edit
+        return months <= 0 ? 0 : months;
+    }
+
+
+
+    $(document).ready(function () {
+        var query_str = '';
+        {% if entity.entity_type == 'Project' %}
+            query_str = 'project_id={{entity.id}}';
+        {% elif entity.entity_type == 'User' %}
+            query_str = 'resource_id={{entity.id}}';
+        {% elif entity.entity_type == 'Department' %}
+            {% for resource in entity.users %}
+                query_str += 'resource_id={{resource.id}}&';
+            {% endfor %}
+            query_str = query_str.slice(0,query_str.length-1);
+        {% endif %}
+
+        var start_date = new Date(2013,4,1);
+        var end_date = new Date(2015,11,1);
+
+        console.log('query_str: '+query_str )
+        $.jqplot._noToImageButton = true;
+        $.jqplot.config.enablePlugins = true;
+        $.getJSON('/entities/{{ entity.id }}/total_schedule_seconds/').then(function (t_schedule_seconds) {
+
+            var t_schedule_hours = t_schedule_seconds / 3600.0;
+
+            console.log('t_schedule_hours : '+ t_schedule_hours)
+
+            $.getJSON('/time_logs/monthly?'+query_str).then(function (data) {
+                start_date = new Date(data[0]['start_date'] * 1000)
+                var remaining_schedule_hours = [[start_date.format('yyyy-mm').toString(), t_schedule_hours]];
+                var monthly_timelogs = [];
+                var previous_value = t_schedule_hours;
+                var current_value;
+                var current_total_hours;
+                for (var i=0; i<data.length; i+=1){
+                    current_total_hours = data[i]['total_hours'];
+                    current_value = previous_value - current_total_hours;
+                    monthly_timelogs.push([new Date(data[i]['start_date'] * 1000).format('yyyy-mm').toString(), current_total_hours])
+                    remaining_schedule_hours.push([new Date(data[i]['start_date'] * 1000).format('yyyy-mm-dd HH:MM').toString(), current_value]);
+                    previous_value = current_value;
+                }
+
+
+                var target_final = [
+                    remaining_schedule_hours[0],
+                    [end_date.format('yyyy-mm').toString(), 1]
+                ];
+
+                var plot1 = $.jqplot("chart1", [remaining_schedule_hours, target_final], {
+                    seriesColors: ["rgba(78, 135, 194, 0.7)", "rgb(211, 235, 59)"],
+                    title: {
+                        text:'Monthly Project Burn Down Chart',
+                        textColor: '#dddddd'
+                      },
+                    highlighter: {
+                        show: true,
+                        sizeAdjust: 1,
+                        tooltipOffset: 9
+                    },
+                    cursor: {
+                         show: true
+                     },
+                    grid: {
+                        background: 'rgba(57,57,57,1.0)',
+                        drawBorder: false,
+                        shadow: false,
+                        gridLineColor: '#666666',
+                        gridLineWidth: 2
+                    },
+                    legend: {
+                        show: true,
+                        placement: 'outside'
+                    },
+                    seriesDefaults: {
+                        rendererOptions: {
+                            smooth: false
+                        },
+                        showMarker: true
+                    },
+                    series: [
+                        {
+                            fill: true,
+                            label: 'reel'
+                        },
+                        {
+                            label: 'target'
+                        }
+                    ],
+                    axesDefaults: {
+                        rendererOptions: {
+                            baselineWidth: 1.5,
+                            baselineColor: '#444444',
+                            drawBaseline: false
+                        }
+                    },
+                    axes: {
+                        xaxis: {
+                            renderer: $.jqplot.DateAxisRenderer,
+                            tickRenderer: $.jqplot.CanvasAxisTickRenderer,
+                            tickOptions: {
+                                formatString: "%b %Y",
+                                angle: -30,
+                                textColor: '#dddddd'
+                            },
+                            min: start_date.format('yyyy-mm-dd').toString(),
+                            max: end_date.format('yyyy-mm-dd').toString(),
+                            tickInterval: "2 months",
+                            drawMajorGridlines: true
+                        },
+                        yaxis: {
+                            renderer: $.jqplot.LinearAxisRenderer,
+                            pad: 0,
+                            rendererOptions: {
+                                minorTicks: 1
+                            },
+                            tickOptions: {
+                                formatString: "  %d h",
+                                showMark: false
+                            }
+                        }
+                    }
+
+                });
+                $('.jqplot-highlighter-tooltip').addClass('ui-corner-all');
+
+                var remaining_months = monthDiff(
+                    new Date(data[data.length-1]['start_date']*1000),
+                    end_date
+                );
+                var new_target_step = previous_value/remaining_months;
+                var new_target_timelogs = [
+                    [remaining_schedule_hours[remaining_schedule_hours.length-1][0],new_target_step ],
+                    [end_date.format('yyyy-mm').toString(), new_target_step]
+                ];
+
+                var all_months = monthDiff(
+                    start_date,
+                    end_date
+                );
+                var old_target_step = t_schedule_hours/all_months;
+                var old_target_timelogs = [
+                    [start_date.format('yyyy-mm').toString(), old_target_step ],
+                    [end_date.format('yyyy-mm').toString(), old_target_step]
+                ];
+
+                var plot2 = $.jqplot('chart2', [monthly_timelogs, old_target_timelogs, new_target_timelogs], {
+                            seriesColors: ["rgba(78, 135, 194, 0.7)", "rgb(211, 200, 59)","rgb(211, 59, 59)"],
+                            series: [
+                                {
+                                    label: ' reel'
+                                },
+                                {
+                                    label: ' ideal'
+                                },
+                                {
+                                    label: ' new target'
+                                }
+
+                            ],
+                            title: {
+                                text:'Monthly Timelogs',
+                                textColor: '#dddddd'
+                              },
+                            highlighter: {
+
+                                show: true,
+                                sizeAdjust: 10,
+
+                            },
+                            grid: {
+                                background: 'rgba(57,57,57,0.5)',
+                                drawBorder: false,
+                                shadow: false,
+                                gridLineColor: '#666666',
+                                gridLineWidth: 2
+                            },
+                            axes:{
+                               xaxis: {
+                                    renderer: $.jqplot.DateAxisRenderer,
+                                    tickRenderer: $.jqplot.CanvasAxisTickRenderer,
+                                    tickOptions: {
+                                        formatString: "%b %Y",
+                                        angle: -30,
+                                        textColor: '#dddddd'
+                                    },
+                                    min: start_date.format('yyyy-mm-dd').toString(),
+                                    max: end_date.format('yyyy-mm-dd').toString(),
+                                    tickInterval: "2 months",
+                                    drawMajorGridlines: false
+                                },
+                                yaxis: {
+                                    renderer: $.jqplot.LinearAxisRenderer,
+                                    pad: 0,
+                                    rendererOptions: {
+                                        minorTicks: 1
+                                    },
+                                    tickOptions: {
+                                        formatString: "  %d h",
+                                        showMark: false
+                                    }
+                                }
+                            },
+                            seriesDefaults: {
+
+                                showMarker: true
+                            }
+
+                          });
+            });
+
+
+        });
+
+    });
+</script>

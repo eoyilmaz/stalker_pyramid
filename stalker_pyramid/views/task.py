@@ -1179,6 +1179,7 @@ def generate_where_clause(params):
             'entity_type': ['Task'],
             'task_type': ['Lighting'],
             'resource': ['Ozgur'],
+            'resource_id': [23, 45, 58],
             'responsible_id': [25, 26],
             'path': ['108', '108|26']
         }
@@ -1322,6 +1323,18 @@ def generate_where_clause(params):
             compress_buffer(temp_buffer, 'or')
         )
 
+    # task_type_id
+    temp_buffer = []
+    for task_type_id in params.get('task_type_id[]',
+                                params.get('task_type_id', [])):
+        temp_buffer.append(
+            "task_types.type_id = {task_type_id}".format(task_type_id=task_type_id)
+        )
+    if len(temp_buffer):
+        where_string_buffer.append(
+            compress_buffer(temp_buffer, 'or')
+        )
+
     # project_id
     temp_buffer = []
     for project_id in params.get('project_id[]',
@@ -1396,8 +1409,6 @@ def generate_where_clause(params):
         where_string_buffer.append(
             compress_buffer(temp_buffer, 'or')
         )
-
-
 
     statuses = params.get('status[]', params.get('status', []))
     if statuses:
@@ -1681,7 +1692,8 @@ def cached_query_tasks(
         left join (
             select
                 "Tasks".id,
-                "Type_SimpleEntities".name
+                "Type_SimpleEntities".name,
+                "Type_SimpleEntities".id as type_id
             from "Tasks"
             join "SimpleEntities" as "Task_SimpleEntities" on "Tasks".id = "Task_SimpleEntities".id
             join "Types" on "Task_SimpleEntities".type_id = "Types".id
@@ -2028,7 +2040,8 @@ def get_cached_tasks_count(entity_type, where_clause, task_id):
         left join (
             select
                 "Tasks".id,
-                "Type_SimpleEntities".name
+                "Type_SimpleEntities".name,
+                "Type_SimpleEntities".id as type_id
             from "Tasks"
             join "SimpleEntities" as "Task_SimpleEntities" on "Tasks".id = "Task_SimpleEntities".id
             join "Types" on "Task_SimpleEntities".type_id = "Types".id
@@ -5551,3 +5564,8 @@ def get_actual_end_time(task):
         return end_time_log.end
 
     return task.computed_end
+
+
+
+
+

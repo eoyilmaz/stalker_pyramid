@@ -25,9 +25,10 @@ import logging
 
 from pyramid.response import Response
 from pyramid.view import view_config
+from stalker.db import DBSession
 import transaction
 
-from stalker import Project, Entity, Task, Shot, Type, Asset
+from stalker import db,Project, Entity, Task, Shot, Type, Asset
 
 from stalker_pyramid.views import (get_logged_in_user,
                                    PermissionChecker, get_multi_integer,
@@ -306,3 +307,71 @@ def update_shot_task_dependencies(action, shot, task_name, dependencies, user, d
 
         # else:
         #     return 'There is no dependency task'
+
+
+@view_config(
+    route_name='get_user_animation_seconds',
+    renderer='json'
+)
+def get_user_animation_seconds(request):
+    """gives get_user_animation_seconds
+    """
+    logger.debug('get_user_animation_seconds starts')
+    entity_id = request.matchdict.get('id')
+
+    sql_query = """select
+          sum(shots.r_seconds) as total_seconds,
+          array_agg(shots.shot_name) as shot_names,
+          min(extract(epoch from shots.start::timestamp AT TIME ZONE 'UTC')) as start,
+          max(extract(epoch from shots.end::timestamp AT TIME ZONE 'UTC')) as end
+    from (
+        select  "Shot_SimpleEntities".name as shot_name,
+                ("Shots".cut_out - "Shots".cut_in)/24 as seconds,
+
+                (("Shots".cut_out - "Shots".cut_in)/24)*(sum(extract(epoch from "TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC'))/
+                    ("Tasks".schedule_timing * (case "Tasks".schedule_unit
+                                when 'min' then 60
+                                when 'h' then 3600
+                                when 'd' then 32400
+                                when 'w' then 147600
+                                when 'm' then 590400
+                                when 'y' then 7696277
+                                else 0
+                            end))
+                    ) as r_seconds,
+                min("TimeLogs".start) as start,
+                max("TimeLogs".end) as end
+
+        from "TimeLogs"
+        join "Tasks" on "TimeLogs".task_id = "Tasks".id
+        join "Task_Resources" on "Task_Resources".task_id = "Tasks".id
+        join "SimpleEntities" as "Task_SimpleEntities" on "Task_SimpleEntities".id = "Tasks".id
+        join "SimpleEntities" as "Type_SimpleEntities" on "Type_SimpleEntities".id = "Task_SimpleEntities".type_id
+        join "Shots" on "Shots".id = "Tasks".parent_id
+        join "SimpleEntities" as "Shot_SimpleEntities" on "Shot_SimpleEntities".id = "Shots".id
+
+        where "Task_Resources".resource_id = %(resource_id)s and "Type_SimpleEntities".name = 'Animation'
+
+        group by "Shot_SimpleEntities".name,
+                 seconds,
+                 "Tasks".schedule_timing,
+                 "Tasks".schedule_unit
+
+
+        ) as shots
+
+        group by  date_trunc('month', shots.start)
+        order by start
+    """
+    sql_query = sql_query % {'resource_id': entity_id}
+
+    result = DBSession.connection().execute(sql_query).fetchall()
+
+    return [{
+        'total_seconds': r[0],
+        'shot_names': r[1],
+        'start_date': r[2],
+        'end_date': r[3]
+    } for r in result]
+
+

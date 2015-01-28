@@ -72,22 +72,24 @@
             get_icon('group'),
             0
         );
+        {% if  has_permission('Create_Project') %}
+            menu_of(
+                'Clients',
+                "{%- if request.current_route_path() == request.route_path('list_studio_clients', id=studio.id) -%}'active',{%- else -%},{%- endif -%}",
+                '{{ request.route_url('list_studio_clients', id=studio.id) }}',
+                get_icon('client'),
+                0
+            );
 
-        menu_of(
-            'Clients',
-            "{%- if request.current_route_path() == request.route_path('list_studio_clients', id=studio.id) -%}'active',{%- else -%},{%- endif -%}",
-            '{{ request.route_url('list_studio_clients', id=studio.id) }}',
-            get_icon('client'),
-            0
-        );
+                menu_of(
+                    'Resource Rates',
+                    "{%- if request.current_route_path() == request.route_path('list_resource_rates', id=studio.id) -%}'active',{%- else -%},{%- endif -%}",
+                    '{{ request.route_url('list_resource_rates', id=studio.id) }}',
+                    get_icon('user'),
+                    0
+                );
+        {% endif %}
 
-        menu_of(
-            'Resource_Rates',
-            "{%- if request.current_route_path() == request.route_path('list_resource_rates', id=studio.id) -%}'active',{%- else -%},{%- endif -%}",
-            '{{ request.route_url('list_resource_rates', id=studio.id) }}',
-            get_icon('user'),
-            0
-        );
 
         menu_of(
             'Vacations',

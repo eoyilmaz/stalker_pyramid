@@ -273,7 +273,9 @@ def get_shots(request):
     array_agg("Tasks".schedule_timing) as schedule_timing,
     array_agg("Tasks".schedule_unit)::text[] as schedule_unit,
     array_agg("Resources_SimpleEntities".name) as resource_name,
-    array_agg("Resources_SimpleEntities".id) as resource_id
+    array_agg("Resources_SimpleEntities".id) as resource_id,
+    "Shots".cut_in as cut_in,
+    "Shots".cut_out as cut_out
 
 from "Tasks"
 join "Shots" on "Shots".id = "Tasks".parent_id
@@ -325,7 +327,9 @@ group by
     "Distinct_Shot_Statuses".shot_status_code,
     "Distinct_Shot_Statuses".shot_status_html_class,
     "Shot_Sequences".sequence_id,
-    "Shot_Sequences_SimpleEntities".name
+    "Shot_Sequences_SimpleEntities".name,
+    "Shots".cut_in,
+    "Shots".cut_out
 order by "Shot_SimpleEntities".name
 """
 
@@ -365,6 +369,8 @@ order by "Shot_SimpleEntities".name
             'status_color': r[5],
             'sequence_id': r[12],
             'sequence_name': r[13],
+            'cut_in': r[20],
+            'cut_out': r[21],
             'update_shot_action': '/tasks/%s/update/dialog' % r[0]
                 if update_shot_permission else None,
             'delete_shot_action': '/tasks/%s/delete/dialog' % r[0]

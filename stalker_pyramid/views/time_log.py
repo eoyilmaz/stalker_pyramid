@@ -35,7 +35,8 @@ from stalker_pyramid.views import (get_logged_in_user,
                                    PermissionChecker, milliseconds_since_epoch,
                                    get_date, StdErrToHTMLConverter,
                                    local_to_utc)
-from stalker_pyramid.views.task import get_task_full_path
+from stalker_pyramid.views.task import (get_task_full_path,
+                                        generate_where_clause)
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -264,6 +265,10 @@ def update_time_log(request):
     route_name='get_task_time_logs',
     renderer='json'
 )
+@view_config(
+    route_name='get_project_time_logs',
+    renderer='json'
+)
 def get_time_logs(request):
     """returns all the time logs of the given entity
     """
@@ -334,6 +339,8 @@ def get_time_logs(request):
         sql_query += 'where "TimeLogs".resource_id = %s' % entity_id
     elif entity_type == 'Task':
         sql_query += 'where "TimeLogs".task_id = %s' % entity_id
+    elif entity_type == 'Project':
+        sql_query += 'where "Tasks".project_id = %s' % entity_id
     elif entity_type is None:
         return []
 
@@ -360,6 +367,56 @@ def get_time_logs(request):
     end = time.time()
     logger.debug('get_entity_time_logs took: %s seconds' % (end - start))
     return data
+
+
+@view_config(
+    route_name='get_monthly_time_logs',
+    renderer='json'
+)
+def get_monthly_time_logs(request):
+    """returns project monthly time logs as a json
+    """
+    sql_query = """select
+        sum(extract(epoch from "TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC')) / 3600 as total_hours,
+        min(extract(epoch from "TimeLogs".start::timestamp AT TIME ZONE 'UTC')) as start,
+        max(extract(epoch from "TimeLogs".end::timestamp AT TIME ZONE 'UTC')) as end
+    from "TimeLogs"
+        join "Tasks" on "TimeLogs".task_id = "Tasks".id
+
+        -- Resources
+        left outer join (
+            select
+                "Tasks".id as task_id,
+                array_agg(("Resource_SimpleEntities".id, "Resource_SimpleEntities".name)) as info,
+                array_agg("Resource_SimpleEntities".id) as resource_id,
+                array_agg("Resource_SimpleEntities".name) as resource_name
+            from "Tasks"
+            join "Task_Resources" on "Tasks".id = "Task_Resources".task_id
+            join "SimpleEntities" as "Resource_SimpleEntities" on "Task_Resources".resource_id = "Resource_SimpleEntities".id
+            group by "Tasks".id
+        ) as resource_info on "Tasks".id = resource_info.task_id
+
+    %(where_clause)s
+
+    group by date_trunc('month', "TimeLogs".start)
+    order by start
+    """
+
+    where_clause = generate_where_clause(request.params.dict_of_lists())
+
+    sql_query = sql_query % {
+        'where_clause': where_clause
+    }
+
+    result = DBSession.connection().execute(sql_query).fetchall()
+
+    logger.debug('get_project_total_schedule_seconds: %s' % result[0])
+    return [{
+        'total_hours': r[0],
+        'start_date': r[1],
+        'end_date': r[2]
+    } for r in result]
+
 
 @view_config(
     route_name='delete_time_log',

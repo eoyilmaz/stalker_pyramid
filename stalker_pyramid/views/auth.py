@@ -28,6 +28,7 @@ from pyramid.response import Response
 from pyramid.security import forget, remember
 from pyramid.view import view_config, forbidden_view_config
 from sqlalchemy import or_
+from stalker.models import local_to_utc
 import transaction
 
 import stalker_pyramid
@@ -203,6 +204,54 @@ def create_user(request):
         log_param(request, 'password')
 
         return Response('There are missing parameters: ', 500)
+
+
+@view_config(
+    route_name='inline_update_user'
+)
+def inline_update_user(request):
+    """Inline updates the given user with the data coming from the request
+    """
+
+    logger.debug('INLINE UPDATE USER IS RUNNING')
+
+    logged_in_user = get_logged_in_user(request)
+
+    logger.debug(request.params)
+
+    # *************************************************************************
+    # collect data
+    attr_name = request.params.get('attr_name', -1)
+
+    logger.debug('attr_name: %s' % attr_name)
+    attr_val = request.params.get(attr_name, None)
+
+    # get user
+    user_id = request.params.get('id', -1)
+    user = User.query.filter(User.id == user_id).first()
+
+    # update the user
+    if not user:
+        transaction.abort()
+        return Response("No user found with id : %s" % user_id, 500)
+
+    if attr_val:
+        if attr_name == 'rate':
+            attr_val = int(attr_val)
+        setattr(user, attr_name, attr_val)
+
+        user.updated_by = logged_in_user
+        utc_now = local_to_utc(datetime.datetime.now())
+        user.date_updated = utc_now
+
+    else:
+        logger.debug('not updating')
+        return Response("MISSING PARAMETERS", 500)
+
+    return Response(
+        'User updated successfully '
+    )
+
 
 
 @view_config(

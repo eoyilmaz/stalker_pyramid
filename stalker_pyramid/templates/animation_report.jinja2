@@ -1,0 +1,107 @@
+<div class="row-fluid">
+    <div id="chart_anim" style="margin-top:20px; margin-left:20px; height:400px; background: rgb(57,57,57)" class="hide">
+     </div>
+</div>
+
+<script class="include" type="text/javascript"
+            src='{{ request.static_url("stalker_pyramid:static/jqPlot/jquery.jqplot.min.js") }}'></script>
+<!-- End Don't touch this! -->
+
+<!-- Additional plugins go here -->
+
+<script class="include" type="text/javascript"
+        src='{{ request.static_url("stalker_pyramid:static/jqPlot/plugins/jqplot.categoryAxisRenderer.min.js") }}'></script>
+<script class="include" type="text/javascript"
+        src='{{ request.static_url("stalker_pyramid:static/jqPlot/plugins/jqplot.barRenderer.min.js") }}'></script>
+<script class="include" type="text/javascript"
+        src='{{ request.static_url("stalker_pyramid:static/jqPlot/plugins/jqplot.dateAxisRenderer.min.js") }}'></script>
+<script class="include" type="text/javascript"
+        src='{{ request.static_url("stalker_pyramid:static/jqPlot/plugins/jqplot.logAxisRenderer.min.js") }}'></script>
+<script class="include" type="text/javascript"
+        src='{{ request.static_url("stalker_pyramid:static/jqPlot/plugins/jqplot.canvasAxisTickRenderer.min.js") }}'></script>
+<script class="include" type="text/javascript"
+        src='{{ request.static_url("stalker_pyramid:static/jqPlot/plugins/jqplot.canvasTextRenderer.min.js") }}'></script>
+<script class="include" type="text/javascript"
+        src='{{ request.static_url("stalker_pyramid:static/jqPlot/plugins/jqplot.pointLabels.min.js") }}'></script>
+<script class="include" type="text/javascript"
+        src='{{ request.static_url("stalker_pyramid:static/jqPlot/plugins/jqplot.highlighter.min.js") }}'></script>
+<script class="include" type="text/javascript"
+        src='{{ request.static_url("stalker_pyramid:static/jqPlot/plugins/jqplot.cursor.min.js") }}'></script>
+
+
+<script type="text/javascript">
+    $(document).ready(function () {
+
+        $.jqplot._noToImageButton = true;
+        $.jqplot.config.enablePlugins = true;
+        $.getJSON('/users/{{ entity.id }}/animation').then(function (data) {
+                console.log('done' + data.length)
+                if (data.length>0){
+                    $('#chart_anim').show()
+                    var monthly_anim_seconds = [];
+
+                    for (var i=0; i<data.length; i+=1){
+                        monthly_anim_seconds.push([new Date(data[i]['start_date'] * 1000).format('yyyy-mm').toString(), data[i]['total_seconds']])
+
+                    }
+                    var plot1 = $.jqplot('chart_anim', [monthly_anim_seconds], {
+                                seriesColors: ["rgba(78, 135, 194, 0.7)"],
+
+                                title: {
+                                    text:'Monthly Timelogs',
+                                    textColor: '#dddddd'
+                                  },
+                                highlighter: {
+
+                                    show: true,
+                                    sizeAdjust: 10,
+
+                                },
+                                grid: {
+                                    background: 'rgba(57,57,57,0.5)',
+                                    drawBorder: false,
+                                    shadow: false,
+                                    gridLineColor: '#666666',
+                                    gridLineWidth: 2
+                                },
+                                legend: {
+                                    show: true,
+                                    placement: 'outside'
+                                },
+                                axes:{
+                                   xaxis: {
+                                        renderer: $.jqplot.DateAxisRenderer,
+                                        tickRenderer: $.jqplot.CanvasAxisTickRenderer,
+                                        tickOptions: {
+                                            formatString: "%b %Y",
+                                            angle: -30,
+                                            textColor: '#dddddd'
+                                        },
+
+                                        tickInterval: "1 month",
+                                        drawMajorGridlines: false
+                                    },
+                                    yaxis: {
+                                        renderer: $.jqplot.LinearAxisRenderer,
+                                        pad: 0,
+                                        rendererOptions: {
+                                            minorTicks: 1
+                                        },
+                                        tickOptions: {
+                                            formatString: "  %d seconds",
+                                            showMark: false
+                                        }
+                                    }
+                                },
+                                seriesDefaults: {
+
+                                    showMarker: true
+                                }
+
+                              });
+                    }
+        });
+
+
+    });
+</script>
