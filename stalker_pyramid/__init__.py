@@ -180,7 +180,7 @@ def main(global_config, **settings):
     config.add_route('get_entity_notes',               'entities/{id}/notes/') #json
     config.add_route('get_entity_task_min_start',      'entities/{id}/task_min_start/') #json
     config.add_route('get_entity_task_max_end',        'entities/{id}/task_max_end/') #json
-    
+
     config.add_route('list_entity_users',              'entities/{id}/users/list')
     config.add_route('list_entity_departments',        'entities/{id}/departments/list')  # html
     config.add_route('list_entity_groups',             'entities/{id}/groups/list')  # html
@@ -196,7 +196,6 @@ def main(global_config, **settings):
     config.add_route('list_entity_resources',          'entities/{id}/resources/list')  # html
     config.add_route('list_entity_notes',              'entities/{id}/notes/list') #html
 
-
     config.add_route('append_entities_to_entity_dialog',  'entities/{id}/{entities}/append/dialog')
     config.add_route('append_entities_to_entity',         'entities/{id}/append')
 
@@ -204,7 +203,6 @@ def main(global_config, **settings):
     config.add_route('view_entity_tasks',              'entities/{id}/tasks/view')
     config.add_route('view_entity_group',              'entities/{eid}/groups/{id}/view')
     config.add_route('view_entity_department',         'entities/{eid}/departments/{id}/view')
-
 
     # *************************************************************************
     # Notes
@@ -395,7 +393,7 @@ def main(global_config, **settings):
     config.add_route('append_link_to_daily', 'links/{id}/dailies/{did}/append')
     config.add_route('remove_link_to_daily_dialog', 'links/{id}/dailies/{did}/remove/dialog')
     config.add_route('remove_link_to_daily', 'links/{id}/dailies/{did}/remove')
-
+    config.add_route('convert_to_webm',      'links/{id}/convert_to_webm')
 
     # *************************************************************************
     # ImageFormat
