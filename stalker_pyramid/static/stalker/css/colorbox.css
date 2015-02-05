@@ -239,8 +239,8 @@
 
 #cboxClose {
     position: absolute;
-    bottom: 0;
-    right: 0;
+    top: 4px;
+    right: 4px;
     background: url(images/controls.png) no-repeat -25px 0;
     width: 25px;
     height: 25px;
