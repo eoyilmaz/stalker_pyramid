@@ -1228,6 +1228,71 @@ def video_player(request):
     }
 
 
+@view_config(
+    route_name='convert_to_webm'
+)
+def convert_to_webm(request):
+    """converts the given file with at the given Link output to WebM format
+    """
+    link_id = request.matchdict['id']
+    link = Link.query.filter(Link.id == link_id).first()
+
+    if not link:
+        return
+
+    # get a version that has this Link
+    v = Version.query.filter(Version.outputs.contains(link)).first()
+
+    if not v:
+        return
+
+    repo = v.task.project.repository
+
+    # for now we need to write code that supports both Stalker pre v0.2.13 and
+    # post v0.2.13 which introduces a difference in Repository path
+    pre_upgrade = False
+    if '$' in link.full_path:  # this is the new style starting with Stalker v0.2.13
+        link_full_path = os.path.expandvars(link.full_path)
+    else:  # this is the pre Stalker v0.2.13
+        pre_upgrade = True
+        link_full_path = '%s/%s' % (repo.path, link.full_path)
+
+    m = MediaManager()
+    web_version_temp_full_path = m.generate_video_for_web(link_full_path)
+
+    # generate a path with ".webm" extension
+    web_version_full_path = \
+        '%s%s' % (os.path.splitext(link_full_path)[0], m.web_video_format)
+
+    # move the file there
+    try:
+        shutil.move(web_version_temp_full_path, web_version_full_path)
+    except IOError:
+        logger.debug('there was an error moving the web version to its new '
+                     'path!')
+        return
+
+    # and update the link
+    old_path = '%s/%s' % (repo.path, link.full_path)
+
+    if pre_upgrade:
+        link.full_path = repo.make_relative(web_version_full_path)
+    else:
+        # we need to use the new style of links with env variables
+        link.full_path = '%s/%s' % (
+            defaults.repo_env_var_template % {'id': repo.id},
+            link.full_path
+        )
+
+    try:
+        # remove the old one
+        os.remove(old_path)
+    except OSError:
+        pass
+
+    return
+
+
 class MediaManager(object):
     """Manages media files.
 

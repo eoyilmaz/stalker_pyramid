@@ -1086,9 +1086,9 @@ def update_task(request):
 
     if entity_type == 'Shot':
         logger.debug('entity_type is Shot')
-        task.sequences = [
-            Sequence.query.filter_by(id=shot_sequence_id).first()
-        ]
+        sequence = Sequence.query.filter_by(id=shot_sequence_id).first()
+        if sequence:
+            task.sequences = [sequence]
         task.cut_in = cut_in
         task.cut_out = cut_out
 
@@ -1566,7 +1566,7 @@ def cached_query_tasks(
 
     if entity_type not in ['Project', 'Studio']:
 
-        logger.debug('where_clause: %s' % where_clause)
+        # logger.debug('where_clause: %s' % where_clause)
 
         sql_query = """
         select
@@ -1915,7 +1915,7 @@ def get_cached_tasks_count(entity_type, where_clause, task_id):
 
     if entity_type not in ['Project', 'Studio']:
 
-        logger.debug('where_clause: %s' % where_clause)
+        # logger.debug('where_clause: %s' % where_clause)
 
         sql_query = """select count(result.id) from (
         select
@@ -2155,7 +2155,13 @@ def get_cached_tasks_count(entity_type, where_clause, task_id):
     from sqlalchemy import text  # to be able to use "%" sign use this function
 
     result = db.DBSession.connection().execute(text(sql_query))
-    return result
+
+    tasks_count = result.fetchone()
+
+    if tasks_count:
+        return tasks_count[0]
+    else:
+        return 0
 
 
 @view_config(
@@ -2183,13 +2189,9 @@ def get_tasks_count(request):
     if entity_type not in ['Project', 'Studio']:
         where_clause = generate_where_clause(request.params.dict_of_lists())
 
-    result = get_cached_tasks_count(entity_type, where_clause, task_id)
+    return get_cached_tasks_count(entity_type, where_clause, task_id)
 
-    tasks_count = result.fetchone()
-    if tasks_count:
-        return tasks_count[0]
-    else:
-        return 0
+
 
 
 @view_config(
@@ -2301,7 +2303,7 @@ def get_cached_user_tasks(statuses, user_id):
             temp_buffer.append(""" "Task_Statuses".code='%s'""" % status.code)
         temp_buffer.append(' )')
         where_clause = ''.join(temp_buffer)
-    logger.debug('where_clause: %s' % where_clause)
+    # logger.debug('where_clause: %s' % where_clause)
     sql_query = sql_query % {
         'generate_recursive_task_query': generate_recursive_task_query(),
         'where_clause': where_clause

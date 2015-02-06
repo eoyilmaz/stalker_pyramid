@@ -911,40 +911,28 @@ require([
     });
 
 
-
     $('#change_tasks_users_menu_item').on('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
 
         // get the selection list
         var selected_ids = gantt_chart.selected_ids();
-{#        console.debug('selected_ids: ', selected_ids);#}
         if (selected_ids.length == 0) {
-            bootbox.alert('Please select at least one item from the ' +
-                    'GanttChart!');
+            bootbox.alert('Please select at least one item from the GanttChart!');
             return;
         }
         var _query = '?project_id={{ project.id }}';
         for (var i=0; i<selected_ids.length; i++){
            _query +='&task_ids='+selected_ids[i];
         }
-        var remote = '/tasks/change/Resources/dialog'+_query
-        console.log ('remote: '+remote)
+        var remote = '/tasks/change/Resources/dialog' + _query;
+        console.log ('remote: ' + remote);
         var event_dialog = $('#dialog_template');
         event_dialog.modal({
             'remote': remote
         });
-{#        $.post('/tasks/change/Resources/dialog'+_query#}
-{#                    ).done(function (response_text) {#}
-{#                        bootbox.alert(response_text);#}
-{#                        // reload the gantt chart#}
-{#                        gantt_column.reload();#}
-{#                    }).fail(function (jqXHR) {#}
-{#                        bootbox.alert(jqXHR.responseText);#}
-{#                    });#}
-
-
     });
+
 
     $('#change_tasks_priority_menu_item').on('click', function (e) {
         e.preventDefault();
@@ -962,24 +950,13 @@ require([
         for (var i=0; i<selected_ids.length; i++){
            _query +='&task_ids='+selected_ids[i];
         }
-        var remote = '/tasks/change_priority/dialog'+_query
-        console.log ('remote: '+remote)
+        var remote = '/tasks/change_priority/dialog'+_query;
+        console.log ('remote: ' + remote);
         var event_dialog = $('#dialog_template');
         event_dialog.modal({
             'remote': remote
         });
-{#        $.post('/tasks/change/Resources/dialog'+_query#}
-{#                    ).done(function (response_text) {#}
-{#                        bootbox.alert(response_text);#}
-{#                        // reload the gantt chart#}
-{#                        gantt_column.reload();#}
-{#                    }).fail(function (jqXHR) {#}
-{#                        bootbox.alert(jqXHR.responseText);#}
-{#                    });#}
-
-
     });
-
 
 
     $('#add_tasks_dependencies_menu_item').on('click', function (e) {
@@ -988,7 +965,6 @@ require([
 
         // get the selection list
         var selected_ids = gantt_chart.selected_ids();
-{#        console.debug('selected_ids: ', selected_ids);#}
         if (selected_ids.length == 0) {
             bootbox.alert('Please select at least one item from the ' +
                 'GanttChart!');
@@ -1004,15 +980,6 @@ require([
         event_dialog.modal({
             'remote': remote
         });
-{#        $.post('/tasks/change/Resources/dialog'+_query#}
-{#                    ).done(function (response_text) {#}
-{#                        bootbox.alert(response_text);#}
-{#                        // reload the gantt chart#}
-{#                        gantt_column.reload();#}
-{#                    }).fail(function (jqXHR) {#}
-{#                        bootbox.alert(jqXHR.responseText);#}
-{#                    });#}
-
     });
 
     $('#delete_task_menu_item').on('click', function (e) {
@@ -1021,7 +988,6 @@ require([
 
         // get the selection list
         var selected_ids = gantt_chart.selected_ids();
-{#        console.debug('selected_ids: ', selected_ids);#}
         if (selected_ids.length == 0) {
             bootbox.alert('Please select at least one item from the ' +
                     'GanttChart!');
@@ -1132,10 +1098,10 @@ require([
                 if (data.is_scheduling){
                     // the system is scheduling right now, don't do anything
                     var message = '<div>The Studio is being scheduled right now by ' +
-                            data.is_scheduling_by +
-                            ' (started at' +
-                            moment(data.scheduling_started_at).format('YYYY-MM-DD HH:mm') +
-                            '), please wait until the current scheduling is done!</div>';
+                        data.is_scheduling_by +
+                        ' (started at' +
+                        moment(data.scheduling_started_at).format('YYYY-MM-DD HH:mm') +
+                        '), please wait until the current scheduling is done!</div>';
                     bootbox.alert(message);
                     $('.bootbox')
                         .prepend('<div class="modal-header alert-danger"><strong>Fail</strong></div>')
@@ -1203,7 +1169,6 @@ require([
                     });
                 }
             });
-
         });
     {% endif %}
 
