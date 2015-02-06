@@ -86,3 +86,6 @@ def query_type(entity_type, type_name):
         db.DBSession.add(type_)
 
     return type_
+
+
+

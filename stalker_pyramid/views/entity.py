@@ -350,6 +350,10 @@ logger.setLevel(logging.DEBUG)
     renderer='templates/budget/list/list_project_budgets.jinja2'
 )
 @view_config(
+    route_name='list_studio_goods',
+    renderer='templates/good/list/list_studio_goods.jinja2'
+)
+@view_config(
     route_name='test_page',
     renderer='templates/test_page.jinja2'
 )

@@ -103,7 +103,7 @@ def create_group(request):
         transaction.abort()
         return response
 
-    response = Response('successfully updated %s group!' % name)
+    response = Response('successfully created %s group!' % name)
     return response
 
 
