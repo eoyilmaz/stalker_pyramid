@@ -156,7 +156,6 @@ def get_studio_clients(request):
             "Client_SimpleEntities".description,
             "Thumbnail_Links".full_path,
             projects.project_count
-
         from "Clients"
         join "SimpleEntities" as "Client_SimpleEntities" on "Client_SimpleEntities".id = "Clients".id
         join "Links" as "Thumbnail_Links" on "Client_SimpleEntities".thumbnail_id = "Thumbnail_Links".id
@@ -165,7 +164,6 @@ def get_studio_clients(request):
                     count("Projects".id) as project_count
                 from "Projects"
                 group by "Projects".client_id)as projects on projects.client_id = "Clients".id
-
     """
 
     clients = []

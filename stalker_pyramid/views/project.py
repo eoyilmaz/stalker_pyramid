@@ -117,7 +117,7 @@ def create_project(request):
                 name=name,
                 code=code,
                 image_format=imf,
-                repository=repo,
+                repositories=[repo],
                 created_by=logged_in_user,
                 fps=fps,
                 structure=structure,
@@ -188,7 +188,11 @@ def update_project(request):
         return Response('Can not find a status with code: %s' % status_id, 500)
 
     client_id = request.params.get('client_id', -1)
-    client = Client.query.filter_by(id=client_id).first()
+    client = None
+    logger.debug('client_id: %s' % client_id)
+    if client_id not in [-1, '']:
+        client = Client.query.get(int(client_id))
+
     if not client:
         transaction.abort()
         return Response('Can not find a client with id: %s' % client_id, 500)

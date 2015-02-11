@@ -336,6 +336,9 @@ def get_user_os(request):
 
 
 def get_path_converter(request, task):
+    """returns a partial function that converts the given path to another path
+    that is visible to other OSes.
+    """
 
     user_os = get_user_os(request)
     repo = task.project.repository

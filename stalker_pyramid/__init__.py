@@ -35,7 +35,7 @@ import logging
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.WARNING)
+logger.setLevel(logging.DEBUG)
 
 
 stalker_server_external_url = None
@@ -59,6 +59,10 @@ def main(global_config, **settings):
     db.setup(settings)
     DBSession.remove()
     DBSession.configure(extension=ZopeTransactionExtension())
+
+    import os
+    for key in os.environ:
+        logger.debug('%s: %s' % (key, os.environ[key]))
 
     # setup internal and external urls
     global stalker_server_external_url
@@ -419,15 +423,14 @@ def main(global_config, **settings):
 
     # serve files in repository
     config.add_route('serve_repository_files',
-                     'repositories/{id}/{partial_file_path:[a-zA-Z0-9/\._\-\+\(\)]*}')
+                     '$REPO{id}/{partial_file_path:[a-zA-Z0-9/\._\-\+\(\)]*}')
 
     config.add_route(
         'forced_download_repository_files',
-        'FDrepositories/{id}/{partial_file_path:[a-zA-Z0-9/\._\-\+\(\)]*}'
+        'FD{file_path:[a-zA-Z0-9/\._\-\+\(\)/$]*}'
     )
 
-
-    config.add_route('video_player', 'video_player')  #html
+    config.add_route('video_player', 'video_player')  # html
 
     # *************************************************************************
     # Structure

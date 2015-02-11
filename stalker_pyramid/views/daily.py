@@ -346,9 +346,9 @@ def get_daily_outputs(request):
                 "Links".id as link_id,
                 "Links".original_filename as original_filename,
 
-                'repositories/' || task_repositories.repo_id || '/' || "Links".full_path as hires_full_path,
-                'repositories/' || task_repositories.repo_id || '/' || "Links_ForWeb".full_path as webres_full_path,
-                'repositories/' || task_repositories.repo_id || '/' || "Thumbnails".full_path as thumbnail_full_path
+                "Links".full_path as hires_full_path,
+                "Links_ForWeb".full_path as webres_full_path,
+                "Thumbnails".full_path as thumbnail_full_path
 
             from "Links"
             join "SimpleEntities" as "Link_SimpleEntities" on "Link_SimpleEntities".id = "Links".id
@@ -358,14 +358,6 @@ def get_daily_outputs(request):
             join "Version_Outputs" on "Version_Outputs".link_id = "Links".id
             join "Versions" on "Versions".id = "Version_Outputs".version_id
             join "Tasks" on "Tasks".id = "Versions".task_id
-            join (
-                select
-                    "Tasks".id as task_id,
-                    "Repositories".id as repo_id
-                from "Tasks"
-                join "Projects" on "Tasks".project_id = "Projects".id
-                join "Repositories" on "Projects".repository_id = "Repositories".id
-            ) as task_repositories on "Tasks".id = task_repositories.task_id
         ) as link_data on link_data.link_id = "Daily_Links".link_id
         join "Tasks" as "Link_Tasks" on "Link_Tasks".id = link_data.task_id
         join "Statuses" as "Task_Statuses" on "Task_Statuses".id = "Link_Tasks".status_id

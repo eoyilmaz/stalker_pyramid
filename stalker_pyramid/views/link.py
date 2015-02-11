@@ -208,36 +208,49 @@ def assign_thumbnail(request):
     logger.debug('entity_id  : %s' % entity_id)
     logger.debug('entity     : %s' % entity)
 
+    thumbnail_extension = os.path.splitext(full_path)[-1]
+
     if entity and full_path:
         mm = MediaManager()
-        thumbnail_path = mm.generate_thumbnail(full_path)
-        thumbnail_extension = os.path.splitext(thumbnail_path)[-1]
+        thumbnail_local_path = mm.generate_thumbnail(full_path)
 
         # move the thumbnail to SPL
-        thumbnail_spl_path = mm.generate_local_file_path(
-            extension=thumbnail_extension
-        )
-        thumbnail_spl_relative_path = thumbnail_spl_path.replace(
-            defaults.server_side_storage_path, 'SPL'
-        )
+        from stalker import Task
+        if not isinstance(entity, Task):
+            thumbnail_final_path = mm.generate_local_file_path(
+                extension=thumbnail_extension
+            )
+            thumbnail_final_relative_path = thumbnail_final_path.replace(
+                defaults.server_side_storage_path, 'SPL'
+            )
+        else:  # put thumbnails in to the repository
+            thumbnail_final_relative_path = Repository.to_os_independent_path(
+                '%s/Thumbnail/thumbnail%s' % (
+                    entity.absolute_path,
+                    thumbnail_extension
+                )
+            )
+            thumbnail_final_path = \
+                os.path.expandvars(thumbnail_final_relative_path)
+
         try:
-            os.makedirs(os.path.dirname(thumbnail_spl_path))
+            os.makedirs(os.path.dirname(thumbnail_final_path))
         except OSError:  # dir exists
             pass
 
         # move the file there
-        shutil.move(thumbnail_path, thumbnail_spl_path)
+        shutil.move(thumbnail_local_path, thumbnail_final_path)
 
-        logger.debug('thumbnail_path              : %s' % thumbnail_path)
+        logger.debug('thumbnail_path              : %s' % thumbnail_local_path)
         logger.debug('thumbnail_extension         : %s' % thumbnail_extension)
-        logger.debug('thumbnail_spl_path          : %s' % thumbnail_spl_path)
+        logger.debug('thumbnail_spl_path          : %s' % thumbnail_final_path)
         logger.debug('thumbnail_spl_relative_path : %s' %
-                     thumbnail_spl_relative_path)
+                     thumbnail_final_relative_path)
 
         # now create a link for the thumbnail
         utc_now = local_to_utc(datetime.datetime.now())
         link = Link(
-            full_path=thumbnail_spl_relative_path,
+            full_path=thumbnail_final_relative_path,
             created_by=logged_in_user,
             date_created=utc_now
         )
@@ -498,9 +511,9 @@ select
     "Links".id,
     "Links".original_filename,
 
-    'repositories/' || task_repositories.repo_id || '/' || "Links".full_path as hires_full_path,
-    'repositories/' || task_repositories.repo_id || '/' || "Links_ForWeb".full_path as webres_full_path,
-    'repositories/' || task_repositories.repo_id || '/' || "Thumbnails".full_path as thumbnail_full_path,
+    "Links".full_path as hires_full_path,
+    "Links_ForWeb".full_path as webres_full_path,
+    "Thumbnails".full_path as thumbnail_full_path,
 
     tags.name as tags,
 
@@ -530,17 +543,6 @@ left join (
 ) as tags on "Links".id = tags.entity_id
 
 
--- find repository id
-join (
-    select
-        "Tasks".id as task_id,
-        "Repositories".id as repo_id
-    from "Tasks"
-    join "Projects" on "Tasks".project_id = "Projects".id
-    join "Repositories" on "Projects".repository_id = "Repositories".id
-) as task_repositories on tasks.id = task_repositories.task_id
-
-
 -- continue on links
 join "SimpleEntities" as "Link_SimpleEntities" on "Links".id = "Link_SimpleEntities".id
 join "Links" as "Links_ForWeb" on "Link_SimpleEntities".thumbnail_id = "Links_ForWeb".id
@@ -552,7 +554,6 @@ where (tasks.path ilike '{path_id}' or tasks.id = {id}) {search_string}
 group by "Links".id,
     "Links_ForWeb".full_path,
     "Links".original_filename,
-    task_repositories.repo_id,
     "Thumbnails".id,
     tags.name
 ) as data
@@ -837,9 +838,9 @@ select
     "Version_Links".id,
     "Version_Links".original_filename,
 
-    'repositories/' || task_repositories.repo_id || '/' || "Version_Links".full_path as hires_full_path,
-    'repositories/' || task_repositories.repo_id || '/' || "Links_ForWeb".full_path as webres_full_path,
-    'repositories/' || task_repositories.repo_id || '/' || "Thumbnails".full_path as thumbnail_full_path,
+    "Version_Links".full_path as hires_full_path,
+    "Links_ForWeb".full_path as webres_full_path,
+    "Thumbnails".full_path as thumbnail_full_path,
 
     tags.name as tags,
 
@@ -864,15 +865,6 @@ join "SimpleEntities" as "Links_ForWeb_SimpleEntities" on "Links_ForWeb".id = "L
 join "Links" as "Thumbnails" on "Links_ForWeb_SimpleEntities".thumbnail_id = "Thumbnails".id
 left outer join "Daily_Links" on "Daily_Links".link_id = "Version_Outputs".link_id
 left outer join "SimpleEntities" as "Daily_SimpleEntities" on "Daily_SimpleEntities".id = "Daily_Links".daily_id
-
-join (
-    select
-        "Tasks".id as task_id,
-        "Repositories".id as repo_id
-    from "Tasks"
-    join "Projects" on "Tasks".project_id = "Projects".id
-    join "Repositories" on "Projects".repository_id = "Repositories".id
-) as task_repositories on "Versions".task_id = task_repositories.task_id
 
 left outer join (
     select
@@ -1183,20 +1175,14 @@ def force_download_repository_files(request):
     logger.debug("logged_in_user: %s" % get_logged_in_user(request))
 
     # TODO: check file access
-    partial_file_path = request.matchdict['partial_file_path']
-    repo_id = request.matchdict['id']
+    file_path = request.matchdict['file_path']
 
-    repo = Repository.query.filter_by(id=repo_id).first()
+    file_full_path = os.path.expandvars(file_path)
 
-    file_full_path = os.path.join(
-        repo.path,
-        partial_file_path
-    )
-
-    logger.debug('partial_file_path: %s' % partial_file_path)
+    logger.debug('partial_file_path: %s' % file_path)
 
     # get the link to get the original file name
-    link = Link.query.filter(Link.full_path == partial_file_path).first()
+    link = Link.query.filter(Link.full_path == file_path).first()
     if link:
         original_filename = link.original_filename
     else:
@@ -1250,12 +1236,7 @@ def convert_to_webm(request):
 
     # for now we need to write code that supports both Stalker pre v0.2.13 and
     # post v0.2.13 which introduces a difference in Repository path
-    pre_upgrade = False
-    if '$' in link.full_path:  # this is the new style starting with Stalker v0.2.13
-        link_full_path = os.path.expandvars(link.full_path)
-    else:  # this is the pre Stalker v0.2.13
-        pre_upgrade = True
-        link_full_path = '%s/%s' % (repo.path, link.full_path)
+    link_full_path = os.path.expandvars(link.full_path)
 
     m = MediaManager()
     web_version_temp_full_path = m.generate_video_for_web(link_full_path)
@@ -1274,15 +1255,6 @@ def convert_to_webm(request):
 
     # and update the link
     old_path = '%s/%s' % (repo.path, link.full_path)
-
-    if pre_upgrade:
-        link.full_path = repo.make_relative(web_version_full_path)
-    else:
-        # we need to use the new style of links with env variables
-        link.full_path = '%s/%s' % (
-            defaults.repo_env_var_template % {'id': repo.id},
-            link.full_path
-        )
 
     try:
         # remove the old one
@@ -2197,8 +2169,8 @@ class MediaManager(object):
     def upload_reference(self, task, file_object, filename):
         """Uploads a reference for the given task to
         Task.path/References/Stalker_Pyramid/ folder and create a Link object
-        to there. Again the Link object will have a Repository root relative
-        path.
+        to there. Again the Link object will have a path that contains
+        environment variables.
 
         It will also create a thumbnail under
         {{Task.absolute_path}}/References/Stalker_Pyramid/Thumbs folder and a
@@ -2233,9 +2205,12 @@ class MediaManager(object):
         # use a Repository relative path
         repo = task.project.repository
         assert isinstance(repo, Repository)
-        relative_full_path = repo.make_relative(reference_file_full_path)
-
-        link = Link(full_path=relative_full_path, original_filename=filename)
+        os_independent_full_path = \
+            repo.to_os_independent_path(reference_file_full_path)
+        link = Link(
+            full_path=os_independent_full_path,
+            original_filename=filename
+        )
 
         # create a thumbnail for the given reference
         # don't forget that the first thumbnail is the Web viewable version
@@ -2257,10 +2232,10 @@ class MediaManager(object):
                 'ForWeb',
                 web_version_file_name
             )
-        web_version_repo_relative_full_path = \
-            repo.make_relative(web_version_full_path)
+        web_version_os_independent_full_path = \
+            repo.to_os_independent_path(web_version_full_path)
         web_version_link = Link(
-            full_path=web_version_repo_relative_full_path,
+            full_path=web_version_os_independent_full_path,
             original_filename=web_version_file_name
         )
 
@@ -2287,10 +2262,10 @@ class MediaManager(object):
                 'Thumbnail',
                 thumbnail_file_name
             )
-        thumbnail_repo_relative_full_path = \
-            repo.make_relative(thumbnail_full_path)
+        thumbnail_repo_os_independent_full_path = \
+            repo.to_os_independent_path(thumbnail_full_path)
         thumbnail_link = Link(
-            full_path=thumbnail_repo_relative_full_path,
+            full_path=thumbnail_repo_os_independent_full_path,
             original_filename=thumbnail_file_name
         )
 
@@ -2381,7 +2356,7 @@ class MediaManager(object):
         # use a Repository relative path
         repo = version.task.project.repository
         assert isinstance(repo, Repository)
-        relative_full_path = str(repo.make_relative(
+        relative_full_path = str(repo.to_os_independent_path(
             str(version_output_file_full_path)
         ))
 
@@ -2408,7 +2383,7 @@ class MediaManager(object):
                 version_output_base_name + web_version_extension
             )
         web_version_repo_relative_full_path = \
-            repo.make_relative(str(web_version_full_path))
+            repo.to_os_independent_path(str(web_version_full_path))
         web_version_link = Link(
             full_path=web_version_repo_relative_full_path,
             original_filename=filename
@@ -2436,7 +2411,7 @@ class MediaManager(object):
                 version_output_base_name + thumbnail_extension
             )
         thumbnail_repo_relative_full_path = \
-            repo.make_relative(thumbnail_full_path)
+            repo.to_os_independent_path(thumbnail_full_path)
         thumbnail_link = Link(
             full_path=thumbnail_repo_relative_full_path,
             original_filename=filename
