@@ -72,6 +72,15 @@
             get_icon('group'),
             0
         );
+
+        menu_of(
+            'Vacations',
+            "{%- if request.current_route_path() == request.route_path('list_studio_vacations', id=studio.id) -%}'active',{%- else -%},{%- endif -%}",
+            '{{ request.route_url('list_studio_vacations', id=studio.id) }}',
+            get_icon('vacation'),
+            {{ studio.vacations | count }}
+        );
+
         {% if  has_permission('Create_Project') %}
             menu_of(
                 'Clients',
@@ -81,31 +90,33 @@
                 0
             );
 
-            menu_of(
-                'Resource Rates',
-                "{%- if request.current_route_path() == request.route_path('list_resource_rates', id=studio.id) -%}'active',{%- else -%},{%- endif -%}",
-                '{{ request.route_url('list_resource_rates', id=studio.id) }}',
-                get_icon('user'),
-                0
-            );
+{#            menu_of(#}
+{#                'Resource Rates',#}
+{#                "{%- if request.current_route_path() == request.route_path('list_resource_rates', id=studio.id) -%}'active',{%- else -%},{%- endif -%}",#}
+{#                '{{ request.route_url('list_resource_rates', id=studio.id) }}',#}
+{#                get_icon('user'),#}
+{#                0#}
+{#            );#}
 
-            menu_of(
-                'Price Lists',
-                "{%- if request.current_route_path() == request.route_path('list_studio_goods', id=studio.id) -%}'active',{%- else -%},{%- endif -%}",
-                '{{ request.route_url('list_studio_goods', id=studio.id) }}',
-                get_icon('budget'),
-                0
-            );
+{#            menu_of(#}
+{#                'Price Lists',#}
+{#                "{%- if request.current_route_path() == request.route_path('list_studio_goods', id=studio.id) -%}'active',{%- else -%},{%- endif -%}",#}
+{#                '{{ request.route_url('list_studio_goods', id=studio.id) }}',#}
+{#                get_icon('budget'),#}
+{#                0#}
+{#            );#}
         {% endif %}
 
-
-        menu_of(
-            'Vacations',
-            "{%- if request.current_route_path() == request.route_path('list_studio_vacations', id=studio.id) -%}'active',{%- else -%},{%- endif -%}",
-            '{{ request.route_url('list_studio_vacations', id=studio.id) }}',
-            get_icon('vacation'),
-            {{ studio.vacations | count }}
-        );
+        menus_under_title('Managment',
+                          'budget',
+                          [
+                           {'name': 'Price List',
+                            'link':'{{ request.route_url('list_studio_goods', id=studio.id) }}',
+                            'state':"{%- if request.current_route_path() == request.route_path('list_studio_goods', id=studio.id) -%}'active',{%- else -%},{%- endif -%}"},
+                          {'name': 'Resource Rates',
+                            'link':'{{ request.route_url('list_resource_rates', id=studio.id) }}',
+                            'state':"{%- if request.current_route_path() == request.route_path('list_resource_rates', id=studio.id) -%}'active',{%- else -%},{%- endif -%}"}
+        ])
 
     })
 </script>

@@ -40,7 +40,7 @@ from stalker_pyramid.views.type import query_type
     renderer='templates/budget/dialog/budget_dialog.jinja2'
 )
 def create_budget_dialog(request):
-    """called when creating dailies
+    """called when creating budget
     """
     came_from = request.params.get('came_from', '/')
     # logger.debug('came_from %s: '% came_from)

@@ -38,11 +38,23 @@
     {% include 'page_header.jinja2' %}
 
     <div class="row-fluid">
-        <div class="span5">
+        <div class="span9">
             <div class="widget-box">
-                 <div class="widget-header widget-header-small header-color-green }}">
-                        <h5 id="items_header" class="smaller"></h5>
 
+                <div class="widget-header widget-header-small header-color-green }}">
+                        <h5 id="items_header" class="smaller"></h5>
+                        <div class="widget-toolbar">
+    {#                  {% if has_permission('Create_'+list_item_type) and  add_button_address %}#}
+                            <a data-target="#dialog_template"
+                               data-toggle="modal"
+                               data-keyboard=false
+                               href="{{ request.route_url("create_good_dialog")}}"
+                               class="white">
+                                <i class="icon-plus"></i>
+                                Add New Good
+                            </a>
+
+                        </div>
                 </div>
                 <div class="widget-body">
                     <div class="widget-main no-padding">
@@ -95,22 +107,25 @@
                             data: grid_data,
                             datatype: "local",
                             height: 800,
-                            colNames:['', 'ID','Name', 'MSRP', 'Cost', 'Unit'],
+                            colNames:['', 'ID','Name', 'MSRP', 'Cost', 'Unit', 'Created_by', 'Updated_by', 'Last_Accessed'],
                             colModel:[
                                 {name:'myac',index:'', width:70, fixed:true, sortable:false, resize:false,
                                     formatter:'actions',
                                     formatoptions:{
                                         keys:false,
-                                        delbutton:false
-{#                                        delOptions:{recreateForm: true, beforeShowForm:beforeDeleteCallback}#}
-{#                                        //editformbutton:true, editOptions:{recreateForm: true, beforeShowForm:beforeEditCallback}#}
+                                        delbutton:true,
+                                        delOptions:{recreateForm: true, beforeShowForm:beforeDeleteCallback}
+                                        //editformbutton:true, editOptions:{recreateForm: true, beforeShowForm:beforeEditCallback}
                                     }
                                 },
                                 {name:'id',index:'id', width:90, sortable:true, editable: false},
-                                {name:'name',index:'name', width:250, sortable:true, editable: false},
-                                {name:'msrp',index:'msrp',  width:100, editable: true, editoptions:{size:"20",maxlength:"30"}},
-                                {name:'cost',index:'cost',  width:120, editable: false},
-                                {name:'unit',index:'unit',  width:120, editable: false}
+                                {name:'name',index:'name', width:250, sortable:true, editable: true, editoptions:{size:"20",maxlength:"30"}},
+                                {name:'msrp',index:'msrp',  width:100, sortable:true, editable: true, editoptions:{size:"20",maxlength:"30"}},
+                                {name:'cost',index:'cost',  width:120, sortable:true, editable: true, editoptions:{size:"20",maxlength:"30"}},
+                                {name:'unit',index:'unit',  width:120, editable: true, edittype:"select", editoptions:{value:"HOUR:HOUR;DAY:DAY;WEEK:WEEK;FILM:FILM"}},
+                                {name:'created_by',index:'created_by', width:250, sortable:true, editable: false},
+                                {name:'updated_by',index:'updated_by', width:250, sortable:true, editable: false},
+                                {name:'date_updated',index:'date_updated', width:150, sortable:true, editable: false}
                             ],
                             viewrecords : true,
                             rowNum:20,
@@ -134,8 +149,7 @@
                                     $('#lui_grid-table').hide();
                                 }, 0);
                             },
-
-                            editurl:  '/users/update/inline?attr_name=rate',
+                            editurl:  '/goods/edit',
                             caption: ""
                         });
 

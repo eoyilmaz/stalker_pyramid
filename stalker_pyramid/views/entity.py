@@ -559,9 +559,9 @@ def append_entities_to_entity(request):
     renderer='templates/modals/confirm_dialog.jinja2'
 )
 def remove_entity_from_entity_dialog(request):
-    """deletes the user with the given id
+    """removes the user with the given id
     """
-    logger.debug('delete_user_dialog is starts')
+    logger.debug('remove_entity_from_entity_dialog is starts')
 
     entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
@@ -1008,7 +1008,6 @@ def delete_entity(request):
         return Response('Can not find an Entity with id: %s' % entity_id, 500)
 
     try:
-
         DBSession.delete(entity)
         transaction.commit()
     except Exception as e:

@@ -1,0 +1,196 @@
+<script class="dialog_loaded"></script>
+
+<div class="row-fluid">
+
+    <form id='good_form'
+          class='form-horizontal'
+          role='form'
+          method="post"
+            >
+
+        <div class="row-fluid">
+            {# Name #}
+            <div class="control-group">
+                <label class="span3 control-label"
+                       for="good_name">Name</label>
+                <div class="span9">
+
+                    <input id="good_name"
+                           name='name'
+                           type="text"
+                           class="form-control"
+                           placeholder="Name"
+                           required>
+                </div>
+            </div>
+            {# MSRP #}
+            <div class="control-group">
+                <label class="span3 control-label"
+                       for="good_msrp">MSRP</label>
+                <div class="span9">
+                    <input id="good_msrp"
+                           name='msrp'
+                           type="text"
+                           class="form-control"
+                           placeholder="MSRP"
+                           required>
+                </div>
+            </div>
+            {# Cost #}
+            <div class="control-group">
+                <label class="span3 control-label"
+                       for="good_cost">Cost</label>
+                <div class="span9">
+                    <input id="good_cost"
+                           name='cost'
+                           type="text"
+                           class="form-control"
+                           placeholder="Cost"
+                           required>
+                </div>
+            </div>
+            {# Unit #}
+            <div class="control-group">
+                <label class="span3 control-label"
+                       for="good_unit">Unit</label>
+                <div class="span9">
+
+                    <input id="good_unit"
+                           name='unit'
+                           type="text"
+                           class="input-block-level"
+                           placeholder="Unit"
+                           required>
+                </div>
+            </div>
+
+            {#Price List #}
+            <div class='control-group'>
+                <label class='span3 control-label'
+                       for='good_price_list'>Price List</label>
+                <div class="span5">
+                    <input id='good_price_list'
+                           class='input-block-level'
+                           name='price_list_name'
+                           type='text'
+                           placeholder='Price List'
+                           >
+                </div>
+            </div>
+
+            {#Description #}
+            <div class="control-group'">
+                <label for="good_description"
+                       class="span3 control-label">Description</label>
+                <div class="span9">
+                    <textarea id="good_description"
+                              name='description'
+                              class="autosize-transition"
+                              style="overflow: hidden;
+                                         word-wrap: break-word;
+                                         resize: horizontal;
+                                         height: 50px;"
+
+                            ></textarea>
+                </div>
+            </div>
+
+        </div>
+
+    </form>
+</div>
+
+
+<script type="text/javascript">
+
+    function init_dialog() {
+
+        console.debug('starting to initialize good dialog!!!');
+
+        var dialog_label = $('#dialog_template_label');
+        dialog_label.find('span').remove();
+        dialog_label.append('<span>Create Good</span>');
+
+        {# ***************************************************************** #}
+        {# Unit #}
+
+
+        var good_unit = $('#good_unit');
+
+        good_unit.autocomplete({
+            delay: 0,
+            source: ['HOUR','DAY','WEEK','FILM'],
+            minLength: 0
+        });
+
+        {# ***************************************************************** #}
+        {# Price List #}
+
+        {% raw %}
+            var good_priceList_option_template = doT.template(
+                '<option value={{=it.id}}>{{=it.name}}</option>'
+            );
+        {% endraw %}
+
+        $.getJSON('/price_lists/').then(function (data) {
+            var good_price_list = $('#good_price_list');
+
+            var available_priceList_as_list = [];
+            for (var i=0; i < data.length; i++){
+                available_priceList_as_list.push(data[i].name);
+            }
+
+            good_price_list.autocomplete({
+                delay: 0,
+                source: available_priceList_as_list,
+                minLength: 0
+            });
+
+
+        });
+
+
+        {# ***************************************************************** #}
+        {# Submit Button #}
+        var submit_button = $('#dialog_template_submit_button');
+        submit_button.on('click', function (e) {
+            e.stopPropagation();
+            e.preventDefault();
+
+            submit_button.button('loading');
+            var good_form = $('#good_form');
+
+            var url = '/goods/create';
+
+
+            $.post(
+                url,
+                good_form.serialize() + '&' +
+                $.param({
+                    'studio_id': {{ studio.id }}
+                })
+            ).done(function (jqXHR) {
+                //$('#new_outputs_storage').text(JSON.stringify(jqXHR));
+                window.location.reload();
+            }).fail(function (jqXHR) {
+                bootbox.alert(jqXHR.responseText);
+                submit_button.button('reset');
+            });
+        });
+
+        console.debug('finished initializing the good dialog!')
+    }
+</script>
+
+<script type="text/javascript">
+    function destruct_dialog() {
+        $('#good_name').unbind();
+        $('#good_description').unbind();
+        $('#dialog_template_submit_button').unbind();
+
+        $('#dialog_template').data('modal', null);
+    }
+</script>
+
+
+
