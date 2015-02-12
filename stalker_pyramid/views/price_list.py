@@ -43,7 +43,7 @@ def query_price_list(price_list_name):
     if not price_list_name:
         return None
 
-    price_list_ = PriceList.filter_by(name=price_list_name).first()
+    price_list_ = PriceList.query.filter_by(name=price_list_name).first()
 
     if price_list_name and price_list_ is None:
         # create a new PriceList
@@ -56,6 +56,31 @@ def query_price_list(price_list_name):
         DBSession.add(price_list_)
 
     return price_list_
+
+
+@view_config(
+    route_name='get_studio_price_lists',
+    renderer='json'
+)
+@view_config(
+    route_name='get_price_lists',
+    renderer='json'
+)
+def get_price_list(request):
+    """
+        give all define price_list in a list
+    """
+    logger.debug('***get_price_list method starts ***')
+
+    return [
+        {
+            'id': priceList.id,
+            'name': priceList.name
+
+        }
+        for priceList in PriceList.query.order_by(PriceList.name.asc()).all()
+    ]
+
 
 @view_config(
     route_name='get_studio_goods',
@@ -71,6 +96,8 @@ def get_goods(request):
     """
     logger.debug('***get_studio_goods method starts ***')
 
+
+
     return [
         {
             'id': good.id,
@@ -78,16 +105,47 @@ def get_goods(request):
             'cost': good.cost,
             'msrp': good.msrp,
             'unit': good.unit,
-            'price_list': good.price_list
+            'created_by': good.created_by_id,
+            'updated_by': good.updated_by_id,
+            'date_updated': milliseconds_since_epoch(good.date_updated)
         }
         for good in Good.query.order_by(Good.name.asc()).all()
     ]
 
 
 @view_config(
+    route_name='create_good_dialog',
+    renderer='templates/good/dialog/create_good_dialog.jinja2'
+)
+def create_good_dialog(request):
+    """ calls create good dialog with necessary info.
+    """
+    came_from = request.params.get('came_from', '/')
+    # logger.debug('came_from %s: '% came_from)
+
+    # get logged in user
+    logged_in_user = get_logged_in_user(request)
+
+    studio = Studio.query.first()
+
+    if not studio:
+        transaction.abort()
+        return Response("There is no Studio instance\n"
+                        "Please create a studio first", 500)
+
+    return {
+        'has_permission': PermissionChecker(request),
+        'logged_in_user': logged_in_user,
+        'studio': studio,
+        'came_from': came_from,
+        'milliseconds_since_epoch': milliseconds_since_epoch
+    }
+
+
+@view_config(
     route_name='create_good'
 )
-def create_group(request):
+def create_good(request):
     """creates a new Good
     """
 
@@ -118,14 +176,15 @@ def create_group(request):
             # create the new group
             new_good = Good(
                 name=name,
-                msrp=msrp,
+                msrp=int(msrp),
                 unit=unit,
-                cost=cost,
-                price_list = price_list
+                cost=int(cost),
+                price_list=price_list
             )
 
             new_good.created_by = logged_in_user
             new_good.date_created = datetime.datetime.now()
+            new_good.date_updated = datetime.datetime.now()
 
             DBSession.add(new_good)
 
@@ -153,39 +212,58 @@ def create_group(request):
 
 
 @view_config(
+    route_name='edit_good'
+)
+def edit_good(request):
+    """edits the good with data from request
+    """
+    logger.debug('***edit group method starts ***')
+    oper = request.params.get('oper', None)
+
+    if oper == 'edit':
+        return update_good(request)
+    elif oper == 'del':
+        return delete_good(request)
+
+
+@view_config(
     route_name='update_good'
 )
 def update_good(request):
     """updates the good with data from request
     """
 
-    logger.debug('***update group method starts ***')
+    logger.debug('***update good method starts ***')
 
     logged_in_user = get_logged_in_user(request)
 
-    came_from = request.params.get('came_from', '/')
-    good_id = request.matchdict.get('id')
+    good_id = request.params.get('id')
     good = Good.query.filter_by(id=good_id).first()
 
     if not good:
         transaction.abort()
-        return Response('There is no task with id: %s' % good_id, 500)
+        return Response('There is no good with id: %s' % good_id, 500)
 
     name = request.params.get('name', None)
     msrp = request.params.get('msrp', None)
     unit = request.params.get('unit', None)
     cost = request.params.get('cost', None)
-    price_list_name = request.params.get('price_list_name', None)
+    # price_list_name = request.params.get('price_list_name', None)
 
-    if name and msrp and unit and cost and price_list_name:
+    logger.debug('name : %s' % name)
+    logger.debug('msrp : %s' % msrp)
+    logger.debug('unit : %s' % unit)
+    logger.debug('cost : %s' % cost)
 
-        price_list = query_price_list(price_list_name)
+    if name and msrp and unit and cost:
+
+        # price_list = query_price_list(price_list_name)
          # update the group
         good.name = name
-        good.msrp = msrp
+        good.msrp = int(msrp)
         good.unit = unit
-        good.cost = cost
-        good.price_list = price_list
+        good.cost = int(cost)
+        # good.price_list = price_list
         good.updated_by = logged_in_user
         good.date_updated = datetime.datetime.now()
 
@@ -211,3 +289,32 @@ def update_good(request):
 
     response = Response('successfully updated %s good!' % name)
     return response
+
+
+@view_config(
+    route_name='delete_good'
+)
+def delete_good(request):
+    """deletes the good with data from request
+    """
+
+    logger.debug('***delete good method starts ***')
+
+    good_id = request.params.get('id')
+    good = Good.query.filter_by(id=good_id).first()
+
+    if not good:
+        transaction.abort()
+        return Response('There is no good with id: %s' % good_id, 500)
+
+    good_name = good.name
+    try:
+        DBSession.delete(good)
+        transaction.commit()
+    except Exception as e:
+        transaction.abort()
+        c = StdErrToHTMLConverter(e)
+        transaction.abort()
+        return Response(c.html(), 500)
+
+    return Response('Successfully deleted good with name %s' % good_name)

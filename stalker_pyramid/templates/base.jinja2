@@ -222,7 +222,7 @@
 {% raw %}
 <script id="tmpl_sidebar_tree_sublink" type="text/x-dot-template">
 
-    <li>
+    <li class="{{=it.state}}">
         <a href={{=it.link}}>
             <i class="icon-double-angle-right"></i>
             {{=it.name }}
@@ -265,9 +265,9 @@
 <script>
     var menu_of = function (title, state, address, icon, count) {
         var sidebar_list = $('#sidebar_list');
-        var pillsbar_list = $('#pillsbar_list');
+{#        var pillsbar_list = $('#pillsbar_list');#}
         var link_template = doT.template($('#tmpl_sidebar_link').html());
-        var pill_link_template = doT.template($('#tmpl_pillsbar_link').html());
+{#        var pill_link_template = doT.template($('#tmpl_pillsbar_link').html());#}
 
         var options = {
             'title': title,
@@ -280,14 +280,14 @@
         var rendered_template = $($.parseHTML(link_template(options)));
         sidebar_list.append(rendered_template);
 
-        var pill_rendered_template = $($.parseHTML(pill_link_template(options)));
-        pillsbar_list.append(pill_rendered_template);
-        pill_rendered_template.on('click', function (e) {
-            window.location.assign($(this).attr('link'));
-        });
+{#        var pill_rendered_template = $($.parseHTML(pill_link_template(options)));#}
+{#        pillsbar_list.append(pill_rendered_template);#}
+{#        pill_rendered_template.on('click', function (e) {#}
+{#            window.location.assign($(this).attr('link'));#}
+{#        });#}
 
         var badge = rendered_template.find('.badge');
-        var pill_badge = pill_rendered_template.find('.badge');
+{#        var pill_badge = pill_rendered_template.find('.badge');#}
 
         // update the badge
         if ( typeof(count) === 'string' ) {
@@ -298,7 +298,7 @@
                 // now update the side bar badge
                 if (count > 0){
                     badge.text(count).removeClass('badge-success').addClass('badge-important');
-                    pill_badge.text(count).removeClass('badge-success').addClass('badge-important');
+{#                    pill_badge.text(count).removeClass('badge-success').addClass('badge-important');#}
                 }
             });
         }
@@ -328,6 +328,31 @@
                     item_sublink.append(tree_sublink_template(data[i]));
                 }
             });
+        });
+    }
+</script>
+
+<script>
+    var menus_under_title = function (title, icon, menuItems) {
+
+        $(function () {
+            var sidebar_list = $('#sidebar_list');
+            var tree_link_template = doT.template($('#tmpl_sidebar_tree_link').html());
+            var data_counts = menuItems.length;
+
+            if (data_counts > 0) {
+                sidebar_list.append(tree_link_template({
+                    'title': title,
+                    'icon': get_icon(icon)
+                }));
+            }
+
+            var item_sublink = $('#' + title + '_sublink');
+            var tree_sublink_template = doT.template($('#tmpl_sidebar_tree_sublink').html());
+
+            for (var i = 0; i < data_counts; i++) {
+                item_sublink.append(tree_sublink_template(menuItems[i]));
+            }
         });
     }
 </script>

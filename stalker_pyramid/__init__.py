@@ -826,12 +826,19 @@ def main(global_config, **settings):
     config.add_route('get_roles', 'roles/')  # json
 
      # *************************************************************************
-    # Price Lists
+    # Price Lists / Good
     config.add_route('list_studio_goods', 'studios/{id}/goods/list')
     config.add_route('get_studio_goods', 'studios/{id}/goods/')
     config.add_route('get_goods', 'goods/')
-    config.add_route('create_good', 'goods/create/')
-    config.add_route('update_good', 'goods/{id}/update/')
+
+    config.add_route('get_studio_price_lists', 'studios/{id}/price_lists/')
+    config.add_route('get_price_lists', 'price_lists/')
+
+    config.add_route('create_good_dialog', 'goods/create/dialog')
+    config.add_route('create_good', 'goods/create')
+    config.add_route('edit_good', 'goods/edit')
+    config.add_route('update_good', 'goods/update')
+    config.add_route('delete_good', 'goods/delete')
 
     # *************************************************************************
     # Anima
