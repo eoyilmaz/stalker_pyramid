@@ -81,13 +81,21 @@
                 0
             );
 
-                menu_of(
-                    'Resource Rates',
-                    "{%- if request.current_route_path() == request.route_path('list_resource_rates', id=studio.id) -%}'active',{%- else -%},{%- endif -%}",
-                    '{{ request.route_url('list_resource_rates', id=studio.id) }}',
-                    get_icon('user'),
-                    0
-                );
+            menu_of(
+                'Resource Rates',
+                "{%- if request.current_route_path() == request.route_path('list_resource_rates', id=studio.id) -%}'active',{%- else -%},{%- endif -%}",
+                '{{ request.route_url('list_resource_rates', id=studio.id) }}',
+                get_icon('user'),
+                0
+            );
+
+            menu_of(
+                'Price Lists',
+                "{%- if request.current_route_path() == request.route_path('list_studio_goods', id=studio.id) -%}'active',{%- else -%},{%- endif -%}",
+                '{{ request.route_url('list_studio_goods', id=studio.id) }}',
+                get_icon('budget'),
+                0
+            );
         {% endif %}
 
 

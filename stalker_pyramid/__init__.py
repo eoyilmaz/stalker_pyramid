@@ -809,12 +809,12 @@ def main(global_config, **settings):
 
     config.add_route('list_groups',         'groups/list')
     config.add_route('list_group_users',    'groups/{id}/users/list')
-    config.add_route('list_group_permissions',    'groups/{id}/permissions/list')  # html
+    config.add_route('list_group_permissions', 'groups/{id}/permissions/list')  # html
 
     config.add_route('delete_group_dialog', 'groups/{id}/delete/dialog')
     config.add_route('delete_group', 'groups/{id}/delete')
 
-    config.add_route('get_group_permissions',    'groups/{id}/permissions/')  # html
+    config.add_route('get_group_permissions', 'groups/{id}/permissions/')
 
     # *************************************************************************
     # Tag
@@ -827,6 +827,14 @@ def main(global_config, **settings):
     # *************************************************************************
     # Role
     config.add_route('get_roles', 'roles/')  # json
+
+    # *************************************************************************
+    # Price Lists
+    config.add_route('list_studio_goods', 'studios/{id}/goods/list')
+    config.add_route('get_studio_goods', 'studios/{id}/goods/')
+    config.add_route('get_goods', 'goods/')
+    config.add_route('create_good', 'goods/create/')
+    config.add_route('update_good', 'goods/{id}/update/')
 
     # *************************************************************************
     # Anima
