@@ -88,7 +88,10 @@
                 <button id="step_forward" class="grey"><i class="icon-step-forward"></i></button>
                 <button id="step_forward_10" class="grey"><i class="icon-fast-forward"></i></button>
                 <span id="video_current_time_info" style="color: lightgray">00:00:00</span>
-                <input id="seek-bar" type="range" value="0" max="2000" class="grey dark_slider">
+{#                <div style="position: relative">#}
+                    <input id="seek-bar" type="range" value="0" max="2000" class="grey dark_slider">
+{#                    <div id="buffer" style="height: 5px; top: 2px;"></div>#}
+{#                </div>#}
                 <span id="video_duration_info" style="color: lightgray">00:00:00</span>
                 <button id="mute" type="button" style="width: 24px;" class="grey"><i class="icon-volume-off"></i></button>
                 <input id="volume-bar" min="0" max="1" step="0.1" value="1" type="range" class="grey dark_slider">
@@ -231,8 +234,18 @@
                 video.on("timeupdate", function () {
                     // Calculate the slider value
                     // Update the slider value
-                    seekBar[0].value = (seekBar.attr('max') / video[0].duration) * video[0].currentTime;
+                    var duration = video[0].duration;
+{#                    var buffered = video[0].buffered.end(0);#}
+{#                    console.debug('buffered: ', buffered);#}
+
+{#                    $('buffer').css({#}
+{#                        width: buffered / duration + '%'#}
+{#                    });#}
+
+                    seekBar[0].value = (seekBar.attr('max') / duration) * video[0].currentTime;
                     set_current_time_info_display(video[0].currentTime);
+
+
                 });
 
                 // Event listener for the volume bar
