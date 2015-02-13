@@ -237,7 +237,7 @@ function chosen_searchable_field_creator(field, url, data_template) {
         // append new ones
         var data_count = data.length;
         // append a single empty option to the responsible field
-        field.append(data_template({'id':"", 'name':"" }));
+        field.append(data_template({'id': "", 'name': ""}));
         for (var i=0; i < data_count; i++){
             field.append(data_template(data[i]));
         }
@@ -247,7 +247,7 @@ function chosen_searchable_field_creator(field, url, data_template) {
 }
 
 
-function unit_by_seconds(unit) {
+function seconds_in_unit(unit) {
     'use strict';
     switch (unit) {
     case 'min':
@@ -266,67 +266,94 @@ function unit_by_seconds(unit) {
     return 0;
 }
 
-function calculate_seconds(timing, unit) {
+/**
+ * Converts the given work time unit to seconds.
+ * 
+ * @param timing
+ * @param unit
+ * @returns {number}
+ */
+function to_seconds(timing, unit) {
     'use strict';
-    var u_seconds = unit_by_seconds(unit);
+    var u_seconds = seconds_in_unit(unit);
     return timing * u_seconds;
 }
 
-function meaningful_time(time) {
+/**
+ * The javascript version of the python function that calculates the least
+ * meaningful integer value and a time unit name from the given integer seconds
+ * value.
+ * 
+ * @param seconds
+ * @returns {string}
+ */
+function meaningful_time(seconds) {
     'use strict';
-    time = Math.round(time);
+    seconds = Math.round(seconds);
 
-    if (time !== 0) {
-        if (time % unit_by_seconds('y') === 0) {
-            return time / unit_by_seconds('y') + ' y';
-        } else if (time % unit_by_seconds('m') === 0) {
-            return time / unit_by_seconds('m') + ' m';
-        } else if (time % unit_by_seconds('w') === 0) {
-            return time / unit_by_seconds('w') + ' w';
-        } else if (time % unit_by_seconds('d') === 0) {
-            return time / unit_by_seconds('d') + ' d';
-        } else if (time % unit_by_seconds('h') === 0) {
-            return time / unit_by_seconds('h') + ' h';
-        } else if (time % unit_by_seconds('min') === 0) {
-            return time / unit_by_seconds('min') + ' min';
+    if (seconds !== 0) {
+        if (seconds % seconds_in_unit('y') === 0) {
+            return seconds / seconds_in_unit('y') + ' y';
+        } else if (seconds % seconds_in_unit('m') === 0) {
+            return seconds / seconds_in_unit('m') + ' m';
+        } else if (seconds % seconds_in_unit('w') === 0) {
+            return seconds / seconds_in_unit('w') + ' w';
+        } else if (seconds % seconds_in_unit('d') === 0) {
+            return seconds / seconds_in_unit('d') + ' d';
+        } else if (seconds % seconds_in_unit('h') === 0) {
+            return seconds / seconds_in_unit('h') + ' h';
+        } else if (seconds % seconds_in_unit('min') === 0) {
+            return seconds / seconds_in_unit('min') + ' min';
         } else {
-            return time + ' seconds';
+            return seconds + ' seconds';
         }
     } else {
         return '0';
     }
 }
 
-function meaningful_time_calculator(time, unit) {
+
+/**
+ * Converts the given seconds value in to a meaning full work time range string
+ * 
+ * @param seconds
+ * @returns {string}
+ */
+function convert_seconds_to_time_range(seconds) {
     'use strict';
-    var calc_time = Math.round(time);
-    var index = units.indexOf(unit);
-    var time_str = '';
-    var u_seconds = unit_by_seconds(unit);
 
-    if (unit !== null || unit !== undefined) {
-        if (calc_time !== 0) {
-            if (calc_time > u_seconds) {
-                var time_unit = parseInt(time / u_seconds, 10);
-                calc_time = calc_time % u_seconds;
-                time_str += time_unit + ' ' + unit;
+    // year
+    var time_range_string = '',
+        remainder = 0,
+        integer_division = 0,
+        current_unit,
+        sec_in_unit,
+        i;
 
-                if (calc_time > 0) {
-                    if (index < units.length - 1) {
-                        time_str += ' ' + meaningful_time_calculator(calc_time, units[index + 1]);
-                    }
-                }
-            } else {
-                if (index < units.length - 1) {
-                    time_str += ' ' + meaningful_time_calculator(calc_time, units[index + 1]);
-                }
+    for(i = 0; i < units.length; i += 1){
+        current_unit = units[i];
+        sec_in_unit = seconds_in_unit(current_unit);
+        integer_division = Math.floor(seconds / sec_in_unit);
+        remainder = seconds % sec_in_unit;
+        if(integer_division > 0){
+            if (time_range_string !== ''){
+                time_range_string += ' ';
             }
+            time_range_string += integer_division + ' ' + current_unit;
         }
+        seconds = remainder;
     }
 
-    return time_str;
+    return time_range_string;
 }
 
+/**
+ * Calculates a time string from the given values
+ * 
+ * @param time1
+ * @param time2
+ * @returns {string}
+ */
 function meaningful_time_between(time1, time2) {
     'use strict';
     var seconds_between = time1 - time2;

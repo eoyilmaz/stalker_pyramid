@@ -54,16 +54,16 @@
 
 <script>
     $(function () {
-        var schedule_unit_seconds = unit_by_seconds('{{ entity.schedule_unit }}');
+        var schedule_unit_seconds = seconds_in_unit('{{ entity.schedule_unit }}');
 
-        var bid_seconds = calculate_seconds({{ entity.bid_timing }}, '{{ entity.bid_unit }}');
-        var schedule_timing_seconds = calculate_seconds({{ entity.schedule_timing }}, '{{ entity.schedule_unit }}');
+        var bid_seconds = to_seconds({{ entity.bid_timing }}, '{{ entity.bid_unit }}');
+        var schedule_timing_seconds = to_seconds({{ entity.schedule_timing }}, '{{ entity.schedule_unit }}');
         var total_logged_seconds = {{entity.total_logged_seconds}};
 
-        var bid = meaningful_time_calculator(bid_seconds, '{{ entity.bid_unit }}');
-        var schedule_timing = meaningful_time_calculator(schedule_timing_seconds, '{{ entity.bid_unit }}');
-        var total_logged = meaningful_time_calculator(total_logged_seconds, '{{ entity.bid_unit }}');
-        var time_to_complete = meaningful_time_calculator(schedule_timing_seconds-total_logged_seconds, '{{ entity.bid_unit }}');
+        var bid = convert_seconds_to_time_range(bid_seconds);
+        var schedule_timing = convert_seconds_to_time_range(schedule_timing_seconds);
+        var total_logged = convert_seconds_to_time_range(total_logged_seconds);
+        var time_to_complete = convert_seconds_to_time_range(schedule_timing_seconds - total_logged_seconds);
 
         $('#bid').text(bid);
         $('#schedule_timing').text(schedule_timing);
@@ -72,7 +72,7 @@
 
         var bid_bar_percent = 0;
         var separator_bar_percent = 0;
-        var total_logged_bar_percent = (total_logged_seconds/schedule_timing_seconds)*100;
+        var total_logged_bar_percent = (total_logged_seconds / schedule_timing_seconds)*100;
         var schedule_timing_bar_percent = 100-total_logged_bar_percent;
         if(bid_seconds < total_logged_seconds)
         {
