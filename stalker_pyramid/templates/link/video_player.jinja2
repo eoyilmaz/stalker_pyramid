@@ -109,7 +109,6 @@
             $(function(){
                 var video = $('#video');
 
-
                 // Buttons
                 var playButton = $("#play-pause");
                 var muteButton = $("#mute");
@@ -235,6 +234,7 @@
                     // Calculate the slider value
                     // Update the slider value
                     var duration = video[0].duration;
+                    var current_time = video[0].currentTime;
 {#                    var buffered = video[0].buffered.end(0);#}
 {#                    console.debug('buffered: ', buffered);#}
 
@@ -242,10 +242,15 @@
 {#                        width: buffered / duration + '%'#}
 {#                    });#}
 
-                    seekBar[0].value = (seekBar.attr('max') / duration) * video[0].currentTime;
+                    seekBar[0].value = (seekBar.attr('max') / duration) * current_time;
                     set_current_time_info_display(video[0].currentTime);
 
-
+                    if (duration == current_time){
+                        // toggle play button
+                        // Update the button text to 'Play'
+                        playButton.find('i').removeClass('icon-pause');
+                        playButton.find('i').addClass('icon-play');
+                    }
                 });
 
                 // Event listener for the volume bar
@@ -292,6 +297,22 @@
                     resize_seek_bar();
                 });
 
+                $(window).on('keypress', function(e){
+                    if (e.keyCode == 49){
+                        console.debug('1 is clicked!');
+                        video[0].currentTime -= 1/24;
+                    } else if (e.keyCode == 50){
+                        console.debug('2 is clicked!');
+                        video[0].currentTime += 1/24;
+                    }
+                });
+
+                // this player should not know that it has been called from a
+                // colorbox object, but this is good enough for now
+                $(document).bind('cbox_closed', function(){
+                    $(window).unbind('keypress');
+                });
+                
                 var init_video = function(){
                     if (video.width() !== 0){
                         center_video();
