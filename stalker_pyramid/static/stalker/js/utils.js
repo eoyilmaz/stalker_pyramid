@@ -257,11 +257,11 @@ function unit_by_seconds(unit) {
     case 'd':
         return 32400; // TODO: this is not true, please use: stalker.defaults.daily_working_hours
     case 'w':
-        return 194400; // TODO: this is not true, please use: stalker.defaults.weekly_working_hours
+        return 183600; // TODO: this is not true, please use: stalker.defaults.weekly_working_hours
     case 'm':
-        return 2419200; // TODO: this is not true, please use: 4 * stalker.defaults.weekly_working_hours
+        return 734400; // TODO: this is not true, please use: 4 * stalker.defaults.weekly_working_hours
     case 'y':
-        return 31536000; // TODO: this is not true, please use: stalker.defaults.yearly_working_days * stalker.defaults.daily_working_hours
+        return 9573418; // TODO: this is not true, please use: stalker.defaults.yearly_working_days * stalker.defaults.daily_working_hours
     }
     return 0;
 }

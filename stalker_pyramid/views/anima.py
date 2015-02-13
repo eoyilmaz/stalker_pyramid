@@ -327,38 +327,36 @@ def get_user_animation_seconds(request):
         from (
             select  "Shot_SimpleEntities".name as shot_name,
                     ("Shots".cut_out - "Shots".cut_in)/24 as seconds,
-    
+
                     (("Shots".cut_out - "Shots".cut_in)/24)*(sum(extract(epoch from "TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC'))/
                         ("Tasks".schedule_timing * (case "Tasks".schedule_unit
                                     when 'min' then 60
                                     when 'h' then 3600
                                     when 'd' then 32400
-                                    when 'w' then 147600
-                                    when 'm' then 590400
-                                    when 'y' then 7696277
+                                    when 'w' then 183600
+                                    when 'm' then 734400
+                                    when 'y' then 9573418
                                     else 0
                                 end))
                         ) as r_seconds,
                     min("TimeLogs".start) as start,
                     max("TimeLogs".end) as end
-    
+
             from "TimeLogs"
             join "Tasks" on "TimeLogs".task_id = "Tasks".id
             join "SimpleEntities" as "Task_SimpleEntities" on "Task_SimpleEntities".id = "Tasks".id
             join "SimpleEntities" as "Type_SimpleEntities" on "Type_SimpleEntities".id = "Task_SimpleEntities".type_id
             join "Shots" on "Shots".id = "Tasks".parent_id
             join "SimpleEntities" as "Shot_SimpleEntities" on "Shot_SimpleEntities".id = "Shots".id
-    
+
             where "TimeLogs".resource_id = %(resource_id)s and "Type_SimpleEntities".name = 'Animation'
-    
+
             group by "Shot_SimpleEntities".name,
                      seconds,
                      "Tasks".schedule_timing,
                      "Tasks".schedule_unit
-    
-    
             ) as shots
-    
+
             group by  date_trunc('month', shots.start)
             order by start
     """

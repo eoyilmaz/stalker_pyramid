@@ -350,9 +350,9 @@ def get_project_tasks_cost(request):
                                 when 'min' then 60
                                 when 'h' then 3600
                                 when 'd' then 32400
-                                when 'w' then 147600
-                                when 'm' then 590400
-                                when 'y' then 7696277
+                                when 'w' then 183600
+                                when 'm' then 734400
+                                when 'y' then 9573418
                                 else 0
                             end)
                         )/3600))
