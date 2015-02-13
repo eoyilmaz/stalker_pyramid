@@ -61,14 +61,18 @@
         var total_logged_seconds = {{entity.total_logged_seconds}};
 
         var bid = convert_seconds_to_time_range(bid_seconds);
+        var bid_lmt = meaningful_time(bid_seconds);
         var schedule_timing = convert_seconds_to_time_range(schedule_timing_seconds);
+        var schedule_timing_lmt = meaningful_time(schedule_timing_seconds);
         var total_logged = convert_seconds_to_time_range(total_logged_seconds);
+        var total_logged_lmt = meaningful_time(total_logged_seconds);
         var time_to_complete = convert_seconds_to_time_range(schedule_timing_seconds - total_logged_seconds);
+        var time_to_complete_lmt = meaningful_time(schedule_timing_seconds - total_logged_seconds);
 
-        $('#bid').text(bid);
-        $('#schedule_timing').text(schedule_timing);
-        $('#total_logged').text(total_logged);
-        $('#time_to_complete').text(time_to_complete);
+        $('#bid').text(bid + ' (' + bid_lmt + ')');
+        $('#schedule_timing').text(schedule_timing + ' (' + schedule_timing_lmt + ')');
+        $('#total_logged').text(total_logged + ' (' + total_logged_lmt + ')');
+        $('#time_to_complete').text(time_to_complete + ' (' + time_to_complete_lmt + ')');
 
         var bid_bar_percent = 0;
         var separator_bar_percent = 0;
