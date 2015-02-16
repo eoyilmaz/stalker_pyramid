@@ -38,7 +38,7 @@
     {% include 'page_header.jinja2' %}
 
     <div class="row-fluid">
-        <div class="span9">
+        <div class="span10">
             <div class="widget-box">
 
                 <div class="widget-header widget-header-small header-color-green }}">
@@ -91,218 +91,254 @@
     <script type="text/javascript">
         $(document).ready(function () {
 
-            $.getJSON('/studios/{{ entity.id }}/goods/').then(function (entry_data) {
+            $.getJSON('/price_lists/').then(function (data) {
+                var good_price_list = $('#good_price_list');
 
-                    var grid_data = entry_data;
-
-                    for(var j=0; j<grid_data.length; j++ ){
-
+                var pricelist_value = '';
+                for (var k=0; k < data.length; k++){
+                    pricelist_value += data[k].name+':'+data[k].name
+                    if(k!=data.length-1){
+                       pricelist_value +=';'
                     }
-                    jQuery(function($) {
-                        var grid_selector = "#grid-table";
-                        var pager_selector = "#grid-pager";
+                }
 
-                        jQuery(grid_selector).jqGrid({
-                            //direction: "rtl",
-                            data: grid_data,
-                            datatype: "local",
-                            height: 800,
-                            colNames:['', 'ID','Name', 'MSRP', 'Cost', 'Unit', 'Created_by', 'Updated_by', 'Last_Accessed'],
-                            colModel:[
-                                {name:'myac',index:'', width:70, fixed:true, sortable:false, resize:false,
-                                    formatter:'actions',
-                                    formatoptions:{
-                                        keys:false,
-                                        delbutton:true,
-                                        delOptions:{recreateForm: true, beforeShowForm:beforeDeleteCallback}
-                                        //editformbutton:true, editOptions:{recreateForm: true, beforeShowForm:beforeEditCallback}
+                $.getJSON('/studios/{{ entity.id }}/goods/').then(function (good_data) {
+
+                        var grid_data = good_data;
+
+                        for(var i=0; i<grid_data.length; i++ ){
+
+                            grid_data[i]['created_by'] = "<a href='/users/"+grid_data[i]['created_by_id']+"/view'>"+grid_data[i]['created_by_name']+"</a>";
+                            if(grid_data[i]['updated_by_id']){
+                                grid_data[i]['updated_by'] = "<a href='/users/"+grid_data[i]['updated_by_id']+"/view'>"+grid_data[i]['updated_by_name']+"</a>";
+                            }
+                            grid_data[i].date_updated = "<span class='date'>"+ new Date(grid_data[i].date_updated).format('yyyy-mm-dd HH:MM')+"</span>";
+
+                        }
+                        jQuery(function($) {
+                            var grid_selector = "#grid-table";
+                            var pager_selector = "#grid-pager";
+
+                            jQuery(grid_selector).jqGrid({
+                                //direction: "rtl",
+                                data: grid_data,
+                                datatype: "local",
+                                height: 800,
+                                colNames:['','ID', 'Price List', 'Name', 'MSRP', 'Cost', 'Unit', 'Created_by', 'Updated_by', 'Last_Accessed'],
+                                colModel:[
+                                    {name:'myac',index:'', width:70, fixed:true, sortable:false, resize:false,
+                                        formatter:'actions',
+                                        formatoptions:{
+                                            keys:false,
+                                            delbutton:true,
+                                            delOptions:{recreateForm: true, beforeShowForm:beforeDeleteCallback}
+                                            //editformbutton:true, editOptions:{recreateForm: true, beforeShowForm:beforeEditCallback}
+                                        }
+                                    },
+                                    {name:'id',index:'id', width:90, sortable:true, editable: false},
+                                    {name:'price_list_name',index:'price_list_name', width:160, sortable:true, editable: true, edittype:"select",editoptions:{value:pricelist_value}},
+                                    {name:'name',index:'name', width:250, sortable:true, editable: true, editoptions:{size:"20",maxlength:"30"}},
+                                    {name:'msrp',index:'msrp',  width:100, sortable:true, editable: true, editoptions:{size:"20",maxlength:"30"}},
+                                    {name:'cost',index:'cost',  width:120, sortable:true, editable: true, editoptions:{size:"20",maxlength:"30"}},
+                                    {name:'unit',index:'unit',  width:120, editable: true, edittype:"select", editoptions:{value:"HOUR:HOUR;DAY:DAY;WEEK:WEEK;FILM:FILM"}},
+                                    {name:'created_by',index:'created_by', width:250, sortable:true, editable: false},
+                                    {name:'updated_by',index:'updated_by', width:250, sortable:true, editable: false},
+                                    {name:'date_updated',index:'date_updated', width:150, sortable:true, editable: false}
+                                ],
+                                viewrecords : true,
+                                rowNum:20,
+                                rowList:[20, 50, 100],
+                                pager : pager_selector,
+                                altRows: true,
+            {#                    toppager: true,#}
+                                multiselect: false,
+    {#                            multikey: "ctrlKey",#}
+                                multiboxonly: true,
+                                grouping: true,
+                                groupingView: {
+                                    groupField: ["price_list_name"],
+                                    groupColumnShow: [true],
+                                    groupText: ["<b>{0}</b>"],
+                                    groupOrder: ["asc"],
+                                    groupSummary: [true],
+                                    groupCollapse: false
+
+                                },
+
+                                loadComplete : function() {
+
+                                    var table = this;
+                                    setTimeout(function(){
+                                        styleCheckbox(table);
+                                        updatePagerIcons(table);
+                                        enableTooltips(table);
+
+                                        $('#lui_grid-table').hide();
+                                    }, 0);
+                                },
+                                editurl:  '/goods/edit',
+                                caption: ""
+                            });
+
+                            //navButtons
+                            jQuery(grid_selector).jqGrid('navGrid',pager_selector,
+                                { 	//navbar options
+                                    edit: true,
+                                    editicon : 'icon-pencil blue',
+                                    add: false,
+                                    addicon : 'icon-plus-sign purple',
+                                    del: true,
+                                    delicon : 'icon-trash red',
+                                    search: true,
+                                    searchicon : 'icon-search orange',
+                                    refresh: true,
+                                    refreshicon : 'icon-refresh green',
+                                    view: true,
+                                    viewicon : 'icon-zoom-in grey'
+                                },
+                                {
+                                    //edit record form
+                                    //closeAfterEdit: true,
+                                    recreateForm: true,
+                                    beforeShowForm : function(e) {
+                                        var form = $(e[0]);
+                                        form.closest('.ui-jqdialog').find('.ui-jqdialog-titlebar').wrapInner('<div class="widget-header" />')
+                                        style_edit_form(form);
                                     }
                                 },
-                                {name:'id',index:'id', width:90, sortable:true, editable: false},
-                                {name:'name',index:'name', width:250, sortable:true, editable: true, editoptions:{size:"20",maxlength:"30"}},
-                                {name:'msrp',index:'msrp',  width:100, sortable:true, editable: true, editoptions:{size:"20",maxlength:"30"}},
-                                {name:'cost',index:'cost',  width:120, sortable:true, editable: true, editoptions:{size:"20",maxlength:"30"}},
-                                {name:'unit',index:'unit',  width:120, editable: true, edittype:"select", editoptions:{value:"HOUR:HOUR;DAY:DAY;WEEK:WEEK;FILM:FILM"}},
-                                {name:'created_by',index:'created_by', width:250, sortable:true, editable: false},
-                                {name:'updated_by',index:'updated_by', width:250, sortable:true, editable: false},
-                                {name:'date_updated',index:'date_updated', width:150, sortable:true, editable: false}
-                            ],
-                            viewrecords : true,
-                            rowNum:20,
-                            rowList:[20, 50, 100],
-                            pager : pager_selector,
-                            altRows: true,
-        {#                    toppager: true,#}
-                            multiselect: false,
-{#                            multikey: "ctrlKey",#}
-                            multiboxonly: true,
+                                {
+                                    //delete record form
+                                    recreateForm: true,
+                                    beforeShowForm : function(e) {
+                                        var form = $(e[0]);
+                                        if(form.data('styled')) return false;
 
-                            loadComplete : function() {
+                                        form.closest('.ui-jqdialog').find('.ui-jqdialog-titlebar').wrapInner('<div class="widget-header" />')
+                                        style_delete_form(form);
 
-                                var table = this;
-                                setTimeout(function(){
-                                    styleCheckbox(table);
-                                    updateActionIcons(table);
-                                    updatePagerIcons(table);
-                                    enableTooltips(table);
-
-                                    $('#lui_grid-table').hide();
-                                }, 0);
-                            },
-                            editurl:  '/goods/edit',
-                            caption: ""
-                        });
-
-                        //navButtons
-                        jQuery(grid_selector).jqGrid('navGrid',pager_selector,
-                            { 	//navbar options
-                                edit: false,
-                                editicon : 'icon-pencil blue',
-                                add: false,
-                                addicon : 'icon-plus-sign purple',
-                                del: false,
-                                delicon : 'icon-trash red',
-                                search: true,
-                                searchicon : 'icon-search orange',
-                                refresh: true,
-                                refreshicon : 'icon-refresh green',
-                                view: true,
-                                viewicon : 'icon-zoom-in grey'
-                            },
-
-                            {
-                                //search form
-                                recreateForm: true,
-                                afterShowSearch: function(e){
-                                    var form = $(e[0]);
-                                    form.closest('.ui-jqdialog').find('.ui-jqdialog-title').wrap('<div class="widget-header" />')
-                                    style_search_form(form);
+                                        form.data('styled', true);
+                                    },
+                                    onClick : function(e) {
+                                        alert(1);
+                                    }
                                 },
-                                afterRedraw: function(){
-                                    style_search_filters($(this));
+
+                                {
+                                    //search form
+                                    recreateForm: true,
+                                    afterShowSearch: function(e){
+                                        var form = $(e[0]);
+                                        form.closest('.ui-jqdialog').find('.ui-jqdialog-title').wrap('<div class="widget-header" />')
+                                        style_search_form(form);
+                                    },
+                                    afterRedraw: function(){
+                                        style_search_filters($(this));
+                                    }
+                                    ,
+                                    multipleSearch: false
+                                    /**
+                                    multipleGroup:true,
+                                    showQuery: true
+                                    */
                                 }
-                                ,
-                                multipleSearch: false
-                                /**
-                                multipleGroup:true,
-                                showQuery: true
-                                */
+
+                            )
+
+                            function style_edit_form(form) {
+
+                                //update buttons classes
+                                var buttons = form.next().find('.EditButton .fm-button');
+                                buttons.addClass('btn btn-small').find('[class*="-icon"]').remove();//ui-icon, s-icon
+                                buttons.eq(0).addClass('btn-primary').prepend('<i class="icon-ok"></i>');
+                                buttons.eq(1).prepend('<i class="icon-remove"></i>')
+
+                                buttons = form.next().find('.navButton a');
+                                buttons.find('.ui-icon').remove();
+                                buttons.eq(0).append('<i class="icon-chevron-left"></i>');
+                                buttons.eq(1).append('<i class="icon-chevron-right"></i>');
                             }
 
-                        )
+                            function style_delete_form(form) {
+                                var buttons = form.next().find('.EditButton .fm-button');
+                                buttons.addClass('btn btn-small').find('[class*="-icon"]').remove();//ui-icon, s-icon
+                                buttons.eq(0).addClass('btn-danger').prepend('<i class="icon-trash"></i>');
+                                buttons.eq(1).prepend('<i class="icon-remove"></i>')
+                            }
 
-                        function style_edit_form(form) {
+                            function style_search_filters(form) {
+                                form.find('.delete-rule').val('X');
+                                form.find('.add-rule').addClass('btn btn-small btn-primary');
+                                form.find('.add-group').addClass('btn btn-small btn-success');
+                                form.find('.delete-group').addClass('btn btn-small btn-danger');
+                            }
+                            function style_search_form(form) {
+                                var dialog = form.closest('.ui-jqdialog');
+                                var buttons = dialog.find('.EditTable')
+                                buttons.find('.EditButton a[id*="_reset"]').addClass('btn btn-small btn-info').find('.ui-icon').attr('class', 'icon-retweet');
+                                buttons.find('.EditButton a[id*="_query"]').addClass('btn btn-small btn-inverse').find('.ui-icon').attr('class', 'icon-comment-alt');
+                                buttons.find('.EditButton a[id*="_search"]').addClass('btn btn-small btn-purple').find('.ui-icon').attr('class', 'icon-search');
+                            }
 
-                            //update buttons classes
-                            var buttons = form.next().find('.EditButton .fm-button');
-                            buttons.addClass('btn btn-small').find('[class*="-icon"]').remove();//ui-icon, s-icon
-                            buttons.eq(0).addClass('btn-primary').prepend('<i class="icon-ok"></i>');
-                            buttons.eq(1).prepend('<i class="icon-remove"></i>')
+                            function beforeDeleteCallback(e) {
+                                var form = $(e[0]);
+                                if(form.data('styled')) return false;
 
-                            buttons = form.next().find('.navButton a');
-                            buttons.find('.ui-icon').remove();
-                            buttons.eq(0).append('<i class="icon-chevron-left"></i>');
-                            buttons.eq(1).append('<i class="icon-chevron-right"></i>');
-                        }
+                                form.closest('.ui-jqdialog').find('.ui-jqdialog-titlebar').wrapInner('<div class="widget-header" />')
+                                style_delete_form(form);
 
-                        function style_delete_form(form) {
-                            var buttons = form.next().find('.EditButton .fm-button');
-                            buttons.addClass('btn btn-small').find('[class*="-icon"]').remove();//ui-icon, s-icon
-                            buttons.eq(0).addClass('btn-danger').prepend('<i class="icon-trash"></i>');
-                            buttons.eq(1).prepend('<i class="icon-remove"></i>')
-                        }
+                                form.data('styled', true);
+                            }
 
-                        function style_search_filters(form) {
-                            form.find('.delete-rule').val('X');
-                            form.find('.add-rule').addClass('btn btn-small btn-primary');
-                            form.find('.add-group').addClass('btn btn-small btn-success');
-                            form.find('.delete-group').addClass('btn btn-small btn-danger');
-                        }
-                        function style_search_form(form) {
-                            var dialog = form.closest('.ui-jqdialog');
-                            var buttons = dialog.find('.EditTable')
-                            buttons.find('.EditButton a[id*="_reset"]').addClass('btn btn-small btn-info').find('.ui-icon').attr('class', 'icon-retweet');
-                            buttons.find('.EditButton a[id*="_query"]').addClass('btn btn-small btn-inverse').find('.ui-icon').attr('class', 'icon-comment-alt');
-                            buttons.find('.EditButton a[id*="_search"]').addClass('btn btn-small btn-purple').find('.ui-icon').attr('class', 'icon-search');
-                        }
+                            function beforeEditCallback(e) {
+                                var form = $(e[0]);
+                                console.log(e[0])
+                                form.closest('.ui-jqdialog').find('.ui-jqdialog-titlebar').wrapInner('<div class="widget-header" />')
+                                style_edit_form(form);
+                            }
 
-                        function beforeDeleteCallback(e) {
-                            var form = $(e[0]);
-                            if(form.data('styled')) return false;
-
-                            form.closest('.ui-jqdialog').find('.ui-jqdialog-titlebar').wrapInner('<div class="widget-header" />')
-                            style_delete_form(form);
-
-                            form.data('styled', true);
-                        }
-
-                        function beforeEditCallback(e) {
-                            var form = $(e[0]);
-                            console.log(e[0])
-                            form.closest('.ui-jqdialog').find('.ui-jqdialog-titlebar').wrapInner('<div class="widget-header" />')
-                            style_edit_form(form);
-                        }
-
-                        function styleCheckbox(table) {
-                        /**
-                            $(table).find('input:checkbox').addClass('ace')
-                            .wrap('<label />')
-                            .after('<span class="lbl align-top" />')
-
-
-                            $('.ui-jqgrid-labels th[id*="_cb"]:first-child')
-                            .find('input.cbox[type=checkbox]').addClass('ace')
-                            .wrap('<label />').after('<span class="lbl align-top" />');
-                        */
-                        }
-
-
-                        //unlike navButtons icons, action icons in rows seem to be hard-coded
-                        //you can change them like this in here if you want
-                        function updateActionIcons(table) {
+                            function styleCheckbox(table) {
                             /**
-                            var replacement =
-                            {
-                                'ui-icon-pencil' : 'icon-pencil blue',
-                                'ui-icon-trash' : 'icon-trash red',
-                                'ui-icon-disk' : 'icon-ok green',
-                                'ui-icon-cancel' : 'icon-remove red'
-                            };
-                            $(table).find('.ui-pg-div span.ui-icon').each(function(){
-                                var icon = $(this);
-                                var $class = $.trim(icon.attr('class').replace('ui-icon', ''));
-                                if($class in replacement) icon.attr('class', 'ui-icon '+replacement[$class]);
-                            })
+                                $(table).find('input:checkbox').addClass('ace')
+                                .wrap('<label />')
+                                .after('<span class="lbl align-top" />')
+
+
+                                $('.ui-jqgrid-labels th[id*="_cb"]:first-child')
+                                .find('input.cbox[type=checkbox]').addClass('ace')
+                                .wrap('<label />').after('<span class="lbl align-top" />');
                             */
-                        }
+                            }
 
-                        //replace icons with FontAwesome icons like above
-                        function updatePagerIcons(table) {
-                            var replacement =
-                            {
-                                'ui-icon-seek-first' : 'icon-double-angle-left bigger-140',
-                                'ui-icon-seek-prev' : 'icon-angle-left bigger-140',
-                                'ui-icon-seek-next' : 'icon-angle-right bigger-140',
-                                'ui-icon-seek-end' : 'icon-double-angle-right bigger-140'
-                            };
-                            $('.ui-pg-table:not(.navtable) > tbody > tr > .ui-pg-button > .ui-icon').each(function(){
-                                var icon = $(this);
-                                var $class = $.trim(icon.attr('class').replace('ui-icon', ''));
+                            //replace icons with FontAwesome icons like above
+                            function updatePagerIcons(table) {
+                                var replacement =
+                                {
+                                    'ui-icon-seek-first' : 'icon-double-angle-left bigger-140',
+                                    'ui-icon-seek-prev' : 'icon-angle-left bigger-140',
+                                    'ui-icon-seek-next' : 'icon-angle-right bigger-140',
+                                    'ui-icon-seek-end' : 'icon-double-angle-right bigger-140'
+                                };
+                                $('.ui-pg-table:not(.navtable) > tbody > tr > .ui-pg-button > .ui-icon').each(function(){
+                                    var icon = $(this);
+                                    var $class = $.trim(icon.attr('class').replace('ui-icon', ''));
 
-                                if($class in replacement) icon.attr('class', 'ui-icon '+replacement[$class]);
-                            })
-                        }
+                                    if($class in replacement) icon.attr('class', 'ui-icon '+replacement[$class]);
+                                })
+                            }
 
-                        function enableTooltips(table) {
-                            $('.navtable .ui-pg-button').tooltip({container:'body'});
-                            $(table).find('.ui-pg-div').tooltip({container:'body'});
-                        }
+                            function enableTooltips(table) {
+                                $('.navtable .ui-pg-button').tooltip({container:'body'});
+                                $(table).find('.ui-pg-div').tooltip({container:'body'});
+                            }
 
-                        //var selr = jQuery(grid_selector).jqGrid('getGridParam','selrow');
-
+                             $('.date').each(function () {
+                                var date = moment.utc($(this).text());
+                                $(this).text(date.fromNow());
+                            });
+                        });
+                    });
                 });
             });
-        });
     </script>
 {% endblock extrascripts %}
 

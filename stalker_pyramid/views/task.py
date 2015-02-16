@@ -36,7 +36,7 @@ from sqlalchemy.exc import IntegrityError
 
 from stalker import (db, defaults, User, Task, Entity, Project, StatusList,
                      Status, Studio, Asset, Shot, Sequence, Ticket, Type, Note,
-                     Review, Version, TimeLog)
+                     Review, Version, TimeLog, Good)
 from stalker.exceptions import CircularDependencyError, StatusError
 
 from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
@@ -976,11 +976,13 @@ def update_task(request):
 
     priority = int(request.params.get('priority', 500))
 
+
     entity_type = request.params.get('entity_type', None)
     code = request.params.get('code', None)
     asset_type = request.params.get('asset_type', None)
     task_type = request.params.get('task_type', None)
     shot_sequence_id = request.params.get('shot_sequence_id', None)
+    good_id = request.params.get('good_id', task_type)
 
     cut_in = int(request.params.get('cut_in', 1))
     cut_out = int(request.params.get('cut_out', 1))
@@ -1000,6 +1002,7 @@ def update_task(request):
     logger.debug('schedule_unit       : %s' % schedule_unit)
     logger.debug('update_bid          : %s' % update_bid)
     logger.debug('priority            : %s' % priority)
+    logger.debug('good_id             : %s' % good_id)
     logger.debug('code                : %s' % code)
 
     logger.debug('shot_sequence_id    : %s' % shot_sequence_id)
@@ -1107,6 +1110,12 @@ def update_task(request):
 
         if task.parent:
             task.parent.update_status_with_children_statuses()
+
+    good = Good.query.filter_by(id=good_id).first()
+    if not good:
+        logger.debug('there are no good with id : %s' % good_id)
+
+    task.good = good
 
     task.date_updated = local_to_utc(datetime.datetime.now())
 
@@ -3115,6 +3124,7 @@ def create_task(request):
         responsible = User.query.filter(User.id.in_(responsible_ids)).all()
 
     priority = int(request.params.get('priority', 500))
+    good_id = request.params.get('good_id')
 
     code = request.params.get('code', '')
     entity_type = request.params.get('entity_type')
@@ -3140,6 +3150,7 @@ def create_task(request):
     logger.debug('resources           : %s' % resources)
     logger.debug('responsible         : %s' % responsible)
     logger.debug('priority            : %s' % priority)
+    logger.debug('good_id            : %s' % good_id)
     logger.debug('shot_sequence_id    : %s' % shot_sequence_id)
     logger.debug('cut_in              : %s' % cut_in)
     logger.debug('cut_out             : %s' % cut_out)
@@ -3231,6 +3242,13 @@ def create_task(request):
     kwargs['depends'] = depends
 
     kwargs['priority'] = priority
+
+    good = Good.query.filter_by(id=good_id).first()
+    if not good:
+        logger.debug('there are no good with id : %s' % good_id)
+
+    kwargs['good'] = good
+
 
     type_name = ''
     if entity_type == 'Asset':

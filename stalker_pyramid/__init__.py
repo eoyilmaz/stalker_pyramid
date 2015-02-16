@@ -377,7 +377,9 @@ def main(global_config, **settings):
 
 
     config.add_route('create_budgetentry',        'budgetentries/create')
-    config.add_route('update_budgetentry',        'budgetentries/{id}/update')
+    config.add_route('edit_budgetentry', 'budgetentries/edit')
+    config.add_route('update_budgetentry', 'budgetentries/update')
+    config.add_route('delete_budgetentry', 'budgetentries/delete')
 
 
     # *************************************************************************
@@ -849,7 +851,9 @@ def main(global_config, **settings):
     config.add_route('add_related_assets', 'entities/{id}/assets/add')
     config.add_route('remove_related_asset_dialog', 'entities/{id}/assets/{a_id}/remove/dialog')
     config.add_route('remove_related_asset', 'entities/{id}/assets/{a_id}/remove')
-    config.add_route('get_user_animation_seconds', 'users/{id}/animation')
+    config.add_route('get_entity_task_type_result', 'entities/{id}/{task_type}/result')
+    config.add_route('view_entity_result', 'entities/{id}/result/view')
+
 
     # *************************************************************************
     # Test

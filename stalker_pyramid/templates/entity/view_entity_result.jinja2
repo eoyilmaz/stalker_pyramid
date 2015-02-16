@@ -10,13 +10,9 @@
 {% endblock sidebar %}
 
 {% block page_content %}
-    {% set page_title='Reports' %}
+    {% set page_title='Results' %}
     {% include 'page_header.jinja2' %}
-    <div class="row-fluid">
-        <div class="span7">
-                {% include 'animation_report.jinja2' %}
-            </div>
-    </div>
+    {% include 'entity/result_of_task_type.jinja2' %}
 
 {% endblock page_content %}
 

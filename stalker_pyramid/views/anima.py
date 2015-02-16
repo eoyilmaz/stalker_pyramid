@@ -310,20 +310,24 @@ def update_shot_task_dependencies(action, shot, task_name, dependencies, user, d
 
 
 @view_config(
-    route_name='get_user_animation_seconds',
+    route_name='get_entity_task_type_result',
     renderer='json'
 )
-def get_user_animation_seconds(request):
-    """gives get_user_animation_seconds
+def get_entity_task_type_result(request):
+    """gives get_entity_task_type_result
     """
-    logger.debug('get_user_animation_seconds starts')
+    logger.debug('get_entity_task_type_result starts')
     entity_id = request.matchdict.get('id')
+    entity = Entity.query.filter_by(id=entity_id).first()
+
+    task_type = request.matchdict.get('task_type')
 
     sql_query = """select
           sum(shots.r_seconds) as total_seconds,
           array_agg(shots.shot_name) as shot_names,
           min(extract(epoch from shots.start::timestamp AT TIME ZONE 'UTC')) as start,
-          max(extract(epoch from shots.end::timestamp AT TIME ZONE 'UTC')) as end
+          max(extract(epoch from shots.end::timestamp AT TIME ZONE 'UTC')) as end,
+          array_agg(distinct(shots.resource_name)) as resource_names
         from (
             select  "Shot_SimpleEntities".name as shot_name,
                     ("Shots".cut_out - "Shots".cut_in)/24 as seconds,
@@ -339,6 +343,7 @@ def get_user_animation_seconds(request):
                                     else 0
                                 end))
                         ) as r_seconds,
+                    "Resource_SimpleEntities".name as resource_name,
                     min("TimeLogs".start) as start,
                     max("TimeLogs".end) as end
     
@@ -348,29 +353,44 @@ def get_user_animation_seconds(request):
             join "SimpleEntities" as "Type_SimpleEntities" on "Type_SimpleEntities".id = "Task_SimpleEntities".type_id
             join "Shots" on "Shots".id = "Tasks".parent_id
             join "SimpleEntities" as "Shot_SimpleEntities" on "Shot_SimpleEntities".id = "Shots".id
-    
-            where "TimeLogs".resource_id = %(resource_id)s and "Type_SimpleEntities".name = 'Animation'
+            join "SimpleEntities" as "Resource_SimpleEntities" on "Resource_SimpleEntities".id = "TimeLogs".resource_id
+
+            where "Type_SimpleEntities".name = '%(task_type)s'
+            %(where_conditions)s
     
             group by "Shot_SimpleEntities".name,
                      seconds,
                      "Tasks".schedule_timing,
-                     "Tasks".schedule_unit
+                     "Tasks".schedule_unit,
+                     "Resource_SimpleEntities".name
     
     
             ) as shots
     
-            group by  date_trunc('month', shots.start)
+            group by  date_trunc('week', shots.start)
             order by start
     """
-    sql_query = sql_query % {'resource_id': entity_id}
+    where_conditions = ''
+    if entity.entity_type == 'User':
+        where_conditions = """and "TimeLogs".resource_id = %(resource_id)s """ % {'resource_id': entity_id}
+    elif entity.entity_type == 'Department':
+        temp_buffer = [""" and ("""]
+        for i, resource in enumerate(entity.users):
+            if i > 0:
+                temp_buffer.append(' or')
+            temp_buffer.append(""" "TimeLogs".resource_id='%s'""" % resource.id)
+        temp_buffer.append(' )')
+        where_conditions = ''.join(temp_buffer)
 
+    sql_query = sql_query % {'where_conditions': where_conditions, 'task_type':task_type}
     result = DBSession.connection().execute(sql_query).fetchall()
 
     return [{
         'total_seconds': r[0],
         'shot_names': r[1],
         'start_date': r[2],
-        'end_date': r[3]
+        'end_date': r[3],
+        'resource_names': r[4]
     } for r in result]
 
 

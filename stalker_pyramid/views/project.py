@@ -342,48 +342,68 @@ def get_project_tasks_cost(request):
     project_id = request.matchdict.get('id', -1)
     sql_query = """
         select
-            "Type_SimpleEntities".id,
-            "Type_SimpleEntities".name,
-            "Users".rate,
-            sum((coalesce("Tasks".schedule_seconds,
-                            "Tasks".schedule_timing * (case "Tasks".schedule_unit
-                                when 'min' then 60
-                                when 'h' then 3600
-                                when 'd' then 32400
-                                when 'w' then 147600
-                                when 'm' then 590400
-                                when 'y' then 7696277
-                                else 0
-                            end)
-                        )/3600))
+           goods.id,
+           goods.name,
+           goods.msrp,
+           goods.cost,
+           goods.unit,
+           sum(goods.bid_total) as bid_total,
+           sum(goods.bid_total * goods.user_rate) as realize_total
 
+        from ( select
+                "Good_SimpleEntities".name as name,
+                "Good_SimpleEntities".id as id,
+                "Task_Goods".msrp as msrp,
+                "Task_Goods".cost as cost,
+                "Task_Goods".unit as unit,
+                sum("Tasks".bid_timing * (case "Tasks".bid_unit
+                                    when 'min' then 60
+                                    when 'h' then 3600
+                                    when 'd' then 32400
+                                    when 'w' then 183600
+                                    when 'm' then 590400
+                                    when 'y' then 7696277
+                                    else 0
+                                end)/3600) as bid_total,
+                "Users".rate as user_rate
 
-            from "Tasks"
-            join "SimpleEntities" as "Task_SimpleEntities" on "Task_SimpleEntities".id = "Tasks".id
-            join "SimpleEntities" as "Type_SimpleEntities" on "Type_SimpleEntities".id = "Task_SimpleEntities".type_id
-            join "Task_Resources" on "Task_Resources".task_id = "Tasks".id
-            join "Users" on "Task_Resources".resource_id = "Users".id
+                from "Tasks"
+                join "Goods" as "Task_Goods" on "Task_Goods".id = "Tasks".good_id
+                join "SimpleEntities" as "Good_SimpleEntities" on "Good_SimpleEntities".id = "Task_Goods".id
+                join "Task_Resources" on "Task_Resources".task_id = "Tasks".id
+                join "Users" on "Users".id = "Task_Resources".resource_id
 
-            where "Tasks".project_id = %(project_id)s and not exists (
-                        select 1 from "Tasks" as "All_Tasks"
-                        where "All_Tasks".parent_id = "Tasks".id
-                        )
+                where "Tasks".project_id = %(project_id)s and not exists (
+                            select 1 from "Tasks" as "All_Tasks"
+                            where "All_Tasks".parent_id = "Tasks".id
+                            )
 
-            group by "Type_SimpleEntities".name,
-            "Type_SimpleEntities".id,
-            "Users".rate
+                group by "Good_SimpleEntities".name,
+                         "Good_SimpleEntities".id,
+                         "Task_Goods".msrp,
+                         "Task_Goods".cost,
+                         "Task_Goods".unit,
+                         "Users".rate
+        ) as goods
+        group by
+               goods.name,
+               goods.id,
+               goods.msrp,
+               goods.cost,
+               goods.unit
 """
 
     sql_query = sql_query % {'project_id': project_id}
     result = DBSession.connection().execute(sql_query)
     return_data = [
         {
-            'id': r[0],
-            'type_name': r[1],
-            'amount': r[3],
-            'unit': 'hour',
-            'unit_price': r[2] if r[2] else 50,
-            'note': ''
+            'good_id': r[0],
+            'good_name': r[1],
+            'msrp': int(r[2]),
+            'cost': int(r[3]),
+            'unit': r[4],
+            'amount':r[5],
+            'realized_total':r[6]
         }
         for r in result.fetchall()
     ]
@@ -415,22 +435,32 @@ def add_project_entries_to_budget(request):
     project_entries = get_project_tasks_cost(request)
 
     for project_entry in project_entries:
-        new_budget_entry_type = query_type('BudgetEntry', project_entry['type_name'])
+        new_budget_entry_type = query_type('BudgetEntry', 'CalenderBasedEntry')
         new_budget = True
+        logger.debug('realized_total: %s' % (project_entry['realized_total']))
         for budget_entry in budget.entries:
-
-            if budget_entry.type == new_budget_entry_type:
+            if budget_entry.name == project_entry['good_name']:
+                budget_entry.type = new_budget_entry_type
                 budget_entry.amount = project_entry['amount']
-                # budget_entry.unit_price = project_entry['unit_price']
+                budget_entry.cost = project_entry['cost']
+                budget_entry.msrp = project_entry['msrp']
+                budget_entry.realized_total = project_entry['realized_total']
+                budget_entry.unit = project_entry['unit']
+                budget_entry.date_updated = utc_now
+                budget_entry.updated_by = logged_in_user
                 new_budget = False
 
         if new_budget:
             new_budget_entry = BudgetEntry(
                 budget=budget,
-                name=project_entry['type_name'],
+                name=project_entry['good_name'],
                 type=new_budget_entry_type,
                 amount=project_entry['amount'],
-                # unit_price=project_entry['unit_price'],
+                cost=project_entry['cost'],
+                msrp=project_entry['msrp'],
+                price=project_entry['cost'],
+                realized_total=project_entry['realized_total'],
+                unit=project_entry['unit'],
                 description='',
                 created_by=logged_in_user,
                 date_created=utc_now,
@@ -438,7 +468,10 @@ def add_project_entries_to_budget(request):
             )
             DBSession.add(new_budget_entry)
 
-    return HTTPOk()
+    return Response(
+        'success:Budget Entries are updated for <strong>%s</strong> project.'
+        % project.name
+    )
 
 
 

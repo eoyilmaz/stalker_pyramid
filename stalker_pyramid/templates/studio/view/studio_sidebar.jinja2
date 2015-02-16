@@ -105,18 +105,19 @@
 {#                get_icon('budget'),#}
 {#                0#}
 {#            );#}
-        {% endif %}
 
-        menus_under_title('Managment',
-                          'budget',
-                          [
-                           {'name': 'Price List',
-                            'link':'{{ request.route_url('list_studio_goods', id=studio.id) }}',
-                            'state':"{%- if request.current_route_path() == request.route_path('list_studio_goods', id=studio.id) -%}'active',{%- else -%},{%- endif -%}"},
-                          {'name': 'Resource Rates',
-                            'link':'{{ request.route_url('list_resource_rates', id=studio.id) }}',
-                            'state':"{%- if request.current_route_path() == request.route_path('list_resource_rates', id=studio.id) -%}'active',{%- else -%},{%- endif -%}"}
-        ])
+
+            menus_under_title('Managment',
+                              'budget',
+                              [
+                               {'name': 'Price List',
+                                'link':'{{ request.route_url('list_studio_goods', id=studio.id) }}',
+                                'state':"{%- if request.current_route_path() == request.route_path('list_studio_goods', id=studio.id) -%}'active',{%- else -%},{%- endif -%}"},
+                              {'name': 'Resource Rates',
+                                'link':'{{ request.route_url('list_resource_rates', id=studio.id) }}',
+                                'state':"{%- if request.current_route_path() == request.route_path('list_resource_rates', id=studio.id) -%}'active',{%- else -%},{%- endif -%}"}
+            ]);
+        {% endif %}
 
     })
 </script>
