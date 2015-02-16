@@ -282,9 +282,9 @@ function init_dialog() {
 
             var sch_unit  = 'h';
 
-            var schedule_unit_seconds = unit_by_seconds(sch_unit);
+            var schedule_unit_seconds = seconds_in_unit(sch_unit);
 
-            var bid_seconds = calculate_seconds(parseFloat(data[0].bid_timing), data[0].bid_unit);
+            var bid_seconds = to_seconds(parseFloat(data[0].bid_timing), data[0].bid_unit);
             var schedule_timing_seconds = parseFloat(data[0].schedule_seconds);
             var total_logged_seconds = parseFloat(data[0].total_logged_seconds);
 
@@ -320,9 +320,7 @@ function init_dialog() {
 
             var remaining_minutes_after_this_time_log = parseInt(remaining_seconds_after_this_time_log / 60);
             information.find('span').remove();
-            var remaining_minutes_after_this_time_log_string = meaningful_time_calculator(Math.abs(remaining_seconds_after_this_time_log), 'h');
-
-
+            var remaining_minutes_after_this_time_log_string = convert_seconds_to_time_range(Math.abs(remaining_seconds_after_this_time_log));
 
             var total_logged_hours_msg = time_to_complete<=0?'spent all scheduled hours':'you can enter max <strong>'+ time_to_complete +sch_unit +'</strong>';
 

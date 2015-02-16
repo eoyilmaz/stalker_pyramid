@@ -1619,9 +1619,9 @@ def cached_query_tasks(
                     when 'min' then 60
                     when 'h' then 3600
                     when 'd' then 32400
-                    when 'w' then 147600
-                    when 'm' then 590400
-                    when 'y' then 7696277
+                    when 'w' then 183600
+                    when 'm' then 734400
+                    when 'y' then 9573418
                     else 0
                 end)
             ) as schedule_seconds,
@@ -1646,9 +1646,9 @@ def cached_query_tasks(
                         when 'min' then 60
                         when 'h' then 3600
                         when 'd' then 32400
-                        when 'w' then 147600
-                        when 'm' then 590400
-                        when 'y' then 7696277
+                        when 'w' then 183600
+                        when 'm' then 734400
+                        when 'y' then 9573418
                         else 0
                     end)) * 100.0
             ) as percent_complete,
@@ -1786,9 +1786,9 @@ def cached_query_tasks(
                                 when 'min' then 60
                                 when 'h' then 3600
                                 when 'd' then 32400
-                                when 'w' then 147600
-                                when 'm' then 590400
-                                when 'y' then 7696277
+                                when 'w' then 183600
+                                when 'm' then 734400
+                                when 'y' then 9573418
                                 else 0
                             end
                         )
@@ -1967,9 +1967,9 @@ def get_cached_tasks_count(entity_type, where_clause, task_id):
                     when 'min' then 60
                     when 'h' then 3600
                     when 'd' then 32400
-                    when 'w' then 147600
-                    when 'm' then 590400
-                    when 'y' then 7696277
+                    when 'w' then 183600
+                    when 'm' then 734400
+                    when 'y' then 9573418
                     else 0
                 end)
             ) as schedule_seconds,
@@ -1994,9 +1994,9 @@ def get_cached_tasks_count(entity_type, where_clause, task_id):
                         when 'min' then 60
                         when 'h' then 3600
                         when 'd' then 32400
-                        when 'w' then 147600
-                        when 'm' then 590400
-                        when 'y' then 7696277
+                        when 'w' then 183600
+                        when 'm' then 734400
+                        when 'y' then 9573418
                         else 0
                     end)) * 100.0
             ) as percent_complete,
@@ -2132,9 +2132,9 @@ def get_cached_tasks_count(entity_type, where_clause, task_id):
                                 when 'min' then 60
                                 when 'h' then 3600
                                 when 'd' then 32400
-                                when 'w' then 147600
-                                when 'm' then 590400
-                                when 'y' then 7696277
+                                when 'w' then 183600
+                                when 'm' then 734400
+                                when 'y' then 9573418
                                 else 0
                             end
                         )
@@ -2703,9 +2703,9 @@ select
             when 'min' then 60
             when 'h' then 3600
             when 'd' then 32400
-            when 'w' then 147600
-            when 'm' then 590400
-            when 'y' then 7696277
+            when 'w' then 183600
+            when 'm' then 734400
+            when 'y' then 9573418
             else 0
         end)
         ) * 100.0 as percent_complete,
@@ -2721,9 +2721,9 @@ select
             when 'min' then 60
             when 'h' then 3600
             when 'd' then 32400
-            when 'w' then 147600
-            when 'm' then 590400
-            when 'y' then 7696277
+            when 'w' then 183600
+            when 'm' then 734400
+            when 'y' then 9573418
             else 0
         end)) - coalesce("Task_TimeLogs".duration, 0.0)) / 3600
     ) as hour_to_complete,
@@ -2737,9 +2737,9 @@ select
                     when 'min' then 60
                     when 'h' then 3600
                     when 'd' then 32400
-                    when 'w' then 147600
-                    when 'm' then 590400
-                    when 'y' then 7696277
+                    when 'w' then 183600
+                    when 'm' then 734400
+                    when 'y' then 9573418
                 else 0
                 end
             )
