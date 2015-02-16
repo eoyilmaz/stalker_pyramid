@@ -24,9 +24,9 @@ from pyramid.response import Response
 
 from stalker import (defaults, Good, Project, Studio, PriceList)
 from stalker.db import DBSession
+from stalker_pyramid.views import local_to_utc
 import transaction
 
-import stalker_pyramid
 from stalker_pyramid.views import (log_param, get_logged_in_user,
                                    PermissionChecker, milliseconds_since_epoch,
                                    StdErrToHTMLConverter)
@@ -96,7 +96,9 @@ def get_goods(request):
     """
     logger.debug('***get_studio_goods method starts ***')
 
+    goods = Good.query.order_by(Good.name.asc()).all()
 
+    logger.debug(len(goods))
 
     return [
         {
@@ -105,11 +107,14 @@ def get_goods(request):
             'cost': good.cost,
             'msrp': good.msrp,
             'unit': good.unit,
-            'created_by': good.created_by_id,
-            'updated_by': good.updated_by_id,
-            'date_updated': milliseconds_since_epoch(good.date_updated)
+            'created_by_id': good.created_by_id,
+            'created_by_name': good.created_by.name,
+            'updated_by_id': good.updated_by_id if good.updated_by else None,
+            'updated_by_name': good.updated_by.name if good.updated_by else None,
+            'date_updated': milliseconds_since_epoch(good.date_updated),
+            'price_list_name': good.price_lists[0].name if good.price_lists else None,
         }
-        for good in Good.query.order_by(Good.name.asc()).all()
+        for good in goods
     ]
 
 
@@ -152,6 +157,7 @@ def create_good(request):
     logger.debug('***create good method starts ***')
 
     logged_in_user = get_logged_in_user(request)
+    utc_now = local_to_utc(datetime.datetime.now())
 
 
     came_from = request.params.get('came_from', '/')
@@ -179,12 +185,12 @@ def create_good(request):
                 msrp=int(msrp),
                 unit=unit,
                 cost=int(cost),
-                price_list=price_list
+                price_lists=[price_list]
             )
 
             new_good.created_by = logged_in_user
-            new_good.date_created = datetime.datetime.now()
-            new_good.date_updated = datetime.datetime.now()
+            new_good.date_created = utc_now
+            new_good.date_updated = utc_now
 
             DBSession.add(new_good)
 
@@ -217,7 +223,7 @@ def create_good(request):
 def edit_good(request):
     """edits the good with data from request
     """
-    logger.debug('***edit group method starts ***')
+    logger.debug('***edit good method starts ***')
     oper = request.params.get('oper', None)
 
     if oper == 'edit':
@@ -236,6 +242,7 @@ def update_good(request):
     logger.debug('***update good method starts ***')
 
     logged_in_user = get_logged_in_user(request)
+    utc_now = local_to_utc(datetime.datetime.now())
 
     good_id = request.params.get('id')
     good = Good.query.filter_by(id=good_id).first()
@@ -248,7 +255,7 @@ def update_good(request):
     msrp = request.params.get('msrp', None)
     unit = request.params.get('unit', None)
     cost = request.params.get('cost', None)
-    # price_list_name = request.params.get('price_list_name', None)
+    price_list_name = request.params.get('price_list_name', None)
 
     logger.debug('name : %s' % name)
     logger.debug('msrp : %s' % msrp)
@@ -257,15 +264,18 @@ def update_good(request):
 
     if name and msrp and unit and cost:
 
-        # price_list = query_price_list(price_list_name)
+        price_list = query_price_list(price_list_name)
          # update the group
+
+        assert isinstance(good, Good)
+
         good.name = name
         good.msrp = int(msrp)
         good.unit = unit
         good.cost = int(cost)
-        # good.price_list = price_list
+        good.price_lists = [price_list]
         good.updated_by = logged_in_user
-        good.date_updated = datetime.datetime.now()
+        good.date_updated = utc_now
 
         DBSession.add(good)
 

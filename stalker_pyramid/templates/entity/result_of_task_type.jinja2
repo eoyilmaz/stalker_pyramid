@@ -1,0 +1,155 @@
+<div class="row-fluid">
+    <div class="span8">
+        <div id="chart_anim" style="margin-top:20px; margin-left:20px; height:400px; background: rgb(57,57,57)" class="hide">
+        </div>
+    </div>
+</div>
+<div class="space-20"></div>
+<div class="row-fluid">
+    <div class="span12">
+        <table id="grid-table" ></table>
+        <div id="grid-pager"></div>
+    </div>
+</div>
+
+<script class="include" type="text/javascript"
+            src='{{ request.static_url("stalker_pyramid:static/jqPlot/jquery.jqplot.min.js") }}'></script>
+<!-- End Don't touch this! -->
+
+<!-- Additional plugins go here -->
+
+<script class="include" type="text/javascript"
+        src='{{ request.static_url("stalker_pyramid:static/jqPlot/plugins/jqplot.categoryAxisRenderer.min.js") }}'></script>
+<script class="include" type="text/javascript"
+        src='{{ request.static_url("stalker_pyramid:static/jqPlot/plugins/jqplot.barRenderer.min.js") }}'></script>
+<script class="include" type="text/javascript"
+        src='{{ request.static_url("stalker_pyramid:static/jqPlot/plugins/jqplot.dateAxisRenderer.min.js") }}'></script>
+<script class="include" type="text/javascript"
+        src='{{ request.static_url("stalker_pyramid:static/jqPlot/plugins/jqplot.logAxisRenderer.min.js") }}'></script>
+<script class="include" type="text/javascript"
+        src='{{ request.static_url("stalker_pyramid:static/jqPlot/plugins/jqplot.canvasAxisTickRenderer.min.js") }}'></script>
+<script class="include" type="text/javascript"
+        src='{{ request.static_url("stalker_pyramid:static/jqPlot/plugins/jqplot.canvasTextRenderer.min.js") }}'></script>
+<script class="include" type="text/javascript"
+        src='{{ request.static_url("stalker_pyramid:static/jqPlot/plugins/jqplot.pointLabels.min.js") }}'></script>
+<script class="include" type="text/javascript"
+        src='{{ request.static_url("stalker_pyramid:static/jqPlot/plugins/jqplot.highlighter.min.js") }}'></script>
+<script class="include" type="text/javascript"
+        src='{{ request.static_url("stalker_pyramid:static/jqPlot/plugins/jqplot.cursor.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/i18n/grid.locale-en.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/jquery.jqGrid.min.js") }}'></script>
+
+
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        var task_type = 'Animation';
+
+        $.jqplot._noToImageButton = true;
+        $.jqplot.config.enablePlugins = true;
+        $.getJSON('/entities/{{ entity.id }}/'+task_type+'/result').then(function (data) {
+            if (data.length>0){
+                var anim_data = data;
+                $('#chart_anim').show()
+                var weekly_anim_seconds = [];
+                for (var i=0; i<data.length; i+=1){
+                    var shot_names = '';
+                    for (var m=0; m<anim_data[i]['shot_names'].length; m+=1){
+                        shot_names += anim_data[i]['shot_names'][m]+'<br/>';
+                    }
+                    anim_data[i]['shot_names'] = shot_names;
+                    var resource_names = '';
+                    for (var m=0; m<anim_data[i]['resource_names'].length; m+=1){
+                        resource_names += anim_data[i]['resource_names'][m]+'<br/>';
+                    }
+                    anim_data[i]['resource_names'] = resource_names;
+
+                    anim_data[i]['start_date'] = new Date(data[i]['start_date'] * 1000).format('yyyy-mm-dd').toString();
+                    anim_data[i]['end_date'] = new Date(data[i]['end_date'] * 1000).format('yyyy-mm-dd').toString();
+                    weekly_anim_seconds.push([anim_data[i]['start_date'], anim_data[i]['total_seconds']]);
+                }
+                $.jqplot('chart_anim', [weekly_anim_seconds], {
+                            seriesColors: ["rgba(78, 135, 194, 0.7)"],
+                            title: {
+                                text:'Weekly Animation Seconds',
+                                textColor: '#dddddd'
+                            },
+                            highlighter: {
+                                show: true,
+                                sizeAdjust: 10
+                            },
+                            grid: {
+                                background: 'rgba(57,57,57,0.5)',
+                                drawBorder: false,
+                                shadow: false,
+                                gridLineColor: '#666666',
+                                gridLineWidth: 2
+                            },
+                            axes:{
+                               xaxis: {
+                                    renderer: $.jqplot.DateAxisRenderer,
+                                    tickRenderer: $.jqplot.CanvasAxisTickRenderer,
+                                    tickOptions: {
+                                        formatString: "%d %b",
+                                        angle: -30,
+                                        textColor: '#dddddd'
+                                    },
+
+                                    tickInterval: "1 week",
+                                    drawMajorGridlines: false
+                                },
+                                yaxis: {
+                                    renderer: $.jqplot.LinearAxisRenderer,
+                                    pad: 0,
+                                    rendererOptions: {
+                                        minorTicks: 1
+                                    },
+                                    tickOptions: {
+                                        formatString: "  %d seconds",
+                                        showMark: false
+                                    }
+                                }
+                            },
+                            seriesDefaults: {
+                                showMarker: true
+                            }
+                });
+
+                var grid_selector = "#grid-table";
+                var pager_selector = "#grid-pager";
+                jQuery(grid_selector).jqGrid({
+                    data: anim_data,
+                    datatype: "local",
+                    colModel: [
+                        { label: 'Start Date', name: 'start_date', width: 150 },
+                        { label: 'End Date', name: 'end_date', width: 150 },
+                        { label: 'Shot Name', name: 'shot_names', key: true, width: 300 },
+                        { label: 'Resource Name', name: 'resource_names', key: true, width: 300 },
+                        { label: 'Total Seconds', name: 'total_seconds', width: 200 }
+
+                    ],
+                    loadonce:true, // just for demo purpose
+{#                    width: 780,#}
+                    height: 750,
+                    rowNum: 20,
+                    rowList:[20,25,50],
+                    sortname: 'start_date',
+                    sortorder: "desc",
+                    pager: pager_selector,
+                    viewrecords: true,
+                    grouping: false,
+                    groupingView: {
+                        groupField: ["start_date"],
+                        groupColumnShow: [true],
+                        groupText: ["<b>{0}</b>"],
+                        groupOrder: ["desc"],
+                        groupSummary: [false],
+                        groupCollapse: false
+
+                    }
+                });
+{#                jQuery(grid_selector).jqGrid("navGrid",pager_selector,{add:false, edit:false, del:false});#}
+            }
+        });
+    });
+</script>

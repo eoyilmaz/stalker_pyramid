@@ -357,6 +357,10 @@ logger.setLevel(logging.DEBUG)
     route_name='test_page',
     renderer='templates/test_page.jinja2'
 )
+@view_config(
+    route_name='view_entity_result',
+    renderer='templates/entity/view_entity_result.jinja2'
+)
 def get_entity_related_data(request):
     """view for generic data
     """
@@ -1029,6 +1033,7 @@ def get_entity_total_schedule_seconds(request):
     logger.debug('get_project_total_schedule_seconds starts')
     entity_id = request.matchdict.get('id')
     entity = Entity.query.filter_by(id=entity_id).first()
+
 
     sql_query = """select
         SUM(

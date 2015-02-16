@@ -264,6 +264,22 @@
                            required>
                 </div>
             </div>
+
+
+
+            {# Goods #}
+            <div class='control-group'>
+                <label class='span3 control-label' for='task_good'>Good</label>
+                <div class='span9'>
+                    <select id='task_good'
+                            name='good_id'
+                            is_updating=false
+                            data-placeholder='Good'
+                            required>
+                    </select>
+                </div>
+            </div>
+
         </form>
 
     </div>
@@ -334,6 +350,7 @@ resource_name, status
         var shot_cut_out = 1;
         var shot_sequences =[];
         var disable_dependency_field = false;
+        var good_id = null;
 
         {% if entity.entity_type == 'Shot' %}
             shot_cut_in = {{ entity.cut_in }};
@@ -391,6 +408,9 @@ resource_name, status
             {% if entity.status.code != 'WFD' and entity.status.code != 'RTS'%}
                 disable_dependency_field = true;
             {% endif %}
+
+            good_id = '{{ entity.good.id }}';
+
         {% endif %}
 
         var submit_button = $('#dialog_template_submit_button');
@@ -405,7 +425,8 @@ resource_name, status
                 $('#shot_sequence').attr('is_updating') === 'true' ||
                 $('#task_depends_to').attr('is_updating') === 'true' ||
                 $('#task_resources').attr('is_updating') === 'true' ||
-                $('#task_responsible').attr('is_updating') === 'true') {
+                $('#task_responsible').attr('is_updating') === 'true' ||
+                $('#task_good').attr('is_updating') === 'true') {
                 // disable the Submit button
                 setTimeout(function(){submit_button.button('loading')}, 0);
             } else {
@@ -796,6 +817,31 @@ resource_name, status
         });
 {#        console.log('entity.priority : ', priority);#}
 
+
+        {# ***************************************************************** #}
+        {# Good #}
+        {% raw %}
+            var task_good_option_template = doT.template(
+                '<option value={{=it.id}}>{{=it.name}}</option>'
+            );
+        {% endraw %}
+        var task_good = $('#task_good');
+        var deferred = chosen_searchable_field_creator(task_good,'/goods/', task_good_option_template);
+
+        deferred.then(function () {
+            task_good.attr('is_updating', false);
+            field_update_mode_checker();
+            if (good_id){
+                task_good.val(good_id).trigger('liszt:updated');
+            }
+
+        });
+
+
+
+
+
+
         {# ***************************************************************** #}
         {# Submit Button #}
 
@@ -862,6 +908,14 @@ resource_name, status
             } else {
                 form_data['dependent_ids'] = [];
             }
+
+{#            // add good info#}
+{#            var good_id = '';#}
+{#            var good_match = task_good.val().match(/\(([\d]+)\)/);#}
+{#            if (good_match) {#}
+{#                good_id = good_match[1];#}
+{#            }#}
+{#            form_data['good_id'] = good_id;#}
 
             if ( task_form.validate() ){
                 // prevent multiple sends

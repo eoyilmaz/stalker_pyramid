@@ -5,76 +5,49 @@
     <form id='budgetentry_form'
           class='form-horizontal'
           role='form'
-          method="post"
-            >
+          method="post">
 
         <div class="row-fluid">
-            {# Name #}
-            <div class="control-group">
-                <label class="span3 control-label"
-                       for="budgetentry_name">Name</label>
-                <div class="span9">
-                    <input id="budgetentry_name"
-                           name='name'
-                           type="text"
-                           class="form-control"
-                           placeholder="Name"
-                           required>
+            {# Good #}
+            <div class='control-group'>
+                <label class='span3 control-label'
+                       for='budgetentry_good'>Good</label>
+                <div class="span5">
+                     <select id='budgetentry_good'
+                            name='id'
+                            data-placeholder='Client'
+                            required>
+                    </select>
                 </div>
             </div>
 
-            {#Type #}
+            {#Amount #}
             <div class='control-group'>
                 <label class='span3 control-label'
-                       for='budgetentry_type'>Type</label>
+                       for='budgetentry_amount'>Amount</label>
                 <div class="span5">
-                    <input id='budgetentry_type'
+                    <input id='budgetentry_amount'
                            class='input-block-level'
-                           name='type_name'
+                           name='amount'
                            type='text'
-                           placeholder="Type"
+                           placeholder="Amount"
                            is_updating=false
                            >
                 </div>
             </div>
-
+            {#Price #}
             <div class="control-group">
                 <label class="span3 control-label"
-                       for="budgetentry_amount">Amount</label>
+                       for="budgetentry_price">Price</label>
                 <div class="span9">
-                    <input id="budgetentry_amount"
-                           name='amount'
+                    <input id="budgetentry_price"
+                           name='price'
                            type="text"
                            class="form-control"
-                           placeholder="Amount"
+                           placeholder="Price"
                            required>
                 </div>
             </div>
-            <div class="control-group">
-                <label class="span3 control-label"
-                       for="budgetentry_unit">Unit</label>
-                <div class="span9">
-                    <input id="budgetentry_unit"
-                           name='unit'
-                           type="text"
-                           class="form-control"
-                           placeholder="Unit"
-                           required>
-                </div>
-            </div>
-            <div class="control-group">
-                <label class="span3 control-label"
-                       for="budgetentry_unit_price">Unit Price</label>
-                <div class="span9">
-                    <input id="budgetentry_unit_price"
-                           name='unit_price'
-                           type="text"
-                           class="form-control"
-                           placeholder="Unit Price"
-                           required>
-                </div>
-            </div>
-
             {#Description #}
             <div class="control-group'">
                 <label for="budgetentry_description"
@@ -109,29 +82,13 @@
         dialog_label.append('<span>{{ mode}} BudgetEntry</span>');
 
         {% raw %}
-            var budgetentry_type_option_template = doT.template(
-                '<option value={{=it.id}}>{{=it.name}}</option>'
+            var good_option_template = doT.template(
+                    '<option value={{=it.id}}>{{=it.name}}</option>'
             );
         {% endraw %}
+        var budgetentry_good = $('#budgetentry_good');
+        var deferred = chosen_searchable_field_creator(budgetentry_good,'/goods/', good_option_template);
 
-        $.getJSON('/types/?target_entity_type=BudgetEntry').then(function (available_types) {
-            var budgetentry_type = $('#budgetentry_type');
-
-            var available_types_as_list = [];
-            for (var i=0; i < available_types.length; i++){
-                available_types_as_list.push(available_types[i].name);
-            }
-
-            budgetentry_type.autocomplete({
-                delay: 0,
-                source: available_types_as_list,
-                minLength: 0
-            });
-
-            budgetentry_type.attr('is_updating', false);
-
-
-        });
         {# ***************************************************************** #}
         {# Submit Button #}
         var submit_button = $('#dialog_template_submit_button');
@@ -149,8 +106,7 @@
                 url,
                 budgetentry_form.serialize() + '&' +
                 $.param({
-                    'budget_id': {{ budget.id }},
-                    'amount': 300
+                    'budget_id': {{ budget.id }}
                 })
             ).done(function (jqXHR) {
                 //$('#new_outputs_storage').text(JSON.stringify(jqXHR));

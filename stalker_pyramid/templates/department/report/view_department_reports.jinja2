@@ -12,11 +12,10 @@
 {% block page_content %}
     {% set page_title='Reports' %}
     {% include 'page_header.jinja2' %}
-
     <div class="row-fluid">
         <div class="span7">
-            {% include 'time_log/report/report_entity_timelogs.jinja2' %}
-        </div>
+                {% include 'animation_report.jinja2' %}
+            </div>
     </div>
 
 {% endblock page_content %}
