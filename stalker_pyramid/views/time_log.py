@@ -27,8 +27,7 @@ import transaction
 from pyramid.response import Response
 from pyramid.view import view_config
 
-from stalker.db import DBSession
-from stalker import defaults, Task, User, Studio, TimeLog, Entity, Status
+from stalker import db, defaults, Task, User, Studio, TimeLog, Entity, Status
 from stalker.exceptions import OverBookedError, DependencyViolationError
 
 from stalker_pyramid.views import (get_logged_in_user,
@@ -234,6 +233,8 @@ def update_time_log(request):
         # we are ready to create the time log
         # TimeLog should handle the extension of the effort
 
+        previous_duration = time_log.duration
+
         try:
             time_log.start = start_date
             time_log.end = end_date
@@ -241,13 +242,21 @@ def update_time_log(request):
             time_log.resource = resource
             time_log.updated_by = logged_in_user
             time_log.date_updated = utc_now
+
+            if time_log.duration > previous_duration\
+               and time_log.task.status == 'HREV':
+                # update the task status to WIP
+                with db.DBSession.no_autoflush:
+                    wip = Status.query.filter(Status.code == 'WIP').fist()
+                    time_log.task.status = wip
+
         except OverBookedError as e:
             logger.debug('e: %s' % str(e))
             response = Response(str(e), 500)
             transaction.abort()
             return response
         else:
-            DBSession.add(time_log)
+            db.DBSession.add(time_log)
             request.session.flash(
                 'success:Time log for <strong>%s</strong> is updated..'
                 % time_log.task.name
@@ -276,7 +285,7 @@ def get_time_logs(request):
     entity_id = request.matchdict.get('id', -1)
     logger.debug('entity_id : %s' % entity_id)
 
-    data = DBSession.connection().execute(
+    data = db.DBSession.connection().execute(
         'select entity_type from "SimpleEntities" where id=%s' % entity_id
     ).fetchone()
 
@@ -344,7 +353,7 @@ def get_time_logs(request):
     elif entity_type is None:
         return []
 
-    result = DBSession.connection().execute(sql_query)
+    result = db.DBSession.connection().execute(sql_query)
 
     start = time.time()
     data = [
@@ -408,7 +417,7 @@ def get_monthly_time_logs(request):
         'where_clause': where_clause
     }
 
-    result = DBSession.connection().execute(sql_query).fetchall()
+    result = db.DBSession.connection().execute(sql_query).fetchall()
 
     logger.debug('get_project_total_schedule_seconds: %s' % result[0])
     return [{
@@ -448,7 +457,7 @@ def delete_time_log(request):
     task_id = time_log.task.id
 
     try:
-        DBSession.delete(time_log)
+        db.DBSession.delete(time_log)
         transaction.commit()
     except Exception as e:
         transaction.abort()
