@@ -247,7 +247,7 @@ def update_time_log(request):
                and time_log.task.status == 'HREV':
                 # update the task status to WIP
                 with db.DBSession.no_autoflush:
-                    wip = Status.query.filter(Status.code == 'WIP').fist()
+                    wip = Status.query.filter(Status.code == 'WIP').first()
                     time_log.task.status = wip
 
         except OverBookedError as e:
