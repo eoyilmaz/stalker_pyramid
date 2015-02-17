@@ -65,7 +65,7 @@
                     anim_data[i]['resource_names'] = resource_names;
 
                     anim_data[i]['start_date'] = new Date(data[i]['start_date'] * 1000).format('yyyy-mm-dd').toString();
-                    anim_data[i]['end_date'] = new Date(data[i]['end_date'] * 1000).format('yyyy-mm-dd').toString();
+{#                    anim_data[i]['end_date'] = new Date(data[i]['end_date'] * 1000).format('yyyy-mm-dd').toString();#}
                     weekly_anim_seconds.push([anim_data[i]['start_date'], anim_data[i]['total_seconds']]);
                 }
                 $.jqplot('chart_anim', [weekly_anim_seconds], {
@@ -122,7 +122,7 @@
                     datatype: "local",
                     colModel: [
                         { label: 'Start Date', name: 'start_date', width: 150 },
-                        { label: 'End Date', name: 'end_date', width: 150 },
+{#                        { label: 'End Date', name: 'end_date', width: 150 },#}
                         { label: 'Shot Name', name: 'shot_names', key: true, width: 300 },
                         { label: 'Resource Name', name: 'resource_names', key: true, width: 300 },
                         { label: 'Total Seconds', name: 'total_seconds', width: 200 }

@@ -321,60 +321,98 @@ def get_entity_task_type_result(request):
     entity = Entity.query.filter_by(id=entity_id).first()
 
     task_type = request.matchdict.get('task_type')
-
     sql_query = """select
-          sum(shots.r_seconds) as total_seconds,
-          array_agg(shots.shot_name) as shot_names,
-          min(extract(epoch from shots.start::timestamp AT TIME ZONE 'UTC')) as start,
-          max(extract(epoch from shots.end::timestamp AT TIME ZONE 'UTC')) as end,
-          array_agg(distinct(shots.resource_name)) as resource_names
-        from (
-            select  "Shot_SimpleEntities".name as shot_name,
-                    ("Shots".cut_out - "Shots".cut_in)/24 as seconds,
-    
-                    (("Shots".cut_out - "Shots".cut_in)/24)*(sum(extract(epoch from "TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC'))/
-                        ("Tasks".schedule_timing * (case "Tasks".schedule_unit
-                                    when 'min' then 60
-                                    when 'h' then 3600
-                                    when 'd' then 32400
-                                    when 'w' then 183600
-                                    when 'm' then 734400
-                                    when 'y' then 9573418
-                                    else 0
-                                end))
-                        ) as r_seconds,
-                    "Resource_SimpleEntities".name as resource_name,
-                    min("TimeLogs".start) as start,
-                    max("TimeLogs".end) as end
-    
-            from "TimeLogs"
-            join "Tasks" on "TimeLogs".task_id = "Tasks".id
-            join "SimpleEntities" as "Task_SimpleEntities" on "Task_SimpleEntities".id = "Tasks".id
-            join "SimpleEntities" as "Type_SimpleEntities" on "Type_SimpleEntities".id = "Task_SimpleEntities".type_id
-            join "Shots" on "Shots".id = "Tasks".parent_id
-            join "SimpleEntities" as "Shot_SimpleEntities" on "Shot_SimpleEntities".id = "Shots".id
-            join "SimpleEntities" as "Resource_SimpleEntities" on "Resource_SimpleEntities".id = "TimeLogs".resource_id
+    min(extract(epoch from "TimeLogs".start::timestamp AT TIME ZONE 'UTC')) as start,
+    array_agg(tasks.shot_name) as shot_names,
+    array_agg(distinct("Resource_SimpleEntities".name)) as resource_names,
+    sum(tasks.seconds*(extract(epoch from "TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC')/
+                        (tasks.schedule_timing *
+                            (case tasks.schedule_unit
+                                        when 'min' then 60
+                                        when 'h' then 3600
+                                        when 'd' then 32400
+                                        when 'w' then 147600
+                                        when 'm' then 590400
+                                        when 'y' then 7696277
+                                        else 0
+                                    end)
+                        ))) as r_seconds
+from "TimeLogs"
+join (
+        select "Tasks".id as id,
+                "Tasks".schedule_timing,
+                "Tasks".schedule_unit,
+                "Shot_SimpleEntities".name as shot_name,
+                ("Shots".cut_out - "Shots".cut_in)/24 as seconds
 
-            where "Type_SimpleEntities".name = '%(task_type)s'
-            %(where_conditions)s
-    
-            group by "Shot_SimpleEntities".name,
-                     seconds,
-                     "Tasks".schedule_timing,
-                     "Tasks".schedule_unit,
-                     "Resource_SimpleEntities".name
-    
-    
-            ) as shots
-    
-            group by  date_trunc('week', shots.start)
-            order by start
-    """
+        from "Tasks"
+        join "SimpleEntities" as "Task_SimpleEntities" on "Task_SimpleEntities".id = "Tasks".id
+        join "SimpleEntities" as "Type_SimpleEntities" on "Type_SimpleEntities".id = "Task_SimpleEntities".type_id
+        join "Shots" on "Shots".id = "Tasks".parent_id
+        join "SimpleEntities" as "Shot_SimpleEntities" on "Shot_SimpleEntities".id = "Shots".id
+
+
+        where "Type_SimpleEntities".name = '%(task_type)s'
+    ) as tasks on tasks.id = "TimeLogs".task_id
+
+join "SimpleEntities" as "Resource_SimpleEntities" on "Resource_SimpleEntities".id = "TimeLogs".resource_id
+where %(where_conditions)s
+group by  date_trunc('week', "TimeLogs".start)
+order by start
+"""
+    # sql_query = """select
+    #       sum(shots.r_seconds) as total_seconds,
+    #       array_agg(shots.shot_name) as shot_names,
+    #       min(extract(epoch from shots.start::timestamp AT TIME ZONE 'UTC')) as start,
+    #       max(extract(epoch from shots.end::timestamp AT TIME ZONE 'UTC')) as end,
+    #       array_agg(distinct(shots.resource_name)) as resource_names
+    #     from (
+    #         select  "Shot_SimpleEntities".name as shot_name,
+    #                 ("Shots".cut_out - "Shots".cut_in)/24 as seconds,
+    #
+    #                 (("Shots".cut_out - "Shots".cut_in)/24)*(sum(extract(epoch from "TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC'))/
+    #                     ("Tasks".schedule_timing * (case "Tasks".schedule_unit
+    #                                 when 'min' then 60
+    #                                 when 'h' then 3600
+    #                                 when 'd' then 32400
+    #                                 when 'w' then 183600
+    #                                 when 'm' then 734400
+    #                                 when 'y' then 9573418
+    #                                 else 0
+    #                             end))
+    #                     ) as r_seconds,
+    #                 "Resource_SimpleEntities".name as resource_name,
+    #                 min("TimeLogs".start) as start,
+    #                 max("TimeLogs".end) as end
+    #
+    #         from "TimeLogs"
+    #         join "Tasks" on "TimeLogs".task_id = "Tasks".id
+    #         join "SimpleEntities" as "Task_SimpleEntities" on "Task_SimpleEntities".id = "Tasks".id
+    #         join "SimpleEntities" as "Type_SimpleEntities" on "Type_SimpleEntities".id = "Task_SimpleEntities".type_id
+    #         join "Shots" on "Shots".id = "Tasks".parent_id
+    #         join "SimpleEntities" as "Shot_SimpleEntities" on "Shot_SimpleEntities".id = "Shots".id
+    #         join "SimpleEntities" as "Resource_SimpleEntities" on "Resource_SimpleEntities".id = "TimeLogs".resource_id
+    #
+    #         where "Type_SimpleEntities".name = '%(task_type)s'
+    #         %(where_conditions)s
+    #
+    #         group by "Shot_SimpleEntities".name,
+    #                  seconds,
+    #                  "Tasks".schedule_timing,
+    #                  "Tasks".schedule_unit,
+    #                  "Resource_SimpleEntities".name
+    #
+    #
+    #         ) as shots
+    #
+    #         group by  date_trunc('week', shots.start)
+    #         order by start
+    # """
     where_conditions = ''
     if entity.entity_type == 'User':
-        where_conditions = """and "TimeLogs".resource_id = %(resource_id)s """ % {'resource_id': entity_id}
+        where_conditions = """"TimeLogs".resource_id = %(resource_id)s """ % {'resource_id': entity_id}
     elif entity.entity_type == 'Department':
-        temp_buffer = [""" and ("""]
+        temp_buffer = ["""("""]
         for i, resource in enumerate(entity.users):
             if i > 0:
                 temp_buffer.append(' or')
@@ -386,11 +424,10 @@ def get_entity_task_type_result(request):
     result = DBSession.connection().execute(sql_query).fetchall()
 
     return [{
-        'total_seconds': r[0],
+        'start_date': r[0],
         'shot_names': r[1],
-        'start_date': r[2],
-        'end_date': r[3],
-        'resource_names': r[4]
+        'resource_names': r[2],
+        'total_seconds': r[3]
     } for r in result]
 
 
