@@ -3247,7 +3247,7 @@ def create_task(request):
     if not good:
         logger.debug('there are no good with id : %s' % good_id)
 
-    kwargs['good'] = good
+    # kwargs['good'] = good
 
 
     type_name = ''
