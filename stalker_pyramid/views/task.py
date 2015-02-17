@@ -1115,7 +1115,7 @@ def update_task(request):
     if not good:
         logger.debug('there are no good with id : %s' % good_id)
 
-    task.good = good
+    # task.good = good
 
     task.date_updated = local_to_utc(datetime.datetime.now())
 
