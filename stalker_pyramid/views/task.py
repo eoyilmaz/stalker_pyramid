@@ -1111,9 +1111,9 @@ def update_task(request):
         if task.parent:
             task.parent.update_status_with_children_statuses()
 
-    good = Good.query.filter_by(id=good_id).first()
-    if not good:
-        logger.debug('there are no good with id : %s' % good_id)
+    # good = Good.query.filter_by(id=good_id).first()
+    # if not good:
+    #     logger.debug('there are no good with id : %s' % good_id)
 
     # task.good = good
 
@@ -3243,9 +3243,9 @@ def create_task(request):
 
     kwargs['priority'] = priority
 
-    good = Good.query.filter_by(id=good_id).first()
-    if not good:
-        logger.debug('there are no good with id : %s' % good_id)
+    # good = Good.query.filter_by(id=good_id).first()
+    # if not good:
+    #     logger.debug('there are no good with id : %s' % good_id)
 
     # kwargs['good'] = good
 
