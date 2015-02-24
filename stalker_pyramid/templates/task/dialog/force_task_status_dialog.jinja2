@@ -79,10 +79,8 @@
 
             if (url){
                 submit_button.button('loading');
-
                 var force_task_status_form = $('#force_task_status_form');
                 var force_task_status_form_data = force_task_status_form.serialize();
-
 
                 $.post(url, force_task_status_form_data).done(function (response) {
                     $('#dialog_template').modal('hide');

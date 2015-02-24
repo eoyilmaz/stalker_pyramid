@@ -1,6 +1,6 @@
 <div class="row-fluid">
     <div class="span8">
-        <div id="chart_anim" style="margin-top:20px; margin-left:20px; height:400px; background: rgb(57,57,57)" class="hide">
+        <div id="chart_shot" style="margin-top:20px; margin-left:20px; height:400px; background: rgb(57,57,57)" class="hide">
         </div>
     </div>
 </div>
@@ -49,29 +49,28 @@
         $.jqplot.config.enablePlugins = true;
         $.getJSON('/entities/{{ entity.id }}/'+task_type+'/result').then(function (data) {
             if (data.length>0){
-                var anim_data = data;
-                $('#chart_anim').show();
+                var shot_data = data;
+                $('#chart_shot').show();
                 var total_seconds = 0;
-
-
-                var weekly_anim_seconds = [];
-                for (var i=0; i<data.length; i+=1){
+                var weekly_shot_seconds = [];
+                for (var i=0; i<shot_data.length; i+=1){
                     var shot_names = '';
-                    for (var m=0; m<anim_data[i]['shot_names'].length; m+=1){
-                        shot_names += anim_data[i]['shot_names'][m]+'<br/>';
+                    for (var m=0; m<shot_data[i]['shot_names'].length; m+=1){
+                        shot_names += shot_data[i]['shot_names'][m]+'<br/>';
                     }
-                    anim_data[i]['shot_names'] = shot_names;
+                    shot_data[i]['shot_names'] = shot_names;
                     var resource_ids = '';
-                    for (var m=0; m<anim_data[i]['resource_ids'].length; m+=1){
-                        resource_ids += "<a href='/users/"+anim_data[i]['resource_ids'][m]+"/view'>"+get_user_name(anim_data[i]['resource_ids'][m])+"</a><br/>";
+                    for (var m=0; m<shot_data[i]['resource_ids'].length; m+=1){
+                        resource_ids += "<a href='/users/"+shot_data[i]['resource_ids'][m]+"/view'>"+get_user_name(shot_data[i]['resource_ids'][m])+"</a><br/>";
                     }
-                    anim_data[i]['resource_ids'] = resource_ids;
-{#                    anim_data[i]['month'] = new Date(data[i]['start_date'] * 1000).format('yyyy-mm').toString();#}
-                    anim_data[i]['start_date'] = new Date(data[i]['start_date'] * 1000).format('yyyy-mm-dd').toString();
-                    total_seconds += anim_data[i]['total_seconds'];
-                    weekly_anim_seconds.push([anim_data[i]['start_date'], anim_data[i]['total_seconds']]);
+                    shot_data[i]['resource_ids'] = resource_ids;
+{#                    shot_data[i]['month'] = new Date(data[i]['start_date'] * 1000).format('yyyy-mm').toString();#}
+                    shot_data[i]['start_date'] = new Date(data[i]['start_date'] * 1000).format('yyyy-mm-dd').toString();
+                    total_seconds += shot_data[i]['total_seconds'];
+                    shot_data[i]['total_seconds'] = shot_data[i]['total_seconds'].toFixed(2);
+                    weekly_shot_seconds.push([shot_data[i]['start_date'], shot_data[i]['total_seconds']]);
                 }
-                $.jqplot('chart_anim', [weekly_anim_seconds], {
+                $.jqplot('chart_shot', [weekly_shot_seconds], {
                             seriesColors: ["rgba(78, 135, 194, 0.7)"],
                             title: {
                                 text:'Weekly Animation Seconds',
@@ -121,7 +120,7 @@
                 var grid_selector = "#grid-table";
                 var pager_selector = "#grid-pager";
                 jQuery(grid_selector).jqGrid({
-                    data: anim_data,
+                    data: shot_data,
                     datatype: "local",
                     colModel: [
 {#                        { label: 'Month', name: 'month', width: 150 },#}
@@ -156,7 +155,11 @@
                         var $self = $(this);
 {#                        var total_seconds= $self.jqGrid('getCol', 'total_seconds', false, 'sum');#}
                         var total_minutes = total_seconds/60;
-                        $self.jqGrid("footerData", "set", {total_seconds: total_seconds.toFixed(2)+'s = '+total_minutes.toFixed(2)+' m',resource_ids: 'TOTAL'});
+                        $self.jqGrid("footerData", "set", {resource_ids: 'TOTAL',
+                                                           total_seconds: total_seconds.toFixed(2)+'s = '+total_minutes.toFixed(2)+' m',
+                                                           start_date: 'AVARAGE',
+                                                           shot_names: (total_seconds/shot_data.length).toFixed(2)+'s'
+                                                           });
 
                     }
                 });

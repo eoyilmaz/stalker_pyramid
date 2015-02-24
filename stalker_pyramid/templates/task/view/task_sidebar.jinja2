@@ -205,7 +205,7 @@
                         new_url = '/projects/{{ task.project.id }}/view';
                     {% endif %}
                     $.post(
-                        '/tasks/' + id + '/delete'
+                        '/tasks/delete?task_ids=' + id
                     ).done(function (response_text) {
                         window.location.assign(new_url);
                     }).fail(function (jqXHR) {

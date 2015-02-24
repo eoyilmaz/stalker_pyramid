@@ -65,9 +65,6 @@
 
             var submit_button = $('#dialog_template_submit_button');
             submit_button.on('click', function (e) {
-
-                console.log('dialog_template_submit_button')
-
                 e.stopPropagation();
                 e.preventDefault();
                 submit_button.button('loading');

@@ -4669,12 +4669,23 @@ def unbind_task_relations(task):
 def delete_task_dialog(request):
     """deletes the department with the given id
     """
-    logger.debug('delete_department_dialog is starts')
+    logger.debug('delete_task_dialog is starts')
 
-    task_id = request.matchdict.get('id')
-    #task = Task.query.get(task_id)
+    selected_task_list = get_multi_integer(request, 'task_ids', 'GET')
+    project_id = request.params.get('project_id', '-1')
+    logger.debug('project_id : %s' % project_id)
 
-    action = '/tasks/%s/delete' % task_id
+    _query_buffer = ['project_id=%s' % project_id]
+
+    for task_id in selected_task_list:
+       _query_buffer.append("""&task_ids=%s""" % task_id)
+    _query = ''.join(_query_buffer)
+
+    logger.debug('_query : %s' % _query)
+
+    action = '/tasks/delete?%s' % _query
+
+
     came_from = request.params.get('came_from', '/')
     message = 'All the selected tasks and their child tasks and all the ' \
               'TimeLogs entered and all the Versions created for those ' \
@@ -4696,34 +4707,74 @@ def delete_task_dialog(request):
 def delete_task(request):
     """deletes the task with the given id
     """
-    task_id = request.matchdict.get('id')
-    task = Task.query.get(task_id)
+    selected_task_list = get_multi_integer(request, 'task_ids', 'GET')
+    logger.debug('selected_task_list : %s' % selected_task_list)
 
-    if not task:
+    tasks = Task.query.filter(Task.id.in_(selected_task_list)).all()
+    logger.debug('tasks : %s' % tasks)
+
+    if not tasks:
         transaction.abort()
-        return Response('Can not find a Task with id: %s' % task_id, 500)
+        return Response('Can not find any Task', 500)
 
-    try:
-        unbind_task_hierarchy_relations(task)
-        unbind_task_relations(task)
+    for task in tasks:
+        try:
+            unbind_task_hierarchy_relations(task)
+            unbind_task_relations(task)
 
-        db.DBSession.delete(task)
-        #transaction.commit()
+            db.DBSession.delete(task)
+            #transaction.commit()
 
-        # invalidate all caches
-        invalidate_all_caches()
+            # invalidate all caches
+            invalidate_all_caches()
 
-        logger.debug(
-            'Successfully deleted task: %s (%s)' % (task.name, task_id)
-        )
-    except Exception as e:
-        transaction.abort()
-        c = StdErrToHTMLConverter(e)
-        transaction.abort()
-        return Response(c.html(), 500)
+            logger.debug(
+                'Successfully deleted task: %s (%s)' % (task.name, task.id)
+            )
+        except Exception as e:
+            transaction.abort()
+            c = StdErrToHTMLConverter(e)
+            transaction.abort()
+            return Response(c.html(), 500)
 
-    return Response('Successfully deleted task: %s' % task_id)
+    return Response('Successfully deleted tasks!')
 
+#
+# @view_config(
+#     route_name='delete_task',
+#     permission='Delete_Task'
+# )
+# def delete_task(request):
+#     """deletes the task with the given id
+#     """
+#     task_id = request.matchdict.get('id')
+#     task = Task.query.get(task_id)
+#
+#     if not task:
+#         transaction.abort()
+#         return Response('Can not find a Task with id: %s' % task_id, 500)
+#
+#     try:
+#         unbind_task_hierarchy_relations(task)
+#         unbind_task_relations(task)
+#
+#         db.DBSession.delete(task)
+#         #transaction.commit()
+#
+#         # invalidate all caches
+#         invalidate_all_caches()
+#
+#         logger.debug(
+#             'Successfully deleted task: %s (%s)' % (task.name, task_id)
+#         )
+#     except Exception as e:
+#         transaction.abort()
+#         c = StdErrToHTMLConverter(e)
+#         transaction.abort()
+#         return Response(c.html(), 500)
+#
+#     return Response('Successfully deleted task: %s' % task_id)
+#
 
 @view_config(
     route_name='get_task_related_entities',
@@ -5209,12 +5260,15 @@ def remove_task_user(request):
                     (user.name, task.name))
 
 
-
+@view_config(
+    route_name='change_tasks_priority_dialog',
+    renderer='templates/task/dialog/change_tasks_priority_dialog.jinja2'
+)
 @view_config(
     route_name='change_tasks_users_dialog',
     renderer='templates/task/dialog/change_tasks_users_dialog.jinja2'
 )
-def change_tasks_users_dialog(request):
+def selected_task_dialog(request):
     """changes task users with the given users dialog
     """
     logger.debug('change_tasks_users_dialog is starts')
@@ -5246,6 +5300,8 @@ def change_tasks_users_dialog(request):
 def change_tasks_users(request):
     """changes task users with the given users
     """
+    logged_in_user = get_logged_in_user(request)
+    utc_now = local_to_utc(datetime.datetime.now())
 
     selected_list = get_multi_integer(request, 'user_ids')
     users = User.query\
@@ -5274,43 +5330,43 @@ def change_tasks_users(request):
     if user_type=='resources':
         for task in tasks:
             task.resources = users
+            task.updated_by = logged_in_user
+            task.date_updated = utc_now
     elif user_type=='responsible':
         for task in tasks:
             task.responsible = users
+            task.updated_by = logged_in_user
+            task.date_updated = utc_now
 
-    logged_in_user = get_logged_in_user(request)
-    utc_now = local_to_utc(datetime.datetime.now())
 
-    task.updated_by = logged_in_user
-    task.date_updated = utc_now
 
     # invalidate all caches
     invalidate_all_caches()
 
     return Response('Success: %s are added to selected tasks' % user_type)
 
-@view_config(
-    route_name='change_tasks_priority_dialog',
-    renderer='templates/task/dialog/change_tasks_priority_dialog.jinja2'
-)
-def change_tasks_priority_dialog(request):
-    """changes task users with the given users dialog
-    """
-    logger.debug('change_tasks_users_dialog is starts')
-
-    selected_task_list = get_multi_integer(request, 'task_ids', 'GET')
-    logger.debug('selected_task_list : %s' % selected_task_list)
-
-    tasks = Task.query.filter(Task.id.in_(selected_task_list)).all()
-    logger.debug('tasks : %s' % tasks)
-
-
-    came_from = request.params.get('came_from', '/')
-
-    return {
-        'tasks': tasks,
-        'came_from': came_from
-    }
+# @view_config(
+#     route_name='change_tasks_priority_dialog',
+#     renderer='templates/task/dialog/change_tasks_priority_dialog.jinja2'
+# )
+# def change_tasks_priority_dialog(request):
+#     """changes task users with the given users dialog
+#     """
+#     logger.debug('change_tasks_users_dialog is starts')
+#
+#     selected_task_list = get_multi_integer(request, 'task_ids', 'GET')
+#     logger.debug('selected_task_list : %s' % selected_task_list)
+#
+#     tasks = Task.query.filter(Task.id.in_(selected_task_list)).all()
+#     logger.debug('tasks : %s' % tasks)
+#
+#
+#     came_from = request.params.get('came_from', '/')
+#
+#     return {
+#         'tasks': tasks,
+#         'came_from': came_from
+#     }
 
 
 @view_config(

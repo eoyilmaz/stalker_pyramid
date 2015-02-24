@@ -10,7 +10,10 @@
         dialog_template_label.find('span').remove();
         dialog_template_label.append('<span class="red"><i class="icon-warning-sign"></i> Warning</span>');
 
-        $('#message').append('{{ message | safe}}');
+        $('#message').append('All the selected tasks and their child tasks and ' +
+                    'all the TimeLogs entered and all the Versions ' +
+                    'created for those tasks are going to be deleted.<br><br>' +
+                    'Are you sure?');
 
         {# ***************************************************************** #}
         {# Submit Button #}
@@ -20,7 +23,7 @@
             // disable the submit_button
             var submit_button = $(this);
 
-            var url= '{{ action | safe}}';
+            var url= '{{ action }}';
             if(url==''){
                 $('#dialog_template').modal('hide');
             }

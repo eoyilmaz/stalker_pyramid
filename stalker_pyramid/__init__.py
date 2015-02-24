@@ -694,8 +694,8 @@ def main(global_config, **settings):
     config.add_route('add_tasks_dependencies_dialog', 'tasks/add/dependencies/dialog')
     config.add_route('add_tasks_dependencies',        'tasks/add/dependencies')
 
-    config.add_route('delete_task',        'tasks/{id}/delete')
-    config.add_route('delete_task_dialog', 'tasks/{id}/delete/dialog')
+    config.add_route('delete_task',        'tasks/delete')
+    config.add_route('delete_task_dialog', 'tasks/delete/dialog')
 
     config.add_route('fix_task_statuses',      'tasks/{id}/fix/statuses/')
     config.add_route('fix_task_schedule_info', 'tasks/{id}/fix/schedule_info/')
