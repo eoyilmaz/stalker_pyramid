@@ -37,6 +37,7 @@
     {% block pre_header %}
     {% endblock pre_header %}
 
+
     <link rel="stylesheet"
           href='{{ request.static_url("stalker_pyramid:static/ace/css/chosen.css") }}'/>
     <link rel="stylesheet"
@@ -53,8 +54,13 @@
           href='{{ request.static_url("stalker_pyramid:static/ace/css/bootstrap-editable.css") }}'/>
     <link rel="stylesheet"
           href='{{ request.static_url("stalker_pyramid:static/ace/css/ui.jqgrid.css") }}'/>
+    <link rel="stylesheet"
+              href='{{ request.static_url("stalker_pyramid:static/jqPlot/syntaxhighlighter/styles/shCoreDefault.min.css") }}'/>
+    <link rel="stylesheet"
+              href='{{ request.static_url("stalker_pyramid:static/jqPlot/syntaxhighlighter/styles/shThemejqPlot.min.css") }}'/>
+    <link rel="stylesheet"
+             href='{{ request.static_url("stalker_pyramid:static/jqPlot/jquery.jqplot.min.css") }}' />
 
-    <link class="include" rel="stylesheet" type="text/css" href='{{ request.static_url("stalker_pyramid:static/jqPlot/jquery.jqplot.min.css") }}' />
 
 
 

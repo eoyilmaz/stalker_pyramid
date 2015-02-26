@@ -1,4 +1,26 @@
+<style type="text/css">
+        .jqplot-target {
+            margin: 20px;
+            height: 400px;
+            width: 1200px;
+            color: #dddddd;
+        }
 
+        .ui-widget-content {
+            background: rgb(57,57,57);
+        }
+
+        table.jqplot-table-legend {
+            border: 0px;
+            background-color: rgba(100,100,100, 0.0);
+        }
+
+        .jqplot-highlighter-tooltip {
+            background-color: rgba(57,57,57, 0.9);
+            padding: 7px;
+            color: #dddddd;
+        }
+</style>
 <div class="row-fluid">
     <div id="chart1"
          style="margin-top:20px; margin-left:20px; height:400px; background: rgb(57,57,57)">
@@ -12,6 +34,13 @@
 
 <script type="text/javascript"
             src='{{ request.static_url("stalker_pyramid:static/jqPlot/jquery.jqplot.min.js") }}'></script>
+<script type="text/javascript"
+        src='{{ request.static_url("stalker_pyramid:static/jqPlot/syntaxhighlighter/scripts/shCore.min.js") }}'></script>
+<script type="text/javascript"
+        src='{{ request.static_url("stalker_pyramid:static/jqPlot/syntaxhighlighter/scripts/shBrushJScript.min.js") }}'></script>
+<script type="text/javascript"
+        src='{{ request.static_url("stalker_pyramid:static/jqPlot/syntaxhighlighter/scripts/shBrushXml.min.js") }}'></script>
+
 <!-- End Don't touch this! -->
 
 <!-- Additional plugins go here -->
@@ -32,8 +61,6 @@
         src='{{ request.static_url("stalker_pyramid:static/jqPlot/plugins/jqplot.pointLabels.min.js") }}'></script>
 <script type="text/javascript"
         src='{{ request.static_url("stalker_pyramid:static/jqPlot/plugins/jqplot.highlighter.min.js") }}'></script>
-<script type="text/javascript"
-        src='{{ request.static_url("stalker_pyramid:static/jqPlot/plugins/jqplot.cursor.min.js") }}'></script>
 
 
 <script type="text/javascript">
@@ -110,13 +137,11 @@
                             highlighter: {
                                 show: true,
                                 sizeAdjust: 1,
-                                tooltipOffset: 9
+                                tooltipOffset: 9,
+                                tooltipLocation: 'ne'
                             },
-                            cursor: {
-                                 show: true
-                             },
                             grid: {
-                                background: 'rgba(57,57,57,1.0)',
+                                background: 'rgba(57,57,57,0.0)',
                                 drawBorder: false,
                                 shadow: false,
                                 gridLineColor: '#666666',
@@ -182,9 +207,10 @@
                             new Date(data[data.length-1]['start_date']*1000),
                             end_date
                         );
+
                         var new_target_step = previous_value/remaining_months;
                         var new_target_timelogs = [
-                            [remaining_schedule_hours[remaining_schedule_hours.length-1][0],new_target_step ],
+                            [remaining_schedule_hours[remaining_schedule_hours.length-1][0], new_target_step ],
                             [end_date.format('yyyy-mm').toString(), new_target_step]
                         ];
         
@@ -197,6 +223,8 @@
                             [start_date.format('yyyy-mm').toString(), old_target_step ],
                             [end_date.format('yyyy-mm').toString(), old_target_step]
                         ];
+
+                        console.log('remaining_months: '+remaining_months+'  previous_value: '+previous_value);
         
                         $.jqplot('chart2', [monthly_timelogs, old_target_timelogs, new_target_timelogs], {
                             seriesColors: ["rgba(78, 135, 194, 0.7)", "rgb(211, 200, 59)","rgb(211, 59, 59)"],
@@ -218,7 +246,8 @@
                               },
                             highlighter: {
                                 show: true,
-                                sizeAdjust: 10
+                                sizeAdjust: 10,
+                                tooltipLocation: 'ne'
                             },
                             grid: {
                                 background: 'rgba(57,57,57,0.5)',

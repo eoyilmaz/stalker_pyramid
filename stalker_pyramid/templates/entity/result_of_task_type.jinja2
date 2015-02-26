@@ -1,3 +1,20 @@
+<style type="text/css">
+        .jqplot-target {
+            margin: 20px;
+            height: 400px;
+            width: 1200px;
+            color: #dddddd;
+        }
+
+
+
+
+        .jqplot-highlighter-tooltip {
+            background-color: rgba(57,57,57, 0.9);
+            padding: 7px;
+            color: #dddddd;
+        }
+</style>
 <div class="row-fluid">
      <div class="left">
         <div class="btn-toolbar">
@@ -17,9 +34,9 @@
             </div>
         </div>
     </div>
-    <div class="span8" id="result_chart" style="margin-left: 0px">
+    <div class="span10" id="result_chart" style="margin-left: 0px">
     </div>
-    <div class="span4 hide" id="info_box">
+    <div class="span2 hide" id="info_box">
         <span class="btn btn-app btn-small btn-success no-hover">
             <span class="bigger-150" id="total_seconds"></span>
             <br />
@@ -79,141 +96,141 @@
         $('#info_box').hide();
 
         $.getJSON('/entities/{{ entity.id }}/'+t_type+'/result').then(function (data) {
-            console.log('loadShotTaskData: '+data.length);
-                if (data.length>0){
-                    var shot_data = data;
 
-                    result_chart.append('<div id="chart_shot" style="height:500px; background: rgb(57,57,57)"></div>');
+            if (data.length>0){
+                var shot_data = data;
 
-                    var total_seconds = 0;
-                    var max_seconds = 0;
-                    var weekly_shot_seconds = [];
-                    for (var i=0; i<shot_data.length; i+=1){
-                        var shot_names = '';
-                        for (var m=0; m<shot_data[i]['shot_names'].length; m+=1){
-                            shot_names += shot_data[i]['shot_names'][m]+'<br/>';
-                        }
-                        shot_data[i]['shot_names'] = shot_names;
-                        var resource_ids = '';
-                        for (var m=0; m<shot_data[i]['resource_ids'].length; m+=1){
-                            resource_ids += "<a href='/users/"+shot_data[i]['resource_ids'][m]+"/view'>"+get_user_name(shot_data[i]['resource_ids'][m])+"</a><br/>";
-                        }
-                        shot_data[i]['resource_ids'] = resource_ids;
-    {#                    shot_data[i]['month'] = new Date(data[i]['start_date'] * 1000).format('yyyy-mm').toString();#}
-                        shot_data[i]['start_date'] = new Date(data[i]['start_date'] * 1000).format('yyyy-mm-dd').toString();
-                        total_seconds += shot_data[i]['total_seconds'];
-                        shot_data[i]['total_seconds'] = shot_data[i]['total_seconds'].toFixed(2);
-                        weekly_shot_seconds.push([shot_data[i]['start_date'], shot_data[i]['total_seconds']]);
-                        max_seconds = parseFloat(shot_data[i]['total_seconds'])>max_seconds?parseFloat(shot_data[i]['total_seconds']):max_seconds;
+                result_chart.append('<div id="chart_shot" style="height:500px; background: rgb(57,57,57)"></div>');
+
+                var total_seconds = 0;
+                var max_seconds = 0;
+                var weekly_shot_seconds = [];
+                for (var i=0; i<shot_data.length; i+=1){
+                    var shot_names = '';
+                    for (var m=0; m<shot_data[i]['shot_names'].length; m+=1){
+                        shot_names += shot_data[i]['shot_names'][m]+'<br/>';
                     }
-
-
-                    $.jqplot('chart_shot', [weekly_shot_seconds], {
-                                seriesColors: ["rgba(78, 135, 194, 0.7)"],
-                                title: {
-                                    text:'Weekly '+t_type+' Seconds',
-                                    textColor: '#dddddd'
-                                },
-                                highlighter: {
-                                    show: true,
-                                    sizeAdjust: 10
-                                },
-                                grid: {
-                                    background: 'rgba(57,57,57,0.5)',
-                                    drawBorder: false,
-                                    shadow: false,
-                                    gridLineColor: '#666666',
-                                    gridLineWidth: 2
-                                },
-                                axes:{
-                                   xaxis: {
-                                        renderer: $.jqplot.DateAxisRenderer,
-                                        tickRenderer: $.jqplot.CanvasAxisTickRenderer,
-                                        tickOptions: {
-                                            formatString: "%d %b",
-                                            angle: -30,
-                                            textColor: '#dddddd'
-                                        },
-
-                                        tickInterval: "1 week",
-                                        drawMajorGridlines: false
-                                    },
-                                    yaxis: {
-                                        renderer: $.jqplot.LinearAxisRenderer,
-                                        pad: 0,
-                                        rendererOptions: {
-                                            minorTicks: 1
-                                        },
-                                        max:max_seconds,
-                                        tickOptions: {
-                                            formatString: "  %d seconds",
-                                            showMark: false
-                                        }
-                                    }
-                                },
-                                seriesDefaults: {
-                                    showMarker: true
-                                }
-                    });
-
-
-                    var grid_selector = "#grid-table";
-                    var pager_selector = "#grid-pager";
-
-
-
-                    jQuery(grid_selector).jqGrid({
-                        data: shot_data,
-                        datatype: "local",
-                        colModel: [
-    {#                        { label: 'Month', name: 'month', width: 150 },#}
-                            { label: 'Start Date', name: 'start_date', width: 150 },
-                            { label: 'Shot Name', name: 'shot_names', key: true, width: 300 },
-                            { label: 'Resource Name', name: 'resource_ids', key: true, width: 300 },
-                            { label: 'Total Seconds', name: 'total_seconds', width: 200 }
-
-                        ],
-                        loadonce:true, // just for demo purpose
-    {#                    width: 780,#}
-                        height: 750,
-                        rowNum: 10,
-                        rowList:[10,25,50],
-                        sortname: 'start_date',
-                        sortorder: "desc",
-                        pager: pager_selector,
-                        viewrecords: true,
-                        footerrow: true, // set a footer row
-                        userDataOnFooter: true,
-                        grouping: false,
-    {#                    groupingView: {#}
-    {#                        groupField: ["month"],#}
-    {#                        groupColumnShow: [true],#}
-    {#                        groupText: ["<b>{0}</b>"],#}
-    {#                        groupOrder: ["desc"],#}
-    {#                        groupSummary: [true],#}
-    {#                        groupCollapse: false#}
-    {##}
-    {#                    },#}
-                        loadComplete : function() {
-                            var $self = $(this);
-    {#                        var total_seconds= $self.jqGrid('getCol', 'total_seconds', false, 'sum');#}
-                            var total_minutes = (total_seconds/60).toFixed(2);
-                            var average_seconds = (total_seconds/shot_data.length).toFixed(2);
-                            $self.jqGrid("footerData", "set", {resource_ids: 'TOTAL',
-                                                               total_seconds: total_seconds.toFixed(2)+'s = '+total_minutes+' m',
-                                                               start_date: 'AVERAGE',
-                                                               shot_names: average_seconds+' s'
-                                                               });
-                            $('#total_seconds').text(total_minutes+' m');
-                            $('#avarage_seconds').text(average_seconds+' s');
-                            $('#info_box').show();
-
-                        }
-                    });
-    {#                jQuery(grid_selector).jqGrid("navGrid",pager_selector,{add:false, edit:false, del:false});#}
-
+                    shot_data[i]['shot_names'] = shot_names;
+                    var resource_ids = '';
+                    for (var m=0; m<shot_data[i]['resource_ids'].length; m+=1){
+                        resource_ids += "<a href='/users/"+shot_data[i]['resource_ids'][m]+"/view'>"+get_user_name(shot_data[i]['resource_ids'][m])+"</a><br/>";
+                    }
+                    shot_data[i]['resource_ids'] = resource_ids;
+{#                    shot_data[i]['month'] = new Date(data[i]['start_date'] * 1000).format('yyyy-mm').toString();#}
+                    shot_data[i]['start_date'] = new Date(data[i]['start_date'] * 1000).format('yyyy-mm-dd').toString();
+                    total_seconds += shot_data[i]['total_seconds'];
+                    shot_data[i]['total_seconds'] = shot_data[i]['total_seconds'].toFixed(2);
+                    weekly_shot_seconds.push([shot_data[i]['start_date'], shot_data[i]['total_seconds']]);
+                    max_seconds = parseFloat(shot_data[i]['total_seconds'])>max_seconds?parseFloat(shot_data[i]['total_seconds']):max_seconds;
                 }
-            });
+
+
+                $.jqplot('chart_shot', [weekly_shot_seconds], {
+                            seriesColors: ["rgba(78, 135, 194, 0.7)"],
+                            title: {
+                                text:'Weekly '+t_type+' Seconds',
+                                textColor: '#dddddd'
+                            },
+                            highlighter: {
+                                show: true,
+                                sizeAdjust: 10
+                            },
+                            grid: {
+                                background: 'rgba(57,57,57,0.5)',
+                                drawBorder: false,
+                                shadow: false,
+                                gridLineColor: '#666666',
+                                gridLineWidth: 2
+                            },
+                            axes:{
+                               xaxis: {
+                                    renderer: $.jqplot.DateAxisRenderer,
+                                    tickRenderer: $.jqplot.CanvasAxisTickRenderer,
+                                    tickOptions: {
+                                        formatString: "%d %b",
+                                        angle: -30,
+                                        textColor: '#dddddd'
+                                    },
+
+                                    tickInterval: "1 week",
+                                    drawMajorGridlines: false
+                                },
+                                yaxis: {
+                                    renderer: $.jqplot.LinearAxisRenderer,
+                                    pad: 0,
+                                    rendererOptions: {
+                                        minorTicks: 1
+                                    },
+                                    max:max_seconds,
+                                    tickOptions: {
+                                        formatString: "  %d seconds",
+                                        showMark: false
+                                    }
+                                }
+                            },
+                            seriesDefaults: {
+                                showMarker: true
+                            }
+                });
+
+
+                var grid_selector = "#grid-table";
+                var pager_selector = "#grid-pager";
+
+
+
+                jQuery(grid_selector).jqGrid({
+                    data: shot_data,
+                    datatype: "local",
+                    colModel: [
+{#                        { label: 'Month', name: 'month', width: 150 },#}
+                        { label: 'Start Date', name: 'start_date', width: 150 },
+                        { label: 'Shot Name', name: 'shot_names', key: true, width: 300 },
+                        { label: 'Resource Name', name: 'resource_ids', key: true, width: 300 },
+                        { label: 'Total Seconds', name: 'total_seconds', width: 200 }
+
+                    ],
+                    loadonce:true, // just for demo purpose
+{#                    width: 780,#}
+                    height: 750,
+                    rowNum: 10,
+                    rowList:[10,25,50],
+                    sortname: 'start_date',
+                    sortorder: "desc",
+                    pager: pager_selector,
+                    viewrecords: true,
+                    footerrow: true, // set a footer row
+                    userDataOnFooter: true,
+                    grouping: false,
+{#                    groupingView: {#}
+{#                        groupField: ["month"],#}
+{#                        groupColumnShow: [true],#}
+{#                        groupText: ["<b>{0}</b>"],#}
+{#                        groupOrder: ["desc"],#}
+{#                        groupSummary: [true],#}
+{#                        groupCollapse: false#}
+{##}
+{#                    },#}
+                    loadComplete : function() {
+                        var $self = $(this);
+{#                        var total_seconds= $self.jqGrid('getCol', 'total_seconds', false, 'sum');#}
+                        var total_minutes = (total_seconds/60).toFixed(2);
+                        var average_seconds = (total_seconds/shot_data.length).toFixed(2);
+                        $self.jqGrid("footerData", "set", {resource_ids: 'TOTAL',
+                                                           total_seconds: total_seconds.toFixed(2)+'s = '+total_minutes+' m',
+                                                           start_date: 'AVERAGE',
+                                                           shot_names: average_seconds+' s'
+                                                           });
+                        $('#total_seconds').text(total_minutes+' m');
+                        $('#avarage_seconds').text(average_seconds+' s');
+                        $('#info_box').show();
+
+                    }
+                });
+{#                jQuery(grid_selector).jqGrid("navGrid",pager_selector,{add:false, edit:false, del:false});#}
+
+            }
+        });
 
 
     }
