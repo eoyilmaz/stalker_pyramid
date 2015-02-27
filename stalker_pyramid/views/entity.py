@@ -1034,10 +1034,9 @@ def get_entity_total_schedule_seconds(request):
     entity_id = request.matchdict.get('id')
     entity = Entity.query.filter_by(id=entity_id).first()
 
-
     sql_query = """select
-        SUM(
-            "Tasks".schedule_timing * (
+    SUM(("Tasks".schedule_timing
+             * (
                 case "Tasks".schedule_unit
                     when 'min' then 60
                     when 'h' then 3600
@@ -1047,21 +1046,46 @@ def get_entity_total_schedule_seconds(request):
                     when 'y' then 9573418 -- 52.1428 week * 51 hours/week
                     else 0
                 end
+               )
+            - coalesce(timelogs.total_timelogs, 0)
             )
-        ) as schedule_seconds
+            / %(division)s
+         )
+         as schedule_seconds
+
     from "Tasks"
     join "Task_Resources" on "Task_Resources".task_id = "Tasks".id
-    where not exists(select 1 from "Tasks" as t where t.parent_id = "Tasks".id)
+    join "Statuses" on "Statuses".id = "Tasks".status_id
+    left outer join (
+                    select
+                        "Tasks".id as task_id,
+                         sum(extract(epoch from "TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC'))
+                            as total_timelogs
+                    from "TimeLogs"
+                    join "Tasks" on "Tasks".id = "TimeLogs".task_id
+
+                    group by "Tasks".id
+                ) as timelogs on timelogs.task_id = "Tasks".id
+
+   where "Statuses".code !='CMPL'
     %(where_conditions)s
     """
     where_conditions = ''
+    division = '1'
 
     if entity.entity_type == 'Project':
         where_conditions = """and "Tasks".project_id = %(project_id)s """ % {'project_id': entity_id}
     elif entity.entity_type == 'User':
         where_conditions = """and "Task_Resources".resource_id = %(resource_id)s """ % {'resource_id': entity_id}
+        division = """(
+                select
+                    count(1)
+                from "Task_Resources" as inner_task_resources
+                where inner_task_resources.task_id = "Tasks".id
+            )"""
     elif entity.entity_type == 'Department':
-        temp_buffer = [""" and ("""]
+
+        temp_buffer = [""" where ("""]
         for i, resource in enumerate(entity.users):
             if i > 0:
                 temp_buffer.append(' or')
@@ -1069,15 +1093,21 @@ def get_entity_total_schedule_seconds(request):
         temp_buffer.append(' )')
         where_conditions = ''.join(temp_buffer)
 
+        division = """(
+                select
+                    count(1)
+                from "Task_Resources" as inner_task_resources
+                where inner_task_resources.task_id = "Tasks".id
+            )"""
+
     logger.debug('where_conditions: %s' % where_conditions)
 
-    sql_query = sql_query % {'where_conditions': where_conditions}
+    sql_query = sql_query % {'where_conditions': where_conditions, 'division':division}
 
     result = db.DBSession.connection().execute(sql_query).fetchone()
 
     logger.debug('get_project_total_schedule_seconds: %s' % result[0])
     return result[0]
-
 
 
 @view_config(
@@ -1142,17 +1172,17 @@ def get_entity_task_max_end(request):
         join "Task_Resources" on "Task_Resources".resource_id = "Users".id
         join "Tasks" on "Tasks".id = "Task_Resources".task_id
 
-    where not exists(select 1 from "Tasks" as t where t.parent_id = "Tasks".id)
+    --where not exists(select 1 from "Tasks" as t where t.parent_id = "Tasks".id)
     %(where_conditions)s
     """
     where_conditions = ''
 
     if entity.entity_type == 'Project':
-        where_conditions = """and "Tasks".project_id = %(project_id)s """ % {'project_id': entity_id}
+        where_conditions = """where "Tasks".project_id = %(project_id)s """ % {'project_id': entity_id}
     elif entity.entity_type == 'User':
-        where_conditions = """and "Task_Resources".resource_id = %(resource_id)s """ % {'resource_id': entity_id}
+        where_conditions = """where "Task_Resources".resource_id = %(resource_id)s """ % {'resource_id': entity_id}
     elif entity.entity_type == 'Department':
-        temp_buffer = [""" and ("""]
+        temp_buffer = ["""where ("""]
         for i, resource in enumerate(entity.users):
             if i > 0:
                 temp_buffer.append(' or')

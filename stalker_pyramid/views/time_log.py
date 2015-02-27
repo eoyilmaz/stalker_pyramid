@@ -33,7 +33,7 @@ from stalker.exceptions import OverBookedError, DependencyViolationError
 from stalker_pyramid.views import (get_logged_in_user,
                                    PermissionChecker, milliseconds_since_epoch,
                                    get_date, StdErrToHTMLConverter,
-                                   local_to_utc)
+                                   local_to_utc, get_multi_integer)
 from stalker_pyramid.views.task import (get_task_full_path,
                                         generate_where_clause)
 
@@ -385,36 +385,37 @@ def get_time_logs(request):
 def get_monthly_time_logs(request):
     """returns project monthly time logs as a json
     """
+
+    resource_ids = get_multi_integer(request, 'resource_id', 'GET')
+    project_id = request.params.get('project_id', None)
+
     sql_query = """select
         sum(extract(epoch from "TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC')) / 3600 as total_hours,
         min(extract(epoch from "TimeLogs".start::timestamp AT TIME ZONE 'UTC')) as start,
         max(extract(epoch from "TimeLogs".end::timestamp AT TIME ZONE 'UTC')) as end
     from "TimeLogs"
-        join "Tasks" on "TimeLogs".task_id = "Tasks".id
+    join "Tasks" on "Tasks".id = "TimeLogs".task_id
 
-        -- Resources
-        left outer join (
-            select
-                "Tasks".id as task_id,
-                array_agg(("Resource_SimpleEntities".id, "Resource_SimpleEntities".name)) as info,
-                array_agg("Resource_SimpleEntities".id) as resource_id,
-                array_agg("Resource_SimpleEntities".name) as resource_name
-            from "Tasks"
-            join "Task_Resources" on "Tasks".id = "Task_Resources".task_id
-            join "SimpleEntities" as "Resource_SimpleEntities" on "Task_Resources".resource_id = "Resource_SimpleEntities".id
-            group by "Tasks".id
-        ) as resource_info on "TimeLogs".task_id = resource_info.task_id
-
-    %(where_clause)s
+    %(where_conditions)s
 
     group by date_trunc('month', "TimeLogs".start)
     order by start
     """
+    where_conditions = ''
+    if resource_ids:
+        temp_buffer = ["""where ("""]
+        for i, resource_id in enumerate(resource_ids):
+            if i > 0:
+                temp_buffer.append(' or')
+            temp_buffer.append(""" "TimeLogs".resource_id='%s'""" % resource_id)
+        temp_buffer.append(' )')
+        where_conditions = ''.join(temp_buffer)
 
-    where_clause = generate_where_clause(request.params.dict_of_lists())
+    if project_id:
+        where_conditions = """where "Tasks".project_id=%s """ % project_id
 
     sql_query = sql_query % {
-        'where_clause': where_clause
+        'where_conditions': where_conditions
     }
 
     result = db.DBSession.connection().execute(sql_query).fetchall()

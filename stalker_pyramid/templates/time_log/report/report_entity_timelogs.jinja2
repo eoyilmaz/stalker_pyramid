@@ -105,18 +105,26 @@
                 
                 $.getJSON('/entities/{{ entity.id }}/total_schedule_seconds/').then(function (t_schedule_seconds) {
 
-                    var t_schedule_hours = t_schedule_seconds / 3600.0;
-        
+                    var t_schedule_hours = t_schedule_seconds/3600.0;
+
                     $.getJSON('/time_logs/monthly?'+query_str).then(function (data) {
+
+                        for (var j=0; j<data.length; j+=1){
+                            t_schedule_hours += data[j]['total_hours'];
+                            console.log('t_schedule_hours: '+ t_schedule_hours)
+                        }
+
                         
                         var remaining_schedule_hours = [[start_date.format('yyyy-mm').toString(), t_schedule_hours]];
                         var monthly_timelogs = [];
                         var previous_value = t_schedule_hours;
                         var current_value;
                         var current_total_hours;
+
                         for (var i=0; i<data.length; i+=1){
                             current_total_hours = data[i]['total_hours'];
                             current_value = previous_value - current_total_hours;
+
                             monthly_timelogs.push([new Date(data[i]['start_date'] * 1000).format('yyyy-mm').toString(), current_total_hours]);
                             remaining_schedule_hours.push([new Date(data[i]['start_date'] * 1000).format('yyyy-mm-dd HH:MM').toString(), current_value]);
                             previous_value = current_value;
