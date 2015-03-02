@@ -4717,25 +4717,24 @@ def delete_task(request):
         transaction.abort()
         return Response('Can not find any Task', 500)
 
-    for task in tasks:
-        try:
+    try:
+        for task in tasks:
             unbind_task_hierarchy_relations(task)
             unbind_task_relations(task)
 
             db.DBSession.delete(task)
-            #transaction.commit()
-
-            # invalidate all caches
-            invalidate_all_caches()
 
             logger.debug(
                 'Successfully deleted task: %s (%s)' % (task.name, task.id)
             )
-        except Exception as e:
-            transaction.abort()
-            c = StdErrToHTMLConverter(e)
-            transaction.abort()
-            return Response(c.html(), 500)
+    except Exception as e:
+        transaction.abort()
+        c = StdErrToHTMLConverter(e)
+        transaction.abort()
+        return Response(c.html(), 500)
+    finally:
+        # invalidate all caches
+        invalidate_all_caches()
 
     return Response('Successfully deleted tasks!')
 
@@ -4775,6 +4774,7 @@ def delete_task(request):
 #
 #     return Response('Successfully deleted task: %s' % task_id)
 #
+
 
 @view_config(
     route_name='get_task_related_entities',

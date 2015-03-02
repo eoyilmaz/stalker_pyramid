@@ -1057,15 +1057,14 @@ def get_entity_total_schedule_seconds(request):
     join "Task_Resources" on "Task_Resources".task_id = "Tasks".id
     join "Statuses" on "Statuses".id = "Tasks".status_id
     left outer join (
-                    select
-                        "Tasks".id as task_id,
-                         sum(extract(epoch from "TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC'))
-                            as total_timelogs
-                    from "TimeLogs"
-                    join "Tasks" on "Tasks".id = "TimeLogs".task_id
+        select
+            "Tasks".id as task_id,
+            sum(extract(epoch from "TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC')) as total_timelogs
+        from "TimeLogs"
+        join "Tasks" on "Tasks".id = "TimeLogs".task_id
 
-                    group by "Tasks".id
-                ) as timelogs on timelogs.task_id = "Tasks".id
+        group by "Tasks".id
+    ) as timelogs on timelogs.task_id = "Tasks".id
 
    where "Statuses".code !='CMPL'
     %(where_conditions)s
