@@ -207,35 +207,37 @@
                                     }
                                 }
                             }
-        
+
                         });
                         $('.jqplot-highlighter-tooltip').addClass('ui-corner-all');
         
-                        var remaining_months = monthDiff(
-                            new Date(data[data.length-1]['start_date']*1000),
-                            end_date
-                        );
+{#                        var remaining_months = monthDiff(#}
+{#                            new Date(),#}
+{#                            end_date#}
+{#                        );#}
+{##}
+{#                        var new_target_step = previous_value/(remaining_months+1);#}
+{#                        var new_target_timelogs = [#}
+{#                            [new Date().format('yyyy-mm').toString(), new_target_step ],#}
+{#                            [end_date.format('yyyy-mm').toString(), new_target_step]#}
+{#                        ];#}
+{#        #}
+{#                        var all_months = monthDiff(#}
+{#                            start_date,#}
+{#                            end_date#}
+{#                        );#}
+{#                        var old_target_step = t_schedule_hours/all_months;#}
+{#                        var old_target_timelogs = [#}
+{#                            [start_date.format('yyyy-mm').toString(), old_target_step ],#}
+{#                            [end_date.format('yyyy-mm').toString(), old_target_step]#}
+{#                        ];#}
 
-                        var new_target_step = previous_value/remaining_months;
-                        var new_target_timelogs = [
-                            [remaining_schedule_hours[remaining_schedule_hours.length-1][0], new_target_step ],
-                            [end_date.format('yyyy-mm').toString(), new_target_step]
-                        ];
+                        //console.log('remaining_months: '+remaining_months+'  previous_value: '+previous_value);
         
-                        var all_months = monthDiff(
-                            start_date,
-                            end_date
-                        );
-                        var old_target_step = t_schedule_hours/all_months;
-                        var old_target_timelogs = [
-                            [start_date.format('yyyy-mm').toString(), old_target_step ],
-                            [end_date.format('yyyy-mm').toString(), old_target_step]
-                        ];
-
-                        console.log('remaining_months: '+remaining_months+'  previous_value: '+previous_value);
-        
-                        $.jqplot('chart2', [monthly_timelogs, old_target_timelogs, new_target_timelogs], {
-                            seriesColors: ["rgba(78, 135, 194, 0.7)", "rgb(211, 200, 59)","rgb(211, 59, 59)"],
+{#                        $.jqplot('chart2', [monthly_timelogs, old_target_timelogs, new_target_timelogs], {#}
+{#                            seriesColors: ["rgba(78, 135, 194, 0.7)", "rgb(211, 200, 59)","rgb(211, 59, 59)"],#}
+                         $.jqplot('chart2', [monthly_timelogs], {
+                            seriesColors: ["rgba(78, 135, 194, 0.7)"],
                             series: [
                                 {
                                     label: ' reel'
