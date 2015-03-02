@@ -1085,7 +1085,7 @@ def get_entity_total_schedule_seconds(request):
             )"""
     elif entity.entity_type == 'Department':
 
-        temp_buffer = [""" where ("""]
+        temp_buffer = [""" and ("""]
         for i, resource in enumerate(entity.users):
             if i > 0:
                 temp_buffer.append(' or')
