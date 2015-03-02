@@ -165,19 +165,19 @@
                                                  style="height: 100%; width: 100%; display: inline;
                                                         position: relative; left: 100%; margin-left: -200%"
 
-                            {#
-                                I know, I know, this is plain ugly, but I had to do it in that way
-                                we should use a common way to store the thumbnails in the fileserver
-                            #}
-                                                 src="{%- if entity.thumbnail -%}
-                                                         {% if entity.entity_type in ['Task', 'Asset', 'Shot', 'Sequence']%}
-                                                             {{ entity.project.repository.path }}/{{ entity.thumbnail.full_path }}
-                                                         {% else %}
-                                                             /{{ entity.thumbnail.full_path }}
-                                                         {%- endif -%}
+                                                 src="{%- set thumbnail_path = request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") -%}
+                                                     {%- if entity.thumbnail -%}
+                                                         {% set thumbnail_path = "/" + entity.thumbnail.full_path %}
                                                      {%- else -%}
-                                                         {{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}
-                                                 {%- endif -%}"/>
+                                                        {% set found_parent_thumbnail=False %}
+                                                        {% for parent in entity.parents|reverse %}
+                                                            {% if not found_parent_thumbnail and parent.thumbnail %}
+                                                                {% set thumbnail_path="/" + parent.thumbnail.full_path %}
+                                                                {% set found_parent_thumbnail = True%}
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                     {%- endif -%}
+                                                     {{ thumbnail_path }}"/>
                                         </div>
                                     {% endif %}
                                 </div>
