@@ -4685,7 +4685,6 @@ def delete_task_dialog(request):
 
     action = '/tasks/delete?%s' % _query
 
-
     came_from = request.params.get('came_from', '/')
     message = 'All the selected tasks and their child tasks and all the ' \
               'TimeLogs entered and all the Versions created for those ' \
