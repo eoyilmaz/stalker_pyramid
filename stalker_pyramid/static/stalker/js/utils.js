@@ -439,3 +439,29 @@ var remove_thumbnails = function (options) {
     container.children().remove('*');
     container.colorbox.remove();
 };
+
+
+/**
+ * Gets entity thumbnail from server
+ * 
+ * @param options
+ */
+var set_entity_thumbnail = function(options) {
+    'use strict';
+    options = $.extend({
+        url: '',
+        default_thumbnail: '',
+        dom_element_query: ''
+    }, options);
+
+    $.getJSON(options.url, function(data){
+        // set the default thumbnail
+        var thumbnail_path = options.default_thumbnail;
+        if(data.thumbnail_path){
+            thumbnail_path = '/' + data.thumbnail_path;
+        }
+        $(options.dom_element_query).attr('src', thumbnail_path);
+    });
+
+
+};

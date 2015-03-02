@@ -163,22 +163,15 @@
                                             <img id="entity_avatar"
                                                  alt="Avatar"
                                                  style="height: 100%; width: 100%; display: inline;
-                                                        position: relative; left: 100%; margin-left: -200%"
-
-                                                 src="{%- set thumbnail_path = request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") -%}
-                                                     {%- if entity.thumbnail -%}
-                                                         {% set thumbnail_path = "/" + entity.thumbnail.full_path %}
-                                                     {%- else -%}
-                                                        {% set found_parent_thumbnail=False %}
-                                                        {% for parent in entity.parents|reverse %}
-                                                            {% if not found_parent_thumbnail and parent.thumbnail %}
-                                                                {% set thumbnail_path="/" + parent.thumbnail.full_path %}
-                                                                {% set found_parent_thumbnail = True%}
-                                                            {% endif %}
-                                                        {% endfor %}
-                                                     {%- endif -%}
-                                                     {{ thumbnail_path }}"/>
+                                                        position: relative; left: 100%; margin-left: -200%"/>
                                         </div>
+                                        <script>
+                                            set_entity_thumbnail({
+                                                url: '{{ request.route_url('get_entity_thumbnail', id=entity.id) }}',
+                                                default_thumbnail: '{{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}',
+                                                dom_element_query: '#entity_avatar'
+                                            });
+                                        </script>
                                     {% endif %}
                                 </div>
     
