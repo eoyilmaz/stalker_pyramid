@@ -101,8 +101,17 @@
 
 <script type="text/javascript">
 
-require([
-    'dojo/store/Cache',
+{% set jquery_defined = True %}
+
+require({
+    packages: [
+        { 
+            name: 'jquery',
+             location: '{{ request.static_url("stalker_pyramid:static/jquery") }}', 
+             main: 'jquery-2.1.1.min'
+         }
+     ]},
+    ['dojo/store/Cache',
     'dojo/store/Memory',
     'dojo/store/JsonRest',
 
@@ -137,11 +146,11 @@ require([
     var ddgrid_dgrid_id = '{{ entity.entity_type }}_{{ entity.id }}_ddgrid';
 
     // allow the ddgrid to resize with the window
-    $(window).on('resize', function(){
-        var ddgrid_height = $(window).height() - 230;
-        $('#' + ddgrid_dom_id).css({height: ddgrid_height});
+    jQuery(window).on('resize', function(){
+        var ddgrid_height = jQuery(window).height() - 230;
+        jQuery('#' + ddgrid_dom_id).css({height: ddgrid_height});
     });
-    $(window).trigger('resize');
+    jQuery(window).trigger('resize');
 
     var ddgrid = new DiscreetDataGrid({
         id: ddgrid_dgrid_id,
@@ -181,15 +190,15 @@ require([
     var resource_column = ddgrid.columnSets[1][0][0];
 
     // Update Button
-    $("#resource_update_zoom_level_button").on('click', function(e){
+    jQuery("#resource_update_zoom_level_button").on('click', function(e){
         // update date values
-        var start_and_end_dates_as_string = $('#start_end_date_range_picker').val();
+        var start_and_end_dates_as_string = jQuery('#start_end_date_range_picker').val();
         var dates = start_and_end_dates_as_string.split(' - ');
         var start_date = moment(dates[0], 'MM-DD-YYYY').startOf('day');
         var end_date = moment(dates[1], 'MM-DD-YYYY').endOf('day');
 
         // get zoom level
-        var zoom_level = $('#zoom_level').val();
+        var zoom_level = jQuery('#zoom_level').val();
 
         // get the total amount of element going to be rendered
         var element_count = resource_column.guess_element_count(+start_date, +end_date, zoom_level);
@@ -222,7 +231,7 @@ require([
 
 
     // Reload Button
-    $("#resource_reload_button").on('click', function(e){
+    jQuery("#resource_reload_button").on('click', function(e){
         e.preventDefault();
         e.stopPropagation();
         resource_column.reload();
@@ -230,7 +239,7 @@ require([
     });
 
     // Refresh Button
-    $("#resource_redraw_button").on('click', function(e){
+    jQuery("#resource_redraw_button").on('click', function(e){
         e.preventDefault();
         e.stopPropagation();
         resource_column.reload();
@@ -238,17 +247,17 @@ require([
     });
 
     // scroll to button
-    $("#resource_scroll_to_button").on('click', function(e){
+    jQuery("#resource_scroll_to_button").on('click', function(e){
         e.preventDefault();
         e.stopPropagation();
-        var start = $(this).attr('start');
+        var start = jQuery(this).attr('start');
         resourse_column.scrollToDate(start);
     });
 
     // Schedule
     {% if has_permission('Update_Task') %}
-        $('#resourse_schedule_tasks_button').on('click', function(){
-            var dialog = $( "#schedule-dialog-message" ).dialog({
+        jQuery('#resourse_schedule_tasks_button').on('click', function(){
+            var dialog = jQuery( "#schedule-dialog-message" ).dialog({
                 modal: true,
                 title: "Scheduling Tasks...",
                 title_html: true,
@@ -256,16 +265,16 @@ require([
                 width: 350
             });
 
-            $.post(
+            jQuery.post(
                 '{{ request.route_url("auto_schedule_tasks") }}'
             ).done(function(data){
                 var message = '<div>' + data + '</div>';
                 bootbox.alert(message);
-                $('.bootbox').prepend('<div class="modal-header alert-success"><strong>Success</strong></div>');
+                jQuery('.bootbox').prepend('<div class="modal-header alert-success"><strong>Success</strong></div>');
             }).fail(function(jqXHR){
                 var message = '<div>' + jqXHR.responseText + '</div>';
                 bootbox.alert(message);
-                $('.bootbox').prepend('<div class="modal-header alert-danger"><strong>Fail</strong></div>');
+                jQuery('.bootbox').prepend('<div class="modal-header alert-danger"><strong>Fail</strong></div>');
             }).always(function(){
                 dialog.dialog("close");
                 resource_column.refresh();
@@ -274,21 +283,21 @@ require([
         });
     {% endif %}
 
-    $('#resource_go_to_today_button').on('click', function(){
+    jQuery('#resource_go_to_today_button').on('click', function(){
        resource_column.centerOnToday(); 
     });
 
     // create the zoom window
-    $('#resource_zoom_selection').on('click', function(e){
+    jQuery('#resource_zoom_selection').on('click', function(e){
         
         // change button state
-        $('#resource_zoom_selection').find('button').button('loading');
+        jQuery('#resource_zoom_selection').find('button').button('loading');
 
-        var dragDetector = $($.parseHTML('<div class="dragDetector"></div>'));
-        var zoomBox = $($.parseHTML('<div class="zoomBox"></div>'));
-        $('#' + ddgrid_dom_id).append(zoomBox).append(dragDetector);
+        var dragDetector = jQuery(jQuery.parseHTML('<div class="dragDetector"></div>'));
+        var zoomBox = jQuery(jQuery.parseHTML('<div class="zoomBox"></div>'));
+        jQuery('#' + ddgrid_dom_id).append(zoomBox).append(dragDetector);
 
-        $('.dragDetector').mousedown(function(e){
+        jQuery('.dragDetector').mousedown(function(e){
             e.stopPropagation();
             e.preventDefault();
             this.start_pos = e.offsetX;
@@ -309,13 +318,13 @@ require([
         }).mouseup(function(e){
             this.start_resizing = false;
             // get the left and width of the zoomBox
-            var start_x = $('.dgrid-column-set-cell.dgrid-column-set-1').offset().left;
-            var scroll_left = $('.dgrid-column-set-cell.dgrid-column-set-1>div').scrollLeft();
+            var start_x = jQuery('.dgrid-column-set-cell.dgrid-column-set-1').offset().left;
+            var scroll_left = jQuery('.dgrid-column-set-cell.dgrid-column-set-1>div').scrollLeft();
             var left = zoomBox.offset().left - start_x + scroll_left;
             var width = zoomBox.width();
 
             // unbind events
-            $('.dragDetector').unbind();
+            jQuery('.dragDetector').unbind();
 
             // delete the elements
             zoomBox.remove();
@@ -328,10 +337,10 @@ require([
             // update interface elements
             var formatted_start_date = moment(zoomed_dates.start).format('MM/DD/YYYY');
             var formatted_end_date = moment(zoomed_dates.end).format('MM/DD/YYYY');
-            var start_end_date_range_picker = $('#start_end_date_range_picker');
+            var start_end_date_range_picker = jQuery('#start_end_date_range_picker');
             start_end_date_range_picker.val(formatted_start_date + ' - ' + formatted_end_date);
             start_end_date_range_picker.data().daterangepicker.updateFromControl();
-            $('#zoom_level').val(zoom_level);
+            jQuery('#zoom_level').val(zoom_level);
 
             // zoom the gantt chart
             resource_column.start = +zoomed_dates.start;
@@ -344,7 +353,7 @@ require([
             resource_column.scrollToDate( (zoomed_dates.end + zoomed_dates.start) * 0.5 );
 
             // restore button
-            $('#resource_zoom_selection').find('button').button('reset');
+            jQuery('#resource_zoom_selection').find('button').button('reset');
         });
     });
 
@@ -356,13 +365,13 @@ require([
     {# ***************************************************************** #}
     {# Start & End Date Picker #}
 
-    $(function () {
+    jQuery(function () {
         // initialize date picker
-        var start_end_date_range_picker = $('#start_end_date_range_picker').daterangepicker();
+        var start_end_date_range_picker = jQuery('#start_end_date_range_picker').daterangepicker();
 
         // also update the icon
         start_end_date_range_picker.next().on('click', function () {
-            $(this).prev().focus();
+            jQuery(this).prev().focus();
         });
 
         // fix z-index of the container
@@ -387,12 +396,12 @@ require([
 </script>
 
 <script>
-    $(function(){
-        $('body').on('click', function(event){
+    jQuery(function(){
+        jQuery('body').on('click', function(event){
             // register a click function to hide any popover that is still shown
-            var target = $(event.target);
+            var target = jQuery(event.target);
             if (!target.hasClass('data_value')){
-                $('[data-rel=popover]').popover('hide');
+                jQuery('[data-rel=popover]').popover('hide');
             }
         });
     });

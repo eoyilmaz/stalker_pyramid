@@ -73,14 +73,14 @@ define([
         var log_bar, data_bar, data_value, data_labels;
         var log_bar_container;
 
-        var parent_div = $($.parseHTML('<div class="logContainer"></div>'));
+        var parent_div = jQuery(jQuery.parseHTML('<div class="logContainer"></div>'));
         parent_div.css({
             width: Math.floor((end_date - start_date) / scale),
             left: Math.floor((start_date - original_start) / scale), // offset as neccessary
             height: height,
             position: 'absolute'
         });
-        $(parent).append(parent_div);
+        jQuery(parent).append(parent_div);
 
         var added_first_data = false;
         var data_scale = data.data_scale();
@@ -94,23 +94,23 @@ define([
 
             // draw a div at that range with the height of data_in_between
             added_first_data = true;
-            log_bar_container = $($.parseHTML('<div class="log_bar layout"></div>'));
+            log_bar_container = jQuery(jQuery.parseHTML('<div class="log_bar layout"></div>'));
             log_bar_container.css({
                 left: Math.floor((period_start - start_date) / scale),
                 width: Math.floor((period_end - period_start) / scale)
             });
 
-            log_bar = $($.parseHTML('<div class="log_bar log"></div>'));
+            log_bar = jQuery(jQuery.parseHTML('<div class="log_bar log"></div>'));
             log_bar.css({
                 height: Math.floor(data_in_between * denominator)
             });
 
             var total_hours = (data_in_between / 3600000).toFixed(0);
-            data_bar = $($.parseHTML(
+            data_bar = jQuery(jQuery.parseHTML(
                 '<div class="data_bar" ></div>'
             ));
 
-            data_value = $($.parseHTML(
+            data_value = jQuery(jQuery.parseHTML(
                 '<div class="data_value"></div>'
             ));
             data_value.attr('data-content', data_labels).attr('data-rel', 'popover');
@@ -506,11 +506,11 @@ define([
         var render_today = function (parent, start, scale) {
             var today = moment(new Date());
             var start_date = moment(start).startOf('day');
-            var today_element = $($.parseHTML('<div></div>'));
+            var today_element = jQuery(jQuery.parseHTML('<div></div>'));
             today_element.addClass('today').css({
                 left: Math.floor((today - start_date) / scale)
             });
-            $(parent).append(today_element);
+            jQuery(parent).append(today_element);
         };
 
         /**
@@ -600,17 +600,17 @@ define([
 
             
             // draw popover
-            $(td).find('[data-rel=popover]').popover({
+            jQuery(td).find('[data-rel=popover]').popover({
                 html:true,
                 container: 'body'
             }).on('show.bs.popover', function () {
                 // remove all the other popovers
                 var self = this;
-                $('[data-rel=popover]').each(function(){
+                jQuery('[data-rel=popover]').each(function(){
                     if (this !== self) {
-                        $(this).popover('hide');
+                        jQuery(this).popover('hide');
                     } else {
-                        $(this).popover({
+                        jQuery(this).popover({
                             trigger: 'hover'
                         })
                     }
@@ -659,7 +659,7 @@ define([
             var start_date = moment(column.start).startOf('day');
             date_x = (date_as_millis - start_date) / zoom_levels[column.scale].scale;
 
-            scroller = $('.dgrid-column-set-scroller-1');
+            scroller = jQuery('.dgrid-column-set-scroller-1');
             scroller_width = scroller.width();
             scroller.scrollLeft(date_x - scroller_width * 0.5);
         };
@@ -684,7 +684,7 @@ define([
             var table_width = zoom_levels[column.scale].table_width(column.start, column.end);
             column.grid.addCssRule(".dgrid-column-chart", "width: " + table_width + "px");
 
-            $(th).css({
+            jQuery(th).css({
                 width: table_width
             });
 
@@ -700,7 +700,7 @@ define([
                 });
             }
             // extend the height of the table header
-            $(th).css({
+            jQuery(th).css({
                 height: header_count * 27 // 27 px each
             });
 
