@@ -492,7 +492,10 @@ def get_entity_references(request):
             search_string_buffer.append(tmp_search_query)
         search_string_buffer.append(')')
         search_query = '\n'.join(search_string_buffer)
+
+    logger.debug('--------------------------')
     logger.debug('search_query: %s' % search_query)
+    logger.debug('--------------------------')
 
     path_id = '%|{id}|%' if entity.entity_type != 'Project' else '%{id}|%'
     path_id = path_id.format(id=entity_id)
@@ -573,6 +576,8 @@ limit {limit}
 
     # if offset and limit:
     #     sql_query += "offset %s limit %s" % (offset, limit)
+
+    logger.debug('sql_query: %s' % sql_query)
 
     from sqlalchemy import text  # to be able to use "%" sign use this function
     result = DBSession.connection().execute(text(sql_query))

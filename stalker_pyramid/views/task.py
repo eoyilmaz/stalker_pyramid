@@ -4421,9 +4421,9 @@ def request_extra_time(request):
         return Response('There is no task with id: %s' % task_id, 500)
 
     if task.is_container:
-            transaction.abort()
-            return Response('Can not request extra time for a container '
-                            'task', 500)
+        transaction.abort()
+        return Response('Can not request extra time for a container '
+                        'task', 500)
 
     schedule_timing = request.params.get('schedule_timing')
     schedule_unit = request.params.get('schedule_unit')

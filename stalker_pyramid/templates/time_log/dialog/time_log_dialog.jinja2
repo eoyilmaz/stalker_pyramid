@@ -131,59 +131,76 @@
           class='form-horizontal hide'
           role='form'
           method='post' >
-            <div id="" class="alert alert-danger bigger-110">
-                <span class="pull_left ">You have to select one of the following alternatives !</span>
-            </div>
-            <div class="control-group">
-                    <label class="span3 control-label" for="task_review_mode">Request Type</label>
+        <div id="" class="alert alert-danger bigger-110">
+            <span class="pull_left ">You have to select one of the following alternatives !</span>
+        </div>
+        <div class="control-group">
+                <label class="span3 control-label" for="task_review_mode">Request Type</label>
 
-                    <div class="span9">
-                        <select id='task_review_mode'
-                                class='input-block-level'
-                                >
-                                <option value="request_review">If you have finished working on this task, <strong>request review</strong></option>
-                                <option value="request_extra_time">If you keep on working this task, <strong>request extra time</strong></option>
-                        </select>
-                    </div>
-            </div>
-            {# Schedule Timing #}
-            <div class='control-group hide' id="revision_controls">
-                <label class='span3 control-label'
-                       for='task_schedule_timing'>Schedule Timing</label>
+                <div class="span9">
+                    <select id='task_review_mode'
+                            class='input-block-level'
+                            >
+                            <option value="request_review">If you have finished working on this task, <strong>request review</strong></option>
+                            <option value="request_extra_time">If you keep on working this task, <strong>request extra time</strong></option>
+                    </select>
+                </div>
+        </div>
+        {# Schedule Timing #}
+        <div class='control-group hide' id="revision_controls">
+            <label class='span3 control-label'
+                   for='task_schedule_timing'>Schedule Timing</label>
 
-                <div class='span9'>
-                    <div class='span2'>
-                        <input id='task_schedule_timing'
-                               class='input-block-level'
-                               name='schedule_timing'
-                               type='text'
-                               value=1
-                               min=1
-                               required>
-                    </div>
-                    <div class='span3'>
-                        <select id='task_schedule_unit'
-                                class='input-block-level'
-                                name='schedule_unit'>
-                            <option value='min'>Minutes</option>
-                            <option value='h'>Hours</option>
-                            <option value='d'>Days</option>
-                            <option value='w'>Weeks</option>
-                            <option value='m'>Months</option>
-                            <option value='y'>Years</option>
-                        </select>
-                    </div>
-                    <div class='span3'>
-                        <select id='task_schedule_model'
-                                class='input-block-level'
-                                name='schedule_model'>
-                            <option value='effort'>Effort</option>
-                            <option value='duration'>Duration</option>
-                        <option value='length'>Length</option>
-                        </select>
-                    </div>
+            <div class='span9'>
+                <div class='span2'>
+                    <input id='task_schedule_timing'
+                           class='input-block-level'
+                           name='schedule_timing'
+                           type='text'
+                           value=1
+                           min=1
+                           required>
+                </div>
+                <div class='span3'>
+                    <select id='task_schedule_unit'
+                            class='input-block-level'
+                            name='schedule_unit'>
+                        <option value='min'>Minutes</option>
+                        <option value='h'>Hours</option>
+                        <option value='d'>Days</option>
+                        <option value='w'>Weeks</option>
+                        <option value='m'>Months</option>
+                        <option value='y'>Years</option>
+                    </select>
+                </div>
+                <div class='span3'>
+                    <select id='task_schedule_model'
+                            class='input-block-level'
+                            name='schedule_model'>
+                        <option value='effort'>Effort</option>
+                        <option value='duration'>Duration</option>
+                    <option value='length'>Length</option>
+                    </select>
                 </div>
             </div>
+        </div>
+
+        <div class='control-group hide' id="revision_controls_2">
+            <label class='span3 control-label'
+                   for='review_note'>Description</label>
+
+            <div class='span9'>
+                <textarea id="review_note"
+                      name='description'
+                      class="autosize-transition span12"
+                      style="overflow: hidden;
+                                 word-wrap: break-word;
+                                 resize: horizontal;
+                                 height: 150px;"
+                    ></textarea>
+            </div>
+        </div>
+
     </form>
 
 </div>
@@ -337,19 +354,17 @@ function init_dialog() {
 
             }
             else{
-
                 information.append(
-                        '<span class="pull_left"><div id="message" class="alert alert-danger bigger-110">' +
-                        '<strong>Bid: </strong>' + bid +sch_unit +
-                        '<br/><strong>Scheduled Time: </strong>' + schedule_timing + sch_unit +' ( extendeded <strong>'+ total_extended_time +sch_unit +'</strong> )' +
-                        '<br/><strong>Total Time Logged: </strong>' + total_logged + sch_unit +' ( '+total_logged_hours_msg+' )'+
-                        '</div></span>'
+                    '<span class="pull_left"><div id="message" class="alert alert-danger bigger-110">' +
+                    '<strong>Bid: </strong>' + bid +sch_unit +
+                    '<br/><strong>Scheduled Time: </strong>' + schedule_timing + sch_unit +' ( extendeded <strong>'+ total_extended_time +sch_unit +'</strong> )' +
+                    '<br/><strong>Total Time Logged: </strong>' + total_logged + sch_unit +' ( '+total_logged_hours_msg+' )'+
+                    '</div></span>'
                 );
             }
 
             var alert_information = $('#alert_information');
             alert_information.find('span').remove();
-
 
             if (remaining_minutes_after_this_time_log > 0) {
                 submit_button.attr('disabled', false);
@@ -360,8 +375,7 @@ function init_dialog() {
                 );
                 $('#percent_bar_container').show();
                 completed_percent = (100 - ((remaining_seconds_after_this_time_log / parseFloat(data[0].schedule_seconds)) * 100)).toFixed(1);
-            }
-            else if(remaining_minutes_after_this_time_log==0){
+            } else if(remaining_minutes_after_this_time_log==0) {
                 submit_button.attr('disabled', false);
                 alert_information.append(
                     "<span class='pull_left'>If you enter this time log, all schedule hours will be spent </span>"
@@ -369,19 +383,18 @@ function init_dialog() {
                 $('#percent_bar_container').show();
                 $('#finalize_task_form').show();
 
-                submit_finalize_form_url = '/tasks/'+task_id+'/'+ $('#task_review_mode').val();
+                var task_review_mode = $('#task_review_mode');
+                submit_finalize_form_url = '/tasks/'+task_id+'/'+ task_review_mode.val();
 
-                $('#task_review_mode').on('change', function () {
+                task_review_mode.on('change', function () {
                     $('#revision_controls').toggle();
+                    $('#revision_controls_2').toggle();
                     submit_finalize_form_url = '/tasks/'+task_id+'/'+ $(this).val();
-
-                    console.log (submit_finalize_form_url)
+                    console.debug(submit_finalize_form_url);
                 });
 
-
                 completed_percent = (100 - ((remaining_seconds_after_this_time_log / parseFloat(data[0].schedule_seconds)) * 100)).toFixed(1);
-            }
-            else {
+            } else {
 
                 var exceeding_message ='<span><div id="message" class="alert alert-error bigger-110">' +
                     '<span class="pull_left ">You need <strong>' + remaining_minutes_after_this_time_log_string +
@@ -652,25 +665,24 @@ function init_dialog() {
 
 
     var post_finalize_action = function () {
-
         var finalize_task_form = $('#finalize_task_form');
         submit_button.button('loading');
 
-        console.log(finalize_task_form.serialize())
+        console.log(finalize_task_form.serialize());
 
         $.post(
-                    submit_finalize_form_url,
-                    finalize_task_form.serialize()+ '&' +
-                    $.param({
-                        'request_review_mode': 'Final'
-                    })
-                ).done(function (response_text) {
-                    refresh_page();
-                }).fail(function (jqXHR) {
-                    bootbox.alert('<div id="message" class="alert alert-danger bigger-110">'+jqXHR.responseText+'</div>');
-                    submit_button.button('reset');
-                });
-    }
+            submit_finalize_form_url,
+            finalize_task_form.serialize() + '&' +
+            $.param({
+                'request_review_mode': 'Final'
+            })
+        ).done(function (response_text) {
+            refresh_page();
+        }).fail(function (jqXHR) {
+            bootbox.alert('<div id="message" class="alert alert-danger bigger-110">'+jqXHR.responseText+'</div>');
+            submit_button.button('reset');
+        });
+    };
 
     var refresh_page = function(){
 
@@ -680,9 +692,7 @@ function init_dialog() {
         submit_button.button('reset');
         $('#dialog_template').modal('hide');
 
-    }
-
-
+    };
 
     {# ***************************************************************** #}
     {# Submit Button #}
