@@ -905,10 +905,10 @@ def submit_search(request):
         # elif entity_count == 1:
         #     sql_query_buffer[0] = 'select "SimpleEntities".id'
         #     sql_query = '\n'.join(sql_query_buffer)
-        # 
+        #
         #     logger.debug('sql_query: %s' % sql_query)
         #     result = DBSession.connection().execute(text(sql_query))
-        # 
+        #
         #     entity = Entity.query.get(result.fetchone()[0])
         #     result_location = \
         #         '/%s/%s/view' % (entity.plural_class_name.lower(), entity.id)
@@ -977,7 +977,7 @@ def delete_entity_dialog(request):
     logger.debug('delete_entity_dialog is starts')
 
     entity_id = request.matchdict.get('id')
-    entity = Entity.query.get(entity_id)
+    #entity = Entity.query.get(entity_id)
 
     action = '/entities/%s/delete' % entity_id
 
@@ -1001,7 +1001,6 @@ def delete_entity_dialog(request):
 def delete_entity(request):
     """deletes the task with the given id
     """
-
     logger.debug('delete_entity is starts')
 
     entity_id = request.matchdict.get('id')
@@ -1057,15 +1056,14 @@ def get_entity_total_schedule_seconds(request):
     join "Task_Resources" on "Task_Resources".task_id = "Tasks".id
     join "Statuses" on "Statuses".id = "Tasks".status_id
     left outer join (
-                    select
-                        "Tasks".id as task_id,
-                         sum(extract(epoch from "TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC'))
-                            as total_timelogs
-                    from "TimeLogs"
-                    join "Tasks" on "Tasks".id = "TimeLogs".task_id
+        select
+            "Tasks".id as task_id,
+            sum(extract(epoch from "TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC')) as total_timelogs
+        from "TimeLogs"
+        join "Tasks" on "Tasks".id = "TimeLogs".task_id
 
-                    group by "Tasks".id
-                ) as timelogs on timelogs.task_id = "Tasks".id
+        group by "Tasks".id
+    ) as timelogs on timelogs.task_id = "Tasks".id
 
    where "Statuses".code !='CMPL'
     %(where_conditions)s
@@ -1117,7 +1115,6 @@ def get_entity_total_schedule_seconds(request):
 def get_entity_task_min_start(request):
     """gives entity's tasks min start date
     """
-     
     logger.debug('get_entity_task_min_start starts')
     entity_id = request.matchdict.get('id')
     entity = Entity.query.filter_by(id=entity_id).first()
@@ -1154,6 +1151,7 @@ def get_entity_task_min_start(request):
 
     return result[0]
 
+
 @view_config(
     route_name='get_entity_task_max_end',
     renderer='json'
@@ -1161,7 +1159,6 @@ def get_entity_task_min_start(request):
 def get_entity_task_max_end(request):
     """gives entity's tasks max end date
     """
-     
     logger.debug('get_entity_task_max_end starts')
     entity_id = request.matchdict.get('id')
     entity = Entity.query.filter_by(id=entity_id).first()
@@ -1198,4 +1195,28 @@ def get_entity_task_max_end(request):
 
     return result[0]
 
+@view_config(
+    route_name='get_entity_thumbnail',
+    renderer='json'
+)
+def get_entity_thumbnail(request):
+    """returns entity thumbnail, this is good for one single entity
+    """
+    entity_id = request.matchdict['id']
+    entity = Entity.query.filter(Entity.id == entity_id).first()
 
+    thumbnail_path = None
+
+    if entity:
+        if entity.thumbnail:
+            thumbnail_path = entity.thumbnail.full_path
+        else:
+            if isinstance(entity, Task):
+                for parent in reversed(entity.parents):
+                    if parent.thumbnail:
+                        thumbnail_path = parent.thumbnail.full_path
+                        break
+
+    return {
+        'thumbnail_path': thumbnail_path
+    }

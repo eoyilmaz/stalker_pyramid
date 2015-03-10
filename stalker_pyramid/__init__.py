@@ -185,6 +185,8 @@ def main(global_config, **settings):
     config.add_route('get_entity_task_min_start',      'entities/{id}/task_min_start/') #json
     config.add_route('get_entity_task_max_end',        'entities/{id}/task_max_end/') #json
 
+    config.add_route('get_entity_thumbnail',           'entities/{id}/thumbnail')
+
     config.add_route('list_entity_users',              'entities/{id}/users/list')
     config.add_route('list_entity_departments',        'entities/{id}/departments/list')  # html
     config.add_route('list_entity_groups',             'entities/{id}/groups/list')  # html

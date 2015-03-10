@@ -1,27 +1,26 @@
 
 <div class="profile-picture"
      style="text-align: center; overflow: hidden; width: 150px;">
+
     <img id="entity_avatar"
          class="editable"
          alt="Avatar"
          style="width: 100%; height: auto; display: inline;
                 position: relative; padding: 0;
-{#                left: 100%; margin-left: -200%;#}
-                top: 0"
-         src="{%- if entity.thumbnail -%}
-                /{{ entity.thumbnail.full_path }}
-            {%- else -%}
-                {{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}
-            {%- endif -%}"/>
+                top: 0"/>
 </div>
 
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.gritter.min.js") }}'></script>
 
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.ui.touch-punch.min.js") }}'></script>
 <script type="text/javascript">
+    $(function () {
 
-
-    $(document).ready(function () {
+        set_entity_thumbnail({
+            url: '{{ request.route_url('get_entity_thumbnail', id=entity.id) }}',
+            default_thumbnail: '{{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}',
+            dom_element_query: '#entity_avatar'
+        });
 
         $.fn.editable.defaults.mode = 'inline';
 

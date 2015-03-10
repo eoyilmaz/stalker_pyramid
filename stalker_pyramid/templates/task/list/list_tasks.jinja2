@@ -988,49 +988,42 @@ require([
         // get the selection list
         var selected_ids = gantt_chart.selected_ids();
         if (selected_ids.length == 0) {
-            bootbox.alert('Please select at least one item from the ' +
-                    'GanttChart!');
+            bootbox.alert('Please select at least one item from the GanttChart!');
             return;
         }
 
-        var _query = '?project_id={{ project.id }}';
-        for (var i=0; i<selected_ids.length; i++){
-           _query +='&task_ids='+selected_ids[i];
-        }
-        var remote = '/tasks/delete/dialog' + _query;
-        console.log ('remote: ' + remote);
-        var event_dialog = $('#dialog_template');
-        event_dialog.modal({
-            'remote': remote
-        });
+        // warn the user about what is going to happen
+        var message_text = 'All the selected tasks and their child tasks and ' +
+            'all the TimeLogs entered and all the Versions ' +
+            'created for those tasks are going to be deleted.<br><br>' +
+            'Are you sure?';
 
-{#        // warn the user about what is going to happen#}
-{#        var message_text = 'All the selected tasks and their child tasks and ' +#}
-{#            'all the TimeLogs entered and all the Versions ' +#}
-{#            'created for those tasks are going to be deleted.<br><br>' +#}
-{#            'Are you sure?';#}
-        
-{#        bootbox.confirm(message_text, function (result) {#}
-{#            if (result) {#}
-{#                var id;#}
-{#                // TODO: users will probably select parent and child items#}
-{#                // together and server will not be able to find the child tasks#}
-{#                // after the parent has deleted, so consider that in server#}
-{#                // side.#}
-{#                for (var i = 0; i < selected_ids.length; i++) {#}
-{#                    id = selected_ids[i];#}
-{#                    $.post(#}
-{#                        '/tasks/' + id + '/delete'#}
-{#                    ).done(function (response_text) {#}
-{#                        bootbox.alert(response_text);#}
-{#                        // reload the gantt chart#}
-{#                        gantt_column.reload();#}
-{#                    }).fail(function (jqXHR) {#}
-{#                        bootbox.alert(jqXHR.responseText);#}
-{#                    });#}
-{#                }#}
-{#            }#}
-{#        });#}
+        bootbox.confirm(message_text, function (result) {
+            if (result) {
+                var id;
+                // TODO: users will probably select parent and child items
+                // together and server will not be able to find the child tasks
+                // after the parent has deleted, so consider that in server
+                // side.
+                var _query = '';
+                for (var i=0; i < selected_ids.length; i++){
+                    if (_query !== '') {
+                        _query += '&'
+                    }
+                   _query += 'task_ids=' + selected_ids[i];
+                }
+
+                $.post(
+                    '/tasks/delete?' + _query
+                ).done(function (response_text) {
+                    bootbox.alert(response_text);
+                    // reload the gantt chart
+                    gantt_column.reload();
+                }).fail(function (jqXHR) {
+                    bootbox.alert(jqXHR.responseText);
+                });
+            }
+        });
     });
 
     // get the gantt column

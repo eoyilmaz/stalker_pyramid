@@ -163,22 +163,15 @@
                                             <img id="entity_avatar"
                                                  alt="Avatar"
                                                  style="height: 100%; width: 100%; display: inline;
-                                                        position: relative; left: 100%; margin-left: -200%"
-
-                            {#
-                                I know, I know, this is plain ugly, but I had to do it in that way
-                                we should use a common way to store the thumbnails in the fileserver
-                            #}
-                                                 src="{%- if entity.thumbnail -%}
-                                                         {% if entity.entity_type in ['Task', 'Asset', 'Shot', 'Sequence']%}
-                                                             {{ entity.project.repository.path }}/{{ entity.thumbnail.full_path }}
-                                                         {% else %}
-                                                             /{{ entity.thumbnail.full_path }}
-                                                         {%- endif -%}
-                                                     {%- else -%}
-                                                         {{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}
-                                                 {%- endif -%}"/>
+                                                        position: relative; left: 100%; margin-left: -200%"/>
                                         </div>
+                                        <script>
+                                            set_entity_thumbnail({
+                                                url: '{{ request.route_url('get_entity_thumbnail', id=entity.id) }}',
+                                                default_thumbnail: '{{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}',
+                                                dom_element_query: '#entity_avatar'
+                                            });
+                                        </script>
                                     {% endif %}
                                 </div>
     

@@ -186,8 +186,8 @@ define([
          */
         show_column: function (column_id) {
             var full_id = '.dgrid-column-' + column_id;
-            $(full_id).filter(function () {
-                return $(this).css('display') === 'none';
+            jQuery(full_id).filter(function () {
+                return jQuery(this).css('display') === 'none';
             }).css({'display': ''});
             // remove from hidden_columns
             var index = this.hidden_columns.indexOf(column_id);
@@ -206,8 +206,8 @@ define([
             setTimeout( // wait until dom actions finished, especially needed for chart
                 function () {
                     var full_id = '.dgrid-column-' + column_id;
-                    var data = $(full_id).filter(function () {
-                        return $(this).css('display') !== 'none';
+                    var data = jQuery(full_id).filter(function () {
+                        return jQuery(this).css('display') !== 'none';
                     });
                     data.css({'display': 'none'});
 
@@ -257,9 +257,9 @@ define([
 //                                '</div>';
 //
 //                            var id_template = doT.template(id_template_str);
-//                            var node_js = $(node);
+//                            var node_js = jQuery(node);
 //                            node_js.addClass('status_' + object.status).append(
-//                                $.parseHTML(id_template(object))
+//                                jQuery.parseHTML(id_template(object))
 //                            );
 //                            // check if hidden
 //                            var column_id = 'action';
@@ -278,15 +278,15 @@ define([
                             return object;
                         },
                         renderCell: function (object, value, node, options) {
-                            $(node).addClass('status_' + object.status).append(
-                                $.parseHTML('<a href="' + object.link + '">' + object.id + '</a>')
+                            jQuery(node).addClass('status_' + object.status).append(
+                                jQuery.parseHTML('<a href="' + object.link + '">' + object.id + '</a>')
                             );
                             // check if hidden
                             var column_id = 'id';
                             var grid = this.grid;
                             if (grid.is_hidden_column(column_id)) {
                                 // also hide this one by default
-                                $(node).css({'display': 'none'});
+                                jQuery(node).css({'display': 'none'});
                             }
                         },
                         resizable: true
@@ -322,15 +322,15 @@ define([
                                 template_var.end = object.end;
                                 template_var.entity_type = object.entity_type;
 
-                                $(node).addClass('status_' + object.status).append(
-                                    $.parseHTML(template(template_var))
+                                jQuery(node).addClass('status_' + object.status).append(
+                                    jQuery.parseHTML(template(template_var))
                                 );
                                 // check if hidden
                                 var column_id = 'name';
                                 var grid = this.grid;
                                 if (grid.is_hidden_column(column_id)) {
                                     // also hide this one by default
-                                    $(node).css({'display': 'none'});
+                                    jQuery(node).css({'display': 'none'});
                                 }
                             },
                             renderExpando: function (level, hasChildren, expanded, object) {
@@ -358,15 +358,15 @@ define([
                             return object;
                         },
                         renderCell: function (object, value, node, options) {
-                            $(node).addClass('status_' + object.status).append(
-                                $.parseHTML('<div class="status_' + object.status + '">' + object.priority + '</div>')
+                            jQuery(node).addClass('status_' + object.status).append(
+                                jQuery.parseHTML('<div class="status_' + object.status + '">' + object.priority + '</div>')
                             );
                             // check if hidden
                             var column_id = 'priority';
                             var grid = this.grid;
                             if (grid.is_hidden_column(column_id)) {
                                 // also hide this one by default
-                                $(node).css({'display': 'none'});
+                                jQuery(node).css({'display': 'none'});
                             }
                         }
                     },
@@ -383,15 +383,15 @@ define([
                             // check if it has a floating part
                             p_complete_str = p_complete.toFixed(0);
 
-                            $(node).addClass('status_' + object.status).append(
-                                $.parseHTML('<div class="status_' + object.status + '">' + p_complete_str + '</div>')
+                            jQuery(node).addClass('status_' + object.status).append(
+                                jQuery.parseHTML('<div class="status_' + object.status + '">' + p_complete_str + '</div>')
                             );
                             // check if hidden
                             var column_id = 'complete';
                             var grid = this.grid;
                             if (grid.is_hidden_column(column_id)) {
                                 // also hide this one by default
-                                $(node).css({'display': 'none'});
+                                jQuery(node).css({'display': 'none'});
                             }
                         }
                     },
@@ -410,15 +410,15 @@ define([
                                     ret = ret + (ret === "" ? "" : ", ") + templates.resourceLink(resource);
                                 }
                             }
-                            $(node).addClass('status_' + object.status).append(
-                                $.parseHTML(ret)
+                            jQuery(node).addClass('status_' + object.status).append(
+                                jQuery.parseHTML(ret)
                             );
                             // check if hidden
                             var column_id = 'resource';
                             var grid = this.grid;
                             if (grid.is_hidden_column(column_id)) {
                                 // also hide this one by default
-                                $(node).css({'display': 'none'});
+                                jQuery(node).css({'display': 'none'});
                             }
                         }
                     },
@@ -440,15 +440,15 @@ define([
                                     ret = ret + (ret === "" ? "" : ", ") + templates.resourceLink(responsible);
                                 }
                             }
-                            $(node).addClass('status_' + object.status).append(
-                                $.parseHTML(ret)
+                            jQuery(node).addClass('status_' + object.status).append(
+                                jQuery.parseHTML(ret)
                             );
                             // check if hidden
                             var column_id = 'resource';
                             var grid = this.grid;
                             if (grid.is_hidden_column(column_id)) {
                                 // also hide this one by default
-                                $(node).css({'display': 'none'});
+                                jQuery(node).css({'display': 'none'});
                             }
                         }
                     },
@@ -490,13 +490,13 @@ define([
                                     }
                                 }
                             }
-                            $(node).addClass('status_' + object.status).text(timing);
+                            jQuery(node).addClass('status_' + object.status).text(timing);
                             // check if hidden
                             var column_id = 'timing';
                             var grid = this.grid;
                             if (grid.is_hidden_column(column_id)) {
                                 // also hide this one by default
-                                $(node).css({'display': 'none'});
+                                jQuery(node).css({'display': 'none'});
                             }
                         }
                     },
@@ -509,8 +509,8 @@ define([
                         },
                         renderCell: function (object, value, node, options) {
                             var start_date = moment(object.start);
-                            $(node).addClass('status_' + object.status);
-                            $(node).text(
+                            jQuery(node).addClass('status_' + object.status);
+                            jQuery(node).text(
                                 start_date.format("YYYY-MM-DD HH:mm")
                             );
                             // check if hidden
@@ -518,7 +518,7 @@ define([
                             var grid = this.grid;
                             if (grid.is_hidden_column(column_id)) {
                                 // also hide this one by default
-                                $(node).css({'display': 'none'});
+                                jQuery(node).css({'display': 'none'});
                             }
                         }
                     },
@@ -531,8 +531,8 @@ define([
                         },
                         renderCell: function (object, value, node, options) {
                             var end_date = moment(object.end);
-                            $(node).addClass('status_' + object.status);
-                            $(node).text(
+                            jQuery(node).addClass('status_' + object.status);
+                            jQuery(node).text(
                                 end_date.format("YYYY-MM-DD HH:mm")
                             );
                             // check if hidden
@@ -540,7 +540,7 @@ define([
                             var grid = this.grid;
                             if (grid.is_hidden_column(column_id)) {
                                 // also hide this one by default
-                                $(node).css({'display': 'none'});
+                                jQuery(node).css({'display': 'none'});
                             }
                         }
                     },
@@ -552,16 +552,16 @@ define([
                             return object;
                         },
                         renderCell: function (object, value, node, options) {
-                            $(node).addClass('status_' + object.status);
-                            $(node).append(
-                                $.parseHTML('<span class="status_' + object.status + '">' + object.status + '</span>')
+                            jQuery(node).addClass('status_' + object.status);
+                            jQuery(node).append(
+                                jQuery.parseHTML('<span class="status_' + object.status + '">' + object.status + '</span>')
                             );
                             // check if hidden
                             var column_id = 'status';
                             var grid = this.grid;
                             if (grid.is_hidden_column(column_id)) {
                                 // also hide this one by default
-                                $(node).css({'display': 'none'});
+                                jQuery(node).css({'display': 'none'});
                             }
                         }
                     },
@@ -572,7 +572,7 @@ define([
                             return object;
                         },
                         renderCell: function(object, value, node, options) {
-                            $(node).addClass('status_' + object.status);
+                            jQuery(node).addClass('status_' + object.status);
 
                             if (object.entity_type !== 'Project') {
                                 var link_template = doT.template('<a href="/tasks/{{= it.id}}/view">{{= it.name}}</a>');
@@ -582,14 +582,14 @@ define([
                                     link_string += link_template(object.dependencies[i]);
                                 }
     
-                                $(node).append($.parseHTML(link_string));
+                                jQuery(node).append(jQuery.parseHTML(link_string));
                             }
                             // check if hidden
                             var column_id = 'dependencies';
                             var grid = this.grid;
                             if (grid.is_hidden_column(column_id)) {
                                 // also hide this one by default
-                                $(node).css({'display': 'none'});
+                                jQuery(node).css({'display': 'none'});
                             }
                         }
                     }
