@@ -118,6 +118,10 @@ def add_related_assets(request):
             find_asset_task_by_type(asset, 'Lighting')
         )
 
+        asset_dependencies_lighting.append(
+            find_asset_task_by_type(asset, 'Look Development')
+        )
+
     if entity.type.name == 'Scene':
         scene = entity
         # Shots----------------------------------------------------
@@ -203,7 +207,8 @@ def remove_related_assets(request):
 
     character_dependencies = [find_asset_task_by_type(asset, 'Rig')]
     asset_dependencies_scene_assembly = [find_asset_task_by_type(asset, 'Layout')]
-    asset_dependencies_lighting = [find_asset_task_by_type(asset, 'Lighting')]
+    asset_dependencies_lighting = [find_asset_task_by_type(asset, 'Lighting'),
+                                   find_asset_task_by_type(asset, 'Look Development')]
 
     if not entity:
         transaction.abort()
