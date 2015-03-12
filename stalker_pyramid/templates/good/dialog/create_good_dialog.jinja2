@@ -1,24 +1,21 @@
 <script class="dialog_loaded"></script>
 
 <div class="row-fluid">
-
-    <form id='good_form'
-          class='form-horizontal'
-          role='form'
-          method="post"
-            >
-
-        <div class="row-fluid">
+    <div class='span10'>
+        <form id='good_form'
+              class='form-horizontal'
+              role='form'
+              method="post">
+            <div class="row-fluid">
             {# Name #}
             <div class="control-group">
                 <label class="span3 control-label"
                        for="good_name">Name</label>
                 <div class="span9">
-
                     <input id="good_name"
                            name='name'
                            type="text"
-                           class="form-control"
+                           class='input-block-level'
                            placeholder="Name"
                            required>
                 </div>
@@ -31,7 +28,7 @@
                     <input id="good_msrp"
                            name='msrp'
                            type="text"
-                           class="form-control"
+                           class='input-block-level'
                            placeholder="MSRP"
                            required>
                 </div>
@@ -42,9 +39,9 @@
                        for="good_cost">Cost</label>
                 <div class="span9">
                     <input id="good_cost"
+                           class='input-block-level'
                            name='cost'
                            type="text"
-                           class="form-control"
                            placeholder="Cost"
                            required>
                 </div>
@@ -54,21 +51,19 @@
                 <label class="span3 control-label"
                        for="good_unit">Unit</label>
                 <div class="span9">
-
                     <input id="good_unit"
+                           class="input-block-level"
                            name='unit'
                            type="text"
-                           class="input-block-level"
                            placeholder="Unit"
                            required>
                 </div>
             </div>
-
             {#Price List #}
             <div class='control-group'>
                 <label class='span3 control-label'
                        for='good_price_list'>Price List</label>
-                <div class="span5">
+                <div class="span9">
                     <input id='good_price_list'
                            class='input-block-level'
                            name='price_list_name'
@@ -77,7 +72,6 @@
                            >
                 </div>
             </div>
-
             {#Description #}
             <div class="control-group'">
                 <label for="good_description"
@@ -85,7 +79,8 @@
                 <div class="span9">
                     <textarea id="good_description"
                               name='description'
-                              class="autosize-transition"
+                              class='input-block-level'
+
                               style="overflow: hidden;
                                          word-wrap: break-word;
                                          resize: horizontal;
@@ -94,38 +89,31 @@
                             ></textarea>
                 </div>
             </div>
-
         </div>
-
-    </form>
+        </form>
+    </div>
 </div>
 
 
 <script type="text/javascript">
-
     function init_dialog() {
-
         console.debug('starting to initialize good dialog!!!');
-
         var dialog_label = $('#dialog_template_label');
         dialog_label.find('span').remove();
         dialog_label.append('<span>Create Good</span>');
 
         {# ***************************************************************** #}
         {# Unit #}
-
-
         var good_unit = $('#good_unit');
 
         good_unit.autocomplete({
             delay: 0,
-            source: ['HOUR','DAY','WEEK','FILM'],
+            source: ['HOUR','DAY','WEEK','FILM', 'ADET'],
             minLength: 0
         });
 
         {# ***************************************************************** #}
         {# Price List #}
-
         {% raw %}
             var good_priceList_option_template = doT.template(
                 '<option value={{=it.id}}>{{=it.name}}</option>'
@@ -185,6 +173,10 @@
 <script type="text/javascript">
     function destruct_dialog() {
         $('#good_name').unbind();
+        $('#good_msrp').unbind();
+        $('#good_cost').unbind();
+        $('#good_unit').unbind();
+        $('#good_price_list').unbind();
         $('#good_description').unbind();
         $('#dialog_template_submit_button').unbind();
 
