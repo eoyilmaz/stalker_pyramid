@@ -270,7 +270,7 @@ order by "Task_Scenes".id"""
             'name': r[1],
             'description': r[2],
             'num_of_shots': len(distinct_shot_ids),
-            'total_seconds': scene_total_frame/24
+            'total_seconds': float(scene_total_frame/24)
         }
 
 

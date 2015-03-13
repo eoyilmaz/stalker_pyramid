@@ -78,6 +78,7 @@
                     <tr id="scenes_table_column">
                         <th>Scene</th>
                         <th># Shots</th>
+                        <th>Total Seconds</th>
                         <th>Description</th>
                     </tr>
                     </thead>
@@ -115,6 +116,8 @@
             </td>
             <td style="width:20px;">{{=it.num_of_shots}}<br/><br/>
             </td>
+            <td style="width:20px;">{{=it.total_seconds}}<br/><br/>
+            </td>
             <td id="scene_summary_cell_{{=it.id}}">
                 {{ if (it.update_scene_action) { }}
                 <a class="blue pull-right"
@@ -124,7 +127,7 @@
                    href="{{=it.update_scene_action}}">
                     <i class="icon-edit bigger-130"></i>
                 </a>{{ } }}
-                <b>Total Seconds:</b> {{=it.total_seconds}}<br/>
+
                 {{=it.description}}<br/>
             </td>
         </tr>
@@ -240,67 +243,6 @@
                     table_column.append(column_template(types[k]));
                 }
 
-{#                var oTable1 = $('#scenes_table').dataTable({#}
-{#                                               'sAjaxSource':'/entities/{{ entity.id }}/scenes/',#}
-{#                                               "bServerSide": true,#}
-{#                                               "fnServerData": function ( sSource, aoData, fnCallback, oSettings ) {#}
-{#                                                   console.log('sSource: '+sSource);#}
-{#                                                   console.log('aoData: '+fnCallback);#}
-{#                                                   oSettings.jqXHR = $.ajax( {#}
-{#                                                        "dataType": 'json',#}
-{#                                                        "type": "POST",#}
-{#                                                        "url": sSource,#}
-{#                                                        "data": aoData,#}
-{#                                                        "success": function(data){#}
-{#                                                            for (var i = 0; i < data.length; i++) {#}
-{#                                                                  console.debug(data[i].name)#}
-{#                                                                    var scenes = data;#}
-{#                                                                    var scene_template = doT.template($('#tmpl_sceneRow').html());#}
-{##}
-{#                                                                    // wait until document is ready#}
-{#                                                                    $(function () {#}
-{#                                                                        var i;#}
-{#                                                                        var table_body = $('#scenes_table>tbody');#}
-{#                                                                        for (i = 0; i < data.length; i++) {#}
-{##}
-{#                                                                            data[i].link = '/tasks/' + data[i].id + '/view';#}
-{#                                                                            // append it to the table#}
-{#                                                                            table_body.append(scene_template(data[i]));#}
-{##}
-{#                                                                            var cell_template = doT.template($('#tmpl_taskCell').html());#}
-{#                                                                            var empty_cell_template = doT.template($('#tmpl_taskCell_empty').html());#}
-{#                                                                            var shot_task_cell_template = doT.template($('#tmpl_taskCell_shot_task').html());#}
-{##}
-{#                                                                            var scene_row = $('#scene_row_' + data[i].id);#}
-{##}
-{#                                                                            for (var j = 0; j < types.length; j++) {#}
-{#                                                                                var task = data[i][types[j].name];#}
-{##}
-{#                                                                                if (task) {#}
-{#                                                                                    task.status_color = 'status_'+task.status;#}
-{#                                                                                    if (task.id){#}
-{#                                                                                        scene_row.append(cell_template(task));#}
-{#                                                                                    }#}
-{#                                                                                    else {#}
-{#                                                                                        scene_row.append(shot_task_cell_template(task));#}
-{#                                                                                    }#}
-{#                                                                                }#}
-{#                                                                                else{#}
-{#                                                                                    scene_row.append(empty_cell_template(null));#}
-{#                                                                                }#}
-{#                                                                            }#}
-{##}
-{##}
-{#                                                            }#}
-{##}
-{#                                                   } );#}
-{#                                               }#}
-{#                                    });#}
-{##}
-{#                        $('#loading_spinner').hide();#}
-{#                        $('#scenes_table').show();#}
-
-
                 $.getJSON('/entities/{{ entity.id }}/scenes/').then(function (data) {
 
                     var scenes = data;
@@ -309,6 +251,7 @@
                     $(function () {
                         var i;
                         var table_body = $('#scenes_table>tbody');
+                        var total_seconds = 0;
                         for (i = 0; i < data.length; i++) {
 
                             data[i].link = '/tasks/' + data[i].id + '/view';
@@ -320,7 +263,7 @@
                             var shot_task_cell_template = doT.template($('#tmpl_taskCell_shot_task').html());
 
                             var scene_row = $('#scene_row_' + data[i].id);
-
+                            total_seconds += data[i].total_seconds;
                             for (var j = 0; j < types.length; j++) {
                                 var task = data[i][types[j].name];
 
@@ -341,6 +284,8 @@
                         }
 
                         var oTable1 = $('#scenes_table').dataTable();
+
+                        $('#items_header').append('<span>Total: '+total_seconds+' s = '+total_seconds/60+' m </span>');
 
                         $('#loading_spinner').hide();
                         $('#scenes_table').show();
