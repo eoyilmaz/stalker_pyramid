@@ -123,7 +123,8 @@
                    data-keyboard=false
                    href="{{=it.update_scene_action}}">
                     <i class="icon-edit bigger-130"></i>
-                </a>{{ } }}<br/>
+                </a>{{ } }}
+                <b>Total Seconds:</b> {{=it.total_seconds}}<br/>
                 {{=it.description}}<br/>
             </td>
         </tr>
@@ -157,7 +158,6 @@
                  style="min-height:100px; position: relative; height: 100%; width: 100%;"">
                 <span>
                     <strong><a class="white" href="/tasks/{{=it.id }}/view">{{=it.name}}</a></strong>
-
                         <a class="pull-right"
                            data-target="#dialog_template"
                            data-toggle="modal"
@@ -165,12 +165,9 @@
                            href="{{=it.update_task_resource_action}}">
                             <i class="icon-edit bigger-130"></i>
                         </a>
-
                     <div class="no-padding">
                         <span><a href='/users/{{=it.resource_id}}/view'>{{=it.resource_name}}</a></span>
                     </div>
-
-
                     <div class="no-padding">
                         {{=it.status}}
                     </div>
@@ -233,7 +230,7 @@
             var icon_name = get_icon('shot');
             $('#items_header').append('<i class=' + icon_name + '></i>');
 
-            var types = [{name:'Storyboard'},{name:'Schematic'},{name:'Edit'},{name:'Sound'}, {name:'Dubbing'}, {name:'Previs'}, {name:'Shot Previs'}, {name:'Animation'}, {name:'Camera'}, {name:'Scene Assembly'}, {name:'Lighting'}, {name:'Comp'}];
+            var types = [{name:'Storyboard'},{name:'Schematic'},{name:'Edit'},{name:'Dubbing'}, {name:'Previs'}, {name:'Shot Previs'}, {name:'Animation'}, {name:'Camera'}, {name:'Scene Assembly'}, {name:'Lighting'}, {name:'Comp'}];
             var column_template = doT.template($('#tmpl_sceneColumn').html());
 
             $(function () {

@@ -130,7 +130,7 @@ def get_scenes(request):
     "Task_Scenes".child_task_resource_id as child_task_resource_id,
     "Task_Scenes".child_task_resource_name as child_task_resource_name,
 
-    array_agg(distinct("Shots".id)) as shot_id,
+    array_agg(("Shots".id)) as shot_id,
     array_agg("Distinct_Shot_Task_Types".type_name) as type_name,
     array_agg("Tasks".id) as task_id,
     array_agg("Task_SimpleEntities".name) as task_name,
@@ -155,7 +155,8 @@ def get_scenes(request):
                 end)) * 100.0
         )) as percent_complete,
     array_agg("Resources_SimpleEntities".name) as resource_name,
-    array_agg("Resources_SimpleEntities".id) as resource_id
+    array_agg("Resources_SimpleEntities".id) as resource_id,
+    array_agg(("Shots".cut_out-"Shots".cut_in)) as shot_duration
 
 from "Tasks"
 join "Shots" on "Shots".id = "Tasks".parent_id
@@ -254,11 +255,22 @@ order by "Task_Scenes".id"""
     return_data = []
 
     for r in result.fetchall():
+
+        shot_ids = r[8]
+        shot_durations = r[16]
+        scene_total_frame = 0
+        distinct_shot_ids = []
+
+        for x in range(len(shot_ids)):
+            if shot_ids[x] not in distinct_shot_ids:
+                distinct_shot_ids.append(shot_ids[x])
+                scene_total_frame += shot_durations[x]
         r_data = {
             'id': r[0],
             'name': r[1],
             'description': r[2],
-            'num_of_shots': len(r[8])
+            'num_of_shots': len(distinct_shot_ids),
+            'total_seconds': scene_total_frame/24
         }
 
 
