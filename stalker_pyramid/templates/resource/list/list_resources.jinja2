@@ -169,11 +169,11 @@ require({
         scale: 'w',
         start: function () {
             var today = moment();
-            return today.subtract(6, 'month').startOf('isoweek');
+            return today.subtract(1, 'month').startOf('isoweek');
         },
         end: function () {
             var today = moment();
-            return today.add(6, 'month').endOf('isoweek');
+            return today.add(11, 'month').endOf('isoweek');
         }
     }, ddgrid_dom_id);
     ddgrid.startup();
@@ -377,8 +377,8 @@ require({
         // fix z-index of the container
         // start_end_date_range_picker.data().daterangepicker.container.css({'z-index': 1060});
 
-        var start_date = moment().subtract(6, 'month').startOf('day');
-        var end_date = moment().add(6, 'month').endOf('day');
+        var start_date = moment().subtract(1, 'month').startOf('day');
+        var end_date = moment().add(11, 'month').endOf('day');
         start_end_date_range_picker.val(
             start_date.format('MM/DD/YYYY') + ' - ' + end_date.format('MM/DD/YYYY')
         );

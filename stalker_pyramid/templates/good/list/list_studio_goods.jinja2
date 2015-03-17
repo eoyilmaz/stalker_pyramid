@@ -38,46 +38,45 @@
     {% include 'page_header.jinja2' %}
 
     <div class="row-fluid">
-        <div class="span10">
-            <div class="widget-box">
+        <div class="widget-box">
 
-                <div class="widget-header widget-header-small header-color-green }}">
-                        <h5 id="items_header" class="smaller"></h5>
-                        <div class="widget-toolbar">
-    {#                  {% if has_permission('Create_'+list_item_type) and  add_button_address %}#}
-                            <a data-target="#dialog_template"
-                               data-toggle="modal"
-                               data-keyboard=false
-                               href="{{ request.route_url("create_good_dialog")}}"
-                               class="white">
-                                <i class="icon-plus"></i>
-                                Add New Good
-                            </a>
-
-                        </div>
-                </div>
-                <div class="widget-body">
-                    <div class="widget-main no-padding">
-    {#                    <div id="loading_spinner" class="well well-sm">#}
-    {##}
-    {#                        <div class="inline middle blue bigger-110"><i#}
-    {#                                class="icon-spinner icon-spin orange bigger-125"></i>#}
-    {#                            Loading#}
-    {#                            content...#}
-    {#                        </div>#}
-    {#                    </div>#}
-
-                        <table id="grid-table"></table>
-                        <div id="grid-pager"></div>
-                        <script type="text/javascript">
-                            var $path_base = "/";//this will be used in gritter alerts containing images
-                        </script>
+            <div class="widget-header widget-header-small header-color-green }}">
+                    <h5 id="items_header" class="smaller"></h5>
+                    <div class="widget-toolbar">
+{#                  {% if has_permission('Create_'+list_item_type) and  add_button_address %}#}
+                        <a data-target="#dialog_template"
+                           data-toggle="modal"
+                           data-keyboard=false
+                           href="{{ request.route_url("create_good_dialog")}}"
+                           class="white">
+                            <i class="icon-plus"></i>
+                            Add New Good
+                        </a>
 
                     </div>
+            </div>
+            <div class="widget-body">
+                <div class="widget-main no-padding">
+{#                    <div id="loading_spinner" class="well well-sm">#}
+{##}
+{#                        <div class="inline middle blue bigger-110"><i#}
+{#                                class="icon-spinner icon-spin orange bigger-125"></i>#}
+{#                            Loading#}
+{#                            content...#}
+{#                        </div>#}
+{#                    </div>#}
+
+                    <table id="grid-table"></table>
+                    <div id="grid-pager"></div>
+                    <script type="text/javascript">
+                        var $path_base = "/";//this will be used in gritter alerts containing images
+                    </script>
+
                 </div>
             </div>
         </div>
     </div>
+
 {% endblock page_content %}
 
 {% block extrascripts %}
@@ -140,10 +139,10 @@
                                     {name:'name',index:'name', width:250, sortable:true, editable: true, editoptions:{size:"20",maxlength:"30"}},
                                     {name:'msrp',index:'msrp',  width:100, sortable:true, editable: true, editoptions:{size:"20",maxlength:"30"}},
                                     {name:'cost',index:'cost',  width:120, sortable:true, editable: true, editoptions:{size:"20",maxlength:"30"}},
-                                    {name:'unit',index:'unit',  width:120, editable: true, edittype:"select", editoptions:{value:"HOUR:HOUR;DAY:DAY;WEEK:WEEK;FILM:FILM"}},
+                                    {name:'unit',index:'unit',  width:120, editable: true, edittype:"select", editoptions:{value:"HOUR:HOUR;DAY:DAY;WEEK:WEEK;FILM:FILM;NUMBER:NUMBER"}},
                                     {name:'created_by',index:'created_by', width:250, sortable:true, editable: false},
                                     {name:'updated_by',index:'updated_by', width:250, sortable:true, editable: false},
-                                    {name:'date_updated',index:'date_updated', width:150, sortable:true, editable: false}
+                                    {name:'date_updated',index:'date_updated', width:250, sortable:true, editable: false}
                                 ],
                                 viewrecords : true,
                                 rowNum:20,

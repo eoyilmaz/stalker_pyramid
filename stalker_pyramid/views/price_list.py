@@ -98,8 +98,6 @@ def get_goods(request):
 
     goods = Good.query.order_by(Good.name.asc()).all()
 
-    logger.debug(len(goods))
-
     return [
         {
             'id': good.id,
@@ -191,6 +189,7 @@ def create_good(request):
             new_good.created_by = logged_in_user
             new_good.date_created = utc_now
             new_good.date_updated = utc_now
+            new_good.price_lists=[price_list]
 
             DBSession.add(new_good)
 

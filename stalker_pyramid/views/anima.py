@@ -112,10 +112,14 @@ def add_related_assets(request):
 
     for asset in assets:
         asset_dependencies_scene_assembly.append(
-            find_asset_task_by_type(asset, 'Look Development')
+            find_asset_task_by_type(asset, 'Layout')
         )
         asset_dependencies_lighting.append(
             find_asset_task_by_type(asset, 'Lighting')
+        )
+
+        asset_dependencies_lighting.append(
+            find_asset_task_by_type(asset, 'Look Development')
         )
 
     if entity.type.name == 'Scene':
@@ -202,8 +206,9 @@ def remove_related_assets(request):
     asset = Asset.query.filter(Asset.id == asset_id).first()
 
     character_dependencies = [find_asset_task_by_type(asset, 'Rig')]
-    asset_dependencies_scene_assembly = [find_asset_task_by_type(asset, 'Look Development')]
-    asset_dependencies_lighting = [find_asset_task_by_type(asset, 'Lighting')]
+    asset_dependencies_scene_assembly = [find_asset_task_by_type(asset, 'Layout')]
+    asset_dependencies_lighting = [find_asset_task_by_type(asset, 'Lighting'),
+                                   find_asset_task_by_type(asset, 'Look Development')]
 
     if not entity:
         transaction.abort()
@@ -268,6 +273,15 @@ def find_asset_task_by_type(asset, type_name):
                             return rig_folder
                 else:
                     return None
+    elif type_name == 'Layout':
+        task_type = Type.query.filter_by(name=type_name).first()
+        layout = Task.query.filter(Task.parent == asset).filter(Task.type == task_type).first()
+        if layout:
+            hires_layout = Task.query.filter(Task.parent == layout).filter(Task.name == 'Hires').filter(Task.type == task_type).first()
+            if hires_layout:
+                return hires_layout
+            else:
+                return layout
     else:
         task_type = Type.query.filter_by(name=type_name).first()
         task = Task.query.filter(Task.parent == asset).filter(Task.type == task_type).first()
