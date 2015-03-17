@@ -1118,7 +1118,6 @@ tr .odd > td .ticket_BLOCKER {
 }
 ul.scroll-menu {
   position: absolute;
-  overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   -moz-overflow-scrolling: touch;
   -ms-overflow-scrolling: touch;
