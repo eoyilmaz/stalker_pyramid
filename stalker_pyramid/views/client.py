@@ -158,7 +158,7 @@ def get_studio_clients(request):
             projects.project_count
         from "Clients"
         join "SimpleEntities" as "Client_SimpleEntities" on "Client_SimpleEntities".id = "Clients".id
-        join "Links" as "Thumbnail_Links" on "Client_SimpleEntities".thumbnail_id = "Thumbnail_Links".id
+        left outer join "Links" as "Thumbnail_Links" on "Client_SimpleEntities".thumbnail_id = "Thumbnail_Links".id
         left outer join  (
             select "Projects".client_id as client_id,
                     count("Projects".id) as project_count

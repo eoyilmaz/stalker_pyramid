@@ -218,9 +218,11 @@ def update_project(request):
     logger.debug('client           : %s' % client)
 
     if name and fps and start and end:
+        assert isinstance(project, Project)
+
         project.name = name
         project.image_format = imf
-        project.repository = repo
+        project.repositories = [repo]
         project.updated_by = logged_in_user
         project.date_updated = datetime.datetime.now()
         project.fps = fps
