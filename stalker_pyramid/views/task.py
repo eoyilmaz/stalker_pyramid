@@ -230,6 +230,30 @@ def get_description_html(description_temp,
     return description_html
 
 
+def check_task_status_by_schedule_model():
+    """after scheduling project checks the task statuses
+    """
+
+    logger.debug('check_task_status_by_schedule_model starts')
+    utc_now = local_to_utc(datetime.datetime.now())
+    tasks = Task.query.filter(Task.schedule_model == 'duration').all()
+    status_cmpl = Status.query.filter(Status.code == 'CMPL').first()
+    status_wip = Status.query.filter(Status.code == 'WIP').first()
+    if tasks:
+        for task in tasks:
+            if task.is_leaf:
+                if task.computed_end < utc_now:
+                    task.status = status_cmpl
+                elif task.computed_start < utc_now and task.computed_end > utc_now:
+                    task.status = status_wip
+                else:
+                    continue
+
+
+
+
+
+
 def update_task_statuses_with_dependencies(task):
     """updates the task status according to its dependencies
     """
@@ -982,7 +1006,7 @@ def update_task(request):
     asset_type = request.params.get('asset_type', None)
     task_type = request.params.get('task_type', None)
     shot_sequence_id = request.params.get('shot_sequence_id', None)
-    good_id = request.params.get('good_id', task_type)
+    good_id = request.params.get('good_id', None)
 
     cut_in = int(request.params.get('cut_in', 1))
     cut_out = int(request.params.get('cut_out', 1))
@@ -1111,11 +1135,10 @@ def update_task(request):
         if task.parent:
             task.parent.update_status_with_children_statuses()
 
-    # good = Good.query.filter_by(id=good_id).first()
-    # if not good:
-    #     logger.debug('there are no good with id : %s' % good_id)
-
-    # task.good = good
+    good = Good.query.filter_by(id=good_id).first()
+    if good:
+        logger.debug('Good is found with name : %s' % good.name)
+        task.good = good
 
     task.date_updated = local_to_utc(datetime.datetime.now())
 
@@ -3243,12 +3266,10 @@ def create_task(request):
 
     kwargs['priority'] = priority
 
-    # good = Good.query.filter_by(id=good_id).first()
-    # if not good:
-    #     logger.debug('there are no good with id : %s' % good_id)
-
-    # kwargs['good'] = good
-
+    good = Good.query.filter_by(id=good_id).first()
+    if good:
+        logger.debug('Good is found with name : %s' % good.name)
+        kwargs['good'] = good
 
     type_name = ''
     if entity_type == 'Asset':

@@ -1116,6 +1116,9 @@ tr .odd > td .ticket_BLOCKER {
   right: 0;
   left: 0;
 }
+.budgetentry_selected {
+  background-color: #d0e7a3;
+}
 ul.scroll-menu {
   position: absolute;
   overflow: auto;

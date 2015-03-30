@@ -824,17 +824,17 @@ resource_name, status
             );
         {% endraw %}
         var task_good = $('#task_good');
-{#        task_good.attr('is_updating', true);#}
-{#        var deferred = chosen_searchable_field_creator(task_good,'/goods/', task_good_option_template);#}
-{##}
-{#        deferred.then(function () {#}
-{#            task_good.attr('is_updating', false);#}
-{#            field_update_mode_checker();#}
-{#            if (good_id){#}
-{#                task_good.val(good_id).trigger('liszt:updated');#}
-{#            }#}
-{##}
-{#        });#}
+        task_good.attr('is_updating', true);
+        var deferred = chosen_searchable_field_creator(task_good,'/goods/', task_good_option_template);
+
+        deferred.then(function () {
+            task_good.attr('is_updating', false);
+            field_update_mode_checker();
+            if (good_id){
+                task_good.val(good_id).trigger('liszt:updated');
+            }
+
+        });
 
 
 

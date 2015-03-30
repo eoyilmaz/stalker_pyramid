@@ -98,8 +98,9 @@ def get_goods(request):
 
     goods = Good.query.order_by(Good.name.asc()).all()
 
-    return [
-        {
+    return_data = []
+    for good in goods:
+        return_data.append({
             'id': good.id,
             'name': good.name,
             'cost': good.cost,
@@ -111,9 +112,9 @@ def get_goods(request):
             'updated_by_name': good.updated_by.name if good.updated_by else None,
             'date_updated': milliseconds_since_epoch(good.date_updated),
             'price_list_name': good.price_lists[0].name if good.price_lists else None,
-        }
-        for good in goods
-    ]
+        })
+
+    return return_data
 
 
 @view_config(
