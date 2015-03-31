@@ -1134,11 +1134,11 @@ def update_task(request):
 
         if task.parent:
             task.parent.update_status_with_children_statuses()
-
-    good = Good.query.filter_by(id=good_id).first()
-    if good:
-        logger.debug('Good is found with name : %s' % good.name)
-        task.good = good
+    if good_id:
+        good = Good.query.filter_by(id=good_id).first()
+        if good:
+            logger.debug('Good is found with name : %s' % good.name)
+            task.good = good
 
     task.date_updated = local_to_utc(datetime.datetime.now())
 
@@ -3266,10 +3266,11 @@ def create_task(request):
 
     kwargs['priority'] = priority
 
-    good = Good.query.filter_by(id=good_id).first()
-    if good:
-        logger.debug('Good is found with name : %s' % good.name)
-        kwargs['good'] = good
+    if good_id:
+        good = Good.query.filter_by(id=good_id).first()
+        if good:
+            logger.debug('Good is found with name : %s' % good.name)
+            kwargs['good'] = good
 
     type_name = ''
     if entity_type == 'Asset':
