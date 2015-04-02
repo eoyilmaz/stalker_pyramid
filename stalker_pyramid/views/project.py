@@ -287,7 +287,7 @@ def get_entity_projects(request):
                 'status': project.status.name,
                 'description': len(project.users),
                 'percent_complete': project.percent_complete,
-                'item_view_link':'/project/%s/view'%project.id,
+                'item_view_link':'/project/%s/view' % project.id,
                 'item_remove_link':'/entities/%s/%s/remove/dialog?came_from=%s'%(project.id, entity.id, request.current_route_path())
                 if PermissionChecker(request)('Update_Project') else None
             }
@@ -351,7 +351,7 @@ def get_project_tasks_cost(request):
            goods.unit,
            goods.price_list_name,
            sum(goods.bid_total) as bid_total,
-           sum(goods.bid_total * goods.user_rate) as realize_total
+           sum(goods.schedule_total * goods.user_rate) as realize_total
 
         from ( select
                 "Good_SimpleEntities".name as name,
@@ -369,6 +369,15 @@ def get_project_tasks_cost(request):
                                     when 'y' then 7696277
                                     else 0
                                 end)/3600) as bid_total,
+                sum("Tasks".schedule_timing * (case "Tasks".schedule_unit
+                                    when 'min' then 60
+                                    when 'h' then 3600
+                                    when 'd' then 32400
+                                    when 'w' then 183600
+                                    when 'm' then 590400
+                                    when 'y' then 7696277
+                                    else 0
+                                end)/3600) as schedule_total,
                 "Users".rate as user_rate
 
                 from "Tasks"

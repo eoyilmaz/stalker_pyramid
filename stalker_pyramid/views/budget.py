@@ -317,7 +317,9 @@ def create_budgetentry(request):
     logged_in_user = get_logged_in_user(request)
     utc_now = local_to_utc(datetime.datetime.now())
 
-    good_id = request.params.get('id')
+    good_id = request.params.get('good_id')
+
+    logger.debug('good_id %s ' % good_id)
     good = Good.query.filter_by(id=good_id).first()
     if not good:
         transaction.abort()
@@ -440,7 +442,7 @@ def update_budgetentry(request):
         budgetentry.amount = amount
         budgetentry.cost = good.cost
         budgetentry.msrp = good.msrp
-        budgetentry.realized_total = good.msrp
+        # budgetentry.realized_total = good.msrp
         budgetentry.price = price
         budgetentry.description = description
         budgetentry.date_updated = utc_now

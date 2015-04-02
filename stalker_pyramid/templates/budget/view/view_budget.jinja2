@@ -197,8 +197,8 @@
         {#                    toppager: true,#}
                             multiselect: false,
                             loadonce: true,
-                            height: grid_data.length*90,
-                            width: 1600,
+                            height: 800,
+                            width: 1660,
                             footerrow: true, // set a footer row
                             userDataOnFooter: true, // the calculated sums and/or strings from server are put at footer row.
                             grouping: true,
@@ -214,11 +214,11 @@
                             gridview: true,
                             editurl: '/budgetentries/edit?budget_id={{ entity.id }}',
                             caption: "",
-{#                            rowattr: function (rd) {#}
-{#                                if (rd.amount > 0) {#}
-{#                                    return {"class": "budgetentry_selected"};#}
-{#                                }#}
-{#                            },#}
+                            rowattr: function (rd) {
+                                if (rd.amount > 0) {
+                                    return ;
+                                }
+                            },
                             loadComplete : function() {
                                 var $self = $(this);
                                 $self.jqGrid("footerData", "set", {msrp: total_msrp,cost: total_cost,realized_total: total_realized,price: total_price});
@@ -319,6 +319,8 @@
 
                     function currencyFmatter (cellvalue, options, rowObject)
                     {
+                       console.log(options.colModel);
+                       options.colModel.editable = false;
                        return accounting.formatMoney(cellvalue, { symbol: "TL",  format: "%v %s" });;
                     }
                     function  unformatCurrency (cellvalue, options)

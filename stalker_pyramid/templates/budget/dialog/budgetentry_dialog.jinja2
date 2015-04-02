@@ -15,7 +15,7 @@
                 <div class="span5">
                      <select id='budgetentry_good'
                             name='id'
-                            data-placeholder='Client'
+                            data-placeholder='Good'
                             required>
                     </select>
                 </div>
@@ -102,7 +102,7 @@
         {# Unit ******************************************************* #}
 
         budgetentry_good.on('change', function(){
-            console.log('unit: ' +$(this).val().split('_'));
+
             $('#good_unit').text($(this).val().split('_')[1]);
         });
 
@@ -132,7 +132,8 @@
                 url,
                 budgetentry_form.serialize() + '&' +
                 $.param({
-                    'budget_id': {{ budget.id }}
+                    'budget_id': {{ budget.id }},
+                    'good_id':budgetentry_good.val().split('_')[0]
                 })
             ).done(function (jqXHR) {
                 //$('#new_outputs_storage').text(JSON.stringify(jqXHR));
