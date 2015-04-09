@@ -1,4 +1,3 @@
-;(function($){
 /**
  * jqGrid Danish Translation
  * Kaare Rasmussen kjs@jasonic.dk
@@ -7,11 +6,31 @@
  * http://www.opensource.org/licenses/mit-license.php
  * http://www.gnu.org/licenses/gpl.html
 **/
-$.jgrid = {
+/*global jQuery, define */
+(function( factory ) {
+	"use strict";
+	if ( typeof define === "function" && define.amd ) {
+		// AMD. Register as an anonymous module.
+		define([
+			"jquery",
+			"../grid.base"
+		], factory );
+	} else {
+		// Browser globals
+		factory( jQuery );
+	}
+}(function( $ ) {
+
+$.jgrid = $.jgrid || {};
+if(!$.jgrid.hasOwnProperty("regional")) {
+	$.jgrid.regional = [];
+}
+$.jgrid.regional["dk"] = {
 	defaults : {
 		recordtext: "View {0} - {1} of {2}",
 	    emptyrecords: "No records to view",
 		loadtext: "Loading...",
+		savetext: "Saving...",
 		pgtext : "Page {0} of {1}",
 		pgfirst : "First Page",
 		pglast : "Last Page",
@@ -78,7 +97,12 @@ $.jgrid = {
 	    alertcap: "Advarsel",
 	    alerttext: "Vælg venligst række",
 		viewtext: "",
-		viewtitle: "View selected row"
+		viewtitle: "View selected row",
+		savetext: "",
+		savetitle: "Save row",
+		canceltext: "",
+		canceltitle : "Cancel row editing"
+
 	},
 	col : {
 	    caption: "Vis/skjul kolonner",
@@ -133,4 +157,4 @@ $.jgrid = {
 	}
 };
 // DK
-})(jQuery);
+}));

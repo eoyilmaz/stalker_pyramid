@@ -127,11 +127,11 @@ def update_budget_dialog(request):
 
 
     return {
-        'mode':'Update',
+        'mode': 'Update',
         'has_permission': PermissionChecker(request),
         'logged_in_user': logged_in_user,
         'budget': budget,
-        'came_from':came_from,
+        'came_from': came_from,
         'milliseconds_since_epoch': milliseconds_since_epoch,
     }
 
@@ -313,24 +313,28 @@ def create_budgetentry_dialog(request):
 def create_budgetentry(request):
     """runs when creating a budget
     """
-
+    logger.debug('***create_budgetentry method starts ***')
     logged_in_user = get_logged_in_user(request)
     utc_now = local_to_utc(datetime.datetime.now())
 
-    good_id = request.params.get('id')
+    good_id = request.params.get('good_id')
+
+    logger.debug('good_id %s ' % good_id)
     good = Good.query.filter_by(id=good_id).first()
     if not good:
         transaction.abort()
         return Response('Please supply a good', 500)
 
     name = good.name
-    entry_type = query_type('BudgetEntries', 'ProducerBasedEntry')
+
+    entry_type = query_type('BudgetEntries', good.price_lists[0].name)
 
     budget_id = request.params.get('budget_id', None)
     budget = Budget.query.filter(Budget.id == budget_id).first()
     if not budget:
         transaction.abort()
         return Response('There is no budget with id %s' % budget_id, 500)
+
 
     # user supply this data
     amount = request.params.get('amount')
@@ -345,6 +349,12 @@ def create_budgetentry(request):
         msrp = good.msrp
         realize_total = msrp
         unit = good.unit
+
+        for budget_entry in budget.entries:
+            if budget_entry.name == name:
+                budget_entry.amount += amount
+                budget_entry.price += price
+                return Response('BudgetEntry is updated successfully')
 
         budget_entry = BudgetEntry(
             budget=budget,
@@ -379,17 +389,21 @@ def edit_budgetentry(request):
     oper = request.params.get('oper', None)
 
     if oper == 'edit':
+
         id = request.params.get('id')
         entity = Entity.query.filter_by(id=id).first()
         if entity.entity_type == 'Good':
+            logger.debug('***create budgetentry method starts ***')
             return create_budgetentry(request)
         elif entity.entity_type == 'BudgetEntry':
+            logger.debug('***update budgetentry method starts ***')
             return update_budgetentry(request)
         else:
             transaction.abort()
             return Response('There is no budgetentry or good with id %s' % id, 500)
 
     elif oper == 'del':
+        logger.debug('***delete budgetentry method starts ***')
         return delete_budgetentry(request)
 
 
@@ -428,7 +442,7 @@ def update_budgetentry(request):
         budgetentry.amount = amount
         budgetentry.cost = good.cost
         budgetentry.msrp = good.msrp
-        budgetentry.realized_total = good.msrp
+        # budgetentry.realized_total = good.msrp
         budgetentry.price = price
         budgetentry.description = description
         budgetentry.date_updated = utc_now

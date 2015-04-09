@@ -15,7 +15,7 @@
                 <div class="span5">
                      <select id='budgetentry_good'
                             name='id'
-                            data-placeholder='Client'
+                            data-placeholder='Good'
                             required>
                     </select>
                 </div>
@@ -27,12 +27,13 @@
                        for='budgetentry_amount'>Amount</label>
                 <div class="span5">
                     <input id='budgetentry_amount'
-                           class='input-block-level'
                            name='amount'
+                           class="input-mini"
                            type='text'
-                           placeholder="Amount"
-                           is_updating=false
-                           >
+                           min=1
+                           max=1000
+                           is_updating=false>
+                    <span id="good_unit"> Hour</span>
                 </div>
             </div>
             {#Price #}
@@ -43,7 +44,7 @@
                     <input id="budgetentry_price"
                            name='price'
                            type="text"
-                           class="form-control"
+                           class="input-mini"
                            placeholder="Price"
                            required>
                 </div>
@@ -69,7 +70,7 @@
 
     </form>
 </div>
-
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/fuelux/fuelux.spinner.min.js") }}'></script>
 
 <script type="text/javascript">
 
@@ -81,13 +82,40 @@
         dialog_label.find('span').remove();
         dialog_label.append('<span>{{ mode}} BudgetEntry</span>');
 
+        {# Good ******************************************************* #}
         {% raw %}
             var good_option_template = doT.template(
-                    '<option value={{=it.id}}>{{=it.name}}</option>'
+                    '<option value={{=it.id}}_{{=it.unit }}>{{=it.name}}</option>'
             );
         {% endraw %}
         var budgetentry_good = $('#budgetentry_good');
         var deferred = chosen_searchable_field_creator(budgetentry_good,'/goods/', good_option_template);
+
+        {# Amount ******************************************************* #}
+        $('#budgetentry_amount').ace_spinner({
+            value: 1,
+            min: 1,
+            step: 1,
+            btn_up_class: 'btn-info',
+            btn_down_class: 'btn-info'
+        });
+        {# Unit ******************************************************* #}
+
+        budgetentry_good.on('change', function(){
+
+            $('#good_unit').text($(this).val().split('_')[1]);
+        });
+
+        {# Price ******************************************************* #}
+
+        $('#budgetentry_price').ace_spinner({
+            value:0,
+            min:100,
+            step:100,
+            icon_up:'icon-caret-up',
+            icon_down:'icon-caret-down'
+        });
+
 
         {# ***************************************************************** #}
         {# Submit Button #}
@@ -100,13 +128,12 @@
             var budgetentry_form = $('#budgetentry_form');
 
             var url = '/budgetentries/create';
-
-
             $.post(
                 url,
                 budgetentry_form.serialize() + '&' +
                 $.param({
-                    'budget_id': {{ budget.id }}
+                    'budget_id': {{ budget.id }},
+                    'good_id':budgetentry_good.val().split('_')[0]
                 })
             ).done(function (jqXHR) {
                 //$('#new_outputs_storage').text(JSON.stringify(jqXHR));

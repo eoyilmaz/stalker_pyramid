@@ -90,7 +90,7 @@
 <script type="text/javascript">
     function loadShotTaskData(t_type){
         console.log('loadShotTaskData: '+t_type);
-        jQuery("#grid-table").jqGrid('GridUnload');
+{#        jQuery("#grid-table").jqGrid('GridUnload');#}
         var result_chart = $('#result_chart');
         result_chart.find("#chart_shot").remove();
         $('#info_box').hide();
@@ -104,6 +104,7 @@
 
                 var total_seconds = 0;
                 var max_seconds = 0;
+                var min_seconds = 0;
                 var weekly_shot_seconds = [];
                 for (var i=0; i<shot_data.length; i+=1){
                     var shot_names = '';
@@ -122,6 +123,7 @@
                     shot_data[i]['total_seconds'] = shot_data[i]['total_seconds'].toFixed(2);
                     weekly_shot_seconds.push([shot_data[i]['start_date'], shot_data[i]['total_seconds']]);
                     max_seconds = parseFloat(shot_data[i]['total_seconds'])>max_seconds?parseFloat(shot_data[i]['total_seconds']):max_seconds;
+                    min_seconds = parseFloat(shot_data[i]['total_seconds'])<min_seconds?parseFloat(shot_data[i]['total_seconds']):min_seconds;
                 }
 
 
@@ -154,19 +156,21 @@
 
                                     tickInterval: "1 week",
                                     drawMajorGridlines: false
-                                },
-                                yaxis: {
+                               },
+                               yaxis: {
                                     renderer: $.jqplot.LinearAxisRenderer,
                                     pad: 0,
                                     rendererOptions: {
                                         minorTicks: 1
                                     },
+                                    min:min_seconds,
                                     max:max_seconds,
                                     tickOptions: {
                                         formatString: "  %d seconds",
                                         showMark: false
-                                    }
-                                }
+                                    },
+                                    tickInterval: 5
+                               }
                             },
                             seriesDefaults: {
                                 showMarker: true

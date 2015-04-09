@@ -287,7 +287,7 @@ def get_entity_projects(request):
                 'status': project.status.name,
                 'description': len(project.users),
                 'percent_complete': project.percent_complete,
-                'item_view_link':'/project/%s/view'%project.id,
+                'item_view_link':'/project/%s/view' % project.id,
                 'item_remove_link':'/entities/%s/%s/remove/dialog?came_from=%s'%(project.id, entity.id, request.current_route_path())
                 if PermissionChecker(request)('Update_Project') else None
             }
@@ -349,8 +349,9 @@ def get_project_tasks_cost(request):
            goods.msrp,
            goods.cost,
            goods.unit,
+           goods.price_list_name,
            sum(goods.bid_total) as bid_total,
-           sum(goods.bid_total * goods.user_rate) as realize_total
+           sum(goods.schedule_total * goods.user_rate) as realize_total
 
         from ( select
                 "Good_SimpleEntities".name as name,
@@ -358,6 +359,7 @@ def get_project_tasks_cost(request):
                 "Task_Goods".msrp as msrp,
                 "Task_Goods".cost as cost,
                 "Task_Goods".unit as unit,
+                "PriceList_SimpleEntities".name as price_list_name,
                 sum("Tasks".bid_timing * (case "Tasks".bid_unit
                                     when 'min' then 60
                                     when 'h' then 3600
@@ -367,11 +369,22 @@ def get_project_tasks_cost(request):
                                     when 'y' then 7696277
                                     else 0
                                 end)/3600) as bid_total,
+                sum("Tasks".schedule_timing * (case "Tasks".schedule_unit
+                                    when 'min' then 60
+                                    when 'h' then 3600
+                                    when 'd' then 32400
+                                    when 'w' then 183600
+                                    when 'm' then 590400
+                                    when 'y' then 7696277
+                                    else 0
+                                end)/3600) as schedule_total,
                 "Users".rate as user_rate
 
                 from "Tasks"
                 join "Goods" as "Task_Goods" on "Task_Goods".id = "Tasks".good_id
                 join "SimpleEntities" as "Good_SimpleEntities" on "Good_SimpleEntities".id = "Task_Goods".id
+                join "PriceList_Goods" on "PriceList_Goods".good_id = "Task_Goods".id
+                join "SimpleEntities" as "PriceList_SimpleEntities" on "PriceList_SimpleEntities".id = "PriceList_Goods".price_list_id
                 join "Task_Resources" on "Task_Resources".task_id = "Tasks".id
                 join "Users" on "Users".id = "Task_Resources".resource_id
 
@@ -385,6 +398,7 @@ def get_project_tasks_cost(request):
                          "Task_Goods".msrp,
                          "Task_Goods".cost,
                          "Task_Goods".unit,
+                         "PriceList_SimpleEntities".name,
                          "Users".rate
         ) as goods
         group by
@@ -392,7 +406,8 @@ def get_project_tasks_cost(request):
                goods.id,
                goods.msrp,
                goods.cost,
-               goods.unit
+               goods.unit,
+               goods.price_list_name
 """
 
     sql_query = sql_query % {'project_id': project_id}
@@ -404,8 +419,9 @@ def get_project_tasks_cost(request):
             'msrp': int(r[2]),
             'cost': int(r[3]),
             'unit': r[4],
-            'amount':r[5],
-            'realized_total':r[6]
+            'price_list_name': r[5],
+            'amount':r[6],
+            'realized_total':r[7]
         }
         for r in result.fetchall()
     ]
@@ -437,7 +453,7 @@ def add_project_entries_to_budget(request):
     project_entries = get_project_tasks_cost(request)
 
     for project_entry in project_entries:
-        new_budget_entry_type = query_type('BudgetEntry', 'CalenderBasedEntry')
+        new_budget_entry_type = query_type('BudgetEntry', project_entry['price_list_name'])
         new_budget = True
         logger.debug('realized_total: %s' % (project_entry['realized_total']))
         for budget_entry in budget.entries:

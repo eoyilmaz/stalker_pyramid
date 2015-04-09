@@ -130,30 +130,29 @@
                 }
                 $.getJSON('/studios/{{ entity.id }}/goods/').then(function (good_data) {
 
-                    for(var k=0; k<good_data.length; k++ ){
-
-                        var add_grid_data = true;
-                        for(var m=0; m<grid_data.length; m++ ){
-                            if(good_data[k].name == grid_data[m].name ){
-                                add_grid_data = false;
-                            }
-                        }
-                        if(add_grid_data){
-                            grid_data.push({    'budget_id': '{{ entity.id }}',
-                                                'good_id':good_data[k].id,
-                                                'id':good_data[k].id,
-                                                'type':"XX",
-                                                'name':good_data[k].name,
-                                                'amount':0,
-                                                'unit':good_data[k].unit,
-                                                'msrp':0,
-                                                'cost':0,
-                                                'realized Total':0,
-                                                'price':0,
-                                                'note':''})
-                        }
-
-                    }
+{#                    for(var k=0; k<good_data.length; k++ ){#}
+{##}
+{#                        var add_grid_data = true;#}
+{#                        for(var m=0; m<grid_data.length; m++ ){#}
+{#                            if(good_data[k].name == grid_data[m].name ){#}
+{#                                add_grid_data = false;#}
+{#                            }#}
+{#                        }#}
+{#                        if(add_grid_data){#}
+{#                            grid_data.push({    'budget_id': '{{ entity.id }}',#}
+{#                                                'good_id':good_data[k].id,#}
+{#                                                'id':good_data[k].id,#}
+{#                                                'type':good_data[k].price_list_name,#}
+{#                                                'name':good_data[k].name,#}
+{#                                                'amount':0,#}
+{#                                                'unit':good_data[k].unit,#}
+{#                                                'msrp':0,#}
+{#                                                'cost':0,#}
+{#                                                'realized Total':0,#}
+{#                                                'price':0,#}
+{#                                                'note':''})#}
+{#                        }#}
+{#                    }#}
                     jQuery(function($) {
                         var grid_selector = "#grid-table";
                         var pager_selector = "#grid-pager";
@@ -174,6 +173,7 @@
                                     formatter:'actions',
                                     formatoptions:{
                                                 keys:false,
+                                                delbutton:true,
                                                 delOptions:{recreateForm: true, beforeShowForm:beforeDeleteCallback}
                 {#                                editformbutton:true, editOptions:{recreateForm: true, beforeShowForm:beforeEditCallback}#}
                                             }
@@ -187,7 +187,7 @@
                                 {name:'cost',index:'cost',  width:150,editable: false,formatter:currencyFmatter, summaryTpl: "{0}", summaryType: "sum" },
                                 {name:'realized_total',index:'realized_total',  width:150,editable: false,formatter:currencyFmatter, summaryTpl: "{0}", summaryType: "sum" },
                                 {name:'price',index:'price', width:150, editable: true, edittype:"textarea",editoptions:{size:"20",maxlength:"80"} , formatter:currencyFmatter, unformat:unformatCurrency, summaryTpl: "{0}", summaryType: "sum" },
-                                {name:'note',index:'note', width:470, sortable:false, editable: true, edittype:"textarea", editoptions:{size:"20",maxlength:"80"}}
+                                {name:'note',index:'note', width:340, sortable:false, editable: true, edittype:"textarea", editoptions:{size:"20",maxlength:"80"}}
                             ],
                             viewrecords : true,
                             rowNum:grid_data.length,
@@ -196,10 +196,9 @@
                             altRows: true,
         {#                    toppager: true,#}
                             multiselect: false,
-
                             loadonce: true,
-                            height: grid_data.length*90,
-    {#                        width: 800,#}
+                            height: 800,
+                            width: 1660,
                             footerrow: true, // set a footer row
                             userDataOnFooter: true, // the calculated sums and/or strings from server are put at footer row.
                             grouping: true,
@@ -212,32 +211,27 @@
                                 groupCollapse: false
 
                             },
+                            gridview: true,
                             editurl: '/budgetentries/edit?budget_id={{ entity.id }}',
                             caption: "",
-
+                            rowattr: function (rd) {
+                                if (rd.amount > 0) {
+                                    return ;
+                                }
+                            },
                             loadComplete : function() {
-                                var $self = $(this)
-    {#                            total_msrp = $self.jqGrid("getCol", "msrp", false, "sum");#}
-    {#                            total_cost = $self.jqGrid("getCol", "cost", false, "sum"),#}
-    {#                            total_realized_total = $self.jqGrid("getCol", "realized_total", false, "sum"),#}
-    {#                            total_price = $self.jqGrid("getCol", "price", false, "sum");#}
+                                var $self = $(this);
                                 $self.jqGrid("footerData", "set", {msrp: total_msrp,cost: total_cost,realized_total: total_realized,price: total_price});
-
-
 
                                 var table = this;
                                 setTimeout(function(){
                                     styleCheckbox(table);
                                     updateActionIcons(table);
                                     updatePagerIcons(table);
-{#                                    enableTooltips(table);#}
 
                                     $('#lui_grid-table').hide();
                                 }, 0);
                             }
-
-
-
                     });
 
 
@@ -325,6 +319,8 @@
 
                     function currencyFmatter (cellvalue, options, rowObject)
                     {
+                       console.log(options.colModel);
+                       options.colModel.editable = false;
                        return accounting.formatMoney(cellvalue, { symbol: "TL",  format: "%v %s" });;
                     }
                     function  unformatCurrency (cellvalue, options)
@@ -383,8 +379,6 @@
                         form.closest('.ui-jqdialog').find('.ui-jqdialog-titlebar').wrapInner('<div class="widget-header" />')
                         style_edit_form(form);
                     }
-
-
 
                     //it causes some flicker when reloading or navigating grid
                     //it may be possible to have some custom formatter to do this as the grid is being created to prevent this

@@ -1,4 +1,3 @@
-;(function($){
 /**
  * jqGrid Arabic Translation
  * 
@@ -7,12 +6,31 @@
  * http://www.opensource.org/licenses/mit-license.php
  * http://www.gnu.org/licenses/gpl.html
 **/
+/*global jQuery, define */
+(function( factory ) {
+	"use strict";
+	if ( typeof define === "function" && define.amd ) {
+		// AMD. Register as an anonymous module.
+		define([
+			"jquery",
+			"../grid.base"
+		], factory );
+	} else {
+		// Browser globals
+		factory( jQuery );
+	}
+}(function( $ ) {
+
 $.jgrid = $.jgrid || {};
-$.extend($.jgrid,{
+if(!$.jgrid.hasOwnProperty("regional")) {
+	$.jgrid.regional = [];
+}
+$.jgrid.regional["ar"] = {
 	defaults : {
 		recordtext: "تسجيل {0} - {1} على {2}",
 		emptyrecords: "لا يوجد تسجيل",
 		loadtext: "تحميل...",
+		savetext: "Saving...",
 		pgtext : "صفحة {0} على {1}",
 		pgfirst : "First Page",
 		pglast : "Last Page",
@@ -78,7 +96,11 @@ $.extend($.jgrid,{
 		alertcap: "تحذير",
 		alerttext: "يرجى إختيار السطر",
 		viewtext: "",
-		viewtitle: "إظهار السطر المختار"
+		viewtitle: "إظهار السطر المختار",
+		savetext: "",
+		savetitle: "Save row",
+		canceltext: "",
+		canceltitle : "Cancel row editing"
 	},
 	col : {
 		caption: "إظهار/إخفاء الأعمدة",
@@ -131,5 +153,5 @@ $.extend($.jgrid,{
 		checkbox : {disabled:true},
 		idName : 'id'
 	}
-});
-})(jQuery);
+};
+}));

@@ -1,17 +1,35 @@
-;(function ($) {
 /**
  * jqGrid Persian Translation
  * Dual licensed under the MIT and GPL licenses:
  * http://www.opensource.org/licenses/mit-license.php
  * http://www.gnu.org/licenses/gpl.html
 **/
-	$.jgrid = $.jgrid || {};
-	$.extend($.jgrid,{
+/*global jQuery, define */
+(function( factory ) {
+	"use strict";
+	if ( typeof define === "function" && define.amd ) {
+		// AMD. Register as an anonymous module.
+		define([
+			"jquery",
+			"../grid.base"
+		], factory );
+	} else {
+		// Browser globals
+		factory( jQuery );
+	}
+}(function( $ ) {
+
+$.jgrid = $.jgrid || {};
+if(!$.jgrid.hasOwnProperty("regional")) {
+	$.jgrid.regional = [];
+}
+$.jgrid.regional["fa"] = {
         defaults: {
             recordtext: "نمابش {0} - {1} از {2}",
             emptyrecords: "رکوردی یافت نشد",
             loadtext: "بارگزاري...",
-            pgtext: "صفحه {0} از {1}",
+			savetext: "Saving...",
+			pgtext: "صفحه {0} از {1}",
 			pgfirst : "First Page",
 			pglast : "Last Page",
 			pgnext : "Next Page",
@@ -84,7 +102,11 @@
             alertcap: "اخطار",
             alerttext: "لطفا يک رديف انتخاب کنيد",
             viewtext: "",
-            viewtitle: "نمایش رکورد های انتخاب شده"
+            viewtitle: "نمایش رکورد های انتخاب شده",
+			savetext: "",
+			savetitle: "Save row",
+			canceltext: "",
+			canceltitle : "Cancel row editing"
         },
         col: {
             caption: "نمايش/عدم نمايش ستون",
@@ -150,5 +172,5 @@
             },
             idName: "id"
         }
-    });
-})(jQuery);
+    };
+}));

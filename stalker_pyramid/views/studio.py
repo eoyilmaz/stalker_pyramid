@@ -31,6 +31,7 @@ import transaction
 from stalker_pyramid.views import (get_time, get_logged_in_user, local_to_utc,
                                    StdErrToHTMLConverter,
                                    invalidate_all_caches)
+from stalker_pyramid.views.task import check_task_status_by_schedule_model
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -202,6 +203,7 @@ def auto_schedule_tasks(request):
         from stalker_pyramid.views.task import cached_query_tasks,\
             get_cached_user_tasks, get_cached_tasks_count
         invalidate_all_caches()
+        check_task_status_by_schedule_model()
 
         c = StdErrToHTMLConverter(stderr)
         return Response(c.html(replace_links=True))
