@@ -805,12 +805,12 @@ tr .odd > td .ticket_BLOCKER {
   color: #FE7E3E;
 }
 .popover {
-  max-width: 500px;
+  max-width: 800px;
 }
 .popover-content {
   max-height: 300px;
-  max-width: 500px;
-  overflow: auto;
+  max-width: 800px;
+  overflow-y: auto;
 }
 .ui-autocomplete-loading {
   background: #ffffff url('../images/ui-anim_basic_16x16.gif') right center no-repeat !important;
