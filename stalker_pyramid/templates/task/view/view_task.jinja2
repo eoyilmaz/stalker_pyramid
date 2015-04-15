@@ -335,18 +335,19 @@
                             {% if not entity.is_leaf %}
                                 <div class="space-4"></div>
                                 {% if entity.entity_type in ['Asset', 'Shot', 'Task'] %}
-                                    <div class="row-fluid">
+
+
+                                    {% if entity.type.name == 'Scene' or entity.entity_type == 'Shot'%}
+                                        <div class="row-fluid">
                                             {% include 'entity/entity_leafs_in_hierarchy_progress_by_type.jinja2' %}
                                         </div>
                                         <div class="space-4"></div>
 
-                                    {% if entity.type.name == 'Scene' or entity.entity_type == 'Shot'%}
-
                                         {% include 'asset/list/list_task_related_assets.jinja2' %}
-{#                                    {% else %}#}
-{#                                        <div class="row-fluid">#}
-{#                                            {% include 'entity/entity_children_progress.jinja2' %}#}
-{#                                        </div>#}
+                                    {% else %}
+                                        <div class="row-fluid">
+                                            {% include 'entity/entity_children_progress.jinja2' %}
+                                        </div>
                                     {% endif %}
                                 {% endif %}
                             {% endif %}
