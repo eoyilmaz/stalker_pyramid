@@ -2962,6 +2962,70 @@ from "Tasks"
     return resp
 
 
+@view_config(
+    route_name='get_task_leafs_in_hierarchy',
+    renderer='json'
+)
+def get_task_leafs_in_hierarchy(request):
+    """finds last leaf tasks under a parent task
+    """
+    logger.debug('get_task_leafs_in_hierarchy is running!')
+    task_id = request.matchdict.get('id', -1)
+    task = Task.query.filter(Task.id == task_id).first()
+
+    sql_query = """
+        Select
+            "Tasks".id,
+            "Task_SimpleEntities".name,
+            "Type_SimpleEntities".name as type_name,
+            "Tasks".bid_timing,
+            "Tasks".bid_unit,
+            "Tasks".schedule_timing,
+            "Tasks".schedule_unit,
+            coalesce( extract(epoch from sum("TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC')), 0) as total_logged_seconds
+        from (
+            %(generate_recursive_task_query)s
+        ) as tasks
+        join "Tasks" on tasks.id = "Tasks".id
+        join "SimpleEntities" as "Task_SimpleEntities" on "Task_SimpleEntities".id = "Tasks".id
+        join "SimpleEntities" as "Type_SimpleEntities" on "Type_SimpleEntities".id = "Task_SimpleEntities".type_id
+        left join "TimeLogs" on "TimeLogs".task_id = "Tasks".id
+        where tasks.path ilike '%%|%(task_id)s|%%' and not exists (
+        select 1 from "Tasks"
+        where "Tasks".parent_id = tasks.id)
+        group by "Tasks".id,
+            "Task_SimpleEntities".name,
+            "Type_SimpleEntities".name,
+            "Tasks".bid_timing,
+            "Tasks".bid_unit,
+            "Tasks".schedule_timing,
+            "Tasks".schedule_unit
+    """
+    sql_query = sql_query % {
+        'generate_recursive_task_query': generate_recursive_task_query(),
+        'task_id': task.id
+    }
+
+    logger.debug(sql_query)
+
+    from sqlalchemy import text  # to be able to use "%" sign use this function
+    result = db.DBSession.connection().execute(text(sql_query))
+
+    return [
+        {
+            'id': r[0],
+            'name': r[1],
+            'type': r[2],
+            'bid_timing': r[3],
+            'bid_unit': r[4],
+            'schedule_timing': r[5],
+            'schedule_unit': r[6],
+            'total_logged_seconds': r[7]
+        }
+        for r in result.fetchall()
+    ]
+
+
 def data_dialog(request, mode='create', entity_type='Task'):
     """a generic function which will create a dictionary with enough data
     """
