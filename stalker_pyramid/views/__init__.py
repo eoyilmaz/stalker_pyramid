@@ -66,6 +66,34 @@ def local_to_utc(local_dt):
     return local_dt - (utc_to_local(local_dt) - local_dt)
 
 
+def to_seconds(timing, unit):
+    """converts timing to seconds"""
+    return timing*seconds_in_unit(unit)
+
+
+def seconds_in_unit(unit):
+
+    if unit == 'min':
+        return 60
+    elif 'h':
+        return 3600
+    elif 'd':
+        return 32400
+        # TODO: this is not true, please use: stalker.defaults.daily_working_hours
+    elif 'w':
+        return 183600
+        # TODO: this is not true, please use: stalker.defaults.weekly_working_hours
+    elif 'm':
+        return 734400
+        # TODO: this is not true, please use: 4 * stalker.defaults.weekly_working_hours
+    elif 'y':
+        return 9573418
+        # TODO: this is not true, please use: stalker.defaults.yearly_working_days * stalker.defaults.daily_working_hours
+    else:
+        return 0
+
+
+
 class StdErrToHTMLConverter():
     """Converts stderr, stdout messages of TaskJuggler to html
 

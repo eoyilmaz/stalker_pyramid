@@ -207,15 +207,14 @@
                         {{ for(var j=0;j<it.resource_ids.length;j++){ }}<a href='/users/{{=it.resource_ids[j]}}/view'>{{=it.resource_names[j] }}</a><br/>{{ } }}
                         <span>{{= it.num_of_task}}</span>
                     </div>
-
                     <div class="no-padding">
                         {{=it.status}}
                     </div>
-                    {{ if (it.percent>0) { }}
-                        <div class="progress progress-success no-padding">
-                            <div style="width:{{=it.percent}}%" class="bar">
-                                <span>{{= it.percent}}%</span>
-                            </div>
+                    {{ if (it.bid_seconds!=null){ }}
+                        <div class="no-padding">
+                            <span>{{=it.bid_seconds}}</span><br/>
+                            <span>{{=it.schedule_seconds}}</span><br/>
+                            <span>{{=it.total_logged_seconds}}</span>
                         </div>
                     {{ } }}
                 </span>
@@ -233,7 +232,19 @@
             var icon_name = get_icon('shot');
             $('#items_header').append('<i class=' + icon_name + '></i>');
 
-            var types = [{name:'Storyboard'},{name:'Schematic'},{name:'Edit'},{name:'Dubbing'}, {name:'Previs'}, {name:'Shot Previs'}, {name:'Animation'}, {name:'Camera'}, {name:'Scene Assembly'}, {name:'Lighting'}, {name:'Comp'}];
+            var types = [
+                {name:'Storyboard'},
+                {name:'Schematic'},
+                {name:'Edit'},
+                {name:'Dubbing'},
+                {name:'Previs'},
+                {name:'Shot Previs'},
+                {name:'Animation'},
+                {name:'Camera'},
+                {name:'Scene Assembly'},
+                {name:'Lighting'},
+                {name:'Comp'}
+            ];
             var column_template = doT.template($('#tmpl_sceneColumn').html());
 
             $(function () {
@@ -273,6 +284,27 @@
                                         scene_row.append(cell_template(task));
                                     }
                                     else {
+                                        var bid_bar_percent = 0;
+                                        var separator_bar_percent = 0;
+                                        var total_logged_bar_percent = (total_logged_seconds / schedule_timing_seconds)*100;
+                                        var schedule_timing_bar_percent = 100-total_logged_bar_percent;
+                                        if(task.bid_seconds < task.total_logged_seconds)
+                                        {
+                                            bid_bar_percent = (task.bid_seconds/task.schedule_timing_seconds)*100;
+                                            separator_bar_percent = 1;
+                                            total_logged_bar_percent -= (bid_bar_percent+separator_bar_percent);
+                                            schedule_timing_bar_percent = 100 -(bid_bar_percent+separator_bar_percent+total_logged_bar_percent);
+                                        }
+
+
+
+
+                                        if(task.schedule_timing_seconds == total_logged_seconds) {
+                                            $('#total_logged_bar').addClass('bar-cmpl');
+                                        }
+                                        else{
+                                            $('#total_logged_bar').addClass('bar-wip');
+                                        }
                                         scene_row.append(shot_task_cell_template(task));
                                     }
                                 }

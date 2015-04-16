@@ -2982,7 +2982,8 @@ def get_task_leafs_in_hierarchy(request):
             "Tasks".bid_unit,
             "Tasks".schedule_timing,
             "Tasks".schedule_unit,
-            coalesce( extract(epoch from sum("TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC')), 0) as total_logged_seconds
+            coalesce( extract(epoch from sum("TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC')), 0) as total_logged_seconds,
+            "Statuses".code
         from (
             %(generate_recursive_task_query)s
         ) as tasks
@@ -2990,6 +2991,7 @@ def get_task_leafs_in_hierarchy(request):
         join "SimpleEntities" as "Task_SimpleEntities" on "Task_SimpleEntities".id = "Tasks".id
         join "SimpleEntities" as "Type_SimpleEntities" on "Type_SimpleEntities".id = "Task_SimpleEntities".type_id
         left join "TimeLogs" on "TimeLogs".task_id = "Tasks".id
+        join "Statuses" on "Statuses".id = "Tasks".status_id
         where tasks.path ilike '%%|%(task_id)s|%%' and not exists (
         select 1 from "Tasks"
         where "Tasks".parent_id = tasks.id)
@@ -2999,7 +3001,8 @@ def get_task_leafs_in_hierarchy(request):
             "Tasks".bid_timing,
             "Tasks".bid_unit,
             "Tasks".schedule_timing,
-            "Tasks".schedule_unit
+            "Tasks".schedule_unit,
+            "Statuses".code
     """
     sql_query = sql_query % {
         'generate_recursive_task_query': generate_recursive_task_query(),
@@ -3020,7 +3023,8 @@ def get_task_leafs_in_hierarchy(request):
             'bid_unit': r[4],
             'schedule_timing': r[5],
             'schedule_unit': r[6],
-            'total_logged_seconds': r[7]
+            'total_logged_seconds': r[7],
+            'status_code':r[8]
         }
         for r in result.fetchall()
     ]
