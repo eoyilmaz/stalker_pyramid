@@ -17,9 +17,7 @@
     <div class="row-fluid" >
         <div class="span12">
             <div>
-                {{ if(it.status_code) {}}
-                <span class="pull-right">{{=it.status_code}}</span>
-                {{ } }}
+
                 <i class="{{=it.sign}}"></i>
                 <strong>{{=it.name}} : </strong>
                 <b>BID:</b>{{=it.bid_seconds}} |
@@ -27,11 +25,16 @@
                 <b>TLS:</b> {{=it.total_logged_seconds }}
             </div>
             <div class="progress no-padding" style="margin-top: 0; margin-bottom: 0;">
+
                 <div class="bar bar-cmpl" style="width: {{=it.bid_bar_percent}}%;"></div>
                 <div class="bar bar-grey" style="width: {{=it.separator_bar_percent}}%;"></div>
                 <div class="bar {{=it.total_logged_bar_class}}" style="width: {{=it.total_logged_bar_percent}}%;"></div>
-                <div class="bar bar-wfd" style="width: {{=it.schedule_bar_percent}}%;"></div>
+                <div class="bar bar-wfd" style="width: {{=it.schedule_bar_percent}}%;">{{if(it.status_code) {}}
+                    <span class="label label-status_{{=it.status_code}} pull-right">{{=it.status_code}}</span>
+                {{ } }}</div>
+
             </div>
+
         </div>
     </div>
 </script>
@@ -56,7 +59,7 @@
                     group_by_type_list[data[i].type]['bid_seconds'] = to_seconds(parseFloat(data[i].bid_timing), data[i].bid_unit);
                     group_by_type_list[data[i].type]['schedule_seconds'] = to_seconds(parseFloat(data[i].schedule_timing), data[i].schedule_unit);
                     group_by_type_list[data[i].type]['total_logged_seconds'] = data[i].total_logged_seconds;
-                    group_by_type_list[data[i].type]['status_code'] = data[i].status_code;
+                    group_by_type_list[data[i].type]['status_code'] = data[i].status_code.toLowerCase();
 
                 } else {
                     group_by_type_list[data[i].type]['name'] = data[i].type;
@@ -97,19 +100,15 @@
                         if(schedule_seconds==bid_seconds){
                             group_by_type_list[prop]['sign'] = "icon-ok green";
                         }
-
                     }
                     else{
-
                         group_by_type_list[prop]['total_logged_bar_class'] = 'bar-wip';
-
 
                     }
 
                     if (group_by_type_list[prop]['status_code']){
-
-                          group_by_type_list[prop]['total_logged_bar_class'] = 'bar-'+  group_by_type_list[prop]['status_code'].toLowerCase();
-                        }
+                          group_by_type_list[prop]['total_logged_bar_class'] = 'bar-'+  group_by_type_list[prop]['status_code'];
+                    }
 
 
                     group_by_type_list[prop]['bid_bar_percent'] = bid_bar_percent;
