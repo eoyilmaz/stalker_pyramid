@@ -274,7 +274,8 @@ sourceimages/3dPaintTextures"""
 
         parent_path = os.path.dirname(path) + '/'
 
-        z = zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED)
+        z = zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED,
+                            allowZip64=True)
         try:
             for current_dir_path, dir_names, file_names in os.walk(path):
                 for dir_name in dir_names:
