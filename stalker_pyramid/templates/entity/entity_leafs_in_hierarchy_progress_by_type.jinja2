@@ -1,0 +1,129 @@
+<div class="widget-box">
+    <div class="widget-header widget-header-small header-color-resource">
+        <h4 class="smaller"><i class="icon-cogs"></i> Progress</h4>
+        <div class="widget-toolbar">
+
+        </div>
+    </div>
+    <div class="widget-body" style="background-color: rgba(255,255,255,.4)">
+        <div class="widget-main">
+            <div id='entity_children'></div>
+        </div>
+    </div>
+</div>
+
+{% raw %}
+<script id="tmpl_child" type="text/x-dot-template">
+    <div class="row-fluid" >
+        <div class="span12">
+            <div>
+
+                <i class="{{=it.sign}}"></i>
+                <strong>{{=it.name}} : </strong>
+                <b>BID:</b>{{=it.bid_seconds}} |
+                <b>ST:</b>{{=it.schedule_seconds}}
+                <b>TLS:</b> {{=it.total_logged_seconds }}
+            </div>
+            <div class="progress no-padding" style="margin-top: 0; margin-bottom: 0;">
+
+                <div class="bar bar-cmpl" style="width: {{=it.bid_bar_percent}}%;"></div>
+                <div class="bar bar-grey" style="width: {{=it.separator_bar_percent}}%;"></div>
+                <div class="bar {{=it.total_logged_bar_class}}" style="width: {{=it.total_logged_bar_percent}}%;"></div>
+                <div class="bar bar-wfd" style="width: {{=it.schedule_bar_percent}}%;">{{if(it.status_code) {}}
+                    <span class="label label-status_{{=it.status_code}} pull-right">{{=it.status_code}}</span>
+                {{ } }}</div>
+
+            </div>
+
+        </div>
+    </div>
+</script>
+{% endraw %}
+
+
+<script class="code" type="text/javascript">
+
+
+    $.getJSON('/tasks/{{ entity.id }}/leafs_in_hierarchy/').then(function (data) {
+        $(function () {
+            var entity_children = $('#entity_children');
+            var child_template = doT.template($('#tmpl_child').html());
+            var group_by_type_list = {};
+
+            for (var i = 0; i < data.length; i++) {
+
+                if (group_by_type_list[data[i].type] == null) {
+                    group_by_type_list[data[i].type] = {};
+
+                    group_by_type_list[data[i].type]['name'] = '<a href="/tasks/'+data[i].id +'/view">'+data[i].type+'</a>';
+                    group_by_type_list[data[i].type]['bid_seconds'] = to_seconds(parseFloat(data[i].bid_timing), data[i].bid_unit);
+                    group_by_type_list[data[i].type]['schedule_seconds'] = to_seconds(parseFloat(data[i].schedule_timing), data[i].schedule_unit);
+                    group_by_type_list[data[i].type]['total_logged_seconds'] = data[i].total_logged_seconds;
+                    group_by_type_list[data[i].type]['status_code'] = data[i].status_code.toLowerCase();
+
+                } else {
+                    group_by_type_list[data[i].type]['name'] = data[i].type;
+                    group_by_type_list[data[i].type].bid_seconds += to_seconds(parseFloat(data[i].bid_timing), data[i].bid_unit);
+                    group_by_type_list[data[i].type].schedule_seconds += to_seconds(parseFloat(data[i].schedule_timing), data[i].schedule_unit);
+                    group_by_type_list[data[i].type].total_logged_seconds += data[i].total_logged_seconds;
+                    group_by_type_list[data[i].type]['status_code'] = null;
+                }
+            }
+
+
+            for (var prop in group_by_type_list){
+                if (group_by_type_list.hasOwnProperty(prop)) {
+                    var bid_seconds = group_by_type_list[prop]['bid_seconds'];
+                    var total_logged_seconds = group_by_type_list[prop]['total_logged_seconds'];
+                    var schedule_seconds = group_by_type_list[prop]['schedule_seconds'];
+
+                    var bid_bar_percent = 0;
+                    var separator_bar_percent = 0;
+                    var total_logged_bar_percent = (total_logged_seconds / schedule_seconds)*100;
+                    var schedule_bar_percent = 100-total_logged_bar_percent;
+
+                    if(bid_seconds<total_logged_seconds){
+
+                        bid_bar_percent = (bid_seconds/schedule_seconds)*100;
+                        separator_bar_percent = 1;
+                        total_logged_bar_percent -= (bid_bar_percent+separator_bar_percent);
+                        schedule_bar_percent = 100 -(bid_bar_percent+separator_bar_percent+total_logged_bar_percent);
+                        group_by_type_list[prop]['sign'] = "icon-warning-sign red";
+
+                    }
+
+                    if(schedule_seconds == total_logged_seconds) {
+                        group_by_type_list[prop]['total_logged_bar_class'] = 'bar-cmpl';
+                        if(schedule_seconds < bid_seconds ){
+                            group_by_type_list[prop]['sign'] = "icon-star orange";
+                        }
+                        if(schedule_seconds==bid_seconds){
+                            group_by_type_list[prop]['sign'] = "icon-ok green";
+                        }
+                    }
+                    else{
+                        group_by_type_list[prop]['total_logged_bar_class'] = 'bar-wip';
+
+                    }
+
+                    if (group_by_type_list[prop]['status_code']){
+                          group_by_type_list[prop]['total_logged_bar_class'] = 'bar-'+  group_by_type_list[prop]['status_code'];
+                    }
+
+
+                    group_by_type_list[prop]['bid_bar_percent'] = bid_bar_percent;
+                    group_by_type_list[prop]['separator_bar_percent'] = separator_bar_percent;
+                    group_by_type_list[prop]['total_logged_bar_percent'] = total_logged_bar_percent;
+                    group_by_type_list[prop]['schedule_bar_percent'] = schedule_bar_percent;
+
+                    group_by_type_list[prop]['bid_seconds'] = convert_seconds_to_time_range(bid_seconds);
+                    group_by_type_list[prop]['schedule_seconds'] = convert_seconds_to_time_range(schedule_seconds);
+                    group_by_type_list[prop]['total_logged_seconds'] = convert_seconds_to_time_range(total_logged_seconds);
+                    entity_children.append(child_template(group_by_type_list[prop]));
+                }
+
+
+            }
+        });
+    });
+</script>

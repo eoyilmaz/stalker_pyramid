@@ -369,7 +369,8 @@ def create_budgetentry(request):
             description=description,
             created_by=logged_in_user,
             date_created=utc_now,
-            date_updated=utc_now
+            date_updated=utc_now,
+            generic_text='Producer'
         )
         db.DBSession.add(budget_entry)
     else:
@@ -429,7 +430,7 @@ def update_budgetentry(request):
     price = int(price)
     description = request.params.get('note', '')
 
-    if budgetentry.type.name == 'CalenderBasedEntry':
+    if budgetentry.generic_text == 'Calendar':
         budgetentry.price = price
         budgetentry.description = description
         budgetentry.date_updated = utc_now
@@ -447,6 +448,7 @@ def update_budgetentry(request):
         budgetentry.description = description
         budgetentry.date_updated = utc_now
         budgetentry.updated_by = logged_in_user
+        budgetentry.generic_text = 'Producer'
 
     return Response('successfully updated %s budgetentry!' % budgetentry.name)
 
@@ -504,7 +506,8 @@ def get_budget_entries(request):
            "BudgetEntries".price,
            "BudgetEntries".realized_total,
            "BudgetEntries".unit,
-           "BudgetEntries_SimpleEntities".description
+           "BudgetEntries_SimpleEntities".description,
+           "BudgetEntries_SimpleEntities".generic_text
         from "BudgetEntries"
         join "SimpleEntities" as "BudgetEntries_SimpleEntities" on "BudgetEntries_SimpleEntities".id = "BudgetEntries".id
         join "SimpleEntities" as "Types_SimpleEntities" on "Types_SimpleEntities".id = "BudgetEntries_SimpleEntities".type_id
@@ -526,7 +529,8 @@ def get_budget_entries(request):
             'price': r[6],
             'realized_total': r[7],
             'unit': r[8],
-            'note': r[9]
+            'note': r[9],
+            'addition_type': r[10]
         }
         for r in result.fetchall()
     ]

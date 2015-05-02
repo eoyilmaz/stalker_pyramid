@@ -1,8 +1,8 @@
 <div class="row-fluid">
-    <div class="widget-box transparent">
-        <div class="widget-header  widget-header-small">
-             <h4 class="smaller grey">
-                 <i class="icon-puzzle-piece blue"></i>Related Assets
+    <div class="widget-box">
+        <div class="widget-header  widget-header-small header-color-resource">
+             <h4 class="smaller">
+                 <i class="icon-puzzle-piece"></i>Related Assets
              </h4>
 
              <div class="widget-toolbar">
@@ -14,7 +14,7 @@
                        href="{{ request.route_url("add_related_assets_dialog", id=entity.id, _query={'project_id': entity.project.id }) }}"
                        class="white">
                         <i class="icon-plus"></i>
-                        New
+                        
                     </a>
                     &nbsp&nbsp
                 {% endif %}

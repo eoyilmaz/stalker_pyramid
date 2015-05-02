@@ -466,6 +466,7 @@ def add_project_entries_to_budget(request):
                 budget_entry.unit = project_entry['unit']
                 budget_entry.date_updated = utc_now
                 budget_entry.updated_by = logged_in_user
+                budget_entry.generic_text = 'Calendar'
                 new_budget = False
 
         if new_budget:
@@ -482,7 +483,8 @@ def add_project_entries_to_budget(request):
                 description='',
                 created_by=logged_in_user,
                 date_created=utc_now,
-                date_updated=utc_now
+                date_updated=utc_now,
+                generic_text='Calendar'
             )
             DBSession.add(new_budget_entry)
 

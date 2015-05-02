@@ -28,7 +28,7 @@ from stalker import Sequence, StatusList, Status, Shot, Project, Entity
 import logging
 from webob import Response
 from stalker_pyramid.views import get_logged_in_user, PermissionChecker, \
-    get_parent_task_status
+    get_parent_task_status, to_seconds
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -135,25 +135,13 @@ def get_scenes(request):
     array_agg("Tasks".id) as task_id,
     array_agg("Task_SimpleEntities".name) as task_name,
     array_agg("Task_Statuses".code) as status_code,
-    array_agg(coalesce(
-            -- for parent tasks
-            (case "Tasks".schedule_seconds
-                when 0 then 0
-                else "Tasks".total_logged_seconds::float / "Tasks".schedule_seconds * 100
-             end
-            ),
-            -- for child tasks we need to count the total seconds of related TimeLogs
-            (coalesce("Task_TimeLogs".duration, 0.0))::float /
-                ("Tasks".schedule_timing * (case "Tasks".schedule_unit
-                    when 'min' then 60
-                    when 'h' then 3600
-                    when 'd' then 32400
-                    when 'w' then 183600
-                    when 'm' then 734400
-                    when 'y' then 9573418
-                    else 0
-                end)) * 100.0
-        )) as percent_complete,
+
+    array_agg("Tasks".bid_timing) as bid_timing,
+    array_agg("Tasks".bid_unit) as bid_unit,
+    array_agg("Tasks".schedule_timing) as schedule_timing,
+    array_agg("Tasks".schedule_unit) as schedule_unit,
+    array_agg(coalesce ("Task_TimeLogs".duration,0)) as total_logged_seconds,
+
     array_agg("Resources_SimpleEntities".name) as resource_name,
     array_agg("Resources_SimpleEntities".id) as resource_id,
     array_agg(("Shots".cut_out-"Shots".cut_in)) as shot_duration
@@ -257,7 +245,7 @@ order by "Task_Scenes".id"""
     for r in result.fetchall():
 
         shot_ids = r[8]
-        shot_durations = r[16]
+        shot_durations = r[20]
         scene_total_frame = 0
         distinct_shot_ids = []
 
@@ -283,16 +271,25 @@ order by "Task_Scenes".id"""
         shot_task_ids = r[10]
         shot_task_names = r[11]
         shot_task_status_codes = r[12]
-        shot_task_percents = r[13]
-        shot_task_resource_names = r[14]
-        shot_task_resource_ids = r[15]
+        shot_task_bid_timing = r[13]
+        shot_task_bid_unit = r[14]
+        shot_task_schedule_timing = r[15]
+        shot_task_schedule_unit = r[16]
+        shot_task_total_logged_seconds = r[17]
+        shot_task_resource_names = r[18]
+        shot_task_resource_ids = r[19]
 
         update_task_permission = PermissionChecker(request)('Update_Task')
 
-
         for i in range(len(layout_task_type_names)):
             task_type_name = layout_task_type_names[i]
-            r_data[task_type_name]= {'id':'', 'name':'','resource_id':'','resource_name':'', 'update_task_resource_action':None}
+            r_data[task_type_name] = {
+                                         'id': '',
+                                         'name': '',
+                                         'resource_id': '',
+                                         'resource_name': '',
+                                         'update_task_resource_action': None
+                                    }
 
         for j in range(len(layout_task_type_names)):
             task_type_name = layout_task_type_names[j]
@@ -303,12 +300,24 @@ order by "Task_Scenes".id"""
             task['resource_id'] = layout_task_resource_ids[j]
             task['status'] = layout_task_status_codes[j].lower()
             if update_task_permission:
-                task['update_task_resource_action'] =request.route_url('change_tasks_users_dialog', user_type='Resources',  _query={'project_id':project_id,'task_ids': [task['id']]})
-                task['update_task_priority_action'] =request.route_url('change_tasks_priority_dialog',  _query={'task_ids': [task['id']]})
+                task['update_task_resource_action'] = request.route_url('change_tasks_users_dialog', user_type='Resources',  _query={'project_id':project_id,'task_ids': [task['id']]})
+                task['update_task_priority_action'] = request.route_url('change_tasks_priority_dialog',  _query={'task_ids': [task['id']]})
 
         for m in range(len(shot_task_types)):
             shot_task_type_name = shot_task_types[m]
-            r_data[shot_task_type_name]= {'name':shot_task_type_name, 'ids':[], 'resource_ids':[],'resource_names':[], 'percent':0, 'child_statuses':[], 'status':'', 'num_of_task':0, 'update_task_resource_action':None}
+            r_data[shot_task_type_name] = {
+                    'name': shot_task_type_name,
+                    'ids': [],
+                    'resource_ids': [],
+                    'resource_names': [],
+                    'bid_seconds': 0,
+                    'schedule_seconds': 0,
+                    'total_logged_seconds': 0,
+                    'child_statuses': [],
+                    'status': '',
+                    'num_of_task': 0,
+                    'update_task_resource_action': None
+            }
 
         for k in range(len(shot_task_types)):
             shot_task_type_name = shot_task_types[k]
@@ -323,14 +332,17 @@ order by "Task_Scenes".id"""
             if shot_task_status_codes[k] not in shot_task['child_statuses']:
                 shot_task['child_statuses'].append(shot_task_status_codes[k])
 
-            shot_task['percent'] += float(shot_task_percents[k])
+            # shot_task['percent'] += float(shot_task_percents[k])
+            shot_task['bid_seconds'] += float(to_seconds(shot_task_bid_timing[k], shot_task_bid_unit[k]))
+            shot_task['schedule_seconds'] += float(to_seconds(shot_task_schedule_timing[k], shot_task_schedule_unit[k]))
+            shot_task['total_logged_seconds'] += float(shot_task_total_logged_seconds[k])
             shot_task['num_of_task'] += 1
 
         for l in range(len(shot_task_types)):
             shot_task_type_name = shot_task_types[l]
             shot_task = r_data[shot_task_type_name]
             shot_task['status'] = get_parent_task_status(shot_task['child_statuses']).lower()
-            shot_task['percent'] = shot_task['percent']/shot_task['num_of_task']
+            # shot_task['percent'] = shot_task['percent']/shot_task['num_of_task']
             if update_task_permission:
                 shot_task['update_task_resource_action'] =request.route_url('change_tasks_users_dialog', user_type='Resources',  _query={'project_id':project_id,'task_ids': shot_task['ids']})
                 shot_task['update_task_priority_action'] =request.route_url('change_tasks_priority_dialog',  _query={'task_ids': [shot_task['ids']]})

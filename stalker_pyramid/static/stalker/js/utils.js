@@ -276,6 +276,7 @@ function seconds_in_unit(unit) {
 function to_seconds(timing, unit) {
     'use strict';
     var u_seconds = seconds_in_unit(unit);
+
     return timing * u_seconds;
 }
 
@@ -321,7 +322,10 @@ function meaningful_time(seconds) {
  */
 function convert_seconds_to_time_range(seconds) {
     'use strict';
+    if (seconds==0){
 
+        return '0';
+    }
     // year
     var time_range_string = '',
         remainder = 0,

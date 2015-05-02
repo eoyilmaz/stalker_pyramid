@@ -664,6 +664,7 @@ def main(global_config, **settings):
     config.add_route('get_task',          'tasks/{id}/')
     config.add_route('get_task_events',   'tasks/{id}/events/')  #json
     config.add_route('get_task_children_task_type',  'tasks/{type}/children/task_type/')  # json
+    config.add_route('get_task_leafs_in_hierarchy', 'tasks/{id}/leafs_in_hierarchy/') #json
 
 
     config.add_route('get_task_related_entities',  'tasks/{id}/related/{e_type}/') # json
