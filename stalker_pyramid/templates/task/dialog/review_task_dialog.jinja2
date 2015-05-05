@@ -261,18 +261,21 @@
 
             // validate the data first
             var form_is_valid, error_messages;
+            form_is_valid = true;
             error_messages = [];
 
-            var schedule_unit_value = task_schedule_unit.val();
-            var current_timing_value = task_schedule_timing.val();
+            if ($('#task_review_mode').val() === 'request_revision'){
+                var schedule_unit_value = task_schedule_unit.val();
+                var current_timing_value = task_schedule_timing.val();
 
-            var validation_result = validate_timing_value({
-                value: current_timing_value,
-                unit: schedule_unit_value
-            });
+                var validation_result = validate_timing_value({
+                    value: current_timing_value,
+                    unit: schedule_unit_value
+                });
 
-            form_is_valid = validation_result.is_valid;
-            error_messages = error_messages.concat(validation_result.errors);
+                form_is_valid = validation_result.is_valid;
+                error_messages = error_messages.concat(validation_result.errors);
+            }
 
             if (form_is_valid) {
                 $.post(
