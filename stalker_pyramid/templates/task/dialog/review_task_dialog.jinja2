@@ -209,33 +209,6 @@
         {# Schedule Unit and Model #}
         var task_schedule_unit = $('#task_schedule_unit');
         var task_schedule_timing = $('#task_schedule_timing');
-
-        var schedule_timing_setter = function(){
-            // set minimum
-            var value = task_schedule_unit.val();
-            if (value === 'min') {
-                // need to be multiple of 10
-                var timing_value = task_schedule_timing.val();
-                timing_value = (timing_value / 10).toFixed(0) * 10;
-                timing_value = Math.max(10, timing_value);
-                task_schedule_timing.val(timing_value);
-            }
-        };
-
-        task_schedule_timing.on('change', schedule_timing_setter);
-        schedule_timing_setter();
-    
-        task_schedule_unit.on('change', function(e){
-            var value = $(this).val();
-            if(value === 'min'){
-                // set the minimum to 10min
-                // TODO: get studio minimum schedule unit
-                task_schedule_timing.val(10);
-            }
-        });
-
-        task_schedule_unit.val(schedule_unit);
-
         $('#task_schedule_model').val(schedule_model);
 
 
@@ -272,16 +245,12 @@
             var form_data = task_form.serialize();
 
             {% if forced  %}
-
                form_data += '&' +
                 $.param({
                     'forced': 'forced'
                 });
-
             {% endif %}
 
-
-{#            console.log('form_data :', form_data);#}
 
             // prevent multiple sends
             if (task_form.attr('is_sending') == 'true') {
@@ -289,25 +258,52 @@
             } else {
                 task_form.attr('is_sending', true);
             }
-            $.post(submit_form_url,
-                   form_data
-            ).done(function () {
-                $('#dialog_template').modal('hide');
-                // reload page
-                setTimeout(function () { // wait for hide event to finish
-                    window.location.reload();
-                }, 0);
-            }).fail(function (jqXHR) {
-                task_form.attr('is_sending', false);
 
-                // reset submit button
-                submit_button.button('reset');
-                bootbox.alert('<h6 class="red"><i class="icon-warning-sign"></i> Failed</h6>' + jqXHR.responseText);
+            // validate the data first
+            var form_is_valid, error_messages;
+            error_messages = [];
 
+            var schedule_unit_value = task_schedule_unit.val();
+            var current_timing_value = task_schedule_timing.val();
+
+            var validation_result = validate_timing_value({
+                value: current_timing_value,
+                unit: schedule_unit_value
             });
+
+            form_is_valid = validation_result.is_valid;
+            error_messages = error_messages.concat(validation_result.errors);
+
+            if (form_is_valid) {
+                $.post(
+                    submit_form_url,
+                    form_data
+                ).done(function () {
+                    $('#dialog_template').modal('hide');
+                    // reload page
+                    setTimeout(function () { // wait for hide event to finish
+                        window.location.reload();
+                    }, 0);
+                }).fail(function (jqXHR) {
+                    task_form.attr('is_sending', false);
+
+                    // reset submit button
+                    submit_button.button('reset');
+                    bootbox.alert('<h6 class="red"><i class="icon-warning-sign"></i> Failed</h6>' + jqXHR.responseText);
+                });
+            } else {
+                var combined_error_messages = '';
+                for (var i=0; i < error_messages.length; i++){
+                    combined_error_messages += error_messages[i] + '<br/>';
+                }
+                // reset submit button
+                task_form.attr('is_sending', false);
+                submit_button.button('reset');
+            }
+
         });
 
-                $('.date').each(function () {
+        $('.date').each(function () {
             var date = moment.utc($(this).text());
             $(this).text(date.fromNow());
         });

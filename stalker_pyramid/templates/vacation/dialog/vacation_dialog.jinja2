@@ -353,7 +353,7 @@ function init_dialog() {
         var start_time = $('#start_time');
         start_time.val(start_time_value.format('HH:MM'));
         start_time.timepicker({
-            minuteStep: 1,
+            minuteStep: 10,
             showSeconds: false,
             showMeridian: false
         });
@@ -367,7 +367,7 @@ function init_dialog() {
         var end_time = $('#end_time');
         end_time.val(end_time_value.format('HH:MM'));
         end_time.timepicker({
-            minuteStep: 1,
+            minuteStep: 10,
             showSeconds: false,
             showMeridian: false
         });

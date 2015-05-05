@@ -469,3 +469,41 @@ var set_entity_thumbnail = function(options) {
 
 
 };
+
+
+/**
+ * Validates timing values
+ * 
+ * @param options
+ */
+var validate_timing_value = function(options) {
+    'use strict';
+    var is_valid = true,
+        errors = [];
+    // set defaults
+    options = $.extend({
+        value: 1,
+        unit: 'min'
+    }, options);
+
+    // to be safe
+    options.value = parseInt(options.value, 10);
+
+    // check resolution
+    if (options.unit === 'min') {
+        var fixed_timing_value = (options.value / 10).toFixed(0) * 10;
+        // need to be multiple of 10
+        if (options.value !== fixed_timing_value) {
+            is_valid = false;
+            errors.push('The minimum timing resolution is 10 minutes');
+        }
+    }
+
+    // check negative values
+    if (options.value <= 0){
+        is_valid = false;
+        errors.push('Timing value should be a positive integer')
+    }
+
+    return {is_valid: is_valid, errors: errors}
+};
