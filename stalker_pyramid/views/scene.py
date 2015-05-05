@@ -172,11 +172,13 @@ left outer join (
             group by task_id
         ) as "Task_TimeLogs" on "Task_TimeLogs".task_id = "Tasks".id
 
-left outer join "Task_Resources" on "Tasks".id = "Task_Resources".task_id
-join "SimpleEntities" as "Resources_SimpleEntities" on "Resources_SimpleEntities".id = "Task_Resources".resource_id
+
 
 join "Tasks" as "Shot_As_Tasks" on "Shot_As_Tasks".id = "Shots".id
 join "Tasks" as "Shot_Parents" on "Shot_Parents".id = "Shot_As_Tasks".parent_id
+
+left outer join "Task_Resources" on "Tasks".id = "Task_Resources".task_id
+left outer join "SimpleEntities" as "Resources_SimpleEntities" on "Resources_SimpleEntities".id = "Task_Resources".resource_id
 
 join(
 select "Scene_SimpleEntities".name as name,
@@ -197,7 +199,7 @@ select "Scene_SimpleEntities".name as name,
     join "SimpleEntities" as "Type_Child_SimpleEntities" on "Type_Child_SimpleEntities".id = "Child_SimpleEntities".type_id
 
     left outer join "Task_Resources" as "Child_Task_Resources" on "Child_Tasks".id = "Child_Task_Resources".task_id
-    join "SimpleEntities" as "Child_Task_Resources_SimpleEntities" on "Child_Task_Resources_SimpleEntities".id = "Child_Task_Resources".resource_id
+    left outer join "SimpleEntities" as "Child_Task_Resources_SimpleEntities" on "Child_Task_Resources_SimpleEntities".id = "Child_Task_Resources".resource_id
 
 
     where "Type_SimpleEntities".name = 'Scene'
@@ -289,7 +291,7 @@ order by "Task_Scenes".id"""
                                          'resource_id': '',
                                          'resource_name': '',
                                          'update_task_resource_action': None
-                                    }
+            }
 
         for j in range(len(layout_task_type_names)):
             task_type_name = layout_task_type_names[j]
@@ -329,8 +331,8 @@ order by "Task_Scenes".id"""
                 shot_task['resource_ids'].append(shot_task_resource_ids[k])
                 shot_task['resource_names'].append(shot_task_resource_names[k])
 
-            if shot_task_status_codes[k] not in shot_task['child_statuses']:
-                shot_task['child_statuses'].append(shot_task_status_codes[k])
+            # if shot_task_status_codes[k] not in shot_task['child_statuses']:
+            shot_task['child_statuses'].append(shot_task_status_codes[k])
 
             # shot_task['percent'] += float(shot_task_percents[k])
             shot_task['bid_seconds'] += float(to_seconds(shot_task_bid_timing[k], shot_task_bid_unit[k]))
@@ -341,6 +343,11 @@ order by "Task_Scenes".id"""
         for l in range(len(shot_task_types)):
             shot_task_type_name = shot_task_types[l]
             shot_task = r_data[shot_task_type_name]
+
+            logger.debug('shot_task : %s %s %s' % (r[1], shot_task_type_name, shot_task['child_statuses']))
+            shot_task['child_statuses'] = list(set(shot_task['child_statuses']))
+            # logger.debug('shot_task : %s' % shot_task['child_statuses'])
+
             shot_task['status'] = get_parent_task_status(shot_task['child_statuses']).lower()
             # shot_task['percent'] = shot_task['percent']/shot_task['num_of_task']
             if update_task_permission:

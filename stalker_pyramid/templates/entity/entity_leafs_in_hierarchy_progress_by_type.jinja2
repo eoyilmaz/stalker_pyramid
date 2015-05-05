@@ -17,7 +17,6 @@
     <div class="row-fluid" >
         <div class="span12">
             <div>
-
                 <i class="{{=it.sign}}"></i>
                 <strong>{{=it.name}} : </strong>
                 <b>BID:</b>{{=it.bid_seconds}} |
@@ -25,16 +24,15 @@
                 <b>TLS:</b> {{=it.total_logged_seconds }}
             </div>
             <div class="progress no-padding" style="margin-top: 0; margin-bottom: 0;">
-
-                <div class="bar bar-cmpl" style="width: {{=it.bid_bar_percent}}%;"></div>
-                <div class="bar bar-grey" style="width: {{=it.separator_bar_percent}}%;"></div>
-                <div class="bar {{=it.total_logged_bar_class}}" style="width: {{=it.total_logged_bar_percent}}%;"></div>
-                <div class="bar bar-wfd" style="width: {{=it.schedule_bar_percent}}%;">{{if(it.status_code) {}}
-                    <span class="label label-status_{{=it.status_code}} pull-right">{{=it.status_code}}</span>
-                {{ } }}</div>
-
+                <div class="bar {{=it.bar0_class}}" style="width: {{=it.bar0_percent}}%;"></div>
+                <div class="bar {{=it.bar1_class}}" style="width: {{=it.bar1_percent}}%;"></div>
+                <div class="bar {{=it.bar2_class}}" style="width: {{=it.bar2_percent}}%;"></div>
+                <div class="bar {{=it.bar3_class}}" style="width: {{=it.bar3_percent}}%;">
+                    {{if(it.status_code) { }}
+                        <span class="label label-status_{{=it.status_code}} pull-right">{{=it.status_code}}</span>
+                    {{ } }}
+                </div>
             </div>
-
         </div>
     </div>
 </script>
@@ -77,44 +75,91 @@
                     var total_logged_seconds = group_by_type_list[prop]['total_logged_seconds'];
                     var schedule_seconds = group_by_type_list[prop]['schedule_seconds'];
 
-                    var bid_bar_percent = 0;
-                    var separator_bar_percent = 0;
-                    var total_logged_bar_percent = (total_logged_seconds / schedule_seconds)*100;
-                    var schedule_bar_percent = 100-total_logged_bar_percent;
+                    var bar0_percent = 0;
+                    var bar1_percent = 0;
+                    var bar2_percent = 0;
+                    var bar3_percent = 0;
 
-                    if(bid_seconds<total_logged_seconds){
+                    var bar0_class = 'bar-wip';
+                    var bar1_class = 'bar-wip';
+                    var bar2_class = 'bar-wip';
+                    var bar3_class = 'bar-wip';
 
-                        bid_bar_percent = (bid_seconds/schedule_seconds)*100;
-                        separator_bar_percent = 1;
-                        total_logged_bar_percent -= (bid_bar_percent+separator_bar_percent);
-                        schedule_bar_percent = 100 -(bid_bar_percent+separator_bar_percent+total_logged_bar_percent);
+                    if(bid_seconds<schedule_seconds){
                         group_by_type_list[prop]['sign'] = "icon-warning-sign red";
+                        if(total_logged_seconds<=bid_seconds){
+                            bar0_percent = (total_logged_seconds/schedule_seconds)*100;//total_logged_seconds_percent
+                            bar0_class = 'bar-wip';
+                            if (group_by_type_list[prop]['status_code']){
+                                    bar0_class = 'bar-'+  group_by_type_list[prop]['status_code'];
+                            }
 
+                            bar1_percent = (bid_seconds/schedule_seconds)*100-bar0_percent;//bid_seconds_percent
+                            bar1_class = 'bar-wfd';
+
+                            bar2_percent = 1;
+                            bar2_class = 'bar-grey';
+
+                            bar3_percent = 100-(bar0_percent+bar1_percent+bar2_percent);
+                            bar3_class = 'bar-wfd';
+                        }
+                        else{
+                            bar0_percent = (bid_seconds/schedule_seconds)*100;//bid_seconds_percent
+                            bar0_class = 'bar-cmpl';
+
+                            bar1_percent = 1;//bid_seconds_percent
+                            bar1_class = 'bar-grey';
+
+                            bar2_percent = (total_logged_seconds/schedule_seconds)*100-(bar0_percent+bar1_percent);//total_logged_seconds_percent
+                            bar2_class = 'bar-wip';
+                            if(total_logged_seconds == schedule_seconds){
+                               bar2_class = 'bar-cmpl';
+                            }
+                            if (group_by_type_list[prop]['status_code']){
+                                    bar2_class = 'bar-'+  group_by_type_list[prop]['status_code'];
+                            }
+
+                            bar3_percent = 100-(bar0_percent+bar1_percent+bar2_percent);
+                            bar3_class = 'bar-wfd';
+                        }
                     }
+                    else {
+                        bar0_percent = (total_logged_seconds/schedule_seconds)*100;//total_logged_seconds_percent
+                        bar0_class = 'bar-wip';
 
-                    if(schedule_seconds == total_logged_seconds) {
-                        group_by_type_list[prop]['total_logged_bar_class'] = 'bar-cmpl';
-                        if(schedule_seconds < bid_seconds ){
+                        if(total_logged_seconds == schedule_seconds){
+                           bar0_class = 'bar-cmpl';
+                           if(bid_seconds==schedule_seconds){
+                                group_by_type_list[prop]['sign'] = "icon-ok green";
+                            }
+                        }
+                        if (group_by_type_list[prop]['status_code']){
+                                bar0_class = 'bar-'+  group_by_type_list[prop]['status_code'];
+                        }
+                        bar1_percent = 100-bar0_percent;//bid_seconds_percent
+                        bar1_class = 'bar-wfd';
+
+                        bar2_percent = 0;
+                        bar2_class = 'bar-grey';
+
+                        bar3_percent = 0;
+                        bar3_class = 'bar-grey';
+
+                        if(bid_seconds>schedule_seconds){
                             group_by_type_list[prop]['sign'] = "icon-star orange";
                         }
-                        if(schedule_seconds==bid_seconds){
-                            group_by_type_list[prop]['sign'] = "icon-ok green";
-                        }
-                    }
-                    else{
-                        group_by_type_list[prop]['total_logged_bar_class'] = 'bar-wip';
-
                     }
 
-                    if (group_by_type_list[prop]['status_code']){
-                          group_by_type_list[prop]['total_logged_bar_class'] = 'bar-'+  group_by_type_list[prop]['status_code'];
-                    }
+                    group_by_type_list[prop]['bar0_percent'] = bar0_percent;
+                    group_by_type_list[prop]['bar1_percent'] = bar1_percent;
+                    group_by_type_list[prop]['bar2_percent'] = bar2_percent;
+                    group_by_type_list[prop]['bar3_percent'] = bar3_percent;
 
+                    group_by_type_list[prop]['bar0_class'] = bar0_class;
+                    group_by_type_list[prop]['bar1_class'] = bar1_class;
+                    group_by_type_list[prop]['bar2_class'] = bar2_class;
+                    group_by_type_list[prop]['bar3_class'] = bar3_class;
 
-                    group_by_type_list[prop]['bid_bar_percent'] = bid_bar_percent;
-                    group_by_type_list[prop]['separator_bar_percent'] = separator_bar_percent;
-                    group_by_type_list[prop]['total_logged_bar_percent'] = total_logged_bar_percent;
-                    group_by_type_list[prop]['schedule_bar_percent'] = schedule_bar_percent;
 
                     group_by_type_list[prop]['bid_seconds'] = convert_seconds_to_time_range(bid_seconds);
                     group_by_type_list[prop]['schedule_seconds'] = convert_seconds_to_time_range(schedule_seconds);

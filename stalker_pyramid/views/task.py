@@ -235,6 +235,7 @@ def check_task_status_by_schedule_model():
     """
 
     logger.debug('check_task_status_by_schedule_model starts')
+
     utc_now = local_to_utc(datetime.datetime.now())
     tasks = Task.query.filter(Task.schedule_model == 'duration').all()
     status_cmpl = Status.query.filter(Status.code == 'CMPL').first()
@@ -4996,8 +4997,7 @@ where "TimeLogs".task_id in %s
     renderer='json'
 )
 def get_task_dependency(request):
-    if not multi_permission_checker(
-            request, ['Read_User', 'Read_Task']):
+    if not multi_permission_checker(request, ['Read_User', 'Read_Task']):
         return HTTPForbidden(headers=request)
 
     logger.debug('get_task_dependent_of is running')
@@ -5059,7 +5059,7 @@ def force_task_status_dialog(request):
     came_from = request.params.get('came_from', '/')
     action = '/tasks/%s/force_status/%s' % (task_id, status_code)
     message = 'Task will be set as %s' \
-                  '<br><br>Are you sure?' % status_code
+              '<br><br>Are you sure?' % status_code
 
     version = get_last_version_of_task(request, is_published='t')
 
@@ -5094,7 +5094,7 @@ def force_task_status(request):
         transaction.abort()
         return Response('Can not find a status with code: %s' % status_code, 500)
 
-    if status.code not in ['CMPL','STOP','OH']:
+    if status.code not in ['CMPL', 'STOP', 'OH']:
         transaction.abort()
         return Response('Can not set status to: %s' % status_code, 500)
 
@@ -5105,7 +5105,7 @@ def force_task_status(request):
         transaction.abort()
         return Response('Can not find a Task with id: %s' % task_id, 500)
 
-    if task.status.code not in ['WIP','HREV']:
+    if task.status.code not in ['WIP', 'HREV']:
         transaction.abort()
         return Response('Cannot force %s tasks' % task.status.code, 500)
 
@@ -5166,7 +5166,8 @@ def force_task_status(request):
     # invalidate all caches
     invalidate_all_caches()
 
-    return Response('Success: %s status is set to %s' % (task.name, status.name))
+    return Response('Success: %s status is set to %s' %
+                    (task.name, status.name))
 
 
 @view_config(
@@ -5183,7 +5184,7 @@ def resume_task_dialog(request):
     came_from = request.params.get('came_from', '/')
     action = '/tasks/%s/resume' % task_id
     message = 'Task will be resumed' \
-                  '<br><br>Are you sure?'
+              '<br><br>Are you sure?'
 
     logger.debug('action: %s' % action)
 
@@ -5223,7 +5224,8 @@ def resume_task(request):
     note_type.code = 'resumed'
 
     note = Note(
-        content='%s has changed this task status to %s' % (logged_in_user.name, task.status.name),
+        content='%s has changed this task status to %s' % (logged_in_user.name,
+                                                           task.status.name),
         created_by=logged_in_user,
         date_created=utc_now,
         date_updated=utc_now,
@@ -5267,7 +5269,10 @@ def get_task_resources(request):
             'thumbnail_full_path': resource.thumbnail.full_path if resource.thumbnail else None,
             'description': '',
             'item_view_link': '/users/%s/view' % resource.id,
-            'item_remove_link':'/tasks/%s/remove/resources/%s/dialog?came_from=%s'%( task.id, resource.id, request.current_route_path())
+            'item_remove_link': '/tasks/%s/remove/resources/%s/dialog?came_from=%s'
+                               %(task.id,
+                                 resource.id,
+                                 request.current_route_path())
             if PermissionChecker(request)('Update_Task') else None
         }
         for resource in task.resources
@@ -5293,7 +5298,7 @@ def remove_task_user_dialog(request):
     came_from = request.params.get('came_from', '/')
     action = '/tasks/%s/remove/%s/%s' % (task.id, user_type, user.id)
     message = '%s will be removed from %s resources' \
-                  '<br><br>Are you sure?' % (user.name, task.name)
+              '<br><br>Are you sure?' % (user.name, task.name)
 
     logger.debug('action: %s' % action)
 
@@ -5416,12 +5421,12 @@ def change_tasks_users(request):
         transaction.abort()
         return Response('Missing parameters', 500)
 
-    if user_type=='resources':
+    if user_type == 'resources':
         for task in tasks:
             task.resources = users
             task.updated_by = logged_in_user
             task.date_updated = utc_now
-    elif user_type=='responsible':
+    elif user_type == 'responsible':
         for task in tasks:
             task.responsible = users
             task.updated_by = logged_in_user
@@ -5512,7 +5517,7 @@ def change_task_users_dialog(request):
 
     return {
         'task': task,
-        'user_type':user_type,
+        'user_type': user_type,
         'came_from': came_from
     }
 
