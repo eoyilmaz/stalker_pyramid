@@ -473,7 +473,7 @@ def get_users(request):
     logger.debug('entity_id  : %s' % entity_id)
     logger.debug('entity_type: %s' % entity_type)
 
-    if entity_id and entity_type not in ['Project', 'Department', 'Group', 'Task', 'User']:
+    if entity_id and entity_type not in ['Project', 'Department', 'Group', 'Task', 'User', 'Client']:
         # there is no entity_type for that entity
         return []
 
@@ -540,6 +540,10 @@ def get_users(request):
     elif entity_type == "Task":
         sql_query += """join "Task_Resources" on "Users".id = "Task_Resources".resource_id
         where "Task_Resources".task_id = %(id)s
+        """ % {'id': entity_id}
+    elif entity_type == "Client":
+        sql_query += """join "Client_Users" on "Users".id = "Client_Users".uid
+        where "Client_Users".cid = %(id)s
         """ % {'id': entity_id}
     elif entity_type == "User":
         sql_query += 'where "Users".id = %s' % entity_id

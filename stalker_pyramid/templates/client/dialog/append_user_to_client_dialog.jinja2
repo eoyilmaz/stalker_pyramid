@@ -82,8 +82,7 @@
 
             var append_form = $("#append_form");
 
-            $.post('/clients/{{ client.id }}/user/append', append_form.serialize()
-            ).done(function (response_text) {
+            $.post('/clients/{{ client.id }}/user/append', append_form.serialize() ).done(function (response_text) {
                 window.location.assign('{{ came_from }}');
                 submit_button.button('reset');
                 $('#dialog_template').modal('hide');

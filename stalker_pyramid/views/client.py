@@ -23,7 +23,7 @@ import datetime
 from pyramid.httpexceptions import HTTPFound
 from pyramid.view import view_config
 
-from stalker import db, Client, Status, Client, Studio, User, Role
+from stalker import db, Client, Status, Client, Studio, User, Role, ClientUser
 from stalker.db import DBSession
 
 import transaction
@@ -292,14 +292,24 @@ def append_user_to_client(request):
     role_name = request.params.get('role_name', None)
     role = query_role(role_name)
 
-
     logger.debug("%s role is created" % role.name)
     logger.debug(client.users)
 
+    client_user = ClientUser()
+    client_user.client = client
+    client_user.role = role
+    client_user.user = user
+
+    DBSession.add(client_user)
+
     if user not in client.users:
         client.users.append(user)
+        request.session.flash('success:%s is added to %s user list' % (user.name, client.name))
 
     logger.debug(client.users)
+
+
+
     return Response(
         'success:%s is added to %s.'
         % (user.name, client.name)
