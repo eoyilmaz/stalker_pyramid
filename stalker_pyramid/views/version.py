@@ -315,6 +315,7 @@ def pack_version(request):
             os.path.splitext(version.filename)[0]
         archive_name = '%s%s' % (version_filename_without_extension, '.zip')
         archive_path = os.path.join(version.absolute_path, archive_name)
+        logger.debug('ZIP Path: %s' % archive_path)
         if os.path.exists(archive_path):
             # just serve the same file
             logger.debug('ZIP exists, not creating it again!')
