@@ -306,9 +306,14 @@ def get_time_logs(request):
         "SimpleEntities_Resource".name,
         extract(epoch from "TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC') as total_seconds,
         extract(epoch from "TimeLogs".start::timestamp AT TIME ZONE 'UTC') * 1000 as start,
-        extract(epoch from "TimeLogs".end::timestamp AT TIME ZONE 'UTC') * 1000 as end
+        extract(epoch from "TimeLogs".end::timestamp AT TIME ZONE 'UTC') * 1000 as end,
+        "SimpleEntities_Created_By".id,
+        "SimpleEntities_Created_By".name,
+        "SimpleEntities_TimeLog".description
     from "TimeLogs"
     join "Tasks" on "TimeLogs".task_id = "Tasks".id
+    join "SimpleEntities" as "SimpleEntities_TimeLog" on "SimpleEntities_TimeLog".id = "TimeLogs".id
+    join "SimpleEntities" as "SimpleEntities_Created_By" on "SimpleEntities_Created_By".id = "SimpleEntities_TimeLog".created_by_id
     join "SimpleEntities" as "SimpleEntities_Task" on "Tasks".id = "SimpleEntities_Task".id
     join "SimpleEntities" as "SimpleEntities_Status" on "Tasks".status_id = "SimpleEntities_Status".id
     join "SimpleEntities" as "SimpleEntities_Resource" on "TimeLogs".resource_id = "SimpleEntities_Resource".id
@@ -367,11 +372,15 @@ def get_time_logs(request):
             'parent_name': r[4],
             'resource_id': r[5],
             'resource_name': r[6],
-            'duration': r[7],
+            'duration': r[7]/3600,
             'start': r[8],
             'end': r[9],
+            'created_by_id': r[10],
+            'created_by_name': r[11],
+            'description': r[12],
             'className': 'label-important',
-            'allDay': '0'
+            'allDay': '0',
+            'update_timelog_action':'timelogs/{id}/update/dialog'
         } for r in result.fetchall()
     ]
     end = time.time()

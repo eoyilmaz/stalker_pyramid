@@ -52,6 +52,13 @@
             get_icon('ticket'),
             {{ user.open_tickets | count }}
         );
+        menu_of(
+            'Timelogs',
+            "{%- if request.current_route_path() == request.route_path('list_user_timelogs', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
+            '{{ request.route_url('list_user_timelogs', id=user.id) }}',
+            get_icon('timelog'),
+            ''
+        );
 
         menu_of(
             'Reviews',

@@ -32,10 +32,10 @@
                         {% if  event_type=='TimeLog' %}
                             var now = new Date();
                             if(now>end){
-                                create_event_action(start, end,allDay, '{{ entity.id }}', '{{ event_type.lower() }}')
+                                create_event_action(start, end, allDay, '{{ entity.id }}', '{{ event_type.lower() }}')
                             }
                         {% else %}
-                            create_event_action(start, end,allDay, '{{ entity.id }}', '{{ event_type.lower() }}')
+                            create_event_action(start, end, allDay, '{{ entity.id }}', '{{ event_type.lower() }}')
                         {% endif %}
                         calendar.fullCalendar('unselect');
                     },

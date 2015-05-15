@@ -499,7 +499,7 @@ def main(global_config, **settings):
     config.add_route('list_user_departments', 'users/{id}/departments/list')  # html
     config.add_route('list_user_groups',      'users/{id}/groups/list')  # html
     config.add_route('list_user_projects',    'users/{id}/projects/list')  # html
-    config.add_route('list_user_time_logs',   'users/{id}/time_logs/list')  # html
+    config.add_route('list_user_timelogs',   'users/{id}/timelogs/list')  # html
     config.add_route('list_user_tickets',     'users/{id}/tickets/list')  # html
     config.add_route('list_user_tasks_responsible_of',       'users/{id}/tasks/list/responsible_of') # html
     config.add_route('list_user_tasks_watching',       'users/{id}/tasks/list/watching') # html

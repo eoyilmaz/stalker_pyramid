@@ -236,16 +236,26 @@ function init_dialog() {
 
     {# ***************************************************************** #}
     var event_dialog = $('#dialog_template');
-
-    var start_date_value = new Date(event_dialog.attr('start'));
-    var end_date_value = new Date(event_dialog.attr('end'));
+var start_date_value;
+var end_date_value
+    if(event_dialog.attr('start') && event_dialog.attr('end')){
+        start_date_value = new Date(event_dialog.attr('start'));
+        end_date_value = new Date(event_dialog.attr('end'));
+    }
+    else{
+        start_date_value = new Date();
+        end_date_value = new Date();
+        event_dialog.attr('allDay', 'true');
+    }
 
     var start_time_value = start_date_value;
     var end_time_value = end_date_value;
 
     if (event_dialog.attr('allDay') == 'true') {
         start_time_value.setHours(10);
+        start_time_value.setMinutes(0);
         end_time_value.setHours(19);
+        end_time_value.setMinutes(0);
     }
     {# ***************************************************************** #}
     {# Schedule Unit and Model #}

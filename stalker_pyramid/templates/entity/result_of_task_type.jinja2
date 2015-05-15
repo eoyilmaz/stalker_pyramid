@@ -6,9 +6,6 @@
             color: #dddddd;
         }
 
-
-
-
         .jqplot-highlighter-tooltip {
             background-color: rgba(57,57,57, 0.9);
             padding: 7px;
@@ -53,8 +50,7 @@
 <div class="space-20"></div>
 <div class="row-fluid">
     <div class="span12" id="result_table">
-            <table id="grid-table"></table>
-            <div id="grid-pager"></div>
+
     </div>
 </div>
 
@@ -90,9 +86,14 @@
 <script type="text/javascript">
     function loadShotTaskData(t_type){
         console.log('loadShotTaskData: '+t_type);
-{#        jQuery("#grid-table").jqGrid('GridUnload');#}
+
         var result_chart = $('#result_chart');
         result_chart.find("#chart_shot").remove();
+
+        var result_table = $('#result_table');
+        result_table.find("#table_container").remove();
+        result_table.find("#grid-pager").remove();
+
         $('#info_box').hide();
 
         $.getJSON('/entities/{{ entity.id }}/'+t_type+'/result').then(function (data) {
@@ -177,11 +178,10 @@
                             }
                 });
 
+                result_table.append('<div id="table_container"><table id="grid-table"></table></div><div id="grid-pager"></div>');
 
                 var grid_selector = "#grid-table";
                 var pager_selector = "#grid-pager";
-
-
 
                 jQuery(grid_selector).jqGrid({
                     data: shot_data,
@@ -231,7 +231,7 @@
 
                     }
                 });
-{#                jQuery(grid_selector).jqGrid("navGrid",pager_selector,{add:false, edit:false, del:false});#}
+                jQuery(grid_selector).jqGrid("navGrid",pager_selector,{add:false, edit:false, del:false});
 
             }
         });

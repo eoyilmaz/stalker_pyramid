@@ -204,6 +204,10 @@ logger.setLevel(logging.DEBUG)
     renderer='templates/task/list/list_user_tasks_watching.jinja2'
 )
 @view_config(
+    route_name='list_user_timelogs',
+    renderer='templates/time_log/list/list_entity_timelogs.jinja2'
+)
+@view_config(
     route_name='list_task_tasks',
     renderer='templates/task/list/list_entity_tasks.jinja2'
 )

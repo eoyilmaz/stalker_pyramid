@@ -148,6 +148,13 @@ tr .odd > td .ticket_BLOCKER {
 .header-color-daily + .widget-body {
   border-color: #6fb3e0;
 }
+.header-color-timelog {
+  background: #6fb3e0;
+  border-color: #6fb3e0;
+}
+.header-color-timelog + .widget-body {
+  border-color: #6fb3e0;
+}
 .approved {
   background-color: #82af6f;
   color: white;
