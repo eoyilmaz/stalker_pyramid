@@ -86,19 +86,18 @@
                     }
                     data[i].project_name = get_project_name(data[i].project_id);
 
-
-
                     if (data[i].responsible !=null){
                         for (var k=0; k<data[i].responsible.length;k++){
                             var r_id = data[i].responsible[k];
-                            data[i].responsible[k] = {'id':r_id,
-                                                   'name':get_user_name(r_id)}
-
+                            data[i].responsible[k] = {
+                                                        'id':r_id,
+                                                        'name':get_user_name(r_id)
+                            }
                         }
                     }
                     else{
                             data[i].responsible = [];
-                        }
+                    }
 
 
 

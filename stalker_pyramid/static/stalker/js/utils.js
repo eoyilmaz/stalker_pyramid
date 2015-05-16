@@ -169,6 +169,8 @@ function get_icon(entity_type) {
         return 'icon-bar-chart';
     case 'budget':
         return 'icon-credit-card';
+    case 'timelog':
+        return 'icon-calendar';
     default:
         return 'icon-key';
     }

@@ -1,0 +1,83 @@
+{% extends "base.jinja2" %}
+
+{# BREADCRUMBS #}
+{% block breadcrumbs %}
+    {% if entity %}
+        {% set groups=entity.groups %}
+    {% else %}
+        {% set entity=studio %}
+    {% endif %}
+    {% set page_title='Timelogs' %}
+    {% include 'breadcrumb/breadcrumbs.jinja2' %}
+{% endblock breadcrumbs %}
+
+{# SIDEBAR #}
+{% block sidebar %}
+
+    {% if not entity %}
+        {% set entity=studio %}
+    {% endif %}
+
+    {% include 'sidebar.jinja2' %}
+{% endblock sidebar %}
+
+{# PAGE-CONTENT #}
+{% block page_content %}
+{#    {% set page_title='Groups' %}#}
+{#    {% include 'page_header.jinja2' %}#}
+    {% set add_button_address=request.route_path('user_time_log_dialog', id=entity.id, _query={'came_from': request.current_route_path()})%}
+    {% set list_item_type='TimeLog' %}
+    {% include 'components/data_table.jinja2' %}
+
+{% endblock page_content %}
+
+
+{# EXTRA-SCRIPTS #}
+{% block extrascripts %}
+
+    {% raw %}
+    <script id="tmpl_itemThead" type="text/x-dot-template">
+        <tr>
+            <th>Start</th>
+            <th>End</th>
+            <th>Duration</th>
+            <th>Task</th>
+            <th>Description</th>
+            <th>Created By</th>
+            <!--<th></th>-->
+        </tr>
+    </script>
+    {% endraw %}
+
+    {% raw %}
+    <script id="tmpl_itemRow" type="text/x-dot-template">
+        <tr>
+            <td>{{=it.start}}</td>
+            <td>{{=it.end}}</td>
+            <td>{{=it.duration}} h</td>
+            <td><a href='/tasks/{{=it.task_id }}/view'>{{=it.task_name}} ( {{=it.parent_name}} )</a>
+            </td>
+            <td>{{=it.description}}</td>
+            <td><a href='/users/{{=it.created_by_id}}/view'>{{=it.created_by_name}}</a>
+            </td>
+            <!--<td>-->
+                 <!--{{ if (it.update_timelog_action) { }}-->
+                <!--<a  class="blue"-->
+                    <!--href="{{=it.update_timelog_action}}">-->
+                    <!--<i class="icon-edit bigger-130"></i>-->
+                <!--</a>{{ } }}-->
+
+            <!--</td>-->
+        </tr>
+    </script>
+    {% endraw %}
+
+    <script>
+
+        var tableParameters = {};
+        var sortingParameters = [[0, 'desc']];
+        var tableDataAddress;
+        tableDataAddress = '{{request.route_path('get_entity_time_logs', id=entity.id) }}';
+    </script>
+
+{% endblock extrascripts %}

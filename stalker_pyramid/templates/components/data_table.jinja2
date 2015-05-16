@@ -93,6 +93,12 @@
                         if (data[i].date_created) {
                             data[i].date_created = new Date(data[i].date_created).format('yyyy-mm-dd HH:MM');
                         }
+                        if (data[i].start) {
+                            data[i].start = new Date(data[i].start).format('yyyy-mm-dd HH:MM');
+                        }
+                        if (data[i].end) {
+                            data[i].end = new Date(data[i].end).format('yyyy-mm-dd HH:MM');
+                        }
 {#                        console.log('data loaded' + data[i].thumbnail_full_path);#}
 
                         if (data[i].thumbnail_full_path == null) {

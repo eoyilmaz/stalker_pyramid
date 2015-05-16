@@ -202,7 +202,7 @@
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/flot/jquery.flot.pie.min.js") }}'></script>
 
     <script type="text/javascript">
-        $.getJSON('/users/{{ entity.id }}/events/?keys=time_log&keys=vacation&keys=task').then(function (data) {
+        $.getJSON('/users/{{ entity.id }}/events/?keys=time_log&keys=vacation').then(function (data) {
             var events = [];
 
             var total_timelogs = 0;
