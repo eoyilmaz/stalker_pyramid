@@ -1084,7 +1084,7 @@ def delete_output(request):
         # now delete files
         for f in files_to_remove:
             # convert the paths to system path
-            f_system = os.path.join(prefix, f)
+            f_system = os.path.expandvars(f)
             logger.debug('deleting : %s' % f_system)
             try:
                 os.remove(f_system)
