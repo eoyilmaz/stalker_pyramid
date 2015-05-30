@@ -327,7 +327,13 @@ def pack_version(request):
             from stalker_pyramid.views.archive import Archiver
 
             path = version.absolute_full_path
-            arch = Archiver()
+
+            exclude_mask = [
+                '.jpg', '.jpeg', '.png', '.tga', '.tif', '.tiff', '.ass',
+                '.bmp', '.gif'
+            ]
+
+            arch = Archiver(exclude_mask=exclude_mask)
             task = version.task
             if False:
                 assert(isinstance(version, Version))
