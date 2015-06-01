@@ -19,7 +19,7 @@
 
 try {
     var doT = require('../../doT/doT.min');
-    var jQuery = require('../../jquery/jquery-2.0.3.min');
+    var jQuery = require('../../jquery/jquery-2.1.1.min');
 } catch (e) {}
 
 
@@ -151,7 +151,7 @@ try {
         $.fn.paginator.get_pages();
         $.fn.paginator.get_pages_shown();
         $.fn.paginator.render_page_icons();
-        $.fn.paginator.register_page_icon_events();
+        $.fn.paginator.register_events();
     };
 
     /**
@@ -207,6 +207,11 @@ try {
         } else if (page_number === -1) {
             page_number = Math.max(current_page_number - 1, 1);
         }
+
+        if (isNaN(parseInt(page_number))) {
+            return;
+        }
+
         current_page_number = page_number;
         $.fn.paginator.initialize();
 
@@ -233,7 +238,7 @@ try {
 
         return '<li class="' + icon_class + '">' +
             '<a class="paginator_page_icon" href="#" data-page-number="-1">' +
-            '   <i class="icon-double-angle-left">' +
+            '   <i class="icon-angle-left">' +
             '   </i>' +
             '</a></li>';
     };
@@ -243,6 +248,27 @@ try {
 
         return '<li class="' + icon_class + '">' +
             '   <a class="paginator_page_icon" href="#" data-page-number="+1">' +
+            '       <i class="icon-angle-right">' +
+            '       </i>' +
+            '   </a>' +
+            '</li>';
+    };
+
+    $.fn.paginator.render_left_most_icon = function () {
+        var icon_class = current_page_number === 1 ? 'disabled' : '';
+
+        return '<li class="' + icon_class + '">' +
+            '<a class="paginator_page_icon" href="#" data-page-number="1">' +
+            '   <i class="icon-double-angle-left">' +
+            '   </i>' +
+            '</a></li>';
+    };
+
+    $.fn.paginator.render_right_most_icon = function () {
+        var icon_class = current_page_number === number_of_pages ? 'disabled' : '';
+
+        return '<li class="' + icon_class + '">' +
+            '   <a class="paginator_page_icon" href="#" data-page-number="' + number_of_pages + '">' +
             '       <i class="icon-double-angle-right">' +
             '       </i>' +
             '   </a>' +
@@ -256,6 +282,23 @@ try {
         }
         template += '<a class="paginator_page_icon" href="#" data-page-number="' + page_number + '">' + page_number + '</a></li>';
         return template;
+    };
+
+    $.fn.paginator.render_jump_to_page_controls = function () {
+        var template = '<form class="form-search span6">' +
+            '<input id="paginator_jump_to_page_input" class="input-medium search-query" type="text" style="width: 26px" value="' + current_page_number +  '">' +
+            '<span> of ' + number_of_pages + '&nbsp</span>' +
+            '<button id="paginator_jump_to_page_button" class="btn btn-info btn-small">Go</button>' +
+            '</form>';
+        return template;
+    };
+
+    $.fn.paginator.register_jump_to_page_button_callback = function () {
+        $('#paginator_jump_to_page_button').on('click', function (e) {
+            e.stopPropagation();
+            e.preventDefault();
+            $.fn.paginator.set_current_page($('#paginator_jump_to_page_input').val());
+        });
     };
 
     /**
@@ -274,10 +317,23 @@ try {
         });
     };
 
+    $.fn.paginator.register_events = function () {
+        $.fn.paginator.register_page_icon_events();
+        $.fn.paginator.register_jump_to_page_button_callback();
+    };
+
     $.fn.paginator.render_page_icons = function () {
         // remove any previous page icons first
-        container.find('ul').remove();
-        var ul_item = $($.parseHTML('<ul></ul>'));
+        container.find('div').remove();
+        var paginator_container = $($.parseHTML('<div class="row-fluid "></div>'));
+        var page_jumper = $($.parseHTML($.fn.paginator.render_jump_to_page_controls()));
+        var ul_item = $($.parseHTML('<ul class="span6"></ul>'));
+
+        paginator_container.append(ul_item);
+        paginator_container.append(page_jumper);
+
+        var left_icon = $($.parseHTML($.fn.paginator.render_left_most_icon()));
+        ul_item.append(left_icon);
 
         var left_icon = $($.parseHTML($.fn.paginator.render_left_icon()));
         ul_item.append(left_icon);
@@ -291,7 +347,10 @@ try {
         var right_icon = $($.parseHTML($.fn.paginator.render_right_icon()));
         ul_item.append(right_icon);
 
-        container.append(ul_item);
+        var right_most_icon = $($.parseHTML($.fn.paginator.render_right_most_icon()));
+        ul_item.append(right_most_icon);
+
+        container.append(paginator_container);
     };
 
 }(jQuery));

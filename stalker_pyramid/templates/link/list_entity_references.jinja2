@@ -362,13 +362,15 @@
             options = $.extend({
                 total_number_of_items: 0,
                 items_per_page: 40,
-                current_page: 1
+                current_page: 1,
+                max_number_of_page_shortcuts: 5
             }, options);
 
             $('.pagination').paginator({
                 'number_of_items': options.total_number_of_items,
                 'items_per_page': options.items_per_page,
                 'current_page': options.current_page,
+                'max_number_of_page_shortcuts': options.max_number_of_page_shortcuts,
                 'callback': function(current_page_number){
                     // get search string
                     var search_string = $('#reference_search_field').val();
