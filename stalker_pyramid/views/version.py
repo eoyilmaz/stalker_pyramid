@@ -25,11 +25,12 @@ from pyramid.response import Response
 
 from sqlalchemy import distinct
 
-from stalker import db, Task, Version, Entity, defaults
+from stalker import db, Task, Version, Entity, User, defaults
 
 from stalker_pyramid.views import (get_logged_in_user, get_user_os,
                                    PermissionChecker, milliseconds_since_epoch)
 from stalker_pyramid.views.link import MediaManager
+from stalker_pyramid.views.task import generate_recursive_task_query
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -200,6 +201,79 @@ def get_entity_versions(request):
         'created_with': version.created_with,
         'description': version.description
     } for version in entity.versions]
+
+
+@view_config(
+    route_name='get_user_versions',
+    renderer='json'
+)
+def get_user_versions(request):
+    """returns all the Shots of the given Project
+    """
+    logger.debug('*******get_user_versions is running')
+
+    user_id = request.matchdict.get('id', -1)
+    user = User.query.filter_by(id=user_id).first()
+
+    sql_query = """
+        select
+            "Versions".id,
+            "Versions".is_published,
+            "Version_SimpleEntities".date_updated,
+            "Versions".take_name,
+            "Versions".version_number,
+            "Versions".created_with,
+            "Version_SimpleEntities".description,
+            tasks.id,
+            tasks.name,
+            tasks.path,
+            tasks.full_path
+
+        from "Versions"
+        join "SimpleEntities" as "Version_SimpleEntities" on "Version_SimpleEntities".id = "Versions".id
+        join "Users" on "Version_SimpleEntities".created_by_id = "Users".id
+        join (
+            %(tasks_hierarchical_name)s
+        ) as tasks on tasks.id = "Versions".task_id
+
+        where "Users".id = %(user_id)s
+        order by "Version_SimpleEntities".date_updated desc
+
+        """
+
+    sql_query = sql_query % {
+                                'user_id': user_id,
+                                'tasks_hierarchical_name':
+                                generate_recursive_task_query(ordered=False)
+                            }
+
+    from sqlalchemy import text  # to be able to use "%" sign use this function
+
+    result = db.DBSession.connection().execute(text(sql_query))
+
+    return_data = [
+        {
+            'id': r[0],
+            'is_published':r[1],
+            'date_created': milliseconds_since_epoch(r[2]),
+            'take_name': r[3],
+            'version_number': r[4],
+            'created_with': r[5],
+            'description': r[6],
+            'task_id': r[7],
+            'task_name': r[8],
+            'task_path': r[9],
+            'task_full_path': r[10],
+            'absolute_full_path':'',
+            'created_by': {
+                'id': user.id,
+                'name': user.name
+            }
+        }
+        for r in result.fetchall()
+    ]
+
+    return return_data
 
 
 @view_config(

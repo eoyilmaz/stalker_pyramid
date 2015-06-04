@@ -107,6 +107,14 @@
         );
 
 
+        menu_of('Versions',
+            "{%- if request.current_route_path() == request.route_path('list_user_versions', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
+            '{{ request.route_url('list_user_versions', id=user.id) }}',
+            get_icon('version'),
+            '0'
+        );
+
+
         submenu_of('{{ user.id }}', 'Project');
 
         submenu_of('{{ user.id }}', 'Department');

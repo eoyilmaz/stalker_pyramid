@@ -59,7 +59,10 @@
 {#    {% include 'page_header.jinja2' %}#}
     <!--/.page-header-->
     {% set add_button_title='Create' %}
-    {% set add_button_address=request.route_url('create_version_dialog', tid=entity.id, _query={'came_from': request.current_route_path()}) %}
+
+    {% if entity.entity_type != 'User' %}
+        {% set add_button_address=request.route_url('create_version_dialog', tid=entity.id, _query={'came_from': request.current_route_path()}) %}
+    {% endif %}
 
     {% set list_item_type='Version' %}
     {% include 'components/data_table.jinja2' %}
@@ -135,6 +138,13 @@
         var tableParameters = {"aoColumns": [null,  null, null, null, null,null,null]};
         var sortingParameters = [[0, 'desc']];
         var tableDataAddress = '{{ request.route_path('get_entity_versions', id=entity.id) }}';
+        {% if entity.entity_type == 'User' %}
+
+            tableDataAddress = '{{ request.route_path('get_user_versions', id=entity.id) }}';
+        {% endif %}
+
+        console.log('tableDataAddress : '+tableDataAddress);
+
     </script>
 
 {% endblock extrascripts %}

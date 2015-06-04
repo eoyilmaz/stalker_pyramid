@@ -505,6 +505,7 @@ def main(global_config, **settings):
     config.add_route('list_user_tasks_watching',       'users/{id}/tasks/list/watching') # html
     config.add_route('list_user_reviews',              'users/{id}/reviews/list')  # html
     config.add_route('list_resource_rates',    'resources/{id}/rates/list')  # html
+    config.add_route('list_user_versions',       'users/{id}/versions/list')  # html
 
 
     config.add_route('view_user_tasks',       'users/{id}/tasks/view')  # html
@@ -767,6 +768,7 @@ def main(global_config, **settings):
     config.add_route('list_version_children',               'versions/{id}/children/list')  # html
 
     config.add_route('get_task_versions',                   'tasks/{id}/versions/')  # jsons
+    config.add_route('get_user_versions',                   'users/{id}/versions/')  # jsons
     config.add_route('get_entity_versions',                 'entities/{id}/versions/')  # json
     config.add_route('get_entity_versions_used_by_tasks',   'entities/{id}/version/used_by/tasks/') # json
 
