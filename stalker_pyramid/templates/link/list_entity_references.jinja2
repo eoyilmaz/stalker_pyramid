@@ -125,7 +125,7 @@
                title="{{=it.original_filename}}&#013;{{=it.entity_names}}&#013;&#013;{{=it.tags }}"
                data-rel="colorbox"
                class="cboxElement">
-                <div style="text-align: center; overflow: hidden; width: 150px">
+                <div style="text-align: center; overflow: hidden; width: 150px; height: 150px;">
                     <img alt="150x150"
                          style="height: 150px; width: auto; max-width: none;
                             position: relative; left: 100%; margin-left: -200%;"
@@ -179,7 +179,7 @@
                    ref_id="{{=it.id}}"
                    ref_file_name="{{=it.original_filename}}"
                    href="#"
-                   title="Delete"><i class="icon-remove red"></i></a>
+                   title="Delete"><i class="icon-trash red"></i></a>
             </div>
         </li>
     </script>
@@ -362,13 +362,15 @@
             options = $.extend({
                 total_number_of_items: 0,
                 items_per_page: 40,
-                current_page: 1
+                current_page: 1,
+                max_number_of_page_shortcuts: 5
             }, options);
 
             $('.pagination').paginator({
                 'number_of_items': options.total_number_of_items,
                 'items_per_page': options.items_per_page,
                 'current_page': options.current_page,
+                'max_number_of_page_shortcuts': options.max_number_of_page_shortcuts,
                 'callback': function(current_page_number){
                     // get search string
                     var search_string = $('#reference_search_field').val();
