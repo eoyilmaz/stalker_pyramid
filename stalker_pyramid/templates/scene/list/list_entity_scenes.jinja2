@@ -168,6 +168,15 @@
                            href="{{=it.update_task_resource_action}}">
                             <i class="icon-edit bigger-130"></i>
                         </a>
+                    <!--<a class="pull-right"-->
+                           <!--data-target="#dialog_template"-->
+                           <!--data-toggle="modal"-->
+                           <!--data-keyboard=false-->
+                           <!--href="{{=it.update_task_action}}">-->
+                            <!--<i class="icon-edit bigger-130"></i>-->
+                        <!--</a>-->
+
+
                     <div class="no-padding">
                         <span><a href='/users/{{=it.resource_id}}/view'>{{=it.resource_name}}</a></span>
                     </div>
@@ -202,6 +211,13 @@
                        href="{{=it.update_task_resource_action}}">
                         <i class="icon-edit bigger-130"></i>
                     </a>
+                    <!--<a class="pull-right"-->
+                           <!--data-target="#dialog_template"-->
+                           <!--data-toggle="modal"-->
+                           <!--data-keyboard=false-->
+                           <!--href="{{=it.update_task_action}}">-->
+                            <!--<i class="icon-edit bigger-130"></i>-->
+                        <!--</a>-->
 
                     <div class="no-padding">
                         {{ for(var j=0;j<it.resource_ids.length;j++){ }}<a href='/users/{{=it.resource_ids[j]}}/view'>{{=it.resource_names[j] }}</a><br/>{{ } }}

@@ -317,7 +317,9 @@ def create_budgetentry(request):
     logged_in_user = get_logged_in_user(request)
     utc_now = local_to_utc(datetime.datetime.now())
 
-    good_id = request.params.get('good_id')
+    good_id = request.params.get('good_id', None)
+    if not good_id:
+        good_id = request.params.get('id', None)
 
     logger.debug('good_id %s ' % good_id)
     good = Good.query.filter_by(id=good_id).first()
@@ -341,6 +343,13 @@ def create_budgetentry(request):
     price = request.params.get('price')
     description = request.params.get('description', '')
 
+    if not amount or amount == '0':
+        transaction.abort()
+        return Response('Please supply the amount', 500)
+
+    if price == '0':
+        price = good.cost * int(amount)
+
     if amount and price:
         # data that's generate from good's data
         amount = int(amount)
@@ -363,8 +372,8 @@ def create_budgetentry(request):
             amount=amount,
             cost=cost,
             msrp=msrp,
-            realize_total=realize_total,
             price=price,
+            realize_total=realize_total,
             unit=unit,
             description=description,
             created_by=logged_in_user,
@@ -392,9 +401,17 @@ def edit_budgetentry(request):
     if oper == 'edit':
 
         id = request.params.get('id')
+        logger.debug('***edit_budgetentry good: %s ***' % id)
+
         entity = Entity.query.filter_by(id=id).first()
+
+        if not entity:
+            transaction.abort()
+            return Response('There is no entry with id %s' % id, 500)
+
         if entity.entity_type == 'Good':
             logger.debug('***create budgetentry method starts ***')
+
             return create_budgetentry(request)
         elif entity.entity_type == 'BudgetEntry':
             logger.debug('***update budgetentry method starts ***')
@@ -436,15 +453,16 @@ def update_budgetentry(request):
         budgetentry.date_updated = utc_now
         budgetentry.updated_by = logged_in_user
     else:
-        if not amount:
+        if not amount or amount == '0':
             transaction.abort()
-            return Response('Please supply amount', 500)
+            return Response('Please supply the amount', 500)
+
         amount = int(amount)
         budgetentry.amount = amount
         budgetentry.cost = good.cost
         budgetentry.msrp = good.msrp
         # budgetentry.realized_total = good.msrp
-        budgetentry.price = price
+        budgetentry.price = price if price != '0' else good.cost*amount
         budgetentry.description = description
         budgetentry.date_updated = utc_now
         budgetentry.updated_by = logged_in_user

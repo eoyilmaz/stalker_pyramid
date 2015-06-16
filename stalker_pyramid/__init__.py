@@ -688,9 +688,12 @@ def main(global_config, **settings):
     config.add_route('get_task_resources',        'tasks/{id}/resources/') #json
     config.add_route('remove_task_user_dialog',   'tasks/{id}/remove/{user_type}/{user_id}/dialog')
     config.add_route('remove_task_user',          'tasks/{id}/remove/{user_type}/{user_id}')
+    config.add_route('change_tasks_properties_dialog',  'tasks/change/properties/dialog')
     config.add_route('change_tasks_users_dialog', 'tasks/change/{user_type}/dialog')
     config.add_route('change_tasks_users',        'tasks/change/{user_type}')
     config.add_route('change_task_users_dialog',  'tasks/{id}/change/{user_type}/dialog')
+
+
     config.add_route('change_task_users',         'tasks/{id}/change/{user_type}')
     config.add_route('change_tasks_priority_dialog',     'tasks/change_priority/dialog')
     config.add_route('change_tasks_priority',     'tasks/change_priority')
@@ -751,8 +754,8 @@ def main(global_config, **settings):
     config.add_route('user_vacation_dialog', 'users/{id}/vacations/create/dialog')
     config.add_route('vacation_update_dialog', 'vacations/{id}/update/dialog')
 
-    config.add_route('create_vacation', 'vacations/create')
-    config.add_route('update_vacation', 'vacations/{id}/update')
+    config.add_route('create_vacation',  'vacations/create')
+    config.add_route('update_vacation',  'vacations/{id}/update')
     config.add_route('delete_vacation',  'vacations/{id}/delete')
 
     # *************************************************************************
@@ -776,7 +779,6 @@ def main(global_config, **settings):
 
     # *************************************************************************
     # Department
-
     # config.add_route('department_dialog',             'departments/{id}/{mode}/dialog')
 
     config.add_route('create_department_dialog', 'departments/create/dialog')
@@ -801,7 +803,6 @@ def main(global_config, **settings):
 
     # *************************************************************************
     # Group
-
     # config.add_route('group_dialog',             'groups/{id}/{mode}/dialog')
 
     config.add_route('create_group_dialog',      'groups/create/dialog')

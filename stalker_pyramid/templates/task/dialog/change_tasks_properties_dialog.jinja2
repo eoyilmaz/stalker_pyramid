@@ -1,0 +1,121 @@
+<script class="dialog_loaded"></script>
+
+<div class="row-fluid" >
+    <div class="row-fluid" >
+{#    <form id='append_form'#}
+{#              class='form-horizontal'#}
+{#              role='form'#}
+{#              method='post'>#}
+{#        <div class='control-group'>#}
+{#            <label class='span3 control-label' for='task_users'>Resources</label>#}
+{#            <div class='span9'>#}
+{#                <select id='task_users'#}
+{#                        multiple=''#}
+{#                        class='input-block-level tag-input-style'#}
+{#                        name='user_ids'#}
+{#                        data-placeholder=Resources#}
+{#                        is_updating=false></select>#}
+{#            </div>#}
+{#        </div>#}
+{#    </form>#}
+        <table id="grid-table"></table>
+        <div id="grid-pager"></div>
+        <script type="text/javascript">
+            var $path_base = "/";//this will be used in gritter alerts containing images
+        </script>
+
+</div>
+        <div class="row-fluid" >asdadasd
+            </div>
+</div>
+<script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/i18n/grid.locale-en.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/jquery.jqGrid.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/accounting.min.js") }}'></script>
+
+<script type="text/javascript">
+
+    function init_dialog() {
+        console.debug('starting to initialize add_task_user_dialog dialog!!!');
+
+        $(function () {
+            var label = $('#dialog_template_label');
+            label.find('span').remove();
+            label.append('<span>Append Resources</span>');
+{#            $('#dialog_template_body').attr('style', "height: 300px");#}
+
+            var tasks_names = [];
+
+            tasks_names = [
+                {% for task in tasks %}
+                    {'id':'{{ task.id }}', 'name':'{{ task.parent.name}}', 'status_code':'{{ task.status.code}}' },
+                {% endfor %}
+            ];
+
+            {% for task in tasks %}
+                  console.log('{{ task.status.code}}'),
+                {% endfor %}
+
+
+            var grid_data = tasks_names;
+
+            jQuery(function($) {
+                var grid_selector = "#grid-table";
+                var pager_selector = "#grid-pager";
+
+                     jQuery(grid_selector).jqGrid({
+                        //direction: "rtl",
+                        data: grid_data,
+                        datatype: "local",
+                        colNames:[' ',  'Id', 'Name', 'Status'],
+                        colModel:[
+                            {
+                                name:'myac',
+                                index:'',
+                                width:80,
+                                fixed:true,
+                                sortable:false,
+                                resize:false,
+                                formatter:'actions',
+                                formatoptions:{
+                                            keys:true,
+                                            delbutton:false
+{#                                            delOptions:{recreateForm: true, beforeShowForm:beforeDeleteCallback}#}
+{#                                                editformbutton:true#}
+{#                                                editOptions:{recreateForm: false, beforeShowForm:beforeEditCallback}#}
+                                        }
+                            },
+
+                            {name:'id', index:'id', width:50, editable: false},
+                            {name:'name', index:'name', width:220, editable: false},
+                            {status_code:'status_code', index:'status_code',width:150, editable: false}
+
+                        ],
+                        viewrecords : true,
+                        rowNum:grid_data.length,
+                        rowList:[grid_data.length, 10, 10],
+                        pager : pager_selector,
+                        altRows: true,
+                        multiselect: true,
+                        loadonce: true,
+                        height: 400,
+                        footerrow: true, // set a footer row
+                        userDataOnFooter: true, // the calculated sums and/or strings from server are put at footer row.
+                        grouping: false,
+                        gridview: true,
+                        editurl: '',
+                        caption: ""
+                });
+            });
+
+
+});
+        console.debug('finished initializing the add_task_user_dialog dialog!')
+    }
+</script>
+
+<script type="text/javascript">
+    function destruct_dialog() {
+        $('#dialog_template_submit_button').unbind();
+        $('#dialog_template').data('modal', null);
+    }
+</script>

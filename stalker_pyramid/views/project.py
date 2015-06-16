@@ -477,7 +477,7 @@ def add_project_entries_to_budget(request):
                 amount=project_entry['amount'],
                 cost=project_entry['cost'],
                 msrp=project_entry['msrp'],
-                price=project_entry['cost'],
+            price=int(project_entry['cost'])* int(project_entry['amount']),
                 realized_total=project_entry['realized_total'],
                 unit=project_entry['unit'],
                 description='',
