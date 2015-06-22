@@ -660,7 +660,7 @@ def duplicate_budget(request):
     name = request.params.get('dup_budget_name')
     description = request.params.get('dup_budget_description')
 
-    
+
     budget_type = query_type('Budget', 'Planning')
     project = budget.project
 
