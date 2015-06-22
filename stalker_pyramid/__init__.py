@@ -371,6 +371,10 @@ def main(global_config, **settings):
 
     config.add_route('view_budget',          'budgets/{id}/view')
 
+    config.add_route('duplicate_budget_dialog',   'budgets/{id}/duplicate/dialog')
+    config.add_route('duplicate_budget',   'budgets/{id}/duplicate')
+    config.add_route('change_budget_type_dialog',   'budgets/{id}/type/{type_name}/dialog')
+    config.add_route('change_budget_type',   'budgets/{id}/type/{type_name}')
     config.add_route('get_budget_entries',   'budgets/{id}/entries/')
 
     # *************************************************************************

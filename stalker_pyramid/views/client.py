@@ -294,7 +294,8 @@ def append_user_to_client(request):
 
     logger.debug("%s role is created" % role.name)
     logger.debug(client.users)
-
+    assert isinstance(client, Client)
+    client.user_role
     client_user = ClientUser()
     client_user.client = client
     client_user.role = role
@@ -307,8 +308,6 @@ def append_user_to_client(request):
         request.session.flash('success:%s is added to %s user list' % (user.name, client.name))
 
     logger.debug(client.users)
-
-
 
     return Response(
         'success:%s is added to %s.'
