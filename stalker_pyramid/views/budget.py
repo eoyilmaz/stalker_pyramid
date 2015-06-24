@@ -367,6 +367,7 @@ def create_budgetentry(request):
 
         budget_entry = BudgetEntry(
             budget=budget,
+            good=good,
             name=name,
             type=entry_type,
             amount=amount,
@@ -452,6 +453,7 @@ def update_budgetentry(request):
         budgetentry.description = description
         budgetentry.date_updated = utc_now
         budgetentry.updated_by = logged_in_user
+
     else:
         if not amount or amount == '0':
             transaction.abort()
@@ -461,6 +463,7 @@ def update_budgetentry(request):
         budgetentry.amount = amount
         budgetentry.cost = good.cost
         budgetentry.msrp = good.msrp
+        budgetentry.good = good
         # budgetentry.realized_total = good.msrp
         budgetentry.price = price if price != '0' else good.cost*amount
         budgetentry.description = description

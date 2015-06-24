@@ -294,8 +294,7 @@ def append_user_to_client(request):
 
     logger.debug("%s role is created" % role.name)
     logger.debug(client.users)
-    assert isinstance(client, Client)
-    client.user_role
+
     client_user = ClientUser()
     client_user.client = client
     client_user.role = role
@@ -314,33 +313,41 @@ def append_user_to_client(request):
         % (user.name, client.name)
     )
 
-# @view_config(
-#     route_name='create_client_dialog',
-#     renderer='templates/budget/dialog/client_dialog.jinja2'
-# )
-# def create_client_dialog(request):
-#     """called when creating dailies
-#     """
-#     came_from = request.params.get('came_from', '/')
-#     # logger.debug('came_from %s: '% came_from)
-#
-#     # get logged in user
-#     logged_in_user = get_logged_in_user(request)
-#
-#     studio_id = request.params.get('studio_id', -1)
-#     studio = Studio.query.filter(Studio.id == studio_id).first()
-#
-#     if not studio:
-#         return Response('No studio found with id: %s' % studio_id, 500)
-#
-#     return {
-#         'has_permission': PermissionChecker(request),
-#         'logged_in_user': logged_in_user,
-#         'client': client,
-#         'came_from': came_from,
-#         'mode': 'Create',
-#         'milliseconds_since_epoch': milliseconds_since_epoch
-#     }
+@view_config(
+    route_name='get_client_users',
+    renderer='json'
+)
+def get_client_users(request):
+    """get_client_users
+    """
+# if there is an id it is probably a project
+    client_id = request.matchdict.get('id')
+    client = Client.query.filter(Client.id == client_id).first()
+
+
+    has_permission = PermissionChecker(request)
+    has_update_user_permission = has_permission('Update_User')
+    has_delete_user_permission = has_permission('Delete_User')
+
+    delete_user_action = '/users/%(id)s/delete/dialog'
+    return_data = []
+    for user in client.users:
+        client_user = ClientUser.query.filter(ClientUser.user == user).first()
+        return_data.append(
+            {
+                'id': user.id,
+                'name': user.name,
+                'login': user.login,
+                'email': user.email,
+                'role': client_user.role.name,
+                'update_user_action':'/users/%s/update/dialog' % user.id if has_update_user_permission else None,
+                'delete_user_action':delete_user_action % {
+                    'id': user.id, 'entity_id': client_id
+                } if has_delete_user_permission else None
+            }
+        )
+
+    return return_data
 #
 #
 # @view_config(

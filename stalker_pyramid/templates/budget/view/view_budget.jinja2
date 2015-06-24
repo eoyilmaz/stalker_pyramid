@@ -72,15 +72,16 @@
                         <div class="row-fluid">
                             <div class="span6">
                                 <button id='add_project_entries_to_budget_button'
-                                        class="btn btn-small btn-info pull-left hide"
+                                        class="btn btn-small btn-info hide"
                                         data-placement="bottom"
                                         data-target="#dialog_template"
                                         data-toggle="modal"
                                         data-keyboard="false"
                                         >
-                                    <i class="icon-refresh bigger-130"></i>Add Project Defaults</button>
+                                    <i class="icon-refresh bigger-130"></i>Get
+                                    Calendar Data </button>
                                 <button id='duplicate_budget_button'
-                                        class="btn btn-small btn-success pull-left"
+                                        class="btn btn-small btn-success"
                                         data-placement="bottom"
                                         data-target="#dialog_template"
                                         data-toggle="modal"
@@ -281,7 +282,7 @@
                                                     'realized Total':0,
                                                     'price':0,
                                                     'note':'',
-                                                    'addition_type':'-'})
+                                                    'addition_type':'-----------'})
                             }
                         }
                         jQuery(function($) {
@@ -304,9 +305,9 @@
                                         formatoptions:{
                                                     keys:false,
                                                     delbutton:true,
-                                                    delOptions:{recreateForm: true, beforeShowForm:beforeDeleteCallback}
-    {#                                                editformbutton:true#}
-    {#                                                editOptions:{recreateForm: false, beforeShowForm:beforeEditCallback}#}
+                                                    delOptions:{recreateForm: true, beforeShowForm:beforeDeleteCallback},
+                                                    editbutton:true,
+                                                    editOptions:{recreateForm: false, beforeShowForm:beforeEditCallback}
                                                 }
                                     },
                                     {name:'addition_type', index:'addition_type', width:100, editable: false},
@@ -328,6 +329,7 @@
                                 altRows: true,
                                 multiselect: false,
                                 loadonce: true,
+                                sortname: 'type',
                                 height: 700,
                                 footerrow: true, // set a footer row
                                 userDataOnFooter: true, // the calculated sums and/or strings from server are put at footer row.
@@ -336,13 +338,14 @@
                                     groupField: ["addition_type"],
                                     groupColumnShow: [false],
                                     groupText: ["<b>{0}</b>"],
-                                    groupOrder: ["desc","desc","desc"],
+                                    groupOrder: ["desc"],
                                     groupSummary: [true],
                                     groupCollapse: false
                                 },
                                 gridview: true,
                                 editurl: '/budgetentries/edit?budget_id={{ entity.id }}',
                                 caption: "",
+                                afterEditCell: function(rowid, cellname, value, iRow, iCol){alert(rowid)},
                                 loadComplete : function() {
                                     var $self = $(this);
                                     $self.jqGrid("footerData", "set", {
@@ -416,6 +419,7 @@
                             multiselect: false,
                             loadonce: true,
                             height: 700,
+                            sortname: 'type',
                             footerrow: true, // set a footer row
                             userDataOnFooter: true, // the calculated sums and/or strings from server are put at footer row.
                             grouping: true,
@@ -499,11 +503,24 @@
                         if(form.data('styled')) return false;
 
                         form.closest('.ui-jqdialog').find('.ui-jqdialog-titlebar').wrapInner('<div class="widget-header" />')
-                        style_delete_form(form);
+{#                        style_delete_form(form);#}
+
+                        form.data('styled', true);
+                    }
+            function beforeEditCallback(e) {
+                        var form = $(e[0]);
+                        if(form.data('styled')) return false;
+
+                        form.closest('.ui-jqdialog').find('.ui-jqdialog-titlebar').wrapInner('<div class="widget-header" />')
+{#                        style_delete_form(form);#}
 
                         form.data('styled', true);
                     }
             });
+
+
+
+
         });
     </script>
 {% endblock extrascripts %}

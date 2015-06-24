@@ -358,7 +358,11 @@ def main(global_config, **settings):
 
     config.add_route('get_studio_clients',           'studios/{id}/clients/')
     config.add_route('get_clients',                  'clients/')
-    config.add_route('get_client_users_out_stack',  'clients/{id}/users/out_stack/' )
+    config.add_route('get_client_users_out_stack',   'clients/{id}/users/out_stack/' )
+    config.add_route('get_client_users',             'clients/{id}/users/' )
+
+    config.add_route('list_client_users',              'clients/{id}/users/list')
+
 
 
     # *************************************************************************
