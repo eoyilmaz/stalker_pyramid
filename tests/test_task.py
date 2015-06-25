@@ -37,9 +37,11 @@ from stalker.db.session import DBSession
 from stalker_pyramid.views import task, milliseconds_since_epoch, local_to_utc
 
 import logging
-from stalker_pyramid.testing import DummyMultiDict
-from stalker_pyramid.views.task import fix_task_computed_time, get_actual_start_time, \
-    get_actual_end_time
+from stalker_pyramid.testing import DummyMultiDict, DummySession
+from stalker_pyramid.views.task import (fix_task_computed_time,
+                                        fix_task_statuses,
+                                        get_actual_start_time,
+                                        get_actual_end_time)
 
 logger = logging.getLogger(__name__)
 
@@ -608,14 +610,11 @@ class TaskViewTestCase(TaskViewBaseTestCase):
         data = task.convert_to_dgrid_gantt_task_format(self.all_tasks)
         self.maxDiff = None
 
-        print data,
-        print '#########################'
-        print expected_data
+        print(data)
+        print('#########################')
+        print(expected_data)
 
-        self.assertItemsEqual(
-            data,
-            expected_data
-        )
+        self.assertEqual(data, expected_data)
 
     def test_duplicate_task_hierarchy_task_is_not_existing(self):
         """testing if None will be returned if the task is not existing
@@ -1716,7 +1715,7 @@ class TaskViewTestCase(TaskViewBaseTestCase):
 
         # find the newly created task
         new_task = Task.query.filter(Task.name == 'New Task 1').first()
-        self.assertIsNotNone(new_task)
+        self.assertTrue(new_task is not None)
 
         # now check the status
         self.assertEqual(
@@ -2167,7 +2166,6 @@ class FixTimeLogTestCase(TaskViewBaseTestCase):
         DBSession.add(time_log3_task9)
         self.test_task9.status = self.status_cmpl
 
-
         fix_task_computed_time(self.test_task9)
 
         self.assertEqual(self.test_task9.computed_start, time_log1_task9.start)
@@ -2179,18 +2177,6 @@ class FixTimeLogTestCase(TaskViewBaseTestCase):
         """
         with self.assertRaises(TypeError) as cm:
             get_actual_start_time(None)
-
-        self.assertEqual(
-            str(cm.exception),
-            'task should be an instance of stalker.models.task.Task, not NoneType'
-        )
-
-    def test_get_actual_end_time_task_argument_is_none(self):
-        """testing if a TypeError will be raised when the task argument is
-        None
-        """
-        with self.assertRaises(TypeError) as cm:
-            get_actual_end_time(None)
 
         self.assertEqual(
             str(cm.exception),
@@ -2209,18 +2195,6 @@ class FixTimeLogTestCase(TaskViewBaseTestCase):
             'task should be an instance of stalker.models.task.Task, not NoneType'
         )
 
-    def test_get_actual_end_time_task_argument_is_not_a_task_instance(self):
-        """testing if a TypeError will be raised when the task argument is
-        not a stalker Task instance
-        """
-        with self.assertRaises(TypeError) as cm:
-            get_actual_end_time(None)
-
-        self.assertEqual(
-            str(cm.exception),
-            'task should be an instance of stalker.models.task.Task, not NoneType'
-        )
-
     def test_get_actual_start_time_for_a_task_with_no_time_logs(self):
         """testing if get_actual_start_time() will return the computed_start of the
         given when the task has no time logs.
@@ -2228,14 +2202,6 @@ class FixTimeLogTestCase(TaskViewBaseTestCase):
 
         result = get_actual_start_time(self.test_task9)
         self.assertEqual(self.test_task9.computed_start, result)
-
-    def test_get_actual_end_time_for_a_task_with_no_time_logs(self):
-        """testing if get_actual_start_time() will return the computed_start of the
-        given when the task has no time logs.
-        """
-
-        result = get_actual_end_time(self.test_task9)
-        self.assertEqual(self.test_task9.computed_end, result)
 
     def test_get_actual_start_time_is_working_properly(self):
         """testing if views.task.get_actual_start_time() is working properly
@@ -2269,10 +2235,40 @@ class FixTimeLogTestCase(TaskViewBaseTestCase):
         DBSession.add(time_log3_task9)
         self.test_task9.status = self.status_cmpl
 
-
-
         result = get_actual_start_time(self.test_task9)
         self.assertEqual(time_log1_task9.start, result)
+
+    def test_get_actual_end_time_task_argument_is_none(self):
+        """testing if a TypeError will be raised when the task argument is
+        None
+        """
+        with self.assertRaises(TypeError) as cm:
+            get_actual_end_time(None)
+
+        self.assertEqual(
+            str(cm.exception),
+            'task should be an instance of stalker.models.task.Task, not NoneType'
+        )
+
+    def test_get_actual_end_time_task_argument_is_not_a_task_instance(self):
+        """testing if a TypeError will be raised when the task argument is
+        not a stalker Task instance
+        """
+        with self.assertRaises(TypeError) as cm:
+            get_actual_end_time(None)
+
+        self.assertEqual(
+            str(cm.exception),
+            'task should be an instance of stalker.models.task.Task, not NoneType'
+        )
+
+    def test_get_actual_end_time_for_a_task_with_no_time_logs(self):
+        """testing if get_actual_start_time() will return the computed_start of the
+        given when the task has no time logs.
+        """
+
+        result = get_actual_end_time(self.test_task9)
+        self.assertEqual(self.test_task9.computed_end, result)
 
     def test_get_actual_end_time_is_working_properly(self):
         """testing if views.task.get_actual_start_time() is working properly
@@ -2306,10 +2302,31 @@ class FixTimeLogTestCase(TaskViewBaseTestCase):
         DBSession.add(time_log3_task9)
         self.test_task9.status = self.status_cmpl
 
-
-
         result = get_actual_end_time(self.test_task9)
         self.assertEqual(time_log3_task9.end, result)
+
+    def test_fix_task_statuses_is_working_properly_for_a_duration_task(self):
+        """testing if the fix_task_statuses() is working properly for a
+        "duration" based task
+        """
+        self.test_task9.resources = []
+        self.test_task9.schedule_model = 'duration'
+        schedule_seconds = self.test_task9.schedule_seconds
+        schedule_timing = self.test_task9.schedule_timing
+        schedule_unit = self.test_task9.schedule_unit
+
+        self.assertEqual(self.test_task9.time_logs, [])
+
+        dummy_request = DummyMultiDict()
+        dummy_request.session = DummySession()
+        dummy_request.matchdict = {
+            'id': self.test_task9.id,
+        }
+        fix_task_statuses(dummy_request)
+
+        self.assertEqual(self.test_task9.schedule_seconds, schedule_seconds)
+        self.assertEqual(self.test_task9.schedule_timing, schedule_timing)
+        self.assertEqual(self.test_task9.schedule_unit, schedule_unit)
 
 
 class TaskForceStatusTestCase(unittest.TestCase):
