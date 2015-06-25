@@ -3791,6 +3791,12 @@ def approve_task(request):
         for watcher in task.watchers:
             recipients.append(watcher.email)
 
+        # also add other note owners to the list
+        for note in task.notes:
+            note_created_by = note.created_by
+            if note_created_by:
+                recipients.append(note_created_by.email)
+
         # make the list unique
         recipients = list(set(recipients))
 
@@ -4026,6 +4032,12 @@ def request_revision(request):
 
         for watcher in task.watchers:
             recipients.append(watcher.email)
+
+        # also add other note owners to the list
+        for note in task.notes:
+            note_created_by = note.created_by
+            if note_created_by:
+                recipients.append(note_created_by.email)
 
         # make the list unique
         recipients = list(set(recipients))
@@ -4272,6 +4284,12 @@ def request_progress_review(request):
         for watcher in task.watchers:
             recipients.append(watcher.email)
 
+        # also add other note owners to the list
+        for note in task.notes:
+            note_created_by = note.created_by
+            if note_created_by:
+                recipients.append(note_created_by.email)
+
         # make the list unique
         recipients = list(set(recipients))
 
@@ -4377,6 +4395,12 @@ def request_final_review(request):
 
         for watcher in task.watchers:
             recipients.append(watcher.email)
+
+        # also add other note owners to the list
+        for note in task.notes:
+            note_created_by = note.created_by
+            if note_created_by:
+                recipients.append(note_created_by.email)
 
         # make the list unique
         recipients = list(set(recipients))
@@ -4609,6 +4633,12 @@ def request_extra_time(request):
 
         for watcher in task.watchers:
             recipients.append(watcher.email)
+
+        # also add other note owners to the list
+        for note in task.notes:
+            note_created_by = note.created_by
+            if note_created_by:
+                recipients.append(note_created_by.email)
 
         # make the list unique
         recipients = list(set(recipients))
