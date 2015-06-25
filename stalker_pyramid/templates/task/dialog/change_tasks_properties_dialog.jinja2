@@ -1,0 +1,137 @@
+<script class="dialog_loaded"></script>
+
+<div class="row-fluid" >
+    <div class="row-fluid" >
+{#    <form id='append_form'#}
+{#              class='form-horizontal'#}
+{#              role='form'#}
+{#              method='post'>#}
+{#        <div class='control-group'>#}
+{#            <label class='span3 control-label' for='task_users'>Resources</label>#}
+{#            <div class='span9'>#}
+{#                <select id='task_users'#}
+{#                        multiple=''#}
+{#                        class='input-block-level tag-input-style'#}
+{#                        name='user_ids'#}
+{#                        data-placeholder=Resources#}
+{#                        is_updating=false></select>#}
+{#            </div>#}
+{#        </div>#}
+{#    </form>#}
+        <table id="grid-table"></table>
+         <div class="widget-toolbox clearfix">
+                <button id='test_button'
+                        class="btn btn-small btn-danger span12"
+                        data-placement="bottom"
+                        >
+                    Test</button>
+            </div>
+
+</div>
+
+</div>
+<script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/i18n/grid.locale-en.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/jquery.jqGrid.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/accounting.min.js") }}'></script>
+
+<script type="text/javascript">
+
+    function init_dialog() {
+        console.debug('starting to initialize add_task_user_dialog dialog!!!');
+
+        $(function () {
+            var label = $('#dialog_template_label');
+            label.find('span').remove();
+            label.append('<span>{{ tasks[0].type.name }}</span>');
+{#            $('#dialog_template_body').attr('style', "height: 300px");#}
+
+            var tasks_names = [];
+
+            tasks_names = [
+                {% for task in tasks %}
+                    {'id':'{{ task.id }}', 'name':'{{ task.parent.name}}', 'status_code':'{{ task.status.code}}','resources':'{% for resource in task.resources %}<a href="/user/{{ resource.id}}/view">{{resource.name}}</a><br/>{% endfor %}'},
+                {% endfor %}
+            ];
+
+            {% for task in tasks %}
+                  console.log('{{ task.status.code}}');
+                {% endfor %}
+
+
+            var grid_data = tasks_names;
+
+            jQuery(function($) {
+                var grid_selector = "#grid-table";
+
+                     jQuery(grid_selector).jqGrid({
+                        //direction: "rtl",
+                        data: grid_data,
+                        datatype: "local",
+                        colNames:['Id', 'Name', 'Status', 'Resources'],
+                        colModel:[
+{#                            {#}
+{#                                name:'myac',#}
+{#                                index:'',#}
+{#                                width:80,#}
+{#                                fixed:true,#}
+{#                                sortable:false,#}
+{#                                resize:false,#}
+{#                                formatter:'actions',#}
+{#                                formatoptions:{#}
+{#                                            keys:true,#}
+{#                                            delbutton:false#}
+{#                                            delOptions:{recreateForm: true, beforeShowForm:beforeDeleteCallback}#}
+{#                                                editformbutton:true#}
+{#                                                editOptions:{recreateForm: false, beforeShowForm:beforeEditCallback}#}
+{#                                        }#}
+{#                            },#}
+
+                            {name:'id', index:'id', width:50, editable: false},
+                            {name:'name', index:'name', width:200, editable: false},
+                            {name:'status_code', index:'status_code',width:75, editable: false},
+                            {name:'resources', index:'resources',width:210, editable: false}
+
+                        ],
+                        viewrecords : true,
+                        rowNum:grid_data.length,
+                        rowList:[grid_data.length, 10, 10],
+                        pager : false,
+                        altRows: true,
+                        multiselect: true,
+                        loadonce: true,
+                        height: 500,
+                        footerrow: false, // set a footer row
+                        userDataOnFooter: false, // the calculated sums and/or strings from server are put at footer row.
+                        grouping: false,
+                        gridview: true,
+                        editurl: '',
+                        caption: ""
+                });
+            });
+
+            var test_button = $('#test_button');
+            test_button.on('click', function (e) {
+
+                e.stopPropagation();
+                e.preventDefault();
+                var selr = jQuery('#grid-table').jqGrid('getGridParam','selarrrow');
+                for(var i=0; i<selr.length;i++){
+                    alert(selr[i]);
+                }
+            });
+
+
+
+
+        });
+        console.debug('finished initializing the add_task_user_dialog dialog!')
+    }
+</script>
+
+<script type="text/javascript">
+    function destruct_dialog() {
+        $('#dialog_template_submit_button').unbind();
+        $('#grid-table').unbind();
+        $('#dialog_template').data('modal', null);
+    }
+</script>

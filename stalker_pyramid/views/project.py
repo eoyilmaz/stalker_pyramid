@@ -29,7 +29,7 @@ from pyramid.view import view_config
 from stalker.db import DBSession
 from stalker import (db, ImageFormat, Repository, Structure, Status,
                      StatusList, Project, Entity, Studio, defaults, Client,
-                     Budget, BudgetEntry)
+                     Budget, BudgetEntry, Good)
 from stalker.models import local_to_utc
 from stalker.models.project import ProjectUser
 import transaction
@@ -455,38 +455,45 @@ def add_project_entries_to_budget(request):
     for project_entry in project_entries:
         new_budget_entry_type = query_type('BudgetEntry', project_entry['price_list_name'])
         new_budget = True
-        logger.debug('realized_total: %s' % (project_entry['realized_total']))
-        for budget_entry in budget.entries:
-            if budget_entry.name == project_entry['good_name']:
-                budget_entry.type = new_budget_entry_type
-                budget_entry.amount = project_entry['amount']
-                budget_entry.cost = project_entry['cost']
-                budget_entry.msrp = project_entry['msrp']
-                budget_entry.realized_total = project_entry['realized_total']
-                budget_entry.unit = project_entry['unit']
-                budget_entry.date_updated = utc_now
-                budget_entry.updated_by = logged_in_user
-                budget_entry.generic_text = 'Calendar'
-                new_budget = False
 
-        if new_budget:
-            new_budget_entry = BudgetEntry(
-                budget=budget,
-                name=project_entry['good_name'],
-                type=new_budget_entry_type,
-                amount=project_entry['amount'],
-                cost=project_entry['cost'],
-                msrp=project_entry['msrp'],
-                price=project_entry['cost'],
-                realized_total=project_entry['realized_total'],
-                unit=project_entry['unit'],
-                description='',
-                created_by=logged_in_user,
-                date_created=utc_now,
-                date_updated=utc_now,
-                generic_text='Calendar'
-            )
-            DBSession.add(new_budget_entry)
+
+        good = Good.query.filter(Good.id == project_entry['good_id']).first()
+
+        logger.debug('good: %s' % good.name)
+        if good:
+            for budget_entry in budget.entries:
+                if budget_entry.name == project_entry['good_name']:
+                    budget_entry.good = good
+                    budget_entry.type = new_budget_entry_type
+                    budget_entry.amount = project_entry['amount']
+                    budget_entry.cost = project_entry['cost']
+                    budget_entry.msrp = project_entry['msrp']
+                    budget_entry.realized_total = project_entry['realized_total']
+                    budget_entry.unit = project_entry['unit']
+                    budget_entry.date_updated = utc_now
+                    budget_entry.updated_by = logged_in_user
+                    budget_entry.generic_text = 'Calendar'
+                    new_budget = False
+
+            if new_budget:
+                new_budget_entry = BudgetEntry(
+                    budget=budget,
+                    good=good,
+                    name=project_entry['good_name'],
+                    type=new_budget_entry_type,
+                    amount=project_entry['amount'],
+                    cost=project_entry['cost'],
+                    msrp=project_entry['msrp'],
+                    price=int(project_entry['cost'])* int(project_entry['amount']),
+                    realized_total=project_entry['realized_total'],
+                    unit=project_entry['unit'],
+                    description='',
+                    created_by=logged_in_user,
+                    date_created=utc_now,
+                    date_updated=utc_now,
+                    generic_text='Calendar'
+                )
+                DBSession.add(new_budget_entry)
 
     return Response(
         'success:Budget Entries are updated for <strong>%s</strong> project.'

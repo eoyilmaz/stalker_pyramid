@@ -23,8 +23,8 @@
 
         menu_of(
             'Users',
-            "{%- if request.current_route_path() == request.route_path('list_entity_users', id=client.id) -%}'active',{%- else -%},{%- endif -%}",
-            '{{ request.route_url('list_entity_users', id=client.id) }}',
+            "{%- if request.current_route_path() == request.route_path('list_client_users', id=client.id) -%}'active',{%- else -%},{%- endif -%}",
+            '{{ request.route_url('list_client_users', id=client.id) }}',
             get_icon('user'),
             '/entities/{{ client.id }}/users/count/'
         );

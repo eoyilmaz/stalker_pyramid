@@ -5355,6 +5355,33 @@ def remove_task_user(request):
 
 
 @view_config(
+    route_name='change_tasks_properties_dialog',
+    renderer='templates/task/dialog/change_tasks_properties_dialog.jinja2'
+)
+def change_tasks_properties_dialog(request):
+    """changes task properties with the given users dialog
+    """
+    logger.debug('change_tasks_properties_dialog is starts')
+
+    selected_task_list = get_multi_integer(request, 'task_ids', 'GET')
+    logger.debug('selected_task_list : %s' % selected_task_list)
+
+    tasks = Task.query.filter(Task.id.in_(selected_task_list)).all()
+    logger.debug('tasks : %s' % tasks)
+
+    project_id = request.params.get('project_id', '-1')
+    logger.debug('project_id : %s' % project_id)
+
+    came_from = request.params.get('came_from', '/')
+
+    return {
+        'tasks': tasks,
+        'came_from': came_from,
+        'project_id':project_id
+    }
+
+
+@view_config(
     route_name='change_tasks_priority_dialog',
     renderer='templates/task/dialog/change_tasks_priority_dialog.jinja2'
 )

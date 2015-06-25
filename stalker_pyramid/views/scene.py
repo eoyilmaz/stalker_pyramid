@@ -351,6 +351,8 @@ order by "Task_Scenes".id"""
             shot_task['status'] = get_parent_task_status(shot_task['child_statuses']).lower()
             # shot_task['percent'] = shot_task['percent']/shot_task['num_of_task']
             if update_task_permission:
+                shot_task['update_task_action'] =request.route_url('change_tasks_properties_dialog',   _query={'project_id':project_id,'task_ids': shot_task['ids']})
+
                 shot_task['update_task_resource_action'] =request.route_url('change_tasks_users_dialog', user_type='Resources',  _query={'project_id':project_id,'task_ids': shot_task['ids']})
                 shot_task['update_task_priority_action'] =request.route_url('change_tasks_priority_dialog',  _query={'task_ids': [shot_task['ids']]})
 

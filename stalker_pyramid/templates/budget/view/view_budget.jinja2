@@ -41,139 +41,180 @@
 {#    {% set page_title=entity.name %}#}
 {#    {% include 'page_header.jinja2' %}#}
 
-    <div class="widget-box transparent invoice-box">
-        <div class="widget-header widget-header-large">
-            <h4 id='task_header' class="position-relative ">{{ entity.name }}</h4>
-            <div class="widget-toolbar no-border invoice-info">
-                <span class="label label-large"> {{ entity.type.name }}
-                </span>
-{#                    {% if has_permission('Update_Budget')%}#}
-                        <div class="inline position-relative">
-                            <button class="btn btn-minier bigger dropdown-toggle"
-                                    data-toggle="dropdown">
-                                <i class="icon-angle-down icon-only bigger-120"></i>
-                            </button>
-                            <ul class="dropdown-menu dropdown-icon-only dropdown-yellow pull-right dropdown-caret dropdown-close">
-                                <li>
-                                    <a href="/budgets/{{entity.id}}/type/CMPL/dialog?came_from={{ request.current_route_path() }}"
-                                       class="tooltip-success"
-                                       data-rel="tooltip"
-                                       title="Force Complete"
-                                       data-target="#dialog_template"
-                                       data-toggle="modal"
-                                       data-keyboard=false
-                                       data-placement="top">
-                                           <span class="status_cmpl-text">
-                                               <i class="icon-ok bigger-110"></i>APPROVED
-                                           </span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="/tasks/{{entity.id}}/force_status/STOP/dialog?came_from={{ request.current_route_path() }}"
-                                       class="tooltip-success"
-                                       data-rel="tooltip"
-                                       title="Stop Task"
-                                       data-target="#dialog_template"
-                                       data-toggle="modal"
-                                       data-keyboard=false
-                                       data-placement="top">
-                                           <span class="status_stop-text">
-                                               <i class="icon-stop bigger-110"></i>REJECTED
-                                           </span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="/tasks/{{entity.id}}/force_status/OH/dialog?came_from={{ request.current_route_path() }}"
-                                       class="tooltip-success"
-                                       data-rel="tooltip"
-                                       title="Hold Task"
-                                       data-target="#dialog_template"
-                                       data-toggle="modal"
-                                       data-keyboard=false
-                                       data-placement="top">
-                                           <span class="status_oh-text">
-                                               <i class="icon-pause bigger-110"></i>CALENDER FIXED
-                                           </span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="/tasks/{{entity.id}}/resume/dialog?came_from={{ request.current_route_path() }}"
-                                       class="tooltip-success"
-                                       data-rel="tooltip"
-                                       title="Resume"
-                                       data-target="#dialog_template"
-                                       data-toggle="modal"
-                                       data-keyboard=false
-                                       data-placement="top">
-                                           <span class="wip-text">
-                                               <i class="icon-play bigger-110">CLOSED</i>
-                                           </span>
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-{#                    {% endif %}#}
-                <br>
+    <div class="space-6"></div>
+    <div class="row-fluid">
+        <div class="span10 offset1">
+            <div class="widget-box transparent invoice-box">
+                <div class="widget-header widget-header-large">
+                    {% set client=entity.project.client %}
+                    {% include 'client/view/client_card.jinja2' %}
+                    <h3 class="grey lighter pull-left position-relative">
+                        {{  entity.project.client.name }}
+                    </h3>
 
-{#                <div class="progress progress-mini progress-success progress-striped {% if entity.status.code == 'WIP' %}active{% endif %}"#}
-{#                     style="width: 120px;"#}
-{#                     data-percent="{{ "%2.1f" | format(entity.percent_complete) }}%">#}
-{#                    <div class="bar"#}
-{#                         style="width: {{ entity.percent_complete }}%;"></div>#}
-{#                </div>#}
-            </div>
+                    <div class="widget-toolbar no-border invoice-info">
+                        <span class="invoice-info-label">Bugdet:</span>
+                        <span class="red">{{ entity.name }}</span>
+                        <br />
+                        <span class="invoice-info-label">Date:</span>
+                        <span class="blue">{{ entity.date_updated }}</span>
+                    </div>
 
-        </div>
-        <div class="widget-body">
-            <div class="widget-main">
-{#                <div class="span12">#}
-                    <div class="widget-box">
-                         <div class="widget-header widget-header-small header-color-green">
-                                <h5 id="items_header" class="smaller"></h5>
-                                <div class="widget-toolbar">
-            {#                  {% if has_permission('Create_'+list_item_type) and  add_button_address %}#}
-                                    <a data-target="#dialog_template"
-                                       data-toggle="modal"
-                                       data-keyboard=false
-                                       href="{{ request.route_url("create_budgetentry_dialog", id=-1, _query={'budget_id': entity.id })}}"
-                                       class="white">
-                                        <i class="icon-plus"></i>
-                                        Add New Entry
-                                    </a>
+                    <div class="widget-toolbar hidden-480">
+                        <a href="#">
+                            <i class="icon-print"></i>
+                        </a>
+                    </div>
+                </div>
 
+                <div class="widget-body">
+                    <div class="widget-main padding-24">
+                        <div class="row-fluid">
+                            <div class="span6">
+                                <button id='add_project_entries_to_budget_button'
+                                        class="btn btn-small btn-info hide"
+                                        data-placement="bottom"
+                                        data-target="#dialog_template"
+                                        data-toggle="modal"
+                                        data-keyboard="false"
+                                        >
+                                    <i class="icon-refresh bigger-130"></i>Get
+                                    Calendar Data </button>
+                                <button id='duplicate_budget_button'
+                                        class="btn btn-small btn-success"
+                                        data-placement="bottom"
+                                        data-target="#dialog_template"
+                                        data-toggle="modal"
+                                        data-keyboard="false"
+                                        href="{{ request.route_url("duplicate_budget_dialog", id=entity.id)}}"
+                                        >
+                                    <i class="icon-copy bigger-130"></i>Duplicate Budget</button>
+                            </div>
+                            <div class="span6 ">
+                                <div class="pull-right">
+                                    <span class="label label-large"> {{ entity.type.name }}</span>
+                                    <div class="inline position-relative">
+                                        <button class="btn btn-minier bigger dropdown-toggle"
+                                                data-toggle="dropdown">
+                                            <i class="icon-angle-down icon-only bigger-120"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-icon-only dropdown-yellow pull-right dropdown-caret dropdown-close">
+                                            <li>
+                                                <a href="/budgets/{{entity.id}}/type/APPROVED/dialog?came_from={{ request.current_route_path() }}"
+                                                   class="tooltip-success"
+                                                   data-target="#dialog_template"
+                                                   data-toggle="modal"
+                                                   data-keyboard=false
+                                                   data-placement="top">
+                                                       <span class="status_cmpl-text">
+                                                           <i class="icon-ok bigger-110"></i>APPROVED
+                                                       </span>
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a href="/budgets/{{entity.id}}/type/REJECTED/dialog?came_from={{ request.current_route_path() }}"
+                                                   class="tooltip-success"
+                                                   data-target="#dialog_template"
+                                                   data-toggle="modal"
+                                                   data-keyboard=false
+                                                   data-placement="top">
+                                                       <span class="status_stop-text">
+                                                           <i class="icon-stop bigger-110"></i>REJECTED
+                                                       </span>
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a href="/budgets/{{entity.id}}/type/CALENDER FIXED/dialog?came_from={{ request.current_route_path() }}"
+                                                   class="tooltip-success"
+                                                   data-target="#dialog_template"
+                                                   data-toggle="modal"
+                                                   data-keyboard=false
+                                                   data-placement="top">
+                                                       <span class="status_oh-text">
+                                                           <i class="icon-pause bigger-110"></i>CALENDER FIXED
+                                                       </span>
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a href="/budgets/{{entity.id}}/type/CLOSED/dialog?came_from={{ request.current_route_path() }}"
+                                                   class="tooltip-success"
+                                                   data-target="#dialog_template"
+                                                   data-toggle="modal"
+                                                   data-keyboard=false
+                                                   data-placement="top">
+                                                       <span class="wip-text">
+                                                           <i class="icon-play bigger-110">CLOSED</i>
+                                                       </span>
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
                                 </div>
-                                <div class="widget-toolbar">
-            {#                  {% if has_permission('Create_'+list_item_type) and  add_button_address %}#}
-                                    <a id='add_project_entries_to_budget_button' href="#"
-                                       class="white">
-                                        <i class="icon-plus"></i>
-                                        Add Project Defaults
-                                    </a>
+                            </div>
 
-                                </div>
                         </div>
-                        <div class="widget-body">
-                            <div class="widget-main no-padding">
-            {#                    <div id="loading_spinner" class="well well-sm">#}
-            {##}
-            {#                        <div class="inline middle blue bigger-110"><i#}
-            {#                                class="icon-spinner icon-spin orange bigger-125"></i>#}
-            {#                            Loading#}
-            {#                            content...#}
-            {#                        </div>#}
-            {#                    </div>#}
 
-                                <table id="grid-table"></table>
-                                <div id="grid-pager"></div>
-                                <script type="text/javascript">
-                                    var $path_base = "/";//this will be used in gritter alerts containing images
-                                </script>
+                        <div class="space"></div>
 
+                        <div class="row-fluid">
+                            <table id="grid-table"></table>
+{#                                <div id="grid-pager"></div>#}
+                            <script type="text/javascript">
+                                var $path_base = "/";//this will be used in gritter alerts containing images
+                            </script>
+                        </div>
+
+                        <div class="hr hr8 hr-double hr-dotted"></div>
+
+                        <div class="row-fluid">
+                            <div class="span5 pull-right">
+                                <h4 class="pull-right">
+                                    Total amount :
+                                    <span class="red" id="total_price"></span>
+                                </h4>
+                            </div>
+                        </div>
+
+                        <div class="space-6"></div>
+
+                        <div class="row-fluid">
+                            <div class="row-fluid">
+                                <div class="span6">
+                                    <div class="row-fluid">
+                                        <div class="span12 label label-large label-success arrowed-in arrowed-right">
+                                            <b>Client Info</b>
+                                        </div>
+                                    </div>
+                                    <div class="row-fluid">
+                                        <ul class="unstyled spaced">
+                                            {% for user_role in  client.user_role %}
+                                            <li>
+                                                <i class="icon-caret-right blue"></i>
+                                                {{ user_role.user.name }},  {{ user_role.role.name }}
+                                            </li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                </div><!--/span-->
+                                <div class="span6">
+                                    <div class="row-fluid">
+                                        <button id='send_button'
+                                                class="btn btn-small btn-danger pull-right"
+                                                data-placement="bottom"
+                                                title="Send to Client"
+                                                data-target="#dialog_template"
+                                                data-toggle="modal"
+                                                data-keyboard="false"
+                                                href="#"
+                                                >
+                                        <i class="icon-envelope bigger-130"></i> Send to Client</button>
+                                    </div>
+                                </div><!--/span-->
                             </div>
                         </div>
                     </div>
-                </div>
-{#            </div>#}
+            </div>
+            </div>
         </div>
     </div>
 {% endblock page_content %}
@@ -183,380 +224,303 @@
 			if("ontouchend" in document) document.write("<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.mobile.custom.min.js") }}'>"+"<"+"/script>");
 		</script>
     <script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/i18n/grid.locale-en.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/jquery.jqGrid.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/jquery.jqGrid.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/accounting.min.js") }}'></script>
     <script type="text/javascript">
         $(document).ready(function () {
+            $('#add_project_entries_to_budget_button').hide();
 
-            $('#add_project_entries_to_budget_button').on('click', function (e) {
-                e.preventDefault();
-                e.stopPropagation();
-
-                $.post('{{ request.route_url("add_project_entries_to_budget", id=entity.project.id, bid=entity.id)}}').done(function (response_text) {
-                    window.location.reload();
-                }).fail(function (jqXHR) {
-                    bootbox.alert(jqXHR.responseText);
-                });
-            });
 
             $.getJSON('/budgets/{{ entity.id }}/entries/').then(function (entry_data) {
 
                 var grid_data = entry_data;
                 var total_cost = 0;
                 var total_msrp = 0;
-                var total_realized = 0;
                 var total_price = 0;
+
                 for(var j=0; j<grid_data.length; j++ ){
                     grid_data[j].msrp = grid_data[j].msrp*grid_data[j].amount;
                     total_msrp += parseInt(grid_data[j].msrp);
                     grid_data[j].cost = grid_data[j].cost*grid_data[j].amount;
                     total_cost += parseInt(grid_data[j].cost);
-                    total_realized += parseInt(grid_data[j].realized_total);
                     total_price += parseInt(grid_data[j].price);
                 }
-                $.getJSON('/studios/{{ entity.id }}/goods/').then(function (good_data) {
+                $('#total_price').text(accounting.formatMoney(total_price, { symbol: "TL",  format: "%v %s" }));
+                {% if entity.type.name == 'Planning'  %}
+                    $('#add_project_entries_to_budget_button').show();
+                    $('#add_project_entries_to_budget_button').on('click', function (e) {
+                        e.preventDefault();
+                        e.stopPropagation();
 
-{#                    for(var k=0; k<good_data.length; k++ ){#}
-{##}
-{#                        var add_grid_data = true;#}
-{#                        for(var m=0; m<grid_data.length; m++ ){#}
-{#                            if(good_data[k].name == grid_data[m].name ){#}
-{#                                add_grid_data = false;#}
-{#                            }#}
-{#                        }#}
-{#                        if(add_grid_data){#}
-{#                            grid_data.push({    'budget_id': '{{ entity.id }}',#}
-{#                                                'good_id':good_data[k].id,#}
-{#                                                'id':good_data[k].id,#}
-{#                                                'type':good_data[k].price_list_name,#}
-{#                                                'name':good_data[k].name,#}
-{#                                                'amount':0,#}
-{#                                                'unit':good_data[k].unit,#}
-{#                                                'msrp':0,#}
-{#                                                'cost':0,#}
-{#                                                'realized Total':0,#}
-{#                                                'price':0,#}
-{#                                                'note':''})#}
-{#                        }#}
-{#                    }#}
+                        $.post('{{ request.route_url("add_project_entries_to_budget", id=entity.project.id, bid=entity.id)}}').done(function (response_text) {
+                            window.location.reload();
+                        }).fail(function (jqXHR) {
+                            bootbox.alert(jqXHR.responseText);
+                        });
+                    });
+
+                    $.getJSON('/studios/{{ entity.id }}/goods/').then(function (good_data) {
+
+                        for(var k=0; k<good_data.length; k++ ){
+
+                            var add_grid_data = true;
+                            for(var m=0; m<grid_data.length; m++ ){
+                                if(good_data[k].name == grid_data[m].name ){
+                                    add_grid_data = false;
+                                }
+                            }
+                            if(add_grid_data){
+                                grid_data.push({    'budget_id': '{{ entity.id }}',
+                                                    'good_id':good_data[k].id,
+                                                    'id':good_data[k].id,
+                                                    'type':good_data[k].price_list_name,
+                                                    'name':good_data[k].name,
+                                                    'amount':0,
+                                                    'unit':good_data[k].unit,
+                                                    'msrp':0,
+                                                    'cost':0,
+                                                    'realized Total':0,
+                                                    'price':0,
+                                                    'note':'',
+                                                    'addition_type':'-----------'})
+                            }
+                        }
+                        jQuery(function($) {
+                            var grid_selector = "#grid-table";
+
+                            jQuery(grid_selector).jqGrid({
+                                //direction: "rtl",
+                                data: grid_data,
+                                datatype: "local",
+                                colNames:[' ',  'Addition Type', 'Type', 'Name','Amount', 'Unit', 'Msrp', 'Cost',  'Price', 'Id','Notes'],
+                                colModel:[
+                                    {
+                                        name:'myac',
+                                        index:'',
+                                        width:80,
+                                        fixed:true,
+                                        sortable:false,
+                                        resize:false,
+                                        formatter:'actions',
+                                        formatoptions:{
+                                                    keys:false,
+                                                    delbutton:true,
+                                                    delOptions:{recreateForm: true, beforeShowForm:beforeDeleteCallback},
+                                                    editbutton:true,
+                                                    editOptions:{recreateForm: false, beforeShowForm:beforeEditCallback}
+                                                }
+                                    },
+                                    {name:'addition_type', index:'addition_type', width:100, editable: false},
+                                    {name:'type', index:'type', width:220, editable: false},
+                                    {name:'name', index:'name', width:220, editable: false},
+                                    {name:'amount', index:'amount', width:60, editable: true, formatter:editFmatter},
+                                    {name:'unit', index:'unit', width:100, editable: false},
+                                    {name:'msrp', index:'msrp', width:150, editable: false, formatter:currencyFmatter, summaryTpl: "{0}", summaryType: "sum" },
+                                    {name:'cost', index:'cost', width:150, editable: false, formatter:currencyFmatter, summaryTpl: "{0}", summaryType: "sum" },
+    {#                                {name:'realized_total',index:'realized_total',  width:150, editable: false,formatter:currencyFmatter, summaryTpl: "{0}", summaryType: "sum" },#}
+                                    {name:'price', index:'price', width:150, editable: true, edittype:"textarea", editoptions:{size:"20",maxlength:"80"} , formatter:currencyFmatter, unformat:unformatCurrency, summaryTpl: "{0}", summaryType: "sum" },
+                                    {name:'id', index:'id', width:82, editable: false },
+                                    {name:'note', index:'note', width:200, sortable:false, editable: true, edittype:"textarea", editoptions:{size:"20", maxlength:"80"}}
+                                ],
+                                viewrecords : true,
+                                rowNum:grid_data.length,
+                                rowList:[grid_data.length, 10, 10],
+                                pager : false,
+                                altRows: true,
+                                multiselect: false,
+                                loadonce: true,
+                                sortname: 'type',
+                                height: 700,
+                                footerrow: true, // set a footer row
+                                userDataOnFooter: true, // the calculated sums and/or strings from server are put at footer row.
+                                grouping: true,
+                                groupingView: {
+                                    groupField: ["addition_type"],
+                                    groupColumnShow: [false],
+                                    groupText: ["<b>{0}</b>"],
+                                    groupOrder: ["desc"],
+                                    groupSummary: [true],
+                                    groupCollapse: false
+                                },
+                                gridview: true,
+                                editurl: '/budgetentries/edit?budget_id={{ entity.id }}',
+                                caption: "",
+                                afterEditCell: function(rowid, cellname, value, iRow, iCol){alert(rowid)},
+                                loadComplete : function() {
+                                    var $self = $(this);
+                                    $self.jqGrid("footerData", "set", {
+                                                                       msrp: total_msrp,
+                                                                       cost: total_cost,
+                                                                       price: total_price,
+                                                                       unit:'TOTAL'
+                                    });
+
+                                    if(total_cost>total_price){
+                                        $self.jqGrid('setCell', 'TOTAL', 'price','',{color:'red'});
+                                    }
+                                    else if(total_cost<total_price){
+                                        $self.jqGrid('setCell', 'TOTAL', 'price','',{color:'green'});
+                                    }
+
+                                    for(var t=0; t<grid_data.length; t++ ){
+                                        if(grid_data[t].cost>grid_data[t].price){
+                                            $self.jqGrid('setCell', grid_data[t].id, 'price','',{color:'red'});
+                                        }
+                                        else if(grid_data[t].cost<grid_data[t].price){
+                                            $self.jqGrid('setCell', grid_data[t].id, 'price','',{color:'green'});
+                                        }
+                                    }
+
+                                    $self.jqGrid('hideCol',["id"]);
+
+                                    var table = this;
+                                    setTimeout(function(){
+    {#                                    styleCheckbox(table);#}
+    {#                                    updateActionIcons(table);#}
+    {#                                    updatePagerIcons(table);#}
+
+                                        $('#lui_grid-table').hide();
+                                    }, 0);
+                                }
+                            });
+
+                        });
+                    });
+                {% else  %}
+
+                    $('#send_button').hide();
+
                     jQuery(function($) {
                         var grid_selector = "#grid-table";
-                        var pager_selector = "#grid-pager";
 
-                        var budget_grid = jQuery(grid_selector).jqGrid({
+                        jQuery(grid_selector).jqGrid({
                             //direction: "rtl",
                             data: grid_data,
                             datatype: "local",
-                            colNames:[' ', 'Id', 'Type', 'Name','Amount', 'Unit', 'Msrp', 'Cost', 'Realized Total', 'Price', 'Notes'],
+                            colNames:['Addition Type', 'Type', 'Name','Amount', 'Unit', 'Msrp', 'Cost',  'Price', 'Id','Notes'],
                             colModel:[
-                                {
-                                    name:'myac',
-                                    index:'',
-                                    width:80,
-                                    fixed:true,
-                                    sortable:false,
-                                    resize:false,
-                                    formatter:'actions',
-                                    formatoptions:{
-                                                keys:false,
-                                                delbutton:true,
-                                                delOptions:{recreateForm: true, beforeShowForm:beforeDeleteCallback}
-                {#                                editformbutton:true, editOptions:{recreateForm: true, beforeShowForm:beforeEditCallback}#}
-                                            }
-                                },
-                                {name:'id',index:'id', width:100, editable: false,  formatter:rowAddTypeFmatter},
-                                {name:'type',index:'type', width:220, editable: false},
-                                {name:'name',index:'name', width:220, editable: false},
-                                {name:'amount',index:'amount', width:100,editable: true, formatter:editFmatter},
-                                {name:'unit',index:'unit', width:100, editable: false},
-                                {name:'msrp',index:'msrp',  width:150,editable: false,formatter:currencyFmatter, summaryTpl: "{0}", summaryType: "sum" },
-                                {name:'cost',index:'cost',  width:150,editable: false,formatter:currencyFmatter, summaryTpl: "{0}", summaryType: "sum" },
-                                {name:'realized_total',index:'realized_total',  width:150,editable: false,formatter:currencyFmatter, summaryTpl: "{0}", summaryType: "sum" },
-                                {name:'price',index:'price', width:150, editable: true, edittype:"textarea", editoptions:{size:"20",maxlength:"80"} , formatter:currencyFmatter, unformat:unformatCurrency, summaryTpl: "{0}", summaryType: "sum" },
-                                {name:'note',index:'note', width:340, sortable:false, editable: true, edittype:"textarea", editoptions:{size:"20", maxlength:"80"}}
+                                {name:'addition_type', index:'addition_type', width:100, editable: false},
+                                {name:'type', index:'type', width:220, editable: false},
+                                {name:'name', index:'name', width:220, editable: false},
+                                {name:'amount', index:'amount', width:60, editable: false, formatter:editFmatter},
+                                {name:'unit', index:'unit', width:100, editable: false},
+                                {name:'msrp', index:'msrp', width:150, editable: false, formatter:currencyFmatter, summaryTpl: "{0}", summaryType: "sum" },
+                                {name:'cost', index:'cost', width:150, editable: false, formatter:currencyFmatter, summaryTpl: "{0}", summaryType: "sum" },
+{#                                {name:'realized_total',index:'realized_total',  width:150, editable: false,formatter:currencyFmatter, summaryTpl: "{0}", summaryType: "sum" },#}
+                                {name:'price', index:'price', width:150, editable: false, edittype:"textarea", editoptions:{size:"20",maxlength:"80"} , formatter:currencyFmatter, unformat:unformatCurrency, summaryTpl: "{0}", summaryType: "sum" },
+                                {name:'id', index:'id', width:82, editable: false },
+                                {name:'note', index:'note', width:200, sortable:false, editable: false, edittype:"textarea", editoptions:{size:"20", maxlength:"80"}}
                             ],
                             viewrecords : true,
                             rowNum:grid_data.length,
                             rowList:[grid_data.length, 10, 10],
-                            pager : pager_selector,
+                            pager : false,
                             altRows: true,
-        {#                    toppager: true,#}
                             multiselect: false,
                             loadonce: true,
-                            height: 800,
-                            width: 1660,
+                            height: 700,
+                            sortname: 'type',
                             footerrow: true, // set a footer row
                             userDataOnFooter: true, // the calculated sums and/or strings from server are put at footer row.
                             grouping: true,
                             groupingView: {
-                                groupField: ["type"],
-                                groupColumnShow: [true],
+                                groupField: ["addition_type"],
+                                groupColumnShow: [false],
                                 groupText: ["<b>{0}</b>"],
-                                groupOrder: ["asc"],
+                                groupOrder: ["desc","desc","desc"],
                                 groupSummary: [true],
                                 groupCollapse: false
-
                             },
                             gridview: true,
                             editurl: '/budgetentries/edit?budget_id={{ entity.id }}',
                             caption: "",
-                            rowattr: function (rd) {
-                                if (rd.amount > 0) {
-                                    return ;
-                                }
-                            },
                             loadComplete : function() {
                                 var $self = $(this);
                                 $self.jqGrid("footerData", "set", {
                                                                    msrp: total_msrp,
                                                                    cost: total_cost,
-                                                                   realized_total: total_realized,
-                                                                   price: total_price
+                                                                   price: total_price,
+                                                                   unit:'TOTAL'
                                 });
+
+                                if(total_cost>total_price){
+                                    $self.jqGrid('setCell', 'TOTAL', 'price','',{color:'red'});
+                                }
+                                else if(total_cost<total_price){
+                                    $self.jqGrid('setCell', 'TOTAL', 'price','',{color:'green'});
+                                }
+
+                                for(var t=0; t<grid_data.length; t++ ){
+                                    if(grid_data[t].cost>grid_data[t].price){
+                                        $self.jqGrid('setCell', grid_data[t].id, 'price','',{color:'red'});
+                                    }
+                                    else if(grid_data[t].cost<grid_data[t].price){
+                                        $self.jqGrid('setCell', grid_data[t].id, 'price','',{color:'green'});
+                                    }
+                                }
+
+                                $self.jqGrid('hideCol',["id"]);
 
                                 var table = this;
                                 setTimeout(function(){
-                                    styleCheckbox(table);
-                                    updateActionIcons(table);
-                                    updatePagerIcons(table);
+{#                                    styleCheckbox(table);#}
+{#                                    updateActionIcons(table);#}
+{#                                    updatePagerIcons(table);#}
 
                                     $('#lui_grid-table').hide();
                                 }, 0);
                             }
                     });
+                    });
+                {% endif %}
 
-
-                    //navButtons
-                    jQuery(grid_selector).jqGrid('navGrid',pager_selector,
-                        { 	//navbar options
-                            edit: true,
-                            editicon : 'icon-pencil blue',
-                            add: false,
-                            addicon : 'icon-plus-sign purple',
-                            del: true,
-                            delicon : 'icon-trash red',
-                            search: true,
-                            searchicon : 'icon-search orange',
-                            refresh: true,
-                            refreshicon : 'icon-refresh green',
-                            view: true,
-                            viewicon : 'icon-zoom-in grey'
-                        },
-                        {
-                            //edit record form
-                            closeAfterEdit: true,
-                            recreateForm: true,
-                            beforeShowForm : function(e) {
-                                var form = $(e[0]);
-                                form.closest('.ui-jqdialog').find('.ui-jqdialog-titlebar').wrapInner('<div class="widget-header" />')
-                                style_edit_form(form);
-                            }
-                        },
-                        {
-                            //new record form
-                            closeAfterAdd: true,
-                            recreateForm: true,
-                            viewPagerButtons: false,
-                            beforeShowForm : function(e) {
-                                var form = $(e[0]);
-                                form.closest('.ui-jqdialog').find('.ui-jqdialog-titlebar').wrapInner('<div class="widget-header" />')
-                                style_edit_form(form);
-                            }
-                        },
-                        {
-                            //delete record form
-                            recreateForm: true,
-                            beforeShowForm : function(e) {
-                                var form = $(e[0]);
-                                if(form.data('styled')) return false;
-
-                                form.closest('.ui-jqdialog').find('.ui-jqdialog-titlebar').wrapInner('<div class="widget-header" />')
-                                style_delete_form(form);
-
-                                form.data('styled', true);
-                            },
-                            onClick : function(e) {
-                                console.log('onClick')
-                                alert(1);
-                            }
-                        },
-                        {
-                            //search form
-                            recreateForm: true,
-                            afterShowSearch: function(e){
-                                var form = $(e[0]);
-                                form.closest('.ui-jqdialog').find('.ui-jqdialog-title').wrap('<div class="widget-header" />')
-                                style_search_form(form);
-                            },
-                            afterRedraw: function(){
-                                style_search_filters($(this));
-                            }
-                            ,
-                            multipleSearch: true
-                            /**
-                            multipleGroup:true,
-                            showQuery: true
-                            */
-                        },
-                        {
-                            //view record form
-                            recreateForm: true,
-                            beforeShowForm: function(e){
-                                var form = $(e[0]);
-                                form.closest('.ui-jqdialog').find('.ui-jqdialog-title').wrap('<div class="widget-header" />')
-                            }
+                function rowAddTypeFmatter(cellvalue, options, rowObject){
+                            return rowObject.addition_type;
                         }
-                    );
-                    function rowAddTypeFmatter(cellvalue, options, rowObject){
 
-                        return rowObject.addition_type;
-                    }
-                    function editFmatter(cellvalue, options, rowObject){
-                        console.log(rowObject);
-                        console.log(options);
-                        console.log(cellvalue);
+                        function editFmatter(cellvalue, options, rowObject){
 
-                        if(rowObject.addition_type == 'Calendar'){
-                            options.colModel.editable = false;
+                            if(rowObject.addition_type == 'Calendar'){
+                                options.colModel.editable = false;
+                            }
+                            else{
+                                options.colModel.editable = true;
+                            }
+                            return cellvalue;
                         }
-                        else{
-                            options.colModel.editable = true;
+
+                        function currencyFmatter (cellvalue, options, rowObject)
+                        {
+                           return accounting.formatMoney(cellvalue, { symbol: "TL",  format: "%v %s" });
                         }
-                        return cellvalue;
-                    }
 
-                    function currencyFmatter (cellvalue, options, rowObject)
-                    {
-                       return accounting.formatMoney(cellvalue, { symbol: "TL",  format: "%v %s" });;
-                    }
-
-                    function  unformatCurrency (cellvalue, options)
-                    {
-                       return accounting.unformat(cellvalue);
-                    }
-
-                    function style_edit_form(form) {
-                        //enable datepicker on "sdate" field and switches for "unit" field
-                        form.find('input[name=sdate]').datepicker({format:'yyyy-mm-dd' , autoclose:true})
-                            .end().find('input[name=unit]')
-                                  .addClass('ace ace-switch ace-switch-5').wrap('<label class="inline" />').after('<span class="lbl"></span>');
-
-                        //update buttons classes
-                        var buttons = form.next().find('.EditButton .fm-button');
-                        buttons.addClass('btn btn-small').find('[class*="-icon"]').remove();//ui-icon, s-icon
-                        buttons.eq(0).addClass('btn-primary').prepend('<i class="icon-ok"></i>');
-                        buttons.eq(1).prepend('<i class="icon-remove"></i>')
-
-                        buttons = form.next().find('.navButton a');
-                        buttons.find('.ui-icon').remove();
-                        buttons.eq(0).append('<i class="icon-chevron-left"></i>');
-                        buttons.eq(1).append('<i class="icon-chevron-right"></i>');
-                    }
-                    function style_delete_form(form) {
-                        var buttons = form.next().find('.EditButton .fm-button');
-                        buttons.addClass('btn btn-small').find('[class*="-icon"]').remove();//ui-icon, s-icon
-                        buttons.eq(0).addClass('btn-danger').prepend('<i class="icon-trash"></i>');
-                        buttons.eq(1).prepend('<i class="icon-remove"></i>')
-                    }
-                    function style_search_filters(form) {
-                        form.find('.delete-rule').val('X');
-                        form.find('.add-rule').addClass('btn btn-small btn-primary');
-                        form.find('.add-group').addClass('btn btn-small btn-success');
-                        form.find('.delete-group').addClass('btn btn-small btn-danger');
-                    }
-                    function style_search_form(form) {
-                        var dialog = form.closest('.ui-jqdialog');
-                        var buttons = dialog.find('.EditTable')
-                        buttons.find('.EditButton a[id*="_reset"]').addClass('btn btn-small btn-info').find('.ui-icon').attr('class', 'icon-retweet');
-                        buttons.find('.EditButton a[id*="_query"]').addClass('btn btn-small btn-inverse').find('.ui-icon').attr('class', 'icon-comment-alt');
-                        buttons.find('.EditButton a[id*="_search"]').addClass('btn btn-small btn-purple').find('.ui-icon').attr('class', 'icon-search');
-                    }
-
-                    function beforeDeleteCallback(e) {
+                        function  unformatCurrency (cellvalue, options)
+                        {
+                           return accounting.unformat(cellvalue);
+                        }
+            function beforeDeleteCallback(e) {
                         var form = $(e[0]);
                         if(form.data('styled')) return false;
 
                         form.closest('.ui-jqdialog').find('.ui-jqdialog-titlebar').wrapInner('<div class="widget-header" />')
-                        style_delete_form(form);
+{#                        style_delete_form(form);#}
 
                         form.data('styled', true);
                     }
-
-                    function beforeEditCallback(e) {
+            function beforeEditCallback(e) {
                         var form = $(e[0]);
+                        if(form.data('styled')) return false;
+
                         form.closest('.ui-jqdialog').find('.ui-jqdialog-titlebar').wrapInner('<div class="widget-header" />')
-                        style_edit_form(form);
+{#                        style_delete_form(form);#}
+
+                        form.data('styled', true);
                     }
-
-                    //it causes some flicker when reloading or navigating grid
-                    //it may be possible to have some custom formatter to do this as the grid is being created to prevent this
-                    //or go back to default browser checkbox styles for the grid
-                    function styleCheckbox(table) {
-                    /**
-                        $(table).find('input:checkbox').addClass('ace')
-                        .wrap('<label />')
-                        .after('<span class="lbl align-top" />')
-
-
-                        $('.ui-jqgrid-labels th[id*="_cb"]:first-child')
-                        .find('input.cbox[type=checkbox]').addClass('ace')
-                        .wrap('<label />').after('<span class="lbl align-top" />');
-                    */
-                    }
-
-
-                    //unlike navButtons icons, action icons in rows seem to be hard-coded
-                    //you can change them like this in here if you want
-                    function updateActionIcons(table) {
-
-
-                        var replacement =
-                        {
-                            'ui-icon-pencil' : 'icon-pencil blue',
-                            'ui-icon-trash' : 'icon-trash red',
-                            'ui-icon-disk' : 'icon-ok green',
-                            'ui-icon-cancel' : 'icon-remove red'
-                        };
-                        $(table).find('.ui-pg-div span.ui-icon').each(function(){
-                            var icon = $(this);
-                            var $class = $.trim(icon.attr('class').replace('ui-icon', ''));
-                            if($class in replacement) icon.attr('class', 'ui-icon '+replacement[$class]);
-                        })
-
-                    }
-
-                    //replace icons with FontAwesome icons like above
-                    function updatePagerIcons(table) {
-
-                        var replacement =
-                        {
-                            'ui-icon-seek-first' : 'icon-double-angle-left bigger-140',
-                            'ui-icon-seek-prev' : 'icon-angle-left bigger-140',
-                            'ui-icon-seek-next' : 'icon-angle-right bigger-140',
-                            'ui-icon-seek-end' : 'icon-double-angle-right bigger-140'
-                        };
-                        $('.ui-pg-table:not(.navtable) > tbody > tr > .ui-pg-button > .ui-icon').each(function(){
-
-                            var icon = $(this);
-                            var $class = $.trim(icon.attr('class').replace('ui-icon', ''));
-
-                            if($class in replacement) icon.attr('class', 'ui-icon '+replacement[$class]);
-                        })
-                    }
-
-{#                    function enableTooltips(table) {#}
-{##}
-{#                        $('.navtable .ui-pg-button').tooltip({container:'body'});#}
-{#                        $(table).find('.ui-pg-div').tooltip({container:'body'});#}
-{##}
-{#                    }#}
-
-
-                });
-               });
             });
+
+
+
+
         });
     </script>
 {% endblock extrascripts %}
-
-

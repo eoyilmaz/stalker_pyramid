@@ -317,7 +317,9 @@ def create_budgetentry(request):
     logged_in_user = get_logged_in_user(request)
     utc_now = local_to_utc(datetime.datetime.now())
 
-    good_id = request.params.get('good_id')
+    good_id = request.params.get('good_id', None)
+    if not good_id:
+        good_id = request.params.get('id', None)
 
     logger.debug('good_id %s ' % good_id)
     good = Good.query.filter_by(id=good_id).first()
@@ -341,6 +343,13 @@ def create_budgetentry(request):
     price = request.params.get('price')
     description = request.params.get('description', '')
 
+    if not amount or amount == '0':
+        transaction.abort()
+        return Response('Please supply the amount', 500)
+
+    if price == '0':
+        price = good.cost * int(amount)
+
     if amount and price:
         # data that's generate from good's data
         amount = int(amount)
@@ -358,13 +367,14 @@ def create_budgetentry(request):
 
         budget_entry = BudgetEntry(
             budget=budget,
+            good=good,
             name=name,
             type=entry_type,
             amount=amount,
             cost=cost,
             msrp=msrp,
-            realize_total=realize_total,
             price=price,
+            realize_total=realize_total,
             unit=unit,
             description=description,
             created_by=logged_in_user,
@@ -392,9 +402,17 @@ def edit_budgetentry(request):
     if oper == 'edit':
 
         id = request.params.get('id')
+        logger.debug('***edit_budgetentry good: %s ***' % id)
+
         entity = Entity.query.filter_by(id=id).first()
+
+        if not entity:
+            transaction.abort()
+            return Response('There is no entry with id %s' % id, 500)
+
         if entity.entity_type == 'Good':
             logger.debug('***create budgetentry method starts ***')
+
             return create_budgetentry(request)
         elif entity.entity_type == 'BudgetEntry':
             logger.debug('***update budgetentry method starts ***')
@@ -435,16 +453,19 @@ def update_budgetentry(request):
         budgetentry.description = description
         budgetentry.date_updated = utc_now
         budgetentry.updated_by = logged_in_user
+
     else:
-        if not amount:
+        if not amount or amount == '0':
             transaction.abort()
-            return Response('Please supply amount', 500)
+            return Response('Please supply the amount', 500)
+
         amount = int(amount)
         budgetentry.amount = amount
         budgetentry.cost = good.cost
         budgetentry.msrp = good.msrp
+        budgetentry.good = good
         # budgetentry.realized_total = good.msrp
-        budgetentry.price = price
+        budgetentry.price = price if price != '0' else good.cost*amount
         budgetentry.description = description
         budgetentry.date_updated = utc_now
         budgetentry.updated_by = logged_in_user
@@ -541,4 +562,146 @@ def get_budget_entries(request):
 
     return resp
 
+
+@view_config(
+    route_name='change_budget_type_dialog',
+    renderer='templates/modals/confirm_dialog.jinja2'
+)
+def change_budget_type_dialog(request):
+    """change_budget_type_dialog
+    """
+    logger.debug('change_budget_type_dialog is starts')
+
+    budget_id = request.matchdict.get('id')
+    budget = Budget.query.filter_by(id=budget_id).first()
+
+    type_name = request.matchdict.get('type_name')
+
+    action = '/budgets/%s/type/%s' % (budget_id, type_name)
+
+    came_from = request.params.get('came_from', '/')
+
+    message = 'Are you sure you want to <strong>change %s type</strong>?'% budget.name
+
+    logger.debug('action: %s' % action)
+
+    return {
+        'message': message,
+        'came_from': came_from,
+        'action': action
+    }
+
+
+@view_config(
+    route_name='change_budget_type'
+)
+def change_budget_type(request):
+
+    logged_in_user = get_logged_in_user(request)
+    utc_now = local_to_utc(datetime.datetime.now())
+
+    budget_id = request.matchdict.get('id')
+    budget = Budget.query.filter_by(id=budget_id).first()
+
+    if not budget:
+        transaction.abort()
+        return Response('There is no budget with id %s' % budget_id, 500)
+
+    type_name = request.matchdict.get('type_name')
+    type = query_type('Budget', type_name)
+
+    budget.type = type
+    budget.updated_by = logged_in_user
+    budget.date_updated = utc_now
+
+    request.session.flash('success: Budget type is changed successfully')
+    return Response('Budget type is changed successfully')
+
+
+@view_config(
+    route_name='duplicate_budget_dialog',
+    renderer='templates/budget/dialog/duplicate_budget_dialog.jinja2'
+)
+def duplicate_budget_dialog(request):
+    """duplicate_budget_dialog
+    """
+    logger.debug('duplicate_budget_dialog is starts')
+
+    budget_id = request.matchdict.get('id')
+    budget = Budget.query.filter_by(id=budget_id).first()
+
+    action = '/budgets/%s/duplicate' % budget_id
+
+    came_from = request.params.get('came_from', '/')
+
+    message = 'Are you sure you want to <strong>change %s type</strong>?'% budget.name
+
+    logger.debug('action: %s' % action)
+
+    return {
+        'budget':budget,
+        'message': message,
+        'came_from': came_from,
+        'action': action
+    }
+
+@view_config(
+    route_name='duplicate_budget'
+)
+def duplicate_budget(request):
+
+    logged_in_user = get_logged_in_user(request)
+    utc_now = local_to_utc(datetime.datetime.now())
+
+    budget_id = request.matchdict.get('id')
+    budget = Budget.query.filter_by(id=budget_id).first()
+
+    if not budget:
+        transaction.abort()
+        return Response('There is no budget with id %s' % budget_id, 500)
+
+    name = request.params.get('dup_budget_name')
+    description = request.params.get('dup_budget_description')
+
+
+    budget_type = query_type('Budget', 'Planning')
+    project = budget.project
+
+    if not name:
+        return Response('Please supply a name', 500)
+
+    if not description:
+        return Response('Please supply a description', 500)
+
+    new_budget = Budget(
+        project=project,
+        name=name,
+        type=budget_type,
+        description=description,
+        created_by=logged_in_user,
+        date_created=utc_now,
+        date_updated=utc_now
+    )
+    db.DBSession.add(budget)
+    for budget_entry in budget.entries:
+        new_budget_entry = BudgetEntry(
+                budget=new_budget,
+                name=budget_entry.name,
+                type=budget_entry.type,
+                amount=budget_entry.amount,
+                cost=budget_entry.cost,
+                msrp=budget_entry.msrp,
+                price=budget_entry.price,
+                unit=budget_entry.unit,
+                description=budget_entry.description,
+                created_by=logged_in_user,
+                date_created=utc_now,
+                date_updated=utc_now,
+                generic_text=budget_entry.generic_text
+            )
+        db.DBSession.add(new_budget_entry)
+
+
+    request.session.flash('success: Budget is duplicated successfully')
+    return Response('Budget is duplicated successfully')
 
