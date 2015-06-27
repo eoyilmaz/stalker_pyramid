@@ -196,9 +196,20 @@ def get_user_reviews(request):
 
     reviewer_id = request.matchdict.get('id', -1)
 
-    where_conditions = """where "Reviews".reviewer_id = %(reviewer_id)s""" % {
-        'reviewer_id': reviewer_id
-    }
+    # also try to get reviews with specified status
+    review_status = request.params.get('status', None)
+
+    if review_status:
+        where_conditions = \
+        """where "Reviews".reviewer_id = %(reviewer_id)s and 
+        "Reviews_Statuses".code = '%(status)s' """ % {
+            'reviewer_id': reviewer_id,
+            'status': review_status
+        }
+    else:
+        where_conditions = """where "Reviews".reviewer_id = %(reviewer_id)s""" % {
+            'reviewer_id': reviewer_id
+        }
 
     return get_reviews(request, where_conditions)
 

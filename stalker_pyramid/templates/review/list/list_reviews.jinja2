@@ -172,9 +172,7 @@
     <script>
         var tableParameters = {};
         var sortingParameters = [[0, 'desc']];
-        var tableDataAddress = '{{ request.route_path('get_%s_reviews' % entity.entity_type.lower(), id=entity.id) }}';
-
-{#        console.log('tableDataAddress' + tableDataAddress);#}
+        var tableDataAddress = '{{ request.route_path('get_%s_reviews' % entity.entity_type.lower(), id=entity.id, _query={'status': 'NEW'}) }}';
     </script>
 
 {% endblock extrascripts %}
