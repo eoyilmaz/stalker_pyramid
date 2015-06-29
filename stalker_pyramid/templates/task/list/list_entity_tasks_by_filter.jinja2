@@ -162,7 +162,7 @@
                     {% endif %}
                 }
                 var rowFooter_template = doT.template($('#tmpl_itemFooterRow').html());
-                table_body.append(rowFooter_template({'total_hours':meaningful_time(total_hours)}));
+                table_body.append(rowFooter_template({'total_hours':convert_seconds_to_time_range(total_hours)}));
 
 
                 var oTable1 = table.dataTable();
