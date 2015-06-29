@@ -454,6 +454,7 @@ def update_budgetentry(request):
         budgetentry.date_updated = utc_now
         budgetentry.updated_by = logged_in_user
 
+
     else:
         if not amount or amount == '0':
             transaction.abort()
@@ -471,6 +472,9 @@ def update_budgetentry(request):
         budgetentry.updated_by = logged_in_user
         budgetentry.generic_text = 'Producer'
 
+    request.session.flash(
+                'success:updated %s budgetentry!' % budgetentry.name
+            )
     return Response('successfully updated %s budgetentry!' % budgetentry.name)
 
 
@@ -686,6 +690,7 @@ def duplicate_budget(request):
     for budget_entry in budget.entries:
         new_budget_entry = BudgetEntry(
                 budget=new_budget,
+                good= budget_entry.good,
                 name=budget_entry.name,
                 type=budget_entry.type,
                 amount=budget_entry.amount,

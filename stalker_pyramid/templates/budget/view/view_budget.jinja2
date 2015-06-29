@@ -305,9 +305,7 @@
                                         formatoptions:{
                                                     keys:false,
                                                     delbutton:true,
-                                                    delOptions:{recreateForm: true, beforeShowForm:beforeDeleteCallback},
-                                                    editbutton:true,
-                                                    editOptions:{recreateForm: false, beforeShowForm:beforeEditCallback}
+                                                    delOptions:{recreateForm: true, beforeShowForm:beforeDeleteCallback}
                                                 }
                                     },
                                     {name:'addition_type', index:'addition_type', width:100, editable: false},
@@ -345,7 +343,14 @@
                                 gridview: true,
                                 editurl: '/budgetentries/edit?budget_id={{ entity.id }}',
                                 caption: "",
-                                afterEditCell: function(rowid, cellname, value, iRow, iCol){alert(rowid)},
+                                onSelectRow: function(id){
+
+                                            var ret = jQuery(grid_selector).jqGrid('getRowData',id);
+                                    console.log(ret.addition_type)
+                                            if (ret.addition_type == 'Calendar')
+                                             {
+                                                jQuery(grid_selector).setColProp('amount',{editable:false});}
+                                            else {  jQuery(grid_selector).setColProp('amount',{editable:true});}},
                                 loadComplete : function() {
                                     var $self = $(this);
                                     $self.jqGrid("footerData", "set", {
@@ -449,14 +454,21 @@
                                 else if(total_cost<total_price){
                                     $self.jqGrid('setCell', 'TOTAL', 'price','',{color:'green'});
                                 }
-
+                                console.log('asdasdasd');
                                 for(var t=0; t<grid_data.length; t++ ){
+                                    console.log(grid_data[t].cost);
+
                                     if(grid_data[t].cost>grid_data[t].price){
                                         $self.jqGrid('setCell', grid_data[t].id, 'price','',{color:'red'});
                                     }
                                     else if(grid_data[t].cost<grid_data[t].price){
                                         $self.jqGrid('setCell', grid_data[t].id, 'price','',{color:'green'});
                                     }
+
+{#                                    if(grid_data[t].addition_type == 'Calendar'){#}
+{#                                        console.log($self.jqGrid('getCell', grid_data[t].id, 'amount'));#}
+{#                                        $self.jqGrid('getCell', grid_data[t].id, 'amount').attr('disabled', true);#}
+{#                                    }#}
                                 }
 
                                 $self.jqGrid('hideCol',["id"]);
@@ -479,13 +491,13 @@
                         }
 
                         function editFmatter(cellvalue, options, rowObject){
+                            console.log(cellvalue);
+                            console.log(options);
+                            console.log(rowObject);
+{#                            if(rowObject.addition_type == 'Calendar'){#}
+{#                                options.colModel.editable = false;#}
+{#                            }#}
 
-                            if(rowObject.addition_type == 'Calendar'){
-                                options.colModel.editable = false;
-                            }
-                            else{
-                                options.colModel.editable = true;
-                            }
                             return cellvalue;
                         }
 

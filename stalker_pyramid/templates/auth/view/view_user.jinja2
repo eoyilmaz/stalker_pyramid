@@ -185,6 +185,23 @@
     </tr>
 </script>
 {% endraw %}
+{% raw %}
+<script id="tmpl_itemFooterRow" type="text/x-dot-template">
+    <tr>
+        <td>TOTAL</td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td data-sType="num-html">
+
+        </td>
+        <td><b>TOTAL:</b></td>
+        <td>{{=it.total_hours}}</td>
+        <td></td>
+        <td></td>
+    </tr>
+</script>
+{% endraw %}
 
     {% if entity.tasks | count > 0 %}
         {% if has_permission('Update_User') or logged_in_user.id == entity.id %}

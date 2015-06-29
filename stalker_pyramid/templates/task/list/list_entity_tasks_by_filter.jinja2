@@ -14,6 +14,7 @@
         <thead></thead>
         <tbody></tbody>
     </table>
+
 </div>
 
 
@@ -63,6 +64,7 @@
                 var thead_template = doT.template($('#tmpl_itemThead').html());
                 var table = $('#items_table');
                 var table_head = table.find('thead');
+                var total_hours = 0;
                 table_head.append(thead_template({}));
 
 {#                var items = data;#}
@@ -103,11 +105,10 @@
 
                     var bid_seconds = to_seconds(data[i].bid_timing, data[i].bid_unit);
                     data[i].hour_based_on_bid = meaningful_time_between(bid_seconds, data[i].total_logged_seconds);
+                    var st_seconds = to_seconds(data[i].schedule_timing, data[i].schedule_unit );
+                    total_hours +=(st_seconds-data[i].total_logged_seconds);
                     data[i].hour_to_complete = meaningful_time_between(
-                                                   to_seconds(
-                                                       data[i].schedule_timing,
-                                                       data[i].schedule_unit
-                                                   ),
+                                                   st_seconds,
                                                    data[i].total_logged_seconds
                                                );
 
@@ -160,6 +161,9 @@
                         table_body.append(row_template(data[i]));
                     {% endif %}
                 }
+                var rowFooter_template = doT.template($('#tmpl_itemFooterRow').html());
+                table_body.append(rowFooter_template({'total_hours':meaningful_time(total_hours)}));
+
 
                 var oTable1 = table.dataTable();
                 oTable1.show();
