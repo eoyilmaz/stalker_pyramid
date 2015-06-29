@@ -156,6 +156,12 @@ def create_note(request):
             for watcher in task.watchers:
                 recipients.append(watcher.email)
 
+            # also add other note owners to the list
+            for note in task.notes:
+                note_created_by = note.created_by
+                if note_created_by:
+                    recipients.append(note_created_by.email)
+
             # make the list unique
             recipients = list(set(recipients))
 

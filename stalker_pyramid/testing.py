@@ -37,3 +37,14 @@ class DummyFileParam(object):
     def __init__(self, filename=None, file=None):
         self.filename = filename
         self.file = file
+
+
+class DummySession(object):
+    """dummy session object for testing
+    """
+
+    def __init__(self):
+        self.messages = []
+
+    def flash(self, message):
+        self.messages.append(message)

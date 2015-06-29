@@ -374,7 +374,7 @@ def duplicate_task(task):
         status=new,
         status_list=task.status_list,
         tags=task.tags,
-        # responsible=task.responsible,
+        responsible=task.responsible,
         start=task.start,
         end=task.end,
         # thumbnail=task.thumbnail,
@@ -3791,6 +3791,12 @@ def approve_task(request):
         for watcher in task.watchers:
             recipients.append(watcher.email)
 
+        # also add other note owners to the list
+        for note in task.notes:
+            note_created_by = note.created_by
+            if note_created_by:
+                recipients.append(note_created_by.email)
+
         # make the list unique
         recipients = list(set(recipients))
 
@@ -4026,6 +4032,12 @@ def request_revision(request):
 
         for watcher in task.watchers:
             recipients.append(watcher.email)
+
+        # also add other note owners to the list
+        for note in task.notes:
+            note_created_by = note.created_by
+            if note_created_by:
+                recipients.append(note_created_by.email)
 
         # make the list unique
         recipients = list(set(recipients))
@@ -4272,6 +4284,12 @@ def request_progress_review(request):
         for watcher in task.watchers:
             recipients.append(watcher.email)
 
+        # also add other note owners to the list
+        for note in task.notes:
+            note_created_by = note.created_by
+            if note_created_by:
+                recipients.append(note_created_by.email)
+
         # make the list unique
         recipients = list(set(recipients))
 
@@ -4377,6 +4395,12 @@ def request_final_review(request):
 
         for watcher in task.watchers:
             recipients.append(watcher.email)
+
+        # also add other note owners to the list
+        for note in task.notes:
+            note_created_by = note.created_by
+            if note_created_by:
+                recipients.append(note_created_by.email)
 
         # make the list unique
         recipients = list(set(recipients))
@@ -4609,6 +4633,12 @@ def request_extra_time(request):
 
         for watcher in task.watchers:
             recipients.append(watcher.email)
+
+        # also add other note owners to the list
+        for note in task.notes:
+            note_created_by = note.created_by
+            if note_created_by:
+                recipients.append(note_created_by.email)
 
         # make the list unique
         recipients = list(set(recipients))
@@ -5699,7 +5729,7 @@ def fix_task_computed_time(task):
     :return: :class:`datetime.datetime`
     """
 
-    if task.status.code not in ['CMPL','STOP','OH']:
+    if task.status.code not in ['CMPL', 'STOP', 'OH']:
         return
 
     else:
@@ -5755,7 +5785,10 @@ def get_actual_end_time(task):
             task.__class__.__name__
         )
 
-    end_time_log = TimeLog.query.filter(TimeLog.task == task).order_by(TimeLog.end.desc()).first()
+    end_time_log = TimeLog.query\
+        .filter(TimeLog.task == task)\
+        .order_by(TimeLog.end.desc())\
+        .first()
 
     if end_time_log:
         return end_time_log.end

@@ -266,9 +266,7 @@
 <script>
     var menu_of = function (title, state, address, icon, count) {
         var sidebar_list = $('#sidebar_list');
-{#        var pillsbar_list = $('#pillsbar_list');#}
         var link_template = doT.template($('#tmpl_sidebar_link').html());
-{#        var pill_link_template = doT.template($('#tmpl_pillsbar_link').html());#}
 
         var options = {
             'title': title,
@@ -281,25 +279,16 @@
         var rendered_template = $($.parseHTML(link_template(options)));
         sidebar_list.append(rendered_template);
 
-{#        var pill_rendered_template = $($.parseHTML(pill_link_template(options)));#}
-{#        pillsbar_list.append(pill_rendered_template);#}
-{#        pill_rendered_template.on('click', function (e) {#}
-{#            window.location.assign($(this).attr('link'));#}
-{#        });#}
-
         var badge = rendered_template.find('.badge');
-{#        var pill_badge = pill_rendered_template.find('.badge');#}
 
         // update the badge
         if ( typeof(count) === 'string' ) {
             // it is the address of the source
-            var url = count;
-            $.getJSON(url).then(function (data) {
+            $.getJSON(count).then(function (data) {
                 count = data;
                 // now update the side bar badge
                 if (count > 0){
                     badge.text(count).removeClass('badge-success').addClass('badge-important');
-{#                    pill_badge.text(count).removeClass('badge-success').addClass('badge-important');#}
                 }
             });
         }
@@ -335,7 +324,6 @@
 
 <script>
     var menus_under_title = function (title, icon, menuItems) {
-
         $(function () {
             var sidebar_list = $('#sidebar_list');
             var tree_link_template = doT.template($('#tmpl_sidebar_tree_link').html());
