@@ -107,6 +107,7 @@
                     data[i].hour_based_on_bid = meaningful_time_between(bid_seconds, data[i].total_logged_seconds);
                     var st_seconds = to_seconds(data[i].schedule_timing, data[i].schedule_unit );
                     total_hours +=(st_seconds-data[i].total_logged_seconds);
+                console.log('total_hours: '+ total_hours)
                     data[i].hour_to_complete = meaningful_time_between(
                                                    st_seconds,
                                                    data[i].total_logged_seconds

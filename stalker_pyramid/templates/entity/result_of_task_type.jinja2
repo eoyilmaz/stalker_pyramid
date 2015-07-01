@@ -121,7 +121,9 @@
 {#                    shot_data[i]['month'] = new Date(data[i]['start_date'] * 1000).format('yyyy-mm').toString();#}
                     shot_data[i]['start_date'] = new Date(data[i]['start_date'] * 1000).format('yyyy-mm-dd').toString();
                     total_seconds += shot_data[i]['total_seconds'];
+
                     shot_data[i]['total_seconds'] = shot_data[i]['total_seconds'].toFixed(2);
+                    console.log(shot_data[i]['start_date']+ ' : ' +shot_data[i]['total_seconds']);
                     weekly_shot_seconds.push([shot_data[i]['start_date'], shot_data[i]['total_seconds']]);
                     max_seconds = parseFloat(shot_data[i]['total_seconds'])>max_seconds?parseFloat(shot_data[i]['total_seconds']):max_seconds;
                     min_seconds = parseFloat(shot_data[i]['total_seconds'])<min_seconds?parseFloat(shot_data[i]['total_seconds']):min_seconds;
