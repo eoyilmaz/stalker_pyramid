@@ -349,7 +349,7 @@ def get_entity_task_type_result(request):
                     when 'y' then 7696277
                     else 0
                 end)
-    ))/24) as r_seconds
+    ))/24.0) as r_seconds
 from "TimeLogs"
 join (
         select "Tasks".id as id,

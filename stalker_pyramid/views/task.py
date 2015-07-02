@@ -4135,7 +4135,7 @@ def request_review_task_dialog(request):
             forced_publish_types = [
                 'Look Development', 'Character Design', 'Model', 'Rig',
                 'Previs', 'Layout', 'Lighting', 'Environment Design',
-                'Matte Painting', 'Animation','Animation Bible',  'Camera', 'Simulation',
+                'Matte Painting', 'Animation Bible',  'Camera', 'Simulation',
                 'Postvis', 'Scene Assembly', 'Schematic', 'Comp', 'FX', 'Sketch',
                 'Color Sketch', 'Groom'
             ]
