@@ -35,7 +35,8 @@ from stalker_pyramid.views import (get_logged_in_user,
                                    get_date, StdErrToHTMLConverter,
                                    local_to_utc, get_multi_integer)
 from stalker_pyramid.views.task import (get_task_full_path,
-                                        generate_where_clause)
+                                        generate_where_clause,
+                                        fix_task_computed_time)
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -192,7 +193,8 @@ def create_time_log(request):
         )
         transaction.abort()
         return response
-
+    task.update_schedule_info()
+    fix_task_computed_time(task)
     logger.debug('successfully created time log!')
     response = Response(get_task_full_path(task.id))
 
@@ -243,7 +245,6 @@ def update_time_log(request):
             time_log.updated_by = logged_in_user
             time_log.date_updated = utc_now
 
-
             if time_log.duration > previous_duration\
                and time_log.task.status == 'HREV':
                 # update the task status to WIP
@@ -264,6 +265,8 @@ def update_time_log(request):
             )
             logger.debug('successfully updated time log!')
 
+    time_log.task.update_schedule_info()
+    fix_task_computed_time(time_log.task)
     return Response('TimeLog has been updated successfully')
 
 

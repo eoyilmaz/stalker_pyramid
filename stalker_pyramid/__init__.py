@@ -634,6 +634,7 @@ def main(global_config, **settings):
     config.add_route('update_task_dependencies_dialog',     'tasks/{id}/update/dependencies/dialog')
     config.add_route('force_task_status_dialog',            'tasks/{id}/force_status/{status_code}/dialog')
     config.add_route('force_task_status',                   'tasks/{id}/force_status/{status_code}')
+    config.add_route('force_tasks_status',                  'tasks/force_status/{status_code}')
     config.add_route('resume_task_dialog',                  'tasks/{id}/resume/dialog')
     config.add_route('resume_task',                  'tasks/{id}/resume')
     config.add_route('review_task',                         'tasks/{id}/review')
@@ -675,6 +676,8 @@ def main(global_config, **settings):
 
     config.add_route('approve_task',   'tasks/{id}/approve')
     config.add_route('request_revision',   'tasks/{id}/request_revision')
+    config.add_route('request_revisions',   'tasks/request_revisions')
+
     config.add_route('request_extra_time', 'tasks/{id}/request_extra_time')
     config.add_route('request_extra_time_dialog', 'tasks/{id}/request_extra_time/dialog')
 

@@ -221,8 +221,8 @@
 
 {% block extrascripts %}
     <script type="text/javascript">
-			if("ontouchend" in document) document.write("<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.mobile.custom.min.js") }}'>"+"<"+"/script>");
-		</script>
+        if("ontouchend" in document) document.write("<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.mobile.custom.min.js") }}'>"+"<"+"/script>");
+    </script>
     <script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/i18n/grid.locale-en.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/jquery.jqGrid.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/accounting.min.js") }}'></script>
@@ -490,44 +490,44 @@
                             return rowObject.addition_type;
                         }
 
-                        function editFmatter(cellvalue, options, rowObject){
-                            console.log(cellvalue);
-                            console.log(options);
-                            console.log(rowObject);
-{#                            if(rowObject.addition_type == 'Calendar'){#}
-{#                                options.colModel.editable = false;#}
-{#                            }#}
+                function editFmatter(cellvalue, options, rowObject){
+                    console.log(cellvalue);
+                    console.log(options);
+                    console.log(rowObject);
+    {#                            if(rowObject.addition_type == 'Calendar'){#}
+    {#                                options.colModel.editable = false;#}
+    {#                            }#}
 
-                            return cellvalue;
+                    return cellvalue;
+                }
+
+                function currencyFmatter (cellvalue, options, rowObject)
+                {
+                   return accounting.formatMoney(cellvalue, { symbol: "TL",  format: "%v %s" });
+                }
+
+                function  unformatCurrency (cellvalue, options)
+                {
+                   return accounting.unformat(cellvalue);
+                }
+                function beforeDeleteCallback(e) {
+                    var form = $(e[0]);
+                    if(form.data('styled')) return false;
+
+                    form.closest('.ui-jqdialog').find('.ui-jqdialog-titlebar').wrapInner('<div class="widget-header" />')
+        {#                        style_delete_form(form);#}
+
+                    form.data('styled', true);
+                }
+                function beforeEditCallback(e) {
+                            var form = $(e[0]);
+                            if(form.data('styled')) return false;
+
+                            form.closest('.ui-jqdialog').find('.ui-jqdialog-titlebar').wrapInner('<div class="widget-header" />')
+    {#                        style_delete_form(form);#}
+
+                            form.data('styled', true);
                         }
-
-                        function currencyFmatter (cellvalue, options, rowObject)
-                        {
-                           return accounting.formatMoney(cellvalue, { symbol: "TL",  format: "%v %s" });
-                        }
-
-                        function  unformatCurrency (cellvalue, options)
-                        {
-                           return accounting.unformat(cellvalue);
-                        }
-            function beforeDeleteCallback(e) {
-                        var form = $(e[0]);
-                        if(form.data('styled')) return false;
-
-                        form.closest('.ui-jqdialog').find('.ui-jqdialog-titlebar').wrapInner('<div class="widget-header" />')
-{#                        style_delete_form(form);#}
-
-                        form.data('styled', true);
-                    }
-            function beforeEditCallback(e) {
-                        var form = $(e[0]);
-                        if(form.data('styled')) return false;
-
-                        form.closest('.ui-jqdialog').find('.ui-jqdialog-titlebar').wrapInner('<div class="widget-header" />')
-{#                        style_delete_form(form);#}
-
-                        form.data('styled', true);
-                    }
             });
 
 

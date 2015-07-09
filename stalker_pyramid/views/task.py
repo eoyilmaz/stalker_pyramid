@@ -47,12 +47,12 @@ from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
                                    get_path_converter, invalidate_all_caches)
 from stalker_pyramid.views.link import (replace_img_data_with_links,
                                         MediaManager)
+from stalker_pyramid.views.note import create_simple_note
 from stalker_pyramid.views.type import query_type
 
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
-
 
 def generate_recursive_task_query(ordered=True):
     """generates a query string that recursively gathers task information
@@ -3536,18 +3536,12 @@ def cleanup_task_new_reviews(request):
         transaction.abort()
         return Response(c.html(), 500)
 
-    note_type = query_type('Note', 'Cleanup Reviews')
-    note_type.html_class = 'red'
-    note_type.code = 'cleanedup_reviews'
-
-    note = Note(
-        content='%s has cleaned all unanswered reviews' % logged_in_user.name,
-        created_by=logged_in_user,
-        date_created=utc_now,
-        date_updated=utc_now,
-        type=note_type
-    )
-    db.DBSession.add(note)
+    note = create_simple_note('%s has cleaned all unanswered reviews' % logged_in_user.name,
+                              'Cleanup Reviews',
+                              'red',
+                              'cleanedup_reviews',
+                              logged_in_user,
+                              utc_now)
 
     task.notes.append(note)
 
@@ -3737,22 +3731,20 @@ def approve_task(request):
         return Response('There is no review', 500)
 
     if review.type and review.type.name == 'Extra Time':
-        note_type = query_type('Note', 'Rejected Extra Time Request')
-        note_type.html_class = 'red'
-        note_type.code = 'rejected'
-    else:
-        note_type = query_type('Note', 'Approved')
-        note_type.html_class = 'green'
-        note_type.code = 'approved'
+        note = create_simple_note(description,
+                                  'Rejected Extra Time Request',
+                                  'red',
+                                  'rejected',
+                                  logged_in_user,
+                                  utc_now)
 
-    note = Note(
-        content=description,
-        created_by=logged_in_user,
-        date_created=utc_now,
-        date_updated=utc_now,
-        type=note_type
-    )
-    db.DBSession.add(note)
+    else:
+        note = create_simple_note(description,
+                                  'Approved',
+                                  'green',
+                                  'approved',
+                                  logged_in_user,
+                                  utc_now)
 
     logger.debug('review %s' % review)
 
@@ -3872,40 +3864,14 @@ def request_revision(request):
         transaction.abort()
         return Response('There is no task with id: %s' % task_id, 500)
 
-    schedule_timing = request.params.get('schedule_timing')
-    schedule_unit = request.params.get('schedule_unit')
-    schedule_model = request.params.get('schedule_model')
-
-    if not schedule_timing:
+    schedule_info = get_schedule_information(request)
+    if schedule_info is Response:
         transaction.abort()
-        return Response('There are missing parameters: schedule_timing', 500)
-    else:
-        try:
-            schedule_timing = float(schedule_timing)
-        except ValueError:
-            transaction.abort()
-            return Response('Please supply a float or integer value for '
-                            'schedule_timing parameter', 500)
+        return schedule_info
 
-    if not schedule_unit:
-        transaction.abort()
-        return Response('There are missing parameters: schedule_unit', 500)
-    else:
-        if schedule_unit not in ['min', 'h', 'd', 'w', 'm', 'y']:
-            transaction.abort()
-            return Response(
-                "schedule_unit parameter should be one of ['min','h', 'd', "
-                "'w', 'm', 'y']", 500
-            )
-
-    if not schedule_model:
-        transaction.abort()
-        return Response('There are missing parameters: schedule_model', 500)
-    else:
-        if schedule_model not in ['effort', 'duration', 'length']:
-            transaction.abort()
-            return Response("schedule_model parameter should be on of "
-                            "['effort', 'duration', 'length']", 500)
+    schedule_timing = schedule_info[0]
+    schedule_unit = schedule_info[1]
+    schedule_model = schedule_info[2]
 
     logger.debug('schedule_timing: %s' % schedule_timing)
     logger.debug('schedule_unit  : %s' % schedule_unit)
@@ -3926,24 +3892,18 @@ def request_revision(request):
             # review = forced_review(logged_in_user, task);
             # review.date_created = utc_now
 
-            note_type = query_type('Note', 'Request Revision')
-            note_type.html_class = 'purple'
-            note_type.code = 'requested_revision'
-
-            note = Note(
-                content='Expanded the timing of the task by <b>'
-                        '%(schedule_timing)s %(schedule_unit)s</b>.<br/>'
-                        '%(description)s' % {
-                            'schedule_timing': schedule_timing,
-                            'schedule_unit': schedule_unit,
-                            'description': description
-                        },
-                created_by=logged_in_user,
-                date_created=utc_now,
-                date_updated=utc_now,
-                type=note_type
-            )
-            db.DBSession.add(note)
+            note = create_simple_note('Expanded the timing of the task by <b>'
+                                        '%(schedule_timing)s %(schedule_unit)s</b>.<br/>'
+                                        '%(description)s' % {
+                                            'schedule_timing': schedule_timing,
+                                            'schedule_unit': schedule_unit,
+                                            'description': description
+                                        },
+                                      'Request Revision',
+                                      'purple',
+                                      'requested_revision',
+                                      logged_in_user,
+                                      utc_now)
 
             task.request_revision(
                 logged_in_user,
@@ -3972,29 +3932,26 @@ def request_revision(request):
             return Response('There is no review', 500)
 
         try:
-
+            content = 'Expanded the timing of the task by <b>%(schedule_timing)s %(schedule_unit)s</b>.<br/>%(description)s' % {
+                        'schedule_timing': schedule_timing,
+                        'schedule_unit': schedule_unit,
+                        'description': description
+            }
             if review.type and review.type.name == 'Extra Time':
-                note_type = query_type('Note', 'Accepted Extra Time Request')
-                note_type.html_class = 'green'
-                note_type.code = 'accepted'
-            else:
-                note_type = query_type('Note', 'Request Revision')
-                note_type.html_class = 'purple'
-                note_type.code = 'requested_revision'
+                note = create_simple_note(content,
+                                          'Accepted Extra Time Request',
+                                          'green',
+                                          'accepted',
+                                          logged_in_user,
+                                          utc_now)
 
-            note = Note(
-                content='Expanded the timing of the task by <b>'
-                        '%(schedule_timing)s %(schedule_unit)s</b>.<br/>'
-                        '%(description)s' % {
-                            'schedule_timing': schedule_timing,
-                            'schedule_unit': schedule_unit,
-                            'description': description
-                        },
-                created_by=logged_in_user,
-                date_created=utc_now,
-                date_updated=utc_now,
-                type=note_type
-            )
+            else:
+                note = create_simple_note(content,
+                                          'Request Revision',
+                                          'purple',
+                                          'requested_revision',
+                                          logged_in_user,
+                                          utc_now)
 
             review.request_revision(
                 schedule_timing,
@@ -4010,8 +3967,6 @@ def request_revision(request):
 
         except StatusError as e:
                 return Response('StatusError: %s' % e, 500)
-
-    db.DBSession.add(note)
 
     task.notes.append(note)
     task.updated_by = logged_in_user
@@ -4098,6 +4053,107 @@ def request_revision(request):
     request.session.flash(flash_message)
 
     return Response(response_message)
+
+
+@view_config(
+    route_name='request_revisions'
+)
+def request_revisions(request):
+    """ request revision for selected tasks
+    """
+
+    logged_in_user = get_logged_in_user(request)
+    utc_now = local_to_utc(datetime.datetime.now())
+
+    selected_task_list = get_multi_integer(request, 'task_ids[]')
+    tasks = Task.query.filter(Task.id.in_(selected_task_list)).all()
+    if not tasks:
+        transaction.abort()
+        return Response('Can not find any Task', 500)
+
+    schedule_info = get_schedule_information(request)
+    if schedule_info is Response:
+        transaction.abort()
+        return schedule_info
+
+    schedule_timing = schedule_info[0]
+    schedule_unit = schedule_info[1]
+    schedule_model = schedule_info[2]
+
+    description = request.params.get('note', 1)
+    has_permission = PermissionChecker(request)
+
+    if has_permission('Create_Review'):
+        note = create_simple_note('Expanded the timing of the task by <b>'
+                                        '%(schedule_timing)s %(schedule_unit)s</b>.<br/>'
+                                        '%(description)s' % {
+                                            'schedule_timing': schedule_timing,
+                                            'schedule_unit': schedule_unit,
+                                            'description': description
+                                        },
+                                      'Request Revision',
+                                      'purple',
+                                      'requested_revision',
+                                      logged_in_user,
+                                      utc_now)
+        result_message =[]
+        for task in tasks:
+            if task.status.code != 'CMPL':
+                result_message.append('%s/%s is  %s. You can not request revision!' % (task.parent.name, task.name, task.status.name))
+                continue
+
+            task.request_revision(
+                logged_in_user,
+                note.content,
+                schedule_timing,
+                schedule_unit
+            )
+            task.notes.append(note)
+            task.updated_by = logged_in_user
+            task.date_updated = utc_now
+    else:
+        request.session.flash('error:You dont have permission!')
+        return Response("You don't have permission", 500)
+
+    flash_message = 'success:Requested revisions for all selected tasks!'
+    if len(result_message) > 0:
+        flash_message = 'warning: %s' % ',\n '.join(result_message)
+
+    request.session.flash(flash_message)
+    return Response(flash_message)
+
+def get_schedule_information(req):
+
+    schedule_timing = req.params.get('schedule_timing')
+    schedule_unit = req.params.get('schedule_unit')
+    schedule_model = req.params.get('schedule_model')
+
+    if not schedule_timing:
+        return Response('There are missing parameters: schedule_timing', 500)
+    else:
+        try:
+            schedule_timing = float(schedule_timing)
+        except ValueError:
+            return Response('Please supply a float or integer value for '
+                            'schedule_timing parameter', 500)
+
+    if not schedule_unit:
+        return Response('There are missing parameters: schedule_unit', 500)
+    else:
+        if schedule_unit not in ['min', 'h', 'd', 'w', 'm', 'y']:
+            return Response(
+                "schedule_unit parameter should be one of ['min','h', 'd', "
+                "'w', 'm', 'y']", 500
+            )
+
+    if not schedule_model:
+        return Response('There are missing parameters: schedule_model', 500)
+    else:
+        if schedule_model not in ['effort', 'duration', 'length']:
+            return Response("schedule_model parameter should be on of "
+                            "['effort', 'duration', 'length']", 500)
+
+    return schedule_timing, schedule_unit, schedule_model
 
 
 @view_config(
@@ -4255,19 +4311,12 @@ def request_progress_review(request):
         request_review_ticket.links.append(task)
         db.DBSession.add(request_review_ticket)
 
-        note_type = query_type('Note', 'Ticket Comment')
-        note_type.html_class = 'pink'
-        note_type.code = 'ticket_comment'
-
-        ticket_comment = Note(
-            content=note,
-            created_by=logged_in_user,
-            date_created=utc_now,
-            date_updated=utc_now,
-            type=note_type
-        )
-
-        db.DBSession.add(ticket_comment)
+        ticket_comment = create_simple_note(note,
+                                            'Ticket Comment',
+                                            'pink',
+                                            'ticket_comment',
+                                            logged_in_user,
+                                            utc_now)
 
         request_review_ticket.comments.append(ticket_comment)
         task.notes.append(ticket_comment)
@@ -4353,17 +4402,12 @@ def request_final_review(request):
 
     utc_now = local_to_utc(datetime.datetime.now())
 
-    note_type = query_type('Note', 'Request Review')
-    note_type.html_class = 'orange'
-    note_type.code = 'requested_review'
-
-    note = Note(
-        content=note_str,
-        created_by=logged_in_user,
-        date_created=utc_now,
-        date_updated=utc_now,
-        type=note_type
-    )
+    note = create_simple_note( note_str,
+                              'Request Review',
+                              'orange',
+                              'requested_review',
+                              logged_in_user,
+                              utc_now)
 
     final_type = Type.query.filter(Type.name == 'Final').first()
     if not final_type:
@@ -4540,38 +4584,14 @@ def request_extra_time(request):
         return Response('Can not request extra time for a container '
                         'task', 500)
 
-    schedule_timing = request.params.get('schedule_timing')
-    schedule_unit = request.params.get('schedule_unit')
-    schedule_model = request.params.get('schedule_model')
-
-    if not schedule_timing:
+    schedule_info = get_schedule_information(request)
+    if schedule_info is Response:
         transaction.abort()
-        return Response('There are missing parameters: schedule_timing', 500)
-    else:
-        try:
-            schedule_timing = float(schedule_timing)
-        except ValueError:
-            transaction.abort()
-            return Response('Please supply a float or integer value for '
-                            'schedule_timing parameter', 500)
+        return schedule_info
 
-    if not schedule_unit:
-        transaction.abort()
-        return Response('There are missing parameters: schedule_unit', 500)
-    else:
-        if schedule_unit not in ['min', 'h', 'd', 'w', 'm', 'y']:
-            transaction.abort()
-            return Response("schedule_unit parameter should be one of "
-                            "['min', 'h', 'd', 'w', 'm', 'y']", 500)
-
-    if not schedule_model:
-        transaction.abort()
-        return Response('There are missing parameters: schedule_model', 500)
-    else:
-        if schedule_model not in ['effort', 'duration', 'length']:
-            transaction.abort()
-            return Response("schedule_model parameter should be on of "
-                            "['effort', 'duration', 'length']", 500)
+    schedule_timing = schedule_info[0]
+    schedule_unit = schedule_info[1]
+    schedule_model = schedule_info[2]
 
     logger.debug('schedule_timing: %s' % schedule_timing)
     logger.debug('schedule_unit  : %s' % schedule_unit)
@@ -4582,25 +4602,18 @@ def request_extra_time(request):
 
     utc_now = local_to_utc(datetime.datetime.now())
 
-    note_type = query_type('Note', 'Request Extra Time')
-    note_type.html_class = 'red2'
-    note_type.code = 'requested_extra_time'
-
-    note = Note(
-        content='<i class="icon-heart"></i> Requesting extra time <b>'
-                '%(schedule_timing)s %(schedule_unit)s</b>.<br/>'
-                '%(description)s' % {
-                    'schedule_timing': schedule_timing,
-                    'schedule_unit': schedule_unit,
-                    'description': description
-                },
-        created_by=logged_in_user,
-        date_created=utc_now,
-        date_updated=utc_now,
-        type=note_type
-    )
-    db.DBSession.add(note)
-
+    note = create_simple_note('<i class="icon-heart"></i> Requesting extra time <b>'
+                                '%(schedule_timing)s %(schedule_unit)s</b>.<br/>'
+                                '%(description)s' % {
+                                    'schedule_timing': schedule_timing,
+                                    'schedule_unit': schedule_unit,
+                                    'description': description
+                                },
+                              'Request Extra Time',
+                              'red2',
+                              'requested_extra_time',
+                              logged_in_user,
+                              utc_now)
     task.notes.append(note)
 
     extra_time_type = Type.query.filter(Type.name == 'Extra Time').first()
@@ -5116,10 +5129,12 @@ def force_task_status(request):
 
     It will work only for tasks with 'WIP' and 'HREV' statuses.
     """
+    logged_in_user = get_logged_in_user(request)
+    utc_now = local_to_utc(datetime.datetime.now())
 
     status_code = request.matchdict.get('status_code')
-    logger.debug('status_code: %s' % status_code)
     status = Status.query.filter(Status.code == status_code).first()
+
     if not status:
         transaction.abort()
         return Response('Can not find a status with code: %s' % status_code, 500)
@@ -5135,9 +5150,108 @@ def force_task_status(request):
         transaction.abort()
         return Response('Can not find a Task with id: %s' % task_id, 500)
 
-    if task.status.code not in ['WIP', 'HREV']:
+    if task.status.code not in ['WIP', 'HREV', 'PREV']:
         transaction.abort()
         return Response('Cannot force %s tasks' % task.status.code, 500)
+
+    note_str = request.params.get('note', '')
+
+    if note_str != '':
+        note_str = 'with this note: <br/><b>%s</b>' % note_str
+
+    content = '%s has changed this task status to %s %s' % (
+        logged_in_user.name,
+        status.name,
+        note_str
+    )
+
+    note = create_simple_note(content, 'Forced Status', 'red', 'forced_status', logged_in_user, utc_now)
+    set_task_status(task, status, note, logged_in_user, utc_now)
+    # invalidate all caches
+    invalidate_all_caches()
+
+    return Response('Success: %s status is set to %s' %
+                    (task.name, status.name))
+
+
+@view_config(
+    route_name='force_tasks_status',
+    permission='Create_Review'
+)
+def force_tasks_status(request):
+    """Forces the tasks status to the status given with the status_code parameter.
+
+    It needs task_ids and status_code as a parameter in the request, with out
+    them it will return a response with status_code of 500.
+
+    It will work only for tasks with 'WIP' and 'HREV' statuses.
+    """
+    logged_in_user = get_logged_in_user(request)
+    utc_now = local_to_utc(datetime.datetime.now())
+
+    status_code = request.matchdict.get('status_code')
+    status = Status.query.filter(Status.code == status_code).first()
+
+    if not status:
+        transaction.abort()
+        return Response('Can not find a status with code: %s' % status_code, 500)
+
+    if status.code not in ['CMPL', 'STOP', 'OH']:
+        transaction.abort()
+        return Response('Can not set status to: %s' % status_code, 500)
+
+    selected_task_list = get_multi_integer(request, 'task_ids[]')
+    tasks = Task.query.filter(Task.id.in_(selected_task_list)).all()
+
+    if not tasks:
+        transaction.abort()
+        return Response('Can not find any task !!', 500)
+
+    result_message =[]
+    note_str = request.params.get('note', '')
+
+    if note_str != '':
+        note_str = 'with this note: <br/><b>%s</b>' % note_str
+
+    content = '%s has changed this task status to %s %s' % (
+        logged_in_user.name,
+        status.name,
+        note_str
+    )
+    note = create_simple_note(content, 'Forced Status', 'red', 'forced_status', logged_in_user, utc_now)
+
+    for task in tasks:
+        if task.status.code not in ['WIP', 'HREV', 'PREV']:
+            result_message.append('%s/%s is  %s.  You can not force status!' % (task.parent.name, task.name, task.status.name))
+
+            continue
+
+        set_task_status(task, status, note, logged_in_user, utc_now)
+
+    # invalidate all caches
+    invalidate_all_caches()
+
+    flash_message = 'success:Forced statuses %s for all selected tasks!' % status.name
+    if len(result_message) > 0:
+        flash_message = 'warning: %s' % ',\n '.join(result_message)
+    request.session.flash(flash_message)
+    return Response(flash_message)
+
+
+def set_task_status(task, status, note, logged_in_user, utc_now):
+
+    if task.status.code == 'PREV':
+        review = forced_review(logged_in_user, task)
+        review.date_created = utc_now
+        review.date_updated = utc_now
+        review.description = \
+            '%(resource_note)s <br/> <b>%(reviewer_name)s</b>: ' \
+            '%(reviewer_note)s' % {
+                'resource_note': '',
+                'reviewer_name': logged_in_user.name,
+                'reviewer_note': note.content
+            }
+        review.approve()
 
     if status.code == 'STOP':
         task.stop()
@@ -5164,40 +5278,9 @@ def force_task_status(request):
             # also update the status of parents of dependencies
             dep.update_parent_statuses()
 
-    logged_in_user = get_logged_in_user(request)
-    utc_now = local_to_utc(datetime.datetime.now())
-
-    note_str = request.params.get('note', '')
-
-    if note_str != '':
-        note_str = 'with this note: <br/><b>%s</b>' % note_str
-
-    note_type = query_type('Note', 'Forced Status')
-    note_type.html_class = 'red'
-    note_type.code = 'forced_status'
-
-    note = Note(
-        content='%s has changed this task status to %s %s' % (
-            logged_in_user.name,
-            status.name,
-            note_str
-        ),
-        created_by=logged_in_user,
-        date_created=utc_now,
-        date_updated=utc_now,
-        type=note_type
-    )
-    db.DBSession.add(note)
-
     task.notes.append(note)
     task.updated_by = logged_in_user
     task.date_updated = utc_now
-
-    # invalidate all caches
-    invalidate_all_caches()
-
-    return Response('Success: %s status is set to %s' %
-                    (task.name, status.name))
 
 
 @view_config(
@@ -5249,19 +5332,13 @@ def resume_task(request):
     logged_in_user = get_logged_in_user(request)
     utc_now = local_to_utc(datetime.datetime.now())
 
-    note_type = query_type('Note', 'Resumed')
-    note_type.html_class = 'red'
-    note_type.code = 'resumed'
-
-    note = Note(
-        content='%s has changed this task status to %s' % (logged_in_user.name,
+    note = create_simple_note('%s has changed this task status to %s' % (logged_in_user.name,
                                                            task.status.name),
-        created_by=logged_in_user,
-        date_created=utc_now,
-        date_updated=utc_now,
-        type=note_type
-    )
-    db.DBSession.add(note)
+                              'Resumed',
+                              'red',
+                              'resumed',
+                              logged_in_user,
+                              utc_now)
 
     task.notes.append(note)
     task.updated_by = logged_in_user
@@ -5444,80 +5521,6 @@ def selected_task_dialog(request):
     }
 
 
-@view_config(
-    route_name='change_tasks_users',
-    permission='Update_Task'
-)
-def change_tasks_users(request):
-    """changes task users with the given users
-    """
-    logged_in_user = get_logged_in_user(request)
-    utc_now = local_to_utc(datetime.datetime.now())
-
-    selected_list = get_multi_integer(request, 'user_ids')
-    users = User.query\
-        .filter(User.id.in_(selected_list)).all()
-
-    if not users:
-        transaction.abort()
-        return Response('Missing parameters', 500)
-
-    selected_task_list = get_multi_integer(request, 'task_ids[]')
-    logger.debug('selected_task_list : %s' % selected_task_list)
-
-    tasks = Task.query.filter(Task.id.in_(selected_task_list)).all()
-    logger.debug('tasks : %s' % tasks)
-
-    if not tasks:
-        transaction.abort()
-        return Response('Can not find any Task', 500)
-
-    user_type = request.matchdict.get('user_type')
-
-    if not user_type:
-        transaction.abort()
-        return Response('Missing parameters', 500)
-
-    if user_type == 'resources':
-        for task in tasks:
-            task.resources = users
-            task.updated_by = logged_in_user
-            task.date_updated = utc_now
-    elif user_type == 'responsible':
-        for task in tasks:
-            task.responsible = users
-            task.updated_by = logged_in_user
-            task.date_updated = utc_now
-
-
-
-    # invalidate all caches
-    invalidate_all_caches()
-
-    return Response('Success: %s are added to selected tasks' % user_type)
-
-# @view_config(
-#     route_name='change_tasks_priority_dialog',
-#     renderer='templates/task/dialog/change_tasks_priority_dialog.jinja2'
-# )
-# def change_tasks_priority_dialog(request):
-#     """changes task users with the given users dialog
-#     """
-#     logger.debug('change_tasks_users_dialog is starts')
-#
-#     selected_task_list = get_multi_integer(request, 'task_ids', 'GET')
-#     logger.debug('selected_task_list : %s' % selected_task_list)
-#
-#     tasks = Task.query.filter(Task.id.in_(selected_task_list)).all()
-#     logger.debug('tasks : %s' % tasks)
-#
-#
-#     came_from = request.params.get('came_from', '/')
-#
-#     return {
-#         'tasks': tasks,
-#         'came_from': came_from
-#     }
 
 
 @view_config(
@@ -5586,6 +5589,8 @@ def change_task_users_dialog(request):
 def change_task_users(request):
     """changes task users with the given users
     """
+    logged_in_user = get_logged_in_user(request)
+    utc_now = local_to_utc(datetime.datetime.now())
 
     selected_list = get_multi_integer(request, 'user_ids')
     users = User.query\
@@ -5615,9 +5620,6 @@ def change_task_users(request):
     elif user_type == 'responsible':
         task.responsible = users
 
-    logged_in_user = get_logged_in_user(request)
-    utc_now = local_to_utc(datetime.datetime.now())
-
     task.updated_by = logged_in_user
     task.date_updated = utc_now
 
@@ -5625,6 +5627,54 @@ def change_task_users(request):
     invalidate_all_caches()
 
     return Response('Success: %s are added to %s resources' % (user_type, task.name))
+
+
+@view_config(
+    route_name='change_tasks_users',
+    permission='Update_Task'
+)
+def change_tasks_users(request):
+    """changes task users with the given users
+    """
+    logged_in_user = get_logged_in_user(request)
+    utc_now = local_to_utc(datetime.datetime.now())
+
+    selected_list = get_multi_integer(request, 'user_ids')
+    users = User.query\
+        .filter(User.id.in_(selected_list)).all()
+
+    if not users:
+        transaction.abort()
+        return Response('Missing parameters', 500)
+
+    selected_task_list = get_multi_integer(request, 'task_ids[]')
+    tasks = Task.query.filter(Task.id.in_(selected_task_list)).all()
+
+    if not tasks:
+        transaction.abort()
+        return Response('Can not find any Task', 500)
+
+    user_type = request.matchdict.get('user_type')
+
+    if not user_type:
+        transaction.abort()
+        return Response('Missing parameters', 500)
+
+    if user_type == 'resources':
+        for task in tasks:
+            task.resources = users
+            task.updated_by = logged_in_user
+            task.date_updated = utc_now
+    elif user_type == 'responsible':
+        for task in tasks:
+            task.responsible = users
+            task.updated_by = logged_in_user
+            task.date_updated = utc_now
+
+    # invalidate all caches
+    invalidate_all_caches()
+
+    return Response('Success: %s are added to selected tasks' % user_type)
 
 
 @view_config(

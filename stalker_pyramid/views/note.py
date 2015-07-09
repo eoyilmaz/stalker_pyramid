@@ -28,7 +28,7 @@ from pyramid_mailer import get_mailer
 from pyramid_mailer.message import Message, Attachment
 
 from stalker.db import DBSession
-from stalker import (Entity, Note, Type)
+from stalker import (db, Entity, Note, Type)
 
 from stalker_pyramid.views import (get_logged_in_user,
                                    milliseconds_since_epoch,
@@ -36,8 +36,8 @@ from stalker_pyramid.views import (get_logged_in_user,
                                    get_multi_integer, dummy_email_address)
 from stalker_pyramid.views.link import replace_img_data_with_links, \
     MediaManager
-from stalker_pyramid.views.task import get_task_full_path, \
-    get_task_external_link
+# from stalker_pyramid.views.task import get_task_full_path, \
+#     get_task_external_link
 from stalker_pyramid.views.type import query_type
 
 
@@ -86,6 +86,7 @@ def create_note(request):
         transaction.abort()
         return Response('No type', 500)
 
+    from stalker_pyramid.views.task import get_task_full_path, get_task_external_link
     attachments = []
     total_attachement_size = 0
     if content:
@@ -197,6 +198,24 @@ def create_note(request):
     request.session.flash('success: note is created by %s' % logged_in_user.name)
 
     return Response('Task note is created')
+
+
+def create_simple_note(content, n_type, html_class, code, logged_in_user, utc_now):
+
+    note_type = query_type('Note', n_type)
+    note_type.html_class = html_class
+    note_type.code = code
+
+    note = Note(
+        content=content,
+        created_by=logged_in_user,
+        date_created=utc_now,
+        date_updated=utc_now,
+        type=note_type
+    )
+    db.DBSession.add(note)
+
+    return note
 
 
 @view_config(

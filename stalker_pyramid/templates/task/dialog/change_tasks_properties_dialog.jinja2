@@ -2,33 +2,93 @@
 
 <div class="row-fluid" >
     <div class="row-fluid" >
-{#    <form id='append_form'#}
-{#              class='form-horizontal'#}
-{#              role='form'#}
-{#              method='post'>#}
-{#        <div class='control-group'>#}
-{#            <label class='span3 control-label' for='task_users'>Resources</label>#}
-{#            <div class='span9'>#}
-{#                <select id='task_users'#}
-{#                        multiple=''#}
-{#                        class='input-block-level tag-input-style'#}
-{#                        name='user_ids'#}
-{#                        data-placeholder=Resources#}
-{#                        is_updating=false></select>#}
-{#            </div>#}
-{#        </div>#}
-{#    </form>#}
-        <table id="grid-table"></table>
-         <div class="widget-toolbox clearfix">
-                <button id='test_button'
-                        class="btn btn-small btn-danger span12"
-                        data-placement="bottom"
-                        >
-                    Test</button>
+        <form id='change_properties_task_form'
+          class='form-horizontal'
+          role='form'
+          method='post' >
+            <div class="control-group">
+                    <label class="span3 control-label" for="task_action">Choose an action</label>
+                    <div class="span9">
+                        <select id='task_action'
+                                class='input-block-level'>
+                                <option value="change_resources">Change Resource</option>
+                                <option value="force_status">Force Complete</option>
+                                <option value="request_revisions">Request Revision</option>
+                        </select>
+                    </div>
             </div>
+            {# Change Resources Controls #}
+            <div class='control-group' id="change_resources_control">
+                <label class='span3 control-label' for='task_resources'>Resources</label>
+                <div class='span9'>
+                    <select id='task_resources'
+                            multiple=''
+                            class='input-block-level tag-input-style'
+                            name='user_ids'
+                            data-placeholder='Resources'
+                            is_updating=false></select>
+                </div>
+            </div>
+            {# Force Status Controls #}
+            <div class='control-group hide' id="force_status_control">
+                <label class='span3 control-label'
+                       for='force_status_note'>Note:</label>
 
-</div>
+                <div class='span9'>
+                    <textarea id="force_status_note"
+                              name='note'
+                              class="autosize-transition span12"
+                              style="overflow: hidden;
+                                         word-wrap: break-word;
+                                         resize: horizontal;
+                                         height: 150px;"
+                            ></textarea>
+                </div>
+            </div>
+            {# Schedule Timing #}
+            <div class='control-group hide' id="request_revision_control">
+                <label class='span3 control-label'
+                       for='task_schedule_timing'>Schedule Timing</label>
 
+                <div class='span9'>
+                    <div class='span2'>
+                        <input id='task_schedule_timing'
+                               class='input-block-level'
+                               name='schedule_timing'
+                               type='text'
+                               value=1
+                               min=1
+                               required>
+                    </div>
+                    <div class='span3'>
+                        <select id='task_schedule_unit'
+                                class='input-block-level'
+                                name='schedule_unit'>
+                            <option value='min'>Minutes</option>
+                            <option value='h'>Hours</option>
+                            <option value='d'>Days</option>
+                            <option value='w'>Weeks</option>
+                            <option value='m'>Months</option>
+                            <option value='y'>Years</option>
+                        </select>
+                    </div>
+                    <div class='span3'>
+                        <select id='task_schedule_model'
+                                class='input-block-level'
+                                name='schedule_model'>
+                            <option value='effort'>Effort</option>
+                            <option value='duration'>Duration</option>
+                            <option value='length'>Length</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </form>
+        <div class="space-5"></div>
+        <div class="hr dotted"></div>
+        <div class="space-5"></div>
+        <table id="grid-table"></table>
+    </div>
 </div>
 <script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/i18n/grid.locale-en.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/jquery.jqGrid.js") }}'></script>
@@ -43,13 +103,17 @@
             var label = $('#dialog_template_label');
             label.find('span').remove();
             label.append('<span>{{ tasks[0].type.name }}</span>');
-{#            $('#dialog_template_body').attr('style', "height: 300px");#}
+            $('#dialog_template_body').attr('style', "height: auto");
 
             var tasks_names = [];
 
             tasks_names = [
                 {% for task in tasks %}
-                    {'id':'{{ task.id }}', 'name':'{{ task.parent.name}}', 'status_code':'{{ task.status.code}}','resources':'{% for resource in task.resources %}<a href="/user/{{ resource.id}}/view">{{resource.name}}</a><br/>{% endfor %}'},
+                    {'id':'{{ task.id }}',
+                     'name':'{{ task.parent.name}}',
+                     'status_code':'{{ task.status.code}}',
+                     'resources':'{% for resource in task.resources %}<a href="/users/{{ resource.id}}/view">{{resource.name}}</a><br/>{% endfor %}'
+                    },
                 {% endfor %}
             ];
 
@@ -69,27 +133,11 @@
                         datatype: "local",
                         colNames:['Id', 'Name', 'Status', 'Resources'],
                         colModel:[
-{#                            {#}
-{#                                name:'myac',#}
-{#                                index:'',#}
-{#                                width:80,#}
-{#                                fixed:true,#}
-{#                                sortable:false,#}
-{#                                resize:false,#}
-{#                                formatter:'actions',#}
-{#                                formatoptions:{#}
-{#                                            keys:true,#}
-{#                                            delbutton:false#}
-{#                                            delOptions:{recreateForm: true, beforeShowForm:beforeDeleteCallback}#}
-{#                                                editformbutton:true#}
-{#                                                editOptions:{recreateForm: false, beforeShowForm:beforeEditCallback}#}
-{#                                        }#}
-{#                            },#}
 
-                            {name:'id', index:'id', width:50, editable: false},
-                            {name:'name', index:'name', width:200, editable: false},
-                            {name:'status_code', index:'status_code',width:75, editable: false},
-                            {name:'resources', index:'resources',width:210, editable: false}
+                            {name:'id', index:'id', width:60, editable: false},
+                            {name:'name', index:'name', width:200, editable: false, formatter:taskLabelFormatter},
+                            {name:'status_code', index:'status_code',width:100, editable: false, formatter:statusLabelFormatter},
+                            {name:'resources', index:'resources',width:220, editable: false}
 
                         ],
                         viewrecords : true,
@@ -99,7 +147,8 @@
                         altRows: true,
                         multiselect: true,
                         loadonce: true,
-                        height: 500,
+                        height: grid_data.length*45,
+                        sortname:'name',
                         footerrow: false, // set a footer row
                         userDataOnFooter: false, // the calculated sums and/or strings from server are put at footer row.
                         grouping: false,
@@ -109,15 +158,91 @@
                 });
             });
 
-            var test_button = $('#test_button');
-            test_button.on('click', function (e) {
+            function taskLabelFormatter(cellvalue, options, rowObject){
+                console.log(rowObject);
+{#                return cellvalue;#}
+                return '<a href="/tasks/'+rowObject.id+'/view">'+cellvalue+'</a>';
+            }
+            function statusLabelFormatter(cellvalue, options, rowObject){
+                return '<span class="label label-large label-status_'+cellvalue.toLowerCase()+'">'+cellvalue+'</span>';
+            }
+
+            var task_action = $('#task_action');
+            var submit_form_url = '/tasks/change/resources';
+            var change_resources_control =  $('#change_resources_control');
+            var force_status_control =  $('#force_status_control');
+            var request_revision_control =  $('#request_revision_control');
+
+            task_action.on('change', function () {
+
+                var action = $(this).val();
+                switch (action){
+                    case 'change_resources':
+                        submit_form_url =  '/tasks/change/resources';
+                        change_resources_control.show();
+                        force_status_control.hide();
+                        request_revision_control.hide();
+                        break;
+                    case 'force_status':
+                        submit_form_url =  '/tasks/force_status/CMPL';
+                        change_resources_control.hide();
+                        force_status_control.show();
+                        request_revision_control.hide();
+                        break;
+                    case 'request_revisions':
+                        submit_form_url =  '/tasks/request_revisions';
+                        change_resources_control.hide();
+                        force_status_control.show();
+                        request_revision_control.show();
+                        break;
+                }
+
+            });
+
+            var task_resources = $('#task_resources');
+            task_resources.chosen({
+                search_contains: true,
+                enable_split_word_search: true
+            });
+
+            {% raw %}
+                var user_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
+            {% endraw %}
+
+            $.getJSON('/projects/{{ tasks[0].project.id }}/users/?simple=1').then(function(data){
+                task_resources.find('option').remove();
+
+                var data_count = data.length;
+                for (var i=0; i < data_count; i++){
+                    task_resources.append(user_template(data[i]));
+                }
+                task_resources.trigger('liszt:updated');
+             });
+
+
+            var submit_button = $('#dialog_template_submit_button');
+            submit_button.on('click', function (e) {
 
                 e.stopPropagation();
                 e.preventDefault();
-                var selr = jQuery('#grid-table').jqGrid('getGridParam','selarrrow');
-                for(var i=0; i<selr.length;i++){
-                    alert(selr[i]);
-                }
+                submit_button.button('loading');
+                var task_ids = jQuery('#grid-table').jqGrid('getGridParam','selarrrow');
+                var change_properties_task_form = $("#change_properties_task_form");
+
+                $.post(
+                    submit_form_url,
+                    change_properties_task_form.serialize()+ '&' + $.param({'task_ids':task_ids})
+                ).done(function (response_text) {
+                    submit_button.button('reset');
+                    $('#dialog_template').modal('hide');
+                    // reload page
+                    setTimeout(function () { // wait for hide event to finish
+                        window.location.reload();
+                    }, 0);
+                }).fail(function (jqXHR) {
+                    bootbox.alert(jqXHR.responseText);
+                    submit_button.button('reset');
+                });
             });
 
 

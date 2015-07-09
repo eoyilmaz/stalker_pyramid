@@ -46,7 +46,7 @@
                                 <i class="icon-angle-down icon-only bigger-120"></i>
                             </button>
                             <ul class="dropdown-menu dropdown-icon-only dropdown-yellow pull-right dropdown-caret dropdown-close">
-                                {% if (entity.status.code == 'WIP' or entity.status.code == 'HREV') %}
+                                {% if (entity.status.code == 'WIP' or entity.status.code == 'HREV' or entity.status.code == 'PREV') %}
                                     <li>
                                         <a href="/tasks/{{entity.id}}/force_status/CMPL/dialog?came_from={{ request.current_route_path() }}"
                                            class="tooltip-success"
