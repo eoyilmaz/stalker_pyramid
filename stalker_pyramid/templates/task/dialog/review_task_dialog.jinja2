@@ -53,28 +53,10 @@
 
                 {# Description #}
                 <div>
-                    <div class='control-group'>
-                        <label class='span3 control-label'
-                               for='task_description'>Description</label>
-
-                        <div class='span9'>
-                            <textarea id="task_description"
-                                      name='description'
-                                      class="autosize-transition span12"
-                                      style="overflow: hidden;
-                                         word-wrap: break-word;
-                                         resize: horizontal;
-                                         height: 250px;"
-                                    >{% if mode=='update' %}
-                                {{ task.description }}{% endif %}</textarea>
-                        </div>
-                    </div>
-
                     {# Schedule Timing #}
                     <div class='control-group hide' id="revision_controls">
                         <label class='span3 control-label'
                                for='task_schedule_timing'>Schedule Timing</label>
-
                         <div class='span9'>
                             <div class='span2'>
                                 <input id='task_schedule_timing'
@@ -106,6 +88,22 @@
                                     <option value='length'>Length</option>
                                 </select>
                             </div>
+                        </div>
+                    </div>
+                    <div class='control-group'>
+                        <label class='span3 control-label'
+                               for='task_description'>Description</label>
+
+                        <div class='span9'>
+                            <textarea id="task_description"
+                                      name='description'
+                                      class="autosize-transition span12"
+                                      style="overflow: hidden;
+                                         word-wrap: break-word;
+                                         resize: horizontal;
+                                         height: 250px;"
+                                    >{% if mode=='update' %}
+                                {{ task.description }}{% endif %}</textarea>
                         </div>
                     </div>
                 </div>
