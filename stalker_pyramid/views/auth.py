@@ -237,7 +237,7 @@ def inline_update_user(request):
 
     if attr_val:
         if attr_name == 'rate':
-            attr_val = int(attr_val)
+            attr_val = float(attr_val)
         setattr(user, attr_name, attr_val)
 
         user.updated_by = logged_in_user
