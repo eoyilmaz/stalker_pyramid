@@ -105,6 +105,7 @@
 
                 var total_seconds = 0;
                 var total_shots = 0;
+                var graph_val_type = 'Seconds';
                 var max_val = 0;
                 var min_val = 0;
                 var weekly_shot_data = [];
@@ -131,6 +132,7 @@
                     var graph_val = shot_data[i]['total_seconds'];
                     if(t_type!='Animation'){
                         graph_val = shot_data[i]['total_shots'];
+                        graph_val_type = "Shots";
                     }
 
                     weekly_shot_data.push([shot_data[i]['start_date'], graph_val]);
@@ -142,7 +144,7 @@
                 $.jqplot('chart_shot', [weekly_shot_data], {
                             seriesColors: ["rgba(78, 135, 194, 0.7)"],
                             title: {
-                                text:'Weekly '+t_type+' Seconds',
+                                text:'Weekly '+t_type+' '+graph_val_type,
                                 textColor: '#dddddd'
                             },
                             highlighter: {
@@ -178,7 +180,7 @@
                                     min:min_val,
                                     max:max_val,
                                     tickOptions: {
-                                        formatString: "  %d seconds",
+                                        formatString: "  %d "+graph_val_type,
                                         showMark: false
                                     },
                                     tickInterval: 5
