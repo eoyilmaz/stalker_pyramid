@@ -155,47 +155,45 @@
     {% endraw %}
 
     {% raw %}
-    <script id="tmpl_taskCell" type="text/x-dot-template">
-        <td class="no-padding" style='width:150px; min-height:{{=it.height}}px;' >
-            <div class="status_{{=it.status_color}}" id="task_cell_{{=it.type_id}}">
-            </div>
+        <script id="tmpl_taskCell" type="text/x-dot-template">
+            <td class="no-padding" style='width:150px; min-height:{{=it.height}}px;' >
+                <div class="status_{{=it.status_color}}" id="task_cell_{{=it.type_id}}">
+                </div>
 
-        </td>
-    </script>
+            </td>
+        </script>
     {% endraw %}
 
     {% raw %}
-    <script id="tmpl_taskCellRow" type="text/x-dot-template">
-                <div class="status_{{=it.status_color}}" style="min-height:55px; height:{{=it.height}}px;">
-                    <a class="white" href="/tasks/{{=it.id }}/view">{{=it.name}}</a>
+        <script id="tmpl_taskCellRow" type="text/x-dot-template">
+            <div class="status_{{=it.status_color}}" style="min-height:55px; height:{{=it.height}}px;">
+                <a class="white" href="/tasks/{{=it.id }}/view">{{=it.name}}</a>
+                {{ if (it.update_asset_action) { }}
+                <a class="white pull-right"
+                   data-target="#dialog_template"
+                   data-toggle="modal"
+                   data-keyboard=false
+                   href="/tasks/{{=it.id }}/update/dialog">
+                    <i class="icon-edit bigger-130"></i>
+                </a>{{ } }}<br/>
+                <a class="white" href="/users/{{=it.resource_id }}/view">{{=it.resource_name }}</a><br/>
+                {{ if (it.percent_complete!='') { }}
+                    <div class="progress progress-success no-padding">
+                        <div style="width:{{=it.percent_complete}}%"
+                             class="bar">
+                            <span>{{= it.percent_complete}}%</span>
 
-                    {{ if (it.update_asset_action) { }}
-                    <a class="white pull-right"
-                       data-target="#dialog_template"
-                       data-toggle="modal"
-                       data-keyboard=false
-                       href="/tasks/{{=it.id }}/update/dialog">
-                        <i class="icon-edit bigger-130"></i>
-                    </a>{{ } }}<br/>
-                    <a class="white" href="/users/{{=it.resource_id }}/view">{{=it.resource_name }}</a><br/>
-                    {{ if (it.percent_complete!='') { }}
-                        <div class="progress progress-success no-padding">
-                            <div style="width:{{=it.percent_complete}}%"
-                                 class="bar">
-                                <span>{{= it.percent_complete}}%</span>
-
-                            </div>
                         </div>
-                    {{ } else {}}
-                        <div>{{=it.status}}</div>
-                    {{ } }}
-
-                </div>
-    {{=it.hr}}
-    </script>
+                    </div>
+                {{ } else {}}
+                    <div>{{=it.status}}</div>
+                {{ } }}
+            </div>
+            {{=it.hr}}
+        </script>
     {% endraw %}
 
-    <script>
+    <script type="text/javascript">
         $(function () {
 
             var icon_name = get_icon('asset');

@@ -456,9 +456,7 @@ def add_project_entries_to_budget(request):
         new_budget_entry_type = query_type('BudgetEntry', project_entry['price_list_name'])
         new_budget = True
 
-
         good = Good.query.filter(Good.id == project_entry['good_id']).first()
-
         logger.debug('good: %s' % good.name)
         if good:
             for budget_entry in budget.entries:
