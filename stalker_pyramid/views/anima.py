@@ -339,24 +339,23 @@ def get_entity_task_type_result(request):
     min(extract(epoch from "TimeLogs".start::timestamp AT TIME ZONE 'UTC')) as start,
     array_agg(distinct(tasks.shot_name)) as shot_names,
     array_agg(distinct("TimeLogs".resource_id)) as resource_ids,
-    sum((tasks.frames*(extract(epoch from "TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC'))/(tasks.schedule_timing *
-        (case tasks.schedule_unit
-                    when 'min' then 60
-                    when 'h' then 3600
-                    when 'd' then 32400
-                    when 'w' then 147600
-                    when 'm' then 590400
-                    when 'y' then 7696277
-                    else 0
-                end)
-    ))/24.0) as r_seconds
+    sum(((tasks.seconds)*(extract(epoch from "TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC'))/tasks.schedule_seconds)) as r_seconds,
+    sum(((extract(epoch from "TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC'))/tasks.schedule_seconds)) as r_percent
+
 from "TimeLogs"
 join (
         select "Tasks".id as id,
-                "Tasks".schedule_timing,
-                "Tasks".schedule_unit,
+                "Tasks".schedule_timing *(case "Tasks".schedule_unit
+                                                        when 'min' then 60
+                                                        when 'h' then 3600
+                                                        when 'd' then 32400
+                                                        when 'w' then 147600
+                                                        when 'm' then 590400
+                                                        when 'y' then 7696277
+                                                        else 0
+                                                    end) as schedule_seconds,
                 "Shot_SimpleEntities".name as shot_name,
-                ("Shots".cut_out - "Shots".cut_in) as frames
+                ("Shots".cut_out - "Shots".cut_in)/24.0 as seconds
 
         from "Tasks"
         join "SimpleEntities" as "Task_SimpleEntities" on "Task_SimpleEntities".id = "Tasks".id
@@ -392,7 +391,8 @@ order by start
         'start_date': r[0],
         'shot_names': r[1],
         'resource_ids': r[2],
-        'total_seconds': r[3]
+        'total_seconds': r[3],
+        'total_shots':r[4]
     } for r in result]
 
 
