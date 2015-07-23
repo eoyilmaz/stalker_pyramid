@@ -1,7 +1,40 @@
-{# Render Project Side Bar #}
+{# Render Budget Side Bar #}
 
-{% set project=entity.project %}
+{% set budget=entity %}
 
-hghgjh
+<ul id="sidebar_list" class='nav nav-list'></ul>
 
-{% include 'project/view/project_sidebar.jinja2' %}
+<script>
+    $(function () {
+        page_of('{{ budget.name }}',
+                '{{ budget.project.client.name }}',
+                '',
+                '{%- if has_permission('Update_Budget')-%}/budgets/{{ budget.id }}/update/dialog{%- endif -%}'
+
+        )
+        menu_of(
+            'Calendar',
+            "{%- if request.current_route_path() == request.route_path('view_budget_calendar', id=budget.id) -%}'active',{%- else -%},{%- endif -%}",
+            '{{ request.route_url('view_budget_calendar', id=budget.id) }}',
+            get_icon('timelog'),
+            ''
+        );
+        menu_of(
+            'Table',
+            "{%- if request.current_route_path() == request.route_path('view_budget_table', id=budget.id) -%}'active',{%- else -%},{%- endif -%}",
+            '{{ request.route_url('view_budget_table', id=budget.id) }}',
+            get_icon('budget'),
+            ''
+        );
+        menu_of(
+            'Realized Total',
+            "",
+            '',
+            get_icon('report'),
+            ''
+        );
+    });
+</script>
+
+
+

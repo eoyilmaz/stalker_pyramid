@@ -335,40 +335,100 @@ def get_entity_task_type_result(request):
     entity = Entity.query.filter_by(id=entity_id).first()
 
     task_type = request.matchdict.get('task_type')
-    sql_query = """select
-    min(extract(epoch from "TimeLogs".start::timestamp AT TIME ZONE 'UTC')) as start,
-    array_agg(distinct(tasks.shot_name)) as shot_names,
-    array_agg(distinct("TimeLogs".resource_id)) as resource_ids,
-    sum(((tasks.seconds)*(extract(epoch from "TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC'))/tasks.schedule_seconds)) as r_seconds,
-    sum(((extract(epoch from "TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC'))/tasks.schedule_seconds)) as r_percent
+#     sql_query = """select
+#     min(extract(epoch from "TimeLogs".start::timestamp AT TIME ZONE 'UTC')) as start,
+#     array_agg(distinct(tasks.shot_name)) as shot_names,
+#     array_agg(distinct("TimeLogs".resource_id)) as resource_ids,
+#     sum(((tasks.seconds)*(extract(epoch from "TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC'))/tasks.schedule_seconds)) as r_seconds,
+#     sum(((extract(epoch from "TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC'))/tasks.schedule_seconds)) as r_percent
+#
+# from "TimeLogs"
+# join (
+#         select "Tasks".id as id,
+#                 "Tasks".schedule_timing *(case "Tasks".schedule_unit
+#                                                         when 'min' then 60
+#                                                         when 'h' then 3600
+#                                                         when 'd' then 32400
+#                                                         when 'w' then 147600
+#                                                         when 'm' then 590400
+#                                                         when 'y' then 7696277
+#                                                         else 0
+#                                                     end) as schedule_seconds,
+#                 "Shot_SimpleEntities".name as shot_name,
+#                 ("Shots".cut_out - "Shots".cut_in)/24.0 as seconds
+#
+#         from "Tasks"
+#         join "SimpleEntities" as "Task_SimpleEntities" on "Task_SimpleEntities".id = "Tasks".id
+#         join "SimpleEntities" as "Type_SimpleEntities" on "Type_SimpleEntities".id = "Task_SimpleEntities".type_id
+#         join "Shots" on "Shots".id = "Tasks".parent_id
+#         join "SimpleEntities" as "Shot_SimpleEntities" on "Shot_SimpleEntities".id = "Shots".id
+#
+#
+#         where "Type_SimpleEntities".name = '%(task_type)s'
+#     ) as tasks on tasks.id = "TimeLogs".task_id
+#
+# where %(where_conditions)s
+# group by  date_trunc('week', "TimeLogs".start)
+# order by start
+# """
+    sql_query = """
+select
+        min(extract(epoch from results.start::timestamp AT TIME ZONE 'UTC')) as start,
+        array_agg(distinct(results.shot_name)) as shot_names,
+        array_agg(distinct(results.resource_id)) as resource_ids,
+        sum(results.approved_shot_seconds*results.timelog_duration/results.schedule_seconds) as approved_shot_seconds,
+        sum(results.shot_seconds*results.timelog_duration/results.schedule_seconds) as shot_seconds,
+        sum(results.approved_timelog_duration/results.schedule_seconds) as approved_percent,
+        sum(results.timelog_duration/results.schedule_seconds) as percent
 
-from "TimeLogs"
-join (
-        select "Tasks".id as id,
-                "Tasks".schedule_timing *(case "Tasks".schedule_unit
-                                                        when 'min' then 60
-                                                        when 'h' then 3600
-                                                        when 'd' then 32400
-                                                        when 'w' then 147600
-                                                        when 'm' then 590400
-                                                        when 'y' then 7696277
-                                                        else 0
-                                                    end) as schedule_seconds,
-                "Shot_SimpleEntities".name as shot_name,
-                ("Shots".cut_out - "Shots".cut_in)/24.0 as seconds
+from (
+        select
+            "TimeLogs".start as start,
+            tasks.shot_name as shot_name,
+            tasks.status_code as shot_status,
+            "TimeLogs".resource_id as resource_id,
+            tasks.seconds as shot_seconds,
+            (case tasks.status_code
+                        when 'CMPL' then tasks.seconds
+                        else 0
+                    end) as approved_shot_seconds,
 
-        from "Tasks"
-        join "SimpleEntities" as "Task_SimpleEntities" on "Task_SimpleEntities".id = "Tasks".id
-        join "SimpleEntities" as "Type_SimpleEntities" on "Type_SimpleEntities".id = "Task_SimpleEntities".type_id
-        join "Shots" on "Shots".id = "Tasks".parent_id
-        join "SimpleEntities" as "Shot_SimpleEntities" on "Shot_SimpleEntities".id = "Shots".id
+            tasks.schedule_seconds,
+             (case tasks.status_code
+                        when 'CMPL' then (extract(epoch from "TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC'))
+                        else 0
+                    end) as approved_timelog_duration,
+            (extract(epoch from "TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC')) as timelog_duration
+
+        from "TimeLogs"
+        join (
+                select "Tasks".id as id,
+                       "Tasks".schedule_timing *(case "Tasks".schedule_unit
+                                                    when 'min' then 60
+                                                    when 'h' then 3600
+                                                    when 'd' then 32400
+                                                    when 'w' then 147600
+                                                    when 'm' then 590400
+                                                    when 'y' then 7696277
+                                                    else 0
+                                                end) as schedule_seconds,
+                        "Shot_SimpleEntities".name as shot_name,
+                        ("Shots".cut_out - "Shots".cut_in)/24.0 as seconds,
+                        "Statuses".code as status_code
+
+                from "Tasks"
+                join "SimpleEntities" as "Task_SimpleEntities" on "Task_SimpleEntities".id = "Tasks".id
+                join "SimpleEntities" as "Type_SimpleEntities" on "Type_SimpleEntities".id = "Task_SimpleEntities".type_id
+                join "Shots" on "Shots".id = "Tasks".parent_id
+                join "SimpleEntities" as "Shot_SimpleEntities" on "Shot_SimpleEntities".id = "Shots".id
+                join "Statuses" on "Statuses".id = "Tasks".status_id
 
 
-        where "Type_SimpleEntities".name = '%(task_type)s'
-    ) as tasks on tasks.id = "TimeLogs".task_id
-
-where %(where_conditions)s
-group by  date_trunc('week', "TimeLogs".start)
+                where "Type_SimpleEntities".name = '%(task_type)s'
+            ) as tasks on tasks.id = "TimeLogs".task_id
+        where %(where_conditions)s
+    ) as results
+group by  date_trunc('week', results.start)
 order by start
 """
 
@@ -391,8 +451,10 @@ order by start
         'start_date': r[0],
         'shot_names': r[1],
         'resource_ids': r[2],
-        'total_seconds': r[3],
-        'total_shots':r[4]
+        'approved_seconds': r[3],
+        'total_seconds': r[4],
+        'approved_shots':r[5],
+        'total_shots':r[6]
     } for r in result]
 
 

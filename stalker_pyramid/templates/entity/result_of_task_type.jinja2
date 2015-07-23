@@ -83,6 +83,7 @@
 
 
 
+
 <script type="text/javascript">
     function loadShotTaskData(t_type){
         console.log('loadShotTaskData: '+t_type);
@@ -103,12 +104,15 @@
 
                 result_chart.append('<div id="chart_shot" style="height:500px; background: rgb(57,57,57)"></div>');
 
+                var approved_seconds = 0;
+                var approved_shots = 0;
                 var total_seconds = 0;
                 var total_shots = 0;
                 var graph_val_type = 'Seconds';
                 var max_val = 0;
                 var min_val = 0;
                 var weekly_shot_data = [];
+                var weekly_approved_shot_data = [];
                 for (var i=0; i<shot_data.length; i+=1){
                     var shot_names = '';
                     for (var m=0; m<shot_data[i]['shot_names'].length; m+=1){
@@ -123,26 +127,33 @@
 {#                    shot_data[i]['month'] = new Date(data[i]['start_date'] * 1000).format('yyyy-mm').toString();#}
                     shot_data[i]['start_date'] = new Date(data[i]['start_date'] * 1000).format('yyyy-mm-dd').toString();
 
+                    approved_seconds += shot_data[i]['approved_seconds'];
+                    approved_shots += shot_data[i]['approved_shots'];
                     total_seconds += shot_data[i]['total_seconds'];
                     total_shots += shot_data[i]['total_shots'];
 
+                    shot_data[i]['approved_seconds'] = shot_data[i]['approved_seconds'].toFixed(2);
+                    shot_data[i]['approved_shots'] = shot_data[i]['approved_shots'].toFixed(2);
                     shot_data[i]['total_seconds'] = shot_data[i]['total_seconds'].toFixed(2);
                     shot_data[i]['total_shots'] = shot_data[i]['total_shots'].toFixed(2);
 
-                    var graph_val = shot_data[i]['total_seconds'];
+                    var graph1_val = shot_data[i]['total_seconds'];
+                    var graph2_val = shot_data[i]['approved_seconds'];
                     if(t_type!='Animation'){
-                        graph_val = shot_data[i]['total_shots'];
+                        graph1_val = shot_data[i]['total_shots'];
+                        graph2_val = shot_data[i]['approved_shots'];
                         graph_val_type = "Shots";
                     }
 
-                    weekly_shot_data.push([shot_data[i]['start_date'], graph_val]);
-                    max_val = parseFloat(graph_val)>max_val?parseFloat(graph_val):max_val;
-                    min_val = parseFloat(graph_val)<min_val?parseFloat(graph_val):min_val;
+                    weekly_shot_data.push([shot_data[i]['start_date'], graph1_val]);
+                    weekly_approved_shot_data.push([shot_data[i]['start_date'], graph2_val]);
+                    max_val = parseFloat(graph1_val)>max_val?parseFloat(graph1_val):max_val;
+                    min_val = parseFloat(graph1_val)<min_val?parseFloat(graph1_val):min_val;
                 }
 
 
-                $.jqplot('chart_shot', [weekly_shot_data], {
-                            seriesColors: ["rgba(78, 135, 194, 0.7)"],
+                $.jqplot('chart_shot', [weekly_shot_data, weekly_approved_shot_data], {
+                            seriesColors: ["rgba(78, 135, 194, 0.7)", "#82af6f"],
                             title: {
                                 text:'Weekly '+t_type+' '+graph_val_type,
                                 textColor: '#dddddd'
@@ -202,15 +213,17 @@
                     colModel: [
 {#                        { label: 'Month', name: 'month', width: 150 },#}
                         { label: 'Start Date', name: 'start_date', width: 150 },
-                        { label: 'Shot Name', name: 'shot_names', key: true, width: 300 },
-                        { label: 'Resource Name', name: 'resource_ids', key: true, width: 300 },
-                        { label: 'Total Seconds', name: 'total_seconds', width: 200 },
-                        { label: 'Total Shots', name: 'total_shots', width: 200 }
+                        { label: 'Shot Name', name: 'shot_names', key: true, width: 200 },
+                        { label: 'Resource Name', name: 'resource_ids', key: true, width: 250 },
+                        { label: 'Approved Seconds', name: 'approved_seconds', width: 150 },
+                        { label: 'Total Seconds', name: 'total_seconds', width: 150 },
+                        { label: 'Approved Shots', name: 'approved_shots', width: 150 },
+                        { label: 'Total Shots', name: 'total_shots', width: 150 }
 
                     ],
                     loadonce:true, // just for demo purpose
 {#                    width: 780,#}
-                    height: 750,
+                    height: 'auto',
                     rowNum: 10,
                     rowList:[10,25,50],
                     sortname: 'start_date',
@@ -232,27 +245,83 @@
                     loadComplete : function() {
                         var $self = $(this);
 {#                        var total_seconds= $self.jqGrid('getCol', 'total_seconds', false, 'sum');#}
+                        var approved_minutes = (approved_seconds/60).toFixed(2);
                         var total_minutes = (total_seconds/60).toFixed(2);
                         var average_seconds = (total_seconds/shot_data.length).toFixed(2);
                         $self.jqGrid("footerData", "set", {resource_ids: 'TOTAL',
+                                                           approved_seconds: approved_seconds.toFixed(2)+'s = '+approved_minutes+' m',
                                                            total_seconds: total_seconds.toFixed(2)+'s = '+total_minutes+' m',
                                                            start_date: 'AVERAGE',
                                                            shot_names: average_seconds+' s',
+                                                           approved_shots:approved_shots.toFixed(2) +' shots',
                                                            total_shots:total_shots.toFixed(2) +' shots'
                                                            });
                         $('#total_seconds').text(total_minutes+' m');
                         $('#avarage_seconds').text(average_seconds+' s');
                         $('#info_box').show();
 
+                        setTimeout(function(){
+                            updatePagerIcons(table);
+                            $('#lui_grid-table').hide();
+                        }, 0);
+
                     }
                 });
-                jQuery(grid_selector).jqGrid("navGrid",pager_selector,{add:false, edit:false, del:false});
+                //navButtons
+                jQuery(grid_selector).jqGrid('navGrid',pager_selector,
+                    { 	//navbar options
+                        edit: false,
+                        editicon : 'icon-pencil blue',
+                        add: false,
+                        addicon : 'icon-plus-sign purple',
+                        del: false,
+                        delicon : 'icon-trash red',
+                        search: false,
+                        searchicon : 'icon-search orange',
+                        refresh: false,
+                        refreshicon : 'icon-refresh green',
+                        view: false,
+                        viewicon : 'icon-zoom-in grey'
+                    },
 
+                    {
+                        //search form
+                        recreateForm: true,
+                        afterShowSearch: function(e){
+                            var form = $(e[0]);
+                            form.closest('.ui-jqdialog').find('.ui-jqdialog-title').wrap('<div class="widget-header" />')
+                            style_search_form(form);
+                        },
+                        afterRedraw: function(){
+                            style_search_filters($(this));
+                        }
+                        ,
+                        multipleSearch: false
+                        /**
+                        multipleGroup:true,
+                        showQuery: true
+                        */
+                });
             }
         });
-
-
     }
+    function updatePagerIcons(table) {
+        var replacement =
+        {
+            'ui-icon-seek-first' : 'icon-double-angle-left bigger-140',
+            'ui-icon-seek-prev' : 'icon-angle-left bigger-140',
+            'ui-icon-seek-next' : 'icon-angle-right bigger-140',
+            'ui-icon-seek-end' : 'icon-double-angle-right bigger-140'
+        };
+        $('.ui-pg-table:not(.navtable) > tbody > tr > .ui-pg-button > .ui-icon').each(function(){
+            var icon = $(this);
+            var $class = $.trim(icon.attr('class').replace('ui-icon', ''));
+
+            if($class in replacement) icon.attr('class', 'ui-icon '+replacement[$class]);
+        })
+    }
+
+
     $(document).ready(function () {
         $.jqplot._noToImageButton = true;
         $.jqplot.config.enablePlugins = true;
@@ -266,8 +335,5 @@
             task_type_str = $(this).val();
             loadShotTaskData(task_type_str);
         });
-
-
-
     });
 </script>

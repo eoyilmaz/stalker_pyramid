@@ -9,7 +9,7 @@
         page_of('{{ client.name }}',
                 '{{ client.login }}',
                 '{%- if client.thumbnail -%}/{{ client.thumbnail.full_path }}{%- else -%}{{ request.static_url("stalker_pyramid:static/stalker/images/Placeholder_0.png")}}{%- endif -%}',
-                '{%- if has_permission('Update_Client') or  client.id==logged_in_client.id -%}/clients/{{ client.id }}/update/dialog{%- endif -%}'
+                '{%- if has_permission('Update_Client') -%}/clients/{{ client.id }}/update/dialog{%- endif -%}'
 
         )
 

@@ -38,33 +38,11 @@
     {% include 'page_header.jinja2' %}
 
     <div class="row-fluid">
-        <div class="span4">
-            <div class="widget-box">
-                 <div class="widget-header widget-header-small header-color-green }}">
-                        <h5 id="items_header" class="smaller"></h5>
-
-                </div>
-                <div class="widget-body">
-                    <div class="widget-main no-padding">
-    {#                    <div id="loading_spinner" class="well well-sm">#}
-    {##}
-    {#                        <div class="inline middle blue bigger-110"><i#}
-    {#                                class="icon-spinner icon-spin orange bigger-125"></i>#}
-    {#                            Loading#}
-    {#                            content...#}
-    {#                        </div>#}
-    {#                    </div>#}
-
-                        <table id="grid-table"></table>
-                        <div id="grid-pager"></div>
-                        <script type="text/javascript">
-                            var $path_base = "/";//this will be used in gritter alerts containing images
-                        </script>
-
-                    </div>
-                </div>
-            </div>
-        </div>
+        <table id="grid-table"></table>
+        <div id="grid-pager"></div>
+        <script type="text/javascript">
+            var $path_base = "/";//this will be used in gritter alerts containing images
+        </script>
     </div>
 {% endblock page_content %}
 
@@ -72,9 +50,8 @@
     <script type="text/javascript">
             if("ontouchend" in document) document.write("<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.mobile.custom.min.js") }}'>"+"<"+"/script>");
         </script>
-    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-datepicker.min.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jqGrid/i18n/grid.locale-en.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jqGrid/jquery.jqGrid.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/i18n/grid.locale-en.js") }}'></script>#}
+    <script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/jquery.jqGrid.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/accounting.min.js") }}'></script>
     <script type="text/javascript">
         $(document).ready(function () {
@@ -94,7 +71,8 @@
                             //direction: "rtl",
                             data: grid_data,
                             datatype: "local",
-                            height: 800,
+                            height: 'auto',
+                            width: 'auto',
                             colNames:['', 'ID','Name', 'Rate', 'Task Count'],
                             colModel:[
                                 {name:'myac',index:'', width:70, fixed:true, sortable:false, resize:false,
@@ -107,9 +85,9 @@
                                     }
                                 },
                                 {name:'id',index:'id', width:90, sortable:true, editable: false},
-                                {name:'name',index:'name', width:250, sortable:true, editable: false},
-                                {name:'rate',index:'rate',  width:92, editable: true, editoptions:{size:"20",maxlength:"30"}},
-                                {name:'tasksCount',index:'tasksCount',  width:90, editable: false}
+                                {name:'name',index:'name', width:200, sortable:true, editable: false, formatter:resourceLabelFormatter},
+                                {name:'rate',index:'rate',  width:100, editable: true, editoptions:{size:"20", maxlength:"30"}},
+                                {name:'tasksCount',index:'tasksCount',  width:100, editable: false}
                             ],
                             viewrecords : true,
                             rowNum:20,
@@ -172,9 +150,11 @@
                                 multipleGroup:true,
                                 showQuery: true
                                 */
-                            }
+                        });
 
-                        )
+                        function resourceLabelFormatter(cellvalue, options, rowObject){
+                            return '<a href="/users/'+rowObject.id+'/view">'+cellvalue+'</a>';
+                        }
 
                         function style_edit_form(form) {
 
