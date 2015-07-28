@@ -112,14 +112,17 @@
             0
         );
 
-        {% if entity.entity_type == 'Sequence' %}
+        {% if entity.entity_type == 'Sequence' or entity.type.name == 'Scene'%}
             menu_of(
                 'Shots',
-                "{%- if request.current_route_path() == request.route_path('list_sequence_shots', id=task.id) -%}'active',{%- else -%},{%- endif -%}",
-                '{{ request.route_url('list_sequence_shots', id=task.id) }}',
+                "{%- if request.current_route_path() == request.route_path('list_entity_shots', id=task.id) -%}'active',{%- else -%},{%- endif -%}",
+                '{{ request.route_url('list_entity_shots', id=task.id) }}',
                 get_icon('shot'),
                 '/entities/{{ task.id }}/shots/count/'
             );
+        {% endif %}
+
+        {% if entity.entity_type == 'Sequence' %}
             menu_of('Scenes',
                 "{%- if request.current_route_path() == request.route_path('list_entity_scenes', id=task.id) -%}'active',{%- else -%},{%- endif -%}",
                 '{{ request.route_url('list_entity_scenes', id=task.id) }}',

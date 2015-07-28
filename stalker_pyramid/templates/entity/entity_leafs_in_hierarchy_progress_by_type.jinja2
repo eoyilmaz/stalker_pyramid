@@ -59,7 +59,7 @@
 
                 if (group_by_type_list[data[i].type] == null) {
                     group_by_type_list[data[i].type] = {};
-                    group_by_type_list[data[i].type]['ids'] = '&task_ids='+data[i].id;
+                    group_by_type_list[data[i].type]['ids'] = 'task_ids='+data[i].id;
 
                     group_by_type_list[data[i].type]['name'] = '<a href="/tasks/'+data[i].id +'/view">'+data[i].type+'</a>';
                     group_by_type_list[data[i].type]['bid_seconds'] = to_seconds(parseFloat(data[i].bid_timing), data[i].bid_unit);
@@ -75,7 +75,7 @@
                     group_by_type_list[data[i].type].total_logged_seconds += data[i].total_logged_seconds;
                     group_by_type_list[data[i].type]['status_code'] = null;
                 }
-                group_by_type_list[data[i].type]['update_task_action'] = '/tasks/change/properties/dialog?project_id={{ entity.project.id }}'+group_by_type_list[data[i].type]['ids'];
+                group_by_type_list[data[i].type]['update_task_action'] = '/tasks/change/properties/dialog?'+group_by_type_list[data[i].type]['ids'];
             }
 
 

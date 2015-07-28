@@ -5476,15 +5476,11 @@ def change_tasks_properties_dialog(request):
     tasks = Task.query.filter(Task.id.in_(selected_task_list)).all()
     logger.debug('tasks : %s' % tasks)
 
-    project_id = request.params.get('project_id', '-1')
-    logger.debug('project_id : %s' % project_id)
-
     came_from = request.params.get('came_from', '/')
 
     return {
         'tasks': tasks,
-        'came_from': came_from,
-        'project_id':project_id
+        'came_from': came_from
     }
 
 

@@ -201,18 +201,14 @@ def get_shots_count(request):
 
     where_condition = ''
 
-
-
     if entity.entity_type == 'Sequence':
         where_condition = """left join "Shot_Sequences" on "Shot_Sequences".shot_id = "Shots".id
                           where "Shot_Sequences".sequence_id = %s""" % entity_id
-
     elif entity.entity_type == 'Project':
         where_condition = 'where "Tasks".project_id = %s' % entity_id
 
     logger.debug('where_condition : %s ' % where_condition)
     sql_query = sql_query % {'where_condition': where_condition}
-
 
     return DBSession.connection().execute(sql_query).fetchone()[0]
 
@@ -286,7 +282,8 @@ join(
     select
         "Shots".id as shot_id,
         "Statuses".code as shot_status_code,
-        "SimpleEntities".html_class as shot_status_html_class
+        "SimpleEntities".html_class as shot_status_html_class,
+        "Tasks".parent_id as shot_parent
     from "Tasks"
     join "Shots" on "Shots".id = "Tasks".id
     join "Statuses" on "Statuses".id = "Tasks".status_id
@@ -339,12 +336,16 @@ order by "Shot_SimpleEntities".name
 
     if entity.entity_type == 'Sequence':
         where_condition = 'where "Shot_Sequences".sequence_id = %s' % entity_id
-
     elif entity.entity_type == 'Project':
         where_condition = 'where "Tasks".project_id = %s' % entity_id
+    elif entity.entity_type == 'Task':
+        if entity.type.name == 'Scene':
+            where_condition = """join "Tasks" as "Parent_Tasks" on "Parent_Tasks".id = "Distinct_Shot_Statuses".shot_parent
+    join "Tasks" as "Scene_Tasks" on "Scene_Tasks".id = "Parent_Tasks".parent_id
+    where "Scene_Tasks".id = %s""" % entity_id
 
     if shot_id:
-        where_condition = 'where "Shots".id = %(shot_id)s'%({'shot_id':shot_id})
+        where_condition = 'where "Shots".id = %(shot_id)s' % ({'shot_id': shot_id})
 
     update_shot_permission = \
         PermissionChecker(request)('Update_Shot')
