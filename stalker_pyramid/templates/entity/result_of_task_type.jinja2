@@ -281,7 +281,9 @@
 
 
                         var total_for_last_six_week = 0;
-                        for (var i=weekly_shot_data.length-6;i<weekly_shot_data.length;i++){
+                        var start_week = weekly_shot_data.length-6<0?0:weekly_shot_data.length-6;
+
+                        for (var i=start_week;i<weekly_shot_data.length;i++){
                             console.log(weekly_shot_data[i][1]);
                             total_for_last_six_week += parseFloat(weekly_shot_data[i][1]);
                             console.log(total_for_last_six_week);
