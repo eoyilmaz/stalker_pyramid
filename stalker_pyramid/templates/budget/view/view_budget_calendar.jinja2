@@ -23,7 +23,7 @@
 
 {% block pre_header %}
     <link rel="stylesheet"
-          href='{{ request.static_url("stalker_pyramid:static/codebase/dhtmlxgantt.css") }}'/>
+          href='{{ request.static_url("stalker_pyramid:static/dhtmlx/dhtmlxgantt.css") }}'/>
 {% endblock pre_header %}
 
 {# BREADCRUMBS #}
@@ -118,9 +118,10 @@
     <script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/i18n/grid.locale-en.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/jquery.jqGrid.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/accounting.min.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/codebase/dhtmlxgantt.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/dhtmlx/dhtmlxgantt.js") }}'></script>
 
     <script type="text/javascript">
+
 
         var clickGridButton = function (id, action) {
                 switch (action) {
@@ -143,6 +144,7 @@
                 }
             };
         $(document).ready(function () {
+            gantt.config.auto_scheduling = true;
             gantt.config.work_time = true;
             gantt.config.scale_unit = "day";
             gantt.config.date_scale = "%D, %d";
@@ -150,6 +152,7 @@
             gantt.config.duration_unit = "day";
             gantt.config.scale_height = 20*3;
             gantt.config.row_height = 30;
+            gantt.config.grid_width = 390;
             gantt.setWorkTime({day : 6, hours : [8,12]});
 
             var weekScaleTemplate = function(date){
@@ -177,40 +180,38 @@
                                 '<i class="fa gantt_button_grid gantt_grid_delete icon-trash" onclick="clickGridButton('+task.id+', \'delete\')"></i>');
                     };
 
+{#            gantt.config.columns = [#}
+{#                {name:"text", tree:false, width:'*',align: "center" , resize:true },#}
+{#                {name:"duration", align: "center" },#}
+{#                {#}
+{#                    name:"buttons",#}
+{#                    label:colHeader,#}
+{#                    resize:true,#}
+{#                    template:colContent#}
+{#                }#}
+{#            ];#}
             gantt.config.columns = [
-                {name:"text", tree:true, width:'*', resize:true },
-                {name:"start_date", align: "center", resize:true },
-                {name:"duration", align: "center" },
+                {name:"text", label:"Task name", width:"*", tree:true },
+                {name:"start_time", label:"Start time", template:function(obj){
+                    return gantt.templates.date_grid(obj.start_date);
+                }, align: "center", width:70 },
+                {name:"duration", label:"Duration", align:"center", width:40},
                 {
                     name:"buttons",
                     label:colHeader,
-                    width:75,
-                    template:colContent
+                    resize:true,
+                    template:colContent,
+                    width:60
                 }
             ];
 
-            var tasks =  {
-                data:[
-                    {id:1, text:"Project #2", start_date:"01-04-2015", duration:18,order:10,
-                        progress:0.4},
-                    {id:2, text:"Task #1", 	  start_date:"02-04-2015", duration:8, order:10,
-                        progress:0.6},
-                    {id:3, text:"Task #2",    start_date:"11-04-2015", duration:8, order:20,
-                        progress:0.6}
-                ],
-                links:[
-                    { id:1, source:1, target:2, type:"1"},
-                    { id:2, source:2, target:3, type:"0"},
-                    { id:3, source:3, target:4, type:"0"},
-                    { id:4, source:2, target:5, type:"2"}
-                ]
-            };
+
 
             $.getJSON('/studios/{{ entity.id }}/goods/').then(function (good_data) {
 
                 var lightBox_goods =[];
                 for(var m=0; m<good_data.length; m++ ){
-                    lightBox_goods.push({key:good_data[m].id, label: good_data[m].name});
+                    lightBox_goods.push({key:good_data[m].name+'/-/'+good_data[m].id, label: good_data[m].name});
                 }
                 gantt.config.lightbox.sections = [
                         {name: "good", height: 22, map_to: "good", type: "select", options: lightBox_goods},
@@ -220,13 +221,11 @@
                 gantt.init("gantt_here");
 
                 gantt.attachEvent("onLightboxSave", function(id, task, is_new){
-                    //any custom logic here
-                    console.log(task);
-                    console.log('onLightboxSave : '+id+' task_id : '+task);
+                    task.text = task.good.split('/-/')[0];
+                    gantt.autoSchedule();
+                    gantt.render();
                     return true;
                 });
-
-                gantt.parse(tasks);
             });
         });
     </script>
