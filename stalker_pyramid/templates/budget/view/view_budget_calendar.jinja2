@@ -50,7 +50,7 @@
                     {% set client=entity.project.client %}
                     {% include 'client/view/client_card.jinja2' %}
                     <h3 class="grey lighter pull-left position-relative">
-                        {{  entity.project.client.name }}
+                        {{  entity.project.client.name }} / {{  entity.project.name }}
                     </h3>
 
                     <div class="widget-toolbar no-border invoice-info">
@@ -75,6 +75,20 @@
                             <div id="gantt_here" style='width:100%; height:300px;'></div>
                         </div>
                         <div class="space"></div>
+
+                            <div class="row-fluid">
+                                <button id='save_button'
+                                        class="btn btn-small btn-danger pull-right"
+                                        data-placement="bottom"
+                                        title="Save"
+                                        data-target="#dialog_template"
+                                        data-toggle="modal"
+                                        data-keyboard="false"
+                                        href="#"
+                                        >
+                                <i class="icon-save bigger-130"></i> Save</button>
+                            </div>
+
                     </div>
                 </div>
             </div>
@@ -116,9 +130,8 @@
         if("ontouchend" in document) document.write("<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.mobile.custom.min.js") }}'>"+"<"+"/script>");
     </script>
     <script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/i18n/grid.locale-en.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/jquery.jqGrid.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/accounting.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/dhtmlx/dhtmlxgantt.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/moment/moment.min.js") }}'></script>
 
     <script type="text/javascript">
 
@@ -180,16 +193,6 @@
                                 '<i class="fa gantt_button_grid gantt_grid_delete icon-trash" onclick="clickGridButton('+task.id+', \'delete\')"></i>');
                     };
 
-{#            gantt.config.columns = [#}
-{#                {name:"text", tree:false, width:'*',align: "center" , resize:true },#}
-{#                {name:"duration", align: "center" },#}
-{#                {#}
-{#                    name:"buttons",#}
-{#                    label:colHeader,#}
-{#                    resize:true,#}
-{#                    template:colContent#}
-{#                }#}
-{#            ];#}
             gantt.config.columns = [
                 {name:"text", label:"Task name", width:"*", tree:true },
                 {name:"start_time", label:"Start time", template:function(obj){
@@ -205,13 +208,21 @@
                 }
             ];
 
+            var tasks = {
+                  data:[
+                     {id:"p_1", text:"Project #1", start_date:'{{ entity.project.start }}', duration:18,
+                     open:true}
 
-
+                   ]
+                };
             $.getJSON('/studios/{{ entity.id }}/goods/').then(function (good_data) {
 
                 var lightBox_goods =[];
                 for(var m=0; m<good_data.length; m++ ){
-                    lightBox_goods.push({key:good_data[m].name+'/-/'+good_data[m].id, label: good_data[m].name});
+                    if (good_data[m].unit == 'HOUR' || good_data[m].unit == 'DAY' ){
+                        console.log(good_data[m].unit);
+                        lightBox_goods.push({key:good_data[m].name+'/-/'+good_data[m].id, label: good_data[m].name});
+                    }
                 }
                 gantt.config.lightbox.sections = [
                         {name: "good", height: 22, map_to: "good", type: "select", options: lightBox_goods},
@@ -219,14 +230,36 @@
                 ];
                 gantt.locale.labels["section_good"] = "Good";
                 gantt.init("gantt_here");
+                gantt.parse(tasks);
+
 
                 gantt.attachEvent("onLightboxSave", function(id, task, is_new){
                     task.text = task.good.split('/-/')[0];
-                    gantt.autoSchedule();
+                    task.parent = 'p_1';
                     gantt.render();
                     return true;
                 });
             });
+
+            $('#save_button').on('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                var children = gantt.getChildren('p_1');
+
+                for(var i=0;i<children.length;i++){
+                    console.log(gantt.getTask(children[i]));
+                }
+
+
+
+{#                $.post('{{ request.route_url("add_project_entries_to_budget", id=entity.project.id, bid=entity.id)}}').done(function (response_text) {#}
+{#                    window.location.reload();#}
+{#                }).fail(function (jqXHR) {#}
+{#                    bootbox.alert(jqXHR.responseText);#}
+{#                });#}
+            });
+
         });
     </script>
 {% endblock extrascripts %}

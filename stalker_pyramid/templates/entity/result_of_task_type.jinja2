@@ -48,7 +48,7 @@
                 <i class="icon-dashboard"></i>
             </div>
             <div class="infobox-data">
-                <span class="infobox-data-number" id="average_for_last_six_week"></span>
+                <span class="infobox-data-number" id="average_for_weeks"></span>
                 <div class="infobox-content">Average for last 6 w</div>
             </div>
         </div>
@@ -112,11 +112,24 @@
         src='{{ request.static_url("stalker_pyramid:static/jqPlot/plugins/jqplot.cursor.min.js") }}'></script>
 <script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/i18n/grid.locale-en.js") }}'></script>
 <script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/jquery.jqGrid.min.js") }}'></script>
-
+<script src='{{ request.static_url("stalker_pyramid:static/moment/moment.min.js") }}'></script>
 
 
 
 <script type="text/javascript">
+    function calculate_average(data_array, working_weeks, start_week){
+        console.log('working_weeks: '+working_weeks);
+         var total_for_last_six_week = 0;
+
+        for (var i=start_week;i<data_array.length;i++){
+            total_for_last_six_week += parseFloat(data_array[i][1]);
+        }
+
+        var average_for_weeks = (total_for_last_six_week/working_weeks).toFixed(2);
+        $('#average_for_weeks').text(average_for_weeks)
+    }
+
+
     function loadShotTaskData(t_type){
         console.log('loadShotTaskData: '+t_type);
 
@@ -132,7 +145,7 @@
         $.getJSON('/entities/{{ entity.id }}/'+t_type+'/result').then(function (data) {
 
             if (data.length>0){
-                var shot_data = data;
+                var shot_data = [];
 
                 result_chart.append('<div id="chart_shot" style="height:500px; margin-left: 0px; background: rgb(57,57,57)"></div>');
 
@@ -145,44 +158,143 @@
                 var min_val = 0;
                 var weekly_shot_data = [];
                 var weekly_approved_shot_data = [];
-                for (var i=0; i<shot_data.length; i+=1){
+
+
+                for (var i=0; i<data.length; i+=1){
+                    var s_data = {}
+                    {#SHOT NAMES#}
                     var shot_names = '';
-                    for (var m=0; m<shot_data[i]['shot_names'].length; m+=1){
-                        shot_names += shot_data[i]['shot_names'][m]+'<br/>';
+                    for (var m=0; m < data[i]['shot_names'].length; m+=1){
+                        shot_names += data[i]['shot_names'][m]+'<br/>';
                     }
-                    shot_data[i]['shot_names'] = shot_names;
+                    s_data['shot_names'] = shot_names;
+
+                    {#RESOURCES NAMES#}
                     var resource_ids = '';
-                    for (var m=0; m<shot_data[i]['resource_ids'].length; m+=1){
-                        resource_ids += "<a href='/users/"+shot_data[i]['resource_ids'][m]+"/view'>"+get_user_name(shot_data[i]['resource_ids'][m])+"</a><br/>";
+                    for (var m=0; m<data[i]['resource_ids'].length; m+=1){
+                        resource_ids += "<a href='/users/"+data[i]['resource_ids'][m]+"/view'>"+get_user_name(data[i]['resource_ids'][m])+"</a><br/>";
                     }
-                    shot_data[i]['resource_ids'] = resource_ids;
-{#                    shot_data[i]['month'] = new Date(data[i]['start_date'] * 1000).format('yyyy-mm').toString();#}
-                    shot_data[i]['start_date'] = new Date(data[i]['start_date'] * 1000).format('yyyy-mm-dd').toString();
+                    s_data['resource_ids'] = resource_ids;
 
-                    approved_seconds += shot_data[i]['approved_seconds'];
-                    approved_shots += shot_data[i]['approved_shots'];
-                    total_seconds += shot_data[i]['total_seconds'];
-                    total_shots += shot_data[i]['total_shots'];
+                    {#SECONDS#}
+                    approved_seconds += data[i]['approved_seconds'];
+                    approved_shots += data[i]['approved_shots'];
+                    total_seconds += data[i]['total_seconds'];
+                    total_shots += data[i]['total_shots'];
 
-                    shot_data[i]['approved_seconds'] = shot_data[i]['approved_seconds'].toFixed(2);
-                    shot_data[i]['approved_shots'] = shot_data[i]['approved_shots'].toFixed(2);
-                    shot_data[i]['total_seconds'] = shot_data[i]['total_seconds'].toFixed(2);
-                    shot_data[i]['total_shots'] = shot_data[i]['total_shots'].toFixed(2);
+                    s_data['approved_seconds'] = data[i]['approved_seconds'].toFixed(2);
+                    s_data['approved_shots'] = data[i]['approved_shots'].toFixed(2);
+                    s_data['total_seconds'] = data[i]['total_seconds'].toFixed(2);
+                    s_data['total_shots'] = data[i]['total_shots'].toFixed(2);
 
-                    var graph1_val = shot_data[i]['total_seconds'];
-                    var graph2_val = shot_data[i]['approved_seconds'];
+                    var graph1_val = s_data['total_seconds'];
+                    var graph2_val = s_data['approved_seconds'];
                     if(t_type!='Animation'){
-                        graph1_val = shot_data[i]['total_shots'];
-                        graph2_val = shot_data[i]['approved_shots'];
+                        graph1_val = s_data['total_shots'];
+                        graph2_val = s_data['approved_shots'];
                         graph_val_type = "Shots";
                     }
 
-                    weekly_shot_data.push([shot_data[i]['start_date'], graph1_val]);
-                    weekly_approved_shot_data.push([shot_data[i]['start_date'], graph2_val]);
+                    {# DATE #}
+
+                    var start_date_ms = moment(data[i]['start_date']*1000);
+                    var week_day = start_date_ms.isoWeekday() - 1;
+                    var current_week = start_date_ms.isoWeek();
+                    start_date_ms = start_date_ms.subtract(week_day, 'day');
+                    s_data['start_date'] = start_date_ms.format('YYYY-MM-DD').toString();
+
+                    shot_data.push(s_data);
+                    weekly_shot_data.push([s_data['start_date'], graph1_val]);
+                    weekly_approved_shot_data.push([s_data['start_date'], graph2_val]);
                     max_val = parseFloat(graph1_val)>max_val?parseFloat(graph1_val):max_val;
                     min_val = parseFloat(graph1_val)<min_val?parseFloat(graph1_val):min_val;
-                }
+                    console.log('---------------------------------');
 
+                    var next_week = start_date_ms.isoWeek()+1;
+                    next_week = next_week>start_date_ms.isoWeeksInYear()?1:next_week;
+                    var data_next_week = i+1< data.length?moment(data[i+1]['start_date']*1000).isoWeek():moment().isoWeek()+1;
+
+                    console.log('Ilk: '+ next_week+' : '+data_next_week  );
+                    while(next_week < data_next_week){
+
+                        var next_week_date_format = start_date_ms.add(1, 'w').format('YYYY-MM-DD').toString();
+                        console.log('Bir hafta ekleyecek!!! '+next_week_date_format);
+                        console.log('start date!!! '+start_date_ms.format('YYYY-MM-DD').toString());
+                        console.log( next_week+' : '+current_week);
+                        s_data = {  'start_date':next_week_date_format,
+                                    'shot_names':'---',
+                                    'resource_ids':'----',
+                                    'approved_seconds':0,
+                                    'total_seconds':0,
+                                    'approved_shots':0,
+                                    'total_shots':0
+                        };
+                        shot_data.push(s_data);
+                        weekly_shot_data.push([next_week_date_format, 0]);
+                        weekly_approved_shot_data.push([next_week_date_format, 0]);
+
+                        next_week += 1;
+                        console.log('Updated: '+ next_week+' : '+data_next_week);
+                    }
+
+                }
+                var total_weeks = 6;
+                var start_week = weekly_shot_data.length-total_weeks<0?0:weekly_shot_data.length-total_weeks;
+                var total_vacation_day = 0;
+
+
+                {% if entity.entity_type =='User' %}
+                    $.getJSON('/entities/{{ entity.id }}/events/?keys=vacation').then(function (vacations) {
+
+                        var av_start_date = new Date(weekly_shot_data[start_week][0]);
+                        var av_end_date = new Date();
+                        av_start_date.setHours(0);
+                        av_end_date.setHours(0);
+                        av_start_date = av_start_date.getTime();
+                        av_end_date = av_end_date.getTime();
+                        console.log('Av: '+new Date(av_start_date)+' : '+new Date(av_end_date));
+                        for (var i = 0; i < vacations.length; i++) {
+                            console.log(vacations[i].title);
+
+                            var v_start_date = new Date(parseInt(vacations[i].start));
+                            var v_end_date = new Date(parseInt(vacations[i].end));
+                            v_start_date.setHours(0);
+                            v_end_date.setHours(0);
+                            v_start_date = v_start_date.getTime();
+                            v_end_date = v_end_date.getTime();
+                            var start_date = null;
+                            var end_date = null;
+                            if(av_start_date<=v_start_date && av_end_date>=v_start_date){
+
+                                start_date = v_start_date;
+                                end_date = v_end_date;
+                                if(av_end_date<=v_end_date){
+
+                                    end_date = av_end_date;
+                                }
+                            }
+                            else if(av_start_date>=v_start_date && av_start_date<=v_end_date){
+
+                                start_date = av_start_date;
+                                end_date = v_end_date;
+                                if(av_end_date<=v_end_date){
+
+                                    end_date = av_end_date;
+                                }
+                            }
+
+
+
+                            if(start_date!=null && end_date!=null){
+                                total_vacation_day += (end_date-start_date)/1000/3600/24 +1;
+                                console.log('total_vacation_day '+ total_vacation_day);
+                            }
+
+
+                        }
+                        calculate_average(weekly_shot_data,total_weeks-total_vacation_day/6,start_week);
+                    });
+                {% endif %}
 
                 $.jqplot('chart_shot', [weekly_shot_data, weekly_approved_shot_data], {
                             seriesColors: ["rgba(78, 135, 194, 0.7)", "#82af6f"],
@@ -238,7 +350,7 @@
 
                 var grid_selector = "#grid-table";
                 var pager_selector = "#grid-pager";
-
+                console.log(' shot_data.length : ' + shot_data[shot_data.length-1].start_date   );
                 jQuery(grid_selector).jqGrid({
                     data: shot_data,
                     datatype: "local",
@@ -280,15 +392,7 @@
                                                            });
 
 
-                        var total_for_last_six_week = 0;
-                        var start_week = weekly_shot_data.length-6<0?0:weekly_shot_data.length-6;
 
-                        for (var i=start_week;i<weekly_shot_data.length;i++){
-                            console.log(weekly_shot_data[i][1]);
-                            total_for_last_six_week += parseFloat(weekly_shot_data[i][1]);
-                            console.log(total_for_last_six_week);
-                        }
-                        var average_for_last_six_week = (total_for_last_six_week/6).toFixed(2);
 
                         var total = total_minutes +' m';
                         var approved_total = approved_minutes +' m';
@@ -297,13 +401,13 @@
                             approved_total = approved_shots.toFixed(2) +' shots';
                         }
 
-                        $('#average_for_last_six_week').text(average_for_last_six_week);
+                        calculate_average(weekly_shot_data,total_weeks,start_week);
                         $('#total').text(total);
                         $('#approved_total').text(approved_total);
                         $('#info_box').show();
 
                         setTimeout(function(){
-                            updatePagerIcons(table);
+                            updatePagerIcons(grid_selector);
                             $('#lui_grid-table').hide();
                         }, 0);
 
@@ -329,15 +433,7 @@
                     {
                         //search form
                         recreateForm: true,
-                        afterShowSearch: function(e){
-                            var form = $(e[0]);
-                            form.closest('.ui-jqdialog').find('.ui-jqdialog-title').wrap('<div class="widget-header" />')
-                            style_search_form(form);
-                        },
-                        afterRedraw: function(){
-                            style_search_filters($(this));
-                        }
-                        ,
+
                         multipleSearch: false
                         /**
                         multipleGroup:true,

@@ -50,7 +50,7 @@
                     {% set client=entity.project.client %}
                     {% include 'client/view/client_card.jinja2' %}
                     <h3 class="grey lighter pull-left position-relative">
-                        {{  entity.project.client.name }}
+                        {{  entity.project.client.name }} / {{  entity.project.name }}
                     </h3>
 
                     <div class="widget-toolbar no-border invoice-info">
