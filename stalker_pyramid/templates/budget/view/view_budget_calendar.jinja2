@@ -24,6 +24,7 @@
 {% block pre_header %}
     <link rel="stylesheet"
           href='{{ request.static_url("stalker_pyramid:static/dhtmlx/dhtmlxgantt.css") }}'/>
+    <link rel="stylesheet" href='{{ request.static_url("stalker_pyramid:static/dhtmlx/skins/dhtmlx_terrace.css") }}' type="text/css" media="screen" title="no title" charset="utf-8">
 {% endblock pre_header %}
 
 {# BREADCRUMBS #}
@@ -38,58 +39,30 @@
 
 {#PAGE-CONTENT#}
 {% block page_content %}
-
-{#    {% set page_title=entity.name %}#}
-{#    {% include 'page_header.jinja2' %}#}
-
-    <div class="space-6"></div>
-    <div class="row-fluid">
-        <div class="span12">
-            <div class="widget-box transparent invoice-box">
-                <div class="widget-header widget-header-large">
-                    {% set client=entity.project.client %}
-                    {% include 'client/view/client_card.jinja2' %}
-                    <h3 class="grey lighter pull-left position-relative">
-                        {{  entity.project.client.name }} / {{  entity.project.name }}
-                    </h3>
-
-                    <div class="widget-toolbar no-border invoice-info">
-                        <span class="invoice-info-label">Bugdet:</span>
-                        <span class="red">{{ entity.name }}</span>
-                        <br />
-                        <span class="invoice-info-label">Date:</span>
-                        <span class="blue">{{ entity.date_updated }}</span>
-                    </div>
-
-                    <div class="widget-toolbar hidden-480">
-                        <a href="#">
-                            <i class="icon-print"></i>
-                        </a>
-                    </div>
+    <div class="widget-box transparent invoice-box">
+        {% set budget=entity %}
+        {% include 'budget/view/budget_header.jinja2' %}
+        <div class="widget-body">
+            <div class="widget-main padding-24">
+                {% set client=budget.project.client %}
+                {% include 'client/view/client_info.jinja2' %}
+                <div class="row-fluid">
+                    <div id="gantt_here" style='width:100%; height:500px; background-color: #EFF5FD;'></div>
                 </div>
-
-                <div class="widget-body">
-                    <div class="widget-main padding-24">
-
-                        <div class="row-fluid">
-                            <div id="gantt_here" style='width:100%; height:300px;'></div>
-                        </div>
-                        <div class="space"></div>
-
-                            <div class="row-fluid">
-                                <button id='save_button'
-                                        class="btn btn-small btn-danger pull-right"
-                                        data-placement="bottom"
-                                        title="Save"
-                                        data-target="#dialog_template"
-                                        data-toggle="modal"
-                                        data-keyboard="false"
-                                        href="#"
-                                        >
-                                <i class="icon-save bigger-130"></i> Save</button>
-                            </div>
-
-                    </div>
+                <div class="space-6"></div>
+                <div class="row-fluid">
+                    {% if entity.type.name == 'Planning'  %}
+                        <button id='save_button'
+                                class="btn btn-small btn-danger pull-right"
+                                data-placement="bottom"
+                                title="Save"
+                                data-target="#dialog_template"
+                                data-toggle="modal"
+                                data-keyboard="false"
+                                href="#"
+                                >
+                        <i class="icon-save bigger-130"></i> Save</button>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -98,7 +71,7 @@
 
 {% block extrascripts %}
     <style type="text/css">
-        html, body { height: 100%; padding:0px; margin:0px; overflow: hidden; }
+        html, body { height: 100%; padding:0px; margin:0px;  overflow: hidden; }
         .gantt_task_cell.week_end{
             background-color: #EFF5FD;
         }
@@ -165,7 +138,7 @@
             gantt.config.duration_unit = "day";
             gantt.config.scale_height = 20*3;
             gantt.config.row_height = 30;
-            gantt.config.grid_width = 390;
+            gantt.config.grid_width = 450;
             gantt.setWorkTime({day : 6, hours : [8,12]});
 
             var weekScaleTemplate = function(date){
@@ -178,7 +151,6 @@
             gantt.config.subscales = [
                 {unit:"month", step:1, date:"%F, %Y"},
                 {unit:"week", step:1, template:weekScaleTemplate}
-
             ];
 
             gantt.templates.task_cell_class = function(task, date){
@@ -195,10 +167,8 @@
 
             gantt.config.columns = [
                 {name:"text", label:"Task name", width:"*", tree:true },
-                {name:"start_time", label:"Start time", template:function(obj){
-                    return gantt.templates.date_grid(obj.start_date);
-                }, align: "center", width:70 },
-                {name:"duration", label:"Duration", align:"center", width:40},
+                {name:"duration", label:"Duration", align:"center", width:55},
+                {name:"resources", label:"Resource", align:"center", width:65},
                 {
                     name:"buttons",
                     label:colHeader,
@@ -208,35 +178,67 @@
                 }
             ];
 
+            var project_start = moment('{{ entity.project.start }}');
+            var project_end = moment('{{ entity.project.end }}');
+            var duration = project_end.diff(project_start, 'days');
             var tasks = {
                   data:[
-                     {id:"p_1", text:"Project #1", start_date:'{{ entity.project.start }}', duration:18,
-                     open:true}
-
+                        {
+                            id:"p_1",
+                            text:"{{ entity.project.name }}",
+                            start_date:project_start.format('DD MM YYYY'),
+                            duration:duration,
+                            resources:5,
+                            open:true
+                        }
                    ]
                 };
-            $.getJSON('/studios/{{ entity.id }}/goods/').then(function (good_data) {
+            var tasks_data_string = '{{entity.generic_text  }}';
+            var task_data = tasks_data_string.split('&amp;');
+
+            for (var i=0; i<task_data.length;i++){
+                var props = task_data[i].split('-');
+
+                var task = {};
+                for (var j=0; j<props.length;j++){
+                    var prop = props[j].split('_');
+                    task[prop[0]] = prop[1];
+                }
+                task.start_date = (moment(parseInt(task.sdate))).format('DD MM YYYY');
+                task.parent = 'p_1';
+                task.good = task.text+'/-/'+task.good;
+                tasks.data.push(task);
+            }
+
+            $.getJSON('/goods/').then(function (good_data) {
 
                 var lightBox_goods =[];
                 for(var m=0; m<good_data.length; m++ ){
                     if (good_data[m].unit == 'HOUR' || good_data[m].unit == 'DAY' ){
-                        console.log(good_data[m].unit);
                         lightBox_goods.push({key:good_data[m].name+'/-/'+good_data[m].id, label: good_data[m].name});
                     }
                 }
-                gantt.config.lightbox.sections = [
-                        {name: "good", height: 22, map_to: "good", type: "select", options: lightBox_goods},
-                        {name: "time", type: "duration", map_to: "auto"}
-                ];
-                gantt.locale.labels["section_good"] = "Good";
-                gantt.init("gantt_here");
-                gantt.parse(tasks);
+                var resource_number_options = [];
+                for (var k=0; k<11;k++){
+                    resource_number_options.push({key:k,label:k});
+                }
 
+                gantt.config.lightbox.sections = [
+                    {name: "good", height: 22, map_to: "good", type: "select", options: lightBox_goods},
+                    {name: "resources", height: 22, map_to: "resources", type: "select", options: resource_number_options},
+                    {name: "time", type: "duration", map_to: "auto"}
+                ];
+
+                gantt.locale.labels["section_good"] = "Good";
+                gantt.locale.labels["section_resources"] = "Resources";
+                gantt.init("gantt_here", new Date(2015,3,1), new Date(2015,11,1));
+                gantt.parse(tasks);
 
                 gantt.attachEvent("onLightboxSave", function(id, task, is_new){
                     task.text = task.good.split('/-/')[0];
-                    task.parent = 'p_1';
-                    gantt.render();
+                    if(is_new){
+                        task.parent = 'p_1';
+                    }
                     return true;
                 });
             });
@@ -246,18 +248,22 @@
                 e.stopPropagation();
 
                 var children = gantt.getChildren('p_1');
-
+                var _query ='type=Calendar';
                 for(var i=0;i<children.length;i++){
-                    console.log(gantt.getTask(children[i]));
+                    var task = gantt.getTask(children[i]);
+                    var good= task.good.split('/-/')[1];
+                    var sdate= (new Date(task.start_date)).getTime();
+                    var duration = task.duration;
+
+                    _query +='&budgetentries_data=id_'+task.id+'-text_'+task.text+'-good_'+good+'-sdate_'+sdate+'-duration_'+duration+'-resources_'+task.resources;
                 }
+                console.log(_query);
+                $.post('/budgets/{{entity.id}}/save/calendar?'+_query).done(function (response_text) {
+                        window.location.reload();
+                    }).fail(function (jqXHR) {
+                        bootbox.alert(jqXHR.responseText);
+                    });
 
-
-
-{#                $.post('{{ request.route_url("add_project_entries_to_budget", id=entity.project.id, bid=entity.id)}}').done(function (response_text) {#}
-{#                    window.location.reload();#}
-{#                }).fail(function (jqXHR) {#}
-{#                    bootbox.alert(jqXHR.responseText);#}
-{#                });#}
             });
 
         });

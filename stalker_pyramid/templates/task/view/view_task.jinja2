@@ -116,7 +116,6 @@
                         {% endif %}
                     {% endif %}              
                 <br>
-    
                 <div class="progress progress-mini progress-success progress-striped {% if entity.status.code == 'WIP' %}active{% endif %}"
                      style="width: 120px;"
                      data-percent="{{ "%2.1f" | format(entity.percent_complete) }}%">
@@ -145,11 +144,8 @@
                 </a>
             </div>
         </div>
-
-
         <div class="widget-body">
             <div class="widget-main">
-
                 <div class="row-fluid">
                     <div class="span8">
                         <div class="row-fluid">

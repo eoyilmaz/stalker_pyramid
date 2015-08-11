@@ -155,6 +155,26 @@ tr .odd > td .ticket_BLOCKER {
 .header-color-timelog + .widget-body {
   border-color: #6fb3e0;
 }
+.rejected {
+  background-color: #4e5962;
+  color: white;
+}
+.rejected a {
+  color: white;
+}
+.label-rejected {
+  background-color: #4e5962 !important;
+}
+.infobox-rejected > .infobox-icon > [class*="icon-"] {
+  background-color: #4e5962;
+}
+.header-color-rejected {
+  background: #4e5962;
+  border-color: #4e5962;
+}
+.header-color-rejected + .widget-body {
+  border-color: #4e5962;
+}
 .approved {
   background-color: #82af6f;
   color: white;

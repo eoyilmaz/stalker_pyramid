@@ -208,19 +208,14 @@
                     weekly_approved_shot_data.push([s_data['start_date'], graph2_val]);
                     max_val = parseFloat(graph1_val)>max_val?parseFloat(graph1_val):max_val;
                     min_val = parseFloat(graph1_val)<min_val?parseFloat(graph1_val):min_val;
-                    console.log('---------------------------------');
 
                     var next_week = start_date_ms.isoWeek()+1;
                     next_week = next_week>start_date_ms.isoWeeksInYear()?1:next_week;
                     var data_next_week = i+1< data.length?moment(data[i+1]['start_date']*1000).isoWeek():moment().isoWeek()+1;
 
-                    console.log('Ilk: '+ next_week+' : '+data_next_week  );
                     while(next_week < data_next_week){
 
                         var next_week_date_format = start_date_ms.add(1, 'w').format('YYYY-MM-DD').toString();
-                        console.log('Bir hafta ekleyecek!!! '+next_week_date_format);
-                        console.log('start date!!! '+start_date_ms.format('YYYY-MM-DD').toString());
-                        console.log( next_week+' : '+current_week);
                         s_data = {  'start_date':next_week_date_format,
                                     'shot_names':'---',
                                     'resource_ids':'----',
@@ -234,7 +229,6 @@
                         weekly_approved_shot_data.push([next_week_date_format, 0]);
 
                         next_week += 1;
-                        console.log('Updated: '+ next_week+' : '+data_next_week);
                     }
 
                 }
@@ -252,9 +246,8 @@
                         av_end_date.setHours(0);
                         av_start_date = av_start_date.getTime();
                         av_end_date = av_end_date.getTime();
-                        console.log('Av: '+new Date(av_start_date)+' : '+new Date(av_end_date));
+
                         for (var i = 0; i < vacations.length; i++) {
-                            console.log(vacations[i].title);
 
                             var v_start_date = new Date(parseInt(vacations[i].start));
                             var v_end_date = new Date(parseInt(vacations[i].end));
@@ -262,35 +255,28 @@
                             v_end_date.setHours(0);
                             v_start_date = v_start_date.getTime();
                             v_end_date = v_end_date.getTime();
+
                             var start_date = null;
                             var end_date = null;
                             if(av_start_date<=v_start_date && av_end_date>=v_start_date){
-
                                 start_date = v_start_date;
                                 end_date = v_end_date;
                                 if(av_end_date<=v_end_date){
-
                                     end_date = av_end_date;
                                 }
                             }
                             else if(av_start_date>=v_start_date && av_start_date<=v_end_date){
-
                                 start_date = av_start_date;
                                 end_date = v_end_date;
                                 if(av_end_date<=v_end_date){
-
                                     end_date = av_end_date;
                                 }
                             }
-
-
 
                             if(start_date!=null && end_date!=null){
                                 total_vacation_day += (end_date-start_date)/1000/3600/24 +1;
                                 console.log('total_vacation_day '+ total_vacation_day);
                             }
-
-
                         }
                         calculate_average(weekly_shot_data,total_weeks-total_vacation_day/6,start_week);
                     });

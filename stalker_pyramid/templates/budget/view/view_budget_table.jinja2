@@ -39,180 +39,38 @@
 {#PAGE-CONTENT#}
 {% block page_content %}
 
-{#    {% set page_title=entity.name %}#}
-{#    {% include 'page_header.jinja2' %}#}
-
-    <div class="space-6"></div>
-    <div class="row-fluid">
-        <div class="span10 offset1">
-            <div class="widget-box transparent invoice-box">
-                <div class="widget-header widget-header-large">
-                    {% set client=entity.project.client %}
-                    {% include 'client/view/client_card.jinja2' %}
-                    <h3 class="grey lighter pull-left position-relative">
-                        {{  entity.project.client.name }}
-                    </h3>
-
-                    <div class="widget-toolbar no-border invoice-info">
-                        <span class="invoice-info-label">Bugdet:</span>
-                        <span class="red">{{ entity.name }}</span>
-                        <br />
-                        <span class="invoice-info-label">Date:</span>
-                        <span class="blue">{{ entity.date_updated }}</span>
-                    </div>
-
-                    <div class="widget-toolbar hidden-480">
-                        <a href="#">
-                            <i class="icon-print"></i>
-                        </a>
-                    </div>
+    <div class="widget-box transparent invoice-box">
+       {% set budget=entity %}
+       {% include 'budget/view/budget_header.jinja2' %}
+        <div class="widget-body">
+            <div class="widget-main padding-24">
+                {% set client=budget.project.client %}
+                {% include 'client/view/client_info.jinja2' %}
+                <div class="row-fluid">
+                    <table id="grid-table"></table>
                 </div>
-
-                <div class="widget-body">
-                    <div class="widget-main padding-24">
-                        <div class="row-fluid">
-                            <div class="span6">
-                                <button id='add_project_entries_to_budget_button'
-                                        class="btn btn-small btn-info hide"
-                                        data-placement="bottom"
-                                        data-target="#dialog_template"
-                                        data-toggle="modal"
-                                        data-keyboard="false"
-                                        >
-                                    <i class="icon-refresh bigger-130"></i>Get
-                                    Calendar Data </button>
-                                <button id='duplicate_budget_button'
-                                        class="btn btn-small btn-success"
-                                        data-placement="bottom"
-                                        data-target="#dialog_template"
-                                        data-toggle="modal"
-                                        data-keyboard="false"
-                                        href="{{ request.route_url("duplicate_budget_dialog", id=entity.id)}}"
-                                        >
-                                    <i class="icon-copy bigger-130"></i>Duplicate Budget</button>
-                            </div>
-                            <div class="span6 ">
-                                <div class="pull-right">
-                                    <span class="label label-large"> {{ entity.type.name }}</span>
-                                    <div class="inline position-relative">
-                                        <button class="btn btn-minier bigger dropdown-toggle"
-                                                data-toggle="dropdown">
-                                            <i class="icon-angle-down icon-only bigger-120"></i>
-                                        </button>
-                                        <ul class="dropdown-menu dropdown-icon-only dropdown-yellow pull-right dropdown-caret dropdown-close">
-                                            <li>
-                                                <a href="/budgets/{{entity.id}}/type/APPROVED/dialog?came_from={{ request.current_route_path() }}"
-                                                   class="tooltip-success"
-                                                   data-target="#dialog_template"
-                                                   data-toggle="modal"
-                                                   data-keyboard=false
-                                                   data-placement="top">
-                                                       <span class="status_cmpl-text">
-                                                           <i class="icon-ok bigger-110"></i>APPROVED
-                                                       </span>
-                                                </a>
-                                            </li>
-                                            <li>
-                                                <a href="/budgets/{{entity.id}}/type/REJECTED/dialog?came_from={{ request.current_route_path() }}"
-                                                   class="tooltip-success"
-                                                   data-target="#dialog_template"
-                                                   data-toggle="modal"
-                                                   data-keyboard=false
-                                                   data-placement="top">
-                                                       <span class="status_stop-text">
-                                                           <i class="icon-stop bigger-110"></i>REJECTED
-                                                       </span>
-                                                </a>
-                                            </li>
-                                            <li>
-                                                <a href="/budgets/{{entity.id}}/type/CALENDER FIXED/dialog?came_from={{ request.current_route_path() }}"
-                                                   class="tooltip-success"
-                                                   data-target="#dialog_template"
-                                                   data-toggle="modal"
-                                                   data-keyboard=false
-                                                   data-placement="top">
-                                                       <span class="status_oh-text">
-                                                           <i class="icon-pause bigger-110"></i>CALENDER FIXED
-                                                       </span>
-                                                </a>
-                                            </li>
-                                            <li>
-                                                <a href="/budgets/{{entity.id}}/type/CLOSED/dialog?came_from={{ request.current_route_path() }}"
-                                                   class="tooltip-success"
-                                                   data-target="#dialog_template"
-                                                   data-toggle="modal"
-                                                   data-keyboard=false
-                                                   data-placement="top">
-                                                       <span class="wip-text">
-                                                           <i class="icon-play bigger-110">CLOSED</i>
-                                                       </span>
-                                                </a>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-
-                        </div>
-
-                        <div class="row-fluid">
-                            <table id="grid-table"></table>
-{#                                <div id="grid-pager"></div>#}
-                            <script type="text/javascript">
-                                var $path_base = "/";//this will be used in gritter alerts containing images
-                            </script>
-                        </div>
-
-                        <div class="hr hr8 hr-double hr-dotted"></div>
-
-                        <div class="row-fluid">
-                            <div class="span5 pull-right">
-                                <h4 class="pull-right">
-                                    Total amount :
-                                    <span class="red" id="total_price"></span>
-                                </h4>
-                            </div>
-                        </div>
-
-                        <div class="space-6"></div>
-
-                        <div class="row-fluid">
-                            <div class="row-fluid">
-                                <div class="span6">
-                                    <div class="row-fluid">
-                                        <div class="span12 label label-large label-success arrowed-in arrowed-right">
-                                            <b>Client Info</b>
-                                        </div>
-                                    </div>
-                                    <div class="row-fluid">
-                                        <ul class="unstyled spaced">
-                                            {% for user_role in  client.user_role %}
-                                            <li>
-                                                <i class="icon-caret-right blue"></i>
-                                                {{ user_role.user.name }},  {{ user_role.role.name }}
-                                            </li>
-                                            {% endfor %}
-                                        </ul>
-                                    </div>
-                                </div><!--/span-->
-                                <div class="span6">
-                                    <div class="row-fluid">
-                                        <button id='send_button'
-                                                class="btn btn-small btn-danger pull-right"
-                                                data-placement="bottom"
-                                                title="Send to Client"
-                                                data-target="#dialog_template"
-                                                data-toggle="modal"
-                                                data-keyboard="false"
-                                                href="#"
-                                                >
-                                        <i class="icon-envelope bigger-130"></i> Send to Client</button>
-                                    </div>
-                                </div><!--/span-->
-                            </div>
-                        </div>
+                <div class="space-6"></div>
+                <div class="hr hr8 hr-double hr-dotted"></div>
+                <div class="row-fluid">
+                    <div class="span8">
+                        <h4 class="pull-right">
+                            Total amount :
+                            <span class="red" id="total_price"></span>
+                        </h4>
                     </div>
-            </div>
+                    <div class="span2">
+                        <button id='send_button'
+                                class="btn btn-small btn-danger pull-right"
+                                data-placement="bottom"
+                                title="Send to Client"
+                                data-target="#dialog_template"
+                                data-toggle="modal"
+                                data-keyboard="false"
+                                href="#"
+                                >
+                        <i class="icon-envelope bigger-130"></i> Send to Client</button>
+                    </div>
+                </div><!--/span-->
             </div>
         </div>
     </div>
@@ -314,7 +172,7 @@
                                     {name:'addition_type', index:'addition_type', width:100, editable: false},
                                     {name:'type', index:'type', width:220, editable: false},
                                     {name:'name', index:'name', width:220, editable: false},
-                                    {name:'amount', index:'amount', width:60, editable: true, formatter:editFmatter},
+                                    {name:'amount', index:'amount', width:60, editable: true},
                                     {name:'unit', index:'unit', width:100, editable: false},
                                     {name:'msrp', index:'msrp', width:150, editable: false, formatter:currencyFmatter, summaryTpl: "{0}", summaryType: "sum" },
                                     {name:'cost', index:'cost', width:150, editable: false, formatter:currencyFmatter, summaryTpl: "{0}", summaryType: "sum" },
@@ -332,6 +190,7 @@
                                 loadonce: true,
                                 sortname: 'type',
                                 height: 700,
+                                width: 'auto',
                                 footerrow: true, // set a footer row
                                 userDataOnFooter: true, // the calculated sums and/or strings from server are put at footer row.
                                 grouping: true,
@@ -348,12 +207,8 @@
                                 caption: "",
                                 onSelectRow: function(id){
 
-                                            var ret = jQuery(grid_selector).jqGrid('getRowData',id);
-                                    console.log(ret.addition_type)
-                                            if (ret.addition_type == 'Calendar')
-                                             {
-                                                jQuery(grid_selector).setColProp('amount',{editable:false});}
-                                            else {  jQuery(grid_selector).setColProp('amount',{editable:true});}},
+
+                                },
                                 loadComplete : function() {
                                     var $self = $(this);
                                     $self.jqGrid("footerData", "set", {
@@ -363,6 +218,8 @@
                                                                        unit:'TOTAL'
                                     });
 
+
+
                                     if(total_cost>total_price){
                                         $self.jqGrid('setCell', 'TOTAL', 'price','',{color:'red'});
                                     }
@@ -371,8 +228,11 @@
                                     }
 
                                     for(var t=0; t<grid_data.length; t++ ){
+
+
                                         if(grid_data[t].cost>grid_data[t].price){
                                             $self.jqGrid('setCell', grid_data[t].id, 'price','',{color:'red'});
+
                                         }
                                         else if(grid_data[t].cost<grid_data[t].price){
                                             $self.jqGrid('setCell', grid_data[t].id, 'price','',{color:'green'});
@@ -410,7 +270,7 @@
                                 {name:'addition_type', index:'addition_type', width:100, editable: false},
                                 {name:'type', index:'type', width:220, editable: false},
                                 {name:'name', index:'name', width:220, editable: false},
-                                {name:'amount', index:'amount', width:60, editable: false, formatter:editFmatter},
+                                {name:'amount', index:'amount', width:60, editable: false},
                                 {name:'unit', index:'unit', width:100, editable: false},
                                 {name:'msrp', index:'msrp', width:150, editable: false, formatter:currencyFmatter, summaryTpl: "{0}", summaryType: "sum" },
                                 {name:'cost', index:'cost', width:150, editable: false, formatter:currencyFmatter, summaryTpl: "{0}", summaryType: "sum" },

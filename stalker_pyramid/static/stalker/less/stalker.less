@@ -244,6 +244,26 @@ tr {
 // *********************************
 // Note Types
 // *********************************
+.rejected {
+    background-color: @dark-grey;
+    color: white;
+    a {
+        color: white;
+    }
+}
+.label-rejected {
+    background-color: @dark-grey !important;
+}
+.infobox-rejected>.infobox-icon>[class*="icon-"] {
+    background-color: @dark-grey
+}
+.header-color-rejected {
+    background: @dark-grey;
+    border-color: @dark-grey;
+    + .widget-body {
+        border-color: @dark-grey;
+    }
+}
 
 .approved {
     background-color: @green;

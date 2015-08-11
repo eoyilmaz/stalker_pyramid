@@ -29,7 +29,8 @@ import transaction
 from webob import Response
 from stalker_pyramid.views import (get_logged_in_user, logger,
                                    PermissionChecker, milliseconds_since_epoch,
-                                   local_to_utc, StdErrToHTMLConverter)
+                                   local_to_utc, StdErrToHTMLConverter,
+                                   get_multi_string)
 
 from stalker_pyramid.views.task import generate_recursive_task_query
 from stalker_pyramid.views.type import query_type
@@ -280,6 +281,99 @@ def get_budgets_count(request):
 
 
 @view_config(
+    route_name='save_budget_calendar'
+)
+def save_budget_calendar(request):
+    """saves the data that is created on budget calendar as a string and
+    """
+    logger.debug('***save_budget_calendar method starts ***')
+    logged_in_user = get_logged_in_user(request)
+    utc_now = local_to_utc(datetime.datetime.now())
+
+    budget_id = request.matchdict.get('id', -1)
+    budget = Budget.query.filter(Budget.id == budget_id).first()
+
+    if not budget:
+        transaction.abort()
+        return Response('No budget with id : %s' % budget_id, 500)
+
+    budgetentries_data = get_multi_string(request, 'budgetentries_data')
+
+    if not budgetentries_data:
+        return Response('No task is defined on calendar for budget id %s' % budget_id, 500)
+
+    budget.generic_text = '&'.join(budgetentries_data)
+    logger.debug('***budget.generic_text %s ***'% budget.generic_text)
+    for budget_entry in budget.entries:
+        if budget_entry.generic_text == 'Calendar':
+            # delete_budgetentry_action(budget_entry)
+            db.DBSession.delete(budget_entry)
+
+    for budgetentry_data in budgetentries_data:
+        logger.debug('budgetentry_data: %s' % budgetentry_data)
+
+        id, text, gid, sdate, duration, resources = budgetentry_data.split('-')
+        good_id = gid.split('_')[1]
+        good = Good.query.filter_by(id=good_id).first()
+        logger.debug('good: %s' % good)
+        if not good:
+            transaction.abort()
+            return Response('Please supply a good', 500)
+
+        amount = int(duration.split('_')[1])*int(resources.split('_')[1])
+        logger.debug('good_id: %s' % good_id)
+        logger.debug('amount: %s' % amount)
+
+        if good.unit == 'HOUR':
+            amount *= 9
+        if amount or amount > 0:
+            create_budgetentry_action(budget,
+                                      good,
+                                      amount,
+                                      good.cost * amount,
+                                      ' ',
+                                      'Calendar',
+                                      logged_in_user,
+                                      utc_now)
+
+    return Response('Budget Calendar Saved Succesfully')
+
+
+@view_config(
+    route_name='edit_budgetentry'
+)
+def edit_budgetentry(request):
+    """edits the budgetentry with data from request
+    """
+    logger.debug('***edit budgetentry method starts ***')
+    oper = request.params.get('oper', None)
+
+    if oper == 'edit':
+        e_id = request.params.get('id')
+        logger.debug('***edit_budgetentry good: %s ***' % e_id)
+
+        entity = Entity.query.filter_by(id=e_id).first()
+
+        if not entity:
+            transaction.abort()
+            return Response('There is no entry with id %s' % e_id, 500)
+
+        if entity.entity_type == 'Good':
+            logger.debug('***create budgetentry method starts ***')
+            return create_budgetentry(request)
+        elif entity.entity_type == 'BudgetEntry':
+            logger.debug('***update budgetentry method starts ***')
+            return update_budgetentry(request)
+        else:
+            transaction.abort()
+            return Response('There is no budgetentry or good with id %s' % e_id, 500)
+
+    elif oper == 'del':
+        logger.debug('***delete budgetentry method starts ***')
+        return delete_budgetentry(request)
+
+
+@view_config(
     route_name='create_budgetentry_dialog',
     renderer='templates/budget/dialog/budgetentry_dialog.jinja2'
 )
@@ -327,18 +421,12 @@ def create_budgetentry(request):
         transaction.abort()
         return Response('Please supply a good', 500)
 
-    name = good.name
-
-    entry_type = query_type('BudgetEntries', good.price_lists[0].name)
-
     budget_id = request.params.get('budget_id', None)
     budget = Budget.query.filter(Budget.id == budget_id).first()
     if not budget:
         transaction.abort()
         return Response('There is no budget with id %s' % budget_id, 500)
 
-
-    # user supply this data
     amount = request.params.get('amount')
     price = request.params.get('price')
     description = request.params.get('description', '')
@@ -352,37 +440,16 @@ def create_budgetentry(request):
 
     if amount and price:
         # data that's generate from good's data
-        amount = int(amount)
-        price = int(price)
-        cost = good.cost
-        msrp = good.msrp
-        realize_total = msrp
-        unit = good.unit
 
-        for budget_entry in budget.entries:
-            if budget_entry.name == name:
-                budget_entry.amount += amount
-                budget_entry.price += price
-                return Response('BudgetEntry is updated successfully')
+        create_budgetentry_action(budget,
+                                  good,
+                                  int(amount),
+                                  int(price),
+                                  description,
+                                  'Producer',
+                                  logged_in_user,
+                                  utc_now)
 
-        budget_entry = BudgetEntry(
-            budget=budget,
-            good=good,
-            name=name,
-            type=entry_type,
-            amount=amount,
-            cost=cost,
-            msrp=msrp,
-            price=price,
-            realize_total=realize_total,
-            unit=unit,
-            description=description,
-            created_by=logged_in_user,
-            date_created=utc_now,
-            date_updated=utc_now,
-            generic_text='Producer'
-        )
-        db.DBSession.add(budget_entry)
     else:
         transaction.abort()
         return Response('There are missing parameters', 500)
@@ -390,40 +457,42 @@ def create_budgetentry(request):
     return Response('BudgetEntry Created successfully')
 
 
-@view_config(
-    route_name='edit_budgetentry'
-)
-def edit_budgetentry(request):
-    """edits the budgetentry with data from request
+def create_budgetentry_action(budget, good, amount, price, description, gText, logged_in_user, utc_now):
+    """create_budgetentry_action
     """
-    logger.debug('***edit budgetentry method starts ***')
-    oper = request.params.get('oper', None)
 
-    if oper == 'edit':
+    for budget_entry in budget.entries:
+        if budget_entry.name == good.name:
+            budget_entry.amount += amount
+            budget_entry.price += price
+            # return Response('BudgetEntry is updated successfully')
 
-        id = request.params.get('id')
-        logger.debug('***edit_budgetentry good: %s ***' % id)
+    cost = good.cost
+    msrp = good.msrp
+    realize_total = msrp
+    unit = good.unit
+    entry_type = query_type('BudgetEntries', good.price_lists[0].name)
 
-        entity = Entity.query.filter_by(id=id).first()
+    budget_entry = BudgetEntry(
+        budget=budget,
+        good=good,
+        name=good.name,
+        type=entry_type,
+        amount=amount,
+        cost=cost,
+        msrp=msrp,
+        price=price,
+        realize_total=realize_total,
+        unit=unit,
+        description=description,
+        created_by=logged_in_user,
+        date_created=utc_now,
+        date_updated=utc_now,
+        generic_text=gText
+    )
+    db.DBSession.add(budget_entry)
+    # return Response('successfully created budgetentry!')
 
-        if not entity:
-            transaction.abort()
-            return Response('There is no entry with id %s' % id, 500)
-
-        if entity.entity_type == 'Good':
-            logger.debug('***create budgetentry method starts ***')
-
-            return create_budgetentry(request)
-        elif entity.entity_type == 'BudgetEntry':
-            logger.debug('***update budgetentry method starts ***')
-            return update_budgetentry(request)
-        else:
-            transaction.abort()
-            return Response('There is no budgetentry or good with id %s' % id, 500)
-
-    elif oper == 'del':
-        logger.debug('***delete budgetentry method starts ***')
-        return delete_budgetentry(request)
 
 
 @view_config(
@@ -432,6 +501,8 @@ def edit_budgetentry(request):
 def update_budgetentry(request):
     """updates the budgetentry with data from request
     """
+
+    logger.debug('***update_budgetentry method starts ***')
     logged_in_user = get_logged_in_user(request)
     utc_now = local_to_utc(datetime.datetime.now())
 
@@ -453,8 +524,6 @@ def update_budgetentry(request):
         budgetentry.description = description
         budgetentry.date_updated = utc_now
         budgetentry.updated_by = logged_in_user
-
-
     else:
         if not amount or amount == '0':
             transaction.abort()
@@ -492,12 +561,17 @@ def delete_budgetentry(request):
         transaction.abort()
         return Response('There is no budgetentry with id: %s' % budgetentry_id, 500)
 
-    if budgetentry.type.name == 'CalenderBasedEntry':
+    if budgetentry.type.name == 'Calendar':
         transaction.abort()
         return Response('You can not delete CalenderBasedEntry', 500)
 
-    budgetentry_name = budgetentry.name
+    delete_budgetentry_action(budgetentry)
 
+
+def delete_budgetentry_action(budgetentry):
+
+    logger.debug('delete_budgetentry_action %s' % budgetentry.name)
+    budgetentry_name = budgetentry.name
     try:
         db.DBSession.delete(budgetentry)
         transaction.commit()
@@ -505,8 +579,8 @@ def delete_budgetentry(request):
         transaction.abort()
         c = StdErrToHTMLConverter(e)
         transaction.abort()
-        return Response(c.html(), 500)
-    return Response('Successfully deleted good with name %s' % budgetentry_name)
+        # return Response(c.html(), 500)
+    # return Response('Successfully deleted good with name %s' % budgetentry_name)
 
 
 @view_config(
@@ -684,7 +758,8 @@ def duplicate_budget(request):
         description=description,
         created_by=logged_in_user,
         date_created=utc_now,
-        date_updated=utc_now
+        date_updated=utc_now,
+        generic_text=budget.generic_text
     )
     db.DBSession.add(budget)
     for budget_entry in budget.entries:

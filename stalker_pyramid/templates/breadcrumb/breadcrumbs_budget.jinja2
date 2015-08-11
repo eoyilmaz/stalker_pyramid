@@ -1,0 +1,25 @@
+<ul id="breadcrumb_budget" class="breadcrumb">
+
+    <li>
+        <a href="{{ request.route_url('view_project', id=budget.project.id) }}">{{ budget.project.name }}</a>
+        <span class="divider">
+          <i class="icon-angle-right arrow-icon"></i>
+        </span>
+    </li>
+    <li>
+        <div class="btn-group">
+            <button tabindex="-1"
+                    data-toggle="dropdown"
+                    class="btn btn-mini btn-danger dropdown-toggle">{{ budget.name }}
+                <i class="icon-angle-down icon-on-right"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-danger scroll-menu">
+                {% for a_budget in budget.project.budgets|sort(attribute='name') %}
+                    <li><a href="{{ request.route_url('view_budget', id=a_budget.id) }}">{{ a_budget.name }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </li>
+
+</ul>
+<!--.breadcrumb-->

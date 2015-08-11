@@ -1,0 +1,58 @@
+<div class="widget-header widget-header-large">
+    {% set client=budget.project.client %}
+    {% include 'client/view/client_card.jinja2' %}
+    <h3 class="grey lighter pull-left position-relative">
+        {{  budget.project.client.name }} / {{  budget.project.name }}<small>  >>  {{ budget.name }}</small>
+    </h3>
+    <div class="widget-toolbar no-border invoice-info">
+
+        <span class="invoice-info-label">Date:</span>
+        <span class="blue">{{ budget.date_updated }}</span>
+        <br />
+        <span class="label label-large label-{{ entity.type.name.lower() }}"> {{ entity.type.name }}</span>
+        <div class="inline position-relative">
+            <button class="btn btn-minier bigger dropdown-toggle"
+                    data-toggle="dropdown">
+                <i class="icon-angle-down icon-only bigger-120"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-icon-only dropdown-yellow pull-right dropdown-caret dropdown-close">
+                <li>
+                    <a href="/budgets/{{entity.id}}/type/APPROVED/dialog?came_from={{ request.current_route_path() }}"
+                       class="tooltip-success"
+                       data-target="#dialog_template"
+                       data-toggle="modal"
+                       data-keyboard=false
+                       data-placement="top">
+                           <span class="status_cmpl-text">
+                               <i class="icon-ok bigger-110"></i>APPROVED
+                           </span>
+                    </a>
+                </li>
+                <li>
+                    <a href="/budgets/{{entity.id}}/type/REJECTED/dialog?came_from={{ request.current_route_path() }}"
+                       class="tooltip-success"
+                       data-target="#dialog_template"
+                       data-toggle="modal"
+                       data-keyboard=false
+                       data-placement="top">
+                           <span class="status_stop-text">
+                               <i class="icon-stop bigger-110"></i>REJECTED
+                           </span>
+                    </a>
+                </li>
+
+            </ul>
+        </div>
+    </div>
+    <div class="widget-toolbar hidden-480">
+        <a data-placement="bottom"
+            data-target="#dialog_template"
+            data-toggle="modal"
+            data-keyboard="false"
+            title="Duplicate Budget"
+            href="{{ request.route_url("duplicate_budget_dialog", id=entity.id)}}">
+            <i class="icon-copy green"></i>
+        </a>
+    </div>
+
+</div>

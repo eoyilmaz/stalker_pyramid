@@ -371,7 +371,8 @@ def main(global_config, **settings):
 
     config.add_route('view_budget',          'budgets/{id}/view')
     config.add_route('view_budget_calendar', 'budgets/{id}/view/calendar')
-    config.add_route('view_budget_table', 'budgets/{id}/view/table')
+    config.add_route('view_budget_table',    'budgets/{id}/view/table')
+    config.add_route('save_budget_calendar', 'budgets/{id}/save/calendar')
 
     config.add_route('duplicate_budget_dialog',   'budgets/{id}/duplicate/dialog')
     config.add_route('duplicate_budget',   'budgets/{id}/duplicate')

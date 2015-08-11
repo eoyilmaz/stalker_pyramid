@@ -13,6 +13,13 @@
 
         )
         menu_of(
+            'Dashboard',
+            "{%- if request.current_route_path() == request.route_path('view_budget', id=budget.id) -%}'active',{%- else -%},{%- endif -%}",
+            '{{ request.route_url('view_budget', id=budget.id) }}',
+            get_icon('dashboard'),
+            ''
+        );
+        menu_of(
             'Calendar',
             "{%- if request.current_route_path() == request.route_path('view_budget_calendar', id=budget.id) -%}'active',{%- else -%},{%- endif -%}",
             '{{ request.route_url('view_budget_calendar', id=budget.id) }}',
@@ -24,13 +31,6 @@
             "{%- if request.current_route_path() == request.route_path('view_budget_table', id=budget.id) -%}'active',{%- else -%},{%- endif -%}",
             '{{ request.route_url('view_budget_table', id=budget.id) }}',
             get_icon('budget'),
-            ''
-        );
-        menu_of(
-            'Realized Total',
-            "",
-            '',
-            get_icon('report'),
             ''
         );
     });
