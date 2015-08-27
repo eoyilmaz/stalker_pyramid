@@ -109,6 +109,19 @@
                 </div>
             </div>
 
+            {# if_completed #}
+            <div id="if_completed" class="control-group hide">
+                <label class="span2 control-label" for="if_completed_cb">
+                </label>
+                <div class="span10">
+                    <input id="if_completed_cb"
+                           name="if_completed_cb"
+                           type="checkbox"
+                           class="ace ace-checkbox-2">
+                    <label class="lbl blue" for="if_completed_cb"> Is it completed for you?</label>
+                </div>
+            </div>
+
 
         </div>
 
@@ -125,6 +138,7 @@
         </div>
 
     </div>
+
     <form id='finalize_task_form'
           class='form-horizontal hide'
           role='form'
@@ -269,7 +283,6 @@ var end_date_value
         $('#finalize_task_form').hide();
 
         var task_id = parseInt(time_log_task.val());
-        console.debug('task_id:', task_id);
         submit_finalize_form_url = null;
         if (task_id === -1){ return }
 
@@ -328,8 +341,6 @@ var end_date_value
                     '<br/><strong>Total Time Logged: </strong>' + total_logged +sch_unit + ' ( '+total_logged_hours_msg+' )'+
                     '</div></span>'
                 );
-
-
             }
             else{
                 information.append(
@@ -349,9 +360,19 @@ var end_date_value
                 alert_information.append(
                     "<span class='pull_left'>If you enter this time log, <strong>" +
                     remaining_minutes_after_this_time_log_string +
-                    "</strong> minutes will remain to complete this task.</span>"
+                    "</strong> will remain to complete this task.</span>"
                 );
                 $('#percent_bar_container').show();
+
+                $('#if_completed').show();
+                $('#if_completed_cb').on('click', function () {
+                    if(this.checked){
+                        submit_finalize_form_url = '/tasks/'+task_id+'/request_review';
+                    }
+                    else{
+                        submit_finalize_form_url = null;
+                    }
+                });
                 completed_percent = (100 - ((remaining_seconds_after_this_time_log / parseFloat(data[0].schedule_seconds)) * 100)).toFixed(1);
             } else if(remaining_minutes_after_this_time_log==0) {
                 submit_button.attr('disabled', false);
@@ -360,6 +381,8 @@ var end_date_value
                 );
                 $('#percent_bar_container').show();
                 $('#finalize_task_form').show();
+                $('#if_completed').hide();
+                $('#if_completed_cb').prop('checked', '');
 
                 var task_review_mode = $('#task_review_mode');
                 submit_finalize_form_url = '/tasks/'+task_id+'/'+ task_review_mode.val();
@@ -376,7 +399,6 @@ var end_date_value
                 var exceeding_message ='<span><div id="message" class="alert alert-error bigger-110">' +
                     '<span class="pull_left ">You need <strong>' + remaining_minutes_after_this_time_log_string +
                     '</strong> extra time. Please request for extra minutes. </span>' +
-
                     '</div></span>';
 
                 alert_information.append(exceeding_message);
@@ -573,7 +595,7 @@ var end_date_value
 
         if(start.getDate() == end.getDate() && start.getMonth()==end.getMonth()) {
 
-            $('#auto_split_wh_cg').hide()
+            $('#auto_split_wh_cg').hide();
 
         }else{
 
@@ -684,7 +706,7 @@ var end_date_value
         var end = start_end[1];
 
         if(start.getDate() == end.getDate() && start.getMonth()==end.getMonth()) {
-            $('#auto_split_wh').prop('checked','')
+            $('#auto_split_wh').prop('checked','');
         }
 
         // validate the data first

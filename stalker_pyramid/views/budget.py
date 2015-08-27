@@ -307,6 +307,7 @@ def save_budget_calendar(request):
     for budget_entry in budget.entries:
         if budget_entry.generic_text == 'Calendar':
             # delete_budgetentry_action(budget_entry)
+            logger.debug('***delete *** %s ' % budget_entry.name)
             db.DBSession.delete(budget_entry)
 
     for budgetentry_data in budgetentries_data:
@@ -321,8 +322,6 @@ def save_budget_calendar(request):
             return Response('Please supply a good', 500)
 
         amount = int(duration.split('_')[1])*int(resources.split('_')[1])
-        logger.debug('good_id: %s' % good_id)
-        logger.debug('amount: %s' % amount)
 
         if good.unit == 'HOUR':
             amount *= 9
@@ -460,12 +459,15 @@ def create_budgetentry(request):
 def create_budgetentry_action(budget, good, amount, price, description, gText, logged_in_user, utc_now):
     """create_budgetentry_action
     """
+    logger.debug('good_id: %s' % good.id)
+    logger.debug('amount: %s' % amount)
 
     for budget_entry in budget.entries:
         if budget_entry.name == good.name:
+            logger.debug('Adds budget_entry amount %s ***'% budget_entry.amount)
             budget_entry.amount += amount
             budget_entry.price += price
-            # return Response('BudgetEntry is updated successfully')
+            return
 
     cost = good.cost
     msrp = good.msrp
@@ -491,7 +493,7 @@ def create_budgetentry_action(budget, good, amount, price, description, gText, l
         generic_text=gText
     )
     db.DBSession.add(budget_entry)
-    # return Response('successfully created budgetentry!')
+    return
 
 
 

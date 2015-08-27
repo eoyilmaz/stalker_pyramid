@@ -193,7 +193,7 @@
                         {
                             id:"p_1",
                             text:"{{ entity.project.name }}",
-                            start_date:"01-08-2015",
+                            start_date:project_start.format('DD MM YYYY'),
                             duration:25,
                             resources:5,
                             open:true
@@ -201,21 +201,26 @@
                    ]
                 };
             var tasks_data_string = '{{entity.generic_text  }}';
-            var task_data = tasks_data_string.split('&amp;');
+            if (tasks_data_string){
 
-            for (var i=0; i<task_data.length;i++){
-                var props = task_data[i].split('-');
+                 var task_data = tasks_data_string.split('&amp;');
 
-                var task = {};
-                for (var j=0; j<props.length;j++){
-                    var prop = props[j].split('_');
-                    task[prop[0]] = prop[1];
+                for (var i=0; i<task_data.length;i++){
+                    var props = task_data[i].split('-');
+
+                    var task = {};
+                    for (var j=0; j<props.length;j++){
+                        var prop = props[j].split('_');
+                        task[prop[0]] = prop[1];
+                    }
+                    task.start_date = (moment(parseInt(task.sdate))).format('DD MM YYYY');
+                    task.parent = 'p_1';
+                    task.good = task.text+'/-/'+task.good;
+                    tasks.data.push(task);
                 }
-                task.start_date = (moment(parseInt(task.sdate))).format('DD MM YYYY');
-                task.parent = 'p_1';
-                task.good = task.text+'/-/'+task.good;
-                tasks.data.push(task);
+
             }
+
 
             $.getJSON('/goods/').then(function (good_data) {
 
@@ -226,7 +231,7 @@
                     }
                 }
                 var resource_number_options = [];
-                for (var k=0; k<11;k++){
+                for (var k=1; k<11;k++){
                     resource_number_options.push({key:k,label:k});
                 }
 
@@ -238,7 +243,7 @@
 
                 gantt.locale.labels["section_good"] = "Good";
                 gantt.locale.labels["section_resources"] = "Resources";
-                gantt.init("gantt_here", new Date(2015,3,1), new Date(2015,11,1));
+                gantt.init("gantt_here");
                 gantt.parse(tasks);
 
                 gantt.attachEvent("onLightboxSave", function(id, task, is_new){
@@ -276,7 +281,7 @@
                 e.preventDefault();
                 e.stopPropagation();
 
-                gantt.exportToPDF();
+{#                gantt.exportToPDF();#}
 
 
             });

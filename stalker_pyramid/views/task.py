@@ -4246,147 +4246,149 @@ def request_review(request):
 
     # invalidate all caches
     invalidate_all_caches()
+    return request_review_action(request, request_review_mode)
 
-    if request_review_mode == 'Final':
-        return request_final_review(request)
-    elif request_review_mode == 'Progress':
-        return request_progress_review(request)
-
-
-def request_progress_review(request):
-    """runs when resource request final review"""
-
-    logger.debug('request_progress_review starts')
-
-    selected_responsible_ids = \
-        get_multi_integer(request, 'selected_responsible_ids')
-    selected_responsible_list = \
-        User.query.filter(User.id.in_(selected_responsible_ids)).all()
-
-    if not selected_responsible_list:
-        transaction.abort()
-        return Response('You did not select any responsible', 500)
-
-    logged_in_user = get_logged_in_user(request)
-
-    task_id = request.matchdict.get('id', -1)
-    task = Task.query.filter(Task.id == task_id).first()
-
-    note = request.params.get('note', 'No note')
-
-    utc_now = local_to_utc(datetime.datetime.now())
-
-    # Create ticket_type if it does not exist
-    ticket_type_name = 'In Progress-Review'
-    ticket_type = query_type('Ticket', ticket_type_name)
-
-    recipients = []
-
-    # Create tickets for selected responsible
-    user_link_internal = get_user_link_internal(request, logged_in_user)
-    task_full_path = get_task_full_path(task.id)
-    task_link_internal = request.route_path('view_task', id=task.id)
-
-    for responsible in selected_responsible_list:
-        logger.debug('responsible: %s' % responsible)
-        recipients.append(responsible.email)
-
-        request_review_ticket = Ticket(
-            project=task.project,
-            summary='In Progress Review Request: %s' % task_full_path,
-            description='%(sender)s has requested you to do <b>a progress '
-                        'review</b> for %(task)s' % {
-                            'sender': user_link_internal,
-                            'task': task_link_internal
-                        },
-            type=ticket_type,
-            created_by=logged_in_user,
-            date_created=utc_now,
-            date_updated=utc_now
-        )
-
-        request_review_ticket.reassign(logged_in_user, responsible)
-
-        # link the task to the review
-        request_review_ticket.links.append(task)
-        db.DBSession.add(request_review_ticket)
-
-        ticket_comment = create_simple_note(note,
-                                            'Ticket Comment',
-                                            'pink',
-                                            'ticket_comment',
-                                            logged_in_user,
-                                            utc_now)
-
-        request_review_ticket.comments.append(ticket_comment)
-        task.notes.append(ticket_comment)
-        task.updated_by = logged_in_user
-        task.date_updated = utc_now
-
-    # Send mail to
-    send_email = request.params.get('send_email', 1)  # for testing purposes
-
-    if send_email:
-        recipients.append(logged_in_user.email)
-        # recipients.extend(task.responsible)
-
-        for watcher in task.watchers:
-            recipients.append(watcher.email)
-
-        # also add other note owners to the list
-        for note in task.notes:
-            note_created_by = note.created_by
-            if note_created_by:
-                recipients.append(note_created_by.email)
-
-        # make the list unique
-        recipients = list(set(recipients))
-
-        description_temp = \
-            '%(user)s has requested an in-progress review for ' \
-            '%(task_full_path)s with the following note:' \
-            '%(spacing)s' \
-            '%(note)s '
-
-        mailer = get_mailer(request)
-
-        message = Message(
-            subject='In Progress Review Request: "%s"' % task_full_path,
-            sender=dummy_email_address,
-            recipients=recipients,
-            body=get_description_text(
-                description_temp,
-                logged_in_user.name,
-                task_full_path,
-                note if note else '-- no notes --'
-            ),
-            html=get_description_html(
-                description_temp,
-                logged_in_user.name,
-                get_task_external_link(task.id),
-                note if note else '-- no notes --'
-            )
-        )
-
-        mailer.send_to_queue(message)
-
-    logger.debug(
-        'success:Your progress review request has been sent to responsible'
-    )
-
-    request.session.flash(
-        'success:Your progress review request has been sent to responsible'
-    )
-
-    # invalidate all caches
-    invalidate_all_caches()
-
-    return Response(
-        'Your progress review request has been sent to responsible'
-    )
+# def request_progress_review(request):
+#     """runs when resource request final review"""
+#
+#     logger.debug('request_progress_review starts')
+#
+#     selected_responsible_ids = \
+#         get_multi_integer(request, 'selected_responsible_ids')
+#     selected_responsible_list = \
+#         User.query.filter(User.id.in_(selected_responsible_ids)).all()
+#
+#     if not selected_responsible_list:
+#         transaction.abort()
+#         return Response('You did not select any responsible', 500)
+#
+#     logged_in_user = get_logged_in_user(request)
+#
+#     task_id = request.matchdict.get('id', -1)
+#     task = Task.query.filter(Task.id == task_id).first()
+#
+#     note = request.params.get('note', 'No note')
+#
+#     utc_now = local_to_utc(datetime.datetime.now())
+#
+#     # Create ticket_type if it does not exist
+#     ticket_type_name = 'In Progress-Review'
+#     ticket_type = query_type('Ticket', ticket_type_name)
+#
+#     recipients = []
+#
+#     # Create tickets for selected responsible
+#     user_link_internal = get_user_link_internal(request, logged_in_user)
+#     task_full_path = get_task_full_path(task.id)
+#     task_link_internal = request.route_path('view_task', id=task.id)
+#
+#     for responsible in selected_responsible_list:
+#         logger.debug('responsible: %s' % responsible)
+#         recipients.append(responsible.email)
+#
+#         request_review_ticket = Ticket(
+#             project=task.project,
+#             summary='In Progress Review Request: %s' % task_full_path,
+#             description='%(sender)s has requested you to do <b>a progress '
+#                         'review</b> for %(task)s' % {
+#                             'sender': user_link_internal,
+#                             'task': task_link_internal
+#                         },
+#             type=ticket_type,
+#             created_by=logged_in_user,
+#             date_created=utc_now,
+#             date_updated=utc_now
+#         )
+#
+#         request_review_ticket.reassign(logged_in_user, responsible)
+#
+#         # link the task to the review
+#         request_review_ticket.links.append(task)
+#         db.DBSession.add(request_review_ticket)
+#
+#         ticket_comment = create_simple_note(note,
+#                                             'Ticket Comment',
+#                                             'pink',
+#                                             'ticket_comment',
+#                                             logged_in_user,
+#                                             utc_now)
+#
+#         request_review_ticket.comments.append(ticket_comment)
+#         task.notes.append(ticket_comment)
+#         task.updated_by = logged_in_user
+#         task.date_updated = utc_now
+#
+#     # Send mail to
+#     send_email = request.params.get('send_email', 1)  # for testing purposes
+#
+#     if send_email:
+#         recipients.append(logged_in_user.email)
+#         # recipients.extend(task.responsible)
+#
+#         for watcher in task.watchers:
+#             recipients.append(watcher.email)
+#
+#         # also add other note owners to the list
+#         for note in task.notes:
+#             note_created_by = note.created_by
+#             if note_created_by:
+#                 recipients.append(note_created_by.email)
+#
+#         # make the list unique
+#         recipients = list(set(recipients))
+#
+#         description_temp = \
+#             '%(user)s has requested an in-progress review for ' \
+#             '%(task_full_path)s with the following note:' \
+#             '%(spacing)s' \
+#             '%(note)s '
+#
+#         mailer = get_mailer(request)
+#
+#         message = Message(
+#             subject='In Progress Review Request: "%s"' % task_full_path,
+#             sender=dummy_email_address,
+#             recipients=recipients,
+#             body=get_description_text(
+#                 description_temp,
+#                 logged_in_user.name,
+#                 task_full_path,
+#                 note if note else '-- no notes --'
+#             ),
+#             html=get_description_html(
+#                 description_temp,
+#                 logged_in_user.name,
+#                 get_task_external_link(task.id),
+#                 note if note else '-- no notes --'
+#             )
+#         )
+#
+#         mailer.send_to_queue(message)
+#
+#     logger.debug(
+#         'success:Your progress review request has been sent to responsible'
+#     )
+#
+#     request.session.flash(
+#         'success:Your progress review request has been sent to responsible'
+#     )
+#
+#     # invalidate all caches
+#     invalidate_all_caches()
+#
+#     return Response(
+#         'Your progress review request has been sent to responsible'
+#     )
 
 
-def request_final_review(request):
+def cut_schedule_timing(task):
+
+    timing, unit = task.least_meaningful_time_unit(task.total_logged_seconds)
+    task.schedule_timing = timing
+    task.schedule_unit = unit
+
+
+def request_review_action(request, mode):
     """runs when resource request final review
     """
 
@@ -4396,6 +4398,10 @@ def request_final_review(request):
 
     task_id = request.matchdict.get('id', -1)
     task = Task.query.filter(Task.id == task_id).first()
+
+    if mode == 'Final':
+        cut_schedule_timing(task)
+
 
     note_str = request.params.get('note', 'No note')
     send_email = request.params.get('send_email', 1)  # for testing purposes
@@ -4409,18 +4415,18 @@ def request_final_review(request):
                               logged_in_user,
                               utc_now)
 
-    final_type = Type.query.filter(Type.name == 'Final').first()
-    if not final_type:
-        final_type = Type(
-            name='Final',
-            code='Final',
+    request_type = Type.query.filter(Type.name == mode).first()
+    if not request_type:
+        request_type = Type(
+            name=mode,
+            code=mode,
             target_entity_type='Review'
         )
 
     task.notes.append(note)
     reviews = task.request_review()
     for review in reviews:
-        review.type = final_type
+        review.type = request_type
         review.created_by = logged_in_user
         review.date_created = utc_now
         review.date_updated = utc_now
@@ -5260,9 +5266,7 @@ def set_task_status(task, status, note, logged_in_user, utc_now):
         task.hold()
         fix_task_computed_time(task)
     elif status.code == 'CMPL':
-        timing, unit = task.least_meaningful_time_unit(task.total_logged_seconds)
-        task.schedule_timing = timing
-        task.schedule_unit = unit
+        cut_schedule_timing(task)
         task.status = status
         fix_task_computed_time(task)
         task.update_parent_statuses()
