@@ -235,7 +235,7 @@ function init_dialog() {
 
     var dialog_template_label = $('#dialog_template_label');
     dialog_template_label.find('span').remove();
-    dialog_template_label.append('<span>Timelog</span>');
+    dialog_template_label.append('<span>Timelog -----</span>');
 
     var submit_button = $('#dialog_template_submit_button');
     submit_button.attr('disabled', false);
@@ -372,6 +372,7 @@ var end_date_value
                     else{
                         submit_finalize_form_url = null;
                     }
+
                 });
                 completed_percent = (100 - ((remaining_seconds_after_this_time_log / parseFloat(data[0].schedule_seconds)) * 100)).toFixed(1);
             } else if(remaining_minutes_after_this_time_log==0) {
@@ -666,6 +667,7 @@ var end_date_value
     var post_finalize_action = function () {
         var finalize_task_form = $('#finalize_task_form');
         submit_button.button('loading');
+        console.log('post_finalize_action');
 
         $.post(
             submit_finalize_form_url,
@@ -727,6 +729,7 @@ var end_date_value
         }
 
         if (form_is_valid) {
+            console.log('submit_finalize_form_url '+submit_finalize_form_url);
             $.post(
                 time_log_form.attr('action'),
                 time_log_form.serialize() + '&' +
@@ -735,7 +738,7 @@ var end_date_value
                     'end': end.toUTCString()
                 })
             ).done(function (response_text) {
-                if (completed_percent == 100 && submit_finalize_form_url){
+                if (submit_finalize_form_url){
                     setTimeout(function () { // wait for hide event to finish
                         post_finalize_action();
                     }, 0);
