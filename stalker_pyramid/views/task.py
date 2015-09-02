@@ -3849,6 +3849,28 @@ def approve_task(request):
     request.session.flash(flash_message)
     return Response(response_message)
 
+def add_note_to_dependent_of_tasks(task, description, logged_in_user, utc_now):
+
+    dependent_of_note = create_simple_note( 'The task got a Revision due to the revision given to '
+                                            '<a href="/tasks/%(task_id)s/view"><b>%(task_name)s</b></a>:<br/>'
+                                            '%(description)s' % {
+                                                'task_name': task.name,
+                                                'task_id': task.id,
+                                                'description': description
+                                            },
+                                            'Request Revision',
+                                            'purple',
+                                            'requested_revision',
+                                            logged_in_user,
+                                            utc_now)
+
+    for tdep in walk_hierarchy(task, 'dependent_of'):
+        logger.debug('tdep : %s' % tdep.name)
+        if tdep != task:
+            if tdep.status.code not in ['WFD','RTS']:
+                if dependent_of_note not in tdep.notes:
+                    tdep.notes.append(dependent_of_note)
+
 
 @view_config(
     route_name='request_revision'
@@ -3906,35 +3928,14 @@ def request_revision(request):
                                       logged_in_user,
                                       utc_now)
 
-            dependent_of_note = create_simple_note('<b>%(task_name)s</b> is expanded the timing of the task by <b>'
-                                        '%(schedule_timing)s %(schedule_unit)s</b>.<br/>'
-                                        '%(description)s' % {
-                                            'schedule_timing': schedule_timing,
-                                            'schedule_unit': schedule_unit,
-                                            'task_name': task.name,
-                                            'description': description
-                                        },
-                                      'Request Revision',
-                                      'purple',
-                                      'requested_revision',
-                                      logged_in_user,
-                                      utc_now)
-
-
-            for tdep in walk_hierarchy(task, 'dependent_of'):
-                logger.debug('tdep : %s' % tdep.name)
-                # dep = tdep.task
-                if tdep != task:
-                    if dependent_of_note not in tdep.notes:
-                        tdep.notes.append(dependent_of_note)
-
-
             task.request_revision(
                 logged_in_user,
                 note.content,
                 schedule_timing,
                 schedule_unit
             )
+
+            add_note_to_dependent_of_tasks(task,description,logged_in_user,utc_now)
 
         else:
             return Response("You don't have permission", 500)
@@ -3988,6 +3989,8 @@ def request_revision(request):
                 }
             )
             review.date_updated = utc_now
+
+            add_note_to_dependent_of_tasks(task, description, logged_in_user,utc_now)
 
         except StatusError as e:
                 return Response('StatusError: %s' % e, 500)
@@ -4135,6 +4138,8 @@ def request_revisions(request):
             task.notes.append(note)
             task.updated_by = logged_in_user
             task.date_updated = utc_now
+
+            add_note_to_dependent_of_tasks(task, description, logged_in_user,utc_now)
     else:
         request.session.flash('error:You dont have permission!')
         return Response("You don't have permission", 500)
