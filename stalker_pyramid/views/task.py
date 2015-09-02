@@ -38,6 +38,7 @@ from stalker import (db, defaults, User, Task, Entity, Project, StatusList,
                      Status, Studio, Asset, Shot, Sequence, Ticket, Type, Note,
                      Review, Version, TimeLog, Good)
 from stalker.exceptions import CircularDependencyError, StatusError
+from stalker.models import walk_hierarchy
 
 from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
                                    get_multi_integer, milliseconds_since_epoch,
@@ -388,18 +389,18 @@ def duplicate_task(task):
     return dup_task
 
 
-def walk_hierarchy(task):
-    """Walks the hierarchy of the given task
-
-    :param task: The top most task instance
-    :return:
-    """
-    tasks_to_visit = [task]
-
-    while len(tasks_to_visit):
-        current_task = tasks_to_visit.pop(0)
-        tasks_to_visit.extend(current_task.children)
-        yield current_task
+# def walk_hierarchy(task):
+#     """Walks the hierarchy of the given task
+#
+#     :param task: The top most task instance
+#     :return:
+#     """
+#     tasks_to_visit = [task]
+#
+#     while len(tasks_to_visit):
+#         current_task = tasks_to_visit.pop(0)
+#         tasks_to_visit.extend(current_task.children)
+#         yield current_task
 
 
 def find_leafs_in_hierarchy(task, leafs=None):
@@ -3904,6 +3905,29 @@ def request_revision(request):
                                       'requested_revision',
                                       logged_in_user,
                                       utc_now)
+
+            dependent_of_note = create_simple_note('<b>%(task_name)s</b> is expanded the timing of the task by <b>'
+                                        '%(schedule_timing)s %(schedule_unit)s</b>.<br/>'
+                                        '%(description)s' % {
+                                            'schedule_timing': schedule_timing,
+                                            'schedule_unit': schedule_unit,
+                                            'task_name': task.name,
+                                            'description': description
+                                        },
+                                      'Request Revision',
+                                      'purple',
+                                      'requested_revision',
+                                      logged_in_user,
+                                      utc_now)
+
+
+            for tdep in walk_hierarchy(task, 'dependent_of'):
+                logger.debug('tdep : %s' % tdep.name)
+                # dep = tdep.task
+                if tdep != task:
+                    if dependent_of_note not in tdep.notes:
+                        tdep.notes.append(dependent_of_note)
+
 
             task.request_revision(
                 logged_in_user,
