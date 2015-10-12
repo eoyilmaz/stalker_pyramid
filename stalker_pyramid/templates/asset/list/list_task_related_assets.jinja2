@@ -6,7 +6,7 @@
              </h4>
 
              <div class="widget-toolbar">
-                {% if has_permission('Update_Task') %}
+                {% if has_permission('Update_Task') and entity.project in logged_in_user.projects %}
                     &nbsp
                     <a data-target="#dialog_template"
                        data-toggle="modal"
@@ -49,16 +49,17 @@
                         <a href="/assets/{{=it.id}}/view" data-rel="colorbox">
                             <i class="icon-zoom-in"></i>
                         </a>
-
-                        <a data-rel="tooltip"
-                               data-placement="bottom"
-                               title="Remove Asset"
-                               data-target="#dialog_template"
-                               data-toggle="modal"
-                               data-keyboard="false"
-                               href="/entities/{{=it.e_id}}/assets/{{=it.id}}/remove/dialog" >
-                            <i class="icon-trash"></i>
-                        </a>
+                        {{ if(it.remove_asset_action){ }}
+                            <a data-rel="tooltip"
+                                   data-placement="bottom"
+                                   title="Remove Asset"
+                                   data-target="#dialog_template"
+                                   data-toggle="modal"
+                                   data-keyboard="false"
+                                   href="/entities/{{=it.e_id}}/assets/{{=it.id}}/remove/dialog" >
+                                <i class="icon-trash"></i>
+                            </a>
+                        {{ } }}
 
                     </div>
                 </div>
@@ -82,7 +83,10 @@
                 else {
                     data[i].thumbnail_full_path = '/' + data[i].thumbnail_full_path;
                 }
-                data[i].e_id = '{{ entity.id }}'
+                data[i].e_id = '{{ entity.id }}';
+                {% if has_permission('Update_Task') and entity.project in logged_in_user.projects  %}
+                    data[i].remove_asset_action = '/entities/'+data[i].e_id+'/assets/'+data[i].id+'/remove/dialog';
+                {% endif %}
 
                 var related_asset_li = $('#related_asset_'+data[i].id);
                 if (related_asset_li.length==0){

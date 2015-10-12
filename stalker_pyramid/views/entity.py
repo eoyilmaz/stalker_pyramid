@@ -72,6 +72,10 @@ logger.setLevel(logging.DEBUG)
     renderer='templates/auth/list/list_entity_users.jinja2'
 )
 @view_config(
+    route_name='list_entity_users_role',
+    renderer='templates/auth/list/list_entity_users_role.jinja2'
+)
+@view_config(
     route_name='list_studio_users',
     renderer='templates/auth/list/list_entity_users.jinja2'
 )
@@ -496,9 +500,6 @@ def append_entities_to_entity_dialog(request):
         'entity': entity,
         'entities_name': entities_name
     }
-
-
-
 
 
 @view_config(

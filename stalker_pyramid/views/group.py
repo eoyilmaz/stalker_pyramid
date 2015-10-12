@@ -313,25 +313,24 @@ def get_group_permissions(request):
 def get_groups(request):
     """returns all the groups in database
     """
-    update_group_permission = PermissionChecker(request)('Update_Department')
-    delete_group_permission = PermissionChecker(request)('Delete_Department')
+    logger.debug('***get_groups method starts ***')
+
+    update_group_permission = PermissionChecker(request)('Update_Group')
+    delete_group_permission = PermissionChecker(request)('Delete_Group')
 
     return [
         {
             'id': group.id,
             'name': group.name,
-            'thumbnail_full_path':
-                group.thumbnail.full_path if group.thumbnail else None,
+            'thumbnail_full_path': group.thumbnail.full_path
+            if group.thumbnail else None,
             'created_by_id': group.created_by.id,
             'created_by_name': group.created_by.name,
             'users_count': len(group.users),
-            'update_group_action':
-                '/groups/%s/update/dialog' % group.id
-                if update_group_permission else None,
-            'delete_group_action':
-                '/groups/%s/delete/dialog' % group.id
-                if delete_group_permission else None
-
+            'update_group_action': '/groups/%s/update/dialog' % group.id
+            if update_group_permission else None,
+            'delete_group_action': '/groups/%s/delete/dialog' % group.id
+            if delete_group_permission else None
         }
         for group in Group.query.order_by(Group.name.asc()).all()
     ]
@@ -353,7 +352,7 @@ def get_group(request):
             'id': group.id,
             'name': group.name,
             'thumbnail_full_path':
-                group.thumbnail.full_path if group.thumbnail else None,
+            group.thumbnail.full_path if group.thumbnail else None,
             'created_by_id': group.created_by.id,
             'created_by_name': group.created_by.name,
             'users_count': len(group.users),
@@ -364,42 +363,42 @@ def get_group(request):
 
 @view_config(
     route_name='get_entity_groups',
-    renderer='json',
-    permission='List_Group'
+    renderer='json'
 )
 @view_config(
     route_name='get_user_groups',
-    renderer='json',
-    permission='List_Group'
+    renderer='json'
 )
 def get_entity_groups(request):
     """returns all the groups of a given Entity
     """
+
+    logger.debug('***get_entity_groups method starts ***')
+
     entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
 
-    update_group_permission = PermissionChecker(request)('Update_Department')
+    update_group_permission = PermissionChecker(request)('Update_Group')
+    delete_group_permission = PermissionChecker(request)('Delete_Group')
 
     return [
         {
             'id': group.id,
             'name': group.name,
             'thumbnail_full_path':
-                group.thumbnail.full_path if group.thumbnail else None,
+            group.thumbnail.full_path if group.thumbnail else None,
             'created_by_id': group.created_by.id,
             'created_by_name': group.created_by.name,
             'description': len(group.users),
-            'item_view_link':'/groups/%s/view'%group.id,
-            'item_update_link':
-                '/groups/%s/update/dialog' % group.id
-                if update_group_permission else None,
+            'item_view_link': '/groups/%s/view' % group.id,
+            'item_update_link': '/groups/%s/update/dialog' % group.id
+            if update_group_permission else None,
             'item_remove_link':
-                '/entities/%s/%s/remove/dialog?came_from=%s' % (
-                    group.id,
-                    entity.id,
-                    request.current_route_path()
-                )
-                if update_group_permission else None
+            '/entities/%s/%s/remove/dialog?came_from=%s' % (
+                group.id,
+                entity.id,
+                request.current_route_path()
+            ) if delete_group_permission else None
         }
         for group in sorted(entity.groups, key=lambda x: x.name.lower())
     ]

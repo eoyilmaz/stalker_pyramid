@@ -1,70 +1,84 @@
-{# Stalker Pyramid a Web Base Production Asset Management System
- Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
+<div class="widget-box {{ collapsed }}">
+    <div class="widget-header widget-header-small header-color-{{ list_item_type.lower() }}">
+        <h5 id="items_header" class="smaller"></h5>
 
- This file is part of Stalker Pyramid.
+        <div class="widget-toolbar">
+{#            {% if has_permission('Create_'+list_item_type) and  add_button_address %}#}
+                {% if add_button_address %}
+                &nbsp
+                <a data-target="#dialog_template"
+                   data-toggle="modal"
+                   data-keyboard=false
+                   href="{{ add_button_address }}"
+                   class="white">
+                    <i class="icon-plus"></i>
+                    {% if add_button_title %}
+                        {{ add_button_title }}
+                    {% else %}
+                        New
+                    {% endif %}
+                </a>
+                &nbsp&nbsp
 
- This library is free software; you can redistribute it and/or
- modify it under the terms of the GNU Lesser General Public
- License as published by the Free Software Foundation;
- version 2.1 of the License.
+            {% endif %}
+            <a href="#" data-action="collapse">
+                <i class="icon-chevron-down"></i>
+            </a>
+        </div>
 
- This library is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- Lesser General Public License for more details.
-
- You should have received a copy of the GNU Lesser General Public
- License along with this library; if not, write to the Free Software
- Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
-#}
-
-
-{% extends "base.jinja2" %}
-
-{# BREADCRUMBS #}
-{% block breadcrumbs %}
-    {% include 'breadcrumb/breadcrumbs.jinja2' %}
-{% endblock breadcrumbs %}
-
-{#SIDEBAR#}
-{% block sidebar %}
-    {% include 'sidebar.jinja2' %}
-{% endblock sidebar %}
-
-{#PAGE-CONTENT#}
-{% block page_content %}
-
-    {% set page_title='Resource Rates' %}
-    {% include 'page_header.jinja2' %}
-
-    <div class="row-fluid">
-        <table id="grid-table"></table>
-        <div id="grid-pager"></div>
-        <script type="text/javascript">
-            var $path_base = "/";//this will be used in gritter alerts containing images
-        </script>
     </div>
-{% endblock page_content %}
+    <div class="widget-body">
+        <div class="widget-main no-padding">
+            <div id="loading_spinner" class="well well-sm">
 
-{% block extrascripts %}
-    <script type="text/javascript">
+                <div class="inline middle blue bigger-110">
+                    <i class="icon-spinner icon-spin orange bigger-125"></i>
+                    Loading
+                    content...
+                </div>
+            </div>
+
+            <div class="row-fluid">
+                <table id="grid-table"></table>
+                <div id="grid-pager"></div>
+                <script type="text/javascript">
+                    var $path_base = "/";//this will be used in gritter alerts containing images
+                </script>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<script type="text/javascript">
             if("ontouchend" in document) document.write("<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.mobile.custom.min.js") }}'>"+"<"+"/script>");
         </script>
-    <script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/i18n/grid.locale-en.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/jquery.jqGrid.min.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/accounting.min.js") }}'></script>
-    <script type="text/javascript">
-        $(document).ready(function () {
+<script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/i18n/grid.locale-en.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/jquery.jqGrid.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/accounting.min.js") }}'></script>
 
-            $.getJSON('/users/').then(function (entry_data) {
+<script type="text/javascript">
+    $(function () {
+
+        var icon_name = get_icon('{{ list_item_type.lower() }}');
+        $('#items_header').append('<i class="' + icon_name + ' bigger-125"></i> {{ list_item_type }}s');
+
+        {% if collapsed %}
+            $('#items_header').append('<small class="white">List of {{ list_item_type }}s</small>');
+        {% endif %}
+
+        var loadTableData = function (address, tableId, cNames, cModel) {
+{#            console.log('loadTableData' + address);#}
+            // fill items table with dynamic data
+            $.getJSON(address).then(function (entry_data) {
+
+                    $('#loading_spinner').hide();
 
                     var grid_data = entry_data;
 
-                    for(var j=0; j<grid_data.length; j++ ){
-
-                    }
                     jQuery(function($) {
-                        var grid_selector = "#grid-table";
+                        var grid_selector = "#"+tableId;
                         var pager_selector = "#grid-pager";
 
                         jQuery(grid_selector).jqGrid({
@@ -73,25 +87,11 @@
                             datatype: "local",
                             height: 'auto',
                             width: 'auto',
-                            colNames:['', 'ID','Name', 'Rate', 'Task Count'],
-                            colModel:[
-                                {name:'myac',index:'', width:70, fixed:true, sortable:false, resize:false,
-                                    formatter:'actions',
-                                    formatoptions:{
-                                        keys:false,
-                                        delbutton:false
-{#                                        delOptions:{recreateForm: true, beforeShowForm:beforeDeleteCallback}#}
-{#                                        //editformbutton:true, editOptions:{recreateForm: true, beforeShowForm:beforeEditCallback}#}
-                                    }
-                                },
-                                {name:'id',index:'id', width:90, sortable:true, editable: false},
-                                {name:'name',index:'name', width:200, sortable:true, editable: false, formatter:resourceLabelFormatter},
-                                {name:'rate',index:'rate',  width:100, editable: true, editoptions:{size:"20", maxlength:"30"}},
-                                {name:'tasksCount',index:'tasksCount',  width:100, editable: false}
-                            ],
+                            colNames:cNames,
+                            colModel:cModel,
                             viewrecords : true,
-                            rowNum:20,
-                            rowList:[20, 50, 100],
+                            rowNum:10,
+                            rowList:[10, 25, 50],
                             pager : pager_selector,
                             altRows: true,
         {#                    toppager: true,#}
@@ -152,9 +152,7 @@
                                 */
                         });
 
-                        function resourceLabelFormatter(cellvalue, options, rowObject){
-                            return '<a href="/users/'+rowObject.id+'/view">'+cellvalue+'</a>';
-                        }
+
 
                         function style_edit_form(form) {
 
@@ -262,13 +260,17 @@
                             $('.navtable .ui-pg-button').tooltip({container:'body'});
                             $(table).find('.ui-pg-div').tooltip({container:'body'});
                         }
-
                         //var selr = jQuery(grid_selector).jqGrid('getGridParam','selrow');
 
                 });
             });
-        });
-    </script>
-{% endblock extrascripts %}
+        };
 
-
+        loadTableData(
+            tableDataAddress,
+            "grid-table",
+            colNames,
+            colModel
+        );
+    });
+</script>

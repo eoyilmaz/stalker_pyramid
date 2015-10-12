@@ -59,7 +59,7 @@
 
 <script type="text/javascript">
      $(function () {
-          {% if has_permission('Update_Task') %}
+          {% if has_permission('Update_Task') and (entity.project in logged_in_user.projects) %}
                 var inline_update_url = '/tasks/{{ entity.id }}/update/inline';
                 $('#shot_view_cut_in').editable({
                     type: 'spinner',

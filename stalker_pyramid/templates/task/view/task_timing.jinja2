@@ -40,7 +40,7 @@
                     <div id='schedule_timing_bar' class="bar bar-rts" style="width: 0;"></div>
             </div>
         </div><!--/widget-main-->
-        {% if (entity.schedule_seconds - entity.total_logged_seconds)==0  and entity.status.code=='WIP' and (logged_in_user in entity.resources or has_permission('Create_Review')) %}
+        {% if (entity.schedule_seconds - entity.total_logged_seconds)==0  and entity.status.code=='WIP' and (logged_in_user in entity.resources or has_permission('Create_Review') and (entity.project in logged_in_user.projects)) %}
             <div class="widget-toolbox clearfix">
                 <button id='task_review_button'
                         class="btn btn-small btn-danger span12"

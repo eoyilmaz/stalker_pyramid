@@ -19,7 +19,9 @@
 
 {#SIDEBAR#}
 {% block sidebar %}
-    {% include 'sidebar.jinja2' %}
+
+     {% include 'sidebar.jinja2' %}
+
 {% endblock sidebar %}
 
 {# BREADCRUMBS #}
@@ -39,7 +41,7 @@
 {#                <span class="invoice-info-label">Status:</span>#}
                 <span class="label label-large label-status_{{ entity.status.code.lower() }}"> {{ entity.status.name }}
                 </span>
-                    {% if has_permission('Create_Review') and entity.is_leaf%}
+                    {% if has_permission('Create_Review') and (entity.project in logged_in_user.projects) and entity.is_leaf%}
                         {% if (entity.schedule_model !='duration') %}
                             {% if (entity.status.code not in ['CMPL', 'DREV', 'WFD', 'RTS']) %}
                                 <div class="inline position-relative">
@@ -151,7 +153,7 @@
                         <div class="row-fluid">
                             <div class="row-fluid">
                                 <div class="span2">
-                                    {% if has_permission('Update_' + entity.entity_type)  %}
+                                    {% if has_permission('Update_' + entity.entity_type) and (entity.project in logged_in_user.projects)  %}
                                         {% include 'components/avatar.jinja2' %}
                                     {% else %}
                                         <div class="profile-picture"
@@ -234,7 +236,6 @@
                                         {% include 'task/view/task_timing.jinja2' %}
                                     {% elif entity.entity_type == 'Shot'%}
                                         {% include 'shot/view/shot_cut_timing.jinja2' %}
-
                                     {% endif %}
                                 </div>
                             </div>
@@ -543,7 +544,7 @@
         var icon_name = get_icon('{{ entity.entity_type.lower()}}');
         $('#task_header').append('<i class="' + icon_name + ' bigger-125"></i>{{ entity.name }}');
 
-        {% if has_permission('Update_Task') %}
+        {% if has_permission('Update_Task') and entity.project in logged_in_user.projects %}
             var inline_update_url = '/tasks/{{ entity.id }}/update/inline';
 
             //editables
@@ -551,7 +552,6 @@
                 type: 'text',
                 name: 'name',
                 success: function (response, newValue) {
-{#                    console.log('newValue ' + newValue);#}
 
                     var params = $.param({
                         attr_name: 'name',

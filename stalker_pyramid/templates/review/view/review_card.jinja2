@@ -3,7 +3,7 @@
     <div class="widget-header widget-header-small header-color-resource">
         <h4 id="responsible_items_header" class="smaller"></h4>
         <div class="widget-toolbar action-buttons">
-            {% if has_permission('Update_Task') and entity.status.code != 'PREV' %}
+            {% if has_permission('Update_Task') and entity.status.code != 'PREV' and (entity.project in logged_in_user.projects) %}
                 <a data-target="#dialog_template"
                    data-toggle="modal"
                    data-keyboard=false
@@ -23,7 +23,7 @@
             <div class="hr hr8 hr-double"></div>
             <div class="row-fluid">
             <div id="responsible_header_toolbar" class="span9"></div>
-            {% if has_permission('Create_Review') and  entity.status.code == 'PREV' %}
+            {% if has_permission('Create_Review') and  entity.status.code == 'PREV' and (entity.project in logged_in_user.projects) %}
                 <div class="span3">
                     <div id="force_review_button" class="no-padding pull-right">
                         <button class="btn btn-small btn-info btn-block dropdown-toggle"
@@ -139,7 +139,7 @@
                     data[i].request_review = true;
                 {% endif %}
                 data[i].delete_action = false;
-                {% if has_permission('Create_Review') and  entity.status.code != 'PREV' %}
+                {% if has_permission('Create_Review') and  entity.status.code != 'PREV' and entity.project in logged_in_user.projects  %}
                     data[i].delete_action = '/tasks/'+data[i].task_id+'/remove/responsible/'+data[i].reviewer_id+'/dialog?came_from={{ request.current_route_path() }}'
                 {% endif %}
 

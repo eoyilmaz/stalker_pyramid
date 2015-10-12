@@ -180,27 +180,33 @@ def get_entity_versions(request):
         elif user_os == 'osx':
             path_converter = repo.to_osx_path
 
-    return [{
-        'id': version.id,
-        'task': {'id': version.task.id,
-                 'name': version.task.name},
-        'take_name': version.take_name,
-        'parent': {
-            'id': version.parent.id,
-            'version_number': version.parent.version_number,
-            'take_name': version.parent.take_name
-            } if version.parent else None,
-        'absolute_full_path': path_converter(version.absolute_full_path),
-        'created_by': {
-            'id': version.created_by.id if version.created_by else None,
-            'name': version.created_by.name if version.created_by else None
-        },
-        'is_published': version.is_published,
-        'version_number': version.version_number,
-        'date_created': milliseconds_since_epoch(version.date_updated),
-        'created_with': version.created_with,
-        'description': version.description
-    } for version in entity.versions]
+    return_data = [
+        {
+            'id': version.id,
+            'task': {'id': version.task.id,
+                     'name': version.task.name},
+            'take_name': version.take_name,
+            'parent': {
+                'id': version.parent.id,
+                'version_number': version.parent.version_number,
+                'take_name': version.parent.take_name
+                } if version.parent else None,
+            'absolute_full_path': path_converter(version.absolute_full_path),
+            'created_by': {
+                'id': version.created_by.id if version.created_by else None,
+                'name': version.created_by.name if version.created_by else None
+            },
+            'is_published': version.is_published,
+            'version_number': version.version_number,
+            'date_created': milliseconds_since_epoch(version.date_updated),
+            'created_with': version.created_with,
+            'description': version.description,
+            'task_full_path': version.task.name
+        }
+        for version in entity.versions
+    ]
+
+    return return_data
 
 
 @view_config(
@@ -260,10 +266,11 @@ def get_user_versions(request):
             'version_number': r[4],
             'created_with': r[5],
             'description': r[6],
-            'task_id': r[7],
             'task_name': r[8],
             'task_path': r[9],
             'task_full_path': r[10],
+            'task': {'id': r[7],
+                     'name': r[10]},
             'absolute_full_path':'',
             'created_by': {
                 'id': user.id,

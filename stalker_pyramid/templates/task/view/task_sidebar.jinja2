@@ -3,7 +3,7 @@
 
 <div class="sidebar-shortcuts" id="sidebar-shortcuts">
     <div class="sidebar-shortcuts-large" id="sidebar-shortcuts-large">
-        {% if has_permission('Update_Task') %}
+        {% if has_permission('Update_Task') and entity.project in logged_in_user.projects %}
             <button data-target="#dialog_template"
                     data-toggle="modal"
                     data-keyboard="false"
@@ -44,7 +44,7 @@
             </button>
         {% endif %}
 
-        {% if  (logged_in_user in task.responsible or has_permission('Create_Review')) and task.status.code == 'CMPL'%}
+        {% if  (logged_in_user in task.responsible or has_permission('Create_Review')) and task.status.code == 'CMPL' and (entity.project in logged_in_user.projects)%}
             <button id='task_review_button'
                     class="btn btn-small btn-purple tooltip-success"
                     data-rel="tooltip"
@@ -65,7 +65,7 @@
                 <i class="icon-comments"></i>
             </button>
         {% endif %}
-        {% if has_permission('Delete_Task') %}
+        {% if has_permission('Delete_Task') and (entity.project in logged_in_user.projects)%}
             <button class="btn btn-small btn-danger tooltip-success"
                     id="delete_task_button"
                     data-rel="tooltip"

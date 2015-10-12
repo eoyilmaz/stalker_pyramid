@@ -340,8 +340,8 @@ def get_client_users(request):
                 'login': user.login,
                 'email': user.email,
                 'role': client_user.role.name,
-                'update_user_action':'/users/%s/update/dialog' % user.id if has_update_user_permission else None,
-                'delete_user_action':delete_user_action % {
+                'update_user_action': '/users/%s/update/dialog' % user.id if has_update_user_permission else None,
+                'delete_user_action': delete_user_action % {
                     'id': user.id, 'entity_id': client_id
                 } if has_delete_user_permission else None
             }

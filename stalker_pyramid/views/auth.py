@@ -645,6 +645,10 @@ def get_users_simple(request):
     ) as tickets on tickets.owner_id = "Users".id
     left outer join "Links" on "SimpleEntities".thumbnail_id = "Links".id
     """
+    has_permission = PermissionChecker(request)
+    has_update_user_permission = has_permission('Update_User')
+    has_delete_user_permission = has_permission('Delete_User')
+    has_read_rate_permission = has_permission('Read_Budget')
 
     result = DBSession.connection().execute(sql_query)
     data = [
@@ -669,8 +673,10 @@ def get_users_simple(request):
             'ticketsCount': r[9] or 0,
             'thumbnail_full_path': r[10] if r[10] else None,
             'rate': r[11] if r[11] else None,
-            'update_user_action': '/users/%s/update/dialog' % r[0],
-            'delete_user_action': '/users/%s/delete/dialog' % r[0],
+            'update_user_action':'/users/%s/update/dialog' % r[0]
+            if has_update_user_permission else None,
+            'delete_user_action':'/users/%(id)s/delete/dialog' % r[0]
+            if has_delete_user_permission else None
         } for r in result.fetchall()
     ]
 

@@ -67,7 +67,6 @@
             get_icon('review'),
             '/users/{{ user.id }}/reviews/count/'
         );
-
         menu_of(
             'Reports',
             "{%- if request.current_route_path() == request.route_path('view_user_reports', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
@@ -105,7 +104,6 @@
             get_icon('user'),
             '0'
         );
-
         menu_of('Versions',
             "{%- if request.current_route_path() == request.route_path('list_user_versions', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
             '{{ request.route_url('list_user_versions', id=user.id) }}',

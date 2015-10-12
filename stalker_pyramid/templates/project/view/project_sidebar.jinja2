@@ -71,6 +71,14 @@
         );
 
         menu_of(
+            'Roles',
+            "{%- if request.current_route_path() == request.route_path('list_entity_users_role', id=project.id) -%}'active',{%- else -%},{%- endif -%}",
+            '{{ request.route_url('list_entity_users_role', id=project.id) }}',
+            get_icon('user'),
+            '/entities/{{ project.id }}/users/count/'
+        );
+
+        menu_of(
             'References',
             "{%- if request.current_route_path() == request.route_path('list_entity_references', id=project.id) -%}'active',{%- else -%},{%- endif -%}",
             '{{ request.route_url('list_entity_references', id=project.id) }}',

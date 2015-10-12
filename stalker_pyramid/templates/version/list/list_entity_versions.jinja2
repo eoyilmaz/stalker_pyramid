@@ -82,6 +82,7 @@
 
             <tr>
                 <th>Updated Date</th>
+                <th>Task Name</th>
                 <th>Take | #</th>
                 <th>Is Published</th>
                 <th>Created By</th>
@@ -102,6 +103,10 @@
 
         <tr {{=it.is_published? 'class="green"' : '' }}>
             <td style="width:70px;">{{= it.date_created}} </td>
+            <td><a href="/tasks/{{= it.task.id }}/view">
+                    {{=it.task.name }}
+                </a>
+            </td>
             <td><a href="/versions/{{= it.id }}/view" {{=it.is_published? 'class="green"' : '' }}>
                     {{= it.take_name }} | {{= it.version_number }}
                 </a>
@@ -135,7 +140,7 @@
     {% endraw %}
 
     <script>
-        var tableParameters = {"aoColumns": [null,  null, null, null, null,null,null]};
+        var tableParameters = {"aoColumns": [null,null,  null, null, null, null,null,null]};
         var sortingParameters = [[0, 'desc']];
         var tableDataAddress = '{{ request.route_path('get_entity_versions', id=entity.id) }}';
         {% if entity.entity_type == 'User' %}

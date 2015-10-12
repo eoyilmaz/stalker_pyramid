@@ -103,7 +103,7 @@ def generate_recursive_task_query(ordered=True):
         recursive_task.parent_id,
         recursive_task.path || '|' || recursive_task.id as path,
         recursive_task.path_names,
-        "SimpleEntities".name || ' (' || recursive_task.id || ') (' || recursive_task.path_names || ')' as full_path,
+        "SimpleEntities".name || ' (' || recursive_task.path_names || ')' as full_path,
         "SimpleEntities".entity_type,
         recursive_task.responsible_id,
         task_watchers.watcher_id
@@ -283,6 +283,32 @@ def update_task_statuses_with_dependencies(task):
         # and decide if it is ready to start or not
         if all([dep.status == status_cmpl for dep in task.depends]):
             task.status = status_rts
+
+
+@view_config(
+    route_name='fix_tasks_statuses'
+)
+def fix_tasks_statuses(request):
+    """ request revision for selected tasks
+    """
+
+    selected_task_list = get_multi_integer(request, 'task_ids[]')
+    tasks = Task.query.filter(Task.id.in_(selected_task_list)).all()
+
+    if not tasks:
+        transaction.abort()
+        return Response('Can not find any Task', 500)
+
+    for task in tasks:
+        task.update_status_with_dependent_statuses()
+        task.update_status_with_children_statuses()
+        task.update_schedule_info()
+        fix_task_computed_time(task)
+
+    request.session.flash('success: Task status is fixed!')
+    invalidate_all_caches()
+
+    return HTTPOk()
 
 
 @view_config(
@@ -3935,7 +3961,7 @@ def request_revision(request):
                 schedule_unit
             )
 
-            add_note_to_dependent_of_tasks(task,description,logged_in_user,utc_now)
+            add_note_to_dependent_of_tasks(task, description, logged_in_user, utc_now)
 
         else:
             return Response("You don't have permission", 500)
@@ -4150,6 +4176,7 @@ def request_revisions(request):
 
     request.session.flash(flash_message)
     return Response(flash_message)
+
 
 def get_schedule_information(req):
 
@@ -5392,6 +5419,7 @@ def get_task_resources(request):
     """
 
     logger.debug('***get_task_resources method starts ***')
+    logged_in_user = get_logged_in_user(request)
 
     task_id = request.matchdict.get('id')
     task = Task.query.get(task_id)
@@ -5400,7 +5428,7 @@ def get_task_resources(request):
         transaction.abort()
         return Response('Can not find a Task with id: %s' % task_id, 500)
 
-    logger.debug(task.resources)
+    update_task_permission = PermissionChecker(request)('Update_Task')
 
     return [
         {
@@ -5410,10 +5438,10 @@ def get_task_resources(request):
             'description': '',
             'item_view_link': '/users/%s/view' % resource.id,
             'item_remove_link': '/tasks/%s/remove/resources/%s/dialog?came_from=%s'
-                               %(task.id,
+                               % (task.id,
                                  resource.id,
                                  request.current_route_path())
-            if PermissionChecker(request)('Update_Task') else None
+            if (update_task_permission and (task.project in logged_in_user.projects)) else None
         }
         for resource in task.resources
     ]

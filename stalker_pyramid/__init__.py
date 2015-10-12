@@ -188,6 +188,8 @@ def main(global_config, **settings):
     config.add_route('get_entity_thumbnail',           'entities/{id}/thumbnail')
 
     config.add_route('list_entity_users',              'entities/{id}/users/list')
+    config.add_route('list_entity_users_role',         'entities/{id}/users/role/list')
+
     config.add_route('list_entity_departments',        'entities/{id}/departments/list')  # html
     config.add_route('list_entity_groups',             'entities/{id}/groups/list')  # html
     config.add_route('list_entity_scenes',             'entities/{id}/scenes/list')  # html
@@ -702,6 +704,7 @@ def main(global_config, **settings):
     config.add_route('delete_task',        'tasks/delete')
     config.add_route('delete_task_dialog', 'tasks/delete/dialog')
 
+    config.add_route('fix_tasks_statuses',      'tasks/fix/statuses/')
     config.add_route('fix_task_statuses',      'tasks/{id}/fix/statuses/')
     config.add_route('fix_task_schedule_info', 'tasks/{id}/fix/schedule_info/')
 

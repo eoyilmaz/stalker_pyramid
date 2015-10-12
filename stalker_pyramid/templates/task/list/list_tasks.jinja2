@@ -160,7 +160,7 @@
         </button>
     
         <ul class="dropdown-menu" role='menu'>
-            {% if project and has_permission('Create_Task') %}
+            {% if project and has_permission('Create_Task') and (entity.project in logged_in_user.projects)%}
                 <li class="dropdown-submenu">
     
                     <a href="#" tabindex="-1">
@@ -232,7 +232,7 @@
                 </li>
             {% endif %}
     
-            {% if has_permission('Update_Task') %}
+            {% if has_permission('Update_Task') and (entity.project in logged_in_user.projects) %}
                 <li>
                     <a id='update_task_menu_item'
                        data-target="#dialog_template"
@@ -246,7 +246,7 @@
                 </li>
             {% endif %}
     
-            {% if has_permission('Create_Task') %}
+            {% if has_permission('Create_Task') and (entity.project in logged_in_user.projects)%}
                 <li>
                     <a id="duplicate_task_hierarchy_menu_item">
                         <i class="icon-copy bigger-120">&nbsp</i>
@@ -255,7 +255,7 @@
                 </li>
             {% endif %}
 
-            {% if has_permission('Update_Task') %}
+            {% if has_permission('Update_Task') and (entity.project in logged_in_user.projects) %}
                 <li>
                     <a id="change_tasks_users_menu_item">
                         <i class="icon-user bigger-120">&nbsp</i>
@@ -263,7 +263,7 @@
                     </a>
                 </li>
             {% endif %}
-            {% if has_permission('Update_Task') %}
+            {% if has_permission('Update_Task') and (entity.project in logged_in_user.projects)%}
                 <li>
                     <a id="change_tasks_priority_menu_item">
                         <i class="icon-bolt bigger-120">&nbsp</i>
@@ -272,7 +272,7 @@
                 </li>
             {% endif %}
     
-            {% if has_permission('Update_Task') %}
+            {% if has_permission('Update_Task') and (entity.project in logged_in_user.projects) %}
                 <li>
                     <a id="add_tasks_dependencies_menu_item">
                         <i class="icon-tasks bigger-120">&nbsp</i>
@@ -281,7 +281,7 @@
                 </li>
             {% endif %}
     
-            {% if has_permission('Delete_Task') %}
+            {% if has_permission('Delete_Task') and (entity.project in logged_in_user.projects) %}
                 <li>
                     <a id="delete_task_menu_item"
                        class="red"
@@ -381,7 +381,7 @@
         </button>
     </div>
     
-    {% if has_permission('Update_Task') %}
+    {% if has_permission('Update_Task') and (entity.project in logged_in_user.projects)%}
         <div id="gantt_schedule_tasks_button" class="btn-group">
             <button class="btn btn-small btn-purple">
                 <span class="icon-wrench bigger-120"></span>
@@ -1093,7 +1093,7 @@ require([
     });
 
     // Schedule
-    {% if has_permission('Update_Task') %}
+    {% if has_permission('Update_Task')  and (entity.project in logged_in_user.projects)%}
         $('#gantt_schedule_tasks_button').on('click', function () {
             // get the schedule info first
             $.getJSON('{{ request.route_url("schedule_info") }}').then(function(data){

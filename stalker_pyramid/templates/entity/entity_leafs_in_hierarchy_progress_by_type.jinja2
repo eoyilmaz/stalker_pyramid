@@ -22,13 +22,17 @@
                 <b>BID:</b>{{=it.bid_seconds}} |
                 <b>ST:</b>{{=it.schedule_seconds}}
                 <b>TLS:</b> {{=it.total_logged_seconds }}
-                <a class="pull-right"
+                {{ if (it.update_task_action){ }}
+                    <a class="pull-right"
                            data-target="#dialog_template"
                            data-toggle="modal"
                            data-keyboard=false
                            href="{{=it.update_task_action}}">
                             <i class="icon-edit bigger-130"></i>
                         </a>
+                {{ } }}
+
+
             </div>
             <div class="progress no-padding" style="margin-top: 0; margin-bottom: 0;">
                 <div class="bar {{=it.bar0_class}}" style="width: {{=it.bar0_percent}}%;"></div>
@@ -75,7 +79,9 @@
                     group_by_type_list[data[i].type].total_logged_seconds += data[i].total_logged_seconds;
                     group_by_type_list[data[i].type]['status_code'] = null;
                 }
-                group_by_type_list[data[i].type]['update_task_action'] = '/tasks/change/properties/dialog?'+group_by_type_list[data[i].type]['ids'];
+                {% if has_permission('Update_Task') and entity.project in logged_in_user.projects %}
+                    group_by_type_list[data[i].type]['update_task_action'] = '/tasks/change/properties/dialog?'+group_by_type_list[data[i].type]['ids'];
+                {% endif %}
             }
 
 

@@ -14,6 +14,7 @@
                                 <option value="change_resources">Change Resource</option>
                                 <option value="force_status">Force Complete</option>
                                 <option value="request_revisions">Request Revision</option>
+                                <option value="fix_task">Fix Task</option>
                         </select>
                     </div>
             </div>
@@ -194,6 +195,12 @@
                         change_resources_control.hide();
                         force_status_control.show();
                         request_revision_control.show();
+                        break;
+                    case 'fix_task':
+                        submit_form_url =  '/tasks/fix/statuses/';
+                        change_resources_control.hide();
+                        force_status_control.hide();
+                        request_revision_control.hide();
                         break;
                 }
 
