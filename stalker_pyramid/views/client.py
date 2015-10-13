@@ -291,6 +291,8 @@ def append_user_to_client(request):
 
     role_name = request.params.get('role_name', None)
     role = query_role(role_name)
+    role.updated_by = logged_in_user
+    role.date_created = utc_now
 
     logger.debug("%s role is created" % role.name)
     logger.debug(client.users)
@@ -299,6 +301,8 @@ def append_user_to_client(request):
     client_user.client = client
     client_user.role = role
     client_user.user = user
+    client_user.date_created = utc_now
+    client_user.created_by = logged_in_user
 
     DBSession.add(client_user)
 
@@ -324,7 +328,6 @@ def get_client_users(request):
     client_id = request.matchdict.get('id')
     client = Client.query.filter(Client.id == client_id).first()
 
-
     has_permission = PermissionChecker(request)
     has_update_user_permission = has_permission('Update_User')
     has_delete_user_permission = has_permission('Delete_User')
@@ -348,117 +351,3 @@ def get_client_users(request):
         )
 
     return return_data
-#
-#
-# @view_config(
-#     route_name='create_budget'
-# )
-# def create_budget(request):
-#     """runs when creating a budget
-#     """
-#
-#     logged_in_user = get_logged_in_user(request)
-#     utc_now = local_to_utc(datetime.datetime.now())
-#
-#     name = request.params.get('name')
-#     description = request.params.get('description')
-#
-#     status_id = request.params.get('status_id', None)
-#     status = Status.query.filter(Status.id == status_id).first()
-#
-#     client_id = request.params.get('client_id', None)
-#     client = Client.query.filter(Client.id == client_id).first()
-#
-#     if not name:
-#         return Response('Please supply a name', 500)
-#
-#     if not description:
-#         return Response('Please supply a description', 500)
-#
-#     # if not status:
-#     #     return Response('There is no status with code: %s' % status_id, 500)
-#
-#     if not client:
-#         return Response('There is no client with id: %s' % client_id, 500)
-#
-#     budget = Budget(
-#         client=client,
-#         name=name,
-#         description=description,
-#         created_by=logged_in_user,
-#         date_created=utc_now,
-#         date_updated=utc_now
-#     )
-#     db.DBSession.add(budget)
-#
-#     return Response('Budget Created successfully')
-#
-#
-# @view_config(
-#     route_name='update_budget_dialog',
-#     renderer='templates/budget/dialog/budget_dialog.jinja2'
-# )
-# def update_budget_dialog(request):
-#     """called when updating dailies
-#     """
-#     came_from = request.params.get('came_from','/')
-#     # logger.debug('came_from %s: '% came_from)
-#
-#     # get logged in user
-#     logged_in_user = get_logged_in_user(request)
-#
-#     budget_id = request.matchdict.get('id', -1)
-#     budget = Budget.query.filter(Budget.id == budget_id).first()
-#
-#
-#     return {
-#         'mode':'Update',
-#         'has_permission': PermissionChecker(request),
-#         'logged_in_user': logged_in_user,
-#         'budget': budget,
-#         'came_from':came_from,
-#         'milliseconds_since_epoch': milliseconds_since_epoch,
-#     }
-#
-#
-# @view_config(
-#     route_name='update_budget'
-# )
-# def update_budget(request):
-#     """runs when updating a budget
-#     """
-#
-#     logged_in_user = get_logged_in_user(request)
-#     utc_now = local_to_utc(datetime.datetime.now())
-#
-#     budget_id = request.matchdict.get('id', -1)
-#     budget = Budget.query.filter(Budget.id == budget_id).first()
-#
-#     if not budget:
-#         transaction.abort()
-#         return Response('No budget with id : %s' % budget_id, 500)
-#
-#     name = request.params.get('name')
-#     description = request.params.get('description')
-#
-#     status_id = request.params.get('status_id')
-#     status = Status.query.filter(Status.id == status_id).first()
-#
-#     if not name:
-#         return Response('Please supply a name', 500)
-#
-#     if not description:
-#         return Response('Please supply a description', 500)
-#
-#     if not status:
-#         return Response('There is no status with code: %s' % status.code, 500)
-#
-#     budget.name = name
-#     budget.description = description
-#     budget.status = status
-#     budget.date_updated = utc_now
-#     budget.updated_by = logged_in_user
-#
-#     request.session.flash('success: Successfully updated budget')
-#     return Response('Successfully updated budget')
-#

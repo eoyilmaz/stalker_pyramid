@@ -103,7 +103,7 @@ def generate_recursive_task_query(ordered=True):
         recursive_task.parent_id,
         recursive_task.path || '|' || recursive_task.id as path,
         recursive_task.path_names,
-        "SimpleEntities".name || ' (' || recursive_task.path_names || ')' as full_path,
+        "SimpleEntities".name || ' (' || recursive_task.path_names || ')(' || recursive_task.id || ')' as full_path,
         "SimpleEntities".entity_type,
         recursive_task.responsible_id,
         task_watchers.watcher_id
@@ -565,10 +565,14 @@ def duplicate_task_hierarchy(request):
     task_id = request.matchdict.get('id')
     task = Task.query.filter_by(id=task_id).first()
 
+    logger.debug('task_id %s ' % task_id)
+
     name = request.params.get('dup_task_name', task.name + ' - Duplicate')
 
-    parent_id = request.params.get('parent_id', '-1')
+    parent_id = request.params.get('parent_id', -1)
     parent = Task.query.filter_by(id=parent_id).first()
+
+
     if not parent:
         parent = task.parent
 

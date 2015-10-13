@@ -16,7 +16,6 @@
                     <input id='dup_task_parent'
                             name='parent_id'
                             class='input-block-level span11'
-                            name='task_parent_id'
                             is_updating=false
                             data-placeholder='Parent'>
                 </div>
@@ -252,7 +251,7 @@ function init_dialog() {
             'responsible_ids': [],
             'resource_ids': []
         };
-
+        console.log('dup_task_parent '+dup_task_parent.val())
         // add parent info
         var parent_id = '';
         var parent_match = dup_task_parent.val().match(/\(([\d]+)\)/);

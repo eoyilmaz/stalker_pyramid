@@ -184,6 +184,7 @@ def main(global_config, **settings):
     config.add_route('get_entity_notes',               'entities/{id}/notes/') #json
     config.add_route('get_entity_task_min_start',      'entities/{id}/task_min_start/') #json
     config.add_route('get_entity_task_max_end',        'entities/{id}/task_max_end/') #json
+    config.add_route('get_entity_users_roles',         'entities/{id}/users/roles/')#json
 
     config.add_route('get_entity_thumbnail',           'entities/{id}/thumbnail')
 

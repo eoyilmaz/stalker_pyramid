@@ -550,8 +550,6 @@ def get_users(request):
 
     sql_query += 'order by "SimpleEntities".name'
 
-
-
     result = DBSession.connection().execute(sql_query)
     data = [
         {
@@ -1223,3 +1221,14 @@ def delete_user(request):
         return Response(c.html(), 500)
 
     return Response('Successfully deleted user: %s' % user_id)
+
+
+
+# @view_config(
+#     route_name='get_entity_users_',
+#     permission='Read_User',
+#     renderer='json'
+# )
+# def get_resources(request):
+#     """returns Users for Resource View
+#     """
