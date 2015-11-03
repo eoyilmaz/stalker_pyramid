@@ -33,7 +33,7 @@ import transaction
 
 import stalker_pyramid
 from stalker import (defaults, User, Department, Group, Project, Studio,
-                     Permission, EntityType)
+                     Permission, EntityType, Entity)
 from stalker.db import DBSession
 from stalker_pyramid.views import (log_param, get_logged_in_user,
                                    PermissionChecker, get_multi_integer,
@@ -489,7 +489,9 @@ def get_users(request):
         tasks.task_count,
         tickets.ticket_count,
         "Links".full_path,
-        "Users".rate
+        "Users".rate,
+        "Role_SimpleEntities".name,
+        "Role_SimpleEntities".id
     from "SimpleEntities"
     join "Users" on "SimpleEntities".id = "Users".id
     left outer join (
@@ -525,27 +527,36 @@ def get_users(request):
     left outer join "Links" on "SimpleEntities".thumbnail_id = "Links".id
     """
 
+    role_query = """left outer join "Roles" on "Entity_Users".rid = "Roles".id
+    left outer join "SimpleEntities" as "Role_SimpleEntities" on "Roles".id = "Role_SimpleEntities".id"""
+
     if entity_type == "Project":
-        sql_query += """join "Project_Users" on "Users".id = "Project_Users".user_id
-        where "Project_Users".project_id = %(id)s
-        """ % {'id': entity_id}
+        sql_query += """join "Project_Users" as "Entity_Users" on "Users".id = "Entity_Users".user_id
+        %(role_query)s
+        where "Entity_Users".project_id = %(id)s
+        """ % {'id': entity_id, 'role_query': role_query}
     elif entity_type == "Department":
-        sql_query += """join "Department_Users" on "Users".id = "Department_Users".uid
-        where "Department_Users".did = %(id)s
-        """ % {'id': entity_id}
+        sql_query += """join "Department_Users" as "Entity_Users" on "Users".id = "Entity_Users".uid
+        %(role_query)s
+        where "Entity_Users".did = %(id)s
+        """ % {'id': entity_id, 'role_query': role_query}
     elif entity_type == "Group":
-        sql_query += """join "Group_Users" on "Users".id = "Group_Users".uid
-        where "Group_Users".gid = %(id)s
-        """ % {'id': entity_id}
+        sql_query += """join "Group_Users" as "Entity_Users" on "Users".id = "Entity_Users".uid
+        %(role_query)s
+        where "Entity_Users".gid = %(id)s
+        """ % {'id': entity_id, 'role_query': role_query}
     elif entity_type == "Task":
         sql_query += """join "Task_Resources" on "Users".id = "Task_Resources".resource_id
         where "Task_Resources".task_id = %(id)s
         """ % {'id': entity_id}
     elif entity_type == "Client":
-        sql_query += """join "Client_Users" on "Users".id = "Client_Users".uid
-        where "Client_Users".cid = %(id)s
-        """ % {'id': entity_id}
+        sql_query += """join "Client_Users" as "Entity_Users" on "Users".id = "Entity_Users".uid
+        %(role_query)s
+        where "Entity_Users".cid = %(id)s
+        """ % {'id': entity_id, 'role_query': role_query}
     elif entity_type == "User":
+        sql_query += 'where "Users".id = %s' % entity_id
+    elif entity_type == "Studio":
         sql_query += 'where "Users".id = %s' % entity_id
 
     sql_query += 'order by "SimpleEntities".name'
@@ -577,7 +588,8 @@ def get_users(request):
             if has_update_user_permission else None,
             'delete_user_action':delete_user_action % {
                 'id': r[0], 'entity_id': entity_id
-            } if has_delete_user_permission else None
+            } if has_delete_user_permission else None,
+            "role": r[12] if r[12] else None
         } for r in result.fetchall()
     ]
 
@@ -1223,12 +1235,3 @@ def delete_user(request):
     return Response('Successfully deleted user: %s' % user_id)
 
 
-
-# @view_config(
-#     route_name='get_entity_users_',
-#     permission='Read_User',
-#     renderer='json'
-# )
-# def get_resources(request):
-#     """returns Users for Resource View
-#     """

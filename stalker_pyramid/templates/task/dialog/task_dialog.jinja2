@@ -264,8 +264,6 @@
                 </div>
             </div>
 
-
-
             {# Goods #}
             <div class='control-group'>
                 <label class='span3 control-label' for='task_good'>Good</label>
@@ -569,7 +567,8 @@ resource_name, status
             },
             resultFilter: function(value){
                 // filter the results coming from the typeahead
-                value = value.match(/[\w\s\d&!?\+\-]+\([0-9]+\)/);
+{#                value = value.match(/[\w\s\d&!?\+\-]+\([0-9]+\)/);#}
+                value = value.match(/[\w\s\d&!?\+\-]+/);
                 return value;
             },
             values: depends_to,

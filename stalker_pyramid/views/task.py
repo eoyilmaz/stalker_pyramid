@@ -231,7 +231,7 @@ def get_description_html(description_temp,
     return description_html
 
 
-def check_task_status_by_schedule_model():
+def check_all_tasks_status_by_schedule_model():
     """after scheduling project checks the task statuses
     """
 
@@ -250,6 +250,31 @@ def check_task_status_by_schedule_model():
                     task.status = status_wip
                 else:
                     continue
+
+
+def check_task_status_by_schedule_model(task):
+    """after scheduling project checks the task statuses
+    """
+
+    logger.debug('check_task_status_by_schedule_model starts')
+
+    utc_now = local_to_utc(datetime.datetime.now())
+
+    status_cmpl = Status.query.filter(Status.code == 'CMPL').first()
+    status_wip = Status.query.filter(Status.code == 'WIP').first()
+
+    if task.is_leaf and task.schedule_model == 'duration':
+        depends_tasks_cmpl = True
+        for dependent_task in task.depends:
+            if dependent_task.status is not status_cmpl:
+                depends_tasks_cmpl = False
+
+        if depends_tasks_cmpl:
+            if task.computed_end < utc_now:
+                task.status = status_cmpl
+            elif task.computed_start < utc_now and task.computed_end > utc_now:
+                task.status = status_wip
+
 
 
 
@@ -304,6 +329,7 @@ def fix_tasks_statuses(request):
         task.update_status_with_children_statuses()
         task.update_schedule_info()
         fix_task_computed_time(task)
+        check_task_status_by_schedule_model(task)
 
     request.session.flash('success: Task status is fixed!')
     invalidate_all_caches()
@@ -326,6 +352,7 @@ def fix_task_statuses(request):
         task.update_status_with_children_statuses()
         task.update_schedule_info()
         fix_task_computed_time(task)
+        check_task_status_by_schedule_model(task)
 
     request.session.flash('success: Task status is fixed!')
 
