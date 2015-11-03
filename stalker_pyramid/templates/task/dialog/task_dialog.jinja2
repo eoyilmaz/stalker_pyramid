@@ -568,8 +568,9 @@ resource_name, status
             resultFilter: function(value){
                 // filter the results coming from the typeahead
 {#                value = value.match(/[\w\s\d&!?\+\-]+\([0-9]+\)/);#}
+                var val_id = value.match(/\(([0-9]+)\)/)[1];
                 value = value.match(/[\w\s\d&!?\+\-]+/);
-                return value;
+                return value+"("+val_id+")";
             },
             values: depends_to,
             disabled: disable_dependency_field
