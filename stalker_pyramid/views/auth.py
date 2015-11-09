@@ -368,7 +368,7 @@ def get_users_count(request):
     logger.debug('entity_id  : %s' % entity_id)
     logger.debug('entity_type: %s' % entity_type)
 
-    if entity_id and entity_type not in ['Project', 'Department', 'Group', 'Task', 'User']:
+    if entity_id and entity_type not in ['Project', 'Department', 'Group', 'Task', 'User', 'Studio']:
         # there is no entity_type for that entity
         return []
 
@@ -473,7 +473,7 @@ def get_users(request):
     logger.debug('entity_id  : %s' % entity_id)
     logger.debug('entity_type: %s' % entity_type)
 
-    if entity_id and entity_type not in ['Project', 'Department', 'Group', 'Task', 'User', 'Client']:
+    if entity_id and entity_type not in ['Project', 'Department', 'Group', 'Task', 'User', 'Client', 'Studio']:
         # there is no entity_type for that entity
         return []
 
@@ -489,9 +489,9 @@ def get_users(request):
         tasks.task_count,
         tickets.ticket_count,
         "Links".full_path,
-        "Users".rate,
-        "Role_SimpleEntities".name,
-        "Role_SimpleEntities".id
+        "Users".rate
+        %(role_attr)s
+
     from "SimpleEntities"
     join "Users" on "SimpleEntities".id = "Users".id
     left outer join (
@@ -527,6 +527,10 @@ def get_users(request):
     left outer join "Links" on "SimpleEntities".thumbnail_id = "Links".id
     """
 
+    role_attr = """,
+        "Role_SimpleEntities".name,
+        "Role_SimpleEntities".id"""
+
     role_query = """left outer join "Roles" on "Entity_Users".rid = "Roles".id
     left outer join "SimpleEntities" as "Role_SimpleEntities" on "Roles".id = "Role_SimpleEntities".id"""
 
@@ -535,29 +539,35 @@ def get_users(request):
         %(role_query)s
         where "Entity_Users".project_id = %(id)s
         """ % {'id': entity_id, 'role_query': role_query}
+        sql_query = sql_query % {'role_attr': role_attr}
     elif entity_type == "Department":
         sql_query += """join "Department_Users" as "Entity_Users" on "Users".id = "Entity_Users".uid
         %(role_query)s
         where "Entity_Users".did = %(id)s
         """ % {'id': entity_id, 'role_query': role_query}
+        sql_query = sql_query % {'role_attr': role_attr}
     elif entity_type == "Group":
         sql_query += """join "Group_Users" as "Entity_Users" on "Users".id = "Entity_Users".uid
-        %(role_query)s
+
         where "Entity_Users".gid = %(id)s
-        """ % {'id': entity_id, 'role_query': role_query}
+        """ % {'id': entity_id}
+        sql_query = sql_query % {'role_attr': ""}
     elif entity_type == "Task":
         sql_query += """join "Task_Resources" on "Users".id = "Task_Resources".resource_id
         where "Task_Resources".task_id = %(id)s
         """ % {'id': entity_id}
+        sql_query = sql_query % {'role_attr': role_attr}
     elif entity_type == "Client":
         sql_query += """join "Client_Users" as "Entity_Users" on "Users".id = "Entity_Users".uid
         %(role_query)s
         where "Entity_Users".cid = %(id)s
         """ % {'id': entity_id, 'role_query': role_query}
+        sql_query = sql_query % {'role_attr': role_attr}
     elif entity_type == "User":
         sql_query += 'where "Users".id = %s' % entity_id
+        sql_query = sql_query % {'role_attr': ""}
     elif entity_type == "Studio":
-        sql_query += 'where "Users".id = %s' % entity_id
+        sql_query = sql_query % {'role_attr': ""}
 
     sql_query += 'order by "SimpleEntities".name'
 
@@ -589,11 +599,13 @@ def get_users(request):
             'delete_user_action':delete_user_action % {
                 'id': r[0], 'entity_id': entity_id
             } if has_delete_user_permission else None,
-            "role": r[12] if r[12] else None
+            "role": r[12] if len(r) >= 13 else None
         } for r in result.fetchall()
     ]
 
     end = time.time()
+
+
     logger.debug('get_users took : %s seconds for %s rows' %
                  ((end - start), len(data)))
     return data

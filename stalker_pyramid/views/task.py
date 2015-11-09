@@ -270,10 +270,11 @@ def check_task_status_by_schedule_model(task):
                 depends_tasks_cmpl = False
 
         if depends_tasks_cmpl:
-            if task.computed_end < utc_now:
-                task.status = status_cmpl
-            elif task.computed_start < utc_now and task.computed_end > utc_now:
-                task.status = status_wip
+            task.status = status_cmpl
+            # if task.computed_end < utc_now:
+            #     task.status = status_cmpl
+            # elif task.computed_start < utc_now and task.computed_end > utc_now:
+            #     task.status = status_wip
 
 
 

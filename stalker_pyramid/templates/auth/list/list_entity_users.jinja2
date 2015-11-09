@@ -117,12 +117,13 @@
         var tableParameters = {"aoColumns": [null, null, null, {'sType': 'num-html'},{'sType': 'num-html'},null, null]};
         var sortingParameters = [[0, 'asc']];
         var tableDataAddress;
-        {% if entity.entity_type == 'Studio' %}
-            tableDataAddress = '{{ request.route_path('get_users') }}';
-        {% else %}
-            tableDataAddress = '{{ request.route_path('get_entity_users', id=entity.id) }}';
-        {% endif %}
-
+{#        {% if entity.entity_type == 'Studio' %}#}
+{#            tableDataAddress = '{{ request.route_path('get_users') }}';#}
+{#        {% else %}#}
+{#            tableDataAddress = '{{ request.route_path('get_entity_users', id=entity.id) }}';#}
+{#        {% endif %}#}
+        tableDataAddress = '{{ request.route_path('get_entity_users', id=entity.id) }}';
+        console.log('tableDataAddress : '+tableDataAddress );
     </script>
 
 {% endblock extrascripts %}

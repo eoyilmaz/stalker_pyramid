@@ -31,7 +31,8 @@ import transaction
 from stalker_pyramid.views import (get_time, get_logged_in_user, local_to_utc,
                                    StdErrToHTMLConverter,
                                    invalidate_all_caches)
-from stalker_pyramid.views.task import check_task_status_by_schedule_model
+from stalker_pyramid.views.task import check_task_status_by_schedule_model, \
+    check_all_tasks_status_by_schedule_model
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
