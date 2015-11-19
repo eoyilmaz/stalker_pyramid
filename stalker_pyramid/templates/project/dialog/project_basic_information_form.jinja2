@@ -89,15 +89,15 @@
 
             {# FPS #}
             <div class='control-group'>
-                <label for='fps' class='span2 control-label'>FPS</label>
+                <label for='project_fps' class='span2 control-label'>FPS</label>
 
                 <div class='span10'>
-                    <input id='fps'
+                    <input id='project_fps'
+                           class='input-block-level'
                            name='fps'
-                           type='text'
-                           placeholder='FPS'
-                            value=25
                            min=1
+                           max=1000
+                           {% if mode=='Update' %} value='{{ project.fps }}'{% endif %}
                            required />
                 </div>
             </div>
@@ -213,16 +213,21 @@
 
         {# FPS Spinner #}
         var fps = 25;
+        console.log('{{ project.fps }}');
         {% if mode == 'Update' %}
             fps = '{{ project.fps }}';
         {% endif %}
-        $('#fps').ace_spinner({
+        $('#project_fps').ace_spinner({
             value:fps,
             min:1,
             max:50,
             step:1,
-            btn_up_class:'btn-info' ,
-            btn_down_class:'btn-info'});
+            btn_up_class:'btn-info',
+            btn_down_class:'btn-info'}).on('change', function(){
+            // check if it is in the range
+            var curr_value = $(this).val();
+            $(this).val(curr_value <= 1 ? 1 : curr_value);
+        });
 
 {#        $('#fps').ace_spinner({#}
 {#            value: fps,#}
