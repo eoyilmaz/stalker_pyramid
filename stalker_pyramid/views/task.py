@@ -4275,14 +4275,15 @@ def request_review_task_dialog(request):
 
     if not version:
         if task.type:
-            # TODO: Add this to the config file
-            forced_publish_types = [
-                'Look Development', 'Character Design', 'Model', 'Rig',
-                'Previs', 'Layout', 'Lighting', 'Environment Design',
-                'Matte Painting', 'Animation Bible',  'Camera', 'Simulation',
-                'Postvis', 'Scene Assembly', 'Schematic', 'Comp', 'FX', 'Sketch',
-                'Color Sketch', 'Groom'
-            ]
+            # TODO: Add this to the config file / omitted
+            # forced_publish_types = [
+            #     'Look Development', 'Character Design', 'Model', 'Rig',
+            #     'Previs', 'Layout', 'Lighting', 'Environment Design',
+            #     'Matte Painting', 'Animation Bible',  'Camera', 'Simulation',
+            #     'Postvis', 'Scene Assembly', 'Schematic', 'Comp', 'FX', 'Sketch',
+            #     'Color Sketch', 'Groom'
+            # ]
+            forced_publish_types = []
             if task.type.name in forced_publish_types:
                 action = ''
         else:
