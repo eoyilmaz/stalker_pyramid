@@ -12,6 +12,7 @@
                         <select id='task_action'
                                 class='input-block-level'>
                                 <option value="change_resources">Change Resource</option>
+                                <option value="change_responsible">Change Responsible</option>
                                 <option value="force_status">Force Complete</option>
                                 <option value="request_revisions">Request Revision</option>
                                 <option value="fix_task">Fix Task</option>
@@ -19,10 +20,10 @@
                     </div>
             </div>
             {# Change Resources Controls #}
-            <div class='control-group' id="change_resources_control">
-                <label class='span3 control-label' for='task_resources'>Resources</label>
+            <div class='control-group' id="change_users_control">
+                <label class='span3 control-label' for='task_users'>Users</label>
                 <div class='span9'>
-                    <select id='task_resources'
+                    <select id='task_users'
                             multiple=''
                             class='input-block-level tag-input-style'
                             name='user_ids'
@@ -113,7 +114,8 @@
                     {'id':'{{ task.id }}',
                      'name':'{{ task.parent.name}}',
                      'status_code':'{{ task.status.code}}',
-                     'resources':'{% for resource in task.resources %}<a href="/users/{{ resource.id}}/view">{{resource.name}}</a><br/>{% endfor %}'
+                     'resources':'{% for resource in task.resources %}<a href="/users/{{ resource.id}}/view">{{resource.name}}</a><br/>{% endfor %}',
+                     'responsible':'{% for resp in task.responsible %}<a href="/users/{{ resp.id}}/view">{{resp.name}}</a><br/>{% endfor %}'
                     },
                 {% endfor %}
             ];
@@ -132,13 +134,14 @@
                         //direction: "rtl",
                         data: grid_data,
                         datatype: "local",
-                        colNames:['Id', 'Name', 'Status', 'Resources'],
+                        colNames:['Id', 'Name', 'Status', 'Resources', 'Responsible'],
                         colModel:[
 
-                            {name:'id', index:'id', width:60, editable: false},
-                            {name:'name', index:'name', width:200, editable: false, formatter:taskLabelFormatter},
-                            {name:'status_code', index:'status_code',width:100, editable: false, formatter:statusLabelFormatter},
-                            {name:'resources', index:'resources',width:220, editable: false}
+                            {name:'id', index:'id', width:50, editable: false},
+                            {name:'name', index:'name', width:180, editable: false, formatter:taskLabelFormatter},
+                            {name:'status_code', index:'status_code',width:70, editable: false, formatter:statusLabelFormatter},
+                            {name:'resources', index:'resources',width:170, editable: false},
+                            {name:'responsible', index:'responsible',width:150, editable: false}
 
                         ],
                         viewrecords : true,
@@ -170,7 +173,7 @@
 
             var task_action = $('#task_action');
             var submit_form_url = '/tasks/change/resources';
-            var change_resources_control =  $('#change_resources_control');
+            var change_users_control =  $('#change_users_control');
             var force_status_control =  $('#force_status_control');
             var request_revision_control =  $('#request_revision_control');
 
@@ -180,25 +183,31 @@
                 switch (action){
                     case 'change_resources':
                         submit_form_url =  '/tasks/change/resources';
-                        change_resources_control.show();
+                        change_users_control.show();
+                        force_status_control.hide();
+                        request_revision_control.hide();
+                        break;
+                    case 'change_responsible':
+                        submit_form_url =  '/tasks/change/responsible';
+                        change_users_control.show();
                         force_status_control.hide();
                         request_revision_control.hide();
                         break;
                     case 'force_status':
                         submit_form_url =  '/tasks/force_status/CMPL';
-                        change_resources_control.hide();
+                        change_users_control.hide();
                         force_status_control.show();
                         request_revision_control.hide();
                         break;
                     case 'request_revisions':
                         submit_form_url =  '/tasks/request_revisions';
-                        change_resources_control.hide();
+                        change_users_control.hide();
                         force_status_control.show();
                         request_revision_control.show();
                         break;
                     case 'fix_task':
                         submit_form_url =  '/tasks/fix/statuses/';
-                        change_resources_control.hide();
+                        change_users_control.hide();
                         force_status_control.hide();
                         request_revision_control.hide();
                         break;
@@ -206,8 +215,8 @@
 
             });
 
-            var task_resources = $('#task_resources');
-            task_resources.chosen({
+            var task_users = $('#task_users');
+            task_users.chosen({
                 search_contains: true,
                 enable_split_word_search: true
             });
@@ -217,13 +226,13 @@
             {% endraw %}
 
             $.getJSON('/projects/{{ tasks[0].project.id }}/users/?simple=1').then(function(data){
-                task_resources.find('option').remove();
+                task_users.find('option').remove();
 
                 var data_count = data.length;
                 for (var i=0; i < data_count; i++){
-                    task_resources.append(user_template(data[i]));
+                    task_users.append(user_template(data[i]));
                 }
-                task_resources.trigger('liszt:updated');
+                task_users.trigger('liszt:updated');
              });
 
 
