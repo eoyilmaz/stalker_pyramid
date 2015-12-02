@@ -74,7 +74,7 @@
     $(document).ready(function () {
         var related_asset_template = doT.template($('#tmpl_related_asset_item').html());
         var related_assets_list = $('#related_assets_list');
-        $.getJSON('/tasks/{{ entity.id }}/related/Asset/').then(function (data) {
+        $.getJSON('/tasks/{{ entity.id }}/related/Asset/depends/').then(function (data) {
              for (var i = 0; i < data.length; i++) {
 
                  if (data[i].thumbnail_full_path == null) {

@@ -1,0 +1,110 @@
+<div class="row-fluid">
+    <div class="widget-box">
+        <div class="widget-header  widget-header-small header-color-resource">
+            <h4 class="smaller">
+                <i class="icon-puzzle-piece"></i>Related Items
+            </h4>
+
+        </div>
+        <div class="widget-body">
+            <div class="space-4"></div>
+            <div class="widget-toolbox clearfix">
+
+                <div class="row-fluid">
+                    <select id='entity_type' class='input-block-level span6'>
+                                <option value="Sequence">Sequence</option>
+                                <option value="Shot">Shot</option>
+                                <option value="Asset">Asset</option>
+                    </select>
+                    <select id='dep_type' class='input-block-level span6'>
+                                <option value="dependent_of">Dependent Of</option>
+                                <option value="depends">Depends</option>
+                    </select>
+                </div>
+
+            </div>
+            <div class="hr hr4 hr-double"></div>
+            <div class="widget-main">
+                <div class="row-fluid" id="related_entities_container">
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div class="space-4"></div>
+{% raw %}
+    <script id="tmpl_related_entity_item" type="text/x-dot-template">
+        <li id="related_entity_{{=it.id}}">
+            <div>
+                <img alt="150x150" src={{=it.thumbnail_full_path }} style="height: 80px; width: auto" />
+                <div class="text">
+                    <div class="inner">
+                        <span>{{=it.name}}</span>
+                        <br />
+                        <a href="/{{=it.plural_class_name}}/{{=it.id}}/view" data-rel="colorbox">
+                            <i class="icon-zoom-in"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </li>
+     </script>
+{% endraw %}
+
+
+<script type="text/javascript">
+    function loadEntityRelatedEntities(e_type, d_type) {
+        var related_entities_container = $('#related_entities_container');
+        related_entities_container.find("#related_entities_list").remove();
+        related_entities_container.append('<ul id="related_entities_list" class="ace-thumbnails"></ul>');
+
+
+        var related_entities_list = $('#related_entities_list');
+        var related_entity_template = doT.template($('#tmpl_related_entity_item').html());
+
+        $.getJSON('/tasks/{{ entity.id }}/related/'+e_type+'/'+d_type+'/').then(function (data) {
+            console.log('loaded '+data.length);
+             for (var i = 0; i < data.length; i++) {
+
+                 if (data[i].thumbnail_full_path == null) {
+                    data[i].thumbnail_full_path = '{{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}';
+                }
+                else {
+                    data[i].thumbnail_full_path = '/' + data[i].thumbnail_full_path;
+                }
+                data[i].e_id = '{{ entity.id }}';
+                {% if has_permission('Update_Task') and entity.project in logged_in_user.projects  %}
+                    data[i].remove_entity_action = '/entities/'+data[i].e_id+'/entities/'+data[i].id+'/remove/dialog';
+                {% endif %}
+
+                var related_entity_li = $('#related_entity_'+data[i].id);
+                if (related_entity_li.length==0){
+                    related_entities_list.append(related_entity_template(data[i]));
+                }
+             }
+        })
+    }
+    $(document).ready(function () {
+        var entity_type = $('#entity_type');
+        var dep_type = $('#dep_type');
+
+        var entity_type_str = entity_type.val();
+        var dep_type_str = dep_type.val();
+        loadEntityRelatedEntities(entity_type_str, dep_type_str);
+
+        entity_type.on('change', function () {
+
+            entity_type_str = $(this).val();
+            loadEntityRelatedEntities(entity_type_str, dep_type_str);
+        });
+
+        dep_type.on('change', function () {
+
+            dep_type_str = $(this).val();
+            loadEntityRelatedEntities(entity_type_str,dep_type_str);
+        });
+    });
+</script>

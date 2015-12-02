@@ -5008,56 +5008,77 @@ def delete_task(request):
     route_name='get_task_related_entities',
     renderer='json'
 )
-def get_task_related_entity(request):
+def get_task_related_entities(request):
     """TODO: Add Docstring please
     """
-
+    logger.debug('get_task_related_entity is running')
     task_id = request.matchdict.get('id')
     task = Task.query.get(task_id)
 
     entity_type = request.matchdict.get('e_type')
-
+    dep_type = request.matchdict.get('d_type')
+    logger.debug('get_task_related_entity is running for %s ' % task.name)
     if not task:
         transaction.abort()
         return Response('Can not find a Task with id: %s' % task_id, 500)
 
-    task_related_assets = []
-    task_related_assets.extend(get_task_related_entities(task, entity_type))
-    return task_related_assets
+    task_related_entities = []
+    task_related_entities.extend(get_task_related_entities_action(task, entity_type, dep_type))
+    return task_related_entities
 
 
-def get_task_related_entities(task, entity_type):
+def get_task_related_entities_action(task, entity_type, dep_type):
     """TODO: Add Docstring please
     """
 
-    task_related_assets = []
+    task_related_entities = []
     if task.children:
         for child in task.children:
-            task_related_assets.extend(
-                get_task_related_entities(child, entity_type)
+            task_related_entities.extend(
+                get_task_related_entities_action(child, entity_type, dep_type)
             )
     else:
-        for dep_task in task.depends:
-            asset = get_task_parent(dep_task, entity_type)
-            if asset:
-                if asset not in task_related_assets:
-                    task_related_assets.append({
-                        'id': asset.id,
-                        'name': asset.name,
-                        'thumbnail_full_path': asset.thumbnail.full_path if asset.thumbnail else None
+        dep_tasks = []
+        if dep_type == 'dependent_of':
+            dep_tasks = task.dependent_of
+        else:
+            dep_tasks = task.depends
+        logger.debug('dep_type %s' % dep_type)
+        for dep_task in dep_tasks:
+            logger.debug('ariyor %s' % dep_task.name)
+            entity = get_task_parent(dep_task, entity_type)
+            logger.debug('buldu %s' % entity)
+            if entity:
+                logger.debug('buldu %s' % entity.name)
+                if entity not in task_related_entities:
+                    task_related_entities.append({
+                        'id': entity.id,
+                        'name': entity.name,
+                        'thumbnail_full_path': entity.thumbnail.full_path if entity.thumbnail else None,
+                        'plural_class_name': entity.plural_class_name.lower()
                     })
 
-    return task_related_assets
+    return task_related_entities
 
 
 def get_task_parent(task, entity_type):
-    if task.parent:
-        if task.parent.entity_type == entity_type:
-            return task.parent
+    logger.debug('get_task_parent starts for  %s' % task.name)
+    parent = task.parent
+    if parent:
+        logger.debug('%s : %s' % (parent.name, parent.entity_type))
+        if parent.entity_type == entity_type:
+            logger.debug('bulduuu %s' % parent)
+            return parent
         else:
-            get_task_parent(task.parent, entity_type)
+            logger.debug('get_task_parent for  %s' % parent.name)
+            return get_task_parent(parent, entity_type)
     else:
-        return task
+        logger.debug('return for  %s' % task.name)
+        if task.entity_type == entity_type:
+            logger.debug('bulduuu %s' % parent)
+            return task
+        else:
+            return
 
 
 @view_config(
