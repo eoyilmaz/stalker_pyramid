@@ -5043,13 +5043,9 @@ def get_task_related_entities_action(task, entity_type, dep_type):
             dep_tasks = task.dependent_of
         else:
             dep_tasks = task.depends
-        logger.debug('dep_type %s' % dep_type)
         for dep_task in dep_tasks:
-            logger.debug('ariyor %s' % dep_task.name)
             entity = get_task_parent(dep_task, entity_type)
-            logger.debug('buldu %s' % entity)
             if entity:
-                logger.debug('buldu %s' % entity.name)
                 if entity not in task_related_entities:
                     task_related_entities.append({
                         'id': entity.id,
@@ -5062,20 +5058,14 @@ def get_task_related_entities_action(task, entity_type, dep_type):
 
 
 def get_task_parent(task, entity_type):
-    logger.debug('get_task_parent starts for  %s' % task.name)
     parent = task.parent
     if parent:
-        logger.debug('%s : %s' % (parent.name, parent.entity_type))
         if parent.entity_type == entity_type:
-            logger.debug('bulduuu %s' % parent)
             return parent
         else:
-            logger.debug('get_task_parent for  %s' % parent.name)
             return get_task_parent(parent, entity_type)
     else:
-        logger.debug('return for  %s' % task.name)
         if task.entity_type == entity_type:
-            logger.debug('bulduuu %s' % parent)
             return task
         else:
             return
