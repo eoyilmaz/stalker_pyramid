@@ -251,11 +251,7 @@ def main(global_config, **settings):
 
     config.add_route('list_task_outputs',           'tasks/{id}/outputs/list')  # html
 
-    config.add_route('get_entities_outputs',          'entities/{id}/outputs/')
-    config.add_route('get_entities_outputs_count',    'entities/{id}/outputs/count/')
 
-    config.add_route('get_tasks_outputs',            'tasks/{id}/outputs/')
-    config.add_route('get_tasks_outputs_count',      'tasks/{id}/outputs/count/')
 
     config.add_route('get_entity_outputs',          'entities/{id}/outputs/')
     config.add_route('get_entity_outputs_count',    'entities/{id}/outputs/count/')
