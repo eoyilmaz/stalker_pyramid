@@ -39,7 +39,8 @@ from stalker.db import DBSession
 from stalker import Entity, Link, defaults, Repository, Version, Daily
 
 from stalker_pyramid.views import (get_logged_in_user, get_tags,
-                                   StdErrToHTMLConverter, local_to_utc)
+                                   StdErrToHTMLConverter, local_to_utc,
+                                   get_multi_integer)
 
 
 logger = logging.getLogger(__name__)
@@ -791,7 +792,11 @@ def get_entity_outputs(request):
 
     entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter(Entity.id == entity_id).first()
+
     logger.debug('asking references for entity: %s' % entity)
+
+    # entity_ids = get_multi_integer(request, 'entity_ids', 'GET')
+    # entities = Entity.query.filter(Entity.id.in_(entity_ids)).all()
 
     offset = request.params.get('offset', 0)
     limit = request.params.get('limit', 1e10)
@@ -829,11 +834,19 @@ def get_entity_outputs(request):
         is_published = """ and "Versions".is_published = 't' """
 
     logger.debug('is_published: %s' % is_published)
-
-    if entity.entity_type == 'Version':
-        where_condition= """where "Versions".id = %(id)s %(search_query)s %(is_published)s""""" % {'id':entity.id, 'search_query':search_query, 'is_published':is_published }
-    elif entity.entity_type == 'Task':
-        where_condition= """where "Task_SimpleEntities".id = %(id)s %(search_query)s %(is_published)s""""" % {'id':entity.id, 'search_query':search_query, 'is_published':is_published }
+    if entity:
+        if entity.entity_type == 'Version':
+            where_condition= """where "Versions".id = %(id)s %(search_query)s %(is_published)s""""" % {'id':entity.id, 'search_query':search_query, 'is_published':is_published }
+        elif entity.entity_type == 'Task':
+            where_condition= """where "Task_SimpleEntities".id = %(id)s %(search_query)s %(is_published)s""""" % {'id':entity.id, 'search_query':search_query, 'is_published':is_published }
+    # if entities:
+    #     tasks_query_buffer = []
+    #     for entity in entities:
+    #         tasks_query_buffer.append(
+    #             """"Task_SimpleEntities".id = %s""" % entity.id
+    #         )
+    #     tasks_query = """ or """.join(tasks_query_buffer)
+    #     where_condition= """where %(tasks_query)s %(search_query)s %(is_published)s""""" % {'tasks_query':tasks_query, 'search_query':search_query, 'is_published':is_published }
 
     logger.debug('where_condition: %s' % where_condition)
 
@@ -928,7 +941,11 @@ def get_entity_outputs_count(request):
     """
     entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter(Entity.id == entity_id).first()
-    logger.debug('asking outputs for entity: %s' % entity)
+
+    # entity_ids = get_multi_integer(request, 'entity_ids', 'GET')
+    # entities = Entity.query.filter(Entity.id.in_(entity_ids)).all()
+
+    # logger.debug('asking outputs for entity: %s' % entity)
 
     search_string = request.params.get('search', '')
     is_published_str = request.params.get('is_published', '')
@@ -964,11 +981,19 @@ def get_entity_outputs_count(request):
     if is_published_str != '':
         is_published = """ and "Versions".is_published = 't' """
 
-
-    if entity.entity_type == 'Version':
-        where_condition= """where "Versions".id = %(id)s %(search_query)s %(is_published)s""""" % {'id':entity.id, 'search_query':search_query, 'is_published':is_published }
-    elif entity.entity_type == 'Task':
-        where_condition= """where "Task_SimpleEntities".id = %(id)s %(search_query)s %(is_published)s""""" % {'id':entity.id, 'search_query':search_query, 'is_published':is_published }
+    if entity:
+        if entity.entity_type == 'Version':
+            where_condition= """where "Versions".id = %(id)s %(search_query)s %(is_published)s""""" % {'id':entity.id, 'search_query':search_query, 'is_published':is_published }
+        elif entity.entity_type == 'Task':
+            where_condition= """where "Task_SimpleEntities".id = %(id)s %(search_query)s %(is_published)s""""" % {'id':entity.id, 'search_query':search_query, 'is_published':is_published }
+    # if entities:
+    #     tasks_query_buffer = []
+    #     for entity in entities:
+    #         tasks_query_buffer.append(
+    #             """"Task_SimpleEntities".id = %s""" % entity.id
+    #         )
+    #     tasks_query = """ or """.join(tasks_query_buffer)
+    #     where_condition= """where %(tasks_query)s %(search_query)s %(is_published)s""""" % {'tasks_query':tasks_query, 'search_query':search_query, 'is_published':is_published }
 
     logger.debug('where_condition: %s' % where_condition)
     # we need to do that import here
@@ -1008,6 +1033,245 @@ left outer join (
 
     return result.fetchone()[0]
 
+
+@view_config(route_name='get_tasks_outputs', renderer='json')
+@view_config(route_name='get_entities_outputs', renderer='json')
+def get_entities_outputs(request):
+    """called when the outputs to Project/Task/Version is
+    requested
+    """
+    # just to make it safe
+    logger.debug("logged_in_user: %s" % get_logged_in_user(request))
+
+    entity_ids = get_multi_integer(request, 'entity_ids', 'GET')
+    entities = Entity.query.filter(Entity.id.in_(entity_ids)).all()
+
+    offset = request.params.get('offset', 0)
+    limit = request.params.get('limit', 1e10)
+
+    search_string = request.params.get('search', '')
+    is_published_str = request.params.get('is_published', '')
+
+    logger.debug('is_published_str: %s' % is_published_str)
+    logger.debug('search_string: %s' % search_string)
+
+    where_condition = ''
+    search_query = ''
+    is_published =''
+
+    if search_string != "":
+        search_string_buffer = ['and (']
+        for i, s in enumerate(search_string.split(' ')):
+            if i != 0:
+                search_string_buffer.append('and')
+            tmp_search_query = """(
+            '%(search_str)s' = any (tags.name)
+            or "Versions".take_name ilike '%(search_wide)s'
+            or "Version_Links".original_filename ilike '%(search_wide)s'
+            )
+            """ % {
+                'search_str': s,
+                'search_wide': '%{s}%'.format(s=s)
+            }
+            search_string_buffer.append(tmp_search_query)
+        search_string_buffer.append(')')
+        search_query = '\n'.join(search_string_buffer)
+    logger.debug('search_query: %s' % search_query)
+
+    if is_published_str != '':
+        is_published = """ and "Versions".is_published = 't' """
+
+    logger.debug('is_published: %s' % is_published)
+    if entities:
+        tasks_query_buffer = []
+        for entity in entities:
+            tasks_query_buffer.append(
+                """"Task_SimpleEntities".id = %s""" % entity.id
+            )
+        tasks_query = """ or """.join(tasks_query_buffer)
+        where_condition= """where %(tasks_query)s %(search_query)s %(is_published)s""""" % {'tasks_query':tasks_query, 'search_query':search_query, 'is_published':is_published }
+
+    logger.debug('where_condition: %s' % where_condition)
+
+    sql_query = """
+    -- select all links assigned to a project tasks or assigned to a task and its children
+select
+    "Version_Links".id,
+    "Version_Links".original_filename,
+
+    "Version_Links".full_path as hires_full_path,
+    "Links_ForWeb".full_path as webres_full_path,
+    "Thumbnails".full_path as thumbnail_full_path,
+
+    tags.name as tags,
+
+    "Versions".id as version_id,
+    "Versions".version_number as version_number,
+    "Versions".take_name as take_name,
+    "Versions".is_published as version_published,
+    "Daily_SimpleEntities".name as daily_name,
+    "Daily_SimpleEntities".id as daily_id,
+    (extract(epoch from "Link_SimpleEntities".date_created::timestamp at time zone 'UTC') * 1000)::bigint as date_created
+
+
+from "Version_Outputs"
+join "Versions" on "Versions".id = "Version_Outputs".version_id
+join "SimpleEntities" as "Task_SimpleEntities" on "Task_SimpleEntities".id = "Versions".task_id
+join "Links" as "Version_Links" on "Version_Links".id = "Version_Outputs".link_id
+join "SimpleEntities" as "Link_SimpleEntities" on "Version_Links".id = "Link_SimpleEntities".id
+join "Links" as "Links_ForWeb" on "Link_SimpleEntities".thumbnail_id = "Links_ForWeb".id
+join "SimpleEntities" as "Links_ForWeb_SimpleEntities" on "Links_ForWeb".id = "Links_ForWeb_SimpleEntities".id
+join "Links" as "Thumbnails" on "Links_ForWeb_SimpleEntities".thumbnail_id = "Thumbnails".id
+left outer join "Daily_Links" on "Daily_Links".link_id = "Version_Outputs".link_id
+left outer join "SimpleEntities" as "Daily_SimpleEntities" on "Daily_SimpleEntities".id = "Daily_Links".daily_id
+
+left outer join (
+    select
+        entity_id,
+        array_agg(name) as name
+    from "Entity_Tags"
+    join "SimpleEntities" on "Entity_Tags".tag_id = "SimpleEntities".id
+    group by "Entity_Tags".entity_id
+) as tags on "Version_Links".id = tags.entity_id
+
+
+%(where_condition)s
+
+order by "Versions".id desc, date_created desc
+offset %(offset)s
+limit %(limit)s
+
+    """ % {
+        'where_condition': where_condition,
+        'offset': offset,
+        'limit': limit
+    }
+
+    logger.debug('sql_query: %s' % sql_query)
+
+    from sqlalchemy import text  # to be able to use "%" sign use this function
+    result = DBSession.connection().execute(text(sql_query))
+
+    return_val = [
+        {
+            'id': r[0],
+            'original_filename': r[1],
+            'hires_full_path': r[2],
+            'webres_full_path': r[3],
+            'thumbnail_full_path': r[4],
+            'tags': r[5],
+            'version_id': r[6],
+            'version_number': r[7],
+            'version_take_name': r[8],
+            'version_published':r[9],
+            'daily_name':r[10],
+            'daily_id':r[11],
+            'date_created':r[12]
+        } for r in result.fetchall()
+    ]
+
+    return return_val
+
+
+@view_config(route_name='get_tasks_outputs_count', renderer='json')
+@view_config(route_name='get_entities_outputs_count', renderer='json')
+def get_entities_outputs_count(request):
+    """called when the count of references to Project/Task/Asset/Shot/Sequence
+    is requested
+    """
+    entity_id = request.matchdict.get('id', -1)
+    entity = Entity.query.filter(Entity.id == entity_id).first()
+
+    # entity_ids = get_multi_integer(request, 'entity_ids', 'GET')
+    # entities = Entity.query.filter(Entity.id.in_(entity_ids)).all()
+
+    # logger.debug('asking outputs for entity: %s' % entity)
+
+    search_string = request.params.get('search', '')
+    is_published_str = request.params.get('is_published', '')
+
+    logger.debug('is_published_str: %s' % is_published_str)
+    logger.debug('search_string: %s' % search_string)
+
+    where_condition = ''
+    search_query = ''
+    is_published =''
+
+    if search_string != "":
+        search_string_buffer = ['and (']
+        for i, s in enumerate(search_string.split(' ')):
+            if i != 0:
+                search_string_buffer.append('and')
+            tmp_search_query = """
+            (
+            '%(search_str)s' = any (tags.name)
+            or "Versions".take_name ilike '%(search_wide)s'
+            or "Version_Links".original_filename ilike '%(search_wide)s'
+            )
+            """ % {
+                'search_str': s,
+                'search_wide': '%{s}%'.format(s=s)
+            }
+            search_string_buffer.append(tmp_search_query)
+        search_string_buffer.append(')')
+        search_query = '\n'.join(search_string_buffer)
+    logger.debug('search_query: %s' % search_query)
+
+
+    if is_published_str != '':
+        is_published = """ and "Versions".is_published = 't' """
+
+    if entity:
+        if entity.entity_type == 'Version':
+            where_condition= """where "Versions".id = %(id)s %(search_query)s %(is_published)s""""" % {'id':entity.id, 'search_query':search_query, 'is_published':is_published }
+        elif entity.entity_type == 'Task':
+            where_condition= """where "Task_SimpleEntities".id = %(id)s %(search_query)s %(is_published)s""""" % {'id':entity.id, 'search_query':search_query, 'is_published':is_published }
+    # if entities:
+    #     tasks_query_buffer = []
+    #     for entity in entities:
+    #         tasks_query_buffer.append(
+    #             """"Task_SimpleEntities".id = %s""" % entity.id
+    #         )
+    #     tasks_query = """ or """.join(tasks_query_buffer)
+    #     where_condition= """where %(tasks_query)s %(search_query)s %(is_published)s""""" % {'tasks_query':tasks_query, 'search_query':search_query, 'is_published':is_published }
+
+    logger.debug('where_condition: %s' % where_condition)
+    # we need to do that import here
+    from stalker_pyramid.views.task import \
+        generate_recursive_task_query
+
+    # using Raw SQL queries here to fasten things up quite a bit and also do
+    # some fancy queries like getting all the references of tasks of a project
+    # also with their tags
+    sql_query = """
+    -- select all links assigned to a project tasks or assigned to a task and its children
+select
+
+    count(1)
+
+from "Version_Outputs"
+join "Versions" on "Versions".id = "Version_Outputs".version_id
+join "SimpleEntities" as "Task_SimpleEntities" on "Task_SimpleEntities".id = "Versions".task_id
+join "Links" as "Version_Links" on "Version_Links".id = "Version_Outputs".link_id
+
+left outer join (
+    select
+        entity_id,
+        array_agg(name) as name
+    from "Entity_Tags"
+    join "SimpleEntities" on "Entity_Tags".tag_id = "SimpleEntities".id
+    group by "Entity_Tags".entity_id
+) as tags on "Version_Links".id = tags.entity_id
+
+%(where_condition)s
+    """ % {
+        'where_condition': where_condition
+    }
+
+    from sqlalchemy import text  # to be able to use "%" sign use this function
+    result = DBSession.connection().execute(text(sql_query))
+
+    return result.fetchone()[0]
 
 @view_config(
     route_name='delete_output',

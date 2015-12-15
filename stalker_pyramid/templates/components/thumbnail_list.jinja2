@@ -1,0 +1,32 @@
+{% raw %}
+<script id="tmpl_entity_card" type="text/x-dot-template">
+    <li>
+        <a href="/{{=it.plural_class_name }}/{{=it.id }}/view" data-rel="colorbox">
+            <img alt="150x150"
+                 style="height: 150px; width: auto;"
+                 src="{{=it.thumbnail_full_path }}" />
+            <div class="text">
+                <div class="inner">{{=it.name }}</div>
+            </div>
+        </a>
+
+        <div class="tools tools-bottom">
+            <a href="#">
+                <i class="icon-link"></i>
+            </a>
+
+            <a href="#">
+                <i class="icon-paper-clip"></i>
+            </a>
+
+            <a href="#">
+                <i class="icon-pencil"></i>
+            </a>
+
+            <a href="#">
+                <i class="icon-remove red"></i>
+            </a>
+        </div>
+    </li>
+ </script>
+{% endraw %}

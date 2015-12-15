@@ -157,7 +157,11 @@
                 {{ task.versions | count }}
             );
 
-            menu_of(
+
+
+        {% endif %}
+
+        menu_of(
                 'Outputs',
                 "{%- if request.current_route_path() == request.route_path('list_task_outputs', id=task.id) -%}'active',{%- else -%},{%- endif -%}",
                 '{{ request.route_url('list_task_outputs', id=task.id) }}',
@@ -165,7 +169,6 @@
                 '/tasks/{{ task.id }}/outputs/count/'
             );
 
-        {% endif %}
 
         menu_of(
             'References',

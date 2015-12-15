@@ -335,42 +335,13 @@ def get_entity_task_type_result(request):
     entity = Entity.query.filter_by(id=entity_id).first()
 
     task_type = request.matchdict.get('task_type')
-#     sql_query = """select
-#     min(extract(epoch from "TimeLogs".start::timestamp AT TIME ZONE 'UTC')) as start,
-#     array_agg(distinct(tasks.shot_name)) as shot_names,
-#     array_agg(distinct("TimeLogs".resource_id)) as resource_ids,
-#     sum(((tasks.seconds)*(extract(epoch from "TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC'))/tasks.schedule_seconds)) as r_seconds,
-#     sum(((extract(epoch from "TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC'))/tasks.schedule_seconds)) as r_percent
-#
-# from "TimeLogs"
-# join (
-#         select "Tasks".id as id,
-#                 "Tasks".schedule_timing *(case "Tasks".schedule_unit
-#                                                         when 'min' then 60
-#                                                         when 'h' then 3600
-#                                                         when 'd' then 32400
-#                                                         when 'w' then 147600
-#                                                         when 'm' then 590400
-#                                                         when 'y' then 7696277
-#                                                         else 0
-#                                                     end) as schedule_seconds,
-#                 "Shot_SimpleEntities".name as shot_name,
-#                 ("Shots".cut_out - "Shots".cut_in)/24.0 as seconds
-#
-#         from "Tasks"
-#         join "SimpleEntities" as "Task_SimpleEntities" on "Task_SimpleEntities".id = "Tasks".id
-#         join "SimpleEntities" as "Type_SimpleEntities" on "Type_SimpleEntities".id = "Task_SimpleEntities".type_id
-#         join "Shots" on "Shots".id = "Tasks".parent_id
-#         join "SimpleEntities" as "Shot_SimpleEntities" on "Shot_SimpleEntities".id = "Shots".id
-#
-#
-#         where "Type_SimpleEntities".name = '%(task_type)s'
-#     ) as tasks on tasks.id = "TimeLogs".task_id
-#
-# where %(where_conditions)s
-# group by  date_trunc('week', "TimeLogs".start)
-# order by start
-# """
+    project_id = request.params.get('project_id', -1)
+
+    logger.debug('project_id %s' % project_id)
+    project = Project.query.filter_by(id=project_id).first()
+    if not project:
+        return 'There is no project with id %s' % project_id
+
     sql_query = """
 select
         min(extract(epoch from results.start::timestamp AT TIME ZONE 'UTC')) as start,
@@ -413,7 +384,7 @@ from (
                                                     else 0
                                                 end) as schedule_seconds,
                         "Shot_SimpleEntities".name as shot_name,
-                        ("Shots".cut_out - "Shots".cut_in)/24.0 as seconds,
+                        ("Shots".cut_out - "Shots".cut_in)/%(project_fps)s as seconds,
                         "Statuses".code as status_code
 
                 from "Tasks"
@@ -424,7 +395,7 @@ from (
                 join "Statuses" on "Statuses".id = "Tasks".status_id
 
 
-                where "Type_SimpleEntities".name = '%(task_type)s'
+                where "Type_SimpleEntities".name = '%(task_type)s' %(project_query)s
             ) as tasks on tasks.id = "TimeLogs".task_id
         where %(where_conditions)s
     ) as results
@@ -444,7 +415,13 @@ order by start
         temp_buffer.append(' )')
         where_conditions = ''.join(temp_buffer)
 
-    sql_query = sql_query % {'where_conditions': where_conditions, 'task_type':task_type}
+    project_query = """ and "Tasks".project_id = %(project_id)s""" % {'project_id': project.id}
+    logger.debug('project_query:  %s' % project_query)
+    sql_query = sql_query % {'where_conditions': where_conditions,
+                             'task_type': task_type,
+                             'project_query': project_query,
+                             'project_fps': project.fps
+                             }
     result = DBSession.connection().execute(sql_query).fetchall()
 
     return [{

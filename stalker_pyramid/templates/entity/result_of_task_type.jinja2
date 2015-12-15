@@ -22,24 +22,21 @@
     </div>
 </div>
 <div class="row-fluid">
-    <div class="span2">
-        <div class="btn-toolbar">
-            <div class="input-prepend" style="height: 30px;
-                                    margin-bottom: 0px;
-                                    margin-left: 0px;
-                                    margin-right: 7px;
-                                    ">
-                <select id='task_type' class='input-block-level'>
-                        <option value="Animation">Animation</option>
-                        <option value="Lighting">Lighting</option>
-                        <option value="Comp">Comp</option>
-                        <option value="Camera">Camera</option>
-                        <option value="Scene Assembly">Scene Assembly</option>
-                        <option value="Shot Previs">Shot Previs</option>
-                        <option value="Render">Full Render</option>
-                </select>
-            </div>
-        </div>
+
+    <div class="span3">
+        <select id='project_id' class='input-block-level'>
+        </select>
+    </div>
+    <div class="span3">
+        <select id='task_type' class='input-block-level'>
+                <option value="Animation">Animation</option>
+                <option value="Lighting">Lighting</option>
+                <option value="Comp">Comp</option>
+                <option value="Camera">Camera</option>
+                <option value="Scene Assembly">Scene Assembly</option>
+                <option value="Shot Previs">Shot Previs</option>
+                <option value="Render">Full Render</option>
+        </select>
     </div>
 </div>
 <div class="row-fluid">
@@ -141,19 +138,23 @@
         result_table.find("#table_container").remove();
         result_table.find("#grid-pager").remove();
 
+        var project_id = $("#project_id").val();
+
         $('#info_box').hide();
 
-        $.getJSON('/entities/{{ entity.id }}/'+t_type+'/result').then(function (data) {
+        console.log("project_id: "+project_id);
+
+        $.getJSON('/entities/{{ entity.id }}/'+t_type+'/result?project_id='+project_id).then(function (data) {
 
             if (data.length>0){
                 var shot_data = [];
 
                 result_chart.append('<div id="chart_shot" style="height:500px; margin-left: 0px; background: rgb(57,57,57)"></div>');
 
-                var approved_seconds = 0;
-                var approved_shots = 0;
-                var total_seconds = 0;
-                var total_shots = 0;
+                var sum_of_approved_seconds = 0;
+                var sum_of_approved_shots = 0;
+                var sum_of_total_seconds = 0;
+                var sum_of_total_shots = 0;
                 var graph_val_type = 'Seconds';
                 var max_val = 0;
                 var min_val = 0;
@@ -178,10 +179,10 @@
                     s_data['resource_ids'] = resource_ids;
 
                     {#SECONDS#}
-                    approved_seconds += data[i]['approved_seconds'];
-                    approved_shots += data[i]['approved_shots'];
-                    total_seconds += data[i]['total_seconds'];
-                    total_shots += data[i]['total_shots'];
+                    sum_of_approved_seconds += data[i]['approved_seconds'];
+                    sum_of_approved_shots += data[i]['approved_shots'];
+                    sum_of_total_seconds += data[i]['total_seconds'];
+                    sum_of_total_shots += data[i]['total_shots'];
 
                     s_data['approved_seconds'] = data[i]['approved_seconds'].toFixed(2);
                     s_data['approved_shots'] = data[i]['approved_shots'].toFixed(2);
@@ -366,16 +367,16 @@
                     loadComplete : function() {
                         var $self = $(this);
 {#                        var total_seconds= $self.jqGrid('getCol', 'total_seconds', false, 'sum');#}
-                        var approved_minutes = (approved_seconds/60).toFixed(2);
-                        var total_minutes = (total_seconds/60).toFixed(2);
-                        var average_seconds = (total_seconds/shot_data.length).toFixed(2);
+                        var approved_minutes = (sum_of_approved_seconds/60).toFixed(2);
+                        var total_minutes = (sum_of_total_seconds/60).toFixed(2);
+                        var average_seconds = (sum_of_total_seconds/shot_data.length).toFixed(2);
                         $self.jqGrid("footerData", "set", {resource_ids: 'TOTAL',
-                                                           approved_seconds: approved_seconds.toFixed(2)+'s = '+approved_minutes+' m',
-                                                           total_seconds: total_seconds.toFixed(2)+'s = '+total_minutes+' m',
+                                                           approved_seconds: sum_of_approved_seconds.toFixed(2)+'s = '+approved_minutes+' m',
+                                                           total_seconds: sum_of_total_seconds.toFixed(2)+'s = '+total_minutes+' m',
                                                            start_date: 'AVERAGE',
                                                            shot_names: average_seconds+' s',
-                                                           approved_shots:approved_shots.toFixed(2) +' shots',
-                                                           total_shots:total_shots.toFixed(2) +' shots'
+                                                           approved_shots:sum_of_approved_shots.toFixed(2) +' shots',
+                                                           total_shots:sum_of_total_shots.toFixed(2) +' shots'
                                                            });
 
 
@@ -384,8 +385,8 @@
                         var total = total_minutes +' m';
                         var approved_total = approved_minutes +' m';
                         if(t_type!='Animation'){
-                            total = total_shots.toFixed(2) +' shots';
-                            approved_total = approved_shots.toFixed(2) +' shots';
+                            total = sum_of_total_shots.toFixed(2) +' shots';
+                            approved_total = sum_of_approved_shots.toFixed(2) +' shots';
                         }
 
                         calculate_average(weekly_shot_data,total_weeks,start_week);
@@ -448,15 +449,53 @@
     $(document).ready(function () {
         $.jqplot._noToImageButton = true;
         $.jqplot.config.enablePlugins = true;
-
         var task_type = $('#task_type');
+        var project_id = $('#project_id');
         var task_type_str = task_type.val();
-        loadShotTaskData(task_type_str);
+        {% raw %}
+            var option_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
+        {% endraw %}
 
-        task_type.on('change', function () {
-
-            task_type_str = $(this).val();
-            loadShotTaskData(task_type_str);
+        project_id.chosen({
+            search_contains: true,
+            enable_split_word_search: true
         });
+
+        var projects_url  = '/projects/'
+        {% if entity.entity_type == 'User' %}
+            projects_url = '/entities/{{ entity.id }}/projects/';
+        {% endif %}
+
+        $.getJSON(projects_url).then(function(data){
+            console.log('loaded '+data.length);
+            project_id.find('option').remove();
+
+            var data_count = data.length;
+
+            for (var i=0; i < data_count; i++){
+                console.log('loaded '+data[i].id+' : '+data[i].name);
+                project_id.append(option_template(data[i]));
+            }
+
+            // update the chosen fields
+            project_id.trigger('liszt:updated');
+
+            loadShotTaskData(task_type_str);
+
+            task_type.on('change', function () {
+                task_type_str = $(this).val();
+                loadShotTaskData(task_type_str);
+            });
+
+            project_id.on('change', function () {
+                task_type_str = task_type.val();
+                loadShotTaskData(task_type_str);
+            });
+        });
+
+
+
+
+
     });
 </script>

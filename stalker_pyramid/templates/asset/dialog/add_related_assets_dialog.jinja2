@@ -102,7 +102,6 @@
                 environment_type_query +='&asset_type_names='+environment_type_names[j];
             }
             get_asset_by_type(environment_type_query, 'environments', asset_template);
-
             get_asset_by_type('asset_type_names=Active%20Prop', 'active_props', asset_template);
             get_asset_by_type('asset_type_names=Vehicle', 'vehicles', asset_template);
 

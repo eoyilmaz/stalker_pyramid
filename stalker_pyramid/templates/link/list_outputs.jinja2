@@ -136,12 +136,16 @@
 
 <script type="text/javascript">
 
-    {% if entity.entity_type == 'Task' %}
+    {% if entity.entity_type == 'Task' or entity.entity_type == 'Asset' or entity.entity_type == 'Shot' or entity.entity_type == 'Sequence' %}
         {% set task=entity %}
     {% else %}
         {% set task=entity.task %}
     {% endif %}
     var task_id = '{{task.id}}';
+
+    var items_per_page = 40;
+    var total_number_of_items;
+    var count_url = '/tasks/{{ entity.id }}/outputs/count/';
 
 
     var colorbox_params = {
@@ -239,6 +243,7 @@
         }
     };
 
+
     /**
      * Draws output items
      */
@@ -248,7 +253,7 @@
         options = $.extend({
             current_page: 1,
             items_per_page: 40,
-            url: '/entities/{{ entity.id }}/outputs/',
+            url: '/tasks/{{ entity.id }}/outputs/',
             search: ''
         }, options);
 
@@ -321,7 +326,7 @@
      *   Options for this function
      */
     var create_paginator = function (options) {
-
+        console.log('create_paginator');
         options = $.extend({
             total_number_of_items: 0,
             items_per_page: 40,
@@ -345,14 +350,13 @@
         });
     };
 
-    $(function () {
-        // create pagination
-        var items_per_page = 40;
-        var total_number_of_items;
-        var count_url = '/entities/{{ entity.id }}/outputs/count/';
+    var get_output_items = function(c_url){
+        count_url = c_url;
 
         // get total number of outputs
         $.getJSON(count_url, function(data){
+
+            console.log('count_url: '+count_url)
             total_number_of_items = data;
 
             create_paginator({
@@ -366,6 +370,14 @@
             current_page: 1,
             items_per_page: items_per_page
         });
+
+    };
+
+    $(function () {
+        // create pagination
+
+
+        get_output_items(count_url);
 
         // and add the new thumbnails when uploaded through Dropzone
         $('#dialog_template').on('hidden', function () {
@@ -430,8 +442,7 @@
 
             // get search string
             var search_string = $('#output_search_field').val();
-            $.getJSON(count_url,
-                $.param({
+            $.getJSON(count_url,  $.param({
                   'search': search_string,
                   'is_published': $('#is_published').prop('checked')?'t':''
                 })).then(function (data) {

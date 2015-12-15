@@ -30,6 +30,7 @@ from webob import Response
 import stalker_pyramid
 from stalker_pyramid.views import (get_logged_in_user, PermissionChecker,
                                    milliseconds_since_epoch, get_multi_string)
+from stalker_pyramid.views.task import generate_recursive_task_query
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -283,7 +284,7 @@ def get_assets(request):
     sql_query = """
         select
             "Assets".id as asset_id,
-            "Asset_SimpleEntities".name as asset_name,
+            assets.full_path as asset_name,
             "Asset_SimpleEntities".description as asset_description,
             "Links".full_path as asset_full_path,
             "Distinct_Asset_Statuses".asset_status_code as asset_status_code,
@@ -317,6 +318,9 @@ def get_assets(request):
             array_agg("Task_Resource_SimpleEntities".id) as resources_id
         from "Tasks"
         join "Assets" on "Assets".id = "Tasks".parent_id
+        join (
+            %(generate_recursive_task_query)s
+        ) as assets on assets.id = "Assets".id
         join "SimpleEntities" as "Asset_SimpleEntities" on "Assets".id = "Asset_SimpleEntities".id
         join "SimpleEntities" as "Task_SimpleEntities" on "Tasks".id = "Task_SimpleEntities".id
         left outer join "Task_Resources"  on "Tasks".id = "Task_Resources".task_id
@@ -359,6 +363,7 @@ def get_assets(request):
         group by
             "Assets".id,
             "Asset_SimpleEntities".name,
+            assets.full_path,
             "Asset_SimpleEntities".description,
             "Links".full_path,
             "Distinct_Asset_Statuses".asset_status_code,
@@ -388,7 +393,8 @@ def get_assets(request):
 
     sql_query = sql_query % {
         'where_conditions': where_conditions,
-        'project_id': project_id
+        'project_id': project_id,
+        'generate_recursive_task_query': generate_recursive_task_query(),
     }
 
     update_asset_permission = \

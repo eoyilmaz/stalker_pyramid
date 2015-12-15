@@ -55,10 +55,17 @@
             <img alt="150x150"
                  style="height: 150px; width: auto;"
                  src="{{=it.thumbnail_full_path }}" />
+            <div class="progress progress-success">
+                <div style="width:{{=it.percent_complete}}%"
+                     class="bar">
+                    <span class="pull-left">{{=it.percent_complete.toFixed(1)}}%</span>
+                </div>
+            </div>
             <div class="text">
                 <div class="inner">{{=it.name }}</div>
             </div>
         </a>
+
 
         <div class="tools tools-bottom">
             <a href="#">
@@ -77,6 +84,8 @@
                 <i class="icon-remove red"></i>
             </a>
         </div>
+
+
     </li>
  </script>
 {% endraw %}

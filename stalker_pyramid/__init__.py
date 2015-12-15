@@ -251,6 +251,12 @@ def main(global_config, **settings):
 
     config.add_route('list_task_outputs',           'tasks/{id}/outputs/list')  # html
 
+    config.add_route('get_entities_outputs',          'entities/{id}/outputs/')
+    config.add_route('get_entities_outputs_count',    'entities/{id}/outputs/count/')
+
+    config.add_route('get_tasks_outputs',            'tasks/{id}/outputs/')
+    config.add_route('get_tasks_outputs_count',      'tasks/{id}/outputs/count/')
+
     config.add_route('get_entity_outputs',          'entities/{id}/outputs/')
     config.add_route('get_entity_outputs_count',    'entities/{id}/outputs/count/')
 
@@ -665,7 +671,8 @@ def main(global_config, **settings):
 
     config.add_route('get_task',          'tasks/{id}/')
     config.add_route('get_task_events',   'tasks/{id}/events/')  #json
-    config.add_route('get_task_children_task_type',  'tasks/{type}/children/task_type/')  # json
+    config.add_route('get_task_children_task_types',  'tasks/{id}/children_task_types/')  # json
+    config.add_route('get_task_children_tasks',  'tasks/{id}/children_tasks/')  # json
     config.add_route('get_task_leafs_in_hierarchy', 'tasks/{id}/leafs_in_hierarchy/') #json
 
     config.add_route('get_task_related_entities',  'tasks/{id}/related/{e_type}/{d_type}/') # json

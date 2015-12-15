@@ -4329,6 +4329,12 @@ def request_review(request):
     if logged_in_user not in task.resources and \
        logged_in_user not in task.responsible:
         transaction.abort()
+        request.session.flash(
+            'warning:You are not one of the resources nor the '
+            'responsible of this task, so you can not request a '
+            'review for this task'
+        )
+
         return Response('You are not one of the resources nor the '
                         'responsible of this task, so you can not request a '
                         'review for this task', 500)
@@ -5002,6 +5008,81 @@ def delete_task(request):
 #
 #     return Response('Successfully deleted task: %s' % task_id)
 #
+
+
+@view_config(
+    route_name='get_task_children_tasks',
+    renderer='json'
+)
+def get_task_children_tasks(request):
+    """TODO: Add Docstring please
+    """
+    logger.debug('get_task_children_tasks is running')
+    task_id = request.matchdict.get('id')
+    task = Task.query.get(task_id)
+
+    type_ids = get_multi_integer(request, 'type_ids', 'GET')
+    types = Type.query.filter(Type.id.in_(type_ids)).all()
+
+    if not task:
+        transaction.abort()
+        return Response('Can not find a Task with id: %s' % task_id, 500)
+
+    children_tasks = []
+    children_tasks.extend(get_task_children_tasks_action(task, types))
+    return children_tasks
+
+
+def get_task_children_tasks_action(task, types):
+    """TODO: Add Docstring please
+    """
+
+    children_tasks = []
+    if task.children:
+        for child in task.children:
+            children_tasks.extend(get_task_children_tasks_action(child, types))
+    else:
+        if task.type in types:
+            children_tasks = [{'id': task.id, 'name': task.name}]
+
+    return children_tasks
+
+
+@view_config(
+    route_name='get_task_children_task_types',
+    renderer='json'
+)
+def get_task_children_task_types(request):
+    """TODO: Add Docstring please
+    """
+    logger.debug('get_task_children_task_types is running')
+    task_id = request.matchdict.get('id')
+    task = Task.query.get(task_id)
+
+    if not task:
+        transaction.abort()
+        return Response('Can not find a Task with id: %s' % task_id, 500)
+
+    children_task_types = get_task_children_task_types_action(task)
+
+    return children_task_types
+
+
+def get_task_children_task_types_action(task):
+    """TODO: Add Docstring please
+    """
+
+    children_task_types = []
+    if task.children:
+        for child in task.children:
+            child_children_task_types = get_task_children_task_types_action(child)
+            for type in child_children_task_types:
+                if type not in children_task_types:
+                    children_task_types.append(type)
+    else:
+        children_task_types = [{'id': task.type.id, 'name': task.type.name}]
+
+    return children_task_types
 
 
 @view_config(
