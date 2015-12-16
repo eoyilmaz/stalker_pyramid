@@ -619,6 +619,8 @@ def get_users(request):
 def get_users_simple(request):
     """simply return the users without dealing a lot of other details
     """
+
+    logger.debug('get_users_simple starts')
     start = time.time()
     sql_query = """select
         "Users".id,
@@ -673,6 +675,8 @@ def get_users_simple(request):
     has_read_rate_permission = has_permission('Read_Budget')
 
     result = DBSession.connection().execute(sql_query)
+
+    logger.debug('get_users_simple results')
     data = [
         {
             'id': r[0],
@@ -697,7 +701,7 @@ def get_users_simple(request):
             'rate': r[11] if r[11] else None,
             'update_user_action':'/users/%s/update/dialog' % r[0]
             if has_update_user_permission else None,
-            'delete_user_action':'/users/%(id)s/delete/dialog' % r[0]
+            'delete_user_action':'/users/%s/delete/dialog' % r[0]
             if has_delete_user_permission else None
         } for r in result.fetchall()
     ]

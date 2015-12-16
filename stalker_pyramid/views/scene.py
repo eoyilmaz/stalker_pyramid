@@ -236,9 +236,8 @@ order by "Task_Scenes".id"""
         where_condition = 'where "Shot_Sequences".sequence_id = %s' % entity_id
         project_id = entity.project.id
 
+    project = Project.query.filter(Project.id == project_id).first()
     sql_query = sql_query % {'where_condition': where_condition}
-
-
 
     result = DBSession.connection().execute(sql_query)
 
@@ -260,7 +259,7 @@ order by "Task_Scenes".id"""
             'name': r[1],
             'description': r[2],
             'num_of_shots': len(distinct_shot_ids),
-            'total_seconds': float(scene_total_frame/24)
+            'total_seconds': float(scene_total_frame/project.fps)
         }
 
 

@@ -78,7 +78,7 @@
                     <tr id="shots_table_column">
                         <th>Sequence</th>
                         <th>Status</th>
-                        <th>Thumbnail</th>
+{#                        <th>Thumbnail</th>#}
                         <th>Name</th>
                     </tr>
                     </thead>
@@ -120,19 +120,23 @@
     {% raw %}
     <script id="tmpl_shotRow" type="text/x-dot-template">
         <tr id="shot_row_{{=it.id}}">
-            <td style="width:20px;">
+            <td style="width:15px;">
                 <a href='/tasks/{{=it.sequence_id}}/view'>{{=it.sequence_name}}</a><br/>
             </td>
-            <td style="width:20px;"><span
+            <td style="width:15px;"><span
                     class="label label-status_{{=it.status_color}}">{{=it.status}}</span><br/><br/>
             </td>
-            <td>
-                <img style="width:auto; height: 100px;"
+            <!--<td>-->
+                <!--<img style="width:auto; height: auto;"-->
+                     <!--class="img-thumbnail"-->
+                     <!--src="{{=it.thumbnail_full_path }}">-->
+            <!--</td>-->
+            <td id="shot_summary_cell_{{=it.id}}">
+                <img style="width:auto; height: auto;"
                      class="img-thumbnail"
                      src="{{=it.thumbnail_full_path }}">
-            </td>
-            <td id="shot_summary_cell_{{=it.id}}">
-                <a href='{{=it.link}}'>{{=it.name}}</a>
+                <a href='{{=it.link}}'>{{=it.name}} : </a>
+                {{=it.cut_in}} - {{=it.cut_out}}
                 {{ if (it.update_shot_action) { }}
                 <a class="blue pull-right"
                    data-target="#dialog_template"
@@ -142,9 +146,7 @@
                     <i class="icon-edit bigger-130"></i>
                 </a>{{ } }}
                 <br/>
-                {{=it.description}}<br/>
-                <br/>
-                {{=it.cut_in}} - {{=it.cut_out}}<br/>
+                {{=it.description}}
             </td>
         </tr>
     </script>
@@ -163,47 +165,48 @@
 
     {% raw %}
     <script id="tmpl_taskCell" type="text/x-dot-template">
-        <td class="no-padding" style="width:120px;">
+        <td class="no-padding" style="width:125px;">
             <div class="status_{{=it.status_color}}"
-                 style="padding:5px; height: 120px"">
+                 style="padding:5px; height: 60px"">
                 <span>
                     <strong><a class="white" href="/tasks/{{=it.id }}/view">{{=it.name}}</a></strong>
                     {{ if (it.update_shot_action) { }}
 
-                            <a class="white pull-right"
-                               data-target="#dialog_template"
-                               data-toggle="modal"
-                               data-keyboard=false
-                               href="/tasks/change/properties/dialog?task_ids={{=it.id }}">
-                               <i class="icon-edit bigger-130"></i>
-                            </a>
+                        <a class="white pull-right"
+                           data-target="#dialog_template"
+                           data-toggle="modal"
+                           data-keyboard=false
+                           href="/tasks/change/properties/dialog?task_ids={{=it.id }}">
+                           <i class="icon-edit bigger-130"></i>
+                        </a>
 
-                        {{ } }}
+                    <br/>
+                    {{ } }}
                     <div class="no-padding">
-                        {{ if(it.bid_timing){ }}
-                            <strong>Bid: </strong>
-                            <span id='bid_timing_{{=it.id}}'>{{=it.bid_timing}}</span>
-                            <span id='bid_unit_{{=it.id}}'>{{=it.bid_unit }}</span>
-                            <br/>
-                            <strong>S_T: </strong>
-                            <span id='schedule_timing_{{=it.id}}'>{{=it.schedule_timing}}</span>
-                            <span id='schedule_unit_{{=it.id}}'>{{=it.schedule_unit }}</span>
-                        {{ } }}
-                        <br/>
+                        <!--{{ if(it.bid_timing){ }}-->
+                            <!--<strong>Bid: </strong>-->
+                            <!--<span id='bid_timing_{{=it.id}}'>{{=it.bid_timing}}</span>-->
+                            <!--<span id='bid_unit_{{=it.id}}'>{{=it.bid_unit }}</span>-->
+                            <!--<br/>-->
+                            <!--<strong>S_T: </strong>-->
+                            <!--<span id='schedule_timing_{{=it.id}}'>{{=it.schedule_timing}}</span>-->
+                            <!--<span id='schedule_unit_{{=it.id}}'>{{=it.schedule_unit }}</span>-->
+                        <!--{{ } }}-->
+                        <!--<br/>-->
                         <span><a href='/users/{{=it.resource_id}}/view'>{{=it.resource_name}}</a></span>
                     </div>
 
                     {{ if (it.percent_complete !== '') { }}
-                        {{=it.status}}
-                        <div class="progress progress-success no-padding">
+                        <!--{{=it.status}}-->
+                        <div class="progress progress-mini progress-success no-padding">
                             <div style="width:{{=it.percent_complete}}%" class="bar">
                                 <span>{{= it.percent_complete.toFixed(1)}}%</span>
                             </div>
                         </div>
-                    <br/>
+
                     {{ } else {}}
 
-                        {{=it.status}}
+                        <!--{{=it.status}}-->
 
                     {{ } }}
                 </span>
@@ -252,7 +255,8 @@
 
                         for (i = 0; i < data.length; i++) {
                             data[i].link = '/shots/' + data[i].id + '/view';
-
+                            data[i].status_color = data[i].status.toLowerCase();
+                            data[i].description = data[i].description.substring(0,40)+"...";
                             if (data[i].thumbnail_full_path == null) {
                                 data[i].thumbnail_full_path = '{{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}';
                             } else {
