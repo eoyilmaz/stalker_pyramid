@@ -124,7 +124,10 @@
                 <a href='/tasks/{{=it.sequence_id}}/view'>{{=it.sequence_name}}</a><br/>
             </td>
             <td style="width:15px;"><span
-                    class="label label-status_{{=it.status_color}}">{{=it.status}}</span><br/><br/>
+                    class="label label-status_{{=it.status_color}}">{{=it.status}}</span><br/>
+                <img style="width:auto; height: auto;"
+                     class="img-thumbnail"
+                     src="{{=it.thumbnail_full_path }}">
             </td>
             <!--<td>-->
                 <!--<img style="width:auto; height: auto;"-->
@@ -132,11 +135,11 @@
                      <!--src="{{=it.thumbnail_full_path }}">-->
             <!--</td>-->
             <td id="shot_summary_cell_{{=it.id}}">
-                <img style="width:auto; height: auto;"
-                     class="img-thumbnail"
-                     src="{{=it.thumbnail_full_path }}">
-                <a href='{{=it.link}}'>{{=it.name}} : </a>
-                {{=it.cut_in}} - {{=it.cut_out}}
+
+                <a href='{{=it.link}}'>{{=it.name}}</a><br/>
+                {{=it.cut_in}} - {{=it.cut_out}} = {{=it.duration}}
+                <br/>
+                {{=it.description}}
                 {{ if (it.update_shot_action) { }}
                 <a class="blue pull-right"
                    data-target="#dialog_template"
@@ -145,8 +148,7 @@
                    href="{{=it.update_shot_action}}">
                     <i class="icon-edit bigger-130"></i>
                 </a>{{ } }}
-                <br/>
-                {{=it.description}}
+
             </td>
         </tr>
     </script>
@@ -167,7 +169,7 @@
     <script id="tmpl_taskCell" type="text/x-dot-template">
         <td class="no-padding" style="width:125px;">
             <div class="status_{{=it.status_color}}"
-                 style="padding:5px; height: 60px"">
+                 style="padding:5px; height: 65px"">
                 <span>
                     <strong><a class="white" href="/tasks/{{=it.id }}/view">{{=it.name}}</a></strong>
                     {{ if (it.update_shot_action) { }}
@@ -256,7 +258,11 @@
                         for (i = 0; i < data.length; i++) {
                             data[i].link = '/shots/' + data[i].id + '/view';
                             data[i].status_color = data[i].status.toLowerCase();
-                            data[i].description = data[i].description.substring(0,40)+"...";
+                            data[i].duration = data[i].cut_out - data[i].cut_in;
+                            if (data[i].description.length>30){
+                                data[i].description = data[i].description.substring(0,30)+"...";
+                            }
+
                             if (data[i].thumbnail_full_path == null) {
                                 data[i].thumbnail_full_path = '{{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}';
                             } else {
