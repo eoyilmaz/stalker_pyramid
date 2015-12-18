@@ -50,7 +50,11 @@
         
             <button id='project_schedule_button'
                     class="btn btn-block btn-purple">
+
             <i class="icon-wrench bigger-120"></i> Schedule Project</button>
+            <button id='project_schedule_cancel_button'
+                    class="btn btn-block">
+                <i class="icon-wrench bigger-120"></i> Abort Scheduling</button>
             <div id="schedule-dialog-message" class="hide">
                 <div id="schedule-progress" class="progress progress-success progress-striped" data-percent="0%">
                     <div class="bar" style="width: 0%;"></div>
@@ -94,6 +98,22 @@
             $('#project_last_schedule_took').append(parseInt(data.last_scheduling_took/60) +' minutes');
 
             var project_schedule_button = $('#project_schedule_button');
+
+            var project_schedule_cancel_button =$('#project_schedule_cancel_button');
+            project_schedule_cancel_button.on('click', function () {
+
+                $.post(
+                    '{{ request.route_url("studio_scheduling_mode", _query={"mode": 0}) }}'
+                ).done(function (data) {
+                    setTimeout(function () { // wait for hide event to finish
+                        window.location.reload();
+                    }, 0);
+                }).fail(function (jqXHR) {
+                    setTimeout(function () { // wait for hide event to finish
+                        window.location.reload();
+                    }, 0);
+                });
+            });
 
             if (data.is_scheduling){
                 project_schedule_button.text('Scheduling by ' + data.is_scheduling_by );
@@ -140,7 +160,7 @@
 
                         // now do the scheduling
                         $.post(
-                            '{{ request.route_url("auto_schedule_tasks") }}'
+                            '{{ request.route_url("auto_schedule_tasks", _query={"project_id": entity.id}) }}'
                         ).done(function (data) {
                             // close the dialog and show the message
                             dialog.dialog('destroy');

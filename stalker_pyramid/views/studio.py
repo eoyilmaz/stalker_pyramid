@@ -26,7 +26,7 @@ from pyramid.response import Response
 from pyramid.view import view_config
 
 from stalker.db import DBSession
-from stalker import Studio, WorkingHours, TaskJugglerScheduler
+from stalker import Studio, WorkingHours, TaskJugglerScheduler, Project
 import transaction
 from stalker_pyramid.views import (get_time, get_logged_in_user, local_to_utc,
                                    StdErrToHTMLConverter,
@@ -189,8 +189,14 @@ def auto_schedule_tasks(request):
         return Response("There is no Studio instance\n"
                         "Please create a studio first", 500)
 
+    project_id = request.params.get('project', -1)
+    project = Project.query.filter(Project.id == project_id).first()
+    logger.debug('project_id: %s' % project_id)
+
     tj_scheduler = TaskJugglerScheduler()
     studio.scheduler = tj_scheduler
+    if project:
+        studio.scheduler.projects = [project]
 
     try:
         stderr = studio.schedule(scheduled_by=logged_in_user)
@@ -278,6 +284,7 @@ def studio_scheduling_mode(request):
 
     if mode:  # set the mode
         mode = bool(int(mode))
+
         studio.is_scheduling = mode
         studio.is_scheduling_by = logged_in_user
         studio.scheduling_started_at = local_to_utc(datetime.datetime.now())

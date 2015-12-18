@@ -329,8 +329,8 @@ def fix_tasks_statuses(request):
         task.update_status_with_dependent_statuses()
         task.update_status_with_children_statuses()
         task.update_schedule_info()
-        fix_task_computed_time(task)
         check_task_status_by_schedule_model(task)
+        fix_task_computed_time(task)
 
     request.session.flash('success: Task status is fixed!')
     invalidate_all_caches()
@@ -352,8 +352,9 @@ def fix_task_statuses(request):
         task.update_status_with_dependent_statuses()
         task.update_status_with_children_statuses()
         task.update_schedule_info()
-        fix_task_computed_time(task)
+
         check_task_status_by_schedule_model(task)
+        fix_task_computed_time(task)
 
     request.session.flash('success: Task status is fixed!')
 
@@ -493,7 +494,6 @@ def walk_and_duplicate_task_hierarchy(task):
         duplicated_child = walk_and_duplicate_task_hierarchy(child)
         duplicated_child.parent = dup_task
     return dup_task
-
 
 def update_dependencies_in_duplicated_hierarchy(task):
     """Updates the dependencies in the given task. Uses the task.duplicate
@@ -5997,6 +5997,13 @@ def get_actual_start_time(task):
 
     if first_time_log:
         return first_time_log.start
+    else:
+        if task.schedule_model == 'duration':
+            start_time = task.project.start
+            for tdep in task.depends:
+                if tdep.computed_end > start_time:
+                    start_time = tdep.computed_end
+            return start_time
 
     return task.computed_start
 
@@ -6024,6 +6031,24 @@ def get_actual_end_time(task):
 
     if end_time_log:
         return end_time_log.end
+    else:
+        if task.schedule_model == 'duration':
+            end_time = task.project.start
+            for tdep in task.depends:
+                if tdep.computed_end > end_time:
+                    duration = datetime.timedelta(minutes=0)
+                    if task.schedule_unit == 'min':
+                         duration = datetime.timedelta(minutes=task.schedule_time)
+                    elif task.schedule_unit == 'h':
+                         duration = datetime.timedelta(hours=task.schedule_time)
+                    elif task.schedule_unit == 'd':
+                         duration = datetime.timedelta(days=task.schedule_time)
+                    elif task.schedule_unit == 'w':
+                         duration = datetime.timedelta(weeks=task.schedule_time)
+                    elif task.schedule_unit == 'm':
+                         duration = datetime.timedelta(weeks=4*task.schedule_time)
+                    end_time = tdep.computed_end + duration
+            return end_time
 
     return task.computed_end
 
