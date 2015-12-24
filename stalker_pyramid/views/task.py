@@ -6038,15 +6038,15 @@ def get_actual_end_time(task):
                 if tdep.computed_end > end_time:
                     duration = datetime.timedelta(minutes=0)
                     if task.schedule_unit == 'min':
-                         duration = datetime.timedelta(minutes=task.schedule_time)
+                         duration = datetime.timedelta(minutes=task.schedule_timing)
                     elif task.schedule_unit == 'h':
-                         duration = datetime.timedelta(hours=task.schedule_time)
+                         duration = datetime.timedelta(hours=task.schedule_timing)
                     elif task.schedule_unit == 'd':
-                         duration = datetime.timedelta(days=task.schedule_time)
+                         duration = datetime.timedelta(days=task.schedule_timing)
                     elif task.schedule_unit == 'w':
-                         duration = datetime.timedelta(weeks=task.schedule_time)
+                         duration = datetime.timedelta(weeks=task.schedule_timing)
                     elif task.schedule_unit == 'm':
-                         duration = datetime.timedelta(weeks=4*task.schedule_time)
+                         duration = datetime.timedelta(weeks=4*task.schedule_timing)
                     end_time = tdep.computed_end + duration
             return end_time
 
