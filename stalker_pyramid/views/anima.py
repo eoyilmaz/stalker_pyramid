@@ -406,7 +406,7 @@ order by start
     where_conditions = ''
     if entity.entity_type == 'User':
         where_conditions = """"TimeLogs".resource_id = %(resource_id)s """ % {'resource_id': entity_id}
-    elif entity.entity_type == 'Department':
+    elif entity.entity_type == 'Department' or entity.entity_type == 'Project':
         temp_buffer = ["""("""]
         for i, resource in enumerate(entity.users):
             if i > 0:
@@ -422,6 +422,8 @@ order by start
                              'project_query': project_query,
                              'project_fps': project.fps
                              }
+
+    logger.debug('sql_query:  %s' % sql_query)
     result = DBSession.connection().execute(sql_query).fetchall()
 
     return [{

@@ -109,6 +109,13 @@
             get_icon('report'),
             ''
         );
+        menu_of(
+            'Results',
+            "{%- if request.current_route_path() == request.route_path('view_entity_result', id=project.id) -%}'active',{%- else -%},{%- endif -%}",
+            '{{ request.route_url('view_entity_result', id=project.id) }}',
+            get_icon('report'),
+            ''
+        );
         {% if  has_permission('Create_Project') %}
             menu_of(
                 'Budgets',

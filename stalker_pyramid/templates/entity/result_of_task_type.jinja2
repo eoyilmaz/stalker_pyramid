@@ -23,11 +23,8 @@
 </div>
 <div class="row-fluid">
 
-    <div class="span3">
-        <select id='project_id' class='input-block-level'>
-        </select>
-    </div>
-    <div class="span3">
+
+    <div class="span2">
         <select id='task_type' class='input-block-level'>
                 <option value="Animation">Animation</option>
                 <option value="Lighting">Lighting</option>
@@ -36,6 +33,10 @@
                 <option value="Scene Assembly">Scene Assembly</option>
                 <option value="Shot Previs">Shot Previs</option>
                 <option value="Render">Full Render</option>
+        </select>
+    </div>
+    <div class="span2">
+        <select id='project_cb' class='input-block-level'>
         </select>
     </div>
 </div>
@@ -128,8 +129,8 @@
     }
 
 
-    function loadShotTaskData(t_type){
-        console.log('loadShotTaskData: '+t_type);
+    function loadShotTaskData(t_type, p_id){
+        console.log('loadShotTaskData: '+t_type+' : ' +p_id);
 
         var result_chart = $('#result_chart');
         result_chart.find("#chart_shot").remove();
@@ -137,15 +138,10 @@
         var result_table = $('#result_table');
         result_table.find("#table_container").remove();
         result_table.find("#grid-pager").remove();
-
-        var project_id = $("#project_id").val();
-
         $('#info_box').hide();
 
-        console.log("project_id: "+project_id);
-
-        $.getJSON('/entities/{{ entity.id }}/'+t_type+'/result?project_id='+project_id).then(function (data) {
-
+        $.getJSON('/entities/{{ entity.id }}/'+t_type+'/result?project_id='+p_id).then(function (data) {
+            console.log('loaded: '+t_type+' : ' +p_id);
             if (data.length>0){
                 var shot_data = [];
 
@@ -326,7 +322,7 @@
                                         formatString: "  %d "+graph_val_type,
                                         showMark: false
                                     },
-                                    tickInterval: 5
+                                    tickInterval: (max_val-min_val)/20
                                }
                             },
                             seriesDefaults: {
@@ -450,49 +446,57 @@
         $.jqplot._noToImageButton = true;
         $.jqplot.config.enablePlugins = true;
         var task_type = $('#task_type');
-        var project_id = $('#project_id');
+        var project_cb = $('#project_cb');
+        var project_id = project_cb.val();
         var task_type_str = task_type.val();
-        {% raw %}
-            var option_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
-        {% endraw %}
 
-        project_id.chosen({
-            search_contains: true,
-            enable_split_word_search: true
-        });
+        {% if entity.entity_type != 'Project' %}
+            {% raw %}
+                var option_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
+            {% endraw %}
+            project_cb.chosen({
+                search_contains: true,
+                enable_split_word_search: true
+            });
 
-        var projects_url  = '/projects/'
-        {% if entity.entity_type == 'User' %}
-            projects_url = '/entities/{{ entity.id }}/projects/';
+            var projects_url  = '/projects/'
+            {% if entity.entity_type == 'User' %}
+                projects_url = '/entities/{{ entity.id }}/projects/';
+            {% endif %}
+
+            $.getJSON(projects_url).then(function(data){
+                console.log('loaded '+data.length);
+                project_cb.find('option').remove();
+
+                var data_count = data.length;
+
+                for (var i=0; i < data_count; i++){
+                    console.log('loaded '+data[i].id+' : '+data[i].name);
+                    project_cb.append(option_template(data[i]));
+                }
+
+                // update the chosen fields
+                project_cb.trigger('liszt:updated');
+
+                project_id = project_cb.val();
+                loadShotTaskData(task_type_str, project_id);
+                project_cb.on('change', function () {
+{#                    task_type_str = task_type.val();#}
+                    project_id = $(this).val();
+                    loadShotTaskData(task_type_str, project_id);
+                });
+            });
+        {% else %}
+            project_cb.hide();
+            project_id = "{{ entity.id }}";
+            loadShotTaskData(task_type_str, project_id);
+            console.log('dalsdjaklsjd');
         {% endif %}
 
-        $.getJSON(projects_url).then(function(data){
-            console.log('loaded '+data.length);
-            project_id.find('option').remove();
-
-            var data_count = data.length;
-
-            for (var i=0; i < data_count; i++){
-                console.log('loaded '+data[i].id+' : '+data[i].name);
-                project_id.append(option_template(data[i]));
-            }
-
-            // update the chosen fields
-            project_id.trigger('liszt:updated');
-
-            loadShotTaskData(task_type_str);
-
-            task_type.on('change', function () {
-                task_type_str = $(this).val();
-                loadShotTaskData(task_type_str);
-            });
-
-            project_id.on('change', function () {
-                task_type_str = task_type.val();
-                loadShotTaskData(task_type_str);
-            });
+        task_type.on('change', function () {
+            task_type_str = $(this).val();
+            loadShotTaskData(task_type_str, project_id);
         });
-
 
 
 
