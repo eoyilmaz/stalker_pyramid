@@ -198,7 +198,7 @@ function chosen_field_creator(field, url, data_template, selected_id, chosen_opt
     field.attr('is_updating', true);
 
     return $.getJSON(url).then(function (data) {
-
+        console.log('data loaded')
         // remove current data
         field.empty();
 

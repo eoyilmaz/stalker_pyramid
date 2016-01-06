@@ -1,0 +1,91 @@
+
+<script class="dialog_loaded"></script>
+
+
+<div class="row-fluid">
+    {% set list_item_type='Task' %}
+    {% include 'components/jgrid_table.jinja2' %}
+</div>
+
+
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.dataTables.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.dataTables.bootstrap.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/dataTable_num-html_sort.js") }}'></script>
+
+
+<script>
+    function init_html_modal() {
+
+        console.debug('starting to initialize init_html_modal dialog!!!');
+        var query_str = '';
+
+        {% if query_str %}
+            query_str = "{{ query_str }}";
+        {% else %}
+            {% if filter.entity_type == 'Status' %}
+                var template_label = $('#html_template_label');
+                template_label.find('span').remove();
+                {% if is_warning_list %}
+                    template_label.append('<span>Black List<small> !! these tasks should have been sent to review or an extra time request should have been made for them !!</small></span>');
+                    $('#html_template_header').attr('class', 'table-header header-color-dark');
+                {% else %}
+                    template_label.append('<span>{{ filter.name }}</span>');
+                    $('#html_template_header').attr('class', 'table-header header-color-status_{{ filter.code.lower() }}');
+                {% endif %}
+            {% endif %}
+
+            {% if entity.entity_type == 'User' %}
+                query_str = 'has_resource=1&leaf_only=1&resource_id={{ entity.id }}';
+            {% elif entity.entity_type == 'Project'%}
+                query_str = 'has_resource=1&leaf_only=1&project_id={{ entity.id }}';
+            {% endif %}
+
+            {% if filter.entity_type == 'User' %}
+                query_str = 'has_resource=1&leaf_only=1&responsible_id={{ filter.id }}';
+            {% elif filter.entity_type == 'Status'%}
+                query_str += '&status={{ filter.code }}';
+            {% endif %}
+        {% endif %}
+
+        console.log("query_str: "+ query_str);
+
+        var colNames = ['', 'ID','Name'];
+        var colModel = [{name:'myac',index:'', width:70, fixed:true, sortable:false, resize:false,
+                        formatter:'actions',
+                        formatoptions:{
+                            keys:false,
+                            delbutton:false
+{#                                        delOptions:{recreateForm: true, beforeShowForm:beforeDeleteCallback}#}
+{#                                        //editformbutton:true, editOptions:{recreateForm: true, beforeShowForm:beforeEditCallback}#}
+                        }
+                    },
+                    {name:'id',index:'id', width:90, sortable:true, editable: false},
+                    {name:'full_path',index:'full_path', width:700, sortable:true, editable: false, formatter:resourceLabelFormatter},
+                    {name:'full_path',index:'full_path', width:700, sortable:true, editable: false, formatter:resourceLabelFormatter}
+                ];
+        var sortingParameters = [[0, 'asc']];
+        var tableDataAddress = '/tasks/?' + query_str;
+
+        loadTableData(
+            tableDataAddress,
+            "grid-table",
+            colNames,
+            colModel
+        );
+
+        function resourceLabelFormatter(cellvalue, options, rowObject){
+            return '<a href="/users/'+rowObject.id+'/view">'+cellvalue+'</a>';
+        }
+
+
+
+        console.debug('finished initializing the init_html_modal dialog!')
+    }
+</script>
+
+<script type="text/javascript">
+    function destruct_html_modal() {
+        $('#items_table').unbind();
+        $('#html_template').data('modal', null);
+    }
+</script>

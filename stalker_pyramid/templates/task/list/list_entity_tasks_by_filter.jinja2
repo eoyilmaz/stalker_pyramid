@@ -48,13 +48,15 @@
             {% elif entity.entity_type == 'Project'%}
                 query_str = 'has_resource=1&leaf_only=1&project_id={{ entity.id }}';
             {% endif %}
-    
+
             {% if filter.entity_type == 'User' %}
                 query_str = 'has_resource=1&leaf_only=1&responsible_id={{ filter.id }}';
             {% elif filter.entity_type == 'Status'%}
                 query_str += '&status={{ filter.code }}';
             {% endif %}
         {% endif %}
+
+        console.log("query_str: "+ query_str);
 
         $.getJSON('/tasks/?' + query_str).then(function (data) {
             // fill items table with dynamic data
@@ -106,7 +108,7 @@
                     data[i].hour_based_on_bid = meaningful_time_between(bid_seconds, data[i].total_logged_seconds);
                     var st_seconds = to_seconds(data[i].schedule_timing, data[i].schedule_unit );
                     total_hours +=(st_seconds-data[i].total_logged_seconds);
-                console.log('total_hours: '+ total_hours)
+
                     data[i].hour_to_complete = meaningful_time_between(
                                                    st_seconds,
                                                    data[i].total_logged_seconds
@@ -185,3 +187,4 @@
         $('#html_template').data('modal', null);
     }
 </script>
+

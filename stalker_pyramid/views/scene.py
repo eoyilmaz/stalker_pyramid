@@ -99,6 +99,88 @@ logger.setLevel(logging.DEBUG)
 #
 #     return DBSession.connection().execute(sql_query).fetchone()[0]
 #
+@view_config(
+    route_name='create_scene_dialog',
+    renderer='templates/scene/dialog/create_scene_dialog.jinja2'
+)
+def create_scene_dialog(request):
+    """a generic function which will create a dictionary with enough data
+    """
+    logged_in_user = get_logged_in_user(request)
+
+    entity_id = request.params.get('entity_id')
+    entity = Entity.query.filter_by(id=entity_id).first()
+
+    project = None
+    sequence = None
+
+    if entity.entity_type == "Project":
+        project = entity
+    elif entity.entity_type == "Sequence":
+        sequence = entity
+        project = sequence.project
+
+    logger.debug('project_id    : %s' % project.id)
+
+    return {
+        'project': project,
+        'sequence': sequence,
+        'logged_in_user': logged_in_user
+    }
+
+# @view_config(
+#     route_name='create_scene'
+# )
+# def create_scene(request):
+#     """runs when adding a new sequence
+#     """
+#     logged_in_user = get_logged_in_user(request)
+#
+#     name = request.params.get('name')
+#
+#
+#     project_id = request.params.get('project_id')
+#     project = Project.query.filter_by(id=project_id).first()
+#
+#     logger.debug('project_id   : %s' % project_id)
+#
+#     if name and project:
+#         # get descriptions
+#         description = request.params.get('description')
+#
+#         # get the status_list
+#         status_list = StatusList.query.filter_by(
+#             target_entity_type='Sequence'
+#         ).first()
+#
+#         # there should be a status_list
+#         # TODO: you should think about how much possible this is
+#         if status_list is None:
+#             return HTTPServerError(detail='No StatusList found')
+#
+#         new_sequence = Sequence(
+#             name=name,
+#             code=code,
+#             description=description,
+#             status_list=status_list,
+#             status=status,
+#             created_by=logged_in_user,
+#             project=project
+#         )
+#
+#         DBSession.add(new_sequence)
+#
+#     else:
+#         logger.debug('there are missing parameters')
+#         logger.debug('name      : %s' % name)
+#         logger.debug('code      : %s' % code)
+#         logger.debug('status    : %s' % status)
+#         logger.debug('project   : %s' % project)
+#         HTTPServerError()
+#
+#     return HTTPOk()
+
+
 
 @view_config(
     route_name='get_entity_scenes',

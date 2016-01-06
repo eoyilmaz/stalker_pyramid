@@ -59,17 +59,17 @@
 <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/accounting.min.js") }}'></script>
 
 <script type="text/javascript">
-    $(function () {
 
-        var icon_name = get_icon('{{ list_item_type.lower() }}');
-        $('#items_header').append('<i class="' + icon_name + ' bigger-125"></i> {{ list_item_type }}s');
+
+
+        $('#items_header').append('{{ list_item_type }}s');
 
         {% if collapsed %}
             $('#items_header').append('<small class="white">List of {{ list_item_type }}s</small>');
         {% endif %}
 
         var loadTableData = function (address, tableId, cNames, cModel) {
-{#            console.log('loadTableData' + address);#}
+            console.log('loadTableData' + address);
             // fill items table with dynamic data
             $.getJSON(address).then(function (entry_data) {
 
@@ -266,11 +266,5 @@
             });
         };
 
-        loadTableData(
-            tableDataAddress,
-            "grid-table",
-            colNames,
-            colModel
-        );
-    });
+
 </script>

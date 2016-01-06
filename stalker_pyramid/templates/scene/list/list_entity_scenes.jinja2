@@ -42,20 +42,20 @@
             <h5 id="items_header" class="smaller"></h5>
 
             <div class="widget-toolbar">
-{#                {% if has_permission('Create_Scene') %}#}
-{##}
-{#                    &nbsp#}
-{#                    <a data-target="#dialog_template"#}
-{#                       data-toggle="modal"#}
-{#                       data-keyboard=false#}
-{#                       href="{{ request.route_url("create_scene_dialog", id=-1, _query={'project_id': entity.id }) }}"#}
-{#                       class="white">#}
-{#                        <i class="icon-plus"></i>#}
-{#                        New#}
-{#                    </a>#}
-{#                    &nbsp&nbsp#}
-{##}
-{#                {% endif %}#}
+                {% if has_permission('Create_Task') %}
+
+                    &nbsp
+                    <a data-target="#dialog_template"
+                       data-toggle="modal"
+                       data-keyboard=false
+                       href="{{ request.route_url("create_scene_dialog", _query={'entity_id': entity.id }) }}"
+                       class="white">
+                        <i class="icon-plus"></i>
+                        New
+                    </a>
+                    &nbsp&nbsp
+
+                {% endif %}
                 <a href="#" data-action="collapse">
                     <i class="icon-chevron-down"></i>
                 </a>

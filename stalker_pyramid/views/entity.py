@@ -951,12 +951,21 @@ def list_search_result(request):
     entity_id = request.params.get('eid', None)
 
     entity = Entity.query.filter_by(id=entity_id).first()
+    logger.debug("entity_name : %s" % entity.name)
 
     results = []
+    project = None
+    if entity.entity_type == "Task" or entity.entity_type == "Asset" or entity.entity_type == "Shot" or entity.entity_type == "Sequence":
+        project = entity.project
+    elif entity.entity_type == "Project":
+        project = entity
+
+    logger.debug("project_name : %s" % project)
 
     if q_entity_type:
 
-        query_string = '%(class_name)s.query.filter(%(class_name)s.name.ilike(\'%(qString)s\')).order_by(%(class_name)s.name.asc())'
+        query_string = '%(class_name)s.query.filter(%(class_name)s.name.ilike(\'%%%(qString)s%%\')).order_by(%(class_name)s.name.asc())'
+        logger.debug(query_string)
         query_string = query_string % {'class_name': q_entity_type, 'qString': qString}
 
         logger.debug(query_string)
@@ -964,9 +973,15 @@ def list_search_result(request):
 
         results = q.all()
     else:
-        results = Entity.query.filter(
-            Entity.name.ilike('%' + qString + '%')
-        ).order_by(Entity.name.asc()).all()
+        if project:
+            results = Task.query.filter(
+                            Task.name.ilike('%' + qString + '%')
+                        ).filter(Task.project == project).order_by(Task.name.asc()).all()
+        else:
+            results = Entity.query.filter(
+                            Entity.name.ilike('%' + qString + '%')
+                        ).order_by(Entity.name.asc()).all()
+
 
     projects = Project.query.all()
     logged_in_user = get_logged_in_user(request)

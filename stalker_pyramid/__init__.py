@@ -597,7 +597,8 @@ def main(global_config, **settings):
     # *************************************************************************
     # Scene
     config.add_route('get_scenes_children_task_type',  'scenes/children/task_type/')  # json
-
+    config.add_route('create_scene_dialog',  'scenes/create/dialog')  # html
+    config.add_route('create_scene',  'scenes/create')  # html
     # *************************************************************************
     # Sequence
     config.add_route('create_sequence_dialog', 'sequences/{id}/create/dialog')
