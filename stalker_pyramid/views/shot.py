@@ -212,6 +212,67 @@ def get_shots_count(request):
 
     return DBSession.connection().execute(sql_query).fetchone()[0]
 
+@view_config(
+    route_name='get_entity_shots_simple',
+    renderer='json'
+)
+def get_shots_simple(request):
+    """returns all the Shots of the given Project
+    """
+    entity_id = request.matchdict.get('id', -1)
+    entity = Entity.query.filter_by(id=entity_id).first()
+
+    shot_id = request.params.get('entity_id', None)
+
+    logger.debug('get_shots starts ')
+
+    sql_query = """select "Shot_SimpleEntities".id as id,
+                          "Shot_SimpleEntities".name as name
+
+    from "Shots"
+    join "Tasks" as "Shot_Tasks" on "Shot_Tasks".id = "Shots".id
+    join "SimpleEntities" as "Shot_SimpleEntities" on "Shot_SimpleEntities".id = "Shots".id
+
+    %(where_condition)s
+    order by "Shot_SimpleEntities".name
+"""
+
+    # set the content range to prevent JSONRest Store to query the data twice
+    content_range = '%s-%s/%s'
+    where_condition = ''
+
+    if entity.entity_type == 'Sequence':
+        where_condition = 'where "Shot_Sequences".sequence_id = %s' % entity_id
+    elif entity.entity_type == 'Project':
+        where_condition = 'where "Shot_Tasks".project_id = %s' % entity_id
+
+
+    sql_query = sql_query % {'where_condition': where_condition}
+    logger.debug('entity_id : %s' % entity_id)
+
+    # convert to dgrid format right here in place
+    result = DBSession.connection().execute(sql_query)
+
+    return_data = []
+
+    for r in result.fetchall():
+        r_data = {
+            'id': r[0],
+            'name': r[1]
+        }
+
+        return_data.append(r_data)
+
+    shot_count = len(return_data)
+    content_range = content_range % (0, shot_count - 1, shot_count)
+
+    logger.debug('get_shots_simple ends ')
+    resp = Response(
+        json_body=return_data
+    )
+    resp.content_range = content_range
+    return resp
+
 
 @view_config(
     route_name='get_entity_shots',

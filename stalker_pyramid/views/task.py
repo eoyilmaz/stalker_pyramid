@@ -574,6 +574,34 @@ def duplicate_task_hierarchy_dialog(request):
     }
 
 
+def duplicate_task_hierarchy_action(task, parent, name, description):
+    """Duplicates the given task hierarchy.
+
+    Walks through the hierarchy of the given task and duplicates every
+    instance it finds in a new task.
+
+    task: The task that wanted to be duplicated
+
+    :return: A list of stalker.models.task.Task
+    """
+
+    dup_task = walk_and_duplicate_task_hierarchy(task)
+    update_dependencies_in_duplicated_hierarchy(task)
+
+    cleanup_duplicate_residuals(task)
+    # update the parent
+    dup_task.parent = parent
+    # just rename the dup_task
+
+    dup_task.name = name
+    dup_task.code = name
+    dup_task.description = description
+
+    db.DBSession.add(dup_task)
+
+    return dup_task
+
+
 @view_config(
     route_name='duplicate_task_hierarchy'
 )
@@ -600,26 +628,14 @@ def duplicate_task_hierarchy(request):
     parent_id = request.params.get('parent_id', -1)
     parent = Task.query.filter_by(id=parent_id).first()
 
-
     if not parent:
         parent = task.parent
 
     description = request.params.get('dup_task_description', '')
 
     if task:
-        dup_task = walk_and_duplicate_task_hierarchy(task)
-        update_dependencies_in_duplicated_hierarchy(task)
 
-        cleanup_duplicate_residuals(task)
-        # update the parent
-        dup_task.parent = parent
-        # just rename the dup_task
-
-        dup_task.name = name
-        dup_task.code = name
-        dup_task.description = description
-
-        db.DBSession.add(dup_task)
+        duplicate_task_hierarchy_action(task, parent, name, description)
 
         #update_task_statuses_with_dependencies(dup_task)
         #leafs = find_leafs_in_hierarchy(dup_task)

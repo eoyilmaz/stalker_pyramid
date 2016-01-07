@@ -7,6 +7,16 @@
               role='form'
               method="post">
             <div class="row-fluid">
+                <div class='control-group'>
+                    <label class='span3 control-label' for='scene_name'>Scene Name</label>
+                    <div class='span9'>
+                            <input type='text'
+                                   id='scene_name'
+                                   class='input-block-level'
+                                   name='name'
+                                   required>
+                    </div>
+                </div>
                 {# Sequence #}
                 <div class='control-group'>
                     <label class='span3 control-label' for='sequence'>Sequence</label>
@@ -18,39 +28,41 @@
                                 data-placeholder='Sequence'></select>
                     </div>
                 </div>
+
                 {# Temp Scene #}
                 <div class='control-group'>
                     <label class='span3 control-label' for='temp_scene'>Temp Scene</label>
                     <div class='span9'>
-                        <input id='temp_scene'
+                        <select id='temp_scene'
                                 name='temp_scene_id'
                                 class='input-block-level span11'
                                 is_updating=false
-                                data-placeholder='Temp Scene'>
+                                data-placeholder='Temp Scene'></select>
                     </div>
                 </div>
                 {# Temp Shot #}
                 <div class='control-group'>
                     <label class='span3 control-label' for='temp_shot'>Temp Shot</label>
                     <div class='span9'>
-                        <input id='temp_shot'
+                        <select id='temp_shot'
                                 name='temp_shot_id'
                                 class='input-block-level span11'
                                 is_updating=false
-                                data-placeholder='Temp Shot'>
+                                data-placeholder='Temp Shot'></select>
 
                     </div>
                 </div>
                 {# Shot Count #}
                 <div class='control-group'>
-                    <label for='shot_count' class='span2 control-label'># Shots</label>
-
-                    <div class='span10'>
+                    <label for='shot_count' class='span3 control-label'># Shots</label>
+                    <div class='span9'>
                         <input id='shot_count'
-                               class='input-block-level'
                                name='shot_count'
                                min=1
-                               max=100
+                               max=999
+                               type='text'
+                               placeholder='Shot Count'
+                               value=1
                                required />
                     </div>
                 </div>
@@ -65,7 +77,7 @@
                                   style="overflow: hidden;
                                              word-wrap: break-word;
                                              resize: horizontal;
-                                             height: 50px;"
+                                             height: 150px;"
                         ></textarea>
                     </div>
                 </div>
@@ -74,7 +86,7 @@
     </div>
 </div>
 
-
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/fuelux/fuelux.spinner.min.js") }}'></script>
 <script type="text/javascript">
     function init_dialog() {
         console.debug('starting to initialize scene dialog!!!');
@@ -99,7 +111,29 @@
                 });
         {% endif %}
 
+        {# ***************************************************************** #}
+        {# Temp Scene #}
+        var temp_scene = $('#temp_scene');
+        var deferred = chosen_field_creator(temp_scene, '/entities/{{ project.id }}/scenes/simple/', option_template);
 
+        {# ***************************************************************** #}
+        {# Temp Shot #}
+        var temp_shot = $('#temp_shot');
+        var deferred = chosen_field_creator(temp_shot, '/entities/{{ project.id }}/shots/simple/', option_template);
+
+        {# ***************************************************************** #}
+        {# Shots #}
+         $('#shot_count').ace_spinner({
+            value:1,
+            min:1,
+            max:99,
+            step:1,
+            btn_up_class:'btn-info',
+            btn_down_class:'btn-info'}).on('change', function(){
+            // check if it is in the range
+            var curr_value = $(this).val();
+            $(this).val(curr_value <= 1 ? 1 : curr_value);
+        });
         {# ***************************************************************** #}
         {# Submit Button #}
         var submit_button = $('#dialog_template_submit_button');

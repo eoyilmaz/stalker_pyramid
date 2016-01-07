@@ -21,84 +21,20 @@ import datetime
 
 from pyramid.httpexceptions import HTTPServerError, HTTPOk
 from pyramid.view import view_config
-
+import transaction
 from stalker.db import DBSession
-from stalker import Sequence, StatusList, Status, Shot, Project, Entity
+from stalker import Sequence, StatusList, Status, Shot, Project, Entity, Task
 
 import logging
 from webob import Response
 from stalker_pyramid.views import get_logged_in_user, PermissionChecker, \
     get_parent_task_status, to_seconds
+from stalker_pyramid.views.task import duplicate_task_hierarchy_action
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 
-#
-# @view_config(
-#     route_name='get_scenes_children_task_type',
-#     renderer='json'
-# )
-# def get_scenes_children_task_type(request):
-#     """returns the Task Types defined under the Scene container
-#     """
-#
-#     sql_query = """select
-#         "SimpleEntities".id as type_id,
-#         "SimpleEntities".name as type_name
-#     from "SimpleEntities"
-#     join "SimpleEntities" as "Task_SimpleEntities" on "SimpleEntities".id = "Task_SimpleEntities".type_id
-#     join "Tasks" on "Task_SimpleEntities".id = "Tasks".id
-#     join "Tasks" on "Tasks".parent_id = "Scenes".id
-#     group by "SimpleEntities".id, "SimpleEntities".name
-#     order by "SimpleEntities".name"""
-#
-#     result = DBSession.connection().execute(sql_query)
-#
-#     return_data = [
-#         {
-#             'id': r[0],
-#             'name': r[1]
-#
-#         }
-#         for r in result.fetchall()
-#     ]
-#
-#     content_range = '%s-%s/%s'
-#
-#     type_count = len(return_data)
-#     content_range = content_range % (0, type_count - 1, type_count)
-#
-#     logger.debug('content_range : %s' % content_range)
-#
-#     resp = Response(
-#         json_body=return_data
-#     )
-#     resp.content_range = content_range
-#     return resp
-#
-#
-# @view_config(
-#     route_name='get_entity_scenes_count',
-#     renderer='json'
-# )
-# @view_config(
-#     route_name='get_project_scenes_count',
-#     renderer='json'
-# )
-# def get_scenes_count(request):
-#     """returns the count of Scenes in the given Project
-#     """
-#     project_id = request.matchdict.get('id', -1)
-#
-#     sql_query = """select
-#         count(1)
-#     from "Scenes"
-#         join "Tasks" on "Scenes".id = "Tasks".id
-#     where "Tasks".project_id = %s""" % project_id
-#
-#     return DBSession.connection().execute(sql_query).fetchone()[0]
-#
 @view_config(
     route_name='create_scene_dialog',
     renderer='templates/scene/dialog/create_scene_dialog.jinja2'
@@ -128,58 +64,128 @@ def create_scene_dialog(request):
         'logged_in_user': logged_in_user
     }
 
-# @view_config(
-#     route_name='create_scene'
-# )
-# def create_scene(request):
-#     """runs when adding a new sequence
-#     """
-#     logged_in_user = get_logged_in_user(request)
-#
-#     name = request.params.get('name')
-#
-#
-#     project_id = request.params.get('project_id')
-#     project = Project.query.filter_by(id=project_id).first()
-#
-#     logger.debug('project_id   : %s' % project_id)
-#
-#     if name and project:
-#         # get descriptions
-#         description = request.params.get('description')
-#
-#         # get the status_list
-#         status_list = StatusList.query.filter_by(
-#             target_entity_type='Sequence'
-#         ).first()
-#
-#         # there should be a status_list
-#         # TODO: you should think about how much possible this is
-#         if status_list is None:
-#             return HTTPServerError(detail='No StatusList found')
-#
-#         new_sequence = Sequence(
-#             name=name,
-#             code=code,
-#             description=description,
-#             status_list=status_list,
-#             status=status,
-#             created_by=logged_in_user,
-#             project=project
-#         )
-#
-#         DBSession.add(new_sequence)
-#
-#     else:
-#         logger.debug('there are missing parameters')
-#         logger.debug('name      : %s' % name)
-#         logger.debug('code      : %s' % code)
-#         logger.debug('status    : %s' % status)
-#         logger.debug('project   : %s' % project)
-#         HTTPServerError()
-#
-#     return HTTPOk()
 
+def shot_no(no):
+    s_no = no*10
+    if s_no < 100:
+        s_no_str = '00%s' % s_no
+    elif 100 <= s_no < 1000:
+        s_no_str = '0%s' % s_no
+    else:
+        s_no_str = '%s' %s_no
+    return s_no_str
+
+
+@view_config(
+    route_name='create_scene'
+)
+def create_scene(request):
+    """runs when adding a new sequence
+    """
+    logged_in_user = get_logged_in_user(request)
+
+
+
+    sequence_id = request.params.get('sequence_id')
+    sequence = Sequence.query.filter_by(id=sequence_id).first()
+
+    scene_name = request.params.get('name')
+
+    temp_scene_id = request.params.get('temp_scene_id')
+    temp_scene = Task.query.filter_by(id=temp_scene_id).first()
+
+    temp_shot_id = request.params.get('temp_shot_id')
+    temp_shot = Shot.query.filter_by(id=temp_shot_id).first()
+
+    shot_count = request.params.get('shot_count')
+
+    logger.debug('sequence_id   : %s' % sequence_id)
+
+    if sequence and scene_name and temp_scene and temp_shot and shot_count:
+        # get descriptions
+        description = request.params.get('description', '')
+        new_scene = duplicate_task_hierarchy_action(temp_scene, sequence, scene_name, description)
+        logger.debug('new_scene   : %s' % new_scene.name)
+        shots = Task.query.filter(Task.name == 'Shots').filter(Task.parent == new_scene).first()
+        if not shots:
+            transaction.abort()
+            return Response('There is no shots under scene task', 500)
+        for i in range(1, int(shot_count)+1):
+            new_shot_name = '%s_%s' % (scene_name, shot_no(i))
+            new_shot = duplicate_task_hierarchy_action(temp_shot, shots, new_shot_name, description)
+            logger.debug('new_shot   : %s' % new_shot.name)
+            new_shot.sequences = [sequence]
+    else:
+        logger.debug('there are missing parameters')
+        logger.debug('scene_name      : %s' % scene_name)
+        logger.debug('temp_shot_id      : %s' % temp_shot_id)
+        logger.debug('temp_scene_id    : %s' % temp_scene_id)
+        logger.debug('shot_count   : %s' % shot_count)
+        transaction.abort()
+        return Response('There is no shots under scene task', 500)
+
+    return Response('Task %s is created successfully' % new_scene)
+
+@view_config(
+    route_name='get_entity_scenes_simple',
+    renderer='json'
+)
+def get_scenes_simple(request):
+    """returns all the Scenes of the given Project
+    """
+
+    logger.debug('get_entity_scenes_simple starts ')
+
+    entity_id = request.matchdict.get('id', -1)
+    entity = Entity.query.filter_by(id=entity_id).first()
+    logger.debug('entity_id : %s' % entity_id)
+
+    sql_query =""" select "Scene_SimpleEntities".id as id,
+       "Scene_SimpleEntities".name as name
+
+    from "Tasks"
+    join "SimpleEntities" as "Scene_SimpleEntities" on "Scene_SimpleEntities".id = "Tasks".id
+    join "SimpleEntities" as "Type_SimpleEntities" on "Type_SimpleEntities".id = "Scene_SimpleEntities".type_id
+
+    where "Type_SimpleEntities".name = 'Scene' %(where_condition)s
+
+    order by "Scene_SimpleEntities".name """
+
+    # set the content range to prevent JSONRest Store to query the data twice
+    content_range = '%s-%s/%s'
+    where_condition = ''
+    project_id = ''
+
+    if entity.entity_type == 'Project':
+        where_condition = 'and "Tasks".project_id = %s' % entity.id
+        project_id = entity.id
+
+    elif entity.entity_type == 'Sequence':
+        where_condition = 'where "Tasks".parent_id = %s' % entity_id
+        project_id = entity.project.id
+
+    project = Project.query.filter(Project.id == project_id).first()
+    sql_query = sql_query % {'where_condition': where_condition}
+
+    result = DBSession.connection().execute(sql_query)
+
+    return_data = []
+
+    for r in result.fetchall():
+        r_data = {
+            'id': r[0],
+            'name': r[1]
+        }
+        return_data.append(r_data)
+
+
+    content_range = content_range % (0, len(return_data) - 1, len(return_data))
+    logger.debug('get_scenes ends ')
+    resp = Response(
+        json_body=return_data
+    )
+    resp.content_range = content_range
+    return resp
 
 
 @view_config(
