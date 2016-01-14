@@ -84,8 +84,6 @@ def create_scene(request):
     """
     logged_in_user = get_logged_in_user(request)
 
-
-
     sequence_id = request.params.get('sequence_id')
     sequence = Sequence.query.filter_by(id=sequence_id).first()
 
@@ -104,7 +102,7 @@ def create_scene(request):
     if sequence and scene_name and temp_scene and temp_shot and shot_count:
         # get descriptions
         description = request.params.get('description', '')
-        new_scene = duplicate_task_hierarchy_action(temp_scene, sequence, scene_name, description)
+        new_scene = duplicate_task_hierarchy_action(temp_scene, sequence, scene_name, description, logged_in_user)
         logger.debug('new_scene   : %s' % new_scene.name)
         shots = Task.query.filter(Task.name == 'Shots').filter(Task.parent == new_scene).first()
         if not shots:
@@ -112,7 +110,7 @@ def create_scene(request):
             return Response('There is no shots under scene task', 500)
         for i in range(1, int(shot_count)+1):
             new_shot_name = '%s_%s' % (scene_name, shot_no(i))
-            new_shot = duplicate_task_hierarchy_action(temp_shot, shots, new_shot_name, description)
+            new_shot = duplicate_task_hierarchy_action(temp_shot, shots, new_shot_name, description, logged_in_user)
             logger.debug('new_shot   : %s' % new_shot.name)
             new_shot.sequences = [sequence]
     else:

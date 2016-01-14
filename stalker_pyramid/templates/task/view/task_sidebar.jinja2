@@ -21,50 +21,86 @@
                 <i class="icon-pencil"></i>
             </button>
         {% endif %}
-
-        {% if (logged_in_user in task.resources or logged_in_user in task.responsible) and task.status.code == 'WIP' and task.is_leaf %}
-            <button id='task_request_review_button'
-                    class="btn btn-small btn-warning tooltip-success"
-                    data-rel="tooltip"
-                    data-placement="bottom"
-                    title="Request Review"
-                    data-target="#dialog_template"
+        {% if has_permission('Create_Task') and entity.project in logged_in_user.projects %}
+            <button data-target="#dialog_template"
                     data-toggle="modal"
                     data-keyboard="false"
-                    href='/tasks/{{ task.id }}/request_review/dialog?came_from={{ request.current_route_path() }}&request_review_mode=Final'
-                    >
-                <i class="icon-comment-alt"></i>
+                    href='{{ request.route_url("duplicate_task_hierarchy_dialog", id=task.id) }}'
+                    class="btn btn-small btn-success tooltip-info"
+                    data-rel="tooltip" data-placement="bottom"
+                    title="Duplicate Hierarchy">
+                <i class="icon-copy"></i>
             </button>
         {% else %}
             <button disabled="true"
-                    class="btn btn-small btn-warning tooltip-success"
+                    class="btn btn-small btn-success tooltip-info"
                     data-rel="tooltip" data-placement="bottom"
-                    title="Request Review">
-                <i class="icon-comment-alt"></i>
+                    title="Duplicate Hierarchy">
+                <i class="icon-copy"></i>
             </button>
         {% endif %}
-
-        {% if  (logged_in_user in task.responsible or has_permission('Create_Review')) and task.status.code == 'CMPL' and (entity.project in logged_in_user.projects)%}
-            <button id='task_review_button'
-                    class="btn btn-small btn-purple tooltip-success"
-                    data-rel="tooltip"
-                    data-placement="bottom"
-                    title="Request Revision Task"
-                    data-target="#dialog_template"
+        {% if has_permission('Create_Task') and entity.project in logged_in_user.projects %}
+            <button data-target="#dialog_template"
                     data-toggle="modal"
                     data-keyboard="false"
-                    href='/tasks/{{ task.id }}/review/dialog?came_from={{ request.current_route_path() }}&review_mode=request_revision&forced=1'
-                    >
-                <i class="icon-comments"></i>
+                    href='{{ request.route_url("create_task_dialog", id=-1, _query={'parent_id':entity.id }) }}'
+                    class="btn btn-small btn-purple tooltip-info"
+                    data-rel="tooltip" data-placement="bottom"
+                    title="Create Child Task">
+                <i class="icon-plus"></i>
             </button>
         {% else %}
             <button disabled="true"
-                    class="btn btn-small btn-purple tooltip-success"
+                    class="btn btn-small btn-purple tooltip-info"
                     data-rel="tooltip" data-placement="bottom"
-                    title="Review Task">
-                <i class="icon-comments"></i>
+                    title="Create Child Task">
+                <i class="icon-plus"></i>
             </button>
         {% endif %}
+
+{#        {% if (logged_in_user in task.resources or logged_in_user in task.responsible) and task.status.code == 'WIP' and task.is_leaf %}#}
+{#            <button id='task_request_review_button'#}
+{#                    class="btn btn-small btn-warning tooltip-success"#}
+{#                    data-rel="tooltip"#}
+{#                    data-placement="bottom"#}
+{#                    title="Request Review"#}
+{#                    data-target="#dialog_template"#}
+{#                    data-toggle="modal"#}
+{#                    data-keyboard="false"#}
+{#                    href='/tasks/{{ task.id }}/request_review/dialog?came_from={{ request.current_route_path() }}&request_review_mode=Final'#}
+{#                    >#}
+{#                <i class="icon-comment-alt"></i>#}
+{#            </button>#}
+{#        {% else %}#}
+{#            <button disabled="true"#}
+{#                    class="btn btn-small btn-warning tooltip-success"#}
+{#                    data-rel="tooltip" data-placement="bottom"#}
+{#                    title="Request Review">#}
+{#                <i class="icon-comment-alt"></i>#}
+{#            </button>#}
+{#        {% endif %}#}
+
+{#        {% if  (logged_in_user in task.responsible or has_permission('Create_Review')) and task.status.code == 'CMPL' and (entity.project in logged_in_user.projects)%}#}
+{#            <button id='task_review_button'#}
+{#                    class="btn btn-small btn-purple tooltip-success"#}
+{#                    data-rel="tooltip"#}
+{#                    data-placement="bottom"#}
+{#                    title="Request Revision Task"#}
+{#                    data-target="#dialog_template"#}
+{#                    data-toggle="modal"#}
+{#                    data-keyboard="false"#}
+{#                    href='/tasks/{{ task.id }}/review/dialog?came_from={{ request.current_route_path() }}&review_mode=request_revision&forced=1'#}
+{#                    >#}
+{#                <i class="icon-comments"></i>#}
+{#            </button>#}
+{#        {% else %}#}
+{#            <button disabled="true"#}
+{#                    class="btn btn-small btn-purple tooltip-success"#}
+{#                    data-rel="tooltip" data-placement="bottom"#}
+{#                    title="Review Task">#}
+{#                <i class="icon-comments"></i>#}
+{#            </button>#}
+{#        {% endif %}#}
         {% if has_permission('Delete_Task') and (entity.project in logged_in_user.projects)%}
             <button class="btn btn-small btn-danger tooltip-success"
                     id="delete_task_button"
@@ -83,16 +119,17 @@
                 <i class="icon-trash"></i>
             </button>
         {% endif %}
+
     </div>
 
     <div class="sidebar-shortcuts-mini" id="sidebar-shortcuts-mini">
         <span class="btn btn-info"></span>
 
-        <span class="btn btn-warning"></span>
-
-        <span class="btn btn-purple"></span>
+        <span class="btn btn-success"></span>
 
         <span class="btn btn-danger"></span>
+
+        <span class="btn btn-purple"></span>
     </div>
 </div><!--#sidebar-shortcuts-->
 
@@ -185,6 +222,17 @@
             get_icon('review'),
             '/tasks/{{ task.id }}/reviews/count/'
         );
+
+        $('#refresh_task_button').on('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            $.post('/tasks/{{ task.id }}/fix/statuses/').done(function (response_text) {
+                window.location.reload();
+            }).fail(function (jqXHR) {
+                bootbox.alert(jqXHR.responseText);
+            });
+        });
 
         $('#delete_task_button').on('click', function (e) {
             e.preventDefault();

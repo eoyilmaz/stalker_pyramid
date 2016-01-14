@@ -40,18 +40,39 @@
                     <div id='schedule_timing_bar' class="bar bar-rts" style="width: 0;"></div>
             </div>
         </div><!--/widget-main-->
-        {% if (entity.schedule_seconds - entity.total_logged_seconds)==0  and entity.status.code=='WIP' and (logged_in_user in entity.resources or has_permission('Create_Review') and (entity.project in logged_in_user.projects)) %}
+        {% if entity.status.code=='WIP' and (logged_in_user in entity.resources or has_permission('Create_Review') and (entity.project in logged_in_user.projects)) %}
             <div class="widget-toolbox clearfix">
-                <button id='task_review_button'
-                        class="btn btn-small btn-danger span12"
-                        data-placement="bottom"
-                        title="Request Extra Time"
-                        data-target="#dialog_template"
-                        data-toggle="modal"
-                        data-keyboard="false"
-                        href="/tasks/{{entity.id}}/request_extra_time/dialog?came_from={{request.current_route_path() }}"
-                        >
-                    <i class="icon-time bigger-130"></i> Request Extra Time</button>
+                <button id='task_request_review_button'
+                            class="btn btn-small btn-warning span6"
+                            data-placement="bottom"
+                            title="Request Review"
+                            data-target="#dialog_template"
+                            data-toggle="modal"
+                            data-keyboard="false"
+                            href='/tasks/{{ entity.id }}/request_review/dialog?came_from={{ request.current_route_path() }}&request_review_mode=Final'
+                            >
+                        <i class="icon-comment-alt bigger-130"></i> Request Review</button>
+                {% if (entity.schedule_seconds - entity.total_logged_seconds)==0 %}
+
+                    <button id='task_review_button'
+                            class="btn btn-small btn-danger span6"
+                            data-placement="bottom"
+                            title="Request Extra Time"
+                            data-target="#dialog_template"
+                            data-toggle="modal"
+                            data-keyboard="false"
+                            href="/tasks/{{entity.id}}/request_extra_time/dialog?came_from={{request.current_route_path() }}"
+                            >
+                        <i class="icon-time bigger-130"></i> Request Extra Time</button>
+                {% else %}
+                    <button
+                            disabled="true"
+                            class="btn btn-small btn-danger span6"
+                            data-placement="bottom"
+                            title="Request Extra Time">
+                        <i class="icon-time bigger-130"></i> Request Extra Time</button>
+                {% endif %}
+
             </div>
         {% endif %}
     </div><!--/widget-body-->

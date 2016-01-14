@@ -647,7 +647,7 @@ def main(global_config, **settings):
     config.add_route('force_task_status',                   'tasks/{id}/force_status/{status_code}')
     config.add_route('force_tasks_status',                  'tasks/force_status/{status_code}')
     config.add_route('resume_task_dialog',                  'tasks/{id}/resume/dialog')
-    config.add_route('resume_task',                  'tasks/{id}/resume')
+    config.add_route('resume_task',                         'tasks/{id}/resume')
     config.add_route('review_task',                         'tasks/{id}/review')
     config.add_route('cleanup_task_new_reviews',            'tasks/{id}/cleanup_new_reviews')
 
@@ -668,23 +668,23 @@ def main(global_config, **settings):
     config.add_route('get_tasks',         'tasks/')
     config.add_route('get_tasks_count',         'tasks/count/')
 
-    config.add_route('get_task',          'tasks/{id}/')
-    config.add_route('get_task_events',   'tasks/{id}/events/')  #json
-    config.add_route('get_task_children_task_types',  'tasks/{id}/children_task_types/')  # json
-    config.add_route('get_task_children_tasks',  'tasks/{id}/children_tasks/')  # json
-    config.add_route('get_task_leafs_in_hierarchy', 'tasks/{id}/leafs_in_hierarchy/') #json
+    config.add_route('get_task',                        'tasks/{id}/')
+    config.add_route('get_task_events',                 'tasks/{id}/events/')  #json
+    config.add_route('get_task_children_task_types',    'tasks/{id}/children_task_types/')  # json
+    config.add_route('get_task_children_tasks',         'tasks/{id}/children_tasks/')  # json
+    config.add_route('get_task_leafs_in_hierarchy',     'tasks/{id}/leafs_in_hierarchy/') #json
 
-    config.add_route('get_task_related_entities',  'tasks/{id}/related/{e_type}/{d_type}/') # json
-    config.add_route('get_task_dependency',  'tasks/{id}/dependency/{type}/') # json
-    config.add_route('get_task_tickets',  'tasks/{id}/tickets')  # json
+    config.add_route('get_task_related_entities',       'tasks/{id}/related/{e_type}/{d_type}/') # json
+    config.add_route('get_task_dependency',             'tasks/{id}/dependency/{type}/') # json
+    config.add_route('get_task_tickets',                'tasks/{id}/tickets')  # json
 
-    config.add_route('get_task_reviews',  'tasks/{id}/reviews/')  # json
+    config.add_route('get_task_reviews',        'tasks/{id}/reviews/')  # json
     config.add_route('get_task_reviews_count',  'tasks/{id}/reviews/count/')  # json
-    config.add_route('get_task_reviewers',  'tasks/{id}/reviewers/')  # json
-    config.add_route('get_task_last_reviews',  'tasks/{id}/last_reviews/') #json
+    config.add_route('get_task_reviewers',      'tasks/{id}/reviewers/')  # json
+    config.add_route('get_task_last_reviews',   'tasks/{id}/last_reviews/') #json
 
-    config.add_route('request_review',     'tasks/{id}/request_review')
-    config.add_route('request_review_task_dialog',     'tasks/{id}/request_review/dialog')
+    config.add_route('request_review',                  'tasks/{id}/request_review')
+    config.add_route('request_review_task_dialog',      'tasks/{id}/request_review/dialog')
 
     config.add_route('approve_task',   'tasks/{id}/approve')
     config.add_route('request_revision',   'tasks/{id}/request_revision')

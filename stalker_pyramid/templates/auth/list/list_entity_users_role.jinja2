@@ -84,6 +84,13 @@
             tableDataAddress = '{{ request.route_path('get_entity_users', id=entity.id) }}';
         {% endif %}
 
+        loadTableData(
+            tableDataAddress,
+            "grid-table",
+            colNames,
+            colModel
+        );
+
         function resourceLabelFormatter(cellvalue, options, rowObject){
             return '<a href="/users/'+rowObject.id+'/view">'+cellvalue+'</a>';
         }

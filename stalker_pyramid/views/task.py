@@ -383,7 +383,7 @@ def fix_task_schedule_info(request):
     return HTTPOk()
 
 
-def duplicate_task(task):
+def duplicate_task(task, user):
     """Duplicates the given task without children.
 
     :param task: a stalker.models.task.Task instance
@@ -418,7 +418,7 @@ def duplicate_task(task):
         bid_unit=task.bid_unit,
         computed_end=task.computed_end,
         computed_start=task.computed_start,
-        created_by=task.created_by,
+        created_by=user,
         description=task.description,
         is_milestone=task.is_milestone,
         resources=task.resources,
@@ -477,7 +477,7 @@ def find_leafs_in_hierarchy(task, leafs=None):
     return leafs
 
 
-def walk_and_duplicate_task_hierarchy(task):
+def walk_and_duplicate_task_hierarchy(task, user):
     """Walks through task hierarchy and creates duplicates of all the tasks
     it finds
 
@@ -487,11 +487,11 @@ def walk_and_duplicate_task_hierarchy(task):
     # start from the given task
     logger.debug('duplicating task : %s' % task)
     logger.debug('task.children    : %s' % task.children)
-    dup_task = duplicate_task(task)
+    dup_task = duplicate_task(task, user)
     task.duplicate = dup_task
     for child in task.children:
         logger.debug('duplicating child : %s' % child)
-        duplicated_child = walk_and_duplicate_task_hierarchy(child)
+        duplicated_child = walk_and_duplicate_task_hierarchy(child, user)
         duplicated_child.parent = dup_task
     return dup_task
 
@@ -574,7 +574,7 @@ def duplicate_task_hierarchy_dialog(request):
     }
 
 
-def duplicate_task_hierarchy_action(task, parent, name, description):
+def duplicate_task_hierarchy_action(task, parent, name, description, user):
     """Duplicates the given task hierarchy.
 
     Walks through the hierarchy of the given task and duplicates every
@@ -584,8 +584,9 @@ def duplicate_task_hierarchy_action(task, parent, name, description):
 
     :return: A list of stalker.models.task.Task
     """
+    utc_now = local_to_utc(datetime.datetime.now())
 
-    dup_task = walk_and_duplicate_task_hierarchy(task)
+    dup_task = walk_and_duplicate_task_hierarchy(task, user)
     update_dependencies_in_duplicated_hierarchy(task)
 
     cleanup_duplicate_residuals(task)
@@ -617,6 +618,7 @@ def duplicate_task_hierarchy(request):
     """
 
     logger.debug('duplicate_task_hierarchy is running')
+    logged_in_user = get_logged_in_user(request)
 
     task_id = request.matchdict.get('id')
     task = Task.query.filter_by(id=task_id).first()
@@ -635,7 +637,7 @@ def duplicate_task_hierarchy(request):
 
     if task:
 
-        duplicate_task_hierarchy_action(task, parent, name, description)
+        duplicate_task_hierarchy_action(task, parent, name, description, logged_in_user)
 
         #update_task_statuses_with_dependencies(dup_task)
         #leafs = find_leafs_in_hierarchy(dup_task)
@@ -646,6 +648,8 @@ def duplicate_task_hierarchy(request):
 
     # invalidate all caches
     invalidate_all_caches()
+
+    request.session.flash('success:Task %s is duplicated successfully' % task.name)
 
     return Response('Task %s is duplicated successfully' % task.id)
 
@@ -1220,6 +1224,8 @@ def update_task(request):
 
     # invalidate all caches
     invalidate_all_caches()
+
+
 
     return Response('Task updated successfully')
 

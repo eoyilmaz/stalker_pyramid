@@ -43,7 +43,7 @@
                 </span>
                     {% if has_permission('Create_Review') and (entity.project in logged_in_user.projects) and entity.is_leaf%}
                         {% if (entity.schedule_model !='duration') %}
-                            {% if (entity.status.code not in ['CMPL', 'DREV', 'WFD', 'RTS']) %}
+                            {% if (entity.status.code not in ['DREV', 'WFD', 'RTS']) %}
                                 <div class="inline position-relative">
                                     <button class="btn btn-minier bigger dropdown-toggle btn-status_{{ entity.status.code.lower() }}"
                                     data-toggle="dropdown">
@@ -66,34 +66,34 @@
                                                 </a>
                                             </li>
                                             {% if entity.status.code == 'WIP'%}
-                                            <li>
-                                            <a href="/tasks/{{entity.id}}/force_status/STOP/dialog?came_from={{ request.current_route_path() }}"
-                                               class="tooltip-success"
-                                               data-rel="tooltip"
-                                               title="Stop Task"
-                                               data-target="#dialog_template"
-                                               data-toggle="modal"
-                                               data-keyboard=false
-                                               data-placement="top">
-                                                   <span class="status_stop-text">
-                                                       <i class="icon-stop bigger-110"></i>Stop Task
-                                                   </span>
-                                            </a>
-                                        </li>
-                                            <li>
-                                            <a href="/tasks/{{entity.id}}/force_status/OH/dialog?came_from={{ request.current_route_path() }}"
-                                               class="tooltip-success"
-                                               data-rel="tooltip"
-                                               title="Hold Task"
-                                               data-target="#dialog_template"
-                                               data-toggle="modal"
-                                               data-keyboard=false
-                                               data-placement="top">
-                                                   <span class="status_oh-text">
-                                                       <i class="icon-pause bigger-110"></i>Hold Task
-                                                   </span>
-                                            </a>
-                                        </li>
+                                                <li>
+                                                    <a href="/tasks/{{entity.id}}/force_status/STOP/dialog?came_from={{ request.current_route_path() }}"
+                                                       class="tooltip-success"
+                                                       data-rel="tooltip"
+                                                       title="Stop Task"
+                                                       data-target="#dialog_template"
+                                                       data-toggle="modal"
+                                                       data-keyboard=false
+                                                       data-placement="top">
+                                                           <span class="status_stop-text">
+                                                               <i class="icon-stop bigger-110"></i>Stop Task
+                                                           </span>
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <a href="/tasks/{{entity.id}}/force_status/OH/dialog?came_from={{ request.current_route_path() }}"
+                                                       class="tooltip-success"
+                                                       data-rel="tooltip"
+                                                       title="Hold Task"
+                                                       data-target="#dialog_template"
+                                                       data-toggle="modal"
+                                                       data-keyboard=false
+                                                       data-placement="top">
+                                                           <span class="status_oh-text">
+                                                               <i class="icon-pause bigger-110"></i>Hold Task
+                                                           </span>
+                                                    </a>
+                                                </li>
                                             {% endif %}
                                         {% endif %}
                                         {% if (entity.status.code in ['STOP', 'OH']) %}
@@ -112,6 +112,25 @@
                                                 </a>
                                             </li>
                                         {% endif %}
+                                        {% if (entity.status.code in ['CMPL']) %}
+                                            {% if  (logged_in_user in entity.responsible or has_permission('Create_Review')) and entity.status.code == 'CMPL' and (entity.project in logged_in_user.projects)%}
+                                                <li>
+                                                    <a href='/tasks/{{ entity.id }}/review/dialog?came_from={{ request.current_route_path() }}&review_mode=request_revision&forced=1'
+                                                       class="tooltip-success"
+                                                       data-rel="tooltip"
+                                                       title="Request Revision"
+                                                       data-target="#dialog_template"
+                                                       data-toggle="modal"
+                                                       data-keyboard=false
+                                                       data-placement="top">
+                                                           <span class="purple">
+                                                               <i class="icon-comment-alt bigger-110"></i>Request Revision"
+                                                           </span>
+                                                    </a>
+                                                </li>
+
+                                            {% endif %}
+                                        {% endif %}
                                     </ul>
                                  </div>
                              {% endif %}
@@ -126,20 +145,38 @@
                 </div>
             </div>
             <div class="widget-toolbar">
-                    <a id='watch_or_unwatch_task_button'
-                       class="btn btn-inverse btn-small"
-                        {% if logged_in_user in entity.watchers %}
-                           title='Unwatch this task'
-                           href="/tasks/{{ entity.id }}/unwatch"
-                           watching='true'>
-                            <i class="icon-eye-close"></i>
-                        {% else %}
-                           title='Watch this task'
-                           href="/tasks/{{ entity.id }}/watch"
-                           watching='false'>
-                            <i class="icon-eye-open"></i>
-                        {% endif %}
-                    </a>
+                {% if (logged_in_user in entity.resources or logged_in_user in entity.responsible) and entity.status.code == 'WIP' and entity.is_leaf %}
+                    <button id='task_request_review_button'
+                            class="btn btn-small btn-warning tooltip-success"
+                            data-rel="tooltip"
+                            data-placement="bottom"
+                            title="Request Review"
+                            data-target="#dialog_template"
+                            data-toggle="modal"
+                            data-keyboard="false"
+                            href='/tasks/{{ entity.id }}/request_review/dialog?came_from={{ request.current_route_path() }}&request_review_mode=Final'
+                            >
+                        <i class="icon-comment-alt"></i>
+                    </button>
+                {% endif %}
+
+
+
+                <a id='watch_or_unwatch_task_button'
+                   class="btn btn-inverse btn-small"
+                    {% if logged_in_user in entity.watchers %}
+                       title='Unwatch this task'
+                       href="/tasks/{{ entity.id }}/unwatch"
+                       watching='true'>
+                        <i class="icon-eye-close"></i>
+                    {% else %}
+                       title='Watch this task'
+                       href="/tasks/{{ entity.id }}/watch"
+                       watching='false'>
+                        <i class="icon-eye-open"></i>
+                    {% endif %}
+                </a>
+
                 <a id='refresh_task_button'  title='Fix Task Status' href="/tasks/{{ entity.id }}/fix/statuses/"
                    class="btn btn-inverse btn-small">
                     <i class="icon-refresh"></i>

@@ -2,7 +2,9 @@
 
 <div class='row-fluid'>
     <div class="row-fluid">
+
         <div id="information" class="infobox-content"></div>
+
     </div>
     <div class="hr dotted"></div>
     <form id='time_log_form'
@@ -214,7 +216,11 @@
 
 
     </form>
-    <div class='span9'>
+    <div class='row-fluid'>
+        {% if time_log %}
+        <p>This timelog is created by <a href="/users/{{ time_log.created_by.id }}/view "> {{ time_log.created_by.name }}</a> and updated by  <a href="/users/{{ time_log.updated_by.id }}/view "> {{ time_log.updated_by.name }}</a>
+                </p>
+        {% endif %}
     </div>
 
 </div>
@@ -250,8 +256,8 @@ function init_dialog() {
 
     {# ***************************************************************** #}
     var event_dialog = $('#dialog_template');
-var start_date_value;
-var end_date_value
+    var start_date_value;
+    var end_date_value;
     if(event_dialog.attr('start') && event_dialog.attr('end')){
         start_date_value = new Date(event_dialog.attr('start'));
         end_date_value = new Date(event_dialog.attr('end'));
@@ -529,6 +535,14 @@ var end_date_value
 
         start_time_value = start_date_value;
         end_time_value = end_date_value;
+
+        console.log('information.append')
+        information.append(
+                '<span class="pull_left"><div id="message" class="alert alert-warning bigger-110">' +
+                '<strong>Created By: </strong> {{ time_log.created_by.name }}'+
+                '<br/><strong>Updated By: </strong> {{ time_log.updated_by.name }}' +
+                '</div></span>'
+            );
 
         update_hours_to_complete();
 
