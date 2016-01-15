@@ -374,7 +374,7 @@
                                 <div class="space-4"></div>
                                 {% if entity.entity_type in ['Asset', 'Shot', 'Task'] %}
 
-                                    {% if entity.type.name == 'Scene' or entity.entity_type == 'Shot'%}
+                                    {% if entity.type.name == 'Props' or entity.type.name == 'Active Props' or entity.type.name == 'Scene' or entity.entity_type == 'Shot'%}
                                         <div class="row-fluid">
                                             {% include 'entity/entity_leafs_in_hierarchy_progress_by_type.jinja2' %}
                                         </div>
