@@ -59,6 +59,7 @@
         console.log("query_str: "+ query_str);
 
         $.getJSON('/tasks/?' + query_str).then(function (data) {
+
             // fill items table with dynamic data
             // wait until document is ready
             $(function () {
@@ -75,6 +76,10 @@
                 var table_body = table.find('tbody');
                 for (i = 0; i < data.length; i++) {
                     // fix dates
+                    for (var prop in data[i] ){
+
+                    console.log(data[i][prop])
+                    }
                     data[i].start = new Date(data[i].start).format('yyyy-mm-dd HH:MM');
                     if(data[i].end){
 
@@ -163,8 +168,8 @@
                         table_body.append(row_template(data[i]));
                     {% endif %}
                 }
-                var rowFooter_template = doT.template($('#tmpl_itemFooterRow').html());
-                table_body.append(rowFooter_template({'total_hours':convert_seconds_to_time_range(total_hours)}));
+{#                var rowFooter_template = doT.template($('#tmpl_itemFooterRow').html());#}
+{#                table_body.append(rowFooter_template({'total_hours':convert_seconds_to_time_range(total_hours)}));#}
 
 
                 var oTable1 = table.dataTable();

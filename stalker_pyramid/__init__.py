@@ -463,6 +463,8 @@ def main(global_config, **settings):
     # dialogs
     config.add_route('create_user_dialog',      'users/create/dialog')
     config.add_route('update_user_dialog',      'users/{id}/update/dialog')
+    config.add_route('update_entity_user_role',      'entities/{id}/users/{u_id}/role/{r_id}')
+
 
     config.add_route('dialog_create_department_user', 'departments/{id}/users/create/dialog')
     config.add_route('dialog_create_group_user',      'groups/{id}/users/create/dialog')

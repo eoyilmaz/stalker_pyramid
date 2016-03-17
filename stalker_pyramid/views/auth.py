@@ -33,7 +33,7 @@ import transaction
 
 import stalker_pyramid
 from stalker import (defaults, User, Department, Group, Project, Studio,
-                     Permission, EntityType, Entity)
+                     Permission, EntityType, Entity, Role)
 from stalker.db import DBSession
 from stalker_pyramid.views import (log_param, get_logged_in_user,
                                    PermissionChecker, get_multi_integer,
@@ -599,7 +599,7 @@ def get_users(request):
             'delete_user_action':delete_user_action % {
                 'id': r[0], 'entity_id': entity_id
             } if has_delete_user_permission else None,
-            "role": r[12] if len(r) >= 13 else None
+            'role': r[12] if len(r) >= 13 else None
         } for r in result.fetchall()
     ]
 
@@ -1249,5 +1249,33 @@ def delete_user(request):
         return Response(c.html(), 500)
 
     return Response('Successfully deleted user: %s' % user_id)
+
+
+@view_config(
+    route_name='update_entity_user_role'
+)
+def update_entity_user_role(request):
+    """updates user role for given entity
+    """
+    logger.debug('update_entity_user_role is starts')
+
+    entity_id = request.matchdict.get('id')
+    entity = Entity.query.get(entity_id)
+
+    user_id = request.matchdict.get('u_id')
+    user = User.query.get(user_id)
+
+    role_id = request.matchdict.get('r_id')
+    role = Role.query.get(role_id)
+
+
+
+
+
+
+
+
+
+
 
 

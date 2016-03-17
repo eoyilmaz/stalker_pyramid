@@ -18,84 +18,158 @@
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #}
 
+
 {% extends "base.jinja2" %}
+
+{% block pre_header %}
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/codebase/dhtmlxgantt.css") }}'/>
+{% endblock pre_header %}
 
 {# BREADCRUMBS #}
 {% block breadcrumbs %}
-
-    {% set page_title='Users' %}
     {% include 'breadcrumb/breadcrumbs.jinja2' %}
-
 {% endblock breadcrumbs %}
 
-{# SIDEBAR #}
+{#SIDEBAR#}
 {% block sidebar %}
-
     {% include 'sidebar.jinja2' %}
-
 {% endblock sidebar %}
 
-{# PAGE-CONTENT #}
+{#PAGE-CONTENT#}
 {% block page_content %}
 
-{#    {% set page_title='Users' %}#}
-{#    {% include 'page_header.jinja2' %}#}
+    <div class="widget-box transparent invoice-box">
 
+        <div class="widget-body">
+            <div class="widget-main padding-24">
+                <div class="row-fluid">
+                    <table id="grid-table"></table>
+                </div>
 
-    {% if entity.entity_type == 'Studio' %}
-        {% set add_button_address=request.route_path('create_user_dialog') %}
-    {% elif entity.entity_type == 'Client' %}
-        {% set add_button_address=request.route_path('append_user_to_client_dialog', id=entity.id, _query={'came_from': request.current_route_path()}) %}
-    {% else %}
-        {% set add_button_title='Add' %}
-        {% set add_button_address=request.route_url('append_entities_to_entity_dialog', id=entity.id, entities='User', _query={'came_from': request.current_route_path()}) %}
-    {% endif %}
-
-
-    {% set list_item_type='User' %}
-    {% include 'components/jgrid_table.jinja2' %}
-
+            </div>
+        </div>
+    </div>
 {% endblock page_content %}
 
-{# EXTRA-SCRIPTS #}
 {% block extrascripts %}
-    <script>
-
-        var colNames = ['', 'ID','Name', 'Role', 'Task Count'];
-        var colModel = [{name:'myac',index:'', width:70, fixed:true, sortable:false, resize:false,
-                        formatter:'actions',
-                        formatoptions:{
-                            keys:false,
-                            delbutton:false
-{#                                        delOptions:{recreateForm: true, beforeShowForm:beforeDeleteCallback}#}
-{#                                        //editformbutton:true, editOptions:{recreateForm: true, beforeShowForm:beforeEditCallback}#}
-                        }
-                    },
-                    {name:'id',index:'id', width:90, sortable:true, editable: false},
-                    {name:'name',index:'name', width:200, sortable:true, editable: false, formatter:resourceLabelFormatter},
-                    {name:'role',index:'role',  width:100, editable: true, editoptions:{size:"20", maxlength:"30"}},
-                    {name:'tasksCount',index:'tasksCount',  width:100, editable: false}
-                ];
-        var sortingParameters = [[0, 'asc']];
-        var tableDataAddress;
-        {% if entity.entity_type == 'Studio' %}
-            tableDataAddress = '{{ request.route_path('get_users') }}';
-        {% else %}
-            tableDataAddress = '{{ request.route_path('get_entity_users', id=entity.id) }}';
-        {% endif %}
-
-        loadTableData(
-            tableDataAddress,
-            "grid-table",
-            colNames,
-            colModel
-        );
-
-        function resourceLabelFormatter(cellvalue, options, rowObject){
-            return '<a href="/users/'+rowObject.id+'/view">'+cellvalue+'</a>';
-        }
-
+    <script type="text/javascript">
+        if("ontouchend" in document) document.write("<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.mobile.custom.min.js") }}'>"+"<"+"/script>");
     </script>
+    <script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/i18n/grid.locale-en.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/jquery.jqGrid.js") }}'></script>
 
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+            $.getJSON('/entities/{{ entity.id }}/users/').then(function (entry_data) {
+
+                console.log('data loaded')
+
+                var grid_data = entry_data;
+
+                $.getJSON('/roles/').then(function(available_roles){
+                    // map available types to an array
+                    var available_roles_as_list = "";
+                    "FE:FedEx;IN:InTime;TN:TNT;AR:ARAMEX"
+                    for (var i=0; i < available_roles.length; i++){
+                        available_roles_as_list+=available_roles[i].id+":"+available_roles[i].name+";";
+                    }
+
+
+                    jQuery(function($) {
+                        var grid_selector = "#grid-table";
+
+                        jQuery(grid_selector).jqGrid({
+                            //direction: "rtl",
+                            data: grid_data,
+                            datatype: "local",
+                            colNames:['', 'Id','Name', 'Email', 'Role'],
+                            colModel:[
+                                {
+                                    name:'myac',
+                                    index:'',
+                                    width:80,
+                                    fixed:true,
+                                    sortable:false,
+                                    resize:false,
+                                    formatter:'actions',
+                                    formatoptions:{
+                                                keys:false,
+                                                delbutton:true,
+                                                delOptions:{recreateForm: true, beforeShowForm:beforeDeleteCallback}
+                                            }
+                                },
+                                {name:'id', index:'id', width:80, editable: false},
+                                {name:'name', index:'name', width:200, editable: false},
+                                {name:'email', index:'email', width:220, editable: false},
+                                {name:'role', index:'role', width:220, editable: true, edittype:"select", editoptions:{value:available_roles_as_list}}
+                            ],
+                            viewrecords : true,
+                            rowNum:grid_data.length,
+                            rowList:[grid_data.length, 10, 10],
+                            pager : false,
+                            altRows: true,
+                            multiselect: false,
+                            loadonce: true,
+                            height: 700,
+                            sortname: 'name',
+                            footerrow: true, // set a footer row
+                            userDataOnFooter: true, // the calculated sums and/or strings from server are put at footer row.
+                            grouping: false,
+    {#                        groupingView: {#}
+    {#                            groupField: ["name"],#}
+    {#                            groupColumnShow: [false],#}
+    {#                            groupText: ["<b>{0}</b>"],#}
+    {#                            groupOrder: ["desc","desc","desc"],#}
+    {#                            groupSummary: [true],#}
+    {#                            groupCollapse: false#}
+    {#                        },#}
+                            gridview: true,
+                            editurl: 'entities/{id}/users/{u_id}/role/{r_id}',
+                            caption: "",
+                            loadComplete : function() {
+                                var $self = $(this);
+    {#                                $self.jqGrid("footerData", "set", {#}
+    {#                                                                   msrp: total_msrp,#}
+    {#                                                                   cost: total_cost,#}
+    {#                                                                   price: total_price,#}
+    {#                                                                   unit:'TOTAL'#}
+    {#                                });#}
+
+                                var table = this;
+                                setTimeout(function(){
+    {#                                    styleCheckbox(table);#}
+    {#                                    updateActionIcons(table);#}
+    {#                                    updatePagerIcons(table);#}
+
+    {#                                $('#lui_grid-table').hide();#}
+                                }, 0);
+                            }
+                        });
+                    });
+                });
+
+
+                function beforeDeleteCallback(e) {
+                    var form = $(e[0]);
+                    if(form.data('styled')) return false;
+
+                    form.closest('.ui-jqdialog').find('.ui-jqdialog-titlebar').wrapInner('<div class="widget-header" />')
+        {#                        style_delete_form(form);#}
+
+                    form.data('styled', true);
+                }
+                function beforeEditCallback(e) {
+                    var form = $(e[0]);
+                    if(form.data('styled')) return false;
+
+                    form.closest('.ui-jqdialog').find('.ui-jqdialog-titlebar').wrapInner('<div class="widget-header" />')
+{#                        style_delete_form(form);#}
+
+                    form.data('styled', true);
+                }
+            });
+        });
+    </script>
 {% endblock extrascripts %}
-

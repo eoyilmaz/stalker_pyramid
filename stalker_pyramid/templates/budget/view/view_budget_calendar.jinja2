@@ -47,7 +47,6 @@
                 {% set client=budget.project.client %}
                 {% include 'client/view/client_info.jinja2' %}
                 <div class="row-fluid">
-
                     <div id="gantt_here" style='width:100%; height:500px; background-color: #EFF5FD;'></div>
                 </div>
                 <div class="space-6"></div>
@@ -117,25 +116,26 @@
 
 
         var clickGridButton = function (id, action) {
-                switch (action) {
-                    case "edit":
-                        gantt.showLightbox(id);
-                        break;
-                    case "add":
-                        gantt.createTask(null, id);
-                        break;
-                    case "delete":
-                        dhtmlx.confirm({
-                            title: gantt.locale.labels.confirm_deleting_title,
-                            text: gantt.locale.labels.confirm_deleting,
-                            callback: function(res){
-                                if(res)
-                                    gantt.deleteTask(id);
-                            }
-                        });
-                        break;
-                }
-            };
+            switch (action) {
+                case "edit":
+                    gantt.showLightbox(id);
+                    break;
+                case "add":
+                    gantt.createTask(null, id);
+                    break;
+                case "delete":
+                    dhtmlx.confirm({
+                        title: gantt.locale.labels.confirm_deleting_title,
+                        text: gantt.locale.labels.confirm_deleting,
+                        callback: function(res){
+                            if(res)
+                                gantt.deleteTask(id);
+                        }
+                    });
+                    break;
+            }
+        };
+
         $(document).ready(function () {
             gantt.config.auto_scheduling = true;
             gantt.config.work_time = true;
@@ -200,14 +200,13 @@
                         }
                    ]
                 };
-            var tasks_data_string = '{{entity.generic_text  }}';
-            if (tasks_data_string){
 
+            var tasks_data_string = '{{entity.generic_text}}';
+            if (tasks_data_string){
                  var task_data = tasks_data_string.split('&amp;');
 
                 for (var i=0; i<task_data.length;i++){
                     var props = task_data[i].split('-');
-
                     var task = {};
                     for (var j=0; j<props.length;j++){
                         var prop = props[j].split('_');
@@ -218,7 +217,6 @@
                     task.good = task.text+'/-/'+task.good;
                     tasks.data.push(task);
                 }
-
             }
 
 
