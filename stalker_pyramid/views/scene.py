@@ -104,7 +104,7 @@ def create_scene(request):
         description = request.params.get('description', '')
         new_scene = duplicate_task_hierarchy_action(temp_scene, sequence, scene_name, description, logged_in_user)
         logger.debug('new_scene   : %s' % new_scene.name)
-        transaction.commit()
+        # transaction.commit()
         shots = Task.query.filter(Task.name == 'Shots').filter(Task.parent == new_scene).first()
         if not shots:
             transaction.abort()
