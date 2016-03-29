@@ -53,13 +53,18 @@
     <link rel="stylesheet"
           href='{{ request.static_url("stalker_pyramid:static/ace/css/bootstrap-editable.css") }}'/>
     <link rel="stylesheet"
-          href='{{ request.static_url("stalker_pyramid:static/ace/css/ui.jqgrid.css") }}'/>
+          href='{{ request.static_url("stalker_pyramid:static/jqGrid/css/ui.jqgrid.css") }}'/>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/jqGrid/css/ui.jqgrid-bootstarp.css") }}'/>
+    <link rel="stylesheet"
+          href='{{ request.static_url("stalker_pyramid:static/jqGrid/css/ui.multiselect.css") }}'/>
     <link rel="stylesheet"
               href='{{ request.static_url("stalker_pyramid:static/jqPlot/syntaxhighlighter/styles/shCoreDefault.min.css") }}'/>
     <link rel="stylesheet"
               href='{{ request.static_url("stalker_pyramid:static/jqPlot/syntaxhighlighter/styles/shThemejqPlot.min.css") }}'/>
     <link rel="stylesheet"
              href='{{ request.static_url("stalker_pyramid:static/jqPlot/jquery.jqplot.min.css") }}' />
+
 
 
 
@@ -515,6 +520,7 @@
 
         // flash all session messages as gritter
         $(function () {
+
             var item, title, type, message;
             var all_messages = $.parseHTML($('#tmpl_flash_message').text());
             for (var i=0; i < all_messages.length; i++){

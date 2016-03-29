@@ -1392,6 +1392,7 @@ def generate_where_clause(params):
     # path
     temp_buffer = []
     for name in params.get('path[]', params.get('path', [])):
+        name = "|%s|" % name
         temp_buffer.append(
             "tasks.path ilike '%{name}%'".format(name=name)
         )

@@ -20,6 +20,7 @@
 
 
 import datetime
+import json
 from pyramid.view import view_config
 
 from stalker import db, Project, Status, Budget, BudgetEntry, Good, Entity
@@ -305,7 +306,8 @@ def save_budget_calendar(request):
     budget.generic_text = '&'.join(budgetentries_data)
     logger.debug('***budget.generic_text %s ***'% budget.generic_text)
     for budget_entry in budget.entries:
-        if budget_entry.generic_text == 'Calendar':
+        generic_data = json.loads(budget_entry.generic_text)
+        if generic_data['dataSource'] == 'Calendar':
             # delete_budgetentry_action(budget_entry)
             logger.debug('***delete *** %s ' % budget_entry.name)
             db.DBSession.delete(budget_entry)
@@ -316,12 +318,17 @@ def save_budget_calendar(request):
         id, text, gid, sdate, duration, resources = budgetentry_data.split('-')
         good_id = gid.split('_')[1]
         good = Good.query.filter_by(id=good_id).first()
+
         logger.debug('good: %s' % good)
         if not good:
             transaction.abort()
             return Response('Please supply a good', 500)
 
-        amount = int(duration.split('_')[1])*int(resources.split('_')[1])
+        numOfResources = int(resources.split('_')[1])
+        amount = int(duration.split('_')[1])*numOfResources
+
+        generic_data = {'dataSource': 'Calendar',
+                        'numberOfResources': numOfResources}
 
         if good.unit == 'HOUR':
             amount *= 9
@@ -331,7 +338,7 @@ def save_budget_calendar(request):
                                       amount,
                                       good.cost * amount,
                                       ' ',
-                                      'Calendar',
+                                      json.dumps(generic_data),
                                       logged_in_user,
                                       utc_now)
 
@@ -430,6 +437,9 @@ def create_budgetentry(request):
     price = request.params.get('price')
     description = request.params.get('description', '')
 
+    generic_data = {'dataSource': 'Producer',
+                    'numberOfResources': 1}
+
     if not amount or amount == '0':
         transaction.abort()
         return Response('Please supply the amount', 500)
@@ -445,7 +455,7 @@ def create_budgetentry(request):
                                   int(amount),
                                   int(price),
                                   description,
-                                  'Producer',
+                                  json.dumps(generic_data),
                                   logged_in_user,
                                   utc_now)
 
@@ -456,7 +466,7 @@ def create_budgetentry(request):
     return Response('BudgetEntry Created successfully')
 
 
-def create_budgetentry_action(budget, good, amount, price, description, gText, logged_in_user, utc_now):
+def create_budgetentry_action(budget, good, amount, price, description, gData, logged_in_user, utc_now):
     """create_budgetentry_action
     """
     logger.debug('good_id: %s' % good.id)
@@ -490,7 +500,7 @@ def create_budgetentry_action(budget, good, amount, price, description, gText, l
         created_by=logged_in_user,
         date_created=utc_now,
         date_updated=utc_now,
-        generic_text=gText
+        generic_text=gData
     )
     db.DBSession.add(budget_entry)
     return
@@ -521,7 +531,9 @@ def update_budgetentry(request):
     price = int(price)
     description = request.params.get('note', '')
 
-    if budgetentry.generic_text == 'Calendar':
+    generic_data = json.loads(budgetentry.generic_text)
+
+    if generic_data['dataSource'] == 'Calendar':
         budgetentry.price = price
         budgetentry.description = description
         budgetentry.date_updated = utc_now
@@ -541,7 +553,8 @@ def update_budgetentry(request):
         budgetentry.description = description
         budgetentry.date_updated = utc_now
         budgetentry.updated_by = logged_in_user
-        budgetentry.generic_text = 'Producer'
+        budgetentry.generic_text = json.dumps({'dataSource': 'Producer',
+                                    'numberOfResources': 1})
 
     request.session.flash(
                 'success:updated %s budgetentry!' % budgetentry.name
@@ -631,7 +644,7 @@ def get_budget_entries(request):
             'realized_total': r[7],
             'unit': r[8],
             'note': r[9],
-            'addition_type': r[10]
+            'addition_type': json.loads(r[10])
         }
         for r in result.fetchall()
     ]
@@ -719,7 +732,7 @@ def duplicate_budget_dialog(request):
     logger.debug('action: %s' % action)
 
     return {
-        'budget':budget,
+        'budget': budget,
         'message': message,
         'came_from': came_from,
         'action': action

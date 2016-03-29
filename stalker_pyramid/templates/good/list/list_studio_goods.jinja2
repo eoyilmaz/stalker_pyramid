@@ -87,25 +87,31 @@
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jqGrid/i18n/grid.locale-en.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jqGrid/jquery.jqGrid.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/accounting.min.js") }}'></script>
+
+
     <script type="text/javascript">
         $(document).ready(function () {
 
-            $.getJSON('/price_lists/').then(function (data) {
+            $.getJSON('/price_lists/').then(function (price_list_data) {
                 var good_price_list = $('#good_price_list');
 
                 var pricelist_value = '';
-                for (var k=0; k < data.length; k++){
-                    pricelist_value += data[k].name+':'+data[k].name
-                    if(k!=data.length-1){
-                       pricelist_value +=';'
-                    }
+                for (var k=0; k < price_list_data.length; k++){
+                    pricelist_value += price_list_data[k].name+':'+price_list_data[k].name+";";
                 }
+                pricelist_value = pricelist_value.substring(0, price_list_data.length-1);
 
                 $.getJSON('/studios/{{ entity.id }}/goods/').then(function (good_data) {
 
                         var grid_data = good_data;
+                        var available_good_units_as_list = [];
+                        var available_good_units_as_list_string = "";
+                        var good_names = [];
+
 
                         for(var i=0; i<grid_data.length; i++ ){
+
+                            good_names.push(grid_data[i].name);
 
                             grid_data[i]['created_by'] = "<a href='/users/"+grid_data[i]['created_by_id']+"/view'>"+grid_data[i]['created_by_name']+"</a>";
                             if(grid_data[i]['updated_by_id']){
@@ -113,50 +119,71 @@
                             }
                             grid_data[i].date_updated = "<span class='date'>"+ new Date(grid_data[i].date_updated).format('yyyy-mm-dd HH:MM')+"</span>";
 
+
+                            if (available_good_units_as_list.indexOf(grid_data[i].unit) == -1){
+                                available_good_units_as_list.push(grid_data[i].unit);
+                            }
+{#                            console.log(grid_data[i]['related_goods']);#}
+                            var related_goods = grid_data[i]['related_goods'];
+                            var related_goods_str = "";
+
+                            for(var m=0; m<related_goods.length;m++){
+                                related_goods_str += "<b>"+related_goods[m].name+"</b> %"+related_goods[m].ratio+"<a data-target='#dialog_template' data-toggle='modal' data-keyboard=false href='/goods/"+grid_data[i].id+"/delete/relation/dialog?related_good_id="+related_goods[m].id+"'> <i class='icon-trash'></i></a><br/>";
+                            }
+                            related_goods_str += "<a data-target='#dialog_template' data-toggle='modal' data-keyboard=false href='/goods/"+grid_data[i].id+"/update/relation/dialog'>Add New Relation</a>"
+                            grid_data[i]['related_goods_str'] = related_goods_str;
+
                         }
+
                         jQuery(function($) {
                             var grid_selector = "#grid-table";
                             var pager_selector = "#grid-pager";
-
-                            jQuery(grid_selector).jqGrid({
+                            var grid = jQuery(grid_selector);
+                            grid.jqGrid({
                                 //direction: "rtl",
+
                                 data: grid_data,
                                 datatype: "local",
-                                height: 800,
-                                colNames:['','ID', 'Price List', 'Name', 'MSRP', 'Cost', 'Unit', 'Created_by', 'Updated_by', 'Last_Accessed'],
+                                colNames:['ID', 'Price List', 'Name', 'MSRP', 'Cost', 'Unit', 'Created_by', 'Updated_by', 'Last_Accessed', 'Related Goods'],
                                 colModel:[
-                                    {   name:'myac',
-                                        index:'',
-                                        width:70,
-                                        fixed:true,
-                                        sortable:false,
-                                        resize:false,
-                                        formatter:'actions',
-                                        formatoptions:{
-                                            keys:false,
-                                            delbutton:true,
-                                            delOptions:{recreateForm: true, beforeShowForm:beforeDeleteCallback}
-                                            //editformbutton:true, editOptions:{recreateForm: true, beforeShowForm:beforeEditCallback}
+                                    {name:'id',index:'id', width:90, sortable:true, editable: false},
+                                    {name:'price_list_name',index:'price_list_name', width:160, sortable:true, editable: true, edittype:"select", editoptions:{value:pricelist_value}},
+                                    {name:'name',index:'name', width:250, sortable:true, editable: true, editoptions:{size:"20", maxlength:"30"}},
+                                    {name:'msrp',index:'msrp',  width:100, sortable:true, editable: true, editoptions:{size:"20" ,maxlength:"30"}},
+                                    {name:'cost',index:'cost',  width:120, sortable:true, editable: true, editoptions:{size:"20", maxlength:"30"}},
+                                    {
+                                        name: 'unit',
+                                        index: 'unit',
+                                        width: 120,
+                                        editable: true,
+                                        edittype: "text",
+                                        editoptions: {
+                                            dataInit: function (element) {
+                                                window.setTimeout(function () {
+                                                    $(element).autocomplete({
+                                                        id: 'AutoComplete',
+                                                    source: available_good_units_as_list,
+                                                    autoFocus: true
+                                                    });
+                                                }, 100);
+                                            }
                                         }
                                     },
-                                    {name:'id',index:'id', width:90, sortable:true, editable: false},
-                                    {name:'price_list_name',index:'price_list_name', width:160, sortable:true, editable: true, edittype:"select",editoptions:{value:pricelist_value}},
-                                    {name:'name',index:'name', width:250, sortable:true, editable: true, editoptions:{size:"20",maxlength:"30"}},
-                                    {name:'msrp',index:'msrp',  width:100, sortable:true, editable: true, editoptions:{size:"20",maxlength:"30"}},
-                                    {name:'cost',index:'cost',  width:120, sortable:true, editable: true, editoptions:{size:"20",maxlength:"30"}},
-                                    {name:'unit',index:'unit',  width:120, editable: true, edittype:"select", editoptions:{value:"HOUR:HOUR;DAY:DAY;WEEK:WEEK;FILM:FILM;NUMBER:NUMBER"}},
-                                    {name:'created_by',index:'created_by', width:250, sortable:true, editable: false},
-                                    {name:'updated_by',index:'updated_by', width:250, sortable:true, editable: false},
-                                    {name:'date_updated',index:'date_updated', width:250, sortable:true, editable: false}
+{#                                    {name:'unit',index:'unit',  width:120, editable: true, edittype:"select", editoptions:{value:available_good_units_as_list_string}},#}
+                                    {name:'created_by',index:'created_by', width:100, sortable:true, editable: false},
+                                    {name:'updated_by',index:'updated_by', width:100, sortable:true, editable: false},
+                                    {name:'date_updated',index:'date_updated', width:100, sortable:true, editable: false},
+                                    {name:'related_goods_str',index:'related_goods_str', width:400, sortable:true, editable: false}
                                 ],
+                                height: 800,
+                                rowNum: 10,
                                 viewrecords : true,
-                                rowNum:20,
                                 rowList:[20, 50, 100],
                                 pager : pager_selector,
                                 altRows: true,
-            {#                    toppager: true,#}
+                              {#toppager: true,#}
                                 multiselect: false,
-    {#                            multikey: "ctrlKey",#}
+                              {#multikey: "ctrlKey",#}
                                 multiboxonly: true,
                                 grouping: true,
                                 groupingView: {
@@ -166,8 +193,8 @@
                                     groupOrder: ["asc"],
                                     groupSummary: [true],
                                     groupCollapse: false
-
                                 },
+                                onSelectRow: editRow,
 
                                 loadComplete : function() {
 
@@ -184,69 +211,105 @@
                                 caption: ""
                             });
 
-                            //navButtons
-                            jQuery(grid_selector).jqGrid('navGrid',pager_selector,
-                                { 	//navbar options
-                                    edit: true,
-                                    editicon : 'icon-pencil blue',
-                                    add: false,
-                                    addicon : 'icon-plus-sign purple',
-                                    del: true,
-                                    delicon : 'icon-trash red',
-                                    search: true,
-                                    searchicon : 'icon-search orange',
-                                    refresh: true,
-                                    refreshicon : 'icon-refresh green',
-                                    view: true,
-                                    viewicon : 'icon-zoom-in grey'
-                                },
-                                {
-                                    //edit record form
-                                    //closeAfterEdit: true,
-                                    recreateForm: true,
-                                    beforeShowForm : function(e) {
-                                        var form = $(e[0]);
-                                        form.closest('.ui-jqdialog').find('.ui-jqdialog-titlebar').wrapInner('<div class="widget-header" />')
-                                        style_edit_form(form);
-                                    }
-                                },
-                                {
-                                    //delete record form
-                                    recreateForm: true,
-                                    beforeShowForm : function(e) {
-                                        var form = $(e[0]);
-                                        if(form.data('styled')) return false;
+                            var lastSelection;
 
-                                        form.closest('.ui-jqdialog').find('.ui-jqdialog-titlebar').wrapInner('<div class="widget-header" />')
-                                        style_delete_form(form);
+                            function editRow(id) {
+                                if (id && id !== lastSelection) {
 
-                                        form.data('styled', true);
-                                    },
-                                    onClick : function(e) {
-                                        alert(1);
-                                    }
-                                },
+                                    grid.restoreRow(lastSelection);
 
-                                {
-                                    //search form
-                                    recreateForm: true,
-                                    afterShowSearch: function(e){
-                                        var form = $(e[0]);
-                                        form.closest('.ui-jqdialog').find('.ui-jqdialog-title').wrap('<div class="widget-header" />')
-                                        style_search_form(form);
-                                    },
-                                    afterRedraw: function(){
-                                        style_search_filters($(this));
-                                    }
-                                    ,
-                                    multipleSearch: false
-                                    /**
-                                    multipleGroup:true,
-                                    showQuery: true
-                                    */
+                                    var editParameters = {
+                                        keys: true,
+                                        successfunc: editSuccessful,
+                                        errorfunc: editFailed,
+                                        restoreAfterError : false
+                                    };
+
+                                    grid.jqGrid('editRow', id, editParameters);
+                                    lastSelection = id;
                                 }
+                            }
 
-                            )
+                            function editSuccessful( data, stat) {
+                                console.log("editSuccessful: " +data.responseText);
+                                flash_message({
+                                    type: "success",
+                                    title: "Success!",
+                                    message: data.responseText
+                                });
+
+                                grid.restoreRow(lastSelection);
+                                return [true,"",""];
+                            }
+
+                            function editFailed(rowID, response) {
+                                $.jgrid.info_dialog($.jgrid.errors.errcap,'<div class="ui-state-error">RowID:'+rowID+ ' :  '+ response.responseJSON.error +'</div>', $.jgrid.edit.bClose,{buttonalign:'right'})
+                                //alert(response.responseJSON.error);
+                            }
+
+                            //navButtons
+{#                            jQuery(grid_selector).jqGrid('navGrid',pager_selector,#}
+{#                                { 	//navbar options#}
+{#                                    edit: true,#}
+{#                                    editicon : 'icon-pencil blue',#}
+{#                                    add: false,#}
+{#                                    addicon : 'icon-plus-sign purple',#}
+{#                                    del: true,#}
+{#                                    delicon : 'icon-trash red',#}
+{#                                    search: true,#}
+{#                                    searchicon : 'icon-search orange',#}
+{#                                    refresh: true,#}
+{#                                    refreshicon : 'icon-refresh green',#}
+{#                                    view: true,#}
+{#                                    viewicon : 'icon-zoom-in grey'#}
+{#                                },#}
+{#                                {#}
+{#                                    //edit record form#}
+{#                                    //closeAfterEdit: true,#}
+{#                                    recreateForm: true,#}
+{#                                    beforeShowForm : function(e) {#}
+{#                                        var form = $(e[0]);#}
+{#                                        form.closest('.ui-jqdialog').find('.ui-jqdialog-titlebar').wrapInner('<div class="widget-header" />')#}
+{#                                        style_edit_form(form);#}
+{#                                    }#}
+{#                                },#}
+{#                                {#}
+{#                                    //delete record form#}
+{#                                    recreateForm: true,#}
+{#                                    beforeShowForm : function(e) {#}
+{#                                        var form = $(e[0]);#}
+{#                                        if(form.data('styled')) return false;#}
+{##}
+{#                                        form.closest('.ui-jqdialog').find('.ui-jqdialog-titlebar').wrapInner('<div class="widget-header" />')#}
+{#                                        style_delete_form(form);#}
+{##}
+{#                                        form.data('styled', true);#}
+{#                                    },#}
+{#                                    onClick : function(e) {#}
+{#                                        alert(1);#}
+{#                                    }#}
+{#                                },#}
+{##}
+{#                                {#}
+{#                                    //search form#}
+{#                                    recreateForm: true,#}
+{#                                    afterShowSearch: function(e){#}
+{#                                        var form = $(e[0]);#}
+{#                                        form.closest('.ui-jqdialog').find('.ui-jqdialog-title').wrap('<div class="widget-header" />')#}
+{#                                        style_search_form(form);#}
+{#                                    },#}
+{#                                    afterRedraw: function(){#}
+{#                                        style_search_filters($(this));#}
+{#                                    }#}
+{#                                    ,#}
+{#                                    multipleSearch: false#}
+{#                                    /**#}
+{#                                    multipleGroup:true,#}
+{#                                    showQuery: true#}
+{#                                    */#}
+{#                                }#}
+{##}
+{#                            )#}
 
                             function style_edit_form(form) {
 

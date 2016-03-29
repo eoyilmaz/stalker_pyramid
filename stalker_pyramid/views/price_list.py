@@ -18,6 +18,7 @@
 # License along with this library; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 import datetime
+import json
 from pyramid.httpexceptions import HTTPFound
 from pyramid.view import view_config
 from pyramid.response import Response
@@ -100,6 +101,13 @@ def get_goods(request):
 
     return_data = []
     for good in goods:
+
+        related_goods = []
+        if good.generic_text != "":
+            generic_data = json.loads(good.generic_text)
+            if generic_data["related_goods"]:
+                related_goods = generic_data["related_goods"]
+
         return_data.append({
             'id': good.id,
             'name': good.name,
@@ -112,9 +120,32 @@ def get_goods(request):
             'updated_by_name': good.updated_by.name if good.updated_by else None,
             'date_updated': milliseconds_since_epoch(good.date_updated),
             'price_list_name': good.price_lists[0].name if good.price_lists else None,
+            'related_goods': related_goods
         })
 
     return return_data
+
+@view_config(
+    route_name='get_good_related_goods',
+    renderer='json'
+)
+def get_good_related_goods(request):
+    """
+        give all define goods in a list
+    """
+    logger.debug('***get_studio_goods method starts ***')
+
+    good_id = request.matchdict.get('id', -1)
+    good = Good.query.filter(Good.id == good_id).first()
+
+    related_goods = []
+    if good.generic_text != "":
+        generic_data = json.loads(good.generic_text)
+        if generic_data["related_goods"]:
+            related_goods = generic_data["related_goods"]
+
+    return related_goods
+
 
 
 @view_config(
@@ -328,3 +359,175 @@ def delete_good(request):
         return Response(c.html(), 500)
 
     return Response('Successfully deleted good with name %s' % good_name)
+
+
+@view_config(
+    route_name='update_good_relation_dialog',
+    renderer='templates/good/dialog/update_good_relation_dialog.jinja2'
+)
+def update_good_relation_dialog(request):
+    """ calls create good dialog with necessary info.
+    """
+    # get logged in user
+    logged_in_user = get_logged_in_user(request)
+
+    good_id = request.matchdict.get('id', -1)
+    good = Good.query.filter(Good.id == good_id).first()
+
+    if not good:
+        transaction.abort()
+        return Response("There is no good instance", 500)
+
+    return {
+        'has_permission': PermissionChecker(request),
+        'logged_in_user': logged_in_user,
+        'good': good,
+        'milliseconds_since_epoch': milliseconds_since_epoch
+    }
+
+
+@view_config(
+    route_name='update_good_relation'
+)
+def update_good_relation(request):
+    """updates the good with data from request
+    """
+
+    logger.debug('***update_good_relation method starts ***')
+
+    logged_in_user = get_logged_in_user(request)
+    utc_now = local_to_utc(datetime.datetime.now())
+
+    good_id = request.matchdict.get('id')
+    good = Good.query.filter_by(id=good_id).first()
+
+    if not good:
+        transaction.abort()
+        return Response('There is no good with id: %s' % good_id, 500)
+
+    related_good_id = request.params.get('related_good_id', None)
+    related_good = Good.query.filter_by(id=related_good_id).first()
+
+    ratio = request.params.get('ratio', None)
+
+    logger.debug('related_good_id : %s' % related_good_id)
+    logger.debug('ratio : %s' % ratio)
+
+    if related_good and ratio:
+
+        related_goods = []
+        generic_data = {}
+        if good.generic_text != "":
+            generic_data = json.loads(good.generic_text)
+            if generic_data["related_goods"]:
+                related_goods = generic_data["related_goods"]
+
+        related_goods.append(
+            {
+                 'id': related_good.id,
+                 'name': related_good.name,
+                 'ratio': ratio
+            }
+        )
+
+        generic_data["related_goods"] = related_goods
+        good.generic_text = json.dumps(generic_data)
+        good.updated_by = logged_in_user
+        good.date_updated = utc_now
+
+    else:
+        logger.debug('not all parameters are in request.params')
+
+        response = Response(
+            'There are missing parameters: '
+            'good_id: %s, name: %s' % (related_good_id, ratio), 500
+        )
+        transaction.abort()
+        return response
+
+    response = Response('successfully updated %s good!' % good.name)
+    return response
+
+
+@view_config(
+    route_name='delete_good_relation_dialog',
+    renderer='templates/modals/confirm_dialog.jinja2'
+)
+def delete_good_relation_dialog(request):
+    """works when task has at least one answered review
+    """
+    logger.debug('delete_good_relation_dialog is starts')
+
+    good_id = request.matchdict.get('id')
+    good = Good.query.filter_by(id=good_id).first()
+
+    related_good_id = request.params.get('related_good_id')
+    related_good = Good.query.filter_by(id=related_good_id).first()
+
+    action = '/goods/%s/delete/relation?related_good_id=%s' % (good_id, related_good_id)
+    came_from = request.params.get('came_from', '/')
+
+    message = '%s will be removed from %s related good list' \
+              '<br><br>Are you sure?' % (related_good.name, good.name)
+
+    logger.debug('action: %s' % action)
+
+    return {
+        'message': message,
+        'came_from': came_from,
+        'action': action
+    }
+
+
+@view_config(
+    route_name='delete_good_relation'
+)
+def delete_good_relation(request):
+    """delete_good_relation data from request
+    """
+
+    logger.debug('***delete_good_relation method starts ***')
+
+    logged_in_user = get_logged_in_user(request)
+    utc_now = local_to_utc(datetime.datetime.now())
+
+    good_id = request.matchdict.get('id')
+    good = Good.query.filter_by(id=good_id).first()
+
+    if not good:
+        transaction.abort()
+        return Response('There is no good with id: %s' % good_id, 500)
+
+    related_good_id = request.params.get('related_good_id', None)
+    related_good = Good.query.filter_by(id=related_good_id).first()
+
+    logger.debug('related_good_id : %s' % related_good_id)
+
+    if related_good:
+        related_goods = []
+        generic_data = {}
+        if good.generic_text != "":
+            generic_data = json.loads(good.generic_text)
+            if generic_data["related_goods"]:
+                related_goods = generic_data["related_goods"]
+        for r_good in related_goods:
+            if r_good['id'] == related_good.id:
+                related_goods.remove(r_good)
+
+        generic_data["related_goods"] = related_goods
+        good.generic_text = json.dumps(generic_data)
+        good.updated_by = logged_in_user
+        good.date_updated = utc_now
+
+    else:
+        logger.debug('not all parameters are in request.params')
+
+        response = Response(
+            'There are missing parameters: '
+            'related_good_id: %s' % (related_good_id), 500
+        )
+        transaction.abort()
+        return response
+
+    response = Response('successfully updated %s good!' % good.name)
+    return response

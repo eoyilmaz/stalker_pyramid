@@ -7,90 +7,93 @@
               role='form'
               method="post">
             <div class="row-fluid">
-            {# Name #}
-            <div class="control-group">
-                <label class="span3 control-label"
-                       for="good_name">Name</label>
-                <div class="span9">
-                    <input id="good_name"
-                           name='name'
-                           type="text"
-                           class='input-block-level'
-                           placeholder="Name"
-                           required>
+                {# Name #}
+                <div class="control-group">
+                    <label class="span3 control-label"
+                           for="good_name">Name</label>
+                    <div class="span9">
+                        <input id="good_name"
+                               name='name'
+                               type="text"
+                               class='input-block-level'
+                               placeholder="Name"
+                               required>
+                    </div>
                 </div>
-            </div>
-            {# MSRP #}
-            <div class="control-group">
-                <label class="span3 control-label"
-                       for="good_msrp">MSRP</label>
-                <div class="span9">
-                    <input id="good_msrp"
-                           name='msrp'
-                           type="text"
-                           class='input-block-level'
-                           placeholder="MSRP"
-                           required>
+                {# MSRP #}
+                <div class="control-group">
+                    <label class="span3 control-label"
+                           for="good_msrp">MSRP</label>
+                    <div class="span9">
+                        <input id="good_msrp"
+                               name='msrp'
+                               type="text"
+                               class='input-block-level'
+                               placeholder="MSRP"
+                               required>
+                    </div>
                 </div>
-            </div>
-            {# Cost #}
-            <div class="control-group">
-                <label class="span3 control-label"
-                       for="good_cost">Cost</label>
-                <div class="span9">
-                    <input id="good_cost"
-                           class='input-block-level'
-                           name='cost'
-                           type="text"
-                           placeholder="Cost"
-                           required>
+                {# Cost #}
+                <div class="control-group">
+                    <label class="span3 control-label"
+                           for="good_cost">Cost</label>
+                    <div class="span9">
+                        <input id="good_cost"
+                               class='input-block-level'
+                               name='cost'
+                               type="text"
+                               placeholder="Cost"
+                               required>
+                    </div>
                 </div>
-            </div>
-            {# Unit #}
-            <div class="control-group">
-                <label class="span3 control-label"
-                       for="good_unit">Unit</label>
-                <div class="span9">
-                    <input id="good_unit"
-                           class="input-block-level"
-                           name='unit'
-                           type="text"
-                           placeholder="Unit"
-                           required>
+                {# Unit #}
+                <div class="control-group">
+                    <label class="span3 control-label"
+                           for="good_unit">Unit</label>
+                    <div class="span9">
+                        <input id="good_unit"
+                               class="input-block-level"
+                               name='unit'
+                               type="text"
+                               placeholder="Unit"
+                               required>
+                    </div>
                 </div>
-            </div>
-            {#Price List #}
-            <div class='control-group'>
-                <label class='span3 control-label'
-                       for='good_price_list'>Price List</label>
-                <div class="span9">
-                    <input id='good_price_list'
-                           class='input-block-level'
-                           name='price_list_name'
-                           type='text'
-                           placeholder='Price List'
-                           >
+                {#Price List #}
+                <div class='control-group'>
+                    <label class='span3 control-label'
+                           for='good_price_list'>Price List</label>
+                    <div class="span9">
+                        <input id='good_price_list'
+                               class='input-block-level'
+                               name='price_list_name'
+                               type='text'
+                               placeholder='Price List'
+                               >
+                    </div>
                 </div>
-            </div>
-            {#Description #}
-            <div class="control-group'">
-                <label for="good_description"
-                       class="span3 control-label">Description</label>
-                <div class="span9">
-                    <textarea id="good_description"
-                              name='description'
-                              class='input-block-level'
 
-                              style="overflow: hidden;
-                                         word-wrap: break-word;
-                                         resize: horizontal;
-                                         height: 50px;"
+                {#Description #}
+                <div class="control-group">
+                    <label for="good_description"
+                           class="span3 control-label">Description</label>
+                    <div class="span9">
+                        <textarea id="good_description"
+                                  name='description'
+                                  class='input-block-level'
 
-                            ></textarea>
+                                  style="overflow: hidden;
+                                             word-wrap: break-word;
+                                             resize: horizontal;
+                                             height: 50px;"
+
+                                ></textarea>
+                    </div>
                 </div>
             </div>
-        </div>
         </form>
+
+
     </div>
 </div>
 
@@ -104,21 +107,28 @@
 
         {# ***************************************************************** #}
         {# Unit #}
-        var good_unit = $('#good_unit');
 
-        good_unit.autocomplete({
-            delay: 0,
-            source: ['HOUR','DAY','WEEK','FILM', 'ADET'],
-            minLength: 0
+
+        $.getJSON('/goods/').then(function (data) {
+            var good_unit = $('#good_unit');
+
+
+            var available_good_units_as_list = [];
+            for (var i=0; i < data.length; i++){
+                if (available_good_units_as_list.indexOf(data[i].unit) == -1){
+                    available_good_units_as_list.push(data[i].unit);
+                }
+            }
+
+            good_unit.autocomplete({
+                delay: 0,
+                source: available_good_units_as_list,
+                minLength: 0
+            });
         });
 
         {# ***************************************************************** #}
         {# Price List #}
-        {% raw %}
-            var good_priceList_option_template = doT.template(
-                '<option value={{=it.id}}>{{=it.name}}</option>'
-            );
-        {% endraw %}
 
         $.getJSON('/price_lists/').then(function (data) {
             var good_price_list = $('#good_price_list');

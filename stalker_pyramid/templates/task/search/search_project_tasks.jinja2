@@ -1,102 +1,213 @@
-{% extends "base.jinja2" %}
-
-{% block breadcrumbs %}
-    {% set page_title='Tasks' %}
-    {% include 'breadcrumb/breadcrumbs.jinja2' %}
-{% endblock breadcrumbs %}
-
-{% block sidebar %}
-    {% include 'sidebar.jinja2' %}
-{% endblock sidebar %}
-
-{% block page_content %}
-
-    <div class="widget-box {{ collapsed }}">
-        <div class="widget-header widget-header-small header-color-grey }}">
-            <h5 id="items_header" class="smaller"></h5>
-
-            <div class="widget-toolbar">
-                <a href="#" data-action="collapse">
-                    <i class="icon-chevron-down"></i>
-                </a>
-            </div>
+<div class="row-fluid">
+    <form class="form-horizontal">
+        <div class="control-group">
+                <input class="span10" type="text" id="task_query" placeholder="Write parameters..." />
+                <button id="submit_task_query"  class="span2 btn btn-purple btn-small pull-right">
+                    Search
+                    <i class="icon-search icon-on-right bigger-110"></i>
+                </button>
         </div>
-        <div class="widget-body">
+    </form>
+</div>
+<div class="row-fluid">
+    <div class="widget-box">
+        <div class="widget-header widget-header-flat widget-header-small">
+            <h5 ><i class="icon-time"></i>Total Task :  <span id="total_task"></span></h5>
+        </div>
+
+        <div class="widget-body no-padding">
             <div class="widget-main no-padding">
-                {% set query_str='resource_id=%s&status=RTS&status=WIP&status=WFD&status=HREV' % entity.id %}
-                {% include 'task/list/list_entity_tasks_by_filter.jinja2' %}
-            </div>
-        </div>
+                <div id='bid_alert' class="alert alert-block alert-info no-padding" style="margin-bottom: 0;">
+
+                    <table class="table">
+                        <tbody>
+                            <tr>
+                                <td style="text-align: left"><strong>Bid</strong></td>
+                                <td><span id="bid"></span></td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: left"><strong>Schedule Timing</strong></td>
+                                <td><span id="schedule_timing"></span></td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: left"><strong>Total Time Logs</strong></td>
+                                <td><span id="total_logged"></span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div><!--/widget-main-->
+        </div><!--/widget-body-->
+    </div><!--/widget-box-->
+</div>
+<div class="row-fluid">
+    <div class="span12" id="result_table">
     </div>
+</div>
+ <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jqGrid/i18n/grid.locale-en.js") }}'></script>
 
-{% endblock page_content %}
+<script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/jquery.jqGrid.min.js") }}'></script>
+<script>
+    function updatePagerIcons(table) {
+                    var replacement =
+                    {
+                        'ui-icon-seek-first' : 'icon-double-angle-left bigger-140',
+                        'ui-icon-seek-prev' : 'icon-angle-left bigger-140',
+                        'ui-icon-seek-next' : 'icon-angle-right bigger-140',
+                        'ui-icon-seek-end' : 'icon-double-angle-right bigger-140'
+                    };
+                    $('.ui-pg-table:not(.navtable) > tbody > tr > .ui-pg-button > .ui-icon').each(function(){
+                        var icon = $(this);
+                        var $class = $.trim(icon.attr('class').replace('ui-icon', ''));
 
-{# EXTRA-SCRIPTS #}
-{% block extrascripts %}
+                        if($class in replacement) icon.attr('class', 'ui-icon '+replacement[$class]);
+                    })
+                }
 
-    {% raw %}
-    <script id="tmpl_itemThead" type="text/x-dot-template">
-        <tr>
-            <th>Start</th>
-            <th>Project</th>
-            <th>Name</th>
-            <th>Resource</th>
-            <th>Type</th>
-            <th>Completed</th>
-            <th>Status</th>
-            <th></th>
-        </tr>
-    </script>
-    {% endraw %}
+    function loadSeachedTaskData(q_str){
+        console.log(q_str)
+        var result_table = $('#result_table');
+        result_table.find("#table_container").remove();
+        result_table.find("#grid-pager").remove();
 
-    {% raw %}
-    <script id="tmpl_itemRow" type="text/x-dot-template">
-        <tr>
-            <td>{{=it.start}}</td>
-            <td><a href='/projects/{{=it.project_id}}/view'>{{=it.project_name}}</a>
-            </td>
-            <td><a href='/tasks/{{=it.id}}/view'>{{=it.full_path}}</a></td>
-            <td>{{ for(var i=0;i<it.resources.length;i++){ }}<a href='/users/{{=it.resources[i].id}}/view'>{{=it.resources[i].name}}</a>{{ } }}</td>
+        $.getJSON('/tasks/?leaf_only=1&project_id={{ entity.id }}&' + q_str).then(function (data) {
+                $('#submit_task_query').button('reset');
 
-            <td>{{=it.task_type}}</td>
-            <td data-sType="num-html">
-                <div class="progress progress-success">
-                    <div style="width:{{=it.completed}}%"
-                         class="bar">
-                        <span class="pull-left">{{= it.completed.toFixed(0) }}%</span>
-                    </div>
-                </div>
-            </td>
-            <td>
-                <span class="label label-status_{{=it.status}}">{{=it.status}}</span>
-            </td>
-            <td>
-                <div class="hidden-phone visible-desktop action-buttons">
-                    <a class="blue" href='/tasks/{{=it.id}}/view'>
-                        <i class="icon-zoom-in bigger-130"></i>
-                    </a>
-
-                    <a id='update_task_item'
-                       data-target="#dialog_template"
-                       data-toggle="modal"
-                       data-keyboard=false
-                       href="/tasks/{{=it.id}}/update/dialog"
-                       tabindex="-1">
-                        <i class="icon-pencil bigger-120">&nbsp</i>
-                    </a>
+                var bid_seconds = 0;
+                var schedule_timing_seconds = 0;
+                var total_logged_seconds = 0;
+                var total_task = data.length;
 
 
-                </div>
-            </td>
+                for(var j=0; j<total_task; j++){
 
-        </tr>
-    </script>
-    {% endraw %}
+                    data[j].name_str = "<a href='/tasks/"+data[j].id+"/view'>"+data[j].full_path+"</a><br/>";
 
-    <script>
-        $(function () {
-            init_html_modal()
-        })
-    </script>
+                    bid_seconds += to_seconds(data[j].bid_timing, data[j].bid_unit);
+                    data[j].bid_timing_str = data[j].bid_timing+' ('+data[j].bid_unit+') ';
 
-{% endblock extrascripts %}
+                    schedule_timing_seconds += to_seconds(data[j].schedule_timing, data[j].schedule_unit );
+                    data[j].schedule_timing_str = data[j].schedule_timing+' ('+data[j].schedule_unit+') ';
+
+                    total_logged_seconds += data[j].total_logged_seconds;
+                    data[j].total_timelog_str = meaningful_time(data[j].total_logged_seconds);
+
+                    if (data[j].resources !=null){
+
+                        data[j].resources_str = "";
+                        for (var k=0; k<data[j].resources.length;k++){
+                            var r_id = data[j].resources[k].id;
+                            data[j].resources_str += "<a href='/users/"+r_id+"/view'>"+get_user_name(r_id)+"</a><br/>";
+                            console.log(data[j].resources_str);
+                        }
+                    }
+                }
+
+                var bid = convert_seconds_to_time_range(bid_seconds);
+                var bid_lmt = meaningful_time(bid_seconds);
+                var schedule_timing = convert_seconds_to_time_range(schedule_timing_seconds);
+                var schedule_timing_lmt = meaningful_time(schedule_timing_seconds);
+                var total_logged = convert_seconds_to_time_range(total_logged_seconds);
+                var total_logged_lmt = meaningful_time(total_logged_seconds);
+
+                $('#total_task').text(total_task);
+                $('#bid').text(bid + ' (' + bid_lmt + ')');
+                $('#schedule_timing').text(schedule_timing + ' (' + schedule_timing_lmt + ')');
+                $('#total_logged').text(total_logged + ' (' + total_logged_lmt + ')');
+
+                result_table.append('<div id="table_container"><table id="grid-table"></table></div><div id="grid-pager"></div>');
+
+                jQuery(function($) {
+                    var grid_selector = "#grid-table";
+                    var pager_selector = "#grid-pager";
+
+                    jQuery(grid_selector).jqGrid({
+                        data: data,
+                        datatype: "local",
+                        height: 'auto',
+                        width: 'auto',
+                        colNames:['ID', 'Name','Bid', 'Schedule Time', 'Total Timelogs', 'Resources'],
+                        colModel:[
+                            {name:'id',index:'id', width:90, sortable:true, editable: false},
+                            {name:'name_str',index:'name_str', width:700, sortable:true, editable: false},
+                            {name:'bid_timing_str',index:'bid_timing_str', width:150, sortable:true, editable: false},
+                            {name:'schedule_timing_str',index:'schedule_timing_str', width:150, sortable:true, editable: false},
+                            {name:'total_timelog_str',index:'total_timelog_str', width:150, sortable:true, editable: false},
+                            {name:'resources_str',index:'resources_str', width:150, sortable:true, editable: false}
+                        ],
+                        viewrecords : true,
+                        rowNum:10,
+                        rowList:[10, 25, 50],
+                        pager : pager_selector,
+                        altRows: true,
+                        multiselect: false,
+                        multiboxonly: true,
+
+                        loadComplete : function() {
+
+                            var table = this;
+                            setTimeout(function(){
+                                 updatePagerIcons(table);
+                                $('#lui_grid-table').hide();
+                            }, 0);
+                        },
+                        caption: ""
+                    });
+                });
+            });
+    }
+    $(function () {
+        var submit_button = $('#submit_task_query');
+        var task_query = $('#task_query');
+        submit_button.on('click', function(e){
+            e.stopPropagation();
+            e.preventDefault();
+
+            submit_button.button('loading');
+
+            var parameters = (task_query.val()).split('; ');
+
+            var query_str = "";
+            var asset_type_query_str = "";
+
+            for(var i=0; i<parameters.length; i++){
+                var param = parameters[i].split(':')[0];
+                var param_value = parameters[i].split(':')[1];
+                if(param !='asset_type_names'){
+                    if (param_value){
+                        query_str += param+'='+param_value+'&'
+                    }
+                }
+                else{
+                    asset_type_query_str += param+'='+param_value+'&'
+                }
+
+            }
+
+            if (asset_type_query_str !=""){
+                asset_type_query_str = asset_type_query_str.substring(0, asset_type_query_str.length-1);
+                console.log("asset_type_query_str: "+asset_type_query_str);
+                $.getJSON('/entities/{{ entity.id }}/assets/?' + asset_type_query_str).then(function (assets_data) {
+
+                    console.log(assets_data.length);
+                    var total_asset = assets_data.length;
+                    for(var j=0; j<total_asset; j++){
+                        query_str += 'path='+assets_data[j].id+'&'
+
+                    }
+                    query_str = query_str.substring(0, query_str.length-1);
+                    loadSeachedTaskData(query_str);
+
+                })
+            }
+            else{
+                query_str = query_str.substring(0, query_str.length-1);
+                console.log("query_str: "+query_str);
+                loadSeachedTaskData(query_str);
+
+            }
+        });
+    });
+</script>
+

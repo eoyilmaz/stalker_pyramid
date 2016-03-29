@@ -100,6 +100,7 @@
                 var total_price = 0;
 
                 for(var j=0; j<grid_data.length; j++ ){
+                    grid_data[j].addition_type = grid_data[j].addition_type.dataSource
                     grid_data[j].msrp = grid_data[j].msrp*grid_data[j].amount;
                     total_msrp += parseInt(grid_data[j].msrp);
                     grid_data[j].cost = grid_data[j].cost*grid_data[j].amount;
@@ -315,7 +316,7 @@
                                 else if(total_cost<total_price){
                                     $self.jqGrid('setCell', 'TOTAL', 'price','',{color:'green'});
                                 }
-                                console.log('asdasdasd');
+
                                 for(var t=0; t<grid_data.length; t++ ){
                                     console.log(grid_data[t].cost);
 

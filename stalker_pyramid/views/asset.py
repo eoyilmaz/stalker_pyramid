@@ -281,6 +281,8 @@ def get_assets(request):
 
     asset_type_names = get_multi_string(request, 'asset_type_names')
 
+    logger.debug('asset_type_names : %s' % asset_type_names)
+
     sql_query = """
         select
             "Assets".id as asset_id,

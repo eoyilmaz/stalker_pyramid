@@ -71,9 +71,8 @@
                 $.getJSON('/roles/').then(function(available_roles){
                     // map available types to an array
                     var available_roles_as_list = "";
-                    "FE:FedEx;IN:InTime;TN:TNT;AR:ARAMEX"
                     for (var i=0; i < available_roles.length; i++){
-                        available_roles_as_list+=available_roles[i].id+":"+available_roles[i].name+";";
+                        available_roles_as_list += available_roles[i].id+":"+available_roles[i].name+";";
                     }
 
 

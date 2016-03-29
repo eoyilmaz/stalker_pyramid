@@ -78,7 +78,8 @@
                     // fix dates
                     for (var prop in data[i] ){
 
-                    console.log(data[i][prop])
+                        console.log(data[i][prop]);
+
                     }
                     data[i].start = new Date(data[i].start).format('yyyy-mm-dd HH:MM');
                     if(data[i].end){
