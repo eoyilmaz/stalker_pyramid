@@ -62,12 +62,13 @@ def generate_recursive_task_query(ordered=True):
     order_string = 'order by path' if ordered else ''
 
     query = """
-    with recursive recursive_task(id, parent_id, path, path_names,  responsible_id) as (
+    with recursive recursive_task(id, parent_id, path, path_names, type_names, responsible_id) as (
         select
             task.id,
             task.project_id,
             task.project_id::text as path,
             ("Projects".code || '') as path_names,
+            'Project ' as type_names,
             (
                 select
                     array_agg(responsible_id)
@@ -85,6 +86,10 @@ def generate_recursive_task_query(ordered=True):
             (parent.path || '|' || task.parent_id::text) as path,
             (parent.path_names || ' | ' || "Parent_SimpleEntities".name) as path_names,
             coalesce(
+                (parent.type_names || ' | ' || "Type_SimpleEntities".name),
+                (parent.type_names || ' | None' )
+            ) as type_names,
+            coalesce(
                 (
                     select
                         array_agg(responsible_id)
@@ -97,6 +102,8 @@ def generate_recursive_task_query(ordered=True):
         from "Tasks" as task
         join recursive_task as parent on task.parent_id = parent.id
         join "SimpleEntities" as "Parent_SimpleEntities" on parent.id = "Parent_SimpleEntities".id
+        left outer join "Types" as "Parent_Types" on "Parent_SimpleEntities".type_id = "Parent_Types".id
+        left outer join "SimpleEntities" as "Type_SimpleEntities" on "Parent_Types".id = "Type_SimpleEntities".id
     ) select
         recursive_task.id,
         "SimpleEntities".name as name,
@@ -106,7 +113,8 @@ def generate_recursive_task_query(ordered=True):
         "SimpleEntities".name || ' (' || recursive_task.path_names || ')(' || recursive_task.id || ')' as full_path,
         "SimpleEntities".entity_type,
         recursive_task.responsible_id,
-        task_watchers.watcher_id
+        task_watchers.watcher_id,
+        recursive_task.type_names
     from recursive_task
     join "SimpleEntities" on recursive_task.id = "SimpleEntities".id
     left join (
@@ -1401,6 +1409,18 @@ def generate_where_clause(params):
             compress_buffer(temp_buffer, 'or')
         )
 
+    # path
+    temp_buffer = []
+    for name in params.get('type_names[]', params.get('type_names', [])):
+        name = "| %s |" % name
+        temp_buffer.append(
+            "tasks.type_names ilike '%{name}%'".format(name=name)
+        )
+    if len(temp_buffer):
+        where_string_buffer.append(
+            compress_buffer(temp_buffer, 'or')
+        )
+
     # full_path
     temp_buffer = []
     for name in params.get('full_path[]', params.get('full_path', [])):
@@ -1773,7 +1793,8 @@ def cached_query_tasks(
             (extract(epoch from coalesce("Tasks".computed_start::timestamp AT TIME ZONE 'UTC', "Tasks".end::timestamp AT TIME ZONE 'UTC')) * 1000)::bigint as "start",
             (extract(epoch from coalesce("Tasks".computed_end::timestamp AT TIME ZONE 'UTC', "Tasks".end::timestamp AT TIME ZONE 'UTC')) * 1000)::bigint as "end",
 
-            lower("Statuses".code) as status
+            lower("Statuses".code) as status,
+            tasks.type_names
 
         from (
             %(tasks_hierarchical_name)s
@@ -1886,7 +1907,8 @@ def cached_query_tasks(
             (extract(epoch from coalesce("Projects".computed_start::timestamp AT TIME ZONE 'UTC', "Projects".end::timestamp AT TIME ZONE 'UTC')) * 1000)::bigint as "start",
             (extract(epoch from coalesce("Projects".computed_end::timestamp AT TIME ZONE 'UTC', "Projects".end::timestamp AT TIME ZONE 'UTC')) * 1000)::bigint as "end",
 
-            lower("Statuses".code) as status
+            lower("Statuses".code) as status,
+            '' as type_names
 
         from "Projects"
         join "SimpleEntities" as "Project_SimpleEntities" on "Projects".id = "Project_SimpleEntities".id
@@ -1971,6 +1993,7 @@ def cached_query_tasks(
             'start': r[26],
             'end': r[27],
             'status': r[28],
+            'type_names': r[29]
         }
         for r in result.fetchall()
     ]

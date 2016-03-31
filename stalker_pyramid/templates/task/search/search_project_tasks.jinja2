@@ -100,7 +100,7 @@
                         for (var k=0; k<data[j].resources.length;k++){
                             var r_id = data[j].resources[k].id;
                             data[j].resources_str += "<a href='/users/"+r_id+"/view'>"+get_user_name(r_id)+"</a><br/>";
-                            console.log(data[j].resources_str);
+
                         }
                     }
                 }
@@ -170,42 +170,39 @@
             var parameters = (task_query.val()).split('; ');
 
             var query_str = "";
-            var asset_type_query_str = "";
 
             for(var i=0; i<parameters.length; i++){
                 var param = parameters[i].split(':')[0];
                 var param_value = parameters[i].split(':')[1];
-
-                if(param !='asset_type_names'){
-                    if (param_value){
+                console.log("param: " + param +"  param_value: " + param_value);
+                if (param_value){
                         query_str += param+'='+param_value+'&'
-                    }
-                }
-                else{
-                    asset_type_query_str += param+'='+param_value+'&'
                 }
             }
+            query_str = query_str.substring(0, query_str.length-1);
+            console.log("query_str: " + query_str);
+            loadSeachedTaskData(query_str);
 
-            if (asset_type_query_str !=""){
-                asset_type_query_str = asset_type_query_str.substring(0, asset_type_query_str.length-1);
-                console.log("asset_type_query_str: "+asset_type_query_str);
-                $.getJSON('/entities/{{ entity.id }}/assets/?' + asset_type_query_str).then(function (assets_data) {
+{#            if (asset_type_query_str !=""){#}
+{#                asset_type_query_str = asset_type_query_str.substring(0, asset_type_query_str.length-1);#}
+{#                console.log("asset_type_query_str: "+asset_type_query_str);#}
+{#                $.getJSON('/entities/{{ entity.id }}/assets/?' + asset_type_query_str).then(function (assets_data) {#}
+{##}
+{#                    console.log(assets_data.length);#}
+{#                    var total_asset = assets_data.length;#}
+{#                    for(var j=0; j<total_asset; j++){#}
+{#                        query_str += 'path='+assets_data[j].id+'&';#}
+{#                    }#}
+{#                    query_str = query_str.substring(0, query_str.length-1);#}
+{#                    loadSeachedTaskData(query_str);#}
+{#                })#}
+{#            }#}
+{#            else{#}
+{#                query_str = query_str.substring(0, query_str.length-1);#}
+{#                console.log("query_str: " + query_str);#}
+{#                loadSeachedTaskData(query_str);#}
 
-                    console.log(assets_data.length);
-                    var total_asset = assets_data.length;
-                    for(var j=0; j<total_asset; j++){
-                        query_str += 'path='+assets_data[j].id+'&';
-                    }
-                    query_str = query_str.substring(0, query_str.length-1);
-                    loadSeachedTaskData(query_str);
-                })
-            }
-            else{
-                query_str = query_str.substring(0, query_str.length-1);
-                console.log("query_str: " + query_str);
-                loadSeachedTaskData(query_str);
-
-            }
+{#            }#}
         });
     });
 </script>
