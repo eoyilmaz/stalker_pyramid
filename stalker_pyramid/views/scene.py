@@ -102,10 +102,33 @@ def create_scene(request):
     if sequence and scene_name and temp_scene and temp_shot and shot_count:
         # get descriptions
         description = request.params.get('description', '')
-        new_scene = duplicate_task_hierarchy_action(temp_scene, sequence, scene_name, description, logged_in_user)
+        try:
+            new_scene = duplicate_task_hierarchy_action(
+                                                        temp_scene,
+                                                        sequence,
+                                                        scene_name,
+                                                        description,
+                                                        logged_in_user
+            )
+            DBSession.flush()
+        except:
+            transaction.abort()
+            return Response(status=500)
+        else:
+            transaction.commit()
+            sequence = Sequence.query.filter_by(id=sequence_id).first()
+            new_scene = Task.query\
+                .filter(Task.name == scene_name)\
+                .filter(Task.parent == sequence)\
+                .first()
+            if not new_scene:
+                transaction.abort()
+                return Response(status=500)
+
         logger.debug('new_scene   : %s' % new_scene.name)
         # transaction.commit()
         shots = Task.query.filter(Task.name == 'Shots').filter(Task.parent == new_scene).first()
+        temp_shot = Shot.query.filter_by(id=temp_shot_id).first()
         if not shots:
             transaction.abort()
             return Response('There is no shots under scene task', 500)

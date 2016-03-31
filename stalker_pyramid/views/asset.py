@@ -278,6 +278,7 @@ def get_assets(request):
     asset_type_id = request.params.get('asset_type_id', None)
 
     asset_id = request.params.get('entity_id', None)
+    parent_name = request.params.get('parent_name', None)
 
     asset_type_names = get_multi_string(request, 'asset_type_names')
 
@@ -392,6 +393,9 @@ def get_assets(request):
         where_conditions_for_type_names = ' or '.join(asset_type_names_buffer)
         where_conditions = """and (%s)""" % where_conditions_for_type_names
         logger.debug('where_conditions : %s' % where_conditions)
+
+    if parent_name:
+        where_conditions += """ and assets.full_path ilike (%s)""" % parent_name
 
     sql_query = sql_query % {
         'where_conditions': where_conditions,

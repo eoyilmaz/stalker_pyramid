@@ -62,7 +62,7 @@ def generate_recursive_task_query(ordered=True):
     order_string = 'order by path' if ordered else ''
 
     query = """
-    with recursive recursive_task(id, parent_id, path, path_names, responsible_id) as (
+    with recursive recursive_task(id, parent_id, path, path_names,  responsible_id) as (
         select
             task.id,
             task.project_id,
@@ -1392,7 +1392,7 @@ def generate_where_clause(params):
     # path
     temp_buffer = []
     for name in params.get('path[]', params.get('path', [])):
-        name = "|%s|" % name
+        # name = "|%s|" % name
         temp_buffer.append(
             "tasks.path ilike '%{name}%'".format(name=name)
         )
@@ -1411,6 +1411,17 @@ def generate_where_clause(params):
         where_string_buffer.append(
             compress_buffer(temp_buffer, 'or')
         )
+
+    # type_names
+    # temp_buffer = []
+    # for name in params.get('type_names[]', params.get('type_names', [])):
+    #     temp_buffer.append(
+    #         "tasks.type_names ilike '%{name}%'".format(name=name)
+    #     )
+    # if len(temp_buffer):
+    #     where_string_buffer.append(
+    #         compress_buffer(temp_buffer, 'or')
+    #     )
 
     # entity_type
     temp_buffer = []
@@ -5205,6 +5216,8 @@ def get_task_events(request):
 
     task_ids = [task['id'] for task in all_tasks]
 
+    logger.debug("task_ids %s" % task_ids)
+
     sql_query = """select
     "TimeLogs".id,
     'timelogs' as entity_type,
@@ -5222,6 +5235,8 @@ from "TimeLogs"
     join "Statuses" on "Tasks".status_id = "Statuses".id
 where "TimeLogs".task_id in %s
     """ % str(task_ids).replace('[', '(').replace(']', ')')
+
+    logger.debug("sql_query %s" % sql_query)
 
     # now query all the time logs
     from sqlalchemy import text  # to be able to use "%" sign use this function

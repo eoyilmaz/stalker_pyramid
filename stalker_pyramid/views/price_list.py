@@ -105,7 +105,7 @@ def get_goods(request):
         related_goods = []
         if good.generic_text != "":
             generic_data = json.loads(good.generic_text)
-            if generic_data["related_goods"]:
+            if generic_data.has_key("related_goods"):
                 related_goods = generic_data["related_goods"]
 
         return_data.append({
@@ -141,7 +141,7 @@ def get_good_related_goods(request):
     related_goods = []
     if good.generic_text != "":
         generic_data = json.loads(good.generic_text)
-        if generic_data["related_goods"]:
+        if generic_data.has_key("related_goods"):
             related_goods = generic_data["related_goods"]
 
     return related_goods
@@ -221,7 +221,7 @@ def create_good(request):
             new_good.created_by = logged_in_user
             new_good.date_created = utc_now
             new_good.date_updated = utc_now
-            new_good.price_lists=[price_list]
+            new_good.price_lists = [price_list]
 
             DBSession.add(new_good)
 
@@ -386,6 +386,31 @@ def update_good_relation_dialog(request):
     }
 
 
+def update_good_generic_text(good, attr, data, l_in_user, u_now, action):
+
+    list_attr = []
+    generic_data = {}
+
+    if good.generic_text != "":
+        generic_data = json.loads(good.generic_text)
+        if generic_data.has_key(attr):
+            list_attr = generic_data[attr]
+
+    if action == 'add':
+        list_attr.append(data)
+
+    elif action == 'remove':
+        for obj in list_attr:
+            if obj.has_key("id"):
+                if obj["id"] == data.id:
+                    list_attr.remove(obj)
+
+    generic_data[attr] = list_attr
+    good.generic_text = json.dumps(generic_data)
+    good.updated_by = l_in_user
+    good.date_updated = u_now
+
+
 @view_config(
     route_name='update_good_relation'
 )
@@ -415,25 +440,27 @@ def update_good_relation(request):
 
     if related_good and ratio:
 
-        related_goods = []
-        generic_data = {}
-        if good.generic_text != "":
-            generic_data = json.loads(good.generic_text)
-            if generic_data["related_goods"]:
-                related_goods = generic_data["related_goods"]
+        update_good_generic_text(good,
+                                 "related_goods",
+                                 {
+                                    'id': related_good.id,
+                                    'name': related_good.name,
+                                    'ratio': ratio
+                                 },
+                                 logged_in_user,
+                                 utc_now,
+                                 'add')
 
-        related_goods.append(
-            {
-                 'id': related_good.id,
-                 'name': related_good.name,
-                 'ratio': ratio
-            }
-        )
-
-        generic_data["related_goods"] = related_goods
-        good.generic_text = json.dumps(generic_data)
-        good.updated_by = logged_in_user
-        good.date_updated = utc_now
+        update_good_generic_text(related_good,
+                                 "linked_goods",
+                                 {
+                                    'id': good.id,
+                                    'name': good.name,
+                                    'ratio': ratio
+                                 },
+                                 logged_in_user,
+                                 utc_now,
+                                 'add')
 
     else:
         logger.debug('not all parameters are in request.params')
@@ -504,20 +531,25 @@ def delete_good_relation(request):
     logger.debug('related_good_id : %s' % related_good_id)
 
     if related_good:
-        related_goods = []
-        generic_data = {}
-        if good.generic_text != "":
-            generic_data = json.loads(good.generic_text)
-            if generic_data["related_goods"]:
-                related_goods = generic_data["related_goods"]
-        for r_good in related_goods:
-            if r_good['id'] == related_good.id:
-                related_goods.remove(r_good)
 
-        generic_data["related_goods"] = related_goods
-        good.generic_text = json.dumps(generic_data)
-        good.updated_by = logged_in_user
-        good.date_updated = utc_now
+        update_good_generic_text(good,
+                                 "related_goods",
+                                 {
+                                    'id': related_good.id
+                                 },
+                                 logged_in_user,
+                                 utc_now,
+                                 'remove')
+
+        update_good_generic_text(related_good,
+                                 "linked_goods",
+                                 {
+                                    'id': good.id
+                                 },
+                                 logged_in_user,
+                                 utc_now,
+                                 'remove')
+
 
     else:
         logger.debug('not all parameters are in request.params')

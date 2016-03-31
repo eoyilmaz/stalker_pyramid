@@ -50,23 +50,23 @@
 <script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/jquery.jqGrid.min.js") }}'></script>
 <script>
     function updatePagerIcons(table) {
-                    var replacement =
-                    {
-                        'ui-icon-seek-first' : 'icon-double-angle-left bigger-140',
-                        'ui-icon-seek-prev' : 'icon-angle-left bigger-140',
-                        'ui-icon-seek-next' : 'icon-angle-right bigger-140',
-                        'ui-icon-seek-end' : 'icon-double-angle-right bigger-140'
-                    };
-                    $('.ui-pg-table:not(.navtable) > tbody > tr > .ui-pg-button > .ui-icon').each(function(){
-                        var icon = $(this);
-                        var $class = $.trim(icon.attr('class').replace('ui-icon', ''));
+        var replacement =
+        {
+            'ui-icon-seek-first' : 'icon-double-angle-left bigger-140',
+            'ui-icon-seek-prev' : 'icon-angle-left bigger-140',
+            'ui-icon-seek-next' : 'icon-angle-right bigger-140',
+            'ui-icon-seek-end' : 'icon-double-angle-right bigger-140'
+        };
+        $('.ui-pg-table:not(.navtable) > tbody > tr > .ui-pg-button > .ui-icon').each(function(){
+            var icon = $(this);
+            var $class = $.trim(icon.attr('class').replace('ui-icon', ''));
 
-                        if($class in replacement) icon.attr('class', 'ui-icon '+replacement[$class]);
-                    })
-                }
+            if($class in replacement) icon.attr('class', 'ui-icon '+replacement[$class]);
+        })
+    }
 
     function loadSeachedTaskData(q_str){
-        console.log(q_str)
+        console.log("loadSeachedTaskData:" + q_str);
         var result_table = $('#result_table');
         result_table.find("#table_container").remove();
         result_table.find("#grid-pager").remove();
@@ -78,9 +78,10 @@
                 var schedule_timing_seconds = 0;
                 var total_logged_seconds = 0;
                 var total_task = data.length;
-
+                console.log(' tasks are loaded ');
 
                 for(var j=0; j<total_task; j++){
+                    console.log('loaded: '+ data[j].type_names);
 
                     data[j].name_str = "<a href='/tasks/"+data[j].id+"/view'>"+data[j].full_path+"</a><br/>";
 
@@ -174,6 +175,7 @@
             for(var i=0; i<parameters.length; i++){
                 var param = parameters[i].split(':')[0];
                 var param_value = parameters[i].split(':')[1];
+
                 if(param !='asset_type_names'){
                     if (param_value){
                         query_str += param+'='+param_value+'&'
@@ -182,7 +184,6 @@
                 else{
                     asset_type_query_str += param+'='+param_value+'&'
                 }
-
             }
 
             if (asset_type_query_str !=""){
@@ -193,17 +194,15 @@
                     console.log(assets_data.length);
                     var total_asset = assets_data.length;
                     for(var j=0; j<total_asset; j++){
-                        query_str += 'path='+assets_data[j].id+'&'
-
+                        query_str += 'path='+assets_data[j].id+'&';
                     }
                     query_str = query_str.substring(0, query_str.length-1);
                     loadSeachedTaskData(query_str);
-
                 })
             }
             else{
                 query_str = query_str.substring(0, query_str.length-1);
-                console.log("query_str: "+query_str);
+                console.log("query_str: " + query_str);
                 loadSeachedTaskData(query_str);
 
             }
