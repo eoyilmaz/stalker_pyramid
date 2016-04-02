@@ -84,7 +84,12 @@
     <script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/jquery.jqGrid.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/accounting.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/codebase/dhtmlxgantt.js") }}'></script>
-
+    <link src='{{ request.static_url("stalker_pyramid:static/jqGrid/css/ui.jqgrid-bootstrap.css") }}'/>
+    <script>
+        $.jgrid.defaults.width = 780;
+        $.jgrid.defaults.responsive = true;
+        $.jgrid.defaults.styleUI = 'Bootstrap';
+    </script>
     <script type="text/javascript">
         $(document).ready(function () {
 
@@ -100,11 +105,28 @@
                 var total_price = 0;
 
                 for(var j=0; j<grid_data.length; j++ ){
-                    grid_data[j].addition_type = grid_data[j].addition_type.dataSource
-                    grid_data[j].msrp = grid_data[j].msrp*grid_data[j].amount;
+                    console.log(grid_data[j].generic_data)
+                    grid_data[j].addition_type = grid_data[j].generic_data.dataSource;
+
+                    grid_data[j].overtime = parseInt(grid_data[j].generic_data.overtime);
+                    grid_data[j].overtime_cost = grid_data[j].overtime * grid_data[j].cost;
+
+                    var stopage_msrp = 0;
+                    grid_data[j].stopage_cost = 0;
+                    grid_data[j].stopage_add = grid_data[j].generic_data.stopage_add;
+                    if (grid_data[j].stopage_add == 1){
+                        var stopage_ratio = parseFloat(grid_data[j].good_generic_data.stopage_ratio);
+                        console.log (stopage_ratio);
+                        grid_data[j].stopage_cost =stopage_ratio * grid_data[j].cost * (grid_data[j].amount+grid_data[j].overtime);
+                        stopage_msrp = stopage_ratio * grid_data[j].msrp * (grid_data[j].amount+grid_data[j].overtime);
+                    }
+
+                    grid_data[j].msrp = grid_data[j].cost * (grid_data[j].amount+grid_data[j].overtime) + stopage_msrp;
                     total_msrp += parseInt(grid_data[j].msrp);
-                    grid_data[j].cost = grid_data[j].cost*grid_data[j].amount;
+
+                    grid_data[j].cost = grid_data[j].cost * (grid_data[j].amount+grid_data[j].overtime) + grid_data[j].stopage_cost;
                     total_cost += parseInt(grid_data[j].cost);
+
                     total_price += parseInt(grid_data[j].price);
                 }
                 $('#total_price').text(accounting.formatMoney(total_price, { symbol: "TL",  format: "%v %s" }));
@@ -149,39 +171,30 @@
                         }
                         jQuery(function($) {
                             var grid_selector = "#grid-table";
-
-                            jQuery(grid_selector).jqGrid({
+                            var grid = jQuery(grid_selector);
+                            grid.jqGrid({
                                 //direction: "rtl",
                                 data: grid_data,
                                 datatype: "local",
-                                colNames:[' ',  'Addition Type', 'Type', 'Name','Amount', 'Unit', 'Msrp', 'Cost',  'Price', 'Id','Notes'],
+                                colNames:['Addition Type', 'Type', 'Name','Amount', 'Unit', 'Msrp', 'Cost', 'Overtime', 'Overtime Cost', 'Stopage','Stopage Cost','Price', 'Id','Notes'],
                                 colModel:[
-                                    {
-                                        name:'myac',
-                                        index:'',
-                                        width:80,
-                                        fixed:true,
-                                        sortable:false,
-                                        resize:false,
-                                        formatter:'actions',
-                                        formatoptions:{
-                                                    keys:false,
-                                                    delbutton:true,
-                                                    delOptions:{recreateForm: true, beforeShowForm:beforeDeleteCallback}
-                                                }
-                                    },
+
                                     {name:'addition_type', index:'addition_type', width:100, editable: false},
                                     {name:'type', index:'type', width:220, editable: false},
                                     {name:'name', index:'name', width:220, editable: false},
                                     {name:'amount', index:'amount', width:60, editable: true},
                                     {name:'unit', index:'unit', width:100, editable: false},
-                                    {name:'msrp', index:'msrp', width:150, editable: false, formatter:currencyFmatter, summaryTpl: "{0}", summaryType: "sum" },
-                                    {name:'cost', index:'cost', width:150, editable: false, formatter:currencyFmatter, summaryTpl: "{0}", summaryType: "sum" },
+                                    {name:'msrp', index:'msrp', width:100, editable: false, formatter:currencyFmatter, summaryTpl: "{0}", summaryType: "sum" },
+                                    {name:'cost', index:'cost', width:100, editable: false, formatter:currencyFmatter, summaryTpl: "{0}", summaryType: "sum" },
+                                    {name:'overtime', index:'overtime', width:50, editable: true},
+                                    {name:'overtime_cost', index:'overtime_cost', width:100, editable: false, formatter:currencyFmatter, summaryTpl: "{0}", summaryType: "sum" },
+                                    {name:'stopage_add', index:'stopage_add', width:50, editable: true},
+                                    {name:'stopage_cost', index:'stopage_cost', width:100, editable: false, formatter:currencyFmatter, summaryTpl: "{0}", summaryType: "sum" },
     {#                                {name:'realized_total',index:'realized_total',  width:150, editable: false,formatter:currencyFmatter, summaryTpl: "{0}", summaryType: "sum" },#}
                                     {name:'price', index:'price', width:150, editable: true, edittype:"textarea", editoptions:{size:"20",maxlength:"80"} , formatter:currencyFmatter, unformat:unformatCurrency, summaryTpl: "{0}", summaryType: "sum" },
                                     {name:'id', index:'id', width:82, editable: false },
                                     {name:'note', index:'note', width:200, sortable:false, editable: true, edittype:"textarea", editoptions:{size:"20", maxlength:"80"}}
-                                ],
+                                 ],
                                 viewrecords : true,
                                 rowNum:grid_data.length,
                                 rowList:[grid_data.length, 10, 10],
@@ -203,13 +216,10 @@
                                     groupSummary: [true],
                                     groupCollapse: false
                                 },
-                                gridview: true,
                                 editurl: '/budgetentries/edit?budget_id={{ entity.id }}',
                                 caption: "",
-                                onSelectRow: function(id){
 
-
-                                },
+                                onSelectRow: editRow,
                                 loadComplete : function() {
                                     var $self = $(this);
                                     $self.jqGrid("footerData", "set", {
@@ -250,6 +260,42 @@
                                     }, 0);
                                 }
                             });
+
+                            var lastSelection;
+
+                            function editRow(id) {
+                                if (id && id !== lastSelection) {
+
+                                    grid.restoreRow(lastSelection);
+
+                                    var editParameters = {
+                                        keys: true,
+                                        successfunc: editSuccessful,
+                                        errorfunc: editFailed,
+                                        restoreAfterError : false
+                                    };
+
+                                    grid.jqGrid('editRow', id, editParameters);
+                                    lastSelection = id;
+                                }
+                            }
+
+                            function editSuccessful( data, stat) {
+                                console.log("editSuccessful: " +data.responseText);
+                                flash_message({
+                                    type: "success",
+                                    title: "Success!",
+                                    message: data.responseText
+                                });
+
+                                grid.restoreRow(lastSelection);
+                                return [true,"",""];
+                            }
+
+                            function editFailed(rowID, response) {
+                                $.jgrid.info_dialog($.jgrid.errors.errcap,'<div class="ui-state-error">RowID:'+rowID+ ' :  '+ response.responseJSON.error +'</div>', $.jgrid.edit.bClose,{buttonalign:'right'})
+                                //alert(response.responseJSON.error);
+                            }
 
                         });
                     });

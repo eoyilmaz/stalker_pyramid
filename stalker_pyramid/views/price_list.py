@@ -25,7 +25,7 @@ from pyramid.response import Response
 
 from stalker import (defaults, Good, Project, Studio, PriceList)
 from stalker.db import DBSession
-from stalker_pyramid.views import local_to_utc
+from stalker_pyramid.views import local_to_utc, update_generic_text
 import transaction
 
 from stalker_pyramid.views import (log_param, get_logged_in_user,
@@ -103,10 +103,16 @@ def get_goods(request):
     for good in goods:
 
         related_goods = []
+        linked_goods = []
+        stopage_ratio = 0
         if good.generic_text != "":
             generic_data = json.loads(good.generic_text)
-            if generic_data.has_key("related_goods"):
+            if "related_goods" in generic_data:
                 related_goods = generic_data["related_goods"]
+            if "linked_goods" in generic_data:
+                linked_goods = generic_data["linked_goods"]
+            if "stopage_ratio" in generic_data:
+                stopage_ratio = generic_data["stopage_ratio"]
 
         return_data.append({
             'id': good.id,
@@ -120,7 +126,9 @@ def get_goods(request):
             'updated_by_name': good.updated_by.name if good.updated_by else None,
             'date_updated': milliseconds_since_epoch(good.date_updated),
             'price_list_name': good.price_lists[0].name if good.price_lists else None,
-            'related_goods': related_goods
+            'related_goods': related_goods,
+            'linked_goods': linked_goods,
+            'stopage_ratio': stopage_ratio
         })
 
     return return_data
@@ -196,6 +204,7 @@ def create_good(request):
     unit = request.params.get('unit', None)
     cost = request.params.get('cost', None)
     price_list_name = request.params.get('price_list_name', None)
+    stopage_ratio = request.params.get('stopage_ratio', None)
 
     logger.debug('came_from : %s' % came_from)
     logger.debug('name : %s' % name)
@@ -203,9 +212,10 @@ def create_good(request):
     logger.debug('unit : %s' % unit)
     logger.debug('cost : %s' % cost)
     logger.debug('price_list_name : %s' % price_list_name)
+    logger.debug('stopage_ratio : %s' % stopage_ratio)
 
     # create and add a new good
-    if name and msrp and unit and cost and price_list_name:
+    if name and msrp and unit and cost and price_list_name and stopage_ratio:
 
         price_list = query_price_list(price_list_name)
         try:
@@ -215,7 +225,8 @@ def create_good(request):
                 msrp=int(msrp),
                 unit=unit,
                 cost=int(cost),
-                price_lists=[price_list]
+                price_lists=[price_list],
+                generic_text=json.dumps({'stopage_ratio': stopage_ratio})
             )
 
             new_good.created_by = logged_in_user
@@ -287,18 +298,16 @@ def update_good(request):
     unit = request.params.get('unit', None)
     cost = request.params.get('cost', None)
     price_list_name = request.params.get('price_list_name', None)
+    stopage_ratio = request.params.get('stopage_ratio', None)
 
     logger.debug('name : %s' % name)
     logger.debug('msrp : %s' % msrp)
     logger.debug('unit : %s' % unit)
     logger.debug('cost : %s' % cost)
 
-    if name and msrp and unit and cost:
+    if name and msrp and unit and cost and stopage_ratio:
 
         price_list = query_price_list(price_list_name)
-         # update the group
-
-        assert isinstance(good, Good)
 
         good.name = name
         good.msrp = int(msrp)
@@ -307,6 +316,11 @@ def update_good(request):
         good.price_lists = [price_list]
         good.updated_by = logged_in_user
         good.date_updated = utc_now
+
+        good.generic_text = update_generic_text(good.generic_text,
+                                                 "stopage_ratio",
+                                                 stopage_ratio,
+                                                 'equal')
 
         DBSession.add(good)
 
@@ -385,32 +399,6 @@ def update_good_relation_dialog(request):
         'milliseconds_since_epoch': milliseconds_since_epoch
     }
 
-
-def update_good_generic_text(good, attr, data, l_in_user, u_now, action):
-
-    list_attr = []
-    generic_data = {}
-
-    if good.generic_text != "":
-        generic_data = json.loads(good.generic_text)
-        if generic_data.has_key(attr):
-            list_attr = generic_data[attr]
-
-    if action == 'add':
-        list_attr.append(data)
-
-    elif action == 'remove':
-        for obj in list_attr:
-            if obj.has_key("id"):
-                if obj["id"] == data.id:
-                    list_attr.remove(obj)
-
-    generic_data[attr] = list_attr
-    good.generic_text = json.dumps(generic_data)
-    good.updated_by = l_in_user
-    good.date_updated = u_now
-
-
 @view_config(
     route_name='update_good_relation'
 )
@@ -440,27 +428,28 @@ def update_good_relation(request):
 
     if related_good and ratio:
 
-        update_good_generic_text(good,
-                                 "related_goods",
-                                 {
-                                    'id': related_good.id,
-                                    'name': related_good.name,
-                                    'ratio': ratio
-                                 },
-                                 logged_in_user,
-                                 utc_now,
-                                 'add')
+        good.generic_text = update_generic_text(good.generic_text,
+                                                 "related_goods",
+                                                 {
+                                                    'id': related_good.id,
+                                                    'name': related_good.name,
+                                                    'ratio': ratio
+                                                 },
+                                                 'add')
+        good.updated_by = logged_in_user
+        good.date_updated = utc_now
 
-        update_good_generic_text(related_good,
-                                 "linked_goods",
-                                 {
-                                    'id': good.id,
-                                    'name': good.name,
-                                    'ratio': ratio
-                                 },
-                                 logged_in_user,
-                                 utc_now,
-                                 'add')
+        related_good.generic_text = update_generic_text(related_good.generic_text,
+                                                             "linked_goods",
+                                                             {
+                                                                'id': good.id,
+                                                                'name': good.name,
+                                                                'ratio': ratio
+                                                             },
+                                                             'add')
+        related_good.updated_by = logged_in_user
+        related_good.date_updated = utc_now
+
 
     else:
         logger.debug('not all parameters are in request.params')
@@ -532,24 +521,24 @@ def delete_good_relation(request):
 
     if related_good:
 
-        update_good_generic_text(good,
-                                 "related_goods",
-                                 {
-                                    'id': related_good.id
-                                 },
-                                 logged_in_user,
-                                 utc_now,
-                                 'remove')
+        good.generic_text = update_generic_text(good.generic_text,
+                                                     "related_goods",
+                                                     {
+                                                        'id': related_good.id
+                                                     },
+                                                     'remove')
 
-        update_good_generic_text(related_good,
-                                 "linked_goods",
-                                 {
-                                    'id': good.id
-                                 },
-                                 logged_in_user,
-                                 utc_now,
-                                 'remove')
+        good.updated_by = logged_in_user
+        good.date_updated = utc_now
 
+        related_good.generic_text = update_generic_text(related_good.generic_text,
+                                                             "linked_goods",
+                                                             {
+                                                                'id': good.id
+                                                             },
+                                                             'remove')
+        related_good.updated_by = logged_in_user
+        related_good.date_updated = utc_now
 
     else:
         logger.debug('not all parameters are in request.params')

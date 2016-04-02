@@ -21,6 +21,7 @@
 import logging
 import calendar
 import datetime
+import json
 
 from pyramid.httpexceptions import HTTPServerError, HTTPForbidden
 from pyramid.view import view_config
@@ -483,3 +484,33 @@ def invalidate_all_caches():
     from beaker.cache import cache_managers
     for _cache in cache_managers.values():
         _cache.clear()
+
+
+
+def update_generic_text(generic_text, attr, data, action):
+
+    list_attr = []
+    generic_data = {}
+
+    if generic_text != "":
+        generic_data = json.loads(generic_text)
+        if attr in generic_data:
+            list_attr = generic_data[attr]
+
+    if action == 'add':
+        list_attr.append(data)
+
+    elif action == 'remove':
+        for obj in list_attr:
+            if "id" in obj:
+                if obj["id"] == data["id"]:
+                    list_attr.remove(obj)
+    elif action == 'equal':
+        list_attr = data
+
+    generic_data[attr] = list_attr
+    generic_text = json.dumps(generic_data)
+
+    logger.debug(generic_text)
+
+    return generic_text

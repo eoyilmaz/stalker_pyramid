@@ -222,7 +222,7 @@
 
             $.getJSON('/goods/').then(function (good_data) {
 
-                var lightBox_goods =[];
+                var lightBox_goods = [];
                 for(var m=0; m<good_data.length; m++ ){
                     if (good_data[m].unit == 'HOUR' || good_data[m].unit == 'DAY' ){
                         lightBox_goods.push({key:good_data[m].name+'/-/'+good_data[m].id, label: good_data[m].name});

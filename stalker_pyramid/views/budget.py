@@ -31,7 +31,7 @@ from webob import Response
 from stalker_pyramid.views import (get_logged_in_user, logger,
                                    PermissionChecker, milliseconds_since_epoch,
                                    local_to_utc, StdErrToHTMLConverter,
-                                   get_multi_string)
+                                   get_multi_string, update_generic_text)
 
 from stalker_pyramid.views.task import generate_recursive_task_query
 from stalker_pyramid.views.type import query_type
@@ -311,36 +311,58 @@ def save_budget_calendar(request):
             # delete_budgetentry_action(budget_entry)
             logger.debug('***delete *** %s ' % budget_entry.name)
             db.DBSession.delete(budget_entry)
+    db.DBSession.flush()
+    transaction.commit()
 
     for budgetentry_data in budgetentries_data:
         logger.debug('budgetentry_data: %s' % budgetentry_data)
 
-        id, text, gid, sdate, duration, resources = budgetentry_data.split('-')
+        id_, text, gid, sdate, duration, resources = \
+            budgetentry_data.split('-')
         good_id = gid.split('_')[1]
         good = Good.query.filter_by(id=good_id).first()
 
         logger.debug('good: %s' % good)
-        if not good:
-            transaction.abort()
-            return Response('Please supply a good', 500)
+        # if not good:
+        #     transaction.abort()
+        #     return Response('Please supply a good', 500)
 
-        numOfResources = int(resources.split('_')[1])
-        amount = int(duration.split('_')[1])*numOfResources
+        num_of_resources = int(resources.split('_')[1])
+        amount = int(duration.split('_')[1]) * num_of_resources
 
-        generic_data = {'dataSource': 'Calendar',
-                        'numberOfResources': numOfResources}
+        generic_data = {
+            'dataSource': 'Calendar',
+            'numberOfResources': num_of_resources,
+            'overtime': 0,
+            'stopage_add': 0
+        }
 
         if good.unit == 'HOUR':
+            # what the fuck is that Gulsen!!!
             amount *= 9
+
         if amount or amount > 0:
-            create_budgetentry_action(budget,
-                                      good,
-                                      amount,
-                                      good.cost * amount,
-                                      ' ',
-                                      json.dumps(generic_data),
-                                      logged_in_user,
-                                      utc_now)
+            # after transaction commit
+            # the ``budget``s state becomes "detached"
+            # so reload it
+            budget = Budget.query.filter(Budget.id == budget_id).first()
+            assert budget in db.DBSession
+
+            create_budgetentry_action(
+                budget,
+                good,
+                amount,
+                good.cost * amount,
+                ' ',
+                json.dumps(generic_data),
+                logged_in_user,
+                utc_now
+            )
+            request.session.flash(
+                'success:created %s BudgetEntry!' % good.name
+            )
+            db.DBSession.flush()
+            transaction.commit()
 
     return Response('Budget Calendar Saved Succesfully')
 
@@ -438,7 +460,9 @@ def create_budgetentry(request):
     description = request.params.get('description', '')
 
     generic_data = {'dataSource': 'Producer',
-                    'numberOfResources': 1}
+                    'numberOfResources': 1,
+                    'overtime':0,
+                    'stopage_add': 0}
 
     if not amount or amount == '0':
         transaction.abort()
@@ -474,15 +498,12 @@ def create_budgetentry_action(budget, good, amount, price, description, gData, l
 
     for budget_entry in budget.entries:
         if budget_entry.name == good.name:
-            logger.debug('Adds budget_entry amount %s ***'% budget_entry.amount)
+            logger.debug('Adds budget_entry amount %s ***' % budget_entry.amount)
             budget_entry.amount += amount
             budget_entry.price += price
             return
 
-    cost = good.cost
-    msrp = good.msrp
-    realize_total = msrp
-    unit = good.unit
+    realize_total = good.msrp
     entry_type = query_type('BudgetEntries', good.price_lists[0].name)
 
     budget_entry = BudgetEntry(
@@ -491,11 +512,8 @@ def create_budgetentry_action(budget, good, amount, price, description, gData, l
         name=good.name,
         type=entry_type,
         amount=amount,
-        cost=cost,
-        msrp=msrp,
         price=price,
         realize_total=realize_total,
-        unit=unit,
         description=description,
         created_by=logged_in_user,
         date_created=utc_now,
@@ -503,17 +521,35 @@ def create_budgetentry_action(budget, good, amount, price, description, gData, l
         generic_text=gData
     )
     db.DBSession.add(budget_entry)
-    return
 
+    if good.generic_text != "":
+        generic_data = json.loads(good.generic_text)
+        linked_goods = generic_data.get('linked_goods', None)
+        if linked_goods:
+            for l_good in linked_goods:
+                linked_good = \
+                    Good.query.filter(Good.id == l_good["id"]).first()
+
+                logger.debug("%s is added" % linked_good.name)
+
+                create_budgetentry_action(
+                    budget,
+                    linked_good,
+                    amount,
+                    linked_good.cost * amount,
+                    description,
+                    gData,
+                    logged_in_user,
+                    utc_now
+                )
 
 
 @view_config(
     route_name='update_budgetentry'
 )
 def update_budgetentry(request):
-    """updates the budgetentry with data from request
+    """updates the BudgetEntry with data from request
     """
-
     logger.debug('***update_budgetentry method starts ***')
     logged_in_user = get_logged_in_user(request)
     utc_now = local_to_utc(datetime.datetime.now())
@@ -521,10 +557,16 @@ def update_budgetentry(request):
     budgetentry_id = request.params.get('id')
     budgetentry = BudgetEntry.query.filter_by(id=budgetentry_id).first()
 
-    good = Good.query.filter(Good.name == budgetentry.name).first()
+    # good = Good.query.filter(Good.name == budgetentry.name).first()
     # user supply this data
     amount = request.params.get('amount', None)
+    overtime = int(request.params.get('overtime', 0))
+    stopage_add = int(request.params.get('stopage_add', 0))
+
     price = request.params.get('price', None)
+
+    logger.debug("overtime %s " % overtime)
+
     if not price:
         transaction.abort()
         return Response('Please supply price', 500)
@@ -533,7 +575,18 @@ def update_budgetentry(request):
 
     generic_data = json.loads(budgetentry.generic_text)
 
-    if generic_data['dataSource'] == 'Calendar':
+    budgetentry.generic_text = update_generic_text(budgetentry.generic_text,
+                                                         "overtime",
+                                                         overtime,
+                                                         'equal')
+
+    budgetentry.generic_text = update_generic_text(budgetentry.generic_text,
+                                                         "stopage_add",
+                                                         stopage_add,
+                                                         'equal')
+
+    if 'dataSource' in generic_data \
+       and generic_data['dataSource'] == 'Calendar':
         budgetentry.price = price
         budgetentry.description = description
         budgetentry.date_updated = utc_now
@@ -545,20 +598,18 @@ def update_budgetentry(request):
 
         amount = int(amount)
         budgetentry.amount = amount
-        budgetentry.cost = good.cost
-        budgetentry.msrp = good.msrp
-        budgetentry.good = good
-        # budgetentry.realized_total = good.msrp
-        budgetentry.price = price if price != '0' else good.cost*amount
+
+
+        budgetentry.price = price if price != '0' else budgetentry.cost * (amount + overtime)
         budgetentry.description = description
         budgetentry.date_updated = utc_now
         budgetentry.updated_by = logged_in_user
-        budgetentry.generic_text = json.dumps({'dataSource': 'Producer',
-                                    'numberOfResources': 1})
+
+        budgetentry.generic_text = json.dumps(generic_data)
 
     request.session.flash(
-                'success:updated %s budgetentry!' % budgetentry.name
-            )
+        'success:updated %s budgetentry!' % budgetentry.name
+    )
     return Response('successfully updated %s budgetentry!' % budgetentry.name)
 
 
@@ -621,11 +672,15 @@ def get_budget_entries(request):
            "BudgetEntries".realized_total,
            "BudgetEntries".unit,
            "BudgetEntries_SimpleEntities".description,
-           "BudgetEntries_SimpleEntities".generic_text
+           "BudgetEntries_SimpleEntities".generic_text,
+           "Goods_SimpleEntities".generic_text
         from "BudgetEntries"
         join "SimpleEntities" as "BudgetEntries_SimpleEntities" on "BudgetEntries_SimpleEntities".id = "BudgetEntries".id
         join "SimpleEntities" as "Types_SimpleEntities" on "Types_SimpleEntities".id = "BudgetEntries_SimpleEntities".type_id
         join "Budgets" on "Budgets".id = "BudgetEntries".budget_id
+        join "Goods" on "BudgetEntries".good_id = "Goods".id
+        join "SimpleEntities" as "Goods_SimpleEntities" on "Goods_SimpleEntities".id = "Goods".id
+
         where "Budgets".id = %(budget_id)s
     """
 
@@ -644,7 +699,8 @@ def get_budget_entries(request):
             'realized_total': r[7],
             'unit': r[8],
             'note': r[9],
-            'addition_type': json.loads(r[10])
+            'generic_data': json.loads(r[10]) if r[10] else {},
+            'good_generic_data': json.loads(r[11]) if r[11] else {}
         }
         for r in result.fetchall()
     ]
@@ -756,7 +812,6 @@ def duplicate_budget(request):
     name = request.params.get('dup_budget_name')
     description = request.params.get('dup_budget_description')
 
-
     budget_type = query_type('Budget', 'Planning')
     project = budget.project
 
@@ -795,7 +850,6 @@ def duplicate_budget(request):
                 generic_text=budget_entry.generic_text
             )
         db.DBSession.add(new_budget_entry)
-
 
     request.session.flash('success: Budget is duplicated successfully')
     return Response('Budget is duplicated successfully')
