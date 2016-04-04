@@ -248,10 +248,6 @@ class TaskViewBaseTestCase(unittest.TestCase):
         )
         DBSession.add(self.test_task9)
 
-
-
-
-
         DBSession.flush()
         transaction.commit()
 

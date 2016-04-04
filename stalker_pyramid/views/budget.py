@@ -854,3 +854,16 @@ def duplicate_budget(request):
     request.session.flash('success: Budget is duplicated successfully')
     return Response('Budget is duplicated successfully')
 
+
+class ReportExporter(object):
+    """A base class for report exporters
+    """
+
+    def __init__(self, name='', template=''):
+        self.name = name
+        self.template = template
+
+    def export(self):
+        """virtual method that needs to be implemented on child classes
+        """
+        raise NotImplementedError()
