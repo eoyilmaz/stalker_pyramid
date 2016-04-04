@@ -21,6 +21,7 @@ stalker_pyramid/static/doT/benchmarks/
 stalker_pyramid/static/doT/examples/
 stalker_pyramid/static/doT/test/
 stalker_pyramid/static/doT/README.md*
+stalker_pyramid/static/beyond/
 .coverage
 .DS_Store
 dist/*
