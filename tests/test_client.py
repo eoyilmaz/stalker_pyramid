@@ -493,6 +493,242 @@ class ClientViewTests(unittest.TestCase):
             be2.price + be2.price * 0.25 + be5.price
         )
 
+    def test_generate_report_output_path_argument_is_skipped(self):
+        """testing if the generate_report() will generate a temp file path
+        and return it when the output_path is '' or skipped
+        """
+        import os
+        from stalker import db, Client
+        c = Client(name='Some Client')
+
+        # generate the template
+        report_template = {
+            'name': 'Reklam Verenler Dernegi',
+            'template': {
+                'path': os.path.abspath('./tests/test_data/report_template.xlsx')
+            },
+            'mapper': {
+                'sheets': [
+                    {
+                        'name': 'Sheet1',
+                        'cells': {
+                            'B2': [
+                                {
+                                    'query': {
+                                        'name': 'Modeler'
+                                    },
+                                    'result': '{item.price}'
+                                }
+                            ],
+                            'B3': [
+                                {
+                                    'query': {
+                                        'name': 'Director'
+                                    },
+                                    'result': '{item.price}'
+                                }
+                            ],
+                            'B4': [
+                                {
+                                    'query': {
+                                        'name': 'Assistant Director'
+                                    },
+                                    'result': '{item.price}'
+                                }
+                            ],
+                        }
+                    },
+                    {
+                        'name': 'Sheet2',
+                        'cells': {
+                            'B2': [
+                                {
+                                    'query': {
+                                        'name': 'Animation Director'
+                                    },
+                                    'result': '{item.price} + {item.price} * {item.stoppage_ratio}'
+                                },
+                                {
+                                    'query': {
+                                        'name': 'Animator'
+                                    },
+                                    'result': '{item.price}'
+                                },
+                            ]
+                        }
+                    }
+                ]
+            }
+        }
+
+        generic_text_data = {
+            'some values': 1,
+            'some other values': 'some text',
+            'report_template': report_template
+        }
+
+        # store the template
+        import json
+        c.generic_text = json.dumps(generic_text_data)
+
+        # store the client
+        db.DBSession.add(c)
+        db.DBSession.commit()
+
+        # create a Project
+        from stalker import Repository, Project, Status, StatusList
+        repo = Repository(
+            name='Test Repository',
+            windows_path='c:/test',
+            linux_path='/tmp/test',
+            osx_path='/tmp/test'
+        )
+        db.DBSession.add(repo)
+
+        status1 = Status(
+            name='Work In Progress',
+            code='WIP'
+        )
+
+        status2 = Status(
+            name='Completed',
+            code='CMPL'
+        )
+        db.DBSession.add_all([status1, status2])
+
+        project_status_list = StatusList(
+            name='Project Status List',
+            target_entity_type='Project',
+            statuses=[status1, status2]
+        )
+        db.DBSession.add(project_status_list)
+        db.DBSession.commit()
+
+        p = Project(
+            name='Test Project 1',
+            code='TP1',
+            client=c,
+            repositories=[repo],
+            status_list=project_status_list
+        )
+        db.DBSession.add(p)
+        db.DBSession.commit()
+
+        # create a budget
+        from stalker import Budget, BudgetEntry, Good
+        b1 = Budget(
+            name='Test Budget 1',
+            project=p
+        )
+
+        # create some goods and entries
+        # Modeler
+        g1 = Good(
+            name='Modeler',
+            cost=100,
+            msrp=80,
+            unit='h'
+        )
+        db.DBSession.add(g1)
+
+        be1 = BudgetEntry(
+            name='Modeler',
+            budget=b1,
+            good=g1,
+            price=150,
+            amount=4
+        )
+        db.DBSession.add(be1)
+
+        # Animation Director
+        g2 = Good(
+            name='Animation Director',
+            cost=150,
+            msrp=125,
+            unit='h'
+        )
+        db.DBSession.add(g2)
+
+        be2 = BudgetEntry(
+            name='Animation Director',
+            budget=b1,
+            good=g2,
+            amount=4,
+            price=g2.cost * 4
+        )
+        # add stoppage ratio
+        import json
+        be2.generic_text = json.dumps({'stoppage_ratio': 0.25})
+        db.DBSession.add(be2)
+
+        # Director
+        g3 = Good(
+            name='Director',
+            cost=150,
+            msrp=125,
+            unit='h'
+        )
+        db.DBSession.add(g3)
+
+        be3 = BudgetEntry(
+            name='Director',
+            budget=b1,
+            good=g3,
+            amount=5,
+            price=g3.cost * 5
+        )
+        db.DBSession.add(be3)
+
+        # Assistant Director
+        g4 = Good(
+            name='Assistant Director',
+            cost=70,
+            msrp=50,
+            unit='h'
+        )
+        db.DBSession.add(g4)
+
+        be4 = BudgetEntry(
+            name='Assistant Director',
+            budget=b1,
+            good=g4,
+            amount=12,
+            price=g4.cost * 12
+        )
+        db.DBSession.add(be4)
+
+        # Animator
+        g5 = Good(
+            name='Animator',
+            cost=25,
+            msrp=20,
+            unit='h'
+        )
+        db.DBSession.add(g5)
+
+        be5 = BudgetEntry(
+            name='Animator',
+            budget=b1,
+            good=g5,
+            amount=120,
+            price=g5.cost * 120
+        )
+        db.DBSession.add(be5)
+        db.DBSession.commit()
+
+        # ok we got the test data ready
+        # now request the get_report() method to do its job
+        from stalker_pyramid.views.client import generate_report
+        import tempfile
+        output_file_location = tempfile.mktemp(suffix='.xlsx')
+
+        output_file_location = generate_report(
+            budget=b1
+        )
+
+        self.assertTrue(tempfile.gettempdir() in output_file_location)
+        self.assertTrue('.xlsx' in output_file_location)
+
     def test_get_distinct_report_templates_is_working_properly_with_client_that_doesnt_have_a_report_template(self):
         """testing if get_distinct_report_templates() gathers templates from
         all clients in the database
@@ -576,8 +812,6 @@ class ClientViewTests(unittest.TestCase):
         from stalker_pyramid.views.client import get_distinct_report_templates
 
         result = get_distinct_report_templates()
-
-        print result
 
         self.maxDiff = None
         self.assertEqual(
@@ -675,3 +909,4 @@ class ClientViewTests(unittest.TestCase):
             result,
             report_template1
         )
+

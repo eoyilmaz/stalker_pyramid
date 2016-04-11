@@ -1,0 +1,84 @@
+{# Stalker Pyramid a Web Base Production Asset Management System
+ Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
+
+ This file is part of Stalker Pyramid.
+
+ This library is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation;
+ version 2.1 of the License.
+
+ This library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Lesser General Public License for more details.
+
+ You should have received a copy of the GNU Lesser General Public
+ License along with this library; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+#}
+
+{% extends "base.jinja2" %}
+
+{# BREADCRUMBS #}
+{% block breadcrumbs %}
+
+    {% set page_title='clients' %}
+    {% include 'breadcrumb/breadcrumbs.jinja2' %}
+
+{% endblock breadcrumbs %}
+
+{# SIDEBAR #}
+{% block sidebar %}
+
+    {% include 'sidebar.jinja2' %}
+
+{% endblock sidebar %}
+
+{# PAGE-CONTENT #}
+{% block page_content %}
+
+    {% set page_title='Related Assets' %}
+    {% include 'page_header.jinja2' %}
+{##}
+{#    {% set add_button_address=request.route_path('create_client_dialog') %}#}
+    {% set list_item_type='Asset' %}
+    {% include 'components/data_table.jinja2' %}
+
+{% endblock page_content %}
+
+{# EXTRA-SCRIPTS #}
+{% block extrascripts %}
+    {% raw %}
+    <script id="tmpl_itemThead" type="text/x-dot-template">
+        <tr>
+            <th>Thumbnail</th>
+            <th>Name</th>
+        </tr>
+    </script>
+    {% endraw %}
+
+    {% raw %}
+    <script id="tmpl_itemRow" type="text/x-dot-template">
+        <tr>
+            <td><img style='width:auto; height: 100px;'
+                     class="img-thumbnail"
+                     src="{{=it.thumbnail_full_path }}">
+            </td>
+            <td><a href='/clients/{{=it.id}}/view'>{{=it.name}}</a>
+            </td>
+        </tr>
+    </script>
+    {% endraw %}
+
+    <script>
+
+        var tableParameters = {"aoColumns": [null, null]};
+        var sortingParameters = [[0, 'asc']];
+        var tableDataAddress;
+        tableDataAddress = '/tasks/{{ entity.id }}/related/Asset/depends/';
+
+    </script>
+
+{% endblock extrascripts %}
+

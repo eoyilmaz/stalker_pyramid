@@ -32,13 +32,12 @@
                 <label class='span3 control-label'
                        for='budget_type'>Type</label>
                 <div class="span5">
-                    <input id='budget_type'
-                           class='input-block-level'
-                           name='type_name'
-                           type='text'
-                           data-placeholder='Type'
-                           is_updating=false
-                           >
+
+                    <select id='budget_type'
+                            class='input'
+                            name='type_id'
+                            required>
+                    </select>
                 </div>
             </div>
 
@@ -81,24 +80,22 @@
             );
         {% endraw %}
 
-        $.getJSON('/types/?target_entity_type=Budget').then(function (available_type) {
+        $.getJSON('/types/?target_entity_type=Budget').then(function (data) {
             var budget_type = $('#budget_type');
+            console.log(data);
 
-            var available_types_as_list = [];
-            for (var i=0; i < available_type.length; i++){
-                available_types_as_list.push(available_type[i].name);
+            for (var i = 0; i < data.length; i++) {
+                budget_type.append(budget_type_option_template(data[i]));
             }
 
-            budget_type.autocomplete({
-                delay: 0,
-                source: available_types_as_list,
-                minLength: 0
+            budget_type.chosen({
+                search_contains: true,
+                enable_split_word_search: true,
+                allow_single_deselect: true
             });
 
-            budget_type.attr('is_updating', false);
-
             {% if mode=='Update' %}
-                budget_type.val({{ budget.status.id }});
+                budget_type.val({{ budget.type.id }});
                 budget_type.trigger('liszt:updated');
             {% endif %}
 

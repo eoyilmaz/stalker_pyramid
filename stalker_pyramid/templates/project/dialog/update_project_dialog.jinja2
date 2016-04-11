@@ -145,15 +145,17 @@
 
             submit_button.button('loading');
             var project_form = $('#project_form');
+
+            console.log(project_form.serialize());
             if (project_form.validate()) {
-                console.log('project_form.validate()')
+                console.log('project_form.validate()');
                 $.post(
                     project_form.attr('action'),
                     project_form.serialize()
                 ).done (function (jqXHR) {
-                    window.location.assign('{{ came_from }}');
+{#                    window.location.assign('{{ came_from }}');#}
                 }).fail(function (jqXHR) {
-                     bootbox.alert('<div id="message" class="alert alert-danger bigger-110">'+jqXHR.responseText+'</div>');
+                    bootbox.alert('<div id="message" class="alert alert-danger bigger-110">'+jqXHR.responseText+'</div>');
 
                     submit_button.button('reset');
                 });

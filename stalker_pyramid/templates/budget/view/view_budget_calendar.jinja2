@@ -113,8 +113,30 @@
     <script src='{{ request.static_url("stalker_pyramid:static/moment/moment.min.js") }}'></script>
 
     <script type="text/javascript">
+        function addDays(date, days) {
+            var result = new Date(date);
+            result.setDate(result.getDate() + days);
+            return result;
+        }
+        var update_project_start_end_date = function(s_date, duration){
+            var start = s_date;
+            var end = (addDays(s_date, duration));
+            console.log(start);
+            console.log(end);
+            var params = $.param({
+                attr_name: 'start_and_end_dates',
+                attr_value: start.format('mm/dd/yyyy') + ' - ' + end.format('mm/dd/yyyy')
+            });
 
+            $.post(
+                "/projects/{{ entity.project.id}}/update/inline", params
+            ).done(function () {
+                        console.log('done');
+            }).fail(function (jqXHR) {
+                bootbox.alert('<div id="message" class="alert alert-danger bigger-110">' + jqXHR.responseText + '</div>');
+            });
 
+        }
         var clickGridButton = function (id, action) {
             switch (action) {
                 case "edit":
@@ -194,7 +216,7 @@
                             id:"p_1",
                             text:"{{ entity.project.name }}",
                             start_date:project_start.format('DD MM YYYY'),
-                            duration:25,
+                            duration:duration,
                             resources:5,
                             open:true
                         }
@@ -245,7 +267,12 @@
                 gantt.parse(tasks);
 
                 gantt.attachEvent("onLightboxSave", function(id, task, is_new){
-                    task.text = task.good.split('/-/')[0];
+                    if(task.id != 'p_1'){
+                        task.text = task.good.split('/-/')[0];
+                    }
+                    else{
+                        update_project_start_end_date(task.start_date, task.duration);
+                    }
                     if(is_new){
                         task.parent = 'p_1';
                     }

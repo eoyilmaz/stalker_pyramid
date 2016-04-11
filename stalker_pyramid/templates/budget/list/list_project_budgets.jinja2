@@ -55,6 +55,7 @@
                 <th>Budget</th>
                 <th>Created By</th>
                 <th>Type</th>
+                <th></th>
             </tr>
         </script>
     {% endraw %}
@@ -70,6 +71,25 @@
                 </td>
                 <td>
                     <span class="label label-large label-status_{{=it.type_name }}"> {{=it.type_name }}</span>
+                </td>
+                <td>
+                     {{ if (it.item_update_link) { }}
+                    <a  class="blue"
+                        data-target="#dialog_template"
+                        data-toggle="modal"
+                        data-keyboard=false
+                        href="{{=it.item_update_link}}">
+                        <i class="icon-edit bigger-130"></i>
+                    </a>{{ } }}
+
+                    {{ if (it.item_remove_link) { }}
+                    <a  class="red"
+                        data-target="#dialog_template"
+                        data-toggle="modal"
+                        data-keyboard=false
+                        href="{{=it.item_remove_link}}">
+                        <i class="icon-trash bigger-130"></i>
+                    </a>{{ } }}
                 </td>
             </tr>
         </script>

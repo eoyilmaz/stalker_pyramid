@@ -23,7 +23,7 @@ import datetime
 from pyramid.httpexceptions import HTTPFound
 from pyramid.view import view_config
 
-from stalker import db, Client, User, ClientUser
+from stalker import db, Client, User, ClientUser, Studio
 from stalker.db import DBSession
 
 import transaction
@@ -33,6 +33,49 @@ from stalker_pyramid.views import (get_logged_in_user, logger,
                                    PermissionChecker, milliseconds_since_epoch,
                                    local_to_utc)
 from stalker_pyramid.views.role import query_role
+
+@view_config(
+    route_name='update_client_dialog',
+    renderer='templates/client/dialog/update_client_dialog.jinja2',
+)
+@view_config(
+    route_name='create_client_dialog',
+    renderer='templates/client/dialog/create_client_dialog.jinja2',
+)
+def client_dialog(request):
+    """view for generic data
+    """
+    logged_in_user = get_logged_in_user(request)
+
+    came_from = request.params.get('came_from', '/')
+    # logger.debug('came_from %s: '% came_from)
+
+    # get logged in user
+    logged_in_user = get_logged_in_user(request)
+
+    studio = Studio.query.first()
+
+    client_id = request.matchdict.get('id', -1)
+    client = Client.query.filter(Client.id == client_id).first()
+
+    mode = request.matchdict.get('mode', None)
+    report_templates = [r['name'] for r in get_distinct_report_templates()]
+    client_report_template = None
+    if client:
+        client_report_template = get_report_template(client)
+
+    return {
+        'has_permission': PermissionChecker(request),
+        'studio': studio,
+        'entity': client,
+        'logged_in_user': logged_in_user,
+        'client': client,
+        'came_from': came_from,
+        'mode': mode,
+        'report_templates': report_templates,
+        'client_report_template': client_report_template,
+        'milliseconds_since_epoch': milliseconds_since_epoch
+    }
 
 
 @view_config(
@@ -85,6 +128,7 @@ def create_client(request):
         % name
     )
 
+
 @view_config(
     route_name='update_client'
 )
@@ -99,7 +143,6 @@ def update_client(request):
     if not client:
         transaction.abort()
         return Response('Can not find a client with id: %s' % client_id, 500)
-
 
     # parameters
     name = request.params.get('name')
@@ -365,7 +408,7 @@ def get_report_template(client):
     if not isinstance(client, Client):
         raise TypeError(
             'Please supply a proper stalker.models.client.Client instance for '
-            'the client argument and not a %s' % client.__class__.__name__
+            'the client argument and not '
         )
 
     import json
@@ -373,6 +416,7 @@ def get_report_template(client):
         generic_text = json.loads(
             client.generic_text
         )
+
         return generic_text.get('report_template', None)
 
 
@@ -445,7 +489,7 @@ def generate_report(budget, output_path=''):
             logger.debug('cell_name: %s' % cell_name)
             cell_data = cells[cell_name]
 
-            result_buffer = []
+            result_buffer = [0.0]
             for entity_data in cell_data:
                 # get the query data
                 query_data = entity_data['query']
@@ -463,14 +507,28 @@ def generate_report(budget, output_path=''):
                     if filtered_entity.generic_text:
                         fe_generic_data = \
                             json.loads(filtered_entity.generic_text)
+
+
+
                         # TODO: Generalize this
-                        filtered_entity.stoppage_ratio = \
-                            fe_generic_data.get('stoppage_ratio', 0)
+                        filtered_entity.stoppage_add = \
+                            fe_generic_data.get('stoppage_add', 0)
+                        filtered_entity.overtime = \
+                            fe_generic_data.get('overtime', 0)
+                        filtered_entity.numberOfResources = \
+                            fe_generic_data.get('numberOfResources', 0)
 
                     # now generate the result
                     result_buffer.append(
                         float(
-                            eval(result_template.format(item=filtered_entity))
+                            eval(
+                                result_template.format(
+                                    item=filtered_entity,
+                                    budget=budget,
+                                    project=budget.project,
+                                    client=budget.project.client
+                                )
+                            )
                         )
                     )
 
@@ -485,9 +543,15 @@ def generate_report(budget, output_path=''):
             # write it down to the cell itself
             sheet[cell_name] = cell_result
 
+    if not output_path:
+        # generate a temp path
+        import tempfile
+        output_path = tempfile.mktemp(suffix='.xlsx')
+
     # we should have filled all the data to cells
     # now write it down to the given path
     wb.save(filename=output_path)
+    return output_path
 
 
 def get_distinct_report_templates():
@@ -515,3 +579,39 @@ def get_report_template_by_name(name):
     for rt in get_distinct_report_templates():
         if rt and rt['name'] == name:
             return rt
+
+
+# @view_config(
+#     route_name='generate_report'
+# )
+# def generate_report_view(request):
+#     """generates report and allows the user to download it
+#     """
+#     budget_id = request.matchdict['budget_id']
+#
+#     from stalker import Budget
+#     budget = Budget.query.filter(Budget.id == budget_id).first()
+#
+#     if budget:
+#         project = budget.project
+#         client = project.client
+#         if not client:
+#             raise Response('No client in the project')
+#
+#         import tempfile
+#         temp_report_path = generate_report(budget)
+#
+#         from pyramid.response import FileResponse
+#         response = FileResponse(
+#             temp_report_path,
+#             request=request,
+#             content_type='application/force-download'
+#         )
+#
+#         report_file_nice_name = '%s_%s.xlsx' % (
+#             project.code, budget.name.replace(' ', '_')
+#         )
+#         response.headers['content-disposition'] = \
+#             str('attachment; filename=%s' % report_file_nice_name)
+#
+#         return response

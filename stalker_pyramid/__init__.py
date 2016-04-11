@@ -304,6 +304,7 @@ def main(global_config, **settings):
 
     config.add_route('create_project',             'projects/create')
     config.add_route('update_project',             'projects/{id}/update')
+    config.add_route('inline_update_project',      'projects/{id}/update/inline')
 
     config.add_route('view_project',               'projects/{id}/view')
     config.add_route('view_project_reports',       'projects/{id}/view/reports')
@@ -386,15 +387,17 @@ def main(global_config, **settings):
     config.add_route('change_budget_type_dialog',   'budgets/{id}/type/{type_name}/dialog')
     config.add_route('change_budget_type',   'budgets/{id}/type/{type_name}')
     config.add_route('get_budget_entries',   'budgets/{id}/entries/')
+    config.add_route('generate_report',   'budgets/{id}/generate/report')
 
     # *************************************************************************
     # BudgetEntries
     config.add_route('create_budgetentry_dialog', 'budgetentries/create/dialog')
+    config.add_route('delete_budgetentry_dialog', 'budgetentries/{id}/delete/dialog')
 
     config.add_route('create_budgetentry',        'budgetentries/create')
     config.add_route('edit_budgetentry', 'budgetentries/edit')
     config.add_route('update_budgetentry', 'budgetentries/update')
-    config.add_route('delete_budgetentry', 'budgetentries/delete')
+    config.add_route('delete_budgetentry', 'budgetentries/{id}/delete')
 
     # *************************************************************************
     # Dailies
@@ -667,8 +670,8 @@ def main(global_config, **settings):
     config.add_route('get_gantt_tasks',          'tasks/{id}/gantt')
     config.add_route('get_gantt_task_children',  'tasks/{id}/children/gantt')
 
-    config.add_route('get_tasks',         'tasks/')
-    config.add_route('get_tasks_count',         'tasks/count/')
+    config.add_route('get_tasks',                   'tasks/')
+    config.add_route('get_tasks_count',             'tasks/count/')
 
     config.add_route('get_task',                        'tasks/{id}/')
     config.add_route('get_task_events',                 'tasks/{id}/events/')  #json
@@ -875,6 +878,8 @@ def main(global_config, **settings):
     config.add_route('remove_related_asset_dialog', 'entities/{id}/assets/{a_id}/remove/dialog')
     config.add_route('remove_related_asset', 'entities/{id}/assets/{a_id}/remove')
     config.add_route('get_entity_task_type_result', 'entities/{id}/{task_type}/result')
+    config.add_route('list_entity_related_assets',  'entities/{id}/related/{e_type}/{d_type}/list')
+
     config.add_route('view_entity_result', 'entities/{id}/result/view')
 
     # *************************************************************************

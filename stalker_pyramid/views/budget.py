@@ -23,7 +23,8 @@ import datetime
 import json
 from pyramid.view import view_config
 
-from stalker import db, Project, Status, Budget, BudgetEntry, Good, Entity
+from stalker import db, Project, Status, Budget, BudgetEntry, Good, Entity, \
+    Type
 
 import transaction
 
@@ -32,6 +33,7 @@ from stalker_pyramid.views import (get_logged_in_user, logger,
                                    PermissionChecker, milliseconds_since_epoch,
                                    local_to_utc, StdErrToHTMLConverter,
                                    get_multi_string, update_generic_text)
+from stalker_pyramid.views.client import generate_report
 
 from stalker_pyramid.views.task import generate_recursive_task_query
 from stalker_pyramid.views.type import query_type
@@ -97,6 +99,13 @@ def create_budget(request):
     if not project:
         return Response('There is no project with id: %s' % project_id, 500)
 
+    generic_data = {
+            'approved_total_price': 0,
+            'total_price': 0,
+            'realized_total_price': 0,
+            'calendar_query': ''
+    }
+
     budget = Budget(
         project=project,
         name=name,
@@ -104,7 +113,8 @@ def create_budget(request):
         description=description,
         created_by=logged_in_user,
         date_created=utc_now,
-        date_updated=utc_now
+        date_updated=utc_now,
+        generic_text=json.dumps(generic_data)
     )
     db.DBSession.add(budget)
 
@@ -156,23 +166,20 @@ def update_budget(request):
         return Response('No budget with id : %s' % budget_id, 500)
 
     name = request.params.get('name')
-    description = request.params.get('description')
+    description = request.params.get('description', " ")
 
-    status_id = request.params.get('status_id')
-    status = Status.query.filter(Status.id == status_id).first()
+    type_id = request.params.get('type_id')
+    type = Type.query.filter(Type.id == type_id).first()
 
     if not name:
         return Response('Please supply a name', 500)
 
-    if not description:
-        return Response('Please supply a description', 500)
-
-    if not status:
-        return Response('There is no status with code: %s' % status.code, 500)
+    if not type:
+        return Response('There is no type with code: %s' % type_id, 500)
 
     budget.name = name
     budget.description = description
-    budget.status = status
+    budget.type = type
     budget.date_updated = utc_now
     budget.updated_by = logged_in_user
 
@@ -218,7 +225,7 @@ def get_budgets(request):
 
     budgets = []
 
-    sql_query = sql_query % {'project_id': project_id, 'additional_condition':additional_condition}
+    sql_query = sql_query % {'project_id': project_id, 'additional_condition': additional_condition}
 
     result = db.DBSession.connection().execute(sql_query)
     update_budget_permission = \
@@ -234,14 +241,14 @@ def get_budgets(request):
             'type_name': r[4],
             'date_created': r[5]
         }
-        if update_budget_permission:
-            budget['item_update_link'] = \
-                '/budgets/%s/update/dialog' % budget['id']
-            budget['item_remove_link'] =\
-                '/budgets/%s/delete/dialog?came_from=%s' % (
-                    budget['id'],
-                    request.current_route_path()
-                )
+        # if update_budget_permission:
+        budget['item_update_link'] = \
+            '/budgets/%s/update/dialog' % budget['id']
+        budget['item_remove_link'] =\
+            '/entities/%s/delete/dialog?came_from=%s' % (
+                budget['id'],
+                request.current_route_path()
+            )
 
         budgets.append(budget)
 
@@ -304,7 +311,11 @@ def save_budget_calendar(request):
         return Response('No task is defined on calendar for budget id %s' % budget_id, 500)
 
     budget.generic_text = '&'.join(budgetentries_data)
-    logger.debug('***budget.generic_text %s ***'% budget.generic_text)
+    # budget.generic_text = update_generic_text(budget.generic_text,
+    #                                                      "approved_total_price",
+    #                                                      '&'.join(budgetentries_data),
+    #                                                      'equal')
+
     for budget_entry in budget.entries:
         generic_data = json.loads(budget_entry.generic_text)
         if generic_data['dataSource'] == 'Calendar':
@@ -334,7 +345,7 @@ def save_budget_calendar(request):
             'dataSource': 'Calendar',
             'numberOfResources': num_of_resources,
             'overtime': 0,
-            'stopage_add': 0
+            'stoppage_add': 0
         }
 
         if good.unit == 'HOUR':
@@ -461,8 +472,8 @@ def create_budgetentry(request):
 
     generic_data = {'dataSource': 'Producer',
                     'numberOfResources': 1,
-                    'overtime':0,
-                    'stopage_add': 0}
+                    'overtime': 0,
+                    'stoppage_add': 0}
 
     if not amount or amount == '0':
         transaction.abort()
@@ -561,11 +572,12 @@ def update_budgetentry(request):
     # user supply this data
     amount = request.params.get('amount', None)
     overtime = int(request.params.get('overtime', 0))
-    stopage_add = int(request.params.get('stopage_add', 0))
+    stoppage_add = request.params.get('stoppage_add', 0)
 
     price = request.params.get('price', None)
 
     logger.debug("overtime %s " % overtime)
+    logger.debug("stoppage_add %s " % stoppage_add)
 
     if not price:
         transaction.abort()
@@ -575,18 +587,11 @@ def update_budgetentry(request):
 
     generic_data = json.loads(budgetentry.generic_text)
 
-    budgetentry.generic_text = update_generic_text(budgetentry.generic_text,
-                                                         "overtime",
-                                                         overtime,
-                                                         'equal')
-
-    budgetentry.generic_text = update_generic_text(budgetentry.generic_text,
-                                                         "stopage_add",
-                                                         stopage_add,
-                                                         'equal')
+    logger.debug("budgetentry.generic_text: %s" % budgetentry.generic_text)
 
     if 'dataSource' in generic_data \
        and generic_data['dataSource'] == 'Calendar':
+
         budgetentry.price = price
         budgetentry.description = description
         budgetentry.date_updated = utc_now
@@ -599,18 +604,53 @@ def update_budgetentry(request):
         amount = int(amount)
         budgetentry.amount = amount
 
-
         budgetentry.price = price if price != '0' else budgetentry.cost * (amount + overtime)
         budgetentry.description = description
         budgetentry.date_updated = utc_now
         budgetentry.updated_by = logged_in_user
 
-        budgetentry.generic_text = json.dumps(generic_data)
+    budgetentry.generic_text = update_generic_text(budgetentry.generic_text,
+                                                         "overtime",
+                                                         overtime,
+                                                         'equal')
+
+    budgetentry.generic_text = update_generic_text(budgetentry.generic_text,
+                                                         "stoppage_add",
+                                                         stoppage_add,
+                                                         'equal')
+    # budgetentry.generic_text = json.dumps(generic_data)
 
     request.session.flash(
         'success:updated %s budgetentry!' % budgetentry.name
     )
     return Response('successfully updated %s budgetentry!' % budgetentry.name)
+
+
+@view_config(
+    route_name='delete_budgetentry_dialog',
+    renderer='templates/modals/confirm_dialog.jinja2'
+)
+def delete_budgetentry_dialog(request):
+    """delete_budgetentry_dialog
+    """
+    logger.debug('delete_budgetentry_dialog is starts')
+
+    budgetentry_id = request.matchdict.get('id')
+    budgetentry = BudgetEntry.query.filter_by(id=budgetentry_id).first()
+
+    action = '/budgetentries/%s/delete' % budgetentry_id
+    came_from = request.params.get('came_from', '/')
+
+    message = '%s will be deleted' \
+              '<br><br>Are you sure?' % budgetentry.name
+
+    logger.debug('action: %s' % action)
+
+    return {
+        'message': message,
+        'came_from': came_from,
+        'action': action
+    }
 
 
 @view_config(
@@ -620,7 +660,7 @@ def delete_budgetentry(request):
     """deletes the budgetentry
     """
 
-    budgetentry_id = request.params.get('id')
+    budgetentry_id = request.matchdict.get('id')
     budgetentry = BudgetEntry.query.filter_by(id=budgetentry_id).first()
 
     if not budgetentry:
@@ -631,7 +671,16 @@ def delete_budgetentry(request):
         transaction.abort()
         return Response('You can not delete CalenderBasedEntry', 500)
 
-    delete_budgetentry_action(budgetentry)
+    budgetentry_name = budgetentry.name
+    try:
+        db.DBSession.delete(budgetentry)
+        transaction.commit()
+    except Exception as e:
+        transaction.abort()
+        c = StdErrToHTMLConverter(e)
+        transaction.abort()
+        # return Response(c.html(), 500)
+    return Response('Successfully deleted budgetentry with name %s' % budgetentry_name)
 
 
 def delete_budgetentry_action(budgetentry):
@@ -646,7 +695,7 @@ def delete_budgetentry_action(budgetentry):
         c = StdErrToHTMLConverter(e)
         transaction.abort()
         # return Response(c.html(), 500)
-    # return Response('Successfully deleted good with name %s' % budgetentry_name)
+    return Response('Successfully deleted good with name %s' % budgetentry_name)
 
 
 @view_config(
@@ -714,7 +763,7 @@ def get_budget_entries(request):
 
 @view_config(
     route_name='change_budget_type_dialog',
-    renderer='templates/modals/confirm_dialog.jinja2'
+    renderer='templates/budget/dialog/change_budget_type_dialog.jinja2'
 )
 def change_budget_type_dialog(request):
     """change_budget_type_dialog
@@ -725,19 +774,16 @@ def change_budget_type_dialog(request):
     budget = Budget.query.filter_by(id=budget_id).first()
 
     type_name = request.matchdict.get('type_name')
-
-    action = '/budgets/%s/type/%s' % (budget_id, type_name)
-
     came_from = request.params.get('came_from', '/')
 
-    message = 'Are you sure you want to <strong>change %s type</strong>?'% budget.name
-
-    logger.debug('action: %s' % action)
+    generic_data = json.loads(budget.generic_text)
+    budget_total_price = generic_data.get('total_price', 0)
 
     return {
-        'message': message,
+        'type_name': type_name,
         'came_from': came_from,
-        'action': action
+        'budget': budget,
+        'budget_total_price': budget_total_price
     }
 
 
@@ -758,6 +804,19 @@ def change_budget_type(request):
 
     type_name = request.matchdict.get('type_name')
     type = query_type('Budget', type_name)
+
+    approved_total_price = request.params.get('approved_total_price', 0)
+    total_price = request.params.get('total_price', 0)
+
+    budget.generic_text = update_generic_text(budget.generic_text,
+                                                         "approved_total_price",
+                                                         approved_total_price,
+                                                         'equal')
+
+    budget.generic_text = update_generic_text(budget.generic_text,
+                                                         "total_price",
+                                                         total_price,
+                                                         'equal')
 
     budget.type = type
     budget.updated_by = logged_in_user
@@ -855,6 +914,34 @@ def duplicate_budget(request):
     return Response('Budget is duplicated successfully')
 
 
+@view_config(
+    route_name='create_budgetentry_dialog',
+    renderer='templates/budget/dialog/budgetentry_dialog.jinja2'
+)
+def create_budgetentry_dialog(request):
+    """called when creating dailies
+    """
+    came_from = request.params.get('came_from', '/')
+
+    # get logged in user
+    logged_in_user = get_logged_in_user(request)
+
+    budget_id = request.params.get('budget_id', -1)
+    budget = Budget.query.filter(Budget.id == budget_id).first()
+
+    if not budget:
+        return Response('No budget found with id: %s' % budget_id, 500)
+
+    return {
+        'has_permission': PermissionChecker(request),
+        'logged_in_user': logged_in_user,
+        'budget': budget,
+        'came_from': came_from,
+        'mode': 'Create',
+        'milliseconds_since_epoch': milliseconds_since_epoch
+    }
+
+
 class ReportExporter(object):
     """A base class for report exporters
     """
@@ -867,3 +954,58 @@ class ReportExporter(object):
         """virtual method that needs to be implemented on child classes
         """
         raise NotImplementedError()
+
+
+@view_config(
+    route_name='generate_report'
+)
+def generate_report_view(request):
+    """generates report and allows the user to download it
+    """
+    logged_in_user = get_logged_in_user(request)
+    utc_now = local_to_utc(datetime.datetime.now())
+
+    budget_id = request.matchdict['id']
+
+    from stalker import Budget
+    budget = Budget.query.filter(Budget.id == budget_id).first()
+
+    if budget:
+        # type = query_type('Budget', 'Pending')
+        # total_price = request.params.get('total_price', 0)
+        #
+        # logger.debug('total_price %s ' % total_price)
+        #
+        # budget.generic_text = update_generic_text(budget.generic_text,
+        #                                          'total_price',
+        #                                          total_price,
+        #                                          'equal')
+        #
+        # budget.type = type
+        # budget.updated_by = logged_in_user
+        # budget.date_updated = utc_now
+
+        project = budget.project
+        client = project.client
+        if not client:
+            raise Response('No client in the project')
+
+
+        logger.debug('generating report:')
+        temp_report_path = generate_report(budget)
+        logger.debug('temp_report_path: %s' % temp_report_path)
+
+        from pyramid.response import FileResponse
+        response = FileResponse(
+            temp_report_path,
+            request=request,
+            content_type='application/force-download'
+        )
+
+        report_file_nice_name = '%s_%s.xlsx' % (
+            project.code, budget.name.replace(' ', '_')
+        )
+        response.headers['content-disposition'] = \
+            str('attachment; filename=%s' % report_file_nice_name)
+
+        return response

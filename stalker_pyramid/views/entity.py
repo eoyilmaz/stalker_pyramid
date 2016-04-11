@@ -39,14 +39,8 @@ from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-@view_config(
-    route_name='update_client_dialog',
-    renderer='templates/client/dialog/update_client_dialog.jinja2',
-)
-@view_config(
-    route_name='create_client_dialog',
-    renderer='templates/client/dialog/create_client_dialog.jinja2',
-)
+
+
 @view_config(
     route_name='list_studio_clients',
     renderer='templates/client/list/list_studio_clients.jinja2'
@@ -384,6 +378,10 @@ logger.setLevel(logging.DEBUG)
 @view_config(
     route_name='view_entity_result',
     renderer='templates/entity/view_entity_result.jinja2'
+)
+@view_config(
+    route_name='list_entity_related_assets',
+    renderer='templates/asset/list/list_entity_related_assets.jinja2'
 )
 def get_entity_related_data(request):
     """view for generic data

@@ -141,7 +141,6 @@
             submit_button.button('loading');
             var client_form = $('#client_form');
             if (client_form.validate()) {
-                console.log('client_form.validate()')
                 $.post(
                     client_form.attr('action'),
                     client_form.serialize()

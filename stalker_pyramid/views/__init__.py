@@ -491,8 +491,10 @@ def update_generic_text(generic_text, attr, data, action):
 
     list_attr = []
     generic_data = {}
-
-    if generic_text != "":
+    logger.debug('update_generic_text %s ' % generic_text)
+    logger.debug('attr %s ' % attr)
+    logger.debug('data %s ' % data)
+    if generic_text and generic_text != "":
         generic_data = json.loads(generic_text)
         if attr in generic_data:
             list_attr = generic_data[attr]
@@ -505,6 +507,7 @@ def update_generic_text(generic_text, attr, data, action):
             if "id" in obj:
                 if obj["id"] == data["id"]:
                     list_attr.remove(obj)
+
     elif action == 'equal':
         list_attr = data
 

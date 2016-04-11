@@ -14,7 +14,6 @@
                        href="{{ request.route_url("add_related_assets_dialog", id=entity.id, _query={'project_id': entity.project.id }) }}"
                        class="white">
                         <i class="icon-plus"></i>
-                        
                     </a>
                     &nbsp&nbsp
                 {% endif %}
@@ -75,9 +74,11 @@
         var related_asset_template = doT.template($('#tmpl_related_asset_item').html());
         var related_assets_list = $('#related_assets_list');
         $.getJSON('/tasks/{{ entity.id }}/related/Asset/depends/').then(function (data) {
-             for (var i = 0; i < data.length; i++) {
 
-                 if (data[i].thumbnail_full_path == null) {
+            console.log("data.length: "+data.length);
+            for (var i = 0; i < data.length; i++) {
+
+                if (data[i].thumbnail_full_path == null) {
                     data[i].thumbnail_full_path = '{{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}';
                 }
                 else {

@@ -245,6 +245,57 @@ def update_project(request):
         % project.code
     )
 
+@view_config(
+    route_name='inline_update_project'
+)
+def inline_update_project(request):
+    """Inline updates the given project with the data coming from the request
+    """
+
+    logger.debug('INLINE UPDATE PROJECT IS RUNNING')
+
+    logged_in_user = get_logged_in_user(request)
+    utc_now = local_to_utc(datetime.datetime.now())
+
+    # *************************************************************************
+    # collect data
+    attr_name = request.params.get('attr_name', None)
+    attr_value = request.params.get('attr_value', None)
+
+    logger.debug('attr_name %s', attr_name)
+    logger.debug('attr_value %s', attr_value)
+
+    # get task
+    project_id = request.matchdict.get('id', -1)
+    project = Project.query.filter(Project.id == project_id).first()
+
+    # update the task
+    if not project:
+        transaction.abort()
+        return Response("No project found with id : %s" % project_id, 500)
+
+    if attr_name and attr_value:
+
+        logger.debug('attr_name %s', attr_name)
+
+        if attr_name == 'start_and_end_dates':
+            start, end = get_date_range(request, 'start_and_end_dates')
+            setattr(project, 'start', start)
+            setattr(project, 'end', end)
+
+            project.updated_by = logged_in_user
+            project.date_updated = utc_now
+        else:
+            setattr(project, 'attr_name', attr_value)
+
+    else:
+        logger.debug('not updating')
+        return Response("MISSING PARAMETERS", 500)
+
+    return Response(
+        'Project updated successfully %s %s' % (attr_name, attr_value)
+    )
+
 
 @view_config(
     route_name='get_entity_projects',
