@@ -47,7 +47,7 @@
                 {% set client=budget.project.client %}
                 {% include 'client/view/client_info.jinja2' %}
                 <div class="row-fluid">
-                    <div class="span8">
+                    <div class="span12">
                         <h4 class="pull-right">
                             Total amount :
                             <span class="red" id="total_price_top"></span>
@@ -60,7 +60,7 @@
                 <div class="space-6"></div>
                 <div class="hr hr8 hr-double hr-dotted"></div>
                 <div class="row-fluid">
-                    <div class="span8">
+                    <div class="span12">
                         <h4 class="pull-right">
                             Total amount :
                             <span class="red" id="total_price_bottom"></span>
@@ -97,8 +97,6 @@
     </script>
     <script type="text/javascript">
         $(document).ready(function () {
-
-
 
             $('#add_project_entries_to_budget_button').hide();
             var total_cost = 0;
@@ -414,21 +412,21 @@
                     $('#send_button').hide();
 
                     jQuery(function($) {
-                        var grid_selector = "#grid-table";
 
-                        jQuery(grid_selector).jqGrid({
+
+                        grid.jqGrid({
                             //direction: "rtl",
                             data: grid_data,
                             datatype: "local",
-                            colNames:['Addition Type', 'Type', 'Name','Amount', 'Unit', 'Msrp', 'Cost',  'Price', 'Notes'],
+                            colNames:['Addition Type', 'Type', 'Name','Amount', 'Unit', 'Msrp', 'Cost', 'Overtime','Overtime Cost','Stoppage','Stoppage Cost', 'Price', 'Notes'],
                             colModel:[
                                 {name:'addition_type', index:'addition_type', width:100, editable: false},
                                 {name:'type', index:'type', width:220, editable: false},
                                 {name:'name', index:'name', width:220, editable: false},
-                                {name:'amount', index:'amount', width:120, editable: false},
-                                {name:'unit', index:'unit', width:120, editable: false},
-                                {name:'total_msrp', index:'total_msrp', width:150, editable: false, formatter:currencyFmatter, summaryTpl: "{0}", summaryType: "sum" },
-                                {name:'total_cost', index:'total_cost', width:150, editable: false, formatter:currencyFmatter, summaryTpl: "{0}", summaryType: "sum" },
+                                {name:'amount', index:'amount', width:60, editable: false},
+                                {name:'unit', index:'unit', width:100, editable: false},
+                                {name:'total_msrp', index:'total_msrp', width:100, editable: false, formatter:currencyFmatter, summaryTpl: "{0}", summaryType: "sum" },
+                                {name:'total_cost', index:'total_cost', width:100, editable: false, formatter:currencyFmatter, summaryTpl: "{0}", summaryType: "sum" },
                                 {name:'overtime', index:'overtime', width:100, editable: false},
                                 {name:'overtime_cost', index:'overtime_cost', width:100, editable: false, formatter:currencyFmatter, summaryTpl: "{0}", summaryType: "sum" },
                                 {name:'stoppage_add', index:'stoppage_add', width:100, editable: false},
@@ -444,6 +442,7 @@
                             multiselect: false,
                             loadonce: true,
                             height: 700,
+                            width: 'auto',
                             sortname: 'type',
                             footerrow: true, // set a footer row
                             userDataOnFooter: true, // the calculated sums and/or strings from server are put at footer row.
