@@ -24,11 +24,12 @@ import json
 from pyramid.view import view_config
 
 from stalker import db, Project, Status, Budget, BudgetEntry, Good, Entity, \
-    Type
+    Type, Studio
 
 import transaction
 
 from webob import Response
+import stalker_pyramid
 from stalker_pyramid.views import (get_logged_in_user, logger,
                                    PermissionChecker, milliseconds_since_epoch,
                                    local_to_utc, StdErrToHTMLConverter,
@@ -98,6 +99,8 @@ def create_budget(request):
 
     if not project:
         return Response('There is no project with id: %s' % project_id, 500)
+
+    logger.debug("budget_type: %s" % budget_type)
 
     generic_data = {
             'approved_total_price': 0,
@@ -287,7 +290,40 @@ def get_budgets_count(request):
 
     return result.fetchone()[0]
 
+@view_config(
+    route_name='view_budget_calendar',
+    renderer='templates/budget/view/view_budget_calendar.jinja2'
+)
+def view_budget_calendar(request):
+    """view_budget_calendar
+    """
+    logger.debug('view_budget_calendar')
+    logged_in_user = get_logged_in_user(request)
 
+    studio = Studio.query.first()
+
+    budget_id = request.matchdict.get('id')
+
+    budget = Budget.query.filter_by(id=budget_id).first()
+    generic_data = json.loads(budget.generic_text)
+    budget_calendar_query = generic_data.get('calendar_query', '')
+
+    projects = Project.query.all()
+    mode = request.matchdict.get('mode', None)
+    came_from = request.params.get('came_from', request.url)
+
+    return {
+        'mode': mode,
+        'entity': budget,
+        'has_permission': PermissionChecker(request),
+        'logged_in_user': logged_in_user,
+        'milliseconds_since_epoch': milliseconds_since_epoch,
+        'stalker_pyramid': stalker_pyramid,
+        'budget_calendar_query': budget_calendar_query,
+        'projects': projects,
+        'studio': studio,
+        'came_from': came_from
+    }
 @view_config(
     route_name='save_budget_calendar'
 )
@@ -310,11 +346,11 @@ def save_budget_calendar(request):
     if not budgetentries_data:
         return Response('No task is defined on calendar for budget id %s' % budget_id, 500)
 
-    budget.generic_text = '&'.join(budgetentries_data)
-    # budget.generic_text = update_generic_text(budget.generic_text,
-    #                                                      "approved_total_price",
-    #                                                      '&'.join(budgetentries_data),
-    #                                                      'equal')
+    # budget.generic_text = '&'.join(budgetentries_data)
+    budget.generic_text = update_generic_text(budget.generic_text,
+                                                         "calendar_query",
+                                                         '&'.join(budgetentries_data),
+                                                         'equal')
 
     for budget_entry in budget.entries:
         generic_data = json.loads(budget_entry.generic_text)

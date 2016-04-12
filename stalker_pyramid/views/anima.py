@@ -101,18 +101,22 @@ def add_related_assets(request):
     assets = Asset.query.filter(Asset.id.in_(environment_ids)).all()
     assets.extend(characters)
 
-    character_dependencies = []
+    asset_dependencies_animation = []
     asset_dependencies_lighting = []
     asset_dependencies_scene_assembly = []
 
     for character in characters:
-        character_dependencies.append(
+        asset_dependencies_animation.append(
             find_asset_task_by_type(character, 'Rig')
         )
 
     for asset in assets:
+        layout = find_asset_task_by_type(asset, 'Layout')
+        asset_dependencies_animation.append(
+            layout
+        )
         asset_dependencies_scene_assembly.append(
-            find_asset_task_by_type(asset, 'Layout')
+            layout
         )
         asset_dependencies_lighting.append(
             find_asset_task_by_type(asset, 'Lighting')
@@ -139,11 +143,11 @@ def add_related_assets(request):
 
         shots = Shot.query.filter(Shot.parent == shots_folder).all()
         for shot in shots:
-            update_shot_task_dependencies('append', shot, 'Animation', character_dependencies, logged_in_user, utc_now)
+            update_shot_task_dependencies('append', shot, 'Animation', asset_dependencies_animation, logged_in_user, utc_now)
             update_shot_task_dependencies('append', shot, 'Lighting', asset_dependencies_lighting, logged_in_user, utc_now)
             update_shot_task_dependencies('append', shot, 'Scene Assembly', asset_dependencies_scene_assembly, logged_in_user, utc_now)
     elif entity.entity_type == 'Shot':
-        update_shot_task_dependencies('append', entity, 'Animation', character_dependencies, logged_in_user, utc_now)
+        update_shot_task_dependencies('append', entity, 'Animation', asset_dependencies_animation, logged_in_user, utc_now)
         update_shot_task_dependencies('append', entity, 'Lighting', asset_dependencies_lighting, logged_in_user, utc_now)
         update_shot_task_dependencies('append', entity, 'Scene Assembly', asset_dependencies_scene_assembly, logged_in_user, utc_now)
 
@@ -205,8 +209,9 @@ def remove_related_assets(request):
     asset_id = request.matchdict.get('a_id')
     asset = Asset.query.filter(Asset.id == asset_id).first()
 
-    character_dependencies = [find_asset_task_by_type(asset, 'Rig')]
-    asset_dependencies_scene_assembly = [find_asset_task_by_type(asset, 'Layout')]
+    layout = find_asset_task_by_type(asset, 'Layout')
+    asset_dependencies_animation = [find_asset_task_by_type(asset, 'Rig'), layout]
+    asset_dependencies_scene_assembly = [layout]
     asset_dependencies_lighting = [find_asset_task_by_type(asset, 'Lighting'),
                                    find_asset_task_by_type(asset, 'Look Development')]
 
@@ -228,12 +233,12 @@ def remove_related_assets(request):
 
         shots = Shot.query.filter(Shot.parent == shots_folder).all()
         for shot in shots:
-            update_shot_task_dependencies('remove', shot, 'Animation', character_dependencies, logged_in_user, utc_now)
+            update_shot_task_dependencies('remove', shot, 'Animation', asset_dependencies_animation, logged_in_user, utc_now)
             update_shot_task_dependencies('remove', shot, 'Scene Assembly', asset_dependencies_scene_assembly, logged_in_user, utc_now)
             update_shot_task_dependencies('remove', shot, 'Lighting', asset_dependencies_lighting, logged_in_user, utc_now)
 
     elif entity.entity_type == 'Shot':
-        update_shot_task_dependencies('remove', entity, 'Animation', character_dependencies, logged_in_user, utc_now)
+        update_shot_task_dependencies('remove', entity, 'Animation', asset_dependencies_animation, logged_in_user, utc_now)
         update_shot_task_dependencies('remove', entity, 'Scene Assembly', asset_dependencies_scene_assembly, logged_in_user, utc_now)
         update_shot_task_dependencies('remove', entity, 'Lighting', asset_dependencies_lighting, logged_in_user, utc_now)
 

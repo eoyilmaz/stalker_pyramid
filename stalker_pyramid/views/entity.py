@@ -356,10 +356,6 @@ logger.setLevel(logging.DEBUG)
     renderer='templates/budget/view/view_budget.jinja2'
 )
 @view_config(
-    route_name='view_budget_calendar',
-    renderer='templates/budget/view/view_budget_calendar.jinja2'
-)
-@view_config(
     route_name='view_budget_table',
     renderer='templates/budget/view/view_budget_table.jinja2'
 )

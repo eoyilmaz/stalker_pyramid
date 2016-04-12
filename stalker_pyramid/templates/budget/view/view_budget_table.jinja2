@@ -192,7 +192,7 @@
             function recalculateGridData(array, id, amount_value, overtime_value, stoppage_add_value, price_value){
                 var index = findArrayElement(grid_data, 'id', id);
 
-                var selected_data = array[index];
+                var selected_data = grid_data[index];
                 if (selected_data.addition_type != "Calendar"){
                     selected_data.addition_type = "Producer";
                     selected_data.amount = amount_value;
@@ -206,6 +206,8 @@
                 console.log("selected_data.msrp: " + selected_data.msrp);
                 console.log("selected_data.amount: " + selected_data.amount);
                 console.log("selected_data.overtime: " + selected_data.overtime);
+                console.log("selected_data.stoppage_ratio: " + selected_data.stoppage_ratio);
+                console.log("selected_data.stoppage_add: " + selected_data.stoppage_add);
                 console.log("overtime_value: " + overtime_value);
 
                 selected_data.total_cost = selected_data.cost * (selected_data.amount + selected_data.overtime);
@@ -218,7 +220,14 @@
                 selected_data.total_cost = selected_data.total_cost + selected_data.stoppage_cost;
                 selected_data.total_msrp = selected_data.total_msrp + selected_data.stoppage_msrp;
 
-                array[index] = selected_data;
+
+                console.log("selected_data.total_cost: " + selected_data.total_cost);
+                console.log("selected_data.total_msrp: " + selected_data.total_msrp);
+                console.log("selected_data.overtime_cost: " + selected_data.overtime_cost);
+                console.log("selected_data.stoppage_cost: " + selected_data.stoppage_cost);
+                console.log("selected_data.stoppage_msrp: " + selected_data.stoppage_msrp);
+
+                grid_data[index] = selected_data;
 
                 return selected_data;
             }
@@ -294,6 +303,7 @@
                     grid_data[j].stoppage_msrp = 0;
                     grid_data[j].stoppage_add = grid_data[j].generic_data.stoppage_add;
                     grid_data[j].stoppage_ratio = parseFloat(grid_data[j].good_generic_data.stopage_ratio);
+                    console.log('grid_data[j].good_generic_data.stopage_ratio: '+ grid_data[j].good_generic_data.stopage_ratio);
 
                     if (grid_data[j].stoppage_add == '1'){
                         grid_data[j].stoppage_cost = grid_data[j].stoppage_ratio * grid_data[j].cost * (grid_data[j].amount+grid_data[j].overtime);

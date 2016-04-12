@@ -35,7 +35,7 @@
 
                     <select id='budget_type'
                             class='input'
-                            name='type_id'
+                            name='type_name'
                             required>
                     </select>
                 </div>
@@ -76,7 +76,7 @@
 
         {% raw %}
             var budget_type_option_template = doT.template(
-                '<option value={{=it.id}}>{{=it.name}}</option>'
+                '<option value={{=it.name}}>{{=it.name}}</option>'
             );
         {% endraw %}
 
