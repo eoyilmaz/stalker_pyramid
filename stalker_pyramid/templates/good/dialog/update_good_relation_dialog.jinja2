@@ -19,7 +19,7 @@
                 <input id='ratio'
                        class='input-block-level'
                        name='ratio'
-                       min=1
+                       min=0
                        max=100
                        required />
             </div>
@@ -56,12 +56,11 @@
                 // remove current data
                 related_good.empty();
 
-                // append new options to the select
                 var i, data_count = all_goods.length;
                 for (i = 0; i < data_count; i += 1) {
                     var in_related_list = false;
                     for (var j = 0; j < related_goods.length; j += 1) {
-                        if(related_goods[j]['id'] == all_goods[i].id){
+                        if(related_goods[j]['id'] == all_goods[i].id || '{{ good.id }}' == all_goods[i].id ){
                             in_related_list = true;
                         }
                     }
@@ -76,15 +75,17 @@
         });
 
         $('#ratio').ace_spinner({
-            value:100,
-            min:1,
+            value:1,
+            min:0,
             max:100,
-            step:10,
+            step:0.1,
+            icon_up:'icon-caret-up',
+            icon_down:'icon-caret-down',
             btn_up_class:'btn-info',
             btn_down_class:'btn-info'}).on('change', function(){
             // check if it is in the range
             var curr_value = $(this).val();
-            $(this).val(curr_value <= 1 ? 1 : curr_value);
+{#            $(this).val(curr_value <= 1 ? 1 : curr_value);#}
         });
 
 

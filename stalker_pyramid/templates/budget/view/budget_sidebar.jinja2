@@ -33,6 +33,13 @@
             get_icon('budget'),
             ''
         );
+        menu_of(
+            'Report',
+            "{%- if request.current_route_path() == request.route_path('view_budget_report', id=budget.id) -%}'active',{%- else -%},{%- endif -%}",
+            '{{ request.route_url('view_budget_report', id=budget.id) }}',
+            get_icon('budget'),
+            ''
+        );
     });
 </script>
 

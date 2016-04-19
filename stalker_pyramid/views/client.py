@@ -62,7 +62,7 @@ def client_dialog(request):
     report_templates = [r['name'] for r in get_distinct_report_templates()]
     client_report_template = None
     if client:
-        client_report_template = get_report_template(client)
+        client_report_template_name = get_report_template(client)['name']
 
     return {
         'has_permission': PermissionChecker(request),
@@ -73,7 +73,7 @@ def client_dialog(request):
         'came_from': came_from,
         'mode': mode,
         'report_templates': report_templates,
-        'client_report_template': client_report_template,
+        'client_report_template_name': client_report_template_name,
         'milliseconds_since_epoch': milliseconds_since_epoch
     }
 
@@ -260,7 +260,7 @@ def append_user_to_client_dialog(request):
         'has_permission': PermissionChecker(request),
         'logged_in_user': logged_in_user,
         'client': client,
-        'came_from':came_from,
+        'came_from': came_from,
         'milliseconds_since_epoch': milliseconds_since_epoch
     }
 
@@ -413,6 +413,8 @@ def get_report_template(client):
 
     import json
     if client.generic_text:
+        logger.debug('client.generic_text: %s' % client.generic_text)
+
         generic_text = json.loads(
             client.generic_text
         )
@@ -562,6 +564,8 @@ def get_distinct_report_templates():
     for c in Client.query.all():
         report_template = get_report_template(c)
         if report_template:
+            logger.debug('report_template: %s' % report_template['name'])
+
             new_report_template = True
             for r in report_templates:
                 if report_template['name'] == r['name']:
@@ -569,6 +573,8 @@ def get_distinct_report_templates():
 
             if new_report_template:
                 report_templates.append(report_template)
+
+    logger.debug('report_templates: %s' % report_templates)
 
     return report_templates
 

@@ -128,7 +128,7 @@
                         var related_goods_str = "";
 
                         for(var m=0; m<related_goods.length;m++){
-                            related_goods_str += "<b>"+related_goods[m].name+"</b> %"+related_goods[m].ratio+"<a data-target='#dialog_template' data-toggle='modal' data-keyboard=false href='/goods/"+grid_data[i].id+"/delete/relation/dialog?related_good_id="+related_goods[m].id+"'> <i class='icon-trash'></i></a><br/>";
+                            related_goods_str += "<b>"+related_goods[m].name+"</b> ratio: "+related_goods[m].ratio+"<a data-target='#dialog_template' data-toggle='modal' data-keyboard=false href='/goods/"+grid_data[i].id+"/delete/relation/dialog?related_good_id="+related_goods[m].id+"'> <i class='icon-trash'></i></a><br/>";
                         }
                         related_goods_str += "<a data-target='#dialog_template' data-toggle='modal' data-keyboard=false href='/goods/"+grid_data[i].id+"/update/relation/dialog'>Add New Relation</a>"
                         grid_data[i]['related_goods_str'] = related_goods_str;
@@ -137,7 +137,7 @@
                         var linked_goods_str = "";
 
                         for(var m=0; m<linked_goods.length;m++){
-                            linked_goods_str += "<b>"+linked_goods[m].name+"</b> %"+linked_goods[m].ratio+"<br/>";
+                            linked_goods_str += "<b>"+linked_goods[m].name+"</b> ratio: "+linked_goods[m].ratio+"<br/>";
                         }
                         grid_data[i]['linked_goods_str'] = linked_goods_str;
 
@@ -152,7 +152,7 @@
 
                             data: grid_data,
                             datatype: "local",
-                            colNames:['ID', 'Price List', 'Name', 'MSRP', 'Cost', 'Unit','Stopage Ratio', 'Related Goods', 'Link Goods', 'Created_by', 'Updated_by', 'Last_Accessed'],
+                            colNames:['ID', 'Price List', 'Name', 'MSRP', 'Cost', 'Unit','Stopage Ratio', 'Related Goods', 'Link Goods', 'Updated_by', 'Last_Accessed'],
                             colModel:[
                                 {name:'id',index:'id', width:90, sortable:true, editable: false},
                                 {name:'price_list_name',index:'price_list_name', width:160, sortable:true, editable: true, edittype:"select", editoptions:{value:pricelist_value}},
@@ -178,9 +178,8 @@
                                     }
                                 },
                                 {name:'stopage_ratio',index:'stopage_ratio', width:80, sortable:true, editable: true, editoptions:{size:"20" ,maxlength:"30"}},
-                                {name:'related_goods_str',index:'related_goods_str', width:200, sortable:true, editable: false},
-                                {name:'linked_goods_str',index:'linked_goods_str', width:200, sortable:true, editable: false},
-                                {name:'created_by',index:'created_by', width:100, sortable:true, editable: false},
+                                {name:'related_goods_str',index:'related_goods_str', width:220, sortable:true, editable: false},
+                                {name:'linked_goods_str',index:'linked_goods_str', width:230, sortable:true, editable: false},
                                 {name:'updated_by',index:'updated_by', width:100, sortable:true, editable: false},
                                 {name:'date_updated',index:'date_updated', width:100, sortable:true, editable: false}
                             ],

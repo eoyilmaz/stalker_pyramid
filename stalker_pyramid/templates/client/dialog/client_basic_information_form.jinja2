@@ -37,14 +37,16 @@
             </div>
         </div>
         {#Report Template #}
+
         <div class="control-group">
-            <label for="client_report_template"
-                   class="span3 control-label">Report Template</label>
+            <label class="span3 control-label"
+                   for="client_report_template">Report Template</label>
             <div class="span9">
                 <select id="client_report_template"
-                          name="report_template'"
-                          class="input"
-                          required></select>
+                       class="input"
+                       name='client_report_template_name'
+                       placeholder="Report Template"
+                       required></select>
             </div>
         </div>
         {#Description #}
@@ -73,23 +75,39 @@
     {# Form #}
     $(document).ready(function () {
 
-        var client_report_template = $('#client_report_template');
+
+        {% raw %}
+            var report_templates_option_template = doT.template(
+                '<option value={{=it.name}}>{{=it.name}}</option>'
+            );
+        {% endraw %}
+
         var report_templates = [
                 {% for r_temp in report_templates %}
-                    '{{ r_temp.name}}',
+                    {'name':'{{ r_temp }}'},
                 {% endfor %}
             ];
 
-        client_report_template.autocomplete({
-                delay: 0,
-                source: report_templates,
-                minLength: 0
-            });
+        console.log(report_templates);
 
-        {% if client_report_template %}
-            client_report_template.val({{ client_report_template }});
+
+        var client_report_template = $('#client_report_template');
+
+        for (var i = 0; i < report_templates.length; i++) {
+            client_report_template.append(report_templates_option_template(report_templates[i]));
+        }
+
+        client_report_template.chosen({
+            search_contains: true,
+            enable_split_word_search: true,
+            allow_single_deselect: true
+        });
+        console.log('client_report_template_name: {{client_report_template_name}}');
+        {% if client_report_template_name %}
+            client_report_template.val('{{ client_report_template_name}}');
             client_report_template.trigger('liszt:updated');
         {% endif %}
+
 
         $('#client_form').validate({
             errorElement: 'span',

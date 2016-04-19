@@ -294,7 +294,15 @@ def get_budgets_count(request):
     route_name='view_budget_calendar',
     renderer='templates/budget/view/view_budget_calendar.jinja2'
 )
-def view_budget_calendar(request):
+@view_config(
+    route_name='view_budget_table',
+    renderer='templates/budget/view/view_budget_table.jinja2'
+)
+@view_config(
+    route_name='view_budget_report',
+    renderer='templates/budget/view/view_budget_report.jinja2'
+)
+def view_budget(request):
     """view_budget_calendar
     """
     logger.debug('view_budget_calendar')
@@ -307,6 +315,8 @@ def view_budget_calendar(request):
     budget = Budget.query.filter_by(id=budget_id).first()
     generic_data = json.loads(budget.generic_text)
     budget_calendar_query = generic_data.get('calendar_query', '')
+    total_price = generic_data.get('total_price', 0)
+    approved_total_price = generic_data.get('approved_total_price', 0)
 
     projects = Project.query.all()
     mode = request.matchdict.get('mode', None)
@@ -320,10 +330,14 @@ def view_budget_calendar(request):
         'milliseconds_since_epoch': milliseconds_since_epoch,
         'stalker_pyramid': stalker_pyramid,
         'budget_calendar_query': budget_calendar_query,
+        'approved_total_price': approved_total_price,
+        'total_price': total_price,
         'projects': projects,
         'studio': studio,
         'came_from': came_from
     }
+
+
 @view_config(
     route_name='save_budget_calendar'
 )
@@ -844,6 +858,9 @@ def change_budget_type(request):
     approved_total_price = request.params.get('approved_total_price', 0)
     total_price = request.params.get('total_price', 0)
 
+
+    logger.debug("approved_total_price : %s" % approved_total_price)
+
     budget.generic_text = update_generic_text(budget.generic_text,
                                                          "approved_total_price",
                                                          approved_total_price,
@@ -853,6 +870,8 @@ def change_budget_type(request):
                                                          "total_price",
                                                          total_price,
                                                          'equal')
+
+    logger.debug("budget.generic_text : %s" % budget.generic_text)
 
     budget.type = type
     budget.updated_by = logged_in_user
@@ -1025,7 +1044,6 @@ def generate_report_view(request):
         client = project.client
         if not client:
             raise Response('No client in the project')
-
 
         logger.debug('generating report:')
         temp_report_path = generate_report(budget)
