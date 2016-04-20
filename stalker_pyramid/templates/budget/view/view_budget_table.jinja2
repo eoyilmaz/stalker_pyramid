@@ -141,10 +141,11 @@
 
                 var overtime = parseFloat(getCellValue(lastSelection, 'overtime'));
                 var amount = parseFloat(getCellValue(lastSelection, 'amount'));
+                var second_amount = parseFloat(getCellValue(lastSelection, 'second_amount'));
                 var stoppage_add = parseInt(getCellValue(lastSelection, 'stoppage_add'));
                 var price = parseFloat(getCellValue(lastSelection, 'price'));
 
-                var selected_data = recalculateGridData(grid_data, lastSelection, amount, overtime, stoppage_add, price);
+                var selected_data = recalculateGridData(grid_data, lastSelection, amount, second_amount, overtime, stoppage_add, price);
 
                 grid.jqGrid('setGridParam',
                                     {
@@ -175,6 +176,26 @@
                return accounting.unformat(cellvalue);
             }
 
+            function unitFmatter (cellvalue, options, rowObject){
+                var index = findArrayElement(grid_data,'id', options.rowId);
+                return grid_data[index].amount+" "+ grid_data[index].unit;
+            }
+
+            function  unformatUnit (cellvalue, options, rowObject){
+                var index = findArrayElement(grid_data,'id', options.rowId);
+                return grid_data[index].amount;
+            }
+
+            function secondUnitFmatter (cellvalue, options, rowObject){
+                var index = findArrayElement(grid_data,'id', options.rowId);
+                return grid_data[index].second_amount+" "+ grid_data[index].second_unit;
+            }
+
+            function  secondUnformatUnit (cellvalue, options, rowObject){
+                var index = findArrayElement(grid_data,'id', options.rowId);
+                return grid_data[index].second_amount;
+            }
+
             function gridLoadComplete() {
                 calculateTotals();
                 setTimeout(function(){
@@ -199,13 +220,14 @@
                 return null;
             }
 
-            function recalculateGridData(array, id, amount_value, overtime_value, stoppage_add_value, price_value){
+            function recalculateGridData(array, id, amount_value, second_amount_value, overtime_value, stoppage_add_value, price_value){
                 var index = findArrayElement(grid_data, 'id', id);
 
                 var selected_data = grid_data[index];
                 if (selected_data.addition_type != "Calendar"){
                     selected_data.addition_type = "Producer";
                     selected_data.amount = amount_value;
+                    selected_data.second_amount = second_amount_value;
                 }
 
                 selected_data.overtime  = overtime_value;
@@ -215,13 +237,14 @@
                 console.log("selected_data.cost: " + selected_data.cost);
                 console.log("selected_data.msrp: " + selected_data.msrp);
                 console.log("selected_data.amount: " + selected_data.amount);
+                console.log("selected_data.second_amount: " + selected_data.second_amount);
                 console.log("selected_data.overtime: " + selected_data.overtime);
                 console.log("selected_data.stoppage_ratio: " + selected_data.stoppage_ratio);
                 console.log("selected_data.stoppage_add: " + selected_data.stoppage_add);
                 console.log("overtime_value: " + overtime_value);
 
-                selected_data.total_cost = selected_data.cost * (selected_data.amount + selected_data.overtime);
-                selected_data.total_msrp = selected_data.msrp * (selected_data.amount + selected_data.overtime);
+                selected_data.total_cost = selected_data.cost * (selected_data.amount*selected_data.second_amount + selected_data.overtime);
+                selected_data.total_msrp = selected_data.msrp * (selected_data.amount*selected_data.second_amount + selected_data.overtime);
                 selected_data.overtime_cost = selected_data.cost * selected_data.overtime;
 
                 selected_data.stoppage_cost = selected_data.stoppage_add*selected_data.stoppage_ratio * selected_data.total_cost;
@@ -306,22 +329,31 @@
                     grid_data[j].delete_action = "<a data-target='#dialog_template' data-toggle='modal' data-keyboard=false href='/budgetentries/"+grid_data[j].id+"/delete/dialog'> <i class='icon-trash'></i></a>"
                     grid_data[j].addition_type = grid_data[j].generic_data.dataSource;
 
+                    grid_data[j].unit = grid_data[j].unit.split('*')[0];
+                    grid_data[j].second_unit = grid_data[j].generic_data.secondaryFactor.unit;
+                    grid_data[j].second_amount = grid_data[j].generic_data.secondaryFactor.amount;
+
                     grid_data[j].overtime = grid_data[j].generic_data.overtime;
                     grid_data[j].overtime_cost = grid_data[j].overtime * grid_data[j].cost;
 
                     grid_data[j].stoppage_cost = 0;
                     grid_data[j].stoppage_msrp = 0;
                     grid_data[j].stoppage_add = grid_data[j].generic_data.stoppage_add;
-                    grid_data[j].stoppage_ratio = parseFloat(grid_data[j].good_generic_data.stopage_ratio);
-                    console.log('grid_data[j].good_generic_data.stopage_ratio: '+ grid_data[j].good_generic_data.stopage_ratio);
 
-                    if (grid_data[j].stoppage_add == '1'){
-                        grid_data[j].stoppage_cost = grid_data[j].stoppage_ratio * grid_data[j].cost * (grid_data[j].amount+grid_data[j].overtime);
-                        grid_data[j].stoppage_msrp = grid_data[j].stoppage_ratio * grid_data[j].msrp * (grid_data[j].amount+grid_data[j].overtime);
+                    if(grid_data[j].good_generic_data.stopage_ratio){
+                        grid_data[j].stoppage_ratio = parseFloat(grid_data[j].good_generic_data.stopage_ratio);
+                    }
+                    else{
+                        grid_data[j].stoppage_ratio = 0;
                     }
 
-                    grid_data[j].total_msrp = grid_data[j].msrp * (grid_data[j].amount+grid_data[j].overtime) + grid_data[j].stoppage_msrp;
-                    grid_data[j].total_cost = grid_data[j].cost * (grid_data[j].amount+grid_data[j].overtime) + grid_data[j].stoppage_cost;
+                    if (grid_data[j].stoppage_add == '1'){
+                        grid_data[j].stoppage_cost = grid_data[j].stoppage_ratio * grid_data[j].cost * (grid_data[j].amount*grid_data[j].second_amount+grid_data[j].overtime);
+                        grid_data[j].stoppage_msrp = grid_data[j].stoppage_ratio * grid_data[j].msrp * (grid_data[j].amount*grid_data[j].second_amount+grid_data[j].overtime);
+                    }
+
+                    grid_data[j].total_msrp = grid_data[j].msrp * (grid_data[j].amount*grid_data[j].second_amount+grid_data[j].overtime) + grid_data[j].stoppage_msrp;
+                    grid_data[j].total_cost = grid_data[j].cost * (grid_data[j].amount*grid_data[j].second_amount+grid_data[j].overtime) + grid_data[j].stoppage_cost;
 
                 }
 
@@ -347,7 +379,9 @@
                                                     'type':good_data[k].price_list_name,
                                                     'name':good_data[k].name,
                                                     'amount':0,
-                                                    'unit':good_data[k].unit,
+                                                    'second_amount':0,
+                                                    'unit':good_data[k].unit.split('*')[0],
+                                                    'second_unit':good_data[k].unit.split('*')[1],
                                                     'msrp':good_data[k].msrp,
                                                     'total_msrp':0,
                                                     'cost':good_data[k].cost,
@@ -370,14 +404,14 @@
                                 //direction: "rtl",
                                 data: grid_data,
                                 datatype: "local",
-                                colNames:['Addition Type', 'Type', 'Id', 'Name','Amount', 'Unit', 'Msrp_PerHour', 'Msrp', 'Cost_PerHour', 'Cost', 'Overtime', 'Overtime Cost', 'Stoppage','Stoppage Cost','Price', 'Notes',''],
+                                colNames:['Addition Type', 'Type', 'Id', 'Name','Amount I', 'Amount II', 'Msrp_PerHour', 'Msrp', 'Cost_PerHour', 'Cost', 'Overtime', 'Overtime Cost', 'Stoppage','Stoppage Cost','Price', 'Notes',''],
                                 colModel:[
                                     {name:'addition_type', index:'addition_type', width:100, editable: false},
                                     {name:'type', index:'type', width:220, editable: false},
                                     {name:'id', index:'id', width:100, editable: false, hidden: true},
                                     {name:'name', index:'name', width:220, editable: false},
-                                    {name:'amount', index:'amount', width:60, editable: true},
-                                    {name:'unit', index:'unit', width:100, editable: false},
+                                    {name:'amount', index:'amount', width:70, editable: true, formatter:unitFmatter,unformat:unformatUnit},
+                                    {name:'second_amount', index:'second_amount', width:70, editable: true, formatter:secondUnitFmatter,unformat:secondUnformatUnit},
                                     {name:'msrp', index:'msrp', width:100, editable: true,  hidden: true},
                                     {name:'total_msrp', index:'total_msrp', width:100, editable: false, formatter:currencyFmatter, summaryTpl: "{0}", summaryType: "sum" },
                                     {name:'cost', index:'cost', width:100, editable: true,  hidden: true},
@@ -439,6 +473,7 @@
                                 {name:'type', index:'type', width:220, editable: false},
                                 {name:'name', index:'name', width:220, editable: false},
                                 {name:'amount', index:'amount', width:60, editable: false},
+                                {name:'second_amount', index:'second_amount', width:60, editable: false},
                                 {name:'unit', index:'unit', width:100, editable: false},
                                 {name:'total_msrp', index:'total_msrp', width:100, editable: false, formatter:currencyFmatter, summaryTpl: "{0}", summaryType: "sum" },
                                 {name:'total_cost', index:'total_cost', width:100, editable: false, formatter:currencyFmatter, summaryTpl: "{0}", summaryType: "sum" },

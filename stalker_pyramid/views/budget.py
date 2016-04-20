@@ -393,7 +393,7 @@ def save_budget_calendar(request):
 
         generic_data = {
             'dataSource': 'Calendar',
-            'numberOfResources': num_of_resources,
+            'secondaryFactor': {'unit': "Kisi", 'amount': num_of_resources},
             'overtime': 0,
             'stoppage_add': 0
         }
@@ -516,12 +516,14 @@ def create_budgetentry(request):
         transaction.abort()
         return Response('There is no budget with id %s' % budget_id, 500)
 
-    amount = request.params.get('amount')
-    price = request.params.get('price')
+    amount = request.params.get('amount', 0)
+    second_amount = request.params.get('second_amount',0)
+    amount = int(amount)*int(second_amount)
+    price = request.params.get('price', 0)
     description = request.params.get('description', '')
 
     generic_data = {'dataSource': 'Producer',
-                    'numberOfResources': 1,
+                    'secondaryFactor': {'unit': good.unit.split('*')[1], 'amount': second_amount},
                     'overtime': 0,
                     'stoppage_add': 0}
 
@@ -530,14 +532,14 @@ def create_budgetentry(request):
         return Response('Please supply the amount', 500)
 
     if price == '0':
-        price = good.cost * int(amount)
+        price = good.cost * amount
 
     if amount and price:
         # data that's generate from good's data
 
         create_budgetentry_action(budget,
                                   good,
-                                  int(amount),
+                                  amount,
                                   int(price),
                                   description,
                                   json.dumps(generic_data),
@@ -621,6 +623,7 @@ def update_budgetentry(request):
     # good = Good.query.filter(Good.name == budgetentry.name).first()
     # user supply this data
     amount = request.params.get('amount', None)
+    second_amount = request.params.get('second_amount', None)
     overtime = int(request.params.get('overtime', 0))
     stoppage_add = request.params.get('stoppage_add', 0)
 
@@ -651,13 +654,20 @@ def update_budgetentry(request):
             transaction.abort()
             return Response('Please supply the amount', 500)
 
-        amount = int(amount)
+
+        second_amount = int(second_amount)
+        amount = int(amount)*second_amount
         budgetentry.amount = amount
 
         budgetentry.price = price if price != '0' else budgetentry.cost * (amount + overtime)
         budgetentry.description = description
         budgetentry.date_updated = utc_now
         budgetentry.updated_by = logged_in_user
+
+    budgetentry.generic_text = update_generic_text(budgetentry.generic_text,
+                                                    "secondaryFactor",
+                                                    {'unit': budgetentry.good.unit.split('*')[1], 'amount': second_amount},
+                                                     'equal')
 
     budgetentry.generic_text = update_generic_text(budgetentry.generic_text,
                                                          "overtime",

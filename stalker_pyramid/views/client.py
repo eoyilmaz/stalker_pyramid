@@ -518,7 +518,7 @@ def generate_report(budget, output_path=''):
                         filtered_entity.overtime = \
                             fe_generic_data.get('overtime', 0)
                         filtered_entity.numberOfResources = \
-                            fe_generic_data.get('numberOfResources', 0)
+                            fe_generic_data.get('secondaryFactor', {'unit':"", 'amount':1 })['amount']
 
                     # now generate the result
                     result_buffer.append(
