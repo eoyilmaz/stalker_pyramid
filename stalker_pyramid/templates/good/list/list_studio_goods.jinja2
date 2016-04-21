@@ -95,22 +95,21 @@
             $.getJSON('/price_lists/').then(function (price_list_data) {
                 var good_price_list = $('#good_price_list');
 
-                var pricelist_value = '';
+                var available_pricelist = [];
                 for (var k=0; k < price_list_data.length; k++){
-                    pricelist_value += price_list_data[k].name+':'+price_list_data[k].name+";";
+                    console.log(price_list_data[k].name)
+                    available_pricelist.push(price_list_data[k].name);
                 }
-                pricelist_value = pricelist_value.substring(0, price_list_data.length-1);
 
                 $.getJSON('/studios/{{ entity.id }}/goods/').then(function (good_data) {
 
                     var grid_data = good_data;
                     var available_good_units_as_list = [];
-                    var available_good_units_as_list_string = "";
                     var good_names = [];
 
 
                     for(var i=0; i<grid_data.length; i++ ){
-
+                        console.log('grid_data[i]: '+ grid_data[i].price_list_name);
                         good_names.push(grid_data[i].name);
 
                         grid_data[i]['created_by'] = "<a href='/users/"+grid_data[i]['created_by_id']+"/view'>"+grid_data[i]['created_by_name']+"</a>";
@@ -152,10 +151,39 @@
 
                             data: grid_data,
                             datatype: "local",
-                            colNames:['ID', 'Price List', 'Name', 'MSRP', 'Cost', 'Unit','Stopage Ratio', 'Related Goods', 'Link Goods', 'Updated_by', 'Last_Accessed'],
+                            colNames:[
+                                        'ID',
+                                        'Price List',
+                                        'Name',
+                                        'MSRP',
+                                        'Cost',
+                                        'Unit',
+                                        'Stopage Ratio',
+                                        'Related Goods',
+                                        'Link Goods',
+                                        'Updated_by',
+                                        'Last_Accessed'
+                            ],
                             colModel:[
                                 {name:'id',index:'id', width:90, sortable:true, editable: false},
-                                {name:'price_list_name',index:'price_list_name', width:160, sortable:true, editable: true, edittype:"select", editoptions:{value:pricelist_value}},
+                                {
+                                    name:'price_list_name',
+                                    index:'price_list_name',
+                                    width:160,
+                                    editable: true,
+                                    edittype:"text",
+                                    editoptions: {
+                                        dataInit: function (element) {
+                                            window.setTimeout(function () {
+                                                $(element).autocomplete({
+                                                    id: 'AutoComplete',
+                                                source: available_pricelist,
+                                                autoFocus: true
+                                                });
+                                            }, 100);
+                                        }
+                                    }
+                                },
                                 {name:'name',index:'name', width:250, sortable:true, editable: true, editoptions:{size:"20", maxlength:"30"}},
                                 {name:'msrp',index:'msrp',  width:100, sortable:true, editable: true, editoptions:{size:"20" ,maxlength:"30"}},
                                 {name:'cost',index:'cost',  width:120, sortable:true, editable: true, editoptions:{size:"20", maxlength:"30"}},
