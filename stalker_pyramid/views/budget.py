@@ -416,6 +416,7 @@ def save_budget_calendar(request):
                 budget,
                 good,
                 amount,
+                num_of_resources,
                 good.cost * amount,
                 ' ',
                 json.dumps(generic_data),
@@ -543,6 +544,7 @@ def create_budgetentry(request):
         create_budgetentry_action(budget,
                                   good,
                                   amount,
+                                  second_amount,
                                   int(price),
                                   description,
                                   json.dumps(generic_data),
@@ -556,7 +558,7 @@ def create_budgetentry(request):
     return Response('BudgetEntry Created successfully')
 
 
-def create_budgetentry_action(budget, good, amount, price, description, gData, logged_in_user, utc_now):
+def create_budgetentry_action(budget, good, amount, second_amount, price, description, gData, logged_in_user, utc_now):
     """create_budgetentry_action
     """
     logger.debug('good_id: %s' % good.id)
@@ -564,9 +566,26 @@ def create_budgetentry_action(budget, good, amount, price, description, gData, l
 
     for budget_entry in budget.entries:
         if budget_entry.name == good.name:
-            logger.debug('Adds budget_entry amount %s ***' % budget_entry.amount)
+            logger.debug('Adds budget_entry amount %s *** %s' % (budget_entry.amount, budget_entry.name))
             budget_entry.amount += amount
             budget_entry.price += price
+
+            good_generic_data = json.loads(good.generic_text)
+            related_goods = good_generic_data.get('related_goods', None)
+
+            logger.debug("related_goods %s " % related_goods)
+            if related_goods:
+                if len(related_goods) > 0:
+                    return
+
+            budget_entry_generic_data = json.loads(budget_entry.generic_text)
+            secondaryFactor = budget_entry_generic_data.get('secondaryFactor', None)
+            second_amount = int(secondaryFactor['amount'])+int(second_amount)
+            budget_entry.generic_text = update_generic_text(budget_entry.generic_text,
+                                                    "secondaryFactor",
+                                                    {'unit': budget_entry.good.unit.split('*')[1],
+                                                     'amount': second_amount},
+                                                     'equal')
             return
 
     realize_total = good.msrp
@@ -598,13 +617,20 @@ def create_budgetentry_action(budget, good, amount, price, description, gData, l
 
                 logger.debug("%s is added" % linked_good.name)
 
+                n_gData = update_generic_text(gData,
+                                                    "secondaryFactor",
+                                                    {'unit': linked_good.unit.split('*')[1],
+                                                     'amount': 1},
+                                                     'equal')
+
                 create_budgetentry_action(
                     budget,
                     linked_good,
                     amount,
+                    1,
                     linked_good.cost * amount,
                     description,
-                    gData,
+                    n_gData,
                     logged_in_user,
                     utc_now
                 )
