@@ -333,6 +333,8 @@
                     grid_data[j].second_unit = grid_data[j].generic_data.secondaryFactor.unit;
                     grid_data[j].second_amount = grid_data[j].generic_data.secondaryFactor.amount;
 
+                    grid_data[j].amount = grid_data[j].amount/grid_data[j].second_amount;
+
                     grid_data[j].overtime = grid_data[j].generic_data.overtime;
                     grid_data[j].overtime_cost = grid_data[j].overtime * grid_data[j].cost;
 
