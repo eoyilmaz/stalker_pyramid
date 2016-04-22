@@ -55,6 +55,7 @@
                 <th>Budget</th>
                 <th>Created By</th>
                 <th>Type</th>
+                <th>Description</th>
                 <th></th>
             </tr>
         </script>
@@ -65,7 +66,7 @@
             <tr>
                 <td style="width:100px;">{{=it.date_created}}
                 </td>
-                <td><a href='{{=it.item_view_link}}'>{{=it.name}}</a>
+                <td><a href='{{=it.item_view_link}}'>{{=it.name}} </a>
                 </td>
                 <td><a href='/users/{{=it.created_by_id}}/view'>{{=it.created_by_name}}</a>
                 </td>
@@ -73,13 +74,25 @@
                     <span class="label label-large label-status_{{=it.type_name }}"> {{=it.type_name }}</span>
                 </td>
                 <td>
-                     {{ if (it.item_update_link) { }}
+                    <span> {{=it.description }}</span>
+                </td>
+                <td>
+                    {{ if (it.item_update_link) { }}
                     <a  class="blue"
                         data-target="#dialog_template"
                         data-toggle="modal"
                         data-keyboard=false
                         href="{{=it.item_update_link}}">
                         <i class="icon-edit bigger-130"></i>
+                    </a>{{ } }}
+
+                    {{ if (it.item_duplicate_link) { }}
+                    <a  class="purple"
+                        data-target="#dialog_template"
+                        data-toggle="modal"
+                        data-keyboard=false
+                        href="{{=it.item_duplicate_link}}">
+                        <i class="icon-copy bigger-130"></i>
                     </a>{{ } }}
 
                     {{ if (it.item_remove_link) { }}

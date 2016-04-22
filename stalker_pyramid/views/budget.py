@@ -82,8 +82,7 @@ def create_budget(request):
     name = request.params.get('name')
     description = request.params.get('description')
 
-    type_name = request.params.get('type_name', None)
-    budget_type = query_type('Budget', type_name)
+    budget_type = query_type('Budget', 'Planning')
 
     project_id = request.params.get('project_id', None)
     project = Project.query.filter(Project.id == project_id).first()
@@ -211,7 +210,8 @@ def get_budgets(request):
             "Created_By_SimpleEntities".created_by_id,
             "Created_By_SimpleEntities".name,
             "Type_SimpleEntities".name,
-            (extract(epoch from "Budget_SimpleEntities".date_created::timestamp at time zone 'UTC') * 1000)::bigint as date_created
+            (extract(epoch from "Budget_SimpleEntities".date_created::timestamp at time zone 'UTC') * 1000)::bigint as date_created,
+            "Budget_SimpleEntities".description
 
         from "Budgets"
         join "SimpleEntities" as "Budget_SimpleEntities" on "Budget_SimpleEntities".id = "Budgets".id
@@ -242,7 +242,8 @@ def get_budgets(request):
             'created_by_name': r[3],
             'item_view_link': '/budgets/%s/view' % r[0],
             'type_name': r[4],
-            'date_created': r[5]
+            'date_created': r[5],
+            'description': r[6]
         }
         # if update_budget_permission:
         budget['item_update_link'] = \
@@ -252,6 +253,12 @@ def get_budgets(request):
                 budget['id'],
                 request.current_route_path()
             )
+        budget['item_duplicate_link'] =\
+            '/budgets/%s/duplicate/dialog?came_from=%s' % (
+                budget['id'],
+                request.current_route_path()
+            )
+
 
         budgets.append(budget)
 
@@ -393,14 +400,10 @@ def save_budget_calendar(request):
 
         generic_data = {
             'dataSource': 'Calendar',
-            'secondaryFactor': {'unit': "Kisi", 'amount': num_of_resources},
+            'secondaryFactor': {'unit': good.unit.split('*')[1], 'amount': num_of_resources},
             'overtime': 0,
             'stoppage_add': 0
         }
-
-        if good.unit == 'HOUR':
-            # what the fuck is that Gulsen!!!
-            amount *= 9
 
         if amount or amount > 0:
             # after transaction commit

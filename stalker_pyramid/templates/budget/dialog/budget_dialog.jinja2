@@ -28,19 +28,20 @@
             </div>
 
             {#Type #}
-            <div class='control-group'>
-                <label class='span3 control-label'
-                       for='budget_type'>Type</label>
-                <div class="span5">
+            {% if mode=='Update' %}
+                <div class='control-group'>
+                    <label class='span3 control-label'
+                           for='budget_type'>Type</label>
+                    <div class="span5">
 
-                    <select id='budget_type'
-                            class='input'
-                            name='type_name'
-                            required>
-                    </select>
+                        <select id='budget_type'
+                                class='input'
+                                name='type_name'
+                                required>
+                        </select>
+                    </div>
                 </div>
-            </div>
-
+            {% endif %}
             {#Description #}
             <div class="control-group'">
                 <label for="budget_description"
@@ -57,9 +58,7 @@
                             >{% if mode=='Update' %}{{ budget.description }}{% endif %}</textarea>
                 </div>
             </div>
-
         </div>
-
     </form>
 </div>
 
@@ -73,33 +72,30 @@
         var dialog_label = $('#dialog_template_label');
         dialog_label.find('span').remove();
         dialog_label.append('<span>{{ mode}} Budget</span>');
+        {% if mode=='Update' %}
+            {% raw %}
+                var budget_type_option_template = doT.template(
+                    '<option value={{=it.name}}>{{=it.name}}</option>'
+                );
+            {% endraw %}
 
-        {% raw %}
-            var budget_type_option_template = doT.template(
-                '<option value={{=it.name}}>{{=it.name}}</option>'
-            );
-        {% endraw %}
+            $.getJSON('/types/?target_entity_type=Budget').then(function (data) {
+                var budget_type = $('#budget_type');
 
-        $.getJSON('/types/?target_entity_type=Budget').then(function (data) {
-            var budget_type = $('#budget_type');
-            console.log(data);
+                for (var i = 0; i < data.length; i++) {
+                    budget_type.append(budget_type_option_template(data[i]));
+                }
 
-            for (var i = 0; i < data.length; i++) {
-                budget_type.append(budget_type_option_template(data[i]));
-            }
-
-            budget_type.chosen({
-                search_contains: true,
-                enable_split_word_search: true,
-                allow_single_deselect: true
-            });
-
-            {% if mode=='Update' %}
-                budget_type.val({{ budget.type.id }});
+                budget_type.chosen({
+                    search_contains: true,
+                    enable_split_word_search: true,
+                    allow_single_deselect: true
+                });
+                console.log({{ budget.type.name }})
+                budget_type.val({{ budget.type.name }});
                 budget_type.trigger('liszt:updated');
-            {% endif %}
-
-        });
+            });
+        {% endif %}
         {# ***************************************************************** #}
         {# Submit Button #}
         var submit_button = $('#dialog_template_submit_button');
