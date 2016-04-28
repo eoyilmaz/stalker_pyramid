@@ -5913,6 +5913,12 @@ def change_tasks_users(request):
             task.responsible = users
             task.updated_by = logged_in_user
             task.date_updated = utc_now
+    elif user_type == 'resources_responsible':
+        for task in tasks:
+            task.resources = users
+            task.responsible = users
+            task.updated_by = logged_in_user
+            task.date_updated = utc_now
 
     # invalidate all caches
     invalidate_all_caches()

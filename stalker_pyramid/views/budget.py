@@ -573,7 +573,7 @@ def create_budgetentry_action(budget, good, amount, second_amount, price, descri
             good_generic_data = json.loads(good.generic_text)
             related_goods = good_generic_data.get('related_goods', None)
 
-            logger.debug("related_goods %s " % related_goods)
+            logger.debug("related_goods %s " % len(related_goods))
             if related_goods:
                 if len(related_goods) > 0:
                     return

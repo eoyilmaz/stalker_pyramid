@@ -13,6 +13,7 @@
                                 class='input-block-level'>
                                 <option value="change_resources">Change Resource</option>
                                 <option value="change_responsible">Change Responsible</option>
+                                <option value="change_resources_responsible">Change Resources & Responsible</option>
                                 <option value="force_status">Force Complete</option>
                                 <option value="request_revisions">Request Revision</option>
                                 <option value="fix_task">Fix Task</option>
@@ -189,6 +190,12 @@
                         break;
                     case 'change_responsible':
                         submit_form_url =  '/tasks/change/responsible';
+                        change_users_control.show();
+                        force_status_control.hide();
+                        request_revision_control.hide();
+                        break;
+                    case 'change_resources_responsible':
+                        submit_form_url =  '/tasks/change/resources_responsible';
                         change_users_control.show();
                         force_status_control.hide();
                         request_revision_control.hide();
