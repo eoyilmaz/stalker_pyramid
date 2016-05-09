@@ -41,7 +41,7 @@
 {#    {% set page_title='Users' %}#}
 {#    {% include 'page_header.jinja2' %}#}
 
-    {% set add_button_address=request.route_path('append_user_to_client_dialog', id=entity.id, _query={'came_from': request.current_route_path()}) %}
+    {% set add_button_address=request.route_path('append_user_to_entity_dialog', id=entity.id, _query={'came_from': request.current_route_path()}) %}
 
     {% set list_item_type='User' %}
     {% include 'components/data_table.jinja2' %}

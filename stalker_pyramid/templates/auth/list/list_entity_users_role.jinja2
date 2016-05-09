@@ -39,14 +39,30 @@
 {#PAGE-CONTENT#}
 {% block page_content %}
 
-    <div class="widget-box transparent invoice-box">
+    <div class="widget-box">
+        <div class="widget-header widget-header-small header-color-user">
+            <h5 id="items_header" class="smaller"></h5>
+            <div class="widget-toolbar">
+                    <a data-target="#dialog_template"
+                       data-toggle="modal"
+                       data-keyboard=false
+                       href='{{ request.route_path('append_user_to_entity_dialog', id=entity.id, _query={'came_from': request.current_route_path()}) }}'
+                       class="white">
+                        <i class="icon-plus"></i>
+                        ADD
+                    </a>
+                    &nbsp&nbsp
 
+                <a href="#" data-action="collapse">
+                    <i class="icon-chevron-down"></i>
+                </a>
+            </div>
+        </div>
         <div class="widget-body">
-            <div class="widget-main padding-24">
+            <div class="widget-main">
                 <div class="row-fluid">
                     <table id="grid-table"></table>
                 </div>
-
             </div>
         </div>
     </div>
@@ -58,22 +74,60 @@
     </script>
     <script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/i18n/grid.locale-en.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/jquery.jqGrid.js") }}'></script>
-
+    <script>
+        $.jgrid.defaults.width = 780;
+        $.jgrid.defaults.responsive = true;
+        $.jgrid.defaults.styleUI = 'Bootstrap';
+    </script>
     <script type="text/javascript">
         $(document).ready(function () {
+            var lastSelection;
+            var grid_selector = "#grid-table";
+            var grid = jQuery(grid_selector);
+
+            function editRow(id) {
+                if (id && id !== lastSelection) {
+
+                    grid.restoreRow(lastSelection);
+
+                    var editParameters = {
+                        keys: true,
+                        successfunc: editSuccessful,
+                        errorfunc: editFailed,
+                        restoreAfterError : false
+                    };
+
+                    grid.jqGrid('editRow', id, editParameters);
+                    lastSelection = id;
+                }
+            }
+
+            function editSuccessful(data, stat) {
+                grid.restoreRow(lastSelection);
+                return [true,"",""];
+            }
+
+            function editFailed(rowID, response) {
+                $.jgrid.info_dialog($.jgrid.errors.errcap,'<div class="ui-state-error">RowID:'+rowID+ ' :  '+ response.responseJSON.error +'</div>', $.jgrid.edit.bClose,{buttonalign:'right'})
+                alert(response.responseJSON.error);
+            }
 
             $.getJSON('/entities/{{ entity.id }}/users/').then(function (entry_data) {
 
-                console.log('data loaded')
+                console.log('data loaded');
 
                 var grid_data = entry_data;
 
                 $.getJSON('/roles/').then(function(available_roles){
                     // map available types to an array
-                    var available_roles_as_list = "";
-                    for (var i=0; i < available_roles.length; i++){
-                        available_roles_as_list += available_roles[i].id+":"+available_roles[i].name+";";
+
+                    var available_rolelist = [];
+                    for (var k=0; k < available_roles.length; k++){
+                        console.log(available_roles[k].name)
+                        available_rolelist.push(available_roles[k].name);
                     }
+
+                    console.log(grid_data)
 
 
                     jQuery(function($) {
@@ -83,26 +137,29 @@
                             //direction: "rtl",
                             data: grid_data,
                             datatype: "local",
-                            colNames:['', 'Id','Name', 'Email', 'Role'],
+                            colNames:[ 'Id', 'Name', 'Email', 'Role'],
                             colModel:[
-                                {
-                                    name:'myac',
-                                    index:'',
-                                    width:80,
-                                    fixed:true,
-                                    sortable:false,
-                                    resize:false,
-                                    formatter:'actions',
-                                    formatoptions:{
-                                                keys:false,
-                                                delbutton:true,
-                                                delOptions:{recreateForm: true, beforeShowForm:beforeDeleteCallback}
-                                            }
-                                },
                                 {name:'id', index:'id', width:80, editable: false},
                                 {name:'name', index:'name', width:200, editable: false},
                                 {name:'email', index:'email', width:220, editable: false},
-                                {name:'role', index:'role', width:220, editable: true, edittype:"select", editoptions:{value:available_roles_as_list}}
+                                    {
+                                    name:'role',
+                                    index:'role',
+                                    width:220,
+                                    editable: true,
+                                    edittype:"text",
+                                    editoptions: {
+                                        dataInit: function (element) {
+                                            window.setTimeout(function () {
+                                                $(element).autocomplete({
+                                                    id: 'AutoComplete',
+                                                source: available_rolelist,
+                                                autoFocus: true
+                                                });
+                                            }, 100);
+                                        }
+                                    }
+                                }
                             ],
                             viewrecords : true,
                             rowNum:grid_data.length,
@@ -112,29 +169,16 @@
                             multiselect: false,
                             loadonce: true,
                             height: 700,
+                            width: 'auto',
                             sortname: 'name',
-                            footerrow: true, // set a footer row
+                            footerrow: false, // set a footer row
                             userDataOnFooter: true, // the calculated sums and/or strings from server are put at footer row.
                             grouping: false,
-    {#                        groupingView: {#}
-    {#                            groupField: ["name"],#}
-    {#                            groupColumnShow: [false],#}
-    {#                            groupText: ["<b>{0}</b>"],#}
-    {#                            groupOrder: ["desc","desc","desc"],#}
-    {#                            groupSummary: [true],#}
-    {#                            groupCollapse: false#}
-    {#                        },#}
-                            gridview: true,
-                            editurl: 'entities/{id}/users/{u_id}/role/{r_id}',
+                            editurl: '/entities/{{ entity.id }}/users/update_role/',
                             caption: "",
+                            onSelectRow: editRow,
                             loadComplete : function() {
                                 var $self = $(this);
-    {#                                $self.jqGrid("footerData", "set", {#}
-    {#                                                                   msrp: total_msrp,#}
-    {#                                                                   cost: total_cost,#}
-    {#                                                                   price: total_price,#}
-    {#                                                                   unit:'TOTAL'#}
-    {#                                });#}
 
                                 var table = this;
                                 setTimeout(function(){
@@ -142,32 +186,12 @@
     {#                                    updateActionIcons(table);#}
     {#                                    updatePagerIcons(table);#}
 
-    {#                                $('#lui_grid-table').hide();#}
+                                    $('#lui_grid-table').hide();
                                 }, 0);
                             }
                         });
                     });
                 });
-
-
-                function beforeDeleteCallback(e) {
-                    var form = $(e[0]);
-                    if(form.data('styled')) return false;
-
-                    form.closest('.ui-jqdialog').find('.ui-jqdialog-titlebar').wrapInner('<div class="widget-header" />')
-        {#                        style_delete_form(form);#}
-
-                    form.data('styled', true);
-                }
-                function beforeEditCallback(e) {
-                    var form = $(e[0]);
-                    if(form.data('styled')) return false;
-
-                    form.closest('.ui-jqdialog').find('.ui-jqdialog-titlebar').wrapInner('<div class="widget-header" />')
-{#                        style_delete_form(form);#}
-
-                    form.data('styled', true);
-                }
             });
         });
     </script>

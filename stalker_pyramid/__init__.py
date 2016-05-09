@@ -30,6 +30,7 @@ __version__ = '0.1.11'
 
 # before anything about stalker create the defaults
 from stalker.config import defaults
+from stalker import SimpleEntity
 
 import logging
 
@@ -40,6 +41,32 @@ logger.setLevel(logging.DEBUG)
 
 stalker_server_external_url = None
 stalker_server_internal_url = None
+
+
+def get_generic_text_attr(self, attr):
+    """patch Simple entity to add new functionality
+    """
+    import json
+    attr_value = None
+    if self.generic_text:
+        data = json.loads(self.generic_text)
+        attr_value = data.get(attr)
+    return attr_value
+
+
+def set_generic_text_attr(self, attr, value):
+    """patch Simple entity to add new functionality
+    """
+    import json
+    data = {}
+    if self.generic_text:
+        data = json.loads(self.generic_text)
+        data[attr] = value
+    self.generic_text = json.dumps(data)
+
+
+SimpleEntity.get_generic_text_attr = get_generic_text_attr
+SimpleEntity.set_generic_text_attr = set_generic_text_attr
 
 
 def main(global_config, **settings):
@@ -141,8 +168,8 @@ def main(global_config, **settings):
 
     config.add_route('create_entity_users_dialog',     'entities/{id}/users/create/dialog')
 
-    config.add_route('append_users_to_entity_dialog',  'entities/{id}/users/append/dialog')
-    config.add_route('append_users_to_entity',         'entities/{id}/users/append')
+    config.add_route('append_user_to_entity_dialog',  'entities/{id}/user/append/dialog')
+    config.add_route('append_user_to_entity',         'entities/{id}/user/append')
     config.add_route('remove_entity_from_entity_dialog','entities/{id}/{entity_id}/remove/dialog')
     config.add_route('remove_entity_from_entity',      'entities/{id}/{entity_id}/remove')
 
@@ -187,6 +214,8 @@ def main(global_config, **settings):
     config.add_route('get_entity_task_min_start',      'entities/{id}/task_min_start/') #json
     config.add_route('get_entity_task_max_end',        'entities/{id}/task_max_end/') #json
     config.add_route('get_entity_users_roles',         'entities/{id}/users/roles/')#json
+    config.add_route('get_entity_role_user',           'entities/{id}/role_user/')#json
+
 
     config.add_route('get_entity_thumbnail',           'entities/{id}/thumbnail')
 
@@ -322,6 +351,7 @@ def main(global_config, **settings):
     config.add_route('list_project_reviews',       'projects/{id}/reviews/list')  # html
     config.add_route('list_project_dailies',       'projects/{id}/dailies/list')  # html
     config.add_route('list_project_budgets',       'projects/{id}/budgets/list')  # html
+    config.add_route('list_project_notes',         'projects/{id}/notes/list') #html
 
     config.add_route('get_projects',               'projects/')
     config.add_route('get_project_users',          'projects/{id}/users/')
@@ -364,7 +394,7 @@ def main(global_config, **settings):
 
     config.add_route('get_studio_clients',           'studios/{id}/clients/')
     config.add_route('get_clients',                  'clients/')
-    config.add_route('get_client_users_out_stack',   'clients/{id}/users/out_stack/' )
+    config.add_route('get_client_users_out_stack',   'clients/{id}/user/out_stack/' )
     config.add_route('get_client_users',             'clients/{id}/users/' )
 
     config.add_route('list_client_users',              'clients/{id}/users/list')
@@ -467,7 +497,7 @@ def main(global_config, **settings):
     # dialogs
     config.add_route('create_user_dialog',      'users/create/dialog')
     config.add_route('update_user_dialog',      'users/{id}/update/dialog')
-    config.add_route('update_entity_user_role',      'entities/{id}/users/{u_id}/role/{r_id}')
+    config.add_route('update_entity_user',      'entities/{id}/users/update/')
 
 
     config.add_route('dialog_create_department_user', 'departments/{id}/users/create/dialog')

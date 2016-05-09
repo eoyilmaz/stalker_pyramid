@@ -61,6 +61,7 @@ def query_role(role_name):
         return None
 
     role = Role.query.filter_by(name=role_name).first()
+
     if role_name and role is None:
         # create a new Type
         logger.debug('creating new role: %s' % role_name)

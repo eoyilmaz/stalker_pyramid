@@ -19,6 +19,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301 USA
 
 import time
+import json
 import datetime
 import logging
 
@@ -57,7 +58,8 @@ def create_project(request):
     # parameters
     name = request.params.get('name')
     code = request.params.get('code')
-    fps = int(request.params.get('fps'))
+    fps = request.params.get('fps')
+    generic_text = request.params.get('generic_text')
     # get the dates
     start, end = get_date_range(request, 'start_and_end_dates')
 
@@ -84,6 +86,11 @@ def create_project(request):
         transaction.abort()
         return Response('Can not find a status with code: %s' % status.id, 500)
 
+    type_name = request.params.get('type_name', None)
+    if not type_name:
+        transaction.abort()
+        return Response('Please enter a type name')
+
     client_id = request.params.get('client_id', -1)
     client = Client.query.filter_by(id=client_id).first()
     if not client:
@@ -102,9 +109,11 @@ def create_project(request):
     logger.debug('structure     : %s' % structure)
     logger.debug('start         : %s' % start)
     logger.debug('end           : %s' % end)
-    logger.debug('client_id           : %s' % client_id)
+    logger.debug('client_id     : %s' % client_id)
+    logger.debug('generic_text  : %s' % generic_text)
+    logger.debug('type_name     : %s' % type_name)
 
-    if name and code and fps and start and end:
+    if name and code and fps and start and end and type_name:
         # status is always New
         # lets create the project
 
@@ -112,6 +121,7 @@ def create_project(request):
         status_list = StatusList.query \
             .filter_by(target_entity_type='Project').first()
 
+        project_type = query_type("Project", type_name)
         try:
             new_project = Project(
                 name=name,
@@ -125,7 +135,9 @@ def create_project(request):
                 status=status,
                 start=start,
                 end=end,
-                client=client
+                client=client,
+                generic_text=generic_text,
+                type=project_type
             )
 
             DBSession.add(new_project)
@@ -198,10 +210,11 @@ def update_project(request):
         return Response('Can not find a client with id: %s' % client_id, 500)
 
     name = request.params.get('name')
-    fps = int(request.params.get('fps'))
+    fps = request.params.get('fps')
     # get the dates
     start, end = get_date_range(request, 'start_and_end_dates')
-
+    generic_text = request.params.get('generic_text')
+    type_name = request.params.get('type_name', None)
 
     logger.debug('update_project          :')
 
@@ -214,11 +227,16 @@ def update_project(request):
     logger.debug('structure     : %s' % structure)
     logger.debug('start         : %s' % start)
     logger.debug('end           : %s' % end)
-    logger.debug('project           : %s' % project)
-    logger.debug('client           : %s' % client)
+    logger.debug('project       : %s' % project)
+    logger.debug('client        : %s' % client)
+    logger.debug('generic_text  : %s' % generic_text)
+    logger.debug('type_name : %s' % type_name)
 
-    if name and fps and start and end:
-        assert isinstance(project, Project)
+    new_generic_data = json.loads(generic_text)
+
+    if name and fps and start and end and type_name:
+
+        project_type = query_type("Project", type_name)
 
         project.name = name
         project.image_format = imf
@@ -231,6 +249,12 @@ def update_project(request):
         project.start = start
         project.end = end
         project.client = client
+        project.type = project_type
+
+        for attr in new_generic_data:
+            project.set_generic_text_attr(attr, new_generic_data[attr])
+
+        logger.debug('project updated %s ' % project.generic_text)
 
     else:
         transaction.abort()
@@ -337,9 +361,10 @@ def get_entity_projects(request):
                 'thumbnail_full_path': project.thumbnail.full_path if project.thumbnail else None,
                 'status': project.status.name,
                 'description': len(project.users),
+                'type_name': project.type.name if project.type else None,
                 'percent_complete': project.percent_complete,
-                'item_view_link':'/project/%s/view' % project.id,
-                'item_remove_link':'/entities/%s/%s/remove/dialog?came_from=%s'%(project.id, entity.id, request.current_route_path())
+                'item_view_link': '/project/%s/view' % project.id,
+                'item_remove_link': '/entities/%s/%s/remove/dialog?came_from=%s'%(project.id, entity.id, request.current_route_path())
                 if PermissionChecker(request)('Update_Project') else None
             }
         )

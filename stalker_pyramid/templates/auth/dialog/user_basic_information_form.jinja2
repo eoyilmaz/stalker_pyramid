@@ -55,6 +55,28 @@
         </div>
 
         </div>
+        <h4 class="header blue bolder smaller">Type</h4>
+
+        <div class="row-fluid">
+            {# Email #}
+            <div class="control-group">
+                <label for="user_type"
+                       class="span2 control-label">Type</label>
+
+                <div class="span6">
+                      <input id="user_type"
+                             name='type_name'
+                             placeholder="Type"
+                             class='input-block-level'
+                             type='text'
+                              {% if mode == 'Update' %}
+                             value='{{ user.type.name }}'
+                              {% endif %}
+                             required>
+
+                </div>
+            </div>
+        </div>
         <h4 class="header blue bolder smaller">Contact</h4>
 
         <div class="row-fluid">
@@ -137,6 +159,26 @@
     {# Form #}
     $(document).ready(function () {
 
+        {# ***************************************************************** #}
+        {# ROLE #}
+        var user_type = $('#user_type');
+        {% raw %}
+            var user_type_option_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
+        {% endraw %}
+        $.getJSON('/types/?target_entity_type=User').then(function(available_type){
+            // map available types to an array
+            var available_type_as_list = [];
+            for (var i=0; i < available_type.length; i++){
+                available_type_as_list.push(available_type[i].name);
+            }
+
+            user_type.autocomplete({
+                delay: 0,
+                source: available_type_as_list,
+                minLength: 0
+            });
+        });
+
         $('#user_form').validate({
             errorElement: 'span',
             errorClass: 'help-inline',
@@ -162,7 +204,6 @@
                     required: true
                 }
             },
-
             messages: {
                 email: {
                     required: "Please provide a valid email.",

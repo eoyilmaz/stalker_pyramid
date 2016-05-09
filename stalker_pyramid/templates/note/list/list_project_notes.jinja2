@@ -100,9 +100,9 @@
                                 attr_value: newValue
                             });
 
-                            $.post('{{request.route_url('inline_update_entity', id=entity.id) }}', params).done(function () {
+                            $.post('{{request.route_url('inline_update_project', id=entity.id) }}', params).done(function () {
 
-                                $.getJSON('{{request.route_url('get_entity', id=entity.id) }}').then(
+                                $.getJSON('{{request.route_url('get_task', id=entity.id) }}').then(
                                     function (data) {
                                         $('#editable_entity_description').val(data.description);
                                         $('#description_loading').hide();

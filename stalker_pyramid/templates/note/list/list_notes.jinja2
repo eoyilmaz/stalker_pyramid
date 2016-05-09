@@ -162,7 +162,7 @@
 
                 {% if has_permission('Delete_Note') %}
 
-                   data[i].delete_note_action = "/notes/"+data[i].note_id+"/delete/dialog?came_from="+data[i].came_from
+                   data[i].delete_note_action = "/notes/"+data[i].note_id+"/delete/dialog?came_from="+data[i].came_from;
 
                 {% endif %}
 

@@ -5,19 +5,18 @@
               class='form-horizontal no-padding no-scroll'
               role='form'
               method='post'>
-            <table id="multiple_select_list" class="table table-striped table-bordered table-hover no-margin-bottom no-border-top" >
-                <thead>
-                    <tr>
-                        <th>Thumbnail</th>
-                        <th>Name</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                </tbody>
-            </table>
+        <table id="multiple_select_list" class="table table-striped table-bordered table-hover no-margin-bottom no-border-top" >
+            <thead>
+                <tr>
+                    <th>Thumbnail</th>
+                    <th>Name</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
     </form>
-
 </div>
 {% raw %}
 <script id="tmpl_append_item" type="text/x-dot-template">
@@ -50,46 +49,6 @@
 
 <script type="text/javascript">
 
-{#    var data_ids = [];#}
-{##}
-{#    function submitStackData() {#}
-{#        // gather info#}
-{#        // and send#}
-{##}
-{#        var selected_items = [];#}
-{#        for (var i = 0; i < data_ids.length; i++) {#}
-{#            var selected = $('#stack_item_' + data_ids[i]).attr('sel');#}
-{##}
-{#            if (selected != "") {#}
-{#                selected_items.push(data_ids[i]);#}
-{#            }#}
-{#        }#}
-{##}
-{#        $.post(#}
-{#            "{{ request.route_url('append_entities_to_entity', id=entity.id) }}",#}
-{#            {'selected_items': selected_items}#}
-{#        ).done(function(){#}
-{#            window.location.assign('{{ came_from }}');#}
-{#        });#}
-{#    }#}
-{##}
-{##}
-{#    function clicked(id) {#}
-{##}
-{#        var selected = $('#stack_item_' + id).attr('sel');#}
-{##}
-{#        if (selected == "") {#}
-{#            $('#stack_item_' + id).attr('sel', 'ok');#}
-{##}
-{#            $('#stack_item_' + id + '-ok').show();#}
-{##}
-{#        }#}
-{#        else {#}
-{#            $('#stack_item_' + id).attr('sel', '')#}
-{#            $('#stack_item_' + id + '-ok').hide();#}
-{#        }#}
-{##}
-{#    }#}
     function init_dialog() {
         console.debug('starting to initialize append_class_to_entity dialog!!!');
 

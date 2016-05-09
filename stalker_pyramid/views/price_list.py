@@ -106,6 +106,7 @@ def get_goods(request):
         linked_goods = []
         stopage_ratio = 0
         if good.generic_text != "":
+            logger.debug("good.generic_text %s " % good.generic_text)
             generic_data = json.loads(good.generic_text)
             if "related_goods" in generic_data:
                 related_goods = generic_data["related_goods"]

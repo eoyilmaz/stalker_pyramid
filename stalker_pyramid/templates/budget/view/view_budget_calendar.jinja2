@@ -24,7 +24,7 @@
 {% block pre_header %}
     <link rel="stylesheet"
           href='{{ request.static_url("stalker_pyramid:static/dhtmlx/dhtmlxgantt.css") }}'/>
-    <link rel="stylesheet" href='{{ request.static_url("stalker_pyramid:static/dhtmlx/skins/dhtmlx_terrace.css") }}' type="text/css" media="screen" title="no title" charset="utf-8">
+    <link rel="stylesheet" href='{{ request.static_url("stalker_pyramid:static/dhtmlx/skins/dhtmlxgantt_broadway.css") }}' type="text/css" media="screen" title="no title" charset="utf-8">
 {% endblock pre_header %}
 
 {# BREADCRUMBS #}
@@ -46,6 +46,11 @@
             <div class="widget-main padding-24">
                 {% set client=budget.project.client %}
                 {% include 'client/view/client_info.jinja2' %}
+{#                {% if budget_calendar_editing == 'ON'%}#}
+{#                    <div class="alert alert-danger bigger-110">#}
+{#                        You can not edit calendar.#}
+{#                    </div>#}
+{#                {% endif %}#}
                 <div class="row-fluid">
                     <div id="gantt_here" style='width:100%; height:500px; background-color: #EFF5FD;'></div>
                 </div>
@@ -59,7 +64,7 @@
                                 href="#"
                                 >
                         <i class="icon-save bigger-130"></i> Export</button>
-                    {% if entity.type.name == 'Planning'  %}
+                    {% if entity.type.name == 'Planning'%}
                         <button id='save_button'
                                 class="btn btn-small btn-danger pull-right"
                                 data-placement="bottom"
@@ -177,6 +182,10 @@
                 return dateToStr(date) + " - " + dateToStr(endDate) + " " + weekNum(date);
             };
 
+            gantt.templates.task_class = function(st,end,item){
+                return item.$level==0?"gantt_project":""
+            };
+
             gantt.config.subscales = [
                 {unit:"month", step:1, date:"%F, %Y"},
                 {unit:"week", step:1, template:weekScaleTemplate}
@@ -195,7 +204,7 @@
                     };
 
             gantt.config.columns = [
-                {name:"text", label:"Task name", width:"*", tree:true },
+                {name:"text", label:"Task Name", width:"*", tree:true },
                 {name:"duration", label:"Duration", align:"center", width:55},
                 {name:"resources", label:"Resource", align:"center", width:65},
                 {
@@ -251,14 +260,15 @@
                     }
                 }
                 var resource_number_options = [];
-                for (var k=1; k<11;k++){
+                for (var k=1; k<100;k++){
                     resource_number_options.push({key:k,label:k});
                 }
+
 
                 gantt.config.lightbox.sections = [
                     {name: "good", height: 22, map_to: "good", type: "select", options: lightBox_goods},
                     {name: "resources", height: 22, map_to: "resources", type: "select", options: resource_number_options},
-                    {name: "time", type: "duration", map_to: "auto"}
+                    {name: "time", height: 22, type: "duration", map_to: "auto", time_format:["%d", "%m", "%Y", "%H:%i"]}
                 ];
 
                 gantt.locale.labels["section_good"] = "Good";
@@ -278,6 +288,62 @@
                     }
                     return true;
                 });
+
+                function limitMoveLeft(task, limit){
+                    var dur = task.end_date - task.start_date;
+                    task.end_date = new Date(limit.end_date);
+                    task.start_date = new Date(+task.end_date - dur);
+                }
+                function limitMoveRight(task, limit){
+                    var dur = task.end_date - task.start_date;
+                    task.start_date = new Date(limit.start_date);
+                    task.end_date = new Date(+task.start_date + dur);
+                }
+
+                function limitResizeLeft(task, limit){
+                    task.end_date = new Date(limit.end_date);
+                }
+                function limitResizeRight(task, limit){
+                    task.start_date = new Date(limit.start_date)
+                }
+
+                gantt.attachEvent("onTaskDrag", function(id, mode, task, original, e){
+                    var parent = task.parent ? gantt.getTask(task.parent) : null,
+                        children = gantt.getChildren(id),
+                        modes = gantt.config.drag_mode;
+
+                    var limitLeft = null,
+                        limitRight = null;
+
+                    if(!(mode == modes.move || mode == modes.resize)) return;
+
+                    if(mode == modes.move){
+                        limitLeft = limitMoveLeft;
+                        limitRight = limitMoveRight;
+                    }else if(mode == modes.resize){
+                        limitLeft = limitResizeLeft;
+                        limitRight = limitResizeRight;
+                    }
+
+                    //check parents constraints
+                    if(parent && +parent.end_date < +task.end_date){
+                        limitLeft(task, parent);
+                    }
+                    if(parent && +parent.start_date > +task.start_date){
+                        limitRight(task, parent);
+                    }
+
+                    //check children constraints
+                    for(var i=0; i < children.length; i++){
+                        var child = gantt.getTask(children[i]);
+                        if(+task.end_date < +child.end_date){
+                            limitLeft(task, child);
+                        }
+                        else if(+task.start_date > +child.start_date){
+                            limitRight(task, child);
+                        }
+                    }
+                });
             });
 
             $('#save_button').on('click', function (e) {
@@ -294,7 +360,7 @@
 
                     _query +='&budgetentries_data=id_'+task.id+'-text_'+task.text+'-good_'+good+'-sdate_'+sdate+'-duration_'+duration+'-resources_'+task.resources;
                 }
-                console.log(_query);
+
                 $.post('/budgets/{{entity.id}}/save/calendar?'+_query).done(function (response_text) {
                         window.location.reload();
                     }).fail(function (jqXHR) {
@@ -302,6 +368,7 @@
                     });
 
             });
+
             $('#export_button').on('click', function (e) {
                 e.preventDefault();
                 e.stopPropagation();

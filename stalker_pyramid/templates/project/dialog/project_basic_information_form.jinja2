@@ -143,11 +143,47 @@
                     </select>
                 </div>
             </div>
+             {# Type #}
+            <div class="control-group">
+                <label for="project_type"
+                       class="span2 control-label">Type</label>
 
-            {# Client #}
+                <div class="span10">
+                      <input id="project_type"
+                             name='type_name'
+                             placeholder="Type"
+                             class='input-block-level'
+                             type='text'
+                              {% if mode == 'Update' %}
+                             value='{{ project.type.name }}'
+                              {% endif %}
+                             required>
+                </div>
+            </div>
+
+             <h4 class="header blue bolder smaller">Client</h4>
+                {# Client #}
+            <div class="control-group">
+                <label for='product_project_name'
+                       class="span2 control-label">Ürün-Film Adı</label>
+
+                <div class="span10">
+                    <input id="product_project_name"
+                           name='product_project_name'
+                           type="text"
+                           class="form-control"
+                           placeholder="Name"
+                            {% if mode == 'Update' %}
+                           value='{{ project.name }}'
+                            {% endif %}
+                           required>
+
+                </div>
+            </div>
+
             <div class="control-group">
                 <label for='client'
-                       class="span2 control-label">Client</label>
+                       class="span2 control-label">Müşteri</label>
 
                 <div class="span10">
                     <select id='client'
@@ -158,9 +194,32 @@
 
                 </div>
             </div>
+            <div class="control-group">
+                <label for='adv_agency'
+                       class="span2 control-label">Reklam Ajansı</label>
+                <div class="span10">
+                    <select id='adv_agency'
+                            name='adv_agency'
+                            data-placeholder='Client'
+                            required>
+                    </select>
+                </div>
+            </div>
+            <div class="control-group">
+                <label for='production_firm'
+                       class="span2 control-label">Yapım Şirketi</label>
 
+                <div class="span10">
+                    <select id='production_firm'
+                            name='production_firm'
+                            data-placeholder='Client'
+                            required>
+                    </select>
+                </div>
+            </div>
         </div>
     </div>
+
 
 </form>
 
@@ -181,9 +240,16 @@
 
 
 <script type="text/javascript">
+
     $(document).ready(function () {
 
-         var start_end_date_range_picker = $('#start_end_date_range_picker').daterangepicker();
+        var client = $('#client');
+        var production_firm = $('#production_firm');
+        var adv_agency = $('#adv_agency');
+        var product_project_name = $('#product_project_name');
+
+
+        var start_end_date_range_picker = $('#start_end_date_range_picker').daterangepicker();
 
         // also update the icon
         start_end_date_range_picker.next().on('click', function () {
@@ -208,6 +274,7 @@
                     start_date.format('mm/dd/yyyy') + ' - ' + end_date.format('mm/dd/yyyy')
             );
             start_end_date_range_picker.data().daterangepicker.updateFromControl();
+
         {% endif %}
 
 
@@ -228,14 +295,6 @@
             var curr_value = $(this).val();
             $(this).val(curr_value <= 1 ? 1 : curr_value);
         });
-
-{#        $('#fps').ace_spinner({#}
-{#            value: fps,#}
-{#            min: 1,#}
-{#            step: 1,#}
-{#            btn_up_class: 'btn-info',#}
-{#            btn_down_class: 'btn-info'#}
-{#        });#}
 
         {% raw %}
             var image_format_option_template = doT.template(
@@ -292,17 +351,45 @@
 
         {% raw %}
             var client_option_template = doT.template(
-                    '<option value={{=it.id}}>{{=it.name}}</option>'
+                '<option value={{=it.id}}>{{=it.name}}</option>'
             );
         {% endraw %}
-        var client = $('#client');
-        var deferred = chosen_searchable_field_creator(client,'/clients/', client_option_template);
-        {% if mode == 'Update' %}
-            deferred.then(function () {
-                client.val({{ project.client.id }}).trigger('liszt:updated');
-            });
-        {% endif %}
 
+        $.getJSON('/clients/').then(function (c_data) {
+
+            var clients_data = c_data;
+
+            chosen_searchable_field_creator_by_data(client, client_option_template, clients_data);
+            chosen_searchable_field_creator_by_data(production_firm, client_option_template, clients_data);
+            chosen_searchable_field_creator_by_data(adv_agency, client_option_template, clients_data);
+            {% if mode == 'Update' %}
+                client.val({{ project.client.id }}).trigger('liszt:updated');
+                production_firm.val('{{ project.get_generic_text_attr('production_firm') }}').trigger('liszt:updated');
+                adv_agency.val('{{ project.get_generic_text_attr('adv_agency') }}').trigger('liszt:updated');
+            {% endif %}
+            client.trigger('liszt:updated');
+            production_firm.trigger('liszt:updated');
+            adv_agency.trigger('liszt:updated');
+
+        });
+
+        {# ***************************************************************** #}
+        {# TYPE #}
+        var project_type = $('#project_type');
+
+        $.getJSON('/types/?target_entity_type=Project').then(function(available_type){
+            // map available types to an array
+            var available_type_as_list = [];
+            for (var i=0; i < available_type.length; i++){
+                available_type_as_list.push(available_type[i].name);
+            }
+
+            project_type.autocomplete({
+                delay: 0,
+                source: available_type_as_list,
+                minLength: 0
+            });
+        });
 
         $('#project_form').validate({
             errorElement: 'span',
@@ -371,9 +458,6 @@
 
             submitHandler: function (form) {
                 form.submit();
-            },
-
-            invalidHandler: function (form) {
             }
         });
     });

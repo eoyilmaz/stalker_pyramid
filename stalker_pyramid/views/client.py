@@ -33,6 +33,8 @@ from stalker_pyramid.views import (get_logged_in_user, logger,
                                    PermissionChecker, milliseconds_since_epoch,
                                    local_to_utc)
 from stalker_pyramid.views.role import query_role
+from stalker_pyramid.views.type import query_type
+
 
 @view_config(
     route_name='update_client_dialog',
@@ -60,8 +62,10 @@ def client_dialog(request):
 
     mode = request.matchdict.get('mode', None)
     report_templates = [r['name'] for r in get_distinct_report_templates()]
-    client_report_template = None
+    client_report_template_name = ""
+    logger.debug("client_report_template %s" % client_report_template_name)
     if client:
+        logger.debug("client.name %s" % client.name)
         client_report_template_name = get_report_template(client)['name']
 
     return {
@@ -93,20 +97,24 @@ def create_client(request):
     name = request.params.get('name')
     description = request.params.get('description')
 
-    logger.debug('create_client          :')
+    type_name = request.params.get('type_name', None)
+
+    logger.debug('create_client :')
 
     logger.debug('name          : %s' % name)
     logger.debug('description   : %s' % description)
+    logger.debug('type_name : %s' % type_name)
 
-    if name and description:
-
+    if name and description and type_name:
+        client_type = query_type("Client", type_name)
         try:
             new_client = Client(
                 name=name,
                 description=description,
                 created_by=logged_in_user,
                 date_created=utc_now,
-                date_updated=utc_now
+                date_updated=utc_now,
+                type=client_type
             )
 
             DBSession.add(new_client)
@@ -147,14 +155,19 @@ def update_client(request):
     # parameters
     name = request.params.get('name')
     description = request.params.get('description')
+    type_name = request.params.get('type_name', None)
 
-    logger.debug('create_client          :')
+    logger.debug('update_client :')
 
     logger.debug('name          : %s' % name)
     logger.debug('description   : %s' % description)
+    logger.debug('type_name : %s' % type_name)
 
-    if name and description:
+    if name and description and type_name:
+        client_type = query_type("Client", type_name)
+
         client.name = name
+        client.type = client_type
         client.description = description
         client.updated_by = logged_in_user
         client.date_updated = utc_now

@@ -45,26 +45,10 @@
         {% include 'budget/view/budget_header.jinja2' %}
         <div class="widget-body">
             <div class="widget-main padding-24">
-                {% set client=budget.project.client %}
-                {% include 'client/view/client_info.jinja2' %}
-                <div class="row-fluid">
-                    <div class="infobox infobox-grey infobox-small infobox-dark">
-                        <div class="infobox-icon">
-                            <i class="icon-calendar"></i>
-                        </div>
-                        <div class="infobox-data">
-                            <div class="infobox-content">Calendar</div>
-                        </div>
-                    </div>
-                    <div class="infobox infobox-grey infobox-small infobox-dark">
-                        <div class="infobox-icon">
-                            <i class="icon-credit-card"></i>
-                        </div>
-                        <div class="infobox-data">
-                            <div class="infobox-content">Table</div>
-                        </div>
-                    </div>
-                </div>
+                {% set project=budget.project %}
+                {% include 'project/view/project_info.jinja2' %}
+                {% set note_type="Simple Text" %}
+                {% include 'note/dialog/add_note_dialog.jinja2' %}
             </div>
         </div>
     </div>
@@ -76,11 +60,4 @@
         if("ontouchend" in document) document.write("<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.mobile.custom.min.js") }}'>"+"<"+"/script>");
     </script>
 
-    <script type="text/javascript">
-
-        $(document).ready(function () {
-
-
-        });
-    </script>
 {% endblock extrascripts %}

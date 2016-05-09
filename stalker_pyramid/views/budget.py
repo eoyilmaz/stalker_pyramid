@@ -105,7 +105,8 @@ def create_budget(request):
             'approved_total_price': 0,
             'total_price': 0,
             'realized_total_price': 0,
-            'calendar_query': ''
+            'calendar_query': '',
+            'calendar_editing': 'OFF'
     }
 
     budget = Budget(
@@ -320,10 +321,12 @@ def view_budget(request):
     budget_id = request.matchdict.get('id')
 
     budget = Budget.query.filter_by(id=budget_id).first()
-    generic_data = json.loads(budget.generic_text)
-    budget_calendar_query = generic_data.get('calendar_query', '')
-    total_price = generic_data.get('total_price', 0)
-    approved_total_price = generic_data.get('approved_total_price', 0)
+
+    budget_calendar_query = budget.get_generic_text_attr("calendar_query")
+    budget_calendar_editing = budget.get_generic_text_attr("calendar_editing")
+
+    total_price = budget.get_generic_text_attr('total_price')
+    approved_total_price = budget.get_generic_text_attr('approved_total_price')
 
     projects = Project.query.all()
     mode = request.matchdict.get('mode', None)
@@ -337,6 +340,7 @@ def view_budget(request):
         'milliseconds_since_epoch': milliseconds_since_epoch,
         'stalker_pyramid': stalker_pyramid,
         'budget_calendar_query': budget_calendar_query,
+        'budget_calendar_editing': "ON",
         'approved_total_price': approved_total_price,
         'total_price': total_price,
         'projects': projects,
@@ -368,14 +372,15 @@ def save_budget_calendar(request):
         return Response('No task is defined on calendar for budget id %s' % budget_id, 500)
 
     # budget.generic_text = '&'.join(budgetentries_data)
-    budget.generic_text = update_generic_text(budget.generic_text,
-                                                         "calendar_query",
-                                                         '&'.join(budgetentries_data),
-                                                         'equal')
+    budget.set_generic_text_attr("calendar_query", '&'.join(budgetentries_data))
+    # budget.generic_text = update_generic_text(budget.generic_text,
+    #                                                      "calendar_query",
+    #                                                      '&'.join(budgetentries_data),
+    #                                                      'equal')
 
     for budget_entry in budget.entries:
-        generic_data = json.loads(budget_entry.generic_text)
-        if generic_data['dataSource'] == 'Calendar':
+
+        if budget_entry.get_generic_text_attr('dataSource') == 'Calendar':
             # delete_budgetentry_action(budget_entry)
             logger.debug('***delete *** %s ' % budget_entry.name)
             db.DBSession.delete(budget_entry)
@@ -570,22 +575,28 @@ def create_budgetentry_action(budget, good, amount, second_amount, price, descri
             budget_entry.amount += amount
             budget_entry.price += price
 
-            good_generic_data = json.loads(good.generic_text)
-            related_goods = good_generic_data.get('related_goods', None)
 
-            logger.debug("related_goods %s " % len(related_goods))
+            related_goods = good.get_generic_text_attr('related_goods')
+
             if related_goods:
+                logger.debug("related_goods %s " % len(related_goods))
                 if len(related_goods) > 0:
                     return
 
-            budget_entry_generic_data = json.loads(budget_entry.generic_text)
-            secondaryFactor = budget_entry_generic_data.get('secondaryFactor', None)
+            secondaryFactor = budget_entry.get_generic_text_attr('secondaryFactor')
             second_amount = int(secondaryFactor['amount'])+int(second_amount)
-            budget_entry.generic_text = update_generic_text(budget_entry.generic_text,
-                                                    "secondaryFactor",
-                                                    {'unit': budget_entry.good.unit.split('*')[1],
-                                                     'amount': second_amount},
-                                                     'equal')
+            budget.set_generic_text_attr("secondaryFactor",
+                                         {
+                                            'unit': budget_entry.good.unit.split('*')[1],
+                                            'amount': second_amount
+                                         }
+            )
+
+            # budget_entry.generic_text = update_generic_text(budget_entry.generic_text,
+            #                                         "secondaryFactor",
+            #                                         {'unit': budget_entry.good.unit.split('*')[1],
+            #                                          'amount': second_amount},
+            #                                          'equal')
             return
 
     realize_total = good.msrp
@@ -608,8 +619,7 @@ def create_budgetentry_action(budget, good, amount, second_amount, price, descri
     db.DBSession.add(budget_entry)
 
     if good.generic_text != "":
-        generic_data = json.loads(good.generic_text)
-        linked_goods = generic_data.get('linked_goods', None)
+        linked_goods = good.get_generic_text_attr('linked_goods')
         if linked_goods:
             for l_good in linked_goods:
                 linked_good = \
@@ -667,12 +677,21 @@ def update_budgetentry(request):
     price = int(price)
     description = request.params.get('note', '')
 
-    generic_data = json.loads(budgetentry.generic_text)
-
     logger.debug("budgetentry.generic_text: %s" % budgetentry.generic_text)
 
-    if 'dataSource' in generic_data \
-       and generic_data['dataSource'] == 'Calendar':
+    second_amount = int(second_amount)
+    amount = float(amount)*second_amount
+
+    if budgetentry.get_generic_text_attr('dataSource') == 'Calendar':
+
+        secondaryFactor = budgetentry.get_generic_text_attr('secondaryFactor')
+
+        if secondaryFactor['amount'] != second_amount or amount != budgetentry.amount:
+            transaction.abort()
+            request.session.flash(
+                "warning: You can not update calander based entry's amount"
+            )
+            return Response("You can not update calander based entry's amount")
 
         budgetentry.price = price
         budgetentry.description = description
@@ -684,8 +703,7 @@ def update_budgetentry(request):
             return Response('Please supply the amount', 500)
 
 
-        second_amount = int(second_amount)
-        amount = int(amount)*second_amount
+
         budgetentry.amount = amount
 
         budgetentry.price = price if price != '0' else budgetentry.cost * (amount + overtime)
@@ -693,20 +711,28 @@ def update_budgetentry(request):
         budgetentry.date_updated = utc_now
         budgetentry.updated_by = logged_in_user
 
-    budgetentry.generic_text = update_generic_text(budgetentry.generic_text,
-                                                    "secondaryFactor",
-                                                    {'unit': budgetentry.good.unit.split('*')[1], 'amount': second_amount},
-                                                     'equal')
+        budgetentry.set_generic_text_attr("secondaryFactor",
+                                          {
+                                              'unit': budgetentry.good.unit.split('*')[1],
+                                              'amount': second_amount
+                                          }
+        )
+        # budgetentry.generic_text = update_generic_text(budgetentry.generic_text,
+        #                                                 "secondaryFactor",
+        #                                                 {'unit': budgetentry.good.unit.split('*')[1], 'amount': second_amount},
+        #                                                  'equal')
 
-    budgetentry.generic_text = update_generic_text(budgetentry.generic_text,
-                                                         "overtime",
-                                                         overtime,
-                                                         'equal')
+    budgetentry.set_generic_text_attr("overtime", overtime)
+    # budgetentry.generic_text = update_generic_text(budgetentry.generic_text,
+    #                                                      "overtime",
+    #                                                      overtime,
+    #                                                      'equal')
 
-    budgetentry.generic_text = update_generic_text(budgetentry.generic_text,
-                                                         "stoppage_add",
-                                                         stoppage_add,
-                                                         'equal')
+    budgetentry.set_generic_text_attr("stoppage_add", stoppage_add)
+    # budgetentry.generic_text = update_generic_text(budgetentry.generic_text,
+    #                                                      "stoppage_add",
+    #                                                      stoppage_add,
+    #                                                      'equal')
     # budgetentry.generic_text = json.dumps(generic_data)
 
     request.session.flash(
@@ -865,8 +891,8 @@ def change_budget_type_dialog(request):
     type_name = request.matchdict.get('type_name')
     came_from = request.params.get('came_from', '/')
 
-    generic_data = json.loads(budget.generic_text)
-    budget_total_price = generic_data.get('total_price', 0)
+
+    budget_total_price = budget.get_generic_text_attr('total_price')
 
     return {
         'type_name': type_name,
@@ -900,15 +926,17 @@ def change_budget_type(request):
 
     logger.debug("approved_total_price : %s" % approved_total_price)
 
-    budget.generic_text = update_generic_text(budget.generic_text,
-                                                         "approved_total_price",
-                                                         approved_total_price,
-                                                         'equal')
+    budget.set_generic_text_attr("approved_total_price", approved_total_price)
+    # budget.generic_text = update_generic_text(budget.generic_text,
+    #                                                      "approved_total_price",
+    #                                                      approved_total_price,
+    #                                                      'equal')
 
-    budget.generic_text = update_generic_text(budget.generic_text,
-                                                         "total_price",
-                                                         total_price,
-                                                         'equal')
+    budget.set_generic_text_attr("total_price", total_price)
+    # budget.generic_text = update_generic_text(budget.generic_text,
+    #                                                      "total_price",
+    #                                                      total_price,
+    #                                                      'equal')
 
     logger.debug("budget.generic_text : %s" % budget.generic_text)
 

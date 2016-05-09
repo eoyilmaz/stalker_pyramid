@@ -47,11 +47,15 @@
         <div class="widget-body">
             <div class="widget-main padding-24">
                 <div class="row-fluid">
-                    <div class="span6">
-                        {% set client=budget.project.client %}
-                        {% include 'client/view/client_info.jinja2' %}
+                    <div class="span4">
+                        {% set project=budget.project %}
+                        {% include 'project/view/project_info.jinja2' %}
                     </div>
-                    <div class="span6">
+{#                    <div class="span4">#}
+{#                        {% set client=budget.project.client %}#}
+{#                        {% include 'client/view/client_info.jinja2' %}#}
+{#                    </div>#}
+                    <div class="span4">
                         <h4 class="pull-right">
                             Approved Total Price :
                             <span class="red" id="approved_total_price">{{ approved_total_price }}</span>
@@ -169,7 +173,7 @@
             }
 
             function currencyFmatter (cellvalue, options, rowObject){
-               return accounting.formatMoney(cellvalue, { symbol: "TL",  format: "%v %s" });
+               return accounting.formatMoney(cellvalue, { symbol: "TL",  format: "%v %s", precision:0 });
             }
 
             function  unformatCurrency (cellvalue, options){
@@ -470,7 +474,7 @@
                             //direction: "rtl",
                             data: grid_data,
                             datatype: "local",
-                            colNames:['Addition Type', 'Type', 'Name','Amount', 'Unit', 'Msrp', 'Cost', 'Overtime','Overtime Cost','Stoppage','Stoppage Cost', 'Price', 'Notes'],
+                            colNames:['Addition Type', 'Type', 'Name','Amount', 'Second Amount','Unit', 'Msrp', 'Cost', 'Overtime','Overtime Cost','Stoppage','Stoppage Cost', 'Price', 'Notes'],
                             colModel:[
                                 {name:'addition_type', index:'addition_type', width:100, editable: false},
                                 {name:'type', index:'type', width:220, editable: false},

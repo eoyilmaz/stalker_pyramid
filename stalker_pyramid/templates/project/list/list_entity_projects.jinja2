@@ -57,6 +57,7 @@
         <th>Lead</th>
         <th>Created By</th>
         <th>Users</th>
+        <th>Type</th>
         <th>Completed</th>
     </tr>
     </script>
@@ -76,6 +77,7 @@
             <td><a href='/users/{{=it.created_by_id}}/view'>{{=it.created_by_name}}</a>
             </td>
             <td>{{=it.description}}</td>
+            <td>{{=it.type_name}}</td>
             <td>
                 <div>
                     <span>{{=it.status}}</span>

@@ -344,6 +344,10 @@ logger.setLevel(logging.DEBUG)
     renderer='templates/note/list/list_entity_notes.jinja2'
 )
 @view_config(
+    route_name='list_project_notes',
+    renderer='templates/note/list/list_project_notes.jinja2'
+)
+@view_config(
     route_name='view_daily',
     renderer='templates/daily/view/view_daily.jinja2'
 )
@@ -587,7 +591,7 @@ def remove_entity_from_entity_dialog(request):
     came_from = request.params.get('came_from', request.current_route_path())
 
     action = '/entities/%s/%s/remove?came_from=%s'% (selected_entity_id, entity_id, came_from)
-    message = 'Are you sure you want to <strong>remove %s </strong>?'% (entity.name)
+    message = 'Are you sure you want to <strong>remove %s </strong>?'% (selected_entity.name)
 
     logger.debug('action: %s' % action)
 

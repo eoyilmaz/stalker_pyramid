@@ -6,10 +6,10 @@
               role='form'
               method='post'>
         <div class='control-group'>
-            <label for='client_user'
+            <label for='entity_user'
                    class="span2 control-label">User</label>
             <div class="span10">
-                <select id='client_user'
+                <select id='entity_user'
                         name='user_id'
                         data-placeholder='User'
                         required>
@@ -38,15 +38,25 @@
         console.debug('starting to initialize append_class_to_entity dialog!!!');
 
         $('#dialog_template_label').find('span').remove();
-        $('#dialog_template_label').append('<span>Append User</span>')
+        $('#dialog_template_label').append('<span>Append User</span>');
+        var list_url= "";
+        var post_url ="";
+        {% if entity.entity_type == 'Client' %}
+            list_url = '/clients/{{ entity.id }}/user/out_stack/';
+            post_url = '/clients/{{ entity.id }}/user/append';
+        {% else %}
+            list_url = '/entities/{{ entity.id }}/User/out_stack/';
+            post_url = '/entities/{{ entity.id }}/append';
+        {% endif %}
+
 
         {# ***************************************************************** #}
-        {# CLIENT #}
-        var client_user = $('#client_user');
+        {# ENTITY #}
+        var entity_user = $('#entity_user');
         {% raw %}
-            var client_user_option_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
+            var entity_user_option_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
         {% endraw %}
-        var deferred = chosen_searchable_field_creator(client_user,'/clients/{{ client.id }}/users/out_stack/', client_user_option_template);
+        var deferred = chosen_searchable_field_creator(entity_user, list_url, entity_user_option_template);
 
         {# ***************************************************************** #}
         {# ROLE #}
@@ -81,7 +91,7 @@
 
             var append_form = $("#append_form");
 
-            $.post('/clients/{{ client.id }}/user/append', append_form.serialize() ).done(function (response_text) {
+            $.post('/entities/{{ entity.id }}/user/append', append_form.serialize() ).done(function (response_text) {
                 window.location.assign('{{ came_from }}');
                 submit_button.button('reset');
                 $('#dialog_template').modal('hide');

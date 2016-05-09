@@ -49,6 +49,24 @@
                        required></select>
             </div>
         </div>
+        {# Type #}
+        <div class="control-group">
+            <label for="client_type"
+                   class="span3 control-label">Type</label>
+
+            <div class="span9">
+                  <input id="client_type"
+                         name='type_name'
+                         placeholder="Type"
+                         class='input-block-level'
+                         type='text'
+                          {% if mode == 'Update' %}
+                         value='{{ client.type.name }}'
+                          {% endif %}
+                         required>
+
+            </div>
+        </div>
         {#Description #}
         <div class="control-group">
             <label for="client_description"
@@ -83,13 +101,10 @@
         {% endraw %}
 
         var report_templates = [
-                {% for r_temp in report_templates %}
-                    {'name':'{{ r_temp }}'},
-                {% endfor %}
-            ];
-
-        console.log(report_templates);
-
+            {% for r_temp in report_templates %}
+                {'name':'{{ r_temp }}'},
+            {% endfor %}
+        ];
 
         var client_report_template = $('#client_report_template');
 
@@ -108,6 +123,23 @@
             client_report_template.trigger('liszt:updated');
         {% endif %}
 
+        {# ***************************************************************** #}
+        {# TYPE #}
+        var client_type = $('#client_type');
+
+        $.getJSON('/types/?target_entity_type=Client').then(function(available_type){
+            // map available types to an array
+            var available_type_as_list = [];
+            for (var i=0; i < available_type.length; i++){
+                available_type_as_list.push(available_type[i].name);
+            }
+
+            client_type.autocomplete({
+                delay: 0,
+                source: available_type_as_list,
+                minLength: 0
+            });
+        });
 
         $('#client_form').validate({
             errorElement: 'span',

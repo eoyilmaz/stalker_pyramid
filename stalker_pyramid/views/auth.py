@@ -33,7 +33,8 @@ import transaction
 
 import stalker_pyramid
 from stalker import (defaults, User, Department, Group, Project, Studio,
-                     Permission, EntityType, Entity, Role)
+                     Permission, EntityType, Entity, Role, ClientUser,
+                     ProjectUser, DepartmentUser)
 from stalker.db import DBSession
 from stalker_pyramid.views import (log_param, get_logged_in_user,
                                    PermissionChecker, get_multi_integer,
@@ -41,6 +42,8 @@ from stalker_pyramid.views import (log_param, get_logged_in_user,
                                    StdErrToHTMLConverter)
 
 import logging
+from stalker_pyramid.views.role import query_role
+from stalker_pyramid.views.type import query_type
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -131,15 +134,19 @@ def create_user(request):
     login = request.params.get('login', None)
     email = request.params.get('email', None)
     password = request.params.get('password', None)
+    type_name = request.params.get('type_name', None)
 
     logger.debug('came_from : %s' % came_from)
     logger.debug('new user name : %s' % name)
     logger.debug('new user login : %s' % login)
     logger.debug('new user email : %s' % email)
     logger.debug('new user password : %s' % password)
+    logger.debug('new user type_name : %s' % type_name)
 
     # create and add a new user
-    if name and login and email and password:
+    if name and login and email and password and type_name:
+
+        user_type = query_type("User", type_name)
 
         department_id = request.params.get('department_id', None)
         departments = []
@@ -175,7 +182,8 @@ def create_user(request):
                 created_by=logged_in_user,
                 departments=departments,
                 groups=groups,
-                tags=tags
+                tags=tags,
+                type=user_type
             )
 
             DBSession.add(new_user)
@@ -274,14 +282,16 @@ def update_user(request):
     login = request.params.get('login')
     email = request.params.get('email')
     password = request.params.get('password')
+    type_name = request.params.get('type_name')
 
     logger.debug('user : %s' % user)
     logger.debug('user new name : %s' % name)
     logger.debug('user new login : %s' % login)
     logger.debug('user new email : %s' % email)
     logger.debug('user new password : %s' % password)
+    logger.debug('user new type_name : %s' % type_name)
 
-    if user and name and login and email and password:
+    if user and name and login and email and password and type_name:
         # departments = []
         #
         # # Departments
@@ -299,10 +309,11 @@ def update_user(request):
 
         # Tags
         tags = get_tags(request)
-
+        user_type = query_type("User", type_name)
         user.name = name
         user.login = login
         user.email = email
+        user.type = user_type
         user.updated_by = logged_in_user
         user.date_updated = datetime.datetime.now()
         # user.departments = departments
@@ -489,7 +500,8 @@ def get_users(request):
         tasks.task_count,
         tickets.ticket_count,
         "Links".full_path,
-        "Users".rate
+        "Users".rate,
+        "Type_SimpleEntities".name
         %(role_attr)s
 
     from "SimpleEntities"
@@ -525,6 +537,7 @@ def get_users(request):
         group by owner_id, name
     ) as tickets on tickets.owner_id = "Users".id
     left outer join "Links" on "SimpleEntities".thumbnail_id = "Links".id
+    left outer join "SimpleEntities" as "Type_SimpleEntities" on "Type_SimpleEntities".id = "SimpleEntities".type_id
     """
 
     role_attr = """,
@@ -594,12 +607,13 @@ def get_users(request):
             'ticketsCount': r[9] or 0,
             'thumbnail_full_path': r[10] if r[has_read_rate_permission] else None,
             'rate': r[11] if has_read_rate_permission else r[11],
+            'type_name': r[12],
             'update_user_action':'/users/%s/update/dialog' % r[0]
             if has_update_user_permission else None,
             'delete_user_action':delete_user_action % {
                 'id': r[0], 'entity_id': entity_id
             } if has_delete_user_permission else None,
-            'role': r[12] if len(r) >= 13 else None
+            'role': r[13] if len(r) >= 14 else None
         } for r in result.fetchall()
     ]
 
@@ -634,7 +648,8 @@ def get_users_simple(request):
         tasks.task_count,
         tickets.ticket_count,
         "Links".full_path,
-        "Users".rate
+        "Users".rate,
+        "Type_SimpleEntities".name
     from "SimpleEntities"
     join "Users" on "SimpleEntities".id = "Users".id
     left outer join (
@@ -668,6 +683,7 @@ def get_users_simple(request):
         group by owner_id, name
     ) as tickets on tickets.owner_id = "Users".id
     left outer join "Links" on "SimpleEntities".thumbnail_id = "Links".id
+    left outer join "SimpleEntities" as "Type_SimpleEntities" on "Type_SimpleEntities".id = "SimpleEntities".type_id
     """
     has_permission = PermissionChecker(request)
     has_update_user_permission = has_permission('Update_User')
@@ -699,6 +715,7 @@ def get_users_simple(request):
             'ticketsCount': r[9] or 0,
             'thumbnail_full_path': r[10] if r[10] else None,
             'rate': r[11] if r[11] else None,
+            'type_name': r[12],
             'update_user_action':'/users/%s/update/dialog' % r[0]
             if has_update_user_permission else None,
             'delete_user_action':'/users/%s/delete/dialog' % r[0]
@@ -1252,26 +1269,205 @@ def delete_user(request):
 
 
 @view_config(
-    route_name='update_entity_user_role'
+    route_name='update_entity_user'
 )
-def update_entity_user_role(request):
-    """updates user role for given entity
+def update_entity_user(request):
+    """updates user for given entity
     """
     logger.debug('update_entity_user_role is starts')
+    logged_in_user = get_logged_in_user(request)
+    utc_now = local_to_utc(datetime.datetime.now())
 
     entity_id = request.matchdict.get('id')
     entity = Entity.query.get(entity_id)
+    if not entity:
+        transaction.abort()
+        return Response('Can not find a entity with id: %s' % entity_id, 500)
 
-    user_id = request.matchdict.get('u_id')
-    user = User.query.get(user_id)
+    user_id = request.params.get('id', -1)
+    user = User.query.filter(User.id == user_id).first()
 
-    role_id = request.matchdict.get('r_id')
-    role = Role.query.get(role_id)
+    role_name = request.params.get('role', None)
+    role = query_role(role_name)
+
+    type_name = request.params.get('type_name', None)
+    type = query_type("User", type_name)
+
+    logger.debug('user_id: %s' % user_id)
+    logger.debug('role_name: %s' % role_name)
+    logger.debug('entity.entity_type: %s' % entity.entity_type)
+
+    if not user:
+        transaction.abort()
+        return Response('Can not find a User with id: %s' % user_id, 500)
+
+    if type:
+        user.type = type
+        user.date_updated = utc_now
+        user.updated_by = logged_in_user
+
+    if user not in entity.users:
+        entity.users.append(user)
+
+    if entity.entity_type in ["Project", "Client", "Department"]:
+        query_string = '%(class_name)sUser.query.filter(%(class_name)sUser.user_id == user_id).filter(%(class_name)sUser.%(attr_name)s == entity_id)'
+        q = eval(query_string % {'class_name': entity.entity_type,
+                                 'attr_name': '%s_id' % entity.entity_type.lower()
+                                })
+        entity_user = q.first()
+
+        entity_user.role = role
+        entity_user.date_updated = utc_now
+        entity_user.updated_by = logged_in_user
+
+        DBSession.add(entity_user)
+
+    return Response('Successfully updated user: %s' % user.name)
+
+
+@view_config(
+    route_name='append_user_to_entity_dialog',
+    renderer='templates/auth/dialog/append_user_to_entity_dialog.jinja2'
+)
+def append_user_to_entity_dialog(request):
+
+    logger.debug('append_entities_to_entity_dialog is running')
+
+    came_from = request.params.get('came_from', '/')
+
+    entity_id = request.matchdict.get('id', -1)
+    entity = Entity.query.filter_by(id=entity_id).first()
+
+    if not entity:
+        transaction.abort()
+        return Response('Can not find a client with id: %s' % entity_id, 500)
+
+    logger.debug('came_from: %s' % came_from)
+
+    return {
+        'has_permission': PermissionChecker(request),
+        'milliseconds_since_epoch': milliseconds_since_epoch,
+        'came_from': came_from,
+        'entity': entity
+    }
+
+
+@view_config(
+    route_name='append_user_to_entity'
+)
+def append_user_to_entity(request):
+
+    logged_in_user = get_logged_in_user(request)
+    utc_now = local_to_utc(datetime.datetime.now())
+
+    came_from = request.params.get('came_from', '/')
+
+    entity_id = request.matchdict.get('id', -1)
+    entity = Entity.query.filter_by(id=entity_id).first()
+    if not entity:
+        transaction.abort()
+        return Response('Can not find a entity with id: %s' % entity_id, 500)
+
+    user_id = request.params.get('user_id', -1)
+    user = User.query.filter(User.id == user_id).first()
+    if not user:
+        transaction.abort()
+        return Response('Can not find a user with id: %s' % user_id, 500)
+
+    role_name = request.params.get('role_name', None)
+    role = query_role(role_name)
+    role.updated_by = logged_in_user
+    role.date_created = utc_now
+
+    logger.debug("%s role is created" % role.name)
+    logger.debug(entity.users)
+
+
+    if entity.entity_type == "Client":
+        entity_user = ClientUser()
+        entity_user.client = entity
+    elif entity.entity_type == "Project":
+        entity_user = ProjectUser()
+        entity_user.project = entity
+    elif entity.entity_type == "Department":
+        entity_user = DepartmentUser()
+        entity_user.department = entity
+
+    entity_user.role = role
+    entity_user.user = user
+    entity_user.date_created = utc_now
+    entity_user.created_by = logged_in_user
+
+    DBSession.add(entity_user)
+
+    if user not in entity.users:
+        entity.users.append(user)
+        request.session.flash('success:%s is added to %s user list' % (user.name, entity.name))
+
+    logger.debug(entity.users)
+
+    return Response(
+        'success:%s is added to %s.'
+        % (user.name, entity.name)
+    )
 
 
 
 
+@view_config(
+    route_name='get_entity_role_user',
+    renderer='json'
+)
+def get_entity_role_user(request):
 
+    entity_id = request.matchdict.get('id', -1)
+    entity = Entity.query.filter_by(id=entity_id).first()
+    if not entity:
+        transaction.abort()
+        return Response('Can not find a entity with id: %s' % entity_id, 500)
+
+    role_name = request.params.get('role_name', None)
+    role = query_role(role_name)
+
+    entity_user = None
+    logger.debug("role_name %s" % role_name)
+    logger.debug("role %s" % role)
+
+    if role:
+        query_string = '%(class_name)sUser.query.filter(%(class_name)sUser.role_id == role.id).filter(%(class_name)sUser.%(attr_name)s == entity_id)'
+        q = eval(query_string % {'class_name': entity.entity_type,
+                             'attr_name': '%s_id' % entity.entity_type.lower()
+                            })
+
+        logger.debug("query_string %s" % query_string % {'class_name': entity.entity_type,
+                             'attr_name': '%s_id' % entity.entity_type.lower()
+                            })
+        entity_user = q.first()
+
+        logger.debug("entity_user %s" % entity_user)
+
+    user_id = request.params.get('user_id', -1)
+    user = User.query.filter(User.id == user_id).first()
+
+    if user:
+        query_string = '%(class_name)sUser.query.filter(%(class_name)sUser.user_id == user_id).filter(%(class_name)sUser.%(attr_name)s == entity_id)'
+        q = eval(query_string % {'class_name': entity.entity_type,
+                             'attr_name': '%s_id' % entity.entity_type.lower()
+                            })
+        entity_user = q.first()
+
+    if not entity_user:
+
+        return { 'id': '',
+            'name': '',
+            'role_name': ''
+        }
+
+    return {
+            'id': entity_user.user.id,
+            'name': entity_user.user.name,
+            'role_name': entity_user.role.name
+    }
 
 
 

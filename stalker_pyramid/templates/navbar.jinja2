@@ -48,10 +48,16 @@
                            data-toggle="dropdown">Projects <span class="caret"></span></a>
                         <ul class="dropdown-menu">
                             {% for project in projects %}
-                                <li>
-                                    <a href="{{ request.route_url('view_project', id=project.id) }}">{{ project.name }}</a>
-                                </li>
+                                {% if project.status.code == 'WIP'  %}
+                                    <li>
+                                        <a href="{{ request.route_url('view_project', id=project.id) }}">{{ project.name }}</a>
+                                    </li>
+                                {% endif %}
                             {% endfor %}
+                            <li class="divider"></li>
+                            <li>
+                                <a href="{{ request.route_url('list_studio_projects', id=studio.id) }}">ALL</a>
+                            </li>
                         </ul>
                     </li>
                 {% endif %}
