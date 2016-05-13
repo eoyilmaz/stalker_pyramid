@@ -85,10 +85,10 @@ def generate_recursive_task_query(ordered=True):
             task.parent_id,
             (parent.path || '|' || task.parent_id::text) as path,
             (parent.path_names || ' | ' || "Parent_SimpleEntities".name) as path_names,
-            coalesce(
-                (parent.type_names || ' | ' || "Type_SimpleEntities".name),
-                (parent.type_names || ' | None' )
-            ) as type_names,
+            (coalesce(
+                        (parent.type_names || ' | ' || "Type_SimpleEntities".name),
+                        (parent.type_names || ' | None' )
+                    ) || ' | ')  as type_names,
             coalesce(
                 (
                     select
@@ -1596,7 +1596,7 @@ def generate_where_clause(params):
         where_string = \
             'where (\n%s\n)' % '\n{indent}and '.join(where_string_buffer)
         where_string = where_string.format(indent=' ' * 4)
-
+    logger.debug("WHERE STRING: %s" % where_string)
     return where_string
 
 
