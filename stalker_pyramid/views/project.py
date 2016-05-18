@@ -303,7 +303,7 @@ def inline_update_project(request):
         logger.debug('attr_name %s', attr_name)
 
         if attr_name == 'start_and_end_dates':
-            start, end = get_date_range(request, 'start_and_end_dates')
+            start, end = get_date_range(request, 'attr_value')
             setattr(project, 'start', start)
             setattr(project, 'end', end)
 

@@ -147,11 +147,15 @@ logger.setLevel(logging.DEBUG)
 )
 @view_config(
     route_name='create_project_dialog',
-    renderer='templates/project/dialog/create_project_dialog.jinja2',
+    renderer='templates/project/dialog/project_dialog.jinja2',
 )
 @view_config(
     route_name='update_project_dialog',
-    renderer='templates/project/dialog/update_project_dialog.jinja2',
+    renderer='templates/project/dialog/project_dialog.jinja2',
+)
+@view_config(
+    route_name='update_project_details_view',
+    renderer='templates/project/dialog/update_project_details_view.jinja2',
 )
 @view_config(
     route_name='view_project_reports',
@@ -394,7 +398,11 @@ def get_entity_related_data(request):
         entity = Entity.query.filter_by(id=entity_id).first()
 
     projects = Project.query.all()
+
     mode = request.matchdict.get('mode', None)
+    if not mode:
+        mode = request.params.get('mode', None)
+
     came_from = request.params.get('came_from', request.url)
 
     return {

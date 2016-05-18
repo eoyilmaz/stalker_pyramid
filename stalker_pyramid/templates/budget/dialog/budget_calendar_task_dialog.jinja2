@@ -1,0 +1,258 @@
+<script class="dialog_loaded"></script>
+
+<div class="row-fluid">
+
+    <form id='calendar_task_form'
+          class='form-horizontal'
+          role='form'
+          method="post">
+
+        <div class="row-fluid">
+
+            {# Good #}
+            <div class='control-group'>
+                <label class='span3 control-label'
+                       for='calendar_task_good'>Good</label>
+                <div class="span5">
+                     <select id='calendar_task_good'
+                            name='good_id'
+                            data-placeholder='Good'
+                            required>
+                    </select>
+                </div>
+            </div>
+
+            {#Start Date #}
+            <div class='control-group'>
+                <label class='span3 control-label'
+                       for='calendar_task_start_date'>Start Date</label>
+                <div class="span5">
+                    <input id='calendar_task_start_date'
+                           name='start_date'
+                           class="date-picker"
+                           data-date-format="dd-mm-yyyy"
+                           is_updating=false>
+                    <span class="add-on">
+                        <i class="icon-calendar"></i>
+                    </span>
+                </div>
+            </div>
+            {#Duration #}
+            <div class='control-group'>
+                <label class='span3 control-label'
+                       for='calendar_task_duration'>Duration</label>
+                <div class="span5">
+                    <input id='calendar_task_duration'
+                           name='amount'
+                           class="input-mini"
+                           type='text'
+                           min=1
+                           max=1000
+                           is_updating=false>
+                    <span> Day</span>
+                </div>
+            </div>
+            {#Resources #}
+            <div class='control-group'>
+                <label class='span3 control-label'
+                       for='calendar_task_num_of_resources'>Resources</label>
+                <div class="span5">
+                    <input id='calendar_task_num_of_resources'
+                           name='second_amount'
+                           class="input-mini"
+                           type='text'
+                           min=1
+                           max=1000
+                           is_updating=false>
+                    <span> Resources</span>
+                </div>
+            </div>
+            {#Description #}
+            <div class="control-group'">
+                <label for="calendar_task_description"
+                       class="span3 control-label">Description</label>
+                <div class="span9">
+                    <textarea id="calendar_task_description"
+                              name='description'
+                              class="autosize-transition"
+                              style="overflow: hidden;
+                                         word-wrap: break-word;
+                                         resize: horizontal;
+                                         height: 50px;"
+                            ></textarea>
+                </div>
+            </div>
+
+        </div>
+
+    </form>
+</div>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/fuelux/fuelux.spinner.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-datepicker.min.js") }}'></script>
+
+
+<script type="text/javascript">
+
+    function init_dialog() {
+
+        var event_dialog = $('#dialog_template');
+        console.debug('starting to initialize calendar_task dialog!!!');
+
+        var dialog_label = $('#dialog_template_label');
+        dialog_label.find('span').remove();
+        dialog_label.append('<span>{{mode}} Task</span>');
+
+        {# Good ******************************************************* #}
+        {% raw %}
+            var good_option_template = doT.template(
+                    '<option value={{=it.id}}>{{=it.name}}</option>'
+            );
+        {% endraw %}
+        var calendar_task_good = $('#calendar_task_good');
+        var deferred = chosen_searchable_field_creator(calendar_task_good,'/goods/', good_option_template);
+        deferred.then(function () {
+            if(event_dialog.attr('good_id')){
+                calendar_task_good.val(event_dialog.attr('good_id')).trigger('liszt:updated');
+            }
+        });
+
+        {# Start Date ******************************************************* #}
+        $('.date-picker').datepicker().next().on(ace.click_event, function(){
+            $(this).prev().focus();
+        });
+
+        var calendar_task_start_date = $("#calendar_task_start_date");
+
+        var start_date_val = (new Date(event_dialog.attr('project_start_date'))).format("dd-mm-yyyy");
+        if(event_dialog.attr('start_date')){
+            start_date_val = (new Date(event_dialog.attr('start_date'))).format("dd-mm-yyyy");
+        }
+        calendar_task_start_date.val(start_date_val);
+
+        {# Duration ******************************************************* #}
+        var calendar_task_duration = 1;
+        if(event_dialog.attr('amount')){
+            calendar_task_duration = parseInt(event_dialog.attr('amount'));
+        }
+        $('#calendar_task_duration').ace_spinner({
+            value: calendar_task_duration,
+            min: 1,
+            step: 1,
+            btn_up_class: 'btn-info',
+            btn_down_class: 'btn-info'
+        });
+
+        {# Resources ******************************************************* #}
+        var calendar_task_num_of_resources = 1;
+        if(event_dialog.attr('second_amount')){
+            calendar_task_num_of_resources = event_dialog.attr('second_amount');
+        }
+        $('#calendar_task_num_of_resources').ace_spinner({
+            value: calendar_task_num_of_resources,
+            min: 1,
+            step: 1,
+            btn_up_class: 'btn-info',
+            btn_down_class: 'btn-info'
+        });
+
+        {# ***************************************************************** #}
+        {# Submit Button #}
+        var submit_button = $('#dialog_template_submit_button');
+        submit_button.on('click', function (e) {
+            e.stopPropagation();
+            e.preventDefault();
+
+            submit_button.button('loading');
+
+            var start_date = calendar_task_start_date.datepicker().val().split('-');
+            var start = new Date(
+                parseInt(start_date[2]),
+                parseInt(start_date[1]) - 1,
+                parseInt(start_date[0]),
+                0,
+                0,
+                0,
+                0
+            );
+
+            var sdate = start.getTime();
+
+            var calendar_task_form = $('#calendar_task_form');
+            var task_id = -1;
+            if(event_dialog.attr('task_id')){
+                    task_id = event_dialog.attr('task_id');
+            }
+
+            var url = '/budgets/{{ budget.id }}/calendar/task/action';
+            $.post(
+                url,
+                calendar_task_form.serialize()+"&"+
+                $.param({
+                    'start_date': sdate,
+                    'task_id': task_id,
+                    'mode': '{{ mode }}'
+                })
+            ).done(function (jqXHR) {
+                //$('#new_outputs_storage').text(JSON.stringify(jqXHR));
+                window.location.reload();
+            }).fail(function (jqXHR) {
+                bootbox.alert(jqXHR.responseText);
+                submit_button.button('reset');
+            });
+        });
+        {# ***************************************************************** #}
+        {# Delete Button #}
+        if(event_dialog.attr('task_id')){
+            $('#dialog_template_delete_button').show();
+            $('#dialog_template_delete_button').on('click', function (e) {
+                e.stopPropagation();
+                e.preventDefault();
+
+                // disable the submit_button
+                var delete_button = $(this);
+                delete_button.button('loading');
+
+                var confirm_message =
+                    '<h3 class="header red"><i class="icon-warning-sign">' +
+                    '</i> Warning</h3>' +
+                    '<div id="message" class="alert alert-info bigger-110">' +
+                    'Are you sure you want to  delete this task?' +
+                    '</div>';
+
+                bootbox.confirm(confirm_message, function (result) {
+                    if (result) {
+                        var id = event_dialog.attr('task_id');
+                        $.post(
+                            '/budgetentries/'+id+'/delete?dataSource=Calendar'
+                        ).done(function (jqXHR) {
+                            gantt.deleteTask(id);
+                            $('#dialog_template').modal('hide');
+                        }).fail(function (jqXHR) {
+                            bootbox.alert(jqXHR.responseText);
+                        });
+                    } else {
+                        delete_button.button('reset');
+                    }
+                });
+            });
+        }
+
+        console.debug('finished initializing the calendar_task dialog!')
+    }
+</script>
+
+<script type="text/javascript">
+    function destruct_dialog() {
+        $('#calendar_task_good').unbind();
+        $('#calendar_task_start_date').unbind();
+        $('#calendar_task_duration').unbind();
+        $('#calendar_task_num_of_resources').unbind();
+        $('#calendar_task_description').unbind();
+        $('#dialog_template_submit_button').unbind();
+
+        $('#dialog_template').data('modal', null);
+    }
+</script>
+
+
+

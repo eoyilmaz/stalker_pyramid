@@ -246,10 +246,10 @@ def main(global_config, **settings):
 
     # *************************************************************************
     # Notes
-    config.add_route('create_note', 'note/create')
-    config.add_route('update_note', 'note/{id}/update')
-    config.add_route('delete_note_dialog', 'notes/{id}/delete/dialog')
-    config.add_route('delete_note', 'notes/{id}/delete')
+    config.add_route('create_note',         'note/create')
+    config.add_route('update_note',         'note/{id}/update')
+    config.add_route('delete_note_dialog',  'notes/{id}/delete/dialog')
+    config.add_route('delete_note',         'notes/{id}/delete')
 
     # *************************************************************************
     # Thumbnail  and Links
@@ -281,8 +281,6 @@ def main(global_config, **settings):
     # Outputs
 
     config.add_route('list_task_outputs',           'tasks/{id}/outputs/list')  # html
-
-
 
     config.add_route('get_entity_outputs',          'entities/{id}/outputs/')
     config.add_route('get_entity_outputs_count',    'entities/{id}/outputs/count/')
@@ -326,6 +324,7 @@ def main(global_config, **settings):
     # Project
     config.add_route('create_project_dialog',      'projects/{id}/create/dialog')
     config.add_route('update_project_dialog',      'projects/{id}/update/dialog')
+    config.add_route('update_project_details_view','projects/{id}/update/details/view')
 
     config.add_route('get_project_tasks',          'projects/{id}/tasks/')  # json
     config.add_route('get_project_tasks_count',    'projects/{id}/tasks/count/')  # json
@@ -412,12 +411,19 @@ def main(global_config, **settings):
     config.add_route('view_budget_table',    'budgets/{id}/view/table')
     config.add_route('view_budget_report',   'budgets/{id}/view/report')
     config.add_route('save_budget_calendar', 'budgets/{id}/save/calendar')
+    config.add_route('budget_calendar_task_dialog', 'budgets/{id}/calendar/task/dialog')
+    config.add_route('budget_calendar_task_action', 'budgets/{id}/calendar/task/action')
+    config.add_route('budget_calendar_milestone_dialog', 'budgets/{id}/calendar/milestone/dialog')
+    config.add_route('budget_calendar_milestone_action', 'budgets/{id}/calendar/milestone/action')
+    # config.add_route('update_budget_calendar_task', 'budgets/{id}/calendar/update_task')
+
 
     config.add_route('duplicate_budget_dialog',   'budgets/{id}/duplicate/dialog')
     config.add_route('duplicate_budget',   'budgets/{id}/duplicate')
     config.add_route('change_budget_type_dialog',   'budgets/{id}/type/{type_name}/dialog')
     config.add_route('change_budget_type',   'budgets/{id}/type/{type_name}')
     config.add_route('get_budget_entries',   'budgets/{id}/entries/')
+    config.add_route('get_budget_milestones',   'budgets/{id}/milestones/')
     config.add_route('generate_report',   'budgets/{id}/generate/report')
 
     # *************************************************************************

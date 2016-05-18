@@ -334,8 +334,20 @@
                     grid_data[j].addition_type = grid_data[j].generic_data.dataSource;
 
                     grid_data[j].unit = grid_data[j].unit.split('*')[0];
-                    grid_data[j].second_unit = grid_data[j].generic_data.secondaryFactor.unit;
-                    grid_data[j].second_amount = grid_data[j].generic_data.secondaryFactor.amount;
+
+                    var secondaryFactor = grid_data[j].generic_data.secondaryFactor;
+                    if (secondaryFactor.unit){
+                        grid_data[j].second_unit = secondaryFactor.unit;
+                        grid_data[j].second_amount = secondaryFactor.second_amount;
+                    }
+                    else{
+                        grid_data[j].second_unit = secondaryFactor[0].unit;
+                        grid_data[j].second_amount = 0;
+
+                        for(var t=0; t<secondaryFactor.length; t++){
+                            grid_data[j].second_amount += parseInt(secondaryFactor[t].second_amount)
+                        }
+                    }
 
                     grid_data[j].amount = grid_data[j].amount/grid_data[j].second_amount;
 

@@ -4,7 +4,6 @@
 <div class="row-fluid padding-2">
 
     <div class="span12">
-        {% set mode='Create' %}
         {% include 'project/dialog/project_basic_information_form.jinja2' %}
     </div>
 
@@ -17,7 +16,7 @@
 
         var dialog_template_label = $('#dialog_template_label');
         dialog_template_label.find('span').remove();
-        dialog_template_label.append('<span>New Project</span>');
+        dialog_template_label.append('<span>{{ mode }} Project</span>');
 
         {# ***************************************************************** #}
         {# Submit Button #}
