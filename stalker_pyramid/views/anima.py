@@ -254,30 +254,30 @@ def find_asset_task_by_type(asset, type_name):
     """please add docstring
     """
     if type_name == 'Rig':
-        animation_test_type = Type.query.filter_by(name='Animation Test').first()
-        animation_bible_type = Type.query.filter_by(name='Animation Bible').first()
-        animation_bible = Task.query.filter(Task.parent == asset).filter(Task.type == animation_bible_type).first()
-
-        if animation_bible:
-            return animation_bible
-        else:
-            animation_test = Task.query.filter(Task.parent == asset).filter(Task.type == animation_test_type).first()
-            if animation_test:
-                return animation_test
+        # animation_test_type = Type.query.filter_by(name='Animation Test').first()
+        # animation_bible_type = Type.query.filter_by(name='Animation Bible').first()
+        # animation_bible = Task.query.filter(Task.parent == asset).filter(Task.type == animation_bible_type).first()
+        #
+        # if animation_bible:
+        #     return animation_bible
+        # else:
+        #     animation_test = Task.query.filter(Task.parent == asset).filter(Task.type == animation_test_type).first()
+        #     if animation_test:
+        #         return animation_test
+        #     else:
+        rig_folder = Task.query.filter(Task.name == 'Rig').filter(Task.parent == asset).first()
+        if rig_folder:
+            main_rig = Task.query.filter(Task.name == 'Main').filter(Task.parent == rig_folder).first()
+            if main_rig:
+                return main_rig
             else:
-                rig_folder = Task.query.filter(Task.name == 'Rig').filter(Task.parent == asset).first()
-                if rig_folder:
-                    main_rig = Task.query.filter(Task.name == 'Main').filter(Task.parent == rig_folder).first()
-                    if main_rig:
-                        return main_rig
-                    else:
-                        hires_rig = Task.query.filter(Task.name == 'Hires').filter(Task.parent == rig_folder).first()
-                        if hires_rig:
-                            return hires_rig
-                        else:
-                            return rig_folder
+                hires_rig = Task.query.filter(Task.name == 'Hires').filter(Task.parent == rig_folder).first()
+                if hires_rig:
+                    return hires_rig
                 else:
-                    return None
+                    return rig_folder
+        else:
+            return None
     elif type_name == 'Layout':
         task_type = Type.query.filter_by(name=type_name).first()
         layout = Task.query.filter(Task.parent == asset).filter(Task.type == task_type).first()

@@ -143,6 +143,7 @@
         var duration = project_end.diff(project_start, 'days');
         var project_id = "{{ entity.project.id }}";
         var project_name = "{{ entity.project.name }}";
+        var links = [];
 
         function doOnLoad() {
             initGantt(gantt);
@@ -241,13 +242,11 @@
                             }
                             tasks.data.push(task);
                         }
-
                     }
                 }
 
                 $.getJSON('/budgets/{{ entity.id }}/milestones/').then(function (m_data) {
                     var milestones = m_data;
-                    console.log(milestones.length);
                     for(var k=0; k<milestones.length; k++){
                         var task = {
                             id:"milestone_"+k,
@@ -287,13 +286,25 @@
 
             });
 
-{#            gantt.attachEvent("onLinkClick", function(id,e){#}
-{#                alert(id);#}
-{##}
-{#            });#}
+            gantt.attachEvent("onLinkClick", function(id,e){
+
+                var confirm_message =
+                    '<h3 class="header red"><i class="icon-warning-sign">' +
+                    '</i> Warning</h3>' +
+                    '<div id="message" class="alert alert-info bigger-110">' +
+                    'Are you sure you want to  delete this link?' +
+                    '</div>';
+
+                bootbox.confirm(confirm_message, function (result) {
+                    if (result) {
+                        gantt.deleteLink(id);
+                    }
+                });
+
+
+            });
 
             gantt.attachEvent("onTaskDrag", function(id, mode, task, original, e){
-
 
                 var parent = task.parent ? gantt.getTask(task.parent) : null,
                     children = gantt.getChildren(id),
@@ -330,10 +341,7 @@
                         limitRight(task, child);
                     }
                 }
-
-                if (task.type == 'milestone'){
-                    updateMilestoneLinkedTask(task);
-                }
+                checkLinkedTasks(task);
             });
 
             gantt.attachEvent("onAfterTaskDrag", function(id, mode, e){
@@ -349,28 +357,33 @@
 
                 var source_task = gantt.getTask(item.source);
                 var target_task = gantt.getTask(item.target);
-                var milestone;
-                if (source_task.type == "milestone"){
-                    var link_item = {'task_id':item.target, 'type':item.type};
-                    milestone = source_task;
-                }
-                if (target_task.type == "milestone"){
 
-                    var link_item = {'task_id':item.source, 'type':item.type};
-                    if (item.type == "0"){
-                        link_item['type'] = "3";
-                    }
-                    else if (item.type == "3"){
-                        link_item['type'] = "0";
-                    }
-                    milestone = target_task;
-
+                if (source_task.type == "milestone" && item.type == '3'){
+                    links.push({'milestone': item.source, 'task':item.target, 'type': '1'});
                 }
-                if(milestone){
-                    milestone.links.push(link_item);
-                    updateMilestoneAction(milestone.id)
+                if (target_task.type == "milestone" && item.type == '0'){
+                    links.push({'milestone': item.target, 'task':item.source, 'type': '1'});
+                }
+                if (source_task.type == "milestone" && item.type == '0'){
+                    links.push({'milestone': item.source, 'task':item.target, 'type': '2'});
+                }
+                if (target_task.type == "milestone" && item.type == '3'){
+                    links.push({'milestone': item.target, 'task':item.source, 'type': '2'});
+                }
+                if (source_task.type == "milestone" && item.type == '1' ){
+                    links.push({'milestone': item.source, 'task':item.target, 'type': '3'});
+                }
+                if (target_task.type == "milestone" && item.type == '1'){
+                    links.push({'milestone': item.target, 'task':item.source, 'type': '3'});
+                }
+                if (source_task.type == "milestone" && item.type == '2'){
+                    links.push({'milestone': item.source, 'task':item.target, 'type': '4'});
+                }
+                if (target_task.type == "milestone" && item.type == '2'){
+                    links.push({'milestone': item.target, 'task':item.source, 'type': '4'});
                 }
             });
+
         }
 
         function createMilestoneDialog() {
@@ -403,14 +416,16 @@
         }
 
         function createTaskDialog() {
+
             var event_dialog = $('#dialog_template');
-            var project = gantt.getTask(project_id)
+            var project = gantt.getTask(project_id);
             event_dialog.attr('project_start_date', project.start_date);
             event_dialog.attr('project_end_date', addDays(project.start_date, project.duration));
 
             event_dialog.modal({
                     'remote': "/budgets/{{ entity.id }}/calendar/task/dialog?mode=Create"
                 });
+
         }
 
         function updateTaskDialog(id) {
@@ -419,7 +434,7 @@
 
             var project = gantt.getTask(project_id);
             event_dialog.attr('project_start_date', project.start_date);
-            event_dialog.attr('project_end_date', addDays(project.start_date, project.duration))
+            event_dialog.attr('project_end_date', addDays(project.start_date, project.duration));
 
             event_dialog.attr('task_id', task.id);
             event_dialog.attr('task_name', task.text);
@@ -427,7 +442,6 @@
             event_dialog.attr('start_date', task.start_date);
             event_dialog.attr('amount', task.duration);
             event_dialog.attr('second_amount', task.resources);
-
 
             event_dialog.modal({
                 'remote': "/budgets/{{ entity.id }}/calendar/task/dialog?mode=Update"
@@ -459,7 +473,7 @@
                 '/budgets/{{ entity.id }}/calendar/milestone/action',
                 $.param({
                     'milestone_id': milestone.id,
-                    'links':makeQueryString(milestone.links),
+{#                    'links':makeQueryString(milestone.links),#}
                     'start_date': (milestone.start_date).getTime(),
                     'mode':"Update"
                 })
@@ -468,6 +482,69 @@
             }).fail(function (jqXHR) {
                 bootbox.alert(jqXHR.responseText);
             });
+        }
+
+        function checkLinkedTasks(task){
+
+            for(var i=0; i < links.length; i++){
+
+                var item = links[i];
+                var target_task;
+
+                if (item.task == task.id){
+                    target_task = task;
+                }
+                if (item.milestone == task.id){
+                    target_task = gantt.getTask(item.task);
+                }
+
+                if(target_task){
+                    var milestone = gantt.getTask(item.milestone);
+                    switch (item.type){
+                        case "1":
+                                if( +milestone.start_date < +target_task.end_date){
+                                    target_task.end_date = new Date(milestone.start_date);
+                                    var min_start_day = addDays(target_task.end_date,-1)
+                                    if(target_task.start_date > min_start_day){
+                                        target_task.start_date = min_start_day;
+                                    }
+                                }
+                            break;
+                        case "2":
+                                if( +target_task.start_date < +milestone.end_date ){
+                                    target_task.start_date = new Date(milestone.end_date);
+                                    var min_end_day = addDays(target_task.start_date, 1);
+                                    if(target_task.end_date < min_end_day){
+                                        target_task.end_date = min_end_day;
+                                    }
+                                }
+                            break;
+                        case "3":
+                                if( +target_task.start_date < +milestone.start_date ){
+                                    target_task.start_date = new Date(milestone.start_date);
+                                    var min_end_day = addDays(target_task.start_date, 1);
+                                    if(target_task.end_date < min_end_day){
+                                        target_task.end_date = min_end_day;
+                                    }
+                                }
+                            break;
+                        case "4":
+                                if( +target_task.end_date > +milestone.end_date ){
+                                    target_task.end_date = new Date(milestone.end_date);
+                                    var min_start_day = addDays(target_task.end_date,-1)
+                                    if(target_task.start_date > min_start_day){
+                                        target_task.start_date = min_start_day;
+                                    }
+                                }
+                            break;
+                    }
+
+                    target_task.duration = gantt.calculateDuration(target_task.start_date, target_task.end_date);
+                    gantt.updateTask(target_task.id);
+                }
+                target_task = null;
+            }
+
         }
 
         function updateEventDialog(id) {
@@ -480,6 +557,7 @@
             else{
                 updateTaskDialog(id);
             }
+
         }
 
         function updateEventAction(id) {
@@ -491,45 +569,6 @@
             }
             else{
                 updateTaskAction(id);
-            }
-        }
-
-        function updateMilestoneLinkedTask(milestone){
-            var links = milestone.links;
-            for(var i=0; i<links.length; i++){
-                var l_task = gantt.getTask(links[i]['task_id']);
-                var l_type = links[i]['type'];
-                switch (l_type) {
-                    case "3":
-                            if(+milestone.start_date < +l_task.end_date){
-                                l_task.end_date = new Date(milestone.start_date);
-                                if(+milestone.start_date < +l_task.start_date){
-                                    l_task.start_date = milestone.start_date;
-                                }
-                            }
-
-                        break;
-                    case "1":
-                            if(+milestone.start_date < +l_task.start_date){
-                                l_task.start_date = new Date(milestone.start_date);
-                            }
-                        break;
-                    case "2":
-                            if(+milestone.end_date > +l_task.end_date){
-                                l_task.end_date = new Date(milestone.end_date);
-                            }
-                        break;
-                    case "0":
-                            if(+milestone.end_date > +l_task.start_date){
-                                l_task.start_date = new Date(milestone.end_date);
-
-                            }
-
-                        break;
-                }
-                gantt.updateTask(l_task.id);
-                updateTaskAction(l_task.id)
-
             }
         }
 
@@ -569,39 +608,61 @@
             }).fail(function (jqXHR) {
                 bootbox.alert('<div id="message" class="alert alert-danger bigger-110">' + jqXHR.responseText + '</div>');
             });
-
         }
 
         function shiftTask(task_id, direction) {
+
+            var project = gantt.getTask(project_id);
+            var project_start = project.start_date;
+            var project_end = project.end_date;
+
             var task = gantt.getTask(task_id);
-            task.start_date = gantt.date.add(task.start_date, direction, "day");
-            task.end_date = gantt.calculateEndDate(task.start_date, task.duration);
+            var new_start_date = gantt.date.add(task.start_date, direction, "day");
+            var new_end_date = gantt.calculateEndDate(new_start_date, task.duration);
+
+            if(project_start <= new_start_date && project_end >= new_end_date){
+                task.start_date = new_start_date;
+                task.end_date = new_end_date;
+            }
+
             gantt.updateTask(task.id);
+
         }
 
         function limitMoveLeft(task, limit){
+            console.log('limitMoveLeft');
             var dur = task.end_date - task.start_date;
             task.end_date = new Date(limit.end_date);
             task.start_date = new Date(+task.end_date - dur);
+
         }
+
         function limitMoveRight(task, limit){
+            console.log('limitMoveRight');
             var dur = task.end_date - task.start_date;
             task.start_date = new Date(limit.start_date);
             task.end_date = new Date(+task.start_date + dur);
+
         }
 
         function limitResizeLeft(task, limit){
+            console.log('limitResizeLeft');
             task.end_date = new Date(limit.end_date);
+
         }
 
         function limitResizeRight(task, limit){
+            console.log('limitResizeRight');
             task.start_date = new Date(limit.start_date)
+
         }
 
         function addDays(date, days) {
+
             var result = new Date(date);
             result.setDate(result.getDate() + days);
             return result;
+
         }
 
         function makeQueryString(array){
@@ -613,8 +674,8 @@
                     t_str +=prop+"_" + t_array[i][prop] + "-"
                 }
             }
-            console.log(t_str);
             return t_str;
+
         }
 
         $(document).ready(function () {
@@ -643,8 +704,6 @@
                 console.log(gantt.getLinks())
                 e.preventDefault();
                 e.stopPropagation();
-
-
 {#                gantt.exportToPDF();#}
             });
 
