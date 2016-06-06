@@ -144,6 +144,7 @@
         var project_id = "{{ entity.project.id }}";
         var project_name = "{{ entity.project.name }}";
         var links = [];
+        var target_tasks = [];
 
         function doOnLoad() {
             initGantt(gantt);
@@ -245,7 +246,7 @@
                     }
                 }
 
-                $.getJSON('/budgets/{{ entity.id }}/milestones/').then(function (m_data) {
+                $.getJSON('/budgets/{{ entity.id }}/calendar/milestones/').then(function (m_data) {
                     var milestones = m_data;
                     for(var k=0; k<milestones.length; k++){
                         var task = {
@@ -256,20 +257,27 @@
                             resources:1,
                             parent: project_id,
                             type: 'milestone',
-                            links:[],
                             open:false
                         }
                         tasks.data.push(task);
                     }
 
                     gantt.templates.task_class = gantt.templates.grid_row_class = gantt.templates.task_row_class = function (start, end, task) {
-                        if (gantt.isSelectedTask(task.id))
-                            return "gantt_selected";
-                        };
+                            if (gantt.isSelectedTask(task.id))
+                                return "gantt_selected";
+                            };
 
-                        gantt.init("gantt_here");
-                        gantt.parse(tasks);
+                    gantt.init("gantt_here");
+                    gantt.parse(tasks);
+
+                    $.getJSON('/budgets/{{ entity.id }}/calendar/links/').then(function (l_data) {
+                        var budget_links = l_data;
+                        for(var i=0; i<budget_links.length; i++){
+                            gantt.addLink(budget_links[i]);
+                            convertLinkData(budget_links[i]);
+                        }
                     });
+                });
             });
         }
 
@@ -298,10 +306,9 @@
                 bootbox.confirm(confirm_message, function (result) {
                     if (result) {
                         gantt.deleteLink(id);
+                        deleteLinkAction(id);
                     }
                 });
-
-
             });
 
             gantt.attachEvent("onTaskDrag", function(id, mode, task, original, e){
@@ -345,45 +352,61 @@
             });
 
             gantt.attachEvent("onAfterTaskDrag", function(id, mode, e){
+
+                var task = gantt.getTask(id);
+                checkLinkedTasks(task);
+
                 if(id == project_id){
                     updateProjectStartEndDate(id);
                 }
                 else{
                     updateEventAction(id);
+                    for (var i=0; i<target_tasks.length;i++){
+                        updateTaskAction(target_tasks[i]);
+                    }
+                    target_tasks = [];
                 }
             });
 
             gantt.attachEvent("onAfterLinkAdd", function(id,item){
-
-                var source_task = gantt.getTask(item.source);
-                var target_task = gantt.getTask(item.target);
-
-                if (source_task.type == "milestone" && item.type == '3'){
-                    links.push({'milestone': item.source, 'task':item.target, 'type': '1'});
-                }
-                if (target_task.type == "milestone" && item.type == '0'){
-                    links.push({'milestone': item.target, 'task':item.source, 'type': '1'});
-                }
-                if (source_task.type == "milestone" && item.type == '0'){
-                    links.push({'milestone': item.source, 'task':item.target, 'type': '2'});
-                }
-                if (target_task.type == "milestone" && item.type == '3'){
-                    links.push({'milestone': item.target, 'task':item.source, 'type': '2'});
-                }
-                if (source_task.type == "milestone" && item.type == '1' ){
-                    links.push({'milestone': item.source, 'task':item.target, 'type': '3'});
-                }
-                if (target_task.type == "milestone" && item.type == '1'){
-                    links.push({'milestone': item.target, 'task':item.source, 'type': '3'});
-                }
-                if (source_task.type == "milestone" && item.type == '2'){
-                    links.push({'milestone': item.source, 'task':item.target, 'type': '4'});
-                }
-                if (target_task.type == "milestone" && item.type == '2'){
-                    links.push({'milestone': item.target, 'task':item.source, 'type': '4'});
-                }
+                convertLinkData(item);
+                createLinkAction(item);
             });
+        }
 
+        function convertLinkData(item){
+            console.log('item.id: '+ item.id);
+
+            var source_task = gantt.getTask(item.source);
+            var target_task = gantt.getTask(item.target);
+            var new_link_item;
+
+            if (source_task.type == "milestone" && item.type == '3'){
+                new_link_item = {'milestone': item.source, 'task':item.target, 'type': '1'};
+            }
+            if (target_task.type == "milestone" && item.type == '0'){
+                new_link_item = {'milestone': item.target, 'task':item.source, 'type': '1'};
+            }
+            if (source_task.type == "milestone" && item.type == '0'){
+                new_link_item = {'milestone': item.source, 'task':item.target, 'type': '2'};
+            }
+            if (target_task.type == "milestone" && item.type == '3'){
+                new_link_item = {'milestone': item.target, 'task':item.source, 'type': '2'};
+            }
+            if (source_task.type == "milestone" && item.type == '1' ){
+                new_link_item = {'milestone': item.source, 'task':item.target, 'type': '3'};
+            }
+            if (target_task.type == "milestone" && item.type == '1'){
+                new_link_item = {'milestone': item.target, 'task':item.source, 'type': '3'};
+            }
+            if (source_task.type == "milestone" && item.type == '2'){
+                new_link_item = {'milestone': item.source, 'task':item.target, 'type': '4'};
+            }
+            if (target_task.type == "milestone" && item.type == '2'){
+                new_link_item = {'milestone': item.target, 'task':item.source, 'type': '4'};
+            }
+            new_link_item['id'] = item.id;
+            links.push(new_link_item);
         }
 
         function createMilestoneDialog() {
@@ -449,22 +472,25 @@
         }
 
         function updateTaskAction(id) {
+            console.log("updateTaskAction: "+ id);
             var task = gantt.getTask(id);
-            $.post(
-                '/budgets/{{ entity.id }}/calendar/task/action',
-                $.param({
-                    'task_id': task.id,
-                    'good_id': task.good_id,
-                    'start_date': (task.start_date).getTime(),
-                    'amount': task.duration,
-                    'second_amount': task.resources,
-                    'mode':"Update"
-                })
-            ).done(function (jqXHR) {
+            if(task.duration > 0){
+                $.post(
+                    '/budgets/{{ entity.id }}/calendar/task/action',
+                    $.param({
+                        'task_id': task.id,
+                        'good_id': task.good_id,
+                        'start_date': (task.start_date).getTime(),
+                        'amount': task.duration,
+                        'second_amount': task.resources,
+                        'mode':"Update"
+                    })
+                ).done(function (jqXHR) {
 
-            }).fail(function (jqXHR) {
-                bootbox.alert(jqXHR.responseText);
-            });
+                }).fail(function (jqXHR) {
+                    bootbox.alert(jqXHR.responseText);
+                });
+            }
         }
 
         function updateMilestoneAction(id) {
@@ -473,7 +499,6 @@
                 '/budgets/{{ entity.id }}/calendar/milestone/action',
                 $.param({
                     'milestone_id': milestone.id,
-{#                    'links':makeQueryString(milestone.links),#}
                     'start_date': (milestone.start_date).getTime(),
                     'mode':"Update"
                 })
@@ -484,7 +509,31 @@
             });
         }
 
+        function createLinkAction(l_item) {
+
+            $.post(
+                '/budgets/{{ entity.id }}/calendar/link/create',
+                $.param(l_item)
+            ).done(function (jqXHR) {
+
+            }).fail(function (jqXHR) {
+                bootbox.alert(jqXHR.responseText);
+            });
+        }
+
+        function deleteLinkAction(id) {
+            $.post(
+                '/budgets/{{ entity.id }}/calendar/link/delete',
+                $.param({'link_id': id})
+            ).done(function (jqXHR) {
+
+            }).fail(function (jqXHR) {
+                bootbox.alert(jqXHR.responseText);
+            });
+        }
+
         function checkLinkedTasks(task){
+
 
             for(var i=0; i < links.length; i++){
 
@@ -504,6 +553,7 @@
                         case "1":
                                 if( +milestone.start_date < +target_task.end_date){
                                     target_task.end_date = new Date(milestone.start_date);
+
                                     var min_start_day = addDays(target_task.end_date,-1)
                                     if(target_task.start_date > min_start_day){
                                         target_task.start_date = min_start_day;
@@ -513,6 +563,7 @@
                         case "2":
                                 if( +target_task.start_date < +milestone.end_date ){
                                     target_task.start_date = new Date(milestone.end_date);
+
                                     var min_end_day = addDays(target_task.start_date, 1);
                                     if(target_task.end_date < min_end_day){
                                         target_task.end_date = min_end_day;
@@ -539,13 +590,18 @@
                             break;
                     }
 
+
+
                     target_task.duration = gantt.calculateDuration(target_task.start_date, target_task.end_date);
                     gantt.updateTask(target_task.id);
+                    target_tasks.push(target_task.id);
                 }
                 target_task = null;
             }
 
         }
+
+
 
         function updateEventDialog(id) {
 
@@ -580,7 +636,6 @@
 
             }).fail(function (jqXHR) {
                 bootbox.alert(jqXHR.responseText);
-
             });
         }
 
@@ -665,18 +720,7 @@
 
         }
 
-        function makeQueryString(array){
 
-            var t_array = array;
-            var t_str = "";
-            for(var i=0;i<t_array.length;i++){
-                for(prop in t_array[i]){
-                    t_str +=prop+"_" + t_array[i][prop] + "-"
-                }
-            }
-            return t_str;
-
-        }
 
         $(document).ready(function () {
 

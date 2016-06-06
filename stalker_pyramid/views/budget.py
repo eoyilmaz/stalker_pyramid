@@ -106,6 +106,7 @@ def create_budget(request):
             'total_price': 0,
             'realized_total_price': 0,
             'milestones': [],
+            'links': [],
             'calendar_editing': 'OFF'
     }
 
@@ -812,10 +813,10 @@ def delete_budgetentry_action(budgetentry):
     return Response('Successfully deleted good with name %s' % budgetentry_name)
 
 @view_config(
-    route_name='get_budget_milestones',
+    route_name='get_budget_calendar_milestones',
     renderer='json'
 )
-def get_budget_milestones(request):
+def get_budget_calendar_milestones(request):
     """returns budget milestones
     """
 
@@ -826,6 +827,20 @@ def get_budget_milestones(request):
 
     return milestones_data
 
+@view_config(
+    route_name='get_budget_calendar_links',
+    renderer='json'
+)
+def get_budget_calendar_links(request):
+    """returns budget links
+    """
+
+    budget_id = request.matchdict.get('id')
+    budget = Budget.query.filter_by(id=budget_id).first()
+
+    links_data = budget.get_generic_text_attr('links')
+
+    return links_data
 
 
 @view_config(
@@ -1134,7 +1149,6 @@ def budget_calendar_milestone_action(request):
 
     start_date = request.params.get('start_date', None)
     description = request.params.get('description', '')
-    description = request.params.get('description', '')
 
     if not start_date:
         transaction.abort()
@@ -1161,6 +1175,79 @@ def budget_calendar_milestone_action(request):
 
     return Response('Milestone Created successfully')
 
+
+@view_config(
+    route_name='budget_calendar_link_create'
+)
+def budget_calendar_link_create(request):
+    """budget_calendar_link_create
+    """
+    logger.debug('***budget_calendar_link_create method starts ***')
+    logged_in_user = get_logged_in_user(request)
+    utc_now = local_to_utc(datetime.datetime.now())
+
+    budget_id = request.matchdict.get('id', None)
+    budget = Budget.query.filter(Budget.id == budget_id).first()
+    if not budget:
+        transaction.abort()
+        return Response('There is no budget with id %s' % budget_id, 500)
+
+    source = request.params.get('source', None)
+    target = request.params.get('target', '')
+    type = request.params.get('type', '')
+    id = request.params.get('id', '')
+
+    links = budget.get_generic_text_attr("links")
+    logger.debug('links: %s' % links)
+
+    new_link = {
+                'source': source,
+                'target': target,
+                'type': type,
+                'id': id
+    }
+
+    links.append(new_link)
+    logger.debug('links: %s' % links)
+
+    budget.set_generic_text_attr("links", links)
+    budget.date_updated = utc_now
+    budget.updated_by = logged_in_user
+
+    return Response('Link Created successfully')
+
+@view_config(
+    route_name='budget_calendar_link_delete'
+)
+def budget_calendar_link_delete(request):
+    """budget_calendar_link_delete
+    """
+    logger.debug('***budget_calendar_link_delete method starts ***')
+    logged_in_user = get_logged_in_user(request)
+    utc_now = local_to_utc(datetime.datetime.now())
+
+    budget_id = request.matchdict.get('id', None)
+    budget = Budget.query.filter(Budget.id == budget_id).first()
+    if not budget:
+        transaction.abort()
+        return Response('There is no budget with id %s' % budget_id, 500)
+
+    link_id = request.params.get('link_id', '')
+    logger.debug('link_id: %s' % link_id)
+
+    links = budget.get_generic_text_attr("links")
+    logger.debug('links: %s' % links)
+    deleted_link = filter(lambda x: x['id'] == link_id, links)
+
+    links.remove(deleted_link[0])
+
+    logger.debug('links: %s' % links)
+
+    budget.set_generic_text_attr("links", links)
+    budget.date_updated = utc_now
+    budget.updated_by = logged_in_user
+
+    return Response('Link deleted successfully')
 
 @view_config(
     route_name='budget_calendar_task_dialog',
@@ -1266,15 +1353,14 @@ def budget_calendar_task_action(request):
             transaction.abort()
             return Response('There is no budgetentry with id: %s' % budgetentry_id, 500)
 
-
         budgetentry.description = description
         budgetentry.date_updated = utc_now
         budgetentry.updated_by = logged_in_user
         secondaryFactor = budgetentry.get_generic_text_attr("secondaryFactor")
         secondaryFactor[int(secondaryFactor_id)] = {'start_date': start_date,
-                                         'unit': good.unit.split('*')[1],
-                                         'amount': amount,
-                                         'second_amount': second_amount}
+                                                     'unit': good.unit.split('*')[1],
+                                                     'amount': amount,
+                                                     'second_amount': second_amount}
         budgetentry.set_generic_text_attr("secondaryFactor", secondaryFactor)
         total_amount = 0
         for fact in secondaryFactor:

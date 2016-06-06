@@ -415,6 +415,8 @@ def main(global_config, **settings):
     config.add_route('budget_calendar_task_action', 'budgets/{id}/calendar/task/action')
     config.add_route('budget_calendar_milestone_dialog', 'budgets/{id}/calendar/milestone/dialog')
     config.add_route('budget_calendar_milestone_action', 'budgets/{id}/calendar/milestone/action')
+    config.add_route('budget_calendar_link_create', 'budgets/{id}/calendar/link/create')
+    config.add_route('budget_calendar_link_delete', 'budgets/{id}/calendar/link/delete')
     # config.add_route('update_budget_calendar_task', 'budgets/{id}/calendar/update_task')
 
 
@@ -423,7 +425,8 @@ def main(global_config, **settings):
     config.add_route('change_budget_type_dialog',   'budgets/{id}/type/{type_name}/dialog')
     config.add_route('change_budget_type',   'budgets/{id}/type/{type_name}')
     config.add_route('get_budget_entries',   'budgets/{id}/entries/')
-    config.add_route('get_budget_milestones',   'budgets/{id}/milestones/')
+    config.add_route('get_budget_calendar_milestones',   'budgets/{id}/calendar/milestones/')
+    config.add_route('get_budget_calendar_links',   'budgets/{id}/calendar/links/')
     config.add_route('generate_report',   'budgets/{id}/generate/report')
 
     # *************************************************************************
