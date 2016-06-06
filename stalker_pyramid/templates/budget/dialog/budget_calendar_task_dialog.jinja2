@@ -109,12 +109,19 @@
             );
         {% endraw %}
         var calendar_task_good = $('#calendar_task_good');
-        var deferred = chosen_searchable_field_creator(calendar_task_good,'/goods/', good_option_template);
-        deferred.then(function () {
+        $.getJSON('/goods/').then(function (g_data) {
+            var filtered_goods= [];
+            for (var i=0;i<g_data.length;i++){
+                if(g_data[i].unit == "GUN*KISI"){
+                    filtered_goods.push(g_data[i]);
+                }
+            }
+            chosen_searchable_field_creator_by_data(calendar_task_good, good_option_template, filtered_goods);
             if(event_dialog.attr('good_id')){
                 calendar_task_good.val(event_dialog.attr('good_id')).trigger('liszt:updated');
             }
         });
+
 
         {# Start Date ******************************************************* #}
         $('.date-picker').datepicker().next().on(ace.click_event, function(){

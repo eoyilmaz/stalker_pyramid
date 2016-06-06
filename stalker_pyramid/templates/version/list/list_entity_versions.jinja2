@@ -144,11 +144,8 @@
         var sortingParameters = [[0, 'desc']];
         var tableDataAddress = '{{ request.route_path('get_entity_versions', id=entity.id) }}';
         {% if entity.entity_type == 'User' %}
-
             tableDataAddress = '{{ request.route_path('get_user_versions', id=entity.id) }}';
         {% endif %}
-
-        console.log('tableDataAddress : '+tableDataAddress);
 
     </script>
 

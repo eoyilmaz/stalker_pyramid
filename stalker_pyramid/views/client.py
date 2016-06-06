@@ -530,8 +530,15 @@ def generate_report(budget, output_path=''):
                             fe_generic_data.get('stoppage_add', 0)
                         filtered_entity.overtime = \
                             fe_generic_data.get('overtime', 0)
-                        filtered_entity.numberOfResources = \
-                            fe_generic_data.get('secondaryFactor', {'unit':"", 'amount':1 })['amount']
+
+                        secondaryFactor = fe_generic_data.get('secondaryFactor', [])
+                        secondaryAmount = 0
+                        logger.debug("secondaryFactor: %s" % secondaryFactor)
+                        for sFactor in secondaryFactor:
+                            logger.debug("sFactor['second_amount']: %s" % sFactor['second_amount'])
+                            secondaryAmount += int(sFactor['second_amount'])
+
+                        filtered_entity.numberOfResources = secondaryAmount
 
                     # now generate the result
                     result_buffer.append(
