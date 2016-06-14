@@ -17,68 +17,281 @@
  License along with this library; if not, write to the Free Software
  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
 #}
-
 {% extends "base.jinja2" %}
 
 {# BREADCRUMBS #}
 {% block breadcrumbs %}
-
-    {% set page_title='clients' %}
+    {% set page_title='Assets' %}
     {% include 'breadcrumb/breadcrumbs.jinja2' %}
-
 {% endblock breadcrumbs %}
 
 {# SIDEBAR #}
 {% block sidebar %}
-
     {% include 'sidebar.jinja2' %}
-
 {% endblock sidebar %}
 
 {# PAGE-CONTENT #}
 {% block page_content %}
 
-    {% set page_title='Related Assets' %}
-    {% include 'page_header.jinja2' %}
-{##}
-{#    {% set add_button_address=request.route_path('create_client_dialog') %}#}
-    {% set list_item_type='Asset' %}
-    {% include 'components/data_table.jinja2' %}
+{#    {% set page_title='Assets' %}#}
+{#    {% include 'page_header.jinja2' %}#}
+
+    <div id="loading_spinner" class="well well-sm">
+        <div class="inline middle blue bigger-110">
+            <i class="icon-spinner icon-spin orange bigger-125"></i> Loading content...
+        </div>
+    </div>
+
+    <div id="content" class="widget-box hide">
+        <div class="widget-header widget-header-small header-color-asset">
+            <h5 id="items_header" class="smaller"></h5>
+            <div class="widget-toolbar">
+{#                {% if has_permission('Create_Asset') %}#}
+{#                    &nbsp#}
+{#                    <a data-target="#dialog_template"#}
+{#                       data-toggle="modal"#}
+{#                       data-keyboard=false#}
+{#                       href="{{ request.route_url("create_asset_dialog", id=-1, _query={'project_id': entity.id }) }}"#}
+{#                       class="white">#}
+{#                        <i class="icon-plus"></i>#}
+{#                        New#}
+{#                    </a>#}
+{#                    &nbsp&nbsp#}
+{#                {% endif %}#}
+                <a href="#" data-action="collapse">
+                    <i class="icon-chevron-down"></i>
+                </a>
+            </div>
+        </div>
+        <div class="widget-body">
+            <div class="widget-main no-padding">
+                <table id="assets_table"
+                       class="table table-striped table-bordered table-hover">
+                    <thead>
+                        <tr id="assets_table_column">
+                            <th>Thumbnail</th>
+                            <th>Name</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
 {% endblock page_content %}
 
 {# EXTRA-SCRIPTS #}
 {% block extrascripts %}
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.dataTables.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.dataTables.bootstrap.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/dataTable_num-html_sort.js") }}'></script>
+
     {% raw %}
-    <script id="tmpl_itemThead" type="text/x-dot-template">
-        <tr>
-            <th>Thumbnail</th>
-            <th>Name</th>
-        </tr>
+    <script id="tmpl_assetTypeLink" type="text/x-dot-template">
+        <li class="{{=it.class}}">
+            <a data-toggle="tab" href="" id="{{=it.asset_type_id}}" >
+                {{=it.asset_type_name}}
+            </a>
+        </li>
     </script>
     {% endraw %}
 
     {% raw %}
-    <script id="tmpl_itemRow" type="text/x-dot-template">
-        <tr>
-            <td><img style='width:auto; height: 100px;'
-                     class="img-thumbnail"
+    <script id="tmpl_assetColumn" type="text/x-dot-template">
+        <th>{{=it.name}}</th>
+    </script>
+    {% endraw %}
+
+    {% raw %}
+    <script id="tmpl_assetRow" type="text/x-dot-template">
+        <tr style='height:auto;' id="asset_row_{{=it.id}}">
+            <!--<td style="width:20px;"><span-->
+                    <!--class="label label-status_{{=it.status_color}}">{{=it.status}}</span><br/><br/>-->
+            <!--</td>-->
+            <td style='width:100px;'>
+                <img style='height:auto;' class="img-thumbnail"
                      src="{{=it.thumbnail_full_path }}">
             </td>
-            <td><a href='/clients/{{=it.id}}/view'>{{=it.name}}</a>
+            <td style='min-width:200px;' id="asset_summary_cell_{{=it.id}}">
+                <a href='{{=it.link}}'>{{=it.name}}</a>
+                {{ if (it.update_asset_action) { }}
+                <a class="blue pull-right"
+                   data-target="#dialog_template"
+                   data-toggle="modal"
+                   data-keyboard=false
+                   href="{{=it.update_asset_action}}">
+                    <i class="icon-edit bigger-130"></i>
+                </a>{{ } }}
             </td>
         </tr>
     </script>
     {% endraw %}
 
-    <script>
+    {% raw %}
+    <script id="tmpl_assetSummaryCell" type="text/x-dot-template">
+        <a class="red"
+           data-target="#dialog_template"
+           data-toggle="modal"
+           data-keyboard=false
+           href="{{=it.link}}">{{=it.name}}, </a>
+    </script>
+    {% endraw %}
 
-        var tableParameters = {"aoColumns": [null, null]};
-        var sortingParameters = [[0, 'asc']];
-        var tableDataAddress;
-        tableDataAddress = '/tasks/{{ entity.id }}/related/Asset/depends/';
+    {% raw %}
+    <script id="tmpl_taskCell_empty" type="text/x-dot-template">
+        <td class="no-padding" style="width:150px;">
+            <div class="black2"
+                 style="min-height:{{=it.height}}px"">
+
+            </div>
+        </td>
+    </script>
+    {% endraw %}
+
+    {% raw %}
+        <script id="tmpl_taskCell" type="text/x-dot-template">
+            <td class="no-padding" style='width:150px; min-height:{{=it.height}}px;' >
+                <div class="status_{{=it.status_color}}" id="task_cell_{{=it.type_id}}">
+                </div>
+
+            </td>
+        </script>
+    {% endraw %}
+
+    {% raw %}
+        <script id="tmpl_taskCellRow" type="text/x-dot-template">
+            <div class="status_{{=it.status_color}}" style="min-height:55px; height:{{=it.height}}px;">
+                <a class="white" href="/tasks/{{=it.id }}/view">{{=it.name}}</a>
+                {{ if (it.update_asset_action) { }}
+                <a class="white pull-right"
+                   data-target="#dialog_template"
+                   data-toggle="modal"
+                   data-keyboard=false
+                   href="/tasks/{{=it.id }}/update/dialog">
+                    <i class="icon-edit bigger-130"></i>
+                </a>{{ } }}<br/>
+                <a class="white" href="/users/{{=it.resource_id }}/view">{{=it.resource_name }}</a><br/>
+
+                <div>{{=it.status}}</div>
+
+            </div>
+            {{=it.hr}}
+        </script>
+    {% endraw %}
+
+    <script type="text/javascript">
+    $(document).ready(function () {
+{#        var related_asset_template = doT.template($('#tmpl_related_asset_item').html());#}
+{#        var related_assets_list = $('#related_assets_list');#}
+        $.getJSON('/tasks/{{ entity.id }}/related/Asset/depends/').then(function (assets) {
+            var asset_id_query = '';
+            console.log("assets.length: "+assets.length);
+            for (var i = 0; i < assets.length; i++) {
+                asset_id_query += 'asset_ids='+assets[i].id+'&';
+            }
+            asset_id_query = asset_id_query.substring(0, asset_id_query.length-1);
+            console.log(asset_id_query);
+            $.getJSON('/entities/{{ entity.id }}/related/assets?'+asset_id_query).then(function (data) {
+                console.log(data.length);
+                var asset_template = doT.template($('#tmpl_assetRow').html());
+                 $(function () {
+                    var types_data = data[data.length-1]['all_types_list'];
+
+                    var column_template = doT.template($('#tmpl_assetColumn').html());
+                    var x;
+                    var table_column = $('#assets_table_column');
+                    for (x = 0; x < types_data.length; x++) {
+
+                        // append it to the table
+                        console.log('types[x]: '+ types_data[x]);
+                        table_column.append(column_template(types_data[x]));
+                    }
+                    var i;
+                    var table_body = $('#assets_table>tbody');
+
+                    for (i = 0; i < data.length-1; i++) {
+
+                        data[i].link = '/assets/' + data[i].id + '/view';
+
+                        if (data[i].thumbnail_full_path == null) {
+                            data[i].thumbnail_full_path = '{{ request.static_url("stalker_pyramid:static/stalker/images/T_NO_IMAGE.gif") }}';
+                        }
+                        else {
+                            data[i].thumbnail_full_path = '/' + data[i].thumbnail_full_path;
+                        }
+
+                        data[i].came_from = '{{ request.current_route_path() }}';
+
+                        // append it to the table
+                        table_body.append(asset_template(data[i]));
+
+                        var asset_row = $('#asset_row_' + data[i].id);
+
+                        console.log('asset_row: '+ asset_row);
+                        var asset_summary_cell = $('#asset_summary_cell_' + data[i].id);
+
+                        var cell_template = doT.template($('#tmpl_taskCell').html());
+                        var empty_cell_template = doT.template($('#tmpl_taskCell_empty').html());
+                        var cell_row_template = doT.template($('#tmpl_taskCellRow').html());
+                        var task_cell_height = 150;
+
+                        for (var j = 0; j < types_data.length; j++) {
+                            var tasks = data[i][types_data[j].name];
+
+                            if (tasks) {
+                                asset_row.append(
+                                    cell_template({
+                                        'type_id': types_data[j].id + '_' + data[i].id ,
+                                        'status_color': 'black2',
+                                        'height':task_cell_height
+                                    })
+                                );
+                                console.log('#task_cell_' + types_data[j].id + '_' + data[i].id);
+                                var task_cell = $('#task_cell_' + types_data[j].id + '_' + data[i].id);
+                                var task_cell_row_height = task_cell_height/tasks.length-5*(tasks.length-1);
+                                for (var k = 0; k < tasks.length; k++) {
+                                    var task = tasks[k];
+
+                                    task_cell.append(
+                                        cell_row_template({
+                                            'id': task.id,
+                                            'name': task.name,
+                                            'status': task.status,
+                                            'status_color': task.status.toLowerCase(),
+                                            'update_asset_action': data[i].update_asset_action,
+                                            'resource_name': task.resource_name?task.resource_name:'',
+                                            'resource_id': task.resource_id?task.resource_id:'',
+                                            'height':task_cell_row_height,
+                                            'hr': k < tasks.length-1?'<div class="hr hr2"></div>':''
+                                        })
+                                    );
+                                }
+
+                            } else {
+                                asset_row.append(
+                                    empty_cell_template({'height':task_cell_height})
+                                );
+                            }
+                        }
+
+                        var asset_summary_cell_template = doT.template($('#tmpl_assetSummaryCell').html());
+
+                        for (var n = 0; n < data[i]['nulls'].length; n++) {
+                            var null_type_task = data[i]['nulls'][n];
+                            asset_summary_cell.append(asset_summary_cell_template({'link': '/tasks/' + null_type_task[0] + '/update/dialog', 'name': null_type_task[1], 'status': null_type_task[2], 'status_color': null_type_task[3]}));
+                        }
+                    }
+
+                    var oTable1 = $('#assets_table').dataTable();
+                    $('#loading_spinner').hide();
+                    $('#content').show();
+                });
+            });
+        });
+    });
 
     </script>
-
 {% endblock extrascripts %}
 

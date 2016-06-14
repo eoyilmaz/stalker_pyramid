@@ -139,7 +139,6 @@
            data-toggle="modal"
            data-keyboard=false
            href="{{=it.link}}">{{=it.name}}, </a>
-
     </script>
     {% endraw %}
 
@@ -209,12 +208,12 @@
                         var column_template = doT.template($('#tmpl_assetColumn').html());
                         var x;
                         var table_column = $('#assets_table_column');
-                        for (x = 0; x < types_data.length; x++) {
+                        for (x = 0; x < types.length; x++) {
 {#                            console.log(types_data[x].name )#}
                             // append it to the table
+                            console.log('types[x]: '+ types[x]);
                             table_column.append(column_template(types[x]));
                         }
-
 
                         $.getJSON('/entities/{{ entity.id }}/assets/?asset_type_id=' + asset_type_id).then(function (data) {
                             var assets = data;
@@ -235,7 +234,7 @@
                                         data[i].thumbnail_full_path = '/' + data[i].thumbnail_full_path;
                                     }
 
-                                    data[i].came_from = '{{ request.current_route_path() }}'
+                                    data[i].came_from = '{{ request.current_route_path() }}';
 
                                     // append it to the table
                                     table_body.append(asset_template(data[i]));
@@ -320,16 +319,16 @@
                     types[i].class = '';
 
                     if (selected_asset_id == types[i].asset_type_id ){
-                        types[i].class = 'active'
+                        types[i].class = 'active';
                     }
 
-                    asset_type_tabs.append(link_template(types[i]))
+                    asset_type_tabs.append(link_template(types[i]));
 
                     $('#' + types[i].asset_type_id).on('click', function (e) {
                         window.location.assign('/projects/{{ entity.id }}/assets/list?asset_type_id='+$(this).attr('id'));
                     })
                 }
-                get_assets_by_type(selected_asset_id)
+                get_assets_by_type(selected_asset_id);
             });
 
         });

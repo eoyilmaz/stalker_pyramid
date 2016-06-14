@@ -919,6 +919,7 @@ def main(global_config, **settings):
     config.add_route('remove_related_asset', 'entities/{id}/assets/{a_id}/remove')
     config.add_route('get_entity_task_type_result', 'entities/{id}/{task_type}/result')
     config.add_route('list_entity_related_assets',  'entities/{id}/related/{e_type}/{d_type}/list')
+    config.add_route('get_related_assets',  'entities/{id}/related/assets')
 
     config.add_route('view_entity_result', 'entities/{id}/result/view')
 

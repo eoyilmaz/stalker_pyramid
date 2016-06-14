@@ -457,9 +457,11 @@ def edit_budgetentry(request):
         if entity.entity_type == 'Good':
             logger.debug('***create budgetentry method starts ***')
             return create_budgetentry(request)
+
         elif entity.entity_type == 'BudgetEntry':
             logger.debug('***update budgetentry method starts ***')
             return update_budgetentry(request)
+
         else:
             transaction.abort()
             return Response('There is no budgetentry or good with id %s' % e_id, 500)

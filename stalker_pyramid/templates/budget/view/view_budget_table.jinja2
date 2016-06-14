@@ -42,8 +42,6 @@
     <div class="widget-box transparent invoice-box">
        {% set budget=entity %}
        {% include 'budget/view/budget_header.jinja2' %}
-
-
         <div class="widget-body">
             <div class="widget-main padding-24">
                 <div class="row-fluid">
@@ -74,6 +72,9 @@
                     <table id="grid-table"></table>
                 </div>
                 <div class="space-6"></div>
+                <div class="row-fluid">
+                    <table id="grid-table-zero"></table>
+                </div>
                 <div class="hr hr8 hr-double hr-dotted"></div>
                 <div class="row-fluid">
                     <div class="span12">
@@ -121,10 +122,32 @@
             var total_msrp = 0;
             var total_price = 0;
             var grid_data;
+            var good_grid_data = [];
             var lastSelection;
+            var lastSelectionZero;
 
             var grid_selector = "#grid-table";
             var grid = jQuery(grid_selector);
+
+            var grid_selector_zero = "#grid-table-zero";
+            var grid_zero = jQuery(grid_selector_zero);
+
+            function addRowToBudget(id) {
+                if (id && id !== lastSelectionZero) {
+
+                    grid_zero.restoreRow(lastSelectionZero);
+
+                    var editParameters = {
+                        keys: true,
+                        successfunc: editSuccessfulZero,
+                        errorfunc: editFailedZero,
+                        restoreAfterError : false
+                    };
+
+                    grid_zero.jqGrid('editRowZero', id, editParameters);
+                    lastSelectionZero = id;
+                }
+            }
 
             function editRow(id) {
                 if (id && id !== lastSelection) {
@@ -152,6 +175,32 @@
                 var price = parseFloat(getCellValue(lastSelection, 'price'));
 
                 var selected_data = recalculateGridData(grid_data, lastSelection, amount, second_amount, overtime, stoppage_add, price);
+
+                grid.jqGrid('setGridParam',
+                                    {
+                                        datatype: 'local',
+                                        data:grid_data
+                                    })
+                                .trigger("reloadGrid");
+
+                flash_message({
+                    type: "success",
+                    title: "Success!",
+                    message: data.responseText
+                });
+                grid.restoreRow(lastSelection);
+                return [true,"",""];
+            }
+
+            function editSuccessfulZero(data, stat) {
+
+                var overtime = parseFloat(getCellValue(lastSelectionZero, 'overtime'));
+                var amount = parseFloat(getCellValue(lastSelectionZero, 'amount'));
+                var second_amount = parseFloat(getCellValue(lastSelectionZero, 'second_amount'));
+                var stoppage_add = parseInt(getCellValue(lastSelectionZero, 'stoppage_add'));
+                var price = parseFloat(getCellValue(lastSelectionZero, 'price'));
+
+{#                var selected_data = createNewTableData(grid_data, lastSelection, amount, second_amount, overtime, stoppage_add, price);#}
 
                 grid.jqGrid('setGridParam',
                                     {
@@ -202,6 +251,26 @@
                 return grid_data[index].second_amount;
             }
 
+            function unitFmatterZero (cellvalue, options, rowObject){
+                var index = findArrayElement(good_grid_data,'id', options.rowId);
+                return good_grid_data[index].amount+" "+ good_grid_data[index].unit;
+            }
+
+            function  unformatUnitZero (cellvalue, options, rowObject){
+                var index = findArrayElement(good_grid_data,'id', options.rowId);
+                return good_grid_data[index].amount;
+            }
+
+            function secondUnitFmatterZero (cellvalue, options, rowObject){
+                var index = findArrayElement(good_grid_data,'id', options.rowId);
+                return good_grid_data[index].second_amount+" "+ good_grid_data[index].second_unit;
+            }
+
+            function  secondUnformatUnitZero (cellvalue, options, rowObject){
+                var index = findArrayElement(good_grid_data,'id', options.rowId);
+                return good_grid_data[index].second_amount;
+            }
+
             function gridLoadComplete() {
                 calculateTotals();
                 setTimeout(function(){
@@ -225,6 +294,50 @@
                 }
                 return null;
             }
+{#            function createNewTableData(amount_value, second_amount_value, overtime_value, stoppage_add_value, price_value, addition_type){#}
+{##}
+{##}
+{##}
+{#                selected_data.overtime  = overtime_value;#}
+{#                selected_data.stoppage_add = stoppage_add_value;#}
+{#                selected_data.price  = price_value;#}
+{##}
+{#                selected_data.total_cost = selected_data.cost * (selected_data.amount*selected_data.second_amount + selected_data.overtime);#}
+{#                selected_data.total_msrp = selected_data.msrp * (selected_data.amount*selected_data.second_amount + selected_data.overtime);#}
+{#                selected_data.overtime_cost = selected_data.cost * selected_data.overtime;#}
+{##}
+{#                selected_data.stoppage_cost = selected_data.stoppage_add*selected_data.stoppage_ratio * selected_data.total_cost;#}
+{#                selected_data.stoppage_msrp = selected_data.stoppage_add*selected_data.stoppage_ratio * selected_data.total_msrp;#}
+{##}
+{#                selected_data.total_cost = selected_data.total_cost + selected_data.stoppage_cost;#}
+{#                selected_data.total_msrp = selected_data.total_msrp + selected_data.stoppage_msrp;#}
+{##}
+{##}
+{#                var new_data = {#}
+{#                                'budget_id': '{{ entity.id }}',#}
+{#                                'good_id':good_data[k].id,#}
+{#                                'id':good_data[k].id,#}
+{#                                'type':good_data[k].price_list_name,#}
+{#                                'name':good_data[k].name,#}
+{#                                'amount':amount_value,#}
+{#                                'second_amount':second_amount_value,#}
+{#                                'unit':good_data[k].unit.split('*')[0],#}
+{#                                'second_unit':good_data[k].unit.split('*')[1],#}
+{#                                'msrp':good_data[k].msrp,#}
+{#                                'total_msrp':0,#}
+{#                                'cost':good_data[k].cost,#}
+{#                                'total_cost':0,#}
+{#                                'realized Total':0,#}
+{#                                'overtime':overtime_value,#}
+{#                                'overtime_cost':0,#}
+{#                                'stoppage_cost': 0,#}
+{#                                'stoppage_msrp': 0,#}
+{#                                'stoppage_add': stoppage_add_value,#}
+{#                                'stoppage_ratio': good_data[k].stopage_ratio,#}
+{#                                'price':price_value,#}
+{#                                'note':'',#}
+{#                                'addition_type':''}#}
+{#            }#}
 
             function recalculateGridData(array, id, amount_value, second_amount_value, overtime_value, stoppage_add_value, price_value){
                 var index = findArrayElement(grid_data, 'id', id);
@@ -379,6 +492,63 @@
 
                 $('#total_price').text(accounting.formatMoney(total_price, { symbol: "TL",  format: "%v %s" }));
 
+                jQuery(function($) {
+
+                    grid.jqGrid({
+                        //direction: "rtl",
+                        data: grid_data,
+                        datatype: "local",
+                        colNames:['Addition Type', 'Type', 'Id', 'Name','Amount I', 'Amount II', 'Msrp_PerHour', 'Msrp', 'Cost_PerHour', 'Cost', 'Overtime', 'Overtime Cost', 'Stoppage','Stoppage Cost','Price', 'Notes',''],
+                        colModel:[
+                            {name:'addition_type', index:'addition_type', width:100, editable: false},
+                            {name:'type', index:'type', width:220, editable: false},
+                            {name:'id', index:'id', width:100, editable: false, hidden: true},
+                            {name:'name', index:'name', width:220, editable: false},
+                            {name:'amount', index:'amount', width:70, editable: true, formatter:unitFmatter,unformat:unformatUnit},
+                            {name:'second_amount', index:'second_amount', width:70, editable: true, formatter:secondUnitFmatter,unformat:secondUnformatUnit},
+                            {name:'msrp', index:'msrp', width:100, editable: true,  hidden: true},
+                            {name:'total_msrp', index:'total_msrp', width:100, editable: false, formatter:currencyFmatter, summaryTpl: "{0}", summaryType: "sum" },
+                            {name:'cost', index:'cost', width:100, editable: true,  hidden: true},
+                            {name:'total_cost', index:'total_cost', width:100, editable: false, formatter:currencyFmatter, summaryTpl: "{0}", summaryType: "sum" },
+                            {name:'overtime', index:'overtime', width:100, editable: true},
+                            {name:'overtime_cost', index:'overtime_cost', width:100, editable: false, formatter:currencyFmatter, summaryTpl: "{0}", summaryType: "sum" },
+                            {name:'stoppage_add', index:'stoppage_add', width:100, editable: true, edittype:"select", editoptions:{value:"1:1;0:0"}},
+                            {name:'stoppage_cost', index:'stoppage_cost', width:100, editable: false, formatter:currencyFmatter, summaryTpl: "{0}", summaryType: "sum" },
+{#                                {name:'realized_total',index:'realized_total',  width:150, editable: false,formatter:currencyFmatter, summaryTpl: "{0}", summaryType: "sum" },#}
+                            {name:'price', index:'price', width:150, sortable:true, editable: true, editoptions:{size:"20",maxlength:"30"} , formatter:currencyFmatter, unformat:unformatCurrency, summaryTpl: "{0}", summaryType: "sum" },
+                            {name:'note', index:'note', width:200, sortable:false, editable: true, edittype:"textarea", editoptions:{size:"20", maxlength:"80"}},
+                            {name:'delete_action', index:'delete_action', width:60, editable: false}
+                         ],
+                        viewrecords : true,
+                        rowNum:grid_data.length,
+                        rowList:[grid_data.length, 10, 10],
+                        pager : false,
+                        altRows: true,
+                        multiselect: false,
+                        loadonce: false,
+                        sortname: 'addition_type',
+                        height: 'auto',
+                        width: 'auto',
+                        footerrow: true,
+                        userDataOnFooter: true,
+                        grouping: true,
+                        groupingView : {
+                            groupField : ['type'],
+                            groupColumnShow : [true],
+                            groupText : ['<b>{0}</b> Sum of totaly: {price}', '{0} Sum of totaly: {price}'],
+                            groupCollapse : false,
+                            groupOrder: ['asc'],
+                            groupSummary : [true],
+                            showSummaryOnHide: true,
+                            groupDataSorted : true
+                        },
+                        editurl: '/budgetentries/edit?budget_id={{ entity.id }}',
+                        caption: "",
+                        onSelectRow: editRow,
+                        loadComplete : gridLoadComplete
+                    });
+                });
+
                 {% if entity.type.name == 'Planning'  %}
 
                     $.getJSON('/studios/{{ entity.id }}/goods/').then(function (good_data) {
@@ -393,8 +563,9 @@
                             }
 
                             if(add_grid_data){
-
-                                grid_data.push({    'budget_id': '{{ entity.id }}',
+                                console.log('good_data[k].name: '+ good_data[k].name);
+                                good_grid_data.push({
+                                                    'budget_id': '{{ entity.id }}',
                                                     'good_id':good_data[k].id,
                                                     'id':good_data[k].id,
                                                     'type':good_data[k].price_list_name,
@@ -416,14 +587,14 @@
                                                     'stoppage_ratio': good_data[k].stopage_ratio,
                                                     'price':0,
                                                     'note':'',
-                                                    'addition_type':'-----------'})
+                                                    'addition_type':''})
                             }
                         }
-                        jQuery(function($) {
 
-                            grid.jqGrid({
+                        jQuery(function($) {
+                            grid_zero.jqGrid({
                                 //direction: "rtl",
-                                data: grid_data,
+                                data: good_grid_data,
                                 datatype: "local",
                                 colNames:['Addition Type', 'Type', 'Id', 'Name','Amount I', 'Amount II', 'Msrp_PerHour', 'Msrp', 'Cost_PerHour', 'Cost', 'Overtime', 'Overtime Cost', 'Stoppage','Stoppage Cost','Price', 'Notes',''],
                                 colModel:[
@@ -431,8 +602,8 @@
                                     {name:'type', index:'type', width:220, editable: false},
                                     {name:'id', index:'id', width:100, editable: false, hidden: true},
                                     {name:'name', index:'name', width:220, editable: false},
-                                    {name:'amount', index:'amount', width:70, editable: true, formatter:unitFmatter,unformat:unformatUnit},
-                                    {name:'second_amount', index:'second_amount', width:70, editable: true, formatter:secondUnitFmatter,unformat:secondUnformatUnit},
+                                    {name:'amount', index:'amount', width:70, editable: true, formatter:unitFmatterZero,unformat:unformatUnitZero},
+                                    {name:'second_amount', index:'second_amount', width:70, editable: true, formatter:secondUnitFmatterZero,unformat:secondUnformatUnitZero},
                                     {name:'msrp', index:'msrp', width:100, editable: true,  hidden: true},
                                     {name:'total_msrp', index:'total_msrp', width:100, editable: false, formatter:currencyFmatter, summaryTpl: "{0}", summaryType: "sum" },
                                     {name:'cost', index:'cost', width:100, editable: true,  hidden: true},
@@ -441,38 +612,40 @@
                                     {name:'overtime_cost', index:'overtime_cost', width:100, editable: false, formatter:currencyFmatter, summaryTpl: "{0}", summaryType: "sum" },
                                     {name:'stoppage_add', index:'stoppage_add', width:100, editable: true, edittype:"select", editoptions:{value:"1:1;0:0"}},
                                     {name:'stoppage_cost', index:'stoppage_cost', width:100, editable: false, formatter:currencyFmatter, summaryTpl: "{0}", summaryType: "sum" },
-    {#                                {name:'realized_total',index:'realized_total',  width:150, editable: false,formatter:currencyFmatter, summaryTpl: "{0}", summaryType: "sum" },#}
+        {#                                {name:'realized_total',index:'realized_total',  width:150, editable: false,formatter:currencyFmatter, summaryTpl: "{0}", summaryType: "sum" },#}
                                     {name:'price', index:'price', width:150, sortable:true, editable: true, editoptions:{size:"20",maxlength:"30"} , formatter:currencyFmatter, unformat:unformatCurrency, summaryTpl: "{0}", summaryType: "sum" },
                                     {name:'note', index:'note', width:200, sortable:false, editable: true, edittype:"textarea", editoptions:{size:"20", maxlength:"80"}},
                                     {name:'delete_action', index:'delete_action', width:60, editable: false}
                                  ],
                                 viewrecords : true,
-                                rowNum:grid_data.length,
-                                rowList:[grid_data.length, 10, 10],
+                                rowNum:good_grid_data.length,
+                                rowList:[good_grid_data.length, 10, 10],
                                 pager : false,
                                 altRows: true,
                                 multiselect: false,
                                 loadonce: false,
-                                sortname: 'type',
-                                height: 700,
+                                sortname: 'addition_type',
+                                height: 'auto',
                                 width: 'auto',
                                 footerrow: true,
                                 userDataOnFooter: true,
                                 grouping: true,
-                                groupingView: {
-                                    groupField: ["addition_type"],
-                                    groupColumnShow: [false],
-                                    groupText: ["<b>{0}</b>"],
-                                    groupOrder: ["desc"],
-                                    groupSummary: [true],
-                                    groupCollapse: false
+                                groupingView : {
+                                    groupField : ['type'],
+                                    groupColumnShow : [true],
+                                    groupText : ['<b>{0}</b>', '{0}'],
+                                    groupCollapse : false,
+                                    groupOrder: ['asc'],
+                                    groupSummary : [true],
+                                    showSummaryOnHide: true,
+                                    groupDataSorted : true
                                 },
                                 editurl: '/budgetentries/edit?budget_id={{ entity.id }}',
                                 caption: "",
-                                onSelectRow: editRow,
-                                loadComplete : gridLoadComplete
+                                onSelectRow: addRowToBudget
                             });
                         });
+
                     });
                 {% else  %}
                     console.log('entity.type.name: {{ entity.type.name }}')
@@ -512,7 +685,7 @@
                             altRows: true,
                             multiselect: false,
                             loadonce: true,
-                            height: 700,
+                            height: 'auto',
                             width: 'auto',
                             sortname: 'type',
                             footerrow: true, // set a footer row

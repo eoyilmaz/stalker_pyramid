@@ -207,9 +207,9 @@
                       name='description'
                       class="autosize-transition span12"
                       style="overflow: hidden;
-                                 word-wrap: break-word;
-                                 resize: horizontal;
-                                 height: 150px;"
+                             word-wrap: break-word;
+                             resize: horizontal;
+                             height: 150px;"
                     ></textarea>
             </div>
         </div>
@@ -381,7 +381,6 @@ function init_dialog() {
                     else{
                         submit_finalize_form_url = null;
                     }
-
                 });
                 completed_percent = (100 - ((remaining_seconds_after_this_time_log / parseFloat(data[0].schedule_seconds)) * 100)).toFixed(1);
             } else if(remaining_minutes_after_this_time_log==0) {

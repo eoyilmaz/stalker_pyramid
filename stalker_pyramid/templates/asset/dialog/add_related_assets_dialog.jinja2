@@ -6,12 +6,43 @@
               role='form'
               method='post'>
         <div class='control-group'>
+            <label class='span3 control-label' for='environments'>Environment</label>
+            <div class='span9'>
+                <select id='environments'
+                        multiple=''
+                        class='input-block-level tag-input-style'
+                        name='environment_ids'
+                        is_updating=false></select>
+            </div>
+        </div>
+
+        <div class="space-5"></div>
+        <div class="hr dotted"></div>
+        <div class="space-5"></div>
+
+        <div class="control-group">
+            <label class="control-label">Do you want to list asset that has rig task completed?</label>
+
+            <div class="controls">
+                <div class="span4">
+                    <label>
+                        <input id="switch-field" class="ace ace-switch ace-switch-2" type="checkbox" />
+                        <span class="lbl"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="space-5"></div>
+
+        <div class='control-group'>
             <label class='span3 control-label' for='characters'>Characters</label>
             <div class='span9'>
                 <select id='characters'
                         multiple=''
                         class='input-block-level tag-input-style'
                         name='character_ids'
+                        is_updating=false
                         ></select>
             </div>
         </div>
@@ -22,6 +53,7 @@
                         multiple=''
                         class='input-block-level tag-input-style'
                         name='vehicle_ids'
+                        is_updating=false
                         ></select>
             </div>
         </div>
@@ -32,46 +64,77 @@
                         multiple=''
                         class='input-block-level tag-input-style'
                         name='active_prop_ids'
+                        is_updating=false
                         ></select>
             </div>
         </div>
-        <div class='control-group'>
-            <label class='span3 control-label' for='environments'>Environment</label>
-            <div class='span9'>
-                <select id='environments'
-                        multiple=''
-                        class='input-block-level tag-input-style'
-                        name='environment_ids'></select>
-            </div>
-        </div>
+
+
     </form>
 </div>
 
 <script type="text/javascript">
-    var get_asset_by_type = function(query, field_name, asset_template){
+    var switch_for_rig = $("#switch-field");
+    var submit_button = $('#dialog_template_submit_button');
+    var character_data = [];
+    var activeprop_data = [];
+    var vehicle_data = [];
 
+    {% raw %}
+        var asset_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
+    {% endraw %}
+
+    var format_field = function(field_name){
         var field = $('#'+field_name);
-
         field.chosen({
             search_contains: true,
             enable_split_word_search: true
         });
 
-        $.getJSON('/projects/{{ project.id }}/assets/?'+query).then(function(data){
-            // remove current elements
-            field.find('option').remove();
 
-            // append new ones
-            var data_count = data.length;
-            // append a single empty option to the responsible field
-            for (var i=0; i < data_count; i++){
+        field.find('option').remove();
+        return field;
+    }
+
+    var field_update_mode_checker = function(){
+
+        if ($('#environments').attr('is_updating') === 'true' ||
+            $('#characters').attr('is_updating') === 'true' ||
+            $('#active_props').attr('is_updating') === 'true' ||
+            $('#vehicles').attr('is_updating') === 'true' ) {
+            // disable the Submit button
+            setTimeout(function(){submit_button.button('loading')}, 0);
+
+        } else {
+            switch_for_rig.on('click', function(e){
+                    load_data_to_field(character_data, 'characters', asset_template,this.checked);
+                    load_data_to_field(activeprop_data, 'active_props', asset_template,this.checked);
+                    load_data_to_field(vehicle_data, 'vehicles', asset_template,this.checked);
+                });// enable the Submit button
+            setTimeout(function(){submit_button.button('reset')}, 0);
+        }
+    };
+
+    var load_data_to_field = function(data, field_name, asset_template, checker){
+        var field = format_field(field_name);
+
+        for (var i=0; i < data.length; i++){
+            if(checker){
+                if(data[i]['Rig']){
+                    if(data[i]['Rig'][0].status == 'CMPL'){
+                        field.append(asset_template(data[i]));
+                    }
+                }
+                else{
+                    field.append(asset_template(data[i]));
+                }
+            }
+            else{
                 field.append(asset_template(data[i]));
             }
 
-            // update the chosen fields
-            field.trigger('liszt:updated');
-        });
-
+        }
+        field.trigger('liszt:updated');
 
     }
 
@@ -84,30 +147,71 @@
             label.append('<span>Add Assets</span>');
 
 
+            format_field('environments');
+            format_field('characters');
+            format_field('active_props');
+            format_field('vehicles');
 
-            {% raw %}
-                var asset_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
-            {% endraw %}
-
-            var character_type_names=['Character%20A1', 'Character%20A2','Character%20B','Character%20C','Character%20F'];
-            var characters_type_query ='asset_type_names='+character_type_names[0];
-            for (var i=1; i<character_type_names.length; i++){
-                characters_type_query +='&asset_type_names='+character_type_names[i];
-            }
-            get_asset_by_type(characters_type_query, 'characters', asset_template);
 
             var environment_type_names=['Exterior', 'Interior','Building','Building%20Part','BG-Building'];
             var environment_type_query ='asset_type_names='+environment_type_names[0];
             for (var j=1; j<environment_type_names.length; j++){
                 environment_type_query +='&asset_type_names='+environment_type_names[j];
             }
-            get_asset_by_type(environment_type_query, 'environments', asset_template);
-            get_asset_by_type('asset_type_names=Active%20Prop', 'active_props', asset_template);
-            get_asset_by_type('asset_type_names=Vehicle', 'vehicles', asset_template);
+            $('#environments').attr('is_updating', true);
+            $.getJSON('/projects/{{ project.id }}/assets/?'+environment_type_query).then(function(data){
+                var data_count = data.length;
+                load_data_to_field(data, 'environments', asset_template, switch_for_rig.checked);
+
+                $('#environments').attr('is_updating', false);
+                field_update_mode_checker();
+            });
+
+            var character_type_names=['Character%20A1', 'Character%20A2','Character%20B','Character%20C','Character%20F'];
+            var characters_type_query ='asset_type_names='+character_type_names[0];
+            for (var i=1; i<character_type_names.length; i++){
+                characters_type_query +='&asset_type_names='+character_type_names[i];
+            }
+
+            $('#characters').attr('is_updating', true);
+            $.getJSON('/projects/{{ project.id }}/assets/?'+characters_type_query).then(function(data){
+
+                character_data = data;
+                load_data_to_field(character_data, 'characters', asset_template, switch_for_rig.checked);
+
+                $('#characters').attr('is_updating', false);
+                field_update_mode_checker();
+            });
+
+            $('#active_props').attr('is_updating', true);
+            $.getJSON('/projects/{{ project.id }}/assets/?asset_type_names=Active%20Prop').then(function(data){
+
+                activeprop_data = data;
+                load_data_to_field(activeprop_data, 'active_props', asset_template, switch_for_rig.checked);
+                field_update_mode_checker();
+
+                $('#active_props').attr('is_updating', false);
+                field_update_mode_checker();
+
+
+            });
+
+
+            $('#vehicles').attr('is_updating', true);
+            $.getJSON('/projects/{{ project.id }}/assets/?asset_type_names=Vehicle').then(function(data){
+                var data_count = data.length;
+                vehicle_data = data;
+                load_data_to_field(vehicle_data, 'vehicles', asset_template, switch_for_rig.checked);
+
+
+                $('#vehicles').attr('is_updating', false);
+                field_update_mode_checker();
+            });
+            field_update_mode_checker();
 
 
 
-            var submit_button = $('#dialog_template_submit_button');
+
             submit_button.on('click', function (e) {
 
                 e.stopPropagation();
