@@ -155,7 +155,8 @@
                 get_icon('shot'),
                 '/entities/{{ task.id }}/shots/count/'
             );
-
+        {% endif %}
+        {% if entity.entity_type == 'Sequence' or entity.entity_type == 'Shot' or entity.type.name == 'Scene'%}
             menu_of('Related Assets',
                 "{%- if request.current_route_path() == request.route_path('list_entity_related_assets', id=task.id, e_type='Asset', d_type='depends') -%}'active',{%- else -%},{%- endif -%}",
                 '{{ request.route_path('list_entity_related_assets', id=task.id, e_type='Asset', d_type='depends') }}',
