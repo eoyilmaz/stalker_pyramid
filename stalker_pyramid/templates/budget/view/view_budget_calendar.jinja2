@@ -375,7 +375,7 @@
         }
 
         function convertLinkData(item){
-            console.log('item.id: '+ item.id);
+{#            console.log('item.id: '+ item.id);#}
 
             var source_task = gantt.getTask(item.source);
             var target_task = gantt.getTask(item.target);
@@ -472,7 +472,7 @@
         }
 
         function updateTaskAction(id) {
-            console.log("updateTaskAction: "+ id);
+{#            console.log("updateTaskAction: "+ id);#}
             var task = gantt.getTask(id);
             if(task.duration > 0){
                 $.post(
@@ -533,7 +533,6 @@
         }
 
         function checkLinkedTasks(task){
-
 
             for(var i=0; i < links.length; i++){
 
@@ -720,8 +719,6 @@
 
         }
 
-
-
         $(document).ready(function () {
 
             doOnLoad();
@@ -730,7 +727,6 @@
                 e.stopPropagation();
 
                 gantt.eachSelectedTask(function(task_id){
-                    console.log("task_id: " + task_id);
                     shiftTask(task_id, -1)
                 });
             });
@@ -745,7 +741,7 @@
             });
 
             $('#export_button').on('click', function (e) {
-                console.log(gantt.getLinks())
+{#                console.log(gantt.getLinks())#}
                 e.preventDefault();
                 e.stopPropagation();
 {#                gantt.exportToPDF();#}

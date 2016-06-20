@@ -46,18 +46,18 @@
         <div class="widget-header widget-header-small header-color-asset">
             <h5 id="items_header" class="smaller"></h5>
             <div class="widget-toolbar">
-{#                {% if has_permission('Create_Asset') %}#}
-{#                    &nbsp#}
-{#                    <a data-target="#dialog_template"#}
-{#                       data-toggle="modal"#}
-{#                       data-keyboard=false#}
-{#                       href="{{ request.route_url("create_asset_dialog", id=-1, _query={'project_id': entity.id }) }}"#}
-{#                       class="white">#}
-{#                        <i class="icon-plus"></i>#}
-{#                        New#}
-{#                    </a>#}
-{#                    &nbsp&nbsp#}
-{#                {% endif %}#}
+                {% if has_permission('Update_Asset') %}
+                    &nbsp
+                    <a data-target="#dialog_template"
+                       data-toggle="modal"
+                       data-keyboard=false
+                       href="{{ request.route_url("add_related_assets_dialog", id=entity.id, _query={'project_id': entity.project.id }) }}"
+                       class="white">
+                        <i class="icon-plus"></i>
+                        ADD
+                    </a>
+                    &nbsp&nbsp
+                {% endif %}
                 <a href="#" data-action="collapse">
                     <i class="icon-chevron-down"></i>
                 </a>

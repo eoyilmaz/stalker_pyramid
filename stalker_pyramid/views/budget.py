@@ -445,14 +445,14 @@ def edit_budgetentry(request):
     oper = request.params.get('oper', None)
 
     if oper == 'edit':
-        e_id = request.params.get('id')
-        logger.debug('***edit_budgetentry good: %s ***' % e_id)
+        id = request.params.get('id')
+        logger.debug('***edit_budgetentry good: %s ***' % id)
 
-        entity = Entity.query.filter_by(id=e_id).first()
+        entity = Entity.query.filter_by(id=id).first()
 
         if not entity:
             transaction.abort()
-            return Response('There is no entry with id %s' % e_id, 500)
+            return Response('There is no entry with id %s' % id, 500)
 
         if entity.entity_type == 'Good':
             logger.debug('***create budgetentry method starts ***')
@@ -464,7 +464,7 @@ def edit_budgetentry(request):
 
         else:
             transaction.abort()
-            return Response('There is no budgetentry or good with id %s' % e_id, 500)
+            return Response('There is no budgetentry or good with id %s' % id, 500)
 
     elif oper == 'del':
         logger.debug('***delete budgetentry method starts ***')
