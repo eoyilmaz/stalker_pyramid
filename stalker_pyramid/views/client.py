@@ -66,7 +66,9 @@ def client_dialog(request):
     logger.debug("client_report_template %s" % client_report_template_name)
     if client:
         logger.debug("client.name %s" % client.name)
-        client_report_template_name = get_report_template(client)['name']
+        report_template = get_report_template(client)
+        if report_template:
+            client_report_template_name = report_template['name']
 
     return {
         'has_permission': PermissionChecker(request),
@@ -607,37 +609,37 @@ def get_report_template_by_name(name):
             return rt
 
 
-@view_config(
-    route_name='generate_report'
-)
-def generate_report_view(request):
-    """generates report and allows the user to download it
-    """
-    budget_id = request.matchdict['budget_id']
-
-    from stalker import Budget
-    budget = Budget.query.filter(Budget.id == budget_id).first()
-
-    if budget:
-        project = budget.project
-        client = project.client
-        if not client:
-            raise Response('No client in the project')
-
-        import tempfile
-        temp_report_path = generate_report(budget)
-
-        from pyramid.response import FileResponse
-        response = FileResponse(
-            temp_report_path,
-            request=request,
-            content_type='application/force-download'
-        )
-
-        report_file_nice_name = '%s_%s.xlsx' % (
-            project.code, budget.name.replace(' ', '_')
-        )
-        response.headers['content-disposition'] = \
-            str('attachment; filename=%s' % report_file_nice_name)
-
-        return response
+# @view_config(
+#     route_name='generate_report'
+# )
+# def generate_report_view(request):
+#     """generates report and allows the user to download it
+#     """
+#     budget_id = request.matchdict['budget_id']
+#
+#     from stalker import Budget
+#     budget = Budget.query.filter(Budget.id == budget_id).first()
+#
+#     if budget:
+#         project = budget.project
+#         client = project.client
+#         if not client:
+#             raise Response('No client in the project')
+#
+#         import tempfile
+#         temp_report_path = generate_report(budget)
+#
+#         from pyramid.response import FileResponse
+#         response = FileResponse(
+#             temp_report_path,
+#             request=request,
+#             content_type='application/force-download'
+#         )
+#
+#         report_file_nice_name = '%s_%s.xlsx' % (
+#             project.code, budget.name.replace(' ', '_')
+#         )
+#         response.headers['content-disposition'] = \
+#             str('attachment; filename=%s' % report_file_nice_name)
+#
+#         return response

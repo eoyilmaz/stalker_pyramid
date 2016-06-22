@@ -363,7 +363,7 @@ def get_entity_projects(request):
                 'description': len(project.users),
                 'type_name': project.type.name if project.type else None,
                 'percent_complete': project.percent_complete,
-                'item_view_link': '/project/%s/view' % project.id,
+                'item_view_link': '/projects/%s/view' % project.id,
                 'item_remove_link': '/entities/%s/%s/remove/dialog?came_from=%s'%(project.id, entity.id, request.current_route_path())
                 if PermissionChecker(request)('Update_Project') else None
             }
