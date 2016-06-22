@@ -103,7 +103,7 @@
                                 class="btn btn-small btn-danger pull-right"
                                 data-placement="bottom"
                                 title="Send to Client"
-                                >Send to Client<
+                                >
                             <a  href="/budgets/{{ entity.id }}/generate/report?" class="white"><i class="icon-envelope bigger-130"></i> Send to Client</a>
                         </button>
                     </div>
@@ -371,22 +371,22 @@
 
             }
 
-            var send_button = $('#send_button');
-             send_button.on('click', function (e) {
-                e.stopPropagation();
-                e.preventDefault();
-
-                send_button.button('loading');
-
-                var url = '/budgets/{{ entity.id }}/generate/report?total_price='+total_price;
-
-                $.post(url).done(function (jqXHR) {
-                    window.location.reload();
-                }).fail(function (jqXHR) {
-                    bootbox.alert(jqXHR.responseText);
-                    send_button.button('reset');
-                });
-            });
+{#            var send_button = $('#send_button');#}
+{#             send_button.on('click', function (e) {#}
+{#                e.stopPropagation();#}
+{#                e.preventDefault();#}
+{##}
+{#                send_button.button('loading');#}
+{##}
+{#                var url = '/budgets/{{ entity.id }}/generate/report?total_price='+total_price;#}
+{##}
+{#                $.post(url).done(function (jqXHR) {#}
+{#                    window.location.reload();#}
+{#                }).fail(function (jqXHR) {#}
+{#                    bootbox.alert(jqXHR.responseText);#}
+{#                    send_button.button('reset');#}
+{#                });#}
+{#            });#}
 
             $.getJSON('/budgets/{{ entity.id }}/entries/').then(function (entry_data) {
 
