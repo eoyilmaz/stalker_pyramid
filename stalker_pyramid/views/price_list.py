@@ -33,6 +33,7 @@ from stalker_pyramid.views import (log_param, get_logged_in_user,
                                    StdErrToHTMLConverter)
 
 import logging
+from stalker_pyramid.views.type import query_type
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -126,6 +127,7 @@ def get_goods(request):
             'updated_by_name': good.updated_by.name if good.updated_by else None,
             'date_updated': milliseconds_since_epoch(good.date_updated),
             'price_list_name': good.price_lists[0].name if good.price_lists else None,
+            'type_name': good.type.name if good.type else None,
             'related_goods': related_goods,
             'linked_goods': linked_goods,
             'stopage_ratio': stopage_ratio
@@ -204,6 +206,7 @@ def create_good(request):
     unit = request.params.get('unit', None)
     cost = request.params.get('cost', None)
     price_list_name = request.params.get('price_list_name', None)
+    type_name = request.params.get('type_name', None)
     stopage_ratio = request.params.get('stopage_ratio', None)
 
     logger.debug('came_from : %s' % came_from)
@@ -213,10 +216,11 @@ def create_good(request):
     logger.debug('cost : %s' % cost)
     logger.debug('price_list_name : %s' % price_list_name)
     logger.debug('stopage_ratio : %s' % stopage_ratio)
+    logger.debug('type_name : %s' % type_name)
 
     # create and add a new good
-    if name and msrp and unit and cost and price_list_name and stopage_ratio:
-
+    if name and msrp and unit and cost and price_list_name and stopage_ratio and type_name:
+        good_type = query_type('Good', type_name)
         price_list = query_price_list(price_list_name)
         try:
             # create the new group
@@ -225,6 +229,7 @@ def create_good(request):
                 msrp=int(msrp),
                 unit=unit,
                 cost=int(cost),
+                type=good_type,
                 price_lists=[price_list],
                 generic_text=json.dumps({'stopage_ratio': stopage_ratio})
             )
@@ -298,6 +303,7 @@ def update_good(request):
     unit = request.params.get('unit', None)
     cost = request.params.get('cost', None)
     price_list_name = request.params.get('price_list_name', None)
+    type_name = request.params.get('type_name', None)
     stopage_ratio = request.params.get('stopage_ratio', None)
 
     logger.debug('name : %s' % name)
@@ -305,8 +311,8 @@ def update_good(request):
     logger.debug('unit : %s' % unit)
     logger.debug('cost : %s' % cost)
 
-    if name and msrp and unit and cost and stopage_ratio:
-
+    if name and msrp and unit and cost and stopage_ratio and type_name:
+        good_type = query_type('Good', type_name)
         price_list = query_price_list(price_list_name)
 
         good.name = name
@@ -314,6 +320,7 @@ def update_good(request):
         good.unit = unit
         good.cost = int(cost)
         good.price_lists = [price_list]
+        good.type = good_type
         good.updated_by = logged_in_user
         good.date_updated = utc_now
 

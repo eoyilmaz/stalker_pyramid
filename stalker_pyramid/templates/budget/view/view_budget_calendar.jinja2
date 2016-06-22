@@ -313,6 +313,8 @@
 
             gantt.attachEvent("onTaskDrag", function(id, mode, task, original, e){
 
+                console.log('onTaskDrag');
+
                 var parent = task.parent ? gantt.getTask(task.parent) : null,
                     children = gantt.getChildren(id),
                     modes = gantt.config.drag_mode;
@@ -353,6 +355,8 @@
 
             gantt.attachEvent("onAfterTaskDrag", function(id, mode, e){
 
+                console.log('onAfterTaskDrag');
+
                 var task = gantt.getTask(id);
                 checkLinkedTasks(task);
 
@@ -369,6 +373,8 @@
             });
 
             gantt.attachEvent("onAfterLinkAdd", function(id,item){
+                console.log('onAfterLinkAdd');
+
                 convertLinkData(item);
                 createLinkAction(item);
             });
@@ -510,7 +516,7 @@
         }
 
         function createLinkAction(l_item) {
-
+            console.log('createLinkAction');
             $.post(
                 '/budgets/{{ entity.id }}/calendar/link/create',
                 $.param(l_item)

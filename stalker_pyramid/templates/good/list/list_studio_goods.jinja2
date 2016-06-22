@@ -92,57 +92,61 @@
     <script type="text/javascript">
         $(document).ready(function () {
 
-            $.getJSON('/price_lists/').then(function (price_list_data) {
-                var good_price_list = $('#good_price_list');
-
-                var available_pricelist = [];
-                for (var k=0; k < price_list_data.length; k++){
-                    console.log(price_list_data[k].name)
-                    available_pricelist.push(price_list_data[k].name);
+            $.getJSON('/types/?target_entity_type=Good').then(function (good_type_data) {
+                var available_good_types = [];
+                for (var k=0; k < good_type_data.length; k++){
+                    available_good_types.push(good_type_data[k].name);
                 }
+                $.getJSON('/price_lists/').then(function (price_list_data) {
 
-                $.getJSON('/studios/{{ entity.id }}/goods/').then(function (good_data) {
-
-                    var grid_data = good_data;
-                    var available_good_units_as_list = [];
-                    var good_names = [];
-
-
-                    for(var i=0; i<grid_data.length; i++ ){
-                        console.log('grid_data[i]: '+ grid_data[i].price_list_name);
-                        good_names.push(grid_data[i].name);
-
-                        grid_data[i]['created_by'] = "<a href='/users/"+grid_data[i]['created_by_id']+"/view'>"+grid_data[i]['created_by_name']+"</a>";
-                        if(grid_data[i]['updated_by_id']){
-                            grid_data[i]['updated_by'] = "<a href='/users/"+grid_data[i]['updated_by_id']+"/view'>"+grid_data[i]['updated_by_name']+"</a>";
-                        }
-                        grid_data[i].date_updated = "<span class='date'>"+ new Date(grid_data[i].date_updated).format('yyyy-mm-dd HH:MM')+"</span>";
-
-
-                        if (available_good_units_as_list.indexOf(grid_data[i].unit) == -1){
-                            available_good_units_as_list.push(grid_data[i].unit);
-                        }
-{#                            console.log(grid_data[i]['related_goods']);#}
-                        var related_goods = grid_data[i]['related_goods'];
-                        var related_goods_str = "";
-
-                        for(var m=0; m<related_goods.length;m++){
-                            related_goods_str += "<b>"+related_goods[m].name+"</b> ratio: "+related_goods[m].ratio+"<a data-target='#dialog_template' data-toggle='modal' data-keyboard=false href='/goods/"+grid_data[i].id+"/delete/relation/dialog?related_good_id="+related_goods[m].id+"'> <i class='icon-trash'></i></a><br/>";
-                        }
-                        related_goods_str += "<a data-target='#dialog_template' data-toggle='modal' data-keyboard=false href='/goods/"+grid_data[i].id+"/update/relation/dialog'>Add New Relation</a>"
-                        grid_data[i]['related_goods_str'] = related_goods_str;
-
-                        var linked_goods = grid_data[i]['linked_goods'];
-                        var linked_goods_str = "";
-
-                        for(var m=0; m<linked_goods.length;m++){
-                            linked_goods_str += "<b>"+linked_goods[m].name+"</b> ratio: "+linked_goods[m].ratio+"<br/>";
-                        }
-                        grid_data[i]['linked_goods_str'] = linked_goods_str;
-
+                    var available_pricelist = [];
+                    for (var k=0; k < price_list_data.length; k++){
+                        console.log(price_list_data[k].name);
+                        available_pricelist.push(price_list_data[k].name);
                     }
 
-                    jQuery(function($) {
+                    $.getJSON('/studios/{{ entity.id }}/goods/').then(function (good_data) {
+
+                        var grid_data = good_data;
+                        var available_good_units_as_list = [];
+                        var good_names = [];
+
+
+                        for(var i=0; i<grid_data.length; i++ ){
+                            console.log('grid_data[i]: '+ grid_data[i].price_list_name);
+                            good_names.push(grid_data[i].name);
+
+                            grid_data[i]['created_by'] = "<a href='/users/"+grid_data[i]['created_by_id']+"/view'>"+grid_data[i]['created_by_name']+"</a>";
+                            if(grid_data[i]['updated_by_id']){
+                                grid_data[i]['updated_by'] = "<a href='/users/"+grid_data[i]['updated_by_id']+"/view'>"+grid_data[i]['updated_by_name']+"</a>";
+                            }
+                            grid_data[i].date_updated = "<span class='date'>"+ new Date(grid_data[i].date_updated).format('yyyy-mm-dd HH:MM')+"</span>";
+
+
+                            if (available_good_units_as_list.indexOf(grid_data[i].unit) == -1){
+                                available_good_units_as_list.push(grid_data[i].unit);
+                            }
+    {#                            console.log(grid_data[i]['related_goods']);#}
+                            var related_goods = grid_data[i]['related_goods'];
+                            var related_goods_str = "";
+
+                            for(var m=0; m<related_goods.length;m++){
+                                related_goods_str += "<b>"+related_goods[m].name+"</b> ratio: "+related_goods[m].ratio+"<a data-target='#dialog_template' data-toggle='modal' data-keyboard=false href='/goods/"+grid_data[i].id+"/delete/relation/dialog?related_good_id="+related_goods[m].id+"'> <i class='icon-trash'></i></a><br/>";
+                            }
+                            related_goods_str += "<a data-target='#dialog_template' data-toggle='modal' data-keyboard=false href='/goods/"+grid_data[i].id+"/update/relation/dialog'>Add New Relation</a>"
+                            grid_data[i]['related_goods_str'] = related_goods_str;
+
+                            var linked_goods = grid_data[i]['linked_goods'];
+                            var linked_goods_str = "";
+
+                            for(var m=0; m<linked_goods.length;m++){
+                                linked_goods_str += "<b>"+linked_goods[m].name+"</b> ratio: "+linked_goods[m].ratio+"<br/>";
+                            }
+                            grid_data[i]['linked_goods_str'] = linked_goods_str;
+
+                        }
+
+                        jQuery(function($) {
                         var grid_selector = "#grid-table";
                         var pager_selector = "#grid-pager";
                         var grid = jQuery(grid_selector);
@@ -153,6 +157,7 @@
                             datatype: "local",
                             colNames:[
                                         'ID',
+                                        'Type',
                                         'Price List',
                                         'Name',
                                         'MSRP',
@@ -166,6 +171,24 @@
                             ],
                             colModel:[
                                 {name:'id',index:'id', width:90, sortable:true, editable: false},
+                                {
+                                    name:'type_name',
+                                    index:'type_name',
+                                    width:160,
+                                    editable: true,
+                                    edittype:"text",
+                                    editoptions: {
+                                        dataInit: function (element) {
+                                            window.setTimeout(function () {
+                                                $(element).autocomplete({
+                                                    id: 'AutoComplete',
+                                                source: available_good_types,
+                                                autoFocus: true
+                                                });
+                                            }, 100);
+                                        }
+                                    }
+                                },
                                 {
                                     name:'price_list_name',
                                     index:'price_list_name',
@@ -283,70 +306,6 @@
                             //alert(response.responseJSON.error);
                         }
 
-                        //navButtons
-{#                            jQuery(grid_selector).jqGrid('navGrid',pager_selector,#}
-{#                                { 	//navbar options#}
-{#                                    edit: true,#}
-{#                                    editicon : 'icon-pencil blue',#}
-{#                                    add: false,#}
-{#                                    addicon : 'icon-plus-sign purple',#}
-{#                                    del: true,#}
-{#                                    delicon : 'icon-trash red',#}
-{#                                    search: true,#}
-{#                                    searchicon : 'icon-search orange',#}
-{#                                    refresh: true,#}
-{#                                    refreshicon : 'icon-refresh green',#}
-{#                                    view: true,#}
-{#                                    viewicon : 'icon-zoom-in grey'#}
-{#                                },#}
-{#                                {#}
-{#                                    //edit record form#}
-{#                                    //closeAfterEdit: true,#}
-{#                                    recreateForm: true,#}
-{#                                    beforeShowForm : function(e) {#}
-{#                                        var form = $(e[0]);#}
-{#                                        form.closest('.ui-jqdialog').find('.ui-jqdialog-titlebar').wrapInner('<div class="widget-header" />')#}
-{#                                        style_edit_form(form);#}
-{#                                    }#}
-{#                                },#}
-{#                                {#}
-{#                                    //delete record form#}
-{#                                    recreateForm: true,#}
-{#                                    beforeShowForm : function(e) {#}
-{#                                        var form = $(e[0]);#}
-{#                                        if(form.data('styled')) return false;#}
-{##}
-{#                                        form.closest('.ui-jqdialog').find('.ui-jqdialog-titlebar').wrapInner('<div class="widget-header" />')#}
-{#                                        style_delete_form(form);#}
-{##}
-{#                                        form.data('styled', true);#}
-{#                                    },#}
-{#                                    onClick : function(e) {#}
-{#                                        alert(1);#}
-{#                                    }#}
-{#                                },#}
-{##}
-{#                                {#}
-{#                                    //search form#}
-{#                                    recreateForm: true,#}
-{#                                    afterShowSearch: function(e){#}
-{#                                        var form = $(e[0]);#}
-{#                                        form.closest('.ui-jqdialog').find('.ui-jqdialog-title').wrap('<div class="widget-header" />')#}
-{#                                        style_search_form(form);#}
-{#                                    },#}
-{#                                    afterRedraw: function(){#}
-{#                                        style_search_filters($(this));#}
-{#                                    }#}
-{#                                    ,#}
-{#                                    multipleSearch: false#}
-{#                                    /**#}
-{#                                    multipleGroup:true,#}
-{#                                    showQuery: true#}
-{#                                    */#}
-{#                                }#}
-{##}
-{#                            )#}
-
                         function style_edit_form(form) {
 
                             //update buttons classes
@@ -438,6 +397,7 @@
                             var date = moment.utc($(this).text());
                             $(this).text(date.fromNow());
                         });
+                    });
                     });
                 });
             });

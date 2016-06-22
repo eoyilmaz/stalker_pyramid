@@ -531,12 +531,14 @@ def create_budgetentry(request):
     price = request.params.get('price', 0)
     description = request.params.get('description', '')
 
-    generic_data = {'dataSource': 'Producer',
+    generic_data = {
+                    'dataSource': 'Producer',
                     'secondaryFactor': [{'unit': good.unit.split('*')[1],
                                         'amount': amount,
                                         'second_amount': second_amount}],
                     'overtime': 0,
-                    'stoppage_add': 0}
+                    'stoppage_add': 0
+    }
 
     if not amount or amount == '0':
         transaction.abort()
@@ -586,12 +588,10 @@ def create_budgetentry_action(budget, good, amount, second_amount, price, descri
                 return
 
             new_secondaryFactor = new_generic_data["secondaryFactor"]
-
             secondaryFactor = budget_entry.get_generic_text_attr('secondaryFactor')
             secondaryFactor.extend(new_secondaryFactor)
 
             budget_entry.set_generic_text_attr("secondaryFactor", secondaryFactor)
-
             return
 
     realize_total = good.msrp
@@ -619,12 +619,14 @@ def create_budgetentry_action(budget, good, amount, second_amount, price, descri
             for l_good in linked_goods:
                 linked_good = Good.query.filter(Good.id == l_good["id"]).first()
 
-                generic_data = {'dataSource': 'Linked',
-                    'secondaryFactor': [{'unit': linked_good.unit.split('*')[1],
-                                         'amount': amount,
-                                         'second_amount':1}],
-                    'overtime': 0,
-                    'stoppage_add': 0}
+                generic_data = {
+                                'dataSource': 'Linked',
+                                'secondaryFactor': [{'unit': linked_good.unit.split('*')[1],
+                                'amount': amount,
+                                'second_amount':1}],
+                                'overtime': 0,
+                                'stoppage_add': 0
+                }
 
                 create_budgetentry_action(
                     budget,
@@ -710,7 +712,7 @@ def update_budgetentry(request):
 
     budgetentry.set_generic_text_attr("overtime", overtime)
     budgetentry.set_generic_text_attr("stoppage_add", stoppage_add)
-
+    check_linked_good_budgetentries(budgetentry.good, budgetentry.budget)
 
     request.session.flash(
         'success:updated %s budgetentry!' % budgetentry.name
@@ -1208,8 +1210,9 @@ def budget_calendar_link_create(request):
                 'type': type,
                 'id': id
     }
+    if new_link not in links:
+        links.append(new_link)
 
-    links.append(new_link)
     logger.debug('links: %s' % links)
 
     budget.set_generic_text_attr("links", links)
@@ -1238,12 +1241,10 @@ def budget_calendar_link_delete(request):
     logger.debug('link_id: %s' % link_id)
 
     links = budget.get_generic_text_attr("links")
-    logger.debug('links: %s' % links)
     deleted_link = filter(lambda x: x['id'] == link_id, links)
 
     links.remove(deleted_link[0])
 
-    logger.debug('links: %s' % links)
 
     budget.set_generic_text_attr("links", links)
     budget.date_updated = utc_now
@@ -1329,13 +1330,19 @@ def budget_calendar_task_action(request):
         return Response('Please supply the start date', 500)
 
     if mode == 'Create':
-        generic_data = {'dataSource': 'Calendar',
-                    'secondaryFactor': [{'start_date': start_date,
-                                         'unit': good.unit.split('*')[1],
-                                         'amount': amount,
-                                         'second_amount': second_amount}],
-                    'overtime': 0,
-                    'stoppage_add': 0}
+        generic_data = {
+                        'dataSource': 'Calendar',
+                        'secondaryFactor': [
+                            {
+                                 'start_date': start_date,
+                                 'unit': good.unit.split('*')[1],
+                                 'amount': amount,
+                                 'second_amount': second_amount
+                            }
+                        ],
+                        'overtime': 0,
+                        'stoppage_add': 0
+        }
 
         create_budgetentry_action(budget,
                                   good,
@@ -1359,17 +1366,51 @@ def budget_calendar_task_action(request):
         budgetentry.date_updated = utc_now
         budgetentry.updated_by = logged_in_user
         secondaryFactor = budgetentry.get_generic_text_attr("secondaryFactor")
-        secondaryFactor[int(secondaryFactor_id)] = {'start_date': start_date,
-                                                     'unit': good.unit.split('*')[1],
-                                                     'amount': amount,
-                                                     'second_amount': second_amount}
+        secondaryFactor[int(secondaryFactor_id)] = {
+                                                        'start_date': start_date,
+                                                        'unit': good.unit.split('*')[1],
+                                                        'amount': amount,
+                                                        'second_amount': second_amount
+        }
+
         budgetentry.set_generic_text_attr("secondaryFactor", secondaryFactor)
         total_amount = 0
+
         for fact in secondaryFactor:
             total_amount += (int(fact['amount'])*int(fact['second_amount']))
+
         budgetentry.amount = total_amount
 
+        check_linked_good_budgetentries(budgetentry.good, budget)
+
     return Response('BudgetEntry Created successfully')
+
+def check_linked_good_budgetentries(good, budget):
+    """budget_calendar_create_task
+    """
+    logger.debug('***check_linked_good_budgetentries method starts ***')
+
+    linked_goods = good.get_generic_text_attr('linked_goods')
+    if linked_goods:
+        for l_good in linked_goods:
+            linked_good = Good.query.filter(Good.id == l_good["id"]).first()
+            linked_budgetentry = BudgetEntry.query.filter(BudgetEntry.budget == budget).\
+                filter(BudgetEntry.good == linked_good).first()
+            if linked_good and linked_budgetentry:
+                related_goods = linked_good.get_generic_text_attr('related_goods')
+                total_amount = 0
+                for r_good in related_goods:
+                    related_good = Good.query.filter(Good.id == r_good["id"]).first()
+                    related_budgetentry = BudgetEntry.query.filter(BudgetEntry.budget == budget).\
+                        filter(BudgetEntry.good == related_good).first()
+                    if related_budgetentry:
+                        total_amount += related_budgetentry.amount
+                linked_budgetentry.amount = total_amount
+                linked_budgetentry.price = linked_budgetentry.cost * linked_budgetentry.amount
+
+                logger.debug("linked_budgetentry.amount %s" % linked_budgetentry.amount)
+                logger.debug("linked_budgetentry %s" % linked_budgetentry.name)
+
 
 
 class ReportExporter(object):

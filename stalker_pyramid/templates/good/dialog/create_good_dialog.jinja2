@@ -86,6 +86,19 @@
                                required>
                     </div>
                 </div>
+                {#Type #}
+                <div class='control-group'>
+                    <label class='span3 control-label'
+                           for='good_type'>Type</label>
+                    <div class="span5">
+
+                        <select id='good_type'
+                                class='input'
+                                name='type_name'
+                                required>
+                        </select>
+                    </div>
+                </div>
 
                 {#Description #}
                 <div class="control-group">
@@ -160,8 +173,29 @@
 
 
         });
+        {# ***************************************************************** #}
+        {# Type #}
 
+        {% raw %}
+            var good_type_option_template = doT.template(
+                '<option value={{=it.name}}>{{=it.name}}</option>'
+            );
+        {% endraw %}
 
+        $.getJSON('/types/?target_entity_type=Good').then(function (data) {
+            var good_type = $('#good_type');
+
+            for (var i = 0; i < data.length; i++) {
+                good_type.append(good_type_option_template(data[i]));
+            }
+
+            good_type.chosen({
+                search_contains: true,
+                enable_split_word_search: true,
+                allow_single_deselect: true
+            });
+
+        });
         {# ***************************************************************** #}
         {# Submit Button #}
         var submit_button = $('#dialog_template_submit_button');

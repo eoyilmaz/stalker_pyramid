@@ -53,10 +53,13 @@
 {#                        {% set client=budget.project.client %}#}
 {#                        {% include 'client/view/client_info.jinja2' %}#}
 {#                    </div>#}
-                    <div class="span4">
+
+                </div>
+                <div class="row-fluid">
+                    <div class="span12">
                         <h4 class="pull-right">
-                            Approved Total Price :
-                            <span class="red" id="approved_total_price">{{ approved_total_price }}</span>
+                            Total cost :
+                            <span id="total_cost_top"></span>
                         </h4>
                     </div>
                 </div>
@@ -64,7 +67,15 @@
                     <div class="span12">
                         <h4 class="pull-right">
                             Total price :
-                            <span class="red" id="total_price_top"></span>
+                            <span id="total_price_top"></span>
+                        </h4>
+                    </div>
+                </div>
+                <div class="row-fluid">
+                    <div class="span12">
+                        <h4 class="pull-right">
+                            Approved Total Price :
+                            <span id="approved_total_price">{{ approved_total_price }} TL</span>
                         </h4>
                     </div>
                 </div>
@@ -92,7 +103,7 @@
                                 class="btn btn-small btn-danger pull-right"
                                 data-placement="bottom"
                                 title="Send to Client"
-                                >
+                                >Send to Client<
                             <a  href="/budgets/{{ entity.id }}/generate/report?" class="white"><i class="icon-envelope bigger-130"></i> Send to Client</a>
                         </button>
                     </div>
@@ -340,33 +351,42 @@
                 }
 
                 grid.jqGrid("footerData", "set", {
-                                                   msrp: total_msrp,
-                                                   cost: total_cost,
+                                                   total_msrp: total_msrp,
+                                                   total_cost: total_cost,
                                                    price: total_price,
                                                    unit:'TOTAL'
                 });
 
+                $('#total_cost_top').text(accounting.formatMoney(total_cost, { symbol: "TL",  format: "%v %s" }));
                 $('#total_price_top').text(accounting.formatMoney(total_price, { symbol: "TL",  format: "%v %s" }));
+                $('#approved_total_price').text(accounting.formatMoney({{ approved_total_price }}, { symbol: "TL",  format: "%v %s" }));
+                if (total_cost <= total_price){
+                    $('#total_price_top').attr('style', "color: green");
+                }
+                else{
+                    $('#total_price_top').attr('style', "color: red");
+                }
+
                 $('#total_price_bottom').text(accounting.formatMoney(total_price, { symbol: "TL",  format: "%v %s" }));
 
             }
 
-{#            var send_button = $('#send_button');#}
-{#             send_button.on('click', function (e) {#}
-{#                e.stopPropagation();#}
-{#                e.preventDefault();#}
-{#    #}
-{#                send_button.button('loading');#}
-{#    #}
-{#                var url = '/budgets/{{ entity.id }}/generate/report?total_price='+total_price;#}
-{#                #}
-{#                $.post(url).done(function (jqXHR) {#}
-{#                    window.location.reload();#}
-{#                }).fail(function (jqXHR) {#}
-{#                    bootbox.alert(jqXHR.responseText);#}
-{#                    send_button.button('reset');#}
-{#                });#}
-{#            });#}
+            var send_button = $('#send_button');
+             send_button.on('click', function (e) {
+                e.stopPropagation();
+                e.preventDefault();
+
+                send_button.button('loading');
+
+                var url = '/budgets/{{ entity.id }}/generate/report?total_price='+total_price;
+
+                $.post(url).done(function (jqXHR) {
+                    window.location.reload();
+                }).fail(function (jqXHR) {
+                    bootbox.alert(jqXHR.responseText);
+                    send_button.button('reset');
+                });
+            });
 
             $.getJSON('/budgets/{{ entity.id }}/entries/').then(function (entry_data) {
 
