@@ -525,8 +525,6 @@ def generate_report(budget, output_path=''):
                         fe_generic_data = \
                             json.loads(filtered_entity.generic_text)
 
-
-
                         # TODO: Generalize this
                         filtered_entity.stoppage_add = \
                             fe_generic_data.get('stoppage_add', 0)
@@ -535,12 +533,11 @@ def generate_report(budget, output_path=''):
 
                         secondaryFactor = fe_generic_data.get('secondaryFactor', [])
                         secondaryAmount = 0
-                        logger.debug("secondaryFactor: %s" % secondaryFactor)
+
                         for sFactor in secondaryFactor:
-                            logger.debug("sFactor['second_amount']: %s" % sFactor['second_amount'])
                             secondaryAmount += int(sFactor['second_amount'])
 
-                        filtered_entity.numberOfResources = secondaryAmount
+                        filtered_entity.secondaryAmount = secondaryAmount
 
                     # now generate the result
                     result_buffer.append(

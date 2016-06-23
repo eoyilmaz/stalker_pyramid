@@ -354,7 +354,6 @@ def get_entity_projects(request):
 
                 'lead_id': lead.id if lead else None,
                 'lead_name': lead.name if lead else None,
-
                 'date_created': milliseconds_since_epoch(project.date_created),
                 'created_by_id': project.created_by.id,
                 'created_by_name': project.created_by.name,
