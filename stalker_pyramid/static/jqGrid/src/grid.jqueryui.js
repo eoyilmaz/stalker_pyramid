@@ -29,7 +29,7 @@
 **/
 "use strict";
 //module begin
-if ($.jgrid.msie && $.jgrid.msiever()===8) {
+if ($.jgrid.msie() && $.jgrid.msiever()===8) {
 	$.expr[":"].hidden = function(elem) {
 		return elem.offsetWidth === 0 || elem.offsetHeight === 0 ||
 			elem.style.display === "none";
@@ -238,7 +238,7 @@ $.jgrid.extend({
 			apply_perm : function() {
 				var perm = [];
 				$('option',select).each(function() {
-					if ($(this).is("[selected]")) {
+					if ($(this).is(":selected")) {
 						self.jqGrid("showCol", colModel[this.value].name);
 					} else {
 						self.jqGrid("hideCol", colModel[this.value].name);
@@ -255,7 +255,7 @@ $.jgrid.extend({
 				if (opts.done) {
 					opts.done.call(self, perm);
 				}
-				self.jqGrid("setGridWidth", self[0].p.tblwidth, self[0].p.shrinkToFit);
+				self.jqGrid("setGridWidth", self[0].p.width, self[0].p.shrinkToFit);
 			},
 			/* Function to cleanup the dialog, and select. Also calls the
 			   done function with no permutation (to indicate that the
@@ -546,7 +546,7 @@ $.jgrid.extend({
 	},
 	gridResize : function(opts) {
 		return this.each(function(){
-			var $t = this, gID = $.jgrid.jqID($t.p.id);
+			var $t = this, gID = $.jgrid.jqID($t.p.id), req;
 			if(!$t.grid || !$.fn.resizable) { return; }
 			opts = $.extend({}, opts || {});
 			if(opts.alsoResize ) {
@@ -565,6 +565,17 @@ $.jgrid.extend({
 				$($t).jqGrid('setGridParam',{height:$("#gview_"+gID+" .ui-jqgrid-bdiv").height()});
 				$($t).jqGrid('setGridWidth',ui.size.width,opts.shrinkToFit);
 				if(opts._stop_) { opts._stop_.call($t,ev,ui); }
+				if($t.p.caption) {
+					$("#gbox_"+ gID).css({ 'height': 'auto' });
+				}
+				if($t.p.frozenColumns) {
+					if (req ) clearTimeout(req);
+					req = setTimeout(function(){
+						if (req ) clearTimeout(req);
+						$("#" + gID).jqGrid("destroyFrozenColumns");
+						$("#" + gID).jqGrid("setFrozenColumns");
+					});
+				}
 			};
 			if(opts._alsoResize_) {
 				var optstest = "{\'#gview_"+gID+" .ui-jqgrid-bdiv\':true,'" +opts._alsoResize_+"':true}";

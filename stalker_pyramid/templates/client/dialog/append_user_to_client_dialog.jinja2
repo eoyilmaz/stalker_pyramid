@@ -35,7 +35,7 @@
 <script type="text/javascript">
 
     function init_dialog() {
-        console.debug('starting to initialize append_class_to_entity dialog!!!');
+        console.debug('starting to initialize append_class_to_entity dialog!!!555555');
 
         $('#dialog_template_label').find('span').remove();
         $('#dialog_template_label').append('<span>Append User</span>')
@@ -46,7 +46,13 @@
         {% raw %}
             var client_user_option_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
         {% endraw %}
-        var deferred = chosen_searchable_field_creator(client_user,'/clients/{{ client.id }}/users/out_stack/', client_user_option_template);
+        console.debug('Client Name: {{ client.name }}');
+{#        var deferred = chosen_searchable_field_creator(client_user,'/clients/{{ client.id }}/user/out_stack/', client_user_option_template);#}
+        $.getJSON('/clients/{{ client.id }}/user/out_stack/').then(function (u_data) {
+
+            chosen_searchable_field_creator_by_data(client_user, client_user_option_template, u_data);
+
+        });
 
         {# ***************************************************************** #}
         {# ROLE #}

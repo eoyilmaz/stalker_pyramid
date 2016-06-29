@@ -103,64 +103,173 @@
                 </div>
                 <div class="widget-body">
                     <div class="widget-main">
-                        {# Name #}
                         <form id='project_user_form'
                               class='form-horizontal'
                               role='form'
                               method="post"
                               >
                             <div class="row-fluid">
-                                <div class="control-group">
-                                    <label class="span2 control-label"
-                                           for="creative_director">Yaratıcı Yönetmen</label>
+                                <h4 class="header blue bolder smaller">Musteri:
+                                    <span class="grey" id="client_name"></span>
+                                    <a data-target="#dialog_template"
+                                       data-toggle="modal"
+                                       data-keyboard=false
+                                       href="{{ request.route_path('append_user_to_client_dialog', id=entity.client.id, _query={'came_from': request.current_route_path()})}}"
+                                       class="green pull-right">
+                                        <i class="icon-plus"></i>
+                                            Add New User
+                                    </a>
+                                </h4>
+                                <div id="client_controls" class="hide">
+                                     <div class="control-group">
+                                        <label class="span2 control-label"
+                                               for="contact">Contact</label>
+                                        <div class="span10">
+                                            <select id="contact"
+                                                   name='contact'
+                                                   placeholder="Contact"
+                                                   required></select>
+                                        </div>
+                                    </div>
+                                </div>
 
-                                    <div class="span10">
-                                        <select id="creative_director"
-                                               name='creative_director'
-                                               placeholder="Yaratıcı Yönetmen"
-                                               required></select>
+                                <h4 class="header blue bolder smaller">Reklam Ajansi:
+                                    <span class="grey" id="adv_agency_name"></span>
+                                    <a data-target="#dialog_template"
+                                       data-toggle="modal"
+                                       data-keyboard=false
+                                       href="{{ request.route_path('append_user_to_client_dialog', id=entity.get_generic_text_attr('adv_agency'), _query={'came_from': request.current_route_path()})}}"
+                                       class="green pull-right">
+                                        <i class="icon-plus"></i>
+                                            Add New User
+                                    </a>
+                                </h4>
+                                <div id="adv_agency_controls" class="hide">
+                                    <div class="control-group">
+                                        <label class="span2 control-label"
+                                               for="director">Yaratici Yönetmen</label>
+                                        <div class="span10">
+                                            <select id="creative_director"
+                                                   name='creative_director'
+                                                   placeholder="Yaratici Yönetmen"
+                                                   required></select>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="control-group">
-                                    <label class="span2 control-label"
-                                           for="customer_director">Müşteri Direktörü</label>
+                                    <div class="control-group">
+                                        <label class="span2 control-label"
+                                               for="customer_director">Müşteri Direktörü</label>
 
-                                    <div class="span10">
-                                        <select id="customer_director"
-                                               name='customer_director'
-                                               placeholder="Müşteri Direktörü"
-                                               required></select>
+                                        <div class="span10">
+                                            <select id="customer_director"
+                                                   name='customer_director'
+                                                   placeholder="Müşteri Direktörü"
+                                                   required></select>
+                                        </div>
+                                    </div>
+                                    <div class="control-group">
+                                        <label class="span2 control-label"
+                                               for="agency_producer">Ajans Yapımcısı</label>
+                                        <div class="span10">
+                                            <select id="agency_producer"
+                                                   name='agency_producer'
+                                                   placeholder="Ajans Yapımcısı"
+                                                   required></select>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="control-group">
-                                    <label class="span2 control-label"
-                                           for="agency_producer">Ajans Yapımcısı</label>
-                                    <div class="span10">
-                                        <select id="agency_producer"
-                                               name='agency_producer'
-                                               placeholder="Ajans Yapımcısı"
-                                               required></select>
+                                <h4 class="header blue bolder smaller">Yapim Sirketi:
+                                    <span class="grey" id="production_firm_name"></span>
+                                    <a data-target="#dialog_template"
+                                       data-toggle="modal"
+                                       data-keyboard=false
+                                       href="{{ request.route_path('append_user_to_client_dialog', id=entity.get_generic_text_attr('production_firm'), _query={'came_from': request.current_route_path()})}}"
+                                       class="green pull-right">
+                                        <i class="icon-plus"></i>
+                                            Add New User
+                                    </a>
+                                </h4>
+                                <div id="production_firm_name_controls" class="hide">
+                                    <div class="control-group">
+                                        <label class="span2 control-label"
+                                               for="director">Yönetmen</label>
+                                        <div class="span10">
+                                            <select id="director"
+                                                   name='director'
+                                                   placeholder="Yönetmen"
+                                                   required></select>
+                                        </div>
+                                    </div>
+                                    <div class="control-group">
+                                        <label class="span2 control-label"
+                                               for="producer">Yapımcı</label>
+                                        <div class="span10">
+                                            <select id="producer"
+                                                   name='producer'
+                                                   placeholder="Yapımcı"
+                                                   required></select>
+                                        </div>
+                                    </div>
+                                    <div class="control-group">
+                                        <label class="span2 control-label"
+                                               for="supervisor">Supervisor</label>
+                                        <div class="span10">
+                                            <select id="supervisor"
+                                                   name='supervisor'
+                                                   placeholder="Supervisor"
+                                                   required></select>
+                                        </div>
+                                    </div>
+                                    <div class="control-group">
+                                        <label class="span2 control-label"
+                                               for="coordinator">Coordinator</label>
+                                        <div class="span10">
+                                            <select id="coordinator"
+                                                   name='coordinator'
+                                                   placeholder="Coordinator"
+                                                   required></select>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="control-group">
-                                    <label class="span2 control-label"
-                                           for="director">Yönetmen</label>
-                                    <div class="span10">
-                                        <select id="director"
-                                               name='director'
-                                               placeholder="Yönetmen"
-                                               required></select>
-                                    </div>
+                            </div>
+                            <h4 class="header blue bolder smaller">{{ studio.name }}</h4>
+                            <div class="control-group">
+                                <label class="span2 control-label"
+                                       for="studio_director">Yönetmen</label>
+                                <div class="span10">
+                                    <select id="studio_director"
+                                           name='studio_director'
+                                           placeholder="Yönetmen"
+                                           required></select>
                                 </div>
-                                <div class="control-group">
-                                    <label class="span2 control-label"
-                                           for="producer">Yapımcı</label>
-                                    <div class="span10">
-                                        <select id="producer"
-                                               name='producer'
-                                               placeholder="Yapımcı"
-                                               required></select>
-                                    </div>
+                            </div>
+                            <div class="control-group">
+                                <label class="span2 control-label"
+                                       for="studio_producer">Yapımcı</label>
+                                <div class="span10">
+                                    <select id="studio_producer"
+                                           name='studio_producer'
+                                           placeholder="Yapımcı"
+                                           required></select>
+                                </div>
+                            </div>
+                            <div class="control-group">
+                                <label class="span2 control-label"
+                                       for="studio_supervisor">Supervisor</label>
+                                <div class="span10">
+                                    <select id="studio_supervisor"
+                                           name='studio_supervisor'
+                                           placeholder="Supervisor"
+                                           required></select>
+                                </div>
+                            </div>
+                            <div class="control-group">
+                                <label class="span2 control-label"
+                                       for="studio_coordinator">Coordinator</label>
+                                <div class="span10">
+                                    <select id="studio_coordinator"
+                                           name='studio_coordinator'
+                                           placeholder="Coordinator"
+                                           required></select>
                                 </div>
                             </div>
                         </form>
@@ -209,51 +318,133 @@
                 '<option value={{=it.id}}>{{=it.name}}</option>'
             );
         {% endraw %}
-        $.getJSON('/projects/{{ entity.id }}/users/').then(function (p_data) {
-            var project_users = p_data;
-            $.getJSON('/clients/{{ entity.client.id }}/users/').then(function (c_data) {
+        {% if  entity.client %}
+
+            console.log('{{ entity.client.name }}');
+            $('#client_name').text('{{ entity.client.name }}');
+            $('#client_controls').show();
+
+            $.getJSON('/clients/{{ entity.client.id}}/users/').then(function (c_data) {
 
                 var client_users = c_data;
 
+                var contact = $('#contact');
+                chosen_searchable_field_creator_by_data(contact, user_option_template, client_users);
+                contact.on('change', function () {
+                    set_user_role($(this).val(), "Contact");
+                });
+                set_field_value(contact, '/entities/{{ entity.id }}/role_user/?role_name=Contact');
+            });
+        {% else %}
+            $('#client_controls').hide();
+        {% endif %}
+        {% if entity.get_generic_text_attr('adv_agency') %}
+            $('#adv_agency_controls').show();
+            $.getJSON('/clients/{{ entity.get_generic_text_attr('adv_agency')}}/').then(function (client_entity) {
+                $('#adv_agency_name').text(client_entity[0].name);
+            });
+            $.getJSON('/clients/{{ entity.get_generic_text_attr('adv_agency') }}/users/').then(function (c_data) {
+
+                var adv_agency_users = c_data;
+
                 var creative_director = $('#creative_director');
-                chosen_searchable_field_creator_by_data(creative_director, user_option_template, project_users);
+                chosen_searchable_field_creator_by_data(creative_director, user_option_template, adv_agency_users);
                 creative_director.on('change', function () {
                     set_user_role($(this).val(), "Yaratici Yonetmen");
                 });
                 set_field_value(creative_director, '/entities/{{ entity.id }}/role_user/?role_name=Yaratici%20Yonetmen');
 
                 var customer_director = $('#customer_director');
-                chosen_searchable_field_creator_by_data(customer_director, user_option_template, project_users);
+                chosen_searchable_field_creator_by_data(customer_director, user_option_template, adv_agency_users);
                 customer_director.on('change', function () {
                     set_user_role($(this).val(), "Musteri Direktoru");
                 });
                 set_field_value(customer_director, '/entities/{{ entity.id }}/role_user/?role_name=Musteri%20Direktoru');
 
                 var agency_producer = $('#agency_producer');
-                chosen_searchable_field_creator_by_data(agency_producer, user_option_template, client_users);
+                chosen_searchable_field_creator_by_data(agency_producer, user_option_template, adv_agency_users);
                 agency_producer.on('change', function () {
                     set_user_role($(this).val(), "Ajans Yapimcisi");
                 });
                 set_field_value(agency_producer, '/entities/{{ entity.id }}/role_user/?role_name=Ajans%20Yapimcisi');
-
-                var director = $('#director');
-                chosen_searchable_field_creator_by_data(director, user_option_template, project_users);
-                director.on('change', function () {
-                    set_user_role($(this).val(), "Yonetmen");
-                });
-                set_field_value(director, '/entities/{{ entity.id }}/role_user/?role_name=Yonetmen');
-
-                var producer = $('#producer');
-                chosen_searchable_field_creator_by_data(producer, user_option_template, project_users);
-                producer.on('change', function () {
-                    set_user_role($(this).val(), "Yapimci");
-                });
-                set_field_value(producer, '/entities/{{ entity.id }}/role_user/?role_name=Yapimci');
             });
+        {% else %}
+{#            $('#adv_agency_name').text('X');#}
+            $('#adv_agency_controls').hide();
+        {% endif %}
+
+         {% if entity.get_generic_text_attr('production_firm') %}
+            $('#production_firm_name_controls').show();
+            $.getJSON('/clients/{{ entity.get_generic_text_attr('production_firm')}}/').then(function (client_entity) {
+                $('#production_firm_name').text(client_entity[0].name);
+            });
+
+            $.getJSON('/clients/{{ entity.get_generic_text_attr('production_firm') }}/users/').then(function (p_data) {
+            var production_firm_users = p_data;
+            var director = $('#director');
+            chosen_searchable_field_creator_by_data(director, user_option_template, production_firm_users);
+            director.on('change', function () {
+                set_user_role($(this).val(), "Yonetmen");
+            });
+            set_field_value(director, '/entities/{{ entity.id }}/role_user/?role_name=Yonetmen');
+
+            var producer = $('#producer');
+            chosen_searchable_field_creator_by_data(producer, user_option_template, production_firm_users);
+            producer.on('change', function () {
+                set_user_role($(this).val(), "Yapimci");
+            });
+            set_field_value(producer, '/entities/{{ entity.id }}/role_user/?role_name=Yapimci');
+
+            var supervisor = $('#supervisor');
+            chosen_searchable_field_creator_by_data(supervisor, user_option_template, production_firm_users);
+            supervisor.on('change', function () {
+                set_user_role($(this).val(), "Supervisor");
+            });
+            set_field_value(supervisor, '/entities/{{ entity.id }}/role_user/?role_name=Supervisor');
+
+            var coordinator = $('#coordinator');
+            chosen_searchable_field_creator_by_data(coordinator, user_option_template, production_firm_users);
+            coordinator.on('change', function () {
+                set_user_role($(this).val(), "Coordinator");
+            });
+            set_field_value(coordinator, '/entities/{{ entity.id }}/role_user/?role_name=Coordinator');
+        });
+        {% else %}
+             $('#production_firm_name_controls').hide();
+        {% endif %}
+
+        $.getJSON('/entities/{{ studio.id }}/users/').then(function (p_data) {
+            var studio_users = p_data;
+            var studio_director = $('#studio_director');
+            chosen_searchable_field_creator_by_data(studio_director, user_option_template, studio_users);
+            studio_director.on('change', function () {
+                set_user_role($(this).val(), "Studio Yonetmen");
+            });
+            set_field_value(studio_director, '/entities/{{ entity.id }}/role_user/?role_name=Studio%20Yonetmen');
+
+            var studio_producer = $('#studio_producer');
+            chosen_searchable_field_creator_by_data(studio_producer, user_option_template, studio_users);
+            studio_producer.on('change', function () {
+                set_user_role($(this).val(), "Studio Yapimci");
+            });
+            set_field_value(studio_producer, '/entities/{{ entity.id }}/role_user/?role_name=Studio%20Yapimci');
+
+            var studio_supervisor = $('#studio_supervisor');
+            chosen_searchable_field_creator_by_data(studio_supervisor, user_option_template, studio_users);
+            studio_supervisor.on('change', function () {
+                set_user_role($(this).val(), "Studio Supervisor");
+            });
+            set_field_value(studio_supervisor, '/entities/{{ entity.id }}/role_user/?role_name=Studio%20Supervisor');
+
+            var studio_coordinator = $('#studio_coordinator');
+            chosen_searchable_field_creator_by_data(studio_coordinator, user_option_template, studio_users);
+            studio_coordinator.on('change', function () {
+                set_user_role($(this).val(), "Studio Coordinator");
+            });
+            set_field_value(studio_coordinator, '/entities/{{ entity.id }}/role_user/?role_name=Studio%20Coordinator');
         });
 
         {# ***************************************************************** #}
-
         {# Submit Button #}
         var submit_button = $('#submit_button');
         submit_button.on('click', function (e) {

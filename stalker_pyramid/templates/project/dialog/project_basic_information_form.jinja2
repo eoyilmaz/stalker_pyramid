@@ -35,6 +35,23 @@
                 </div>
             </div>
 
+            <div class="control-group">
+                <label for='product_project_name'
+                       class="span2 control-label">Ürün-Film Adı</label>
+
+                <div class="span10">
+                    <input id="product_project_name"
+                           name='product_project_name'
+                           type="text"
+                           class="form-control"
+                           placeholder="Name"
+                            {% if mode == 'Update' %}
+                           value='{{ project.name }}'
+                            {% endif %}
+                           required>
+                </div>
+            </div>
+
             {# Code #}
             <div class="control-group">
                 <label for="project_code"
@@ -149,49 +166,27 @@
                        class="span2 control-label">Type</label>
 
                 <div class="span10">
-                      <input id="project_type"
-                             name='type_name'
-                             placeholder="Type"
-                             class='input-block-level'
-                             type='text'
-                              {% if mode == 'Update' %}
-                             value='{{ project.type.name }}'
-                              {% endif %}
-                             required>
+                     <select id='project_type'
+                            name='type_name'
+                            data-placeholder='Type'
+                            required>
+                    </select>
                 </div>
             </div>
 
-             <h4 class="header blue bolder smaller">Client</h4>
+             <h4 class="header blue bolder smaller">Clients & Roles</h4>
                 {# Client #}
-            <div class="control-group">
-                <label for='product_project_name'
-                       class="span2 control-label">Ürün-Film Adı</label>
 
-                <div class="span10">
-                    <input id="product_project_name"
-                           name='product_project_name'
-                           type="text"
-                           class="form-control"
-                           placeholder="Name"
-                            {% if mode == 'Update' %}
-                           value='{{ project.name }}'
-                            {% endif %}
-                           required>
-
-                </div>
-            </div>
 
             <div class="control-group">
                 <label for='client'
                        class="span2 control-label">Müşteri</label>
-
                 <div class="span10">
                     <select id='client'
                             name='client_id'
                             data-placeholder='Client'
                             required>
                     </select>
-
                 </div>
             </div>
             <div class="control-group">
@@ -247,11 +242,14 @@
         var production_firm = $('#production_firm');
         var adv_agency = $('#adv_agency');
         var product_project_name = $('#product_project_name');
+        {% raw %}
+            var option_template = doT.template(
+                '<option value={{=it.id}}>{{=it.name}}</option>'
+            );
+        {% endraw %}
 
 
         var start_end_date_range_picker = $('#start_end_date_range_picker').daterangepicker();
-
-        // also update the icon
         start_end_date_range_picker.next().on('click', function () {
             $(this).prev().focus();
         });
@@ -296,6 +294,9 @@
             $(this).val(curr_value <= 1 ? 1 : curr_value);
         });
 
+        {# ***************************************************************** #}
+        {# IMAGE FORMAT #}
+
         {% raw %}
             var image_format_option_template = doT.template(
                 '<option value={{=it.id}}>{{=it.name}} ({{=it.width}} x {{=it.height}} x {{=it.pixel_aspect}})</option>'
@@ -309,39 +310,31 @@
             });
         {% endif %}
 
-        {% raw %}
-            var repository_option_template = doT.template(
-                '<option value={{=it.id}}>{{=it.name}}</option>'
-            );
-        {% endraw %}
+        {# ***************************************************************** #}
+        {# REPOSITORY #}
         var repository = $('#repository');
-        var deferred = chosen_field_creator(repository, '/repositories/', repository_option_template);
+        var deferred = chosen_field_creator(repository, '/repositories/', option_template);
         {% if mode == 'Update' %}
             deferred.then(function () {
                     repository.val({{ project.repository.id }}).trigger('liszt:updated');
                 });
         {% endif %}
 
-        {% raw %}
-            var structure_option_template = doT.template(
-                    '<option value={{=it.id}}>{{=it.name}}</option>'
-            );
-        {% endraw %}
+
+        {# ***************************************************************** #}
+        {# STRUCTURE #}
         var structure = $('#structure');
-        var deferred = chosen_field_creator(structure, '/structures/', structure_option_template);
+        var deferred = chosen_field_creator(structure, '/structures/', option_template);
         {% if mode == 'Update' %}
             deferred.then(function () {
                     structure.val({{ project.structure.id }}).trigger('liszt:updated');
                 });
         {% endif %}
 
-        {% raw %}
-            var status_option_template = doT.template(
-                    '<option value={{=it.id}}>{{=it.name}}</option>'
-            );
-        {% endraw %}
+        {# ***************************************************************** #}
+        {# STATUS #}
         var status = $('#status');
-        var deferred = chosen_field_creator(status,'/statuses/Project/', status_option_template);
+        var deferred = chosen_field_creator(status,'/statuses/Project/', option_template);
         {% if mode == 'Update' %}
             deferred.then(function () {
                 status.val({{ project.status.id }}).trigger('liszt:updated');
@@ -349,47 +342,54 @@
         {% endif %}
 
 
-        {% raw %}
-            var client_option_template = doT.template(
-                '<option value={{=it.id}}>{{=it.name}}</option>'
-            );
-        {% endraw %}
-
-        $.getJSON('/clients/').then(function (c_data) {
-
-            var clients_data = c_data;
-
-            chosen_searchable_field_creator_by_data(client, client_option_template, clients_data);
-            chosen_searchable_field_creator_by_data(production_firm, client_option_template, clients_data);
-            chosen_searchable_field_creator_by_data(adv_agency, client_option_template, clients_data);
-            {% if mode == 'Update' %}
-                client.val({{ project.client.id }}).trigger('liszt:updated');
-                production_firm.val('{{ project.get_generic_text_attr('production_firm') }}').trigger('liszt:updated');
-                adv_agency.val('{{ project.get_generic_text_attr('adv_agency') }}').trigger('liszt:updated');
-            {% endif %}
-            client.trigger('liszt:updated');
-            production_firm.trigger('liszt:updated');
-            adv_agency.trigger('liszt:updated');
-
-        });
-
         {# ***************************************************************** #}
         {# TYPE #}
         var project_type = $('#project_type');
-
-        $.getJSON('/types/?target_entity_type=Project').then(function(available_type){
-            // map available types to an array
-            var available_type_as_list = [];
-            for (var i=0; i < available_type.length; i++){
-                available_type_as_list.push(available_type[i].name);
-            }
-
-            project_type.autocomplete({
-                delay: 0,
-                source: available_type_as_list,
-                minLength: 0
+        var deferred = chosen_field_creator(project_type,'/types/?target_entity_type=Project', option_template);
+        {% if mode == 'Update' %}
+            deferred.then(function () {
+                project_type.val({{ project.type.name }}).trigger('liszt:updated');
             });
+        {% endif %}
+
+
+        $.getJSON('/clients/?type_name=Brand').then(function (c_data) {
+
+            var clients_data = c_data;
+            chosen_searchable_field_creator_by_data(client, option_template, clients_data);
+
+            {% if mode == 'Update' %}
+                client.val({{ project.client.id }}).trigger('liszt:updated');
+            {% endif %}
+
+            client.trigger('liszt:updated');
         });
+
+        $.getJSON('/clients/?type_name=Production%20House').then(function (c_data) {
+
+            var clients_data = c_data;
+            chosen_searchable_field_creator_by_data(production_firm, option_template, clients_data);
+
+            {% if mode == 'Update' %}
+                production_firm.val('{{ project.get_generic_text_attr('production_firm') }}').trigger('liszt:updated');
+            {% endif %}
+
+            production_firm.trigger('liszt:updated');
+
+        });
+
+        $.getJSON('/clients/?type_name=Agency').then(function (c_data) {
+
+            var clients_data = c_data;
+            chosen_searchable_field_creator_by_data(adv_agency, option_template, clients_data);
+
+            {% if mode == 'Update' %}
+                adv_agency.val('{{ project.get_generic_text_attr('adv_agency') }}').trigger('liszt:updated');
+            {% endif %}
+
+            adv_agency.trigger('liszt:updated');
+        });
+
 
         $('#project_form').validate({
             errorElement: 'span',

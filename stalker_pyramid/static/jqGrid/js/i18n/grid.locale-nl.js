@@ -31,14 +31,22 @@ $.jgrid.regional["nl"] = {
 			pgnext : "Volgende Pagina",
 			pgprev : "Vorige Pagina",
 			pgrecs : "Records per Pagina",
-			showhide: "Schakelen Uitklappen Inklappen Grid"
+			showhide: "Schakelen Uitklappen Inklappen Grid",
+			// mobile
+			pagerCaption : "Grid::Page Settings",
+			pageText : "Page:",
+			recordPage : "Records per Page",
+			nomorerecs : "No more records...",
+			scrollPullup: "Pull up to load more...",
+			scrollPulldown : "Pull down to refresh...",
+			scrollRefresh : "Release to refresh..."
         },
         search:
         {
             caption: "Zoeken...",
             Find: "Zoek",
             Reset: "Herstellen",
-            odata: [{ oper:'eq', text:"gelijk aan"},{ oper:'ne', text:"niet gelijk aan"},{ oper:'lt', text:"kleiner dan"},{ oper:'le', text:"kleiner dan of gelijk aan"},{ oper:'gt', text:"groter dan"},{ oper:'ge', text:"groter dan of gelijk aan"},{ oper:'bw', text:"begint met"},{ oper:'bn', text:"begint niet met"},{ oper:'in', text:"is in"},{ oper:'ni', text:"is niet in"},{ oper:'ew', text:"eindigt met"},{ oper:'en', text:"eindigt niet met"},{ oper:'cn', text:"bevat"},{ oper:'nc', text:"bevat niet"},{ oper:'nu', text:'is null'},{ oper:'nn', text:'is not null'}],
+            odata: [{ oper:'eq', text:"gelijk aan"},{ oper:'ne', text:"niet gelijk aan"},{ oper:'lt', text:"kleiner dan"},{ oper:'le', text:"kleiner dan of gelijk aan"},{ oper:'gt', text:"groter dan"},{ oper:'ge', text:"groter dan of gelijk aan"},{ oper:'bw', text:"begint met"},{ oper:'bn', text:"begint niet met"},{ oper:'in', text:"is in"},{ oper:'ni', text:"is niet in"},{ oper:'ew', text:"eindigt met"},{ oper:'en', text:"eindigt niet met"},{ oper:'cn', text:"bevat"},{ oper:'nc', text:"bevat niet"},{ oper:'nu', text:'is null'},{ oper:'nn', text:'is not null'}, {oper:'bt', text:'between'}],
             groupOps: [{ op: "AND", text: "alle" }, { op: "OR", text: "een van de"}],
 			operandTitle : "Klik om de zoekterm te selecteren.",
 			resetTitle : "Herstel zoekterm"
@@ -101,8 +109,8 @@ $.jgrid.regional["nl"] = {
 			savetext: "",
 			savetitle: "Save row",
 			canceltext: "",
-			canceltitle : "Cancel row editing"
-
+			canceltitle : "Cancel row editing",
+			selectcaption : "Actions..."
         },
         col:
         {
@@ -176,6 +184,18 @@ $.jgrid.regional["nl"] = {
                 disabled: true
             },
             idName: "id"
-        }
+        },
+	colmenu : {
+		sortasc : "Sort Ascending",
+		sortdesc : "Sort Descending",
+		columns : "Columns",
+		filter : "Filter",
+		grouping : "Group By",
+		ungrouping : "Ungroup",
+		searchTitle : "Get items with value that:",
+		freeze : "Freeze",
+		unfreeze : "Unfreeze",
+		reorder : "Move to reorder"
+	}
     };
 }));

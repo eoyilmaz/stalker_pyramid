@@ -205,24 +205,39 @@ def get_studio_clients(request):
 
     logger.debug('get_studio_clients is working for the studio')
 
+    type_name = request.params.get('type_name', None)
+
+    logger.debug('type_name: %s' % type_name )
+
     sql_query = """
          select
             "Clients".id,
             "Client_SimpleEntities".name,
             "Client_SimpleEntities".description,
             "Thumbnail_Links".full_path,
-            projects.project_count
+            projects.project_count,
+            "Type_SimpleEntities".name
         from "Clients"
         join "SimpleEntities" as "Client_SimpleEntities" on "Client_SimpleEntities".id = "Clients".id
         left outer join "Links" as "Thumbnail_Links" on "Client_SimpleEntities".thumbnail_id = "Thumbnail_Links".id
+
         left outer join  (
             select "Projects".client_id as client_id,
                     count("Projects".id) as project_count
                 from "Projects"
                 group by "Projects".client_id)as projects on projects.client_id = "Clients".id
+        left join "SimpleEntities" as "Type_SimpleEntities" on "Client_SimpleEntities".type_id = "Type_SimpleEntities".id
+        %(where_conditions)s
     """
 
     clients = []
+    where_conditions = ""
+    if type_name:
+        where_conditions = """where "Type_SimpleEntities".name = '%(type_name)s'""" %({'type_name':type_name})
+
+    sql_query = sql_query % {
+        'where_conditions': where_conditions
+    }
 
     result = db.DBSession.connection().execute(sql_query)
     update_client_permission = \
@@ -253,6 +268,21 @@ def get_studio_clients(request):
 
     return resp
 
+@view_config(
+    route_name='get_client',
+    renderer='json'
+)
+def get_client(request):
+    """RESTful version of getting a client
+    """
+    client_id = request.matchdict.get('id', -1)
+    client = Client.query.filter_by(id=client_id).first()
+
+    return_data = [{'id':client.id,
+                    'name':client.name
+                   }]
+
+    return return_data
 
 @view_config(
     route_name='append_user_to_client_dialog',

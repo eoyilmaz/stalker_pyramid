@@ -490,7 +490,7 @@ def get_users(request):
 
     sql_query = """select
         "Users".id,
-        "SimpleEntities".name,
+        "User_SimpleEntities".name,
         "Users".login,
         "Users".email,
         department_users."dep_ids",
@@ -501,11 +501,13 @@ def get_users(request):
         tickets.ticket_count,
         "Links".full_path,
         "Users".rate,
-        "Type_SimpleEntities".name
+        "Type_SimpleEntities".name,
+        client_users."client_ids",
+        client_users."client_names"
         %(role_attr)s
 
-    from "SimpleEntities"
-    join "Users" on "SimpleEntities".id = "Users".id
+    from "Users"
+    join "SimpleEntities" as "User_SimpleEntities" on "User_SimpleEntities".id = "Users".id
     left outer join (
         select
             uid,
@@ -536,8 +538,17 @@ def get_users(request):
         where "SimpleEntities".name = 'New'
         group by owner_id, name
     ) as tickets on tickets.owner_id = "Users".id
-    left outer join "Links" on "SimpleEntities".thumbnail_id = "Links".id
-    left outer join "SimpleEntities" as "Type_SimpleEntities" on "Type_SimpleEntities".id = "SimpleEntities".type_id
+    left outer join "Links" on "User_SimpleEntities".thumbnail_id = "Links".id
+    left outer join "SimpleEntities" as "Type_SimpleEntities" on "Type_SimpleEntities".id = "User_SimpleEntities".type_id
+    left outer join (
+        select
+            uid,
+            array_agg(cid) as client_ids,
+            array_agg(name) as client_names
+        from "Client_Users"
+        join "SimpleEntities" on "Client_Users".cid = "SimpleEntities".id
+        group by uid
+    ) as client_users on client_users.uid = "Users".id
     """
 
     role_attr = """,
@@ -582,7 +593,7 @@ def get_users(request):
     elif entity_type == "Studio":
         sql_query = sql_query % {'role_attr': ""}
 
-    sql_query += 'order by "SimpleEntities".name'
+    sql_query += 'order by "User_SimpleEntities".name'
 
     result = DBSession.connection().execute(sql_query)
     data = [
@@ -599,9 +610,9 @@ def get_users(request):
             ] if r[4] else [],
             'groups': [
                 {
-                    'id': r[6],
-                    'name': r[7]
-                } for i in range(len(r[6]))
+                    'id': r[6][i],
+                    'name': r[7][i]
+                } for i, a in enumerate(r[6])
             ] if r[6] else [],
             'tasksCount': r[8] or 0,
             'ticketsCount': r[9] or 0,
@@ -613,7 +624,13 @@ def get_users(request):
             'delete_user_action':delete_user_action % {
                 'id': r[0], 'entity_id': entity_id
             } if has_delete_user_permission else None,
-            'role': r[13] if len(r) >= 14 else None
+            'clients': [
+                {
+                    'id': r[13][i],
+                    'name': r[14][i]
+                } for i, a in enumerate(r[13])
+            ] if r[13] else [],
+            'role': r[15] if len(r) >= 16 else None
         } for r in result.fetchall()
     ]
 

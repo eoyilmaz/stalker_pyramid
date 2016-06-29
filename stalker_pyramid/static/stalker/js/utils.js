@@ -225,6 +225,7 @@ function chosen_searchable_field_creator(field, url, data_template) {
     // set the field to updating mode
     field.attr('is_updating', true);
 
+
     return $.getJSON(url).then(function (data) {
 
         // remove current data
@@ -243,8 +244,6 @@ function chosen_searchable_field_creator(field, url, data_template) {
         for (var i=0; i < data_count; i++){
             field.append(data_template(data[i]));
         }
-
-        field.trigger('liszt:updated');
     });
 }
 

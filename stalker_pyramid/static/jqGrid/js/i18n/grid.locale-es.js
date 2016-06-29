@@ -3,6 +3,7 @@
  * Traduccion jqGrid en Español por Yamil Bracho
  * Traduccion corregida y ampliada por Faserline, S.L. 
  * http://www.faserline.com
+ * Traduccion corregida y ampliada por Fernán Castro Asensio
  * Dual licensed under the MIT and GPL licenses:
  * http://www.opensource.org/licenses/mit-license.php
  * http://www.gnu.org/licenses/gpl.html
@@ -31,23 +32,31 @@ $.jgrid.regional["es"] = {
 		recordtext: "Mostrando {0} - {1} de {2}",
 	    emptyrecords: "Sin registros que mostrar",
 		loadtext: "Cargando...",
-		savetext: "Saving...",
+		savetext: "Guardando...",
 		pgtext : "Página {0} de {1}",
-		pgfirst : "First Page",
-		pglast : "Last Page",
-		pgnext : "Next Page",
-		pgprev : "Previous Page",
-		pgrecs : "Records per Page",
-		showhide: "Toggle Expand Collapse Grid"
+		pgfirst : "Primera Página",
+		pglast : "Última Página",
+		pgnext : "Siguiente Página",
+		pgprev : "Anterior Página",
+		pgrecs : "Registros por Página",
+		showhide: "Alternar Contraer Expandir Grid",
+		// mobile
+		pagerCaption : "Grid::Configurar Página",
+		pageText : "Página:",
+		recordPage : "Registros por Página",
+		nomorerecs : "No más registros...",
+		scrollPullup: "Arrastrar arriba para cargar más...",
+		scrollPulldown : "Arrastrar arriba para refrescar...",
+		scrollRefresh : "Soltar para refrescar..."		
 	},
 	search : {
 	    caption: "Búsqueda...",
 	    Find: "Buscar",
 	    Reset: "Limpiar",
-	    odata: [{ oper:'eq', text:"igual "},{ oper:'ne', text:"no igual a"},{ oper:'lt', text:"menor que"},{ oper:'le', text:"menor o igual que"},{ oper:'gt', text:"mayor que"},{ oper:'ge', text:"mayor o igual a"},{ oper:'bw', text:"empiece por"},{ oper:'bn', text:"no empiece por"},{ oper:'in', text:"está en"},{ oper:'ni', text:"no está en"},{ oper:'ew', text:"termina por"},{ oper:'en', text:"no termina por"},{ oper:'cn', text:"contiene"},{ oper:'nc', text:"no contiene"},{ oper:'nu', text:'is null'},{ oper:'nn', text:'is not null'}],
+	    odata: [{ oper:'eq', text:"igual "},{ oper:'ne', text:"no igual a"},{ oper:'lt', text:"menor que"},{ oper:'le', text:"menor o igual que"},{ oper:'gt', text:"mayor que"},{ oper:'ge', text:"mayor o igual a"},{ oper:'bw', text:"empiece por"},{ oper:'bn', text:"no empiece por"},{ oper:'in', text:"está en"},{ oper:'ni', text:"no está en"},{ oper:'ew', text:"termina por"},{ oper:'en', text:"no termina por"},{ oper:'cn', text:"contiene"},{ oper:'nc', text:"no contiene"},{ oper:'nu', text:'is null'},{ oper:'nn', text:'is not null'}, {oper:'bt', text:'between'}],
 	    groupOps: [	{ op: "AND", text: "todo" },	{ op: "OR",  text: "cualquier" }	],
-		operandTitle : "Click to select search operation.",
-		resetTitle : "Reset Search Value"
+		operandTitle : "Click para seleccionar la operación de búsqueda.",
+		resetTitle : "Resetear valor de Búsqueda"
 	},
 	edit : {
 	    addCaption: "Agregar registro",
@@ -100,10 +109,10 @@ $.jgrid.regional["es"] = {
 		viewtext: "",
 		viewtitle: "Ver fila seleccionada",
 		savetext: "",
-		savetitle: "Save row",
+		savetitle: "Guardar fila",
 		canceltext: "",
-		canceltitle : "Cancel row editing"
-
+		canceltitle : "Cancelar edición de fila",
+		selectcaption : "Actions..."
 	},
 	col : {
 	    caption: "Mostrar/ocultar columnas",
@@ -155,6 +164,18 @@ $.jgrid.regional["es"] = {
 	    target: '',
 	    checkbox : {disabled:true},
 		idName : 'id'
+	},
+	colmenu : {
+		sortasc : "Sort Ascending",
+		sortdesc : "Sort Descending",
+		columns : "Columns",
+		filter : "Filter",
+		grouping : "Group By",
+		ungrouping : "Ungroup",
+		searchTitle : "Get items with value that:",
+		freeze : "Freeze",
+		unfreeze : "Unfreeze",
+		reorder : "Move to reorder"
 	}
 };
 }));

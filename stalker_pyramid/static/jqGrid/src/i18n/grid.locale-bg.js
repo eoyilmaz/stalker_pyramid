@@ -37,14 +37,21 @@ $.jgrid.regional["bg"] = {
 		pgnext : "Следваща Стр.",
 		pgprev : "Предишна Стр.",
 		pgrecs : "Брой записи на Стр.",
-		showhide: "Свиване/Разтягане на таблицата"
-
+		showhide: "Свиване/Разтягане на таблицата",
+		// mobile
+		pagerCaption : "Таблица::Настр. Страница",
+		pageText : "Страница:",
+		recordPage : "Записи на стр.",
+		nomorerecs : "Няма повече записи...",
+		scrollPullup: "Издърпайте нагоре за повече...",
+		scrollPulldown : "Дръпнете надолу за опресняване...",
+		scrollRefresh : "Освободете за да опресните..."
 	},
 	search : {
 		caption: "Търсене...",
 		Find: "Намери",
 		Reset: "Изчисти",
-		odata: [{ oper:'eq', text:"равно"},{ oper:'ne', text:"различно"},{ oper:'lt', text:"по-малко"},{ oper:'le', text:"по-малко или="},{ oper:'gt', text:"по-голямо"},{ oper:'ge', text:"по-голямо или ="},{ oper:'bw', text:"започва с"},{ oper:'bn', text:"не започва с"},{ oper:'in', text:"се намира в"},{ oper:'ni', text:"не се намира в"},{ oper:'ew', text:"завършва с"},{ oper:'en', text:"не завършава с"},{ oper:'cn', text:"съдържа"},{ oper:'nc', text:"не съдържа"},{ oper:'nu', text:'е NULL'},{ oper:'nn', text:'не е NULL'}],
+		odata: [{ oper:'eq', text:"равно"},{ oper:'ne', text:"различно"},{ oper:'lt', text:"по-малко"},{ oper:'le', text:"по-малко или="},{ oper:'gt', text:"по-голямо"},{ oper:'ge', text:"по-голямо или ="},{ oper:'bw', text:"започва с"},{ oper:'bn', text:"не започва с"},{ oper:'in', text:"се намира в"},{ oper:'ni', text:"не се намира в"},{ oper:'ew', text:"завършва с"},{ oper:'en', text:"не завършава с"},{ oper:'cn', text:"съдържа"},{ oper:'nc', text:"не съдържа"},{ oper:'nu', text:'е NULL'},{ oper:'nn', text:'не е NULL'}, {oper:'bt', text:'между'}],
 	    groupOps: [	{ op: "AND", text: "&nbsp;И " },	{ op: "OR",  text: "ИЛИ" }	],
 		operandTitle : "Натисни за избор на операнд.",
 		resetTitle : "Изчисти стойността"
@@ -102,8 +109,8 @@ $.jgrid.regional["bg"] = {
 		savetext: "",
 		savetitle: "Съхрани запис",
 		canceltext: "",
-		canceltitle : "Отказ редакция"
-
+		canceltitle : "Отказ редакция",
+		selectcaption : "Действия..."
 	},
 	col : {
 		caption: "Избери колони",
@@ -160,6 +167,18 @@ $.jgrid.regional["bg"] = {
 		target: '',
 		checkbox : {disabled:true},
 		idName : 'id'
+	},
+	colmenu : {
+		sortasc : "Сортирай възходящо",
+		sortdesc : "Сортирай низходящо",
+		columns : "Колони",
+		filter : "Филтрирай",
+		grouping : "Групирай по",
+		ungrouping : "Разгрупиране",
+		searchTitle : "Търси данни със стойност, която",
+		freeze : "Неподвижна",
+		unfreeze : "Отмяна неподвижност",
+		reorder : "Премести за пренареждане"
 	}
 };
 }));

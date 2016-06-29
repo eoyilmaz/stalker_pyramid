@@ -37,13 +37,21 @@ $.jgrid.regional["ca"] = {
 		pgnext : "Next Page",
 		pgprev : "Previous Page",
 		pgrecs : "Records per Page",
-		showhide: "Toggle Expand Collapse Grid"
+		showhide: "Toggle Expand Collapse Grid",
+		// mobile
+		pagerCaption : "Grid::Page Settings",
+		pageText : "Page:",
+		recordPage : "Records per Page",
+		nomorerecs : "No more records...",
+		scrollPullup: "Pull up to load more...",
+		scrollPulldown : "Pull down to refresh...",
+		scrollRefresh : "Release to refresh..."
 	},
 	search : {
 		caption: "Cerca...",
 		Find: "Cercar",
 		Reset: "Buidar",
-	    odata: [{ oper:'eq', text:"equal"},{ oper:'ne', text:"not equal"},{ oper:'lt', text:"less"},{ oper:'le', text:"less or equal"},{ oper:'gt', text:"greater"},{ oper:'ge', text:"greater or equal"},{ oper:'bw', text:"begins with"},{ oper:'bn', text:"does not begin with"},{ oper:'in', text:"is in"},{ oper:'ni', text:"is not in"},{ oper:'ew', text:"ends with"},{ oper:'en', text:"does not end with"},{ oper:'cn', text:"contains"},{ oper:'nc', text:"does not contain"},{ oper:'nu', text:'is null'},{ oper:'nn', text:'is not null'}],
+	    odata: [{ oper:'eq', text:"equal"},{ oper:'ne', text:"not equal"},{ oper:'lt', text:"less"},{ oper:'le', text:"less or equal"},{ oper:'gt', text:"greater"},{ oper:'ge', text:"greater or equal"},{ oper:'bw', text:"begins with"},{ oper:'bn', text:"does not begin with"},{ oper:'in', text:"is in"},{ oper:'ni', text:"is not in"},{ oper:'ew', text:"ends with"},{ oper:'en', text:"does not end with"},{ oper:'cn', text:"contains"},{ oper:'nc', text:"does not contain"},{ oper:'nu', text:'is null'},{ oper:'nn', text:'is not null'}, {oper:'bt', text:'between'}],
 	    groupOps: [	{ op: "AND", text: "tot" },	{ op: "OR",  text: "qualsevol" }	],
 		operandTitle : "Click to select search operation.",
 		resetTitle : "Reset Search Value"
@@ -101,7 +109,8 @@ $.jgrid.regional["ca"] = {
 		savetext: "",
 		savetitle: "Save row",
 		canceltext: "",
-		canceltitle : "Cancel row editing"
+		canceltitle : "Cancel row editing",
+		selectcaption : "Actions..."
 	},
 // setcolumns module
 	col : {
@@ -154,6 +163,18 @@ $.jgrid.regional["ca"] = {
 	    target: '',
 	    checkbox : {disabled:true},
 		idName : 'id'
+	},
+	colmenu : {
+		sortasc : "Sort Ascending",
+		sortdesc : "Sort Descending",
+		columns : "Columns",
+		filter : "Filter",
+		grouping : "Group By",
+		ungrouping : "Ungroup",
+		searchTitle : "Get items with value that:",
+		freeze : "Freeze",
+		unfreeze : "Unfreeze",
+		reorder : "Move to reorder"
 	}
 };
 }));

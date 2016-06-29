@@ -46,13 +46,21 @@ $.jgrid.regional["pt-br"] = {
 		pgnext : "Próxima Página",
 		pgprev : "Página Anterior",
 		pgrecs : "Registros por Página",
-		showhide: "Mostrar/Ocultar Grid"
+		showhide: "Mostrar/Ocultar Grid",
+		// mobile
+		pagerCaption : "Grid::Page Settings",
+		pageText : "Page:",
+		recordPage : "Records per Page",
+		nomorerecs : "No more records...",
+		scrollPullup: "Pull up to load more...",
+		scrollPulldown : "Pull down to refresh...",
+		scrollRefresh : "Release to refresh..."
 	},
 	search : {
 	    caption: "Procurar...",
 	    Find: "Procurar",
 	    Reset: "Limpar",
-	    odata: [{ oper:'eq', text:"igual"},{ oper:'ne', text:"diferente"},{ oper:'lt', text:"menor"},{ oper:'le', text:"menor ou igual"},{ oper:'gt', text:"maior"},{ oper:'ge', text:"maior ou igual"},{ oper:'bw', text:"inicia com"},{ oper:'bn', text:"não inicia com"},{ oper:'in', text:"está em"},{ oper:'ni', text:"não está em"},{ oper:'ew', text:"termina com"},{ oper:'en', text:"não termina com"},{ oper:'cn', text:"contém"},{ oper:'nc', text:"não contém"},{ oper:'nu', text:"nulo"},{ oper:'nn', text:"não nulo"}],
+	    odata: [{ oper:'eq', text:"igual"},{ oper:'ne', text:"diferente"},{ oper:'lt', text:"menor"},{ oper:'le', text:"menor ou igual"},{ oper:'gt', text:"maior"},{ oper:'ge', text:"maior ou igual"},{ oper:'bw', text:"inicia com"},{ oper:'bn', text:"não inicia com"},{ oper:'in', text:"está em"},{ oper:'ni', text:"não está em"},{ oper:'ew', text:"termina com"},{ oper:'en', text:"não termina com"},{ oper:'cn', text:"contém"},{ oper:'nc', text:"não contém"},{ oper:'nu', text:"nulo"},{ oper:'nn', text:"não nulo"}, {oper:'bt', text:'between'}],
 	    groupOps: [	{ op: "AND", text: "todos" },{ op: "OR",  text: "qualquer um" }	],
 		operandTitle : "Clique para escolher a operação de pesquisa.",
 		resetTitle : "Limpar valor de pesquisa"
@@ -110,7 +118,8 @@ $.jgrid.regional["pt-br"] = {
 		savetext: "",
 		savetitle: "Salvar linha",
 		canceltext: "",
-		canceltitle : "Cancelar edição da linha"		
+		canceltitle : "Cancelar edição da linha",
+		selectcaption : "Actions..."
 	},
 	col : {
 	    caption: "Mostrar/Esconder Colunas",
@@ -162,6 +171,18 @@ $.jgrid.regional["pt-br"] = {
 	    target: '',
 	    checkbox : {disabled:true},
 		idName : 'id'
+	},
+	colmenu : {
+		sortasc : "Sort Ascending",
+		sortdesc : "Sort Descending",
+		columns : "Columns",
+		filter : "Filter",
+		grouping : "Group By",
+		ungrouping : "Ungroup",
+		searchTitle : "Get items with value that:",
+		freeze : "Freeze",
+		unfreeze : "Unfreeze",
+		reorder : "Move to reorder"
 	}
 };
 }));
