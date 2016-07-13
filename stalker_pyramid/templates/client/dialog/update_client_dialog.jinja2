@@ -140,15 +140,15 @@
 
             submit_button.button('loading');
             var client_form = $('#client_form');
+            console.log("client_form.serialize(): "+ client_form.serialize());
             if (client_form.validate()) {
                 $.post(
                     client_form.attr('action'),
                     client_form.serialize()
                 ).done (function (jqXHR) {
-                    window.location.assign('{{ came_from }}');
+                    window.location.reload();
                 }).fail(function (jqXHR) {
-                     bootbox.alert('<div id="message" class="alert alert-danger bigger-110">'+jqXHR.responseText+'</div>');
-
+                    bootbox.alert('<div id="message" class="alert alert-danger bigger-110">'+jqXHR.responseText+'</div>');
                     submit_button.button('reset');
                 });
             }

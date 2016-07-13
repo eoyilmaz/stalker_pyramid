@@ -44,6 +44,8 @@
                  };
                  var generic_text =  JSON.stringify(g_data);
 
+                console.log("project_form.serialize(): "+ project_form.serialize());
+
                 if (project_form.validate()) {
                     $.post(
                         project_form.attr('action'),

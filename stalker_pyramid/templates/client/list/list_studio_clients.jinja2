@@ -81,12 +81,12 @@
                 </a>
                 {{ } }}
 
-                {{ if (it.delete_client_action) { }}
+                {{ if (it.item_remove_link) { }}
                 <a class="red"
                    data-target="#dialog_template"
                    data-toggle="modal"
                    data-keyboard=false
-                   href="{{=it.delete_client_action}}?came_from={{=it.came_from }}">
+                   href="{{=it.item_remove_link}}?came_from={{=it.came_from }}">
                     <i class="icon-trash bigger-130"></i>
                 </a>
                 {{ } }}

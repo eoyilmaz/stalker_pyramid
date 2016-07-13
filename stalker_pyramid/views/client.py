@@ -98,6 +98,7 @@ def create_client(request):
     # parameters
     name = request.params.get('name')
     description = request.params.get('description')
+    report_template_name = request.params.get('report_template_name', None)
 
     type_name = request.params.get('type_name', None)
 
@@ -106,9 +107,17 @@ def create_client(request):
     logger.debug('name          : %s' % name)
     logger.debug('description   : %s' % description)
     logger.debug('type_name : %s' % type_name)
+    logger.debug('report_template_name : %s' % report_template_name)
 
-    if name and description and type_name:
+    if name and description and type_name and report_template_name:
         client_type = query_type("Client", type_name)
+
+        report_template = filter(lambda x: x['name'] == report_template_name, get_distinct_report_templates())
+        logger.debug('report_template : %s' % report_template[0])
+        generic_text_data = {
+            'report_template': report_template[0]
+        }
+        import json
         try:
             new_client = Client(
                 name=name,
@@ -116,7 +125,8 @@ def create_client(request):
                 created_by=logged_in_user,
                 date_created=utc_now,
                 date_updated=utc_now,
-                type=client_type
+                type=client_type,
+                generic_text=json.dumps(generic_text_data)
             )
 
             DBSession.add(new_client)
@@ -158,24 +168,29 @@ def update_client(request):
     name = request.params.get('name')
     description = request.params.get('description')
     type_name = request.params.get('type_name', None)
+    report_template_name = request.params.get('report_template_name', None)
 
     logger.debug('update_client :')
 
     logger.debug('name          : %s' % name)
     logger.debug('description   : %s' % description)
     logger.debug('type_name : %s' % type_name)
+    logger.debug('report_template_name query : %s' % report_template_name)
 
-    if name and description and type_name:
+    if name and description and type_name and report_template_name:
         client_type = query_type("Client", type_name)
+
+        report_template = filter(lambda x: x['name'] == report_template_name, get_distinct_report_templates())
+        logger.debug('report_template[0] : %s' % report_template[0])
 
         client.name = name
         client.type = client_type
         client.description = description
         client.updated_by = logged_in_user
         client.date_updated = utc_now
+        client.set_generic_text_attr("report_template", report_template[0])
 
         DBSession.add(client)
-
     else:
         transaction.abort()
         return Response('There are missing parameters', 500)
@@ -255,7 +270,7 @@ def get_studio_clients(request):
             client['item_update_link'] = \
                 '/clients/%s/update/dialog' % client['id']
             client['item_remove_link'] =\
-                '/clients/%s/delete/dialog?came_from=%s' % (
+                '/entities/%s/delete/dialog?came_from=%s' % (
                     client['id'],
                     request.current_route_path()
                 )
@@ -613,7 +628,7 @@ def get_distinct_report_templates():
     for c in Client.query.all():
         report_template = get_report_template(c)
         if report_template:
-            logger.debug('report_template: %s' % report_template['name'])
+            # logger.debug('get_distinct_report_templates: %s' % report_template['name'])
 
             new_report_template = True
             for r in report_templates:

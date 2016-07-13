@@ -42,11 +42,22 @@
             <label class="span3 control-label"
                    for="client_report_template">Report Template</label>
             <div class="span9">
-                <select id="client_report_template"
-                       class="input"
-                       name='client_report_template_name'
-                       placeholder="Report Template"
-                       required></select>
+{#                <select id="client_report_template"#}
+{#                       name='report_template_name'#}
+{#                       class='input-block-level'#}
+{#                       type='text'#}
+{#                       placeholder="Report Template"#}
+{#                       required></select>#}
+                <input id="client_report_template"
+                         name='report_template_name'
+                         placeholder="Report Template"
+                         class='input-block-level'
+                         type='text'
+                         {% if client_report_template_name %}
+                         value='{{ client_report_template_name }}'
+                      {% endif %}
+
+                         required>
             </div>
         </div>
         {# Type #}
@@ -60,7 +71,7 @@
                          placeholder="Type"
                          class='input-block-level'
                          type='text'
-                          {% if mode == 'Update' %}
+                      {% if mode == 'Update' %}
                          value='{{ client.type.name }}'
                           {% endif %}
                          required>
@@ -92,36 +103,36 @@
 
     {# Form #}
     $(document).ready(function () {
-
-
         {% raw %}
             var report_templates_option_template = doT.template(
-                '<option value={{=it.name}}>{{=it.name}}</option>'
+                '<option value={{=it.id}}>{{=it.name}}</option>'
             );
         {% endraw %}
 
         var report_templates = [
             {% for r_temp in report_templates %}
-                {'name':'{{ r_temp }}'},
+                {'name':'{{ r_temp }}', 'id':'{{ r_temp }}'.replace(" ","%20")},
+            {% endfor %}
+        ];
+
+        var available_report_templates = [
+            {% for r_temp in report_templates %}
+                '{{ r_temp }}',
             {% endfor %}
         ];
 
         var client_report_template = $('#client_report_template');
-
-        for (var i = 0; i < report_templates.length; i++) {
-            client_report_template.append(report_templates_option_template(report_templates[i]));
-        }
-
-        client_report_template.chosen({
-            search_contains: true,
-            enable_split_word_search: true,
-            allow_single_deselect: true
-        });
+{#        chosen_searchable_field_creator_by_data(client_report_template, report_templates_option_template, report_templates);#}
+        client_report_template.autocomplete({
+                delay: 0,
+                source: available_report_templates,
+                minLength: 0
+            });
         console.log('client_report_template_name: {{client_report_template_name}}');
-        {% if client_report_template_name %}
-            client_report_template.val('{{ client_report_template_name}}');
-            client_report_template.trigger('liszt:updated');
-        {% endif %}
+{#        {% if client_report_template_name %}#}
+{#            client_report_template.val('{{ client_report_template_name}}').trigger('liszt:updated');#}
+{#            client_report_template.trigger('liszt:updated');#}
+{#        {% endif %}#}
 
         {# ***************************************************************** #}
         {# TYPE #}
