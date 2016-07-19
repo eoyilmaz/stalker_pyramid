@@ -584,6 +584,21 @@ def generate_report(budget, output_path=''):
 
                         filtered_entity.secondaryAmount = secondaryAmount
 
+                    setattr(
+                            budget.project,
+                            "production_firm",
+                            budget.project.get_generic_text_attr('production_firm')
+                    )
+                    setattr(
+                            budget.project,
+                            "adv_agency",
+                            budget.project.get_generic_text_attr('adv_agency')
+                    )
+                    setattr(
+                            budget.project,
+                            "product_project_name",
+                            budget.project.get_generic_text_attr('product_project_name')
+                    )
                     # now generate the result
                     result_buffer.append(
                         float(
