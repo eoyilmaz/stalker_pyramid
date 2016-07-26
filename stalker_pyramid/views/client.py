@@ -23,7 +23,7 @@ import datetime
 from pyramid.httpexceptions import HTTPFound
 from pyramid.view import view_config
 
-from stalker import db, Client, User, ClientUser, Studio
+from stalker import db, Client, User, ClientUser, Studio, ProjectUser
 from stalker.db import DBSession
 
 import transaction
@@ -32,6 +32,7 @@ from webob import Response
 from stalker_pyramid.views import (get_logged_in_user, logger,
                                    PermissionChecker, milliseconds_since_epoch,
                                    local_to_utc)
+from stalker_pyramid.views.project import get_project_user
 from stalker_pyramid.views.role import query_role
 from stalker_pyramid.views.type import query_type
 
@@ -482,6 +483,7 @@ def get_report_template(client):
         return generic_text.get('report_template', None)
 
 
+
 def generate_report(budget, output_path=''):
     """generates report for the given client and budget
 
@@ -507,6 +509,8 @@ def generate_report(budget, output_path=''):
 
     # get the report_template
     report_template = get_report_template(client)
+
+    logger.debug("report_template: %s" % report_template)
 
     if not report_template:
         raise RuntimeError(
@@ -538,21 +542,85 @@ def generate_report(budget, output_path=''):
     import openpyxl
     wb = openpyxl.load_workbook(wb_path)
 
+    creative_director = get_project_user(budget.project, "Yaratici Yonetmen")
+    creative_director_name = "Not Appended!!"
+    if creative_director:
+        creative_director_name = creative_director.name
     setattr(
-            budget.project,
-            "production_firm",
-            budget.project.get_generic_text_attr('production_firm')
+        budget.project,
+        "creative_director",
+        creative_director_name
     )
+
+    customer_director = get_project_user(budget.project, "Musteri Direktoru")
+    customer_director_name = "Not Appended!!"
+    if customer_director:
+        customer_director_name = customer_director.name
     setattr(
-            budget.project,
-            "adv_agency",
-            budget.project.get_generic_text_attr('adv_agency')
+        budget.project,
+        "customer_director",
+        customer_director_name
     )
+
+    agency_producer = get_project_user(budget.project, "Ajans Yapimcisi")
+    agency_producer_name = "Not Appended!!"
+    if agency_producer:
+        agency_producer_name = agency_producer.name
     setattr(
-            budget.project,
-            "product_project_name",
-            budget.project.get_generic_text_attr('product_project_name')
+        budget.project,
+        "agency_producer",
+        agency_producer_name
     )
+
+    studio_director = get_project_user(budget.project, "Studio Yonetmen")
+    studio_director_name = "Not Appended!!"
+    if studio_director:
+        studio_director_name = studio_director.name
+    setattr(
+        budget.project,
+        "studio_director",
+        studio_director_name
+    )
+
+    studio_producer = get_project_user(budget.project, "Studio Yapimci")
+    studio_producer_name = "Not Appended!!"
+    if studio_producer:
+        studio_producer_name = studio_producer.name
+    setattr(
+        budget.project,
+        "studio_producer",
+        studio_producer_name
+    )
+
+    production_firm = Client.query.filter(Client.id == budget.project.get_generic_text_attr('production_firm')).first()
+    production_firm_name = "Not Appended!!"
+    if production_firm:
+        production_firm_name = production_firm.name
+    setattr(
+        budget.project,
+        "production_firm",
+        production_firm_name
+    )
+    logger.debug("production_firm_name: %s" % production_firm_name)
+
+    adv_agency = Client.query.filter(Client.id == budget.project.get_generic_text_attr('adv_agency')).first()
+    adv_agency_name = "Not Appended!!"
+    if adv_agency:
+        adv_agency_name = adv_agency.name
+    setattr(
+        budget.project,
+        "adv_agency",
+        adv_agency_name
+    )
+    logger.debug("adv_agency_name: %s" % adv_agency_name)
+
+
+    setattr(
+        budget.project,
+        "product_project_name",
+        budget.project.get_generic_text_attr('product_project_name')
+    )
+    logger.debug("budget.project.get_generic_text_attr('product_project_name'): %s" % budget.project.get_generic_text_attr('product_project_name'))
 
     # iterate through sheet_data on the mapper
     for sheet_data in mapper_data['sheets']:
@@ -567,61 +635,77 @@ def generate_report(budget, output_path=''):
             logger.debug('cell_name: %s' % cell_name)
             cell_data = cells[cell_name]
 
-            result_buffer = [0.0]
+            result_buffer = []
             for entity_data in cell_data:
                 # get the query data
                 query_data = entity_data['query']
                 result_template = entity_data['result']
 
-                # build the query
-                q = BudgetEntry.query\
-                    .filter(BudgetEntry.budget == budget)
-                for k, v in query_data.items():
-                    q = q.filter(getattr(BudgetEntry, k) == v)
-                filtered_entity = q.first()
+                if query_data['name'] != '#STRING RESULT#':
+                    # build the query
+                    q = BudgetEntry.query\
+                        .filter(BudgetEntry.budget == budget)
+                    for k, v in query_data.items():
+                        q = q.filter(getattr(BudgetEntry, k) == v)
+                    filtered_entity = q.first()
 
-                if filtered_entity:
-                    # add secondary data like stoppage_ratio
-                    if filtered_entity.generic_text:
-                        fe_generic_data = \
-                            json.loads(filtered_entity.generic_text)
+                    if filtered_entity:
+                        # add secondary data like stoppage_ratio
+                        if filtered_entity.generic_text:
+                            fe_generic_data = \
+                                json.loads(filtered_entity.generic_text)
 
-                        # TODO: Generalize this
-                        filtered_entity.stoppage_add = \
-                            fe_generic_data.get('stoppage_add', 0)
-                        filtered_entity.overtime = \
-                            fe_generic_data.get('overtime', 0)
+                            # TODO: Generalize this
+                            filtered_entity.stoppage_add = filtered_entity.get_generic_text_attr('stoppage_add')
+                            filtered_entity.overtime = filtered_entity.get_generic_text_attr('overtime')
 
-                        secondaryFactor = fe_generic_data.get('secondaryFactor', [])
-                        secondaryAmount = 0
+                            logger.debug('filtered_entity.stoppage_add: %s' % filtered_entity.stoppage_add)
 
-                        for sFactor in secondaryFactor:
-                            secondaryAmount += int(sFactor['second_amount'])
+                            secondaryFactor = filtered_entity.get_generic_text_attr('secondaryFactor')
+                            secondaryAmount = 0
 
-                        filtered_entity.secondaryAmount = secondaryAmount
+                            for sFactor in secondaryFactor:
+                                secondaryAmount += int(sFactor['second_amount'])
 
+                            filtered_entity.secondaryAmount = secondaryAmount
 
-                    # now generate the result
-                    result_buffer.append(
-                        float(
-                            eval(
-                                result_template.format(
-                                    item=filtered_entity,
-                                    budget=budget,
-                                    project=budget.project,
-                                    client=budget.project.client
+                        # now generate the result
+                        result_buffer.append(
+                            float(
+                                eval(
+                                    result_template.format(
+                                        item=filtered_entity,
+                                        budget=budget,
+                                        project=budget.project,
+                                        client=budget.project.client
+                                    )
                                 )
                             )
                         )
+                else:
+                    # now generate the result
+                    result_buffer.append(
+                        result_template.format(
+                            item=None,
+                            budget=budget,
+                            project=budget.project,
+                            client=budget.project.client
+                        )
                     )
+
 
             logger.debug('result_buffer: %s' % result_buffer)
             # we should have something like ['2334.3', '2656.4', ...]
             # render it to a one float value
-            cell_result = reduce(
-                lambda x, y: x + y,
-                result_buffer
-            )
+
+            if result_buffer:
+                cell_result = reduce(
+                    lambda x, y: x + y,
+                    result_buffer
+                )
+            else:
+                cell_result = ''
+
 
             # write it down to the cell itself
             sheet[cell_name] = cell_result

@@ -30,7 +30,7 @@ from pyramid.view import view_config
 from stalker.db import DBSession
 from stalker import (db, ImageFormat, Repository, Structure, Status,
                      StatusList, Project, Entity, Studio, defaults, Client,
-                     Budget, BudgetEntry, Good)
+                     Budget, BudgetEntry, Good, User)
 from stalker.models import local_to_utc
 from stalker.models.project import ProjectUser
 import transaction
@@ -733,3 +733,15 @@ def view_project(request):
         'projects': projects
     }
 
+
+def get_project_user(project, role_name):
+
+    role = query_role(role_name)
+    project_user = ProjectUser.query.\
+        filter(ProjectUser.role_id == role.id).\
+        filter(ProjectUser.project_id == project.id).first()
+
+    user = User.query.\
+        filter(User.id == project_user.user_id).first()
+
+    return user
