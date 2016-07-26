@@ -242,6 +242,7 @@ function chosen_searchable_field_creator(field, url, data_template) {
         // append a single empty option to the responsible field
         field.append(data_template({'id': "", 'name': ""}));
         for (var i=0; i < data_count; i++){
+            console.log(data_template(data[i]));
             field.append(data_template(data[i]));
         }
     });

@@ -321,7 +321,7 @@
         {% if  entity.client %}
 
             console.log('{{ entity.client.name }}');
-            $('#client_name').text('{{ entity.client.name }}');
+            $('#client_name').append('<a class="green" href="/clients/{{ entity.client.id }}/view">{{ entity.client.name }}</a>');
             $('#client_controls').show();
 
             $.getJSON('/clients/{{ entity.client.id}}/users/').then(function (c_data) {
@@ -341,7 +341,7 @@
         {% if entity.get_generic_text_attr('adv_agency') %}
             $('#adv_agency_controls').show();
             $.getJSON('/clients/{{ entity.get_generic_text_attr('adv_agency')}}/').then(function (client_entity) {
-                $('#adv_agency_name').text(client_entity[0].name);
+                $('#adv_agency_name').append('<a class="green" href="/clients/'+client_entity[0].id+'/view">'+client_entity[0].name+'</a>');
             });
             $.getJSON('/clients/{{ entity.get_generic_text_attr('adv_agency') }}/users/').then(function (c_data) {
 
@@ -376,7 +376,7 @@
          {% if entity.get_generic_text_attr('production_firm') %}
             $('#production_firm_name_controls').show();
             $.getJSON('/clients/{{ entity.get_generic_text_attr('production_firm')}}/').then(function (client_entity) {
-                $('#production_firm_name').text(client_entity[0].name);
+                $('#production_firm_name').append('<a class="green" href="/clients/'+client_entity[0].id+'/view">'+client_entity[0].name+'</a>');
             });
 
             $.getJSON('/clients/{{ entity.get_generic_text_attr('production_firm') }}/users/').then(function (p_data) {

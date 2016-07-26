@@ -57,6 +57,11 @@
             var entity_user_option_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
         {% endraw %}
         var deferred = chosen_searchable_field_creator(entity_user, list_url, entity_user_option_template);
+        deferred.then(function () {
+            entity_user.trigger('liszt:updated');
+        });
+
+
 
         {# ***************************************************************** #}
         {# ROLE #}
