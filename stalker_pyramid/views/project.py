@@ -736,12 +736,15 @@ def view_project(request):
 
 def get_project_user(project, role_name):
 
+    user = None
     role = query_role(role_name)
-    project_user = ProjectUser.query.\
-        filter(ProjectUser.role_id == role.id).\
-        filter(ProjectUser.project_id == project.id).first()
+    if role:
+        project_user = ProjectUser.query.\
+            filter(ProjectUser.role_id == role.id).\
+            filter(ProjectUser.project_id == project.id).first()
 
-    user = User.query.\
-        filter(User.id == project_user.user_id).first()
+        if project_user:
+            user = User.query.\
+                filter(User.id == project_user.user_id).first()
 
     return user

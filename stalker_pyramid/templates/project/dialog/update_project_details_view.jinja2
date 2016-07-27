@@ -380,35 +380,35 @@
             });
 
             $.getJSON('/clients/{{ entity.get_generic_text_attr('production_firm') }}/users/').then(function (p_data) {
-            var production_firm_users = p_data;
-            var director = $('#director');
-            chosen_searchable_field_creator_by_data(director, user_option_template, production_firm_users);
-            director.on('change', function () {
-                set_user_role($(this).val(), "Yonetmen");
-            });
-            set_field_value(director, '/entities/{{ entity.id }}/role_user/?role_name=Yonetmen');
+                var production_firm_users = p_data;
+                var director = $('#director');
+                chosen_searchable_field_creator_by_data(director, user_option_template, production_firm_users);
+                director.on('change', function () {
+                    set_user_role($(this).val(), "Yonetmen");
+                });
+                set_field_value(director, '/entities/{{ entity.id }}/role_user/?role_name=Yonetmen');
 
-            var producer = $('#producer');
-            chosen_searchable_field_creator_by_data(producer, user_option_template, production_firm_users);
-            producer.on('change', function () {
-                set_user_role($(this).val(), "Yapimci");
-            });
-            set_field_value(producer, '/entities/{{ entity.id }}/role_user/?role_name=Yapimci');
+                var producer = $('#producer');
+                chosen_searchable_field_creator_by_data(producer, user_option_template, production_firm_users);
+                producer.on('change', function () {
+                    set_user_role($(this).val(), "Yapimci");
+                });
+                set_field_value(producer, '/entities/{{ entity.id }}/role_user/?role_name=Yapimci');
 
-            var supervisor = $('#supervisor');
-            chosen_searchable_field_creator_by_data(supervisor, user_option_template, production_firm_users);
-            supervisor.on('change', function () {
-                set_user_role($(this).val(), "Supervisor");
-            });
-            set_field_value(supervisor, '/entities/{{ entity.id }}/role_user/?role_name=Supervisor');
+                var supervisor = $('#supervisor');
+                chosen_searchable_field_creator_by_data(supervisor, user_option_template, production_firm_users);
+                supervisor.on('change', function () {
+                    set_user_role($(this).val(), "Supervisor");
+                });
+                set_field_value(supervisor, '/entities/{{ entity.id }}/role_user/?role_name=Supervisor');
 
-            var coordinator = $('#coordinator');
-            chosen_searchable_field_creator_by_data(coordinator, user_option_template, production_firm_users);
-            coordinator.on('change', function () {
-                set_user_role($(this).val(), "Coordinator");
+                var coordinator = $('#coordinator');
+                chosen_searchable_field_creator_by_data(coordinator, user_option_template, production_firm_users);
+                coordinator.on('change', function () {
+                    set_user_role($(this).val(), "Coordinator");
+                });
+                set_field_value(coordinator, '/entities/{{ entity.id }}/role_user/?role_name=Coordinator');
             });
-            set_field_value(coordinator, '/entities/{{ entity.id }}/role_user/?role_name=Coordinator');
-        });
         {% else %}
              $('#production_firm_name_controls').hide();
         {% endif %}
