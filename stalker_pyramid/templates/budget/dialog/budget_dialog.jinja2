@@ -41,6 +41,24 @@
                 </div>
             </div>
 {#            {% endif %}#}
+        {% if mode=='Update' %}
+            {# Start & End Dates #}
+            <div class="control-group">
+                <label for="start_end_date_range_picker"
+                       class="span3 control-label">Date</label>
+
+                <div class="span9 input-prepend">
+                    <input id='start_end_date_range_picker'
+                           name='start_and_end_dates'
+                           type="text"
+                           data-date-format="yyyy-mm-dd"
+                           placeholder="Start & End Dates">
+                        <span class="add-on">
+                            <i class="icon-calendar"></i>
+                        </span>
+                </div>
+            </div>
+        {% endif %}
             {#Description #}
             <div class="control-group'">
                 <label for="budget_description"
@@ -60,8 +78,8 @@
         </div>
     </form>
 </div>
-
-
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-datepicker.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/daterangepicker.min.js") }}'></script>
 <script type="text/javascript">
 
     function init_dialog() {
@@ -95,6 +113,32 @@
             {% endif %}
             budget_type.trigger('liszt:updated');
         });
+
+        var start_end_date_range_picker = $('#start_end_date_range_picker').daterangepicker();
+        start_end_date_range_picker.next().on('click', function () {
+            $(this).prev().focus();
+        });
+
+        // fix z-index of the container
+{#            start_end_date_range_picker.data().daterangepicker.container.css({'z-index': 1060});#}
+        start_end_date_range_picker.on('shown', function (e) {
+            e.stopPropagation();
+        });
+        start_end_date_range_picker.on('hidden', function (e) {
+            e.stopPropagation();
+        });
+
+        // fill data if mode is update
+        {% if mode == 'Update' %}
+
+            var start_date = new Date({{ budget.get_generic_text_attr('start') }});
+            var end_date = new Date({{ budget.get_generic_text_attr('end') }});
+            start_end_date_range_picker.val(
+                    start_date.format('mm/dd/yyyy') + ' - ' + end_date.format('mm/dd/yyyy')
+            );
+            start_end_date_range_picker.data().daterangepicker.updateFromControl();
+
+        {% endif %}
 
         {# ***************************************************************** #}
         {# Submit Button #}

@@ -48,7 +48,7 @@
                     <a data-target="#dialog_template"
                        data-toggle="modal"
                        data-keyboard=false
-                       href="{{ request.route_url("create_scene_dialog", _query={'entity_id': entity.id }) }}"
+                       href="{{ request.route_url("create_scene_dialog", id=-1, _query={'entity_id': entity.id, 'mode': 'create' }) }}"
                        class="white">
                         <i class="icon-plus"></i>
                         New

@@ -38,11 +38,15 @@ import transaction
 from stalker_pyramid.views import (get_date_range,
                                    get_logged_in_user,
                                    milliseconds_since_epoch, PermissionChecker)
+from stalker_pyramid.views.budget import update_budgetenties_startdate
 from stalker_pyramid.views.role import query_role
 from stalker_pyramid.views.type import query_type
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
+
+from stalker import log
+log.logging_level = logging.DEBUG
 
 
 @view_config(
@@ -58,7 +62,7 @@ def create_project(request):
     # parameters
     name = request.params.get('name')
     code = request.params.get('code')
-    fps = request.params.get('fps')
+    fps = request.params.get('fps', 0)
     generic_text = request.params.get('generic_text')
     # get the dates
     start, end = get_date_range(request, 'start_and_end_dates')
@@ -66,20 +70,23 @@ def create_project(request):
     imf_id = request.params.get('image_format_id', -1)
     imf = ImageFormat.query.filter_by(id=imf_id).first()
     if not imf:
-        transaction.abort()
-        return Response('Can not find a ImageFormat with code: %s' % imf_id, 500)
+        imf = ImageFormat.query.first()
+    #     transaction.abort()
+    #     return Response('Can not find a ImageFormat with code: %s' % imf_id, 500)
 
     repo_id = request.params.get('repository_id', -1)
     repo = Repository.query.filter_by(id=repo_id).first()
     if not repo:
-        transaction.abort()
-        return Response('Can not find a Repository with code: %s' % repo_id, 500)
+        repo = Repository.query.first()
+    #     transaction.abort()
+    #     return Response('Can not find a Repository with code: %s' % repo_id, 500)
 
     structure_id = request.params.get('structure_id', -1)
     structure = Structure.query.filter_by(id=structure_id).first()
     if not structure:
-        transaction.abort()
-        return Response('Can not find a structure with code: %s' % structure_id, 500)
+        structure = Structure.query.first()
+        # transaction.abort()
+        # return Response('Can not find a structure with code: %s' % structure_id, 500)
 
     status = Status.query.filter_by(name='New').first()
     if not status:
@@ -103,6 +110,7 @@ def create_project(request):
     logger.debug('code          : %s' % code)
     logger.debug('fps           : %s' % fps)
     logger.debug('imf_id        : %s' % imf_id)
+    logger.debug('imf           : %s' % imf)
     logger.debug('repo_id       : %s' % repo_id)
     logger.debug('repo          : %s' % repo)
     logger.debug('structure_id  : %s' % structure_id)
@@ -113,23 +121,27 @@ def create_project(request):
     logger.debug('generic_text  : %s' % generic_text)
     logger.debug('type_name     : %s' % type_name)
 
-    if name and code and fps and start and end and type_name:
+    if name and code and start and end and type_name:
         # status is always New
         # lets create the project
-
+        logger.debug('codecode          : %s' % code)
         # status list
         status_list = StatusList.query \
             .filter_by(target_entity_type='Project').first()
 
         project_type = query_type("Project", type_name)
         try:
+            logger.debug('code: %s' % code)
+            logger.debug('type(code): %s' % type(code))
+            logger.debug('fps: %s' % fps)
+            logger.debug('type(fps): %s' % type(fps))
             new_project = Project(
                 name=name,
                 code=code,
                 image_format=imf,
                 repositories=[repo],
                 created_by=logged_in_user,
-                fps=fps,
+                # fps=fps,
                 structure=structure,
                 status_list=status_list,
                 status=status,
@@ -211,7 +223,7 @@ def update_project(request):
 
     name = request.params.get('name')
     fps = request.params.get('fps')
-    # get the dates
+
     start, end = get_date_range(request, 'start_and_end_dates')
     generic_text = request.params.get('generic_text')
     type_name = request.params.get('type_name', None)
@@ -238,6 +250,7 @@ def update_project(request):
 
         project_type = query_type("Project", type_name)
 
+        time_delta = milliseconds_since_epoch(start) - milliseconds_since_epoch(project.start)
         project.name = name
         project.image_format = imf
         project.repositories = [repo]
@@ -253,7 +266,7 @@ def update_project(request):
 
         for attr in new_generic_data:
             project.set_generic_text_attr(attr, new_generic_data[attr])
-
+        update_budgetenties_startdate(project, time_delta)
         logger.debug('project updated %s ' % project.generic_text)
 
     else:
@@ -268,6 +281,7 @@ def update_project(request):
         'success:Project with the code <strong>%s</strong> is updated.'
         % project.code
     )
+
 
 @view_config(
     route_name='inline_update_project'
@@ -351,7 +365,6 @@ def get_entity_projects(request):
             {
                 'id': project.id,
                 'name': project.name,
-
                 'lead_id': lead.id if lead else None,
                 'lead_name': lead.name if lead else None,
                 'date_created': milliseconds_since_epoch(project.date_created),

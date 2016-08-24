@@ -138,8 +138,11 @@
     <script src='{{ request.static_url("stalker_pyramid:static/dhtmlx/ext/dhtmlxgantt_multiselect.js") }}' type='text/javascript' charset='utf-8'></script>
     <script type="text/javascript">
         var myLayout, myToolbar;
-        var project_start = moment('{{ entity.project.start }}');
-        var project_end = moment('{{ entity.project.end }}');
+        console.log('{{ entity.get_generic_text_attr('start') }}');
+        console.log('{{ entity.get_generic_text_attr('end') }}');
+
+        var project_start = moment({{ entity.get_generic_text_attr('start') }});
+        var project_end = moment({{ entity.get_generic_text_attr('end') }});
         var duration = project_end.diff(project_start, 'days');
         var project_id = "{{ entity.project.id }}";
         var project_name = "{{ entity.project.name }}";
@@ -647,11 +650,13 @@
         function updateProjectDialog(id) {
             var event_dialog = $('#dialog_template');
             event_dialog.modal({
-                        'remote': "/projects/"+project_id+"/update/dialog?mode=Update"
+                        'remote': "/budgets/{{ entity.id }}/update/dialog?mode=Update"
                     });
         }
 
         function updateProjectStartEndDate(id){
+
+            console.log("updateProjectStartEndDate");
             var project = gantt.getTask(id);
             var start = project.start_date;
             var end = (addDays(start, project.duration));
@@ -662,7 +667,7 @@
             });
 
             $.post(
-                "/projects/{{ entity.project.id}}/update/inline", params
+                "/budgets/{{ entity.id}}/update/inline", params
             ).done(function () {
                 console.log('done');
             }).fail(function (jqXHR) {

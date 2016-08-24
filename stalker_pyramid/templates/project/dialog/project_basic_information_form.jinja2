@@ -86,67 +86,67 @@
                         </span>
                 </div>
             </div>
+            {% if mode == 'Update' %}
+                {# Image Format #}
+                <div class="control-group">
+                    <label for='image_format' class="span2 control-label">Image
+                        Format</label>
 
-            {# Image Format #}
-            <div class="control-group">
-                <label for='image_format' class="span2 control-label">Image
-                    Format</label>
-
-                <div class="span10">
-                    <select id='image_format'
-                            name='image_format_id'
-                            data-placeholder='Image Format'
-                             {% if mode == 'Update' %}
-                            value='{{ project.image_format.name }}'
-                             {% endif %}
-                            required>
-                    </select>
+                    <div class="span10">
+                        <select id='image_format'
+                                name='image_format_id'
+                                data-placeholder='Image Format'
+                                 {% if mode == 'Update' %}
+                                value='{{ project.image_format.name }}'
+                                 {% endif %}
+                                required>
+                        </select>
+                    </div>
                 </div>
-            </div>
 
-            {# FPS #}
-            <div class='control-group'>
-                <label for='project_fps' class='span2 control-label'>FPS</label>
+                {# FPS #}
+                <div class='control-group'>
+                    <label for='project_fps' class='span2 control-label'>FPS</label>
 
-                <div class='span10'>
-                    <input id='project_fps'
-                           class='input-block-level'
-                           name='fps'
-                           min=1
-                           max=1000
-                           {% if mode=='Update' %} value='{{ project.fps }}'{% endif %}
-                           required />
+                    <div class='span10'>
+                        <input id='project_fps'
+                               class='input-block-level'
+                               name='fps'
+                               min=1
+                               max=1000
+                               {% if mode=='Update' %} value='{{ project.fps }}'{% endif %}
+                               required />
+                    </div>
                 </div>
-            </div>
 
-            {# Repository #}
-            <div class="control-group">
-                <label for='repository'
-                       class="span2 control-label">Repository</label>
+                {# Repository #}
+                <div class="control-group">
+                    <label for='repository'
+                           class="span2 control-label">Repository</label>
 
-                <div class="span10">
-                    <select id='repository'
-                            name='repository_id'
-                            data-placeholder='Repository'
-                            required>
-                    </select>
+                    <div class="span10">
+                        <select id='repository'
+                                name='repository_id'
+                                data-placeholder='Repository'
+                                required>
+                        </select>
+                    </div>
                 </div>
-            </div>
 
-            {# Structure #}
-            <div class="control-group">
-                <label for='structure'
-                       class="span2 control-label">Structure</label>
+                {# Structure #}
+                <div class="control-group">
+                    <label for='structure'
+                           class="span2 control-label">Structure</label>
 
-                <div class="span10">
-                    <select id='structure'
-                            name='structure_id'
-                            data-placeholder='Structure'
-                            required>
-                    </select>
+                    <div class="span10">
+                        <select id='structure'
+                                name='structure_id'
+                                data-placeholder='Structure'
+                                required>
+                        </select>
+                    </div>
                 </div>
-            </div>
-
+            {% endif %}
             {# Status #}
             <div class="control-group">
                 <label for='status'
@@ -221,7 +221,6 @@
 
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/chosen.jquery.min.js") }}'></script>
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-datepicker.min.js") }}'></script>
-
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/daterangepicker.min.js") }}'></script>
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/bootstrap-colorpicker.min.js") }}'></script>
 <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.autosize-min.js") }}'></script>

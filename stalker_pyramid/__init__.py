@@ -407,6 +407,7 @@ def main(global_config, **settings):
 
     config.add_route('create_budget',        'budgets/create')
     config.add_route('update_budget',        'budgets/{id}/update')
+    config.add_route('inline_update_budget', 'budgets/{id}/update/inline')
 
     config.add_route('view_budget',          'budgets/{id}/view')
     config.add_route('view_budget_calendar', 'budgets/{id}/view/calendar')
@@ -646,8 +647,10 @@ def main(global_config, **settings):
     # *************************************************************************
     # Scene
     config.add_route('get_scenes_children_task_type',  'scenes/children/task_type/')  # json
-    config.add_route('create_scene_dialog',  'scenes/create/dialog')  # html
+    config.add_route('create_scene_dialog',  'scenes/{id}/create/dialog')  # html
+    config.add_route('update_scene_dialog',  'scenes/{id}/update/dialog')  # html
     config.add_route('create_scene',  'scenes/create')  # html
+    config.add_route('update_scene',  'scenes/{id}/update')  # html
     # *************************************************************************
     # Sequence
     config.add_route('create_sequence_dialog', 'sequences/{id}/create/dialog')

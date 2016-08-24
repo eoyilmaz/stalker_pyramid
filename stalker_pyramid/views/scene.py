@@ -34,18 +34,34 @@ from stalker_pyramid.views.task import duplicate_task_hierarchy_action
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-
+@view_config(
+    route_name='update_scene_dialog',
+    renderer='templates/scene/dialog/scene_dialog.jinja2',
+)
 @view_config(
     route_name='create_scene_dialog',
-    renderer='templates/scene/dialog/create_scene_dialog.jinja2'
+    renderer='templates/scene/dialog/scene_dialog.jinja2'
 )
-def create_scene_dialog(request):
+def scene_dialog(request):
     """a generic function which will create a dictionary with enough data
     """
     logged_in_user = get_logged_in_user(request)
 
     entity_id = request.params.get('entity_id')
     entity = Entity.query.filter_by(id=entity_id).first()
+
+    mode = request.params.get('mode')
+
+    scene_id = request.matchdict.get('id', -1)
+    scene = Task.query.filter(Task.id == scene_id).first()
+
+    shot_count = 1
+    if scene:
+        shots_folder = Task.query.filter(Task.name == 'Shots').filter(Task.parent == scene).first()
+        if shots_folder:
+            shots = Shot.query.filter(Shot.parent == shots_folder).all()
+            shot_count = len(shots)
+
 
     project = None
     sequence = None
@@ -61,7 +77,10 @@ def create_scene_dialog(request):
     return {
         'project': project,
         'sequence': sequence,
-        'logged_in_user': logged_in_user
+        'logged_in_user': logged_in_user,
+        'mode': mode,
+        'scene': scene,
+        'shot_count': shot_count
     }
 
 
@@ -147,6 +166,59 @@ def create_scene(request):
         return Response('There is no shots under scene task', 500)
 
     return Response('Task %s is created successfully' % new_scene)
+
+
+@view_config(
+    route_name='update_scene'
+)
+def update_scene(request):
+    """runs when updating a scene
+    """
+    logged_in_user = get_logged_in_user(request)
+
+    scene_id = request.matchdict.get('id', -1)
+    scene = Task.query.filter(Task.id == scene_id).first()
+
+    if not scene:
+        transaction.abort()
+        return Response('There is no scene task', 500)
+
+    sequence = scene.parent
+
+    temp_shot_id = request.params.get('temp_shot_id')
+    temp_shot = Shot.query.filter_by(id=temp_shot_id).first()
+
+    shot_count = request.params.get('shot_count')
+
+    if sequence and temp_shot and shot_count:
+        # get descriptions
+        description = request.params.get('description', '')
+
+        logger.debug('new_scene   : %s' % scene.name)
+        # transaction.commit()
+        shots_folder = Task.query.filter(Task.name == 'Shots').filter(Task.parent == scene).first()
+        temp_shot = Shot.query.filter_by(id=temp_shot_id).first()
+
+        if not shots_folder:
+            transaction.abort()
+            return Response('There is no shots under scene task', 500)
+        shots = Shot.query.filter(Shot.parent == shots_folder).all()
+
+        for i in range(len(shots)+1, int(shot_count)+1):
+            new_shot_name = '%s_%s' % (scene.name, shot_no(i))
+            new_shot = duplicate_task_hierarchy_action(temp_shot, shots_folder, new_shot_name, description, logged_in_user)
+            logger.debug('new_shot   : %s' % new_shot.name)
+            new_shot.sequences = [sequence]
+    else:
+        logger.debug('there are missing parameters')
+        logger.debug('scene_name      : %s' % scene.name)
+        logger.debug('temp_shot_id    : %s' % temp_shot_id)
+        logger.debug('shot_count      : %s' % shot_count)
+        transaction.abort()
+        return Response('There is no shots under scene task', 500)
+
+    return Response('Task %s is updated successfully' % scene)
+
 
 @view_config(
     route_name='get_entity_scenes_simple',
@@ -353,6 +425,8 @@ order by "Task_Scenes".id"""
 
     return_data = []
 
+    update_task_permission = PermissionChecker(request)('Update_Task')
+
     for r in result.fetchall():
 
         shot_ids = r[8]
@@ -369,7 +443,8 @@ order by "Task_Scenes".id"""
             'name': r[1],
             'description': r[2],
             'num_of_shots': len(distinct_shot_ids),
-            'total_seconds': float(scene_total_frame/project.fps)
+            'total_seconds': float(scene_total_frame/project.fps),
+            'update_scene_action': '/scenes/%(id)s/update/dialog?entity_id=%(entity_id)s&mode=Update' % {'id':r[0],'entity_id':entity.id} if update_task_permission else None
         }
 
 
@@ -390,7 +465,7 @@ order by "Task_Scenes".id"""
         shot_task_resource_names = r[18]
         shot_task_resource_ids = r[19]
 
-        update_task_permission = PermissionChecker(request)('Update_Task')
+
 
         for i in range(len(layout_task_type_names)):
             task_type_name = layout_task_type_names[i]

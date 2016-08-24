@@ -30,14 +30,17 @@ import transaction
 
 from webob import Response
 import stalker_pyramid
-from stalker_pyramid.views import (get_logged_in_user, logger,
-                                   PermissionChecker, milliseconds_since_epoch,
-                                   local_to_utc, StdErrToHTMLConverter,
-                                   get_multi_string, update_generic_text)
-from stalker_pyramid.views.client import generate_report
-
-from stalker_pyramid.views.task import generate_recursive_task_query
-from stalker_pyramid.views.type import query_type
+# from stalker_pyramid.views import (get_logged_in_user, logger,
+#                                    PermissionChecker, milliseconds_since_epoch,
+#                                    local_to_utc, StdErrToHTMLConverter,
+#                                    get_multi_string, update_generic_text)
+# from stalker_pyramid.views.client import generate_report
+#
+# from stalker_pyramid.views.task import generate_recursive_task_query
+# from stalker_pyramid.views.type import query_type
+import logging
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 
 @view_config(
@@ -51,6 +54,8 @@ def create_budget_dialog(request):
     # logger.debug('came_from %s: '% came_from)
 
     # get logged in user
+    from stalker_pyramid.views import get_logged_in_user,\
+        milliseconds_since_epoch
     logged_in_user = get_logged_in_user(request)
 
     project_id = request.params.get('project_id', -1)
@@ -59,6 +64,7 @@ def create_budget_dialog(request):
     if not project:
         return Response('No project found with id: %s' % project_id, 500)
 
+    from stalker_pyramid.views.auth import PermissionChecker
     return {
         'has_permission': PermissionChecker(request),
         'logged_in_user': logged_in_user,
@@ -75,13 +81,14 @@ def create_budget_dialog(request):
 def create_budget(request):
     """runs when creating a budget
     """
-
+    from stalker_pyramid.views import get_logged_in_user, local_to_utc, milliseconds_since_epoch
     logged_in_user = get_logged_in_user(request)
     utc_now = local_to_utc(datetime.datetime.now())
 
     name = request.params.get('name')
     description = request.params.get('description')
 
+    from stalker_pyramid.views.type import query_type
     budget_type = query_type('Budget', 'Planning')
 
     project_id = request.params.get('project_id', None)
@@ -107,7 +114,9 @@ def create_budget(request):
             'realized_total_price': 0,
             'milestones': [],
             'links': [],
-            'calendar_editing': 'OFF'
+            'calendar_editing': 'OFF',
+            'start': milliseconds_since_epoch(project.start),
+            'end': milliseconds_since_epoch(project.end)
     }
 
     budget = Budget(
@@ -132,16 +141,18 @@ def create_budget(request):
 def update_budget_dialog(request):
     """called when updating dailies
     """
-    came_from = request.params.get('came_from','/')
+    came_from = request.params.get('came_from', '/')
     # logger.debug('came_from %s: '% came_from)
 
     # get logged in user
+    from stalker_pyramid.views import get_logged_in_user,\
+        milliseconds_since_epoch
     logged_in_user = get_logged_in_user(request)
 
     budget_id = request.matchdict.get('id', -1)
     budget = Budget.query.filter(Budget.id == budget_id).first()
 
-
+    from stalker_pyramid.views.auth import PermissionChecker
     return {
         'mode': 'Update',
         'has_permission': PermissionChecker(request),
@@ -159,6 +170,8 @@ def update_budget(request):
     """runs when updating a budget
     """
 
+    from stalker_pyramid.views import get_logged_in_user, \
+        local_to_utc, get_date_range, milliseconds_since_epoch
     logged_in_user = get_logged_in_user(request)
     utc_now = local_to_utc(datetime.datetime.now())
 
@@ -172,23 +185,85 @@ def update_budget(request):
     name = request.params.get('name')
     description = request.params.get('description', " ")
 
-    type_id = request.params.get('type_id')
-    type = Type.query.filter(Type.id == type_id).first()
+    type_name = request.params.get('type_name')
+    type_ = Type.query.filter(Type.name == type_name).first()
 
     if not name:
         return Response('Please supply a name', 500)
 
-    if not type:
-        return Response('There is no type with code: %s' % type_id, 500)
+    if not type_:
+        return Response('There is no type with name: %s' % type_name, 500)
 
     budget.name = name
     budget.description = description
-    budget.type = type
+    budget.type = type_
+
+    start, end = get_date_range(request, 'start_and_end_dates')
+    if start and end:
+        time_delta = milliseconds_since_epoch(start) - budget.get_generic_text_attr('start')
+        budget.set_generic_text_attr('start', milliseconds_since_epoch(start))
+        budget.set_generic_text_attr('end', milliseconds_since_epoch(end))
+        update_budgetenties_startdate(budget, time_delta)
+
     budget.date_updated = utc_now
     budget.updated_by = logged_in_user
 
     request.session.flash('success: Successfully updated budget')
     return Response('Successfully updated budget')
+
+
+@view_config(
+    route_name='inline_update_budget'
+)
+def inline_update_budget(request):
+    """Inline updates the given budget with the data coming from the request
+    """
+
+    logger.debug('INLINE UPDATE BUDGET IS RUNNING')
+
+    from stalker_pyramid.views import get_logged_in_user, local_to_utc, \
+        get_date_range, milliseconds_since_epoch
+    logged_in_user = get_logged_in_user(request)
+    utc_now = local_to_utc(datetime.datetime.now())
+
+    # *************************************************************************
+    # collect data
+    attr_name = request.params.get('attr_name', None)
+    attr_value = request.params.get('attr_value', None)
+
+    logger.debug('attr_name %s', attr_name)
+    logger.debug('attr_value %s', attr_value)
+
+    # get task
+    budget_id = request.matchdict.get('id', -1)
+    budget = Budget.query.filter(Budget.id == budget_id).first()
+
+    # update the task
+    if not budget:
+        transaction.abort()
+        return Response("No budget found with id : %s" % budget_id, 500)
+
+    if attr_name and attr_value:
+
+        logger.debug('attr_name %s', attr_name)
+
+        if attr_name == 'start_and_end_dates':
+            start, end = get_date_range(request, 'attr_value')
+            budget.set_generic_text_attr('start', milliseconds_since_epoch(start))
+            budget.set_generic_text_attr('end', milliseconds_since_epoch(end))
+
+            budget.updated_by = logged_in_user
+            budget.date_updated = utc_now
+        else:
+            setattr(budget, 'attr_name', attr_value)
+
+    else:
+        logger.debug('not updating')
+        return Response("MISSING PARAMETERS", 500)
+
+    return Response(
+        'Budget updated successfully %s %s' % (attr_name, attr_value)
+    )
 
 
 @view_config(
@@ -200,7 +275,9 @@ def get_budgets(request):
     """
 
     project_id = request.matchdict.get('id')
-    logger.debug('get_budgets is working for the project which id is: %s' % project_id)
+    logger.debug(
+        'get_budgets is working for the project which id is: %s' % project_id
+    )
 
     status_code = request.params.get('status_code', None)
     status = Status.query.filter(Status.code == status_code).first()
@@ -230,8 +307,12 @@ def get_budgets(request):
 
     budgets = []
 
-    sql_query = sql_query % {'project_id': project_id, 'additional_condition': additional_condition}
+    sql_query = sql_query % {
+        'project_id': project_id,
+        'additional_condition': additional_condition
+    }
 
+    from stalker_pyramid.views.auth import PermissionChecker
     result = db.DBSession.connection().execute(sql_query)
     update_budget_permission = \
         PermissionChecker(request)('Update_Budget')
@@ -280,7 +361,10 @@ def get_budgets_count(request):
     """missing docstring
     """
     project_id = request.matchdict.get('id')
-    logger.debug('get_budgets_count is working for the project which id is %s' % project_id)
+    logger.debug(
+        'get_budgets_count is working for the project which id is %s' %
+        project_id
+    )
 
     sql_query = """
         select count(1) from (
@@ -299,6 +383,7 @@ def get_budgets_count(request):
 
     return result.fetchone()[0]
 
+
 @view_config(
     route_name='view_budget_calendar',
     renderer='templates/budget/view/view_budget_calendar.jinja2'
@@ -315,13 +400,13 @@ def view_budget(request):
     """view_budget_calendar
     """
     logger.debug('view_budget_calendar')
+    from stalker_pyramid.views import get_logged_in_user
     logged_in_user = get_logged_in_user(request)
 
     studio = Studio.query.first()
 
     budget_id = request.matchdict.get('id')
     budget = Budget.query.filter_by(id=budget_id).first()
-
 
     total_price = budget.get_generic_text_attr('total_price')
     approved_total_price = budget.get_generic_text_attr('approved_total_price')
@@ -330,6 +415,8 @@ def view_budget(request):
     mode = request.matchdict.get('mode', None)
     came_from = request.params.get('came_from', request.url)
 
+    from stalker_pyramid.views import milliseconds_since_epoch
+    from stalker_pyramid.views.auth import PermissionChecker
     return {
         'mode': mode,
         'entity': budget,
@@ -354,6 +441,8 @@ def save_budget_calendar(request):
     """saves the data that is created on budget calendar as a string and
     """
     logger.debug('***save_budget_calendar method starts ***')
+    from stalker_pyramid.views import (get_logged_in_user, local_to_utc,
+                                       get_multi_string)
     logged_in_user = get_logged_in_user(request)
     utc_now = local_to_utc(datetime.datetime.now())
 
@@ -432,7 +521,7 @@ def save_budget_calendar(request):
                 db.DBSession.flush()
                 transaction.commit()
 
-    return Response('Budget Calendar Saved Succesfully')
+    return Response('Budget Calendar Saved Successfully')
 
 
 @view_config(
@@ -464,7 +553,10 @@ def edit_budgetentry(request):
 
         else:
             transaction.abort()
-            return Response('There is no budgetentry or good with id %s' % id, 500)
+            return Response(
+                'There is no budgetentry or good with id %s' % id,
+                status=500
+            )
 
     elif oper == 'del':
         logger.debug('***delete budgetentry method starts ***')
@@ -481,6 +573,8 @@ def create_budgetentry_dialog(request):
     came_from = request.params.get('came_from', '/')
 
     # get logged in user
+    from stalker_pyramid.views import (get_logged_in_user,
+                                       milliseconds_since_epoch)
     logged_in_user = get_logged_in_user(request)
 
     budget_id = request.params.get('budget_id', -1)
@@ -489,6 +583,7 @@ def create_budgetentry_dialog(request):
     if not budget:
         return Response('No budget found with id: %s' % budget_id, 500)
 
+    from stalker_pyramid.views.auth import PermissionChecker
     return {
         'has_permission': PermissionChecker(request),
         'logged_in_user': logged_in_user,
@@ -506,6 +601,7 @@ def create_budgetentry(request):
     """runs when creating a budget
     """
     logger.debug('***create_budgetentry method starts ***')
+    from stalker_pyramid.views import get_logged_in_user, local_to_utc
     logged_in_user = get_logged_in_user(request)
     utc_now = local_to_utc(datetime.datetime.now())
 
@@ -526,18 +622,22 @@ def create_budgetentry(request):
         return Response('There is no budget with id %s' % budget_id, 500)
 
     amount = request.params.get('amount', 0)
-    second_amount = request.params.get('second_amount',0)
+    second_amount = request.params.get('second_amount', 0)
 
     price = request.params.get('price', 0)
     description = request.params.get('description', '')
 
     generic_data = {
-                    'dataSource': 'Producer',
-                    'secondaryFactor': [{'unit': good.unit.split('*')[1],
-                                        'amount': amount,
-                                        'second_amount': second_amount}],
-                    'overtime': 0,
-                    'stoppage_add': 0
+        'dataSource': 'Producer',
+        'secondaryFactor': [
+            {
+                'unit': good.unit.split('*')[1],
+                'amount': amount,
+                'second_amount': second_amount
+            }
+        ],
+        'overtime': 0,
+        'stoppage_add': 0
     }
 
     if not amount or amount == '0':
@@ -577,7 +677,10 @@ def create_budgetentry_action(budget, good, amount, second_amount, price, descri
 
     for budget_entry in budget.entries:
         if budget_entry.name == good.name:
-            logger.debug('Adds budget_entry amount %s *** %s' % (budget_entry.amount, budget_entry.name))
+            logger.debug(
+                'Adds budget_entry amount %s *** %s' %
+                (budget_entry.amount, budget_entry.name)
+            )
             budget_entry.amount += amount
             budget_entry.price += price
 
@@ -595,6 +698,7 @@ def create_budgetentry_action(budget, good, amount, second_amount, price, descri
             return
 
     realize_total = good.msrp
+    from stalker_pyramid.views.type import query_type
     entry_type = query_type('BudgetEntries', good.price_lists[0].name)
 
     budget_entry = BudgetEntry(
@@ -617,15 +721,20 @@ def create_budgetentry_action(budget, good, amount, second_amount, price, descri
         linked_goods = good.get_generic_text_attr('linked_goods')
         if linked_goods:
             for l_good in linked_goods:
-                linked_good = Good.query.filter(Good.id == l_good["id"]).first()
+                linked_good = \
+                    Good.query.filter(Good.id == l_good["id"]).first()
 
                 generic_data = {
-                                'dataSource': 'Linked',
-                                'secondaryFactor': [{'unit': linked_good.unit.split('*')[1],
-                                'amount': amount,
-                                'second_amount':1}],
-                                'overtime': 0,
-                                'stoppage_add': 0
+                    'dataSource': 'Linked',
+                    'secondaryFactor': [
+                        {
+                            'unit': linked_good.unit.split('*')[1],
+                            'amount': amount,
+                            'second_amount':1
+                        }
+                    ],
+                    'overtime': 0,
+                    'stoppage_add': 0
                 }
 
                 create_budgetentry_action(
@@ -641,6 +750,64 @@ def create_budgetentry_action(budget, good, amount, second_amount, price, descri
                 )
 
 
+def update_budgetenties_startdate(entity, time_delta):
+    """updates the BudgetEntry start date in all budgets which status is planning
+    """
+    logger.debug('update_budgetenties_startdate')
+
+    sql_query = """
+        select
+           array_agg("BudgetEntries".id),
+           "Budgets".id
+        from "BudgetEntries"
+        join "Budgets" on "Budgets".id = "BudgetEntries".budget_id
+        join "SimpleEntities" as "Budget_SimpleEntities" on "Budget_SimpleEntities".id = "Budgets".id
+        join "SimpleEntities" as "BudgetTypes_SimpleEntities" on "BudgetTypes_SimpleEntities".id = "Budget_SimpleEntities".type_id
+
+        where "BudgetTypes_SimpleEntities".name = 'Planning' %(where_clause)s
+
+        group by "Budgets".id
+        """
+    where_clause = ""
+    if entity.entity_type == "Project":
+        where_clause = """and "Budgets".project_id =  %(project_id)s""" % {'project_id': entity.id}
+
+    elif entity.entity_type == "Budget":
+        where_clause = """and "Budgets".id =  %(budget_id)s""" % {'budget_id': entity.id}
+
+    sql_query = sql_query % {'where_clause': where_clause}
+
+    result = db.DBSession.connection().execute(sql_query)
+    lists = [
+        {
+            'budgetEntries': r[0],
+            'budget_id': r[1]
+        }
+        for r in result.fetchall()
+    ]
+
+    for list in lists:
+
+        budget = Budget.query.filter(Budget.id == list['budget_id']).first()
+
+        milestones = budget.get_generic_text_attr("milestones")
+        for milestone in milestones:
+            milestone['start_date'] = int(milestone['start_date'])+time_delta
+        budget.set_generic_text_attr("milestones", milestones)
+
+        for entry_id in list['budgetEntries']:
+            budgetEntry = BudgetEntry.query.filter(BudgetEntry.id == entry_id).first()
+            secondaryFactors = budgetEntry.get_generic_text_attr("secondaryFactor")
+
+            for secondaryFactor in secondaryFactors:
+                if 'start_date' in secondaryFactor:
+                    secondaryFactor['start_date'] = int(secondaryFactor['start_date'])+time_delta
+
+            budgetEntry.set_generic_text_attr("secondaryFactor", secondaryFactors)
+
+    return Response('successfully updated budgetentries!')
+
+
 @view_config(
     route_name='update_budgetentry'
 )
@@ -648,6 +815,7 @@ def update_budgetentry(request):
     """updates the BudgetEntry with data from request
     """
     logger.debug('***update_budgetentry method starts ***')
+    from stalker_pyramid.views import get_logged_in_user, local_to_utc
     logged_in_user = get_logged_in_user(request)
     utc_now = local_to_utc(datetime.datetime.now())
 
@@ -773,6 +941,7 @@ def delete_budgetentry(request):
 
     budgetentry_name = budgetentry.name
 
+    from stalker_pyramid.views import StdErrToHTMLConverter
     if dataSource and dataSource == 'Calendar':
         secondaryFactor = budgetentry.get_generic_text_attr("secondaryFactor")
         secondaryFactor_id = int(secondaryFactor_id)
@@ -811,10 +980,12 @@ def delete_budgetentry_action(budgetentry):
         transaction.commit()
     except Exception as e:
         transaction.abort()
+        from stalker_pyramid.views import StdErrToHTMLConverter
         c = StdErrToHTMLConverter(e)
         transaction.abort()
         # return Response(c.html(), 500)
     return Response('Successfully deleted good with name %s' % budgetentry_name)
+
 
 @view_config(
     route_name='get_budget_calendar_milestones',
@@ -830,6 +1001,7 @@ def get_budget_calendar_milestones(request):
     milestones_data = budget.get_generic_text_attr('milestones')
 
     return milestones_data
+
 
 @view_config(
     route_name='get_budget_calendar_links',
@@ -927,7 +1099,6 @@ def change_budget_type_dialog(request):
     type_name = request.matchdict.get('type_name')
     came_from = request.params.get('came_from', '/')
 
-
     budget_total_price = budget.get_generic_text_attr('total_price')
 
     return {
@@ -943,6 +1114,7 @@ def change_budget_type_dialog(request):
 )
 def change_budget_type(request):
 
+    from stalker_pyramid.views import get_logged_in_user, local_to_utc
     logged_in_user = get_logged_in_user(request)
     utc_now = local_to_utc(datetime.datetime.now())
 
@@ -954,25 +1126,16 @@ def change_budget_type(request):
         return Response('There is no budget with id %s' % budget_id, 500)
 
     type_name = request.matchdict.get('type_name')
+    from stalker_pyramid.views.type import query_type
     type = query_type('Budget', type_name)
 
     approved_total_price = request.params.get('approved_total_price', 0)
     total_price = request.params.get('total_price', 0)
 
-
     logger.debug("approved_total_price : %s" % approved_total_price)
 
     budget.set_generic_text_attr("approved_total_price", approved_total_price)
-    # budget.generic_text = update_generic_text(budget.generic_text,
-    #                                                      "approved_total_price",
-    #                                                      approved_total_price,
-    #                                                      'equal')
-
     budget.set_generic_text_attr("total_price", total_price)
-    # budget.generic_text = update_generic_text(budget.generic_text,
-    #                                                      "total_price",
-    #                                                      total_price,
-    #                                                      'equal')
 
     logger.debug("budget.generic_text : %s" % budget.generic_text)
 
@@ -1016,6 +1179,7 @@ def duplicate_budget_dialog(request):
 )
 def duplicate_budget(request):
 
+    from stalker_pyramid.views import get_logged_in_user, local_to_utc
     logged_in_user = get_logged_in_user(request)
     utc_now = local_to_utc(datetime.datetime.now())
 
@@ -1029,6 +1193,7 @@ def duplicate_budget(request):
     name = request.params.get('dup_budget_name')
     description = request.params.get('dup_budget_description')
 
+    from stalker_pyramid.views.type import query_type
     budget_type = query_type('Budget', 'Planning')
     project = budget.project
 
@@ -1082,6 +1247,8 @@ def create_budgetentry_dialog(request):
     came_from = request.params.get('came_from', '/')
 
     # get logged in user
+    from stalker_pyramid.views import (get_logged_in_user, PermissionChecker,
+                                       milliseconds_since_epoch)
     logged_in_user = get_logged_in_user(request)
 
     budget_id = request.params.get('budget_id', -1)
@@ -1098,6 +1265,8 @@ def create_budgetentry_dialog(request):
         'mode': 'Create',
         'milliseconds_since_epoch': milliseconds_since_epoch
     }
+
+
 @view_config(
     route_name='budget_calendar_milestone_dialog',
     renderer='templates/budget/dialog/budget_calendar_milestone_dialog.jinja2'
@@ -1111,6 +1280,8 @@ def budget_calendar_milestone_dialog(request):
     came_from = request.params.get('came_from', '/')
     mode = request.params.get('mode', None)
     # get logged in user
+    from stalker_pyramid.views import (get_logged_in_user, PermissionChecker,
+                                       milliseconds_since_epoch)
     logged_in_user = get_logged_in_user(request)
 
     budget_id = request.matchdict.get('id')
@@ -1139,6 +1310,7 @@ def budget_calendar_milestone_action(request):
     """budget_calendar_milestone_action
     """
     logger.debug('***budget_calendar_milestone_action method starts ***')
+    from stalker_pyramid.views import get_logged_in_user, local_to_utc
     logged_in_user = get_logged_in_user(request)
     utc_now = local_to_utc(datetime.datetime.now())
 
@@ -1162,16 +1334,16 @@ def budget_calendar_milestone_action(request):
         milestones = budget.get_generic_text_attr("milestones")
         new_milestone = {
                             'name': name,
-                            'start_date': start_date,
+                            'start_date': int(start_date),
                             'description': description,
                             'links': []
         }
-
         milestones.append(new_milestone)
+
     elif mode == 'Update':
         milestone_id = request.params.get('milestone_id', None)
         milestones = budget.get_generic_text_attr("milestones")
-        milestones[int(milestone_id.split('_')[1])]['start_date'] = start_date
+        milestones[int(milestone_id.split('_')[1])]['start_date'] = int(start_date)
 
     budget.set_generic_text_attr("milestones", milestones)
     budget.date_updated = utc_now
@@ -1187,6 +1359,7 @@ def budget_calendar_link_create(request):
     """budget_calendar_link_create
     """
     logger.debug('***budget_calendar_link_create method starts ***')
+    from stalker_pyramid.views import get_logged_in_user, local_to_utc
     logged_in_user = get_logged_in_user(request)
     utc_now = local_to_utc(datetime.datetime.now())
 
@@ -1228,6 +1401,7 @@ def budget_calendar_link_delete(request):
     """budget_calendar_link_delete
     """
     logger.debug('***budget_calendar_link_delete method starts ***')
+    from stalker_pyramid.views import get_logged_in_user, local_to_utc
     logged_in_user = get_logged_in_user(request)
     utc_now = local_to_utc(datetime.datetime.now())
 
@@ -1265,6 +1439,8 @@ def budget_calendar_task_dialog(request):
     came_from = request.params.get('came_from', '/')
     mode = request.params.get('mode', None)
     # get logged in user
+    from stalker_pyramid.views import (get_logged_in_user, PermissionChecker,
+                                       milliseconds_since_epoch)
     logged_in_user = get_logged_in_user(request)
 
     budget_id = request.matchdict.get('id')
@@ -1293,6 +1469,7 @@ def budget_calendar_task_action(request):
     """budget_calendar_create_task
     """
     logger.debug('***budget_calendar_create_task method starts ***')
+    from stalker_pyramid.views import get_logged_in_user, local_to_utc
     logged_in_user = get_logged_in_user(request)
     utc_now = local_to_utc(datetime.datetime.now())
 
@@ -1319,6 +1496,7 @@ def budget_calendar_task_action(request):
     logger.debug('second_amount: %s ' % second_amount)
 
     start_date = request.params.get('start_date', None)
+    start_date = int(start_date)
     description = request.params.get('description', '')
 
     if not amount or amount == '0':
@@ -1331,17 +1509,17 @@ def budget_calendar_task_action(request):
 
     if mode == 'Create':
         generic_data = {
-                        'dataSource': 'Calendar',
-                        'secondaryFactor': [
-                            {
-                                 'start_date': start_date,
-                                 'unit': good.unit.split('*')[1],
-                                 'amount': amount,
-                                 'second_amount': second_amount
-                            }
-                        ],
-                        'overtime': 0,
-                        'stoppage_add': 0
+            'dataSource': 'Calendar',
+            'secondaryFactor': [
+                {
+                    'start_date': start_date,
+                    'unit': good.unit.split('*')[1],
+                    'amount': amount,
+                    'second_amount': second_amount
+                }
+            ],
+            'overtime': 0,
+            'stoppage_add': 0
         }
 
         create_budgetentry_action(budget,
@@ -1385,6 +1563,7 @@ def budget_calendar_task_action(request):
 
     return Response('BudgetEntry Created successfully')
 
+
 def check_linked_good_budgetentries(good, budget):
     """budget_calendar_create_task
     """
@@ -1412,7 +1591,6 @@ def check_linked_good_budgetentries(good, budget):
                 logger.debug("linked_budgetentry %s" % linked_budgetentry.name)
 
 
-
 class ReportExporter(object):
     """A base class for report exporters
     """
@@ -1433,6 +1611,7 @@ class ReportExporter(object):
 def generate_report_view(request):
     """generates report and allows the user to download it
     """
+    from stalker_pyramid.views import get_logged_in_user, local_to_utc
     logged_in_user = get_logged_in_user(request)
     utc_now = local_to_utc(datetime.datetime.now())
 
@@ -1462,6 +1641,7 @@ def generate_report_view(request):
             raise Response('No client in the project')
 
         logger.debug('generating report:')
+        from stalker_pyramid.views.client import generate_report
         temp_report_path = generate_report(budget)
         logger.debug('temp_report_path: %s' % temp_report_path)
 

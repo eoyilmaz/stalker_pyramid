@@ -10,27 +10,41 @@
                 <div class='control-group'>
                     <label class='span3 control-label' for='scene_name'>Scene Name</label>
                     <div class='span9'>
-                            <input type='text'
-                                   id='scene_name'
-                                   class='input-block-level'
-                                   name='name'
-                                   required>
+                        <input type='text'
+                               id='scene_name'
+                               class='input-block-level'
+                               name='name'
+                               {% if mode=='Update'%}
+                                    value="{{ scene.name }}" disabled="true"
+                                {% endif %}
+                               required>
                     </div>
                 </div>
                 {# Sequence #}
                 <div class='control-group'>
                     <label class='span3 control-label' for='sequence'>Sequence</label>
                     <div class='span9'>
+                    {% if mode=='Update'%}
+                        <input type='text'
+                                   id='sequence_'
+                                   class='input-block-level'
+                                   name='sequence_id'
+                                   value="{{ sequence.name }}"
+                                   disabled="true"
+                                   required>
+                    {% else %}
                         <select id='sequence'
                                 name='sequence_id'
                                 class='input-block-level span11'
                                 is_updating=false
-                                data-placeholder='Sequence'></select>
+                                data-placeholder='Sequence'
+                                required></select>
+                    {% endif %}
                     </div>
                 </div>
 
                 {# Temp Scene #}
-                <div class='control-group'>
+                <div class='control-group {% if mode=='Update'%}hide{% endif %}' >
                     <label class='span3 control-label' for='temp_scene'>Temp Scene</label>
                     <div class='span9'>
                         <select id='temp_scene'
@@ -62,7 +76,7 @@
                                max=999
                                type='text'
                                placeholder='Shot Count'
-                               value=1
+                               value={{ shot_count }}
                                required />
                     </div>
                 </div>
@@ -92,7 +106,7 @@
         console.debug('starting to initialize scene dialog!!!');
         var dialog_label = $('#dialog_template_label');
         dialog_label.find('span').remove();
-        dialog_label.append('<span>Create Scene</span>');
+        dialog_label.append('<span>{{ mode }} Scene</span>');
 
         {% raw %}
             var option_template = doT.template(
@@ -111,6 +125,7 @@
                 });
         {% endif %}
 
+
         {# ***************************************************************** #}
         {# Temp Scene #}
         var temp_scene = $('#temp_scene');
@@ -124,8 +139,8 @@
         {# ***************************************************************** #}
         {# Shots #}
          $('#shot_count').ace_spinner({
-            value:1,
-            min:1,
+            value:{{ shot_count }},
+            min:{{ shot_count }},
             max:99,
             step:1,
             btn_up_class:'btn-info',
@@ -144,8 +159,10 @@
             submit_button.button('loading');
             var scene_form = $('#scene_form');
 
-            var url = '/scenes/create';
-
+            var url = '/scenes/{{ mode.lower() }}'
+            {% if mode == 'Update' %}
+                url = '/scenes/{{ scene.id }}/{{ mode.lower() }}'
+            {% endif %}
 
             $.post(
                 url,
