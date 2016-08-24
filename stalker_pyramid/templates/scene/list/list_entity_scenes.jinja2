@@ -112,13 +112,7 @@
     <script id="tmpl_sceneRow" type="text/x-dot-template">
         <tr id="scene_row_{{=it.id}}" style="position: relative; height: 100%">
             <td style="width:20px;">
-                <a href='/tasks/{{=it.id}}/view'>{{=it.name}}</a><br/>
-            </td>
-            <td style="width:20px;">{{=it.num_of_shots}}<br/><br/>
-            </td>
-            <td style="width:20px;">{{=it.total_seconds}}<br/><br/>
-            </td>
-            <td id="scene_summary_cell_{{=it.id}}">
+                <a href='/tasks/{{=it.id}}/view'>{{=it.name}}</a><br/><br/>
                 {{ if (it.update_scene_action) { }}
                 <a class="blue pull-right"
                    data-target="#dialog_template"
@@ -127,6 +121,13 @@
                    href="{{=it.update_scene_action}}">
                     <i class="icon-edit bigger-130"></i>
                 </a>{{ } }}
+
+            </td>
+            <td style="width:20px;">{{=it.num_of_shots}}<br/><br/>
+            </td>
+            <td style="width:20px;">{{=it.total_seconds}}<br/><br/>
+            </td>
+            <td id="scene_summary_cell_{{=it.id}}">
 
                 {{=it.description}}<br/>
             </td>
