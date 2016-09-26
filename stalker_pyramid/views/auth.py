@@ -457,10 +457,12 @@ def get_users_count(request):
     renderer='json',
     permission='Read_User'
 )
-def get_users(request):
+def get_entity_users(request):
     """returns all users or one particular user from database
     """
     start = time.time()
+
+    logger.debug("get_entity_users is starts")
 
     # if there is an id it is probably a project
     entity_id = request.matchdict.get('id')
@@ -504,7 +506,7 @@ def get_users(request):
         "Type_SimpleEntities".name,
         client_users."client_ids",
         client_users."client_names"
-        %(role_attr)s
+        %(new_attr)s
 
     from "Users"
     join "SimpleEntities" as "User_SimpleEntities" on "User_SimpleEntities".id = "Users".id
@@ -551,7 +553,7 @@ def get_users(request):
     ) as client_users on client_users.uid = "Users".id
     """
 
-    role_attr = """,
+    new_attr = """,
         "Role_SimpleEntities".name,
         "Role_SimpleEntities".id"""
 
@@ -563,39 +565,47 @@ def get_users(request):
         %(role_query)s
         where "Entity_Users".project_id = %(id)s
         """ % {'id': entity_id, 'role_query': role_query}
-        sql_query = sql_query % {'role_attr': role_attr}
+
+        new_attr = """,
+        "Role_SimpleEntities".name,
+        "Role_SimpleEntities".id,
+        "Entity_Users".rate"""
+
+        sql_query = sql_query % {'new_attr': new_attr}
+
     elif entity_type == "Department":
         sql_query += """join "Department_Users" as "Entity_Users" on "Users".id = "Entity_Users".uid
         %(role_query)s
         where "Entity_Users".did = %(id)s
         """ % {'id': entity_id, 'role_query': role_query}
-        sql_query = sql_query % {'role_attr': role_attr}
+        sql_query = sql_query % {'new_attr': new_attr}
     elif entity_type == "Group":
         sql_query += """join "Group_Users" as "Entity_Users" on "Users".id = "Entity_Users".uid
 
         where "Entity_Users".gid = %(id)s
         """ % {'id': entity_id}
-        sql_query = sql_query % {'role_attr': ""}
+        sql_query = sql_query % {'new_attr': ""}
     elif entity_type == "Task":
         sql_query += """join "Task_Resources" on "Users".id = "Task_Resources".resource_id
         where "Task_Resources".task_id = %(id)s
         """ % {'id': entity_id}
-        sql_query = sql_query % {'role_attr': role_attr}
+        sql_query = sql_query % {'new_attr': new_attr}
     elif entity_type == "Client":
         sql_query += """join "Client_Users" as "Entity_Users" on "Users".id = "Entity_Users".uid
         %(role_query)s
         where "Entity_Users".cid = %(id)s
         """ % {'id': entity_id, 'role_query': role_query}
-        sql_query = sql_query % {'role_attr': role_attr}
+        sql_query = sql_query % {'new_attr': new_attr}
     elif entity_type == "User":
         sql_query += 'where "Users".id = %s' % entity_id
-        sql_query = sql_query % {'role_attr': ""}
+        sql_query = sql_query % {'new_attr': ""}
     elif entity_type == "Studio":
-        sql_query = sql_query % {'role_attr': ""}
+        sql_query = sql_query % {'new_attr': ""}
 
     sql_query += 'order by "User_SimpleEntities".name'
 
     result = DBSession.connection().execute(sql_query)
+
     data = [
         {
             'id': r[0],
@@ -617,7 +627,7 @@ def get_users(request):
             'tasksCount': r[8] or 0,
             'ticketsCount': r[9] or 0,
             'thumbnail_full_path': r[10] if r[has_read_rate_permission] else None,
-            'rate': r[11] if has_read_rate_permission else r[11],
+            'studio_rate': r[11] if has_read_rate_permission else r[11],
             'type_name': r[12],
             'update_user_action':'/users/%s/update/dialog' % r[0]
             if has_update_user_permission else None,
@@ -630,14 +640,15 @@ def get_users(request):
                     'name': r[14][i]
                 } for i, a in enumerate(r[13])
             ] if r[13] else [],
-            'role': r[15] if len(r) >= 16 else None
+            'role': r[15] if len(r) >= 16 else None,
+            'rate': r[17] if (len(r) >= 18 and has_read_rate_permission) else "HiddenData"
         } for r in result.fetchall()
     ]
 
     end = time.time()
 
 
-    logger.debug('get_users took : %s seconds for %s rows' %
+    logger.debug('get_entity_users took : %s seconds for %s rows' %
                  ((end - start), len(data)))
     return data
 
@@ -652,6 +663,7 @@ def get_users_simple(request):
     """
 
     logger.debug('get_users_simple starts')
+
     start = time.time()
     sql_query = """select
         "Users".id,
@@ -731,7 +743,7 @@ def get_users_simple(request):
             'tasksCount': r[8] or 0,
             'ticketsCount': r[9] or 0,
             'thumbnail_full_path': r[10] if r[10] else None,
-            'rate': r[11] if r[11] else None,
+            'studio_rate': r[11] if r[11] else None,
             'type_name': r[12],
             'update_user_action':'/users/%s/update/dialog' % r[0]
             if has_update_user_permission else None,
@@ -1304,6 +1316,8 @@ def update_entity_user(request):
     user_id = request.params.get('id', -1)
     user = User.query.filter(User.id == user_id).first()
 
+    rate = request.params.get('rate', None)
+
     role_name = request.params.get('role', None)
     role = query_role(role_name)
 
@@ -1312,6 +1326,7 @@ def update_entity_user(request):
 
     logger.debug('user_id: %s' % user_id)
     logger.debug('role_name: %s' % role_name)
+    logger.debug('rate: %s' % rate)
     logger.debug('entity.entity_type: %s' % entity.entity_type)
 
     if not user:
@@ -1326,6 +1341,9 @@ def update_entity_user(request):
     if user not in entity.users:
         entity.users.append(user)
 
+
+
+
     if entity.entity_type in ["Project", "Client", "Department"]:
         query_string = '%(class_name)sUser.query.filter(%(class_name)sUser.user_id == user_id).filter(%(class_name)sUser.%(attr_name)s == entity_id)'
         q = eval(query_string % {'class_name': entity.entity_type,
@@ -1334,6 +1352,11 @@ def update_entity_user(request):
         entity_user = q.first()
 
         entity_user.role = role
+        if rate:
+            entity_user.rate = int(rate)
+        logger.debug('entity_user: %s' % entity_user)
+        logger.debug('entity_user.rate: %s' % entity_user.rate)
+
         entity_user.date_updated = utc_now
         entity_user.updated_by = logged_in_user
 

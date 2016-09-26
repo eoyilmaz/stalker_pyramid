@@ -59,6 +59,7 @@
         <th>Users</th>
         <th>Type</th>
         <th>Completed</th>
+        <th></th>
     </tr>
     </script>
     {% endraw %}
@@ -90,6 +91,36 @@
                 </div>
 
             </td>
+            <td>
+                {{ if (it.item_update_link) { }}
+                <a  class="blue"
+                    data-target="#dialog_template"
+                    data-toggle="modal"
+                    data-keyboard=false
+                    href="{{=it.item_update_link}}">
+                    <i class="icon-edit bigger-130"></i>
+                </a>{{ } }}
+
+                {{ if (it.item_duplicate_link) { }}
+                <a  class="purple"
+                    data-target="#dialog_template"
+                    data-toggle="modal"
+                    data-keyboard=false
+                    href="{{=it.item_duplicate_link}}">
+                    <i class="icon-copy bigger-130"></i>
+                </a>{{ } }}
+
+                {{ if (it.item_remove_link) { }}
+                <a  class="red"
+                    data-target="#dialog_template"
+                    data-toggle="modal"
+                    data-keyboard=false
+                    href="{{=it.item_remove_link}}">
+                    <i class="icon-trash bigger-130"></i>
+                </a>{{ } }}
+            </td>
+
+
         </tr>
     </script>
     {% endraw %}

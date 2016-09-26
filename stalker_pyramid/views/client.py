@@ -226,7 +226,7 @@ def get_studio_clients(request):
     logger.debug('type_name: %s' % type_name )
 
     sql_query = """
-         select
+        select
             "Clients".id,
             "Client_SimpleEntities".name,
             "Client_SimpleEntities".description,
@@ -238,10 +238,10 @@ def get_studio_clients(request):
         left outer join "Links" as "Thumbnail_Links" on "Client_SimpleEntities".thumbnail_id = "Thumbnail_Links".id
 
         left outer join  (
-            select "Projects".client_id as client_id,
-                    count("Projects".id) as project_count
-                from "Projects"
-                group by "Projects".client_id)as projects on projects.client_id = "Clients".id
+            select "Project_Clients".client_id as client_id,
+                    count("Project_Clients".project_id) as project_count
+                from "Project_Clients"
+                group by "Project_Clients".client_id)as projects on projects.client_id = "Clients".id
         left join "SimpleEntities" as "Type_SimpleEntities" on "Client_SimpleEntities".type_id = "Type_SimpleEntities".id
         %(where_conditions)s
     """
@@ -500,15 +500,21 @@ def generate_report(budget, output_path=''):
         )
 
     # render the budget for the given client by using the clients report format
-    client = budget.project.client
-    if not client:
+    clients = budget.project.clients
+    report_temp_client = None
+    for client in clients:
+        logger.debug("client.type.name: %s" % client.type.name)
+        if client.type.name == "Brand":
+            report_temp_client = client
+
+    if not report_temp_client:
         raise RuntimeError(
             'The Project has no client, please specify the client of this '
-            'project in ``Project.client`` attribute!!'
+            'project in ``Project.clients`` attribute!!'
         )
 
     # get the report_template
-    report_template = get_report_template(client)
+    report_template = get_report_template(report_temp_client)
 
     logger.debug("report_template: %s" % report_template)
 
@@ -607,13 +613,13 @@ def generate_report(budget, output_path=''):
     adv_agency_name = "Not Appended!!"
     if adv_agency:
         adv_agency_name = adv_agency.name
+
     setattr(
         budget.project,
         "adv_agency",
         adv_agency_name
     )
     logger.debug("adv_agency_name: %s" % adv_agency_name)
-
 
     setattr(
         budget.project,
@@ -677,7 +683,7 @@ def generate_report(budget, output_path=''):
                                         item=filtered_entity,
                                         budget=budget,
                                         project=budget.project,
-                                        client=budget.project.client
+                                        client=report_temp_client
                                     )
                                 )
                             )
@@ -689,7 +695,7 @@ def generate_report(budget, output_path=''):
                             item=None,
                             budget=budget,
                             project=budget.project,
-                            client=budget.project.client
+                            client=report_temp_client
                         )
                     )
 

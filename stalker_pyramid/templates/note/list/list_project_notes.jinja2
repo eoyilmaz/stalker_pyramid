@@ -80,8 +80,8 @@
 
     <script type="text/javascript">
         $(function () {
-        {% if has_permission('Update_Entity')%}
-        $('#editable_entity_description').editable({
+            {% if has_permission('Update_Entity')%}
+                $('#editable_entity_description').editable({
                         mode: 'inline',
                         type: 'wysiwyg',
                         name: 'editable_entity_description',
@@ -102,12 +102,6 @@
 
                             $.post('{{request.route_url('inline_update_project', id=entity.id) }}', params).done(function () {
 
-                                $.getJSON('{{request.route_url('get_task', id=entity.id) }}').then(
-                                    function (data) {
-                                        $('#editable_entity_description').val(data.description);
-                                        $('#description_loading').hide();
-                                    }
-                                );
 
                             }).fail(function (jqXHR) {
                                 bootbox.alert('<div id="message" class="alert alert-danger bigger-110">' + jqXHR.responseText + '</div>');
@@ -122,7 +116,7 @@
                         $('#editable_entity_description').editable('toggle');
                     });
 
-                {% endif %}
+            {% endif %}
         });
     </script>
 {% endblock extrascripts %}

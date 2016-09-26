@@ -100,6 +100,7 @@ def create_budget(request):
     if not description:
         return Response('Please supply a description', 500)
 
+    status = Status.query.filter(Status.name == 'Planning').first()
     # if not status:
     #     return Response('There is no status with code: %s' % status_id, 500)
 
@@ -123,6 +124,7 @@ def create_budget(request):
         project=project,
         name=name,
         type=budget_type,
+        status=status,
         description=description,
         created_by=logged_in_user,
         date_created=utc_now,
@@ -200,9 +202,27 @@ def update_budget(request):
 
     start, end = get_date_range(request, 'start_and_end_dates')
     if start and end:
-        time_delta = milliseconds_since_epoch(start) - budget.get_generic_text_attr('start')
-        budget.set_generic_text_attr('start', milliseconds_since_epoch(start))
-        budget.set_generic_text_attr('end', milliseconds_since_epoch(end))
+        start_asmilliseconds = milliseconds_since_epoch(start)
+        end_asmilliseconds = milliseconds_since_epoch(end)
+
+        time_delta = start_asmilliseconds - budget.get_generic_text_attr('start')
+
+        budget.set_generic_text_attr('start', start_asmilliseconds)
+        budget.set_generic_text_attr('end', end_asmilliseconds)
+
+        # if milliseconds_since_epoch(budget.project.start) > start_asmilliseconds:
+        #     budget.project.start = start
+        #     budget.project.updated_by = logged_in_user
+        #     budget.project.date_updated = utc_now
+        #
+        # if milliseconds_since_epoch(budget.project.end) < end_asmilliseconds:
+        #     budget.project.end = end
+        #     budget.project.updated_by = logged_in_user
+        #     budget.project.date_updated = utc_now
+
+        check_project_start_end_date(budget.project)
+
+
         update_budgetenties_startdate(budget, time_delta)
 
     budget.date_updated = utc_now
@@ -248,9 +268,20 @@ def inline_update_budget(request):
         logger.debug('attr_name %s', attr_name)
 
         if attr_name == 'start_and_end_dates':
+            logger.debug('attr_name %s', attr_name)
             start, end = get_date_range(request, 'attr_value')
-            budget.set_generic_text_attr('start', milliseconds_since_epoch(start))
-            budget.set_generic_text_attr('end', milliseconds_since_epoch(end))
+
+            start_asmilliseconds = milliseconds_since_epoch(start)
+            end_asmilliseconds = milliseconds_since_epoch(end)
+
+            budget.set_generic_text_attr('start', start_asmilliseconds)
+            budget.set_generic_text_attr('end', end_asmilliseconds)
+
+            logger.debug('budget.project.start: %s' % budget.project.start)
+            logger.debug('start_asmilliseconds: %s' % start_asmilliseconds)
+
+
+            check_project_start_end_date(budget.project)
 
             budget.updated_by = logged_in_user
             budget.date_updated = utc_now
@@ -264,6 +295,24 @@ def inline_update_budget(request):
     return Response(
         'Budget updated successfully %s %s' % (attr_name, attr_value)
     )
+
+
+def check_project_start_end_date(project):
+    """updates project start end date by checking budgets' start end dates
+    """
+
+    budgets = project.budgets
+    logger.debug('check_project_start_end_date budgets : %s' % len(budgets))
+    for budget in budgets:
+        start_asmilliseconds = budget.get_generic_text_attr('start')
+        end_asmilliseconds = budget.get_generic_text_attr('end')
+
+        from stalker_pyramid.views import milliseconds_since_epoch, from_milliseconds
+        if milliseconds_since_epoch(budget.project.start) > start_asmilliseconds:
+            budget.project.start = from_milliseconds(start_asmilliseconds)
+
+        if milliseconds_since_epoch(budget.project.end) < end_asmilliseconds:
+            budget.project.end = from_milliseconds(end_asmilliseconds)
 
 
 @view_config(
@@ -290,10 +339,14 @@ def get_budgets(request):
             "Created_By_SimpleEntities".name,
             "Type_SimpleEntities".name,
             (extract(epoch from "Budget_SimpleEntities".date_created::timestamp at time zone 'UTC') * 1000)::bigint as date_created,
-            "Budget_SimpleEntities".description
+            "Budget_SimpleEntities".description,
+            "Statuses_SimpleEntities".name,
+            "Statuses".code
 
         from "Budgets"
         join "SimpleEntities" as "Budget_SimpleEntities" on "Budget_SimpleEntities".id = "Budgets".id
+        join "Statuses" on "Statuses".id = "Budgets".status_id
+        join "SimpleEntities" as "Statuses_SimpleEntities" on "Statuses_SimpleEntities".id = "Statuses".id
         join "SimpleEntities" as "Created_By_SimpleEntities" on "Created_By_SimpleEntities".id = "Budget_SimpleEntities".created_by_id
         left outer join "SimpleEntities" as "Type_SimpleEntities" on "Type_SimpleEntities".id = "Budget_SimpleEntities".type_id
         join "Projects" on "Projects".id = "Budgets".project_id
@@ -326,7 +379,9 @@ def get_budgets(request):
             'item_view_link': '/budgets/%s/view' % r[0],
             'type_name': r[4],
             'date_created': r[5],
-            'description': r[6]
+            'description': r[6],
+            'status_name': r[7],
+            'status_code': r[8]
         }
         # if update_budget_permission:
         budget['item_update_link'] = \
@@ -761,10 +816,9 @@ def update_budgetenties_startdate(entity, time_delta):
            "Budgets".id
         from "BudgetEntries"
         join "Budgets" on "Budgets".id = "BudgetEntries".budget_id
-        join "SimpleEntities" as "Budget_SimpleEntities" on "Budget_SimpleEntities".id = "Budgets".id
-        join "SimpleEntities" as "BudgetTypes_SimpleEntities" on "BudgetTypes_SimpleEntities".id = "Budget_SimpleEntities".type_id
+        join "Statuses" on "Budgets".status_id = "Statuses".id
 
-        where "BudgetTypes_SimpleEntities".name = 'Planning' %(where_clause)s
+        where "Statuses".code = 'PLN' %(where_clause)s
 
         group by "Budgets".id
         """
@@ -776,6 +830,7 @@ def update_budgetenties_startdate(entity, time_delta):
         where_clause = """and "Budgets".id =  %(budget_id)s""" % {'budget_id': entity.id}
 
     sql_query = sql_query % {'where_clause': where_clause}
+    logger.debug('sql_query: %s' % sql_query)
 
     result = db.DBSession.connection().execute(sql_query)
     lists = [
@@ -790,20 +845,32 @@ def update_budgetenties_startdate(entity, time_delta):
 
         budget = Budget.query.filter(Budget.id == list['budget_id']).first()
 
-        milestones = budget.get_generic_text_attr("milestones")
-        for milestone in milestones:
-            milestone['start_date'] = int(milestone['start_date'])+time_delta
-        budget.set_generic_text_attr("milestones", milestones)
+        if budget:
+            logger.debug('list[budgetEntries]: %s' % list['budgetEntries'])
+            milestones = budget.get_generic_text_attr("milestones")
 
-        for entry_id in list['budgetEntries']:
-            budgetEntry = BudgetEntry.query.filter(BudgetEntry.id == entry_id).first()
-            secondaryFactors = budgetEntry.get_generic_text_attr("secondaryFactor")
+            if milestones:
+                for milestone in milestones:
+                    milestone['start_date'] = int(milestone['start_date'])+time_delta
 
-            for secondaryFactor in secondaryFactors:
-                if 'start_date' in secondaryFactor:
-                    secondaryFactor['start_date'] = int(secondaryFactor['start_date'])+time_delta
+                budget.set_generic_text_attr("milestones", milestones)
 
-            budgetEntry.set_generic_text_attr("secondaryFactor", secondaryFactors)
+            logger.debug('time_delta: %s' % time_delta)
+            for entry_id in list['budgetEntries']:
+                logger.debug('entry_id: %s' % entry_id)
+                budgetEntry = BudgetEntry.query.filter(BudgetEntry.id == entry_id).first()
+                logger.debug('budgetEntry.name: %s' % budgetEntry.name)
+                if budgetEntry:
+                    secondaryFactors = budgetEntry.get_generic_text_attr("secondaryFactor")
+                    logger.debug('secondaryFactors: %s' % secondaryFactors)
+
+                    if secondaryFactors:
+                        for secondaryFactor in secondaryFactors:
+                            if 'start_date' in secondaryFactor:
+                                logger.debug('secondaryFactor[start_date]: %s' % secondaryFactor['start_date'])
+                                secondaryFactor['start_date'] = int(secondaryFactor['start_date'])+time_delta
+
+                        budgetEntry.set_generic_text_attr("secondaryFactor", secondaryFactors)
 
     return Response('successfully updated budgetentries!')
 
@@ -1145,6 +1212,83 @@ def change_budget_type(request):
 
     request.session.flash('success: Budget type is changed successfully')
     return Response('Budget type is changed successfully')
+
+
+@view_config(
+    route_name='change_budget_status_dialog',
+    renderer='templates/budget/dialog/change_budget_status_dialog.jinja2'
+)
+def change_budget_status_dialog(request):
+    """change_budget_status_dialog
+    """
+    logger.debug('change_budget_status_dialog is starts')
+
+    budget_id = request.matchdict.get('id')
+    budget = Budget.query.filter_by(id=budget_id).first()
+
+    status_code = request.matchdict.get('status_code')
+    came_from = request.params.get('came_from', '/')
+
+    budget_total_price = budget.get_generic_text_attr('total_price')
+
+    return {
+        'status_code': status_code,
+        'came_from': came_from,
+        'budget': budget,
+        'budget_total_price': budget_total_price
+    }
+
+
+@view_config(
+    route_name='change_budget_status'
+)
+def change_budget_status(request):
+
+    from stalker_pyramid.views import get_logged_in_user, local_to_utc
+    logged_in_user = get_logged_in_user(request)
+    utc_now = local_to_utc(datetime.datetime.now())
+
+    budget_id = request.matchdict.get('id')
+    budget = Budget.query.filter_by(id=budget_id).first()
+
+    if not budget:
+        transaction.abort()
+        return Response('There is no budget with id %s' % budget_id, 500)
+
+    status_code = request.matchdict.get('status_code')
+    status = Status.query.filter(Status.code == status_code).first()
+
+    if not status:
+        transaction.abort()
+        return Response('There is no status with name %s' % status_code, 500)
+
+    approved_total_price = request.params.get('approved_total_price', 0)
+    total_price = request.params.get('total_price', 0)
+
+    logger.debug("approved_total_price : %s" % approved_total_price)
+
+    budget.set_generic_text_attr("approved_total_price", approved_total_price)
+    budget.set_generic_text_attr("total_price", total_price)
+
+    logger.debug("budget.generic_text : %s" % budget.generic_text)
+
+    note_str = request.params.get('note')
+    from stalker_pyramid.views.note import create_simple_note
+    note = create_simple_note(note_str,
+                              status.name,
+                              'purple',
+                              status.name,
+                              logged_in_user,
+                              utc_now)
+
+    budget.notes.append(note)
+
+    budget.status = status
+    budget.updated_by = logged_in_user
+    budget.date_updated = utc_now
+
+    request.session.flash('success: Budget type is changed successfully')
+    return Response('Budget status is changed successfully')
 
 
 @view_config(
@@ -1636,9 +1780,14 @@ def generate_report_view(request):
         # budget.date_updated = utc_now
 
         project = budget.project
-        client = project.client
-        if not client:
-            raise Response('No client in the project')
+        # client = project.client
+        # if not client:
+        #     raise Response('No client in the project')
+
+        status = Status.query.filter(Status.code == "PREV").first()
+        budget.status = status
+        budget.updated_by = logged_in_user
+        budget.date_updated = utc_now
 
         logger.debug('generating report:')
         from stalker_pyramid.views.client import generate_report

@@ -108,8 +108,6 @@
                             data[i].responsible = [];
                     }
 
-
-
                     var bid_seconds = to_seconds(data[i].bid_timing, data[i].bid_unit);
                     data[i].hour_based_on_bid = meaningful_time_between(bid_seconds, data[i].total_logged_seconds);
                     var st_seconds = to_seconds(data[i].schedule_timing, data[i].schedule_unit );

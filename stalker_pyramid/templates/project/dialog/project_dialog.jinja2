@@ -32,24 +32,33 @@
 
                 var project_form = $('#project_form');
 
-                var client = $('#client');
+                var brand = $('#brand');
                 var production_firm = $('#production_firm');
                 var adv_agency = $('#adv_agency');
                 var product_project_name = $('#product_project_name');
 
                  var g_data = {
-                     'production_firm': production_firm.val(),
-                     'adv_agency':adv_agency.val(),
                      'product_project_name' : product_project_name.val()
                  };
                  var generic_text =  JSON.stringify(g_data);
 
-                console.log("project_form.serialize(): "+ project_form.serialize());
+
+                var _client_query = '';
+                if (production_firm.val()){
+                    _client_query +="&client_ids="+production_firm.val();
+                }
+                if (adv_agency.val()){
+                    _client_query +="&client_ids="+adv_agency.val();
+                }
+                if (brand.val()){
+                    _client_query +="&client_ids="+brand.val();
+                }
+                 console.log("project_form.serialize(): _client_query="+_client_query);
 
                 if (project_form.validate()) {
                     $.post(
                         project_form.attr('action'),
-                        project_form.serialize()+"&generic_text="+generic_text
+                        project_form.serialize()+"&generic_text="+generic_text+_client_query
                     ).done(function () {
                         window.location.reload();
                     }).fail(function (jqXHR) {

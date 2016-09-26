@@ -106,6 +106,20 @@ tr .odd > td .ticket_BLOCKER {
 .header-color-budget + .widget-body {
   border-color: #4e5962;
 }
+.header-color-invoice {
+  background: #4e5962;
+  border-color: #4e5962;
+}
+.header-color-invoice + .widget-body {
+  border-color: #4e5962;
+}
+.header-color-payment {
+  background: #4e5962;
+  border-color: #4e5962;
+}
+.header-color-payment + .widget-body {
+  border-color: #4e5962;
+}
 .header-color-user {
   background: #ffc657;
   border-color: #ffc657;

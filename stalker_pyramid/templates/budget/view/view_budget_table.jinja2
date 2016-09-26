@@ -33,6 +33,7 @@
 
 {#SIDEBAR#}
 {% block sidebar %}
+    {% set budget=entity %}
     {% include 'sidebar.jinja2' %}
 {% endblock sidebar %}
 
@@ -45,10 +46,10 @@
         <div class="widget-body">
             <div class="widget-main padding-24">
                 <div class="row-fluid">
-                    <div class="span4">
-                        {% set project=budget.project %}
-                        {% include 'project/view/project_info.jinja2' %}
-                    </div>
+{#                    <div class="span4">#}
+{#                        {% set project=budget.project %}#}
+{#                        {% include 'project/view/project_info.jinja2' %}#}
+{#                    </div>#}
 {#                    <div class="span4">#}
 {#                        {% set client=budget.project.client %}#}
 {#                        {% include 'client/view/client_info.jinja2' %}#}
@@ -123,7 +124,7 @@
     <script src='{{ request.static_url("stalker_pyramid:static/codebase/dhtmlxgantt.js") }}'></script>
     <link src='{{ request.static_url("stalker_pyramid:static/jqGrid/css/ui.jqgrid-bootstrap.css") }}'/>
     <script>
-        $.jgrid.defaults.width = 780;
+        $.jgrid.defaults.autowidth = true;
         $.jgrid.defaults.responsive = true;
         $.jgrid.defaults.styleUI = 'Bootstrap';
     </script>
@@ -455,7 +456,7 @@
                             {name:'second_amount', index:'second_amount', width:70, editable: true, formatter:secondUnitFmatter,unformat:secondUnformatUnit},
                             {name:'msrp', index:'msrp', width:80, editable: true,  hidden: true},
                             {name:'total_msrp', index:'total_msrp', width:80, editable: false, formatter:currencyFmatter, summaryTpl: "{0}", summaryType: "sum" },
-                            {name:'cost', index:'cost', width:80, editable: true,  hidden: true},
+                            {name:'cost', index:'cost', width:80, editable: false,  hidden: true},
                             {name:'total_cost', index:'total_cost', width:80, editable: false, formatter:currencyFmatter, summaryTpl: "{0}", summaryType: "sum" },
                             {name:'overtime', index:'overtime', width:100, editable: true},
                             {name:'overtime_cost', index:'overtime_cost', width:100, editable: false, formatter:currencyFmatter, summaryTpl: "{0}", summaryType: "sum" },
@@ -475,7 +476,7 @@
                         loadonce: false,
                         sortname: 'addition_type',
                         height: 'auto',
-                        width: 'auto',
+                        autowidth: true,
                         footerrow: true,
                         userDataOnFooter: true,
                         grouping: true,
@@ -573,7 +574,7 @@
                                 loadonce: false,
                                 sortname: 'addition_type',
                                 height: 'auto',
-                                width: 'auto',
+                                autowidth: true,
                                 footerrow: true,
                                 userDataOnFooter: true,
                                 grouping: true,
@@ -631,7 +632,7 @@
                             multiselect: false,
                             loadonce: true,
                             height: 'auto',
-                            width: 'auto',
+                            autowidth: true,
                             sortname: 'type',
                             footerrow: true, // set a footer row
                             userDataOnFooter: true, // the calculated sums and/or strings from server are put at footer row.

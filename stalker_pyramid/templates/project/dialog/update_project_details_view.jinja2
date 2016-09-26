@@ -110,17 +110,17 @@
                               >
                             <div class="row-fluid">
                                 <h4 class="header blue bolder smaller">Musteri:
-                                    <span class="grey" id="client_name"></span>
-                                    <a data-target="#dialog_template"
-                                       data-toggle="modal"
-                                       data-keyboard=false
-                                       href="{{ request.route_path('append_user_to_client_dialog', id=entity.client.id, _query={'came_from': request.current_route_path()})}}"
-                                       class="green pull-right">
-                                        <i class="icon-plus"></i>
-                                            Add New User
-                                    </a>
+                                    <span class="grey" id="brand_name"></span>
+{#                                    <a data-target="#dialog_template"#}
+{#                                       data-toggle="modal"#}
+{#                                       data-keyboard=false#}
+{#                                       href="{{ request.route_path('append_user_to_client_dialog', id=entity.client.id, _query={'came_from': request.current_route_path()})}}"#}
+{#                                       class="green pull-right">#}
+{#                                        <i class="icon-plus"></i>#}
+{#                                            Add New User#}
+{#                                    </a>#}
                                 </h4>
-                                <div id="client_controls" class="hide">
+                                <div id="brand_controls" class="hide">
                                      <div class="control-group">
                                         <label class="span2 control-label"
                                                for="contact">Contact</label>
@@ -134,17 +134,17 @@
                                 </div>
 
                                 <h4 class="header blue bolder smaller">Reklam Ajansi:
-                                    <span class="grey" id="adv_agency_name"></span>
-                                    <a data-target="#dialog_template"
-                                       data-toggle="modal"
-                                       data-keyboard=false
-                                       href="{{ request.route_path('append_user_to_client_dialog', id=entity.get_generic_text_attr('adv_agency'), _query={'came_from': request.current_route_path()})}}"
-                                       class="green pull-right">
-                                        <i class="icon-plus"></i>
-                                            Add New User
-                                    </a>
+                                    <span class="grey" id="agency_name"></span>
+{#                                    <a data-target="#dialog_template"#}
+{#                                       data-toggle="modal"#}
+{#                                       data-keyboard=false#}
+{#                                       href="{{ request.route_path('append_user_to_client_dialog', id=entity.get_generic_text_attr('adv_agency'), _query={'came_from': request.current_route_path()})}}"#}
+{#                                       class="green pull-right">#}
+{#                                        <i class="icon-plus"></i>#}
+{#                                            Add New User#}
+{#                                    </a>#}
                                 </h4>
-                                <div id="adv_agency_controls" class="hide">
+                                <div id="agency_controls" class="hide">
                                     <div class="control-group">
                                         <label class="span2 control-label"
                                                for="director">Yaratici Yönetmen</label>
@@ -179,16 +179,16 @@
                                 </div>
                                 <h4 class="header blue bolder smaller">Yapim Sirketi:
                                     <span class="grey" id="production_firm_name"></span>
-                                    <a data-target="#dialog_template"
-                                       data-toggle="modal"
-                                       data-keyboard=false
-                                       href="{{ request.route_path('append_user_to_client_dialog', id=entity.get_generic_text_attr('production_firm'), _query={'came_from': request.current_route_path()})}}"
-                                       class="green pull-right">
-                                        <i class="icon-plus"></i>
-                                            Add New User
-                                    </a>
+{#                                    <a data-target="#dialog_template"#}
+{#                                       data-toggle="modal"#}
+{#                                       data-keyboard=false#}
+{#                                       href="{{ request.route_path('append_user_to_client_dialog', id=entity.get_generic_text_attr('production_firm'), _query={'came_from': request.current_route_path()})}}"#}
+{#                                       class="green pull-right">#}
+{#                                        <i class="icon-plus"></i>#}
+{#                                            Add New User#}
+{#                                    </a>#}
                                 </h4>
-                                <div id="production_firm_name_controls" class="hide">
+                                <div id="production_firm_controls" class="hide">
                                     <div class="control-group">
                                         <label class="span2 control-label"
                                                for="director">Yönetmen</label>
@@ -295,7 +295,37 @@
 
     $(document).ready(function () {
 
+        function get_client_users(client_type, client_type_field_name, roles){
+            var client_id = get_project_client_by_type(client_type)['id'];
+            var client_name = get_project_client_by_type(client_type)['name'];
+
+            if (client_id != -1){
+                $('#'+client_type_field_name+'_name').append('<a class="green" href="/clients/'+client_id+'/view">'+client_name+'</a>');
+                $('#'+client_type_field_name+'_controls').show();
+
+                $.getJSON('/clients/'+client_id+'/users/').then(function (c_data) {
+
+                    var client_users = c_data;
+                    for (var i=0; i<roles.length; i++){
+                        var field = $('#'+roles[i].field_name);
+                        chosen_searchable_field_creator_by_data(field, user_option_template, client_users);
+                        field.attr('role_name', roles[i].role_name)
+                        field.on('change', function () {
+                            console.log("roles[i].role_name: "+$(this).attr('role_name'));
+                            set_user_role($(this).val(), $(this).attr('role_name'));
+                        });
+                        set_field_value(field, '/entities/{{ entity.id }}/role_user/?role_name='+roles[i].role_name);
+                    }
+
+                });
+            }
+            else{
+                 $('#'+client_type_field_name+'_controls').hide();
+            }
+        }
+
         function set_user_role(user_id, role_name){
+            console.log("role_name: "+ role_name)
             $.post(
                 '/entities/{{ entity.id }}/users/update/',
                 'id='+user_id+"&role="+role_name
@@ -318,100 +348,15 @@
                 '<option value={{=it.id}}>{{=it.name}}</option>'
             );
         {% endraw %}
-        {% if  entity.client %}
+        get_client_users("Brand","brand", [{'field_name':"contact", 'role_name':"Contact"}]);
+        get_client_users("Agency","agency", [{'field_name':"creative_director", 'role_name':"Yaratici Yönetmen"},
+                                    {'field_name':"customer_director", 'role_name':"Müşteri Direktörü"},
+                                    {'field_name':"agency_producer", 'role_name':"Ajans Yapımcısı"}]);
+        get_client_users("Production House","production_firm", [{'field_name':"director", 'role_name':"Yönetmen"},
+                                    {'field_name':"producer", 'role_name':"Yapımcı"},
+                                    {'field_name':"supervisor", 'role_name':"Supervisor"},
+                                    {'field_name':"coordinator", 'role_name':"Coordinator"}]);
 
-            console.log('{{ entity.client.name }}');
-            $('#client_name').append('<a class="green" href="/clients/{{ entity.client.id }}/view">{{ entity.client.name }}</a>');
-            $('#client_controls').show();
-
-            $.getJSON('/clients/{{ entity.client.id}}/users/').then(function (c_data) {
-
-                var client_users = c_data;
-
-                var contact = $('#contact');
-                chosen_searchable_field_creator_by_data(contact, user_option_template, client_users);
-                contact.on('change', function () {
-                    set_user_role($(this).val(), "Contact");
-                });
-                set_field_value(contact, '/entities/{{ entity.id }}/role_user/?role_name=Contact');
-            });
-        {% else %}
-            $('#client_controls').hide();
-        {% endif %}
-        {% if entity.get_generic_text_attr('adv_agency') %}
-            $('#adv_agency_controls').show();
-            $.getJSON('/clients/{{ entity.get_generic_text_attr('adv_agency')}}/').then(function (client_entity) {
-                $('#adv_agency_name').append('<a class="green" href="/clients/'+client_entity[0].id+'/view">'+client_entity[0].name+'</a>');
-            });
-            $.getJSON('/clients/{{ entity.get_generic_text_attr('adv_agency') }}/users/').then(function (c_data) {
-
-                var adv_agency_users = c_data;
-
-                var creative_director = $('#creative_director');
-                chosen_searchable_field_creator_by_data(creative_director, user_option_template, adv_agency_users);
-                creative_director.on('change', function () {
-                    set_user_role($(this).val(), "Yaratici Yonetmen");
-                });
-                set_field_value(creative_director, '/entities/{{ entity.id }}/role_user/?role_name=Yaratici%20Yonetmen');
-
-                var customer_director = $('#customer_director');
-                chosen_searchable_field_creator_by_data(customer_director, user_option_template, adv_agency_users);
-                customer_director.on('change', function () {
-                    set_user_role($(this).val(), "Musteri Direktoru");
-                });
-                set_field_value(customer_director, '/entities/{{ entity.id }}/role_user/?role_name=Musteri%20Direktoru');
-
-                var agency_producer = $('#agency_producer');
-                chosen_searchable_field_creator_by_data(agency_producer, user_option_template, adv_agency_users);
-                agency_producer.on('change', function () {
-                    set_user_role($(this).val(), "Ajans Yapimcisi");
-                });
-                set_field_value(agency_producer, '/entities/{{ entity.id }}/role_user/?role_name=Ajans%20Yapimcisi');
-            });
-        {% else %}
-{#            $('#adv_agency_name').text('X');#}
-            $('#adv_agency_controls').hide();
-        {% endif %}
-
-         {% if entity.get_generic_text_attr('production_firm') %}
-            $('#production_firm_name_controls').show();
-            $.getJSON('/clients/{{ entity.get_generic_text_attr('production_firm')}}/').then(function (client_entity) {
-                $('#production_firm_name').append('<a class="green" href="/clients/'+client_entity[0].id+'/view">'+client_entity[0].name+'</a>');
-            });
-
-            $.getJSON('/clients/{{ entity.get_generic_text_attr('production_firm') }}/users/').then(function (p_data) {
-                var production_firm_users = p_data;
-                var director = $('#director');
-                chosen_searchable_field_creator_by_data(director, user_option_template, production_firm_users);
-                director.on('change', function () {
-                    set_user_role($(this).val(), "Yonetmen");
-                });
-                set_field_value(director, '/entities/{{ entity.id }}/role_user/?role_name=Yonetmen');
-
-                var producer = $('#producer');
-                chosen_searchable_field_creator_by_data(producer, user_option_template, production_firm_users);
-                producer.on('change', function () {
-                    set_user_role($(this).val(), "Yapimci");
-                });
-                set_field_value(producer, '/entities/{{ entity.id }}/role_user/?role_name=Yapimci');
-
-                var supervisor = $('#supervisor');
-                chosen_searchable_field_creator_by_data(supervisor, user_option_template, production_firm_users);
-                supervisor.on('change', function () {
-                    set_user_role($(this).val(), "Supervisor");
-                });
-                set_field_value(supervisor, '/entities/{{ entity.id }}/role_user/?role_name=Supervisor');
-
-                var coordinator = $('#coordinator');
-                chosen_searchable_field_creator_by_data(coordinator, user_option_template, production_firm_users);
-                coordinator.on('change', function () {
-                    set_user_role($(this).val(), "Coordinator");
-                });
-                set_field_value(coordinator, '/entities/{{ entity.id }}/role_user/?role_name=Coordinator');
-            });
-        {% else %}
-             $('#production_firm_name_controls').hide();
-        {% endif %}
 
         $.getJSON('/entities/{{ studio.id }}/users/').then(function (p_data) {
             var studio_users = p_data;
@@ -452,31 +397,43 @@
             e.preventDefault();
 
             submit_button.button('loading');
+
+            console.log('project_form');
+
             var project_form = $('#project_form');
 
+            var brand = $('#brand');
             var production_firm = $('#production_firm');
             var adv_agency = $('#adv_agency');
             var product_project_name = $('#product_project_name');
 
             var g_data = {
-             'production_firm': production_firm.val(),
-             'adv_agency':adv_agency.val(),
-             'product_project_name' : product_project_name.val()
-            };
+                 'product_project_name' : product_project_name.val()
+             };
             var generic_text =  JSON.stringify(g_data);
 
-            console.log("generic_text: " +generic_text);
+
+            var _client_query = '';
+            if (production_firm.val()){
+                _client_query +="&client_ids="+production_firm.val();
+            }
+            if (adv_agency.val()){
+                _client_query +="&client_ids="+adv_agency.val();
+            }
+            if (brand.val()){
+                _client_query +="&client_ids="+brand.val();
+            }
+            console.log("project_form.serialize(): _client_query="+_client_query);
+
 
             if (project_form.validate()) {
                 $.post(
                     project_form.attr('action'),
-                    project_form.serialize()+"&generic_text="+generic_text
-                ).done (function (jqXHR) {
+                    project_form.serialize()+"&generic_text="+generic_text+_client_query
+                ).done(function () {
                     window.location.reload();
-                    submit_button.button('reset');
                 }).fail(function (jqXHR) {
-                    bootbox.alert('<div id="message" class="alert alert-danger bigger-110">'+jqXHR.responseText+'</div>');
-
+                    bootbox.alert(jqXHR.responseText);
                     submit_button.button('reset');
                 });
             }

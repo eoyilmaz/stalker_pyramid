@@ -24,7 +24,7 @@
 {% block pre_header %}
     <link rel="stylesheet"
           href='{{ request.static_url("stalker_pyramid:static/dhtmlx/dhtmlxgantt.css") }}'/>
-    <link rel="stylesheet" href='{{ request.static_url("stalker_pyramid:static/dhtmlx/skins/dhtmlxgantt_broadway.css") }}' type="text/css" media="screen" title="no title" charset="utf-8">
+    <link rel="stylesheet" href='{{ request.static_url("stalker_pyramid:static/dhtmlx/skins/dhtmlxgantt_terrace.css") }}' type="text/css" media="screen" title="no title" charset="utf-8">
 {% endblock pre_header %}
 
 {# BREADCRUMBS #}
@@ -34,6 +34,7 @@
 
 {#SIDEBAR#}
 {% block sidebar %}
+    {% set budget=entity %}
     {% include 'sidebar.jinja2' %}
 {% endblock sidebar %}
 
@@ -43,38 +44,30 @@
         {% set budget=entity %}
         {% include 'budget/view/budget_header.jinja2' %}
         <div class="widget-body">
-            <div class="widget-main padding-24">
-                {% set client=budget.project.client %}
-                {% include 'client/view/client_info.jinja2' %}
-{#                {% if budget_calendar_editing == 'ON'%}#}
-{#                    <div class="alert alert-danger bigger-110">#}
-{#                        You can not edit calendar.#}
-{#                    </div>#}
-{#                {% endif %}#}
+            <div class="widget-main" >
+
+                <div class="row-fluid">
+                    <div id="gantt_here" style='width:100%; height:700px; background-color: #EFF5FD;'></div>
+                </div>
+                <div class="space-6"></div>
                 <div class="row-fluid">
                     <button id='export_button'
-                                    class="btn btn-small btn-info pull-right"
+                                    class="btn btn-small btn-info"
                                     data-placement="bottom"
                                     title="Export"
                                     data-keyboard="false"
-                                    href="#"
+                                    onclick='gantt.exportToExcel()'
                                     >
+
                             <i class="icon-save bigger-130"></i> Export</button>
                     <button id='milestone_button'
-                                    class="btn btn-small btn-success pull-left"
+                                    class="btn btn-small btn-success"
                                     data-placement="bottom"
                                     title="MileStone"
                                     data-keyboard="false"
                                     href="#"
                                     >
                             <i class="icon-plus bigger-130"></i> MileStone</button>
-                </div>
-                <div class="space-6"></div>
-                <div class="row-fluid">
-                    <div id="gantt_here" style='width:100%; height:500px; background-color: #EFF5FD;'></div>
-                </div>
-                <div class="space-6"></div>
-                <div class="row-fluid">
                     <button id='forward_button'
                             class="btn btn-small btn-danger pull-right"
                             data-placement="bottom"
@@ -89,8 +82,9 @@
                                 href="#"
                                 >
                         <i class="icon-arrow-left bigger-130"></i></button>
-
                 </div>
+
+
             </div>
         </div>
     </div>
@@ -134,8 +128,10 @@
 
     <script src='{{ request.static_url("stalker_pyramid:static/dhtmlx/dhtmlxSuite/dhtmlx.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/dhtmlx/dhtmlxgantt.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/dhtmlx/api.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/moment/moment.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/dhtmlx/ext/dhtmlxgantt_multiselect.js") }}' type='text/javascript' charset='utf-8'></script>
+{#    <script src="http://export.dhtmlx.com/gantt/api.js"></script>#}
     <script type="text/javascript">
         var myLayout, myToolbar;
         console.log('{{ entity.get_generic_text_attr('start') }}');
@@ -167,7 +163,7 @@
             gantt.config.duration_unit = "day";
             gantt.config.scale_height = 20*3;
             gantt.config.row_height = 30;
-            gantt.config.grid_width = 450;
+            gantt.config.grid_width = 300;
             gantt.setWorkTime({day : 6, hours : [8,12]});
 
             var weekScaleTemplate = function(date){
@@ -198,7 +194,7 @@
                     };
 
             gantt.config.columns = [
-                {name:"text", label:"Task Name", width:"*", tree:true },
+                {name:"text", label:"Task Name", width:150, tree:true },
                 {name:"duration", label:"Duration", align:"center", width:55},
                 {name:"resources", label:"Resource", align:"center", width:65},
                 {
@@ -542,6 +538,9 @@
         }
 
         function checkLinkedTasks(task){
+            var project = gantt.getTask(project_id);
+            var project_start = project.start_date;
+            var project_end = project.end_date;
 
             for(var i=0; i < links.length; i++){
 
@@ -562,7 +561,7 @@
                                 if( +milestone.start_date < +target_task.end_date){
                                     target_task.end_date = new Date(milestone.start_date);
 
-                                    var min_start_day = addDays(target_task.end_date,-1)
+                                    var min_start_day = addDays(target_task.end_date,-1);
                                     if(target_task.start_date > min_start_day){
                                         target_task.start_date = min_start_day;
                                     }
@@ -590,13 +589,14 @@
                         case "4":
                                 if( +target_task.end_date > +milestone.end_date ){
                                     target_task.end_date = new Date(milestone.end_date);
-                                    var min_start_day = addDays(target_task.end_date,-1)
+                                    var min_start_day = addDays(target_task.end_date,-1);
                                     if(target_task.start_date > min_start_day){
                                         target_task.start_date = min_start_day;
                                     }
                                 }
                             break;
                     }
+
 
 
 
@@ -755,7 +755,9 @@
 {#                console.log(gantt.getLinks())#}
                 e.preventDefault();
                 e.stopPropagation();
-{#                gantt.exportToPDF();#}
+
+                gantt.exportToPNG();
+
             });
 
             $('#milestone_button').on('click', function (e) {

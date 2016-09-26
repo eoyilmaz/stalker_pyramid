@@ -334,6 +334,9 @@ def main(global_config, **settings):
     config.add_route('update_project',             'projects/{id}/update')
     config.add_route('inline_update_project',      'projects/{id}/update/inline')
 
+    config.add_route('change_project_status_dialog', 'projects/{id}/status/{status_code}/dialog')
+    config.add_route('change_project_status',        'projects/{id}/status/{status_code}')
+
     config.add_route('view_project',               'projects/{id}/view')
     config.add_route('view_project_reports',       'projects/{id}/view/reports')
 
@@ -392,11 +395,11 @@ def main(global_config, **settings):
 
     config.add_route('view_client',                  'clients/{id}/view')
 
-    config.add_route('get_studio_clients',           'studios/{id}/clients/')
-    config.add_route('get_clients',                  'clients/')
-    config.add_route('get_client',                  'clients/{id}/')
-    config.add_route('get_client_users_out_stack',   'clients/{id}/user/out_stack/' )
-    config.add_route('get_client_users',             'clients/{id}/users/' )
+    config.add_route('get_studio_clients',           'studios/{id}/clients/')# json
+    config.add_route('get_clients',                  'clients/')# json
+    config.add_route('get_client',                  'clients/{id}/')# json
+    config.add_route('get_client_users_out_stack',   'clients/{id}/user/out_stack/' )# json
+    config.add_route('get_client_users',             'clients/{id}/users/' )# json
 
     config.add_route('list_client_users',              'clients/{id}/users/list')
 
@@ -422,11 +425,14 @@ def main(global_config, **settings):
     config.add_route('budget_calendar_link_delete', 'budgets/{id}/calendar/link/delete')
     # config.add_route('update_budget_calendar_task', 'budgets/{id}/calendar/update_task')
 
-
     config.add_route('duplicate_budget_dialog',   'budgets/{id}/duplicate/dialog')
     config.add_route('duplicate_budget',   'budgets/{id}/duplicate')
     config.add_route('change_budget_type_dialog',   'budgets/{id}/type/{type_name}/dialog')
     config.add_route('change_budget_type',   'budgets/{id}/type/{type_name}')
+
+    config.add_route('change_budget_status_dialog',   'budgets/{id}/status/{status_code}/dialog')
+    config.add_route('change_budget_status',   'budgets/{id}/status/{status_code}')
+
     config.add_route('get_budget_entries',   'budgets/{id}/entries/')
     config.add_route('get_budget_calendar_milestones',   'budgets/{id}/calendar/milestones/')
     config.add_route('get_budget_calendar_links',   'budgets/{id}/calendar/links/')
@@ -441,6 +447,37 @@ def main(global_config, **settings):
     config.add_route('edit_budgetentry', 'budgetentries/edit')
     config.add_route('update_budgetentry', 'budgetentries/update')
     config.add_route('delete_budgetentry', 'budgetentries/{id}/delete')
+
+    # *************************************************************************
+    # Invoices
+
+    config.add_route('create_payment_dialog', 'payments/create/dialog')
+    config.add_route('update_payment_dialog', 'payments/{id}/update/dialog')
+    config.add_route('list_payment_dialog', 'payments/{id}/list/dialog')
+    config.add_route('delete_payment_dialog', 'payments/{id}/delete/dialog')
+
+    config.add_route('create_payment',        'payments/create')
+    config.add_route('update_payment',        'payments/update')
+
+    config.add_route('create_invoice_dialog', 'invoices/create/dialog')
+    config.add_route('update_invoice_dialog', 'invoices/{id}/update/dialog')
+
+    config.add_route('delete_invoice_dialog', 'invoices/{id}/delete/dialog')
+    config.add_route('duplicate_invoice_dialog',  'invoices/{id}/duplicate/dialog')
+
+    config.add_route('create_invoice',        'invoices/create')
+    config.add_route('update_invoice',        'invoices/{id}/update')
+
+    config.add_route('list_budget_invoices',         'budgets/{id}/invoices/list')
+    config.add_route('get_budget_invoices',          'budgets/{id}/invoices/')
+    config.add_route('get_budget_invoices_count',    'budgets/{id}/invoices/count/')
+
+    config.add_route('list_entity_invoices',         'entities/{id}/invoices/list')
+    config.add_route('get_entity_invoices',          'entities/{id}/invoices/')
+    config.add_route('get_entity_invoices_count',    'entities/{id}/invoices/count/')
+
+    config.add_route('view_invoice',          'invoices/{id}/view')
+    config.add_route('get_invoice_payments',  'invoices/{id}/payments/')
 
     # *************************************************************************
     # Dailies

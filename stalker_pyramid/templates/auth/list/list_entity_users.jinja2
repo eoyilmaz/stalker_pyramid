@@ -161,7 +161,7 @@
                 $.jgrid.info_dialog($.jgrid.errors.errcap,'<div class="ui-state-error">RowID:'+rowID+ ' :  '+ response.responseJSON.error +'</div>', $.jgrid.edit.bClose,{buttonalign:'right'})
                 alert(response.responseJSON.error);
             }
-
+            console.log('/entities/{{ entity.id }}/users/');
             $.getJSON('/entities/{{ entity.id }}/users/').then(function (entry_data) {
 
                 var grid_data = entry_data;
@@ -192,16 +192,17 @@
                                 //direction: "rtl",
                                 data: grid_data,
                                 datatype: "local",
-                                colNames:[ 'Id', 'Name', 'Email', 'Type Name', 'Role', 'Client', 'Department', 'Group', ''],
+                                colNames:[ 'Id', 'Name', 'Email', 'Rate', 'Type Name', 'Role', 'Client', 'Department', 'Group', ''],
                                 colModel:[
                                     {name:'id', index:'id', width:80, editable: false},
                                     {name:'name', index:'name', width:200, editable: false},
                                     {name:'email', index:'email', width:200, editable: false},
+                                    {name:'rate', index:'rate', width:200, editable: {% if has_permission('Read_Budget') %} true {% else %} false {% endif %}},
                                     {
                                         name:'type_name',
                                         index:'type_name',
                                         width:200,
-                                        editable: true,
+                                        editable: {% if has_permission('Update_User') %} true {% else %} false {% endif %},
                                         edittype:"text",
                                         editoptions: {
                                             dataInit: function (element) {
@@ -219,7 +220,7 @@
                                         name:'role',
                                         index:'role',
                                         width:200,
-                                        editable: true,
+                                        editable: {% if has_permission('Update_User') %} true {% else %} false {% endif %},
                                         edittype:"text",
                                         editoptions: {
                                             dataInit: function (element) {

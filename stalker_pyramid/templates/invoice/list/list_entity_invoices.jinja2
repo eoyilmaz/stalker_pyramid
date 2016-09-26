@@ -1,0 +1,113 @@
+{# Stalker Pyramid a Web Base Production Asset Management System
+ Copyright (C) 2009-2014 Erkan Ozgur Yilmaz
+
+ This file is part of Stalker Pyramid.
+
+ This library is free software; you can redistribute it and/or
+ modify it under the terms of the GNU Lesser General Public
+ License as published by the Free Software Foundation;
+ version 2.1 of the License.
+
+ This library is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ Lesser General Public License for more details.
+
+ You should have received a copy of the GNU Lesser General Public
+ License along with this library; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+#}
+{% extends "base.jinja2" %}
+
+{# SIDEBAR #}
+{% block sidebar %}
+    {% set budget=entity %}
+    {% include 'sidebar.jinja2' %}
+
+{% endblock sidebar %}
+
+{# BREADCRUMBS #}
+{% block breadcrumbs %}
+
+    {% set page_title='Budgets' %}
+    {% include 'breadcrumb/breadcrumbs.jinja2' %}
+
+{% endblock breadcrumbs %}
+
+
+{# PAGE-CONTENT #}
+{% block page_content %}
+
+    {% set add_button_address=request.route_path('create_invoice_dialog', _query={'budget_id':entity.id, 'came_from':request.current_route_path()}) %}
+    {% set address=request.route_path('get_budget_invoices', id=entity.id) %}
+    {% set list_item_type='Invoice' %}
+    {% include 'components/data_table.jinja2' %}
+
+{% endblock page_content %}
+
+{# EXTRA-SCRIPTS #}
+{% block extrascripts %}
+
+    {% raw %}
+        <script id="tmpl_itemThead" type="text/x-dot-template">
+            <tr>
+                <th>Created Date</th>
+                <th>Name</th>
+                <th>Client</th>
+                <th>Amount</th>
+                <th>Description</th>
+                <th>Payment</th>
+                <th></th>
+            </tr>
+        </script>
+    {% endraw %}
+
+    {% raw %}
+        <script id="tmpl_itemRow" type="text/x-dot-template">
+            <tr>
+                <td style="width:100px;">{{=it.date_created}}
+                </td>
+                <td><a href='{{=it.item_view_link}}'>{{=it.name}}</a>
+                </td>
+                <td><a href='{{=it.client_id}}'>{{=it.client_name}} </a>
+                </td>
+                <td>{{=it.amount}} {{=it.unit}}
+                </td>
+                <td>{{=it.description}}
+                </td>
+                <td>
+                    <div class="progress">
+
+                        {{ if(it.payments){ }}
+                            {{ for(var j=0;j<it.payments.length;j++){ }}
+                                {{ if(it.payments[j]){ }}
+                                    {{ if(j%2==0){ }}
+                                        <div class="bar bar-blue" style="width: {{=it.payments[j]}}%;">{{=it.payments[j]}}%</div>
+                                    {{ } }}
+                                     {{ if(j%2==1){ }}
+                                        <div class="bar bar-purple" style="width: {{=it.payments[j]}}%;">{{=it.payments[j]}}%</div>
+                                    {{ } }}
+                                {{ } }}
+                            {{ } }}
+
+                        {{ } }}
+                    </div>
+
+                    <a data-target='#dialog_template' data-toggle='modal' data-keyboard=false href='/payments/create/dialog?invoice_id={{=it.id}}'>Add New Payment</a>
+                 </td>
+                <td>
+                    <a data-target='#dialog_template' data-toggle='modal' data-keyboard=false href='/entities/{{=it.id}}/delete/dialog'><i class="icon-trash green"></i></a>
+                 </td>
+            </tr>
+        </script>
+    {% endraw %}
+
+    <script>
+
+        var tableParameters = {};
+        var sortingParameters = [[0, 'desc'], [1, 'desc']];
+        var tableDataAddress = '{{ request.route_path('get_entity_invoices', id=entity.id) }}';
+
+    </script>
+
+{% endblock extrascripts %}

@@ -285,11 +285,6 @@ def check_task_status_by_schedule_model(task):
             #     task.status = status_wip
 
 
-
-
-
-
-
 def update_task_statuses_with_dependencies(task):
     """updates the task status according to its dependencies
     """
@@ -3847,6 +3842,7 @@ def approve_task(request):
         return Response('There is no review', 500)
 
     if review.type and review.type.name == 'Extra Time':
+
         note = create_simple_note(description,
                                   'Rejected Extra Time Request',
                                   'red',

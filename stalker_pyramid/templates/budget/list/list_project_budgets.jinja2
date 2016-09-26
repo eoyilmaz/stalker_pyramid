@@ -55,6 +55,7 @@
                 <th>Budget</th>
                 <th>Created By</th>
                 <th>Type</th>
+                <th>Status</th>
                 <th>Description</th>
                 <th></th>
             </tr>
@@ -72,6 +73,9 @@
                 </td>
                 <td>
                     <span class="label label-large label-status_{{=it.type_name }}"> {{=it.type_name }}</span>
+                </td>
+                <td>
+                    <span class="label label-large label-status_{{=it.status_code }}"> {{=it.status_name }}</span>
                 </td>
                 <td>
                     <span> {{=it.description }}</span>

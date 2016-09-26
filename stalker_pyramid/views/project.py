@@ -37,8 +37,10 @@ import transaction
 
 from stalker_pyramid.views import (get_date_range,
                                    get_logged_in_user,
-                                   milliseconds_since_epoch, PermissionChecker)
-from stalker_pyramid.views.budget import update_budgetenties_startdate
+                                   milliseconds_since_epoch,
+                                   PermissionChecker,
+                                   get_multi_integer)
+# from stalker_pyramid.views.budget import update_budgetenties_startdate
 from stalker_pyramid.views.role import query_role
 from stalker_pyramid.views.type import query_type
 
@@ -98,11 +100,14 @@ def create_project(request):
         transaction.abort()
         return Response('Please enter a type name')
 
-    client_id = request.params.get('client_id', -1)
-    client = Client.query.filter_by(id=client_id).first()
-    if not client:
+
+    client_ids = get_multi_integer(request, 'client_ids')
+    clients = Client.query.filter(Client.id.in_(client_ids)).all()
+    logger.debug('client_ids          : %s' % clients)
+
+    if not clients:
         transaction.abort()
-        return Response('Can not find a client with id: %s' % client_id, 500)
+        return Response('Can not find any client', 500)
 
     logger.debug('create_project          :')
 
@@ -117,7 +122,6 @@ def create_project(request):
     logger.debug('structure     : %s' % structure)
     logger.debug('start         : %s' % start)
     logger.debug('end           : %s' % end)
-    logger.debug('client_id     : %s' % client_id)
     logger.debug('generic_text  : %s' % generic_text)
     logger.debug('type_name     : %s' % type_name)
 
@@ -147,7 +151,7 @@ def create_project(request):
                 status=status,
                 start=start,
                 end=end,
-                client=client,
+                clients=clients,
                 generic_text=generic_text,
                 type=project_type
             )
@@ -211,15 +215,15 @@ def update_project(request):
         transaction.abort()
         return Response('Can not find a status with code: %s' % status_id, 500)
 
-    client_id = request.params.get('client_id', -1)
-    client = None
-    logger.debug('client_id: %s' % client_id)
-    if client_id not in [-1, '']:
-        client = Client.query.get(int(client_id))
 
-    if not client:
+
+    client_ids = get_multi_integer(request, 'client_ids')
+    clients = Client.query.filter(Client.id.in_(client_ids)).all()
+    logger.debug('client_ids          : %s' % clients)
+
+    if not clients:
         transaction.abort()
-        return Response('Can not find a client with id: %s' % client_id, 500)
+        return Response('Can not find any client', 500)
 
     name = request.params.get('name')
     fps = request.params.get('fps')
@@ -240,7 +244,7 @@ def update_project(request):
     logger.debug('start         : %s' % start)
     logger.debug('end           : %s' % end)
     logger.debug('project       : %s' % project)
-    logger.debug('client        : %s' % client)
+    logger.debug('client        : %s' % len(clients))
     logger.debug('generic_text  : %s' % generic_text)
     logger.debug('type_name : %s' % type_name)
 
@@ -261,12 +265,12 @@ def update_project(request):
         project.status = status
         project.start = start
         project.end = end
-        project.client = client
+        project.clients = clients
         project.type = project_type
 
         for attr in new_generic_data:
             project.set_generic_text_attr(attr, new_generic_data[attr])
-        update_budgetenties_startdate(project, time_delta)
+        # update_budgetenties_startdate(project, time_delta)
         logger.debug('project updated %s ' % project.generic_text)
 
     else:
@@ -324,7 +328,7 @@ def inline_update_project(request):
             project.updated_by = logged_in_user
             project.date_updated = utc_now
         else:
-            setattr(project, 'attr_name', attr_value)
+            setattr(project, attr_name, attr_value)
 
     else:
         logger.debug('not updating')
@@ -333,6 +337,70 @@ def inline_update_project(request):
     return Response(
         'Project updated successfully %s %s' % (attr_name, attr_value)
     )
+
+
+@view_config(
+    route_name='change_project_status_dialog',
+    renderer='templates/project/dialog/change_project_status_dialog.jinja2'
+)
+def change_project_status_dialog(request):
+    """change_project_status_dialog
+    """
+    logger.debug('change_project_status_dialog is starts')
+
+    project_id = request.matchdict.get('id')
+    project = Project.query.filter_by(id=project_id).first()
+
+    status_code = request.matchdict.get('status_code')
+    came_from = request.params.get('came_from', '/')
+
+    return {
+        'status_code': status_code,
+        'came_from': came_from,
+        'project': project
+    }
+
+
+@view_config(
+    route_name='change_project_status'
+)
+def change_project_status(request):
+
+    from stalker_pyramid.views import get_logged_in_user, local_to_utc
+    logged_in_user = get_logged_in_user(request)
+    utc_now = local_to_utc(datetime.datetime.now())
+
+    project_id = request.matchdict.get('id')
+    project = Project.query.filter_by(id=project_id).first()
+
+    if not project:
+        transaction.abort()
+        return Response('There is no project with id %s' % project_id, 500)
+
+    status_code = request.matchdict.get('status_code')
+    status = Status.query.filter(Status.code == status_code).first()
+
+    if not status:
+        transaction.abort()
+        return Response('There is no status with code %s' % status_code, 500)
+
+    note_str = request.params.get('note')
+    from stalker_pyramid.views.note import create_simple_note
+    note = create_simple_note(note_str,
+                              status.name,
+                              status.code.lower(),
+                              status.name,
+                              logged_in_user,
+                              utc_now)
+
+    project.notes.append(note)
+
+    project.status = status
+    project.updated_by = logged_in_user
+    project.date_updated = utc_now
+
+    request.session.flash('success: Project status is changed successfully')
+    return Response('Project status is changed successfully')
 
 
 @view_config(
@@ -376,7 +444,7 @@ def get_entity_projects(request):
                 'type_name': project.type.name if project.type else None,
                 'percent_complete': project.percent_complete,
                 'item_view_link': '/projects/%s/view' % project.id,
-                'item_remove_link': '/entities/%s/%s/remove/dialog?came_from=%s'%(project.id, entity.id, request.current_route_path())
+                'item_remove_link': '/entities/%s/delete/dialog?came_from=%s'%(project.id, request.current_route_path())
                 if PermissionChecker(request)('Update_Project') else None
             }
         )

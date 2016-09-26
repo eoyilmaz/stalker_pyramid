@@ -19,6 +19,9 @@
     {% elif entity.entity_type == 'Budget' %}
         {% set budget=entity %}
         {% include 'breadcrumb/breadcrumbs_budget.jinja2' %}
+    {% elif entity.entity_type == 'Invoice' %}
+        {% set invoice=entity %}
+        {% include 'breadcrumb/breadcrumbs_invoice.jinja2' %}
     {% else %}
         {% include 'breadcrumb/breadcrumbs_base.jinja2' %}
     {% endif %}

@@ -34,6 +34,7 @@
 
 {#SIDEBAR#}
 {% block sidebar %}
+    {% set budget=entity %}
     {% include 'sidebar.jinja2' %}
 {% endblock sidebar %}
 
@@ -45,8 +46,17 @@
         {% include 'budget/view/budget_header.jinja2' %}
         <div class="widget-body">
             <div class="widget-main padding-24">
-                {% set project=budget.project %}
-                {% include 'project/view/project_info.jinja2' %}
+                <div class="row-fluid">
+                    <div class="span6">
+                        {% set project=budget.project %}
+                        {% include 'project/view/project_info.jinja2' %}
+                    </div>
+                    <div class="span6">
+                        {% set client=budget.project.clients[0] %}
+                        {% include 'client/view/client_info.jinja2' %}
+                    </div>
+                </div>
+                <div class="space-6"></div>
                 {% set note_type="Simple Text" %}
                 {% include 'note/dialog/add_note_dialog.jinja2' %}
             </div>

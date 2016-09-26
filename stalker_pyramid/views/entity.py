@@ -50,6 +50,10 @@ logger.setLevel(logging.DEBUG)
     renderer='templates/client/view/view_client.jinja2'
 )
 @view_config(
+    route_name='view_invoice',
+    renderer='templates/invoice/view/view_invoice.jinja2'
+)
+@view_config(
     route_name='list_client_users',
     renderer='templates/auth/list/list_client_users.jinja2'
 )
@@ -366,6 +370,14 @@ logger.setLevel(logging.DEBUG)
 @view_config(
     route_name='list_project_budgets',
     renderer='templates/budget/list/list_project_budgets.jinja2'
+)
+@view_config(
+    route_name='list_budget_invoices',
+    renderer='templates/invoice/list/list_budget_invoices.jinja2'
+)
+@view_config(
+    route_name='list_entity_invoices',
+    renderer='templates/invoice/list/list_entity_invoices.jinja2'
 )
 @view_config(
     route_name='list_studio_goods',
