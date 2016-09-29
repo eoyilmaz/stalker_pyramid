@@ -30,10 +30,8 @@
 
     <div class="row-fluid">
         <div class="widget-box transparent invoice-box">
-
             <div class="widget-header widget-header-large ">
                 <h4 class="position-relative ">{{entity.name}}</h4>
-
                 <div class="widget-toolbar no-border invoice-info">
 
                     <span class="invoice-info-label">Status:</span>
@@ -52,9 +50,10 @@
                                        data-toggle="modal"
                                        data-keyboard=false
                                        data-placement="top">
-                                           <span class="status_prev-text">
-                                               <i class="icon-ok bigger-110"></i>PREV
+                                           <span class="blue">
+                                               <i class="icon-comment bigger-110"></i>PREV
                                            </span>
+
                                     </a>
                                 </li>
                                 <li>
@@ -65,7 +64,7 @@
                                        data-keyboard=false
                                        data-placement="top">
                                            <span class="status_cls-text">
-                                               <i class="icon-ok bigger-110"></i>Paused
+                                               <i class="icon-pause bigger-110"></i>Paused
                                            </span>
                                     </a>
                                 </li>
@@ -76,8 +75,8 @@
                                        data-toggle="modal"
                                        data-keyboard=false
                                        data-placement="top">
-                                           <span class="status_CNCLD-text">
-                                               <i class="icon-ok bigger-110"></i>Canceled
+                                           <span class="red">
+                                               <i class="icon-remove bigger-110"></i>Canceled
                                            </span>
                                     </a>
                                 </li>
@@ -89,8 +88,8 @@
                                        data-toggle="modal"
                                        data-keyboard=false
                                        data-placement="top">
-                                           <span class="status_closed-text">
-                                               <i class="icon-stop bigger-110"></i>Approved
+                                           <span class="green">
+                                               <i class="icon-ok bigger-110"></i>Approved
                                            </span>
                                     </a>
                                 </li>
@@ -101,8 +100,8 @@
                                        data-toggle="modal"
                                        data-keyboard=false
                                        data-placement="top">
-                                           <span class="status_hrev-text">
-                                               <i class="icon-stop bigger-110"></i>Has Revision
+                                           <span class="purple">
+                                               <i class="icon-comment-alt bigger-110"></i>Request Revision
                                            </span>
                                     </a>
                                 </li>
@@ -113,8 +112,8 @@
                                        data-toggle="modal"
                                        data-keyboard=false
                                        data-placement="top">
-                                           <span class="purple">
-                                               <i class="icon-comment-alt bigger-110"></i>Rejected
+                                            <span class="red">
+                                               <i class="icon-remove bigger-110"></i>Rejected
                                            </span>
                                     </a>
                                 </li>
@@ -138,12 +137,12 @@
                                        data-toggle="modal"
                                        data-keyboard=false
                                        data-placement="top">
-                                           <span class="status_wip-text">
-                                               <i class="icon-stop bigger-110"></i>Work In Progress
+                                           <span class="orange">
+                                               <i class="icon-play bigger-110"></i>Work In Progress
                                            </span>
                                     </a>
                                 </li>
-                            {% elif entity.status.code == 'WIP'%}
+                            {% elif entity.status.code == 'WIP' or entity.status.code == 'HREV'%}
                                 <li>
                                     <a href="/projects/{{entity.id}}/status/CMPL/dialog?came_from={{ request.current_route_path() }}"
                                        class="tooltip-success"
@@ -164,8 +163,8 @@
                                        data-toggle="modal"
                                        data-keyboard=false
                                        data-placement="top">
-                                           <span class="status_hrev-text">
-                                               <i class="icon-stop bigger-110"></i>Has Revision
+                                           <span class="purple">
+                                               <i class="icon-comment-alt bigger-110"></i>Request Revision"
                                            </span>
                                     </a>
                                 </li>
@@ -181,23 +180,36 @@
                              style="width: {{ entity.percent_complete }}%;"></div>
                     </div>
                 </div>
-                <div class="widget-toolbar no-border invoice-info">
-{#                    {% set client=entity.clients[0] %}#}
-                </div>
             </div>
             <div class="widget-body">
                 <div class="widget-main">
-
                     <div class="row-fluid">
-                        <div class="span10">
+                        <div class="span5">
+                            {% include 'client/view/client_card.jinja2' %}
+
                             <div class="space"></div>
+                            <div class="hr hr8 hr-double"></div>
+                            <div class="space"></div>
+
+
+
+                            <div class="widget-box transparent">
+                                <div class="widget-header widget-header-small">
+                                    <h4 class="smaller">
+                                        <i class="icon-check bigger-110"></i>
+                                        Notes
+                                    </h4>
+                                </div>
+                                <div class="widget-body">
+                                    <div class="widget-main">
+                                        {% include 'note/list/list_notes.jinja2' %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="span7">
                             <div class="row-fluid">
-                                 <div class="span5">
-{#                                    {% include 'project/view/project_timing.jinja2' %}#}
-                                    {% include 'client/view/client_card.jinja2' %}
-                                    <div class="space"></div>
-                                    <div class="hr hr8 hr-double"></div>
-                                    <div class="space"></div>
+                                <div class="span8">
                                     <div class="widget-box transparent">
                                         <div class="widget-header widget-header-small">
                                             <h4 class="smaller">
@@ -208,80 +220,67 @@
                                         <div class="widget-body">
                                             <div class="widget-main">
                                                 <span id="editable_entity_description">{{ entity.description | replace('\n', '<br/>') | safe }}</span>
-
-
-                                            </div>
-                                        </div>
-                                    </div>
-                                     <div class="space"></div>
-                                                <div class="hr hr8 hr-double"></div>
-                                                <div class="space"></div>
-                                     <div class="widget-box transparent">
-                                        <div class="widget-header widget-header-small">
-                                            <h4 class="smaller">
-                                                <i class="icon-check bigger-110"></i>
-                                                Notes
-                                            </h4>
-                                        </div>
-                                        <div class="widget-body">
-                                            <div class="widget-main">
-                                                {% include 'note/list/list_notes.jinja2' %}
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                                <div id="infobox"
-                                     address='/entities/{{ entity.id }}/tasks_stats/'
-                                     class="span7 infobox-container">
-                                    {% include 'components/infobox.jinja2' %}
+                                <div class="span4">
+                                    {% include 'project/view/project_timing.jinja2' %}
+                                </div>
+                            </div>
 
-                                    <div class="infobox infobox-black infobox-small">
-                                        <div class="infobox-icon">
-                                            <i class="icon-bullhorn bigger-230"></i>
-                                        </div>
-                                        <div class="infobox-data">
-                                            <div class="infobox-data-number">
-                                                <a href="/projects/{{ entity.id }}/view" class="grey">
-                                                    Black List
-                                                </a>
-                                            </div>
+                            <div class="space"></div>
+                            <div class="hr hr8 hr-double"></div>
+                            <div class="space"></div>
+
+                            <div id="infobox"
+                                 address='/entities/{{ entity.id }}/tasks_stats/'
+                                 class="infobox-container">
+                                {% include 'components/infobox.jinja2' %}
+
+                                <div class="infobox infobox-black infobox-small">
+                                    <div class="infobox-icon">
+                                        <i class="icon-bullhorn bigger-230"></i>
+                                    </div>
+                                    <div class="infobox-data">
+                                        <div class="infobox-data-number">
+                                            <a href="/projects/{{ entity.id }}/view" class="grey">
+                                                Black List
+                                            </a>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
+                            <div class="space"></div>
 
-
-
-{#                            <div class="widget-box">#}
-{#                                {% if is_warning_list %}#}
-{#                                <div class="widget-header widget-header-small header-color-dark">#}
-{#                                    <h4 id="items_header" class="smaller">Black List<small> !! these tasks should have been sent to review or an extra time request should have been made for them !!</small></h4>#}
-{#                                {% else %}#}
-{#                                <div class="widget-header widget-header-small header-color-status_{{ filter.code.lower() }}">#}
-{#                                    <h5 id="items_header" class="smaller">{{ filter.name }}</h5>#}
-{#                                {% endif %}#}
-{#                                    <div class="widget-toolbar">#}
-{#                                        <a href="#" data-action="collapse">#}
-{#                                            <i class="icon-chevron-down"></i>#}
-{#                                        </a>#}
-{#                                    </div>#}
-{#                                </div>#}
-{#                                <div class="widget-body">#}
-{#                                    <div class="widget-main no-padding">#}
-{#                                        {% include 'task/list/list_entity_tasks_by_filter.jinja2' %}#}
-{#                                    </div>#}
-{#                                </div>#}
-{#                            </div>#}
-{##}
-{#                        </div>#}
-
+                            <div class="widget-box">
+                                {% if is_warning_list %}
+                                <div class="widget-header widget-header-small header-color-dark">
+                                    <h4 id="items_header" class="smaller">Black List<small> !! these tasks should have been sent to review or an extra time request should have been made for them !!</small></h4>
+                                {% else %}
+                                <div class="widget-header widget-header-small header-color-status_{{ filter.code.lower() }}">
+                                    <h5 id="items_header" class="smaller">{{ filter.name }}</h5>
+                                {% endif %}
+                                    <div class="widget-toolbar">
+                                        <a href="#" data-action="collapse">
+                                            <i class="icon-chevron-down"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="widget-body">
+                                    <div class="widget-main no-padding">
+                                        {% include 'task/list/list_entity_tasks_by_filter.jinja2' %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    </div>
+
 
 {% endblock page_content %}
 
@@ -416,7 +415,7 @@
 
     <script>
         $(document).ready(function () {
-{#            init_html_modal();#}
+            init_html_modal();
         });
     </script>
 

@@ -209,6 +209,26 @@ tr .odd > td .ticket_BLOCKER {
 .header-color-approved + .widget-body {
   border-color: #82af6f;
 }
+.status_app {
+  background-color: #82af6f;
+  color: white;
+}
+.status_app a {
+  color: white;
+}
+.label-status_app {
+  background-color: #82af6f !important;
+}
+.infobox-status_app > .infobox-icon > [class*="icon-"] {
+  background-color: #82af6f;
+}
+.header-color-status_app {
+  background: #82af6f;
+  border-color: #82af6f;
+}
+.header-color-status_app + .widget-body {
+  border-color: #82af6f;
+}
 .requested_revision {
   background-color: #6f3cc4;
   color: white;

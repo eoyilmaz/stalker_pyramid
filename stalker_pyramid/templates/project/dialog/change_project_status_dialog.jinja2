@@ -8,22 +8,21 @@
           method="post"
             >
         <div class="row-fluid">
-            {% if status_code=='CMPL' %}
-                <div class="control-group">
-                    <label class="span3 control-label"
-                           for="approved_total_price">Approved Total</label>
-                    <div class="span9">
-
-                        <input id="approved_total_price"
-                               name='approved_total_price'
-                               type="text"
-                               class="form-control"
-                               placeholder="Approved Total"
-                               value=''
-                               required>
-                    </div>
-                </div>
-            {% endif %}
+{#            {% if status_code=='CMPL' %}#}
+{#                <div class="control-group">#}
+{#                    <label class="span3 control-label"#}
+{#                           for="approved_total_price">Approved Total</label>#}
+{#                    <div class="span9">#}
+{#                        <input id="approved_total_price"#}
+{#                               name='approved_total_price'#}
+{#                               type="text"#}
+{#                               class="form-control"#}
+{#                               placeholder="Approved Total"#}
+{#                               value=''#}
+{#                               required>#}
+{#                    </div>#}
+{#                </div>#}
+{#            {% endif %}#}
             {#Description #}
             <div class="control-group'">
                 <label for="project_note"
@@ -31,7 +30,7 @@
                 <div class="span9">
                     <textarea id="project_note"
                               name='note'
-                              class="autosize-transition"
+                              class="autosize-transition span12"
                               style="overflow: hidden;
                                      word-wrap: break-word;
                                      resize: horizontal;
