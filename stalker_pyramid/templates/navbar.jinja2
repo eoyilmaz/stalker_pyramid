@@ -42,6 +42,8 @@
                             </li>
                     </ul>
                 </li>
+                
+
                 {% if has_permission('List_Project') %}
                     <li class="dropdown">
                         <a href="#" class="dropdown-toggle"
@@ -87,6 +89,19 @@
                             <li>
                                 <a href="{{ request.route_url('list_studio_projects', id=studio.id) }}">ALL</a>
                             </li>
+                            {% if has_permission('Create_Project') %}
+                                <li class="divider"></li>
+                                <li>
+                                    <a data-target="#dialog_template"
+                                       data-toggle="modal"
+                                       data-keyboard=false
+                                       href="{{ request.route_path('create_project_dialog', id=-1, _query={'mode': "Create" }) }}"
+                                       >
+                                        <i class="icon-plus"></i>
+                                            New Project
+                                    </a>
+                                </li>
+                            {% endif %}
                         </ul>
                     </li>
                 {% endif %}

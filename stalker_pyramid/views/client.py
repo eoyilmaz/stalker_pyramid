@@ -231,8 +231,8 @@ def get_studio_clients(request):
             "Client_SimpleEntities".name,
             "Client_SimpleEntities".description,
             "Thumbnail_Links".full_path,
-            projects.project_count,
-            "Type_SimpleEntities".name
+            "Type_SimpleEntities".name,
+            projects.project_count
         from "Clients"
         join "SimpleEntities" as "Client_SimpleEntities" on "Client_SimpleEntities".id = "Clients".id
         left outer join "Links" as "Thumbnail_Links" on "Client_SimpleEntities".thumbnail_id = "Thumbnail_Links".id
@@ -265,7 +265,8 @@ def get_studio_clients(request):
             'name': r[1],
             'description': r[2],
             'thumbnail_full_path': r[3],
-            'projectsCount': r[4] if r[4] else 0
+            'type_name': r[4],
+            'projectsCount': r[5] if r[5] else 0
         }
         if update_client_permission:
             client['item_update_link'] = \

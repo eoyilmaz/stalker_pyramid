@@ -15,7 +15,7 @@
                         class="btn btn-mini btn-danger dropdown-toggle">{{ parent.name }}&nbsp
                     <i class="icon-angle-down icon-on-right"></i>
                 </button>
-                <ul class="dropdown-menu dropdown-danger">
+                <ul class="dropdown-menu dropdown-danger scroll-menu">
                     {% if parent.parent %}
                         {% set sibling_tasks = parent.parent.children %}
                     {% else %}
@@ -39,7 +39,7 @@
                 <i class="icon-angle-down icon-on-right"></i>
             </button>
 
-            <ul class="dropdown-menu dropdown-danger">
+            <ul class="dropdown-menu dropdown-danger scroll-menu">
 
                 {% if task.parent %}
                     {% set sibling_tasks = task.parent.children %}

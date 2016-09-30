@@ -53,7 +53,6 @@
                                            <span class="blue">
                                                <i class="icon-comment bigger-110"></i>PREV
                                            </span>
-
                                     </a>
                                 </li>
                                 <li>
@@ -175,7 +174,7 @@
 
                     <div class="progress progress-mini progress-success progress-striped {% if entity.status.code == 'WIP' %}active{% endif %}"
                          style="width: 120px;"
-                         data-percent="{{ "%2.1f" | format(entity.percent_complete) }}%">
+                         data-percent="{{ "%2.2f" | format(entity.percent_complete) }}%">
                         <div class="bar"
                              style="width: {{ entity.percent_complete }}%;"></div>
                     </div>

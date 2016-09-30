@@ -54,6 +54,7 @@
         <tr>
             <th>Thumbnail</th>
             <th>Name</th>
+            <th>Type</th>
             <th>Project Count</th>
             <th>Description</th>
             <th></th>
@@ -69,6 +70,8 @@
                      src="{{=it.thumbnail_full_path }}">
             </td>
             <td><a href='/clients/{{=it.id}}/view'>{{=it.name}}</a>
+            </td>
+            <td>{{=it.type_name}}
             </td>
             <td>{{=it.projectsCount}}
             </td>
@@ -97,7 +100,7 @@
 
     <script>
 
-        var tableParameters = {"aoColumns": [null, null, {'sType': 'num-html'},null, null]};
+        var tableParameters = {"aoColumns": [null, null, null, {'sType': 'num-html'},null, null]};
         var sortingParameters = [[0, 'asc']];
         var tableDataAddress;
         tableDataAddress = '{{ request.route_path('get_studio_clients', id=studio.id) }}';
