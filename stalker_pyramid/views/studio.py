@@ -189,7 +189,7 @@ def auto_schedule_tasks(request):
         return Response("There is no Studio instance\n"
                         "Please create a studio first", 500)
 
-    project_id = request.params.get('project', -1)
+    project_id = request.params.get('project_id', -1)
     project = Project.query.filter(Project.id == project_id).first()
     logger.debug('project_id: %s' % project_id)
 

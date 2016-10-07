@@ -111,14 +111,15 @@
                             <div class="row-fluid">
                                 <h4 class="header blue bolder smaller">Musteri:
                                     <span class="grey" id="brand_name"></span>
-{#                                    <a data-target="#dialog_template"#}
-{#                                       data-toggle="modal"#}
-{#                                       data-keyboard=false#}
-{#                                       href="{{ request.route_path('append_user_to_client_dialog', id=entity.client.id, _query={'came_from': request.current_route_path()})}}"#}
-{#                                       class="green pull-right">#}
-{#                                        <i class="icon-plus"></i>#}
-{#                                            Add New User#}
-{#                                    </a>#}
+                                    <a id="brand_id"
+                                       data-target="#dialog_template"
+                                       data-toggle="modal"
+                                       data-keyboard=false
+                                       href=""
+                                       class="green pull-right">
+                                        <i class="icon-plus"></i>
+                                            Add New User
+                                    </a>
                                 </h4>
                                 <div id="brand_controls" class="hide">
                                      <div class="control-group">
@@ -135,14 +136,15 @@
 
                                 <h4 class="header blue bolder smaller">Reklam Ajansi:
                                     <span class="grey" id="agency_name"></span>
-{#                                    <a data-target="#dialog_template"#}
-{#                                       data-toggle="modal"#}
-{#                                       data-keyboard=false#}
-{#                                       href="{{ request.route_path('append_user_to_client_dialog', id=entity.get_generic_text_attr('adv_agency'), _query={'came_from': request.current_route_path()})}}"#}
-{#                                       class="green pull-right">#}
-{#                                        <i class="icon-plus"></i>#}
-{#                                            Add New User#}
-{#                                    </a>#}
+                                    <a id="agency_id"
+                                       data-target="#dialog_template"
+                                       data-toggle="modal"
+                                       data-keyboard=false
+                                       href=""
+                                       class="green pull-right">
+                                        <i class="icon-plus"></i>
+                                            Add New User
+                                    </a>
                                 </h4>
                                 <div id="agency_controls" class="hide">
                                     <div class="control-group">
@@ -179,14 +181,15 @@
                                 </div>
                                 <h4 class="header blue bolder smaller">Yapim Sirketi:
                                     <span class="grey" id="production_firm_name"></span>
-{#                                    <a data-target="#dialog_template"#}
-{#                                       data-toggle="modal"#}
-{#                                       data-keyboard=false#}
-{#                                       href="{{ request.route_path('append_user_to_client_dialog', id=entity.get_generic_text_attr('production_firm'), _query={'came_from': request.current_route_path()})}}"#}
-{#                                       class="green pull-right">#}
-{#                                        <i class="icon-plus"></i>#}
-{#                                            Add New User#}
-{#                                    </a>#}
+                                    <a id="production_firm_id"
+                                       data-target="#dialog_template"
+                                       data-toggle="modal"
+                                       data-keyboard=false
+                                       href=""
+                                       class="green pull-right">
+                                        <i class="icon-plus"></i>
+                                            Add New User
+                                    </a>
                                 </h4>
                                 <div id="production_firm_controls" class="hide">
                                     <div class="control-group">
@@ -308,8 +311,11 @@
                     var client_users = c_data;
                     for (var i=0; i<roles.length; i++){
                         var field = $('#'+roles[i].field_name);
+                        var add_button = $("#"+client_type_field_name+"_id");
+                        add_button.attr('href', "/clients/"+client_id+"/user/append/dialog");
+
                         chosen_searchable_field_creator_by_data(field, user_option_template, client_users);
-                        field.attr('role_name', roles[i].role_name)
+                        field.attr('role_name', roles[i].role_name);
                         field.on('change', function () {
                             console.log("roles[i].role_name: "+$(this).attr('role_name'));
                             set_user_role($(this).val(), $(this).attr('role_name'));

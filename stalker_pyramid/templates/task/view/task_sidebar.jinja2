@@ -265,6 +265,7 @@
                     $.post(
                         '/tasks/delete?task_ids=' + id
                     ).done(function (response_text) {
+                       alert(response_text);
                         window.location.assign(new_url);
                     }).fail(function (jqXHR) {
                         bootbox.alert(jqXHR.responseText);

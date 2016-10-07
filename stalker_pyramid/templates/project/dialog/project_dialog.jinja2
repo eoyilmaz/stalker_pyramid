@@ -59,8 +59,8 @@
                     $.post(
                         project_form.attr('action'),
                         project_form.serialize()+"&generic_text="+generic_text+_client_query
-                    ).done(function () {
-                        window.location.reload();
+                    ).done(function (new_url) {
+                        window.location.assign(new_url);
                     }).fail(function (jqXHR) {
                         bootbox.alert(jqXHR.responseText);
                         submit_button.button('reset');

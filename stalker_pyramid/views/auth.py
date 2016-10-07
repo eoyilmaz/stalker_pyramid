@@ -641,7 +641,7 @@ def get_entity_users(request):
                 } for i, a in enumerate(r[13])
             ] if r[13] else [],
             'role': r[15] if len(r) >= 16 else None,
-            'rate': r[17] if (len(r) >= 18 and has_read_rate_permission) else "HiddenData"
+            'rate': r[17] if (len(r) >= 17) and has_read_rate_permission else None
         } for r in result.fetchall()
     ]
 
@@ -1341,9 +1341,6 @@ def update_entity_user(request):
     if user not in entity.users:
         entity.users.append(user)
 
-
-
-
     if entity.entity_type in ["Project", "Client", "Department"]:
         query_string = '%(class_name)sUser.query.filter(%(class_name)sUser.user_id == user_id).filter(%(class_name)sUser.%(attr_name)s == entity_id)'
         q = eval(query_string % {'class_name': entity.entity_type,
@@ -1361,6 +1358,13 @@ def update_entity_user(request):
         entity_user.updated_by = logged_in_user
 
         DBSession.add(entity_user)
+
+    if entity.entity_type == "Studio":
+        if rate:
+            user.rate = int(rate)
+
+            user.date_updated = utc_now
+            user.updated_by = logged_in_user
 
     return Response('Successfully updated user: %s' % user.name)
 

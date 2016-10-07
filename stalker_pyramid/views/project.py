@@ -124,7 +124,7 @@ def create_project(request):
     logger.debug('end           : %s' % end)
     logger.debug('generic_text  : %s' % generic_text)
     logger.debug('type_name     : %s' % type_name)
-
+    new_project_id = ""
     if name and code and start and end and type_name:
         # status is always New
         # lets create the project
@@ -157,6 +157,9 @@ def create_project(request):
             )
 
             DBSession.add(new_project)
+            transaction.commit()
+            project = Project.query.filter(Project.name == name).first()
+            new_project_id = project.id
             # flash success message
             request.session.flash(
                 'success:Project <strong>%s</strong> is created '
@@ -170,10 +173,8 @@ def create_project(request):
         transaction.abort()
         return Response('There are missing parameters', 500)
 
-    return Response(
-        'success:Project with the code <strong>%s</strong> is created.'
-        % code
-    )
+    return Response("/projects/%s/view" % new_project_id)
+
 
 
 @view_config(
@@ -395,6 +396,11 @@ def change_project_status(request):
 
     project.notes.append(note)
 
+    archive_project = request.params.get('archive_project')
+    if archive_project:
+        logger.debug("archive_project %s" % archive_project)
+        project.set_generic_text_attr("archive_project", archive_project)
+
     project.status = status
     project.updated_by = logged_in_user
     project.date_updated = utc_now
@@ -440,12 +446,15 @@ def get_entity_projects(request):
                 'created_by_name': project.created_by.name,
                 'thumbnail_full_path': project.thumbnail.full_path if project.thumbnail else None,
                 'status': project.status.name,
+                'status_code': project.status.code.lower(),
                 'description': len(project.users),
                 'type_name': project.type.name if project.type else None,
                 'percent_complete': project.percent_complete,
                 'item_view_link': '/projects/%s/view' % project.id,
                 'item_remove_link': '/entities/%s/delete/dialog?came_from=%s'%(project.id, request.current_route_path())
-                if PermissionChecker(request)('Update_Project') else None
+                if PermissionChecker(request)('Update_Project') else None,
+                'archive_project': project.get_generic_text_attr("archive_project")
+
             }
         )
 

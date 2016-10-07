@@ -56,22 +56,24 @@
                     </div>
             </div>
             <div class="widget-body">
-                <div class="widget-main no-padding">
-{#                    <div id="loading_spinner" class="well well-sm">#}
-{##}
-{#                        <div class="inline middle blue bigger-110"><i#}
-{#                                class="icon-spinner icon-spin orange bigger-125"></i>#}
-{#                            Loading#}
-{#                            content...#}
-{#                        </div>#}
-{#                    </div>#}
-
-                    <table id="grid-table"></table>
-                    <div id="grid-pager"></div>
-                    <script type="text/javascript">
-                        var $path_base = "/";//this will be used in gritter alerts containing images
-                    </script>
-
+                <div class="widget-main" style="padding: 0px">
+                    <div class="space-5"></div>
+                    <div id="items_table_wrapper" class="dataTables_wrapper" role="grid">
+                        <div class="row-fluid">
+                            <div class="span6">
+                            </div>
+                            <div class="span6">
+                                <div class="dataTables_filter" id="items_table_filter">
+                                    <label>Search: <input type="text" id="search_cells" aria-controls="items_table">
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row-fluid">
+                        <table id="grid-table"></table>
+                        <div id="grid-pager"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -85,12 +87,21 @@
         </script>
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/date-time/bootstrap-datepicker.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jqGrid/i18n/grid.locale-en.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jqGrid/jquery.jqGrid.min.js") }}'></script>
+{#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/jqGrid/jquery.jqGrid.min.js") }}'></script>#}
+    <script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/jquery.jqGrid.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/jquery.jqGrid.min.js") }}'></script>
     <script src='{{ request.static_url("stalker_pyramid:static/stalker/js/accounting.min.js") }}'></script>
+    <script src='{{ request.static_url("stalker_pyramid:static/jqGrid/plugins/ui.multiselect.js") }}'></script>
+    <script>
+        $.jgrid.defaults.autowidth = true;
 
+        $.jgrid.defaults.responsive = true;
+        $.jgrid.defaults.styleUI = 'Bootstrap';
+    </script>
 
     <script type="text/javascript">
         $(document).ready(function () {
+
 
             $.getJSON('/types/?target_entity_type=Good').then(function (good_type_data) {
                 var available_good_types = [];
@@ -152,7 +163,6 @@
                         var grid = jQuery(grid_selector);
                         grid.jqGrid({
                             //direction: "rtl",
-
                             data: grid_data,
                             datatype: "local",
                             colNames:[
@@ -234,7 +244,7 @@
                                 {name:'updated_by',index:'updated_by', width:100, sortable:true, editable: false},
                                 {name:'date_updated',index:'date_updated', width:100, sortable:true, editable: false}
                             ],
-                            height: 800,
+                            height: 700,
                             rowNum: 10,
                             viewrecords : true,
                             rowList:[20, 50, 100],
@@ -392,6 +402,20 @@
                             $('.navtable .ui-pg-button').tooltip({container:'body'});
                             $(table).find('.ui-pg-div').tooltip({container:'body'});
                         }
+
+                        var timer;
+                        $("#search_cells").on("keyup", function() {
+
+                            var self = this;
+
+                            if(timer) { clearTimeout(timer); }
+                            timer = setTimeout(function(){
+                                //timer = null;
+                                var grid_selector = "#grid-table";
+                                console.log(grid_selector);
+                                jQuery(grid_selector).jqGrid('filterInput', self.value);
+                            },0);
+                        });
 
                          $('.date').each(function () {
                             var date = moment.utc($(this).text());

@@ -1276,7 +1276,7 @@ def change_budget_status(request):
     from stalker_pyramid.views.note import create_simple_note
     note = create_simple_note(note_str,
                               status.name,
-                              'purple',
+                              "status_%s" % status.code.lower(),
                               status.name,
                               logged_in_user,
                               utc_now)
