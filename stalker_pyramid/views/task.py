@@ -5497,29 +5497,29 @@ def set_task_status(task, status, note, logged_in_user, utc_now):
                 'reviewer_note': note.content
             }
         review.approve()
-
-    if status.code == 'STOP':
-        task.stop()
-        fix_task_computed_time(task)
-    elif status.code == 'OH':
-        task.hold()
-        fix_task_computed_time(task)
-    elif status.code == 'CMPL':
-        cut_schedule_timing(task)
-        task.status = status
-        fix_task_computed_time(task)
-        task.update_parent_statuses()
-        for tdep in task.task_dependent_of:
-            dep = tdep.task
-            dep.update_status_with_dependent_statuses()
-            if dep.status.code in ['HREV', 'PREV', 'DREV', 'OH', 'STOP']:
-                # for tasks that are still be able to continue to work,
-                # change the dependency_target to "onstart" to allow
-                # the two of the tasks to work together and still let the
-                # TJ to be able to schedule the tasks correctly
-                tdep.dependency_target = 'onstart'
-            # also update the status of parents of dependencies
-            dep.update_parent_statuses()
+    else:
+        if status.code == 'STOP':
+            task.stop()
+            fix_task_computed_time(task)
+        elif status.code == 'OH':
+            task.hold()
+            fix_task_computed_time(task)
+        elif status.code == 'CMPL':
+            cut_schedule_timing(task)
+            task.status = status
+            fix_task_computed_time(task)
+            task.update_parent_statuses()
+            for tdep in task.task_dependent_of:
+                dep = tdep.task
+                dep.update_status_with_dependent_statuses()
+                if dep.status.code in ['HREV', 'PREV', 'DREV', 'OH', 'STOP']:
+                    # for tasks that are still be able to continue to work,
+                    # change the dependency_target to "onstart" to allow
+                    # the two of the tasks to work together and still let the
+                    # TJ to be able to schedule the tasks correctly
+                    tdep.dependency_target = 'onstart'
+                # also update the status of parents of dependencies
+                dep.update_parent_statuses()
 
     task.notes.append(note)
     task.updated_by = logged_in_user
