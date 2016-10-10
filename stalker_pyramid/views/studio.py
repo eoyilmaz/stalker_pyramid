@@ -210,7 +210,8 @@ def auto_schedule_tasks(request):
         from stalker_pyramid.views.task import cached_query_tasks,\
             get_cached_user_tasks, get_cached_tasks_count
         invalidate_all_caches()
-        check_all_tasks_status_by_schedule_model()
+
+        check_all_tasks_status_by_schedule_model(studio.scheduler.projects)
 
         c = StdErrToHTMLConverter(stderr)
         return Response(c.html(replace_links=True))

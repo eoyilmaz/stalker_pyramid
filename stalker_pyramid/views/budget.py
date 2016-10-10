@@ -88,8 +88,10 @@ def create_budget(request):
     name = request.params.get('name')
     description = request.params.get('description')
 
+    type_name = request.params.get('type_name')
+
     from stalker_pyramid.views.type import query_type
-    budget_type = query_type('Budget', 'Planning')
+    budget_type = query_type('Budget', type_name)
 
     project_id = request.params.get('project_id', None)
     project = Project.query.filter(Project.id == project_id).first()
@@ -279,7 +281,6 @@ def inline_update_budget(request):
 
             logger.debug('budget.project.start: %s' % budget.project.start)
             logger.debug('start_asmilliseconds: %s' % start_asmilliseconds)
-
 
             check_project_start_end_date(budget.project)
 

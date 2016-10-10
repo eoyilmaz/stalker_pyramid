@@ -239,14 +239,14 @@ def get_description_html(description_temp,
     return description_html
 
 
-def check_all_tasks_status_by_schedule_model():
+def check_all_tasks_status_by_schedule_model(projects):
     """after scheduling project checks the task statuses
     """
 
     logger.debug('check_task_status_by_schedule_model starts')
 
     utc_now = local_to_utc(datetime.datetime.now())
-    tasks = Task.query.filter(Task.schedule_model == 'duration').all()
+    tasks = Task.query.filter(Task.schedule_model == 'duration').filter(Task.project in projects).all()
     status_cmpl = Status.query.filter(Status.code == 'CMPL').first()
     status_wip = Status.query.filter(Status.code == 'WIP').first()
     if tasks:
@@ -254,7 +254,8 @@ def check_all_tasks_status_by_schedule_model():
             if task.is_leaf:
                 if task.computed_end < utc_now:
                     task.status = status_cmpl
-                elif task.computed_start < utc_now and task.computed_end > utc_now:
+                elif task.computed_start < utc_now \
+                        and task.computed_end > utc_now:
                     task.status = status_wip
                 else:
                     continue
