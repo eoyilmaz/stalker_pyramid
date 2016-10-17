@@ -832,13 +832,8 @@ resource_name, status
             if (good_id){
                 task_good.val(good_id).trigger('liszt:updated');
             }
-
+            task_good.trigger('liszt:updated');
         });
-
-
-
-
-
 
         {# ***************************************************************** #}
         {# Submit Button #}

@@ -168,7 +168,7 @@
 
                 <div class="span10">
                      <select id='project_type'
-                            name='type_name'
+                            name='type_id'
                             data-placeholder='Type'
                             required>
                     </select>
@@ -379,7 +379,7 @@
         var deferred = chosen_field_creator(project_type, '/types/?target_entity_type=Project', option_template);
         {% if mode == 'Update' %}
             deferred.then(function () {
-                project_type.val({{ project.type.name }}).trigger('liszt:updated');
+                project_type.val({{ project.type.id }}).trigger('liszt:updated');
             });
         {% endif %}
 

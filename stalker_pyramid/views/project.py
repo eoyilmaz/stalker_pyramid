@@ -30,7 +30,7 @@ from pyramid.view import view_config
 from stalker.db import DBSession
 from stalker import (db, ImageFormat, Repository, Structure, Status,
                      StatusList, Project, Entity, Studio, defaults, Client,
-                     Budget, BudgetEntry, Good, User)
+                     Budget, BudgetEntry, Good, User, Type)
 from stalker.models import local_to_utc
 from stalker.models.project import ProjectUser
 import transaction
@@ -95,8 +95,8 @@ def create_project(request):
         transaction.abort()
         return Response('Can not find a status with code: %s' % status.id, 500)
 
-    type_name = request.params.get('type_name', None)
-    if not type_name:
+    type_id = request.params.get('type_id', None)
+    if not type_id:
         transaction.abort()
         return Response('Please enter a type name')
 
@@ -123,9 +123,9 @@ def create_project(request):
     logger.debug('start         : %s' % start)
     logger.debug('end           : %s' % end)
     logger.debug('generic_text  : %s' % generic_text)
-    logger.debug('type_name     : %s' % type_name)
+    logger.debug('type_id     : %s' % type_id)
     new_project_id = ""
-    if name and code and start and end and type_name:
+    if name and code and start and end and type_id:
         # status is always New
         # lets create the project
         logger.debug('codecode          : %s' % code)
@@ -133,7 +133,8 @@ def create_project(request):
         status_list = StatusList.query \
             .filter_by(target_entity_type='Project').first()
 
-        project_type = query_type("Project", type_name)
+        project_type = Type.query.filter_by(target_entity_type="Project").\
+                                filter_by(id=type_id).first()
         try:
             logger.debug('code: %s' % code)
             logger.debug('type(code): %s' % type(code))
@@ -231,7 +232,7 @@ def update_project(request):
 
     start, end = get_date_range(request, 'start_and_end_dates')
     generic_text = request.params.get('generic_text')
-    type_name = request.params.get('type_name', None)
+    type_id = request.params.get('type_id', None)
 
     logger.debug('update_project          :')
 
@@ -247,15 +248,17 @@ def update_project(request):
     logger.debug('project       : %s' % project)
     logger.debug('client        : %s' % len(clients))
     logger.debug('generic_text  : %s' % generic_text)
-    logger.debug('type_name : %s' % type_name)
+    logger.debug('type_id : %s' % type_id)
 
     new_generic_data = json.loads(generic_text)
 
-    if name and fps and start and end and type_name:
+    if name and fps and start and end and type_id:
 
-        project_type = query_type("Project", type_name)
+        project_type = Type.query.filter_by(target_entity_type="Project").\
+                                filter_by(id=type_id).first()
 
-        time_delta = milliseconds_since_epoch(start) - milliseconds_since_epoch(project.start)
+        time_delta = milliseconds_since_epoch(start) - \
+                     milliseconds_since_epoch(project.start)
         project.name = name
         project.image_format = imf
         project.repositories = [repo]
@@ -498,7 +501,6 @@ def get_project_lead(request):
     return lead_data
 
 
-
 @view_config(
     route_name='get_project_tasks_cost',
     renderer='json'
@@ -507,86 +509,107 @@ def get_project_tasks_cost(request):
     """returns the project lead as a json data
     """
     project_id = request.matchdict.get('id', -1)
+
+    budget_list = get_multi_integer(request, 'budget_ids', 'GET')
+    budgets = Budget.query.filter(Budget.id.in_(budget_list)).all()
+
+    if not budgets:
+        transaction.abort()
+        return Response('Can not find any budget !!', 500)
+
     sql_query = """
-        select
-           goods.id,
-           goods.name,
-           goods.msrp,
-           goods.cost,
-           goods.unit,
-           goods.price_list_name,
-           sum(goods.bid_total) as bid_total,
-           sum(goods.schedule_total * goods.user_rate) as realize_total
+               select
+       "PriceList_SimpleEntities".name as price_list_name,
+        "Good_SimpleEntities".name as good_name,
+        "Good_SimpleEntities".id as good_id,
+        "Task_Goods".msrp as msrp,
+        "Task_Goods".cost as cost,
+        "Task_Goods".unit as unit,
+        sum("Project_Users".rate*("Tasks".bid_timing * (case "Tasks".bid_unit
+                                            when 'min' then 60
+                                            when 'h' then 3600
+                                            when 'd' then 32400
+                                            when 'w' then 183600
+                                            when 'm' then 590400
+                                            when 'y' then 7696277
+                                            else 0
+                                        end)/3600)) as bid_total,
+        sum("Project_Users".rate*("Tasks".schedule_timing * (case "Tasks".schedule_unit
+                            when 'min' then 60
+                            when 'h' then 3600
+                            when 'd' then 32400
+                            when 'w' then 183600
+                            when 'm' then 590400
+                            when 'y' then 7696277
+                            else 0
+                        end)/3600)) as schedule_total,
+       sum("Project_Users".rate*(extract(epoch from "TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC'))/3600) as timelog_duration,
+       budgetentries.name,
+       budgetentries.price
 
-        from ( select
-                "Good_SimpleEntities".name as name,
-                "Good_SimpleEntities".id as id,
-                "Task_Goods".msrp as msrp,
-                "Task_Goods".cost as cost,
-                "Task_Goods".unit as unit,
-                "PriceList_SimpleEntities".name as price_list_name,
-                sum("Tasks".bid_timing * (case "Tasks".bid_unit
-                                    when 'min' then 60
-                                    when 'h' then 3600
-                                    when 'd' then 32400
-                                    when 'w' then 183600
-                                    when 'm' then 590400
-                                    when 'y' then 7696277
-                                    else 0
-                                end)/3600) as bid_total,
-                sum("Tasks".schedule_timing * (case "Tasks".schedule_unit
-                                    when 'min' then 60
-                                    when 'h' then 3600
-                                    when 'd' then 32400
-                                    when 'w' then 183600
-                                    when 'm' then 590400
-                                    when 'y' then 7696277
-                                    else 0
-                                end)/3600) as schedule_total,
-                "Users".rate as user_rate
+       from "Tasks"
+       join "Goods" as "Task_Goods" on "Task_Goods".id = "Tasks".good_id
+       join "SimpleEntities" as "Good_SimpleEntities" on "Good_SimpleEntities".id = "Task_Goods".id
+       join "PriceList_Goods" on "PriceList_Goods".good_id = "Task_Goods".id
+       join "SimpleEntities" as "PriceList_SimpleEntities" on "PriceList_SimpleEntities".id = "PriceList_Goods".price_list_id
+       join "TimeLogs" on "Tasks".id = "TimeLogs".task_id
+       join "Project_Users" on "Project_Users".user_id = "TimeLogs".resource_id
+       left outer join (
+                select "BudgetEntries_SimpleEntities".name as name,
+                         "BudgetEntries".id as id,
+                         "BudgetEntries".good_id as good_id,
+                         "BudgetEntries".price as price
+                    from "BudgetEntries"
+                    join "SimpleEntities" as "BudgetEntries_SimpleEntities" on "BudgetEntries_SimpleEntities".id = "BudgetEntries".id
+                    join "Budgets" on "Budgets".id = "BudgetEntries".budget_id
+                    %(where_condition_budgets)s
+                ) as budgetentries on budgetentries.good_id = "Task_Goods".id
 
-                from "Tasks"
-                join "Goods" as "Task_Goods" on "Task_Goods".id = "Tasks".good_id
-                join "SimpleEntities" as "Good_SimpleEntities" on "Good_SimpleEntities".id = "Task_Goods".id
-                join "PriceList_Goods" on "PriceList_Goods".good_id = "Task_Goods".id
-                join "SimpleEntities" as "PriceList_SimpleEntities" on "PriceList_SimpleEntities".id = "PriceList_Goods".price_list_id
-                join "Task_Resources" on "Task_Resources".task_id = "Tasks".id
-                join "Users" on "Users".id = "Task_Resources".resource_id
-
-                where "Tasks".project_id = %(project_id)s and not exists (
+       where "Project_Users".project_id = %(project_id)s  and not exists (
                             select 1 from "Tasks" as "All_Tasks"
                             where "All_Tasks".parent_id = "Tasks".id
                             )
 
-                group by "Good_SimpleEntities".name,
-                         "Good_SimpleEntities".id,
-                         "Task_Goods".msrp,
-                         "Task_Goods".cost,
-                         "Task_Goods".unit,
-                         "PriceList_SimpleEntities".name,
-                         "Users".rate
-        ) as goods
-        group by
-               goods.name,
-               goods.id,
-               goods.msrp,
-               goods.cost,
-               goods.unit,
-               goods.price_list_name
+       group by "Good_SimpleEntities".name,
+                 "Good_SimpleEntities".id,
+                 budgetentries.name,
+                 budgetentries.price,
+                 "Task_Goods".msrp,
+                 "Task_Goods".cost,
+                 "Task_Goods".unit,
+                 "PriceList_SimpleEntities".name
 """
 
-    sql_query = sql_query % {'project_id': project_id}
+
+    where_condition_budgets = ""
+    temp_buffer = ["""where"""]
+    for i, budget in enumerate(budgets):
+        if i > 0:
+            temp_buffer.append(' or')
+        temp_buffer.append(""" "Budgets".id=%s""" % budget.id)
+
+    where_condition_budgets = ''.join(temp_buffer)
+
+    logger.debug("where_condition_budgets: %s" % where_condition_budgets)
+
+    sql_query = sql_query % {'project_id': project_id,
+                             'where_condition_budgets': where_condition_budgets
+    }
+
     result = DBSession.connection().execute(sql_query)
     return_data = [
         {
-            'good_id': r[0],
+            'price_list_name': r[0],
             'good_name': r[1],
-            'msrp': int(r[2]),
-            'cost': int(r[3]),
-            'unit': r[4],
-            'price_list_name': r[5],
-            'amount':r[6],
-            'realized_total':r[7]
+            'good_id': r[2],
+            'msrp': int(r[3]),
+            'cost': int(r[4]),
+            'unit': r[5],
+            'bid':r[6],
+            'scheduled':r[7],
+            'realized_total':r[8],
+            'budgetentries_name':r[9] if r[9] else " - ",
+            'budgetentries_price':r[10] if r[10] else 0,
         }
         for r in result.fetchall()
     ]

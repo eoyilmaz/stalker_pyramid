@@ -135,7 +135,10 @@
                                 'state':"{%- if request.current_route_path() == request.route_path('list_project_budgets', id=project.id) -%}'active',{%- else -%},{%- endif -%}"},
                               {'name': 'Invoices',
                                 'link':'{{ request.route_url('list_entity_invoices', id=project.id) }}',
-                                'state':"{%- if request.current_route_path() == request.route_path('list_entity_invoices', id=project.id) -%}'active',{%- else -%},{%- endif -%}"}
+                                'state':"{%- if request.current_route_path() == request.route_path('list_entity_invoices', id=project.id) -%}'active',{%- else -%},{%- endif -%}"},
+                              {'name': 'Cost Sheet',
+                                'link':'{{ request.route_url('view_project_cost_sheet', id=project.id) }}',
+                                'state':"{%- if request.current_route_path() == request.route_path('view_project_cost_sheet', id=project.id) -%}'active',{%- else -%},{%- endif -%}"}
             ]);
         {% endif %}
 

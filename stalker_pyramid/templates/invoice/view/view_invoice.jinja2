@@ -188,9 +188,13 @@
             }
 
             function gridLoadComplete() {
-                grid.jqGrid("footerData", "set", { date_created: "TOTAL",
+
+                if(grid_data.length>0){
+                    grid.jqGrid("footerData", "set", { date_created: "TOTAL",
                                                    amount: total_payment+" "+grid_data[grid_data.length-1].unit
-                });
+                    });
+                }
+
                 setTimeout(function(){
                     $('#lui_grid-table').hide();
                 }, 0);
@@ -236,8 +240,21 @@
                                         }, 100);
                                     }
                                 }},
-                            {name:'description', index:'description', sortable:false, editable: true, edittype:"textarea", editoptions:{size:"20", maxlength:"80"}},
-                            {name:'delete_action', index:'delete_action',  editable: false}
+                            {
+                                name:'description',
+                                index:'description',
+                                sortable:false,
+                                editable: true,
+                                edittype:"textarea",
+                                editoptions:{
+                                    size:"20",
+                                    maxlength:"80"
+                                }
+                            },
+                            {
+                                name:'delete_action',
+                                index:'delete_action',
+                                editable: false}
                          ],
                         viewrecords : true,
                         rowNum:grid_data.length,

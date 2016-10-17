@@ -166,6 +166,10 @@ logger.setLevel(logging.DEBUG)
     renderer='templates/project/report/view_project_reports.jinja2'
 )
 @view_config(
+    route_name='view_project_cost_sheet',
+    renderer='templates/project/report/view_project_cost_sheet.jinja2'
+)
+@view_config(
     route_name='list_projects',
     renderer='templates/project/list/list_entity_projects.jinja2'
 )

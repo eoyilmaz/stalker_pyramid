@@ -339,6 +339,7 @@ def main(global_config, **settings):
 
     config.add_route('view_project',               'projects/{id}/view')
     config.add_route('view_project_reports',       'projects/{id}/view/reports')
+    config.add_route('view_project_cost_sheet',    'projects/{id}/view/cost_sheet') #json
 
     config.add_route('add_project_entries_to_budget',   'projects/{id}/entries/budgets/{bid}/add')
 
