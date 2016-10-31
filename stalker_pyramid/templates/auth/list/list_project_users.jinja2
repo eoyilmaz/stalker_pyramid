@@ -41,34 +41,28 @@
 {#    {% set page_title='Users' %}#}
 {#    {% include 'page_header.jinja2' %}#}
 
-    {% if has_permission('Update_'+entity.entity_type) %}
-        {% if entity.entity_type == 'Studio' %}
-            {% set add_button_address=request.route_path('create_user_dialog') %}
-        {% elif entity.entity_type == 'Client' or  entity.entity_type == 'Project' or  entity.entity_type == 'Department'%}
-            {% set add_button_address=request.route_path('append_user_to_entity_dialog', id=entity.id, _query={'came_from': request.current_route_path()}) %}
-        {% else %}
-            {% set add_button_title='Add' %}
-            {% set add_button_address=request.route_url('append_entities_to_entity_dialog', id=entity.id, entities='User', _query={'came_from': request.current_route_path()}) %}
-        {% endif %}
-    {% endif %}
+    <ul class="nav nav-tabs" id="client_tabs"></ul>
 
-    <div class="widget-box">
+    <div id="loading_spinner" class="well well-sm">
+        <div class="inline middle blue bigger-110">
+            <i class="icon-spinner icon-spin orange bigger-125"></i> Loading content...
+        </div>
+    </div>
+
+    <div id="content" class="widget-box hide">
         <div class="widget-header widget-header-small header-color-user">
             <h5 id="items_header" class="smaller"></h5>
             <div class="widget-toolbar">
-                {% if add_button_address %}
+                {% if has_permission('Update_Project') %}
                     &nbsp
-                    <a data-target="#dialog_template"
+                    <a id="add_button"
+                       data-target="#dialog_template"
                        data-toggle="modal"
                        data-keyboard=false
-                       href="{{ add_button_address }}"
+                       href="{{ request.route_path('append_user_to_entity_dialog', id=entity.id, _query={'came_from': request.current_route_path()}) }}"
                        class="white">
                         <i class="icon-plus"></i>
-                        {% if add_button_title %}
-                            {{ add_button_title }}
-                        {% else %}
-                            New
-                        {% endif %}
+                        ADD
                     </a>
                     &nbsp&nbsp
                 {% endif %}
@@ -117,12 +111,61 @@
         $.jgrid.defaults.responsive = true;
         $.jgrid.defaults.styleUI = 'Bootstrap';
     </script>
+
+    {% raw %}
+    <script id="tmpl_clientLink" type="text/x-dot-template">
+        <li class="{{=it.class}}">
+            <a data-toggle="tab" href="" id="{{=it.id}}" >
+                {{=it.name}}
+            </a>
+        </li>
+    </script>
+    {% endraw %}
+
     <script type="text/javascript">
         $(document).ready(function () {
             var lastSelection;
             var grid_selector = "#grid-table";
-            var grid_data;
             var grid = jQuery(grid_selector);
+
+            var link_template = doT.template($('#tmpl_clientLink').html());
+
+            var client_tabs = $('#client_tabs');
+            var client = { 'id':'All',
+                           'name':'ALL',
+                           'class':'active'
+                }
+
+            client_tabs.append(link_template(client));
+
+            $('#All').on('click', function (e) {
+                filterTableData('', null);
+            });
+
+            {% for client in entity.clients %}
+
+                client = { 'id':'{{ client.id }}',
+                           'name':'{{ client.name }}',
+                           'class':''
+                };
+                client_tabs.append(link_template(client));
+
+                $('#' + client.id).on('click', function (e) {
+                    filterTableData('{{ client.name }}', '{{ client.id }}');
+                });
+            {% endfor %}
+
+
+
+            function filterTableData(cName, cId){
+
+                var add_button = $("#add_button");
+                console.log("cId: "+ cId);
+{#                add_button.attr('href', "{{ request.route_path('append_user_to_entity_dialog', client_id=cId, id=entity.id, _query={'came_from': request.current_route_path()}) }}");#}
+                add_button.attr('href', "/entities/{{ entity.id }}/user/append/dialog?client_id="+cId);
+
+                jQuery(grid_selector).jqGrid('filterInput', cName);
+            }
 
             function makelistLink(array, list_type){
 
@@ -189,6 +232,7 @@
                     if(!grid_data[j].rate){
                         grid_data[j].rate =grid_data[j].studio_rate
                     }
+
 
                 }
 
@@ -314,6 +358,8 @@
         {#                                    styleCheckbox(table);#}
 {#                                            updateActionIcons(table);#}
                                             updatePagerIcons(table);
+                                        $('#loading_spinner').hide();
+                                        $('#content').show();
 
                                         $('#lui_grid-table').hide();
                                     }, 0);

@@ -107,7 +107,6 @@ function get_task_data(options) {
 var units = ['y', 'm', 'w', 'd', 'h', 'min'];
 
 function get_icon(entity_type) {
-    console.log('entity_type: ' + entity_type);
     'use strict';
     switch (entity_type) {
     case 'PREV':

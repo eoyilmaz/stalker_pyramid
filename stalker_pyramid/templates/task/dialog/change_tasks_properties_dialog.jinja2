@@ -39,7 +39,7 @@
 
                 <div class='span9'>
                     <textarea id="force_status_note"
-                              name='note'
+                              name='description'
                               class="autosize-transition span12"
                               style="overflow: hidden;
                                          word-wrap: break-word;
@@ -100,7 +100,7 @@
 <script type="text/javascript">
 
     function init_dialog() {
-        console.debug('starting to initialize add_task_user_dialog dialog!!!');
+        console.debug('starting to initialize add_task_user_dialog dialog  sadasdad!!!');
 
         $(function () {
             var label = $('#dialog_template_label');
@@ -120,11 +120,6 @@
                     },
                 {% endfor %}
             ];
-
-            {% for task in tasks %}
-                  console.log('{{ task.status.code}}');
-                {% endfor %}
-
 
             var grid_data = tasks_names;
 

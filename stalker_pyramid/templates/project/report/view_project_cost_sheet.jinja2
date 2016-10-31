@@ -50,7 +50,7 @@
                 </div>
                 <div class="widget-box">
                     <div class="widget-header widget-header-small header-color-payment">
-                        <h5 id="items_header" class="smaller">PAYMENTS</h5>
+                        <h5 id="items_header" class="smaller">COST SHEET</h5>
                         <div class="widget-toolbar">
 
                         </div>
@@ -137,9 +137,17 @@
 
                 for(var t=0; t<grid_data.length; t++ ){
 
-{#                    if(grid_data[t].total_cost>grid_data[t].price){#}
-{#                        grid.jqGrid('setCell', grid_data[t].id, 'price', grid_data[t].price, {color:'red'});#}
-{#                    }#}
+                    if(grid_data[t].realized_total>grid_data[t].budgetentries_price){
+                        console.log(grid_data[t].realized_total + " : "+ grid_data[t].budgetentries_price);
+                        grid.jqGrid('setCell', grid_data[t].id, 'realized_total', grid_data[t].realized_total, {color:'red'});
+                    }
+                    if(grid_data[t].bid>grid_data[t].budgetentries_price){
+                        grid.jqGrid('setCell', grid_data[t].id, 'bid', grid_data[t].bid, {color:'red'});
+                    }
+                    if(grid_data[t].scheduled>grid_data[t].budgetentries_price){
+                        console.log(grid_data[t].scheduled + " : "+ grid_data[t].budgetentries_price);
+                        grid.jqGrid('setCell', grid_data[t].id, 'scheduled', grid_data[t].scheduled, {color:'red'});
+                    }
 {#                    else if(grid_data[t].total_cost<grid_data[t].price){#}
 {#                        grid.jqGrid('setCell', grid_data[t].id, 'price', grid_data[t].price, {color:'green'});#}
 {#                    }#}
@@ -188,7 +196,7 @@
                             {name:'bid', index:'bid',  width:220,editable: false},
                             {name:'scheduled', index:'scheduled', width:220,editable: false},
                             {name:'realized_total', index:'realized_total', width:220,editable: false},
-                             {name:'budgetentries_price', index:'budgetentries_price', width:220, editable: false}
+                            {name:'budgetentries_price', index:'budgetentries_price', width:220, editable: false}
                          ],
                         viewrecords : true,
                         rowNum:grid_data.length,

@@ -34,7 +34,7 @@ import transaction
 import stalker_pyramid
 from stalker import (defaults, User, Department, Group, Project, Studio,
                      Permission, EntityType, Entity, Role, ClientUser,
-                     ProjectUser, DepartmentUser)
+                     ProjectUser, DepartmentUser, Client, Status)
 from stalker.db import DBSession
 from stalker_pyramid.views import (log_param, get_logged_in_user,
                                    PermissionChecker, get_multi_integer,
@@ -641,7 +641,7 @@ def get_entity_users(request):
                 } for i, a in enumerate(r[13])
             ] if r[13] else [],
             'role': r[15] if len(r) >= 16 else None,
-            'rate': r[17] if (len(r) >= 17) and has_read_rate_permission else None
+            'rate': r[17] if (len(r) >= 18) and has_read_rate_permission else None
         } for r in result.fetchall()
     ]
 
@@ -884,6 +884,13 @@ def home(request):
     studio = Studio.query.first()
     projects = Project.query.all()
 
+    filter_id = request.params.get('f_id', -1)
+    filter_entity = Entity.query.filter_by(id=filter_id).first()
+    is_warning_list = False
+    if not filter_entity:
+        is_warning_list = True
+        filter_entity = Status.query.filter_by(code='WIP').first()
+
     flash_message = request.params.get('flash')
     if flash_message:
         request.session.flash(flash_message)
@@ -895,7 +902,46 @@ def home(request):
         'has_permission': PermissionChecker(request),
         'milliseconds_since_epoch': milliseconds_since_epoch,
         'projects': projects,
+        'filter': filter_entity,
+        'is_warning_list': is_warning_list,
         'entity': logged_in_user
+    }
+
+
+@view_config(
+    route_name='view_user',
+    renderer='templates/auth/view/view_user.jinja2'
+)
+def view_user(request):
+    logged_in_user = get_logged_in_user(request)
+
+    studio = Studio.query.first()
+    projects = Project.query.all()
+
+    entity_id = request.matchdict.get('id', -1)
+    entity = Entity.query.filter_by(id=entity_id).first()
+
+    filter_id = request.params.get('f_id', -1)
+    filter_entity = Entity.query.filter_by(id=filter_id).first()
+    is_warning_list = False
+    if not filter_entity:
+        is_warning_list = True
+        filter_entity = Status.query.filter_by(code='WIP').first()
+
+    flash_message = request.params.get('flash')
+    if flash_message:
+        request.session.flash(flash_message)
+
+    return {
+        'stalker_pyramid': stalker_pyramid,
+        'studio': studio,
+        'logged_in_user': logged_in_user,
+        'has_permission': PermissionChecker(request),
+        'milliseconds_since_epoch': milliseconds_since_epoch,
+        'projects': projects,
+        'filter': filter_entity,
+        'is_warning_list': is_warning_list,
+        'entity': entity
     }
 
 
@@ -1425,7 +1471,6 @@ def append_user_to_entity(request):
 
     logger.debug("%s role is created" % role.name)
     logger.debug(entity.users)
-
 
     if entity.entity_type == "Client":
         entity_user = ClientUser()

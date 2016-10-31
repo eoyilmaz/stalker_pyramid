@@ -2,16 +2,13 @@
 
 <div class='row-fluid'>
     <div class="row-fluid">
-
         <div id="information" class="infobox-content"></div>
-
     </div>
     <div class="hr dotted"></div>
     <form id='time_log_form'
           class='form-horizontal'
           role='form'
           method='post'>
-
         <div class='row-fluid'>
             {# Task #}
             <div class='control-group'>
@@ -49,7 +46,8 @@
                            name='start_and_end_dates'
                            type="text"
                            data-date-format="yyyy-mm-dd"
-                           placeholder="Start & End Dates">
+                           placeholder="Start & End Dates"
+                            >
                     <span class="add-on">
                         <i class="icon-calendar"></i>
                     </span>
@@ -57,17 +55,17 @@
             </div>
 
             {# Auto-Split #}
-            <div id="auto_split_wh_cg" class="control-group hide">
-                <label class="span2 control-label" for="auto_split_wh">
-                </label>
-                <div class="span10">
-                    <input id="auto_split_wh"
-                           name="auto_split_wh"
-                           type="checkbox"
-                           class="ace ace-checkbox-2" checked>
-                    <label class="lbl blue" for="auto_split_wh"> In Working Hours of Studio</label>
-                </div>
-            </div>
+{#            <div id="auto_split_wh_cg" class="control-group hide">#}
+{#                <label class="span2 control-label" for="auto_split_wh">#}
+{#                </label>#}
+{#                <div class="span10">#}
+{#                    <input id="auto_split_wh"#}
+{#                           name="auto_split_wh"#}
+{#                           type="checkbox"#}
+{#                           class="ace ace-checkbox-2" checked>#}
+{#                    <label class="lbl blue" for="auto_split_wh"> In Working Hours of Studio</label>#}
+{#                </div>#}
+{#            </div>#}
 
 
             {# Start Time#}
@@ -88,13 +86,38 @@
                 <label class='span2 control-label' for="end_time">
                     To
                 </label>
-
                 <div class="span10 input-append bootstrap-timepicker">
                     <input id="end_time" name="end_time" type="text"
                            class="input-small"/>
                     <span class="add-on">
                         <i class="icon-time"></i>
-                        </span>
+                    </span>
+                </div>
+            </div>
+            <div class="row-fluid">
+                <label class='span2 control-label'>
+                </label>
+                <div id="alert_information" class="infobox-content span10"></div>
+                <div class="space-2"></div>
+                <div id="percent_bar_container" class="progress progress progress-success span10" data-percent="0%">
+                    <div id="percent_bar" class="bar" style="width: 0;" ></div>
+                </div>
+
+            </div>
+
+
+            <div id="revision_type_cg" class='control-group hide'>
+                <label class='span2 control-label' for='revision_type'>Revision Type</label>
+                <div class='span10'>
+                    <select id='revision_type'
+                            class='input-block-level'
+                            name='revision_type'
+                            required>
+                        <option value="Ajans">Ajans</option>
+                        <option value="Yonetmen">Yonetmen</option>
+                        <option value="Ic_Revizyon">Ic Revizyon</option>
+                        <option value="Yetistiremedim">Yetistiremedim</option>
+                    </select>
                 </div>
             </div>
 
@@ -112,7 +135,7 @@
             </div>
 
             {# if_completed #}
-            <div id="if_completed" class="control-group hide">
+            <div id="if_completed" class="control-group">
                 <label class="span2 control-label" for="if_completed_cb">
                 </label>
                 <div class="span10">
@@ -128,94 +151,84 @@
         </div>
 
     </form>
+
     <div class="space-5"></div>
     <div class="hr dotted"></div>
     <div class="space-5"></div>
-    <div class="row-fluid padding18">
 
-        <div id="alert_information" class="infobox-content"></div>
-        <div class="space-2"></div>
-        <div id="percent_bar_container" class="progress progress progress-success" data-percent="0%">
-            <div id="percent_bar" class="bar" style="width: 0;" ></div>
-        </div>
-
-    </div>
-
-    <form id='finalize_task_form'
-          class='form-horizontal hide'
-          role='form'
-          method='post' >
-        <div id="" class="alert alert-danger bigger-110">
-            <span class="pull_left ">You have to select one of the following alternatives !</span>
-        </div>
-        <div class="control-group">
-                <label class="span3 control-label" for="task_review_mode">Request Type</label>
-
-                <div class="span9">
-                    <select id='task_review_mode'
-                            class='input-block-level'>
-                            <option value="request_review">Request Review</option>
-                            <option value="request_extra_time">Request Extra Time</option>
-                    </select>
-                </div>
-        </div>
+{#    <form id='finalize_task_form'#}
+{#          class='form-horizontal hide'#}
+{#          role='form'#}
+{#          method='post' >#}
+{#        <div id="" class="alert alert-danger bigger-110">#}
+{#            <span class="pull_left ">You have to select one of the following alternatives !</span>#}
+{#        </div>#}
+{#        <div class="control-group">#}
+{#                <label class="span2 control-label" for="task_review_mode">Request Type</label>#}
+{##}
+{#                <div class="span10">#}
+{#                    <select id='task_review_mode'#}
+{#                            class='input-block-level'>#}
+{#                            <option value="request_review">Request Review</option>#}
+{#                            <option value="request_extra_time">Request Extra Time</option>#}
+{#                    </select>#}
+{#                </div>#}
+{#        </div>#}
         {# Schedule Timing #}
-        <div class='control-group hide' id="revision_controls">
-            <label class='span3 control-label'
-                   for='task_schedule_timing'>Schedule Timing</label>
-
-            <div class='span9'>
-                <div class='span2'>
-                    <input id='task_schedule_timing'
-                           class='input-block-level'
-                           name='schedule_timing'
-                           type='text'
-                           value=1
-                           min=1
-                           required>
-                </div>
-                <div class='span3'>
-                    <select id='task_schedule_unit'
-                            class='input-block-level'
-                            name='schedule_unit'>
-                        <option value='min'>Minutes</option>
-                        <option value='h'>Hours</option>
-                        <option value='d'>Days</option>
-                        <option value='w'>Weeks</option>
-                        <option value='m'>Months</option>
-                        <option value='y'>Years</option>
-                    </select>
-                </div>
-                <div class='span3'>
-                    <select id='task_schedule_model'
-                            class='input-block-level'
-                            name='schedule_model'>
-                        <option value='effort'>Effort</option>
-                        <option value='duration'>Duration</option>
-                    <option value='length'>Length</option>
-                    </select>
-                </div>
-            </div>
-        </div>
-
-        <div class='control-group hide' id="revision_controls_2">
-            <label class='span3 control-label'
-                   for='review_note'>Description</label>
-
-            <div class='span9'>
-                <textarea id="review_note"
-                      name='description'
-                      class="autosize-transition span12"
-                      style="overflow: hidden;
-                             word-wrap: break-word;
-                             resize: horizontal;
-                             height: 150px;"
-                    ></textarea>
-            </div>
-        </div>
-
-
-    </form>
+{#        <div class='control-group hide' id="revision_controls">#}
+{#            <label class='span2 control-label'#}
+{#                   for='task_schedule_timing'>Schedule Timing</label>#}
+{##}
+{#            <div class='span10'>#}
+{#                <div class='span2'>#}
+{#                    <input id='task_schedule_timing'#}
+{#                           class='input-block-level'#}
+{#                           name='schedule_timing'#}
+{#                           type='text'#}
+{#                           value=1#}
+{#                           min=1#}
+{#                           required>#}
+{#                </div>#}
+{#                <div class='span2'>#}
+{#                    <select id='task_schedule_unit'#}
+{#                            class='input-block-level'#}
+{#                            name='schedule_unit'>#}
+{#                        <option value='min'>Minutes</option>#}
+{#                        <option value='h'>Hours</option>#}
+{#                        <option value='d'>Days</option>#}
+{#                        <option value='w'>Weeks</option>#}
+{#                        <option value='m'>Months</option>#}
+{#                        <option value='y'>Years</option>#}
+{#                    </select>#}
+{#                </div>#}
+{#                <div class='span2'>#}
+{#                    <select id='task_schedule_model'#}
+{#                            class='input-block-level'#}
+{#                            name='schedule_model'>#}
+{#                        <option value='effort'>Effort</option>#}
+{#                        <option value='duration'>Duration</option>#}
+{#                    <option value='length'>Length</option>#}
+{#                    </select>#}
+{#                </div>#}
+{#            </div>#}
+{#        </div>#}
+{##}
+{#        <div class='control-group hide' id="revision_controls_2">#}
+{#            <label class='span2 control-label'#}
+{#                   for='review_note'>Description</label>#}
+{##}
+{#            <div class='span10'>#}
+{#                <textarea id="review_note"#}
+{#                      name='description'#}
+{#                      class="autosize-transition span12"#}
+{#                      style="overflow: hidden;#}
+{#                             word-wrap: break-word;#}
+{#                             resize: horizontal;#}
+{#                             height: 150px;"#}
+{#                    ></textarea>#}
+{#            </div>#}
+{#        </div>#}
+{#    </form>#}
     <div class='row-fluid'>
         {% if time_log %}
         <p>This timelog is created by <a href="/users/{{ time_log.created_by.id }}/view "> {{ time_log.created_by.name }}</a> and updated by  <a href="/users/{{ time_log.updated_by.id }}/view "> {{ time_log.updated_by.name }}</a>
@@ -247,12 +260,11 @@ function init_dialog() {
     dialog_template_label.append('<span>Timelog</span>');
 
     var submit_button = $('#dialog_template_submit_button');
-    submit_button.attr('disabled', false);
-
     var information = $('#information');
 
     var submit_finalize_form_url = null;
-
+    var status_code = '';
+    var remaining_minutes_after_this_time_log_string = "";
 
     {# ***************************************************************** #}
     var event_dialog = $('#dialog_template');
@@ -289,12 +301,11 @@ function init_dialog() {
         // total hours of time_logs should have been given by Stalker
         // calculate the remaining hours
 
-        $('#finalize_task_form').hide();
-
         var task_id = parseInt(time_log_task.val());
         submit_finalize_form_url = null;
-        if (task_id === -1){ return }
 
+
+        if (task_id === -1){ return }
 
         $.getJSON('/tasks/' + task_id + '/').then(function (data) {
 
@@ -337,7 +348,7 @@ function init_dialog() {
 
             var remaining_minutes_after_this_time_log = parseInt(remaining_seconds_after_this_time_log / 60);
             information.find('span').remove();
-            var remaining_minutes_after_this_time_log_string = convert_seconds_to_time_range(Math.abs(remaining_seconds_after_this_time_log));
+            remaining_minutes_after_this_time_log_string = convert_seconds_to_time_range(Math.abs(remaining_seconds_after_this_time_log));
 
             var total_logged_hours_msg = time_to_complete<=0?'spent all scheduled hours':'you can enter max <strong>'+ time_to_complete +sch_unit +'</strong>';
 
@@ -364,64 +375,52 @@ function init_dialog() {
             var alert_information = $('#alert_information');
             alert_information.find('span').remove();
 
-            if (remaining_minutes_after_this_time_log > 0) {
-                submit_button.attr('disabled', false);
+            if (remaining_minutes_after_this_time_log >= 0) {
                 alert_information.append(
                     "<span class='pull_left'>If you enter this time log, <strong>" +
                     remaining_minutes_after_this_time_log_string +
                     "</strong> will remain to complete this task.</span>"
                 );
                 $('#percent_bar_container').show();
-
-                $('#if_completed').show();
+                $('#revision_type_cg').hide();
                 $('#if_completed_cb').on('click', function () {
                     if(this.checked){
-                        submit_finalize_form_url = '/tasks/'+task_id+'/request_review';
+                        submit_finalize_form_url = '/tasks/'+task_id+'/force_status/CMPL';
+                        status_code = 'CMPL';
                     }
                     else{
                         submit_finalize_form_url = null;
+                        status_code = '';
                     }
                 });
-                completed_percent = (100 - ((remaining_seconds_after_this_time_log / parseFloat(data[0].schedule_seconds)) * 100)).toFixed(1);
-            } else if(remaining_minutes_after_this_time_log==0) {
-                submit_button.attr('disabled', false);
-                alert_information.append(
-                    "<span class='pull_left'>If you enter this time log, all schedule hours will be spent </span>"
-                );
-                $('#percent_bar_container').show();
-                $('#finalize_task_form').show();
-                $('#if_completed').hide();
-                $('#if_completed_cb').prop('checked', '');
-
-                var task_review_mode = $('#task_review_mode');
-                submit_finalize_form_url = '/tasks/'+task_id+'/'+ task_review_mode.val();
-
-                task_review_mode.on('change', function () {
-                    $('#revision_controls').toggle();
-                    $('#revision_controls_2').toggle();
-                    submit_finalize_form_url = '/tasks/'+task_id+'/'+ $(this).val();
-                });
-
                 completed_percent = (100 - ((remaining_seconds_after_this_time_log / parseFloat(data[0].schedule_seconds)) * 100)).toFixed(1);
             } else {
 
                 var exceeding_message ='<span><div id="message" class="alert alert-error bigger-110">' +
                     '<span class="pull_left ">You need <strong>' + remaining_minutes_after_this_time_log_string +
-                    '</strong> extra time. Please request for extra minutes. </span>' +
+                    '</strong> extra time. If you enter this time log, time of the task will be extended. Are you sure? </span>' +
                     '</div></span>';
 
                 alert_information.append(exceeding_message);
                 completed_percent = 100;
 
-                submit_button.attr('disabled', true);
+                submit_finalize_form_url = '/tasks/'+task_id+'/auto_extend_time';
+                $('#if_completed_cb').on('click', function () {
+                    if(this.checked){
+                        status_code = 'CMPL';
+                    }
+                    else{
+                        status_code = '';
+                    }
+                });
                 $('#percent_bar_container').hide();
-
+                $('#revision_type_cg').show();
             }
 
             $('#percent_bar').attr('style', 'width:' + completed_percent + '%');
             $('#percent_bar_container').attr('data-percent', completed_percent + '%');
         });
-        
+
     };
 
     var time_log_form = $("#time_log_form");
@@ -555,7 +554,7 @@ function init_dialog() {
                 var delete_button = $(this);
                 delete_button.button('loading');
 
-                var confirm_message = 
+                var confirm_message =
                     '<h3 class="header red"><i class="icon-warning-sign">' +
                     '</i> Warning</h3>' +
                     '<div id="message" class="alert alert-info bigger-110">' +
@@ -610,14 +609,14 @@ function init_dialog() {
             0, 0
         );
 
-        if(start.getDate() == end.getDate() && start.getMonth()==end.getMonth()) {
-
-            $('#auto_split_wh_cg').hide();
-
-        }else{
-
-            $('#auto_split_wh_cg').show();
-        }
+{#        if(start.getDate() == end.getDate() && start.getMonth()==end.getMonth()) {#}
+{##}
+{#            $('#auto_split_wh_cg').hide();#}
+{##}
+{#        }else{#}
+{##}
+{#            $('#auto_split_wh_cg').show();#}
+{#        }#}
         return [start, end];
     };
 
@@ -681,15 +680,17 @@ function init_dialog() {
 
 
     var post_finalize_action = function () {
-        var finalize_task_form = $('#finalize_task_form');
+
         submit_button.button('loading');
-        console.log('post_finalize_action');
+        console.log("$('#revision_type').val(): "+$('#revision_type').val());
+        console.log('post_finalize_action: '+submit_finalize_form_url+' status_code:'+status_code+'remaining_minutes_after_this_time_log_string: '+remaining_minutes_after_this_time_log_string);
 
         $.post(
             submit_finalize_form_url,
-            finalize_task_form.serialize() + '&' +
             $.param({
-                'request_review_mode': 'Final'
+                'status_code': status_code,
+                'remaining_minutes_after_this_time_log_string':remaining_minutes_after_this_time_log_string,
+                'revision_type': $('#revision_type').val()
             })
         ).done(function (response_text) {
             refresh_page();
@@ -733,17 +734,17 @@ function init_dialog() {
         error_messages = [];
         form_is_valid = true;
 
-        if (completed_percent == 100 && submit_finalize_form_url && $('#task_review_mode').val() === 'request_extra_time') {
-            var schedule_unit_value = task_schedule_unit.val();
-            var current_timing_value = parseInt(task_schedule_timing.val());
-
-            var validation_result = validate_timing_value({
-                value: current_timing_value,
-                unit: schedule_unit_value
-            });
-            form_is_valid = validation_result.is_valid;
-            error_messages = error_messages.concat(validation_result.errors);
-        }
+{#        if (completed_percent == 100 && submit_finalize_form_url && $('#task_review_mode').val() === 'request_extra_time') {#}
+{#            var schedule_unit_value = task_schedule_unit.val();#}
+{#            var current_timing_value = parseInt(task_schedule_timing.val());#}
+{##}
+{#            var validation_result = validate_timing_value({#}
+{#                value: current_timing_value,#}
+{#                unit: schedule_unit_value#}
+{#            });#}
+{#            form_is_valid = validation_result.is_valid;#}
+{#            error_messages = error_messages.concat(validation_result.errors);#}
+{#        }#}
 
         if (form_is_valid) {
             console.log('submit_finalize_form_url '+submit_finalize_form_url);

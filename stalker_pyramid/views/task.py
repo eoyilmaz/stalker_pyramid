@@ -4193,6 +4193,33 @@ def request_revision(request):
 
     return Response(response_message)
 
+@view_config(
+    route_name='request_revisions_dialog',
+    renderer='templates/task/dialog/request_revisions_dialog.jinja2'
+)
+def request_revisions_dialog(request):
+    """deletes the department with the given id
+    """
+    logger.debug('request_revisions_dialog is starts')
+
+    came_from = request.params.get('came_from', '/')
+
+    selected_task_list = get_multi_integer(request, 'task_ids', 'GET')
+    logger.debug('selected_task_list: %s' % selected_task_list)
+
+    _query_buffer = []
+    for task_id in selected_task_list:
+        _query_buffer.append("""task_ids=%s""" % task_id)
+    _query = '&'.join(_query_buffer)
+
+    action = '/tasks/request_revisions?%s' % (_query)
+
+    logger.debug('action: %s' % action)
+
+    return {
+        'came_from': came_from,
+        'action': action
+    }
 
 @view_config(
     route_name='request_revisions'
@@ -4204,7 +4231,7 @@ def request_revisions(request):
     logged_in_user = get_logged_in_user(request)
     utc_now = local_to_utc(datetime.datetime.now())
 
-    selected_task_list = get_multi_integer(request, 'task_ids[]')
+    selected_task_list = get_multi_integer(request, 'task_ids', 'GET')
     tasks = Task.query.filter(Task.id.in_(selected_task_list)).all()
     if not tasks:
         transaction.abort()
@@ -4219,7 +4246,7 @@ def request_revisions(request):
     schedule_unit = schedule_info[1]
     schedule_model = schedule_info[2]
 
-    description = request.params.get('note', 1)
+    description = request.params.get('description', 1)
     has_permission = PermissionChecker(request)
 
     if has_permission('Create_Review'):
@@ -4259,6 +4286,8 @@ def request_revisions(request):
     flash_message = 'success:Requested revisions for all selected tasks!'
     if len(result_message) > 0:
         flash_message = 'warning: %s' % ',\n '.join(result_message)
+
+    invalidate_all_caches()
 
     request.session.flash(flash_message)
     return Response(flash_message)
@@ -4532,10 +4561,11 @@ def request_review(request):
 
 def cut_schedule_timing(task):
 
+
     timing, unit = task.least_meaningful_time_unit(task.total_logged_seconds)
     task.schedule_timing = timing
     task.schedule_unit = unit
-
+    logger.debug("cut_schedule_timing : %s" % task.schedule_timing)
 
 def request_review_action(request, mode):
     """runs when resource request final review
@@ -4551,8 +4581,7 @@ def request_review_action(request, mode):
     if mode == 'Final':
         cut_schedule_timing(task)
 
-
-    note_str = request.params.get('note', 'No note')
+    note_str = request.params.get('description', 'No note')
     send_email = request.params.get('send_email', 1)  # for testing purposes
 
     utc_now = local_to_utc(datetime.datetime.now())
@@ -4851,6 +4880,160 @@ def request_extra_time(request):
 
     request.session.flash(
         'success:Your extra time request has been sent to responsible'
+    )
+
+    return Response('Your extra time request has been sent to responsible')
+
+
+@view_config(
+    route_name='auto_extend_time',
+)
+def auto_extend_time(request):
+    """creates sends an email to the responsible about the user has requested
+    extra time
+    """
+
+    logger.debug('auto_extend_time')
+    # get logged in user as he review requester
+    logged_in_user = get_logged_in_user(request)
+
+    task_id = request.matchdict.get('id', -1)
+    task = Task.query.filter(Task.id == task_id).first()
+
+    if not task:
+        transaction.abort()
+        return Response('There is no task with id: %s' % task_id, 500)
+
+    if task.is_container:
+        transaction.abort()
+        return Response('Can not request extra time for a container '
+                        'task', 500)
+
+
+    remaining_minutes_after_this_time_log_string = request.params.get('remaining_minutes_after_this_time_log_string', '')
+    logger.debug('remaining_minutes_after_this_time_log_string : %s' % remaining_minutes_after_this_time_log_string)
+
+    logger.debug('task.total_logged_seconds : %s' % task.total_logged_seconds)
+    cut_schedule_timing(task)
+
+
+    description = request.params.get('description', '')
+    revision_type = request.params.get('revision_type', 'Auto Extended Time')
+    send_email = request.params.get('send_email', 1)  # for testing purposes
+    utc_now = local_to_utc(datetime.datetime.now())
+
+    note = create_simple_note('Extending timing of the task <b>'
+                                '%(remaining_minutes_after_this_time_log_string)s</b>.<br/>'
+                                '%(description)s' % {
+                                    'remaining_minutes_after_this_time_log_string': remaining_minutes_after_this_time_log_string,
+                                    'description': description
+                                },
+                              revision_type,
+                              'red2',
+                              'auto_extend_time',
+                              logged_in_user,
+                              utc_now)
+    task.notes.append(note)
+
+    status_code = request.params.get('status_code', None)
+    if status_code == 'CMPL':
+        status = Status.query.filter(Status.code == status_code).first()
+        content = '%s has changed this task status to %s %s' % (
+            logged_in_user.name,
+            status.name,
+            description
+        )
+
+        note = create_simple_note(content,
+                                  'Forced Status',
+                                  'red',
+                                  'forced_status',
+                                  logged_in_user,
+                                  utc_now)
+
+        set_task_status(task, status, note, logged_in_user, utc_now)
+
+
+    # extra_time_type = Type.query.filter(Type.name == 'Extra Time').first()
+    # if not extra_time_type:
+    #     extra_time_type = Type(
+    #         name='Extra Time',
+    #         code='ExtraTime',
+    #         target_entity_type='Review'
+    #     )
+    #     db.DBSession.add(extra_time_type)
+    #
+    # reviews = task.request_review()
+    # for review in reviews:
+    #     review.type = extra_time_type
+    #     review.created_by = logged_in_user
+    #     review.date_created = utc_now
+    #     review.date_updated = utc_now
+    #     review.description = "<b>%(resource_name)s</b>: %(note)s " % {
+    #         'resource_name': logged_in_user.name,
+    #         'note': note.content
+    #     }
+
+    # if send_email:
+    #     #*******************************************************************
+    #     # info message for responsible
+    #     recipients = []
+    #
+    #     for responsible in task.responsible:
+    #         recipients.append(responsible.email)
+    #
+    #     for watcher in task.watchers:
+    #         recipients.append(watcher.email)
+    #
+    #     # also add other note owners to the list
+    #     for note in task.notes:
+    #         note_created_by = note.created_by
+    #         if note_created_by:
+    #             recipients.append(note_created_by.email)
+    #
+    #     # make the list unique
+    #     recipients = list(set(recipients))
+    #
+    #     task_full_path = get_task_full_path(task.id)
+    #
+    #     description_temp = \
+    #         '%(user)s has requested extra time for ' \
+    #         '%(task_full_path)s with the following note:%(note)s'
+    #
+    #     mailer = get_mailer(request)
+    #
+    #     message = Message(
+    #         subject='Extra Time Request: "%s"' % task_full_path,
+    #         sender=dummy_email_address,
+    #         recipients=recipients,
+    #         body=get_description_text(
+    #             description_temp,
+    #             logged_in_user.name,
+    #             task_full_path,
+    #             note.content if note.content else '-- no notes --'
+    #         ),
+    #         html=get_description_html(
+    #             description_temp,
+    #             logged_in_user.name,
+    #             get_task_external_link(task.id),
+    #             note.content if note.content else '-- no notes --'
+    #         )
+    #     )
+    #
+    #     try:
+    #         mailer.send_to_queue(message)
+    #     except ValueError:
+    #         pass
+    #
+    # # invalidate all caches
+    # invalidate_all_caches()
+
+    logger.debug(
+        'success:Extended time of the task'
+    )
+
+    request.session.flash(
+        'success:Extended time of the task'
     )
 
     return Response('Your extra time request has been sent to responsible')
@@ -5343,9 +5526,11 @@ def force_task_status_dialog(request):
     task_id = request.matchdict.get('id')
     task = Task.query.filter_by(id=task_id).first()
     status_code = request.matchdict.get('status_code')
-
+    logger.debug('status_code: %s' % status_code)
     came_from = request.params.get('came_from', '/')
     action = '/tasks/%s/force_status/%s' % (task_id, status_code)
+
+    logger.debug('action: %s' % action)
     message = 'Task will be set as %s' \
               '<br><br>Are you sure?' % status_code
 
@@ -5363,8 +5548,7 @@ def force_task_status_dialog(request):
 
 
 @view_config(
-    route_name='force_task_status',
-    permission='Create_Review'
+    route_name='force_task_status'
 )
 def force_task_status(request):
     """Forces the task status to the status given with the status_code parameter.
@@ -5376,6 +5560,8 @@ def force_task_status(request):
     """
     logged_in_user = get_logged_in_user(request)
     utc_now = local_to_utc(datetime.datetime.now())
+
+    logger.debug("force_task_status starts")
 
     status_code = request.matchdict.get('status_code')
     status = Status.query.filter(Status.code == status_code).first()
@@ -5399,29 +5585,74 @@ def force_task_status(request):
         transaction.abort()
         return Response('Cannot force %s tasks' % task.status.code, 500)
 
-    note_str = request.params.get('note', '')
+    description = request.params.get('description', '')
 
-    if note_str != '':
-        note_str = 'with this note: <br/><b>%s</b>' % note_str
+    if description != '':
+        description = 'with this note: <br/><b>%s</b>' % description
 
     content = '%s has changed this task status to %s %s' % (
         logged_in_user.name,
         status.name,
-        note_str
+        description
     )
 
-    note = create_simple_note(content, 'Forced Status', 'red', 'forced_status', logged_in_user, utc_now)
+    note = create_simple_note(content,
+                              'Forced Status',
+                              'red',
+                              'forced_status',
+                              logged_in_user,
+                              utc_now)
+
     set_task_status(task, status, note, logged_in_user, utc_now)
     # invalidate all caches
     invalidate_all_caches()
+
+    flash_message = 'success:%s status is set to %s!' % (task.name, status.name)
+    request.session.flash(flash_message)
 
     return Response('Success: %s status is set to %s' %
                     (task.name, status.name))
 
 
 @view_config(
-    route_name='force_tasks_status',
-    permission='Create_Review'
+    route_name='force_tasks_status_dialog',
+    renderer='templates/modals/confirm_dialog.jinja2'
+)
+def force_tasks_status_dialog(request):
+    """deletes the department with the given id
+    """
+    logger.debug('force_task_status_dialog is starts')
+
+    status_code = request.matchdict.get('status_code')
+    logger.debug('status_code: %s' % status_code)
+    came_from = request.params.get('came_from', '/')
+
+    selected_task_list = get_multi_integer(request, 'task_ids', 'GET')
+    logger.debug('selected_task_list: %s' % selected_task_list)
+
+    _query_buffer = []
+    for task_id in selected_task_list:
+        _query_buffer.append("""task_ids=%s""" % task_id)
+    _query = '&'.join(_query_buffer)
+
+    action = '/tasks/force_status/%s?%s' % (status_code, _query)
+
+    logger.debug('action: %s' % action)
+    message = 'Tasks will be set as %s' \
+              '<br><br>Are you sure?' % status_code
+
+
+    logger.debug('action: %s' % action)
+
+    return {
+        'message': message,
+        'came_from': came_from,
+        'action': action
+    }
+
+
+@view_config(
+    route_name='force_tasks_status'
 )
 def force_tasks_status(request):
     """Forces the tasks status to the status given with the status_code parameter.
@@ -5445,7 +5676,7 @@ def force_tasks_status(request):
         transaction.abort()
         return Response('Can not set status to: %s' % status_code, 500)
 
-    selected_task_list = get_multi_integer(request, 'task_ids[]')
+    selected_task_list = get_multi_integer(request, 'task_ids', 'GET')
     tasks = Task.query.filter(Task.id.in_(selected_task_list)).all()
 
     if not tasks:
@@ -5453,7 +5684,7 @@ def force_tasks_status(request):
         return Response('Can not find any task !!', 500)
 
     result_message =[]
-    note_str = request.params.get('note', '')
+    note_str = request.params.get('description', '')
 
     if note_str != '':
         note_str = 'with this note: <br/><b>%s</b>' % note_str
@@ -5635,7 +5866,7 @@ def get_task_resources(request):
     renderer='templates/modals/confirm_dialog.jinja2'
 )
 def remove_task_user_dialog(request):
-    """deletes the department with the given id
+    """removes the user with the given id
     """
     logger.debug('remove_task_resource_dialog is starts')
 
@@ -5665,7 +5896,7 @@ def remove_task_user_dialog(request):
     permission='Update_Task'
 )
 def remove_task_user(request):
-    """deletes the task with the given id
+    """removes the user with the given id
     """
 
     user_id = request.matchdict.get('user_id')
@@ -5703,6 +5934,111 @@ def remove_task_user(request):
 
     return Response('Success: %s is removed from %s resources' %
                     (user.name, task.name))
+
+
+@view_config(
+    route_name='remove_tasks_user_dialog',
+    renderer='templates/modals/confirm_dialog.jinja2'
+)
+def remove_tasks_user_dialog(request):
+    """removes the user with the given id
+    """
+    logger.debug('remove_tasks_user_dialog is starts')
+
+    selected_task_list = get_multi_integer(request, 'task_ids', 'GET')
+    user_id = request.matchdict.get('user_id')
+    user_type = request.matchdict.get('user_type')
+
+    user = User.query.filter(User.id == user_id).first()
+
+    came_from = request.params.get('came_from', '/')
+
+    _query_buffer = []
+    for task_id in selected_task_list:
+        _query_buffer.append("""task_ids=%s""" % task_id)
+    _query = '&'.join(_query_buffer)
+
+    action = '/tasks/remove/%s/%s?%s' % (user_type, user.id, _query)
+
+    message = '%s will be removed from resources of selected tasks' \
+              '<br><br>Are you sure?' % user.name
+
+    logger.debug('action: %s' % action)
+
+    return {
+        'message': message,
+        'came_from': came_from,
+        'action': action
+    }
+
+
+@view_config(
+    route_name='remove_tasks_user',
+    permission='Update_Task'
+)
+def remove_tasks_user(request):
+    """removes the user with the given id
+    """
+
+    user_id = request.matchdict.get('user_id')
+    user = User.query.filter(User.id == user_id).first()
+    user_type = request.matchdict.get('user_type')
+
+    if not user:
+        transaction.abort()
+        return Response('Can not find a user with id: %s' % user_id, 500)
+
+    selected_task_list = get_multi_integer(request, 'task_ids', 'GET')
+    tasks = Task.query.filter(Task.id.in_(selected_task_list)).all()
+    if not tasks:
+        transaction.abort()
+        return Response('Can not find any Task', 500)
+
+    if not user_type:
+        transaction.abort()
+        return Response('Missing parameters', 500)
+
+    logged_in_user = get_logged_in_user(request)
+    utc_now = local_to_utc(datetime.datetime.now())
+
+    description = request.params.get('description', 'No note')
+    note = create_simple_note(
+                                '%(resource_name)s is removed '
+                                'from %(user_type)s list by %(logged_in_user)s '
+                                'with the note:<br/> %(description)s' % {
+                                                'user_type':user_type,
+                                                'resource_name': user.name,
+                                                'logged_in_user': logged_in_user.name,
+                                                'description': description
+                                        },
+                                'Removed Resource',
+                                'red',
+                                'removed_resource',
+                                logged_in_user,
+                                utc_now)
+
+    if user_type == 'resources':
+        for task in tasks:
+            task.resources.remove(user)
+            task.updated_by = logged_in_user
+            task.date_updated = utc_now
+            task.notes.append(note)
+
+    elif user_type == 'responsible':
+        for task in tasks:
+            task.responsible.remove(user)
+            task.updated_by = logged_in_user
+            task.date_updated = utc_now
+            task.notes.append(note)
+
+    # invalidate all caches
+    invalidate_all_caches()
+
+    return Response('Success: %s is removed from resources of the selected tasks' %
+                    (user.name))
+
+
+
 
 
 @view_config(
@@ -6024,7 +6360,7 @@ def fix_task_computed_time(task):
     :type task: :class:`stalker.models.task.Task`
     :return: :class:`datetime.datetime`
     """
-
+    invalidate_all_caches()
     if task.status.code not in ['CMPL', 'STOP', 'OH']:
         return
 

@@ -733,6 +733,7 @@ def main(global_config, **settings):
     config.add_route('update_task_dependencies_dialog',     'tasks/{id}/update/dependencies/dialog')
     config.add_route('force_task_status_dialog',            'tasks/{id}/force_status/{status_code}/dialog')
     config.add_route('force_task_status',                   'tasks/{id}/force_status/{status_code}')
+    config.add_route('force_tasks_status_dialog',           'tasks/force_status/{status_code}/dialog')
     config.add_route('force_tasks_status',                  'tasks/force_status/{status_code}')
     config.add_route('resume_task_dialog',                  'tasks/{id}/resume/dialog')
     config.add_route('resume_task',                         'tasks/{id}/resume')
@@ -776,7 +777,10 @@ def main(global_config, **settings):
 
     config.add_route('approve_task',   'tasks/{id}/approve')
     config.add_route('request_revision',   'tasks/{id}/request_revision')
+    config.add_route('request_revisions_dialog',   'tasks/request_revisions/dialog')
     config.add_route('request_revisions',   'tasks/request_revisions')
+
+    config.add_route('auto_extend_time', 'tasks/{id}/auto_extend_time')
 
     config.add_route('request_extra_time', 'tasks/{id}/request_extra_time')
     config.add_route('request_extra_time_dialog', 'tasks/{id}/request_extra_time/dialog')
@@ -784,6 +788,8 @@ def main(global_config, **settings):
     config.add_route('get_task_resources',        'tasks/{id}/resources/') #json
     config.add_route('remove_task_user_dialog',   'tasks/{id}/remove/{user_type}/{user_id}/dialog')
     config.add_route('remove_task_user',          'tasks/{id}/remove/{user_type}/{user_id}')
+    config.add_route('remove_tasks_user_dialog',   'tasks/remove/{user_type}/{user_id}/dialog')
+    config.add_route('remove_tasks_user',          'tasks/remove/{user_type}/{user_id}')
     config.add_route('change_tasks_properties_dialog',  'tasks/change/properties/dialog')
     config.add_route('change_tasks_users_dialog', 'tasks/change/{user_type}/dialog')
     config.add_route('change_tasks_users',        'tasks/change/{user_type}')

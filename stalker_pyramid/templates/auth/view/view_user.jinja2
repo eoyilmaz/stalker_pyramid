@@ -33,50 +33,47 @@
 
     {% include 'page_header.jinja2' %}
     <!--/.page-header-->
-
     <div class="row-fluid">
-
         <div class="span12">
             <!--PAGE CONTENT BEGINS-->
             <div class="row-fluid">
-                <div class="span9">
+                <div class="span7">
+                    <div id="calendar"></div>
+                </div>
+                <div class="span5">
+{#                    <div class="row-fluid">#}
+{#                        <select id='project_cb' class='span6 input-block-level'>#}
+{#                        </select>#}
+{#                    </div>#}
+{#                    <div class="space"></div>#}
+{#                    <div class="hr hr8 hr-double"></div>#}
+                    <div class="space"></div>
                     <div id="infobox"
-                         address='/entities/{{ entity.id }}/tasks_stats/'
                          class="infobox-container">
                         {% include 'components/infobox.jinja2' %}
-                        <div class="infobox infobox-black infobox-small">
-                            <div class="infobox-icon">
-                                <i class="icon-bullhorn bigger-230"></i>
-                            </div>
-                            <div class="infobox-data">
-                                <div class="infobox-data-number">
-                                    <a data-target="#html_template"
-                                       data-toggle="modal"
-                                       data-keyboard=false
-                                       href="/entities/{{ entity.id }}/tasks/filter/-1/list"
-                                       class="grey">Black List</a>
-                                </div>
-                            </div>
-                        </div>
+{#                        <div class="infobox infobox-black infobox-small">#}
+{#                            <div class="infobox-icon">#}
+{#                                <i class="icon-bullhorn bigger-230"></i>#}
+{#                            </div>#}
+{#                            <div class="infobox-data">#}
+{#                                <div class="infobox-data-number">#}
+{#                                    <a data-target="#html_template"#}
+{#                                       data-toggle="modal"#}
+{#                                       data-keyboard=false#}
+{#                                       href="/entities/{{ entity.id }}/tasks/filter/-1/list"#}
+{#                                       class="grey">Black List</a>#}
+{#                                </div>#}
+{#                            </div>#}
+{#                        </div>#}
                     </div>
                     <div class="space"></div>
+                    <div class="hr hr8 hr-double"></div>
+
+                    {% include 'task/list/list_entity_tasks_by_filter_.jinja2' %}
                 </div>
-                <div class="span3">
-                    <div id="piechart-placeholder"></div>
-                </div>
-            </div>
-
-            <div class="hr hr8 hr-double"></div>
-
-            <div class="space"></div>
-
-            <div class="row-fluid">
-                <div id="calendar"></div>
             </div>
         </div>
-
     </div>
-
     <!--PAGE CONTENT ENDS-->
 
 {% endblock page_content %}
@@ -90,12 +87,8 @@
     <tr>
         <th>Start</th>
         <th>Name</th>
-        <th>Responsible</th>
-        <th>Type</th>
-        <th>Completed</th>
         <th>Hours Based on Bid</th>
         <th>Hours to Complete</th>
-        <th>Priority</th>
         <th></th>
     </tr>
 </script>
@@ -107,33 +100,20 @@
     <tr>
         <td>{{=it.start}}</td>
         <td><a href='/tasks/{{=it.id}}/view'>{{=it.full_path}}</a></td>
-        <td>{{ for(var j=0;j<it.responsible.length;j++){ }}<a href='/users/{{=it.responsible[j].id}}/view'>{{=it.responsible[j].name}}</a><br/>{{ } }}</td>
-        <td>{{=it.task_type}}</td>
-        <td data-sType="num-html">
-            <div class="progress progress-success">
-                <div style="width:{{=it.completed}}%"
-                     class="bar">
-                    <span class="pull-left">{{= it.completed.toFixed(0) }}%</span>
-                </div>
-            </div>
-        </td>
         <td style="background-color: {{=it.bid_stat}}; opacity:0.8;">{{=it.hour_based_on_bid}}</td>
         <td>{{=it.hour_to_complete}}</td>
-        <td>{{=it.priority}}</td>
         <td>
             <div class="hidden-phone visible-desktop action-buttons">
-                <a class="blue" href='/tasks/{{=it.id}}/view'>
-                    <i class="icon-zoom-in bigger-130"></i>
-                </a>
-
-                <a id='update_task_item'
-                   data-target="#dialog_template"
-                   data-toggle="modal"
-                   data-keyboard=false
-                   href="/tasks/{{=it.id}}/update/dialog"
-                   tabindex="-1">
-                    <i class="icon-pencil bigger-120">&nbsp</i>
-                </a>
+                {{ if (it.status === 'wip' || it.status === 'hrev')  { }}
+                    <a id='update_task_item'
+                       data-target="#dialog_template"
+                       data-toggle="modal"
+                       data-keyboard=false
+                       href="/tasks/{{=it.id}}/force_status/CMPL/dialog"
+                       tabindex="-1">
+                        <i class="icon-check bigger-120">&nbsp</i>
+                    </a>
+                {{ } }}
 
                 {{ if (it.request_extra_time)  { }}
                     <a
@@ -216,71 +196,112 @@
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/flot/jquery.flot.pie.min.js") }}'></script>
 
     <script type="text/javascript">
-        $.getJSON('/users/{{ entity.id }}/events/?keys=time_log&keys=vacation').then(function (data) {
-            var events = [];
+     $(document).ready(function () {
+            init_html_modal();
+            initInfoBox('/entities/{{ entity.id }}/tasks_stats/');
+{#            var project_cb = $('#project_cb');#}
+{#            var project_id = project_cb.val();#}
+{#            {% raw %}#}
+{#                var option_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');#}
+{#            {% endraw %}#}
+{#            project_cb.chosen({#}
+{#                search_contains: true,#}
+{#                enable_split_word_search: true#}
+{#            });#}
+{##}
+{#            $.getJSON('/entities/{{ entity.id }}/projects/').then(function(data){#}
+{##}
+{#                project_cb.find('option').remove();#}
+{##}
+{#                var data_count = data.length;#}
+{##}
+{#                for (var i=0; i < data_count; i++){#}
+{#                    project_cb.append(option_template(data[i]));#}
+{#                }#}
+{##}
+{#                // update the chosen fields#}
+{#                project_cb.trigger('liszt:updated');#}
+{##}
+{#                project_id = project_cb.val();#}
+{#                init_html_modal();#}
+{#                initInfoBox('/entities/{{ entity.id }}/tasks_stats/');#}
+{##}
+{#                project_cb.on('change', function () {#}
+{#                    task_type_str = task_type.val();#}
+{#                    project_id = $(this).val();#}
+{#                    init_html_modal();#}
+{#                    initInfoBox('/entities/{{ entity.id }}/tasks_stats/');#}
+{#                });#}
+{#            });#}
 
-            var total_timelogs = 0;
 
-            for (var i = 0; i < data.length; i++) {
 
-                var start_date = new Date(parseInt(data[i].start));
-                var end_date = new Date(parseInt(data[i].end));
+            $.getJSON('/users/{{ entity.id }}/events/?keys=time_log&keys=vacation').then(function (data) {
+                var events = [];
 
-                if(data[i].entity_type == 'timelogs'){
-{#                    var now = new Date();#}
-{#                    if(now>end_date){#}
-{#                        console.log(data[i].title +' : '+ end_date)#}
-{#                    }#}
-                    var timelog_hours = (end_date-start_date)/1000/60/60;
-                    total_timelogs +=timelog_hours;
+                var total_timelogs = 0;
 
+                for (var i = 0; i < data.length; i++) {
+
+                    var start_date = new Date(parseInt(data[i].start));
+                    var end_date = new Date(parseInt(data[i].end));
+
+                    if(data[i].entity_type == 'timelogs'){
+    {#                    var now = new Date();#}
+    {#                    if(now>end_date){#}
+    {#                        console.log(data[i].title +' : '+ end_date)#}
+    {#                    }#}
+                        var timelog_hours = (end_date-start_date)/1000/60/60;
+                        total_timelogs +=timelog_hours;
+
+                    }
+
+                    var event = {
+                        eId: data[i].id,
+                        entity_type: data[i].entity_type,
+                        title: data[i].title,
+                        start: start_date,
+                        end: end_date,
+                        className: data[i].className,
+                        allDay: data[i].allDay
+                    };
+
+                    events.push(event);
                 }
 
-                var event = {
-                    eId: data[i].id,
-                    entity_type: data[i].entity_type,
-                    title: data[i].title,
-                    start: start_date,
-                    end: end_date,
-                    className: data[i].className,
-                    allDay: data[i].allDay
-                };
+                $(document).ready(function () {
+                    drawCalendar('calendar', events);
 
-                events.push(event);
-            }
+    {#                var placeholder = $('#piechart-placeholder').css({'width':'90%' , 'min-height':'150px'});#}
+    {#                  var data = [#}
+    {#                    { label: "You have worked",  data: total_timelogs, color: "#68BC31"},#}
+    {#                    { label: "Your vacations",  data: 240.5, color: "#2091CF"},#}
+    {#                    { label: "We don't know what you did",  data: 8.2, color: "#AF4E96"}#}
+    {##}
+    {#                  ];#}
+    {##}
+    {#                 drawPieChart(placeholder, data);#}
+    {##}
+    {#                 /**#}
+    {#                 we saved the drawing function and the data to redraw with different position later when switching to RTL mode dynamically#}
+    {#                 so that's not needed actually.#}
+    {#                 */#}
+    {#                 placeholder.data('chart', data);#}
+    {#                 placeholder.data('draw', drawPieChart);#}
+                });
 
-            $(document).ready(function () {
-                drawCalendar('calendar', events);
+    {#      TODO: Please use this version later on, which loads events dynamically #}
+    {#            var events = {#}
+    {#                url: '/users/{{ entity.id }}/events/',#}
+    {#                type: 'POST',#}
+    {#                data: {#}
+    {#                    keys: ['time_log', 'vacation', 'task']#}
+    {#                }#}
+    {#            };#}
+    {#            drawCalendar('calendar', events);#}
 
-{#                var placeholder = $('#piechart-placeholder').css({'width':'90%' , 'min-height':'150px'});#}
-{#                  var data = [#}
-{#                    { label: "You have worked",  data: total_timelogs, color: "#68BC31"},#}
-{#                    { label: "Your vacations",  data: 240.5, color: "#2091CF"},#}
-{#                    { label: "We don't know what you did",  data: 8.2, color: "#AF4E96"}#}
-{##}
-{#                  ];#}
-{##}
-{#                 drawPieChart(placeholder, data);#}
-{##}
-{#                 /**#}
-{#                 we saved the drawing function and the data to redraw with different position later when switching to RTL mode dynamically#}
-{#                 so that's not needed actually.#}
-{#                 */#}
-{#                 placeholder.data('chart', data);#}
-{#                 placeholder.data('draw', drawPieChart);#}
             });
-
-{#      TODO: Please use this version later on, which loads events dynamically #}
-{#            var events = {#}
-{#                url: '/users/{{ entity.id }}/events/',#}
-{#                type: 'POST',#}
-{#                data: {#}
-{#                    keys: ['time_log', 'vacation', 'task']#}
-{#                }#}
-{#            };#}
-{#            drawCalendar('calendar', events);#}
-            
-        });
+     });
     </script>
 
 {% endblock extrascripts %}

@@ -544,8 +544,9 @@ def get_project_tasks_cost(request):
                             else 0
                         end)/3600)) as schedule_total,
        sum("Project_Users".rate*(extract(epoch from "TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC'))/3600) as timelog_duration,
-       budgetentries.name,
-       budgetentries.price
+       budgetentries.name as budgetentries_name,
+       budgetentries.price as budgetentries_price,
+       "Task_Goods".id as good_id
 
        from "Tasks"
        join "Goods" as "Task_Goods" on "Task_Goods".id = "Tasks".good_id
@@ -577,6 +578,7 @@ def get_project_tasks_cost(request):
                  "Task_Goods".msrp,
                  "Task_Goods".cost,
                  "Task_Goods".unit,
+                 "Task_Goods".id,
                  "PriceList_SimpleEntities".name
 """
 
@@ -610,6 +612,7 @@ def get_project_tasks_cost(request):
             'realized_total':r[8],
             'budgetentries_name':r[9] if r[9] else " - ",
             'budgetentries_price':r[10] if r[10] else 0,
+            'id': r[11]
         }
         for r in result.fetchall()
     ]

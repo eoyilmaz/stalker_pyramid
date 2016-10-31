@@ -79,7 +79,7 @@ logger.setLevel(logging.DEBUG)
 )
 @view_config(
     route_name='list_project_users',
-    renderer='templates/auth/list/list_entity_users.jinja2'
+    renderer='templates/auth/list/list_project_users.jinja2'
 )
 @view_config(
     route_name='list_department_users',
@@ -96,10 +96,6 @@ logger.setLevel(logging.DEBUG)
 @view_config(
     route_name='list_resource_rates',
     renderer='templates/resource/list/list_resource_rates.jinja2'
-)
-@view_config(
-    route_name='view_user',
-    renderer='templates/auth/view/view_user.jinja2'
 )
 @view_config(
     route_name='view_user_reports',

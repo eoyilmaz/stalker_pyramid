@@ -351,16 +351,18 @@ def get_entity_task_type_result(request):
 select
         min(extract(epoch from results.start::timestamp AT TIME ZONE 'UTC')) as start,
         array_agg(distinct(results.shot_name)) as shot_names,
-        array_agg(distinct(results.resource_id)) as resource_ids,
+        results.resource_id as resource_ids,
         sum(results.approved_shot_seconds*results.timelog_duration/results.schedule_seconds) as approved_shot_seconds,
         sum(results.shot_seconds*results.timelog_duration/results.schedule_seconds) as shot_seconds,
         sum(results.approved_timelog_duration/results.schedule_seconds) as approved_percent,
-        sum(results.timelog_duration/results.schedule_seconds) as percent
+        sum(results.timelog_duration/results.schedule_seconds) as percent,
+        results.scene_name as scene_name
 
 from (
         select
             "TimeLogs".start as start,
             tasks.shot_name as shot_name,
+            tasks.scene_name as scene_name,
             tasks.status_code as shot_status,
             "TimeLogs".resource_id as resource_id,
             tasks.seconds as shot_seconds,
@@ -390,7 +392,8 @@ from (
                                                 end) as schedule_seconds,
                         "Shot_SimpleEntities".name as shot_name,
                         ("Shots".cut_out - "Shots".cut_in)/%(project_fps)s as seconds,
-                        "Statuses".code as status_code
+                        "Statuses".code as status_code,
+                        "Scene_SimpleEntities".name as scene_name
 
                 from "Tasks"
                 join "SimpleEntities" as "Task_SimpleEntities" on "Task_SimpleEntities".id = "Tasks".id
@@ -398,14 +401,20 @@ from (
                 join "Shots" on "Shots".id = "Tasks".parent_id
                 join "SimpleEntities" as "Shot_SimpleEntities" on "Shot_SimpleEntities".id = "Shots".id
                 join "Statuses" on "Statuses".id = "Tasks".status_id
-
+                join "Tasks" as "Shot_Tasks" on "Shot_Tasks".id = "Shots".id
+                join "Tasks" as "Shot_Folders" on "Shot_Folders".id = "Shot_Tasks".parent_id
+                join "Tasks" as "Scenes" on "Scenes".id = "Shot_Folders".parent_id
+                join "SimpleEntities" as "Scene_SimpleEntities" on "Scene_SimpleEntities".id = "Scenes".id
 
                 where "Type_SimpleEntities".name = '%(task_type)s' %(project_query)s
             ) as tasks on tasks.id = "TimeLogs".task_id
         where %(where_conditions)s
     ) as results
-group by  date_trunc('week', results.start)
-order by start
+group by  date_trunc('week', results.start),
+          results.resource_id,
+          results.scene_name
+order by start,
+    resource_ids
 """
 
     where_conditions = ''
@@ -438,7 +447,9 @@ order by start
         'approved_seconds': r[3],
         'total_seconds': r[4],
         'approved_shots':r[5],
-        'total_shots':r[6]
+        'total_shots':r[6],
+        'scene_name':r[7]
+
     } for r in result]
 
 

@@ -350,6 +350,9 @@ def get_client_users_out_stack(request):
         join "SimpleEntities" as "User_SimpleEntities" on "User_SimpleEntities".id = "Users".id
 
         where "Client_Users".cid != %(client_id)s or "Client_Users".cid is Null
+        group by
+            "User_SimpleEntities".name,
+            "User_SimpleEntities".id
     """
 
     sql_query = sql_query % {'client_id': client_id}

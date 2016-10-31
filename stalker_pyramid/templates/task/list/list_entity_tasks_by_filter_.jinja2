@@ -1,16 +1,69 @@
-
 <script class="dialog_loaded"></script>
-
-
 <div class="row-fluid">
-    {% set list_item_type='Task' %}
-    {% include 'components/jgrid_table.jinja2' %}
+    <div class="widget-box">
+        <div class="widget-header widget-header-small header-color-status_{{ filter.code.lower() }}">
+            <h5 id="items_header">{{ filter.name }}</h5>
+            <div class="widget-toolbar">
+                <div class="space-5"></div>
+                {% if (logged_in_user in entity.resources or logged_in_user in entity.responsible) or has_permission('Update_Task') %}
+
+                    {%if filter.code == 'WFD' or filter.code == 'RTS'%}
+                        <button
+                                id="remove_resource_btn"
+                                class="btn btn-small btn-info tooltip-success"
+                                title="Remove Task"
+                                >
+                            <i class="icon-user"></i>
+                        </button>
+                    {% endif %}
+                    {%if filter.code == 'WIP' or filter.code == 'PREV' or filter.code == 'HREV' %}
+                        <button id="force_complete_btn"
+                                class="btn btn-small btn-success tooltip-success"
+                                title="Force Complete"
+                                >
+                            <i class="icon-ok"></i>
+                        </button>
+                        <button
+                                id="remove_resource_btn"
+                                class="btn btn-small btn-info tooltip-success"
+                                title="Remove Task"
+                                >
+                            <i class="icon-user"></i>
+                        </button>
+                    {% endif %}
+                    {%if filter.code == 'CMPL'%}
+                        <button
+                                id="request_revisions_btn"
+                                class="btn btn-small btn-purple tooltip-success"
+                                title="Request Revisions">
+                            <i class="icon-comment-alt bigger-110"></i>
+                        </button>
+                        <button
+                                id="remove_resource_btn"
+                                class="btn btn-small btn-info tooltip-success"
+                                title="Remove Task"
+                                >
+                            <i class="icon-user"></i>
+                        </button>
+                    {% endif %}
+                {% endif %}
+
+
+            </div>
+        </div>
+        <div class="widget-body">
+            <div class="widget-main no-padding">
+                {% include 'components/jgrid_table.jinja2' %}
+            </div>
+        </div>
+    </div>
 </div>
 
+<script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/i18n/grid.locale-en.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/jquery.jqGrid.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/jquery.jqGrid.min.js") }}'></script>
+<script src='{{ request.static_url("stalker_pyramid:static/jqGrid/plugins/ui.multiselect.js") }}'></script>
 
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.dataTables.min.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/ace/js/jquery.dataTables.bootstrap.js") }}'></script>
-<script src='{{ request.static_url("stalker_pyramid:static/stalker/js/dataTable_num-html_sort.js") }}'></script>
 
 
 <script>
@@ -47,38 +100,145 @@
             {% endif %}
         {% endif %}
 
-        console.log("query_str: "+ query_str);
 
-        var colNames = ['', 'ID','Name'];
-        var colModel = [{name:'myac',index:'', width:70, fixed:true, sortable:false, resize:false,
-                        formatter:'actions',
-                        formatoptions:{
-                            keys:false,
-                            delbutton:false
-{#                                        delOptions:{recreateForm: true, beforeShowForm:beforeDeleteCallback}#}
-{#                                        //editformbutton:true, editOptions:{recreateForm: true, beforeShowForm:beforeEditCallback}#}
+        var colNames = ['Name', 'Bid', 'ST'];
+        var colModel = [
+                        {
+                            name:'full_path',
+                            index:'full_path',
+                            width:220,
+                            editable: false,
+                            formatter:taskLabelFormatter
+                        },
+                        {
+                            name:'hour_based_on_bid',
+                            index:'hour_based_on_bid',
+                            width:25, editable: false,
+                            formatter:bidFormatter
+                        },
+                        {
+                            name:'hour_to_complete',
+                            index:'hour_to_complete',
+                            width:25,
+                            editable: false
                         }
-                    },
-                    {name:'id',index:'id', width:90, sortable:true, editable: false},
-                    {name:'full_path',index:'full_path', width:700, sortable:true, editable: false, formatter:resourceLabelFormatter},
-                    {name:'full_path',index:'full_path', width:700, sortable:true, editable: false, formatter:resourceLabelFormatter}
                 ];
+
         var sortingParameters = [[0, 'asc']];
         var tableDataAddress = '/tasks/?' + query_str;
+        $.getJSON(tableDataAddress).then(function (data) {
 
-        loadTableData(
-            tableDataAddress,
-            "grid-table",
-            colNames,
-            colModel
-        );
+            console.log("tableDataAddress is loaded");
+            var total_remain_st_seconds = 0;
+            var total_remain_bid_seconds = 0;
+            for (var i = 0; i < data.length; i++) {
+                // fix dates
 
-        function resourceLabelFormatter(cellvalue, options, rowObject){
-            return '<a href="/users/'+rowObject.id+'/view">'+cellvalue+'</a>';
+                data[i].start = new Date(data[i].start).format('yyyy-mm-dd HH:MM');
+                if(data[i].end){
+                    data[i].end = new Date(data[i].end).format('yyyy-mm-dd HH:MM');
+                }
+
+                data[i].project_name = get_project_name(data[i].project_id);
+
+                var bid_seconds = to_seconds(
+                                        data[i].bid_timing,
+                                        data[i].bid_unit
+                                );
+
+                total_remain_bid_seconds +=(bid_seconds-data[i].total_logged_seconds);
+
+                data[i].hour_based_on_bid = meaningful_time_between(
+                                                    bid_seconds,
+                                                    data[i].total_logged_seconds
+                                            );
+                var st_seconds = to_seconds(
+                                        data[i].schedule_timing,
+                                        data[i].schedule_unit
+                                );
+
+                total_remain_st_seconds +=(st_seconds-data[i].total_logged_seconds);
+
+                data[i].hour_to_complete = meaningful_time_between(
+                                               st_seconds,
+                                               data[i].total_logged_seconds
+                                           );
+
+                if(bid_seconds < data[i].total_logged_seconds){
+                     data[i].bid_stat = '#ff0000'
+                }
+            }
+
+            var footerData = {
+                full_path:'TOTAL',
+                hour_based_on_bid: meaningful_time(total_remain_bid_seconds),
+                hour_to_complete: meaningful_time(total_remain_st_seconds)
+            };
+
+
+            loadTableData(
+                    data,
+                    "grid-table",
+                    colNames,
+                    colModel,
+                    footerData
+                );
+        });
+
+
+        function taskLabelFormatter(cellvalue, options, rowObject){
+
+{#                return cellvalue;#}
+                return '<a href="/tasks/'+rowObject.id+'/view">'+cellvalue+'</a>';
         }
 
 
+        function bidFormatter(cellvalue, options, rowObject){
 
+{#                return cellvalue;#}
+                return '<span style="background-color: '+rowObject.bid_stat+'; opacity:0.8;">'+cellvalue+'</span>';
+        }
+
+        var submit_form_url = '/tasks/force_status/CMPL/dialog';
+        var force_complete_btn = $('#force_complete_btn');
+        if(force_complete_btn){
+            force_complete_btn.on('click', function(){
+                submit_form_url = '/tasks/force_status/CMPL/dialog';
+                submit_action()
+            });
+        }
+
+        var request_revisions_btn = $('#request_revisions_btn');
+        if(request_revisions_btn){
+            request_revisions_btn.on('click', function(){
+                submit_form_url = '/tasks/request_revisions/dialog';
+                submit_action()
+            });
+        }
+
+        var remove_resource_btn = $('#remove_resource_btn');
+        if(remove_resource_btn){
+            remove_resource_btn.on('click', function(){
+                submit_form_url = '/tasks/remove/resources/{{ entity.id }}/dialog';
+                submit_action()
+            });
+        }
+
+        function submit_action(){
+
+            var event_dialog = $('#dialog_template');
+            var selected_task_ids = jQuery('#grid-table').jqGrid('getGridParam','selarrrow');
+
+            var _query = '?entity_id={{ entity.id }}';
+
+            for (var i=0; i<selected_task_ids.length; i++){
+               _query +='&task_ids='+selected_task_ids[i];
+            }
+
+            event_dialog.modal({
+                'remote': submit_form_url+_query
+            });
+        }
         console.debug('finished initializing the init_html_modal dialog!')
     }
 </script>

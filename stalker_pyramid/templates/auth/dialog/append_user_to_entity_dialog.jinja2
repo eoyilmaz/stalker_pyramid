@@ -35,13 +35,15 @@
 <script type="text/javascript">
 
     function init_dialog() {
-        console.debug('starting to initialize append_class_to_entity dialog!!!');
+        console.debug('11111 starting to initialize append_class_to_entity dialog!!!');
 
         $('#dialog_template_label').find('span').remove();
         $('#dialog_template_label').append('<span>Append User</span>');
+
+        console.log("Client  : {{ client.id }}");
         var list_url= "";
         var post_url ="";
-        {% if entity.entity_type == 'Client' %}
+        {% if entity.entity_type == 'Client'%}
             list_url = '/clients/{{ entity.id }}/user/out_stack/';
             post_url = '/clients/{{ entity.id }}/user/append';
         {% else %}

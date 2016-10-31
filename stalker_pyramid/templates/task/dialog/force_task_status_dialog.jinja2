@@ -24,11 +24,11 @@
             {# Notes #}
             <div class='control-group'>
                 <label class='span3 control-label'
-                       for='note'>Note:</label>
+                       for='description'>Note:</label>
 
                 <div class='span9'>
-                    <textarea id="note"
-                              name='note'
+                    <textarea id="description"
+                              name='description'
                               class="autosize-transition span12"
                               style="overflow: hidden;
                                          word-wrap: break-word;
@@ -72,6 +72,8 @@
 
             // disable the submit_button
             var submit_button = $(this);
+
+            console.log("url: "+url);
 
             if (url){
                 submit_button.button('loading');

@@ -19,9 +19,8 @@
         <div class='control-group'>
             <label for='role'
                    class='span2 control-label'>Role</label>
-            <div class='span5'>
+            <div class='span10'>
                 <input id='role'
-                       class='input-block-level'
                        name='role_name'
                        type='text'
                        data-placeholder='Role'
@@ -30,6 +29,81 @@
             </div>
         </div>
     </form>
+{#    <form id='user_form'#}
+{#      class='form-horizontal'#}
+{#      role='form'#}
+{#      method="post"#}
+{#            >#}
+        {# Name #}
+{#        <div class="control-group">#}
+{#            <label class="span2 control-label"#}
+{#                   for="user_name">Name</label>#}
+{##}
+{#            <div class="span6">#}
+{#                <input id="user_name"#}
+{#                       name='name'#}
+{#                       type="text"#}
+{#                       class="form-control"#}
+{#                       placeholder="Name"#}
+{#                       required>#}
+{#            </div>#}
+{#        </div>#}
+        {# Login #}
+{#        <div class="control-group">#}
+{#            <label for="user_login"#}
+{#                   class="span2 control-label">Login</label>#}
+{##}
+{#            <div class="span6">#}
+{#                <input id="user_login"#}
+{#                       name='login'#}
+{#                       type="text"#}
+{#                       class="form-control"#}
+{#                       placeholder="Login"#}
+{#                        {% if mode == 'Update' %}#}
+{#                       value='{{ user.login }}'#}
+{#                        {% endif %}#}
+{#                       required>#}
+{#            </div>#}
+{#        </div>#}
+        {# Type #}
+{#        <div class="control-group">#}
+{#            <label for="user_type"#}
+{#                   class="span2 control-label">Type</label>#}
+{##}
+{#            <div class="span6">#}
+{#                  <input id="user_type"#}
+{#                         name='type_name'#}
+{#                         placeholder="Type"#}
+{#                         class='input-block-level'#}
+{#                         type='text'#}
+{#                          {% if mode == 'Update' %}#}
+{#                         value='{{ user.type.name }}'#}
+{#                          {% endif %}#}
+{#                         required>#}
+{##}
+{#            </div>#}
+{#        </div>#}
+        {# Email #}
+{#        <div class="control-group">#}
+{#            <label for="user_email"#}
+{#                   class="span2 control-label">Email</label>#}
+{##}
+{#            <div class="span6">#}
+{#                  <span class="input-icon input-icon-left">#}
+{#                      <input id="user_email"#}
+{#                             name='email'#}
+{#                             type="email"#}
+{#                             class="form-control"#}
+{#                             placeholder="Email"#}
+{#                              {% if mode == 'Update' %}#}
+{#                             value='{{ user.email }}'#}
+{#                              {% endif %}#}
+{#                             required>#}
+{#                      <i class="icon-envelope icon-flip-horizontal"></i>#}
+{#                   </span>#}
+{#            </div>#}
+{#        </div>#}
+{#    </form>#}
 </div>
 
 <script type="text/javascript">
@@ -38,7 +112,7 @@
         console.debug('starting to initialize append_class_to_entity dialog!!!555555');
 
         $('#dialog_template_label').find('span').remove();
-        $('#dialog_template_label').append('<span>Append User</span>')
+        $('#dialog_template_label').append('<span>Append User</span>');
 
         {# ***************************************************************** #}
         {# CLIENT #}
@@ -46,12 +120,8 @@
         {% raw %}
             var client_user_option_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
         {% endraw %}
-        console.debug('Client Name: {{ client.name }}');
-{#        var deferred = chosen_searchable_field_creator(client_user,'/clients/{{ client.id }}/user/out_stack/', client_user_option_template);#}
         $.getJSON('/clients/{{ client.id }}/user/out_stack/').then(function (u_data) {
-
             chosen_searchable_field_creator_by_data(client_user, client_user_option_template, u_data);
-
         });
 
         {# ***************************************************************** #}

@@ -160,6 +160,8 @@
 
                 for (var i=0; i<data.length; i+=1){
                     var s_data = {}
+                    {#SCENE NAME#}
+                    s_data['scene_name'] = data[i]['scene_name'];
                     {#SHOT NAMES#}
                     var shot_names = '';
                     for (var m=0; m < data[i]['shot_names'].length; m+=1){
@@ -169,9 +171,9 @@
 
                     {#RESOURCES NAMES#}
                     var resource_ids = '';
-                    for (var m=0; m<data[i]['resource_ids'].length; m+=1){
-                        resource_ids += "<a href='/users/"+data[i]['resource_ids'][m]+"/view'>"+get_user_name(data[i]['resource_ids'][m])+"</a><br/>";
-                    }
+{#                    for (var m=0; m<data[i]['resource_ids'].length; m+=1){#}
+                        resource_ids += "<a href='/users/"+data[i]['resource_ids']+"/view'>"+get_user_name(data[i]['resource_ids'])+"</a><br/>";
+{#                    }#}
                     s_data['resource_ids'] = resource_ids;
 
                     {#SECONDS#}
@@ -215,6 +217,7 @@
 
                         var next_week_date_format = start_date_ms.add(1, 'w').format('YYYY-MM-DD').toString();
                         s_data = {  'start_date':next_week_date_format,
+                                    'scene_name':'---',
                                     'shot_names':'---',
                                     'resource_ids':'----',
                                     'approved_seconds':0,
@@ -334,13 +337,13 @@
 
                 var grid_selector = "#grid-table";
                 var pager_selector = "#grid-pager";
-                console.log(' shot_data.length : ' + shot_data[shot_data.length-1].start_date   );
                 jQuery(grid_selector).jqGrid({
                     data: shot_data,
                     datatype: "local",
                     colModel: [
 {#                        { label: 'Month', name: 'month', width: 150 },#}
                         { label: 'Start Date', name: 'start_date', width: 150 },
+                        { label: 'Scene Name', name: 'scene_name', key: true, width: 150 },
                         { label: 'Shot Name', name: 'shot_names', key: true, width: 200 },
                         { label: 'Resource Name', name: 'resource_ids', key: true, width: 250 },
                         { label: 'Approved Seconds', name: 'approved_seconds', width: 150 },
@@ -353,10 +356,10 @@
                     height: 'auto',
                     rowNum: 10,
                     rowList:[10,25,50],
-                    sortname: 'start_date',
-                    sortorder: "desc",
                     pager: pager_selector,
                     viewrecords: true,
+                    sortname: 'start_date',
+                    sortorder: "desc",
                     footerrow: true, // set a footer row
                     userDataOnFooter: true,
                     grouping: false,
@@ -374,8 +377,6 @@
                                                            approved_shots:sum_of_approved_shots.toFixed(2) +' shots',
                                                            total_shots:sum_of_total_shots.toFixed(2) +' shots'
                                                            });
-
-
 
 
                         var total = total_minutes +' m';
