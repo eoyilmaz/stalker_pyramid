@@ -6223,7 +6223,7 @@ def change_tasks_users(request):
         transaction.abort()
         return Response('Missing parameters', 500)
 
-    selected_task_list = get_multi_integer(request, 'task_ids[]')
+    selected_task_list = get_multi_integer(request, 'task_ids', 'GET')
     tasks = Task.query.filter(Task.id.in_(selected_task_list)).all()
 
     if not tasks:

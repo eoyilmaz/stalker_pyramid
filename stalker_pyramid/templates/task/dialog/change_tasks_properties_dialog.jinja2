@@ -245,11 +245,18 @@
                 e.preventDefault();
                 submit_button.button('loading');
                 var task_ids = jQuery('#grid-table').jqGrid('getGridParam','selarrrow');
+
+                console.log('task_ids: '+task_ids);
+                var _query = "?project_id={{ tasks[0].project.id }}";
+                for (var i=0; i<task_ids.length; i++){
+                    _query += "&task_ids="+task_ids[i]
+                }
+
                 var change_properties_task_form = $("#change_properties_task_form");
 
                 $.post(
-                    submit_form_url,
-                    change_properties_task_form.serialize()+ '&' + $.param({'task_ids':task_ids})
+                    submit_form_url+_query,
+                    change_properties_task_form.serialize()
                 ).done(function (response_text) {
                     submit_button.button('reset');
                     $('#dialog_template').modal('hide');

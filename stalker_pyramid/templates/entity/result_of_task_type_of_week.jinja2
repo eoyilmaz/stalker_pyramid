@@ -50,15 +50,17 @@
 
 
 <script type="text/javascript">
-
+    var select_week_cb_data=[''];
     function loadShotTaskData(t_type, p_id){
         console.log('loadShotTaskData: '+t_type+' : ' +p_id);
+        select_week_cb_data=[''];
 
         var result_table = $('#result_table');
         result_table.find("#table_container").remove();
         result_table.find("#grid-pager").remove();
         var grid_selector = "#grid-table";
         var pager_selector = "#grid-pager";
+
 
         $.getJSON('/entities/{{ entity.id }}/'+t_type+'/result?project_id='+p_id).then(function (data) {
 
@@ -69,7 +71,7 @@
                 var sum_of_approved_shots = 0;
                 var sum_of_total_seconds = 0;
                 var sum_of_total_shots = 0;
-                var select_week_cb_data=[''];
+
 
 
                 for (var i=0; i<data.length; i+=1){
@@ -136,29 +138,29 @@
 
                 select_week_cb_data.reverse();
                 select_week_cb_data.pop();
+
                 for (var j=0; j < select_week_cb_data.length; j++){
                     select_week_cb.append(option_template(select_week_cb_data[j]));
                 }
 
                 // update the chosen fields
                 select_week_cb.trigger('liszt:updated');
+
                 select_week_cb.on('change', function () {
-{#                    task_type_str = task_type.val();#}
+
                     var index = $(this).val();
                     index = select_week_cb_data.length-index;
-                    console.log("$(this).index:"+ select_week_cb_data[index]['start_date']);
-                    jQuery(grid_selector).jqGrid('filterInput', select_week_cb_data[index]['start_date']);
+                    var cb_data = select_week_cb_data;
+                    jQuery(grid_selector).jqGrid('filterInput', cb_data[index]['start_date']);
                     jQuery(grid_selector).jqGrid("footerData", "set", {resource_ids: 'TOTAL',
-                                                           approved_seconds: select_week_cb_data[index]['sum_of_approved_seconds'].toFixed(2)+' s ',
-                                                           total_seconds: select_week_cb_data[index]['sum_of_total_seconds'].toFixed(2)+' s ',
-                                                           approved_shots:select_week_cb_data[index]['sum_of_approved_shots'].toFixed(2) +' shots',
-                                                           total_shots:select_week_cb_data[index]['sum_of_total_shots'].toFixed(2) +' shots'
+                                                           approved_seconds: cb_data[index]['sum_of_approved_seconds'].toFixed(2)+' s ',
+                                                           total_seconds: cb_data[index]['sum_of_total_seconds'].toFixed(2)+' s ',
+                                                           approved_shots:cb_data[index]['sum_of_approved_shots'].toFixed(2) +' shots',
+                                                           total_shots:cb_data[index]['sum_of_total_shots'].toFixed(2) +' shots'
                                                            });
                 });
 
-
                 result_table.append('<div id="table_container"><table id="grid-table"></table></div><div id="grid-pager"></div>');
-
 
                 jQuery(grid_selector).jqGrid({
                     data: shot_data,
