@@ -322,7 +322,7 @@ def fix_tasks_statuses(request):
     """ request revision for selected tasks
     """
 
-    selected_task_list = get_multi_integer(request, 'task_ids[]')
+    selected_task_list = get_multi_integer(request, 'task_ids', 'GET')
     tasks = Task.query.filter(Task.id.in_(selected_task_list)).all()
 
     if not tasks:

@@ -42,10 +42,11 @@
                        class="span2 control-label">Date</label>
 
                 <div class="span10 input-prepend">
-                    <input id='start_end_date_range_picker'
+                    <input class="date-picker"
+                           id='start_end_date_range_picker'
                            name='start_and_end_dates'
                            type="text"
-                           data-date-format="yyyy-mm-dd"
+                           data-date-format="dd-mm-yyyy"
                            placeholder="Start & End Dates"
                             >
                     <span class="add-on">
@@ -146,8 +147,6 @@
                     <label class="lbl blue" for="if_completed_cb"> Set as Completed</label>
                 </div>
             </div>
-
-
         </div>
 
     </form>
@@ -303,7 +302,6 @@ function init_dialog() {
 
         var task_id = parseInt(time_log_task.val());
         submit_finalize_form_url = null;
-
 
         if (task_id === -1){ return }
 
@@ -534,7 +532,7 @@ function init_dialog() {
         start_time_value = start_date_value;
         end_time_value = end_date_value;
 
-        console.log('information.append')
+        console.log('information.append');
         information.append(
                 '<span class="pull_left"><div id="message" class="alert alert-warning bigger-110">' +
                 '<strong>Created By: </strong> {{ time_log.created_by.name }}'+
@@ -584,61 +582,44 @@ function init_dialog() {
     {# Get Start End  #}
 
     var get_start_end = function () {
+        console.log("get_start_end");
+        console.log($('#start_end_date_range_picker').datepicker().val());
+        var date_string = $('#start_end_date_range_picker').datepicker().val().split('-');
 
-        var date_range = $('#start_end_date_range_picker').daterangepicker().val().split(' - ');
-        var start_date_string = date_range[0].split('/');
-        var end_date_string = date_range[1].split('/');
         var start_time_string = $('#start_time').val().split(':');
         var end_time_string = $('#end_time').val().split(':');
 
         var start = new Date(
-            parseInt(start_date_string[2]),
-            parseInt(start_date_string[0]) - 1,
-            parseInt(start_date_string[1]),
+            parseInt(date_string[2]),
+            parseInt(date_string[1]) - 1,
+            parseInt(date_string[0]),
             parseInt(start_time_string[0]),
             parseInt(start_time_string[1]),
             0, 0
         );
 
         var end = new Date(
-            parseInt(end_date_string[2]),
-            parseInt(end_date_string[0]) - 1,
-            parseInt(end_date_string[1]),
+            parseInt(date_string[2]),
+            parseInt(date_string[1]) - 1,
+            parseInt(date_string[0]),
             parseInt(end_time_string[0]),
             parseInt(end_time_string[1]),
             0, 0
         );
 
-{#        if(start.getDate() == end.getDate() && start.getMonth()==end.getMonth()) {#}
-{##}
-{#            $('#auto_split_wh_cg').hide();#}
-{##}
-{#        }else{#}
-{##}
-{#            $('#auto_split_wh_cg').show();#}
-{#        }#}
         return [start, end];
     };
 
     {# ***************************************************************** #}
     {# Start & End Date Picker #}
     // initialize date picker
-    var start_end_date_range_picker = $('#start_end_date_range_picker').daterangepicker();
+    var start_end_date_range_picker = $('#start_end_date_range_picker').datepicker();
+    start_end_date_range_picker.datepicker('setDate', start_date_value);
 
-    // also update the icon
-    start_end_date_range_picker.next().on('click', function () {
-        $(this).prev().focus();
-    });
+    $('.date-picker').datepicker().next().on(ace.click_event, function(){
+                $(this).prev().focus();
+            });
 
-    // fix z-index of the container
-    // start_end_date_range_picker.data().daterangepicker.container.css({'z-index': 1060});
-    start_end_date_range_picker.val(
-        start_date_value.format('mm/dd/yyyy') + ' - ' + end_date_value.format('mm/dd/yyyy')
-    );
-
-    start_end_date_range_picker.data().daterangepicker.updateFromControl();
-
-    // TODO: Change the listener action type
     start_end_date_range_picker.on('shown', function (e) {
         e.stopPropagation();
     });
@@ -678,13 +659,9 @@ function init_dialog() {
         update_hours_to_complete();
     });
 
-
     var post_finalize_action = function () {
 
         submit_button.button('loading');
-        console.log("$('#revision_type').val(): "+$('#revision_type').val());
-        console.log('post_finalize_action: '+submit_finalize_form_url+' status_code:'+status_code+'remaining_minutes_after_this_time_log_string: '+remaining_minutes_after_this_time_log_string);
-
         $.post(
             submit_finalize_form_url,
             $.param({
