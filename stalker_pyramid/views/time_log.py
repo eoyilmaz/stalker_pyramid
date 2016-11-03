@@ -196,6 +196,7 @@ def create_time_log(request):
         return response
     task.update_schedule_info()
     fix_task_computed_time(task)
+
     if task.total_logged_seconds > task.schedule_seconds:
 
         logger.debug('EXTEND TIMING OF TASK!')
@@ -278,7 +279,7 @@ def update_time_log(request):
     time_log.task.update_schedule_info()
     fix_task_computed_time(time_log.task)
 
-    if time_log.task.total_logged_seconds>time_log.task.schedule_seconds:
+    if time_log.task.total_logged_seconds > time_log.task.schedule_seconds:
 
         revision_type = request.params.get('revision_type', 'Auto Extended Time')
         auto_extend_time(time_log.task,
