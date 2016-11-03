@@ -135,18 +135,27 @@
                 </div>
             </div>
 
-            {# if_completed #}
-            <div id="if_completed" class="control-group">
-                <label class="span2 control-label" for="if_completed_cb">
-                </label>
-                <div class="span10">
-                    <input id="if_completed_cb"
-                           name="if_completed_cb"
-                           type="checkbox"
-                           class="ace ace-checkbox-2">
-                    <label class="lbl blue" for="if_completed_cb"> Set as Completed</label>
+            <div class="control-group">
+                <label class="span2 control-label">Select</label>
+                <div index="final_action_rb" class="span10 controls">
+
+                    <label>
+                        <input name="final_action" type="radio" class="ace" value="wip" checked="checked"/>
+                        <span class="lbl" > Not Finished Yet </span>
+                    </label>
+
+                    <label>
+                        <input name="final_action" type="radio" class="ace" value="force_complete"/>
+                        <span class="lbl" > Set As Completed </span>
+                    </label>
+
+                    <label>
+                        <input name="final_action" type="radio" class="ace" value="request_final_review"/>
+                        <span class="lbl" > Submit For Final Review </span>
+                    </label>
                 </div>
             </div>
+
         </div>
 
     </form>
@@ -299,10 +308,7 @@ function init_dialog() {
     var update_hours_to_complete = function () {
         // total hours of time_logs should have been given by Stalker
         // calculate the remaining hours
-
         var task_id = parseInt(time_log_task.val());
-        submit_finalize_form_url = null;
-
         if (task_id === -1){ return }
 
         $.getJSON('/tasks/' + task_id + '/').then(function (data) {
@@ -381,16 +387,6 @@ function init_dialog() {
                 );
                 $('#percent_bar_container').show();
                 $('#revision_type_cg').hide();
-                $('#if_completed_cb').on('click', function () {
-                    if(this.checked){
-                        submit_finalize_form_url = '/tasks/'+task_id+'/force_status/CMPL';
-                        status_code = 'CMPL';
-                    }
-                    else{
-                        submit_finalize_form_url = null;
-                        status_code = '';
-                    }
-                });
                 completed_percent = (100 - ((remaining_seconds_after_this_time_log / parseFloat(data[0].schedule_seconds)) * 100)).toFixed(1);
             } else {
 
@@ -402,15 +398,6 @@ function init_dialog() {
                 alert_information.append(exceeding_message);
                 completed_percent = 100;
 
-                submit_finalize_form_url = '/tasks/'+task_id+'/auto_extend_time';
-                $('#if_completed_cb').on('click', function () {
-                    if(this.checked){
-                        status_code = 'CMPL';
-                    }
-                    else{
-                        status_code = '';
-                    }
-                });
                 $('#percent_bar_container').hide();
                 $('#revision_type_cg').show();
             }
@@ -659,6 +646,29 @@ function init_dialog() {
         update_hours_to_complete();
     });
 
+    {# ***************************************************************** #}
+    {# Radio Select #}
+    $('.controls input[type="radio"]').on('change', function(){
+
+        var task_id = parseInt(time_log_task.val());
+        submit_finalize_form_url = null;
+
+        var final_action = $('input[name="final_action"]:checked', '.controls').val();
+
+        switch(final_action){
+            case 'force_complete':
+                submit_finalize_form_url = '/tasks/'+task_id+'/force_status/CMPL';
+                break;
+            case 'request_final_review':
+                submit_finalize_form_url = '/tasks/'+task_id+'/request_review';
+                break;
+            case 'wip':
+                submit_finalize_form_url = null;
+                break;
+        }
+
+    });
+
     var post_finalize_action = function () {
 
         submit_button.button('loading');
@@ -724,13 +734,15 @@ function init_dialog() {
 {#        }#}
 
         if (form_is_valid) {
-            console.log('submit_finalize_form_url '+submit_finalize_form_url);
             $.post(
                 time_log_form.attr('action'),
                 time_log_form.serialize() + '&' +
                 $.param({
                     'start': start.toUTCString(),
-                    'end': end.toUTCString()
+                    'end': end.toUTCString(),
+                    'status_code': status_code,
+                    'remaining_minutes_after_this_time_log_string':remaining_minutes_after_this_time_log_string,
+                    'revision_type': $('#revision_type').val()
                 })
             ).done(function (response_text) {
                 if (submit_finalize_form_url){

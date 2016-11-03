@@ -780,7 +780,7 @@ def main(global_config, **settings):
     config.add_route('request_revisions_dialog',   'tasks/request_revisions/dialog')
     config.add_route('request_revisions',   'tasks/request_revisions')
 
-    config.add_route('auto_extend_time', 'tasks/{id}/auto_extend_time')
+    # config.add_route('auto_extend_time', 'tasks/{id}/auto_extend_time')
 
     config.add_route('request_extra_time', 'tasks/{id}/request_extra_time')
     config.add_route('request_extra_time_dialog', 'tasks/{id}/request_extra_time/dialog')

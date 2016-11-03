@@ -36,7 +36,8 @@ from stalker_pyramid.views import (get_logged_in_user,
                                    local_to_utc, get_multi_integer)
 from stalker_pyramid.views.task import (get_task_full_path,
                                         generate_where_clause,
-                                        fix_task_computed_time)
+                                        fix_task_computed_time,
+                                        auto_extend_time)
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -195,6 +196,15 @@ def create_time_log(request):
         return response
     task.update_schedule_info()
     fix_task_computed_time(task)
+    if task.total_logged_seconds > task.schedule_seconds:
+
+        logger.debug('EXTEND TIMING OF TASK!')
+        revision_type = request.params.get('revision_type', 'Auto Extended Time')
+        auto_extend_time(task,
+                         description,
+                         revision_type,
+                         logged_in_user)
+
     logger.debug('successfully created time log!')
     response = Response(get_task_full_path(task.id))
 
@@ -267,6 +277,15 @@ def update_time_log(request):
 
     time_log.task.update_schedule_info()
     fix_task_computed_time(time_log.task)
+
+    if time_log.task.total_logged_seconds>time_log.task.schedule_seconds:
+
+        revision_type = request.params.get('revision_type', 'Auto Extended Time')
+        auto_extend_time(time_log.task,
+                         description,
+                         revision_type,
+                         logged_in_user)
+
     return Response('TimeLog has been updated successfully')
 
 

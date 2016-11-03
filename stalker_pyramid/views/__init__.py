@@ -73,21 +73,21 @@ def to_seconds(timing, unit):
 
 
 def seconds_in_unit(unit):
-
+    logger.debug("seconds_in_unit: %s" % unit)
     if unit == 'min':
         return 60
-    elif 'h':
+    elif unit == 'h':
         return 3600
-    elif 'd':
+    elif unit == 'd':
         return 32400
         # TODO: this is not true, please use: stalker.defaults.daily_working_hours
-    elif 'w':
+    elif unit == 'w':
         return 183600
         # TODO: this is not true, please use: stalker.defaults.weekly_working_hours
-    elif 'm':
+    elif unit == 'm':
         return 734400
         # TODO: this is not true, please use: 4 * stalker.defaults.weekly_working_hours
-    elif 'y':
+    elif unit == 'y':
         return 9573418
         # TODO: this is not true, please use: stalker.defaults.yearly_working_days * stalker.defaults.daily_working_hours
     else:
@@ -233,6 +233,41 @@ def get_time(request, time_attr):
         hours=time_part.hour,
         minutes=time_part.minute
     )
+
+
+def convert_seconds_to_time_range(seconds):
+
+    if seconds == 0:
+        return '0'
+
+    units = ['y', 'm', 'w', 'd', 'h', 'min']
+    time_range_string = ''
+    remainder = 0
+    integer_division = 0
+    current_unit = ''
+    sec_in_unit = ''
+    logger.debug("seconds %s " % seconds)
+    for i in range(0, len(units)):
+        current_unit = units[i]
+        logger.debug("i %s " % i)
+        logger.debug("current_unit %s " % current_unit)
+
+        sec_in_unit = seconds_in_unit(current_unit)
+        logger.debug("sec_in_unit %s " % sec_in_unit)
+
+        integer_division = int(seconds / sec_in_unit)
+        logger.debug("integer_division %s " % integer_division)
+
+        remainder = seconds % sec_in_unit
+        logger.debug("remainder %s " % remainder)
+
+        if integer_division > 0:
+            if time_range_string != ' ':
+                time_range_string += ' '
+            time_range_string += '%s %s' % (integer_division, current_unit)
+
+        seconds = remainder
+    return time_range_string
 
 
 def get_date(request, date_attr):

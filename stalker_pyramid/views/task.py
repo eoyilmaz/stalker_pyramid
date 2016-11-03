@@ -44,6 +44,7 @@ from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
                                    get_multi_integer, milliseconds_since_epoch,
                                    StdErrToHTMLConverter,
                                    multi_permission_checker,
+                                   convert_seconds_to_time_range,
                                    dummy_email_address, local_to_utc,
                                    get_path_converter, invalidate_all_caches)
 from stalker_pyramid.views.link import (replace_img_data_with_links,
@@ -4561,11 +4562,11 @@ def request_review(request):
 
 def cut_schedule_timing(task):
 
-
     timing, unit = task.least_meaningful_time_unit(task.total_logged_seconds)
     task.schedule_timing = timing
     task.schedule_unit = unit
     logger.debug("cut_schedule_timing : %s" % task.schedule_timing)
+
 
 def request_review_action(request, mode):
     """runs when resource request final review
@@ -4885,47 +4886,21 @@ def request_extra_time(request):
     return Response('Your extra time request has been sent to responsible')
 
 
-@view_config(
-    route_name='auto_extend_time',
-)
-def auto_extend_time(request):
+def auto_extend_time(task, description, revision_type, logged_in_user):
     """creates sends an email to the responsible about the user has requested
     extra time
     """
-
-    logger.debug('auto_extend_time')
+    logger.debug('EXTEND TIMING OF TASK!')
     # get logged in user as he review requester
-    logged_in_user = get_logged_in_user(request)
-
-    task_id = request.matchdict.get('id', -1)
-    task = Task.query.filter(Task.id == task_id).first()
-
-    if not task:
-        transaction.abort()
-        return Response('There is no task with id: %s' % task_id, 500)
-
-    if task.is_container:
-        transaction.abort()
-        return Response('Can not request extra time for a container '
-                        'task', 500)
-
-
-    remaining_minutes_after_this_time_log_string = request.params.get('remaining_minutes_after_this_time_log_string', '')
-    logger.debug('remaining_minutes_after_this_time_log_string : %s' % remaining_minutes_after_this_time_log_string)
-
-    logger.debug('task.total_logged_seconds : %s' % task.total_logged_seconds)
-    cut_schedule_timing(task)
-
-
-    description = request.params.get('description', '')
-    revision_type = request.params.get('revision_type', 'Auto Extended Time')
-    send_email = request.params.get('send_email', 1)  # for testing purposes
     utc_now = local_to_utc(datetime.datetime.now())
 
+    exceeded_time_str = convert_seconds_to_time_range(task.total_logged_seconds
+                                                      - task.schedule_seconds)
+
     note = create_simple_note('Extending timing of the task <b>'
-                                '%(remaining_minutes_after_this_time_log_string)s</b>.<br/>'
+                                '%(exceeded_time_str)s</b>.<br/>'
                                 '%(description)s' % {
-                                    'remaining_minutes_after_this_time_log_string': remaining_minutes_after_this_time_log_string,
+                                    'exceeded_time_str': exceeded_time_str,
                                     'description': description
                                 },
                               revision_type,
@@ -4934,25 +4909,7 @@ def auto_extend_time(request):
                               logged_in_user,
                               utc_now)
     task.notes.append(note)
-
-    status_code = request.params.get('status_code', None)
-    if status_code == 'CMPL':
-        status = Status.query.filter(Status.code == status_code).first()
-        content = '%s has changed this task status to %s %s' % (
-            logged_in_user.name,
-            status.name,
-            description
-        )
-
-        note = create_simple_note(content,
-                                  'Forced Status',
-                                  'red',
-                                  'forced_status',
-                                  logged_in_user,
-                                  utc_now)
-
-        set_task_status(task, status, note, logged_in_user, utc_now)
-
+    cut_schedule_timing(task)
 
     # extra_time_type = Type.query.filter(Type.name == 'Extra Time').first()
     # if not extra_time_type:
@@ -5028,15 +4985,6 @@ def auto_extend_time(request):
     # # invalidate all caches
     # invalidate_all_caches()
 
-    logger.debug(
-        'success:Extended time of the task'
-    )
-
-    request.session.flash(
-        'success:Extended time of the task'
-    )
-
-    return Response('Your extra time request has been sent to responsible')
 
 
 @view_config(
