@@ -660,7 +660,7 @@ function init_dialog() {
                 submit_finalize_form_url = '/tasks/'+task_id+'/force_status/CMPL';
                 break;
             case 'request_final_review':
-                submit_finalize_form_url = '/tasks/'+task_id+'/request_review';
+                submit_finalize_form_url = '/tasks/'+task_id+'/request_review?request_review_mode=Final';
                 break;
             case 'wip':
                 submit_finalize_form_url = null;
