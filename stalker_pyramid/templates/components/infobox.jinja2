@@ -28,9 +28,10 @@
 <script>
 
         function initInfoBox(address){
-            console.log("initInfoBox is started")
-
+            console.log("initInfoBox is started");
             var infobox = $('#infobox');
+
+            infobox.find(".infobox").remove();
             var infobox_template = doT.template($('#tmpl_infobox').html());
 
             $.getJSON(address).then(function (data) {

@@ -37,20 +37,20 @@
         <div class="span12">
             <!--PAGE CONTENT BEGINS-->
             <div class="row-fluid">
-                <div class="span7">
+                <div class="span6">
                     <div id="calendar"></div>
                 </div>
-                <div class="span5">
-{#                    <div class="row-fluid">#}
-{#                        <select id='project_cb' class='span6 input-block-level'>#}
-{#                        </select>#}
-{#                    </div>#}
-{#                    <div class="space"></div>#}
-{#                    <div class="hr hr8 hr-double"></div>#}
+                <div class="span6">
+                    <div class="row-fluid">
+                        <select id='project_cb' class='span6 input-block-level'>
+                        </select>
+                    </div>
+                    <div class="space"></div>
+                    <div class="hr hr8 hr-double"></div>
                     <div class="space"></div>
                     <div id="infobox"
-                         class="infobox-container">
-                        {% include 'components/infobox.jinja2' %}
+                         class="center">
+                        {% include 'components/infobtn.jinja2' %}
 {#                        <div class="infobox infobox-black infobox-small">#}
 {#                            <div class="infobox-icon">#}
 {#                                <i class="icon-bullhorn bigger-230"></i>#}
@@ -196,43 +196,45 @@
     <script src='{{ request.static_url("stalker_pyramid:static/ace/js/flot/jquery.flot.pie.min.js") }}'></script>
 
     <script type="text/javascript">
+
      $(document).ready(function () {
-            init_html_modal();
-            initInfoBox('/entities/{{ entity.id }}/tasks_stats/');
-{#            var project_cb = $('#project_cb');#}
-{#            var project_id = project_cb.val();#}
-{#            {% raw %}#}
-{#                var option_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');#}
-{#            {% endraw %}#}
-{#            project_cb.chosen({#}
-{#                search_contains: true,#}
-{#                enable_split_word_search: true#}
-{#            });#}
-{##}
-{#            $.getJSON('/entities/{{ entity.id }}/projects/').then(function(data){#}
-{##}
-{#                project_cb.find('option').remove();#}
-{##}
-{#                var data_count = data.length;#}
-{##}
-{#                for (var i=0; i < data_count; i++){#}
-{#                    project_cb.append(option_template(data[i]));#}
-{#                }#}
-{##}
-{#                // update the chosen fields#}
-{#                project_cb.trigger('liszt:updated');#}
-{##}
-{#                project_id = project_cb.val();#}
-{#                init_html_modal();#}
-{#                initInfoBox('/entities/{{ entity.id }}/tasks_stats/');#}
-{##}
-{#                project_cb.on('change', function () {#}
-{#                    task_type_str = task_type.val();#}
-{#                    project_id = $(this).val();#}
-{#                    init_html_modal();#}
-{#                    initInfoBox('/entities/{{ entity.id }}/tasks_stats/');#}
-{#                });#}
-{#            });#}
+
+            var project_cb = $('#project_cb');
+            var project_id = project_cb.val();
+
+            var status_code = '';
+
+            {% raw %}
+                var option_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
+            {% endraw %}
+
+            project_cb.chosen({
+                search_contains: true,
+                enable_split_word_search: true
+            });
+
+            $.getJSON('/entities/{{ entity.id }}/projects/').then(function(data){
+
+                project_cb.find('option').remove();
+
+                var data_count = data.length;
+
+                for (var i=0; i < data_count; i++){
+                    project_cb.append(option_template(data[i]));
+                }
+
+                // update the chosen fields
+                project_cb.trigger('liszt:updated');
+                project_id = project_cb.val();
+
+                initInfoBtn('/entities/{{ entity.id }}/tasks_stats/?project_id='+project_id);
+
+                project_cb.on('change', function () {
+                    project_id = $(this).val();
+                    initInfoBtn('/entities/{{ entity.id }}/tasks_stats/?project_id='+project_id);
+{#                    init_html_modal(status_code, project_id);#}
+                });
+            });
 
 
 

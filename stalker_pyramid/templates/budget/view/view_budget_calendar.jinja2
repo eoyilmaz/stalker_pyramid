@@ -695,6 +695,7 @@
         }
 
         function limitMoveLeft(task, limit){
+
             console.log('limitMoveLeft');
             var dur = task.end_date - task.start_date;
             task.end_date = new Date(limit.end_date);
@@ -703,6 +704,7 @@
         }
 
         function limitMoveRight(task, limit){
+
             console.log('limitMoveRight');
             var dur = task.end_date - task.start_date;
             task.start_date = new Date(limit.start_date);
@@ -711,14 +713,16 @@
         }
 
         function limitResizeLeft(task, limit){
+
             console.log('limitResizeLeft');
             task.end_date = new Date(limit.end_date);
 
         }
 
         function limitResizeRight(task, limit){
+
             console.log('limitResizeRight');
-            task.start_date = new Date(limit.start_date)
+            task.start_date = new Date(limit.start_date);
 
         }
 
@@ -734,21 +738,25 @@
 
             doOnLoad();
             $('#back_button').on('click', function (e) {
+
                 e.preventDefault();
                 e.stopPropagation();
 
                 gantt.eachSelectedTask(function(task_id){
                     shiftTask(task_id, -1)
                 });
+
             });
 
             $('#forward_button').on('click', function (e) {
+
                 e.preventDefault();
                 e.stopPropagation();
 
                 gantt.eachSelectedTask(function(task_id){
                     shiftTask(task_id, 1)
                 });
+
             });
 
             $('#export_button').on('click', function (e) {

@@ -1501,8 +1501,6 @@ def append_user_to_entity(request):
     )
 
 
-
-
 @view_config(
     route_name='get_entity_role_user',
     renderer='json'

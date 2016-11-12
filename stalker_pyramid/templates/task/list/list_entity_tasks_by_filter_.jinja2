@@ -1,59 +1,39 @@
+{% raw %}
+<script id="tmpl_btn" type="text/x-dot-template">
+    <button
+            id="{{=it.id}}"
+            class="btn btn-small btn-grey tooltip-success"
+            title="{{=it.title}}"
+            >
+        <i class="{{=it.icon}}"></i>
+    </button>
+</script>
+{% endraw %}
+
+
 <script class="dialog_loaded"></script>
 <div class="row-fluid">
-    <div class="widget-box">
-        <div class="widget-header widget-header-small header-color-status_{{ filter.code.lower() }}">
-            <h5 id="items_header">{{ filter.name }}</h5>
+    <div id="tasks_list" class="widget-box hide">
+        <div id="html_template_header" class="widget-header widget-header-small header-color-status_{{ filter.code.lower() }} ">
+            <h5 id="items_header"></h5>
             <div class="widget-toolbar">
                 <div class="space-5"></div>
-                {% if (logged_in_user in entity.resources or logged_in_user in entity.responsible) or has_permission('Update_Task') %}
+                <div id="button_list">
 
-                    {%if filter.code == 'WFD' or filter.code == 'RTS'%}
-                        <button
-                                id="remove_resource_btn"
-                                class="btn btn-small btn-info tooltip-success"
-                                title="Remove Task"
-                                >
-                            <i class="icon-user"></i>
-                        </button>
-                    {% endif %}
-                    {%if filter.code == 'WIP' or filter.code == 'HREV' %}
-                        <button id="force_complete_btn"
-                                class="btn btn-small btn-success tooltip-success"
-                                title="Force Complete"
-                                >
-                            <i class="icon-ok"></i>
-                        </button>
-                        <button
-                                id="remove_resource_btn"
-                                class="btn btn-small btn-info tooltip-success"
-                                title="Remove Task"
-                                >
-                            <i class="icon-user"></i>
-                        </button>
-                    {% endif %}
-                    {%if filter.code == 'CMPL'%}
-                        <button
-                                id="request_revisions_btn"
-                                class="btn btn-small btn-purple tooltip-success"
-                                title="Request Revisions">
-                            <i class="icon-comment-alt bigger-110"></i>
-                        </button>
-                        <button
-                                id="remove_resource_btn"
-                                class="btn btn-small btn-info tooltip-success"
-                                title="Remove Task"
-                                >
-                            <i class="icon-user"></i>
-                        </button>
-                    {% endif %}
-                {% endif %}
-
-
+                </div>
             </div>
         </div>
         <div class="widget-body">
             <div class="widget-main no-padding">
                 {% include 'components/jgrid_table.jinja2' %}
+                <div id="loading_spinner" class="well well-sm">
+
+                    <div class="inline middle blue bigger-110">
+                        <i class="icon-spinner icon-spin orange bigger-125"></i>
+                        Loading
+                        content...
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -64,42 +44,70 @@
 <script src='{{ request.static_url("stalker_pyramid:static/jqGrid/js/jquery.jqGrid.min.js") }}'></script>
 <script src='{{ request.static_url("stalker_pyramid:static/jqGrid/plugins/ui.multiselect.js") }}'></script>
 
-
-
 <script>
-    function init_html_modal() {
+
+    function clear_html_modal(){
+        $('#tasks_list').hide();
+
+        $('#button_list').find('button').remove();
+        unloadTableData();
+    }
+    function init_html_modal(status_code, project_id) {
 
         console.debug('starting to initialize init_html_modal dialog!!!');
         var query_str = '';
 
-        {% if query_str %}
-            query_str = "{{ query_str }}";
-        {% else %}
-            {% if filter.entity_type == 'Status' %}
-                var template_label = $('#html_template_label');
-                template_label.find('span').remove();
-                {% if is_warning_list %}
-                    template_label.append('<span>Black List<small> !! these tasks should have been sent to review or an extra time request should have been made for them !!</small></span>');
-                    $('#html_template_header').attr('class', 'table-header header-color-dark');
-                {% else %}
-                    template_label.append('<span>{{ filter.name }}</span>');
-                    $('#html_template_header').attr('class', 'table-header header-color-status_{{ filter.code.lower() }}');
-                {% endif %}
-            {% endif %}
+        var items_header = $('#items_header');
+        items_header.text(status_code);
 
-            {% if entity.entity_type == 'User' %}
-                query_str = 'has_resource=1&leaf_only=1&resource_id={{ entity.id }}';
-            {% elif entity.entity_type == 'Project'%}
-                query_str = 'has_resource=1&leaf_only=1&project_id={{ entity.id }}';
-            {% endif %}
+        $('#html_template_header').attr('class', 'widget-header widget-header-small header-color-status_'+status_code);
+        $('#tasks_list').show();
+        var button_list = $('#button_list');
+        $('#button_list').find('button').remove();
+        var btn_template = doT.template($('#tmpl_btn').html());
+        var remove_task_btn_info = {
+                                        'id':'remove_resource_btn',
+                                        'title':'Remove Task',
+                                        'icon':'icon-trash'
+        }
 
-            {% if filter.entity_type == 'User' %}
-                query_str = 'has_resource=1&leaf_only=1&responsible_id={{ filter.id }}';
-            {% elif filter.entity_type == 'Status'%}
-                query_str += '&status={{ filter.code }}';
-            {% endif %}
+        var enter_timelog_btn_info = {
+                                        'id':'timelog_btn',
+                                        'title':'Enter Timelog',
+                                        'icon':'icon-calendar'
+        }
+
+        var force_complete_btn_info = {
+                                        'id':'force_complete_btn',
+                                        'title':'Force Complete',
+                                        'icon':'icon-ok'
+        }
+
+        var request_revisions_btn_info = {
+                                        'id':'request_revisions_btn',
+                                        'title':'Request Revisions',
+                                        'icon':'icon-comment-alt'
+        }
+
+         {% if (logged_in_user in entity.resources or logged_in_user in entity.responsible) or has_permission('Update_Task') %}
+            if (status_code == 'wfd' || status_code == 'rts'){
+                button_list.append(btn_template(remove_task_btn_info));
+                if ( status_code == 'rts'){
+                    button_list.append(btn_template(enter_timelog_btn_info));
+                }
+            }
+            if (status_code == 'wip' || status_code == 'hrev'){
+                button_list.append(btn_template(force_complete_btn_info));
+                button_list.append(btn_template(remove_task_btn_info));
+                button_list.append(btn_template(enter_timelog_btn_info));
+            }
+
+            if (status_code == 'cmpl'){
+                button_list.append(btn_template(request_revisions_btn_info));
+            }
         {% endif %}
 
+        query_str = 'status='+status_code+'&project_id='+project_id+'&has_resource=1&leaf_only=1&resource_id={{ entity.id }}';
 
         var colNames = ['Name', 'Bid', 'ST'];
         var colModel = [
@@ -124,17 +132,19 @@
                         }
                 ];
 
-        var sortingParameters = [[0, 'asc']];
         var tableDataAddress = '/tasks/?' + query_str;
-        $.getJSON(tableDataAddress).then(function (data) {
+        $('#loading_spinner').show();
 
+        $.getJSON(tableDataAddress).then(function (data) {
+            $('#loading_spinner').hide();
             console.log("tableDataAddress is loaded");
             var total_remain_st_seconds = 0;
             var total_remain_bid_seconds = 0;
+
             for (var i = 0; i < data.length; i++) {
-                // fix dates
 
                 data[i].start = new Date(data[i].start).format('yyyy-mm-dd HH:MM');
+
                 if(data[i].end){
                     data[i].end = new Date(data[i].end).format('yyyy-mm-dd HH:MM');
                 }
@@ -146,7 +156,7 @@
                                         data[i].bid_unit
                                 );
 
-                total_remain_bid_seconds +=(bid_seconds-data[i].total_logged_seconds);
+                total_remain_bid_seconds += (bid_seconds-data[i].total_logged_seconds);
 
                 data[i].hour_based_on_bid = meaningful_time_between(
                                                     bid_seconds,
@@ -158,7 +168,7 @@
                                         data[i].schedule_unit
                                 );
 
-                total_remain_st_seconds +=(st_seconds-data[i].total_logged_seconds);
+                total_remain_st_seconds += (st_seconds-data[i].total_logged_seconds);
 
                 data[i].hour_to_complete = meaningful_time_between(
                                                st_seconds,
@@ -175,7 +185,7 @@
                 hour_based_on_bid: meaningful_time(total_remain_bid_seconds),
                 hour_to_complete: meaningful_time(total_remain_st_seconds)
             };
-
+            console.log(data);
 
             loadTableData(
                     data,
@@ -222,6 +232,14 @@
             remove_resource_btn.on('click', function(){
                 submit_form_url = '/tasks/remove/resources/{{ entity.id }}/dialog';
                 submit_action()
+            });
+        }
+
+        var timelog_btn = $('#timelog_btn');
+        if(timelog_btn){
+            timelog_btn.on('click', function(){
+                submit_form_url = '/users/{{ entity.id }}/multi_timelogs/create/dialog?';
+                submit_action();
             });
         }
 

@@ -773,6 +773,7 @@ def main(global_config, **settings):
     config.add_route('get_task_last_reviews',   'tasks/{id}/last_reviews/') #json
 
     config.add_route('request_review',                  'tasks/{id}/request_review')
+    config.add_route('request_reviews',                  'tasks/request_reviews')
     config.add_route('request_review_task_dialog',      'tasks/{id}/request_review/dialog')
 
     config.add_route('approve_task',   'tasks/{id}/approve')
@@ -826,6 +827,10 @@ def main(global_config, **settings):
 
     config.add_route('create_time_log', 'time_logs/create')
     config.add_route('update_time_log', 'time_logs/{id}/update')
+
+
+    config.add_route('user_multi_timelog_dialog',     'users/{id}/multi_timelogs/create/dialog')
+    config.add_route('create_multi_timelog', 'timelogs/multi/create')
 
     config.add_route('delete_time_log',  'time_logs/{id}/delete')
 

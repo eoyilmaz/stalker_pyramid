@@ -33,11 +33,13 @@ from stalker.exceptions import OverBookedError, DependencyViolationError
 from stalker_pyramid.views import (get_logged_in_user,
                                    PermissionChecker, milliseconds_since_epoch,
                                    get_date, StdErrToHTMLConverter,
-                                   local_to_utc, get_multi_integer)
+                                   local_to_utc, get_multi_integer, to_seconds,
+                                   from_milliseconds, seconds_since_epoch)
 from stalker_pyramid.views.task import (get_task_full_path,
                                         generate_where_clause,
                                         fix_task_computed_time,
-                                        auto_extend_time)
+                                        auto_extend_time,
+                                        get_schedule_information)
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -288,6 +290,189 @@ def update_time_log(request):
                          logged_in_user)
 
     return Response('TimeLog has been updated successfully')
+
+
+@view_config(
+    route_name='user_multi_timelog_dialog',
+    renderer='templates/time_log/dialog/multi_timelog_dialog.jinja2'
+)
+def user_multi_timelog_dialog(request):
+    """creates a create_time_log_dialog by using the given task
+    """
+    logger.debug('inside timelog_dialog')
+
+    came_from = request.params.get('came_from', '/')
+    logger.debug('came_from %s: ' % came_from)
+
+    # get logged in user
+    logged_in_user = get_logged_in_user(request)
+
+    entity_id = request.matchdict.get('id', -1)
+    entity = Entity.query.filter_by(id=entity_id).first()
+
+    selected_task_list = get_multi_integer(request, 'task_ids', 'GET')
+    tasks = Task.query.filter(Task.id.in_(selected_task_list)).all()
+
+    studio = Studio.query.first()
+    if not studio:
+        studio = defaults
+
+    return {
+        'mode': 'create',
+        'has_permission': PermissionChecker(request),
+        'studio': studio,
+        'logged_in_user': logged_in_user,
+        'entity': entity,
+        'came_from': came_from,
+        'tasks': tasks,
+        'milliseconds_since_epoch': milliseconds_since_epoch,
+    }
+
+
+
+@view_config(
+    route_name='create_multi_timelog'
+)
+def create_multi_timelog(request):
+    """runs when creating a time_log
+    """
+    logger.debug('create_multi_timelog method starts')
+
+    #**************************************************************************
+    # task
+
+    logged_in_user = get_logged_in_user(request)
+    utc_now = local_to_utc(datetime.datetime.now())
+
+    selected_task_list = get_multi_integer(request, 'task_ids')
+    tasks = Task.query.filter(Task.id.in_(selected_task_list)).all()
+
+    if not tasks:
+        return Response('No task id found', 500)
+
+    #**************************************************************************
+    # resource
+    resource_id = request.params.get('resource_id', None)
+    resource = User.query.filter(User.id == resource_id).first()
+
+    logger.debug('resource_id : %s' % resource_id)
+    logger.debug('resource : %s' % resource)
+
+    if not resource:
+        return Response('No user with id %s found' % resource_id, 500)
+
+    #**************************************************************************
+    # collect data
+    start_date = get_date(request, 'start')
+    description = request.params.get('description', '')
+
+    logger.debug('start_date  : %s' % start_date)
+    logger.debug('description    : %s' % description)
+
+    schedule_info = get_schedule_information(request)
+    if not schedule_info:
+        transaction.abort()
+        return schedule_info
+
+    schedule_timing = schedule_info[0]
+    schedule_unit = schedule_info[1]
+
+    duration = to_seconds(schedule_timing, schedule_unit)
+
+    logger.debug('schedule_timing: %s' % schedule_timing)
+    logger.debug('schedule_unit  : %s' % schedule_unit)
+    logger.debug('duration  : %s' % duration)
+
+    if resource and start_date and duration:
+
+        for task in tasks:
+            start_as_seconds = seconds_since_epoch(start_date)
+            end_as_seconds = start_as_seconds + duration
+            end_date = from_milliseconds(end_as_seconds*1000)
+
+            try:
+                logger.debug('recursive_create_timelog_action')
+                logger.debug('start_date  : %s' % start_date)
+                logger.debug('end_date  : %s' % end_date)
+                logger.debug('resource  : %s' % resource)
+
+                time_log = task.create_time_log(resource, start_date, end_date)
+                time_log.description = description
+                time_log.created_by = logged_in_user
+                time_log.date_created = utc_now
+                logger.debug('timelog created!')
+
+            except (OverBookedError, TypeError, DependencyViolationError) as e:
+                converter = StdErrToHTMLConverter(e)
+                response = Response(converter.html(), 500)
+                transaction.abort()
+                return response
+            else:
+
+                start_date = end_date
+
+                request.session.flash(
+                    'success: Time log for <strong>%s</strong> is saved for '
+                    'resource <strong>%s</strong>.' % (task.name, resource.name)
+                )
+                task.update_schedule_info()
+                fix_task_computed_time(task)
+
+                if task.total_logged_seconds > task.schedule_seconds:
+
+                    revision_type = request.params.get('revision_type', 'Auto Extended Time')
+                    auto_extend_time(task,
+                                     description,
+                                     revision_type,
+                                     logged_in_user)
+    else:
+        response = Response(
+            'There are missing parameters: ', 500
+        )
+        transaction.abort()
+        return response
+
+    logger.debug('successfully created time log!')
+    response = Response('successfully created time log!')
+
+    return response
+
+
+def recursive_create_timelog_action(t, s_date, d, r, desc, l_in_user, u_now):
+
+    logger.debug('recursive_create_timelog_action is starts')
+
+    task = t
+    start_date = s_date
+    duration = d
+    resource = r
+    description = desc
+    logged_in_user = l_in_user
+    utc_now = u_now
+
+    start_as_seconds = seconds_since_epoch(start_date)
+    end_as_seconds = start_as_seconds + duration
+    end_date = from_milliseconds(end_as_seconds*1000)
+
+    try:
+        logger.debug('recursive_create_timelog_action')
+        logger.debug('start_date  : %s' % start_date)
+        logger.debug('end_date  : %s' % end_date)
+        logger.debug('resource  : %s' % resource)
+
+        time_log = task.create_time_log(resource, start_date, end_date)
+        time_log.description = description
+        time_log.created_by = logged_in_user
+        time_log.date_created = utc_now
+        logger.debug('timelog created!')
+
+    except (OverBookedError, TypeError, DependencyViolationError) as e:
+        converter = StdErrToHTMLConverter(e)
+        response = Response(converter.html(), 500)
+        transaction.abort()
+        return response
+    else:
+        return end_date
 
 
 @view_config(

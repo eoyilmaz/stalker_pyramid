@@ -2431,10 +2431,13 @@ def get_cached_user_tasks(statuses, user_id):
     """
     sql_query = """select
         "Tasks".id  as task_id,
-        "ParentTasks".full_path as task_name
+        "ParentTasks".full_path as task_name,
+        "Task_SimpleEntities".name as short_name
+
     from "Tasks"
         join "Task_Resources" on "Task_Resources".task_id = "Tasks".id
         join "Statuses" as "Task_Statuses" on "Task_Statuses".id = "Tasks".status_id
+        join "SimpleEntities" as "Task_SimpleEntities" on "Task_SimpleEntities".id = "Tasks".id
         left join (
             %(generate_recursive_task_query)s
         ) as "ParentTasks" on "Tasks".id = "ParentTasks".id
@@ -2458,7 +2461,8 @@ def get_cached_user_tasks(statuses, user_id):
     return_data = [
         {
             'id': r[0],
-            'name': r[1]
+            'name': r[1],
+            'short_name': r[2]
         }
         for r in result.fetchall()
     ]
@@ -2731,7 +2735,7 @@ where "Task_Resources".resource_id = %s
 
 
 @cache_region('long_term', 'load_tasks')
-def get_cached_entity_tasks_stats(entity, entity_id):
+def get_cached_entity_tasks_stats(entity, entity_id, project):
     sql_query = """
         select
             count("Tasks".id) as count,
@@ -2767,11 +2771,15 @@ def get_cached_entity_tasks_stats(entity, entity_id):
         where_clause_for_entity = \
             'join "Task_Resources" on "Task_Resources".task_id = "Tasks".id ' \
             'where "Task_Resources".resource_id =%s' % entity_id
+        if project:
+            where_clause_for_entity += ' and "Tasks".project_id = %s' % project.id
     elif isinstance(entity, Project):
         where_clause_for_entity = 'where "Tasks".project_id =%s' % entity_id
     sql_query = sql_query % {
         'where_clause_for_entity': where_clause_for_entity
     }
+
+    logger.debug("sql_query: %s" % sql_query)
     # convert to dgrid format right here in place
     result = db.DBSession.connection().execute(sql_query)
     return_data = [
@@ -2798,9 +2806,12 @@ def get_entity_tasks_stats(request):
     entity_id = request.matchdict.get('id', -1)
     entity = Entity.query.filter_by(id=entity_id).first()
 
+    project_id = request.params.get('project_id', -1)
+    project = Project.query.filter_by(id=project_id).first()
+
     logger.debug('get_entity_tasks_stats is starts')
 
-    return_data = get_cached_entity_tasks_stats(entity, entity_id)
+    return_data = get_cached_entity_tasks_stats(entity, entity_id, project)
 
     resp = Response(
         json_body=return_data
@@ -4425,7 +4436,51 @@ def request_review(request):
 
     # invalidate all caches
     invalidate_all_caches()
-    return request_review_action(request, request_review_mode)
+
+    send_email = request.params.get('send_email', 1)
+    description = request.params.get('description', "")
+
+    return request_review_action(request, task, logged_in_user, description, send_email, request_review_mode)
+
+
+@view_config(
+    route_name='request_reviews',
+)
+def request_reviews(request):
+    """creates a new ticket and sends an email to the responsible
+    """
+    logger.debug('request_review method starts')
+    # get logged in user as he review requester
+    logged_in_user = get_logged_in_user(request)
+
+    selected_task_list = get_multi_integer(request, 'task_ids', 'GET')
+    tasks = Task.query.filter(Task.id.in_(selected_task_list)).all()
+    if not tasks:
+        selected_task_list = get_multi_integer(request, 'task_ids')
+        tasks = Task.query.filter(Task.id.in_(selected_task_list)).all()
+        if not tasks:
+            transaction.abort()
+            return Response('Can not find any Task', 500)
+
+    request_review_mode = request.params.get('request_review_mode', 'Progress')
+
+    for task in tasks:
+        # check if the user is one of the resources of this task or the responsible
+        if logged_in_user not in task.resources and \
+           logged_in_user not in task.responsible:
+            request.session.flash(
+                'warning:You are not one of the resources nor the '
+                'responsible of this task, so you can not request a '
+                'review for this task'
+            )
+        else:
+            invalidate_all_caches()
+            send_email = request.params.get('send_email', 1)
+            description = request.params.get('description', "")
+            request_review_action(request, task, logged_in_user, description, send_email, request_review_mode)
+            # request_review_action(request, request_review_mode)
+
+    return Response('Successfully requested reviews')
 
 # def request_progress_review(request):
 #     """runs when resource request final review"""
@@ -4568,22 +4623,22 @@ def cut_schedule_timing(task):
     logger.debug("cut_schedule_timing : %s" % task.schedule_timing)
 
 
-def request_review_action(request, mode):
+def request_review_action(request, task, logged_in_user, desc, send_email, mode):
     """runs when resource request final review
     """
 
     logger.debug('request_final_review starts')
 
-    logged_in_user = get_logged_in_user(request)
-
-    task_id = request.matchdict.get('id', -1)
-    task = Task.query.filter(Task.id == task_id).first()
+    # logged_in_user = get_logged_in_user(request)
+    #
+    # task_id = request.matchdict.get('id', -1)
+    # task = Task.query.filter(Task.id == task_id).first()
 
     if mode == 'Final':
         cut_schedule_timing(task)
 
-    note_str = request.params.get('description', 'No note')
-    send_email = request.params.get('send_email', 1)  # for testing purposes
+    note_str = desc
+    # send_email = request.params.get('send_email', 1)  # for testing purposes
 
     utc_now = local_to_utc(datetime.datetime.now())
 
@@ -5624,12 +5679,17 @@ def force_tasks_status(request):
         transaction.abort()
         return Response('Can not set status to: %s' % status_code, 500)
 
-    selected_task_list = get_multi_integer(request, 'task_ids', 'GET')
+    selected_task_list = get_multi_integer(request, 'task_ids')
     tasks = Task.query.filter(Task.id.in_(selected_task_list)).all()
 
     if not tasks:
-        transaction.abort()
-        return Response('Can not find any task !!', 500)
+
+        selected_task_list = get_multi_integer(request, 'task_ids', 'GET')
+        tasks = Task.query.filter(Task.id.in_(selected_task_list)).all()
+
+        if not tasks:
+            transaction.abort()
+            return Response('Can not find any task !!', 500)
 
     result_message =[]
     note_str = request.params.get('description', '')
@@ -6039,9 +6099,9 @@ def selected_task_dialog(request):
 
     return {
         'tasks': tasks,
-        'user_type':user_type,
+        'user_type': user_type,
         'came_from': came_from,
-        'project_id':project_id
+        'project_id': project_id
     }
 
 
