@@ -35,8 +35,9 @@
 <script type="text/javascript">
 
         var unloadTableData = function(){
-
+             $('#loading_spinner').show();
             var tasks_table = $('#tasks_table');
+            tasks_table.hide();
             tasks_table.find("#table_container").remove();
             tasks_table.find("#grid-pager").remove();
         }
@@ -47,6 +48,7 @@
             $('#loading_spinner').hide();
 
             var tasks_table = $('#tasks_table');
+            tasks_table.show();
             tasks_table.find("#table_container").remove();
             tasks_table.find("#grid-pager").remove();
             var grid_selector = "#grid-table";

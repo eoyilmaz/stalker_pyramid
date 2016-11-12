@@ -25,7 +25,7 @@
         </div>
         <div class="widget-body">
             <div class="widget-main no-padding">
-                {% include 'components/jgrid_table.jinja2' %}
+
                 <div id="loading_spinner" class="well well-sm">
 
                     <div class="inline middle blue bigger-110">
@@ -34,6 +34,7 @@
                         content...
                     </div>
                 </div>
+                {% include 'components/jgrid_table.jinja2' %}
             </div>
         </div>
     </div>
@@ -48,12 +49,12 @@
 
     function clear_html_modal(){
         $('#tasks_list').hide();
-
         $('#button_list').find('button').remove();
         unloadTableData();
+
     }
     function init_html_modal(status_code, project_id) {
-
+        clear_html_modal();
         console.debug('starting to initialize init_html_modal dialog!!!');
         var query_str = '';
 
