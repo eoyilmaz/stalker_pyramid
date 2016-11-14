@@ -46,7 +46,8 @@ from stalker_pyramid.views import (PermissionChecker, get_logged_in_user,
                                    multi_permission_checker,
                                    convert_seconds_to_time_range,
                                    dummy_email_address, local_to_utc,
-                                   get_path_converter, invalidate_all_caches)
+                                   get_path_converter, invalidate_all_caches,
+                                   measure_time)
 from stalker_pyramid.views.link import (replace_img_data_with_links,
                                         MediaManager)
 from stalker_pyramid.views.note import create_simple_note
@@ -1955,7 +1956,9 @@ def cached_query_tasks(
     if limit:
         sql_query = '%s limit %s' % (sql_query, limit)
     from sqlalchemy import text  # to be able to use "%" sign use this function
-
+    logger.debug("Big Fucking Query Starts")
+    logger.debug("%s" % sql_query)
+    logger.debug("Big Fucking Query Ends")
     result = db.DBSession.connection().execute(text(sql_query))
     # use local functions to speed things up
     local_raw_data_to_array = raw_data_to_array
@@ -2010,7 +2013,7 @@ def get_tasks(request):
     """RESTful version of getting all tasks
     """
     logger.debug('get_tasks is running')
-    start = time.time()
+    global_start = start = time.time()
     # set the content range to prevent JSONRest Store to query the data twice
     offset = request.params.get('offset', 0)
     limit = request.params.get('limit')
@@ -2019,7 +2022,10 @@ def get_tasks(request):
     logger.debug('order_by_params: %s' % order_by_params)
 
     where_clause = generate_where_clause(request.params.dict_of_lists())
+    end = time.time()
+    logger.debug('generate_where_clause: %s seconds' % (end - start))
 
+    start = time.time()
     task_id = None
     if 'id' in request.params:
         # check if this is a Task or Project
@@ -2032,6 +2038,10 @@ def get_tasks(request):
         where_clause=where_clause,
         task_id=task_id,
     )
+    end = time.time()
+    logger.debug(
+        'query_tasks: %s seconds' % (end - start)
+    )
 
     task_count = len(return_data)
     content_range = '%s-%s/%s' % (offset, offset + task_count - 1, task_count)
@@ -2040,9 +2050,12 @@ def get_tasks(request):
         json_body=return_data
     )
     resp.content_range = content_range
-    end = time.time()
-    logger.debug('GET_TASKS: %s rows retrieved in %s seconds' % (len(return_data),
-                                                      (end - start)))
+    global_end = time.time()
+    logger.debug(
+        'GET_TASKS: %s rows retrieved in %s seconds' % (
+            len(return_data), (global_end - global_start)
+        )
+    )
 
     return resp
 

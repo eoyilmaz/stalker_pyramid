@@ -552,3 +552,16 @@ def update_generic_text(generic_text, attr, data, action):
     logger.debug(generic_text)
 
     return generic_text
+
+
+def measure_time(f):
+    import time
+
+    def inner_f():
+        start = time.time()
+        return_data = f()
+        end = time.time()
+        logger.debug('%s: %0.3f sec' % (f.__name__, (end - start)))
+        return return_data
+
+    return inner_f
