@@ -2010,7 +2010,7 @@ def get_tasks(request):
     """RESTful version of getting all tasks
     """
     logger.debug('get_tasks is running')
-
+    start = time.time()
     # set the content range to prevent JSONRest Store to query the data twice
     offset = request.params.get('offset', 0)
     limit = request.params.get('limit')
@@ -2040,6 +2040,10 @@ def get_tasks(request):
         json_body=return_data
     )
     resp.content_range = content_range
+    end = time.time()
+    logger.debug('GET_TASKS: %s rows retrieved in %s seconds' % (len(return_data),
+                                                      (end - start)))
+
     return resp
 
 
