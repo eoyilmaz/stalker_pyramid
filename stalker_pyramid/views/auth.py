@@ -810,6 +810,17 @@ def get_permissions_from_multi_dict(multi_dict):
     route_name='logout'
 )
 def logout(request):
+    logged_in_user = get_logged_in_user(request)
+    from stalker import AuthenticationLog
+    from stalker.models.auth import LOGOUT
+    al = AuthenticationLog(
+        user=logged_in_user,
+        date=local_to_utc(datetime.datetime.now()),
+        action=LOGOUT
+    )
+    DBSession.add(al)
+    transaction.commit()
+
     headers = forget(request)
     return HTTPFound(
         location=request.route_url('login'),
@@ -849,6 +860,15 @@ def login(request):
             login_name = user_obj.login
 
         if user_obj and user_obj.check_password(password):
+            from stalker import AuthenticationLog
+            from stalker.models.auth import LOGIN
+            al = AuthenticationLog(
+                user_obj,
+                date=local_to_utc(datetime.datetime.now()),
+                action=LOGIN
+            )
+            DBSession.add(al)
+            transaction.commit()
             headers = remember(request, login_name)
             # form submission succeeded
             return HTTPFound(
