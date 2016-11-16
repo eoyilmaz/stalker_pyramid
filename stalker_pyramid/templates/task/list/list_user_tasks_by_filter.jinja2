@@ -90,7 +90,7 @@
                                         'icon':'icon-comment-alt'
         }
 
-         {% if (logged_in_user in entity.resources or logged_in_user in entity.responsible) or has_permission('Update_Task') %}
+         {% if logged_in_user.id == entity.id   or has_permission('Update_Task') %}
             if (status_code == 'wfd' || status_code == 'rts'){
                 button_list.append(btn_template(remove_task_btn_info));
                 if ( status_code == 'rts'){
