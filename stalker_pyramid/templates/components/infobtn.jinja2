@@ -11,7 +11,7 @@
 <script>
         function initInfoBtn(address){
 
-            clear_html_modal();
+
 
             var infobtn = $('#infobox');
             infobtn.find(".btn").remove();
@@ -41,13 +41,22 @@
 
                 for (var k = 0; k < sorted_data.length; k++) {
                     if(sorted_data[k]){
+                        var status_code = localStorage.getItem("status_code");
+
                         if (first_status == ''){
                             first_status = sorted_data[k].status_code;
                         }
+
+                        if (status_code != ''){
+                            first_status = status_code;
+                        }
+
                         infobtn.append(infobtn_template(sorted_data[k]));
                         var btn = $('#btn_'+sorted_data[k].status_code);
                         btn.on('click', function(){
-                            init_html_modal($(this).attr('id').split('_')[1], $('#project_cb').val());
+                            var status_code = $(this).attr('id').split('_')[1];
+                            localStorage.setItem("status_code", status_code);
+                            init_html_modal(status_code, $('#project_cb').val());
                         });
                     }
                 }

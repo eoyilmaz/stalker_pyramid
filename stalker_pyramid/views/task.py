@@ -2487,6 +2487,168 @@ def get_cached_user_tasks(statuses, user_id):
 
 
 @view_config(
+    route_name='get_user_tasks_simple',
+    renderer='json'
+)
+def get_user_tasks_simple(request):
+    """return user's task with a simple methot for view user page
+    """
+    logger.debug("get_user_tasks_simple")
+
+    user_id = request.matchdict.get('id', -1)
+    user = User.query.filter(User.id == user_id).first()
+
+    logger.debug("user_id: %s" % user_id)
+
+    if not user:
+        transaction.abort()
+        return Response("No user found by the id: %s" % user_id)
+
+    status_code = request.params.get('status_code', None)
+    status = Status.query.filter(Status.code == status_code.upper()).first()
+
+    logger.debug("status_code: %s" % status_code)
+
+    if not status:
+        transaction.abort()
+        return Response("No status found by the code: %s" % status_code)
+
+    project_id = request.params.get('project_id', None)
+    project = Project.query.filter(Project.id == project_id).first()
+
+    logger.debug("project_id: %s" % project_id)
+
+    if not project:
+        transaction.abort()
+        return Response("No project found by the id: %s" % project_id)
+
+    sql_query = """select
+        "Tasks".id,
+        tasks.name,
+        tasks.full_path,
+
+        "Tasks".project_id,
+        "Tasks".parent_id,
+        "Tasks".priority as priority,
+
+        "Tasks".bid_timing,
+        "Tasks".bid_unit,
+
+        "Tasks".schedule_timing,
+        "Tasks".schedule_unit,
+        "Tasks".schedule_model,
+
+        coalesce(
+            "Tasks".total_logged_seconds,
+            coalesce("Task_TimeLogs".duration, 0.0)
+        ) as total_logged_seconds
+
+        from (
+
+    with recursive recursive_task(id, path_names) as (
+        select
+            task.id,
+            ("Projects".code || '') as path_names
+        from "Tasks" as task
+        join "Projects" on task.project_id = "Projects".id
+        where task.parent_id is NULL
+    union all
+        select
+            task.id,
+            (parent.path_names || ' | ' || "Parent_SimpleEntities".name) as path_names
+
+        from "Tasks" as task
+        join recursive_task as parent on task.parent_id = parent.id
+        join "SimpleEntities" as "Parent_SimpleEntities" on parent.id = "Parent_SimpleEntities".id
+    ) select
+        recursive_task.id,
+        "SimpleEntities".name as name,
+        recursive_task.path_names,
+        "SimpleEntities".name || ' (' || recursive_task.path_names || ')(' || recursive_task.id || ')' as full_path
+    from recursive_task
+    join "SimpleEntities" on recursive_task.id = "SimpleEntities".id
+
+        ) as tasks
+        join "Tasks" on tasks.id = "Tasks".id
+
+        -- Resources
+        left outer join (
+            select
+                "Tasks".id as task_id,
+                array_agg("Task_Resources".resource_id) as resource_id
+            from "Tasks"
+            join "Task_Resources" on "Tasks".id = "Task_Resources".task_id
+            group by "Tasks".id
+        ) as resource_info on "Tasks".id = resource_info.task_id
+
+        -- TimeLogs for Leaf Tasks
+        left outer join (
+            select
+                "TimeLogs".task_id,
+                extract(epoch from sum("TimeLogs".end::timestamp AT TIME ZONE 'UTC' - "TimeLogs".start::timestamp AT TIME ZONE 'UTC')) as duration
+            from "TimeLogs"
+            group by task_id
+        ) as "Task_TimeLogs" on "Task_TimeLogs".task_id = tasks.id
+
+        -- Task Status
+        join "Statuses" on "Tasks".status_id = "Statuses".id
+
+
+        where (
+                "Tasks".project_id = %(project_id)s
+                and exists (
+                    select * from (
+                        select unnest(resource_info.resource_id)
+                    ) x(resource_id)
+                    where x.resource_id = %(user_id)s
+                )
+                and (
+                "Statuses".code ilike '%%%(status_code)s%%'
+                )
+                and not exists (
+                    select 1 from "Tasks"
+                    where "Tasks".parent_id = tasks.id
+                )
+            )
+
+order by tasks.name"""
+
+    sql_query = sql_query % {
+        'project_id': project.id,
+        'status_code': status.code,
+        'user_id': user.id
+    }
+
+    logger.debug("sql_query %s" % sql_query)
+
+    start = time.time()
+    from sqlalchemy import text
+    result = db.DBSession.connection().execute(text(sql_query))
+
+    return_data = [
+        {
+            'id': r[0],
+            'name': r[1],
+            'full_path': r[2],
+            'project_id': r[3],
+            'parent_id': r[4],
+            'priority': r[5],
+            'bid_timing': r[6],
+            'bid_unit': r[7],
+            'schedule_timing': r[8],
+            'schedule_unit': r[9],
+            'schedule_model': r[10],
+            'total_logged_seconds': r[11]
+        }
+        for r in result.fetchall()
+    ]
+    end = time.time()
+    logger.debug('get_user_task_simple took: %s seconds' %
+                 (end - start))
+    return return_data
+
+
+@view_config(
     route_name='get_user_tasks',
     renderer='json'
 )

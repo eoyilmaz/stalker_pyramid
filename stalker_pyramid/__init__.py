@@ -574,6 +574,7 @@ def main(global_config, **settings):
     config.add_route('get_user_departments',  'users/{id}/departments/')  # json
     config.add_route('get_user_groups',       'users/{id}/groups/')  # json
     config.add_route('get_user_tasks',        'users/{id}/tasks/')  # json
+    config.add_route('get_user_tasks_simple', 'users/{id}/tasks/simple/')  # json
     config.add_route('get_user_tasks_count',  'users/{id}/tasks/count/')  # json
     config.add_route('get_user_tasks_responsible_of_count', 'users/{id}/tasks/responsible_of/count') # html
     config.add_route('get_user_vacations',    'users/{id}/vacations/')  # json

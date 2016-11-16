@@ -373,10 +373,10 @@ function init_dialog() {
             submit_finalize_form_url,
             time_log_form.serialize()
         ).done(function (response_text) {
-{#            refresh_page();#}
+            refresh_page();
         }).fail(function (jqXHR) {
             bootbox.alert('<div id="message" class="alert alert-danger bigger-110">'+jqXHR.responseText+'</div>');
-{#            refresh_page();#}
+            refresh_page();
 {#            submit_button.button('reset');#}
         });
     };

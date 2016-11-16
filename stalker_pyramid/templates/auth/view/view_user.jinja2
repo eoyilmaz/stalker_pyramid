@@ -81,105 +81,6 @@
 {#EXTRA-SCRIPTS#}
 {% block extrascripts %}
 
-
-{% raw %}
-<script id="tmpl_itemThead" type="text/x-dot-template">
-    <tr>
-        <th>Start</th>
-        <th>Name</th>
-        <th>Hours Based on Bid</th>
-        <th>Hours to Complete</th>
-        <th></th>
-    </tr>
-</script>
-{% endraw %}
-
-
-{% raw %}
-<script id="tmpl_itemRow" type="text/x-dot-template">
-    <tr>
-        <td>{{=it.start}}</td>
-        <td><a href='/tasks/{{=it.id}}/view'>{{=it.full_path}}</a></td>
-        <td style="background-color: {{=it.bid_stat}}; opacity:0.8;">{{=it.hour_based_on_bid}}</td>
-        <td>{{=it.hour_to_complete}}</td>
-        <td>
-            <div class="hidden-phone visible-desktop action-buttons">
-                {{ if (it.status === 'wip' || it.status === 'hrev')  { }}
-                    <a id='update_task_item'
-                       data-target="#dialog_template"
-                       data-toggle="modal"
-                       data-keyboard=false
-                       href="/tasks/{{=it.id}}/force_status/CMPL/dialog"
-                       tabindex="-1">
-                        <i class="icon-check bigger-120">&nbsp</i>
-                    </a>
-                {{ } }}
-
-                {{ if (it.request_extra_time)  { }}
-                    <a
-                        class="red"
-                        data-target="#dialog_template"
-                        data-toggle="modal"
-                        data-keyboard=false
-                        data-rel="tooltip"
-                        data-placement="top"
-                        title="Request Extra Time"
-                        href="{{=it.request_extra_time}}">
-                        <i class="icon-time bigger-130"></i>
-                    </a>
-                {{ } }}
-
-                {{ if (it.request_review) { }}
-                    <a
-                        class="green"
-                        data-target="#dialog_template"
-                        data-toggle="modal"
-                        data-keyboard=false
-                        data-rel="tooltip"
-                        data-placement="top"
-                        title="Request Review"
-                        href="{{=it.request_review}}">
-                        <i class="icon-comment-alt bigger-130"></i>
-                    </a>
-
-                {{ } }}
-                {{ if (it.review) { }}
-                    <a
-                        class="purple"
-                        data-target="#dialog_template"
-                        data-toggle="modal"
-                        data-keyboard=false
-                        data-rel="tooltip"
-                        data-placement="top"
-                        title="Review"
-                        href="{{=it.review }}">
-                        <i class="icon-comments bigger-130"></i>
-                    </a>
-                {{ } }}
-
-            </div>
-        </td>
-    </tr>
-</script>
-{% endraw %}
-{% raw %}
-<script id="tmpl_itemFooterRow" type="text/x-dot-template">
-    <tr>
-        <td>TOTAL</td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td data-sType="num-html">
-
-        </td>
-        <td><b>TOTAL:</b></td>
-        <td>{{=it.total_hours}}</td>
-        <td></td>
-        <td></td>
-    </tr>
-</script>
-{% endraw %}
-
     {% if entity.tasks | count > 0 %}
         {% if has_permission('Update_User') or logged_in_user.id == entity.id %}
             {% set event_type='TimeLog' %}
@@ -191,22 +92,23 @@
     {% include 'charts/pie_chart.jinja2' %}
     <script class="include" type="text/javascript"
         src='{{ request.static_url("stalker_pyramid:static/jqPlot/jquery.jqplot.min.js") }}'></script>
-
-    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/flot/jquery.flot.min.js") }}'></script>
-    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/flot/jquery.flot.pie.min.js") }}'></script>
+{##}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/flot/jquery.flot.min.js") }}'></script>#}
+{#    <script src='{{ request.static_url("stalker_pyramid:static/ace/js/flot/jquery.flot.pie.min.js") }}'></script>#}
 
     <script type="text/javascript">
 
      $(document).ready(function () {
 
-            var project_cb = $('#project_cb');
-            var project_id = project_cb.val();
-
+            var project_id = localStorage.getItem("project_id");
             var status_code = '';
 
             {% raw %}
                 var option_template = doT.template('<option value={{=it.id}}>{{=it.name}}</option>');
             {% endraw %}
+
+            var project_cb = $('#project_cb');
+
 
             project_cb.chosen({
                 search_contains: true,
@@ -223,16 +125,30 @@
                     project_cb.append(option_template(data[i]));
                 }
 
+
+                if (project_id){
+                    project_cb.val(project_id)
+                }
+                else{
+                    project_id = project_cb.val();
+                }
+
                 // update the chosen fields
                 project_cb.trigger('liszt:updated');
                 project_id = project_cb.val();
 
+                clear_html_modal();
                 initInfoBtn('/entities/{{ entity.id }}/tasks_stats/?project_id='+project_id);
+
 
                 project_cb.on('change', function () {
                     project_id = $(this).val();
+                    localStorage.setItem("project_id", project_id);
+                    localStorage.setItem("status_code", '');
+
+                    clear_html_modal();
                     initInfoBtn('/entities/{{ entity.id }}/tasks_stats/?project_id='+project_id);
-{#                    init_html_modal(status_code, project_id);#}
+
                 });
             });
 
