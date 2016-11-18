@@ -395,6 +395,10 @@ logger.setLevel(logging.DEBUG)
     route_name='list_entity_related_assets',
     renderer='templates/asset/list/list_entity_related_assets.jinja2'
 )
+@view_config(
+    route_name='list_entity_authlogs',
+    renderer='templates/authlog/list_entity_authlogs.jinja2'
+)
 def get_entity_related_data(request):
     """view for generic data
     """
@@ -1267,3 +1271,54 @@ def get_entity_thumbnail(request):
     return {
         'thumbnail_path': thumbnail_path
     }
+
+
+@view_config(
+    route_name='get_entity_authlogs',
+    renderer='json'
+)
+def get_entity_authlogs(request):
+
+    entity_id = request.matchdict.get('id', -1)
+    entity = Entity.query.filter_by(id=entity_id).first()
+    if not entity:
+        transaction.abort()
+        return Response('Can not find a entity with id: %s' % entity_id, 500)
+
+    sql_query = """
+              select
+                    "AuthenticationLogs".uid,
+                    "AuthenticationLogs".action,
+                    "AuthenticationLogs".date
+
+            from "AuthenticationLogs"
+
+            %(where_conditions)s
+    """
+    where_conditions = ''
+
+    if entity.entity_type == 'User':
+        where_conditions = """where "AuthenticationLogs".uid = %(user_id)s """ % {'user_id': entity_id}
+    elif entity.entity_type == 'Project':
+        temp_buffer = ["""where ("""]
+        for i, user in enumerate(entity.users):
+            if i > 0:
+                temp_buffer.append(' or')
+            temp_buffer.append(""" "AuthenticationLogs".uid='%s'""" % user.id)
+        temp_buffer.append(' )')
+        where_conditions = ''.join(temp_buffer)
+
+    logger.debug('where_conditions: %s' % where_conditions)
+
+    sql_query = sql_query % {'where_conditions': where_conditions}
+
+    from sqlalchemy import text  # to be able to use "%" sign use this function
+    result = DBSession.connection().execute(text(sql_query))
+    return [
+        {
+            'user_id': r[0],
+            'action': r[1],
+            'date_created': milliseconds_since_epoch(r[2])
+        }
+        for r in result.fetchall()
+    ]

@@ -188,6 +188,7 @@ def main(global_config, **settings):
     config.add_route('get_entity_tasks',               'entities/{id}/tasks/')
     config.add_route('get_entity_tasks_stats',         'entities/{id}/tasks_stats/')
     config.add_route('get_entity_total_schedule_seconds',   'entities/{id}/total_schedule_seconds/')
+    config.add_route('get_entity_authlogs',        'entities/{id}/authlogs/')  # json
 
     # TODO: Do we still really need "get_entity_tasks_by_filter"
     config.add_route('get_entity_tasks_by_filter',     'entities/{id}/tasks/filter/{f_id}/')
@@ -235,6 +236,7 @@ def main(global_config, **settings):
     config.add_route('list_entity_versions',           'entities/{id}/versions/list')  # html
     config.add_route('list_entity_resources',          'entities/{id}/resources/list')  # html
     config.add_route('list_entity_notes',              'entities/{id}/notes/list') #html
+    config.add_route('list_entity_authlogs',           'entities/{id}/authlogs/list')  # html
 
     config.add_route('append_entities_to_entity_dialog',  'entities/{id}/{entities}/append/dialog')
     config.add_route('append_entities_to_entity',         'entities/{id}/append')
@@ -603,6 +605,7 @@ def main(global_config, **settings):
     config.add_route('list_user_reviews',              'users/{id}/reviews/list')  # html
     config.add_route('list_resource_rates',    'resources/{id}/rates/list')  # html
     config.add_route('list_user_versions',       'users/{id}/versions/list')  # html
+    # config.add_route('list_user_authlogs',       'users/{id}/authlogs/list')  # html
 
     config.add_route('view_user_tasks',       'users/{id}/tasks/view')  # html
     config.add_route('view_user_versions',    'users/{id}/versions/view')

@@ -64,7 +64,7 @@
         $('#html_template_header').attr('class', 'widget-header widget-header-small header-color-status_'+status_code);
         $('#tasks_list').show();
         var button_list = $('#button_list');
-        $('#button_list').find('button').remove();
+        button_list.find('button').remove();
         var btn_template = doT.template($('#tmpl_btn').html());
         var remove_task_btn_info = {
                                         'id':'remove_resource_btn',

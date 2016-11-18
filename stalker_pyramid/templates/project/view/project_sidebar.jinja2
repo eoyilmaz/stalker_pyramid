@@ -69,6 +69,13 @@
             get_icon('user'),
             '/entities/{{ project.id }}/users/count/'
         );
+        menu_of(
+            'Authlogs',
+            "{%- if request.current_route_path() == request.route_path('list_entity_authlogs', id=project.id) -%}'active',{%- else -%},{%- endif -%}",
+            '{{ request.route_url('list_entity_authlogs', id=project.id) }}',
+            get_icon('report'),
+            ''
+        );
 
 {#        menu_of(#}
 {#            'Roles',#}
@@ -127,7 +134,7 @@
         {% if  has_permission('Create_Budget') %}
 
 
-            menus_under_title('Managment',
+            menus_under_title('Management',
                               'budget',
                               [
                                {'name': 'Budgets',

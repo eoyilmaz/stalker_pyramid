@@ -81,6 +81,13 @@
             get_icon('report'),
             ''
         );
+        menu_of(
+            'Authlogs',
+            "{%- if request.current_route_path() == request.route_path('list_entity_authlogs', id=user.id) -%}'active',{%- else -%},{%- endif -%}",
+            '{{ request.route_url('list_entity_authlogs', id=user.id) }}',
+            get_icon('report'),
+            ''
+        );
 
 {#        menu_of(#}
 {#            'Tasks',#}
