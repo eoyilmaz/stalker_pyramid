@@ -55,8 +55,8 @@
     }
     function init_html_modal(status_code, project_id) {
         clear_html_modal();
-        console.debug('starting to initialize init_html_modal dialog!!!');
 
+        console.debug('starting to initialize init_html_modal dialog!!!');
 
         var items_header = $('#items_header');
         items_header.text(status_code);
@@ -70,25 +70,25 @@
                                         'id':'remove_resource_btn',
                                         'title':'Remove Task',
                                         'icon':'icon-trash'
-        }
+        };
 
         var enter_timelog_btn_info = {
                                         'id':'timelog_btn',
                                         'title':'Enter Timelog',
                                         'icon':'icon-calendar'
-        }
+        };
 
         var force_complete_btn_info = {
                                         'id':'force_complete_btn',
                                         'title':'Force Complete',
                                         'icon':'icon-ok'
-        }
+        };
 
         var request_revisions_btn_info = {
                                         'id':'request_revisions_btn',
                                         'title':'Request Revisions',
                                         'icon':'icon-comment-alt'
-        }
+        };
 
          {% if logged_in_user.id == entity.id   or has_permission('Update_Task') %}
             if (status_code == 'wfd' || status_code == 'rts'){
@@ -117,7 +117,8 @@
                             index:'full_path',
                             width:220,
                             editable: false,
-                            formatter:taskLabelFormatter
+                            formatter:taskLabelFormatter,
+                            cellattr: function (rowId, tv, rawObject, cm, rdata) { return 'style="white-space: normal;"' }
                         },
                         {
                             name:'hour_based_on_bid',
@@ -186,7 +187,6 @@
                 hour_based_on_bid: meaningful_time(total_remain_bid_seconds),
                 hour_to_complete: meaningful_time(total_remain_st_seconds)
             };
-            console.log(data);
 
             loadTableData(
                     data,
@@ -199,15 +199,11 @@
 
 
         function taskLabelFormatter(cellvalue, options, rowObject){
-
-{#                return cellvalue;#}
                 return '<a href="/tasks/'+rowObject.id+'/view">'+cellvalue+'</a>';
         }
 
 
         function bidFormatter(cellvalue, options, rowObject){
-
-{#                return cellvalue;#}
                 return '<span style="background-color: '+rowObject.bid_stat+'; opacity:0.8;">'+cellvalue+'</span>';
         }
 
