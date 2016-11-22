@@ -376,6 +376,41 @@ function convert_seconds_to_time_range(seconds) {
     return time_range_string;
 }
 
+
+function convert_seconds_to_hour(seconds) {
+    'use strict';
+    if (seconds==0){
+
+        return '0';
+    }
+    var f_units = ['h','min']
+    // year
+    var time_range_string = '',
+        remainder = 0,
+        integer_division = 0,
+        current_unit,
+        sec_in_unit,
+        i;
+
+
+
+    for(i = 0; i < f_units.length; i += 1){
+        current_unit = f_units[i];
+        sec_in_unit = seconds_in_unit(current_unit);
+        integer_division = Math.floor(seconds / sec_in_unit);
+        remainder = seconds % sec_in_unit;
+        if(integer_division > 0){
+            if (time_range_string !== ''){
+                time_range_string += ' ';
+            }
+            time_range_string += integer_division + ' ' + current_unit;
+        }
+        seconds = remainder;
+    }
+
+    return time_range_string;
+}
+
 /**
  * Calculates a time string from the given values
  * 

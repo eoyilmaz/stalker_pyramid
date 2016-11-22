@@ -3367,6 +3367,7 @@ def data_dialog(request, mode='create', entity_type='Task'):
 
         if not project and depends_to:
             project = depends_to[0].project
+
     elif mode in ['update', 'review']:
         entity_type = entity.entity_type
         project = entity.project

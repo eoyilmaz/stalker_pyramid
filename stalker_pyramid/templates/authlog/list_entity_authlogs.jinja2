@@ -196,7 +196,7 @@
                         }
 
                         var seconds_between = (new_data.logout_date_created - new_data.login_date_created)/1000;
-                        new_data.hour = convert_seconds_to_time_range(seconds_between);
+                        new_data.hour = convert_seconds_to_hour(seconds_between);
                         if(seconds_between && seconds_between>0){
                             total_hour += seconds_between;
                         }
@@ -207,7 +207,7 @@
 
                 var footerData = {
                     user_name:'TOTAL',
-                    hour: convert_seconds_to_time_range(total_hour)
+                    hour: convert_seconds_to_hour(total_hour)
                 };
 
                 loadTableData(
