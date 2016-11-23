@@ -97,12 +97,19 @@
             console.debug('starting to initialize init_html_modal dialog!!!');
 
 
-            var colNames = ['User Name', 'Date', 'Login', 'Logout', 'Hour'];
+            var colNames = ['User Name', 'Role', 'Date', 'Login', 'Logout', 'Hour'];
             var colModel = [
                             {
                                 name:'user_name',
                                 index:'user_name',
                                 width:200,
+                                editable: false
+                            },
+
+                            {
+                                name:'role_name',
+                                index:'role_name',
+                                width:100,
                                 editable: false
                             },
 {#                            {#}

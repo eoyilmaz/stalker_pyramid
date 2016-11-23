@@ -1290,17 +1290,26 @@ def get_entity_authlogs(request):
                     "AuthenticationLogs".uid,
                     "AuthenticationLogs".action,
                     "AuthenticationLogs".date
+                    %(attributes)s
 
             from "AuthenticationLogs"
+            %(join_tables)s
 
             %(where_conditions)s
     """
     where_conditions = ''
+    join_tables = ''
+    attributes = ''
 
     if entity.entity_type == 'User':
         where_conditions = """where "AuthenticationLogs".uid = %(user_id)s """ % {'user_id': entity_id}
+
     elif entity.entity_type == 'Project':
-        temp_buffer = ["""where ("""]
+        attributes = """,  "Role_SimpleEntities".name"""
+        join_tables = """join "Project_Users" on "Project_Users".user_id = "AuthenticationLogs".uid
+                        join "SimpleEntities" as "Role_SimpleEntities" on "Role_SimpleEntities".id = "Project_Users".rid """
+
+        temp_buffer = ["""where  ("""]
         for i, user in enumerate(entity.users):
             if i > 0:
                 temp_buffer.append(' or')
@@ -1310,7 +1319,13 @@ def get_entity_authlogs(request):
 
     logger.debug('where_conditions: %s' % where_conditions)
 
-    sql_query = sql_query % {'where_conditions': where_conditions}
+    sql_query = sql_query % {
+                                'where_conditions': where_conditions,
+                                'join_tables': join_tables,
+                                'attributes': attributes
+    }
+
+    logger.debug('sql_query: %s' % sql_query)
 
     from sqlalchemy import text  # to be able to use "%" sign use this function
     result = DBSession.connection().execute(text(sql_query))
@@ -1318,7 +1333,8 @@ def get_entity_authlogs(request):
         {
             'user_id': r[0],
             'action': r[1],
-            'date_created': milliseconds_since_epoch(r[2])
+            'date_created': milliseconds_since_epoch(r[2]),
+            'role_name':  r[3] if len(r) > 3 else ""
         }
         for r in result.fetchall()
     ]
