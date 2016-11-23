@@ -1326,6 +1326,7 @@ def get_entity_authlogs(request):
     }
 
     logger.debug('sql_query: %s' % sql_query)
+    logger.debug('sql_query: %s' % sql_query)
 
     from sqlalchemy import text  # to be able to use "%" sign use this function
     result = DBSession.connection().execute(text(sql_query))
@@ -1334,7 +1335,7 @@ def get_entity_authlogs(request):
             'user_id': r[0],
             'action': r[1],
             'date_created': milliseconds_since_epoch(r[2]),
-            'role_name':  r[3] if len(r) > 3 else ""
+            'role_name':  r[3] if len(r) > 3 else ''
         }
         for r in result.fetchall()
     ]

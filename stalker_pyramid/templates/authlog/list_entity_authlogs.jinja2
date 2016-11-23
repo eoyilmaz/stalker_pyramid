@@ -105,25 +105,12 @@
                                 width:200,
                                 editable: false
                             },
-
                             {
                                 name:'role_name',
                                 index:'role_name',
                                 width:100,
                                 editable: false
                             },
-{#                            {#}
-{#                                name:'full_date',#}
-{#                                index:'full_date',#}
-{#                                width:25,#}
-{#                                editable: false#}
-{#                            },#}
-{#                            {#}
-{#                                name:'action',#}
-{#                                index:'action',#}
-{#                                width:25,#}
-{#                                editable: false#}
-{#                            },#}
                             {
                                 name:'date',
                                 index:'date',
@@ -165,7 +152,7 @@
                     new_data.user_id = data[i].user_id;
                     new_data.date = new Date(data[i].date_created).format('yyyy-mm-dd');
                     var index = findArrayElement(new_list,'date', new_data.date, 'user_id',new_data.user_id );
-                    console.log("index: " + index);
+                    console.log("new_data.user_id: " + new_data.user_id);
                     if(index == -1){
                         for (var j = 0; j < data.length; j++) {
                             var data_date = data[j].date_created;
@@ -208,6 +195,7 @@
                             total_hour += seconds_between;
                         }
                         new_data.user_name = '<a href="/users/'+data[i].user_id+'/view">'+get_user_name(data[i].user_id)+'</a>';
+                        new_data.role_name = data[i].role_name;
                         new_list.push(new_data);
                     }
                 }
